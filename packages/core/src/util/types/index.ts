@@ -692,6 +692,23 @@ export interface AbstractViewModel {
    * `trackContainerFor` cannot answer that — a walker has no id to ask with.
    */
   trackContainers?: TrackContainer[]
+  /**
+   * every track open on this view itself — its own `tracks` and any containers
+   * it owns instead; tracks on nested views are excluded. Derived by
+   * `BaseViewModel`, so a view composing the base answers correctly without
+   * implementing anything. Required, like `bodyMounted`: a stand-in that
+   * forgets it would silently under-report instead of failing the build.
+   */
+  ownTracks: AbstractTrackModel[]
+  /**
+   * this view and every view nested inside it, to any depth. The walk over
+   * `tracks` / `trackContainers` / `views` is written once, in `BaseViewModel`;
+   * anything needing "everything on screen" asks this and `ownTracks` rather
+   * than knowing which property a container keeps its children on.
+   */
+  allViews: AbstractViewModel[]
+  /** every track open on this view or any view nested inside it */
+  allTracks: AbstractTrackModel[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

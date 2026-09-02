@@ -1,55 +1,36 @@
 import { observer } from 'mobx-react'
 
 import type { AppSession } from './types.ts'
+import type {
+  AbstractTrackModel,
+  AbstractViewModel,
+} from '@jbrowse/core/util/types'
 
-/** A view whose displays we can ask, without importing any view's model type. */
+/**
+ * The per-view flags and per-display phase the marker reads beyond the census
+ * contract. Duck-typed because they are view- and display-family specifics
+ * (`showLoading` is the LGV's), not part of AbstractViewModel — absent means
+ * not loading, the same rule the phase attributes follow.
+ */
+interface ViewFlags {
+  showLoading?: boolean
+  initialized?: boolean
+}
 interface DisplayLike {
   displayPhase?: string
 }
-interface TrackLike {
-  displays?: DisplayLike[]
-}
-/** a view's own track list, or one of the several it owns instead. */
-interface TrackContainerLike {
-  tracks?: TrackLike[]
-}
-interface ViewLike extends TrackContainerLike {
-  showLoading?: boolean
-  initialized?: boolean
-  trackContainers?: TrackContainerLike[]
-  views?: ViewLike[]
+
+function trackLoading(track: AbstractTrackModel) {
+  return track.displays.some(d => (d as DisplayLike).displayPhase === 'loading')
 }
 
-function containerLoading(container: TrackContainerLike): boolean {
-  return (container.tracks ?? []).some(track =>
-    (track.displays ?? []).some(d => d.displayPhase === 'loading'),
-  )
+function viewLoading(view: AbstractViewModel) {
+  const flags = view as ViewFlags
+  return flags.showLoading === true || flags.initialized === false
 }
 
 /**
- * Is anything in this session still working?
- *
- * The same two facts the per-element attributes publish — a view still
- * resolving its assembly, a display still in its own fetch — reduced to one
- * answer for the whole app. Duck-typed rather than imported: every view type
- * would otherwise have to be a dependency of the app shell.
- */
-function anythingLoading(views: ViewLike[]): boolean {
-  return views.some(
-    view =>
-      view.showLoading === true ||
-      view.initialized === false ||
-      containerLoading(view) ||
-      // A view whose tracks hang off something else — the synteny view's are on
-      // its levels, one list per band. `view.tracks` is empty there, so without
-      // this a stack of ribbons still fetching reads as idle.
-      (view.trackContainers ?? []).some(containerLoading) ||
-      anythingLoading(view.views ?? []),
-  )
-}
-
-/**
- * One element that says whether the whole app has finished.
+ * One element that says whether the whole app has finished, and what is open.
  *
  * `[data-app-phase="ready"]` is the entire readiness contract for anything
  * driving JBrowse from outside — a screenshot tool, a test, an agent. Wait for
@@ -62,6 +43,15 @@ function anythingLoading(views: ViewLike[]): boolean {
  * true of an app that has not started — and the gap is real, measured at about
  * a second on a two-track session. A positive attribute cannot be satisfied
  * early, because something has to render it.
+ *
+ * The census attributes beside it — `data-app-views`, `data-app-assemblies`,
+ * `data-app-tracks` (the latter two JSON arrays) — publish WHAT is open the
+ * same way the phase publishes whether it is done, so an outside reader asking
+ * "is the track I requested actually open" reads one element instead of
+ * walking `window.JBrowseSession` with its own copy of the view nesting. The
+ * walk itself is the views' own `allViews`/`ownTracks` contract (BaseViewModel
+ * derives it), so this component knows nothing about which property a
+ * container view keeps its children on either.
  *
  * Its own component, and `hidden`, for two reasons: an observer here subscribes
  * to every view's phase without re-rendering the app shell around it, and a
@@ -82,13 +72,23 @@ const AppReadyMarker = observer(function AppReadyMarker({
 }: {
   session: AppSession
 }) {
+  const views = session.views.flatMap(v => v.allViews)
+  const tracks = views.flatMap(v => v.ownTracks)
+  const loading = views.some(viewLoading) || tracks.some(trackLoading)
   return (
     <span
       hidden
       data-testid="app-ready-marker"
-      data-app-phase={
-        anythingLoading(session.views as ViewLike[]) ? 'loading' : 'ready'
-      }
+      data-app-phase={loading ? 'loading' : 'ready'}
+      data-app-views={session.views.length}
+      data-app-assemblies={JSON.stringify([
+        ...new Set(views.flatMap(v => v.assemblyNames ?? [])),
+      ])}
+      data-app-tracks={JSON.stringify(
+        tracks.map(
+          t => (t.configuration as { trackId?: string }).trackId ?? '(unnamed)',
+        ),
+      )}
     />
   )
 })

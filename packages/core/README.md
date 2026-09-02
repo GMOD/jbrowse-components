@@ -651,6 +651,24 @@ at the point where the connection is cut.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### runLazyAfterAttach
+
+Run a display's `afterAttach` body from a module loaded on demand, so the
+autorun installers stay out of the display's eager bundle.
+
+One policy for the gap the `await` opens: a node torn down before the module
+lands installs nothing, and a module that fails to load is reported where the
+user can see it rather than onto the display's own error slot — that slot is
+what `reload()` clears, and nothing would re-run the install behind it. Three
+displays hand-rolled this IIFE and each drew the lines differently.
+
+```js
+// type signature
+<Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/lazyAfterAttach.ts)
+
 ### sampleColorRamp
 
 The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly

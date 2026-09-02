@@ -4,7 +4,15 @@ import { isViewModel } from '../../util/types/index.ts'
 import { ElementId, Region } from '../../util/types/mst.ts'
 
 import type { MenuItem } from '../../ui/index.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  AbstractTrackModel,
+  AbstractViewModel,
+} from '../../util/types/index.ts'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * The view a view is nested in, if it is nested in one at all — a synteny row
@@ -24,6 +32,25 @@ function containingViewOf(node: IAnyStateTreeNode) {
     }
   }
   return undefined
+}
+
+/**
+ * Where a derived view keeps things the base can enumerate: an ordinary view
+ * has `tracks`, a container view has `trackContainers` instead (the synteny
+ * view's per-band lists) and child views on `views`. All three are the
+ * AbstractViewModel contract; this is the ONE place their shapes are walked,
+ * so a consumer asks `ownTracks`/`allViews`/`allTracks` and never learns which
+ * property a container keeps its children on.
+ *
+ * A `views` entry answers only if it carries the contract itself: the dotplot
+ * keeps its two 1D axis models under the same property name, and an axis is
+ * not a view — it composes no base, holds no tracks, and descending into it
+ * would put undefined in the census.
+ */
+interface ViewTreeSelf extends IStateTreeNode {
+  tracks?: AbstractTrackModel[]
+  trackContainers?: { tracks?: AbstractTrackModel[] }[]
+  views?: { allViews?: AbstractViewModel[] }[]
 }
 
 /**
@@ -104,6 +131,45 @@ const BaseViewModel = types
      */
     menuItems(): MenuItem[] {
       return []
+    },
+    /**
+     * #getter
+     * Every track open on this view itself: its own `tracks` array plus any
+     * track containers it owns instead (the synteny view keeps one list per
+     * band on `trackContainers` and its own `tracks` empty). Tracks on nested
+     * views are `allTracks`'s, not this getter's.
+     */
+    get ownTracks(): AbstractTrackModel[] {
+      const s = self as ViewTreeSelf
+      return [
+        ...(s.tracks ?? []),
+        ...(s.trackContainers ?? []).flatMap(c => c.tracks ?? []),
+      ]
+    },
+    /**
+     * #getter
+     * This view and every view nested inside it, to any depth — a synteny
+     * stack's genome rows, a breakpoint split view's panels. Each view answers
+     * for its own children, so a consumer never walks the nesting itself:
+     * before this getter, four consumers each carried a copy of the walk and
+     * two of them had drifted (one read `levels`, one read `trackContainers`,
+     * and each was blind to the other's spelling).
+     */
+    get allViews(): AbstractViewModel[] {
+      const s = self as ViewTreeSelf
+      return [
+        self as unknown as AbstractViewModel,
+        ...(s.views ?? []).flatMap(v => v.allViews ?? []),
+      ]
+    },
+  }))
+  .views(self => ({
+    /**
+     * #getter
+     * Every track open on this view or any view nested inside it.
+     */
+    get allTracks(): AbstractTrackModel[] {
+      return self.allViews.flatMap(v => v.ownTracks)
     },
   }))
   .actions(self => ({

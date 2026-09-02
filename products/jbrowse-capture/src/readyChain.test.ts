@@ -49,6 +49,35 @@ afterEach(() => {
   delete (globalThis as { JBrowseSession?: unknown }).JBrowseSession
 })
 
+// The census path: on a build whose marker publishes what is open, the whole
+// session gate is a read of one element — no walk of window.JBrowseSession,
+// which is not even present here.
+test('the marker census satisfies the session gate without a session walk', async () => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="ready" data-app-views="1"
+          data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
+  const report = await waitForJBrowseReady(fakePage(), {
+    assembly: 'hg38',
+    trackIds: ['genes'],
+    timeout: 500,
+  })
+  expect(report.appMarker).toBe(true)
+  expect(report.unsettled).toEqual([])
+}, 15000)
+
+test('a census missing the requested track fails the gate with the diagnostic', async () => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="ready" data-app-views="1"
+          data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
+  await expect(
+    waitForJBrowseReady(fakePage(), {
+      assembly: 'hg38',
+      trackIds: ['clinvar'],
+      timeout: 200,
+    }),
+  ).rejects.toThrow(/track\(s\) \[clinvar\].*tracks \[genes\]/s)
+}, 15000)
+
 // The regression this file exists for. With the session gate skipped, the
 // marker and instrumentation reads race the boot: an empty page has no marker,
 // no attributes and no session, and every stage in the fallback chain is an

@@ -117,6 +117,29 @@ makes that a direct read rather than a guess. This is the gate
 ```ts
 await page.waitForFunction(
   (wantAssembly: string | null, wantTracks: string[]) => {
+    // The census the app publishes on its ready marker (see APP_CENSUS):
+    // on a build that has it, the whole gate is a read of one element.
+    const marker = document.querySelector('[data-app-tracks]')
+    if (marker) {
+      try {
+        const openViews = Number(marker.getAttribute('data-app-views'))
+        const assemblies = JSON.parse(
+          marker.getAttribute('data-app-assemblies') ?? '[]',
+        ) as string[]
+        const openTracks = JSON.parse(
+          marker.getAttribute('data-app-tracks') ?? '[]',
+        ) as string[]
+        return (
+          openViews > 0 &&
+          (wantAssembly === null || assemblies.includes(wantAssembly)) &&
+          wantTracks.every(id => openTracks.includes(id))
+        )
+      } catch {
+        return false
+      }
+    }
+    // No census: a deployed build older than the marker's attributes, so
+    // walk the session model it publishes instead.
     const session = (
       globalThis as { JBrowseSession?: { views?: ViewState[] } }
     ).JBrowseSession

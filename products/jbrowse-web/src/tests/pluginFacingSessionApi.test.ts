@@ -220,4 +220,17 @@ test('the automation-facing session walk still resolves', () => {
   // lookup from outside. A shape change reads as '(unreadable)' and fails on the
   // value, which is the same way the script would experience it.
   expect(openTrackIds(view)).toEqual(['volvox-genes'])
+
+  // The census contract the walk is retiring behind: each view answers for
+  // itself (BaseViewModel derives these), AppReadyMarker publishes the
+  // reduction as data-app-* attributes, and capture's gate reads those. Pinned
+  // on a real session-created view because everything downstream — the marker,
+  // jbApi, the published census — assumes a view a session opens carries them.
+  expect(view.allViews).toEqual([view])
+  expect(
+    (view.ownTracks as unknown[]).map(
+      t => (t as { configuration: { trackId?: string } }).configuration.trackId,
+    ),
+  ).toEqual(['volvox-genes'])
+  expect(view.allTracks).toEqual(view.ownTracks)
 })

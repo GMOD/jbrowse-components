@@ -64,6 +64,19 @@ interface ViewState {
 // one of them is serialized into the page by puppeteer, so it can only call what
 // it declares inside itself.
 
+/**
+ * The census the app publishes beside its phase: `AppReadyMarker` renders
+ * `data-app-views` (a count), and `data-app-assemblies` / `data-app-tracks`
+ * (JSON string arrays of what is open). On a build that has it, the session
+ * gate and the summary are a read of ONE element — no walk of the session
+ * model, so nothing here has to know which property a container view keeps its
+ * children on. The session walk below each census read is the fallback for a
+ * deployed build older than the census, and goes when the legacy chain does.
+ * `scripts/readinessContract.test.ts` pins the attribute names against the
+ * marker, since neither package may import the other.
+ */
+export const APP_CENSUS = '[data-app-tracks]'
+
 export interface SessionSummary {
   views: number
   assemblies: string[]
@@ -84,6 +97,23 @@ export function readSessionSummary(
 // so calling it in node against a stubbed global exercises the very function
 // puppeteer serializes, rather than a copy of it that can drift.
 export function readSessionSummaryInPage(): SessionSummary | undefined {
+  // census first: one element, no walk (see APP_CENSUS)
+  const marker = document.querySelector('[data-app-tracks]')
+  if (marker) {
+    try {
+      return {
+        views: Number(marker.getAttribute('data-app-views')) || 0,
+        assemblies: JSON.parse(
+          marker.getAttribute('data-app-assemblies') ?? '[]',
+        ) as string[],
+        trackIds: JSON.parse(
+          marker.getAttribute('data-app-tracks') ?? '[]',
+        ) as string[],
+      }
+    } catch {
+      // a malformed census falls through to the walk rather than failing the read
+    }
+  }
   const session = (
     globalThis as {
       JBrowseSession?: { views?: ViewState[] }
@@ -139,6 +169,29 @@ export async function waitForSession(
     // #region session-gate
     await page.waitForFunction(
       (wantAssembly: string | null, wantTracks: string[]) => {
+        // The census the app publishes on its ready marker (see APP_CENSUS):
+        // on a build that has it, the whole gate is a read of one element.
+        const marker = document.querySelector('[data-app-tracks]')
+        if (marker) {
+          try {
+            const openViews = Number(marker.getAttribute('data-app-views'))
+            const assemblies = JSON.parse(
+              marker.getAttribute('data-app-assemblies') ?? '[]',
+            ) as string[]
+            const openTracks = JSON.parse(
+              marker.getAttribute('data-app-tracks') ?? '[]',
+            ) as string[]
+            return (
+              openViews > 0 &&
+              (wantAssembly === null || assemblies.includes(wantAssembly)) &&
+              wantTracks.every(id => openTracks.includes(id))
+            )
+          } catch {
+            return false
+          }
+        }
+        // No census: a deployed build older than the marker's attributes, so
+        // walk the session model it publishes instead.
         const session = (
           globalThis as { JBrowseSession?: { views?: ViewState[] } }
         ).JBrowseSession

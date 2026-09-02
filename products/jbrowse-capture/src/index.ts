@@ -1,6 +1,7 @@
 export { captureJBrowse, openJBrowse } from './capture.ts'
 export { waitForJBrowseReady } from './ready.ts'
 export {
+  APP_CENSUS,
   PAINT_CONTRACT_NOTE,
   describePendingDisplays,
   hasPaintContract,

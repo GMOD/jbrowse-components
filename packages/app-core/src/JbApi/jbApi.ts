@@ -91,10 +91,10 @@ interface ViewSelf {
   assemblyNames?: string[]
   coarseVisibleLocStrings?: string
   height?: number
-  tracks?: TrackSelf[]
-  trackContainers?: { tracks?: TrackSelf[] }[]
-  views?: AbstractViewModel[]
   initialized?: boolean
+  // read only by viewSummary, whose output mirrors the nesting for the reader;
+  // ENUMERATION goes through the census contract (allViews/ownTracks) below
+  views?: AbstractViewModel[]
   visibleRegions?: {
     refName: string
     start: number
@@ -114,25 +114,16 @@ function viewSelf(view: AbstractViewModel) {
   return view as unknown as ViewSelf
 }
 
-// One level of composite-view flattening: a synteny or breakpoint-split view
-// keeps its navigable, track-bearing linear views in `views`, so a scan of
-// session.views alone cannot reach a session those views' own launcher built.
+// The views' own census contract (BaseViewModel derives `allViews` and
+// `ownTracks`), so this module carries no copy of the view nesting: a synteny
+// stack's rows and per-band containers, a breakpoint split view's panels, and
+// any depth of nesting all arrive through each view answering for itself.
 function allViews(session: AbstractSessionModel): AbstractViewModel[] {
-  return session.views.flatMap(v => {
-    const sub = viewSelf(v).views
-    return [v, ...(Array.isArray(sub) ? sub : [])]
-  })
+  return session.views.flatMap(v => v.allViews)
 }
 
-// A synteny view holds its tracks on per-band containers INSTEAD of a `tracks`
-// array, so a walk of view.tracks alone reaches none of them — see
-// AbstractViewModel.trackContainers.
 function viewTracks(view: AbstractViewModel): TrackSelf[] {
-  const v = viewSelf(view)
-  return [
-    ...(v.tracks ?? []),
-    ...(v.trackContainers ?? []).flatMap(c => c.tracks ?? []),
-  ]
+  return view.ownTracks as unknown as TrackSelf[]
 }
 
 function allTracks(session: AbstractSessionModel): TrackSelf[] {

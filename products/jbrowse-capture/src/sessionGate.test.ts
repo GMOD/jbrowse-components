@@ -9,6 +9,7 @@ const stub = (session: unknown) => {
 
 afterEach(() => {
   delete (globalThis as { JBrowseSession?: unknown }).JBrowseSession
+  document.body.replaceChildren()
 })
 
 const track = (trackId: string) => ({ configuration: { trackId } })
@@ -16,6 +17,33 @@ const track = (trackId: string) => ({ configuration: { trackId } })
 test('no session on the page reports undefined', () => {
   stub(undefined)
   expect(readSessionSummaryInPage()).toBeUndefined()
+})
+
+// The census the app publishes on its ready marker: one element, read before
+// any walk of the session model, so on a build that has it nothing here needs
+// to know which property a container view keeps its children on.
+test('a published census answers the summary without a session walk', () => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="loading" data-app-views="2"
+          data-app-assemblies='["hg38","mm39"]'
+          data-app-tracks='["genes","synteny"]'></span>`
+  // no JBrowseSession stubbed at all — the census alone answers
+  expect(readSessionSummaryInPage()).toEqual({
+    views: 2,
+    assemblies: ['hg38', 'mm39'],
+    trackIds: ['genes', 'synteny'],
+  })
+})
+
+test('a malformed census falls back to the session walk', () => {
+  document.body.innerHTML =
+    '<span data-app-tracks="not json" data-app-assemblies="[]"></span>'
+  stub({ views: [{ assemblyNames: ['hg38'], tracks: [track('genes')] }] })
+  expect(readSessionSummaryInPage()).toEqual({
+    views: 1,
+    assemblies: ['hg38'],
+    trackIds: ['genes'],
+  })
 })
 
 test('a plain view reports its own tracks', () => {

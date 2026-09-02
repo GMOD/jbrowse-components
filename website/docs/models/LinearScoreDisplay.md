@@ -79,7 +79,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; ... 25 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LinearScoreDisplay |
+| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; ... 26 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LinearScoreDisplay |
 | <span id="getter-renderstate">**renderState**</span><br><code>ScoreRenderState</code> |  | LinearScoreDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
 | <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |

@@ -47,4 +47,23 @@ describe('the readiness contract', () => {
     expect(waits).toContain(`APP_READY = '${APP_READY}'`)
     expect(waits).toContain(`LOADING_OVERLAY = '${LOADING_OVERLAY}'`)
   })
+
+  // The census beside the phase: AppReadyMarker publishes what is open as
+  // attributes so capture's session gate reads one element instead of walking
+  // window.JBrowseSession. Same doctrine as the phase selector — the strings
+  // are the contract, and a rename in one file splits the readers silently,
+  // presenting as a gate that never passes rather than as a broken build.
+  it('the census attributes are published and read under the same names', () => {
+    const marker = read('packages/app-core/src/ui/App/AppReadyMarker.tsx')
+    const gate = read('products/jbrowse-capture/src/sessionGate.ts')
+    for (const attr of [
+      'data-app-views',
+      'data-app-assemblies',
+      'data-app-tracks',
+    ]) {
+      expect(marker).toContain(attr)
+      expect(gate).toContain(attr)
+    }
+    expect(gate).toContain(`APP_CENSUS = '[data-app-tracks]'`)
+  })
 })

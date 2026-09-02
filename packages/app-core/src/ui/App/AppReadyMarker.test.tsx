@@ -4,11 +4,41 @@ import AppReadyMarker from './AppReadyMarker.tsx'
 
 import type { AppSession } from './types.ts'
 
-const session = (views: unknown[]) => ({ views }) as unknown as AppSession
-const phaseOf = (views: unknown[]) =>
+// The marker reads the census CONTRACT — each view's `allViews`/`ownTracks`,
+// which BaseViewModel derives — so what these tests pin is the reduction: the
+// phase over the flags and display phases, and the census attributes. The walk
+// behind the contract has its own tests against real composed models
+// (core/pluggableElementTypes/models/BaseViewModel.test.ts), and
+// jbrowse-web's AppReadyMarkerComparative.test.tsx renders the two together.
+interface FakeView {
+  showLoading?: boolean
+  initialized?: boolean
+  assemblyNames?: string[]
+  tracks?: { trackId?: string; displays?: { displayPhase?: string }[] }[]
+  views?: FakeView[]
+}
+
+function view(v: FakeView): Record<string, unknown> {
+  const children = (v.views ?? []).map(view)
+  const self: Record<string, unknown> = {
+    ...v,
+    ownTracks: (v.tracks ?? []).map(t => ({
+      configuration: { trackId: t.trackId },
+      displays: t.displays ?? [],
+    })),
+  }
+  self.allViews = [self, ...children.flatMap(c => c.allViews as unknown[])]
+  return self
+}
+
+const session = (views: FakeView[]) =>
+  ({ views: views.map(view) }) as unknown as AppSession
+
+const markerOf = (views: FakeView[]) =>
   render(<AppReadyMarker session={session(views)} />).getByTestId(
     'app-ready-marker',
-  ).dataset.appPhase
+  )
+const phaseOf = (views: FakeView[]) => markerOf(views).dataset.appPhase
 
 // The one selector anything driving JBrowse from outside waits for. It has to
 // be POSITIVE — rendered when the app is done — because every other readiness
@@ -69,10 +99,9 @@ test('one loading display among many holds the app loading', () => {
   ).toBe('loading')
 })
 
-// A container view holds sub-views with track lists of their own — the synteny
-// view's genome rows — so a walk that reads the top level only reports a loading
-// app as ready.
-test('a sub-view display is reached', () => {
+// A container view's rows arrive through its `allViews`, so a loading display
+// on a nested view holds the app — the marker never walks the nesting itself.
+test('a display on a nested view is reached', () => {
   expect(
     phaseOf([
       { views: [{ tracks: [{ displays: [{ displayPhase: 'loading' }] }] }] },
@@ -80,31 +109,25 @@ test('a sub-view display is reached', () => {
   ).toBe('loading')
 })
 
-// And the other half of that view, which the sub-view walk does NOT reach: its
-// synteny tracks hang off `levels`, one list per band, published as
-// `trackContainers`. `view.tracks` is empty there, so a stack of ribbons still
-// fetching used to read as idle.
-test('a display in a track container the view owns is reached', () => {
-  expect(
-    phaseOf([
-      {
-        tracks: [],
-        trackContainers: [
-          { tracks: [{ displays: [{ displayPhase: 'loading' }] }] },
-        ],
-      },
-    ]),
-  ).toBe('loading')
+// The census: what is open, published beside whether it is done, so an outside
+// reader asks one element "is the track I requested actually open" instead of
+// walking the session model with its own copy of the view nesting.
+test('the marker publishes the open-track and assembly census', () => {
+  const marker = markerOf([
+    {
+      assemblyNames: ['hg38'],
+      tracks: [{ trackId: 'genes' }],
+      views: [{ assemblyNames: ['hg38'], tracks: [{ trackId: 'reads' }] }],
+    },
+  ])
+  expect(marker.dataset.appViews).toBe('1')
+  expect(JSON.parse(marker.dataset.appAssemblies!)).toEqual(['hg38'])
+  expect(JSON.parse(marker.dataset.appTracks!)).toEqual(['genes', 'reads'])
 })
 
-test('a finished track container is ready', () => {
-  expect(
-    phaseOf([
-      {
-        trackContainers: [
-          { tracks: [{ displays: [{ displayPhase: 'ready' }] }] },
-        ],
-      },
-    ]),
-  ).toBe('ready')
+test('an empty session publishes an empty census, not missing attributes', () => {
+  const marker = markerOf([])
+  expect(marker.dataset.appViews).toBe('0')
+  expect(JSON.parse(marker.dataset.appAssemblies!)).toEqual([])
+  expect(JSON.parse(marker.dataset.appTracks!)).toEqual([])
 })
