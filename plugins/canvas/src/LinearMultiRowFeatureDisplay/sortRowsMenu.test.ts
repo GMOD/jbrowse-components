@@ -33,6 +33,7 @@ function regionData(
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField: 'name',
   }

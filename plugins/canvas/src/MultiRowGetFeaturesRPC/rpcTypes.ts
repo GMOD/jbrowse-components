@@ -33,6 +33,15 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
   colorConfig: string | undefined
 }
 
+// The distinct values one partition candidate took over a region, capped at
+// MAX_COUNTED_PARTITION_VALUES. `overflow` means the cap was passed and `values`
+// is empty — the count is "too many", not a number.
+export interface PartitionCandidateValues {
+  field: string
+  values: string[]
+  overflow: boolean
+}
+
 // One region's painting: absolute genomic positions, pre-resolved ABGR colors,
 // and rows referenced indirectly through a deduplicated `partitionValues` list
 // so row strings ship once rather than per feature.
@@ -75,6 +84,10 @@ export interface MultiRowRegionData {
   // same on every line, and a union over half a million features would rebuild a
   // Set per region for an answer the first few rows already give.
   partitionCandidates: string[]
+  // How many rows each candidate would draw, one entry per `partitionCandidates`
+  // name, so the menu can say so without the refetch that is otherwise the only
+  // way to find out.
+  partitionCandidateValues: PartitionCandidateValues[]
   // The distinct (row, name, color) combinations the features carry, in
   // first-seen order and bounded — the shared derived-key shape, with `rowIndex`
   // indexing `partitionValues`. Packed here because deriving it is a walk over

@@ -62,6 +62,7 @@ function regionData(resolvedPartitionField: string) {
     featureIds: ['f1'],
     usedItemRgb: false,
     partitionCandidates: ['repClass', 'repFamily'],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField,
   }
@@ -81,6 +82,7 @@ function emptyRegionData() {
     featureNames: [],
     featureIds: [],
     partitionCandidates: [],
+    partitionCandidateValues: [],
   }
 }
 

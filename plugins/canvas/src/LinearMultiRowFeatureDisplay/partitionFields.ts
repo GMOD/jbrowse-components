@@ -1,4 +1,7 @@
-import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import {
+  AUTO_PARTITION_FIELD,
+  MAX_COUNTED_PARTITION_VALUES,
+} from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -96,4 +99,59 @@ export function regionHasPinnedData(
     (data.partitionValues.length === 0 ||
       data.resolvedPartitionField === pinnedPartitionField(self))
   )
+}
+
+export interface PartitionRowCount {
+  count: number
+  overflow: boolean
+}
+
+/**
+ * How many rows partitioning on each candidate would draw, over the loaded
+ * regions. The worker ships each region's distinct values (capped), and they
+ * are unioned here because two regions of one file can each hold a different
+ * subset of the same twenty repeat classes. A region that overflowed the cap
+ * makes the union an overflow, since its contribution is unknown.
+ */
+export function partitionRowCounts(self: PartitionFieldSlice) {
+  const unions = new Map<string, Set<string>>()
+  const overflowed = new Set<string>()
+  for (const data of self.rpcDataMap.values()) {
+    for (const { field, values, overflow } of data.partitionCandidateValues) {
+      if (overflow) {
+        overflowed.add(field)
+      } else {
+        const union = unions.get(field) ?? new Set<string>()
+        for (const v of values) {
+          union.add(v)
+        }
+        unions.set(field, union)
+      }
+    }
+  }
+  const counts = new Map<string, PartitionRowCount>()
+  for (const [field, union] of unions) {
+    counts.set(field, {
+      count: union.size,
+      overflow: union.size > MAX_COUNTED_PARTITION_VALUES,
+    })
+  }
+  for (const field of overflowed) {
+    counts.set(field, { count: MAX_COUNTED_PARTITION_VALUES, overflow: true })
+  }
+  return counts
+}
+
+/**
+ * The aside on a "Partition by..." radio: how many rows the pick would draw
+ * here, or nothing while no loaded region has counted it.
+ */
+export function partitionRowCountHint(rowCount: PartitionRowCount | undefined) {
+  return rowCount === undefined
+    ? undefined
+    : rowCount.overflow
+      ? `${MAX_COUNTED_PARTITION_VALUES}+ rows`
+      : rowCount.count === 1
+        ? '1 row'
+        : `${rowCount.count} rows`
 }

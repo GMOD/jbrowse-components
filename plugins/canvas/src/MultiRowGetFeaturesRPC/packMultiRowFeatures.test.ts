@@ -4,6 +4,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
+  MAX_COUNTED_PARTITION_VALUES,
   makeFeatureColorResolver,
   packMultiRowFeatures,
 } from './packMultiRowFeatures.ts'
@@ -501,4 +502,44 @@ test('samples the head rather than every feature', () => {
   })
   expect(r.partitionCandidates).toContain('col0')
   expect(r.partitionCandidates).not.toContain('col400')
+})
+
+// What each candidate would cost in rows, so the menu can say so before the
+// refetch. Values rather than counts, since the main thread unions regions.
+describe('the distinct values per partition candidate', () => {
+  test('lists each candidate with the values it takes', () => {
+    const r = packMultiRowFeatures({
+      features,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+    expect(r.partitionCandidateValues).toEqual([
+      {
+        field: 'itemRgb',
+        values: ['227,26,28', '31,120,180', '170,170,170'],
+        overflow: false,
+      },
+      { field: 'sample', values: ['mom', 'offspring01'], overflow: false },
+    ])
+  })
+
+  test('a unique-per-feature column overflows and ships no values', () => {
+    const n = MAX_COUNTED_PARTITION_VALUES + 1
+    const many = Array.from({ length: n }, (_, i) =>
+      feat({ start: i, end: i + 1, sample: 'a', id: `f${i}` }),
+    )
+    const r = packMultiRowFeatures({
+      features: many,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+    expect(r.partitionCandidateValues).toEqual([
+      { field: 'id', values: [], overflow: true },
+      { field: 'sample', values: ['a'], overflow: false },
+    ])
+  })
 })

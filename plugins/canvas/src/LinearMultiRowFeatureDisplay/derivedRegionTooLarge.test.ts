@@ -18,6 +18,7 @@ function emptyRegionData(): MultiRowRegionData {
     featureIds: [],
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField: 'name',
   }

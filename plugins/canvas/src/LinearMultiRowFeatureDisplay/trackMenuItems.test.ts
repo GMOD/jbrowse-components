@@ -2,6 +2,7 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
+import type { PartitionRowCount } from './partitionFields.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
@@ -38,6 +39,7 @@ function makeSelf(
     // absent condition — a case that wants the submenu supplies candidates
     effectivePartitionField: 'name',
     partitionCandidates: [] as string[],
+    partitionRowCounts: new Map<string, PartitionRowCount>(),
     setPartitionField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
@@ -309,6 +311,31 @@ describe('multi-row track menu', () => {
       expect(items).toMatchObject([
         { label: 'repClass', type: 'radio', checked: true },
         { label: 'repFamily', type: 'radio', checked: false },
+      ])
+    })
+
+    // The one fact a reader needs at the point of choice: whether a name is
+    // twenty rows or one row per feature. Said on the radio, since the counts
+    // are already in hand and the refetch is the thing being avoided.
+    it('says how many rows each name would draw', () => {
+      const items = subMenuOf(
+        buildMultiRowTrackMenuItems(
+          makeSelf({
+            partitionCandidates: ['name', 'repClass', 'strain'],
+            effectivePartitionField: 'repClass',
+            partitionRowCounts: new Map<string, PartitionRowCount>([
+              ['name', { count: 200, overflow: true }],
+              ['repClass', { count: 21, overflow: false }],
+              ['strain', { count: 1, overflow: false }],
+            ]),
+          }),
+        ),
+        'Partition by...',
+      )
+      expect(items.map(i => ('label' in i ? i.label : ''))).toEqual([
+        'name — 200+ rows',
+        'repClass — 21 rows',
+        'strain — 1 row',
       ])
     })
 

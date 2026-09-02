@@ -22,6 +22,7 @@ function region(deltas: number[]): MultiRowRegionData {
     featureIds: deltas.map((_, i) => `f${i}`),
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField: 'name',
   }

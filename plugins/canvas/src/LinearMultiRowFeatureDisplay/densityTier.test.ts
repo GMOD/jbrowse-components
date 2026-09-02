@@ -39,6 +39,7 @@ function oneRow() {
     featureIds: [],
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField: 'name',
   }

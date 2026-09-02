@@ -61,6 +61,7 @@ import {
 import {
   answeredPartitionField,
   partitionCandidates,
+  partitionRowCounts,
   pinnedPartitionField,
   regionHasPinnedData,
 } from './partitionFields.ts'
@@ -82,6 +83,7 @@ import type {
   LinearMultiRowFeatureDisplayConfigModel,
 } from './configSchema.ts'
 import type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
+import type { PartitionRowCount } from './partitionFields.ts'
 import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
 import type {
   MultiRowFeaturePaintInputs,
@@ -397,6 +399,16 @@ export default function stateModelFactory(
          */
         get partitionCandidates(): string[] {
           return partitionCandidates(self)
+        },
+        /**
+         * #getter
+         * How many rows each candidate would draw over the loaded regions, which
+         * the "Partition by..." menu puts beside each name so a reader can tell
+         * the twenty-row attribute from the one-row-per-feature one before
+         * paying the refetch.
+         */
+        get partitionRowCounts(): ReadonlyMap<string, PartitionRowCount> {
+          return partitionRowCounts(self)
         },
       }
     })

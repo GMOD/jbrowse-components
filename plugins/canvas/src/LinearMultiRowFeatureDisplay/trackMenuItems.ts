@@ -5,6 +5,7 @@ import {
   checkboxItem,
   radioItems,
   showLegendCheckboxItem,
+  withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
@@ -20,6 +21,9 @@ import {
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
+import { partitionRowCountHint } from './partitionFields.ts'
+
+import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
@@ -81,6 +85,7 @@ interface MultiRowMenuSelf
   // features actually carry — the menu offers the second and writes the first
   effectivePartitionField: string
   partitionCandidates: string[]
+  partitionRowCounts: ReadonlyMap<string, PartitionRowCount>
   setPartitionField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
@@ -216,7 +221,8 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
 // Nothing here can write one: an expression is a config-level thing, and a menu
 // that could clear it but not restore it would be a one-way door.
 function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const { partitionCandidates, effectivePartitionField } = self
+  const { partitionCandidates, partitionRowCounts, effectivePartitionField } =
+    self
   if (!partitionCandidates.length) {
     return []
   }
@@ -230,7 +236,13 @@ function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           ? [{ label: 'Custom expression', disabled: true, onClick: () => {} }]
           : []),
         ...radioItems(
-          partitionCandidates.map(value => ({ value, label: value })),
+          partitionCandidates.map(value => ({
+            value,
+            label: withHint(
+              value,
+              partitionRowCountHint(partitionRowCounts.get(value)),
+            ),
+          })),
           isExpression ? undefined : effectivePartitionField,
           (field: string) => {
             self.setPartitionField(field)

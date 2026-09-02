@@ -49,6 +49,7 @@ function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
     featureIds: feats.map((f, i) => f.id ?? `f${i}`),
     usedItemRgb: opts?.usedItemRgb ?? false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     resolvedPartitionField: 'name',
   }
   return {
@@ -253,6 +254,7 @@ describe('featureAt', () => {
         featureIds: featureRows.map(r => `f${r}`),
         usedItemRgb: false,
         partitionCandidates: [],
+        partitionCandidateValues: [],
         legendCandidates: [],
         resolvedPartitionField: 'name',
       } satisfies MultiRowRegionData

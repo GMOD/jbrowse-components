@@ -106,6 +106,7 @@ const PAINTED_REGION = {
   featureIds: ['f0'],
   usedItemRgb: true,
   partitionCandidates: [],
+  partitionCandidateValues: [],
   legendCandidates: [],
   resolvedPartitionField: 'name',
 }

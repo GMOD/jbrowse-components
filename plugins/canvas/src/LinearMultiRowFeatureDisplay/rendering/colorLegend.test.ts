@@ -26,6 +26,7 @@ const region = regionData({
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
   partitionCandidates: [],
+  partitionCandidateValues: [],
   resolvedPartitionField: 'name',
 })
 
@@ -245,6 +246,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     resolvedPartitionField: 'name',
   })
   expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
@@ -268,6 +270,7 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     resolvedPartitionField: 'name',
   })
   expect(capped.legendCandidates.length).toBeLessThan(n)

@@ -46,6 +46,7 @@ function painted(): MultiRowRegionData {
     featureIds: ['f0'],
     usedItemRgb: true,
     partitionCandidates: [],
+    partitionCandidateValues: [],
     legendCandidates: [],
     resolvedPartitionField: 'name',
   }

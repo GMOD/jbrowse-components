@@ -11,6 +11,7 @@ import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import type {
   MultiRowGetFeaturesResult,
   MultiRowRegionData,
+  PartitionCandidateValues,
 } from './rpcTypes.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -163,6 +164,47 @@ function collectPartitionCandidates(features: Feature[]) {
   return [...names].sort()
 }
 
+// Distinct values counted per candidate before it is declared high-cardinality
+// and dropped from the walk. Past this a count is not a decision anyone makes
+// differently: 200 rows and 40,000 rows are both "not this attribute".
+export const MAX_COUNTED_PARTITION_VALUES = 200
+
+/**
+ * The distinct values each partition candidate takes over the region, capped,
+ * so the "Partition by..." menu can say how many rows a choice would draw
+ * before the refetch that would otherwise be the only way to find out.
+ *
+ * Values rather than counts because regions land independently and the main
+ * thread unions them; a count cannot be unioned. A candidate that overflows the
+ * cap stops being read at all, so a unique-per-feature column costs its first
+ * two hundred features and nothing after.
+ */
+function createCandidateValueCounter(candidates: string[]) {
+  const active = new Map(candidates.map(c => [c, new Set<string>()]))
+  const overflowed = new Set<string>()
+  return {
+    add(feature: Feature) {
+      for (const [field, values] of active) {
+        values.add(columnValue(feature.get(field)))
+        if (values.size > MAX_COUNTED_PARTITION_VALUES) {
+          active.delete(field)
+          overflowed.add(field)
+        }
+      }
+    },
+    result(): PartitionCandidateValues[] {
+      return candidates.map(field => {
+        const overflow = overflowed.has(field)
+        return {
+          field,
+          values: overflow ? [] : [...active.get(field)!],
+          overflow,
+        }
+      })
+    },
+  }
+}
+
 // The `partitionField` slot left empty: pick the row attribute off the data.
 export const AUTO_PARTITION_FIELD = ''
 
@@ -304,6 +346,7 @@ export function packMultiRowFeatures({
     partitionField,
     partitionCandidates,
   )
+  const candidateValues = createCandidateValueCounter(partitionCandidates)
   const featurePartition = makeFeaturePartitionResolver(
     resolvedPartitionField,
     jexl,
@@ -348,6 +391,7 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
+    candidateValues.add(feature)
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
     let abgr = abgrByCss.get(css)
@@ -369,6 +413,7 @@ export function packMultiRowFeatures({
     featureIds,
     usedItemRgb,
     partitionCandidates,
+    partitionCandidateValues: candidateValues.result(),
     resolvedPartitionField,
     legendCandidates: collectLegendCandidates({
       featureNames,
