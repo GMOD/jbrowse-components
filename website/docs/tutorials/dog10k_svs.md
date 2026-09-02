@@ -69,17 +69,16 @@ Schall and Kidd genotyped long-read-discovered structural variants across the
 Dog10K collection and flagged those whose allele frequencies track breed clades.
 One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant
 [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to Collie eye
-anomaly. If it is what the literature says, it should be common in Collies and
-their relatives and absent from unrelated breeds and from wolves. The anomaly is
-recessive, so the darker cells below are affected animals and the lighter ones
-unaffected carriers.
+anomaly. It should be common in Collies and their relatives and absent from
+unrelated breeds and wolves. The anomaly is recessive, so the darker cells below
+are affected animals and the lighter ones carriers.
 
 ## Slicing one locus out of the callset
 
 The genotype VCF is 5.9 GB across 1,879 dogs and wolves, published on
 [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index, and
 `bcftools` fetches only the locus. Zenodo serves the data and index from
-separate content URLs, so the index is named explicitly:
+separate URLs, so the index is named explicitly:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 
@@ -92,12 +91,11 @@ bcftools view -r chr37:25500000-25620000 -S sv.samples --force-samples \
 tabix -p vcf dog10k_nhej1_svs.vcf.gz
 ```
 
-`sv.samples` is derived from the Dog10K sample table: every Collie, Shetland
-Sheepdog, and Silken Windhound in the analysis set, four Lancashire Heelers,
-then Australian Shepherds, German Shepherds, and Labrador Retrievers as breeds
-with no reported association, and four Greek gray wolves as the outgroup.
-
-Before drawing anything, read the genotypes directly:
+`sv.samples` comes from the Dog10K sample table: every Collie, Shetland Sheepdog
+and Silken Windhound in the analysis set, four Lancashire Heelers, Australian
+Shepherds, German Shepherds and Labrador Retrievers as breeds with no reported
+association, and four Greek gray wolves as the outgroup. Read the genotypes
+directly first:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 
@@ -106,15 +104,15 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-Eleven of the thirteen Collies carry it, four of them homozygous, along with two
-of four Shetland Sheepdogs and one of two Silken Windhounds. Nothing else in the
-set carries a copy.
+Eleven of the thirteen Collies carry it, four homozygous, along with two of four
+Shetland Sheepdogs and one of two Silken Windhounds. Nothing else carries a
+copy.
 
 ## Loading the slice with breed labels
 
 An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
-draws one row per sample across the variant's real genomic span, so a 7.8 kb
-deletion is a 7.8 kb block.
+draws one row per sample across the variant's genomic span, so a 7.8 kb deletion
+is a 7.8 kb block.
 
 ```json addtrack
 {
@@ -129,14 +127,11 @@ deletion is a 7.8 kb block.
 }
 ```
 
-The sample rows keep the Dog10K IDs, which say nothing to a reader. `layout`
-renames them for the sidebar and gives each group a swatch without touching the
-VCF.
-
-`layout` is display **state**, the same thing the tree sidebar writes when you
-rearrange rows by hand, so it belongs on a session's track entry. A display
-config accepts only its declared slots, so a `layout` put in `displays` is
-ignored with no error:
+The sample rows keep the Dog10K IDs. `layout` renames them for the sidebar and
+gives each group a swatch without touching the VCF. It is display **state**, the
+same thing the tree sidebar writes when you rearrange rows by hand, so it
+belongs on a session's track entry; a `layout` put in `displays` is ignored with
+no error:
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -171,8 +166,8 @@ ignored with no error:
 }
 ```
 
-Add the assembly's gene annotation above it, since calling the deletion intronic
-means reading it against _NHEJ1_'s exons.
+Add the assembly's gene annotation above it, to read the deletion against
+_NHEJ1_'s exons.
 
 ## Reading the NHEJ1 deletion
 
@@ -184,11 +179,10 @@ this large can be common in a breed.
 ### Checking the call against a curated source
 
 The middle lane is [OMIA](https://omia.org), which curates the published causal
-variants of Mendelian traits in animals, one record per variant with its
-phenotype, mode of inheritance and reported coordinates; its Collie eye anomaly
-record (OMIA 000218-9615) is this deletion. Its span was published on CanFam3.1
-and lifted here with UCSC's chain, so the bar and the genotype column below it
-come from two publications by two routes:
+variants of Mendelian traits in animals; its Collie eye anomaly record (OMIA
+000218-9615) is this deletion. Its span was published on CanFam3.1 and lifted
+here with UCSC's chain, so the bar and the genotype column below it come from
+two publications by two routes:
 
 <!-- from: scripts/build_omia_dog_variants.sh -->
 
@@ -199,8 +193,8 @@ wc -l < unmapped.bed   # records the chain could not place
 ```
 
 An interval lifts as a unit, so a plain `liftOver` is enough. A BND carries its
-partner coordinate inside `ALT` and needs more; the
-[cancer SV tutorial](/docs/tutorials/cancer_sv) covers that.
+partner coordinate inside `ALT` and needs more; see the
+[cancer SV tutorial](/docs/tutorials/cancer_sv).
 
 ```json addtrack
 {
@@ -218,11 +212,9 @@ partner coordinate inside `ALT` and needs more; the
 }
 ```
 
-The mode of inheritance is drawn as the feature's description.
-
-Click the bar for the rest of the record, including whether it reached canFam4
-through a chain. A lifted record can be right about the locus and wrong about
-the base.
+The mode of inheritance is drawn as the feature's description. Click the bar for
+the rest of the record, including whether it reached canFam4 through a chain. A
+lifted record can be right about the locus and wrong about the base.
 
 ### Filtering to one record
 
@@ -251,7 +243,8 @@ The window holds nine SV records, and the figure filters to this one:
 Unfiltered, a second deletion nested inside the 7.8 kb one paints yellow
 no-calls against the darkest blue and the two records read as one striped block.
 The nested deletion is missing in exactly the four dogs homozygous for the
-larger one:
+larger one, since a dog with no copy of the surrounding sequence has no reads to
+genotype it from:
 
 ```bash
 # -i POS=… because -r is END-aware and would also return the deletion this one
@@ -261,9 +254,6 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
   | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-A dog with no copy of the surrounding sequence has no reads to genotype the
-nested call from, so the genotyper returns missing.
-
 ### The Lancashire Heelers
 
 Collie eye anomaly is reported in Lancashire Heelers, and none of the four
@@ -272,7 +262,7 @@ sampled here carry the deletion. Four dogs is not a frequency estimate.
 ## Two diet genes that run opposite ways
 
 A 14.9 kb `DUP` at chr6:47,375,677 in the Michigan Manta callset spans the
-pancreatic amylase gene end to end. Extra copies of it are the starch-digestion
+pancreatic amylase gene end to end. Extra copies are the starch-digestion
 signature of domestication
 ([Axelsson et al. 2013](https://doi.org/10.1038/nature11837)), and the record
 separates dogs from wolves almost completely:
@@ -295,9 +285,9 @@ Zenodo Paragraph set, runs the other way:
 ```
 
 One panel is sliced from both callsets in the same order so the two lanes read
-row for row: two ordinary breeds, the three Arctic breeds, the two other breeds
+row for row: two ordinary breeds, the three Arctic breeds, the two breeds
 holding a dog that departs from the amylase rule, the Alaskan village dogs, and
-every gray wolf in the analysis set labelled by country.
+every gray wolf labelled by country.
 
 ```json addtrack
 {
@@ -322,26 +312,22 @@ every gray wolf in the analysis set labelled by country.
 
 Too many rows for a `layout` entry each, so the labels come from a TSV: first
 column the sample name, every other column an attribute, and `colorBy` naming
-the one that paints the swatch. The _RNASE1_ track is that same config with the
+the one that paints the swatch. The _RNASE1_ track is the same config with the
 other slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
 Two of the three Greenland Dogs lack the duplication; the third carries it, as
-does every Alaskan Malamute and every Samoyed. The grey Czechoslovakian Wolfdog
-row is CZEC000003, the animal
+does every Alaskan Malamute and Samoyed. The grey Czechoslovakian Wolfdog row is
+CZEC000003, the animal
 [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
-wolf-derived blocks on.
+wolf-derived blocks on. Every wolf carrying the insertion is heterozygous. Three
+of the six Iranian wolves carry the amylase duplication and none the
+ribonuclease insertion, while the Greek and Swedish wolves do the reverse.
 
-Every wolf carrying the insertion is heterozygous, so the lower lane is one
-shade where the upper one has two. Three of the six Iranian wolves carry the
-amylase duplication and none the ribonuclease insertion, while the Greek and
-Swedish wolves do the reverse.
-
-Copy number is what amylase is known for, and a genotype column does not carry
-it: four copies and twenty are both `1/1`.
-[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that measurement from
-the SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
+A genotype column does not carry copy number: four copies and twenty are both
+`1/1`. [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that measurement
+from the SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
 `dog10k_slc28a3_cohort_cn` in this tutorial's config are the same pair of lanes
 over a second duplication.
 
@@ -349,6 +335,12 @@ over a second duplication.
 
 The variant here is an insertion somewhere else in the genome, and what the
 callset holds at _FGF4_ is its footprint.
+[Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
+breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
+the transcript reinserted elsewhere. Made from spliced mRNA, it has no introns,
+so short reads from the retrocopy map to the parent's exons and stop at each
+splice site, and a short-read caller reads that pileup as a deletion of each
+intron. The callset cannot tell a retrocopy's footprint from a real deletion.
 
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
 breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
@@ -357,16 +349,13 @@ spliced mRNA, so it has no introns: short reads from the retrocopy map to the
 parent's exons and stop at each splice site, and a short-read caller reads that
 pileup as a deletion of each intron.
 
-The retrocopy interpretation comes from Parker et al.; the callset cannot tell a
-retrocopy's footprint from a real deletion.
-
 ### Checking the records against the FGF4 introns
 
 _FGF4_ has two introns, so a retrocopy should leave two records, each spanning
 one intron end to end.
 [`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
 derives the introns from the RefSeq annotation and asserts each record against
-them, allowing one base of slack at each breakpoint, before it writes any track:
+them, with one base of slack at each breakpoint:
 
 ```
 FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
@@ -378,9 +367,8 @@ intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
 
 ### Slicing the two records out
 
-This locus comes from the Michigan aggregate Manta callset, 1.08 GB over the
-same collection, which carries `DUP` and `INV` records too. Selecting on `POS`
-keeps the two intron records and drops everything else called nearby:
+This locus comes from the Michigan aggregate Manta callset, which carries `DUP`
+and `INV` records too. Selecting on `POS` keeps the two intron records:
 
 <!-- from: scripts/build_dog10k_fgf4_retrogene.sh -->
 
@@ -394,9 +382,9 @@ tabix -p vcf dog10k_fgf4_svs.vcf.gz
 ```
 
 `fgf4.samples` is whole breeds again: three breeds whose short legs are the
-trait Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds
-with no reported association, and the Greek gray wolves. Labelled through a
-samples TSV as above, with `colorBy` on the breed group.
+trait Parker et al. mapped, two spaniel breeds, two standard-proportioned
+breeds, and the Greek gray wolves, labelled through a samples TSV with `colorBy`
+on the breed group.
 
 ```json addtrack
 {
@@ -419,33 +407,27 @@ samples TSV as above, with `colorBy` on the breed group.
 }
 ```
 
-The positional display draws each record at its own coordinates, so the two
-blocks sit where they fall against the exons.
-
-Every carrier is heterozygous: the parent gene's introns are still on both
-chromosomes, so a carrier's pileup is always a mixture.
+Each record draws at its own coordinates, so the two blocks sit against the
+exons. Every carrier is heterozygous: the parent gene's introns are still on
+both chromosomes, so a carrier's pileup is always a mixture.
 
 ### The two known FGF4 retrocopies
 
 Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
 [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
 a different chromosome, to chondrodystrophy and intervertebral disc disease,
-which is why breeds of ordinary proportions carry a copy too.
-
-Both are copies of the same transcript, so both leave the same footprint at the
-parent gene and one record cannot say which. The swatch names a breed's
-proportions, and the spaniels are the rows where proportions and genotype
-disagree. Placing either insertion needs the other side of the junction, a
-different query against a different callset.
+which is why breeds of ordinary proportions carry a copy too. Both leave the
+same footprint at the parent gene, so one record cannot say which. The spaniels
+are the rows where proportions and genotype disagree. Placing either insertion
+needs the other side of the junction, from a different callset.
 
 ### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
 
 Both copies were amplified, Sanger-sequenced and deposited, as
 [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
 insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
-CFA12 one. Most candidate retrocopies have no sequenced insert.
-
-One alignment per retrocopy, against the parent locus cut out as its own FASTA:
+CFA12 one. One alignment per retrocopy, against the parent locus cut out as its
+own FASTA:
 
 <!-- from: scripts/build_dog10k_fgf4_synteny.sh -->
 
@@ -475,31 +457,23 @@ Load each retrocopy as a one-contig assembly and its alignment as a
 }
 ```
 
-`assemblyNames` is ordered `[query, target]`, which is the reverse of the order
-minimap2 takes its inputs.
-
-Each GenBank record carries a feature table, so the gene model on a retrocopy
-row is the submitters' annotation. The build script writes it out as GFF3 and
-requires the CDS to be a single interval: the parent's CDS is three boxes and a
-processed copy's is one.
+`assemblyNames` is ordered `[query, target]`, the reverse of minimap2's argument
+order. Each GenBank record carries a feature table, which the build script
+writes out as GFF3 for the retrocopy row's gene model; it requires the CDS to be
+a single interval, where the parent's is three.
 
 Put the parent gene between the two retrocopies. Both align to the same three
-exons, so from above and below each intron is one gap seen twice.
+exons, so each intron is one gap seen twice. The window stops where the CFA18
+alignment does, so the CFA12 ribbon runs on past it.
 
 <Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls at their own coordinates and then across 55 Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
-The window stops where the CFA18 alignment does, so that retrocopy is on screen
-end to end and the CFA12 ribbon runs on past it.
-
 Set the synteny view's indel drawing to **Transparent indels**. Colored indels
 name each CIGAR operation from the side it is read, so one gap is a deletion
-above the parent row and an insertion below it, taking two colors by stacking
-order.
+above the parent row and an insertion below it.
 
-The two records agree at 207 codons but their spans against chr18 differ, so the
-two retrocopies took the same coding sequence and different amounts of UTR.
-Neither places the insertion: the deposited sequence ends at the poly(A) tail,
-so none of the landing site comes with it.
+The two records agree at 207 codons but differ in how much UTR they took.
+Neither places the insertion: the deposited sequence ends at the poly(A) tail.
 
 ### Genotypes across the collection
 
@@ -519,18 +493,15 @@ Genotype counts per group, at the intron 1 record (chr18:48869782):
   most common (intron 1, intron 2) pairs: (0/0, 0/0) x1422  (0/1, 0/1) x409
 ```
 
-No wolf in the collection carries it. Manta called the two introns
-independently, so the same animals landing on both records is a check: one
-retrocopy takes both introns out of the pileup at once.
-
-The whole-collection track is in the config as `dog10k_fgf4_cohort_svs`. 1,879
-rows in a few hundred pixels puts each row well under a pixel, where rows alias.
+No wolf carries it. Manta called the two introns independently, so the same
+animals landing on both records is a check. The whole-collection track is in the
+config as `dog10k_fgf4_cohort_svs`; 1,879 rows in a few hundred pixels puts each
+row well under a pixel, where rows alias.
 
 ## Where to go next
 
-The same recipe reaches every other variant in the callset. Schall and Kidd's
-table of clade-associated SVs is the place to pick the next locus. For the
-retrogene shape specifically, any gene whose introns are all called deleted in
+Schall and Kidd's table of clade-associated SVs is the place to pick the next
+locus. For the retrogene shape, any gene whose introns are all called deleted in
 some animals and not others is a candidate, and the check is the one the script
 runs: do the records match the annotated introns to the base.
 
@@ -555,11 +526,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_omia_dog_variants.sh   # writes ./omia_dog_build/
 ```
 
-OMIA publishes no coordinate API, so this reads the nightly mysqldump the site
-offers, keeps the dog records, lifts the CanFam3.1 majority with UCSC's chain,
-and prints how many records each assembly contributed and how many the lift
-dropped. Rerunning it on another day gives a different count: the database is
-curated continuously.
+OMIA publishes no coordinate API, so this reads the nightly mysqldump, keeps the
+dog records, lifts the CanFam3.1 majority with UCSC's chain, and prints what
+each assembly contributed and how many the lift dropped. The database is curated
+continuously, so another day gives a different count.
 
 [`build_dog10k_amy2b_sv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_amy2b_sv.sh)
 builds the amylase track:
@@ -569,10 +539,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_amy2b_sv.sh   # writes ./dog10k_amy2b_build/
 ```
 
-It derives the panel and the label TSV from the sample table, slices the one
-duplication record out of the Manta callset, then genotypes it over every canid
-in the callset: the tally quoted above, all eight non-carrier dogs by name, all
-five carrier wolves, and the wolves by country.
+It derives the panel and the label TSV from the sample table, slices the
+duplication record out of the Manta callset, then genotypes it over every canid:
+the tally quoted above, the non-carrier dogs and carrier wolves by name, and the
+wolves by country.
 
 [`build_dog10k_slc28a3_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_slc28a3_cn.sh)
 builds the copy-number tracks the same way:
@@ -583,8 +553,8 @@ bash build_dog10k_slc28a3_cn.sh   # writes ./dog10k_slc28a3_cn_build/
 ```
 
 It prints each panel animal's copy number over the duplication. Its first route
-needs only `bcftools`; the second re-measures six of those animals from their
-SRA runs, which needs an aligner and about 35 GB of scratch.
+needs only `bcftools`; the second re-measures six animals from their SRA runs,
+which needs an aligner and about 35 GB of scratch.
 
 Two more build the _FGF4_ locus:
 
