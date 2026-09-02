@@ -2255,7 +2255,13 @@ export default function stateModelFactory(
           // `activeRowRendering` has no branch that is ever the strip. Last, so
           // the key reads in paint order, and so the rendering's own swatches
           // stay where a reader of the other modes already expects them.
-          return self.visibleFrames.length > 0
+          // Whether the strip has frames to draw, not `visibleFrames.length`:
+          // that walk is per-pan, so reading it here recomputed the whole key
+          // on every pan tick for an answer that only moves when a frames
+          // fetch lands.
+          return self.rowsVisible &&
+            self.annotationsActive &&
+            self.framesDataMap.size > 0
             ? [...rows, ...getFrameLegendItems(palette)]
             : rows
         },

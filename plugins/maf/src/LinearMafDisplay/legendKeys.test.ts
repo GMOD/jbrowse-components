@@ -9,6 +9,7 @@ import {
   SOURCE_CHROM_PALETTE,
   sourceChromLegendItems,
 } from './components/drawSourceChrom.ts'
+import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { LegendItem } from '@jbrowse/core/ui'
 
@@ -87,5 +88,39 @@ describe('each row rendering keys itself from what it paints', () => {
       expect(getCodonColors(palette).fill.same).toBeUndefined()
       expect(getCodonLegendItems(palette)).toHaveLength(3)
     })
+  })
+})
+
+// The CDS strip's key is appended to whichever rendering's key won, and the gate
+// on it used to be `visibleFrames.length` — the per-pan overlay walk, rebuilt
+// for an answer that only moves when a frames fetch lands.
+describe('the CDS frame key follows the frames data, not the viewport', () => {
+  function display() {
+    const env = createMafTestEnvironment({
+      annotationAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    env.display.setShowAnnotations(true)
+    env.display.setSamples({
+      samples: [{ id: 'hg38' }, { id: 'mm10' }],
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    return env
+  }
+
+  const frameLabels = (items: LegendItem[]) =>
+    items.filter(i => i.label.includes('codon base'))
+
+  it('is absent until a frames read lands', () => {
+    const { display: d } = display()
+    expect(frameLabels(d.legendItems)).toHaveLength(0)
+  })
+
+  it('appears with the frames, and survives a pan', () => {
+    const { display: d, view } = display()
+    d.setFramesData(0, [])
+    expect(frameLabels(d.legendItems)).toHaveLength(3)
+    view.scrollTo(500)
+    expect(frameLabels(d.legendItems)).toHaveLength(3)
   })
 })
