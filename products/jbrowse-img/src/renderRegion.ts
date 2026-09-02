@@ -22,8 +22,14 @@ import {
   resolveTrackId,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
-import { dotplotInit, syntenyInit } from './comparativeInit.ts'
-import { subcommandForViewType } from './modes.ts'
+import {
+  dotplotInit,
+  dotplotViewKnobs,
+  syntenyInit,
+  syntenyViewKnobs,
+} from './comparativeInit.ts'
+import { syntenyTrackTypes } from './makeConfigs.ts'
+import { modeDescriptors, subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
@@ -31,8 +37,9 @@ import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
 import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
+import type { Entry } from './parseArgv.ts'
 import type { ViewSpec } from './spec.ts'
-import type { Config, Opts, Track } from './types.ts'
+import type { Config, OpenTrack, Opts, Track } from './types.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {
   BreakpointSplitViewInitView,
@@ -280,18 +287,59 @@ function sessionViewType(session: Model['session']): string | undefined {
   return session.views[0]?.type
 }
 
+// The session holds a view this subcommand cannot draw. Casting it and rendering
+// anyway died several statements later on a field the other view type has no
+// version of, which reads as a corrupt session rather than as the wrong
+// subcommand.
+function wrongViewTypeError(opts: Opts, suppliedType: string) {
+  return new Error(
+    `the ${opts.session ? '--session' : 'defaultSession'} holds a ${suppliedType}; render it with "jb2export ${subcommandForViewType(suppliedType) ?? '<subcommand>'}"`,
+  )
+}
+
+// The trackIds `--track` named, each with the display modifiers that followed
+// it. The token is resolved to a real trackId (accepting the
+// assembly-name-prefix shorthand); a file flag's id was already assigned when
+// readData built its config.
+function resolvedShowTracks(
+  showTracks: Entry[] | undefined,
+  data: Config,
+): OpenTrack[] {
+  return (showTracks ?? []).map(([, [trackInput, ...opts]]) => {
+    if (!trackInput) {
+      // a bare `--track` used to be skipped in silence, so the track the user
+      // meant to show just wasn't there
+      throw new Error(
+        '--track requires a trackId (list them with "jb2export list <hub>")',
+      )
+    }
+    return {
+      trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
+      opts,
+    }
+  })
+}
+
 // The view to render: the one a --session/--defaultSession supplied, if it is of
-// this type, else one built from `init`.
+// this type, else one built from `makeSettings`.
 //
 // `--session` is listed in every subcommand's help, but only renderLinear ever
 // adopted the view it carried — dotplot/synteny/circular each added a SECOND
 // view from CLI flags and rendered that, so a saved synteny session exported a
-// view the user never arranged. `--spec` is the opposite case: it describes a
-// view to construct, so it wins over whatever the session holds.
+// view the user never arranged. A session holding some OTHER view type was the
+// same silence one step further along, and now gets the error renderLinear
+// already gives for the reverse direction. `--spec` is the opposite case: it
+// describes a view to construct, so it wins over whatever the session holds.
+//
+// The settings arrive as a thunk because building them can THROW on flags the
+// adopted view makes irrelevant — breakpointInit demands two --loc,
+// comparativeViews two assemblies. Built eagerly, `jb2export breakpoint
+// --session sv.json` failed on the missing --loc before it could adopt the very
+// view it was pointed at, so the advice renderLinear's error gives led nowhere.
 async function addLaunchView<T extends InitView>(
   ctx: ModeContext,
   viewType: string,
-  settings:
+  makeSettings: () =>
     | SpecSettings
     | DotplotViewInit
     | LinearSyntenyViewInit
@@ -301,18 +349,22 @@ async function addLaunchView<T extends InitView>(
     | { views: BreakpointSplitViewInitView[] },
 ) {
   const { session } = ctx.model
-  const existing =
-    !ctx.spec && sessionViewType(session) === viewType
+  const suppliedType = ctx.spec ? undefined : sessionViewType(session)
+  if (suppliedType !== undefined && suppliedType !== viewType) {
+    throw wrongViewTypeError(ctx.opts, suppliedType)
+  }
+  const view =
+    suppliedType === viewType
       ? session.views[0]
-      : session.addView(viewType, settings)
-  return readyView(existing as T, ctx)
+      : session.addView(viewType, makeSettings())
+  return readyView(view as T, ctx)
 }
 
 const renderLinear: ModeRenderer = async ctx => {
   const { model, data, opts } = ctx
   const {
     loc,
-    showTracks = [],
+    showTracks,
     session: sessionParam,
     defaultSession,
     showGridlines,
@@ -321,15 +373,9 @@ const renderLinear: ModeRenderer = async ctx => {
   } = opts
 
   const { session } = model
-  // A session can hold any view type, and this renderer draws only an LGV;
-  // casting whatever it holds died several statements later on
-  // `view.displayedRegions.length` (a dotplot has no such field), which reads as
-  // a corrupt session rather than the wrong subcommand.
   const suppliedType = sessionViewType(session)
   if (suppliedType !== undefined && suppliedType !== 'LinearGenomeView') {
-    throw new Error(
-      `the ${sessionParam ? '--session' : 'defaultSession'} holds a ${suppliedType}; render it with "jb2export ${subcommandForViewType(suppliedType) ?? '<subcommand>'}"`,
-    )
+    throw wrongViewTypeError(opts, suppliedType)
   }
   // Adopted from the session when one supplied a view, else synthesized. Either
   // way it goes through readyView, so an `init` the session carried is applied
@@ -391,26 +437,12 @@ const renderLinear: ModeRenderer = async ctx => {
   // Hosted trackIds from --track (present in a --hub/--config config) go first,
   // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
   // built — argv order top-to-bottom, same convention as every other stacked
-  // view in this CLI (synteny levels, multi-way assemblies). A --track token is
-  // resolved to a real trackId (accepting the assembly-name-prefix shorthand);
-  // a file flag's id was already assigned when its config was built. Both then
-  // take the same path: the display category comes from the track's own type in
-  // the config, so modifiers (height:, color:, …) route to the right display
-  // slots whichever way the track got there.
+  // view in this CLI (synteny levels, multi-way assemblies). Both then take the
+  // same path: the display category comes from the track's own type in the
+  // config, so modifiers (height:, color:, …) route to the right display slots
+  // whichever way the track got there.
   const toOpen = [
-    ...showTracks.map(([, [trackInput, ...opts]]) => {
-      if (!trackInput) {
-        // a bare `--track` used to be skipped in silence, so the track the user
-        // meant to show just wasn't there
-        throw new Error(
-          '--track requires a trackId (list them with "jb2export list <hub>")',
-        )
-      }
-      return {
-        trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
-        opts,
-      }
-    }),
+    ...resolvedShowTracks(showTracks, data),
     ...(data.openTracks ?? []),
   ]
   for (const { trackId, opts } of toOpen) {
@@ -432,26 +464,23 @@ const renderLinear: ModeRenderer = async ctx => {
 }
 
 const renderDotplot: ModeRenderer = async ctx => {
-  const settings = ctx.spec
-    ? viewSettingsFromSpec(ctx.spec)
-    : dotplotInit(ctx.data, ctx.opts)
-  const view = await addLaunchView<DotplotViewModel>(
-    ctx,
-    'DotplotView',
-    settings,
+  const view = await addLaunchView<DotplotViewModel>(ctx, 'DotplotView', () =>
+    ctx.spec
+      ? viewSettingsFromSpec(ctx.spec, dotplotViewKnobs(ctx.opts))
+      : dotplotInit(ctx.data, ctx.opts),
   )
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
   return svg
 }
 
 const renderSynteny: ModeRenderer = async ctx => {
-  const settings = ctx.spec
-    ? viewSettingsFromSpec(ctx.spec)
-    : syntenyInit(ctx.data, ctx.opts)
   const view = await addLaunchView<LinearSyntenyViewModel>(
     ctx,
     'LinearSyntenyView',
-    settings,
+    () =>
+      ctx.spec
+        ? viewSettingsFromSpec(ctx.spec, syntenyViewKnobs(ctx.opts))
+        : syntenyInit(ctx.data, ctx.opts),
   )
   const svg = await renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
@@ -502,11 +531,10 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
 }
 
 const renderCircular: ModeRenderer = async ctx => {
-  const settings = ctx.spec ? viewSettingsFromSpec(ctx.spec) : circularInit(ctx)
   const view = await addLaunchView<CircularViewModel>(
     ctx,
     'CircularView',
-    settings,
+    () => (ctx.spec ? viewSettingsFromSpec(ctx.spec) : circularInit(ctx)),
   )
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
   return svg
@@ -516,7 +544,8 @@ const renderCircular: ModeRenderer = async ctx => {
 // arrive in another drawn between them. Unlike the comparative modes this reads
 // --track, because its panels are ordinary LGVs and the whole picture is the
 // tracks on them: with no track there is nothing to connect and the export is a
-// stack of empty rulers.
+// stack of empty rulers. The modifiers that follow a --track reach the panels
+// through breakpointTracks, which is the one route a panel's launch blob has.
 //
 // The view's panels are its `views`, one entry per panel, which is why this
 // does not go through `viewSettingsFromSpec` the way the single-blob modes do —
@@ -524,29 +553,14 @@ const renderCircular: ModeRenderer = async ctx => {
 // `addLaunchView`/`readyView` wait on it identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
-  // trackId AND its modifiers: breakpointTracks builds a display snapshot from
-  // them, since a breakpoint panel opens its tracks from its launch blob and never
-  // reaches the `applyDisplayOpts`/`showTrack` call every other mode uses
-  const showTracks = (opts.showTracks ?? []).map(
-    ([, [trackInput, ...trackOpts]]) => {
-      if (!trackInput) {
-        throw new Error(
-          '--track requires a trackId (list them with "jb2export list <hub>")',
-        )
-      }
-      return {
-        trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
-        opts: trackOpts,
-      }
-    },
-  )
-  const views = ctx.spec
-    ? breakpointPanelsFromSpec(ctx.spec)
-    : breakpointInit(data, opts, showTracks)
   const view = await addLaunchView<BreakpointViewModel>(
     ctx,
     'BreakpointSplitView',
-    { views },
+    () => ({
+      views: ctx.spec
+        ? breakpointPanelsFromSpec(ctx.spec)
+        : breakpointInit(data, opts, resolvedShowTracks(opts.showTracks, data)),
+    }),
   )
   // A SECOND wait, because this view's launch state is consumed one level above
   // the one that matters. Its autorun turns the panel array into sub-views and
@@ -556,7 +570,8 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   // correctly
   // positioned, correctly labelled, completely empty panels: the exact
   // failure `whenViewReady` warns about for LGV's `initPending`, one level of
-  // nesting further out.
+  // nesting further out. Unconditional, since an adopted session view's panels
+  // carry their own launches just as a freshly built one's do.
   await when(
     () =>
       view.views.every(v => !v.pendingLaunch) ||
@@ -585,10 +600,24 @@ function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode === 'linear') {
     return
   }
+  // A comparative view's levels are made of the synteny files, and it opens
+  // nothing else — so `--fasta a --paf x --fasta b --bigwig sig.bw` built the
+  // bigwig's track config and then showed it nowhere. Circular is exempt: it
+  // picks its chord tracks out of the whole config.
+  const droppedFiles = modeDescriptors[mode].comparative
+    ? [
+        ...new Set(
+          (opts.trackList ?? [])
+            .map(([type]) => type)
+            .filter(type => !syntenyTrackTypes.includes(type)),
+        ),
+      ].map(type => `--${type}`)
+    : []
   const ignored = [
     opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
     opts.refseq ? '--refseq' : '',
     mode === 'circular' && opts.loc ? '--loc' : '',
+    ...droppedFiles,
   ].filter(Boolean)
   if (ignored.length) {
     console.warn(
