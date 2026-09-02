@@ -3,6 +3,7 @@ import {
   navigationLocString,
   openSampleInNewView,
 } from '../openSampleInNewView.ts'
+import { selectionRegion } from '../openSubsequenceWidget.ts'
 import { mafPointerAt, rowSpanAtY } from './mafHitTest.ts'
 
 import type {
@@ -44,9 +45,10 @@ const MAX_INLINE_ITEMS = 6
  * own locus under the selection, plus the selection itself in reference terms,
  * which the synteny launch reads the blocks back out of.
  *
- * The region is taken at the selection's start pixel, matching
- * `openSubsequenceWidget`: on a multi-region view a selection crossing a region
- * boundary clips to the region it began in.
+ * The region is taken at the selection's start pixel, and the span is
+ * `selectionRegion`'s: on a multi-region view a selection crossing a region
+ * boundary clips to the region it began in, so the widget and these entries
+ * name the same bases.
  */
 export function selectedRowTargets(
   model: SampleNavigationModel,
@@ -105,13 +107,17 @@ function rowTargetsBetween(
 ) {
   const left = mafPointerAt(model, leftPx, leftY)
   const right = mafPointerAt(model, rightPx, rightY)
-  // The half-open span of bases actually painted between the two pixels, from
-  // `baseBp` rather than a floor/ceil of the fractional coordinate — which on a
-  // reversed region names one base past each edge (see `HoverBp`), so the
-  // navigation target could include a base the selection rectangle did not
-  // cover. Same span `selectionRegion` computes for the subsequence widget.
-  const startBp = Math.min(left.baseBp, right.baseBp)
-  const endBp = Math.max(left.baseBp, right.baseBp) + 1
+  // Literally `selectionRegion`, not a second span computed the same way: it
+  // orders the two edges on a reversed region and clips the right one into the
+  // left's region, and this had only the first half — so on a multi-region view
+  // every Launch entry named a span whose end was another chromosome's
+  // coordinate. `visibleRowTargets` takes px 0 and width-1, which is that case
+  // on every multi-region view.
+  const {
+    refName,
+    start: startBp,
+    end: endBp,
+  } = selectionRegion(left.pos, right.pos)
   const targets: (SampleNavigationTarget & { rowIndex: number })[] = []
   for (let row = startRow; row < endRow; row++) {
     const target = model.rowNavigationTarget(
@@ -129,7 +135,7 @@ function rowTargetsBetween(
   }
   return {
     regionIndex: left.pos.index,
-    refName: left.pos.refName,
+    refName,
     startBp,
     endBp,
     targets,

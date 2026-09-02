@@ -106,6 +106,60 @@ test('many navigable rows collapse into a submenu', () => {
   expect(item && 'subMenu' in item && item.subMenu).toHaveLength(8)
 })
 
+// Two 100bp regions abutting at px 15, 1px = 1bp. A drag (or the track menu's
+// whole-window span) that starts in the first and ends in the second reads its
+// right edge in the second region's coordinates.
+function twoRegionModel(): SampleNavigationModel {
+  return {
+    ...model({ 0: target('SPRET_EiJ', 1000) }),
+    view: {
+      assemblyNames: ['hg38'],
+      bpPerPx: 1,
+      pxToBp: px =>
+        px < 15
+          ? {
+              index: 0,
+              offset: px,
+              start: 100,
+              end: 115,
+              refName: 'chr1',
+              coord: 100 + px,
+              coord0: 100 + px,
+              assemblyName: 'hg38',
+              reversed: false,
+              oob: false,
+              refIndex: 0,
+            }
+          : {
+              index: 1,
+              offset: px - 15,
+              start: 5000,
+              end: 5100,
+              refName: 'chr2',
+              coord: 5000 + px - 15,
+              coord0: 5000 + px - 15,
+              assemblyName: 'hg38',
+              reversed: false,
+              oob: false,
+              refIndex: 1,
+            },
+    },
+  }
+}
+
+test('a span crossing a region boundary clips to the region it began in', () => {
+  const { refName, startBp, endBp } = selectedRowTargets(
+    twoRegionModel(),
+    coord,
+  )
+  expect({ refName, startBp, endBp }).toEqual({
+    refName: 'chr1',
+    startBp: 105,
+    // the first region's last base, not px 25 read as chr2:5010
+    endBp: 115,
+  })
+})
+
 test('launching opens a view keyed on display + assembly', async () => {
   views.length = 0
   await openSampleInNewView(session, 'display1', target('SPRET_EiJ', 1000))
