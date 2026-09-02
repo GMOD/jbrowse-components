@@ -12,12 +12,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * source and silently desyncs the track if the assembly's sequence changes.
  *
  * #example
- * The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — so a track needs
- * no slots at all. It scans the assembly's own sequence, which is why there is
- * no file location:
+ * The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — and the adapter
+ * scans the assembly's own sequence, which is why there is no file location.
+ * A PAM occurs every few bases, so an unfiltered scan is denser than a display
+ * can draw; the GC window and `excludePolyT` (guides carrying `TTTT`, a
+ * terminator for the pol III promoters guides are expressed from) keep the
+ * usable ones. SaCas9 is the same track with `pam: 'NNGRRT'` and
+ * `guideLength: 21`:
  * ```js
  * {
  *   type: 'CrisprGuideAdapter',
+ *   pam: 'NGG',
+ *   guideLength: 20,
+ *   pamLocation: '3prime',
+ *   cutOffset: 3,
+ *   minGcPercent: 40,
+ *   maxGcPercent: 60,
+ *   excludePolyT: true,
  * }
  * ```
  *

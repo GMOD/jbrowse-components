@@ -98,9 +98,18 @@ see the
 ## Reading the type list off the file
 
 A lookup-table callback keyed on `feature.type` is only as good as its keys, so
-read the types off the file. The [cookbook](/docs/cookbook#colors) has the `awk`
-one-liner that counts the types in a GFF3; this section works one file through
-end to end.
+read the types off the file. The `/^##FASTA/{exit}` stops before any inline
+sequence, whose lines carry no `#` and would otherwise be counted as feature
+types:
+
+```bash
+awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
+  sort | uniq -c | sort -rn
+```
+
+Any type missing from the table falls through to `|| 'gray'`, so gray is the
+signal to go back and check that list. The rest of this section works one file
+through end to end.
 
 The
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)

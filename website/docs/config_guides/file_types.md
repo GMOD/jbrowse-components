@@ -439,8 +439,7 @@ nor a sequence:
 All three are [`FeatureTrack`](/docs/config/featuretrack)s.
 
 The [sequence search guide](/docs/user_guides/sequence_search) drives them from
-the view menu; the [cookbook](/docs/cookbook#reference-scan) has a whole track
-config for each.
+the view menu; each adapter page above opens with a whole track config.
 
 ## Full adapter reference
 

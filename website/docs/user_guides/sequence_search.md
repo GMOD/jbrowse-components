@@ -94,11 +94,12 @@ motif** gives each its own lane.
 A search launched from the menu lives in your session. To put one in front of
 everyone who opens the instance, write the same adapter into `config.json` as an
 ordinary `FeatureTrack` — it names no file, since the assembly supplies the
-sequence. The [cookbook](/docs/cookbook#reference-scan) has a whole track config
-for each of the three modes.
+sequence. Each adapter's page opens with a whole track config:
+[](/docs/config/sequencesearchadapter), [](/docs/config/motiflistadapter) and
+[](/docs/config/crisprguideadapter).
 
 ## See also
 
 - [](/docs/user_guides/sequence_track)
 - [](/docs/user_guides/feature_sequence)
-- [](/docs/cookbook#reference-scan)
+- [](/docs/config_guides/file_types#computed-from-the-reference)
