@@ -87,6 +87,14 @@ export type {
   DerivativePathEvidence,
   DerivativeSegment,
 } from './features/derivativePaths/computePaths.ts'
+export {
+  derivativeLetterSummary,
+  letterSegments,
+} from './features/derivativePaths/letterSegments.ts'
+export type {
+  ReferencePiece,
+  SegmentLettering,
+} from './features/derivativePaths/letterSegments.ts'
 export type { IndicatorHitResult } from './features/indicator/types.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { BezierArcScope } from './features/linkedReads/computeOverlay.ts'
