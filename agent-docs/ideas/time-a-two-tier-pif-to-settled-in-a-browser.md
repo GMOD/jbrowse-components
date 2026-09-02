@@ -1,14 +1,14 @@
 ---
 name: time-a-two-tier-pif-to-settled-in-a-browser
 description: bytes are measured; what is left wants the app and the ready gate
-metadata:
-  area: synteny, PIF
-  category: measure-first
-  order: 2
-  first_move: "bytes are measured; what is left wants the app and the ready gate — and the zoomed-in case, where a release note claiming a win needs the case in which there isn't one"
 ---
 
 # Time a two-tier PIF to settled, in a browser
+
+Moved out of [TODO.md](../TODO.md) on 2026-09-02. The v5.0.0 draft already
+dropped the paragraph this number would have backed, and the crossing-cost
+bullet below is being closed by the main thread reading the `#pif` header's
+bound. It comes back when a release note wants the stopwatch half.
 
 The v5.0.0 draft carried a two-tier benchmark table nothing in-repo backed, so
 the paragraph came out. **The bytes half is now taken** —

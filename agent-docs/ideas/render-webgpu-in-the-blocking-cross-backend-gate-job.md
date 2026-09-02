@@ -1,14 +1,15 @@
 ---
 name: render-webgpu-in-the-blocking-cross-backend-gate-job
 description: the drift half is done and the hand gate renders webgpu; the CI job cannot launch the browser it needs
-metadata:
-  area: browser tests, CI
-  category: ready
-  order: 3
-  first_move: "the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated"
 ---
 
 # Render webgpu in the blocking cross-backend gate job
+
+Moved out of [TODO.md](../TODO.md) on 2026-09-02. The pixels half is done and
+the hand gate renders webgpu; what is left is a CI runner with a Firefox
+Nightly, a display and a software WebGPU adapter, none of which a worktree can
+prove and none of which the release turns on. It comes back when someone can
+run the job.
 
 **The half this entry used to be about is done.** The capture no longer scrolls:
 `captureElementPng` measures the element's rect, clips to it, and asserts the

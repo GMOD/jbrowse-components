@@ -1960,6 +1960,20 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   mid-flight, probe on vs off.
 
 
+- **Unifying `plugins/alignments/src/shared/spanOverlaps.ts` with
+  `plugins/canvas/src/shared/mergeSpans.ts` on core's `mergeIntervals`** —
+  declined 2026-09-02 by the LinearAlignmentsDisplay review. Canvas merges
+  `[start, end]` tuples on a hot path, alignments merges `{start, end}` objects
+  fed sorted by construction, and `mergeIntervals` always sorts a copy, so it
+  cannot back the sorted-input entry point without paying the sort the caller
+  already avoided.
+
+- **Merging `computeVariantCells` and `computeVariantMatrixCells` (~130 shared
+  lines)** — declined 2026-09-01 by the multi display review. Both sit on the
+  worker path `MULTI_SAMPLE_VARIANTS.md` measured at 2504 samples x 400 sites,
+  and that A/B is the price of admission for any change there; the duplication
+  is cheaper than re-running it for a shared helper.
+
 ## Comparative and pangenome
 
 - **Fold the synteny follow's reverse-strand vote into `followWindowsMapping`'s
@@ -2188,6 +2202,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   rank 0 has reference coordinates, so a K12 lane under it is one flat colour.
   The correspondence is carried by the page's stills and by
   `pangenome/pggb_layout_switch`, whose session still applies the ramp.
+
+- **A per-alignment id tag on every row of one PAF alignment, so a synteny
+  selection survives a PIF tier switch** — declined 2026-09-02, closing
+  `handoffs/pif-coarse-tier-rollout.md`. Feature ids are file offsets, so the
+  fine row and its coarse row have different ids and a click made on one tier
+  is cleared by crossing the threshold. The fix is a format change to a frozen
+  format (ADR-104) for a selection that already re-resolves on the next click;
+  nobody has asked for it.
 
 ## Data and demos
 

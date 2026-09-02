@@ -135,6 +135,23 @@ fine tier's rows. So for the "many short alignments" regime (dense all-vs-all
 pangenomes, human-vs-mouse whole genome) it is only marginal. The bottleneck
 there is N.
 
+## Verified in a browser on hs1 vs mm39, 2026-09-02
+
+The hosted PIF was inverted to PAF and rebuilt with the current writer, then
+driven against the dev server with pixel diffs (throwaway puppeteer scripts of
+the `scripts/verify-hs1-mm39-dotplot.mjs` kind; the captures were not kept).
+Whole genome under `auto` and under pinned fine differ by 19 of 794,000 band
+pixels. A 240 kb insertion in the chr1 block draws as the same 22 px wedge under
+auto, pinned fine and pinned coarse at 10 kb/px, and is a white seam on the old
+hosted file. At 1 kb/px under pinned coarse the wedge and the ribbon edges match
+the fine tier to the pixel and only sub-5 kb stripes are absent. The move-panel
+items appear on the coarse tier and land within the fold bound of the fine
+walk. No console errors. Two things it surfaced: `auto` resolves off the min of
+both rows, so a follow that zooms one row past the threshold flips the tier
+([ideas/two-fine-tier-fetches-the-fold-could-avoid.md](../ideas/two-fine-tier-fetches-the-fold-could-avoid.md)),
+and the follow tooltip's "approximate" now names both of its causes, a window
+wider than one alignment being the usual one.
+
 ## Measured cost model (do not guess — this was profiled)
 
 Synthetic human-vs-mouse-scale PIF (short blocks over 20 chromosome-scale
