@@ -505,10 +505,11 @@ per-row identity, and codon view.
 
 Drag across the rows and the menu that opens on release lists each strain the
 selection covers: **Open Sakai ... in new view** puts that strain's genome
-beside this one at the aligned stretch, and **Launch synteny view, K12 vs...**
-opens the two as a [linear synteny view](/docs/user_guides/linear_synteny_view).
-This works because the config loads the strains as assemblies under the names
-the MAF uses; a
+<!-- menu-path-ok --> beside this one at the aligned stretch, and **Launch
+
+synteny view, K12 vs...** opens the two as a
+[linear synteny view](/docs/user_guides/linear_synteny_view). This works because
+the config loads the strains as assemblies under the names the MAF uses; a
 [`samples` entry](/docs/config_guides/maf_track#the-samples-array) names the
 assembly where the two differ.
 
