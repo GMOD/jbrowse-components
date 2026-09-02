@@ -388,6 +388,8 @@ its own coordinates at the matching stretch, which is also what a
 [graph node](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 offers.
 
+<Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or that strain on its own, under one Launch heading." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
+
 A launched view is a few kilobases wide, where the CIGAR `minimap2 -c` wrote
 matters: each insertion and deletion is drawn where it falls. **Show color
 legend** on the palette button names the colors, and **CIGAR indels** in the

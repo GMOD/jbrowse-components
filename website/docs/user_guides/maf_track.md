@@ -183,13 +183,15 @@ window, so reaching a species' genome needs no selection.
 
 The same selection — or the visible window, from the track menu's **Launch**
 submenu — opens as a two-row
-[linear synteny view](/docs/user_guides/linear_synteny_view): **Launch synteny
+[linear synteny view](/docs/user_guides/linear_synteny_view): **Linear synteny
 view, \<ref\> vs...** lists the same species, and picking one opens the
 reference over that species' genome with the alignment drawn between them as
 ribbons. The ribbons come from the MAF's own columns, so every insertion and
 deletion in the block is where the alignment put it, and no synteny file is
 involved. The reference row carries the tracks this view had open, the MAF
 included; the species row carries its own gene track where the session has one.
+
+<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: one entry per strain the drag covers, and the same strains again under the synteny launch." src="/img/maf_row_menu.png" />
 
 ## Row layout and the species tree
 

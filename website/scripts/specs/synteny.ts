@@ -3955,7 +3955,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 900,
     // the top row's height: tall enough for the whole context menu in stage 1
     // (the binding frame) — the menu opens below the clicked block, so the boxed
-    // "Launch synteny view" item is its last line. The bottom row sets its own,
+    // "Linear synteny view with panTro6" item sits under the Launch heading. The bottom row sets its own,
     // taller, height per stage.
     viewportHeight: 575,
     stageColumns: 2,
@@ -3985,7 +3985,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Open feature details' },
           // leave the item the reader is being pointed at under the cursor, so
           // it carries the menu's own hover highlight as well as the box below
-          { type: 'hover', text: 'Launch synteny view for this position' },
+          { type: 'hover', text: 'Linear synteny view with panTro6' },
           { type: 'delay', ms: 500 },
         ],
         annotations: [
@@ -4006,16 +4006,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           },
           {
             type: 'box',
-            anchor: { text: 'Launch synteny view for this position' },
+            anchor: { text: 'Linear synteny view with panTro6' },
             strokeWidth: 3,
           },
         ],
       },
       {
         actions: [
-          { type: 'click', text: 'Launch synteny view for this position' },
-          // the dialog's own text, not its title: "Launch synteny view" is also
-          // the prefix of the menu item just clicked
+          { type: 'click', text: 'Linear synteny view with panTro6' },
+          // the dialog's own text, not its title, which names the launch too
           {
             type: 'waitForText',
             text: 'Use CIGAR to map the current visible region to the target',
@@ -4934,6 +4933,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 10000,
   },
+  ...launchMenuStills(),
 ]
 
 // What videos/synteny.ts films: the linear synteny import form with nothing
@@ -5160,4 +5160,130 @@ export const syntenyVideoFixtures = {
       },
     ],
   }),
+}
+
+// The three launch menus this site's prose walks a reader through and no still
+// showed: the routes a right-click on one alignment offers, the hops off a
+// multi-way lane's header, and the entries a drag across MAF rows raises. Each
+// is the menu left open with the launch entries boxed; the views they open are
+// the launch composites' and the tours' job.
+function launchMenuStills(): ScreenshotSpec[] {
+  return [
+    {
+      mode: 'url',
+      name: 'multiway_synteny/ecoli_alignment_menu',
+      url: ECOLI_ONE_VS_ALL_LANES,
+      readySelector: displayPainted('pileup-display'),
+      readyTimeout: 120000,
+      settleMs: 8000,
+      viewportHeight: 440,
+      hideTooltip: true,
+      actions: [
+        // 8px into the first lane's row at featureHeight 14; the lanes are
+        // canvas-drawn, so a locus and a depth is the only handle
+        {
+          type: 'rightclick',
+          anchor: { track: 'ecoli_ava', locus: 'chr:801,000', fracY: 0, dy: 8 },
+        },
+        { type: 'waitForText', text: 'Open feature details' },
+        // the launch entries arrive a fetch after the menu: they need the
+        // alignment's mate, which says whether a synteny view can open at all
+        {
+          type: 'waitForText',
+          text: 'Linear synteny view, all assemblies here',
+        },
+        { type: 'hover', text: 'Linear synteny view with' },
+        { type: 'delay', ms: 500 },
+      ],
+      annotations: [
+        { type: 'box', anchor: { text: 'Linear synteny view with' } },
+        {
+          type: 'box',
+          anchor: { text: 'Linear synteny view, all assemblies here' },
+        },
+        { type: 'box', anchor: { text: 'at the matching region' } },
+      ],
+    },
+    {
+      mode: 'url',
+      name: 'multiway_synteny/lane_header_menu',
+      url: sessionSpec(
+        encodeURIComponent(
+          'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+        ),
+        {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'grape',
+              loc: '11:778,000-866,000',
+              tracks: [
+                {
+                  trackId: 'grape_peach_cacao_blocks',
+                  type: 'MultiWaySyntenyDisplay',
+                  rowOrder: ['peach', 'cacao', 'poplar'],
+                  height: 260,
+                },
+              ],
+            },
+          ],
+        },
+      ),
+      readySelector: displaySettled('multiway-synteny-display'),
+      readyTimeout: 120000,
+      settleMs: 12000,
+      viewportHeight: 520,
+      hideTooltip: true,
+      actions: [
+        {
+          type: 'rightclick',
+          selector: '[data-testid="multiway-lane-label-peach"]',
+        },
+        { type: 'waitForText', text: 'Re-anchor on peach' },
+        { type: 'delay', ms: 500 },
+      ],
+      annotations: [
+        { type: 'box', anchor: { text: 'Open peach at the matching region' } },
+        { type: 'box', anchor: { text: 'Re-anchor on peach' } },
+      ],
+    },
+    {
+      mode: 'url',
+      name: 'maf_row_menu',
+      url: ECOLI_MAF_ROWS,
+      readySelector: displayPainted('maf-display'),
+      readyTimeout: 180000,
+      settleMs: 8000,
+      viewportHeight: 560,
+      hideTooltip: true,
+      actions: [
+        // the tour's drag from the top row to the bottom one, ending short of
+        // the tour's span so the menu the release raises opens inside the
+        // frame rather than against its right edge
+        {
+          type: 'drag',
+          fromAnchor: {
+            locus: 'chr:798,700',
+            track: 'ecoli_pggb_maf',
+            band: '[data-testid="maf-rows"]',
+            fracY: 0.02,
+          },
+          toAnchor: {
+            locus: 'chr:800,000',
+            track: 'ecoli_pggb_maf',
+            band: '[data-testid="maf-rows"]',
+            fracY: 0.98,
+          },
+        },
+        // no hover on the launch entry: it is a submenu, and opening it lays
+        // the per-strain rows over the menu this frame is of
+        { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
+        { type: 'delay', ms: 500 },
+      ],
+      annotations: [
+        { type: 'box', anchor: { text: 'Open CFT073 at the matching region' } },
+        { type: 'box', anchor: { text: 'Linear synteny view, K12 vs...' } },
+      ],
+    },
+  ]
 }

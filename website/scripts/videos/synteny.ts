@@ -233,7 +233,7 @@ export const syntenyVideos: VideoSpec[] = [
   {
     name: 'synteny/multiway_launch_stack',
     description:
-      "From the grasses lane track to the stacked view: the track menu's Launch stacked synteny view entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
+      "From the grasses lane track to the stacked view: the track menu's Launch → Linear synteny view (visible region) entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
     url: grassesLanes,
     // Sized to the LAUNCHED STACK, the tallest of the three states and the
     // frame the poster comes from: the run measured the app at 665 on the
@@ -256,15 +256,17 @@ export const syntenyVideos: VideoSpec[] = [
         say: 'Launch a stacked view, one panel per grass',
         hold: 1400,
       },
-      { type: 'waitForText', text: 'Launch stacked synteny view' },
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'hover', text: 'Launch', hold: 900 },
+      { type: 'waitForText', text: 'Linear synteny view (visible region)' },
       {
         type: 'hover',
-        text: 'Launch stacked synteny view (visible region)',
+        text: 'Linear synteny view (visible region)',
         hold: 1600,
       },
       {
         type: 'click',
-        text: 'Launch stacked synteny view (visible region)',
+        text: 'Linear synteny view (visible region)',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The rows arrive from the worker's mate discovery, which re-reads the
@@ -1083,15 +1085,15 @@ export const syntenyVideos: VideoSpec[] = [
       // feature's mate assembly, which decides whether a synteny view can open
       // at all (canLaunchSyntenyForMate). So this waits on the fetch rather than
       // guessing at it.
-      { type: 'waitForText', text: 'Launch synteny view for this position' },
+      { type: 'waitForText', text: 'Linear synteny view with hs1' },
       {
         type: 'hover',
-        text: 'Launch synteny view for this position',
+        text: 'Linear synteny view with hs1',
         hold: 1400,
       },
       {
         type: 'click',
-        text: 'Launch synteny view for this position',
+        text: 'Linear synteny view with hs1',
       },
       // The dialog is lazy, so this waits on the chunk as well as on the open.
       // Matched on the checkbox rather than on the title, which is the menu item
@@ -1340,11 +1342,11 @@ export const syntenyVideos: VideoSpec[] = [
         say: 'Drag across the rows',
         hold: 900,
       },
-      { type: 'waitForText', text: 'Launch synteny view, K12 vs...' },
+      { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
       { type: 'delay', ms: 1800, say: 'One entry per strain the drag covers' },
       {
         type: 'click',
-        text: 'Launch synteny view, K12 vs...',
+        text: 'Linear synteny view, K12 vs...',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: MAF_NCTC86_ENTRY },
