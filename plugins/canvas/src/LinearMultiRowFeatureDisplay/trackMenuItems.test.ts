@@ -2,7 +2,7 @@ import { staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
-import type { MultiRowSource } from './sourcesLogic.ts'
+import type { MultiRowSource } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
 // The builder only reads state (the onClick bodies are what reach the model and

@@ -1,6 +1,6 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
-import type { MultiRowSource } from '../sourcesLogic.ts'
+import type { MultiRowSource } from '../rowSources.ts'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 // A per-row `color` overrides that row's blocks at render time (over the

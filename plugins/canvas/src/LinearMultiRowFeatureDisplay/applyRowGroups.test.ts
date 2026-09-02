@@ -1,4 +1,4 @@
-import { applyRowGroups } from './sourcesLogic.ts'
+import { applyRowGroups } from './rowSources.ts'
 
 const WOLF = { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' }
 const VILLAGE = {

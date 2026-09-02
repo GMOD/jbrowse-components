@@ -15,7 +15,7 @@ import type {
   MultiRowFeaturePaintInputs,
   MultiRowRegionData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './sourcesLogic.ts'
+import type { MultiRowSource } from './rowSources.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 

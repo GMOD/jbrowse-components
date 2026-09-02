@@ -1,6 +1,6 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 
-import { orderPartitionValues, resolveRowColorStrings } from './sourcesLogic.ts'
+import { orderPartitionValues, resolveRowColorStrings } from './rowSources.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 

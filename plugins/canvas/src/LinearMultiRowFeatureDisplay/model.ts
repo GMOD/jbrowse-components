@@ -75,7 +75,7 @@ import {
   applyRowGroups,
   orderPartitionValues,
   resolveRowColorStrings,
-} from './sourcesLogic.ts'
+} from './rowSources.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -90,7 +90,7 @@ import type {
   MultiRowRenderState,
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
+import type { MultiRowSource, RowGroup } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'

@@ -10,7 +10,7 @@ what v5.0.0 turns on. A feature, and the vocabulary to copy is already written
 down.
 
 There is no FEATURE grouping in the canvas pileup path. `applyRowGroups`
-(`LinearMultiRowFeatureDisplay/sourcesLogic.ts`) looks like it and is not — it
+(`LinearMultiRowFeatureDisplay/rowSources.ts`) looks like it and is not — it
 groups source ROWS, a different axis, and it shipped with its own config slot,
 legend and SVG export.
 

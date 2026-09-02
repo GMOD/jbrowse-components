@@ -19,7 +19,7 @@ import type {
   MultiRowRegionData,
   MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './sourcesLogic.ts'
+import type { MultiRowSource } from './rowSources.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LegendItem } from '@jbrowse/core/ui'
