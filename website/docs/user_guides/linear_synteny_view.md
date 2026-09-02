@@ -82,7 +82,7 @@ configured but closed is what the import form above is for.
   interval by interpolating across the block, which is the straight line its
   ribbon is already drawn as. Worked through in
   [](/docs/tutorials/genomes_synteny). On a track declaring three or more
-  assemblies the same menu also offers **Launch synteny view for all assemblies
+  assemblies the same menu also offers **Linear synteny view, all assemblies
   here**, the multi-panel dialog above cut from this track at the block you
   clicked in. **Open \<assembly\> at the matching region** is the jump rather
   than the comparison: it opens the mate assembly on its own, with the session's
