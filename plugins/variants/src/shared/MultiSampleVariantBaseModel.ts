@@ -1499,10 +1499,11 @@ export default function MultiSampleVariantBaseModelF(
           // harmless no-op: `setLayout` drops the cluster tree whenever the row
           // set changes. The same decline the other "sort rows here" actions
           // make in `sortRowsAtColumn`.
+          let sorted: ProcessedSource[] | undefined
           if (cellData && sources.length > 1) {
             const { featureIds, genotypeCodesByFeatureId } =
               getOrderedGenotypeCodes(cellData)
-            const sorted = sortSourcesAroundVariant({
+            sorted = sortSourcesAroundVariant({
               sources,
               sampleNames: cellData.sampleNames,
               genotypeDict: cellData.genotypeDict,
@@ -1515,6 +1516,7 @@ export default function MultiSampleVariantBaseModelF(
               self.setLayout(sorted)
             }
           }
+          return sorted !== undefined
         },
       }))
       .actions(self => ({
@@ -1526,31 +1528,35 @@ export default function MultiSampleVariantBaseModelF(
          * covering the column; a column no record covers leaves the rows
          * alone, the rule every "sort rows here" shares (`rowSortColumn.ts`).
          *
+         * **Answers whether it sorted**, which is what keeps `sortRowsBy` set
+         * when it did not: the shared gate only knows a region covers the
+         * column, and this display additionally needs a record there — a
+         * session naming a variant-free column would otherwise clear its own
+         * trigger and leave the rows unsorted with nothing left to re-fire it
+         * once a record loads (`setupRowSortAutorun`).
+         *
          * `refName` arrives canonical — the autorun normalizes it — while a
          * record's refName is whatever the file spelled, so the comparison
          * canonicalizes the record's side.
          */
         sortRowsByGenotypeAt(refName: string, pos: number) {
           const features = self.cellData?.simplifiedFeatures
-          if (
-            !features ||
-            loadedRegionIndexAt(self.loadedRegions, refName, pos) === undefined
-          ) {
-            return
-          }
-          const hit = features.find(({ data }) => {
-            const { start, end } = data
-            return (
-              typeof start === 'number' &&
-              typeof end === 'number' &&
-              start <= pos &&
-              pos < end &&
-              canonicalizeViewRefName(self, String(data.refName)) === refName
-            )
-          })
-          if (hit) {
-            self.sortByGenotype(hit.id)
-          }
+          const hit =
+            features &&
+            loadedRegionIndexAt(self.loadedRegions, refName, pos) !== undefined
+              ? features.find(({ data }) => {
+                  const { start, end } = data
+                  return (
+                    typeof start === 'number' &&
+                    typeof end === 'number' &&
+                    start <= pos &&
+                    pos < end &&
+                    canonicalizeViewRefName(self, String(data.refName)) ===
+                      refName
+                  )
+                })
+              : undefined
+          return hit ? self.sortByGenotype(hit.id) : false
         },
         /**
          * #action

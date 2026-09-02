@@ -11,7 +11,7 @@ type Self = IStateTreeNode &
     // `clusteringReady` there: that one is on the shared interface because BOTH
     // clustering entry points gate on it, and this one only this autorun does.
     autoClusterReady: boolean
-    sortRowsByGenotypeAt: (refName: string, pos: number) => void
+    sortRowsByGenotypeAt: (refName: string, pos: number) => boolean
   } & Parameters<typeof getMultiSampleVariantSourcesAutorun>[0] &
   Parameters<typeof setupTreeSidebarAutoruns>[0]
 
@@ -20,9 +20,10 @@ export function setupMultiSampleVariantAutoruns(self: Self) {
 
   setupTreeSidebarAutoruns(self, {
     name: 'MultiSampleVariant',
-    sortRows: (refName, pos) => {
-      self.sortRowsByGenotypeAt(refName, pos)
-    },
+    // Forwarded, not swallowed: `false` is "no record at that column", which
+    // the shared gate cannot ask about, and it holds `sortRowsBy` for the fetch
+    // that brings one in.
+    sortRows: (refName, pos) => self.sortRowsByGenotypeAt(refName, pos),
     // "Cluster rows by genotype": the genotype-matrix RPC over the
     // `clusterRegion` locus if the session named one, the visible blocks if
     // not.
