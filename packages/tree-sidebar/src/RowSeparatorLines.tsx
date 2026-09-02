@@ -17,8 +17,7 @@ import { getStrokeProps } from '@jbrowse/core/util'
 // edge swallow a fainter line than bars sitting on paper.
 
 /**
- * Smallest row height a separator is drawn at, and the default `minRowPx`
- * below.
+ * Smallest row height a separator is drawn at.
  *
  * A 1px line between rows that are themselves 2px tall is half the picture, and
  * every display here lets its rows go below a pixel (a clustered cohort at 0.32
@@ -26,12 +25,9 @@ import { getStrokeProps } from '@jbrowse/core/util'
  * dividing the plot and becomes it. Multi-wiggle drew the wash for exactly that
  * reason: it took the default, and the default was 0.
  *
- * A default rather than a per-caller argument because the threshold is the
- * pixel rule this component already owns, and the one caller that passed it
- * spelled it in its own module while the other passed nothing. Read it for a
- * menu row that has to say why the grid is absent (see the "Show row
- * separators" toggle); pass `minRowPx` only for a display whose rows are
- * bounded some other way.
+ * Not a per-caller argument because the threshold is the pixel rule this
+ * component already owns. Exported so a menu row can say why the grid is absent
+ * (see the "Show row separators" toggle).
  */
 export const MIN_SEPARATOR_ROW_PX = 4
 
@@ -40,7 +36,6 @@ export function RowSeparatorLines({
   rowHeight,
   width,
   opacity,
-  minRowPx = MIN_SEPARATOR_ROW_PX,
   scrollTop = 0,
   viewportHeight,
 }: {
@@ -49,9 +44,6 @@ export function RowSeparatorLines({
   width: number
   // Alpha applied to the theme's divider color.
   opacity: number
-  // Row height below which the grid is dropped; defaults to
-  // MIN_SEPARATOR_ROW_PX. Pass 0 to always draw.
-  minRowPx?: number
   // For a display whose rows scroll inside a viewport: the lines are drawn in
   // viewport coordinates, and the ones outside it are skipped rather than
   // emitted — a 3,000-sample cohort at a fixed row height is 3,000 `<line>`s
@@ -60,7 +52,7 @@ export function RowSeparatorLines({
   viewportHeight?: number
 }) {
   const palette = usePalette()
-  if (numRows < 2 || rowHeight < minRowPx) {
+  if (numRows < 2 || rowHeight < MIN_SEPARATOR_ROW_PX) {
     return null
   }
   const lines = []
