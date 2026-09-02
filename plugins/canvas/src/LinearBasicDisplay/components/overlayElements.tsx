@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { pluralize } from '@jbrowse/core/util'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -14,7 +15,7 @@ import {
   highlightBoxColors,
   overlayItemRect,
 } from './highlightUtils.ts'
-import { HIT_PAD_PX } from './hitTesting.ts'
+import { HIT_PAD_PX, labelHit } from './hitTesting.ts'
 import { htmlToPlainText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
 import {
@@ -32,7 +33,11 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
-import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type {
+  FeatureItemEntry,
+  HitFeatureResult,
+  VisibleRegion,
+} from './hitTesting.ts'
 import type {
   MoreResolvedLabel,
   PlainResolvedLabel,
@@ -91,8 +96,8 @@ interface HighlightBoxesModel {
   labelFontSize: number
   selectedFeatureId: string | undefined
   // the open context menu's target, else the hover — see the model's getters
-  hoverBoxFeature: FlatbushItem | null
-  hoverBoxSubfeature: SubfeatureInfo | null
+  hoverBoxFeature: FlatbushItem | undefined
+  hoverBoxSubfeature: SubfeatureInfo | undefined
   featureItemMap: Map<string, FeatureItemEntry>
   // Y a feature's glyph is currently drawn off its laid-out row by, mid Y-morph.
   // featureItemMap holds the destination rows (hit targets), so every box adds
@@ -379,11 +384,10 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
 }: {
   model: FloatingLabelsModel
   view: LGV
-  // Just the item: the label's own hover sets the model's hover, and the
-  // tooltip's POSITION comes from the chrome's pointer tracker rather than from
-  // this event. It used to carry the region index and the event so the caller
-  // could stash `clientX`/`clientY` in React state.
-  onLabelMouseOver?: (item: FlatbushItem) => void
+  // The hit the hovered label stands for, shaped as the canvas hit test's so
+  // the caller reads the tooltip off it the same way. The tooltip's POSITION
+  // comes from the chrome's pointer tracker rather than from this event.
+  onLabelMouseOver?: (hit: HitFeatureResult) => void
   onLabelMouseLeave?: () => void
 }) {
   const { classes, cx } = useStyles()
@@ -591,8 +595,13 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
           return
         }
         const t = resolveTarget(e)
-        if (t && onLabelMouseOver) {
-          onLabelMouseOver(t.item)
+        const vr =
+          t &&
+          visibleRegions.find(
+            r => r.displayedRegionIndex === t.displayedRegionIndex,
+          )
+        if (t && vr && onLabelMouseOver) {
+          onLabelMouseOver(labelHit(t.item, vr, eventPoint(e).x))
         }
       }}
       // A clickable label is stacked above the canvas, so entering one fires the

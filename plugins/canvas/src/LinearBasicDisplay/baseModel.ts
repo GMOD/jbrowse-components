@@ -329,11 +329,11 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        featureIdUnderMouse: null as string | null,
+        featureIdUnderMouse: undefined as string | undefined,
         /**
          * #volatile
          */
-        subfeatureIdUnderMouse: null as string | null,
+        subfeatureIdUnderMouse: undefined as string | undefined,
         /**
          * #volatile
          * the hover tooltip's rows, each rendered as its own element — see
@@ -1271,7 +1271,7 @@ export default function baseStateModelFactory(
          */
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
-          return id ? (self.featureIdIndex.get(id) ?? null) : null
+          return id === undefined ? undefined : self.featureIdIndex.get(id)
         },
 
         /**
@@ -1279,7 +1279,7 @@ export default function baseStateModelFactory(
          */
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
-          return id ? (self.subfeatureIdIndex.get(id) ?? null) : null
+          return id === undefined ? undefined : self.subfeatureIdIndex.get(id)
         },
 
         /**
@@ -1308,7 +1308,7 @@ export default function baseStateModelFactory(
          */
         get hoverBoxSubfeature() {
           const info = self.contextMenuInfo
-          return info ? (info.subfeature ?? null) : self.hoveredSubfeature
+          return info ? info.subfeature : self.hoveredSubfeature
         },
       }))
       .views(self => ({
@@ -1995,7 +1995,7 @@ export default function baseStateModelFactory(
             //
             // The two id->item maps ride along, and they suspend far more often
             // than the Flatbush ones: their only readers are
-            // hoveredFeature/hoveredSubfeature, which short-circuit to null when
+            // hoveredFeature/hoveredSubfeature, which short-circuit to undefined when
             // nothing is under the cursor — so the dependency disappears on every
             // hover-out, and the next hover-in rebuilt a Map over every laid-out
             // feature. Drag-panning over a track hit that on every frame (the

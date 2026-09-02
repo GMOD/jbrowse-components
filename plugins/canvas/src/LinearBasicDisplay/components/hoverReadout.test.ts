@@ -59,8 +59,8 @@ const makeAa = (
 function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
   return {
     feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: 'gene mouseover' },
-    subfeature: null,
-    peptide: null,
+    subfeature: undefined,
+    peptide: undefined,
     bpPos: 0,
     // base zoom, so the HGVS readout is in play unless a test says otherwise
     bpPerPx: 0.1,
@@ -126,6 +126,19 @@ test('hoverTooltipRows leaves only the residue for a feature with no tooltip tex
       }),
     ),
   ).toEqual(['K124'])
+})
+
+// A hover on a floating label arrives as a hit with no subfeature and no
+// peptide (see labelHit). A feature whose mouseover slot is empty then has
+// nothing to say, and says nothing — not an empty row.
+test('hoverTooltipRows drops the empty title row of a label-shaped hit', () => {
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: '' },
+      }),
+    ),
+  ).toEqual([])
 })
 
 // Three exons at 0-10, 20-30, 40-50, coding 5-45, on the + strand: c.1 is

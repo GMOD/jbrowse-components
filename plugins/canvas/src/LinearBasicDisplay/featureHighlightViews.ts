@@ -31,8 +31,8 @@ export interface FeatureHighlightHost extends IStateTreeNode {
 
 /** The hover and the tooltip beside it. */
 export interface FeatureHoverHost {
-  featureIdUnderMouse: string | null
-  subfeatureIdUnderMouse: string | null
+  featureIdUnderMouse: string | undefined
+  subfeatureIdUnderMouse: string | undefined
   mouseoverExtraInformation: string[] | undefined
   resolvedHighlights: ResolvedHighlights
   featureHighlights: IMSTArray<typeof FeatureHighlightModel>
@@ -150,8 +150,8 @@ export function featureHighlightActions(self: FeatureHoverHost) {
      * #action
      */
     setHover(
-      featureId: string | null,
-      subfeatureId: string | null,
+      featureId: string | undefined,
+      subfeatureId: string | undefined,
       tooltip: string[] | undefined,
     ) {
       self.featureIdUnderMouse = featureId
@@ -169,8 +169,8 @@ export function featureHighlightActions(self: FeatureHoverHost) {
      * #action
      */
     clearHover() {
-      self.featureIdUnderMouse = null
-      self.subfeatureIdUnderMouse = null
+      self.featureIdUnderMouse = undefined
+      self.subfeatureIdUnderMouse = undefined
       self.mouseoverExtraInformation = undefined
     },
 

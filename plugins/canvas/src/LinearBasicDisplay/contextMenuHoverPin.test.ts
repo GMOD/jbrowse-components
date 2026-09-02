@@ -58,11 +58,11 @@ describe('the highlight box follows the context menu target', () => {
 
   it('drops the hover and its tooltip when the menu opens', () => {
     const { display, menuTarget, other } = setup()
-    display.setHover(other.featureId, null, [other.tooltip])
+    display.setHover(other.featureId, undefined, [other.tooltip])
 
     rightClick(display, menuTarget)
 
-    expect(display.hoveredFeature).toBeNull()
+    expect(display.hoveredFeature).toBeUndefined()
     expect(display.mouseoverExtraInformation).toBeUndefined()
   })
 
@@ -70,7 +70,7 @@ describe('the highlight box follows the context menu target', () => {
     const { display, menuTarget, other } = setup()
     rightClick(display, menuTarget)
 
-    display.setHover(other.featureId, null, [other.tooltip])
+    display.setHover(other.featureId, undefined, [other.tooltip])
     expect(display.hoverBoxFeature?.featureId).toBe(menuTarget.featureId)
 
     display.clearHover()
@@ -81,9 +81,9 @@ describe('the highlight box follows the context menu target', () => {
     const { display, menuTarget, other } = setup()
     rightClick(display, menuTarget)
     display.closeContextMenu()
-    expect(display.hoverBoxFeature).toBeNull()
+    expect(display.hoverBoxFeature).toBeUndefined()
 
-    display.setHover(other.featureId, null, [other.tooltip])
+    display.setHover(other.featureId, undefined, [other.tooltip])
     expect(display.hoverBoxFeature?.featureId).toBe(other.featureId)
     expect(display.mouseoverExtraInformation).toEqual([other.tooltip])
   })

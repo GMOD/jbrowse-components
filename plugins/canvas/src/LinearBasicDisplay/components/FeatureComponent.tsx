@@ -36,8 +36,8 @@ import {
 } from './hoverReadout.ts'
 import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
-import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { HitFeatureResult } from './hitTesting.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -314,7 +314,7 @@ const FeatureBody = observer(function FeatureBody({
     if (isHitFeature(result)) {
       model.setHover(
         result.feature.featureId,
-        result.subfeature?.featureId ?? null,
+        result.subfeature?.featureId,
         hoverTooltipRows(result),
       )
     } else {
@@ -345,7 +345,7 @@ const FeatureBody = observer(function FeatureBody({
     } else if (isHitFeature(result)) {
       model.selectFeatureById(
         result.feature.featureId,
-        result.subfeature ?? undefined,
+        result.subfeature,
         result.displayedRegionIndex,
       )
     } else {
@@ -368,7 +368,7 @@ const FeatureBody = observer(function FeatureBody({
         displayedRegionIndex: result.displayedRegionIndex,
         clientX: e.clientX,
         clientY: e.clientY,
-        subfeature: result.subfeature ?? undefined,
+        subfeature: result.subfeature,
         // resolved here rather than in the menu: only the hit knows which base
         // was clicked and at what zoom
         hgvsLabel: hgvsHitLabel(result),
@@ -392,13 +392,12 @@ const FeatureBody = observer(function FeatureBody({
     model.setDensityHoverPx(undefined)
   })
 
+  // The label's hover is the same readout as the glyph's: the layer hands over
+  // a hit shaped like the canvas path's (see `labelHit`), so crossing from a
+  // feature onto its name keeps the isoform, exon and HGVS rows.
   const onLabelMouseOver = useCallback(
-    (item: FlatbushItem) => {
-      model.setHover(
-        item.featureId,
-        null,
-        item.tooltip ? [item.tooltip] : undefined,
-      )
+    (hit: HitFeatureResult) => {
+      model.setHover(hit.feature.featureId, undefined, hoverTooltipRows(hit))
     },
     [model],
   )

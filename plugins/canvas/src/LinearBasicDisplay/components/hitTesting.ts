@@ -60,9 +60,9 @@ export interface FlatbushRegionIndexes {
 
 export interface HitFeatureResult {
   feature: FlatbushItem
-  subfeature: SubfeatureInfo | null
+  subfeature: SubfeatureInfo | undefined
   // amino-acid codon under the cursor, when hovering peptide-level CDS
-  peptide: AminoAcidOverlayItem | null
+  peptide: AminoAcidOverlayItem | undefined
   // integer genomic position under the cursor, which the transcript readouts
   // are measured from, and the zoom it was read at, which decides how precise
   // a readout is honest
@@ -71,10 +71,31 @@ export interface HitFeatureResult {
   displayedRegionIndex: number
 }
 
-type HitResult = HitFeatureResult | { feature: null; subfeature: null }
+type HitResult =
+  | HitFeatureResult
+  | { feature: undefined; subfeature: undefined }
 
 export function isHitFeature(r: HitResult): r is HitFeatureResult {
-  return r.feature !== null
+  return r.feature !== undefined
+}
+
+// The hit a hover on a feature's floating label stands for: the label names its
+// feature and nothing finer, and the base under the cursor is read through the
+// label's own region so the transcript readouts match what the glyph beside it
+// would say.
+export function labelHit(
+  feature: FlatbushItem,
+  vr: VisibleRegion,
+  mouseXPx: number,
+): HitFeatureResult {
+  return {
+    feature,
+    subfeature: undefined,
+    peptide: undefined,
+    bpPos: bpAtPx(mouseXPx, vr),
+    bpPerPx: regionBpPerPx(vr),
+    displayedRegionIndex: vr.displayedRegionIndex,
+  }
 }
 
 export function buildFeatureFlatbushIndex(
@@ -188,7 +209,7 @@ function findPeptideAt(
       }
     }
   }
-  return null
+  return undefined
 }
 
 // The topmost subfeature under the cursor that belongs to `feature`. Gating on
@@ -202,15 +223,15 @@ function resolveSubfeature(
   bpPos: number,
   yPos: number,
   feature: FlatbushItem,
-): SubfeatureInfo | null {
+) {
   if (!indexes.subfeature) {
-    return null
+    return undefined
   }
   const idx = topmostMatch(
     indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
     i => data.subfeatureInfos[i]!.parentFeatureId === feature.featureId,
   )
-  return idx === undefined ? null : data.subfeatureInfos[idx]!
+  return idx === undefined ? undefined : data.subfeatureInfos[idx]!
 }
 
 export function performMultiRegionHitDetection(
@@ -251,5 +272,5 @@ export function performMultiRegionHitDetection(
       }
     }
   }
-  return { feature: null, subfeature: null }
+  return { feature: undefined, subfeature: undefined }
 }

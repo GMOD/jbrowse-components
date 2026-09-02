@@ -39,8 +39,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;LoadedFeatureData&gt;('rpcDataMap')</code> |  | LinearCanvasBaseDisplay |
-| <span id="volatile-featureidundermouse">**featureIdUnderMouse**</span><br><code>featureIdUnderMouse: null as string &#124; null</code> |  | LinearCanvasBaseDisplay |
-| <span id="volatile-subfeatureidundermouse">**subfeatureIdUnderMouse**</span><br><code>subfeatureIdUnderMouse: null as string &#124; null</code> |  | LinearCanvasBaseDisplay |
+| <span id="volatile-featureidundermouse">**featureIdUnderMouse**</span><br><code>featureIdUnderMouse: undefined as string &#124; undefined</code> |  | LinearCanvasBaseDisplay |
+| <span id="volatile-subfeatureidundermouse">**subfeatureIdUnderMouse**</span><br><code>subfeatureIdUnderMouse: undefined as string &#124; undefined</code> |  | LinearCanvasBaseDisplay |
 | <span id="volatile-mouseoverextrainformation">**mouseoverExtraInformation**</span><br><code>mouseoverExtraInformation: undefined as string[] &#124; undefined</code> | the hover tooltip's rows, each rendered as its own element — see hoverTooltipRows for why this is a list and not one HTML string | LinearCanvasBaseDisplay |
 | <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sequenceHoverPosition: undefined as SequenceHoverPosition &#124; und…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sequenceHoverPosition: undefined as SequenceHoverPosition &#124; undefined</code></pre></dialog></span> | genomic base currently hovered in a feature sequence dialog opened from this display, read by the LGV crosshair overlay | LinearCanvasBaseDisplay |
 | <span id="volatile-incrementallayout">**incrementalLayout**</span><br><code>incrementalLayout: createIncrementalLayout()</code> |  | LinearCanvasBaseDisplay |
@@ -160,10 +160,10 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-growtargetheight">**growTargetHeight**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-featureidindex">**featureIdIndex**</span><br><code>Map&lt;string, FlatbushItem&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-subfeatureidindex">**subfeatureIdIndex**</span><br><code>Map&lt;string, SubfeatureInfo&gt;</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>FlatbushItem &#124; null</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-hoveredsubfeature">**hoveredSubfeature**</span><br><code>SubfeatureInfo &#124; null</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-hoverboxfeature">**hoverBoxFeature**</span><br><code>FlatbushItem &#124; null</code> | The feature the hover box frames: the open context menu's target while one is open, so the box always agrees with what the menu acts on, else the feature under the cursor. Same rule as the multi-row display's `highlightedBlockRect`. | LinearCanvasBaseDisplay |
-| <span id="getter-hoverboxsubfeature">**hoverBoxSubfeature**</span><br><code>SubfeatureInfo &#124; null</code> | The transcript the hover box frames instead of its gene, by the rule of `hoverBoxFeature`. | LinearCanvasBaseDisplay |
+| <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>FlatbushItem &#124; undefined</code> |  | LinearCanvasBaseDisplay |
+| <span id="getter-hoveredsubfeature">**hoveredSubfeature**</span><br><code>SubfeatureInfo &#124; undefined</code> |  | LinearCanvasBaseDisplay |
+| <span id="getter-hoverboxfeature">**hoverBoxFeature**</span><br><code>FlatbushItem &#124; undefined</code> | The feature the hover box frames: the open context menu's target while one is open, so the box always agrees with what the menu acts on, else the feature under the cursor. Same rule as the multi-row display's `highlightedBlockRect`. | LinearCanvasBaseDisplay |
+| <span id="getter-hoverboxsubfeature">**hoverBoxSubfeature**</span><br><code>SubfeatureInfo &#124; undefined</code> | The transcript the hover box frames instead of its gene, by the rule of `hoverBoxFeature`. | LinearCanvasBaseDisplay |
 | <span id="getter-featureitemmap">**featureItemMap**</span><br><code>Map&lt;string, FeatureItemEntry&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-flatbushindexes">**flatbushIndexes**</span><br><code>Map&lt;number, FlatbushRegionIndexes&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-regionfetchkey">**regionFetchKey**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
@@ -294,7 +294,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-clearsolo">**clearSolo**</span><br><code>() =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-hidefeature">**hideFeature**</span><br><code>(featureId: string) =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-showallhidden">**showAllHidden**</span><br><code>() =&gt; void</code> |  | LinearCanvasBaseDisplay |
-| <span id="action-sethover">**setHover**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string &#124; null, subfeatureId: string &#124; null, tooltip…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string &#124; null, subfeatureId: string &#124; null, tooltip: string[] &#124; undefined) =&gt; void</code></pre></dialog></span> |  | LinearCanvasBaseDisplay |
+| <span id="action-sethover">**setHover**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string &#124; undefined, subfeatureId: string &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string &#124; undefined, subfeatureId: string &#124; undefined, tooltip: string[] &#124; undefined) =&gt; void</code></pre></dialog></span> |  | LinearCanvasBaseDisplay |
 | <span id="action-clearhover">**clearHover**</span><br><code>() =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-setfeaturehighlights">**setFeatureHighlights**</span><br><code>(highlights: FeatureHighlight[]) =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-addfeaturehighlightforitem">**addFeatureHighlightForItem**</span><br><code>(target: HighlightTarget, refName: string) =&gt; void</code> |  | LinearCanvasBaseDisplay |

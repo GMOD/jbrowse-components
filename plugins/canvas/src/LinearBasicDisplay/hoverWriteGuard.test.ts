@@ -18,33 +18,33 @@ function setup() {
 describe('setHover write guard', () => {
   it('keeps the tooltip array identity when the rows are unchanged', () => {
     const display = setup()
-    display.setHover('f1', null, ['gene1', 'ctgA:1..100'])
+    display.setHover('f1', undefined, ['gene1', 'ctgA:1..100'])
     const first = display.mouseoverExtraInformation
-    display.setHover('f1', null, ['gene1', 'ctgA:1..100'])
+    display.setHover('f1', undefined, ['gene1', 'ctgA:1..100'])
     expect(display.mouseoverExtraInformation).toBe(first)
   })
 
   it('writes when a row changes', () => {
     const display = setup()
-    display.setHover('f1', null, ['gene1', 'ctgA:1..100'])
-    display.setHover('f1', null, ['gene1', 'ctgA:1..200'])
+    display.setHover('f1', undefined, ['gene1', 'ctgA:1..100'])
+    display.setHover('f1', undefined, ['gene1', 'ctgA:1..200'])
     expect(display.mouseoverExtraInformation).toEqual(['gene1', 'ctgA:1..200'])
   })
 
   it('writes when the row count changes', () => {
     const display = setup()
-    display.setHover('f1', null, ['gene1'])
-    display.setHover('f1', null, ['gene1', 'exon 2/5'])
+    display.setHover('f1', undefined, ['gene1'])
+    display.setHover('f1', undefined, ['gene1', 'exon 2/5'])
     expect(display.mouseoverExtraInformation).toEqual(['gene1', 'exon 2/5'])
   })
 
   it('writes when the tooltip appears or goes away', () => {
     const display = setup()
-    display.setHover('f1', null, undefined)
+    display.setHover('f1', undefined, undefined)
     expect(display.mouseoverExtraInformation).toBeUndefined()
-    display.setHover('f1', null, ['gene1'])
+    display.setHover('f1', undefined, ['gene1'])
     expect(display.mouseoverExtraInformation).toEqual(['gene1'])
-    display.setHover(null, null, undefined)
+    display.setHover(undefined, undefined, undefined)
     expect(display.mouseoverExtraInformation).toBeUndefined()
   })
 
