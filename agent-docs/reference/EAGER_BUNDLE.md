@@ -765,3 +765,40 @@ bytes on either product and adds a round trip inside a path that is already
 deferred. The factory is still the seam if a reason to use it ever appears — the
 signature is already `(canvas) => Promise<Backend>`, so it takes an `await
 import()` with no other change.
+
+## The RPC worker's React stack, and two ways of removing it that lose
+
+Measured with `pnpm measure-web-bundle --worker` (2026-09-02), which splits the
+worker's fetches from the page's by `Sec-Fetch-Dest`. On the four-track volvox
+page the worker fetched 32 chunks, 21 of them ones the page never asks for, 272
+KB gzipped, including its own copy of react-dom (55 KB) and part of Material
+UI. None of it came from the plugin install graph: `PluginLoader` published the
+runtime plugin ABI (`ReExports/modules.ts`, which names `react-dom/client`,
+`@mui/material` and the whole `@jbrowse/core/ui` namespace) in every realm
+whether or not a runtime plugin existed. The callers now build no loader for an
+empty definition list; a config naming no runtime plugin pays 555 KB for the
+empty page and 1020 KB for four tracks instead of 584 and 1103.
+
+Two things that looked like the fix and measured worse, both reverted:
+
+- **Cutting value edges from the worker graph into `.tsx`** (repointing ten
+  eagerly evaluated modules from the `core/ui` barrel to leaf subpaths). Empty
+  page 584 → 611 KB and 23 → 39 chunks. Under webpack's default chunking a
+  module ejected from the `corePlugins` concatenation becomes its own chunk that
+  the main thread still downloads, and more, smaller chunks compress worse.
+- **The upper bound**: every `@mui/*` and `@emotion/*` edge stubbed out of the
+  worker's static graph (40 files). Four tracks 1177 KB, empty page 641 KB —
+  worse than baseline, because the chunks that hold the UI the worker "carries"
+  are downloaded by the page anyway, so the worker's marginal cost was never the
+  UI in them.
+
+What remains when a config does name a UMD plugin: the worker still fetches the
+full ABI, react-dom/client included, about 127 KB it cannot use. The lever is a
+worker-appropriate re-export set in `PluginLoader.publishReExports`, and the
+hazard is that a plugin bundle evaluated in the worker may read a UI entry at
+module scope, so a missing key is a load-time throw rather than a saving.
+
+`scripts/eager-import-closure.ts` overstates a worker or app closure several
+times over: it walks a barrel whole, so one eager import of a constant from
+`@jbrowse/core/ui` counts all of its components. The fetched set from
+`measure-web-bundle` is the number that costs bytes.
