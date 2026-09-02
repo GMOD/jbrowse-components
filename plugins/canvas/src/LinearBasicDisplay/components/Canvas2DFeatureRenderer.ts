@@ -124,6 +124,18 @@ function centeredRowVisible(
   return rowVisible(state, centerY - heightPx * 0.5, heightPx)
 }
 
+// The lines' and arrows' half of the rects' same-colour-run cache below: one
+// CSS string per packed colour per region, and a style assignment only when the
+// run changes, since a gene track's intron lines arrive thousands to a frame.
+function cssRgbaStyle(styles: Map<number, string>, c: number) {
+  let style = styles.get(c)
+  if (style === undefined) {
+    style = abgrToCssRgba(c)
+    styles.set(c, style)
+  }
+  return style
+}
+
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
@@ -132,6 +144,8 @@ function drawLines(
   state: RenderState,
 ) {
   const { scrollY, canvasWidth } = state
+  const styles = new Map<number, string>()
+  let lastStyle: string | undefined
   for (let i = 0; i < region.lineYs.length; i++) {
     if (!centeredRowVisible(state, region.lineYs[i]!, region.lineHeights[i]!)) {
       continue
@@ -145,7 +159,11 @@ function drawLines(
       region.lineHeights[i]!,
       scrollY,
     )
-    ctx.strokeStyle = abgrToCssRgba(region.lineColors[i]!)
+    const style = cssRgbaStyle(styles, region.lineColors[i]!)
+    if (style !== lastStyle) {
+      ctx.strokeStyle = style
+      lastStyle = style
+    }
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(x1, y)
@@ -311,6 +329,8 @@ function drawArrows(
   state: RenderState,
 ) {
   const { scrollY } = state
+  const styles = new Map<number, string>()
+  let lastStyle: string | undefined
   for (let i = 0; i < region.arrowYs.length; i++) {
     if (
       !centeredRowVisible(state, region.arrowYs[i]!, region.arrowHeights[i]!)
@@ -339,7 +359,11 @@ function drawArrows(
       scrollY,
     )
     const dir = block.reversed ? -rawDir : rawDir
-    ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
+    const style = cssRgbaStyle(styles, region.arrowColors[i]!)
+    if (style !== lastStyle) {
+      ctx.fillStyle = style
+      lastStyle = style
+    }
 
     const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
     ctx.fillRect(

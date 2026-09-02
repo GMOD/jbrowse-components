@@ -319,13 +319,11 @@ const useStyles = makeStyles()(() => {
       height: '100%',
       pointerEvents: 'none',
     },
-    // Color is applied inline per-label from the worker-baked label.color (the
-    // single source of truth the SVG export also consumes), so the DOM overlay
-    // and the export can't drift. It's safe to read here rather than re-deriving
-    // from the live theme because the active theme is an RPC cache key
-    // (rpcProps.theme): switching themes clears and refetches, so a shown label's
-    // baked color always matches the current theme. fontSize is likewise inline
-    // from the model's resolved label size (it shrinks in compact display modes).
+    // Color is applied inline per-label from the palette-derived `labelColors`
+    // (see labelColors.ts), resolved on the main thread so a theme toggle is a
+    // re-render and not a refetch; the SVG export resolves the same table off
+    // the export theme. fontSize is likewise inline from the model's resolved
+    // label size (it shrinks in compact display modes).
     floatingLabel: {
       position: 'absolute',
       lineHeight: 1,
@@ -339,8 +337,8 @@ const useStyles = makeStyles()(() => {
       pointerEvents: 'none',
     },
     // The isoform badge ("+3 more"): an aside on the gene's name, not a second
-    // label, so it is italic and — via the worker-baked label.color, like every
-    // other label here — a translucent grey, at MORE_ISOFORMS_FONT_SCALE of the
+    // label, so it is italic and — via `labelColors.more`, like every other
+    // label here — a translucent grey, at MORE_ISOFORMS_FONT_SCALE of the
     // name's size. What keeps it from receding out of existence is the
     // underline and the pointer: it is the affordance, not a readout.
     floatingLabelMore: {
@@ -349,8 +347,8 @@ const useStyles = makeStyles()(() => {
       fontStyle: 'italic',
       textDecoration: 'underline',
     },
-    // Light backing rect for overlay labels; the text color still comes from the
-    // baked label.color (worker sets it to a dark tone that reads on this rect).
+    // Light backing rect for overlay labels; `labelColors.subfeatureOverlay`
+    // keeps the text a dark tone that reads on it whatever the page theme.
     floatingLabelOverlay: {
       background: LABEL_OVERLAY_BACKGROUND,
     },

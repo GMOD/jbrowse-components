@@ -55,13 +55,14 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   const colorItems = display.colorMenuItems()
   expect(colorItems.map(item => item.label)).toEqual(['Color by...'])
   expect(colorItems[0]!.subMenu?.map(item => item.label)).toEqual([
+    'Default',
     'Solid color...',
     'Consequence impact',
     'SV type',
     'Attribute...',
   ])
 
-  expect(display.colorByMode).toBe('solid')
+  expect(display.colorByMode).toBe('default')
   display.setFeatureColor('red')
   expect(display.featureColor).toBe('red')
   expect(display.colorByMode).toBe('solid')

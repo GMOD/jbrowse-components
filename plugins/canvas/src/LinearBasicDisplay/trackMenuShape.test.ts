@@ -72,6 +72,7 @@ describe('canvas track menu shape', () => {
         'onClick' in i ? staysOpenOnClick(i) : undefined,
       ]),
     ).toEqual([
+      ['Default', true],
       ['Solid color...', false],
       ['Strand', true],
       ['Attribute...', false],
@@ -339,5 +340,29 @@ describe('the built-in strand color expression', () => {
     ) as { onClick: () => void }
     strand.onClick()
     expect(display.colorByMode).toBe('strand')
+  })
+})
+
+// An unset slot paints a feature's own itemRgb, which no solid swatch can stand
+// in for, so it is its own rung rather than reading as "Solid color" — and the
+// rung is the way back from Strand without opening the dialog for its Reset.
+describe('the Default color rung', () => {
+  it('is what an unset color slot reads as', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    expect(display.colorByMode).toBe('default')
+  })
+
+  it('unsets the slot the Strand item wrote', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor(STRAND_COLOR_JEXL)
+    const item = find(
+      subMenuOf(display.trackMenuItems(), 'Color by...'),
+      'Default',
+    ) as { onClick: () => void }
+    item.onClick()
+    expect(display.colorByMode).toBe('default')
+    expect(display.conf.color).toBeUndefined()
   })
 })

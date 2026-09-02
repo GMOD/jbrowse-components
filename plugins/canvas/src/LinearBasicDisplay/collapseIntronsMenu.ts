@@ -24,13 +24,14 @@ const CollapseIntronsDialog = lazy(
 )
 
 // Loose type test, matched case-insensitively like isCDS/isExon: real GFFs carry
-// 'mRNA', 'lnc_RNA', 'protein_coding_gene', 'transcript'. Gates the menu item on
-// the clicked FEATURE (see the display's contextMenuItems) and the transcript
-// scope on the clicked SUBFEATURE, so a mature-protein or repeat subpart hit
-// doesn't offer to collapse itself.
+// 'mRNA', 'lnc_RNA', 'protein_coding_gene', 'transcript'. Anchored at the end
+// for gene and RNA so 'intergenic_region' is not offered a collapse. Gates the
+// menu item on the clicked FEATURE (see the display's contextMenuItems) and the
+// transcript scope on the clicked SUBFEATURE, so a mature-protein or repeat
+// subpart hit doesn't offer to collapse itself.
+const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript/
 export function isGeneLikeType(type: string | undefined) {
-  const t = (type ?? '').toLowerCase()
-  return t.includes('gene') || t.includes('rna') || t.includes('transcript')
+  return type !== undefined && GENE_LIKE_TYPE.test(type.toLowerCase())
 }
 
 // Structural rather than `Instance<typeof stateModelFactory>`: the factory calls

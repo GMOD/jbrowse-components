@@ -275,6 +275,21 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, 'showLabels')).toBe('description')
     })
 
+    it.each([
+      [{ showLabels: 'none', showDescriptions: false }, 'none'],
+      [{ showLabels: 'name', showDescriptions: true }, 'name'],
+      [{ showDescriptions: false }, 'auto'],
+    ])(
+      'keeps a unified-enum showLabels beside a stale showDescriptions %j',
+      (legacy, expected) => {
+        const config = schema.create(
+          { displayId: 'test', type: 'LinearBasicDisplay', ...legacy },
+          { pluginManager: pm },
+        )
+        expect(readConfObject(config, 'showLabels')).toBe(expected)
+      },
+    )
+
     it('maps legacy geneGlyphMode "longest" lifted from renderer to "longestCoding"', () => {
       const config = schema.create(
         {

@@ -3,7 +3,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading.
 // This module is itself only reached through LinearVariantDisplay's own loader.
-import linearCanvasBaseDisplayStateModelFactory from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
+import linearCanvasBaseDisplayStateModelFactory, {
+  defaultColorItem,
+} from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
@@ -150,6 +152,7 @@ export default function stateModelFactory(
       // read through a receiver, a method is not.
       colorBySubMenuItems() {
         return [
+          defaultColorItem(self),
           {
             label: 'Solid color...',
             type: 'radio' as const,

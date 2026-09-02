@@ -176,6 +176,9 @@ export interface GeneGlyphNotice {
 }
 
 export type { Region } from '@jbrowse/core/util'
+// Off this subpath rather than the barrel, for the subclass that composes its
+// own "Color by..." presets around it without a value edge into the eager entry.
+export { defaultColorItem } from './trackMenus.ts'
 
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
@@ -596,17 +599,20 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Which "Color by..." choice is active, so the track menu can show a
-        // radio checkmark. 'strand' is the exact built-in jexl; any other jexl
-        // value is a per-attribute expression; anything else (a solid color)
-        // reads as the default solid mode. Reads the raw slot value (not
-        // getConf) — same jexl-without-a-feature hazard as featureColor.
-        get colorByMode(): 'strand' | 'attribute' | 'solid' {
+        // radio checkmark. An unset slot is 'default' (a feature's own itemRgb,
+        // else the stock fill), which no solid swatch can stand in for; 'strand'
+        // is the exact built-in jexl; any other jexl value is a per-attribute
+        // expression; anything else is a solid color. Reads the raw slot value
+        // (not getConf) — same jexl-without-a-feature hazard as featureColor.
+        get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
           const raw = self.conf.color
-          return raw === STRAND_COLOR_JEXL
-            ? 'strand'
-            : isJexl(raw)
-              ? 'attribute'
-              : 'solid'
+          return raw === undefined
+            ? 'default'
+            : raw === STRAND_COLOR_JEXL
+              ? 'strand'
+              : isJexl(raw)
+                ? 'attribute'
+                : 'solid'
         },
 
         /**

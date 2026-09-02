@@ -100,7 +100,7 @@ interface ColorMenuSelf {
   colorByMode: string
   openSetColorDialog: () => void
   openColorByAttributeDialog: () => void
-  setFeatureColor: (color: string) => void
+  setFeatureColor: (color?: string) => void
 }
 
 // `HeightModeMenuModel<LinearBasicDisplayConfig>`, not the bare form: this menu
@@ -199,10 +199,25 @@ export function inertLabelHint<T extends string>(
         : fitHint
 }
 
-// The "Color by..." radio choices (solid/strand/attribute), shared so subclasses
-// can reuse them while assembling their own color menu.
+// The way back to an unset `color` slot from any of the choices below, where a
+// BED track's own itemRgb paints again. Shared with the variants menu, which
+// composes its own presets around it.
+export function defaultColorItem(self: ColorMenuSelf): MenuItem {
+  return {
+    label: 'Default',
+    type: 'radio' as const,
+    checked: self.colorByMode === 'default',
+    onClick: () => {
+      self.setFeatureColor(undefined)
+    },
+  }
+}
+
+// The "Color by..." radio choices (default/solid/strand/attribute), shared so
+// subclasses can reuse them while assembling their own color menu.
 export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   return [
+    defaultColorItem(self),
     {
       label: 'Solid color...',
       type: 'radio' as const,

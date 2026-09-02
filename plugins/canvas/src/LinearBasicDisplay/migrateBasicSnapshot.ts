@@ -81,20 +81,22 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   // showLabels absorbed the retired showDescriptions boolean, so a config
   // carrying either legacy shape — the original boolean, or the 'auto'/'on'/
   // 'off' enum alongside showDescriptions — folds onto the unified enum here.
-  // Only the legacy values need folding: the new enum's own values pass
-  // through, so a re-saved config isn't rewritten.
-  if (
-    result.showDescriptions !== undefined ||
+  // A unified-enum value already present wins over a stale showDescriptions
+  // riding beside it, so a re-saved config isn't rewritten.
+  const legacyShowLabels =
     typeof result.showLabels === 'boolean' ||
     result.showLabels === 'on' ||
     result.showLabels === 'off'
+  if (
+    legacyShowLabels ||
+    (result.showLabels === undefined && result.showDescriptions !== undefined)
   ) {
     result.showLabels = legacyShowLabelsToMode(
       result.showLabels,
       result.showDescriptions !== false,
     )
-    delete result.showDescriptions
   }
+  delete result.showDescriptions
   if (result.geneGlyphMode !== undefined) {
     result.geneGlyphMode = legacyGeneGlyphMode(result.geneGlyphMode)
   }

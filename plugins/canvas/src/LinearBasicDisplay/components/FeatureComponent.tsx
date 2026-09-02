@@ -394,7 +394,11 @@ const FeatureBody = observer(function FeatureBody({
 
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem) => {
-      model.setHover(item.featureId, null, [item.tooltip])
+      model.setHover(
+        item.featureId,
+        null,
+        item.tooltip ? [item.tooltip] : undefined,
+      )
     },
     [model],
   )

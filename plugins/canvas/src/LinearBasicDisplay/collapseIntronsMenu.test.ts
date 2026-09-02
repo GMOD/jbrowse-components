@@ -6,6 +6,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { isGeneLikeType } from './collapseIntronsMenu.ts'
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -210,5 +211,33 @@ describe('collapse introns context menu', () => {
     rightClick(display, gene, matureProtein)
 
     expect(subMenuLabels(collapseItem(display))).toBeUndefined()
+  })
+})
+
+describe('isGeneLikeType', () => {
+  it.each([
+    'gene',
+    'protein_coding_gene',
+    'pseudogene',
+    'ncRNA_gene',
+    'V_gene_segment',
+    'mRNA',
+    'lnc_RNA',
+    'tRNA',
+    'transcript',
+    'pseudogenic_transcript',
+  ])('offers a collapse on %s', type => {
+    expect(isGeneLikeType(type)).toBe(true)
+  })
+
+  it.each([
+    'intergenic_region',
+    'exon',
+    'CDS',
+    'mature_protein_region_of_CDS',
+    'repeat_region',
+    undefined,
+  ])('withholds it from %s', type => {
+    expect(isGeneLikeType(type)).toBe(false)
   })
 })
