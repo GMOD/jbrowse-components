@@ -31,13 +31,13 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 }
 ```
 
-`assemblies` and `tracks` are the two that carry data, and an entry in either is
-a name and a file: `{ "name": "hg38", "uri": "hg38.fa.gz" }` for an assembly
-(see [assemblies](/docs/config_guides/assemblies)), and for a track
-`{ "trackId": "genes", "uri": "genes.gff.gz", "assemblyNames": ["hg38"] }`,
-whose `assemblyNames` a config with one assembly supplies (see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track)). JBrowse
-reads the adapter, and a track's type, off the extension.
+`assemblies` and `tracks` carry the data, and an entry in either is a name and a
+file: `{ "name": "hg38", "uri": "hg38.fa.gz" }` for an
+[assembly](/docs/config_guides/assemblies), and
+`{ "trackId": "genes", "uri": "genes.gff.gz", "assemblyNames": ["hg38"] }` for a
+track. A config with one assembly supplies `assemblyNames` itself (see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track)). The
+adapter and track type come from the extension.
 
 Every other top-level field is optional:
 
@@ -51,25 +51,18 @@ Every other top-level field is optional:
 | `preConfiguredSessions`       | [](/docs/config_guides/default_session) |
 | `configuration`               | [](/docs/config/jbrowseconfiguration)   |
 
-These hand-written guides explain the common cases. Every option for a specific
-track or adapter type is in the auto-generated
-[config reference](/docs/config_guide), one page per type generated from source,
-e.g. [](/docs/config/bamadapter) or [](/docs/config/linearwiggledisplay).
+These guides cover the common cases. Every option for a track or adapter type is
+in the generated [config reference](/docs/config_guide), one page per type, e.g.
+[](/docs/config/bamadapter) or [](/docs/config/linearwiggledisplay). For many
+tracks, [](/docs/config_guides/deploying) generates `config.json` from a script.
 
-For repetitive data, [](/docs/config_guides/deploying) covers generating
-`config.json` from a script, end to end.
-
-On jbrowse-desktop, saved sessions use this same config format, stored in a file
-with a `.jbrowse` extension.
+On jbrowse-desktop, saved `.jbrowse` sessions use this same format.
 
 ## Checking a config with jbrowse validate
 
 **A config key JBrowse does not recognize is ignored rather than reported.** The
-track still appears, so the only symptom of a misspelled setting, or one written
-in a format from an older JBrowse version, is that your color, height or filter
-does nothing.
-
-`jbrowse validate` checks for exactly this:
+track still appears, so the only symptom of a misspelled setting is that your
+color, height or filter does nothing. `jbrowse validate` catches this:
 
 ```bash
 jbrowse validate myconfig.json
@@ -83,26 +76,23 @@ error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in
 3 error(s), 0 warning(s) in myconfig.json
 ```
 
-It checks against config-slot definitions read out of JBrowse itself, so it
-knows every track, display and adapter type and the slots each accepts, and it
-never opens your data files, so it runs before anything is uploaded. Two levels:
+It checks against slot definitions read out of JBrowse itself and never opens
+your data files. Two levels:
 
 - **error** — JBrowse accepts it and silently does the wrong thing: an unknown
   slot, a key a `defaultSession` view or display does not declare, a track
-  pointing at an assembly the config never defines, a `defaultSession` naming a
-  `trackId` that does not exist, a duplicate `trackId`.
-- **warning** — JBrowse will tell you itself on load, or handles it: a type name
-  it does not know (which is expected if a plugin registers it), or a legacy key
-  a migration rewrites.
+  naming an undefined assembly, a `defaultSession` naming a missing `trackId`, a
+  duplicate `trackId`
+- **warning** — JBrowse reports or handles it itself on load: a type name it
+  does not know (expected when a plugin registers it), or a legacy key a
+  migration rewrites
 
-Add `--json` for machine-readable output; it exits non-zero when there are
-errors, so it can gate a deploy. See [](/docs/agents) if an AI assistant is
-writing the config.
+`--json` gives machine-readable output, and a non-zero exit on errors can gate a
+deploy. See [](/docs/agents) if an AI assistant is writing the config.
 
-Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
-object at runtime (see
-[embedding a linear genome view](/docs/tutorials/embed_linear_genome_view)). To
-fetch one on the fly:
+Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take the config
+as an object at runtime (see
+[embedding a linear genome view](/docs/tutorials/embed_linear_genome_view)):
 
 ```typescript
 const url = 'config.json'

@@ -80,27 +80,24 @@ The same config, with the track written short:
 }
 ```
 
-The track type and adapter come from the file's extension, the same guess the
-"Add track" dialog makes (see [file types](/docs/config_guides/file_types) for
-which extension gives which adapter), the index location is derived as the
-adapter shorthand derives it, and `name` defaults to the file name. With one
+The track type and adapter come from the extension, the same guess the "Add
+track" dialog makes (see [file types](/docs/config_guides/file_types)). The
+index location is derived, and `name` defaults to the file name. With one
 assembly in the config the track is on it; with several, write `assemblyNames`.
-Any other key sits beside `uri` and wins over the guess — `name`, `category`,
-`displayDefaults`, `index` for an index that is not at the derived location, or
-`type` to pick a track type the extension would not. `jbrowse validate` accepts
-the form.
+Any other key beside `uri` wins over the guess: `name`, `category`,
+`displayDefaults`, `index` for an index elsewhere, or `type` to pick a track
+type the extension would not.
 
-The same entry works in `createViewState`'s `tracks`, where the component stamps
-on the assembly it was given, and in a session's `sessionTracks`, where nothing
-implies one: a session track written without `assemblyNames` gets an empty list
-and belongs to no assembly, so name it there.
+The same entry works in `createViewState`'s `tracks`, where the component
+supplies the assembly. In a session's `sessionTracks` nothing implies one, so
+write `assemblyNames` there.
 
 ## Configuring displays
 
-Appearance settings (`color`, `height`, `labels`, jexl color callbacks, and so
-on) belong to a track's **displays** (the different ways a track can be drawn).
-There are two ways to set them: the `displayDefaults` object for the common
-case, or the full `displays` array when you need precise control.
+Appearance settings (`color`, `height`, `labels`, jexl color callbacks) belong
+to a track's **displays**, the different ways a track can be drawn. Set them in
+a `displayDefaults` object for the common case, or the full `displays` array for
+precise control.
 
 ### Shorthand object
 
@@ -121,11 +118,10 @@ the display that defines it:
 }
 ```
 
-A setting goes to every display whose config schema has a slot by that name.
-Displays drawn differently usually name their slots differently, so each setting
-lands on the display it belongs to: a `VariantTrack` colors its linear display
-with `color` and its circular (chord) display with `strokeColor`, both in the
-same object.
+A setting goes to every display with a slot by that name. Displays drawn
+differently usually name their slots differently, so each setting lands where it
+belongs: a `VariantTrack` colors its linear display with `color` and its chord
+display with `strokeColor`, both in the same object.
 
 ```json addtrack
 {
@@ -147,11 +143,10 @@ display defines is ignored, with a console warning so typos show up.
 
 ### Full array
 
-For precise control (giving two displays different values for the same setting,
-choosing which display is the default, or setting an explicit `displayId`), pass
-`displays` as an array. Each entry names a display `type`; `displayId` is
-optional and defaults to `{trackId}-{displayType}`. The two forms combine, and
-an explicit entry wins over `displayDefaults` for any setting it names itself.
+To give two displays different values for one setting, choose the default
+display, or set an explicit `displayId`, pass `displays` as an array. Each entry
+names a display `type`; `displayId` defaults to `{trackId}-{displayType}`. The
+two forms combine, and an explicit entry wins over `displayDefaults`.
 
 ```json addtrack
 {
@@ -200,44 +195,34 @@ See the [config guides](/docs/config_guide) for per-track display options.
 
 ## Copying a track's config out of the app
 
-To get the raw JSON of a track you configured in the app:
+From the track menu on the track label:
 
-- **Copy track**: in the track menu (the dropdown on the track label), choose
-  "Copy track" to copy the track's full config JSON. "Copy and open track" does
-  the same and immediately opens the copy in the current view.
-- **Settings**: also in the track menu, "Settings" opens the configuration
-  editor for that track, where you can review and copy every slot's current
-  value. Any user can do this: a non-admin's edits become a per-session override
-  rather than changes to the shared `config.json`, and "Reset track settings"
-  clears it.
+- **Copy track** copies the track's full config JSON. **Copy and open track**
+  also opens the copy in the current view
+- **Settings** opens the configuration editor, where every slot's current value
+  can be reviewed and copied. A non-admin's edits become a per-session override,
+  and "Reset track settings" clears it
 
 Either way the result pastes into `config.json` or into a
 [generation script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
 
 ## The "Zoom in to see more features" limits
 
-Two limits guard the region, and either one shows the message: how many bytes
-the fetch would download, and how many features would land on screen.
+Two limits guard the region, and either shows the message: the bytes the fetch
+would download, and the features that would land on screen. The banner reads
+"Zoom in to see features or force load (may be slow)", usually with the
+estimated size, and **Force load** downloads the region anyway.
 
-The message itself is "Zoom in to see features or force load (may be slow)",
-usually with the estimated size that tripped it, and the banner's **Force load**
-button downloads the region anyway.
-
-On alignments and MAF tracks the message can appear at any zoom, and there it
-offers only **Force load**. Those two formats cost bytes per reference base
-times something zooming does not reduce — read depth, and the number of aligned
-species — so a gene-sized window over a deep pileup or a 470-way alignment is
-still tens of megabytes. Other tracks stop being guarded below about 20 kb,
-where a small region is a small download.
+On alignments and MAF tracks the message can appear at any zoom, because their
+cost scales with read depth or the number of aligned species, which zooming does
+not reduce. Other tracks are not guarded below about 20 kb.
 
 ### Raising the feature limit
 
 [`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
-is **features per pixel of track width**, and it defaults to `1`. So the feature
-count a track will draw is roughly the width of your browser window in pixels:
-about 1,500 features on a 1,500px-wide window. Doubling the slot to `2` allows
-about 3,000, and so on. It is a density because the same region drawn in a wider
-window has more room, so the budget grows with the window.
+is **features per pixel of track width**, so the budget grows with the window.
+At the default of `1`, a track draws roughly as many features as the window is
+pixels wide; `2` allows twice that.
 
 ```json addtrack
 {
@@ -250,9 +235,8 @@ window has more room, so the budget grows with the window.
 }
 ```
 
-If you only want the region loaded once, the **Force load** button does that
-without touching the config. To force it without a click (an embedded view, a
-notebook, a screenshot, where nobody can press the button), set
+For a one-off, **Force load** needs no config change. Where nobody can press the
+button (an embedded view, a notebook, a screenshot), set
 [`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display.
 
 ### Raising the byte limit
@@ -282,16 +266,12 @@ adapter:
 
 ## Finding every option for a track or adapter type
 
-The config guides cover common settings. Every slot for every track, display,
-and adapter type is in the auto-generated **config reference**, built from
-source. For example:
+Every slot for every track, display and adapter type is in the generated
+**config reference**, in the docs sidebar. For example:
 
 - [](/docs/config/bamadapter), [](/docs/config/vcftabixadapter),
   [](/docs/config/bigwigadapter)
 - [](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay)
-
-The full set of pages is in the **Config reference** section of the docs
-sidebar.
 
 ## See also
 
