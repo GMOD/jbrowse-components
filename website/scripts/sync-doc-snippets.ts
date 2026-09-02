@@ -124,11 +124,18 @@ const stale: string[] = []
 // deliberately: its examples are prose and inline code for exactly this reason,
 // which is the pattern to copy rather than this raise.
 //
+// 24 -> 49 on 2026-09-01: `agents_recipes.md` (16) and `agents_live_model.md`
+// (9) landed. Every recipe fence is a `run_javascript` body — the thing a reader
+// pastes into MCP — and the live-model page's are the reads and writes an agent
+// makes against a session it already holds. Neither has a source file to point
+// at: the bodies are the API surface, not code we ship, and the tests that cover
+// the same calls assert around them rather than running them as written.
+//
 // Note main had already come DOWN to 19 against this 21 when the raise landed,
 // so the honest figure for what these pages cost is +5, not +3. Lower it again
 // the moment a tested `jb` example fixture exists to point at — that is the
 // conversion this debt is waiting on, and it would buy back most of the six.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '24')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '49')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {

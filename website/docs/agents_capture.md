@@ -119,15 +119,15 @@ await page.waitForFunction(
   (wantAssembly: string | null, wantTracks: string[]) => {
     // The census the app publishes on its ready marker (see APP_CENSUS):
     // on a build that has it, the whole gate is a read of one element.
-    const marker = document.querySelector('[data-app-tracks]')
+    const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
     if (marker) {
       try {
-        const openViews = Number(marker.getAttribute('data-app-views'))
+        const openViews = Number(marker.dataset.appViews)
         const assemblies = JSON.parse(
-          marker.getAttribute('data-app-assemblies') ?? '[]',
+          marker.dataset.appAssemblies ?? '[]',
         ) as string[]
         const openTracks = JSON.parse(
-          marker.getAttribute('data-app-tracks') ?? '[]',
+          marker.dataset.appTracks ?? '[]',
         ) as string[]
         return (
           openViews > 0 &&
