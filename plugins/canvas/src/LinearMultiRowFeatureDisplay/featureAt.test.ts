@@ -124,16 +124,51 @@ describe('featureAt', () => {
   // tooltip, no click-to-details and no context menu — the same degenerate span
   // the details narrowing had to widen.
   it('resolves a zero-length feature at the base it is painted from', () => {
-    const { display } = twoRowDisplay(
+    const { display, view } = twoRowDisplay(
       region([
         { row: 'a', start: 400, end: 400, id: 'insertion' },
         { row: 'b', start: 0, end: 1000 },
       ]),
     )
+    expect(view.bpPerPx).toBe(1)
     expect(display.featureAt(400, 10)?.id).toBe('insertion')
-    // one base wide, not a widened claim on the bases beside it
+    // Nothing to the LEFT of the start edge, which is where both painters widen
+    // away from. To the right the claim is deliberately the painted one and no
+    // wider: the block is MULTI_ROW_MIN_CELL_PX across, 2px at this 1bp/px, and
+    // the pixel it covers has to hit or the mark on screen has no tooltip. This
+    // assertion read `undefined` at 401 while that pixel was painted.
     expect(display.featureAt(399, 10)).toBeUndefined()
-    expect(display.featureAt(401, 10)).toBeUndefined()
+    expect(display.featureAt(401, 10)?.id).toBe('insertion')
+    expect(display.featureAt(402, 10)).toBeUndefined()
+  })
+
+  // A repeat element on an rmsk painting at chromosome zoom: hundreds of bp
+  // inside one pixel, drawn as the shader's minimum cell and answering for
+  // nothing the cursor could reach.
+  it('resolves a feature narrower than the cell it is painted as', () => {
+    const { display, view } = createTestEnvironment().createDisplay([
+      { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
+    ])
+    view.zoomTo(10_000)
+    expect(view.bpPerPx).toBe(10_000)
+    // the 10Mb region is centred in the 800px view at this zoom, so px 500 is
+    // over it and px 300 is off its left edge
+    const start = view.pxToBp(500).coord0
+
+    display.setRpcData(
+      0,
+      region([
+        { row: 'a', start, end: start + 300, id: 'alu' },
+        { row: 'b', start: 0, end: 10_000_000 },
+      ]),
+    )
+
+    // 300bp is 0.03px, and the painted block is the 2px floor from px 500
+    expect(display.featureAt(500, 10)?.id).toBe('alu')
+    expect(display.featureAt(501, 10)?.id).toBe('alu')
+    // and no wider than what is painted
+    expect(display.featureAt(502, 10)).toBeUndefined()
+    expect(display.featureAt(499, 10)).toBeUndefined()
   })
 
   it('is undefined past the last row rather than clamping to it', () => {

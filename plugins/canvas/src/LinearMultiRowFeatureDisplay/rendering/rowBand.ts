@@ -4,6 +4,8 @@ import {
 } from '@jbrowse/render-core/shaders/rowRect'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
+import { featureSpanEndBp } from '../../shared/featureSpanBp.ts'
+
 // Narrowest a cell is painted, the horizontal twin of the shader's
 // MIN_DRAWN_ROW_PX row floor and the same constant this display writes into
 // `rowRectVertex`'s `minCellPx` uniform. Re-exported here so the Canvas2D
@@ -41,4 +43,29 @@ export function rowBand(rowHeight: number, rowProportion: number) {
     height: drawnRowHeightPx(rowHeight, rowProportion),
     offset: rowBandOffsetPx(rowHeight, rowProportion),
   }
+}
+
+/**
+ * Whether a genomic base falls on a feature's PAINTED block: its own span, or
+ * the `MULTI_ROW_MIN_CELL_PX` both painters widen a narrower one to, whichever
+ * reaches further.
+ *
+ * The bp twin of the px floor above, and the hit test's half of it. Both
+ * painters widen from the START edge — `spanLeft` on Canvas2D, the shader's
+ * `extendToMinWidthX` — so the block runs forward from `start` in bp however
+ * the region is oriented, and this is the same interval on both. Without it a
+ * 300 bp repeat at 10 kb/px paints two pixels and answers for neither: the
+ * feature is visible, the tooltip and the click-to-details are not.
+ */
+export function paintedSpanContainsBp(
+  start: number,
+  end: number,
+  bp: number,
+  bpPerPx: number,
+) {
+  const paintedEnd = Math.max(
+    featureSpanEndBp(start, end),
+    start + MULTI_ROW_MIN_CELL_PX * bpPerPx,
+  )
+  return start <= bp && bp < paintedEnd
 }

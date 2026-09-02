@@ -56,7 +56,6 @@ import {
   densityHoverAt,
   displayDensityBandLayer,
 } from '../shared/densityBandViews.ts'
-import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -74,6 +73,7 @@ import {
   findTopDrawnFeatureInRow,
 } from './rendering/featurePainting.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
+import { paintedSpanContainsBp } from './rendering/rowBand.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -1050,8 +1050,14 @@ export default function stateModelFactory(
        * #method
        * Hit-test the feature under a display-relative pixel: row from
        * `mouseY / rowHeight`, genomic bp from the view, then the first feature on
-       * that row whose `[start,end)` covers the bp. Returns undefined over the
+       * that row whose PAINTED block covers the bp. Returns undefined over the
        * sidebar, off-row, out-of-bounds, or over a gap.
+       *
+       * Painted rather than genomic, because the painters widen a sub-pixel
+       * block to `MULTI_ROW_MIN_CELL_PX` and a bare `[start,end)` then answers
+       * for none of it — a repeat element at chromosome zoom was drawn, and had
+       * no tooltip, no details and no menu. `paintedSpanContainsBp` is that
+       * rule, and `blockScreenRect` draws the marker on the same one.
        *
        * The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the
        * latter is where labels are *drawn* from, while the resize handle sitting
@@ -1088,10 +1094,15 @@ export default function stateModelFactory(
         // `findTopDrawnFeatureInRow` owns both halves of "which feature is
         // under this pixel" that the painters also own: which features are
         // drawn at all, and which of two overlapping ones is on top. All this
-        // adds is the span, and `featureSpanContainsBp` owns the zero-length
-        // case within that.
+        // adds is the span, and `paintedSpanContainsBp` owns both the
+        // zero-length case and the sub-pixel widening within that.
         const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
-          featureSpanContainsBp(featureStarts[i]!, featureEnds[i]!, bp),
+          paintedSpanContainsBp(
+            featureStarts[i]!,
+            featureEnds[i]!,
+            bp,
+            view.bpPerPx,
+          ),
         )
         return i === -1
           ? undefined
