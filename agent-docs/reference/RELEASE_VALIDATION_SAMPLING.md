@@ -135,6 +135,17 @@ Each rule is here because the absence of it wasted a run.
   in, when a second started; its writes landed under the second's baseline and
   both runs' results were garbage. A sweep mutates shared files, so it owns the
   worktree while it runs.
+- **A fresh worktree has no `node_modules/.cache`, and jest's `--outputFile`
+  does not create it.** The baseline ran green, jest threw `ENOENT` writing the
+  report, and the script read "no usable report" — one wasted run before the
+  cause was found, because the script captured jest's stderr and printed none
+  of it. The script now creates the directory.
+- **Launch the sweep in its own session, not `nohup … &` from an agent
+  shell.** The harness reaps the shell's process group when the call returns,
+  and `nohup` does not leave the group: one run got SIGTERM seconds after
+  "baseline green". The handler restored the tree, so it cost a baseline and
+  nothing else — `subprocess.Popen(…, start_new_session=True)` is what
+  survived.
 
 ## The deleted source files: done, and nearly clean
 

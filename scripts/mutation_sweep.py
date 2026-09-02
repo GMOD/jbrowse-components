@@ -184,6 +184,7 @@ RUN_TIMEOUT_S = 300
 
 def jest(tests):
     """Failures as `suite::title`, `None` if jest never reported, `HUNG` on timeout."""
+    os.makedirs(os.path.dirname(SWEEP_JSON), exist_ok=True)
     if os.path.exists(SWEEP_JSON):
         os.remove(SWEEP_JSON)
     try:
