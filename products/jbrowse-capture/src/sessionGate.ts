@@ -102,13 +102,11 @@ export function readSessionSummaryInPage(): SessionSummary | undefined {
   if (marker) {
     try {
       return {
-        views: Number(marker.getAttribute('data-app-views')) || 0,
+        views: Number(marker.dataset.appViews) || 0,
         assemblies: JSON.parse(
-          marker.getAttribute('data-app-assemblies') ?? '[]',
+          marker.dataset.appAssemblies ?? '[]',
         ) as string[],
-        trackIds: JSON.parse(
-          marker.getAttribute('data-app-tracks') ?? '[]',
-        ) as string[],
+        trackIds: JSON.parse(marker.dataset.appTracks ?? '[]') as string[],
       }
     } catch {
       // a malformed census falls through to the walk rather than failing the read
@@ -174,12 +172,12 @@ export async function waitForSession(
         const marker = document.querySelector('[data-app-tracks]')
         if (marker) {
           try {
-            const openViews = Number(marker.getAttribute('data-app-views'))
+            const openViews = Number(marker.dataset.appViews)
             const assemblies = JSON.parse(
-              marker.getAttribute('data-app-assemblies') ?? '[]',
+              marker.dataset.appAssemblies ?? '[]',
             ) as string[]
             const openTracks = JSON.parse(
-              marker.getAttribute('data-app-tracks') ?? '[]',
+              marker.dataset.appTracks ?? '[]',
             ) as string[]
             return (
               openViews > 0 &&
