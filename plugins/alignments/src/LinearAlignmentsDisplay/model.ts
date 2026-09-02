@@ -140,7 +140,6 @@ import {
 import {
   buildLanes,
   drawnLanesOf,
-  laneExpandable,
   toSectionGroupInputs,
   zipLaneSections,
 } from './lanes.ts'
@@ -232,9 +231,6 @@ const AlignmentsTooltip = lazy(
 )
 
 export { ColorScheme } from './constants.ts'
-// Re-exported for the consumers that reach for a lane through the model — the
-// group-label overlay, and the plugin's public surface.
-export { laneExpandable }
 export type { AlignmentLane }
 
 // Screen-px geometry of one section's coverage band, named by the hover
@@ -449,6 +445,16 @@ export default function stateModelFactory(
           collapsedGroups: observable.set<string>(),
           /**
            * #volatile
+           * Group keys the user hid from the stack, keyed and dropped exactly
+           * like `collapsedGroups` — one lane's reads are then out of every
+           * cross-group derivation too (coverage scale, legend, arcs), which is
+           * the point: a lane hidden is a lane the rest of the stack is read
+           * without. `hiddenGroupKeys` is what applies it, and folds in the lane
+           * a display hides on its own behalf.
+           */
+          hiddenGroups: observable.set<string>(),
+          /**
+           * #volatile
            * Per-group pileup height override in px (in-track grouping). Keyed by
            * group key, volatile like `collapsedGroups` and dropped alongside it
            * on a key-space change; absent keys fall back to the display-wide
@@ -542,13 +548,28 @@ export default function stateModelFactory(
       .views(() => ({
         /**
          * #getter
-         * Group keys that `groupOrder` drops, so a display can hide a lane its
-         * own grouping produces without every consumer of the order learning
-         * about it. Empty here; LGVSyntenyDisplay overrides it to hide the
-         * self-alignment lane of an all-vs-all track.
+         * Lanes the DISPLAY hides on its own behalf, as opposed to the ones the
+         * user hid from a chip (`hiddenGroups`). Empty here; LGVSyntenyDisplay
+         * overrides it to hide the self-alignment lane of an all-vs-all track.
+         * The overridable half, so a display stating one can't drop the other.
+         */
+        get displayHiddenGroupKeys(): ReadonlySet<string> {
+          return NO_HIDDEN_GROUPS
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Group keys that `groupOrder` drops, so a lane leaves the stack — and
+         * every cross-group derivation — without any consumer of the order
+         * learning about it. Both halves: what the user hid, and what the
+         * display hides for itself.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
-          return NO_HIDDEN_GROUPS
+          const own = self.displayHiddenGroupKeys
+          return self.hiddenGroups.size === 0
+            ? own
+            : new Set([...own, ...self.hiddenGroups])
         },
       }))
       .views(self => ({
@@ -3502,13 +3523,15 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Forget every collapse and height override. Each is keyed by group
-           * key, and a group key only names a lane within the grouping that
-           * issued it, so a key-space change invalidates all of them at once.
+           * Forget every collapse, height override and hidden lane. Each is
+           * keyed by group key, and a group key only names a lane within the
+           * grouping that issued it, so a key-space change invalidates all of
+           * them at once.
            */
           dropGroupLaneState() {
             self.collapsedGroups.clear()
             self.groupMaxHeightOverrides.clear()
+            self.hiddenGroups.clear()
           },
 
           /**
@@ -3534,6 +3557,27 @@ export default function stateModelFactory(
             } else {
               self.collapsedGroups.add(key)
             }
+          },
+
+          /**
+           * #action
+           * Drop a lane from the stack. Its reads leave every cross-group
+           * derivation with it — the shared coverage scale, the legend, the arc
+           * pool — which is what hiding is for: reading the rest of the stack
+           * without the lane that dominates it. Reversed by `showAllGroups`,
+           * which the "Show..." menu offers while anything is hidden, since a
+           * hidden lane draws no chip of its own to come back from.
+           */
+          hideGroup(key: string) {
+            self.hiddenGroups.add(key)
+          },
+
+          /**
+           * #action
+           * Put every hidden lane back.
+           */
+          showAllGroups() {
+            self.hiddenGroups.clear()
           },
 
           /**

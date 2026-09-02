@@ -7,6 +7,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   collapseGroupRowsItems,
   groupByRadioMenuItem,
+  hiddenGroupsItems,
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
 
@@ -14,12 +15,13 @@ import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   CollapseGroupRowsModel,
-  GroupByType,
+  GroupBy,
+  HiddenGroupsModel,
 } from '@jbrowse/plugin-alignments'
 
 interface GroupByModel {
-  groupBy?: { type: GroupByType }
-  setGroupBy: (groupBy?: { type: GroupByType }) => void
+  groupBy?: GroupBy
+  setGroupBy: (groupBy?: GroupBy) => void
   // A synteny track carries the inherited `linkedReads` slot, so chain layout is
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
@@ -83,7 +85,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   }
 }
 
-interface ShowModel extends CollapseGroupRowsModel {
+interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showLegendDisplayTypeDefault: Pin
@@ -128,6 +130,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     // Only while grouping is in effect — for an all-vs-all track grouped by
     // mate assembly this is the default, one band per mate genome.
     ...collapseGroupRowsItems(model),
+    ...hiddenGroupsItems(model),
     toggleItem(
       'Show mismatches',
       model.showMismatches,

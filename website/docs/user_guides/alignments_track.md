@@ -121,13 +121,40 @@ than coloring alone. See the
 ## Grouping reads
 
 The track menu's **Group by...** splits the pileup into one coverage+pileup
-section per value of a dimension: strand, split read (an `SA` tag, separating
-reads crossing a breakpoint from those spanning it intact), read group (RG), or
-any tag such as `HP`. Groups share one coverage scale, reads missing the tag
-collect in a trailing "none" section, and each divider can collapse its section
-to just its coverage.
+section per value of a dimension. It is a radio list, one dimension at a time:
+**Strand**, **First-of-pair strand**, **Pair orientation**, **Split read (SA
+tag)** (separating reads crossing a breakpoint from those spanning it intact),
+**Mapping quality**, and **Tag...**, which opens a dialog for the tag name (`HP`
+for haplotype, `RG` for read group, or any other). Groups share one coverage
+scale and reads missing the tag collect in a trailing "none" section. Grouping
+caps at 40 sections; past that the tail merges into one "N merged values"
+section, and the tag dialog refuses a tag that would reach the cap, telling you
+how many distinct values it found in view first.
 
-<Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
+<Figure caption="Group by... → Tag... opens a dialog for the tag name (here the HP haplotype tag), which reports the values it finds in view and can color the reads by the same tag." src="/img/alignments/haplotype_groupby.png" />
+
+Each section is headed by a label chip, and the chip is where the section's
+height is controlled:
+
+- The chevron collapses that section to just its coverage band, and expands it
+  again.
+- **Show all reads** appears when the section's reads were clipped to fit the
+  shared height budget; it gives that one section the track's full row cap, and
+  turns into **Fit to view** to hand it back.
+- Right-click a chip to hide that section. Its reads leave the shared coverage
+  scale, the legend and the arcs with it, which is how to read the rest of the
+  stack without the section that dominates it. **Show... → Show N hidden
+  groups** puts them back.
+- Dragging the boundary below a section resizes that section alone.
+
+**Show... → Collapse groups to one row** draws every section as a single row
+with overlap depth as darker shading, the compact reading for a track with many
+groups; expanding one section from its chip opts that one back out to a true
+stack.
+
+These per-section choices are per view: they are not saved to a session or a
+shared link, and changing the grouping dimension clears them, since a section
+name means nothing under a different dimension.
 
 <Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 

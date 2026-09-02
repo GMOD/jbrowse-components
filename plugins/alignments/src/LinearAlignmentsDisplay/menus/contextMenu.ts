@@ -19,6 +19,7 @@ import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
+import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import {
   buildPairedEndMateFeature,
@@ -207,15 +208,6 @@ function sortAndDetailsSubMenu({
     : detailsItem
 }
 
-// The tags worth a one-click filter, and what to call each in the row. A closed
-// list rather than a walk of the read's tags: these two are the ones a reader
-// narrows a pileup by, and offering every tag on the read (NM, AS, ms, de…)
-// would bury them. A third is one entry here.
-const QUICK_TAG_FILTERS = [
-  { tag: 'HP', noun: 'haplotype' },
-  { tag: 'RG', noun: 'read group' },
-]
-
 // Quick per-read filters (read name / HP / RG) plus a clear item, shown only
 // when a filter is active. Each coexists with the others (setTagFilter merges).
 function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
@@ -230,7 +222,10 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       },
     })
   }
-  for (const { tag, noun } of QUICK_TAG_FILTERS) {
+  // The shared list rather than a walk of the read's tags: these are the two a
+  // reader narrows a pileup by, and offering every tag on the read (NM, AS, ms,
+  // de…) would bury them. Same list the tag dialogs' quick-pick chips draw on.
+  for (const { tag, noun } of COMMON_READ_TAGS) {
     const value = getReadTag(feat, tag)
     if (value !== undefined) {
       sub.push({

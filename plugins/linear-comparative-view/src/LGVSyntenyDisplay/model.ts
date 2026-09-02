@@ -153,12 +153,16 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * rather than filtered out of the fetch, so unchecking the option shows
          * it again without a refetch.
          *
+         * The display's own half of `hiddenGroupKeys`, which unions it with the
+         * lanes the user hid from a chip — overriding that would have dropped
+         * theirs.
+         *
          * The key is the name the adapter resolved out of the track's
          * `assemblyNames`, and the view may spell the same assembly another way,
          * so every declared name that is this assembly goes in beside the
          * view's own.
          */
-        get hiddenGroupKeys(): ReadonlySet<string> {
+        get displayHiddenGroupKeys(): ReadonlySet<string> {
           const assemblyName = self.view.assemblyNames[0]
           if (
             !this.hideSelfAlignments ||

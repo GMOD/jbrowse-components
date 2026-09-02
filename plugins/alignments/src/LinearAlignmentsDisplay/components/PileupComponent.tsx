@@ -24,6 +24,7 @@ import {
   compactAxisLabel,
   leftAxisSpineX,
 } from '../coverageAxisStyle.ts'
+import { groupSectionLabel } from '../groupLabelStyle.ts'
 import { stackedBandGain } from '../sectionLayout.ts'
 import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
@@ -378,7 +379,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
             onDrag={dy => {
               model.resizeGroupHeight(section.groupKey, dy)
             }}
-            title={`Drag to resize "${section.label || 'group'}"`}
+            title={`Drag to resize "${groupSectionLabel(section.label)}"`}
           />
         )
       })}

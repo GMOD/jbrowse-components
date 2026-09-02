@@ -14,8 +14,15 @@ export {
   getMaxHeightMenuItem,
 } from './featureSize.ts'
 export { getFiltersMenuItems } from './filters.ts'
-export { collapseGroupRowsItems, groupByRadioMenuItem } from './groupByMenu.ts'
-export type { CollapseGroupRowsModel } from './groupByMenu.ts'
+export {
+  collapseGroupRowsItems,
+  groupByRadioMenuItem,
+  hiddenGroupsItems,
+} from './groupByMenu.ts'
+export type {
+  CollapseGroupRowsModel,
+  HiddenGroupsModel,
+} from './groupByMenu.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'

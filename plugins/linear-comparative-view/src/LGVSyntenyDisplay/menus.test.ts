@@ -3,10 +3,10 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
-import type { GroupByType } from '@jbrowse/plugin-alignments'
+import type { ParameterlessGroupByType } from '@jbrowse/plugin-alignments'
 
 function makeModel(
-  type?: GroupByType,
+  type?: ParameterlessGroupByType,
   hideSelfAlignments = false,
   isChainMode = false,
 ) {
@@ -140,6 +140,8 @@ function makeShowModel(showCoverage: boolean) {
     canCollapseGroupRows: false,
     collapseGroupRows: false,
     setCollapseGroupRows: jest.fn(),
+    hiddenGroups: new Set<string>(),
+    showAllGroups: jest.fn(),
   }
 }
 

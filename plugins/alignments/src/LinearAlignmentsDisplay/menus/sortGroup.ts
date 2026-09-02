@@ -171,14 +171,14 @@ export function getSortByMenuItem(
 // menu's own list: the registry is a module constant, so a menu open cannot
 // produce a different answer.
 const GROUP_OPTIONS = pickGroupByOptions(
-  ...Object.values(GROUP_BY_DIMENSIONS)
-    .filter(d => !d.hidden && d.type !== 'tag')
-    .map(d => d.type),
+  ...Object.values(GROUP_BY_DIMENSIONS).flatMap(d =>
+    !d.hidden && d.type !== 'tag' ? [d.type] : [],
+  ),
 )
 
 // The dialog's surface plus what the radios themselves need. The same node is
 // passed on to GroupByDialog, so it has to be a superset.
-export type GroupByMenuModel = GroupByDialogModel & {
+export interface GroupByMenuModel extends GroupByDialogModel {
   isChainMode: boolean
 }
 

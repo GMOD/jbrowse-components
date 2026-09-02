@@ -1,9 +1,13 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { isChainGroupableType } from '../../shared/groupFeatures.ts'
 
-import type { GroupByType } from '../../shared/types.ts'
+import type {
+  GroupByType,
+  ParameterlessGroupByType,
+} from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // A directly-selectable dimension: picking it calls `onSelect(type)`.
@@ -12,13 +16,17 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // than a convention: the menu reserves a help column across every row as soon as
 // one row carries one, and a dimension needing a sentence is better renamed.
 export interface GroupByRadioOption {
-  type: GroupByType
+  type: ParameterlessGroupByType
   label: string
 }
 
 // A dimension that activates through a custom flow rather than a direct select
-// — e.g. `tag`, whose radio opens a dialog for the tag name.
-export interface GroupByRadioItem extends GroupByRadioOption {
+// — e.g. `tag`, whose radio opens a dialog for the tag name. Not a
+// `GroupByRadioOption`, because the dimensions needing a flow are exactly the
+// ones `onSelect` cannot write: `tag` takes a parameter.
+export interface GroupByRadioItem {
+  type: GroupByType
+  label: string
   onClick: () => void
 }
 
@@ -28,7 +36,7 @@ export interface GroupByRadioItem extends GroupByRadioOption {
 // blank, so no caller has to filter `current` against what it passed in.
 function checkedType(
   current: GroupByType | undefined,
-  offered: GroupByRadioOption[],
+  offered: { type: GroupByType }[],
 ) {
   return offered.some(o => o.type === current) ? current : undefined
 }
@@ -38,7 +46,7 @@ function checkedType(
 // degrades any other to ungrouped (`groupByForMode`), so a menu offering one
 // anyway ticks a radio that changes nothing. Alongside `checkedType`, the second
 // rule no call site should have to remember.
-function offered<T extends GroupByRadioOption>(
+function offered<T extends { type: GroupByType }>(
   options: T[],
   isChainMode: boolean,
 ) {
@@ -66,7 +74,7 @@ export function groupByRadioMenuItem({
 }: {
   current: GroupByType | undefined
   options: GroupByRadioOption[]
-  onSelect: (type: GroupByType) => void
+  onSelect: (type: ParameterlessGroupByType) => void
   onNone: () => void
   extra?: GroupByRadioItem[]
   isChainMode?: boolean
@@ -138,6 +146,36 @@ export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
                 'label chip opts that group back out to a true stack.',
             },
           ),
+        ]
+      : []
+  ) satisfies MenuItem[]
+}
+
+export interface HiddenGroupsModel {
+  hiddenGroups: { size: number }
+  showAllGroups: () => void
+}
+
+// The way back from the label chip's "Hide this group". Spread into the same
+// "Show..." menu as `collapseGroupRowsItems`, and absent while nothing is
+// hidden — a row that reads "Show hidden groups (0)" is a row about a feature
+// most tracks never use.
+//
+// A menu row and not a chip, because a hidden lane draws no chip: the stack it
+// left is the only thing still on screen, and one lane hidden out of two leaves
+// nothing that names the missing one.
+export function hiddenGroupsItems(model: HiddenGroupsModel) {
+  const { size } = model.hiddenGroups
+  return (
+    size > 0
+      ? [
+          {
+            label: `Show ${size} hidden group${size > 1 ? 's' : ''}`,
+            icon: VisibilityIcon,
+            onClick: () => {
+              model.showAllGroups()
+            },
+          },
         ]
       : []
   ) satisfies MenuItem[]

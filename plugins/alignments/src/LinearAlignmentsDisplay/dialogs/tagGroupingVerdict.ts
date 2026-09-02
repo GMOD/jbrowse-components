@@ -1,4 +1,8 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
+
 import { MAX_GROUPS, compareGroupKeys } from '../../shared/groupFeatures.ts'
+
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 // The caption GroupByDialog shows under the tag box, and whether Submit is
 // refused. `undefined` while nothing describes the tag in the box — the caller
@@ -26,11 +30,26 @@ export interface TagGroupingVerdict {
  */
 export function tagGroupingVerdict(
   tag: string,
-  values: string[] | undefined,
+  scan: string[] | RegionTooLargeResult | undefined,
 ): TagGroupingVerdict | undefined {
-  if (!values) {
+  if (!scan) {
     return undefined
   }
+  // The scan runs the render fetch's download under the display's own budget, so
+  // over a wide view it is refused exactly where the track beside it is. Said
+  // rather than refused, like the no-values case: the grouping applies fine, it
+  // is only the count that cannot be previewed from here.
+  if (isRegionRefused(scan)) {
+    return {
+      blocks: false,
+      color: 'warning.main',
+      text:
+        `This region is too large to scan for ${tag} values — the same limit ` +
+        'the track itself refuses at. Grouping still applies; zoom in to see ' +
+        'how many sections it makes.',
+    }
+  }
+  const values = scan
   // `>=`, not `>`: the scan reports only the values reads actually carry (it
   // drops the '' sentinel), and reads LACKING the tag take a section of their
   // own besides. So exactly MAX_GROUPS distinct values is already over the cap

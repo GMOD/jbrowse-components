@@ -19,7 +19,7 @@ import {
   getStrand,
 } from './util.ts'
 
-import type { GroupBy, GroupByType } from './types.ts'
+import type { GroupBy, GroupByType, ParameterlessGroupByType } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -277,6 +277,16 @@ function singleSection(features: Feature[]): FeatureGroup[] {
   return [{ key: '', label: '', features }]
 }
 
+// The registry lookup, split on the one dimension that takes a parameter. Every
+// other entry's `key` has the identical signature, so the second branch is one
+// call and not a case per dimension — and `tag` reaches its own entry with its
+// own grouping, which is what makes `groupBy.tag` a string there.
+function featureGroupKey(feature: Feature, groupBy: GroupBy) {
+  return groupBy.type === 'tag'
+    ? GROUP_BY_DIMENSIONS.tag.key(feature, groupBy)
+    : GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
+}
+
 // Partition the fetched reads into ordered groups, one group key per read.
 export function partitionFeatures(
   features: Feature[],
@@ -285,12 +295,22 @@ export function partitionFeatures(
   if (!groupBy) {
     return singleSection(features)
   }
-  const { key } = GROUP_BY_DIMENSIONS[groupBy.type]
   const groups = new Map<string, FeatureGroup>()
   for (const feature of features) {
-    appendFeature(groups, feature, key(feature, groupBy))
+    appendFeature(groups, feature, featureGroupKey(feature, groupBy))
   }
   return orderGroups([...groups.values()])
+}
+
+// A whole chain's key: the dimension's own answer where it states one, else the
+// representative read's. `tag` has no `chainKey`, so the branch also carries the
+// narrowing the registry lookup needs.
+function chainGroupKey(chain: Feature[], groupBy: GroupBy) {
+  const fromChain =
+    groupBy.type === 'tag'
+      ? undefined
+      : GROUP_BY_DIMENSIONS[groupBy.type].chainKey?.(chain, groupBy)
+  return fromChain ?? featureGroupKey(chainRepresentative(chain), groupBy)
 }
 
 // The read a chain's group key comes from: a primary, preferring read1 so the
@@ -310,8 +330,17 @@ function chainRepresentative(chain: Feature[]): Feature {
   return primary ?? chain[0]!
 }
 
-export interface GroupByDimension {
-  type: GroupByType
+// The grouping an entry's key generators are handed: the tag dimension's, which
+// carries the tag, or the shared shape every other dimension has. Written as a
+// conditional rather than an `Extract` so the six parameterless entries land on
+// ONE type — that is what lets `featureGroupKey` reach them through a single
+// registry lookup instead of a branch per dimension.
+type GroupByOf<K extends GroupByType> = K extends 'tag'
+  ? Extract<GroupBy, { type: 'tag' }>
+  : Exclude<GroupBy, { type: 'tag' }>
+
+export interface GroupByDimension<K extends GroupByType = GroupByType> {
+  type: K
   // Whether the dimension describes the FRAGMENT rather than the record, so
   // `partitionChains` can key a whole chain off its representative read.
   //
@@ -330,13 +359,15 @@ export interface GroupByDimension {
   // "Group by..." radios and surfaced by the display that supports it —
   // LGVSyntenyDisplay's menus.ts owns mateAssembly.
   hidden?: boolean
-  // `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
-  key: (feature: Feature, groupBy: GroupBy) => GroupKey
+  // `groupBy` is passed for tag grouping, which needs `groupBy.tag` — and gets
+  // it, rather than a `?? ''`, because the parameter is this dimension's own
+  // grouping and not the whole union.
+  key: (feature: Feature, groupBy: GroupByOf<K>) => GroupKey
   // Key for a whole chain, for a dimension the representative read cannot answer
   // for — it answers "is the primary read1 like this", not "is any read of this
   // fragment". Supplying one is also what makes a per-read dimension groupable in
   // chain mode (`isChainGroupableType`).
-  chainKey?: (chain: Feature[], groupBy: GroupBy) => GroupKey
+  chainKey?: (chain: Feature[], groupBy: GroupByOf<K>) => GroupKey
 }
 
 // The one registry of group-by dimensions. Keyed by GroupByType, so a new member
@@ -346,7 +377,7 @@ export interface GroupByDimension {
 // the menu order. Labels live in the React-free groupByLabels.ts (see its
 // header), joined to this registry by `pickGroupByOptions` alone.
 export const GROUP_BY_DIMENSIONS: {
-  [K in GroupByType]: GroupByDimension & { type: K }
+  [K in GroupByType]: GroupByDimension<K>
 } = {
   strand: {
     type: 'strand',
@@ -361,7 +392,7 @@ export const GROUP_BY_DIMENSIONS: {
   tag: {
     type: 'tag',
     fragmentLevel: true,
-    key: (feature, groupBy) => tagKey(feature, groupBy.tag ?? ''),
+    key: (feature, groupBy) => tagKey(feature, groupBy.tag),
   },
   pairOrientation: {
     type: 'pairOrientation',
@@ -426,14 +457,18 @@ export function groupByForMode(
 // keep up with. Takes the EFFECTIVE grouping (`groupByForMode`) — chain mode
 // degrades a per-read dimension to ungrouped without the slot moving.
 export function groupKeySpaceOf(groupBy: GroupBy | undefined) {
-  return groupBy ? `${groupBy.type}\0${groupBy.tag ?? ''}` : ''
+  return groupBy === undefined
+    ? ''
+    : groupBy.type === 'tag'
+      ? `${groupBy.type}\0${groupBy.tag}`
+      : groupBy.type
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated
 // three. Mirrors pickColorOptions.
-export function pickGroupByOptions(...types: GroupByType[]) {
+export function pickGroupByOptions(...types: ParameterlessGroupByType[]) {
   return types.map(type => ({ type, label: GROUP_BY_LABELS[type] }))
 }
 
@@ -451,12 +486,9 @@ export function partitionChains(
   for (const feature of features) {
     getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
   }
-  const { key, chainKey } = GROUP_BY_DIMENSIONS[groupBy.type]
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {
-    const groupKey = chainKey
-      ? chainKey(chain, groupBy)
-      : key(chainRepresentative(chain), groupBy)
+    const groupKey = chainGroupKey(chain, groupBy)
     for (const feature of chain) {
       appendFeature(groups, feature, groupKey)
     }

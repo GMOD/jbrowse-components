@@ -4,7 +4,7 @@ import { SubmitDialog, TagTextField } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
+import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 
 interface Tag {
   type: 'tag'
@@ -40,7 +40,7 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
       <TagTextField
         defaultValue={model.colorBy?.tag}
         autoFocus
-        quickPicks={COMMON_READ_TAGS}
+        quickPicks={COMMON_READ_TAG_PICKS}
         onValueChange={setTag}
       />
     </SubmitDialog>

@@ -50,6 +50,8 @@ function makeModel(
     canCollapseGroupRows: false,
     collapseGroupRows: false,
     setCollapseGroupRows: jest.fn(),
+    hiddenGroups: new Set<string>(),
+    showAllGroups: jest.fn(),
     ...overrides,
   }
 }

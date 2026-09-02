@@ -275,8 +275,8 @@ export const READ_CATEGORY_KEYS = [
 export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
 // In-track stacked grouping. `type` selects the per-read group-key generator
-// (see shared/groupFeatures.ts); `tag` carries the tag name for tag/HP/RG
-// grouping. Absent groupBy means a single ungrouped section.
+// (see shared/groupFeatures.ts). Absent groupBy means a single ungrouped
+// section.
 export type GroupByType =
   | 'strand'
   | 'firstOfPairStrand'
@@ -286,10 +286,19 @@ export type GroupByType =
   | 'mapq'
   | 'mateAssembly'
 
-export interface GroupBy {
-  type: GroupByType
-  tag?: string
-}
+// The dimensions a menu radio can pick whole. `tag` is the one that takes a
+// parameter, so it is the one with a dialog behind it — and the one dimension
+// with no entry in GROUP_BY_LABELS, since no radio ever names it.
+export type ParameterlessGroupByType = Exclude<GroupByType, 'tag'>
+
+// `tag` is required on the tag dimension and absent from every other, which is
+// the shape `normalizeGroupBy` enforces at the config boundary rather than a
+// convention downstream code hopes for: a stray tag beside another dimension
+// names a key space of its own (`groupKeySpaceOf`), so re-picking that same
+// dimension from the menu dropped every lane's collapse and refetched.
+export type GroupBy =
+  | { type: ParameterlessGroupByType; tag?: undefined }
+  | { type: 'tag'; tag: string }
 
 export interface SortedBy {
   type: string

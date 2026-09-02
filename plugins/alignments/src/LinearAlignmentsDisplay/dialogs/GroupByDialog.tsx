@@ -13,19 +13,19 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
+import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
 // radio-building fields (GroupByMenuModel in ../menus/sortGroup.ts) and hands the
 // same node straight through, so the two can't disagree about the tag/color
 // surface while the dialog stays free of menu-only state.
-export type GroupByDialogModel = {
+export interface GroupByDialogModel extends IStateTreeNode {
   id: string
   // Both read by `getUniqueTags`, not here: they describe the fetch its tag scan
   // runs, and it has to be the same read set the worker will partition — the
@@ -33,11 +33,15 @@ export type GroupByDialogModel = {
   // never becomes a section.
   adapterConfig: Record<string, unknown>
   filterBy: FilterBy
+  // Read by `getUniqueTags` too, and the reason its scan can be refused: that
+  // scan IS the render fetch's download, so it is measured against the render
+  // fetch's budget rather than running unbounded beside a refused track.
+  resolvedByteLimit: () => number | undefined
   colorBy: ColorBy
   groupBy?: GroupBy
   setGroupBy: (groupBy?: GroupBy) => void
   setColorScheme: (colorBy: ColorBy) => void
-} & IAnyStateTreeNode
+}
 
 // Reads are currently colored by exactly this tag.
 function isColoringByTag(colorBy: ColorBy, tag: string) {
@@ -45,10 +49,12 @@ function isColoringByTag(colorBy: ColorBy, tag: string) {
 }
 
 // Whether "also color by this tag" should be ticked, absent an explicit click:
-// yes when the reads already carry that tag's colors, and yes when they carry no
-// tag colors at all (grouping by a tag usually pairs with coloring by it). No
-// only when a DIFFERENT tag's colors are in force, which the checkbox would
-// replace.
+// yes over the plain scheme, where grouping by a tag usually pairs with coloring
+// by it, and yes when the reads already carry that same tag's colors. No over
+// every other scheme, since ticking it REPLACES whatever is painted — a reader
+// looking at modifications, bisulfite or insert size who groups by HP loses that
+// picture on Submit, which is the trap the SV-channels preset dropped `colorBy`
+// over.
 //
 // Derived from the tag in the box rather than seeded once from the model: the
 // box is where the tag is chosen, so a state read at open time describes a tag
@@ -56,7 +62,7 @@ function isColoringByTag(colorBy: ColorBy, tag: string) {
 // then left the box unticked over colors that were on — and, since unticking
 // means "don't color by this tag", submitting turned those colors off.
 function defaultColorByTag(colorBy: ColorBy, tag: string) {
-  return colorBy.type !== 'tag' || isColoringByTag(colorBy, tag)
+  return colorBy.type === 'normal' || isColoringByTag(colorBy, tag)
 }
 
 // The scheme to apply after grouping by `tag`: color by it when checked; when
@@ -91,7 +97,11 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const [colorByTagChoice, setColorByTagChoice] = useState<boolean>()
   const colorByTag =
     colorByTagChoice ?? defaultColorByTag(model.colorBy, groupByTag)
-  const debouncedTag = useDebounce(groupByTag, 1000)
+  // Short, because the field emits only a VALID two-letter tag (or undefined),
+  // so the half-typed keystrokes a long debounce exists to swallow never reach
+  // here — a second of it was dead time on every open, and on every quick-pick
+  // chip click, which lands its tag in one go.
+  const debouncedTag = useDebounce(groupByTag, 300)
   // Keyed by the display's id, never the node itself: useFetch JSON-stringifies
   // its key, and an MST node stringifies to its whole snapshot — so the key both
   // cost a full serialization per render and changed on any unrelated model edit,
@@ -116,13 +126,21 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       }),
   )
 
-  // The fetch lags the field by the debounce, so its values describe
-  // `debouncedTag`; only trust them once it matches what Submit would apply.
-  const values = debouncedTag === groupByTag ? tagSet : undefined
-  // What those values mean for the grouping, and whether Submit is refused —
-  // one answer, in `tagGroupingVerdict`, which says why both ends of the count
-  // are decided here rather than left to the worker.
-  const verdict = tagGroupingVerdict(groupByTag, values)
+  // The fetch lags the field by the debounce AND by its own round trip, so
+  // nothing describes the tag Submit would apply until both have caught up. One
+  // term, because it is also what Submit is held on: the cardinality guard this
+  // dialog exists for is `verdict`, and a click landing before the scan settled
+  // bypassed it outright.
+  const scanPending =
+    groupByTag !== '' && (loadingTags || debouncedTag !== groupByTag)
+  // What the scan says about the grouping, and whether Submit is refused — one
+  // answer, in `tagGroupingVerdict`, which says why both ends of the count are
+  // decided here rather than left to the worker, and what a refused region
+  // means.
+  const verdict = tagGroupingVerdict(
+    groupByTag,
+    scanPending ? undefined : tagSet,
+  )
 
   const handleSubmit = () => {
     model.setGroupBy({ type: 'tag', tag: groupByTag })
@@ -138,7 +156,10 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       open
       title="Group by tag"
       // Worker only needs a valid tag name; groupByTag holds a valid tag or ''.
-      submitDisabled={groupByTag === '' || !!verdict?.blocks}
+      // A failed scan leaves this enabled: the verdict is advice the data
+      // supplies, and without it the grouping is the one the menu would have
+      // applied anyway.
+      submitDisabled={groupByTag === '' || scanPending || !!verdict?.blocks}
       onCancel={handleClose}
       onSubmit={handleSubmit}
     >
@@ -150,21 +171,21 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         // Seed from `groupByTag` (parent state) so it stays in lockstep with
         // what Submit reads.
         defaultValue={groupByTag}
-        quickPicks={COMMON_READ_TAGS}
+        quickPicks={COMMON_READ_TAG_PICKS}
         onValueChange={value => {
           setGroupByTag(value ?? '')
         }}
         data-testid="group-tag-name"
         inputTestId="group-tag-name-input"
       />
-      {error ? (
-        <ErrorBanner error={error} />
-      ) : loadingTags ? (
+      {scanPending ? (
         <LoadingEllipses
           message={
             statusProgressLabel(status) || 'Scanning reads for tag values'
           }
         />
+      ) : error ? (
+        <ErrorBanner error={error} />
       ) : verdict ? (
         <Typography variant="caption" color={verdict.color}>
           {verdict.text}

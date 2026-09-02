@@ -59,9 +59,13 @@ export {
   getMaxHeightMenuItem,
   getSortByMenuItem,
   groupByRadioMenuItem,
+  hiddenGroupsItems,
   withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
-export type { CollapseGroupRowsModel } from './LinearAlignmentsDisplay/menus/index.ts'
+export type {
+  CollapseGroupRowsModel,
+  HiddenGroupsModel,
+} from './LinearAlignmentsDisplay/menus/index.ts'
 export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
 export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'
 export {
@@ -69,7 +73,7 @@ export {
   pickColorOptions,
 } from './shared/colorSchemes.ts'
 export { pickGroupByOptions } from './shared/groupFeatures.ts'
-export type { GroupByType } from './shared/types.ts'
+export type { GroupByType, ParameterlessGroupByType } from './shared/types.ts'
 
 // Types that appear in the inferred shape of the exported display model. They
 // have to be reachable from this entry or tsc names them by source path in

@@ -5,13 +5,16 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 
-import { collapseGroupRowsItems } from './groupByMenu.ts'
+import { collapseGroupRowsItems, hiddenGroupsItems } from './groupByMenu.ts'
 
-import type { CollapseGroupRowsModel } from './groupByMenu.ts'
+import type {
+  CollapseGroupRowsModel,
+  HiddenGroupsModel,
+} from './groupByMenu.ts'
 import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-interface ReadsModel extends CollapseGroupRowsModel {
+interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showLegendDisplayTypeDefault: Pin
@@ -85,6 +88,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // Only while grouping is in effect, so it sits next to the pileup toggle
     // it modifies rather than in the Group-by dimension list.
     ...collapseGroupRowsItems(model),
+    ...hiddenGroupsItems(model),
     toggleItem(
       'Show mismatches',
       model.showMismatches,

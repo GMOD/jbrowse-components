@@ -31,3 +31,30 @@ test('nothing is hidden under another grouping, or with the option off', () => {
   display.setHideSelfAlignments(false)
   expect(display.hiddenGroupKeys.size).toBe(0)
 })
+
+// The two halves are unioned, not one over the other: overriding
+// `hiddenGroupKeys` outright would have dropped every lane the user hid from a
+// chip the moment the self-lane option was on.
+test('a lane hidden from a chip is hidden alongside the self lane', () => {
+  const display = createDisplay()
+  display.setGroupBy({ type: 'mateAssembly' })
+  display.setHideSelfAlignments(true)
+  display.hideGroup('volvox_random')
+  expect([...display.hiddenGroupKeys].sort()).toEqual([
+    'volvox',
+    'volvox_random',
+  ])
+  display.showAllGroups()
+  expect([...display.hiddenGroupKeys]).toEqual(['volvox'])
+})
+
+// A group key names a lane only within the grouping that issued it, so the
+// key-space reset drops what the user hid along with the collapses.
+test('changing the grouping forgets what was hidden', () => {
+  const display = createDisplay()
+  display.setGroupBy({ type: 'mateAssembly' })
+  display.hideGroup('volvox_random')
+  expect(display.hiddenGroupKeys.has('volvox_random')).toBe(true)
+  display.setGroupBy({ type: 'strand' })
+  expect(display.hiddenGroupKeys.size).toBe(0)
+})

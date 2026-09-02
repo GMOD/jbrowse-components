@@ -1,10 +1,12 @@
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 
+import { ContextMenu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -19,10 +21,12 @@ import {
   groupChipTop,
   groupSectionLabel,
 } from '../groupLabelStyle.ts'
-import { laneExpandable } from '../model.ts'
+import { laneExpandable } from '../lanes.ts'
 import { bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type React from 'react'
 
 const useStyles = makeStyles()(theme => {
   const chip = {
@@ -71,8 +75,12 @@ const useStyles = makeStyles()(theme => {
         background: theme.palette.background.paper,
       },
     },
-    // Non-interactive header when the pileup is hidden — collapse/expand are
-    // no-ops on a coverage-only stack, so the group name is just a label.
+    // Plain header when the pileup is hidden: collapse/expand are no-ops on a
+    // coverage-only stack, so the group name carries no button. It still takes
+    // the right-click that hides the lane, which is why the caller hands it
+    // `pointerEvents` rather than this class fixing them off — the row above is
+    // `none` so the gaps around the chips don't swallow the coverage hover, and
+    // a chip that answers a click has to opt back in exactly as the button does.
     label: chip,
     icon: {
       fontSize: GROUP_LABEL_ICON_SIZE,
@@ -128,6 +136,15 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   model: LinearAlignmentsDisplayModel
 }) {
   const { classes } = useStyles()
+  // The chip's right-click target, held as one value: the click point and which
+  // lane it landed on can't disagree, and `undefined` is the closed state. Local
+  // rather than on the model — nothing outside this overlay asks where a menu
+  // is, and the pileup's own context menu is a separate surface.
+  const [laneMenu, setLaneMenu] = useState<{
+    anchor: ContextMenuAnchor
+    groupKey: string
+    label: string
+  }>()
   if (!model.showsGroupLabels) {
     return null
   }
@@ -140,6 +157,24 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     canSizeGroupHeights,
     renderSections,
   } = model
+  // Hiding the last drawn lane leaves a stack with no chip in it, so the only
+  // way back would be the "Show..." menu row — offered, but a worse place to
+  // land than simply not offering the action that empties the track.
+  const canHideLane = renderSections.length > 1
+  const openLaneMenu = (
+    event: React.MouseEvent,
+    groupKey: string,
+    label: string,
+  ) => {
+    if (canHideLane) {
+      event.preventDefault()
+      setLaneMenu({
+        anchor: { clientX: event.clientX, clientY: event.clientY },
+        groupKey,
+        label,
+      })
+    }
+  }
   return (
     <>
       {renderSections.map((section, i) => {
@@ -179,6 +214,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   onClick={() => {
                     model.toggleGroupCollapsed(section.groupKey)
                   }}
+                  onContextMenu={event => {
+                    openLaneMenu(event, section.groupKey, label)
+                  }}
                   title={
                     collapsed
                       ? 'Show this group’s pileup'
@@ -193,7 +231,14 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   <span data-testid="group-label-text">{label}</span>
                 </button>
               ) : (
-                <span className={classes.label} data-testid="group-label-text">
+                <span
+                  className={classes.label}
+                  style={{ pointerEvents: canHideLane ? 'auto' : 'none' }}
+                  data-testid="group-label-text"
+                  onContextMenu={event => {
+                    openLaneMenu(event, section.groupKey, label)
+                  }}
+                >
                   {label}
                 </span>
               )}
@@ -218,6 +263,25 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
           </Fragment>
         )
       })}
+      <ContextMenu
+        anchor={laneMenu?.anchor}
+        menuItems={
+          laneMenu
+            ? [
+                {
+                  label: `Hide "${laneMenu.label}"`,
+                  icon: VisibilityOffIcon,
+                  onClick: () => {
+                    model.hideGroup(laneMenu.groupKey)
+                  },
+                },
+              ]
+            : []
+        }
+        onClose={() => {
+          setLaneMenu(undefined)
+        }}
+      />
     </>
   )
 })

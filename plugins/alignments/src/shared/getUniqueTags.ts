@@ -10,6 +10,11 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 // own read filter — `filterBy` comes off `self` beside `adapterConfig` because
 // both describe the same fetch, and a caller that passed one without the other
 // would be enumerating a different read set than the track draws.
+//
+// Answers a `RegionTooLargeResult` instead where the display's own gate refuses
+// the region, for the same reason `resolvedByteLimit` is read off `self` here:
+// this scan is the render fetch's download without its budget, and the two have
+// to agree about which regions are affordable.
 export async function getUniqueTags({
   self,
   tag,
@@ -19,6 +24,7 @@ export async function getUniqueTags({
   self: {
     adapterConfig: Record<string, unknown>
     filterBy: FilterBy
+    resolvedByteLimit: () => number | undefined
   }
   tag: string
   blocks: BlockSet
@@ -30,16 +36,12 @@ export async function getUniqueTags({
   const { rpcManager } = getSession(self)
   const { adapterConfig, filterBy } = self
   const sessionId = getRpcSessionId(self)
-  const values = await rpcManager.call(
-    sessionId,
-    'PileupGetGlobalValueForTag',
-    {
-      adapterConfig,
-      tag,
-      filterBy,
-      regions: blocks.contentBlocks,
-      ...opts,
-    },
-  )
-  return values
+  return rpcManager.call(sessionId, 'PileupGetGlobalValueForTag', {
+    adapterConfig,
+    tag,
+    filterBy,
+    byteLimit: self.resolvedByteLimit(),
+    regions: blocks.contentBlocks,
+    ...opts,
+  })
 }

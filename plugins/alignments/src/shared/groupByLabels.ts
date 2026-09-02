@@ -6,18 +6,17 @@
 // compactnessPresets.ts is its own module.
 //
 // GROUP_BY_DIMENSIONS reads its labels from here, so the menu and the docs
-// cannot disagree. The Record is exhaustive over GroupByType, so adding a
-// dimension without labelling it is a compile error.
+// cannot disagree. The Record is exhaustive over the selectable dimensions, so
+// adding one without labelling it is a compile error.
 
-import type { GroupByType } from './types.ts'
+import type { ParameterlessGroupByType } from './types.ts'
 
-export const GROUP_BY_LABELS: Record<GroupByType, string> = {
+// `tag` has no entry, and the type says so: the menus drop it from the radios in
+// favour of a 'Tag...' item that opens a dialog for the tag name, and the
+// website recipe names it by that path — so a label here would never be shown.
+export const GROUP_BY_LABELS: Record<ParameterlessGroupByType, string> = {
   strand: 'Strand',
   firstOfPairStrand: 'First-of-pair strand',
-  // never shown as-is: getGroupByMenuItem drops `tag` from the radios and adds a
-  // separate 'Tag...' item that opens the tag dialog. This label names the
-  // dimension (e.g. in the dialog's own copy), not that menu entry.
-  tag: 'Tag (HP, RG, ...)',
   pairOrientation: 'Pair orientation',
   splitRead: 'Split read (SA tag)',
   mapq: 'Mapping quality',

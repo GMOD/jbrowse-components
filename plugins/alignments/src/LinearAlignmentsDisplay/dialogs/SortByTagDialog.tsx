@@ -4,7 +4,7 @@ import { SubmitDialog, TagTextField } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
+import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 
 // Decoupled from where the sort anchors: the track menu passes an onSubmit that
 // sorts at the center line, the read right-click menu one that sorts at the
@@ -39,7 +39,7 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
       <TagTextField
         autoFocus
         defaultValue={initialTag}
-        quickPicks={COMMON_READ_TAGS}
+        quickPicks={COMMON_READ_TAG_PICKS}
         onValueChange={setTag}
         data-testid="sort-tag-name"
         inputTestId="sort-tag-name-input"
