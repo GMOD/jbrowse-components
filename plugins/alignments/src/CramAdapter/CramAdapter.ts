@@ -1,7 +1,7 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
-import { decodedRecordsBudget } from '@jbrowse/core/util/cacheBudgets'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -184,9 +184,10 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         checkSequenceMD5: false,
         recordClass: CramSlightlyLazyFeature,
         // maxCacheBytes is per file, and one IndexedCramFile is held per open
-        // track. Its own budget, not the bytes one: this cache weighs decoded
-        // records, and a budget summing records with bytes bounds neither
-        cacheBudget: decodedRecordsBudget,
+        // track, so its 1GB ceiling was multiplied by the track count with
+        // nothing bounding the sum; see cacheBudgets. The slice cache weighs
+        // bytes since @gmod/cram 14, so it shares the BAM and tabix budget
+        cacheBudget: decompressedBytesBudget,
         useSliceWorkerPool: this.getConf('useSliceWorkerPool'),
         numSliceWorkers: sliceWorkerCount(),
       })

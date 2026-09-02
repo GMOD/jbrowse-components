@@ -1,11 +1,11 @@
 import { SharedBudget } from '@gmod/shared-read-cache'
 
 /**
- * Ceilings on what the indexed-format libraries retain, shared by every adapter
- * in this JS context — so one per RPC worker, plus one on the main thread,
- * which is the scope that actually runs out of memory.
+ * The ceiling on what the indexed-format libraries retain, shared by every
+ * adapter in this JS context — so one per RPC worker, plus one on the main
+ * thread, which is the scope that actually runs out of memory.
  *
- * ## Why these are not per file
+ * ## Why this is not per file
  *
  * `@gmod/bam`, `@gmod/tabix` and `@gmod/cram` each take a per-file budget,
  * sized so that a single track panning never falls off the cliff where a cache
@@ -30,25 +30,27 @@ import { SharedBudget } from '@gmod/shared-read-cache'
  * at hand their space to the one being panned, so the active track keeps a
  * whole working set however many are open.
  *
- * ## The numbers are not new
+ * ## The number is not new
  *
- * Both are the libraries' own per-file defaults, moved from per-file to
- * per-context. That makes this a strict tightening — retention can only fall —
- * and avoids inventing a number that would need its own justification. The
- * budget still has to clear one query's working set or the cliff returns, and
- * on that workload 512 MB shared across three tracks already cost 43 refills
- * where 1 GB cost 4.
+ * 1 GB is the libraries' own per-file default (`DEFAULT_MAX_CACHE_BYTES` in
+ * both `@gmod/bam` and `@gmod/cram`), moved from per-file to per-context. That
+ * makes this a strict tightening — retention can only fall — and avoids
+ * inventing a number that would need its own justification. With one file open
+ * the two ceilings coincide; from the second file on, this one is the one that
+ * binds. The budget still has to clear one query's working set or the cliff
+ * returns, and on that workload 512 MB shared across three tracks already cost
+ * 43 refills where 1 GB cost 4.
  *
- * ## Two budgets, because units cannot mix
+ * ## One budget, because every member weighs bytes
  *
  * `SharedBudget.total` is a sum over its members, so they must all weigh in the
- * same unit. `@gmod/bam` and `@gmod/tabix` weigh decompressed bytes;
- * `@gmod/cram` weighs decoded records, because a decoded record has no cheap
- * size. A single budget spanning them would add records to bytes and bound
- * neither. `sizeOf` is opaque, so nothing can catch that at runtime — hence two
- * budgets named for their units.
+ * same unit, and `sizeOf` is opaque, so nothing could catch a mismatch at
+ * runtime. `@gmod/bam` and `@gmod/tabix` weigh decompressed bytes, and since 14
+ * `@gmod/cram` weighs a decoded slice by `DecodedSlice.byteLength` — its typed
+ * columns exactly and its strings by estimate, within 1–8% of the measured heap
+ * (its ADR 0013). Before that a CRAM slice weighed its record count, which is
+ * why this used to be two budgets named for their units: a million records
+ * could not be added to bytes, and never bound long-read data either, where a
+ * 6 MB slice counted as 37.
  */
 export const decompressedBytesBudget = new SharedBudget(1024 * 2 ** 20)
-
-/** See {@link decompressedBytesBudget}. Records, not bytes — CRAM only. */
-export const decodedRecordsBudget = new SharedBudget(1_000_000)

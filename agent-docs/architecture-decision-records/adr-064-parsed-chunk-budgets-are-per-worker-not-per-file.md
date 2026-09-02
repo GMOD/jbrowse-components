@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "@gmod/bam, @gmod/tabix and @gmod/cram each bound their parsed-chunk cache per file, and dataAdapterCache holds one file per open track, so the ceilings multiplied by track count with nothing bounding the sum — three deep alignments tracks browsing eight windows retained 1109 MB with every cache still well under its own 1 GB ceiling; the adapters now share one SharedBudget per JS context, in two of them because bytes and records cannot be summed"
+summary: "@gmod/bam, @gmod/tabix and @gmod/cram each bound their parsed-chunk cache per file, and dataAdapterCache holds one file per open track, so the ceilings multiplied by track count with nothing bounding the sum — three deep alignments tracks browsing eight windows retained 1109 MB with every cache still well under its own 1 GB ceiling; the adapters now share one SharedBudget per JS context (originally two, because cram weighed records until 14)"
 ---
 
 # ADR-064: Parsed-chunk budgets are per worker, not per file
@@ -9,6 +9,14 @@ summary: "@gmod/bam, @gmod/tabix and @gmod/cram each bound their parsed-chunk ca
 
 Accepted (2026-08). Requires `@gmod/shared-read-cache` 1.5.0, `@gmod/bam` 8.4.0,
 `@gmod/tabix` 3.7.1, `@gmod/cram` 11.4.0.
+
+Amended (2026-09): the "two budgets" half below is superseded. `@gmod/cram` 14
+weighs its slice cache in bytes (`DecodedSlice.byteLength`, its ADR 0013), so
+`decodedRecordsBudget` is gone and CRAM files report into
+`decompressedBytesBudget` beside BAM and tabix —
+`packages/core/src/util/cacheBudgets.ts` and
+`plugins/alignments/src/CramAdapter/cramBudgetWiring.test.ts`. The record
+budget also never bound long-read data, where a 6 MB slice counted as 37.
 
 ## Context
 
