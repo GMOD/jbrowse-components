@@ -5,11 +5,8 @@ description:
   embedded app, CLI — and where its reference, recipes, and validator live
 ---
 
-A JBrowse session is a JSON document: the genomes loaded, the tracks and where
-their data lives, and the views that are open, at what locus, with which
-settings. You write or generate it and open it.
-
-The same document is what every surface takes:
+A JBrowse session is one JSON document: the genomes, the tracks and where their
+data lives, and the views that are open. Every surface takes the same document:
 
 | Surface                                            | How it takes the document                                       |
 | -------------------------------------------------- | --------------------------------------------------------------- |
@@ -20,13 +17,13 @@ The same document is what every surface takes:
 | [](/docs/jbrowser) and [](/docs/jbrowse_anywidget) | what the helper functions assemble for you                      |
 | [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
-A running JBrowse also takes the document a piece at a time, an assembly or a
-track at once, with no file to edit. Every config block in these docs carries
-that route beside the file and the CLI command, on its own tab.
+A running JBrowse also takes it a piece at a time, one assembly or track pasted
+in. Every config block in these docs has that route on its own tab beside the
+file and the CLI command.
 
 ## What a session document contains
 
-The genome, a track, and the view to open on:
+A genome, a track, and the view to open on:
 
 ```json
 {
@@ -62,132 +59,105 @@ The genome, a track, and the view to open on:
 }
 ```
 
-`assemblies` and `tracks` are the two fields that matter; a file with just those
-works, and `defaultSession` only says what to open on load.
-[](/docs/config_guides/intro) covers both, along with the optional top-level
-fields beside them — `plugins`, `connections`, `internetAccounts`,
-`aggregateTextSearchAdapters`, `configuration` — each with a guide of its own.
-[](/docs/config_guides/default_session) covers the session object and
+`assemblies` and `tracks` are enough on their own; `defaultSession` only says
+what to open on load. [](/docs/config_guides/intro) covers the other top-level
+fields (`plugins`, `connections`, `internetAccounts`,
+`aggregateTextSearchAdapters`, `configuration`),
+[](/docs/config_guides/default_session) the session object, and
 [](/docs/automating) the fields a view takes.
 
 ## How the config and the session fit together
 
-They are two halves of one document, and each thing belongs in one half or the
-other.
-
 **The config is the catalog. The session says what is open.** A session names a
-track by the `trackId` the config gave it. In the example above the whole join
-is one string: the `"ncbi_genes"` in the view's `tracks` is the `trackId` of the
-track defined above it. Delete that track from `tracks` and the session is left
-naming something that does not exist, which is one of the things
-[`jbrowse validate`](#checking-a-document) reports.
+track by its `trackId`: the `"ncbi_genes"` in the view's `tracks` above is the
+`trackId` of the track defined above it. Delete the track and the session names
+something that does not exist, which [`jbrowse validate`](#checking-a-document)
+reports.
 
-**Write the short form above.** The app's export-session option writes the other
-one: a raw state snapshot with every view, track and display spelled out, the
-same track named as `"configuration": "ncbi_genes"` and an `id` on everything —
-dozens of lines for what an assembly, a locus and a track list say in four, and
-harder to edit afterwards. Reach for the exported snapshot to recover a view you
-built by clicking.
+**Write the short form above.** The app's export-session option writes a raw
+state snapshot instead, with every view, track and display spelled out and an
+`id` on everything. Reach for that only to recover a view you built by clicking.
 
 **The config holds the settings; the session holds the state.** Color, height,
 display mode, color-by and filters are
-[configuration slots](/docs/config_guides/tracks) — they belong on the track in
-the config, under `displayDefaults`. What is open, where it is scrolled to and
-how the panels are arranged is session state. So one view has its appearance
-described in one half of the document and its position in the other.
+[configuration slots](/docs/config_guides/tracks) and belong on the track under
+`displayDefaults`. What is open, where it is scrolled to and how the panels are
+arranged is session state.
 
-A track a view opens can still set a display option per launch: write the entry
-as an object instead of a string — `{ "trackId": "ncbi_genes", "height": 250 }`
-— and the slot is routed onto the display's config, because the view resolves
-that entry rather than restoring it.
+A view can still set a display option per launch by writing the track entry as
+an object: `{ "trackId": "ncbi_genes", "height": 250 }`. The view resolves that
+entry, so the slot lands on the display's config.
 
-That same `"height": 250` on a raw snapshot's display node does nothing at all.
-A snapshot node is instantiated by the display's **state model**, so it takes
-that model's properties — `id`, `type`, `configuration` — and drops everything
-else, and `height` is a config slot rather than a property. Nothing warns you;
-the track just opens at its default height. `jbrowse validate` reports the key
-by name and says which of the two places it belonged in.
+The same `"height": 250` on a raw snapshot's display node does nothing. A
+snapshot node takes only the display state model's properties (`id`, `type`,
+`configuration`) and drops the rest without warning. `jbrowse validate` names
+the key and says where it belonged.
 
 **A session can carry tracks of its own.** `sessionTracks` takes the same track
-configs the top-level `tracks` array takes, but they belong to that session:
-they travel with it when it is shared or saved, and never reach the
-`config.json` the server hands every visitor. It is how a link adds a track to
-somebody else's instance.
+configs as `tracks`, but they travel with the session and never reach the
+server's `config.json`. It is how a link adds a track to somebody else's
+instance.
 
-**On desktop the halves are stored as one file.** A `.jbrowse` file is this same
-document with the session saved into it, which is why opening one restores the
-tracks and the view together.
+**On desktop the halves are one file.** A `.jbrowse` file is this document with
+the session saved into it.
 
-**And the two are edited the same way.** Track settings are the same slots the
-track menu writes, so a setting you find by clicking around has a name you can
-write into the config — see [](/docs/config_guides/default_session).
+**The two are edited the same way.** Track settings are the slots the track menu
+writes, so a setting found by clicking has a name you can write into the config.
+See [](/docs/config_guides/default_session).
 
 ## Where the document comes from
 
-It is a small enough format to write, and to generate — a track is an id, a uri
-and the assembly it sits on, with the type and adapter read off the file's
-extension, and where the config declares one assembly the track need not name it
-(see [the shortest track](/docs/config_guides/tracks#the-shortest-track)). A
-view is an assembly, a locus and a list of tracks. Several things will also
-write parts of it for you:
+A track is an id, a uri and the assembly it sits on; the type and adapter come
+from the file extension, and with one assembly declared the track need not name
+it (see [the shortest track](/docs/config_guides/tracks#the-shortest-track)). A
+view is an assembly, a locus and a list of tracks. Things that write it for you:
 
-- [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and
-  `jbrowse add-track` append to `config.json`, inferring the track type and the
-  adapter from the file you hand them.
-- **The app tells you what to put in the session part.** Set the view up by
-  clicking; the assembly, locus and track ids you land on are what a view needs,
-  and the URL bar is already showing them. `jbrowse set-default-session`
-  installs a session file into a config. See
-  [](/docs/config_guides/default_session).
-- **A track hub needs no config file at all.** `&hubURL=` loads a
-  [UCSC track hub](/docs/user_guides/hub_url) straight from a link, supplying
-  its own assemblies and tracks, and [](/docs/config_guides/connections) makes
-  that permanent in a file.
-- **For a lot of tracks, generate it.** [](/docs/config_guides/deploying) covers
-  building `config.json` from a script.
+- [`@jbrowse/cli`](/docs/cli): `jbrowse add-assembly` and `jbrowse add-track`
+  append to `config.json`, inferring the track type and adapter from the file
+- **The app**, for the session part. Set the view up by clicking; the URL bar
+  shows the assembly, locus and track ids a view needs, and
+  `jbrowse set-default-session` installs a session file into a config. See
+  [](/docs/config_guides/default_session)
+- **A track hub**, which needs no file at all. `&hubURL=` loads a
+  [UCSC track hub](/docs/user_guides/hub_url) from a link, and
+  [](/docs/config_guides/connections) makes that permanent
+- **A script**, for many tracks. See [](/docs/config_guides/deploying)
 
 ## Opening the document, from a file or a link
 
-Save that as `hg38.json` next to jbrowse-web and it opens on it: the
-`defaultSession` is the view you land on.
-
-That fixes the view in the file. The same fields also go on the URL, to send
-someone a different gene or a different set of tracks — a view names an
-assembly, a location and a list of tracks, and jbrowse-web reads all three as
-query parameters.
+Save the example as `hg38.json` next to jbrowse-web and it opens on the
+`defaultSession`. The same fields also go on the URL, to send someone a
+different gene or a different set of tracks:
 
 ```
 ?config=hg38.json&assembly=hg38&loc=chr17:43,044,295-43,170,245&tracks=ncbi_genes
 ```
 
-The config still supplies the assemblies and the track definitions; the URL says
-which of them to open, and where. [](/docs/urlparams) lists every parameter and
-[](/docs/automating) covers the fields they set.
+The config supplies the assemblies and track definitions; the URL says which to
+open, and where. [](/docs/urlparams) lists every parameter and
+[](/docs/automating) the fields they set.
 
-For a view those parameters cannot describe — several views at once, a dotplot,
-tracks that exist only in that link — the URL carries a whole session as JSON, a
+For a view those parameters cannot describe (several views, a dotplot, tracks
+that exist only in that link), the URL carries a whole session as JSON, a
 [session spec](/docs/urlparams#session-spec). A spec writes a view exactly as a
-`defaultSession` does, so the same view object serves both.
+`defaultSession` does.
 
 ## The generated slot and model reference
 
-Every configuration type — each adapter, track, display, connection, and
-internet account — has a page under [](/docs/config) listing its slots, their
-types and their defaults, and every state model has one under [](/docs/models).
-Both are generated from the definitions in the source on every build, so they
-describe the release you are running.
+Every configuration type (adapter, track, display, connection, internet account)
+has a page under [](/docs/config) listing its slots, types and defaults, and
+every state model has one under [](/docs/models). Both are generated from the
+source on every build.
 
 Two pages sit between those and a file you are writing:
 
 - [](/docs/config_guides/file_types) maps a file format to the adapter that
-  reads it, which is what tells you which of those config pages to open.
+  reads it, and so to the config page to open
 - [](/docs/config_guides/slot_types) says what a slot's **Type** column accepts:
-  what to write for a `fileLocation`, a `stringEnum`, or a `frozen`.
+  a `fileLocation`, a `stringEnum`, a `frozen`
 
-A slot's value can also be computed per feature rather than fixed: see
-[](/docs/config_guides/jexl). If you are adding types of your own,
-[](/docs/developer_guides/configuration_schema) is how the schemas these pages
-are generated from get declared.
+A slot can also be computed per feature: [](/docs/config_guides/jexl). To add
+types of your own, see [](/docs/developer_guides/configuration_schema).
 
 ## Checking a document
 
@@ -196,28 +166,23 @@ jbrowse validate config.json
 ```
 
 The [validate command](/docs/cli#jbrowse-validate) checks a config or a saved
-`.jbrowse` session against a manifest generated from those same schemas. It
-catches what JBrowse itself ignores: a misspelled slot that leaves the setting
-doing nothing, a track naming an assembly that is not defined, a
+`.jbrowse` session against those same schemas. It catches what JBrowse itself
+ignores: a misspelled slot, a track naming an undefined assembly, a
 `defaultSession` naming a `trackId` that does not exist.
 
 ## More examples
 
-The [](/docs/cookbook) is whole configs short enough to copy — the smallest one
-that works, then the settings people reach for most. The
-[tutorials](/docs/tutorials) run end to end from public data, config and all.
-For the settings specific to one kind of data, the
+The [](/docs/cookbook) is whole configs short enough to copy. The
+[tutorials](/docs/tutorials) run end to end from public data. The
 [config guide](/docs/config_guide) has a page per track type.
 
 Nearly every figure on this site is rendered from one of these documents, which
-is why most carry an "Open this view in JBrowse" link: the image and the live
-session come from the same spec.
+is why most carry an "Open this view in JBrowse" link.
 
 ## Drawing the document as a static image
 
-The same document renders headlessly. `jb2export`, the command installed by
-[@jbrowse/img](/docs/jbrowse-img), takes the same config and the same assembly,
-location and tracks, and writes SVG, PNG or PDF:
+`jb2export`, installed by [@jbrowse/img](/docs/jbrowse-img), takes the same
+config, assembly, location and tracks and writes SVG, PNG or PDF:
 
 ```bash
 jb2export --config hg38.json --assembly hg38 \

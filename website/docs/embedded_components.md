@@ -5,15 +5,13 @@ description:
   to find working examples and demos for each
 ---
 
-The embedded components are **React components** published on npm: render one
-JSX element and you have a genome browser inside your own page. They are the
-same views the full JBrowse app is built from, so a track config that works
-there works here.
+The embedded components are **React components** on npm: one JSX element puts a
+genome browser in your page. They are the same views the full app is built from,
+so a track config that works there works here.
 
-React 18 or newer is the only peer dependency. If your page isn't a React app,
-the components also ship as a browser bundle you can load with a single
-`<script>` tag, which pulls in the React it needs itself; see
-[non-React hosts](#non-react-hosts) below.
+React 18 or newer is the only peer dependency. For a page that isn't a React
+app, a `<script>` bundle carries its own React; see
+[non-React hosts](#non-react-hosts).
 
 ## Choosing a package
 
@@ -24,33 +22,29 @@ the components also ship as a browser bundle you can load with a single
 | Complete app (multiple view types, synteny, etc)  | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2), [examples](https://jbrowse.org/storybook/app/)                                   | `<JBrowse>`            |
 | Make your own custom UI around the engine         | `createViewState` + [`@jbrowse/display-ui`](https://www.npmjs.com/package/@jbrowse/display-ui), [examples](https://jbrowse.org/storybook/byo/)               | —                      |
 
-Each package's storybook is the reference for how to use it: copy-pasteable
-React code, one page per task — setting up the view, navigating from your own
-code, running a worker, theming, plugins, and more. Start there for anything
-beyond the basic props below.
+Each package's storybook is the reference: copy-pasteable React code, one page
+per task (setting up the view, navigating from your own code, running a worker,
+theming, plugins).
 
-A `tracks` entry is a track config, and the shortest one is `{ trackId, uri }`:
-the type and adapter come from the file's extension, and `assemblyNames` from
-the single-view components' one `assembly`, or from an app config declaring just
-one (see [the shortest track](/docs/config_guides/tracks#the-shortest-track)).
+A `tracks` entry is a track config, and the shortest one is `{ trackId, uri }`.
+The type and adapter come from the file's extension, and `assemblyNames` from
+the component's one `assembly` (see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
 **`@jbrowse/react-app2` also needs its stylesheet**:
-`import '@jbrowse/react-app2/styles.css'`. It is the only one of these packages
-that ships a stylesheet; without it the panels, tabs and dividers render
-unstyled while everything else looks correct.
+`import '@jbrowse/react-app2/styles.css'`. Without it the panels, tabs and
+dividers render unstyled.
 
 **The props are initial values, like an input's `defaultValue`.** The engine is
-built once, on first render, and later prop changes are ignored — so pointing an
-already-mounted component at a different `assembly`, or a different plugin list,
-does nothing. Give the element a React `key` that changes with the assembly and
-React remounts it on a fresh engine.
+built once on first render and later prop changes are ignored. To switch
+`assembly` or plugins on a mounted component, give it a React `key` that changes
+with them so React remounts it.
 
 ## Embedded views versus the full app
 
-Embedded views are designed for genome browsing within an existing webpage. For
-a standalone browser, run [JBrowse Web](/docs/quickstart_web) instead.
-`@jbrowse/react-app2` sits between the two: the whole JBrowse app as a React
-component.
+Embedded views are for genome browsing inside an existing page. For a standalone
+browser, run [JBrowse Web](/docs/quickstart_web). `@jbrowse/react-app2` sits
+between: the whole app as a React component.
 
 |                | Single-view components (LGV, CGV) | `@jbrowse/react-app2`                      | JBrowse Web                                                      |
 | -------------- | --------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
@@ -59,21 +53,18 @@ component.
 | Sessions       | No built-in saving or loading     | Held in your app's state, yours to persist | Save, import, export, plus local autosave                        |
 | URLs           | The page owns the URL             | The page owns the URL                      | Reads [URL params](/docs/urlparams) like `&loc=` and `&session=` |
 
-Embedded components are designed for web developers to build custom systems
-around, so features like sessions and track manipulation can be implemented by
-the embedding application. If your app is Python or R rather than JavaScript,
-[](/docs/jbrowse_anywidget) and [](/docs/jbrowser) wrap the same views.
+Sessions and track manipulation are left to the embedding application. For
+Python or R, [](/docs/jbrowse_anywidget) and [](/docs/jbrowser) wrap the same
+views.
 
 ## Non-React hosts
 
-Every package also exports an imperative controller — `createLinearGenomeView`,
-`createCircularGenomeView`, `createApp` — with no JSX and no React root for you
-to manage. It's what the [Python anywidget](/docs/jbrowse_anywidget), R
-htmlwidgets, and plain `<script>` pages are built on. See the vanillajs rows in
-[bundler examples](#bundler-examples) below for a working reference
-implementation of each. Driving one from your own code — reading state back out,
-local in-process data, the controller's callbacks — is covered in
-[](/docs/automating).
+Every package exports an imperative controller (`createLinearGenomeView`,
+`createCircularGenomeView`, `createApp`) with no JSX and no React root to
+manage. The [Python anywidget](/docs/jbrowse_anywidget), R htmlwidgets and plain
+`<script>` pages are built on it; the vanillajs rows in
+[bundler examples](#bundler-examples) are reference implementations. Driving one
+from your own code is covered in [](/docs/automating).
 
 ## Bundler examples
 
