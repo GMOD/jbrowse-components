@@ -496,16 +496,17 @@ async function main() {
         )
         for (const c of r.calls) {
           console.log(
-            `    ${c.outcome?.padEnd(8)} t+${(c.issuedAt - r.calls[0]!.issuedAt).toFixed(0).padStart(5)}ms bin ${String(c.perBaseBinBp).padStart(3)} ${c.region}` +
-              (c.stoppedAt !== undefined
+            `    ${c.outcome?.padEnd(8)} t+${(c.issuedAt - r.calls[0]!.issuedAt).toFixed(0).padStart(5)}ms bin ${String(c.perBaseBinBp).padStart(3)} ${c.region}${
+              c.stoppedAt !== undefined
                 ? ` stopped@+${(c.stoppedAt - c.issuedAt).toFixed(0)}ms`
-                : '') +
-              (c.settledAt !== undefined
+                : ''
+            }${
+              c.settledAt !== undefined
                 ? ` settled@+${(c.settledAt - c.issuedAt).toFixed(0)}ms`
-                : '') +
-              (c.statusAfterStop
-                ? ` status-after-stop ${c.statusAfterStop}`
-                : ''),
+                : ''
+            }${
+              c.statusAfterStop ? ` status-after-stop ${c.statusAfterStop}` : ''
+            }`,
           )
         }
       }

@@ -485,7 +485,7 @@ Only the SVG bodies drift; every canvas count came back bit-identical across
 every run.
 
 The five `SvInspectorView` figures were spot-checked rather than re-shot:
-`node scripts/generate-screenshots.ts --check --filter sv_inspector` from
+`node website/scripts/generate-screenshots.ts --check --filter sv_inspector` from
 `website/` renders each twice and compares them without touching a committed
 PNG, and all six it selects came out stable to 0.000% with every page readied by
 the app's own `ready` marker. They author the flat shape the probe drives, and

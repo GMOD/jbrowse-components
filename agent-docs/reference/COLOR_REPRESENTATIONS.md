@@ -1,6 +1,7 @@
 ---
 name: color-representations
 description: One-page spec (release-validation method) for the packed-color concept — the six representations a color travels through between a config slot and a drawn pixel (CSS string, the vendored color-bits canonical u32, the GPU-facing ABGR u32, a normalized float triple, plain RGBA/HSLA objects, and the `colord` UI facade) and the ~20 named functions that cross between them. Unlike REGION_TOO_LARGE.md and TRACK_REGISTRATION.md, this one does not collapse cleanly: two of the six representations share the exact runtime type (`number`) with incompatible byte layouts, the type system cannot tell them apart, and the conversion graph has no edge back from the GPU layout to the domain every color-math operation lives in. Read before adding a color path, or before believing "call the accessor" is enough of a contract.
+audience: internal
 ---
 
 # Color representations: a concept that does not collapse

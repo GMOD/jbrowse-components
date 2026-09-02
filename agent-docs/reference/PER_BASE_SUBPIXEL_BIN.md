@@ -1,7 +1,6 @@
 ---
 name: per-base-subpixel-bin
 description: The two per-base alignments colour modes emitted one JS object per aligned base of every read in the worker, unbounded by the viewport — 30.5M entries and 2.0 GB on a 1 Mb pacbio pileup, and an OOM at short-read depth. What the sub-pixel bin that bounds it does, what it measures at, and the compositing mechanism that made it visible in `perBaseLetter` and invisible in `perBaseQuality`. Read before touching `subPixelBinBp`, `forEachAlignedBaseInRegion`, or either per-base extract.
-audience: internal
 ---
 
 # The per-base wall, and the sub-pixel bin that bounds it

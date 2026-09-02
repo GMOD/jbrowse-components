@@ -230,7 +230,7 @@ async function census(page: Page): Promise<Census> {
   const dom = await page.evaluate(
     (chords, rows, pending) => ({
       viewPhases: [...document.querySelectorAll('[data-view-phase]')].map(
-        e => e.getAttribute('data-view-phase') ?? '',
+        e => e.dataset.viewPhase ?? '',
       ),
       chords: document.querySelectorAll(chords).length,
       rows: document.querySelectorAll(rows).length,
@@ -324,11 +324,10 @@ async function pageState(page: Page) {
     ).JBrowseSession
     return {
       appPhase:
-        document
-          .querySelector('[data-app-phase]')
-          ?.getAttribute('data-app-phase') ?? 'absent',
+        document.querySelector('[data-app-phase]')?.dataset.appPhase ??
+        'absent',
       viewPhases: [...document.querySelectorAll('[data-view-phase]')].map(
-        e => e.getAttribute('data-view-phase') ?? '',
+        e => e.dataset.viewPhase ?? '',
       ),
       pending: [...document.querySelectorAll(pending)].map(e =>
         [...e.attributes]

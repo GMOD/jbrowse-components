@@ -1,6 +1,7 @@
 ---
 name: track-registration
 description: One-page spec (release-validation method) for the session-tracks concept — the three destinations a track config can land in (sessionTracks, trackConfigDeltas, jbrowse.tracks), the six actions that route a track between them, and the count of state a consumer can actually tell apart. 32 named branches across six actions and two session mixins collapse to 17 consumer-visible outcomes and, further, to 4 destination values plus three small side channels a menu or a `tracks` read ever consults. Read before adding a seventh track-registration action, or before trusting that "session vs catalog vs delta" is simpler than it looks.
+audience: internal
 ---
 
 # Track registration: session, catalog, delta
