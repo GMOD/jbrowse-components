@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import { clusterScoreMatrixArgs } from './components/clusterOptions.ts'
+import { parseSamplesPerPixel } from './components/parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
@@ -52,10 +53,15 @@ export async function runWiggleClustering({
       ret.tree,
       // Sampling density belongs in the caption because it changes the matrix:
       // the columns are pixel bins, so the same locus at a different density is
-      // a different set of measurements. Taken from `args` rather than
-      // recomputed so the recorded value cannot drift from the one sent.
+      // a different set of measurements. The parsed value, not the raw field
+      // text: `samplesPerPixel` is free text and the matrix was binned at what
+      // `parseSamplesPerPixel` clamped or defaulted it to, so recording the
+      // text would caption the matrix with a density it was never built at.
       clusterProvenanceFromRegions(args.regions, [
-        { name: 'samples/px', value: samplesPerPixel },
+        {
+          name: 'samples/px',
+          value: String(parseSamplesPerPixel(samplesPerPixel)),
+        },
       ]),
     )
   }
