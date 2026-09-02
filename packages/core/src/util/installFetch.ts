@@ -196,7 +196,7 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    * also be invalidated by `reload()`, or Retry re-runs the body straight into
    * the same decline and the button is dead. Every layer that has one made
    * that pairing structural in the end — the global family after arc shipped
-   * the bug (`GlobalFetchMixin.reload` drops `loadedFetchSignature` in the same
+   * the bug (`GlobalFetchMixin.reload` drops `loadedFetchKey` in the same
    * action as the bump) — and this is that move for the skeleton: a run whose
    * `reloadCounter` has advanced since the run that last ISSUED a fetch ignores
    * this gate, so nothing has to remember to clear anything. The multi-way
@@ -226,7 +226,7 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    * write is what wakes the autorun to fetch A again. A closure variable would
    * leave data B under viewport A until the next input moved.
    */
-  committedKey?: () => string | undefined
+  loadedKey?: () => string | undefined
   /**
    * The predicate form of the freshness gate, for a fetch whose "I have exactly
    * this already" is not string equality: the density tier holds bins over a
@@ -341,7 +341,7 @@ export function installFetch<TArgs, TResult>(
     gate,
     contract,
     fetchKey,
-    committedKey,
+    loadedKey,
     heldAnswers,
     prepare,
     run,
@@ -363,10 +363,10 @@ export function installFetch<TArgs, TResult>(
   // fetch with no `fetchKey` never reads it, so allocating one would only feed
   // it `undefined` on every commit.
   const stamp =
-    committedKey === undefined && fetchKey !== undefined
+    loadedKey === undefined && fetchKey !== undefined
       ? observable.box<string | undefined>()
       : undefined
-  const heldKey = committedKey ?? (() => stamp?.get())
+  const heldKey = loadedKey ?? (() => stamp?.get())
   // the freshness gate in whichever form the caller declared it
   const held =
     heldAnswers !== undefined

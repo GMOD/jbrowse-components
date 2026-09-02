@@ -63,7 +63,7 @@ export default function GlobalFetchMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * `fetchSignature` as it stood when the held data was committed — the
+       * `currentFetchKey` as it stood when the held data was committed — the
        * loaded half of this family's freshness compare. Written only by
        * `commitFetchResult`, so a display cannot stamp data it did not fetch,
        * and cleared by `reload` for the overlay's sake rather than the
@@ -71,7 +71,7 @@ export default function GlobalFetchMixin() {
        * data itself stays display-owned: arc keeps stale arcs on screen under
        * the loading overlay, HiC keeps the stale matrix.
        */
-      loadedFetchSignature: undefined as string | undefined,
+      loadedFetchKey: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -105,7 +105,7 @@ export default function GlobalFetchMixin() {
        * prerequisite header still in flight) and holds the fetch off.
        *
        * Settings and the adapter are deliberately not the display's half:
-       * `fetchSignature` below appends `rpcPropsCacheKey` and
+       * `currentFetchKey` below appends `rpcPropsCacheKey` and
        * `adapterConfigKey`, so a field added to `rpcProps()` or a track
        * re-pointed in the config editor invalidates held data structurally.
        * HiC hand-folded one settings term in and would have silently missed
@@ -159,7 +159,7 @@ export default function GlobalFetchMixin() {
        * at issue, compared against the stamp below, and written to it at
        * commit.
        */
-      get fetchSignature(): string | undefined {
+      get currentFetchKey(): string | undefined {
         const base = self.viewSignature
         return base === undefined
           ? undefined
@@ -190,7 +190,7 @@ export default function GlobalFetchMixin() {
       /**
        * #getter
        * The shared freshness answer every foundation gives: data has been
-       * committed (`loadedFetchSignature` is only ever written beside it), it
+       * committed (`loadedFetchKey` is only ever written beside it), it
        * was fetched for the current view and settings, and the display is not
        * about to supersede it itself. A pan inside the loaded blocks stays
        * current; a block entering, a tier step, a settings change or a
@@ -203,7 +203,7 @@ export default function GlobalFetchMixin() {
        */
       get dataCurrent(): boolean {
         return (
-          isDataCurrent(self.loadedFetchSignature, self.fetchSignature) &&
+          isDataCurrent(self.loadedFetchKey, self.currentFetchKey) &&
           !self.dataSuperseded
         )
       },
@@ -274,12 +274,12 @@ export default function GlobalFetchMixin() {
          * The commit half of this family's fetch: run the display's own store in
          * the same transaction as the signature stamp, so no observer can see fresh
          * data under a stale signature or the reverse. Being the only writer of
-         * `loadedFetchSignature` is what makes `dataCurrent` derivable — a
+         * `loadedFetchKey` is what makes `dataCurrent` derivable — a
          * display cannot commit without stamping.
          */
         commitFetchResult(commit: () => void, signature: string) {
           commit()
-          self.loadedFetchSignature = signature
+          self.loadedFetchKey = signature
         },
         /**
          * #action
@@ -297,7 +297,7 @@ export default function GlobalFetchMixin() {
          */
         reload() {
           superReload()
-          self.loadedFetchSignature = undefined
+          self.loadedFetchKey = undefined
         },
       }
     })

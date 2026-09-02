@@ -266,7 +266,7 @@ export function evaluateRegionTooLarge({
  * While `regionTooLarge` holds, every "already have it" gate is void — the
  * per-region family's `covered`, and the global family's committed signature,
  * which spells the same precedence as a key rather than through this function
- * (`installGlobalFetchAutorun`'s `committedKey` reads as absent while the
+ * (`installGlobalFetchAutorun`'s `loadedKey` reads as absent while the
  * banner holds). Held data answers nothing while the banner hides it, and the
  * fetch is the only re-measure, so a return to a viewport whose data is still
  * loaded has to fetch or the banner can never be released.

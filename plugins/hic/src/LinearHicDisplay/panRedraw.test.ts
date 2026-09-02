@@ -72,10 +72,10 @@ test('a pan inside the loaded blocks redraws without a refetch', async () => {
 
   const calls = contactCalls(mockRpcCall).length
   const offsetBefore = display.viewTransform.viewOffsetX
-  const signatureBefore = display.fetchSignature
+  const signatureBefore = display.currentFetchKey
 
   view.horizontalScroll(10)
-  expect(display.fetchSignature).toBe(signatureBefore)
+  expect(display.currentFetchKey).toBe(signatureBefore)
   // the redraw half: the per-frame transform followed the viewport
   expect(display.viewTransform.viewOffsetX).toBe(offsetBefore - 10)
   expect(display.dataCurrent).toBe(true)
@@ -88,10 +88,10 @@ test('a pan inside the loaded blocks redraws without a refetch', async () => {
 test('a zoom moves the signature and refetches', async () => {
   const { display, view, mockRpcCall } = await loadedDisplay()
   const calls = contactCalls(mockRpcCall).length
-  const signatureBefore = display.fetchSignature
+  const signatureBefore = display.currentFetchKey
 
   view.zoomTo(5000)
-  expect(display.fetchSignature).not.toBe(signatureBefore)
+  expect(display.currentFetchKey).not.toBe(signatureBefore)
   expect(display.dataCurrent).toBe(false)
 
   jest.advanceTimersByTime(1100)

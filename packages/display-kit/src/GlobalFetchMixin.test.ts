@@ -229,7 +229,7 @@ describe('an empty viewport is a resting state, so it is terminal', () => {
 // track re-pointed in the config editor is a different fetch, and until 2026-09
 // this family's key could not see it — the display kept the old file's matrix
 // until a block boundary or a setting moved.
-test('fetchSignature moves with the adapter config', () => {
+test('currentFetchKey moves with the adapter config', () => {
   const Display = types
     .compose(
       'TestAdapterKeyedDisplay',
@@ -252,9 +252,9 @@ test('fetchSignature moves with the adapter config', () => {
   const model: Instance<typeof Display> = hostView(Display, {
     type: 'TestAdapterKeyedDisplay',
   }).display
-  const before = model.fetchSignature
+  const before = model.currentFetchKey
   expect(before).toBeDefined()
 
   model.setAdapterConfig({ type: 'B' })
-  expect(model.fetchSignature).not.toBe(before)
+  expect(model.currentFetchKey).not.toBe(before)
 })

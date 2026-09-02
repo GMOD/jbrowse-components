@@ -8,7 +8,7 @@
 // `prepare` declines once its data has loaded (arc: `dataCurrent`) hits that on
 // every successful fetch, which is how `reload()` came to be a no-op there. The
 // skeleton reads `reloadCounter` and `fetchCanceled` unconditionally; the
-// viewport and the `rpcProps()` axis are tracked through `fetchSignature`,
+// viewport and the `rpcProps()` axis are tracked through `currentFetchKey`,
 // which `prepare` and the freshness gate read on every run the gates let
 // through; and each gate term is an observable that flips on the transition to
 // wake on.
@@ -106,7 +106,7 @@ const TestDisplay = types
     committedBytes: [] as (number | undefined)[][],
     // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and `dataCurrent`
     // compares against
-    loadedFetchSignature: undefined as string | undefined,
+    loadedFetchKey: undefined as string | undefined,
   }))
   .volatile(self => ({
     // `FetchMixin`'s rotation, lent to the skeleton — which is also what a test
@@ -130,13 +130,13 @@ const TestDisplay = types
     // it: the block set plus the serialized settings axis, so the viewport and
     // `rpcProps()` are tracked wherever the signature is read — which is now
     // the whole viewport trigger, the way it is for the real mixin.
-    get fetchSignature(): string | undefined {
+    get currentFetchKey(): string | undefined {
       return `${self.host.dynamicBlocks.contentBlocks
         .map(b => b.key)
         .join(',')}|${this.rpcPropsCacheKey}`
     },
     get dataCurrent() {
-      return isDataCurrent(self.loadedFetchSignature, this.fetchSignature)
+      return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
     },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
     // it off the node in both families rather than taking a predicate.
@@ -168,7 +168,7 @@ const TestDisplay = types
     // `GlobalFetchMixin.commitFetchResult`
     commitFetchResult(commit: () => void, signature: string) {
       commit()
-      self.loadedFetchSignature = signature
+      self.loadedFetchKey = signature
     },
     // `RegionTooLargeMixin`'s byte-gate commit pair. The gate state is what a
     // measurement is judged against; this fixture records the bytes the runner
@@ -221,7 +221,7 @@ const TestDisplay = types
     },
     reload() {
       self.reloadCounter += 1
-      self.loadedFetchSignature = undefined
+      self.loadedFetchKey = undefined
     },
     // `FetchMixin`'s pair, cut down to the flag plus the rotation: the internal
     // reset the viewport-change autorun runs, and the user gesture the
@@ -438,7 +438,7 @@ describe('installGlobalFetchAutorun', () => {
 
   it('refetches when a reload() bump also reopens the gate', async () => {
     // what a display gets by pairing the counter bump with dropping its
-    // freshness signal (GlobalFetchMixin.reload clears loadedFetchSignature)
+    // freshness signal (GlobalFetchMixin.reload clears loadedFetchKey)
     const { display, fetched } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
@@ -700,7 +700,7 @@ describe('a blocked display still re-measures', () => {
   // it returns to, which is the half the freshness compare used to break: the
   // freshness gate answers "nothing owed" for a span whose data was committed
   // earlier, while the banner is hiding that very data and this fetch is the
-  // only re-measure. What makes `regionTooLarge` outrank it is `committedKey`
+  // only re-measure. What makes `regionTooLarge` outrank it is `loadedKey`
   // reading as absent while the banner holds — the same precedence the
   // per-region family applies through `heldDataAnswers`, spelled here as a key
   // so the skeleton's reload epoch can override it. `gateSkipsMeasuredViewport`
@@ -745,7 +745,7 @@ describe('the gate suppresses a fetch while it is shut', () => {
     expect(fetched.count).toBe(afterFirst + 1)
   })
 
-  // `fetchSignature` is computed from view-derived getters that throw before
+  // `currentFetchKey` is computed from view-derived getters that throw before
   // init by design, so this term is what keeps `prepare` from being reached at
   // all — and it is observable, which is what makes the decline safe.
   it('does not fetch before the view is initialized, and fetches once after', async () => {

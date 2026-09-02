@@ -132,7 +132,7 @@ function installLaneFetch<Spec, Result>(
     name,
     fetchSpecs,
     fetchOne,
-    committedKey,
+    loadedKey,
     commit,
   }: {
     name: string
@@ -141,7 +141,7 @@ function installLaneFetch<Spec, Result>(
       spec: Spec,
       ctx: FetchContext,
     ) => Promise<readonly [string, Result]>
-    committedKey: () => string | undefined
+    loadedKey: () => string | undefined
     commit: (byLane: Map<string, Result>, key: string) => void
   },
 ) {
@@ -157,7 +157,7 @@ function installLaneFetch<Spec, Result>(
     fetchKey: ({ key }) => key,
     // the display's own stamp rather than the skeleton's, so `dataSuperseded`
     // reads the same key the gate compares
-    committedKey,
+    loadedKey,
     run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
     commit: (byLane, { key }) => {
       commit(byLane, key)
@@ -231,7 +231,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
-    committedKey: () => self.laneGenesKey,
+    loadedKey: () => self.laneGenesKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
@@ -254,7 +254,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
-    committedKey: () => self.laneLinksKey,
+    loadedKey: () => self.laneLinksKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,

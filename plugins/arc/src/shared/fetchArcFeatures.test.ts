@@ -122,7 +122,7 @@ describe('arc displayPhase', () => {
 // fetch", so bumping the counter can't wake it, and the signature still matches
 // so `prepare` would decline anyway. Covers both halves of the fix —
 // unconditional trigger reads in installGlobalFetchAutorun, and
-// GlobalFetchMixin.reload() dropping loadedFetchSignature for the whole family.
+// GlobalFetchMixin.reload() dropping loadedFetchKey for the whole family.
 describe('arc reload', () => {
   it('refetches after a successful load', async () => {
     const { display, view, mockRpcCall } =

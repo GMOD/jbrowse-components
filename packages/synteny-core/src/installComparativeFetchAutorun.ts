@@ -131,7 +131,7 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     report: self,
     contract: `${name}'s installComparativeFetchAutorun`,
     fetchKey: ({ key }) => key,
-    committedKey: () => self.loadedFetchKey,
+    loadedKey: () => self.loadedFetchKey,
     prepare: () => {
       const args = prepare()
       return args === undefined

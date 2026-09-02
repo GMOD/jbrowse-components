@@ -9,7 +9,7 @@ Every fetch in the tree gates on one compare: the key the held data was fetched
 under against the key a fetch now would use (`installFetch`'s `fetchKey` /
 `heldAnswers`). The two LGV families spell their non-viewport axes differently:
 
-- **Global**: `GlobalFetchMixin.fetchSignature` is
+- **Global**: `GlobalFetchMixin.currentFetchKey` is
   `viewSignature | rpcPropsCacheKey | adapterConfigKey`. A settings change moves
   the key, the skeleton refetches, and the display keeps the stale frame up
   under the loading overlay until the commit lands.

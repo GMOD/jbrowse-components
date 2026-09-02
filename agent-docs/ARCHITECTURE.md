@@ -659,7 +659,7 @@ autorun again. Arc is the shape that exposed this: its `prepare` declines while
 `reloadCounter` read under the gate `reload()` was silently dead. The viewport
 and the `rpcProps()` cache key (`FetchMixin.rpcPropsCacheKey`, for the reason
 in "the cache key is the return value, not the reads") are the global family's
-other two trigger axes, and both ride `fetchSignature`, which `prepare` and the
+other two trigger axes, and both ride `currentFetchKey`, which `prepare` and the
 freshness gate read on every run the gates let through — so any state that can
 decline for a signature-shaped reason keeps a signature read that wakes it.
 
@@ -688,12 +688,12 @@ errored) where a gated read would have dropped out.
 A gate on a freshness signal must also be invalidated by `reload()` — bumping
 `reloadCounter` alone re-runs the autorun but leaves the gate declining. On the
 global family that pairing is the skeleton's now: the freshness gate is
-`installFetch`'s `fetchKey` (`fetchSignature` against the stamped
-`loadedFetchSignature`), and a run whose `reloadCounter` has advanced since the
+`installFetch`'s `fetchKey` (`currentFetchKey` against the stamped
+`loadedFetchKey`), and a run whose `reloadCounter` has advanced since the
 run that last issued a fetch ignores it — including against a fetch that
 commits mid-reload and re-stamps the very signature the reload dropped, a race
 the family's hand-rolled gate lost. `GlobalFetchMixin.reload()` still drops
-`loadedFetchSignature`, but for the overlay: `dataCurrent` goes false, so the
+`loadedFetchKey`, but for the overlay: `dataCurrent` goes false, so the
 refetch shows as loading while the display's data stays on screen under it.
 Arc and HiC each carried their own copy of that invalidation before the mixin
 owned it, and the copies were the reason the rule had to be remembered.
@@ -1188,7 +1188,7 @@ site does anymore.
 `getConf(this.parentTrack, 'adapter')`) — a **structural** arg, so it is not in
 `rpcProps()`, and its own axis of every fetch key: `FetchMixin.adapterConfigKey`
 (`adapterConfigKey` from `@jbrowse/core/util`, the one spelling every fetch
-family uses) rides beside `rpcPropsCacheKey` in `fetchSignature` and in
+family uses) rides beside `rpcPropsCacheKey` in `currentFetchKey` and in
 `SettingsInvalidate`'s trigger list, so a track re-pointed in the config editor
 refetches. Until 2026-09 only the comparative displays and the prerequisite
 reads keyed on it, and an LGV display kept the old file's data until something

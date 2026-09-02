@@ -378,7 +378,7 @@ export default function FetchMixin() {
        * #getter
        * The adapter axis of the same key, watched by the same two readers as
        * `rpcPropsCacheKey`: `SettingsInvalidate` per-region and the global
-       * family's `fetchSignature`. A track re-pointed in the config editor is a
+       * family's `currentFetchKey`. A track re-pointed in the config editor is a
        * different fetch, and until 2026-09 only the comparative family said so.
        */
       get adapterConfigKey(): string {

@@ -1719,7 +1719,7 @@ does the Canvas2D-only version); keep them in step with any change here.
     `installGlobalFetchAutorun(self, { prepare, run, commit, delay, name })`.
     The helper declares this family's terms over the shared `installFetch`
     skeleton (`reloadCounter` and the durable cancel read unconditionally, the
-    freshness gate on `fetchSignature` with its reload epoch, and gates for a
+    freshness gate on `currentFetchKey` with its reload epoch, and gates for a
     view not yet initialized, a minimized track and a viewport the byte gate
     already measured; then the debounce); the display supplies the three phases.
     `prepare` runs synchronously in the autorun and returning `undefined` from

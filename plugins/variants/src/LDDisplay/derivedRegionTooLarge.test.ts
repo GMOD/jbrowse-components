@@ -165,7 +165,7 @@ describe('LD derived regionTooLarge', () => {
   // measurement is the only thing that releases it. What this pins is the LD
   // side of it: one RPC, carrying the byte limit, and a commit that clears both
   // the banner and the stale-measurement flag. The PRECEDENCE that lets the run
-  // through is the installed autorun's `committedKey`, which reads as absent
+  // through is the installed autorun's `loadedKey`, which reads as absent
   // while `regionTooLarge` holds — `installGlobalFetchAutorun.test.ts`'s
   // 'fetches a viewport whose data it still holds, and only once' pins that on
   // the skeleton. Before the precedence existed this shipped as a display stuck
@@ -177,7 +177,7 @@ describe('LD derived regionTooLarge', () => {
     await new Promise(res => setTimeout(res, 0))
 
     view.zoomTo(50)
-    const loadedViewport = display.fetchSignature
+    const loadedViewport = display.currentFetchKey
     mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
       method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
     )
@@ -198,7 +198,7 @@ describe('LD derived regionTooLarge', () => {
     // measurement behind it is about the viewport just left, and the freshness
     // gate would answer "nothing owed"
     view.zoomTo(50)
-    expect(display.fetchSignature).toBe(loadedViewport)
+    expect(display.currentFetchKey).toBe(loadedViewport)
     expect(display.dataCurrent).toBe(true)
     expect(display.regionTooLarge).toBe(true)
     expect(display.gateMeasurementStale).toBe(true)

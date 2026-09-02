@@ -31,7 +31,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
   // a new block set, so the installed autorun issues a fetch for it
   view.zoomTo(10)
   const issuedOffsetPx = view.offsetPx
-  const issuedSignature = display.fetchSignature
+  const issuedSignature = display.currentFetchKey
   await waitFor(
     () => {
       expect(landData).toBeDefined()
@@ -54,7 +54,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
     snps: [],
   })
   await waitFor(() => {
-    expect(display.loadedFetchSignature).toBe(issuedSignature)
+    expect(display.loadedFetchKey).toBe(issuedSignature)
   })
 
   // the pan moved the block set out from under the fetch, so the data is not

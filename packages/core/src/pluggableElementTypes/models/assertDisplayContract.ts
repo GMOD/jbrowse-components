@@ -158,7 +158,7 @@ export function takeFetchStarted(self: object) {
  * has changed. Arc shipped exactly that: a `prepare` declining on `dataCurrent`,
  * with the error clearing on click and no arcs ever coming back. The fix this
  * message asks for is what `GlobalFetchMixin.reload()` now does for that whole
- * family — drop `loadedFetchSignature`, so `dataCurrent` goes false and the
+ * family — drop `loadedFetchKey`, so `dataCurrent` goes false and the
  * gate opens.
  *
  * Detected at the moment it happens rather than statically, because the relation
@@ -276,7 +276,7 @@ export function makeRetryContractCheck(
             `fetch autorun's gate still declines, so Retry is a dead ` +
             `button — it clears the error and nothing refetches. reload() has ` +
             `to invalidate whatever that gate reads, not just bump the ` +
-            `counter (GlobalFetchMixin.reload drops loadedFetchSignature so ` +
+            `counter (GlobalFetchMixin.reload drops loadedFetchKey so ` +
             `dataCurrent goes false). If this display is deliberately not ` +
             `fetching, say so with fetchInert — the loading scrim and the SVG ` +
             `export read it too; if this run declined only because a ` +

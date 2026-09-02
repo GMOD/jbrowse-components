@@ -223,7 +223,7 @@ and gating on the visible half left exactly the same empty export behind.
 **A dependent fetch of the display's own.** Multi-way synteny fetches lane genes
 and lane links off the lane frames its ortholog fetch produced, so the signature
 is current the moment the ortholog data commits while the lanes are still empty.
-Each lane fetch stamps its key on the display (`committedKey`), and the hook is
+Each lane fetch stamps its key on the display (`loadedKey`), and the hook is
 "specs exist and the stamp is not the current key" — which a lane fetch always
 clears, since one failed lane drops out of an otherwise committed map.
 

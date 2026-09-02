@@ -61,8 +61,8 @@ display except this one.
   gate, so a bump refires into a fetch with nothing to remember to clear (this
   was the rule the other way around until 2026-08-31, when arc's `reload()`
   needed the invalidation or the gate declined). `GlobalFetchMixin.reload()`
-  drops `loadedFetchSignature` so `dataCurrent` goes false and the refetch shows
-  as loading; `features` deliberately survives, so stale arcs stay under that
+  drops `loadedFetchKey` so `dataCurrent` goes false and the refetch shows as
+  loading; `features` deliberately survives, so stale arcs stay under that
   overlay instead of blanking.
 - **Two readiness flags, don't conflate**: `svgReady` is the SVG-export terminal
   gate and goes false on a pan past a block boundary; `data-display-drawn` gets

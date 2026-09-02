@@ -51,7 +51,7 @@ export interface GlobalFetchHost
   // it in the same transaction as the display's own store. The signature, not
   // `dataCurrent`: that one also carries `dataSuperseded`, which holds the
   // export and must not refetch.
-  fetchSignature: string | undefined
+  currentFetchKey: string | undefined
   commitFetchResult: (commit: () => void, signature: string) => void
 }
 
@@ -76,7 +76,7 @@ export interface GlobalFetchAutorunHost
   // The committed side of the skeleton's freshness gate, and the verdict that
   // outranks it: while the banner holds, the stamp reads as absent, because the
   // banner is hiding that data and this fetch is the only re-measure.
-  loadedFetchSignature: string | undefined
+  loadedFetchKey: string | undefined
   regionTooLarge: boolean
   // The hosting view, for the not-yet-initialized gate: view-derived getters
   // (`dynamicBlocks`, `width`) throw before init by design, so the signature
@@ -119,7 +119,7 @@ function globalFetchPlan<TArgs, TResult>(
 > {
   return {
     prepare: () => {
-      const signature = self.fetchSignature
+      const signature = self.currentFetchKey
       if (signature === undefined) {
         return undefined
       }
@@ -167,7 +167,7 @@ function globalFetchPlan<TArgs, TResult>(
  *   unconditionally". Liveness is not a term here: `installFetch` checks it
  *   above every gate, because `host` is a parent walk and so is nearly every
  *   other gate in the tree.
- * - **fetchKey / committedKey** — `fetchSignature` (the display's
+ * - **fetchKey / loadedKey** — `currentFetchKey` (the display's
  *   `viewSignature` plus the serialized `rpcProps()` axis, so the viewport and
  *   every user setting are tracked wherever the compare runs) against the
  *   stamp `commitFetchResult` wrote. While `regionTooLarge` holds, the
@@ -210,8 +210,7 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       !self.isMinimized &&
       !self.gateSkipsMeasuredViewport,
     fetchKey: issue => issue.signature,
-    committedKey: () =>
-      self.regionTooLarge ? undefined : self.loadedFetchSignature,
+    loadedKey: () => (self.regionTooLarge ? undefined : self.loadedFetchKey),
     ...globalFetchPlan(self, opts),
     ...fetchMixinLifecycle(self),
   })
