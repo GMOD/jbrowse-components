@@ -51,9 +51,9 @@ wrong; read the header before using it.** `rehearse` runs one short turn.
 **`webDemo.mjs <outdir> <deviceId>`** — a LOCAL jbrowse-web build driven through
 the Claude in Chrome extension by a headless `claude -p --chrome` session, no
 filming. The proof that `window.jb` works from the client it was built for. The
-agent gets only the website pages (`agents_web.md`, `agents_mcp.md`) as system
-prompt; `deviceId` comes from the extension's `list_connected_browsers` (two
-Chrome installs register here, so it must be named). Needs
+agent gets only the website pages (`agents.md`, `agents_live_model.md`) as
+system prompt; `deviceId` comes from the extension's `list_connected_browsers`
+(two Chrome installs register here, so it must be named). Needs
 `pnpm --filter @jbrowse/web build` first. Writes `transcript.json` and every
 screenshot the agent took as `shot-NN.png`.
 

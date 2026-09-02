@@ -136,10 +136,11 @@ const stale: string[] = []
 // the moment a tested `jb` example fixture exists to point at — that is the
 // conversion this debt is waiting on, and it would buy back most of the six.
 //
-// 49 -> 52 on 2026-09-02: the agents overview rewrite grew `agents.md` (+2) and
-// `agents_web.md` (+1) — the same standard-library tour, so `agents_web.md` no
-// longer holds the line its own "adds ZERO deliberately" note above described.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '52')
+// 49 -> 41 on 2026-09-02: the agent pages were consolidated. `agents_mcp.md`
+// and `agents_web.md` folded into `agents.md` and `agents_live_model.md`, the
+// recipes page dropped two entries, and `agents_capture.md` kept only the
+// selectors the generated `@jbrowse/capture` reference does not carry.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '41')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {

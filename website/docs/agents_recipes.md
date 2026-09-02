@@ -8,16 +8,13 @@ description:
   per locus, and adding a remote file
 ---
 
-Each recipe is a `run_javascript` body for JBrowse Desktop over
-[MCP](/docs/agents_mcp). In JBrowse Web the same code runs in the page (see
-[](/docs/agents_web)), where the value is the last expression rather than a
-`return`, so wrap a body in `(async () => { ... })()` there. What differs
-between the two is said where it matters.
-
-Every snippet was run against the `volvox` test config or the hosted hg38 config
-before it was written down, and the values quoted are what came back. Inside the
-app the same page is `docs topic:"recipes"`, so an agent can read one section at
-a time.
+- Each recipe is a `run_javascript` body for JBrowse Desktop over MCP.
+- In JBrowse Web the same code runs in the page, where the value is the last
+  expression rather than a `return`, so wrap a body in
+  `(async () => { ... })()`.
+- Every snippet runs against the `volvox` test config or the hosted hg38 config
+  in the Desktop conformance suite, and the values quoted are what came back.
+- Inside the app the same page is `docs topic:"recipes"`, one section at a time.
 
 ## Find the tracks you can use
 
@@ -40,11 +37,14 @@ tracks are included, which is why this and not `session.tracks` is the catalog.
 
 ## Open a hosted genome at a gene
 
-With nothing open, Desktop's `open` tool takes the hosted config URL directly,
-`https://jbrowse.org/ucsc/hg38/config.json`. JBrowse Web takes the same URL as
-`?config=`. [](/docs/agents_hosted_data) has the URL for every UCSC database and
-GenArk accession. Then a spec builds the view, and a `loc` that is a gene name
-goes through the config's text index:
+- With nothing open, Desktop's `open` tool takes the hosted config URL directly,
+  `https://jbrowse.org/ucsc/hg38/config.json`; JBrowse Web takes it as
+  `?config=`. [](/docs/agents_hosted_data) has the URL for every UCSC database
+  and GenArk accession.
+- Then a spec builds the view. A `loc` that is a gene name goes through the
+  config's text index.
+- Because the spec names its tracks, the track the hit was found in is not added
+  on top of them.
 
 ```js
 return jb.loadSessionSpec({
@@ -60,9 +60,8 @@ return jb.loadSessionSpec({
 ```
 
 The result is the settle report plus a session summary naming the view, its
-visible region and each track's display and height. A spec's own tracks win over
-the track the gene search would otherwise add. Here the report also says that
-ClinVar is over its fetch-size gate at a whole-gene zoom:
+visible region and each track's display and height. Here the report also says
+that ClinVar is over its fetch-size gate at a whole-gene zoom:
 
 ```json
 {
@@ -121,12 +120,13 @@ return {
 }
 ```
 
-`f.get('start')` is zero-based and `f.get('end')` exclusive. A VCF feature also
-answers `REF`, `ALT` (an array), `QUAL`, `FILTER`, `INFO` and `samples`; a GFF
-feature its column-nine attributes by name. `Object.keys(f.toJSON())` lists what
-one feature has, and is worth a look before filtering on `name`: the hosted
-RefSeq GFF names a gene by `ID` and `gene_id` with no `Name`, so `name` is
-`null` on every gene there and `id` is the symbol.
+- `f.get('start')` is zero-based and `f.get('end')` exclusive.
+- A VCF feature also answers `REF`, `ALT` (an array), `QUAL`, `FILTER`, `INFO`
+  and `samples`; a GFF feature its column-nine attributes by name.
+- `Object.keys(f.toJSON())` lists what one feature has, and is worth a look
+  before filtering on `name`: the hosted RefSeq GFF names a gene by `ID` and
+  `gene_id` with no `Name`, so `name` is `null` on every gene there and `id` is
+  the symbol.
 
 The same shape over ClinVar on the hosted hg38 config, where the field is the
 clinical significance. The whole BRCA1 view is over the read's byte gate, so
@@ -169,36 +169,6 @@ return genes
   .filter(h => h.variants > 0)
   .sort((a, b) => b.variants - a.variants)
 ```
-
-## GC content of the visible sequence
-
-The assembly's own sequence is a track like any other. Its `trackId` is on the
-assembly config, and `jb.getFeatures` answers one feature per region carrying
-the bases as `seq`:
-
-```js
-const [{ assemblyName, refName, start, end }] = await jb.visibleRegions()
-const seqTrackId =
-  session.assemblyManager.get(assemblyName).configuration.sequence.trackId
-const [f] = await jb.getFeatures({ trackId: seqTrackId })
-const seq = f.get('seq').toUpperCase()
-let gc = 0
-for (const base of seq) {
-  if (base === 'G' || base === 'C') {
-    gc += 1
-  }
-}
-return {
-  refName,
-  start,
-  end,
-  length: seq.length,
-  gc: +(gc / seq.length).toFixed(3),
-}
-```
-
-Mind the size: this pulls every base on screen. The same read over a whole
-chromosome is what the byte gate refuses.
 
 ## Find the highest value in a quantitative track and go there
 
@@ -310,11 +280,12 @@ return {
 }
 ```
 
-A fresh `trackId` and `adapterId` per computation is deliberate. Re-adding a
-known `trackId` with different content is refused, and the adapter cache is
-keyed on `adapterId`, so a recomputed track under the old ids keeps showing the
-first values it saw. Plan for a few thousand features and no more; above that,
-write a real file and load it with `jb.addTrack`.
+- A fresh `trackId` and `adapterId` per computation is deliberate. Re-adding a
+  known `trackId` with different content is refused, and the adapter cache is
+  keyed on `adapterId`, so a recomputed track under the old ids keeps showing
+  the first values it saw.
+- Plan for a few thousand features and no more; above that, write a real file
+  and load it with `jb.addTrack`.
 
 ## Restyle, and read back what landed
 
@@ -353,10 +324,11 @@ return {
 }
 ```
 
-`unapplied` is the misspelling; `failed` is a key the display knows and could
-not set. Anything a slot does not cover is an action on the display itself,
-listed by `docs topic:"model:<modelType>" section:"Actions"` with the type name
-from `jb.inspect('views.0.tracks.0.displays.0').modelType`.
+- `unapplied` is the misspelling; `failed` is a key the display knows and could
+  not set.
+- Anything a slot does not cover is an action on the display itself, listed by
+  `docs topic:"model:<modelType>" section:"Actions"` with the type name from
+  `jb.inspect('views.0.tracks.0.displays.0').modelType`.
 
 ## Reorder tracks with an action `inspect` found
 
@@ -401,11 +373,12 @@ return jb.waitReady(20000)
 }
 ```
 
-A track over its fetch-size gate reports `phase: "tooLarge"` with the reason the
-display painted; zoom in, or raise the display's `fetchSizeLimit` slot through
-`applyDisplaySettings` if the size is meant. For a track that settled clean,
-pair the empty `notReady` with a feature count over the visible region rather
-than looking for pixels: the canvases are offscreen and measure 0 by 0.
+- A track over its fetch-size gate reports `phase: "tooLarge"` with the reason
+  the display painted. Zoom in, or raise the display's `fetchSizeLimit` slot
+  through `applyDisplaySettings` if the size is meant.
+- For a track that settled clean, pair the empty `notReady` with a feature count
+  over the visible region rather than looking for pixels: the canvases are
+  offscreen and measure 0 by 0.
 
 ## A figure per locus
 
@@ -425,9 +398,10 @@ return {
 }
 ```
 
-Then `screenshot` with `selector: '[data-testid="view-container-<view.id>"]'`,
-and read `notReady` in its text part before trusting the image. On JBrowse Web
-the capture is the browser agent's own, taken after `jb.waitReady` resolves.
+- Then `screenshot` with `selector: '[data-testid="view-container-<view.id>"]'`,
+  and read `notReady` in its text part before trusting the image.
+- On JBrowse Web the capture is the browser agent's own, taken after
+  `jb.waitReady` resolves.
 
 ## Add a file by URL, and check it lines up
 
@@ -445,35 +419,14 @@ const values = await jb.getFeatures({ trackId: added.trackId })
 return { ...added, valuesInView: values.length }
 ```
 
-The result names the `trackId` it chose, the inferred types, the view it was
-shown in and the settle report. A count of zero over a region that should have
-signal is the refName-mismatch trap: read `getRefNames()` off the adapter (the
-[live model guide](/docs/agents_live_model) shows how) and compare against the
-assembly's names. In JBrowse Web the location must be a URL the host serves with
-CORS headers; a local path is refused before anything is added.
-
-## Export what is on screen
-
-In Desktop the renderer has Node, so a file is one `window.require` away. In
-Web, return the text instead:
-
-```js
-const variants = await jb.getFeatures({ trackId: 'volvox_test_vcf' })
-const rows = variants.map(v =>
-  [
-    v.get('refName'),
-    v.get('start') + 1,
-    v.get('end'),
-    v.get('name'),
-    v.get('REF'),
-    v.get('ALT').join(','),
-  ].join('\t'),
-)
-const tsv = ['refName\tstart\tend\tname\tref\talt', ...rows].join('\n')
-const fs = window.require('fs')
-fs.writeFileSync('/tmp/visible-variants.tsv', tsv)
-return { rows: rows.length, file: '/tmp/visible-variants.tsv' }
-```
+- The result names the `trackId` it chose, the inferred types, the view it was
+  shown in and the settle report.
+- A count of zero over a region that should have signal is the refName-mismatch
+  trap: read `getRefNames()` off the adapter (the
+  [live model guide](/docs/agents_live_model) shows how) and compare against the
+  assembly's names.
+- In JBrowse Web the location must be a URL the host serves with CORS headers; a
+  local path is refused before anything is added.
 
 ## A second view without replacing the session
 
@@ -498,7 +451,6 @@ that takes a `viewId` can be pointed at either.
 
 ## See also
 
-- [](/docs/agents_mcp)
-- [](/docs/agents_web)
+- [](/docs/agents)
 - [](/docs/agents_live_model)
 - [](/docs/agents_hosted_data)

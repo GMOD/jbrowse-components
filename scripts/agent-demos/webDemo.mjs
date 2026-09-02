@@ -59,10 +59,13 @@ const appUrl = `http://localhost:${web.port}/`
 console.log(`serving ${buildDir} at ${appUrl}`)
 
 const systemPrompt = [
-  fs.readFileSync(path.join(repoRoot, 'website/docs/agents_web.md'), 'utf8'),
+  fs.readFileSync(path.join(repoRoot, 'website/docs/agents.md'), 'utf8'),
   '',
-  '# Reference for the shared jb library (from the MCP page)',
-  fs.readFileSync(path.join(repoRoot, 'website/docs/agents_mcp.md'), 'utf8'),
+  '# Reference for the shared jb library',
+  fs.readFileSync(
+    path.join(repoRoot, 'website/docs/agents_live_model.md'),
+    'utf8',
+  ),
   '',
   `# This session
 The user's JBrowse Web instance is served at ${appUrl}. A hosted hg38 config is ${HG38}; open it as ${appUrl}?config=${HG38}. The only connected browser has deviceId ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. Use javascript_tool for everything the page can answer; use screenshots to verify what drew. Do not use WebFetch or WebSearch; fetch from inside the page instead.`,

@@ -9,104 +9,106 @@ description:
 Desktop's `run_javascript` MCP tool runs an async JavaScript function body
 inside the app's renderer, and what you `return` is serialized back to you. A
 browser agent on JBrowse Web runs the same code in the page, where the value is
-the last expression (see [](/docs/agents_web)). In scope either way:
+the last expression. In scope either way:
 
-- `session` — the live MST session model (views, tracks, assemblies, dialogs)
-- `rootModel` — its parent (jbrowse config, menus, `session` itself)
-- `pluginManager` — plugin registry: track/view/adapter types, extension points
-- `jb` — the standard library. High level:
-  - `jb.sessionSummary()` — views, tracks, assemblies, visible regions; the
-    orientation call
-  - `jb.inspect(path?, maxBytes?)` — walk the live model by dot-path
-    (`'views.0'`): the value, its getters (the high-value state a snapshot
-    filters out), **the actions it takes** and its `modelType`. Reach for it
-    before deciding a model cannot do something: MST attaches actions as
-    NON-ENUMERABLE properties, so `Object.keys(view)` lists none of them, and a
-    view that has `moveTrack`, `moveTrackUp` and `moveTrackToTop` looks like it
-    has no way to reorder a track. The action's signature and what it does:
-    `docs topic:"model:<modelType>" section:"Actions"` (e.g.
-    `model:LinearAlignmentsDisplay` documents `setColorScheme(colorBy)`,
-    `setFilterBy`, `setSortedBy`, `setHeightMode`). Config slots by type:
-    `docs topic:"config:BamAdapter"`; every name: `docs topic:"types"`
-  - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
-    (connection/hub tracks included; default cap 100)
-  - `jb.loadSessionSpec(spec, settleMs?)` — build views declaratively (docs
-    topic "session-spec"); replaces the open views, settles for `settleMs`
-    (default 30000, reporting what is still not ready), returns the summary. It
-    REPLACES the session, so the `session` argument you were given is a dead
-    node afterwards — every `jb` helper re-reads the live one for you, and
-    `jb.session` is it if you need to rebind: `session = jb.session`. A spec
-    `layout` leaf's `views` are indexes into the spec's own `views` array — an
-    index names EVERY view that entry created, so a connected `ProteinView`'s
-    index is its genome view and the structure, stacked — or view ids
-  - `session.applyLayoutSpec(layout)` — the same `layout` shape, live: a leaf's
-    `views` are indexes into `session.views` (the order `jb.sessionSummary()`
-    lists them) or view ids, e.g.
-    `{ direction: 'horizontal', children: [{ views: [0] }, { views: [1] }] }`. A
-    leaf spelled any other way, an index past the end or an unknown id throws
-    and changes nothing. `session.moveViewToSplitRight(viewId)` and
-    `moveViewToNewTab(viewId)` are the two one-view moves; both read the
-    session's own view list when not handed one
-  - `track.applyDisplaySettings(settings)` — in-place styling of the track's
-    `activeDisplay`; returns { applied, unapplied, failed } (`failed` means you
-    got a key wrong; `unapplied` also lists keys that are not config slots)
-  - `jb.addTrack({ location, index?, assembly?, name?, show? })` — local path or
-    URL, format inferred from the extension; a list of bigWig locations becomes
-    one stacked `MultiQuantitativeTrack`
-  - `jb.getFeatures({ trackId, loc? })`, or `jb.getFeatures(trackId, loc?)` —
-    the track's data as live Feature objects (see below)
-  - `await jb.visibleRegions(viewId?)` — the visible region as numbers
-    (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
-    reads by default; use it to bin or recompute over exactly what is on screen
-  - `jb.rootModel` — the root model (`jbrowse` config, menus, `session`)
-  - `jb.waitReady(timeoutMs)` — resolves when tracks finish loading/drawing. Its
-    result carries `notifications` (the session's error toasts), `notReady`:
-    tracks whose display settled without drawing anything, each with its `phase`
-    (`tooLarge`, `error`, `renderError`, `loading`), and `offscreen` when the
-    session is taller than the window, naming the views a viewport screenshot
-    would cut off. A display over the fetch-size gate raises NO toast and
-    replaces its own subtree, so this is the only way to tell it apart from a
-    track that drew — the screenshot looks fine either way
+- `session`, the live MST session model: views, tracks, assemblies, dialogs
+- `rootModel`, its parent: the jbrowse config, menus, `session` itself
+- `pluginManager`, the plugin registry: track, view and adapter types, extension
+  points
+- `jb`, the helper library below
+- `window`, the real DOM. In Desktop this is an Electron renderer with
+  nodeIntegration, so Node is one `window.require` away
 
-  Lower level:
-  - `jb.require(name)` — the module registry plugins link against, by the same
-    names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`)
-  - `jb.mst`, `jb.mobx` — the whole mobx-state-tree and mobx APIs
-  - `jb.readConfObject(conf, 'slot')` / `jb.getConf(model, 'slot')` — config
-    slots are not plain properties
-  - `jb.describeSlots(confNode)` — every slot the node's schema defines, with
-    type/description/default:
-    `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An
-    unknown settings key is dropped SILENTLY, so introspect before writing
-  - `jb.trackModel(trackId)` — the shown track's live model (or undefined)
-  - `jb.parseLocString`, `jb.getFeatureAdapterOrThrow` (async),
-    `jb.renameRegionsIfNeeded`, `jb.getRpcSessionId`, `jb.createStopToken`,
-    `jb.stopStopToken` — direct data access, see below
+## The helper library
 
-- `window` — real DOM plus Node via `window.require` (fs, path, ...); this is an
-  Electron renderer with nodeIntegration
+Orientation and building:
 
-State persists between `run_javascript` calls in the same app run: stash your
-own helpers on `globalThis` (`globalThis.myHelpers = {...}`) and reuse them.
-`session` can be REPLACED by the open tool or `jb.loadSessionSpec` — re-read it
-per call, never cache it on globalThis. One exception to persistence: the `open`
-tool with NO session open (the start screen) loads a new page, and `globalThis`
-starts empty on it. With a session open it swaps in place and your helpers
-survive.
+- `jb.sessionSummary()` is the orientation call: views, tracks with their
+  display type and render phase, assemblies, visible regions.
+- `jb.inspect(path?, maxBytes?)` walks the live model by dot path (`'views.0'`)
+  and answers with the value, its getters, **the actions it takes** and its
+  `modelType`. Reach for it before deciding a model cannot do something: MST
+  attaches actions as non-enumerable properties, so `Object.keys(view)` lists
+  none of them. An action's signature is under
+  `docs topic:"model:<modelType>" section:"Actions"`, config slots by type under
+  `docs topic:"config:BamAdapter"`, every name under `docs topic:"types"`.
+- `jb.listTracks(search?, limit?)` is the track catalog with trackIds,
+  connection and hub tracks included, capped at 100 by default. It answers
+  `{ total, tracks }`.
+- `jb.loadSessionSpec(spec, settleMs?)` builds views declaratively from the spec
+  on `docs topic:"session-spec"`, settles for `settleMs` (default 30000)
+  reporting what is still not ready, and returns the summary. It **replaces the
+  session**: the `session` argument you were given is a dead node afterwards.
+  Every `jb` helper re-reads the live one, and `jb.session` is it if you need to
+  rebind. A spec `layout` indexes the spec's own `views` array; the live action
+  `session.applyLayoutSpec` takes the same tree with `viewIds` in place of
+  `views`, and accepts the wrong key silently, collapsing the workspace into one
+  tab.
+- `jb.addTrack({ location, index?, assembly?, name?, show?, viewId? })` adds a
+  local path or URL, with the format inferred from the extension, and shows it.
+- `jb.trackModel(trackId)` is the shown track's live model, or undefined.
+- `track.applyDisplaySettings(settings)` styles the track's `activeDisplay` in
+  place and returns `{ applied, unapplied, failed }`. `failed` means a key the
+  display knows and could not set; `unapplied` lists keys that are not config
+  slots, misspellings included.
+- `jb.describeSlots(confNode)` lists every slot the node's schema defines, with
+  type, description and default. An unknown settings key is dropped silently, so
+  introspect before writing:
+  `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`.
 
-What a call answers with, besides `value`:
+Reading:
 
-- `logs` — everything the code passed to `console.log/info/warn/error/debug`, in
-  order. Print intermediate state instead of returning it.
-- `notifications` — toasts the session raised since the previous call, each with
-  its `level`. A toast is reported ONCE, on the first call after it fired, so an
+- `jb.getFeatures({ trackId, loc?, regions?, byteLimit? })` is the track's data
+  as live Feature objects, over the visible region by default. See
+  [Reading data directly](#reading-data-directly-fast-path).
+- `await jb.visibleRegions(viewId?)` is the visible region as numbers
+  (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
+  reads by default, for binning or recomputing over exactly what is on screen.
+- `jb.waitReady(timeoutMs)` resolves when tracks finish loading and drawing. Its
+  result carries `notifications`, the session's error toasts, `notReady`: tracks
+  whose display settled without drawing anything, each with its `phase`
+  (`tooLarge`, `error`, `renderError`, `loading`), and `offscreen`: views taller
+  than the window, naming what a viewport screenshot would cut off. A display
+  over the fetch-size gate raises no toast and replaces its own subtree, so this
+  is the only way to tell it from a track that drew. The screenshot looks fine
+  either way.
+
+Lower level:
+
+- `jb.require(name)` is the module registry plugins link against, by the same
+  names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`). In
+  a browser, `await jb.ensureRequire()` once first.
+- `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.
+- `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
+  slots, which are not plain properties.
+- `jb.rootModel` is the root model.
+- `jb.parseLocString`, `jb.getFeatureAdapterOrThrow` (async),
+  `jb.renameRegionsIfNeeded`, `jb.getRpcSessionId`, `jb.createStopToken` and
+  `jb.stopStopToken` are direct data access, below.
+
+## Calls and what they answer with
+
+- State persists between `run_javascript` calls in the same app run: stash your
+  own helpers on `globalThis` and reuse them.
+- `session` can be replaced by the `open` tool or `jb.loadSessionSpec`, so
+  re-read it per call and never cache it on `globalThis`.
+- The `open` tool with no session open (the start screen) loads a new page, and
+  `globalThis` starts empty on it. With a session open it swaps in place and
+  your helpers survive.
+
+Besides `value`, a call answers with:
+
+- `logs`, everything the code passed to `console.log`, `info`, `warn`, `error`
+  or `debug`, in order. Print intermediate state instead of returning it.
+- `notifications`, toasts the session raised since the previous call, each with
+  its `level`. A toast is reported once, on the first call after it fired, so an
   error from a track you added two calls ago arrives on this one.
-- a thrown error comes back as its message plus `at code line L, column C`
-  counted in YOUR code, followed by the console output printed before it. A
-  compile error has no line (V8 gives none for a function body): look for an
-  unbalanced bracket or an `await` inside a non-async callback.
+- a thrown error as its message plus `at code line L, column C`, counted in your
+  code, followed by the console output printed before it. A compile error has no
+  line, because V8 gives none for a function body: look for an unbalanced
+  bracket or an `await` inside a non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) answers with an error and the
-  logs so far, and the code KEEPS RUNNING. For a long job, park the promise and
+  logs so far, and the code keeps running. For a long job, park the promise and
   come back for it:
 
 ```js
@@ -118,6 +120,40 @@ globalThis.job = (async () => {
 return 'started'
 // call 2 (later): await globalThis.job
 ```
+
+## In a browser
+
+JBrowse Web publishes `window.jb` beside `window.JBrowseSession` and
+`window.JBrowseRootModel`. The differences from Desktop:
+
+- **No Node, so no local files.** `jb.addTrack` takes a URL and refuses a local
+  path rather than adding a track that cannot read.
+- **The data host has to allow the request.** A tab is subject to CORS where an
+  Electron app is not, so a file that loads in Desktop may be unreachable from a
+  page.
+- **A read runs on the thread that draws**, so the page stops repainting while a
+  large `jb.getFeatures` runs. Aggregate in code and return the answer.
+- **`jb.require` needs `await jb.ensureRequire()` first**, once.
+- **`jb.loadSessionSpec` also rewrites the URL** and stores a new session, and
+  the one it replaced is not recoverable from the page. Prefer adding to the
+  open session where that will do.
+
+The Claude in Chrome extension changes the calling convention:
+
+- **The value is the last expression.** End the snippet with the value, or wrap
+  the body in `(async () => { ... })()`.
+- **One evaluation has a fixed time budget**, about 45 seconds, and the code
+  keeps running when it expires. `jb.loadSessionSpec` settles the new session
+  before it answers, which on a cold hosted config can outlive the budget. Call
+  it on its own, and read `jb.sessionSummary()` on the next call.
+- **Results are sanitized on the way back.** Nested objects are cut off past a
+  few levels, long strings are clipped, and a string that looks like base64 is
+  replaced. Return flat, pre-sliced values, or a `JSON.stringify` of what you
+  need.
+- **Its screenshot knows nothing about rendering.** Call `jb.waitReady()` first,
+  then screenshot, and read `notReady` from the settle result.
+- **Wait for the page.** The app assigns `window.jb` after its first render, so
+  poll for it after navigating.
 
 ## The model, oriented
 
@@ -149,17 +185,21 @@ track.replaceDisplay(
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
 carries no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
-symbol. `Object.keys(f.toJSON())` says what one feature has before you filter on
-a field.
+symbol. `Object.keys(f.toJSON())` says what one feature has before you filter
+on a field.
 
-MST rules: reads are plain property/getter access; **mutations only through
-actions** (`view.setWidth(800)` works, `view.width = 800` throws). Snapshots
-(`jb.mst.getSnapshot(node)`) omit computed getters — read getters off the live
-node. Display settings go through `track.applyDisplaySettings(settings)`, which
-routes each key through the same slot machinery a session spec's inline keys get
-(legacy keys included); `jb.describeSlots(display.configuration)` lists the
-slots that exist before you write one, and `docs topic:"model:<modelType>"`
-documents the display's own actions for anything a slot does not cover.
+- Reads are plain property or getter access; **mutations only through actions**
+  (`view.setWidth(800)` works, `view.width = 800` throws).
+- Snapshots (`jb.mst.getSnapshot(node)`) omit computed getters, so read getters
+  off the live node.
+- `launchTrack` on an already shown track applies nothing.
+  `track.applyDisplaySettings(settings)` is the update path, and it routes each
+  key through the same slot machinery a session spec's inline keys get.
+- `docs topic:"model:<modelType>"` documents a display's own actions for
+  anything a slot does not cover.
+- A track too tall for the window wants a height strategy, not `displayMode`:
+  many displays take `heightMode` `fit` or `grow`, and `compact` only shrinks
+  each feature. `describeSlots` lists both.
 
 ```js
 // make every shown track compact
@@ -171,8 +211,8 @@ return jb.waitReady(30000)
 
 ## Reading data directly (fast path)
 
-Adapters run on the main thread here — no worker round trip, features stay as
-objects. Reduce/filter in place and return only what you need:
+Adapters run on the main thread here, with no worker round trip, so features
+stay as objects. Reduce and filter in place and return only what you need:
 
 ```js
 // visible region by default; pass loc for an arbitrary region
@@ -187,10 +227,18 @@ return {
 }
 ```
 
+- A region over the byte gate throws `region too large for jb.getFeatures`,
+  naming the estimate and the limit, rather than answering short. Narrow the
+  region, or pass `byteLimit` for a read you mean to be that big.
+- A base-level quantitative track is one feature per base, so a 160 kb window is
+  about 160k of them. Reduce with a loop, never `Math.max(...scores)`, which
+  blows the call stack on an array that size.
+- Never `return` thousands of raw features: aggregate, slice, or put them on
+  screen as a track.
+
 **To find out what a remote file holds before adding it as a track, build its
 adapter and ask.** An adapter needs no track and no session, so this answers
-"which assembly is this bigWig on" in one call rather than by fetching the
-file's header and parsing it by hand:
+"which assembly is this bigWig on" in one call:
 
 ```js
 const adapter = await jb.getFeatureAdapterOrThrow({
@@ -205,25 +253,20 @@ return (await adapter.getRefNames()).slice(0, 5)
 ```
 
 `jb.getFeatures` does two things raw adapter code gets wrong silently, so if you
-drop to `jb.getFeatureAdapterOrThrow` yourself, do both by hand: translate
-canonical refNames into the file's own spelling with `jb.renameRegionsIfNeeded`
-("ctgA" vs "contigA" — a query in the wrong namespace matches nothing and reads
-as "no data here"), and derive the adapter-cache `sessionId` from the shown
-track (`jb.getRpcSessionId(jb.trackModel(trackId))`) so you share the parsed
-indexes the display already warmed.
+drop to `jb.getFeatureAdapterOrThrow` yourself, do both by hand:
 
-Mind the sizes. A base-level quantitative track (phastCons, a bigWig at full
-resolution) is one feature per base, so a 160 kb window is ~160k of them: reduce
-with a loop, never `Math.max(...scores)`, which blows the call stack on an array
-that size. And don't `return` thousands of raw features — aggregate, slice, or
-put them on screen as a track (next section).
+- Translate canonical refNames into the file's own spelling with
+  `jb.renameRegionsIfNeeded`. "ctgA" against a file saying "contigA" matches
+  nothing and reads as "no data here".
+- Derive the adapter-cache `sessionId` from the shown track
+  (`jb.getRpcSessionId(jb.trackModel(trackId))`) so you share the parsed indexes
+  the display already warmed.
 
 ## Showing something you derived
 
 A track built from values you just computed does not need a file.
 `FromConfigAdapter` carries the features in the track's own config, so the
-derived track is part of the session: it survives a save and reopen, and it
-needs no filesystem at all.
+derived track is part of the session and survives a save and reopen.
 
 ```js
 session.addSessionTrackConf({
@@ -247,14 +290,19 @@ await session.views[0].launchTrack('nutlin-log2')
 return jb.waitReady(60000)
 ```
 
-`adapterId` is the adapter cache key; leave it out and the whole feature array
-is hashed instead. `addSessionTrackConf` is the destination for a track you
-stood up on the user's behalf — `session.tracks` is the site's catalog.
-
-**Recomputed the values? Delete, re-add, and change the `adapterId`.**
-`addSessionTrackConf` refuses a known trackId whose content differs (the same
-content is idempotent), and the adapter cache is keyed on `adapterId`, so the
-same id with new features keeps serving the first array it saw.
+- `adapterId` is the adapter cache key; leave it out and the whole feature array
+  is hashed instead.
+- `addSessionTrackConf` is the destination for a track you stood up on the
+  user's behalf; `session.tracks` is the site's catalog.
+- **Recomputed the values? Delete, re-add, and change the `adapterId`.**
+  `addSessionTrackConf` refuses a known trackId whose content differs (the same
+  content is idempotent), and the adapter cache is keyed on `adapterId`, so the
+  same id with new features keeps serving the first array it saw.
+- **Plan for a few thousand features, not more.** The array lives in the track
+  config, so it is held in memory, written into the session snapshot, and
+  re-serialized by every autosave. Above that, run the tool that does the job
+  (`bigwigCompare`, `bedGraphToBigWig`, deeptools), write a real indexed file
+  and load that with `jb.addTrack`.
 
 ```js
 const old = session.sessionTracks.find(t => t.trackId === 'nutlin-log2')
@@ -268,58 +316,36 @@ session.addSessionTrackConf({
 await session.views[0].launchTrack('nutlin-log2')
 ```
 
-**Plan for a few thousand features, not more.** The array lives in the track
-config, so it is held in memory, written into the session snapshot, and
-re-serialized by every autosave from then on. That fits a window of bins, a peak
-list, a set of hits, and nothing bigger. Above it, run the tool that does the
-job (`bigwigCompare`, `bedGraphToBigWig`, deeptools), write a real indexed file
-and load that with `jb.addTrack` — computing in the renderer holds the whole
-input in the process that is also drawing the view.
-
 ## Waiting on the app
 
-Model mutations render asynchronously. After navigating or adding tracks,
-`await jb.waitReady(30000)` before reading render state or screenshotting.
-`jb.mobx.when(() => predicate)` awaits any observable condition.
+- Model mutations render asynchronously. After navigating or adding tracks,
+  `await jb.waitReady(30000)` before reading render state or screenshotting.
+  `jb.mobx.when(() => predicate)` awaits any observable condition.
+- To prove a track really drew rather than settled empty, pair the empty
+  `notReady` with a `jb.getFeatures` count over the visible region. Do not go
+  looking for pixels: displays render into offscreen canvases and paint the
+  result, so the `<canvas>` elements in the page measure 0x0.
+- A freshly created view throws "width undefined" from region-dependent getters
+  (`visibleRegions`, `visibleLocStrings`, `dynamicBlocks`) until its component
+  mounts and sets a width. `await jb.mobx.when(() => view.initialized)` before
+  reading them on a view you just made.
+- Long synchronous loops block the UI thread, so chunk big work with
+  `await new Promise(r => setTimeout(r))` between batches.
+- "Does it all fit in the window" is arithmetic: `jb.sessionSummary()` reports
+  each view's `height` and each track's display `height`, so compare the sum
+  against the view before capturing anything.
+- A whole-window screenshot spends most of its pixels on chrome, and a session
+  taller than the window is cut off at the bottom — the settle result says so
+  under `offscreen`. `screenshot` takes `fullPage: true` for the whole
+  laid-out document, `selector` to crop to one element —
+  `[data-testid="view-container-<view.id>"]` for a view, id from
+  `jb.sessionSummary()` — or `rect` with a box you measured.
 
-To prove a track really drew rather than settled empty, pair the empty
-`notReady` with a `jb.getFeatures` count over the visible region. Do NOT go
-looking for pixels: displays render into offscreen canvases and paint the
-result, so the `<canvas>` elements in the page measure 0x0 and a DOM hunt for
-them proves nothing either way.
+## Shell tools and files, from Desktop
 
-A freshly created view THROWS "width undefined" from region-dependent getters
-(`visibleRegions`, `visibleLocStrings`, `dynamicBlocks`) until its component
-mounts and sets a width — `await jb.mobx.when(() => view.initialized)` before
-reading them on a view you just made.
-
-Long synchronous loops block the UI thread — chunk big work with
-`await new Promise(r => setTimeout(r))` between batches.
-
-"Does it all fit in the window" is arithmetic, not a screenshot:
-`jb.sessionSummary()` reports each view's `height` and each track's display
-`height`, so compare the sum against the view before capturing anything.
-
-## Looking closely
-
-A whole-window screenshot spends most of its pixels on chrome, and a session
-taller than the window is cut off at the bottom — the settle result says so
-under `offscreen`. `screenshot` takes `fullPage: true` for the whole laid-out
-document, `selector` to crop to one element — a view is
-`[data-testid="view-container-<view.id>"]` with the id from
-`jb.sessionSummary()` — or `rect` with a box you measured:
-
-```js
-const el = document.querySelector(`[data-testid="view-container-${view.id}"]`)
-return el.getBoundingClientRect().toJSON()
-```
-
-## Beyond the app: shell tools and files
-
-This is an Electron renderer with nodeIntegration, so the machine's tools are
-one `window.require` away — the route for a client with no shell of its own. A
-real pipeline step (`bigwigCompare`, `samtools`, `bedGraphToBigWig`) runs here
-and its output loads with `jb.addTrack`:
+The machine's tools are one `window.require` away, which is the route for a
+client with no shell of its own. A real pipeline step runs here and its output
+loads with `jb.addTrack`:
 
 ```js
 const { execFile } = window.require('child_process')
@@ -330,11 +356,6 @@ return stdout.split('\n').slice(0, 5)
 ```
 
 A `fetch` from here carries a browser Origin and obeys CORS, and some hosts
-refuse it (NCBI's acc.cgi answers 403; eutils does not). A plain Node request
-carries neither — `window.require('https')`, or
-`window.require('child_process')` for `curl` — and reads the same bytes.
-
-`globalThis` dies with the app. A helper worth keeping across restarts goes in a
-file: write it with `window.require('fs')` as a CommonJS module and load it with
-`window.require('/path/to/helpers.js')` (`delete window.require.cache[path]`
-first to pick up an edit).
+refuse it (NCBI's acc.cgi answers 403; eutils does not).
+`window.require('https')` or `curl` under `window.require('child_process')`
+carries neither and reads the same bytes.
