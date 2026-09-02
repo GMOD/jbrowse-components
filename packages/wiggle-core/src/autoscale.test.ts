@@ -139,3 +139,30 @@ describe('visible-window clipping matches a full scan', () => {
     }
   })
 })
+
+// A wig or bigwig file can carry a NaN score. Folded into the running min/max
+// it turns both NaN, the domain is discarded, and the display falls back to the
+// [0, 1] stub — a whole track flattened by one bad bin.
+describe('non-finite scores', () => {
+  it('scales to the real scores around a NaN', () => {
+    expect(
+      computeAutoscaleDomain('local', 'avg', 3, [entry([2, Number.NaN, 5, 3])]),
+    ).toEqual([2, 5])
+  })
+
+  it('leaves the mean and stddev to the finite scores', () => {
+    const [low, high] = computeAutoscaleDomain('localsd', 'avg', 1, [
+      entry([-4, Number.NaN, 4]),
+    ])!
+    expect(low).toBeCloseTo(-4)
+    expect(high).toBeCloseTo(4)
+  })
+
+  it('has no domain when every score is NaN', () => {
+    expect(
+      computeAutoscaleDomain('local', 'avg', 3, [
+        entry([Number.NaN, Number.NaN]),
+      ]),
+    ).toBeUndefined()
+  })
+})

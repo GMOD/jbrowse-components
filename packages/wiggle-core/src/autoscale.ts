@@ -182,16 +182,27 @@ export function computeScoreStats(
       ) {
         continue
       }
-      min = Math.min(min, minScores[i]!)
-      max = Math.max(max, maxScores[i]!)
+      // Non-finite scores are skipped rather than folded in: a wig file may
+      // carry a NaN, and one of them poisons min/max and mean alike, collapsing
+      // the whole domain to the [0, 1] stub the callers fall back to.
+      const lo = minScores[i]!
+      if (Number.isFinite(lo)) {
+        min = Math.min(min, lo)
+      }
+      const hi = maxScores[i]!
+      if (Number.isFinite(hi)) {
+        max = Math.max(max, hi)
+      }
       // Mean/stddev always use featureScores (the average) regardless of
       // summaryScoreMode; min/max for the domain bounds come from the mode-
       // selected arrays above. Intentional: sd-based autoscale centers on the
       // average-value distribution even in whiskers/min/max summary modes.
       const avg = featureScores[i]!
-      sum += avg
-      sumSq += avg * avg
-      count++
+      if (Number.isFinite(avg)) {
+        sum += avg
+        sumSq += avg * avg
+        count++
+      }
     }
   }
   if (count === 0 || !Number.isFinite(min) || !Number.isFinite(max)) {
