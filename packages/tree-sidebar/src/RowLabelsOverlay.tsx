@@ -64,7 +64,10 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   testId,
   showLabels = true,
 }: {
-  sources: RowLabelSource[] | undefined
+  // Resolved, never absent: every display's `sources` getter answers `[]`
+  // before a fetch has landed, and "no rows yet" is its loading state to
+  // report, not a missing array to render around.
+  sources: RowLabelSource[]
   // Resolved px row height, never a fit-to-height sentinel — same contract as
   // `TreeDrawingModel.effectiveRowHeight`.
   rowHeight: number
@@ -83,7 +86,7 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   // Draw the names. False still renders the overlay element, see above.
   showLabels?: boolean
 }) {
-  return sources?.length ? (
+  return sources.length ? (
     <TrackOverlayPortal>
       <svg
         data-testid={testId}

@@ -2,6 +2,7 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
 import type { NewickNode } from '@gmod/newick'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export type ClusterNodeData = NewickNode
 
@@ -95,7 +96,11 @@ export interface TreeSidebarModel {
   setScrollTop: (scrollTop: number) => void
 }
 
-export interface TreeDrawingModel {
+// `IStateTreeNode`, because `setupTreeDrawingAutorun` hands it to
+// `addDisposer`, `isAlive`, `getContainingView` and `getPaletteHost`: it is the
+// display node itself, narrowed to what the drawing reads. Never
+// `IAnyStateTreeNode`, which is `any` and would check none of the rest.
+export interface TreeDrawingModel extends IStateTreeNode {
   treeCanvas?: HTMLCanvasElement | null
   mouseoverCanvas?: HTMLCanvasElement | null
   hierarchy?: ClusterHierarchyNode
