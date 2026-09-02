@@ -58,19 +58,17 @@ The dm6 assembly and gene track are the hosted UCSC
 
 ## Windowed statistics as tracks
 
-A population-genetic scan is a per-window statistic running along the genome:
-Fst between two groups, nucleotide diversity (π) within one, dxy between them.
-That is the shape of a wiggle track, so whatever a scanner writes per window
-loads as a [quantitative track](/docs/user_guides/quantitative_track) and reads
-against the genes underneath it. Haplotype-based selection statistics (iHS,
-XP-EHH, e.g. from [selscan](https://github.com/szpiech/selscan)) capture sweeps
-that Fst misses and, being per-site or per-window scores, load the same way.
+A population-genetic scan is a per-window statistic along the genome: Fst
+between two groups, nucleotide diversity (π) within one, dxy between them. That
+is the shape of a wiggle track, so whatever a scanner writes per window loads as
+a [quantitative track](/docs/user_guides/quantitative_track). Haplotype
+statistics (iHS, XP-EHH, e.g. from
+[selscan](https://github.com/szpiech/selscan)) load the same way.
 
-This tutorial stacks Fst, π and Tajima's D in one view, each scaled to its own
-data, over the [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/)
-(DGRP), 205 inbred lines
-([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6. Two signals
-stand out:
+This tutorial stacks Fst, π and Tajima's D in one view over the
+[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
+inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6.
+Two signals stand out:
 
 - **Fst across the `In(2L)t` inversion.** The inversion suppresses recombination
   between the two arrangements in a heterozygote
@@ -84,19 +82,16 @@ stand out:
 
 The inversion karyotypes
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)) harmonize the
-`In(2L)t` typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554).
-The karyotype column is `0` for standard homozygotes, `2` for inverted
-homozygotes, and `1` for heterozygotes, which is what splits the panel into the
-two groups Fst compares. The heterozygotes are dropped from both groups.
-
+`In(2L)t` typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554):
+`0` for standard homozygotes, `2` for inverted, `1` for heterozygotes, which are
+dropped.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
-downloads both files and derives the two sample lists, normalizing DGRPool's
-`DGRP_021` to the VCF's `DGRP-021`. Each list is one sample name per line, which
-is the form [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop`
-and `--keep`.
+derives the two sample lists, one name per line as
+[vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`,
+normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`.
 
-Each scan is then one vcftools run, an awk turning its table into a bedGraph,
-and a pack into a bigWig. Fst uses the Weir & Cockerham estimator
+Each scan is one vcftools run, an awk turning its table into a bedGraph, and a
+pack into a bigWig. Fst uses the Weir & Cockerham estimator
 ([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)):
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
@@ -128,21 +123,18 @@ awk -F'\t' 'NR==FNR{len[$1]=$2; next}
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 ```
 
-The clamp reads window ends against that same `chrom.sizes`. Diversity is the
-same three steps with `--window-pi 2000`, reading `$5` of `pi_all.windowed.pi`,
-and `--keep` restricts it to one arrangement. Reading `$4` of the same table
-instead gives the called-variant count the figure below stacks under π.
+Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
+`pi_all.windowed.pi`, with `--keep` restricting it to one arrangement. `$4` of
+the same table is the called-variant count the figure below stacks under π.
 
-The two groups here are very unequal, since the inverted arrangement is the
-rarer one. Weir & Cockerham corrects for sample size, and Hudson's estimator
-summed as a ratio of averages is the usual recommendation where the groups
-differ this much ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
+The two groups are very unequal, since the inverted arrangement is the rarer
+one. Hudson's estimator is the usual recommendation where groups differ this
+much ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
 [](/docs/tutorials/dog10k_selection) scans with that one.
 
-Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reads its
-table differently from the other two. `--TajimaD` reports `BIN_START` 0-based,
-so it takes no `-1` shift, and reports no `BIN_END` at all, so the window end is
-constructed here before the same clamp applies to it.
+Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports
+`BIN_START` 0-based, so no `-1` shift, and no `BIN_END`, so the window end is
+constructed before the clamp:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -159,45 +151,28 @@ awk -F'\t' 'NR==FNR{len[$1]=$2; next}
 bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 ```
 
-Window size trades resolution for smoothness. 2 kb is dense enough in this panel
-that a single-gene sweep like _Cyp6g1_ resolves sharply. Widen toward 5-10 kb
-for smoother genome-wide overviews, or narrow further only where SNP density
-stays high.
+Window size trades resolution for smoothness. 2 kb resolves a single-gene sweep
+like _Cyp6g1_ sharply; widen toward 5-10 kb for smoother genome-wide overviews.
 
-The one thing to check yourself is chromosome naming: a mismatch draws an empty
-track with no error. The bigWigs take their contig names from the VCF header,
-which spells the arms `2L`, `2R`, `3L`, `3R`, `X` and `4`, FlyBase style, where
-UCSC dm6 prefixes them `chr2L`. If your dm6 assembly uses the UCSC names,
-[refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two
-at display time.
+Check chromosome naming: a mismatch draws an empty track with no error. The
+bigWigs take their contig names from the VCF header (`2L`, `2R`, `X`, FlyBase
+style) where UCSC dm6 prefixes them `chr2L`.
+[Refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two.
 
-Negative Fst estimates, an artifact of the Weir & Cockerham estimator at
-low-differentiation sites, are floored at 0. Tajima's D keeps its sign, since
-its negative excursions are the signal.
-
-Because this VCF holds variant sites only, `--window-pi` divides by the nominal
-window size, so every position not in the file counts as invariant and callable
-alike. A window that lost sites to filtering or to coverage reads as low
-diversity, and how much each window lost varies.
-[pixy](https://pixy.readthedocs.io/)
+Because this VCF holds variant sites only, `--window-pi` counts every position
+not in the file as invariant and callable alike, so a window that lost sites to
+filtering reads as low diversity. [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
-allSites VCF, where an invariant position and a missing one are distinguishable,
-and reports π, dxy and Fst per window without that bias, one row per window, so
-its output packs into a bigWig the same way.
-
-Tajima's D is read as an excursion against the panel's own background. A
-variant-sites-only callset of inbred lines lifts the whole baseline, since
-filtering takes the rare alleles D is most sensitive to and vcftools counts two
-chromosomes where a line contributes one.
+allSites VCF and reports π, dxy and Fst per window without that bias, and its
+output packs into a bigWig the same way. The same filtering lifts Tajima's D's
+whole baseline, so D reads as an excursion against the panel's own background.
 
 ## Loading the scans in JBrowse
 
-You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
-gene-name search works. See
+With a dm6 assembly and gene track loaded (see
 [configuring assemblies](/docs/config_guides/assemblies) and
-[gene tracks](/docs/user_guides/gene_track). Each scan is an ordinary
-[quantitative track](/docs/user_guides/quantitative_track) over its bigWig,
-which auto-scales to its own data:
+[gene tracks](/docs/user_guides/gene_track)), each scan is a
+[quantitative track](/docs/user_guides/quantitative_track) over its bigWig:
 
 ```json addtrack
 {
@@ -212,14 +187,10 @@ which auto-scales to its own data:
 }
 ```
 
-Load the Fst and π scans as two separate tracks: they sit on very different
-scales (Fst approaches 1, π stays near 0.01), so each needs its own y-axis,
-where a [multi-wiggle](/docs/config_guides/multiquantitative_track) shares one
-across its rows.
-
-A multi-wiggle suits rows on the same scale, such as the same statistic across
-groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`) share a scale, so
-inverted and standard diversity load as one track on one shared y-domain:
+Fst and π sit on very different scales, so load them as separate tracks with
+their own y-axes. A [multi-wiggle](/docs/config_guides/multiquantitative_track)
+shares one axis across rows, which suits the same statistic across groups, so
+the per-group π bigWigs load as one track:
 
 ```json addtrack
 {
@@ -245,18 +216,15 @@ inverted and standard diversity load as one track on one shared y-domain:
 }
 ```
 
-The inverted lines carry somewhat less diversity than the standard ones across
-the inverted region, most noticeably near the breakpoints.
+The inverted lines carry less diversity than the standard ones across the
+inverted region, most noticeably near the breakpoints.
 
 ## Reading the signals
 
-The three scans are read against each other. Search `Cyp6g1` (on `2R`) in the
-location box and add the Tajima's D track alongside π. Both dip together over
-the swept window. D carries π inside it, so the pair says the frequency spectrum
-is skewed further toward rare alleles than the drop in diversity on its own
-accounts for. Add the called-variant count under them, which is column 4 of the
-table π comes from, so it counts the same windows over the same calls. A
-duplication of `Cyp6g1` segregates alongside the resistance allele
+Search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
+alongside π. Both dip together over the swept window. Add the called-variant
+count under them, column 4 of the table π comes from. A duplication of _Cyp6g1_
+segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
 number costs a window called sites.
 
@@ -270,35 +238,29 @@ Each pair of values reads differently:
 | High | High in both, high dxy | Long-standing divergence (e.g. an inversion)     |
 | Low  | High                   | Shared variation / gene flow                     |
 
-Other selection loci in this panel read the same way against their own genes,
-including _Ace_ and _CHKov1_ on `3R`. `In(3R)Payne`, a cosmopolitan inversion
-under clinal selection, is typed in the same DGRPool table set, so repeating the
-grouping step with its phenotype scans `3R` exactly as the steps above scan
-`2L`.
+_Ace_ and _CHKov1_ on `3R` read the same way. `In(3R)Payne` is typed in the same
+DGRPool table set, so repeating the grouping step with its phenotype scans `3R`
+as above.
 
 ## The inversion, genome-wide and per line
 
-Opening the assembly with no location shows all of its regions at once, so the
-six arms lay out side by side. The `In(2L)t` Fst track rises over the inverted
-region of chromosome 2L, against low background Fst on every other arm.
+Opening the assembly with no location lays the six arms out side by side. The
+`In(2L)t` Fst track rises over the inverted region of 2L against low background
+everywhere else.
 
-That view gives one number per window across the arrangement. To see which lines
-carry it, represent the whole arrangement as a single structural-variant call,
-one `<INV>` record spanning the In(2L)t breakpoints (`2L:2,225,744-13,154,180`),
-genotyped across every karyotyped line, and load it in the
+To see which lines carry it, represent the arrangement as one `<INV>` record
+spanning the In(2L)t breakpoints (`2L:2,225,744-13,154,180`), genotyped across
+every karyotyped line, and load it in the
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
-which draws each genotype at the call's true span so the carriers line up under
-the Fst plateau. [](/docs/tutorials/ld_mosquitoes) builds the same one-record
-karyotype track for a 22 Mb mosquito inversion.
+which draws each genotype at the call's true span.
+[](/docs/tutorials/ld_mosquitoes) builds the same track for a mosquito
+inversion.
 
 The build script writes both inputs: a `samples.tsv` whose first column is the
-sample name and whose other columns are attributes the display can order and
-color rows by, and a one-record SV VCF genotyping every karyotyped line `1/1` or
-`0/0` from its arrangement call.
-
-Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
-`LinearMultiSampleVariantDisplay` that both orders (`groupBy`) and colors
-(`colorBy`) its rows by the `karyotype` column:
+sample name and whose other columns are attributes to order and color rows by,
+and a one-record SV VCF genotyping every line `1/1` or `0/0`. Load it with a
+`LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors (`colorBy`)
+rows by the `karyotype` column:
 
 ```json addtrack
 {
@@ -323,25 +285,19 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 }
 ```
 
-Viewed across the whole arm, each row is a line colored by its genotype at the
-inversion, with the karyotype strip down the sidebar. `groupBy` keeps the two
-karyotype classes contiguous, so each reads as one block.
+Each row is a line colored by its genotype, with the karyotype strip down the
+sidebar and the two classes contiguous.
 
 <Figure src="/img/popgen/in2lt_inversion.png" caption="Top: all six dm6 arms, with the In(2L)t extent over Fst between the two arrangements, the block on 2L standing against low background everywhere else. Bottom: the same two tracks across chr2L alone, with one row per DGRP line under them, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau above it runs past both." links="Six arms=popgen/fst_in2lt_2L,Chromosome 2L=popgen/in2lt_per_sample"/>
 
-The genotypes here are the arrangement karyotypes themselves, so the lane
-records which lines carry the inversion, and the two Fst lanes above it quantify
-how far ordinary SNPs across the region co-segregate with it. Differentiation
-decays outside the breakpoints rather than stopping at them
+Differentiation decays outside the breakpoints rather than stopping at them
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
 extent at the top of the frame is published coordinates.
 
 ## Reproduce it end to end
 
-Every step above (the downloads, the group split, all three scans, and the
-per-sample inversion genotypes) is wrapped in
-[`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh),
-which also downloads JBrowse and writes a ready-to-serve config:
+[`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
+wraps every step above and writes a ready-to-serve config:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dgrp_popgen.sh
@@ -349,12 +305,11 @@ bash build_dgrp_popgen.sh                  # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-The config carries the dm6 assembly (from UCSC) plus the Fst, π, Tajima's D and
-called-variant scan tracks and the inversion genotypes, opening on the In(2L)t
-inversion across arm 2L. The `.bw` and `.vcf.gz` files are written next to it,
-so you can host them elsewhere or
-[open them as local track files](/docs/user_guides/basic_usage#opening-tracks)
-in JBrowse Desktop.
+The config carries the dm6 assembly plus every scan and the inversion genotypes,
+opening on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are written next
+to it, to host elsewhere or
+[open as local track files](/docs/user_guides/basic_usage#opening-tracks) in
+JBrowse Desktop.
 
 ## See also
 
