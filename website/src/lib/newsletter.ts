@@ -1,4 +1,4 @@
-// Unset in local dev and forks (it's a GitHub Actions secret), in which case
-// every newsletter block is omitted rather than rendered as a dead form.
-export const newsletterApiUrl = import.meta.env.PUBLIC_NEWSLETTER_API_URL as
-  string | undefined
+// The mailing list is paused. Every signup block is gated on this value, so
+// reading PUBLIC_NEWSLETTER_API_URL here again (a GitHub Actions secret, unset
+// in local dev and forks) is what brings them back.
+export const newsletterApiUrl: string | undefined = undefined
