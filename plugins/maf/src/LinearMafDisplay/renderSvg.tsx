@@ -201,9 +201,13 @@ function MafSvgBody({
           sources={sources}
           rowHeight={effectiveRowHeight}
           treeAreaWidth={treeAreaWidth}
-          showLabels={showRowLabels && !!sources.length}
+          showLabels={showRowLabels}
           scrollTop={scrollTop}
           availableHeight={rowsHeight}
+          // "Clustered on <locus>", so a shared figure says where its
+          // dendrogram came from. Undefined for maf's `.nh` phylogeny, which
+          // arrives as data and has no locus.
+          clusterProvenance={model.clusterProvenance}
         />
       </g>
       {/* The same titles the display shows on screen (`MafBandLabels`), and for
