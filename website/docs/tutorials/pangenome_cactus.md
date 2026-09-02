@@ -79,21 +79,17 @@ CLI, K12 the `--reference` backbone the other four are aligned onto.
 reference you pick, every other sample is aligned onto it, and Cactus normalizes
 the result into a graph.
 
-This tutorial builds a graph from five _E. coli_ strains and loads it in JBrowse
-as synteny, variants, a whole-genome alignment, depth and presence, then maps a
-new isolate's reads through the finished graph. The
-[HPRC tutorial](/docs/tutorials/pangenome_hprc) opens the Minigraph-Cactus graph
-the Human Pangenome Reference Consortium publishes, the same builder at human
-scale.
+This tutorial builds a graph from five _E. coli_ strains, loads it as synteny,
+variants, a whole-genome alignment, depth and presence, then maps a new
+isolate's reads through it. The [HPRC tutorial](/docs/tutorials/pangenome_hprc)
+is the same builder at human scale.
 
 The [pggb tutorial](/docs/tutorials/pangenome_ecoli) uses the same five strains
 and the same projections onto K12, so the two pages compare the builders on
 identical input.
 [What each projection is](/docs/tutorials/pangenome_ecoli#the-linear-projections)
-is written up there and holds for any builder; this one covers producing them
-from Cactus, and [one figure](#pangenome-depth-and-per-strain-presence) puts the
-two graphs' depth curves in a single frame. Here is what changes between the
-two:
+is written up there; this page covers producing them from Cactus. What changes
+between the two:
 
 | Step             | pggb                                        | Minigraph-Cactus                                                 |
 | ---------------- | ------------------------------------------- | ---------------------------------------------------------------- |
@@ -124,11 +120,10 @@ Contigs keep their plain names here (`chr`). Cactus applies
 naming to the graph internally.
 
 The image carries [odgi](https://github.com/pangenome/odgi), `halSynteny`,
-`hal2maf` and `vg`, which the projections below all need. Cactus also ships a
-statically linked
+`hal2maf` and `vg`, which the projections below need; Cactus also ships a
 [binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md)
-for a machine with no container runtime. Every later step runs in the same
-image, so wrap the `docker run` once and call it `in_cactus`:
+for a machine with no container runtime. Every step runs in the same image, so
+wrap the `docker run` once:
 
 ```bash
 in_cactus() {
@@ -139,11 +134,11 @@ in_cactus() {
 
 Under singularity,
 `singularity exec --bind "$PWD":/data --pwd /data docker://<image>` replaces the
-wrapper body and every call after it is unchanged. The
-[build script](#reproduce-it-end-to-end) picks the runtime off `PATH`.
+wrapper body. The [build script](#reproduce-it-end-to-end) picks the runtime off
+`PATH`.
 
-The graph build takes `--reference K12`, which makes K12 the minigraph backbone,
-and the path every projection is decomposed against:
+`--reference K12` makes K12 the minigraph backbone and the path every projection
+is decomposed against:
 
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
@@ -161,8 +156,6 @@ in_cactus cactus-pangenome /data/js /data/seqfile.txt \
 - `--viz` writes the odgi raster shown at the end.
 - `--giraffe` writes the indexes the read-mapping section needs.
 
-Pinning the image to a dated version tag keeps the graph reproducible.
-
 One run produces everything the sections below use:
 
 - `mc/ecoli.gfa.gz`, `mc/ecoli.full.og`: the graph (GFA and odgi)
@@ -177,15 +170,12 @@ One run produces everything the sections below use:
 ## All-vs-all synteny projection
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
-HAL's base-level alignment and emits synteny blocks per genome pair. On a
-near-colinear bacterial graph, `odgi untangle` collapses each pair to a few
-whole-chromosome blocks.
-
-`halSynteny` writes PSL, and names every sequence `chr` with no sample tag. The
-[build script](#reproduce-it-end-to-end) runs it for all six strain pairs and
-converts each PSL to PAF, injecting the PanSN `sample#0#chr` names and decoding
-the strand. (halSynteny keeps the query on `+` and flips only the target, so the
-PAF strand is the second character of the PSL strand field.)
+HAL's base-level alignment and emits synteny blocks per genome pair. It writes
+PSL and names every sequence `chr` with no sample tag, so the
+[build script](#reproduce-it-end-to-end) runs it for all six pairs and converts
+each PSL to PAF, injecting the PanSN `sample#0#chr` names and decoding the
+strand (halSynteny flips only the target, so the PAF strand is the second
+character of the PSL strand field).
 
 Index the combined PAF so a range query fetches only the region in view:
 
@@ -213,10 +203,10 @@ PanSN `sample#` prefix on every record is how it maps a record to its strain:
 }
 ```
 
-To stack the five strains, use a linear synteny view with one panel per strain
-and one `tracks` entry per band, each band naming the same track. Put this in
-the session's `views`, or reach the same state from the UI with **Add → Linear
-synteny view**, whose Quick start fills in a row per assembly the track lists.
+To stack the five strains, a linear synteny view takes one panel per strain and
+one `tracks` entry per band, each naming the same track. Put this in the
+session's `views`, or use **Add → Linear synteny view**, whose Quick start fills
+in a row per assembly the track lists.
 
 ```json
 {
@@ -243,20 +233,16 @@ synteny view**, whose Quick start fills in a row per assembly the track lists.
 
 Same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
-and the [pggb one](/docs/tutorials/pangenome_ecoli#synteny-projection), and all
-three agree on the backbone and on IAI39's inversions. These blocks are read out
-of the HAL, so they are the graph's own base-level alignment.
+and the [pggb one](/docs/tutorials/pangenome_ecoli#synteny-projection). These
+blocks are read out of the HAL, so they are the graph's own alignment.
 
 ## Pangenome variants projection
 
-`--vcf` decomposes the graph against the K12 reference with
+`--vcf` decomposes the graph against K12 with
 [`vg deconstruct`](https://github.com/vgteam/vg), genotyped across the other
-four strains. Its `CHROM` is already the reference contig (`chr`), so the `.gz`
-and `.tbi` Cactus wrote load unchanged.
-
-Load `mc/ecoli.vcf.gz` as a [`VariantTrack`](/docs/config_guides/variant_track)
-on K12 and pick the matrix display, one column per variant and one row per
-sample:
+four strains. Its `CHROM` is already `chr`, so the `.gz` and `.tbi` Cactus wrote
+load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track) with the
+matrix display, one column per variant and one row per sample:
 
 ```json addtrack
 {
@@ -277,20 +263,17 @@ covers the matrix versus the per-position display, the genotype colors, and
 clustering samples by genotype.
 
 `vg deconstruct` emits a snarl **tree**, one record per snarl at every level, so
-its wide records paint over the fine layer they were decomposed from.
-`cactus-pangenome` pops that tree with
-[`vcfbub`](https://github.com/pangenome/vcfbub) by default; `--vcfbub 0` turns
-it off, and `--vcfwave` realigns the survivors into primitive variants. The pggb
-tutorial
-[sets the same knob by hand](/docs/tutorials/pangenome_ecoli#why-the-reference-path-takes-a-length),
-and covers what the width cap costs.
+wide records paint over the fine layer under them. `cactus-pangenome` pops that
+tree with [`vcfbub`](https://github.com/pangenome/vcfbub) by default;
+`--vcfbub 0` turns it off, and `--vcfwave` realigns the survivors into primitive
+variants. The pggb tutorial
+[sets the same knob by hand](/docs/tutorials/pangenome_ecoli#why-the-reference-path-takes-a-length).
 
 ## Whole-genome alignment (MAF) projection
 
-`cactus-pangenome` writes `mc/ecoli.full.hal` by default, and the MAF comes out
-of it. `hal2maf --refGenome K12` roots every block on K12 directly, and the
-HAL's `genome.sequence` rows come out as `K12.chr`, `Sakai.chr`, and so on, the
-`sample.contig` naming the MAF display splits each species off on:
+The MAF comes out of `mc/ecoli.full.hal`. `hal2maf --refGenome K12` roots every
+block on K12, and the rows come out as `K12.chr`, `Sakai.chr`, and so on, the
+`sample.contig` naming the MAF display splits species on:
 
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
@@ -303,11 +286,10 @@ tabix -p bed ecoli_cactus.maf.bed.gz
 ```
 
 [`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
-writes one line per block, carrying that block's rows, which a
-[`MafTabixAdapter`](/docs/config/maftabixadapter) reads. `hal2maf` has already
-rooted every block on K12, so [maf2bed](https://github.com/cmdcolin/maf2bed)
-converts this MAF too and streams while it does it, which matters at
-whole-genome scale; see
+writes one line per block, which a
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads. Since every block is
+already rooted on K12, the streaming
+[maf2bed](https://github.com/cmdcolin/maf2bed) converts this MAF too; see
 [producing the tabix BED](/docs/config_guides/maf_track#producing-the-tabix-bed-from-a-maf).
 
 ```json addtrack
@@ -326,22 +308,19 @@ whole-genome scale; see
 
 <Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
 
-A row reads blank two ways. No colored columns is sequence the strain shares
-with K12, which is most of the flanks; a row that stops entirely is a strain
-with no alignment to K12 there, which is what the four do across the prophage.
-The coverage band separates them, dropping where rows drop out and holding where
-they match.
+A row reads blank two ways: no colored columns is sequence shared with K12, and
+a row that stops is a strain with no alignment to K12 there. The coverage band
+separates them.
 
-`samples` both names the rows and fixes their order. To order them by how much
-of the graph each pair of strains shares instead, run
+`samples` names the rows and fixes their order. To order them by shared graph
+content instead, run
 [`odgi similarity`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_similarity.html)
-on `mc/ecoli.full.og` and point `nhLocation` at the tree, which is what the
+on `mc/ecoli.full.og` and point `nhLocation` at the tree, as the
 [pggb tutorial's MAF track](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)
 does.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity, and codon view, all derived from the alignment with no extra
-files. The same `hal2maf` route works for a
+per-row identity, and codon view. The same `hal2maf` route works for a
 [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus) HAL of
 more divergent species.
 
@@ -350,49 +329,41 @@ more divergent species.
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths traverse the graph under each K12 base, and
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
-splits that aggregate per strain. Both run as they do in the pggb tutorial's
+splits that per strain. Both run as in the pggb tutorial's
 [depth](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
 and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
-sections, over `mc/ecoli.full.og` instead of the pggb GFA, and load as the same
+sections, over `mc/ecoli.full.og`, and load as the same
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
 [`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). Two names
-change: the reference path is `K12#0#chr`, and each non-reference strain carries
-a trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter has to match
-a prefix rather than the whole name. The
-[build script](#reproduce-it-end-to-end) runs both.
+change: the reference path is `K12#0#chr`, and each other strain carries a
+trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter matches a
+prefix. The [build script](#reproduce-it-end-to-end) runs both.
 
 Depth counts path **steps** rather than strains, so a repeat the graph folded
-onto one run of nodes reads above the strain count. On identical input, seqwish
-folds the rRNA copies together, so the pggb curve runs above the strain count
-there, and the reference-first graph keeps them apart.
+onto one run of nodes reads above the strain count. seqwish folds the rRNA
+copies together; the reference-first graph keeps them apart.
 
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
-seqwish merges identical sequence wherever it occurs, so a collapsed repeat is
-where to look for variation _within_ an array. A reference-anchored build keeps
-each copy at its own coordinate, so the depth curve here is a strain tally and a
-read can be asked which copy it came from.
+A collapsed repeat is where to look for variation _within_ an array; a
+reference-anchored copy keeps each at its own coordinate, so the depth curve
+here is a strain tally.
 
-Drawn under the aggregate curve, the pav rows say which strain accounts for each
-dip. The picture is the one the pggb tutorial already shows
-([per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)),
-because at this scale the two graphs agree.
+Under the aggregate curve, the pav rows say which strain accounts for each dip,
+as in the pggb tutorial's
+[per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence).
 
 ## Mapping a new isolate through the graph
 
-Every projection above re-plots a genome the graph was built from. This one
-takes a sample outside the graph, maps its short reads through the whole
-pangenome, and flattens the result onto K12.
+This step takes a sample outside the graph, maps its short reads through the
+whole pangenome, and flattens the result onto K12. A read over an allele K12
+lacks places on another strain's path and has no K12 coordinate, so surjection
+leaves it unmapped; the BAM holds reads over sequence K12 carries, where a
+divergent read followed a non-reference path through a bubble and paid no
+mismatches or soft clips for it.
 
-A read over an allele K12 lacks places in the graph, on whichever strain's path
-carries it, and has no K12 coordinate for `vg surject` to project onto, so
-surjection leaves it unmapped. The BAM holds the reads over sequence K12
-carries, where a divergent read followed a non-reference path through a bubble
-and paid no mismatches or soft clips for the difference.
-
-`--giraffe` wrote the indexes for this during the build. `vg giraffe` maps
-against the graph and emits a GAM, and `vg surject` projects that graph
-alignment onto one path as an ordinary BAM. The reads here are _E. coli_ KTa004
+`--giraffe` wrote the indexes during the build. `vg giraffe` emits a GAM, and
+`vg surject` projects it onto one path as a BAM. The reads are _E. coli_ KTa004
 ([ENA DRR063408](https://www.ebi.ac.uk/ena/browser/view/DRR063408), Illumina
 MiSeq), a strain the graph has never seen:
 
@@ -409,12 +380,10 @@ in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p K12#0#chr \
 ```
 
 `-p K12#0#chr` picks the path to surject onto, so the BAM's one reference
-sequence is that PanSN path name. Rename it to the assembly's refName in the
-header, drop the unmapped reads, then sort and index; the
-[build script](#reproduce-it-end-to-end) does those four `samtools` steps, and
-downloads and subsamples the reads.
-
-The result is a plain BAM, loaded as an ordinary alignments track:
+sequence is that PanSN name. Rename it to the assembly's refName in the header,
+drop the unmapped reads, sort and index; the
+[build script](#reproduce-it-end-to-end) does those `samtools` steps and
+subsamples the reads. The result loads as an ordinary alignments track:
 
 ```json addtrack
 {
@@ -429,27 +398,22 @@ The result is a plain BAM, loaded as an ordinary alignments track:
 }
 ```
 
-Stack it over the variant and MAF projections and the pileup reads against the
-graph it came out of, at the loci where this isolate is far enough from K12 for
-the difference to be worth a graph. The
-[alignments track guide](/docs/user_guides/alignments_track) covers coloring and
-sorting the pileup.
+The [alignments track guide](/docs/user_guides/alignments_track) covers coloring
+and sorting the pileup.
 
 `vg giraffe` rewrites `ecoli.d2.dist` as it runs, leaving it newer than the
-`.min` and `.zipcodes` built from it, so a second run refuses to start on an
-index that only looks stale. `touch` the two derived files before re-mapping.
+`.min` and `.zipcodes` built from it, so a second run refuses to start. `touch`
+the two derived files before re-mapping.
 
 ## Opening the graph in the graph genome view
 
-Every projection above flattens the graph onto K12. JBrowse can also draw it as
-a graph, through the
+JBrowse can also draw the graph as a graph, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view).
 
 ### Installing the plugin
 
 The plugin is beta and not in the [plugin store](/docs/user_guides/plugin_store)
-yet, so it loads by URL. In JBrowse Web that means a `plugins` array at the top
-level of `config.json`, beside `assemblies` and `tracks` (see
+yet, so it loads by URL from a top-level `plugins` array in `config.json` (see
 [configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
@@ -468,33 +432,24 @@ level of `config.json`, beside `assemblies` and `tracks` (see
 <!-- GRAPH_PLUGIN_CONFIG END -->
 
 `RgfaTabixAdapter` ships in the same plugin, so the segments track below needs
-it as much as the view does. On [JBrowse Desktop](/docs/quickstart_desktop)
-there is no config file to edit: install it once from the start screen at
-**Global plugins... → Add custom plugin**, putting that `esmUrl` under
-**Advanced options** in **ESM build URL** and leaving the two fields above it
-empty.
+it too. On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the
+start screen at **Global plugins... → Add custom plugin**, putting that `esmUrl`
+under **Advanced options** in **ESM build URL**.
 
 ### Indexing the graph
 
-`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so it takes the plain-GFA
-route: `build_pggb_tabix.sh` walks the path lines offline and writes the two
-tabix-indexed BEDs `RgfaTabixAdapter` reads, which makes the whole graph
-queryable by locus with no per-window extraction step.
+`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so `build_pggb_tabix.sh` walks
+the path lines offline and writes the two tabix-indexed BEDs `RgfaTabixAdapter`
+reads, making the whole graph queryable by locus.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
 bash build_pggb_tabix.sh mc/ecoli.gfa.gz ecoli_cactus K12
 ```
 
-Cactus writes the reference as a `P` line and the haplotypes as `W` lines, and
-the walk reads both in file order, so the third argument anchors rank 0 on the
-K12 path. The non-reference paths carry a trailing subpath tag
-(`Sakai#0#chr#0`), which PanSN still resolves to the sample.
-
-The pair loads as one `FeatureTrack` pointed at the shared prefix, beside the
-projection tracks the build script already wrote. The `uri` below is our hosted
-copy of that pair; a local build swaps in the `ecoli_cactus` prefix the command
-above wrote.
+The third argument anchors rank 0 on the K12 path. The pair loads as one
+`FeatureTrack` pointed at the shared prefix; the `uri` below is our hosted copy,
+and a local build swaps in the `ecoli_cactus` prefix written above.
 
 ```json addtrack
 {
@@ -510,73 +465,56 @@ above wrote.
 }
 ```
 
-The segments then draw as an ordinary track on K12, and **Track menu → Launch →
-Graph genome view (this region)** cuts a subgraph at whatever is on screen. The
-link under the clip opens the session it starts in, so the same route runs on
-any graph indexed this way.
+The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
+genome view (this region)** cuts a subgraph at whatever is on screen.
 
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu." />
 
-A kilobase or two is the width to open one at, and the downstream edge of the
-flagellar operon is a place where the five strains have something to disagree
-about: K12 carries an IS1 element there that the other four skip. A second copy
-of the segments track, colored by the `SM:Z:` carriage the walk recorded, says
-which segments those are; the pggb page gives
-[that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane)
-and it takes only a new `trackId` and this graph's prefix.
+A kilobase or two is the width to open one at. Past the flagellar operon, K12
+carries an IS1 element the other four skip. A second copy of the segments track,
+colored by the `SM:Z:` carriage the walk recorded, says which segments those
+are; the pggb page gives
+[that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
 
 <Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
-The node and the block are the same segment: both halves run the reference
-position ramp over the cut's own region, so a color in the lane is that color in
-the graph. The dashed edge is the other four strains' route, drawn as the
-deletion it is against K12.
-
-An edge carries no sequence, so its drawn length comes from the layout. In a
-force layout a link between two anchors that are already close together bows out
-around everything between them, which is why the route past the IS1 element is
-the largest thing in the frame. The label on the edge is the length of the node
-it skips.
+Both halves run the reference position ramp over the cut's region, so a color in
+the lane is that color in the graph. The dashed edge is the other four strains'
+route. An edge carries no sequence, so its drawn length comes from the layout;
+the label on it is the length of the node it skips.
 
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
-covers the decisions in the walk that decide what it can be trusted for, and the
-graph size past which cutting one window offline with `odgi extract` is the
-better route.
+covers what the walk can be trusted for, and the graph size past which
+`odgi extract` is the better route.
 
 ## Compared to `odgi viz`
 
-`--viz` already wrote `mc/ecoli.viz/chr.full.viz.png`, the same
+`--viz` wrote `mc/ecoli.viz/chr.full.viz.png`, the
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
 raster the [pggb tutorial](/docs/tutorials/pangenome_ecoli#compared-to-odgi-viz)
-shows beside its projections. It gives one row per strain, with the graph's node
-order on the horizontal axis.
+also shows: one row per strain, graph node order on the horizontal axis.
 
 <Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 
-The `odgi pav` track carries the same information, one row per path painted
-where that path is present. Drawing it on K12's coordinates in the raster's row
-order and colors leaves the horizontal axis as the only difference between the
-two figures. The gold band marks the same `chr:1,000,000-1,100,000` in both.
+The `odgi pav` track carries the same information. Drawing it on K12's
+coordinates in the raster's row order and colors leaves the horizontal axis as
+the only difference. The gold band marks `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths and the same colors on K12's coordinates. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
 
-The graph axis counts pangenome bases, so a locus where the other strains carry
-sequence K12 lacks takes up more of it, and the JBrowse axis holds every locus
-to its reference width. This is the 100 kb window where the gap is largest,
-which is why it sits over a dip in the depth track.
+The graph axis counts pangenome bases, so a locus where other strains carry
+sequence K12 lacks takes up more of it. This is the 100 kb window where that gap
+is largest, which is why it sits over a dip in the depth track. Node ids in a
+Cactus graph run `1..N` in node order, so walking K12's `P` line turns a K12
+offset into a pangenome offset; `build_ecoli_pangenome_cactus.sh` does that
+walk.
 
-Node ids in a Cactus graph run `1..N` in node order, so walking K12's `P` line
-turns a K12 offset into a pangenome offset. `build_ecoli_pangenome_cactus.sh`
-does that walk, so both bands come from the same arithmetic.
-
-The band contains Sakai's _stx2_ prophage and a second Sakai-only stretch, so
-crossing this 100 kb of K12 costs the other strains substantially more of their
-own sequence. The
+The band contains Sakai's _stx2_ prophage and a second Sakai-only stretch. The
 [all-vs-all tutorial's stx2 figure](/docs/tutorials/allvsall_synteny) opens the
 locus two rows deep with the gene lane on, and
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-covers the gene-level version of that zoom.
+covers the gene-level version.
 
 ## Reproduce it end to end
 
@@ -590,19 +528,13 @@ bash build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbrowse2
 npx --yes serve ecoli_cactus_build/jbrowse2
 ```
 
-It downloads the same five RefSeq genomes as the pggb build, runs
-`cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
-projections above, maps the KTa004 reads through the graph, indexes the graph
-itself with `build_pggb_tabix.sh`, downloads JBrowse, and writes a `config.json`
-with the five assemblies, per-strain gene tracks, the projection tracks, the
-segments track, and a default session. It needs the same tools listed under
-[Prerequisites](#prerequisites).
-
-The `config.json` declares the graph genome view plugin, so the segments track
-and its launch menu item work in that build.
-
-It picks its container runtime from what is on `PATH`, docker first and then
-singularity or apptainer. Force one with `CONTAINER=singularity`.
+It downloads the five RefSeq genomes, runs `cactus-pangenome`, converts the HAL,
+VCF, `odgi depth` and `odgi pav` into the projections above, maps the KTa004
+reads, indexes the graph with `build_pggb_tabix.sh`, and writes a `config.json`
+with the five assemblies, per-strain gene tracks, the projection and segments
+tracks, the plugin declaration and a default session. It needs the tools under
+[Prerequisites](#prerequisites), and picks its container runtime off `PATH`,
+docker first; force one with `CONTAINER=singularity`.
 
 ## See also
 
