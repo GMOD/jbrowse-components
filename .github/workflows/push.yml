@@ -929,6 +929,15 @@ jobs:
           # skip webpack minification: nothing here reads the bundle's size or
           # its stack traces, and it is the longest part of the build
           NO_MINIMIZE: true
+      # The MCP conformance suite is what keeps the recipes page's "every
+      # snippet was run against the app" true, and it ran nowhere until now.
+      # Same build as the step above (`pnpm build` writes build/electron.js and
+      # build/mcpServer.js), same xvfb; it launches `electron .` against the
+      # served renderer build, so it needs no installer. Network-free: it
+      # opens volvox and skips the recipe fences that name hg38 or a URL.
+      - name: MCP conformance against the built app
+        run: pnpm test:mcp:headless
+        working-directory: products/jbrowse-desktop
 
   nsis_installer_script:
     name: Windows installer script compiles

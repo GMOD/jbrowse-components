@@ -63,6 +63,33 @@ writes the mp4 and its poster. `readTranscript.mjs <outdir>/transcript.json`
 prints what was asked and what each turn did, which is the first thing a
 reviewer wants.
 
+## What the Chrome extension actually is
+
+Established while proving `window.jb` from it (`webDemo.mjs`), each a dead end
+first:
+
+- **Its tools are deferred.** A headless `claude -p --chrome` session lists only
+  the built-ins until `ToolSearch` pulls `mcp__claude-in-chrome__*`. They are
+  there; they are not advertised.
+- **"Claude in Chrome requires permission" is Claude Code's own allowlist**, not
+  Chrome. `--allowedTools mcp__claude-in-chrome` clears it.
+- **`javascript_tool` evaluates in the page's MAIN world**, so
+  `window.JBrowseSession` and `window.jb` are simply there. It returns the last
+  expression, not a `return`; caps one evaluation at 45 s while the code runs
+  on; and sanitizes results (depth-truncated objects, clipped strings, any
+  string that looks like base64 replaced with a `[BLOCKED]` marker, which has
+  hit a display type name). `website/docs/agents_web.md` carries the
+  agent-facing version of these.
+- **Naming the browser is two calls**, `list_connected_browsers` then
+  `select_browser` with its `deviceId`, and two Chrome installs register the
+  extension here, so a headless run has to be told the id in its prompt.
+- It can read `file://` URLs if granted, and that is the whole extent of its
+  local reach: no writes, no child process, no indexing. GEO bigWigs fetch from
+  the jbrowse.org origin with real bytes, so CORS is not the blocker there that
+  it is for some hosts.
+- Chrome raises a `"Claude" started debugging this browser` infobar while the
+  extension works, which changes the frame height mid-clip.
+
 ## What cost the most to find
 
 - **`screencapture -l <windowid>`, not `-R <region>`.** Region capture only sees

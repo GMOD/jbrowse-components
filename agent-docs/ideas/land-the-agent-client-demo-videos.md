@@ -1,6 +1,6 @@
 ---
 name: land-the-agent-client-demo-videos
-description: three Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness lives only in an ephemeral scratchpad, so read the handoff before filming
+description: three Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness and its operating notes are scripts/agent-demos/
 ---
 
 # Land the agent client demo videos
@@ -59,8 +59,7 @@ Needs the same keyboard path, which now works.
 
 ## Before filming anything again
 
-The macOS automation findings, the artifact locations and what is already
-established about the extension are in
-[handoffs/agent-clients-and-demos](../handoffs/agent-clients-and-demos.md).
-**The harness scripts live only in an ephemeral scratchpad** — read that first
-or rediscover a day of dead ends.
+The harness, the macOS automation findings and what is established about the
+Chrome extension are all in
+[`scripts/agent-demos/CLAUDE.md`](../../scripts/agent-demos/CLAUDE.md). Read it
+first or rediscover a day of dead ends.

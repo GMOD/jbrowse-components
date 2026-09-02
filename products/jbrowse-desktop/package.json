@@ -34,6 +34,7 @@
     "update:appimagetool": "node scripts/updateAppimagetool.ts",
     "test:e2e": "node test/e2e.ts",
     "test:mcp": "node test/mcpConformance.ts",
+    "test:mcp:headless": "xvfb-run --auto-servernum node test/mcpConformance.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node test/e2e.ts --headless",
     "test:e2e:headless:win": "node test/e2e.ts --headless",
     "test:e2e:build": "pnpm package:linux:no-installer && pnpm test:e2e",
