@@ -10,7 +10,6 @@ import {
   csToCigar,
   flipCigar,
   flipCoarseCigar,
-  pafIdentity,
   swapCoarseCigar,
   swapIndelCigar,
 } from '@jbrowse/cigar-utils'
@@ -63,7 +62,7 @@ export interface PifStats {
  */
 export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
   const cigars =
-    stats.rows === 0 || stats.cigarRows === 0
+    stats.cigarRows === 0
       ? 'none'
       : stats.cigarRows === stats.rows && stats.unboundedRows === 0
         ? 'all'
@@ -182,44 +181,16 @@ function foldCsIntoCg(tags: string[]) {
   return { tags: rewritten, cigarIdx: rewritten.indexOf(folded) }
 }
 
-// Coarse identity must match the fine tier exactly, or coloring jumps at the
-// zoom where the view switches tiers. So it is written off the SAME function the
-// adapters read the fine tier with (de:f: tag, then odgi's id:f:, then
-// num_matches/block_len) rather than a private copy of that chain — a copy is
-// what previously skipped the id:f: rung. A CIGAR recompute is deliberately not
-// in the chain at all: a cg (M-style) CIGAR folds mismatches into M, so it would
-// report ~0 divergence (spurious 100% identity) for a divergent alignment.
-//
-// When the row's own de:f: is what the reader lands on, that string is passed
-// through byte-for-byte rather than recomputed: a round trip through toFixed(6)
-// would silently truncate a 7-decimal tag and drift the two tiers apart by the
-// exact mechanism this is guarding against.
-function coarseDivergence(
-  tags: string[],
-  numMatches: number,
-  blockLen: number,
-) {
-  const rawDe = tags.find(f => f.startsWith('de:f:'))?.slice(5)
-  const identity = pafIdentity({
-    de: rawDe,
-    id: tags.find(f => f.startsWith('id:f:'))?.slice(5),
-    numMatches,
-    blockLen,
-  })
-  return rawDe !== undefined && 1 - +rawDe === identity
-    ? rawDe
-    : (1 - identity).toFixed(6)
-}
-
 function pifRow(fields: (string | number | undefined)[]) {
   return `${fields.join('\t')}\n`
 }
 
 function processLine(
-  line: string,
+  rawLine: string,
   coarseGap: number | undefined,
   stats: PifStats,
 ): string {
+  const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
   if (line.startsWith('#')) {
     return ''
   }
@@ -265,21 +236,10 @@ function processLine(
     return fineRows
   }
 
-  const numMatches = +tags[0]!
-  const blockLen = +tags[1]!
-  const mapq = tags[2]
-  // Every optional tag except the alignment string itself rides along, so a
-  // click on a coarse ribbon shows the same attributes as the same alignment
-  // does zoomed in (rustybam's tags, minimap2's tp/cm/s1, odgi's id). The CIGAR
-  // is replaced by its fold (`cr:Z:`, the runs and the indels longer than half
-  // of `coarseGap`), and de:f: is rewritten below. No `cs:Z:` can reach here:
-  // it was folded into the cg above, since a PIF row carries one alignment
-  // string.
-  const passthrough = tags
-    .slice(3)
-    .filter(f => !f.startsWith('cg:Z:') && !f.startsWith('de:f:'))
-  const de = coarseDivergence(tags, numMatches, blockLen)
-  const tail = [numMatches, blockLen, mapq, ...passthrough, `de:f:${de}`]
+  // the coarse row is the fine row with its CIGAR replaced by the fold and
+  // every other column and tag verbatim, so a click and the identity coloring
+  // read the same on both tiers
+  const coarse = cigarIdx === -1 ? tags : tags.filter((_, i) => i !== cigarIdx)
   // the T row's own axis is the target, as the PAF CIGAR is written; the Q row
   // re-orients it for the query, the way the fine tier's cg is
   const { ops: cr, unbounded } = coarseFold({
@@ -299,8 +259,8 @@ function processLine(
 
   return (
     fineRows +
-    pifRow([`T${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...tail, ...tCr]) +
-    pifRow([`Q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...tail, ...qCr])
+    pifRow([`T${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...coarse, ...tCr]) +
+    pifRow([`Q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...coarse, ...qCr])
   )
 }
 

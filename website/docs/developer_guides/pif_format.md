@@ -75,9 +75,10 @@ This matches [rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf`
 writes the same `perID_by_all` quantity) and
 [SVbyEye](https://github.com/daewoooo/SVbyEye).
 
-Coarse-tier rows carry a `de:f:` tag that `make-pif` writes from that same
-chain, so identity coloring does not jump at the zoom where the view switches
-tiers. It is never recomputed from the CIGAR: a plain `M` CIGAR folds mismatches
+A coarse-tier row carries the same count columns and tags as its fine row, so
+the renderer lands on the same rung of that chain with the same value and
+identity coloring does not jump at the zoom where the view switches tiers.
+Identity is never recomputed from the CIGAR: a plain `M` CIGAR folds mismatches
 into matches, so a recompute would report a divergent alignment as 100%
 identical.
 
@@ -133,8 +134,7 @@ jbrowse make-pif input.paf --csi
 Full workflow from two genome assemblies:
 
 ```bash
-# --eqx makes minimap2 emit =/X in the CIGAR so make-pif can compute accurate
-# per-alignment identity (stored as a de:f: tag in the PIF).
+# --eqx makes minimap2 emit =/X in the CIGAR so mismatches draw at base zoom
 minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 jbrowse make-pif alignment.paf
 jbrowse add-assembly reference.fa --out $OUT --load copy

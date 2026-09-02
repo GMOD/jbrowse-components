@@ -5,10 +5,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { Writable } from 'node:stream'
-import { gunzipSync } from 'node:zlib'
+import { gunzipSync, gzipSync } from 'node:zlib'
 
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
-import { createPIF } from './pif-generator.ts'
+import { createPIF, pifHeader } from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
@@ -184,45 +184,6 @@ test('coarse tier keeps the aligner de:f: tag for a plain M CIGAR', async () => 
   })
 })
 
-test('coarse identity matches fine for a cg CIGAR with no de:f: tag', async () => {
-  await runInTmpDir(async ({ dir }) => {
-    const pafPath = path.join(dir, 'nodetag.paf')
-    // A cg:Z:100M CIGAR folds substitutions into M, and there is NO de:f: tag.
-    // The row's own num_matches/block_len columns (90/100) are the only honest
-    // identity signal. A CIGAR recompute would report 0 divergence (100%
-    // identity) — the coarse tier must instead reuse 1 - 90/100 = 0.1 so it
-    // colors identically to the fine tier across the LOD switch.
-    fs.writeFileSync(
-      pafPath,
-      `${[
-        'q1',
-        '100',
-        '0',
-        '100',
-        '+',
-        't1',
-        '100',
-        '0',
-        '100',
-        '90',
-        '100',
-        '60',
-        'cg:Z:100M',
-      ].join('\t')}\n`,
-    )
-    const fn = 'nodetag.pif.gz'
-    await runCommand(['make-pif', pafPath, '--out', fn])
-    const lines = gunzipSync(fs.readFileSync(fn))
-      .toString()
-      .split('\n')
-      .filter(Boolean)
-    const coarseT = lines.find(l => l.startsWith('T'))!
-    const coarseQ = lines.find(l => l.startsWith('Q'))!
-    expect(coarseT).toContain('de:f:0.100000')
-    expect(coarseQ).toContain('de:f:0.100000')
-  })
-})
-
 // A PAF row helper: 12 mandatory columns plus whatever tags the test needs
 function pafRow(
   tags: string[],
@@ -292,27 +253,26 @@ test('a row carrying both cg and cs emits one cg, folded from the cs', async () 
   })
 })
 
-// odgi untangle writes id:f: and no de:f:. pafIdentity reads de -> id ->
-// num_matches/block_len, so a coarse tier that skipped the id rung colored off
-// 90/100 while the fine tier colored off id=0.99 — a visible jump at the zoom
-// where the tier switches.
-test('coarse identity follows the id:f: tag when there is no de:f:', async () => {
+// The renderer reads identity off the row's own tags (de:f:, then id:f:, then
+// num_matches/block_len) on both tiers, so carrying them verbatim is what keeps
+// the coloring continuous across the switch. make-pif used to restate a de:f:
+// on the coarse row from that chain, and a restatement rounded through
+// toFixed(6) is a drift on exactly the rows (id:f: only, or no tag at all)
+// where the fine tier reads the value unrounded.
+test("a coarse row carries the fine row's columns and tags verbatim minus the alignment string", async () => {
   await runInTmpDir(async () => {
-    const lines = await pifLines(pafRow(['cg:Z:100M', 'id:f:0.99']))
-    const coarseT = lines.find(l => l.startsWith('T'))!
-    // 1 - 0.99, not 1 - 90/100
-    expect(+tagValue(coarseT, 'de:f:')!).toBeCloseTo(0.01, 6)
-    expect(tagValue(coarseT, 'id:f:')).toBe('0.99')
-  })
-})
-
-test('a degenerate zero block length reads as 0% identity on both tiers', async () => {
-  await runInTmpDir(async () => {
-    // block_len 0 makes pafIdentity return 0; the coarse tier used to write
-    // de:f:0, which reads back as 100%
-    const lines = await pifLines(pafRow(['cg:Z:100M'], { 9: '0', 10: '0' }))
-    const coarseT = lines.find(l => l.startsWith('T'))!
-    expect(tagValue(coarseT, 'de:f:')).toBe('1.000000')
+    const lines = await pifLines(
+      pafRow(['tp:A:P', 'id:f:0.99', 'cg:Z:100M', 'NM:i:3'], {
+        9: '0',
+        10: '0',
+      }),
+    )
+    const fineT = lines.find(l => l.startsWith('t'))!.split('\t')
+    const coarseT = lines.find(l => l.startsWith('T'))!.split('\t')
+    expect(coarseT.slice(1)).toEqual(
+      fineT.slice(1).filter(f => !f.startsWith('cg:Z:')),
+    )
+    expect(coarseT).not.toContain(expect.stringMatching(/^de:f:/))
   })
 })
 
@@ -424,17 +384,33 @@ test('a lopsided cluster of small indels is written as several runs', async () =
   })
 })
 
-test('--coarse 0 is rejected: a coarse tier always has a bound', async () => {
+test.each(['0', '-500', '2500.5', 'wide'])(
+  '--coarse %s is rejected: the bound is a positive whole number of bp',
+  async coarse => {
+    await runInTmpDir(async () => {
+      const { error } = await runCommand([
+        'make-pif',
+        simplePaf,
+        '--out',
+        'o.pif.gz',
+        `--coarse=${coarse}`,
+      ])
+      expect(error?.message).toMatch('Invalid --coarse')
+    })
+  },
+)
+
+test('a CRLF PAF writes the same PIF as an LF one', async () => {
   await runInTmpDir(async () => {
-    const { error } = await runCommand([
-      'make-pif',
-      simplePaf,
-      '--out',
-      'o.pif.gz',
-      '--coarse',
-      '0',
-    ])
-    expect(error?.message).toMatch('Invalid --coarse')
+    const paf = pafRow(['cg:Z:40M5I35M1000D40M', 'de:f:0.01'], {
+      3: '120',
+      4: '-',
+      8: '1115',
+    })
+    const lf = await pifLines(paf, ['--coarse', '500'])
+    const crlf = await pifLines(paf.replace('\n', '\r\n'), ['--coarse', '500'])
+    expect(crlf).toEqual(lf)
+    expect(lf.join('\n')).not.toContain('\r')
   })
 })
 
@@ -486,13 +462,21 @@ test('a CIGAR the fold cannot stand behind downgrades the census to some', async
   })
 })
 
-test('a file with no rows at all carries no CIGAR census either', async () => {
-  await runInTmpDir(async () => {
-    const lines = await pifLines('q1\t100\t0\t100\n')
-    expect(lines[0]).toBe(
-      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none',
-    )
-  })
+// the command refuses to write a file with no rows, so the header for one is
+// only ever seen through its builder
+test('a pass that saw no rows at all carries no CIGAR census either', () => {
+  expect(
+    pifHeader(10000, {
+      samples: new Set(),
+      pairs: new Set(),
+      rows: 0,
+      cigarRows: 0,
+      unboundedRows: 0,
+      skipped: 1,
+    }),
+  ).toBe(
+    '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none\n',
+  )
 })
 
 test('an incoming cr:Z: is dropped from both tiers', async () => {
@@ -570,6 +554,27 @@ test('a file with no valid PAF rows fails instead of writing an empty PIF', asyn
       'o.pif.gz',
     ])
     expect(error?.message).toMatch('Is this a PAF file?')
+    // the census used to run after the pipeline had already written the file
+    expect(fs.readdirSync(dir).filter(f => f.startsWith('o.pif'))).toEqual([])
+  })
+})
+
+// A truncated download is the common corruption, and gunzip reports it only
+// at the end of the stream: everything before it had already gone through
+// sort, bgzip and tabix, so the command failed and left a valid, indexed PIF
+// of the first part of the file beside its error
+test('a truncated gzip input fails and leaves no output behind', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const whole = gzipSync(pafRow(['cg:Z:100M']).repeat(3000))
+    fs.writeFileSync('trunc.paf.gz', whole.subarray(0, whole.length / 2))
+    const { error } = await runCommand([
+      'make-pif',
+      'trunc.paf.gz',
+      '--out',
+      'o.pif.gz',
+    ])
+    expect(error?.message).toMatch('unexpected end of file')
+    expect(fs.readdirSync(dir).filter(f => f.startsWith('o.pif'))).toEqual([])
   })
 })
 

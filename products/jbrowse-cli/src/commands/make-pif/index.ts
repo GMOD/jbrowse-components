@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { parseArgs } from 'node:util'
 
 import { printHelp } from '../../utils.ts'
@@ -113,14 +114,14 @@ export async function run(args?: string[]) {
     : coarse === undefined
       ? DEFAULT_COARSE_GAP
       : +coarse
-  // positive, never 0: a coarse row without a fold means "one run within the
-  // bound", and a tier with no bound would be indistinguishable from one
+  // a whole number because the header states it as an `i` tag, and positive
+  // because a coarse row without a fold means "one run within the bound"
   if (
     coarseGap !== undefined &&
-    (!Number.isFinite(coarseGap) || coarseGap <= 0)
+    (!Number.isInteger(coarseGap) || coarseGap <= 0)
   ) {
     throw new Error(
-      `Invalid --coarse value: ${coarse} (must be a positive number of bp)`,
+      `Invalid --coarse value: ${coarse} (must be a positive whole number of bp)`,
     )
   }
 
@@ -129,29 +130,48 @@ export async function run(args?: string[]) {
     throw new Error(`Invalid --threads value: ${threads}`)
   }
 
-  const child = spawnSortProcess(outputFile, csi, bgzipThreads)
-  const stdin = child.stdin
-  // end stdin even if createPIF throws, otherwise the spawned sort/index child
-  // is left running with an open stdin
-  const stats = await createPIF(file, stdin, coarseGap).finally(() => {
-    stdin.end()
-  })
-  const { samples, rows, skipped } = stats
+  const indexExt = csi ? 'csi' : 'tbi'
+  const indexFile = `${outputFile}.${indexExt}`
+  // The pipeline writes under a temporary name, renamed into place only once
+  // the pass, the pipeline and the row census have all succeeded: a truncated
+  // .paf.gz or a non-PAF input used to leave a valid, indexed PIF of whatever
+  // preceded the failure, which a build script reads as done.
+  const partFile = `${outputFile}.part`
+  const partIndex = `${partFile}.${indexExt}`
+  const child = spawnSortProcess(partFile, csi, bgzipThreads)
+  const closed = waitForProcessClose(child)
+  const pass = await createPIF(file, child.stdin, coarseGap).then(
+    stats => ({ stats }),
+    (error: unknown) => ({
+      error: error instanceof Error ? error : new Error(String(error)),
+    }),
+  )
+  child.stdin.end()
   // no SIGPIPE exemption here (unlike sort-gff/sort-bed): this pipeline's output
   // is the .pif.gz file, so anything that killed it early left that file broken
-  const exit = await waitForProcessClose(child)
+  const exit = await closed
+  const discardPart = () => {
+    fs.rmSync(partFile, { force: true })
+    fs.rmSync(partIndex, { force: true })
+  }
+  if ('error' in pass) {
+    discardPart()
+    throw pass.error
+  }
   if (exit.code !== 0) {
+    discardPart()
     throw new Error(`PIF sort/index pipeline exited with ${describeExit(exit)}`)
   }
-
-  // A file that yielded nothing is almost always the wrong file, not an empty
-  // alignment: without this the command wrote a valid, indexed, empty PIF and
-  // printed the add-track suggestion for it
+  const { stats } = pass
+  const { samples, rows, skipped } = stats
   if (rows === 0) {
+    discardPart()
     throw new Error(
       `No valid PAF rows found in ${file ?? 'stdin'} (${skipped} line(s) had fewer than the 12 mandatory PAF columns). Is this a PAF file?`,
     )
   }
+  fs.renameSync(partFile, outputFile)
+  fs.renameSync(partIndex, indexFile)
   if (skipped > 0) {
     console.warn(
       `Warning: skipped ${skipped} of ${rows + skipped} line(s) with fewer than the 12 mandatory PAF columns`,
@@ -183,7 +203,6 @@ export async function run(args?: string[]) {
     )
   }
 
-  const indexFile = `${outputFile}.${csi ? 'csi' : 'tbi'}`
   const nextCommand =
     samples.size > 0
       ? 'Next, add it as an all-vs-all synteny track (PanSN names detected):\n' +

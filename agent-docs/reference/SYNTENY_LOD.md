@@ -150,13 +150,15 @@ entry gated itself on `hasCigarData`, so it appeared and disappeared as the user
 zoomed — a control coming and going under a gesture that is supposed to be an
 implementation detail.
 
-A coarse row's `de:f:` is written as `1 - pafIdentity(row)` using
-**`pafIdentity` itself** (`@jbrowse/cigar-utils`), the same function the adapters
-read the fine tier with, so the two tiers cannot disagree. When the row's own
-`de:f:` is what that chain lands on, the string is copied byte-for-byte rather
-than reformatted, so a 7-decimal tag isn't truncated by `toFixed(6)`.
+A coarse row is its fine row with the CIGAR replaced by the fold and every
+other column and tag verbatim, so `pafIdentity` (`@jbrowse/cigar-utils`) reads
+the same bytes on both tiers and lands on the same rung. `make-pif` used to
+restate the coarse row's `de:f:` from that chain instead, which is where the
+two traps below lived, and a restatement rounded through `toFixed(6)` was a
+third on the rows the chain resolves from `id:f:` or `num_matches/block_len`,
+which the fine tier reads unrounded.
 
-Two traps this replaced, both of which shipped:
+The two that shipped:
 
 - A private copy of the chain in `make-pif` that went `de:f:` →
   `num_matches/block_len`, **skipping the `id:f:` rung** `pafIdentity` honors. An
