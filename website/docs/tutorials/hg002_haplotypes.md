@@ -98,34 +98,32 @@ Every chromosome in the plot is a red diagonal against its own counterpart, and
 chromosome 8 is the one to look at closely. HG002 is heterozygous for the 8p23.1
 inversion polymorphism (Bosch _et al._ 2009), so the maternal and paternal
 copies of that arm run in opposite directions, and the Q100 chain carries it as
-its largest inverted block, close to 4 Mb. A dotplot places it; a linear synteny
-view is where the two copies can be read base against base, with each
-haplotype's own tracks beside them.
+its largest inverted block, close to 4 Mb. The plot places it; a linear synteny
+view is where the two copies can be read against each other, with each
+haplotype's own tracks beside the ribbons.
 
-Open **Add → Linear synteny view**. The form opens on **Quick start**, which
-already offers the two rows the chain implies and the chain between them, so
-**Launch** is the only click it needs. Both panels open on a whole haplotype.
+There are two ways into that view. From the plot, drag a box around the cell
+where `chr8_MATERNAL` meets `chr8_PATERNAL` and pick **Zoom in**; near the start
+of the short arm the diagonal breaks into a blue block running the other way,
+and a box dragged around it, with some red either side, offers **Linear synteny
+view** and opens the panels framed on the box. From the **Add** menu, **Linear
+synteny view** opens on **Quick start**, which already offers the two rows the
+chain implies and the chain between them, so **Launch** is the only click it
+needs, and both panels open on the whole assembly. This section takes the second
+route, since it gives a window to write down.
 
 Click the follow button in the view's header, the arrows icon, before framing
 anything. It makes the top panel the anchor: wherever it goes, the panel below
 is placed on the sequence that aligns to it, resolved through the chain. From
 here on the top panel is the only one to navigate. Type
 `chr8_MATERNAL:5,250,000-14,250,000` into its search box, and the paternal panel
-arrives on the same stretch of chromosome 8 on its own. Then:
+arrives on the matching stretch of `chr8_PATERNAL` on its own. Then:
 
-- pick **Strand** from the palette icon, the coloring the dotplot used:
-  collinear red, inverted blue
+- pick **Strand** from the palette icon, the coloring the plot used: collinear
+  red, inverted blue
 - turn the chain track on in each panel's own track selector, where it draws as
   blocks on that panel's own ruler. The inverted block is the long blue bar in
   both
-
-The dotplot is the other way in, and the better one when the block has no
-coordinates to type yet. Drag a box around the cell where `chr8_MATERNAL` meets
-`chr8_PATERNAL`, pick **Zoom in**, and near the start of the short arm the
-diagonal breaks into a blue block running the other way. Drag a box around it,
-taking some red on either side so the collinear flanks come along, and pick
-**Linear synteny view**: the view opens framed on the box, maternal on top, with
-the chain drawn as ribbons between the panels.
 
 Genes read the inversion a second way. The JHU Liftoff GFFs are published beside
 the assembly, one per haplotype, on matching contig names:
@@ -166,17 +164,21 @@ Then, on each gene lane:
 
 ## Why the panel below follows
 
-At 9 Mb across, the two haplotypes agree on their coordinates to within a few
-bases, so a window typed into both panels would have lined up on its own. Zoomed
-in, the same coordinate is no longer the same sequence, because every upstream
-indel offsets one haplotype against the other. Following is what keeps the
-panels on the same sequence: it walks the top panel's window through the chain's
-CIGAR and sends the panel below there on every pan, and the ribbons stay
-near-vertical however far you go.
+At 9 Mb across, the two haplotypes sit some tens of kilobases out of register,
+which is a few pixels, so the same window typed into both panels would have
+looked lined up. Zoomed in, the offset is the whole screen: the same coordinate
+is no longer the same sequence, because every upstream indel shifts one
+haplotype against the other. Following is what keeps the panels on the same
+sequence. It walks the top panel's window through the chain's CIGAR and sends
+the panel below there on every pan, so the ribbons stay near-vertical however
+far you go.
 
-The button in the header toggles it. Turn it off to pan the paternal panel by
-hand, and right-click a chain block for **Move other panel to the matching
-region**, the same walk done once.
+The figure below is 70 kb typed into both panels with follow off. The maternal
+panel carries a chain block and the paternal panel's lane is empty, because
+those coordinates land in the gap past that block's end on the other haplotype.
+The follow button fills the lane and closes the ribbon. Turn it off to pan the
+paternal panel by hand, and right-click a chain block for **Move other panel to
+the matching region**, the same walk done once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
