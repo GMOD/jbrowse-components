@@ -1,4 +1,5 @@
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
+import { getEffectiveScores } from '@jbrowse/wiggle-core'
 
 import { findFeatureAtBp } from '../shared/wiggleHitTest.ts'
 
@@ -11,10 +12,9 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // candidate CNV puts the carriers together at the top, and a density matrix
 // sorted at a peak resolves the samples that have it.
 //
-// The plain `featureScores` value, which is what the tooltip prints and what
-// every rendering paints its main mark from, never the min/max summary bands —
-// sorting on a band nobody is reading would order the rows by a number that
-// isn't on screen.
+// `getEffectiveScores` under the display's effective summary mode, which is the
+// array the plot paints its main mark from — sorting the average while the rows
+// show min or max would order them by a number that isn't on screen.
 //
 // One region's data, not every loaded region: the columns are pixel bins, so a
 // bp only has a score in the region it was fetched for, and the caller has
@@ -30,12 +30,13 @@ export function sortSourcesByScoreAt<T extends { name: string }>(
   sources: T[],
   data: WiggleDataResult,
   bp: number,
+  summaryScoreMode: string,
 ): T[] {
   const scoreByName = new Map<string, number>()
   for (const s of data.sources) {
     const i = findFeatureAtBp(s.featurePositions, s.numFeatures, bp)
     if (i !== -1) {
-      const score = s.featureScores[i]!
+      const score = getEffectiveScores(s, summaryScoreMode)[i]!
       if (!Number.isNaN(score)) {
         scoreByName.set(s.name, score)
       }

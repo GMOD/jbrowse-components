@@ -7,11 +7,20 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 function withFeatures(
   name: string,
   features: [start: number, end: number, score: number][],
+  summary?: [min: number, max: number][],
 ) {
+  const scores = new Float32Array(features.map(f => f[2]))
   return {
     ...makeSource(name),
     featurePositions: new Uint32Array(features.flatMap(([s, e]) => [s, e])),
-    featureScores: new Float32Array(features.map(f => f[2])),
+    featureScores: scores,
+    featureMinScores: summary
+      ? new Float32Array(summary.map(f => f[0]))
+      : scores,
+    featureMaxScores: summary
+      ? new Float32Array(summary.map(f => f[1]))
+      : scores,
+    hasSummaryScores: summary !== undefined,
     numFeatures: features.length,
   }
 }
@@ -28,8 +37,13 @@ function rows(...names: string[]) {
   return names.map(name => ({ name }))
 }
 
-function order(sources: { name: string }[], d: WiggleDataResult, bp: number) {
-  return sortSourcesByScoreAt(sources, d, bp).map(s => s.name)
+function order(
+  sources: { name: string }[],
+  d: WiggleDataResult,
+  bp: number,
+  summaryScoreMode = 'avg',
+) {
+  return sortSourcesByScoreAt(sources, d, bp, summaryScoreMode).map(s => s.name)
 }
 
 test('ranks the rows at the clicked base, highest score first', () => {
@@ -49,7 +63,7 @@ test('returns the rows it was handed, not just their names', () => {
   const a = { name: 'a', color: 'red' }
   const b = { name: 'b', color: 'blue' }
 
-  expect(sortSourcesByScoreAt([a, b], d, 50)).toEqual([b, a])
+  expect(sortSourcesByScoreAt([a, b], d, 50, 'avg')).toEqual([b, a])
 })
 
 test('reads the feature covering the base, not the whole source', () => {
@@ -107,4 +121,21 @@ test('leaves tied rows in their incoming order', () => {
   )
 
   expect(order(rows('b', 'a', 'c'), d, 50)).toEqual(['b', 'a', 'c'])
+})
+
+test('ranks by the summary band the plot is painting', () => {
+  // the three modes rank these three rows three different ways, so an avg-only
+  // sort under a min or max rendering would order the rows by a number no bar
+  // on screen carries
+  const d: WiggleDataResult = {
+    sources: [
+      withFeatures('a', [[0, 100, 9]], [[1, 30]]),
+      withFeatures('b', [[0, 100, 8]], [[5, 10]]),
+      withFeatures('c', [[0, 100, 7]], [[3, 20]]),
+    ],
+  }
+
+  expect(order(rows('a', 'b', 'c'), d, 50, 'avg')).toEqual(['a', 'b', 'c'])
+  expect(order(rows('a', 'b', 'c'), d, 50, 'min')).toEqual(['b', 'c', 'a'])
+  expect(order(rows('a', 'b', 'c'), d, 50, 'max')).toEqual(['a', 'c', 'b'])
 })

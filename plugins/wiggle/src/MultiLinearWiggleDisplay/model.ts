@@ -460,7 +460,13 @@ export default function stateModelFactory(
           refName,
           pos,
           index => self.rpcDataMap.get(index),
-          (sources, data) => sortSourcesByScoreAt(sources, data, pos),
+          (sources, data) =>
+            sortSourcesByScoreAt(
+              sources,
+              data,
+              pos,
+              self.effectiveSummaryScoreMode,
+            ),
         )
       },
     }))
