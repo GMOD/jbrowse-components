@@ -86,6 +86,14 @@ export interface PluginUpdate {
   definition: PluginDefinition
 }
 
+// A prerelease host is its release for compatibility purposes. Under semver
+// 5.0.0-beta.1 sorts below 5.0.0, so a range written to keep a plugin off v5
+// (`<5.0.0`) would serve it to every beta host and a v5-only range (`>=5.0.0`)
+// would hide it from them. Store ranges are written against release versions.
+export function releaseVersion(jbrowseVersion: string) {
+  return jbrowseVersion.split('-')[0]!
+}
+
 // `*` (and empty) mean "any JBrowse version"; compare-versions throws on those,
 // so handle them directly. A malformed range simply fails to match rather than
 // breaking the store UI — producer-side validation is the place to reject those.
@@ -93,7 +101,7 @@ function rangeMatches(jbrowseVersion: string, range: string) {
   let matched = range === '*' || range === ''
   if (!matched) {
     try {
-      matched = satisfies(jbrowseVersion, range)
+      matched = satisfies(releaseVersion(jbrowseVersion), range)
     } catch {
       matched = false
     }

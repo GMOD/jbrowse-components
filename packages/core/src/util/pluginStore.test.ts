@@ -67,6 +67,33 @@ describe('resolvePlugin', () => {
     expect(r.supportedRanges).toEqual(['>=2.0.0 <3.0.0', '>=3.0.0'])
   })
 
+  // 5.0.0-beta.1 sorts below 5.0.0 under semver, so a range meant to keep a
+  // plugin off v5 served it to every beta host, and a v5-only range hid it
+  it('matches a prerelease host as its release', () => {
+    const keptOffV5 = plugin({
+      versions: [
+        {
+          pluginVersion: '1.0.0',
+          jbrowseRange: '<5.0.0',
+          url: 'https://x/1.0.0/p.js',
+        },
+      ],
+    })
+    expect(resolvePlugin(keptOffV5, '5.0.0-beta.1').compatible).toBe(false)
+    expect(resolvePlugin(keptOffV5, '4.9.9').compatible).toBe(true)
+    const v5Only = plugin({
+      versions: [
+        {
+          pluginVersion: '2.0.0',
+          jbrowseRange: '^5.0.0',
+          url: 'https://x/2.0.0/p.js',
+        },
+      ],
+    })
+    expect(resolvePlugin(v5Only, '5.0.0-beta.1').compatible).toBe(true)
+    expect(resolvePlugin(v5Only, '5.0.0-beta.1').pluginVersion).toBe('2.0.0')
+  })
+
   it('treats * as matching any JBrowse version', () => {
     const p = plugin({
       url: 'https://x/latest/p.js',
