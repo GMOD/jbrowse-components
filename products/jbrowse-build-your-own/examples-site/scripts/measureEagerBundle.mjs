@@ -119,9 +119,19 @@ if (process.argv.includes('--check')) {
     if (gzipKb > allowed + OVER_KB) {
       problems.push(
         `${page}: ${gzipKb} KB gzip eager, over its ${allowed} KB budget. ` +
-          'Something that used to be behind a dynamic import is now statically ' +
-          'reachable from an eagerly-evaluated module — a plugin `exports` ' +
-          'object, a state model naming a React component, a menu-items file.',
+          'Three causes, and this figure cannot tell them apart — ' +
+          '`pnpm probe-eager-graph` can. A pin: something behind a dynamic ' +
+          'import is now statically reachable from an eagerly-evaluated ' +
+          'module (a plugin `exports` object, a state model naming a React ' +
+          'component, a menu-items file), which is the one worth reverting. A ' +
+          'page added or removed anywhere on the site, which re-partitions ' +
+          'chunks and moves EVERY page 12-14 KB without any page importing ' +
+          'anything new. Or diffuse growth in the state models that are eager ' +
+          'by construction, which is what a whole release of feature work ' +
+          'looks like and is banked by re-running without --check. Every ' +
+          'page over by a similar amount is the shape of the last two; one ' +
+          'page over alone is the shape of the first. ' +
+          'agent-docs/reference/EAGER_BUNDLE.md has the measurements.',
       )
     } else if (gzipKb < allowed - UNDER_KB) {
       problems.push(

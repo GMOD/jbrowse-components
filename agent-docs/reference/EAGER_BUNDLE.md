@@ -511,6 +511,29 @@ on the same product) — and both were attributed rather than assumed, with
 eager modules importing the new page's product. The ratchet is normal again from
 a banked step; a further rise is a real regression.
 
+### A third cause: the eager set grows because state models grow
+
+Measured 2026-09-02, and the reason this section now names three causes rather
+than two. Every one of the fourteen pages went 14-15 KB gzip over its budget at
+once, +8 chunks apiece, `ultraminimal` included — the shape of a page addition,
+except no page was added. Nor was it a pin: **zero `.tsx` modules were in the
+eager set**, which is the check worth running first, since every pin catalogued
+above is a component reached from a module that must be evaluated.
+
+It was 88 commits of ordinary feature work landing in modules that are eager by
+construction. Of `ultraminimal`'s 1054 first-party eager modules, 22 were files
+that did not exist at the previous baseline — the density-tier cluster
+(`DensityTierMixin` and its seven siblings), `legendCandidates`,
+`contractReports`, `lazyAfterAttach` — totalling 25.6 KB raw, and the other 204
+that changed grew by a net +4,948 lines. A state-model mixin is eager the moment
+a display composes it, so there is nothing to defer and nothing to revert.
+
+The bank is the whole answer here: re-run without `--check` and commit. What
+distinguishes this from the other two is the run that says so, and it is cheap —
+`pnpm probe-eager-graph` lists the eager modules, a `.tsx` among them is a pin,
+and `git diff --numstat <baseline>..HEAD` over the rest says whether the growth
+is diffuse.
+
 ### The noise is larger than the band, which is why this keeps costing a session
 
 `OVER_KB` is 10. A page addition moves every other page 12-14 KB. So the
