@@ -1,4 +1,9 @@
-import { CramRecord, arenaFromReadFeatures } from '@gmod/cram'
+import {
+  CramRecord,
+  NEXT_UNKNOWN,
+  TagColumn,
+  arenaFromReadFeatures,
+} from '@gmod/cram'
 import { numericCigarToString } from '@jbrowse/cigar-utils'
 
 import { TYPED_CIGAR_MIN_OPS, packCigar } from './packCigar.ts'
@@ -12,21 +17,31 @@ import type { ReadFeature } from '@gmod/cram'
 // deletion, a Q between two single-base insertions, xx#minimal's zero-length
 // ops). What is left here is the packing, which is this repo's memory decision.
 
-// build a bare record with just the fields the CIGAR walk reads
+// a one-record slice carrying just the fields the CIGAR walk reads
 function makeRecord(
   readFeatures: ReadFeature[],
   alignmentStart: number,
   readLen: number,
 ) {
   const arena = arenaFromReadFeatures(readFeatures)
-  return Object.assign(Object.create(CramRecord.prototype), {
+  return new CramRecord({
     flags: 0,
+    cramFlags: 0,
     start: alignmentStart,
     readLength: readLen,
+    sequenceId: 0,
+    readGroupId: 0,
+    uniqueId: 0,
+    nextSequenceId: NEXT_UNKNOWN,
+    nextStart: -1,
+    qualityStart: -1,
     readFeatureArena: arena,
     readFeatureStart: 0,
     readFeatureCount: arena.length,
-  }) as CramRecord
+    tagColumn: new TagColumn(),
+    tagStart: 0,
+    tagCount: 0,
+  })
 }
 
 function cigarOf(
