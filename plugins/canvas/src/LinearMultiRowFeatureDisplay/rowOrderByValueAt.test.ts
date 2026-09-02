@@ -188,3 +188,40 @@ test('a zero-length feature carries a value at the base it is painted from', () 
   // one base past it the insertion is gone and b sinks
   expect(order(['a', 'b', 'c'], r, 51)).toEqual(['a', 'c', 'b'])
 })
+
+// `sortRowsAtColumn` orders `editableSources`, which the subtree filter has not
+// touched — a hidden row has to keep its place and its overrides. So the list
+// being ordered is not the list on screen, and the block sizes that decide
+// which allele leads are a statement about the screen: a clade focused down to
+// three rows must not be ranked by the two thousand behind it.
+test('sizes the blocks by the rows on screen, not the rows being ordered', () => {
+  const r = region(
+    [
+      { start: 0, end: 100, color: 1, row: 0 }, // a
+      { start: 0, end: 100, color: 1, row: 1 }, // b
+      { start: 0, end: 100, color: 1, row: 2 }, // c
+      { start: 0, end: 100, color: 2, row: 3 }, // d
+      { start: 0, end: 100, color: 2, row: 4 }, // e
+    ],
+    ['a', 'b', 'c', 'd', 'e'],
+  )
+  // unfiltered, color 1 is the bigger block and leads
+  expect(order(['a', 'b', 'c', 'd', 'e'], r, 50)).toEqual([
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+  ])
+
+  // with only a, d and e drawn, color 2 is the bigger block on screen — and the
+  // rows the filter hides still come along in their own block
+  expect(
+    rowOrderByValueAt(
+      rows('a', 'b', 'c', 'd', 'e'),
+      r,
+      50,
+      paintInputs(['a', 'd', 'e']),
+    ).map(s => s.name),
+  ).toEqual(['d', 'e', 'a', 'b', 'c'])
+})

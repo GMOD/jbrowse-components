@@ -91,13 +91,21 @@ export function rowOrderByValueAt<T extends { name: string }>(
   paint: MultiRowFeaturePaintInputs,
 ): T[] {
   const colorByRow = colorsPaintedAt(region, pos, paint)
-  // counted over the rows being ordered, not over the data, so a subtree filter
-  // sizes the blocks by what is actually on screen
-  const blockSize = new Map<number, number>()
+  // Counted over the rows ON SCREEN rather than over the list being ordered:
+  // `sortRowsAtColumn` hands `sources` the unfiltered `editableSources`, so
+  // that a hidden row keeps its place and its overrides, and sizing the blocks
+  // off it would rank them by rows the reader cannot see. `rowIndexByValue` is
+  // built from the drawn `sources`, so the screen set is already here.
+  //
+  // Seeded at zero for every color the column carries, so a block whose rows
+  // are all filtered away still compares as a number.
+  const blockSize = new Map(
+    [...colorByRow.values()].map(color => [color, 0] as const),
+  )
   for (const { name } of sources) {
     const color = colorByRow.get(name)
-    if (color !== undefined) {
-      blockSize.set(color, (blockSize.get(color) ?? 0) + 1)
+    if (color !== undefined && paint.rowIndexByValue.has(name)) {
+      blockSize.set(color, blockSize.get(color)! + 1)
     }
   }
   return orderRowsByValueAt(
