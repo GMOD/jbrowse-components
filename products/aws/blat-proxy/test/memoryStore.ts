@@ -15,6 +15,7 @@ export function memoryStore() {
   const daily = new Map<string, number>()
   const calls: string[] = []
   let lastMs: number | undefined
+  let notice: string | undefined
 
   const store: BlatStore = {
     tryReserveSlot(nowMs, spacingMs) {
@@ -56,7 +57,25 @@ export function memoryStore() {
       cache.set(key, { body, expiresAt })
       return Promise.resolve()
     },
+
+    readDailyCount(day) {
+      calls.push('readDailyCount')
+      return Promise.resolve(daily.get(day) ?? 0)
+    },
+
+    readNotice() {
+      calls.push('readNotice')
+      return Promise.resolve(notice)
+    },
   }
 
-  return { store, calls, cache, daily }
+  return {
+    store,
+    calls,
+    cache,
+    daily,
+    setNotice(message: string | undefined) {
+      notice = message
+    },
+  }
 }

@@ -16,10 +16,12 @@ function serve({
   clientBody = QUERY,
   store,
   nowMs = NOON,
+  bypassCache,
 }: {
   clientBody?: string
   store?: BlatStore
   nowMs?: number
+  bypassCache?: boolean
 }) {
   return serveQuery({
     clientBody,
@@ -27,6 +29,7 @@ function serve({
     upstreamUrl: UPSTREAM,
     store,
     nowMs,
+    bypassCache,
   })
 }
 
@@ -70,6 +73,26 @@ describe('serveQuery budget', () => {
     expect(second.headers?.['X-Blat-Cache']).toBe('hit')
     expect(second.statusCode).toBe(200)
     expect(second.body).toBe(first.body)
+  })
+
+  // the canary's daily probe has to reach UCSC, or a cached answer would report
+  // a broken upstream as fine; the probe is still metered and still cached
+  it('goes upstream for a repeat when the cache is bypassed, and still meters it', async () => {
+    const fetchSpy = stubUpstream()
+    const { store, cache } = memoryStore()
+    await serve({ store })
+
+    const refused = structured(
+      await serve({ store, nowMs: NOON + 1000, bypassCache: true }),
+    )
+    const result = structured(
+      await serve({ store, nowMs: NOON + 15_000, bypassCache: true }),
+    )
+
+    expect(refused.statusCode).toBe(429)
+    expect(result.headers?.['X-Blat-Cache']).toBe('miss')
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(cache.size).toBe(1)
   })
 
   it('refuses a different query inside the spacing window with a Retry-After', async () => {

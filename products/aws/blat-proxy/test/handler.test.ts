@@ -82,6 +82,19 @@ describe('handler', () => {
     expect(result.statusCode).toBe(405)
   })
 
+  it('answers GET /status without hitting upstream', async () => {
+    const fetchSpy = vi.fn()
+    vi.stubGlobal('fetch', fetchSpy)
+    const result = structured(
+      await handler(makeEvent({ method: 'GET', path: '/prod/status' })),
+    )
+    expect(result.statusCode).toBe(200)
+    expect(result.headers?.['Cache-Control']).toBe('no-store')
+    expect(result.headers?.['Access-Control-Allow-Origin']).toBe('*')
+    expect(JSON.parse(result.body ?? '')).toEqual({ ok: true })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('returns 500 when the apiKey is not configured', async () => {
     delete process.env.UCSC_API_KEY
     const result = structured(await handler(makeEvent({ body: VALID_BODY })))

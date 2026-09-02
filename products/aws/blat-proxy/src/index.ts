@@ -8,6 +8,7 @@ import {
 } from './budget.ts'
 import { dynamoStore } from './dynamoStore.ts'
 import { BLAT_ROUTE, routeForPath } from './routes.ts'
+import { proxyStatus } from './status.ts'
 
 import type { ProxyRoute } from './routes.ts'
 import type { BlatStore } from './store.ts'
@@ -19,7 +20,18 @@ import type {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+}
+
+const STATUS_PATH = 'status'
+
+// A client sending `Cache-Control: no-cache` wants an answer from UCSC itself
+// rather than the table. The canary needs that: a daily probe answered from a
+// 24h cache would report a broken upstream as fine. The answer is still cached,
+// and the request is still metered, so this bypasses nothing that protects the
+// key.
+function bypassesCache(headers: Record<string, string | undefined>) {
+  return /no-cache/i.test(headers['cache-control'] ?? '')
 }
 
 function json(
@@ -86,6 +98,7 @@ export async function serveQuery({
   route = BLAT_ROUTE,
   store,
   nowMs = Date.now(),
+  bypassCache = false,
 }: {
   clientBody: string
   apiKey: string
@@ -93,6 +106,7 @@ export async function serveQuery({
   route?: ProxyRoute
   store?: BlatStore
   nowMs?: number
+  bypassCache?: boolean
 }): Promise<APIGatewayProxyResultV2> {
   // the route is part of the key: the two CGIs take different parameters, but
   // nothing structural stops a body from being valid for both
@@ -103,12 +117,13 @@ export async function serveQuery({
     DEFAULT_CACHE_TTL_SECONDS,
   )
   // a cache failure is a slow path, not a broken one
-  const cached = store
-    ? await store.readCached(key, nowSeconds).catch((error: unknown) => {
-        console.error('BLAT cache read failed:', error)
-        return undefined
-      })
-    : undefined
+  const cached =
+    store && !bypassCache
+      ? await store.readCached(key, nowSeconds).catch((error: unknown) => {
+          console.error('BLAT cache read failed:', error)
+          return undefined
+        })
+      : undefined
 
   let result: APIGatewayProxyResultV2
   if (cached) {
@@ -179,8 +194,19 @@ export const handler = async (
   const upstreamUrl =
     process.env[route.upstreamEnvVar] ?? route.defaultUpstreamUrl
 
+  const path = event.requestContext.http.path
   if (method === 'OPTIONS') {
     return { statusCode: 200, headers: corsHeaders, body: '' }
+  } else if (method === 'GET' && path.endsWith(`/${STATUS_PATH}`)) {
+    return json(
+      200,
+      await proxyStatus({
+        store: storeFromEnv(),
+        nowMs: Date.now(),
+        dailyMax: envNumber('BLAT_DAILY_MAX', DEFAULT_DAILY_MAX),
+      }),
+      { 'Cache-Control': 'no-store' },
+    )
   } else if (method !== 'POST') {
     return json(405, { error: 'Method not allowed. Use POST' })
   } else if (!apiKey) {
@@ -209,6 +235,7 @@ export const handler = async (
           upstreamUrl,
           route,
           store: storeFromEnv(),
+          bypassCache: bypassesCache(event.headers),
         })
       } catch (error) {
         console.error('BLAT proxy request failed:', error)

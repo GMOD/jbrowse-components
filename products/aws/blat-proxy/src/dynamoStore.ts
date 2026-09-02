@@ -13,6 +13,7 @@ import type { BlatStore } from './store.ts'
 // day and cache items carry `expiresAt` (epoch seconds) so DynamoDB's TTL
 // sweeps them; the lock is a single item that is rewritten forever.
 const SLOT_KEY = 'slot'
+const NOTICE_KEY = 'notice'
 
 function num(value: number) {
   return { N: String(value) }
@@ -107,6 +108,27 @@ export function dynamoStore(
           },
         }),
       )
+    },
+
+    async readDailyCount(day) {
+      const result = await client.send(
+        new GetItemCommand({
+          TableName: tableName,
+          Key: { pk: { S: `day#${day}` } },
+        }),
+      )
+      const calls = Number(result.Item?.calls?.N)
+      return Number.isFinite(calls) ? calls : 0
+    },
+
+    async readNotice() {
+      const result = await client.send(
+        new GetItemCommand({
+          TableName: tableName,
+          Key: { pk: { S: NOTICE_KEY } },
+        }),
+      )
+      return result.Item?.message?.S
     },
   }
 }

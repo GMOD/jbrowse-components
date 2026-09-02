@@ -340,3 +340,28 @@ export const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
  * which is how someone runs their own proxy or their own gfServer.
  */
 export const DEFAULT_BLAT_URL = 'https://api.jbrowse.org/ucsc/v1/blat'
+
+// the proxy's status route sits beside its query routes (`.../v1/status`)
+export function proxyStatusUrl(queryUrl: string) {
+  return new URL('status', queryUrl).href
+}
+
+export type ProxyStatus = { ok: true } | { ok: false; message: string }
+
+/**
+ * The proxy's `/status` answer, read before a query goes out. `ok: false`
+ * carries an operator's sentence about an outage — the kill switch for a
+ * UCSC-side change this client cannot absorb. Anything that is not that shape
+ * reads as ok: a status the client cannot understand is not evidence of an
+ * outage, and the query itself will say what is wrong.
+ */
+export function parseProxyStatus(data: unknown): ProxyStatus {
+  let status: ProxyStatus = { ok: true }
+  if (data !== null && typeof data === 'object' && 'ok' in data) {
+    const message = 'message' in data ? data.message : undefined
+    if (data.ok === false && typeof message === 'string' && message) {
+      status = { ok: false, message }
+    }
+  }
+  return status
+}

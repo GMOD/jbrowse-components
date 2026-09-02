@@ -16,7 +16,11 @@
  */
 import { revcom } from '@jbrowse/core/util'
 
-import { buildBlatBody, parseBlatResponse } from './blatQuery.ts'
+import {
+  buildBlatBody,
+  parseBlatResponse,
+  parseProxyStatus,
+} from './blatQuery.ts'
 import { buildIsPcrBody, parseIsPcrResponse } from './ispcrQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 
@@ -29,10 +33,15 @@ const START = 7676520
 const END = 7676667
 const PRIMER_LENGTH = 22
 
+// no-cache: this runs daily against a proxy that caches for a day, and an
+// answer served from the table would report a broken UCSC as fine
 function send(route: string, body: string) {
   return fetch(`${base}/${route}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cache-Control': 'no-cache',
+    },
     body,
   })
 }
@@ -80,6 +89,13 @@ maybe('live UCSC proxy round-trip', () => {
     ref = dna.toUpperCase()
     expect(ref).toHaveLength(END - START)
   }, 60000)
+
+  it('reports itself usable', async () => {
+    const res = await fetch(`${base}/status`)
+    expect(res.status).toBe(200)
+    const status = parseProxyStatus(await res.json())
+    expect(status).toEqual({ ok: true })
+  }, 30000)
 
   it('serves a BLAT hit that converts to a placeable SAM record', async () => {
     const text = await post(

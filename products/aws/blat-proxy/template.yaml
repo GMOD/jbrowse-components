@@ -142,6 +142,15 @@ Resources:
             Path: /ispcr
             Method: OPTIONS
             ApiId: !Ref BlatProxyApi
+        # What a client reads before it queries: the operator notice (the
+        # `notice` item in the budget table) and the day's spend. Never touches
+        # UCSC, so it costs nothing against the key.
+        Status:
+          Type: HttpApi
+          Properties:
+            Path: /status
+            Method: GET
+            ApiId: !Ref BlatProxyApi
 
   # HTTP API (payload format 2.0) — matches the handler's APIGatewayProxyEventV2
   # (event.requestContext.http.method). CORS is owned entirely by the Lambda

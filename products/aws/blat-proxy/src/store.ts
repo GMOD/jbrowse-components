@@ -38,4 +38,16 @@ export interface BlatStore {
     body: string,
     expiresAtSeconds: number,
   ): Promise<void>
+
+  /**
+   * How many upstream calls `day` has spent so far, for the status route.
+   */
+  readDailyCount(day: string): Promise<number>
+
+  /**
+   * An operator-set outage notice, shown by clients before they query. Set and
+   * cleared out of band (`aws dynamodb put-item` / `delete-item` on the `notice`
+   * item), so a UCSC-side change can be announced without a redeploy.
+   */
+  readNotice(): Promise<string | undefined>
 }

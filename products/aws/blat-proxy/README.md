@@ -30,6 +30,13 @@ response comes back as `text/html`, because hgPcr's **result** is an HTML page
 of FASTA amplicons. A "No matches" page is a 200, not an error — an empty result
 is an answer. Only an actual Cloudflare challenge is a 502.
 
+`GET /status` — `{ok, message?, budget?}` without touching UCSC. The plugin's
+dialogs read it on open and show `message` as a warning when `ok` is false, so a
+UCSC-side change the shipped client cannot absorb is a sentence in the dialog
+rather than a parse error. `ok` is false for an operator notice (below) or when
+the budget store cannot be read, since queries fail closed without it. A client
+that cannot reach the route at all shows nothing — offline is not an outage.
+
 `OPTIONS` on either path — CORS preflight.
 
 Both routes are one Lambda claiming one budget, deliberately. UCSC's cap is on
@@ -127,6 +134,26 @@ a deployment). `template.yaml` wires it, so a SAM deploy is metered by default.
 
 The desktop "own apiKey" path (in the plugin dialog) is the pressure valve that
 avoids the shared budget entirely.
+
+A request carrying `Cache-Control: no-cache` skips the cache read (the answer is
+still cached, and still metered). The daily canary
+(`.github/workflows/blat-canary.yml`) sends it, since a probe answered from a
+24h cache would report a broken UCSC as fine.
+
+## Outage notice
+
+The `notice` item in the budget table is the kill switch. While it exists,
+`/status` answers `ok: false` with its `message`, and every open BLAT and
+in-silico PCR dialog shows it. Queries are not blocked — a desktop user with
+their own key can still go to UCSC directly — so the sentence should say what is
+broken and what to do about it. No redeploy involved:
+
+```bash
+aws dynamodb put-item --table-name jbrowse-blat-proxy-budget \
+  --item '{"pk":{"S":"notice"},"message":{"S":"UCSC changed hgBlat on 2026-09-02; BLAT search needs JBrowse Desktop 5.1 or later."}}'
+aws dynamodb delete-item --table-name jbrowse-blat-proxy-budget \
+  --key '{"pk":{"S":"notice"}}'
+```
 
 ### Tuning
 

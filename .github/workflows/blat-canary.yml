@@ -1,0 +1,46 @@
+# The daily probe of the one feature whose failure is entirely outside this
+# repo: BLAT and in-silico PCR go through a jbrowse.org proxy to UCSC's hgBlat
+# and hgPcr, and the client parses what those CGIs answer. UCSC has changed that
+# answer before (hgPcr's amplicon header), and the shipped Desktop cannot absorb
+# a change until a release ships and users upgrade. Until this existed the first
+# report of such a change was a user's.
+#
+# Off the PR path, like links.yml and abi-watch.yml: every hop here belongs to
+# somebody else, so a required check built on it fails on their outage. What a
+# red run means is written in the test it runs (plugins/blat/src/liveProxy.test.ts):
+# the deployed proxy is up, authorized, and what it relays still parses.
+#
+# It spends two of the shared key's 4500 daily queries, bypassing the proxy's
+# cache on purpose — a probe answered from a 24h cache would pass over a dead
+# UCSC. When it goes red, products/aws/blat-proxy/README.md §"Outage notice" is
+# how to tell every open dialog what happened without a release.
+name: BLAT canary
+
+on:
+  schedule:
+    # 06:30 UTC daily, off the weekly Monday sweeps' hour
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  proxy-round-trip:
+    name: Proxy round-trip to UCSC
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Query both routes through the deployed proxy
+        env:
+          JBROWSE_UCSC_PROXY_URL: https://api.jbrowse.org/ucsc/v1
+        run:
+          pnpm jest --ci plugins/blat/src/liveProxy.test.ts --reporters=default
