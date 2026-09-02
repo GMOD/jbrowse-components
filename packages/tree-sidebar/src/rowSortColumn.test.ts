@@ -2,6 +2,7 @@ import {
   loadedRegionIndexAt,
   orderRowsByValueAt,
   regionCoversColumn,
+  sortRowsAtColumn,
 } from './rowSortColumn.ts'
 
 function regions(...spans: [number, string, number, number][]) {
@@ -115,5 +116,76 @@ describe('orderRowsByValueAt', () => {
       },
     )
     expect(seen.every(v => typeof v === 'number')).toBe(true)
+  })
+})
+
+describe('sortRowsAtColumn', () => {
+  function host(names: string[]) {
+    const written: string[][] = []
+    return {
+      loadedRegions: regions([0, 'chr1', 0, 1000]),
+      editableSources: rows(...names),
+      setLayout: (next: { name: string }[]) => {
+        written.push(next.map(s => s.name))
+      },
+      written,
+    }
+  }
+
+  const reversed = (sources: { name: string }[]) => [...sources].reverse()
+
+  test('orders the rows and says it sorted', () => {
+    const self = host(['a', 'b', 'c'])
+    expect(sortRowsAtColumn(self, 'chr1', 500, () => 'data', reversed)).toBe(
+      true,
+    )
+    expect(self.written).toEqual([['c', 'b', 'a']])
+  })
+
+  // The list handed to `order` is `editableSources`, which the subtree filter
+  // has not touched: a hidden row must keep its place and its overrides rather
+  // than being dropped from `layout` for good. An `order` deriving a statistic
+  // from what it is given is therefore counting rows that are not on screen.
+  test('orders the unfiltered list, hidden rows included', () => {
+    const self = host(['a', 'hidden', 'c'])
+    const seen: string[][] = []
+    sortRowsAtColumn(
+      self,
+      'chr1',
+      500,
+      () => 'data',
+      sources => {
+        seen.push(sources.map(s => s.name))
+        return sources
+      },
+    )
+    expect(seen).toEqual([['a', 'hidden', 'c']])
+  })
+
+  // `setLayout` drops the cluster tree whenever the row set changes, so neither
+  // decline is a harmless no-op — each would trade a dendrogram for a write
+  // that reorders nothing.
+  test('declines when no loaded region covers the column', () => {
+    const self = host(['a', 'b'])
+    expect(sortRowsAtColumn(self, 'chr2', 500, () => 'data', reversed)).toBe(
+      false,
+    )
+    expect(self.written).toEqual([])
+  })
+
+  test('declines when the display has no data at the column', () => {
+    const self = host(['a', 'b'])
+    expect(sortRowsAtColumn(self, 'chr1', 500, () => undefined, reversed)).toBe(
+      false,
+    )
+    expect(self.written).toEqual([])
+  })
+
+  test('declines below two rows', () => {
+    const self = host(['a'])
+    expect(sortRowsAtColumn(self, 'chr1', 500, () => 'data', reversed)).toBe(
+      false,
+    )
+    expect(self.written).toEqual([])
   })
 })
