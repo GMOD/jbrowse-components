@@ -1,5 +1,13 @@
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { rowIndexAt, rowSpanAt } from '@jbrowse/core/util/rowStackGeometry'
+import {
+  rowIndexAt,
+  rowSpanAt,
+  rowsUnderPointer,
+} from '@jbrowse/core/util/rowStackGeometry'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
 
 import type { MafHover } from '../util.ts'
 import type { HoverBp } from './findRowHover.ts'
@@ -20,6 +28,7 @@ export interface MafHitTestModel {
   scrollTop: number
   rowsTopOffset: number
   effectiveRowHeight: number
+  rowProportion: number
   rowHoverInfo: (
     displayedRegionIndex: number,
     bp: HoverBp,
@@ -57,14 +66,14 @@ export function mafPointerAt(
     // The base *painted* at this pixel, which on a reversed region is not the
     // floor of `gposFrac` — see `HoverBp`.
     baseBp: basePaintedAt(pos, pos.offset),
-    rowIndex: rowIndexAt(mouseY, rowStackOf(model)),
+    rowIndex: rowIndexUnder(model, mouseY),
     inBands: mouseY < model.rowsTopOffset,
   }
 }
 
 type RowGeometry = Pick<
   MafHitTestModel,
-  'scrollTop' | 'rowsTopOffset' | 'effectiveRowHeight'
+  'scrollTop' | 'rowsTopOffset' | 'effectiveRowHeight' | 'rowProportion'
 >
 
 function rowStackOf(model: RowGeometry) {
@@ -73,6 +82,34 @@ function rowStackOf(model: RowGeometry) {
     scrollTop: model.scrollTop,
     topOffset: model.rowsTopOffset,
   }
+}
+
+/**
+ * The row whose colour the pixel carries, which is not always the row whose
+ * slot the pixel centre falls in.
+ *
+ * Both painters put a row's band at `rowBandOffsetPx` inside its slot and floor
+ * its height at `MIN_DRAWN_ROW_PX` (`maf.slang`'s `rowRectClipPos`,
+ * `drawMafBlocks`'s `rowBandGeometry`). Below a pixel per row the floor makes
+ * neighbouring bands overlap, several rows paint the same pixel, and the last
+ * one drawn — the highest index — is the one on screen; `rowIndexAt` answered
+ * with the slot instead, so the tooltip named a neighbour of the cell under the
+ * cursor. Above the floor the bands cannot overlap and a pixel can fall in the
+ * gutter between two, where the slot is still the answer to give.
+ */
+function rowIndexUnder(model: RowGeometry, mouseY: number) {
+  const { effectiveRowHeight: rowHeight, rowProportion } = model
+  const { nearest, lowest } = rowsUnderPointer(
+    mouseY,
+    {
+      rowHeight,
+      scrollTop: model.scrollTop,
+      topOffset:
+        model.rowsTopOffset + rowBandOffsetPx(rowHeight, rowProportion),
+    },
+    drawnRowHeightPx(rowHeight, rowProportion),
+  )
+  return nearest >= lowest ? nearest : rowIndexAt(mouseY, rowStackOf(model))
 }
 
 /**

@@ -39,6 +39,7 @@ function model(asked: [number, number, number][] = []) {
     scrollTop: 0,
     rowsTopOffset: 0,
     effectiveRowHeight: 10,
+    rowProportion: 1,
     rowHoverInfo: () => undefined,
     rpcDataMap: { get: () => undefined },
     view: {

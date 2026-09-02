@@ -34,6 +34,7 @@ function makeModel(overrides?: Partial<MafHitTestModel>): MafHitTestModel {
     scrollTop: 0,
     rowsTopOffset: 45,
     effectiveRowHeight: 10,
+    rowProportion: 1,
     rowHoverInfo: () => CELL_HOVER,
     ...overrides,
   }
@@ -74,12 +75,42 @@ describe('mafPointerAt', () => {
     expect(mafPointerAt(model, 0, 55).rowIndex).toBe(1)
   })
 
-  // sub-pixel rows are where the half-pixel matters: pixel 45 shows whichever
-  // row covers 45.5, and measuring from 45.0 named the row above it
+  // Sub-pixel rows are where the half-pixel matters twice over. The pixel shows
+  // whichever row covers 45.5, and measuring from 45.0 named the row above it;
+  // and below a pixel per row the painters floor every band to
+  // MIN_DRAWN_ROW_PX, so ten rows paint pixel 45 and the reader sees the LAST
+  // of them. Ten rows per pixel from 44.55 (row 0's band, floored to 1px and
+  // centred, starts half a pixel above the rows area), so pixel 45 is row 9.
   test('a sub-pixel row height resolves the row the pixel was painted from', () => {
     const model = makeModel({ effectiveRowHeight: 0.1 })
-    expect(mafPointerAt(model, 0, 45).rowIndex).toBe(5)
-    expect(mafPointerAt(model, 0, 46).rowIndex).toBe(15)
+    expect(mafPointerAt(model, 0, 45).rowIndex).toBe(9)
+    expect(mafPointerAt(model, 0, 46).rowIndex).toBe(19)
+  })
+
+  // The regime the floor creates: at 0.6px rows every band is painted 1px tall
+  // and so overlaps its neighbours, and the one on top is the higher index. The
+  // slot the pixel centre falls in answers 0 and 5 for these two, both of them
+  // rows the reader cannot see there.
+  test('overlapping floored bands resolve to the row drawn last', () => {
+    const model = makeModel({
+      effectiveRowHeight: 0.6,
+      rowsTopOffset: 0,
+    })
+    expect(mafPointerAt(model, 0, 0).rowIndex).toBe(1)
+    expect(mafPointerAt(model, 0, 3).rowIndex).toBe(6)
+  })
+
+  // Above the floor the bands are inset within their slots and cannot overlap,
+  // so a pixel in the gutter between two of them still belongs to the slot it
+  // is in — 1.3px rows at the default 0.8 proportion draw a 1.04px band.
+  test('a gutter pixel keeps the slot it is in', () => {
+    const model = makeModel({
+      effectiveRowHeight: 1.3,
+      rowProportion: 0.8,
+      rowsTopOffset: 0,
+    })
+    expect(mafPointerAt(model, 0, 19).rowIndex).toBe(15)
+    expect(mafPointerAt(model, 0, 3).rowIndex).toBe(2)
   })
 
   test('scrollTop shifts the rows under the cursor', () => {

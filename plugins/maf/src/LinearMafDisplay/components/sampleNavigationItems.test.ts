@@ -39,6 +39,7 @@ function model(
     scrollTop: 0,
     rowsTopOffset: 0,
     effectiveRowHeight: 10,
+    rowProportion: 1,
     rowHoverInfo: () => undefined,
     rowNavigationTarget: (_regionIndex, _startBp, _endBp, rowIndex) =>
       targets[rowIndex],
