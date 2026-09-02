@@ -34,8 +34,9 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
 }
 
 // The distinct values one partition candidate took over a region, capped at
-// MAX_COUNTED_PARTITION_VALUES. `overflow` means the cap was passed and `values`
-// is empty — the count is "too many", not a number.
+// MAX_COUNTED_PARTITION_VALUES and each truncated to MAX_PARTITION_VALUE_LENGTH.
+// `overflow` means the cap was passed and `values` is empty — the count is "too
+// many", not a number.
 export interface PartitionCandidateValues {
   field: string
   values: string[]

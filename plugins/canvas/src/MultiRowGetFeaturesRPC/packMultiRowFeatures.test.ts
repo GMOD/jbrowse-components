@@ -5,6 +5,8 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   MAX_COUNTED_PARTITION_VALUES,
+  MAX_PARTITION_VALUE_LENGTH,
+  PARTITION_VALUE_COUNT_SAMPLE,
   makeFeatureColorResolver,
   packMultiRowFeatures,
 } from './packMultiRowFeatures.ts'
@@ -541,5 +543,39 @@ describe('the distinct values per partition candidate', () => {
       { field: 'id', values: [], overflow: true },
       { field: 'sample', values: ['a'], overflow: false },
     ])
+  })
+
+  test('a long value is truncated rather than shipped whole', () => {
+    const long = 'x'.repeat(MAX_PARTITION_VALUE_LENGTH + 50)
+    const r = packMultiRowFeatures({
+      features: [feat({ start: 0, end: 1, sample: 'a', note: long })],
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+    const note = r.partitionCandidateValues.find(c => c.field === 'note')
+    expect(note?.values).toEqual([long.slice(0, MAX_PARTITION_VALUE_LENGTH)])
+  })
+
+  test('values past the sample are not counted', () => {
+    const n = PARTITION_VALUE_COUNT_SAMPLE + 1
+    const many = Array.from({ length: n }, (_, i) =>
+      feat({
+        start: i,
+        end: i + 1,
+        sample: 'a',
+        batch: i < PARTITION_VALUE_COUNT_SAMPLE ? 'x' : 'late',
+      }),
+    )
+    const r = packMultiRowFeatures({
+      features: many,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+    const batch = r.partitionCandidateValues.find(c => c.field === 'batch')
+    expect(batch).toEqual({ field: 'batch', values: ['x'], overflow: false })
   })
 })

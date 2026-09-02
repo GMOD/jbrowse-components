@@ -169,10 +169,28 @@ function collectPartitionCandidates(features: Feature[]) {
 // differently: 200 rows and 40,000 rows are both "not this attribute".
 export const MAX_COUNTED_PARTITION_VALUES = 200
 
+// A stored value is truncated to this many characters before it goes in the
+// set. Cardinality counting only needs distinctness, so this bounds what a
+// single GFF3 Note or a stringified Parent array can cost — both in the set
+// the worker holds and in what crosses the postMessage boundary to the main
+// thread — without resorting to a hash that would make the shipped value
+// unreadable. Two distinct values sharing this prefix undercount by one, which
+// is the same kind of approximation the sample below already accepts.
+export const MAX_PARTITION_VALUE_LENGTH = 64
+
+// How many features to read for value counting, out of a region that can carry
+// half a million. Past this a value's presence doesn't change what the menu
+// should say — a field with 20 categories has shown all of them long before
+// this many rows, and a unique-per-feature field has already overflowed the
+// 200-value cap by row 201. Bounds the per-feature work this pass adds to O(1)
+// against the region size instead of O(features).
+export const PARTITION_VALUE_COUNT_SAMPLE = 5_000
+
 /**
- * The distinct values each partition candidate takes over the region, capped,
- * so the "Partition by..." menu can say how many rows a choice would draw
- * before the refetch that would otherwise be the only way to find out.
+ * The distinct values each partition candidate takes over the region, capped
+ * and sampled, so the "Partition by..." menu can say how many rows a choice
+ * would draw before the refetch that would otherwise be the only way to find
+ * out.
  *
  * Values rather than counts because regions land independently and the main
  * thread unions them; a count cannot be unioned. A candidate that overflows the
@@ -185,7 +203,9 @@ function createCandidateValueCounter(candidates: string[]) {
   return {
     add(feature: Feature) {
       for (const [field, values] of active) {
-        values.add(columnValue(feature.get(field)))
+        values.add(
+          columnValue(feature.get(field)).slice(0, MAX_PARTITION_VALUE_LENGTH),
+        )
         if (values.size > MAX_COUNTED_PARTITION_VALUES) {
           active.delete(field)
           overflowed.add(field)
@@ -391,7 +411,9 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
-    candidateValues.add(feature)
+    if (i < PARTITION_VALUE_COUNT_SAMPLE) {
+      candidateValues.add(feature)
+    }
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
     let abgr = abgrByCss.get(css)
