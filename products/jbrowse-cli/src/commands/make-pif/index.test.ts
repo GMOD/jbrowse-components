@@ -459,6 +459,42 @@ test('a fine-only file says so in its header, and a CIGAR-less one too', async (
   })
 })
 
+// `cigars:Z:all` is the reader's licence to take a coarse row with no `cr:Z:`
+// as one run within the bound (`coarseRowsAreBounded`), and a row whose fold
+// does not close on its own far corner is not one — the tag is withheld for the
+// same reason a clipped or hand-made CIGAR's is. Counting it as a CIGAR row
+// anyway had the header licence a run the fold never produced, and the follow
+// then called itself exact where the fine tier lands 580bp away.
+test('a CIGAR the fold cannot stand behind downgrades the census to some', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      // 40M1000D40M walks 1080 of the target, but the row's columns claim 500
+      pafRow(['cg:Z:40M1000D40M'], {
+        1: '1000',
+        3: '450',
+        6: '1000',
+        8: '500',
+      }),
+      ['--coarse', '500'],
+    )
+    expect(lines[0]).toBe(
+      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:some',
+    )
+    for (const l of lines.filter(l => /^[TQ]/.test(l))) {
+      expect(l).not.toContain('cr:Z:')
+    }
+  })
+})
+
+test('a file with no rows at all carries no CIGAR census either', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines('q1\t100\t0\t100\n')
+    expect(lines[0]).toBe(
+      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none',
+    )
+  })
+})
+
 test('an incoming cr:Z: is dropped from both tiers', async () => {
   await runInTmpDir(async () => {
     const lines = await pifLines(

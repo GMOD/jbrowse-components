@@ -45,6 +45,13 @@ export interface PifStats {
   // so a reader knows whether a coarse row without a fold is a bounded single
   // run or an alignment nothing could fold
   cigarRows: number
+  // Rows that carried an alignment string the coarse tier could not stand
+  // behind: the fold's walk does not close on the row's own far corner, so the
+  // row goes out with no `cr:Z:` for the same reason a CIGAR-less row does.
+  // Counted apart from `cigarRows` because the two mean opposite things to a
+  // reader — `cigars:Z:all` is its licence to read a tagless coarse row as one
+  // run within the bound, and such a row is not one.
+  unboundedRows: number
   skipped: number
 }
 
@@ -56,10 +63,10 @@ export interface PifStats {
  */
 export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
   const cigars =
-    stats.cigarRows === stats.rows
-      ? 'all'
-      : stats.cigarRows === 0
-        ? 'none'
+    stats.rows === 0 || stats.cigarRows === 0
+      ? 'none'
+      : stats.cigarRows === stats.rows && stats.unboundedRows === 0
+        ? 'all'
         : 'some'
   const tiers = coarseGap === undefined ? 'fine' : 'fine,coarse'
   const bound = coarseGap === undefined ? '' : `\tcoarse:i:${coarseGap}`
@@ -104,15 +111,23 @@ export function missingPairs({ samples, pairs }: PifStats) {
   return out
 }
 
-// The coarse row's `cr:Z:` value, or nothing. Nothing when the row has no
-// CIGAR, when the fold is a single run (the coordinate columns already say it
-// all), and when the walk does not close on the row's own far corner — clipping
-// ops, a hand-made cg, a cs whose spans don't add up — since the columns are what
-// the fine tier draws and the coarse row must not disagree with them. A fold of
-// several runs with no kept indel is still written: the runs are where a
-// lopsided cluster of small indels bends the path, which a straight ribbon
-// across the row would miss by up to the whole cluster.
-function coarseCigarTag({
+// The coarse row's `cr:Z:` value, or nothing, and whether withholding it left
+// the row making a claim it cannot keep.
+//
+// `ops` is nothing when the row has no CIGAR, when the fold is a single run
+// (the coordinate columns already say it all), and when the walk does not close
+// on the row's own far corner — clipping ops, a hand-made cg, a cs whose spans
+// don't add up — since the columns are what the fine tier draws and the coarse
+// row must not disagree with them. A fold of several runs with no kept indel is
+// still written: the runs are where a lopsided cluster of small indels bends
+// the path, which a straight ribbon across the row would miss by up to the
+// whole cluster.
+//
+// `unbounded` separates the last of those from the rest. The first two leave a
+// tagless row a reader may take as one run within `--coarse`, and it is one; a
+// walk that misses its own corner leaves a row that reads the same way and is
+// not, so the header has to stop saying `cigars:Z:all` on its account.
+function coarseFold({
   cigar,
   coarseGap,
   ownLen,
@@ -125,12 +140,17 @@ function coarseCigarTag({
 }) {
   const coarse =
     cigar === undefined ? undefined : coarsenCigar(cigar, coarseGap)
-  return coarse !== undefined &&
-    (coarse.gapCount > 0 || coarse.opCount > 1) &&
+  const closed =
+    coarse !== undefined &&
     coarse.ownLen === ownLen &&
     coarse.mateLen === mateLen
-    ? coarse.ops
-    : undefined
+  return {
+    ops:
+      closed && (coarse.gapCount > 0 || coarse.opCount > 1)
+        ? coarse.ops
+        : undefined,
+    unbounded: cigar !== undefined && !closed,
+  }
 }
 
 // A PIF row carries exactly ONE alignment string — `cg:Z:`, in the orientation
@@ -262,12 +282,15 @@ function processLine(
   const tail = [numMatches, blockLen, mapq, ...passthrough, `de:f:${de}`]
   // the T row's own axis is the target, as the PAF CIGAR is written; the Q row
   // re-orients it for the query, the way the fine tier's cg is
-  const cr = coarseCigarTag({
+  const { ops: cr, unbounded } = coarseFold({
     cigar,
     coarseGap,
     ownLen: +e2! - +s2!,
     mateLen: +e1! - +s1!,
   })
+  if (unbounded) {
+    stats.unboundedRows++
+  }
   const tCr = cr === undefined ? [] : [`cr:Z:${cr}`]
   const qCr =
     cr === undefined
@@ -332,6 +355,7 @@ export async function createPIF(
     pairs: new Set(),
     rows: 0,
     cigarRows: 0,
+    unboundedRows: 0,
     skipped: 0,
   }
   const transform = makePifTransform(coarseGap, stats)
