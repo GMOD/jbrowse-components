@@ -11,21 +11,23 @@ function block({
   start,
   ref,
   rows,
+  refName = 'chr1',
 }: {
   start: number
   ref: string
   rows: Record<string, string>
+  refName?: string
 }) {
   return new SimpleFeature({
-    uniqueId: `block-${start}`,
-    refName: 'chr1',
+    uniqueId: `block-${refName}-${start}`,
+    refName,
     start,
     end: start + ref.replaceAll('-', '').length,
     seq: ref,
     alignments: Object.fromEntries(
       Object.entries(rows).map(([id, seq]) => [
         id,
-        { seq, start, chr: 'chr1' },
+        { seq, start, chr: refName },
       ]),
     ),
     empties: {},
@@ -44,10 +46,20 @@ function fakePluginManager(features: Feature[]) {
 jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
   loadMafSamplesAdapter: (pluginManager: { features: unknown[] }) => ({
     adapter: {
-      // required inside the factory: jest hoists this above the imports, so a
-      // module referenced from the enclosing scope is not defined yet
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      getFeatures: () => require('rxjs').from(pluginManager.features),
+      // filtered by region, so a two-region case sees only its own blocks —
+      // which is what the per-region column segments are about
+      getFeatures: (region: { refName: string; start: number; end: number }) =>
+        // required inside the factory: jest hoists this above the imports, so a
+        // module referenced from the enclosing scope is not defined yet
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('rxjs').from(
+          pluginManager.features.filter(
+            (f: Feature) =>
+              f.get('refName') === region.refName &&
+              f.get('start') < region.end &&
+              f.get('end') > region.start,
+          ),
+        ),
     },
     samples: [],
     treeNewick: undefined,
@@ -161,6 +173,39 @@ describe('buildIdentityMatrix', () => {
     // six reference positions, all matched by both rows; the two gap columns
     // contribute no bin at all, so the tail of the row stays at zero
     expect([...m.get('inserter')!]).toEqual([1, 1, 1, 1, 1, 1, 0, 0])
+  })
+
+  // Two chromosomes shared one set of bins when the ruler ran from min(starts)
+  // to max(ends), so a row present in one region and absent in the other scored
+  // as half-diverged everywhere instead of present-here-absent-there.
+  it('gives each region its own columns', async () => {
+    const m = await buildIdentityMatrix({
+      pluginManager: fakePluginManager([
+        block({
+          start: 0,
+          ref: 'ACGTACGT',
+          rows: { ref: 'ACGTACGT', chr2only: '--------' },
+        }),
+        block({
+          refName: 'chr2',
+          start: 0,
+          ref: 'ACGTACGT',
+          rows: { ref: 'ACGTACGT', chr2only: 'ACGTACGT' },
+        }),
+      ]),
+      args: {
+        adapterConfig: {},
+        regions: [REGION, { ...REGION, refName: 'chr2' }],
+        sessionId: 'test',
+        sources: ['ref', 'chr2only'],
+      },
+    })
+    expect([...m.get('ref')!]).toEqual([
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    ])
+    expect([...m.get('chr2only')!]).toEqual([
+      0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+    ])
   })
 
   // Soft-masked repeat runs are lower case in most MAFs, and a masked match is

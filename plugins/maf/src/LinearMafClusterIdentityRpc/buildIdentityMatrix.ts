@@ -32,6 +32,52 @@ const GAP = 45 // '-'
  */
 const MAX_COLUMNS = 5000
 
+/** One region's slice of the concatenated row. */
+interface RegionSegment {
+  start: number
+  end: number
+  colOffset: number
+  columns: number
+  binWidth: number
+}
+
+/**
+ * The column budget shared out among the displayed regions by span, each
+ * region's slice contiguous and its own. Binning every region against one
+ * `min(starts)`..`max(ends)` ruler instead put two chromosomes' positions in
+ * the same bins and spent the budget on the gap between non-overlapping ones.
+ * `buildSegments` in `plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` is the
+ * same shape for the same reason.
+ *
+ * A region gets at least one column and never more than it has bases, so a
+ * whole-genome view of many small regions can exceed `MAX_COLUMNS` by at most
+ * one column per region — clustering is a one-shot action and the alternative
+ * is a region that bins to nothing.
+ */
+function buildSegments(regions: Region[]) {
+  const spans = regions.map(r => Math.max(1, r.end - r.start))
+  const total = spans.reduce((a, b) => a + b, 0)
+  const budget = Math.max(1, Math.min(MAX_COLUMNS, total))
+  const segments: RegionSegment[] = []
+  let colOffset = 0
+  for (const [i, region] of regions.entries()) {
+    const span = spans[i]!
+    const columns = Math.min(
+      span,
+      Math.max(1, Math.round((span / total) * budget)),
+    )
+    segments.push({
+      start: region.start,
+      end: region.end,
+      colOffset,
+      columns,
+      binWidth: span / columns,
+    })
+    colOffset += columns
+  }
+  return { segments, columns: colOffset }
+}
+
 /**
  * One row per genome, one column per bin of the reference, valued as the
  * fraction of the bin at which that genome both aligns and matches.
@@ -92,11 +138,7 @@ export async function buildIdentityMatrix({
   )
   const opts = configSamples.length ? { ...args, samples: configSamples } : args
 
-  const start = Math.min(...regions.map(r => r.start))
-  const end = Math.max(...regions.map(r => r.end))
-  const span = Math.max(1, end - start)
-  const columns = Math.max(1, Math.min(MAX_COLUMNS, span))
-  const binWidth = span / columns
+  const { segments, columns } = buildSegments(regions)
 
   // Seeded in `sources` order, and nothing is ever added to it: a genome the
   // file holds but the display is not drawing has no row here, and so cannot
@@ -119,7 +161,8 @@ export async function buildIdentityMatrix({
   let columnBin = new Int32Array(0)
   let refFolded = new Uint8Array(0)
 
-  for (const region of regions) {
+  for (const [regionIndex, region] of regions.entries()) {
+    const segment = segments[regionIndex]!
     await subscribeToObservable(
       adapter.getFeatures(region, opts),
       (feature: Feature) => {
@@ -147,11 +190,13 @@ export async function buildIdentityMatrix({
             columnBin[c] = -1
             continue
           }
-          if (refPos >= start && refPos < end) {
-            const bin = Math.min(
-              columns - 1,
-              Math.floor((refPos - start) / binWidth),
-            )
+          if (refPos >= segment.start && refPos < segment.end) {
+            const bin =
+              segment.colOffset +
+              Math.min(
+                segment.columns - 1,
+                Math.floor((refPos - segment.start) / segment.binWidth),
+              )
             columnBin[c] = bin
             covered[bin]! += 1
           } else {
