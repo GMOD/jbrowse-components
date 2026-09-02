@@ -1960,7 +1960,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   mid-flight, probe on vs off.
 
 
-- **Unifying `plugins/alignments/src/shared/spanOverlaps.ts` with
+- **Unifying `plugins/alignments/src/LinearAlignmentsDisplay/spanOverlaps.ts` with
   `plugins/canvas/src/shared/mergeSpans.ts` on core's `mergeIntervals`** —
   declined 2026-09-02 by the LinearAlignmentsDisplay review. Canvas merges
   `[start, end]` tuples on a hot path, alignments merges `{start, end}` objects

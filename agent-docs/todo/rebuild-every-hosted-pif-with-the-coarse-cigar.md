@@ -11,7 +11,7 @@ metadata:
 # Rebuild every hosted PIF with the coarse CIGAR
 
 The two-tier PIF format froze on 2026-09-02
-([ADR-104](../architecture-decision-records/adr-104-pif-coarse-cigar.md)):
+([ADR-104](../architecture-decision-records/adr-104-the-coarse-tier-is-a-coarsened-alignment.md)):
 a coarse row carries a `cr:Z:` coarse CIGAR and the file opens with a `#pif`
 header naming its tiers and the coarse bound. Every file in
 [reference/HOSTING.md](../reference/HOSTING.md) §"Hosted PIFs and the coarse
