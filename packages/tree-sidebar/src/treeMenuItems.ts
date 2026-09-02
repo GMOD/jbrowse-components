@@ -8,7 +8,7 @@ import { MIN_CLUSTER_ROWS } from './clusterMatrix.ts'
 import { describeClusterProvenance } from './clusterProvenance.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 
 // The tree toggle's label. Exported because the website's figure recipes name
 // it in a click path and must not re-spell it.
@@ -214,7 +214,7 @@ export function sortRowsHereMenuItem({
   // subtree, so a clade focused to one row still has rows to sort
   rowCount: number
   onClick: () => void
-}): MenuItem {
+}): NormalMenuItem {
   return {
     label,
     icon: SwapVertIcon,

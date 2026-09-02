@@ -173,12 +173,8 @@ export async function run(args?: string[]) {
     : `  bgzip ${file} && tabix -p ${preset} ${trackFile}\n`
   const nextCommand =
     outputFile === densitySidecarPath(file)
-      ? 'Next, add the track it summarizes — a sidecar under this name is picked up automatically:\n' +
-        indexFirst +
-        `  jbrowse add-track ${trackFile} --load copy`
-      : 'Next, add the track it summarizes, naming this sidecar:\n' +
-        indexFirst +
-        `  jbrowse add-track ${trackFile} --load copy --density ${outputFile}`
+      ? `Next, add the track it summarizes — a sidecar under this name is picked up automatically:\n${indexFirst}  jbrowse add-track ${trackFile} --load copy`
+      : `Next, add the track it summarizes, naming this sidecar:\n${indexFirst}  jbrowse add-track ${trackFile} --load copy --density ${outputFile}`
   console.log(
     `Created ${outputFile}: ${records} feature start(s) in ${binCount} non-empty ${binSize}bp bin(s)\n\n${nextCommand}`,
   )

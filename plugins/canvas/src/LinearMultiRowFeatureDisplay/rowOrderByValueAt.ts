@@ -99,8 +99,8 @@ export function rowOrderByValueAt<T extends { name: string }>(
   //
   // Seeded at zero for every color the column carries, so a block whose rows
   // are all filtered away still compares as a number.
-  const blockSize = new Map(
-    [...colorByRow.values()].map(color => [color, 0] as const),
+  const blockSize = new Map<number, number>(
+    [...colorByRow.values()].map(color => [color, 0]),
   )
   for (const { name } of sources) {
     const color = colorByRow.get(name)

@@ -44,7 +44,7 @@ function fakePluginManager(features: Feature[]) {
 // rather than the adapter constructed: the builder's contract is with
 // `getFeatures` + `getSamples` and nothing else.
 jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
-  loadMafSamplesAdapter: (pluginManager: { features: unknown[] }) => ({
+  loadMafSamplesAdapter: (pluginManager: { features: Feature[] }) => ({
     adapter: {
       // filtered by region, so a two-region case sees only its own blocks —
       // which is what the per-region column segments are about
@@ -54,7 +54,7 @@ jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('rxjs').from(
           pluginManager.features.filter(
-            (f: Feature) =>
+            f =>
               f.get('refName') === region.refName &&
               f.get('start') < region.end &&
               f.get('end') > region.start,

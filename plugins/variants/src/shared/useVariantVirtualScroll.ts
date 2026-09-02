@@ -12,11 +12,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // specific is which height the rows lay out against, and that comes off the
 // shared base model, so the two variant displays stay identical by construction.
 export function useVariantVirtualScroll(
-  canvas: HTMLCanvasElement | null,
+  el: HTMLElement | null,
   model: MultiSampleVariantBaseModel,
 ) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  useRowVirtualScroll(canvas, model, {
+  useRowVirtualScroll(el, model, {
     viewportHeight: model.availableHeight,
     scrollZoom: view.scrollZoom,
   })

@@ -17,9 +17,12 @@ import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearM
 // the one element the listener is bound to.
 const SOURCES = [{ name: 'S0' }, { name: 'S1' }]
 
-function clustered<T extends { setSources: (s: unknown[]) => void }>(
-  display: T & { setLayoutAndClusterTree: (l: unknown[], t: string) => void },
-) {
+interface Clusterable {
+  setSources(s: { name: string }[]): void
+  setLayoutAndClusterTree(l: { name: string }[], t: string): void
+}
+
+function clustered<T extends Clusterable>(display: T) {
   display.setSources(SOURCES)
   display.setLayoutAndClusterTree(SOURCES, '(S0,S1);')
   return display

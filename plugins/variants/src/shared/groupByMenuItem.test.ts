@@ -1,12 +1,13 @@
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
+import type { Source } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // "Group by..." is the ordering twin of "Color by... → Samples": same candidate
 // attributes off the samplesTsv columns, writing the `groupBy` slot instead of
 // `colorBy`. The user guide has always described grouping as interactive; only
 // the config slot was.
-function display(sources?: Record<string, unknown>[]) {
+function display(sources?: Source[]) {
   const { display } = createTestEnvironment().createDisplay()
   if (sources) {
     display.setSources(sources)
