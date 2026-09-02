@@ -26,6 +26,39 @@ test('nested views are collected too', () => {
   ).toEqual(['synteny', 'top', 'bottom'])
 })
 
+// The two synteny spellings. A spec's `tracks` may be one string[] per level
+// (the shape normalizeTrackLevels accepts), and a session saved from a running
+// view carries `levels: [{tracks}]` instead — both used to be filtered out as
+// malformed entries, so a synteny --session contributed no expectations and
+// the gate passed on an empty browser.
+test('per-level track lists in a synteny spec are collected', () => {
+  expect(
+    trackIdsFromSession({
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [['mat_vs_pat'], ['pat_vs_ref']],
+          views: [{}, {}, {}],
+        },
+      ],
+    }),
+  ).toEqual(['mat_vs_pat', 'pat_vs_ref'])
+})
+
+test("tracks on a snapshot-shaped view's levels are collected", () => {
+  expect(
+    trackIdsFromSession({
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          levels: [{ tracks: [{ trackId: 'synteny' }] }],
+          views: [{ tracks: ['genes'] }, {}],
+        },
+      ],
+    }),
+  ).toEqual(['synteny', 'genes'])
+})
+
 test('a spec with no tracks expects none', () => {
   expect(
     trackIdsFromSession({ views: [{ type: 'LinearGenomeView' }] }),

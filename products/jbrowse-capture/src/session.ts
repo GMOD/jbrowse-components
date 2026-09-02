@@ -16,10 +16,17 @@ export function encodeSessionSpec(session: object): string {
   return encodeURIComponent(sessionSpecParam(session))
 }
 
+type TrackEntry = string | { trackId?: string }
+
 interface SpecShape {
   views?: {
     assembly?: string
-    tracks?: (string | { trackId?: string })[]
+    // a synteny spec's `tracks` may be nested — one string[] per level (the
+    // gap between adjacent rows), the shape normalizeTrackLevels accepts
+    tracks?: (TrackEntry | string[])[]
+    // the restructured snapshot spelling of the same thing, for a session
+    // saved from a running view rather than written as a spec
+    levels?: { tracks?: TrackEntry[] }[]
     views?: SpecShape['views']
   }[]
 }
@@ -54,14 +61,21 @@ export function assemblyFromSession(session: object): string | undefined {
  * caller has not spelled those ids out separately.
  */
 export function trackIdsFromSession(session: object): string[] {
+  // an entry may be a bare id or `{trackId, displaySnapshot}`; an object
+  // without a trackId is malformed rather than a track to expect, so it drops
+  // out here instead of gating on undefined
+  const idsOf = (tracks: TrackEntry[] | undefined): string[] =>
+    (tracks ?? [])
+      .map(t => (typeof t === 'string' ? t : t.trackId))
+      .filter(id => id !== undefined)
   const collect = (views: SpecShape['views']): string[] =>
     (views ?? []).flatMap(view => [
-      // an entry may be a bare id or `{trackId, displaySnapshot}`; an object
-      // without a trackId is malformed rather than a track to expect, so it
-      // drops out here instead of gating on undefined
-      ...(view.tracks ?? [])
-        .map(t => (typeof t === 'string' ? t : t.trackId))
-        .filter(id => id !== undefined),
+      // a nested entry is a synteny spec's per-level list; these used to be
+      // filtered out as malformed, so a synteny --session gated on nothing
+      ...(view.tracks ?? []).flatMap(t =>
+        Array.isArray(t) ? idsOf(t) : idsOf([t]),
+      ),
+      ...(view.levels ?? []).flatMap(l => idsOf(l.tracks)),
       ...collect(view.views),
     ])
   return collect((session as SpecShape).views)
