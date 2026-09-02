@@ -69,8 +69,7 @@ function makeSelf(
   return {
     ...self,
     hiddenCategorySet: new Set(self.hiddenCategories),
-    hasLegendToShow:
-      self.colorLegend.length > 0 || self.rowGroupLegend.length > 0,
+    hasLegendKey: self.colorLegend.length > 0 || self.rowGroupLegend.length > 0,
   }
 }
 

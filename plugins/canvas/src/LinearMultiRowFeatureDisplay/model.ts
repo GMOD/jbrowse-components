@@ -542,7 +542,7 @@ export default function stateModelFactory(
        * The `legend` config slot, validated into key rows. Its own getter
        * because two different questions read it: what is DRAWN (gated on there
        * being a painting, below) and whether this display has a key at all
-       * (`hasLegendToShow`, which the menu offers the toggle on).
+       * (`hasLegendKey`, which the menu offers the toggle on).
        */
       get configuredLegend() {
         return resolveConfiguredLegend(readConfObject(self.conf, 'legend'))
@@ -736,7 +736,7 @@ export default function stateModelFactory(
        * density band stands in: the toggle is the user's, and a key merely
        * waiting for data must not take the way back to it with it.
        */
-      get hasLegendToShow() {
+      get hasLegendKey() {
         return self.hasLegendEntries || self.configuredLegend.length > 0
       },
     }))

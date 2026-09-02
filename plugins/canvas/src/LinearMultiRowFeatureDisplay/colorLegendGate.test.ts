@@ -102,14 +102,14 @@ describe('the color key waits for a painting to key', () => {
     }).createDisplay()
 
     expect(display.hasLegendEntries).toBe(false)
-    expect(display.hasLegendToShow).toBe(true)
+    expect(display.hasLegendKey).toBe(true)
     expect(menuLabels(display)).toContain('Show legend')
   })
 
   it('offers no toggle on a track that declares no key at all', () => {
     const { display } = createTestEnvironment().createDisplay()
 
-    expect(display.hasLegendToShow).toBe(false)
+    expect(display.hasLegendKey).toBe(false)
     expect(menuLabels(display)).not.toContain('Show legend')
   })
 
