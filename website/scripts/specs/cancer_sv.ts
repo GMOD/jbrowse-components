@@ -895,7 +895,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/foldback_reconstruction',
-    viewportHeight: 576,
+    // three routes plus the segment-map row under them: at 576 the dialog's
+    // own buttons ran off the frame
+    viewportHeight: 620,
     viewportWidth: 1300,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',

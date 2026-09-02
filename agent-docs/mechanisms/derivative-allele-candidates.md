@@ -252,6 +252,11 @@ the chr12 insert, shares no run and stays the dissent it is.
   not cross: [reference/SV_MULTIHOP.md](../reference/SV_MULTIHOP.md).
 - How the chains this groups are built:
   [split-read-chains](split-read-chains.md).
+- How a candidate is written as `A B C D E′ B′` and drawn as a segment map:
+  `letterSegments.ts` beside this file's subject, and
+  `plugins/linear-comparative-view/src/LinearDerivativeVsRef/segmentMapSvg.ts`,
+  which `website/scripts/gen-segment-maps.ts` runs over the committed COLO829
+  reads for the tutorial's figure.
 - What is shipped, what is parked, and what was settled by a rule rather than a
   design:
   [ideas/sa-hops-in-the-bezier-overlay.md](../ideas/sa-hops-in-the-bezier-overlay.md).
