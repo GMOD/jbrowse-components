@@ -11,7 +11,7 @@ import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
 import {
-  markPermanentPluginLoadSucceeded,
+  markPermanentPluginLoadFinished,
   permanentPluginSafeMode,
   permanentPluginSafeModeSuspects,
 } from './permanentPlugins.ts'
@@ -99,7 +99,7 @@ export function createPluginManager(
   // marker covers includes `configure()` — where a plugin registers its menu
   // items and extension points, and where one that throws takes the app down
   // just as thoroughly as one that throws while its module is evaluated.
-  markPermanentPluginLoadSucceeded()
+  markPermanentPluginLoadFinished()
   return pluginManager
 }
 

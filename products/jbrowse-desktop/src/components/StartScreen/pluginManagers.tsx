@@ -22,8 +22,9 @@ import { completeConfig } from './configInputs.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import {
   getGlobalPlugins,
+  globalPluginReadErrorMessage,
   globalPluginsGeneration,
-  markGlobalPluginLoadSucceeded,
+  markGlobalPluginLoadFinished,
 } from './globalPlugins.ts'
 import { launchFromLink } from './launchFromLink.ts'
 import { resolveSessionName } from './sessionName.ts'
@@ -96,6 +97,8 @@ function pluginRecords(
 export interface StartScreenPluginManager {
   pluginManager: PluginManager
   failures: PluginLoadFailure[]
+  // why the global plugin list came back empty, when that is why
+  readError: unknown
 }
 
 /**
@@ -123,22 +126,29 @@ async function buildPluginManager(
   )
   const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
   pluginManager.createPluggableElements()
-  // whatever the global plugins were going to do to this launch, they have now
-  // done it, so the next one need not suspect them
-  markGlobalPluginLoadSucceeded()
   return { pluginManager, failures: [...unresolved, ...failures] }
 }
 
 // A manager built from the global plugins alone, so the start screen — which
 // has no session, and therefore no session plugin manager — can still fire the
 // extension points a global plugin contributes to.
+//
+// The crash marker is cleared in a finally, after configure(): a plugin that
+// hangs or takes the renderer down while registering its extension points does
+// so as thoroughly as one that does while its module is evaluated, and a throw
+// caught here is a renderer that lived to show the error.
 async function buildStartScreenPluginManager(): Promise<StartScreenPluginManager> {
-  const built = await buildPluginManager(await getGlobalPlugins(), () => true)
-  // no root model to configure against, which every plugin's configure()
-  // already guards for (isAbstractMenuManager), but extension points a plugin
-  // registers there have to be in place before the start screen renders
-  built.pluginManager.configure()
-  return built
+  const { plugins, readError } = await getGlobalPlugins()
+  try {
+    const built = await buildPluginManager(plugins, () => true)
+    // no root model to configure against, which every plugin's configure()
+    // already guards for (isAbstractMenuManager), but extension points a plugin
+    // registers there have to be in place before the start screen renders
+    built.pluginManager.configure()
+    return { ...built, readError }
+  } finally {
+    markGlobalPluginLoadFinished()
+  }
 }
 
 // Built once per list, not once per mount. "Return to start screen" unmounts and
@@ -148,8 +158,17 @@ async function buildStartScreenPluginManager(): Promise<StartScreenPluginManager
 // once per round trip. Keyed on the write generation rather than cached
 // outright so that removing the plugin that broke a panel still takes effect on
 // the way back, which is the recovery this whole surface exists for.
+//
+// The failures ride along once. The start screen notifies whatever this
+// resolves with on every mount, and the build behind a cache hit did not run
+// again — so a hit hands back the manager alone rather than re-raising the same
+// toasts on every round trip.
 let cached:
-  | { generation: number; built: Promise<StartScreenPluginManager> }
+  | {
+      generation: number
+      built: Promise<StartScreenPluginManager>
+      reported: boolean
+    }
   | undefined
 
 export function createStartScreenPluginManager() {
@@ -163,9 +182,17 @@ export function createStartScreenPluginManager() {
         cached = undefined
         throw e
       }),
+      reported: false,
     }
   }
-  return cached.built
+  const entry = cached
+  return entry.built.then(built => {
+    if (entry.reported) {
+      return { ...built, failures: [], readError: undefined }
+    }
+    entry.reported = true
+    return built
+  })
 }
 
 /**
@@ -228,7 +255,29 @@ export async function createPluginManager(
   // before the loader runs. The config's entry wins a name/url collision (it is
   // version-pinned to what this session was built against), which is what
   // dedupePlugins keeping the first occurrence means here.
-  const globalPlugins = await getGlobalPlugins()
+  const { plugins: globalPlugins, readError } = await getGlobalPlugins()
+  try {
+    return await buildSession(
+      configSnapshot,
+      globalPlugins,
+      readError,
+      initialTimestamp,
+    )
+  } finally {
+    // after configure() and the session's own model creation, which is where a
+    // plugin's menu registration or MST hooks run — a crash there is as much a
+    // crash as one during module evaluation, and a caught throw is a renderer
+    // that lived to report it
+    markGlobalPluginLoadFinished()
+  }
+}
+
+async function buildSession(
+  configSnapshot: JBrowseConfigInput,
+  globalPlugins: PluginDefinition[],
+  readError: unknown,
+  initialTimestamp: number,
+) {
   const merged = dedupePlugins([
     ...(configSnapshot.plugins ?? []),
     ...globalPlugins,
@@ -281,6 +330,9 @@ export async function createPluginManager(
       `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
       error,
     )
+  }
+  if (readError) {
+    rootModel.session?.notifyError(globalPluginReadErrorMessage, readError)
   }
 
   return pluginManager

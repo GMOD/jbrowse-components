@@ -258,15 +258,28 @@ export function getPermanentPlugins(): PluginDefinition[] {
       markerKey(),
       JSON.stringify(plugins.map(p => pluginLabel(p))),
     )
+    // A tab the user closes, or navigates away from, while the bundles are
+    // still fetching is not a tab a plugin took down — and on the web that is
+    // far more common than a crash. A page that dies never gets here, which is
+    // the one case the marker is for.
+    window.addEventListener(
+      'pagehide',
+      () => {
+        markPermanentPluginLoadFinished()
+      },
+      { once: true },
+    )
   }
   return plugins
 }
 
 /**
- * Called once a plugin manager has been built: whatever the permanent plugins
- * were going to do to this load, they have done it.
+ * Called once this load has run its course with the tab still alive — a plugin
+ * manager built, or an error caught and put on screen. Either way whatever the
+ * permanent plugins were going to do to this load, they have done it, and the
+ * marker's only job is to catch the load that never reaches any code at all.
  */
-export function markPermanentPluginLoadSucceeded() {
+export function markPermanentPluginLoadFinished() {
   // Not in safe mode, where none of them ran and so nothing has been vouched
   // for. Clearing it there re-arms them for the next load, which reproduces the
   // crash that set the marker: the app works every *other* time it is opened.

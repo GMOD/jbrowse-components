@@ -109,18 +109,31 @@ export async function readGlobalPlugins() {
   return (await invokeIpc('getGlobalPlugins')) as GlobalPluginEntry[]
 }
 
+export const globalPluginReadErrorMessage =
+  'The global plugin list could not be read, so no global plugins were loaded. Fix or reset it from the start screen\u2019s "Global plugins" dialog.'
+
+export interface GlobalPluginLoad {
+  plugins: GlobalPluginEntry[]
+  // the read failure, when there was one: the list is then empty, and the
+  // caller says so once it has a session or start screen to say it on
+  readError: unknown
+}
+
 /**
  * The global plugins to load into a plugin manager: the enabled ones, none in
  * safe mode, and none when the list can't be read — an unreadable or corrupt
- * globalPlugins.json must not take the whole session down with it.
+ * globalPlugins.json must not take the whole session down with it. It must not
+ * vanish quietly either, so the failure comes back beside the empty list.
  */
-export async function getGlobalPlugins() {
+export async function getGlobalPlugins(): Promise<GlobalPluginLoad> {
   let plugins: GlobalPluginEntry[] = []
+  let readError: unknown
   if (!safeModeReason) {
     try {
       plugins = (await readGlobalPlugins()).filter(p => !p.disabled)
     } catch (e) {
       console.error(e)
+      readError = e
     }
     // Armed after the read, and only when there is in fact something to
     // suspect. Arming it unconditionally meant a user who has never installed a
@@ -135,9 +148,18 @@ export async function getGlobalPlugins() {
         LOADING_MARKER,
         JSON.stringify(plugins.map(p => pluginLabel(p))),
       )
+      // a window closed or reloaded while the bundles are still fetching is
+      // not one a plugin took down; a renderer that dies never gets here
+      window.addEventListener(
+        'pagehide',
+        () => {
+          markGlobalPluginLoadFinished()
+        },
+        { once: true },
+      )
     }
   }
-  return plugins
+  return { plugins, readError }
 }
 
 /**
@@ -158,10 +180,12 @@ export async function setGlobalPlugins(plugins: GlobalPluginEntry[]) {
 }
 
 /**
- * Called once a plugin manager has been built: whatever the global plugins were
- * going to do to this launch, they have done it.
+ * Called once this launch has run its course with the renderer still alive — a
+ * plugin manager built and configured, a session set, or an error caught and
+ * put on screen. Whatever the global plugins were going to do to this launch,
+ * they have done it; the marker's only job is the launch no code survives.
  */
-export function markGlobalPluginLoadSucceeded() {
+export function markGlobalPluginLoadFinished() {
   // Not in safe mode, where no global plugin ran and so nothing has been
   // vouched for. Clearing it here re-armed them for the next launch, which
   // reproduced the crash that set the marker in the first place: the app worked
@@ -169,8 +193,16 @@ export function markGlobalPluginLoadSucceeded() {
   // the only thing standing between the user and that loop. Safe mode now stays
   // on until they take it off.
   if (!safeModeReason) {
-    localStorageRemoveItem(LOADING_MARKER)
+    clearGlobalPluginLoadMarker()
   }
+}
+
+/**
+ * Forget that a launch failed — the user's call, or a reset that has just
+ * emptied the list the marker was about to accuse.
+ */
+export function clearGlobalPluginLoadMarker() {
+  localStorageRemoveItem(LOADING_MARKER)
 }
 
 /**
@@ -191,6 +223,6 @@ export function reloadInSafeMode() {
  */
 export function reloadWithGlobalPlugins() {
   setQueryParams({ [SAFE_MODE_PARAM]: undefined })
-  localStorageRemoveItem(LOADING_MARKER)
+  clearGlobalPluginLoadMarker()
   window.location.reload()
 }

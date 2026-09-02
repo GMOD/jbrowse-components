@@ -36,13 +36,27 @@ beforeEach(() => {
 test('loads the list and marks the attempt, then clears it on success', async () => {
   const g = await importFresh('/')
   expect(g.globalPluginSafeMode()).toBeUndefined()
-  expect(await g.getGlobalPlugins()).toEqual(plugins)
+  expect((await g.getGlobalPlugins()).plugins).toEqual(plugins)
   // still set, and naming what was about to run, so the launch after a crash
   // can say which plugins it was
   expect(JSON.parse(localStorage.getItem(LOADING_MARKER)!)).toEqual([
     'P (https://example.com/p.js)',
   ])
-  g.markGlobalPluginLoadSucceeded()
+  g.markGlobalPluginLoadFinished()
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
+})
+
+test('closing the window during the load clears the marker', async () => {
+  const g = await importFresh('/')
+  await g.getGlobalPlugins()
+  expect(localStorage.getItem(LOADING_MARKER)).not.toBeNull()
+  window.dispatchEvent(new Event('pagehide'))
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
+})
+
+test('a reset forgets the crash along with the list it blamed', async () => {
+  const g = await importFresh('/', JSON.stringify(['P (x)']))
+  g.clearGlobalPluginLoadMarker()
   expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
@@ -75,13 +89,13 @@ test('a disabled entry is kept but not loaded', async () => {
   // the dialog edits the whole list, so it has to see the entry it is going to
   // switch back on
   expect(await g.readGlobalPlugins()).toEqual([...plugins, off])
-  expect(await g.getGlobalPlugins()).toEqual(plugins)
+  expect((await g.getGlobalPlugins()).plugins).toEqual(plugins)
 })
 
 test('a list with everything switched off arms nothing', async () => {
   const g = await importFresh('/')
   mockInvoke.mockResolvedValue([{ ...plugins[0], disabled: true }])
-  expect(await g.getGlobalPlugins()).toEqual([])
+  expect((await g.getGlobalPlugins()).plugins).toEqual([])
   // nothing ran, so a crash after this point is not theirs to answer for
   expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
@@ -99,14 +113,14 @@ test('enabling drops the flag rather than writing false', async () => {
 test('an empty list arms nothing, so an unrelated crash is not blamed on it', async () => {
   const g = await importFresh('/')
   mockInvoke.mockResolvedValue([])
-  expect(await g.getGlobalPlugins()).toEqual([])
+  expect((await g.getGlobalPlugins()).plugins).toEqual([])
   expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
 test('?safeMode skips the list without touching it', async () => {
   const g = await importFresh('/?safeMode=1')
   expect(g.globalPluginSafeMode()).toBe('requested')
-  expect(await g.getGlobalPlugins()).toEqual([])
+  expect((await g.getGlobalPlugins()).plugins).toEqual([])
   expect(mockInvoke).not.toHaveBeenCalled()
 })
 
@@ -118,7 +132,7 @@ test('a valueless ?safeMode counts', async () => {
 test('a launch that never finished loading them disables them next time', async () => {
   const g = await importFresh('/', '1')
   expect(g.globalPluginSafeMode()).toBe('previousLaunchFailed')
-  expect(await g.getGlobalPlugins()).toEqual([])
+  expect((await g.getGlobalPlugins()).plugins).toEqual([])
   expect(mockInvoke).not.toHaveBeenCalled()
 })
 
@@ -127,7 +141,7 @@ test('safe mode survives the launch it protected, rather than re-arming', async 
   await g.getGlobalPlugins()
   // nothing ran, so there is nothing to vouch for: clearing here would load the
   // plugins again next launch and crash on every other start
-  g.markGlobalPluginLoadSucceeded()
+  g.markGlobalPluginLoadFinished()
   expect(localStorage.getItem(LOADING_MARKER)).toBe('1')
 })
 
@@ -143,7 +157,11 @@ test('a failed read degrades to no global plugins rather than throwing', async (
   const g = await importFresh('/')
   mockInvoke.mockRejectedValue(new Error('EACCES'))
   jest.spyOn(console, 'error').mockImplementation(() => {})
-  expect(await g.getGlobalPlugins()).toEqual([])
+  const { plugins: loaded, readError } = await g.getGlobalPlugins()
+  expect(loaded).toEqual([])
+  // ...but not silently: the user's plugins have just vanished from every
+  // session, and the caller has somewhere to say why
+  expect(readError).toEqual(new Error('EACCES'))
   // but the editing path still reports it, so the dialog can't save over a
   // list it failed to read
   await expect(g.readGlobalPlugins()).rejects.toThrow('EACCES')

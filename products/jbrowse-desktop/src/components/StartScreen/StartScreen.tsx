@@ -20,6 +20,7 @@ import { useNotifyError } from '../NotifyContext.ts'
 import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import {
+  globalPluginReadErrorMessage,
   globalPluginSafeMode,
   globalPluginSafeModeSuspects,
   reloadInSafeMode,
@@ -165,7 +166,13 @@ export default function StartScreen({
       },
       // a global plugin that no longer loads is the user's to fix, and the
       // start screen is the one place they can: report it with the way out
-      onSuccess: ({ failures }) => {
+      onSuccess: ({ failures, readError }) => {
+        const manage = {
+          label: 'Manage global plugins',
+          onClick: () => {
+            setShowGlobalPlugins(true)
+          },
+        }
         for (const { definition, error } of failures) {
           console.error(error)
           notifyError(
@@ -173,12 +180,13 @@ export default function StartScreen({
               `Failed to load global plugin ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}`,
               { cause: error },
             ),
-            {
-              label: 'Manage global plugins',
-              onClick: () => {
-                setShowGlobalPlugins(true)
-              },
-            },
+            manage,
+          )
+        }
+        if (readError) {
+          notifyError(
+            new Error(globalPluginReadErrorMessage, { cause: readError }),
+            manage,
           )
         }
       },

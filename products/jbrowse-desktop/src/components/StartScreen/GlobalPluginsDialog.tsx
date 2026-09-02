@@ -203,7 +203,7 @@ export default function GlobalPluginsDialog({
             can be skipped for one launch with &quot;Reload without global
             plugins&quot; in the start screen menu.
           </Typography>
-          {loadError ? <ErrorMessage error={loadError} /> : null}
+          {loadError && !plugins ? <ErrorMessage error={loadError} /> : null}
           {saveError ? <ErrorMessage error={saveError} /> : null}
           {loadError && !plugins ? (
             // The list cannot be read, so there is nothing to edit and every

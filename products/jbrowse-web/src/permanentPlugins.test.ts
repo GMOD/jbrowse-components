@@ -170,7 +170,19 @@ test('loading arms the marker with what was about to run, success clears it', as
       localStorage.getItem(markerKey('http://localhost/volvox/config.json'))!,
     ),
   ).toEqual(['GWAS (https://example.com/gwas.js)'])
-  p.markPermanentPluginLoadSucceeded()
+  p.markPermanentPluginLoadFinished()
+  expect(
+    localStorage.getItem(markerKey('http://localhost/volvox/config.json')),
+  ).toBeNull()
+})
+
+// Closing a tab that is still fetching bundles is not a crash, and it is the
+// far more common way a web load ends early.
+test('leaving the page during the load clears the marker', async () => {
+  const p = await importFresh()
+  p.addPermanentPlugin(gwas)
+  p.getPermanentPlugins()
+  window.dispatchEvent(new Event('pagehide'))
   expect(
     localStorage.getItem(markerKey('http://localhost/volvox/config.json')),
   ).toBeNull()
@@ -228,7 +240,7 @@ test('a safe-mode boot does not clear the marker', async () => {
   const key = markerKey('http://localhost/volvox/config.json')
   localStorage.setItem(key, JSON.stringify(['GWAS (x)']))
   const p = await importFresh()
-  p.markPermanentPluginLoadSucceeded()
+  p.markPermanentPluginLoadFinished()
   expect(localStorage.getItem(key)).not.toBeNull()
 })
 

@@ -10,7 +10,10 @@ import { autorun } from 'mobx'
 
 import { clearCrashedSession, readCrashedSession } from './crashedSession.ts'
 import { createPluginManager } from './createPluginManager.ts'
-import { getPermanentPlugins } from './permanentPlugins.ts'
+import {
+  getPermanentPlugins,
+  markPermanentPluginLoadFinished,
+} from './permanentPlugins.ts'
 import { resolveConfigPath } from './resolveConfigPath.ts'
 import {
   buildLgvInit,
@@ -413,6 +416,7 @@ const SessionLoader = types
       } catch (e) {
         console.error(e)
         self.pluginManagerError = e
+        markPermanentPluginLoadFinished()
       }
     },
     /**
@@ -483,6 +487,10 @@ const SessionLoader = types
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
+        // an error on screen is proof the tab survived this load, which is all
+        // the crash marker asks; left armed, a config an admin later fixes
+        // would still put the user's permanent plugins into safe mode
+        markPermanentPluginLoadFinished()
       }
     },
     /**
