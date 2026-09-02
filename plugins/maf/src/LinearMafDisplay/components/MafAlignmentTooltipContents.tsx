@@ -73,7 +73,10 @@ function RangeContents({
       <Row label="End" value={refLabel(p2)} />
       <Row
         label="Length"
-        value={getBpDisplayStr(Math.abs(p1.coord - p2.coord))}
+        // Inclusive of both ends, because the subsequence widget this drag
+        // opens extracts `max - min + 1` bases. The exclusive count read
+        // "0 bp" over a one-base drag that hands back one base.
+        value={getBpDisplayStr(Math.abs(p1.coord - p2.coord) + 1)}
       />
     </TableShell>
   )
