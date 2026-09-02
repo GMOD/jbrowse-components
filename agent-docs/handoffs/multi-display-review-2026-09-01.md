@@ -24,7 +24,7 @@ Commits from this session carry
 `Claude-Session: https://claude.ai/code/session_014psJ3MEcdh1mzRbfJb7z5j`.
 `git log --grep session_014psJ3MEcdh1mzRbfJb7z5j` lists what landed.
 
-Note for whoever resumes: `pnpm lint --cache` is rejected by this oxlint,
+Note for whoever resumes: `pnpm lint --cache` is rejected by this oxlint (the flag in `~/.claude/CLAUDE.md` is stale),
 and `pnpm format <files>` ignores its arguments and formats the whole repo;
 use `pnpm exec oxfmt <files>`.
 
@@ -92,7 +92,21 @@ extracted from the block duplicated with `LinearBasicDisplay/baseModel.ts`;
 hit-test cluster and partition views moved out of `model.ts`;
 `MultiRowClusterDialog` type + stable `matrixKey`.
 
-**maf** (`plugins/maf`): minus-strand insertion widget span
+**maf** — COMPLETE except three items, 95 suites green. Not done:
+(a) `LegendMixin` for MAF: fully built and reverted because it fails
+`products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts` (needs a
+`LinearMafDisplay` fixture there) and the `ConfigSlotDefaults` snapshot;
+the working patch is at the session scratchpad
+`item9-legend-mixin.patch` and may be gone, so rebuild from the wiggle
+model's `showLegend` shape and land it with those two web-side edits.
+(b) Lazy Launch submenu: `SubMenuItem.subMenu` has no function form
+(`packages/core`); the `rows.find` per block was replaced by one pass
+(`findRowSpans`), measured 2.0x on the 464-row shape. (c) Pan-stable
+`legendItems` was tried and reverted (no read expresses "a CDS is on
+screen"); the extraction of argument-taking views out of `stateModel.ts`
+was not started. Item 6's premise was corrected: bands only overlap below
+1px/row, and the fix uses `rowsUnderPointer` with a gutter fallback.
+Items (`plugins/maf`): minus-strand insertion widget span
 (`forwardPos` mirrors, `pos` is the highest coordinate); multi-region
 selection clipped like `selectionRegion` (Launch items mixed chromosomes);
 identity matrix per-region segments (4614838f16); drag readout Length

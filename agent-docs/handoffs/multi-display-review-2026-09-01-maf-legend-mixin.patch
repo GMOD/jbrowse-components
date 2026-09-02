@@ -1,0 +1,268 @@
+diff --git a/plugins/maf/src/LinearMafDisplay/components/MafLegends.tsx b/plugins/maf/src/LinearMafDisplay/components/MafLegends.tsx
+index 4541d2bed3..0ea607a83c 100644
+--- a/plugins/maf/src/LinearMafDisplay/components/MafLegends.tsx
++++ b/plugins/maf/src/LinearMafDisplay/components/MafLegends.tsx
+@@ -8,13 +8,24 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
+  * ranks, or the identity ramp). Entries come from the model so the SVG export
+  * emits the same key; this is only the on-screen presentation, via the shared
+  * `FloatingLegend` every other display's legend uses.
++ *
++ * Dismissing it writes the `showLegend` slot rather than a per-view flag, which
++ * is what makes the export follow: a key the reader turned off is not in the
++ * figure either.
+  */
+ const MafLegends = observer(function MafLegends({
+   model,
+ }: {
+   model: LinearMafDisplayModel
+ }) {
+-  return <FloatingLegend items={model.legendItems} />
++  return model.showLegend ? (
++    <FloatingLegend
++      items={model.legendItems}
++      onDismiss={() => {
++        model.setShowLegend(false)
++      }}
++    />
++  ) : null
+ })
+ 
+ export default MafLegends
+diff --git a/plugins/maf/src/LinearMafDisplay/configSchema.ts b/plugins/maf/src/LinearMafDisplay/configSchema.ts
+index 7f33f35af4..3b4f3811c0 100644
+--- a/plugins/maf/src/LinearMafDisplay/configSchema.ts
++++ b/plugins/maf/src/LinearMafDisplay/configSchema.ts
+@@ -141,6 +141,22 @@ export default function configSchemaF() {
+         tree: 'show the species tree sidebar',
+         rowLabels: 'draw the species name over the left of each row',
+       }),
++      /**
++       * #slot
++       * Show the color key for the active row rendering — the codon-change
++       * categories, the source-chromosome ranks, the identity ramp, and the CDS
++       * frame swatches. In `bases` mode the cells are the reference's own base
++       * colors and there is nothing to key, so nothing draws whatever this says.
++       */
++      showLegend: {
++        type: 'maybeBoolean',
++        description:
++          'show the color key for the active row rendering. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
++        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
++        // (true) is what it resolves to when nothing is promoted. Read through
++        // LegendMixin's resolved `showLegend` getter, never raw.
++        promotedBase: true,
++      },
+       /**
+        * #slot
+        */
+diff --git a/plugins/maf/src/LinearMafDisplay/legendKeys.test.ts b/plugins/maf/src/LinearMafDisplay/legendKeys.test.ts
+index 45e7870492..0563f57c96 100644
+--- a/plugins/maf/src/LinearMafDisplay/legendKeys.test.ts
++++ b/plugins/maf/src/LinearMafDisplay/legendKeys.test.ts
+@@ -11,7 +11,7 @@ import {
+ } from './components/drawSourceChrom.ts'
+ import { createMafTestEnvironment } from './testEnv.ts'
+ 
+-import type { LegendItem } from '@jbrowse/core/ui'
++import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+ 
+ // The color key is the only decoder an exported figure ships with, so each of
+ // these is built by the module that paints the rendering, out of the colors it
+@@ -101,7 +101,10 @@ describe('the CDS frame key follows the frames data, not the viewport', () => {
+     }).createDisplay()
+     env.display.setShowAnnotations(true)
+     env.display.setSamples({
+-      samples: [{ id: 'hg38' }, { id: 'mm10' }],
++      samples: [
++        { id: 'hg38', label: 'hg38' },
++        { id: 'mm10', label: 'mm10' },
++      ],
+       treeNewick: undefined,
+       samplesCanonical: true,
+     })
+@@ -124,3 +127,38 @@ describe('the CDS frame key follows the frames data, not the viewport', () => {
+     expect(frameLabels(d.legendItems)).toHaveLength(3)
+   })
+ })
++
++// maf was the last row display with no `showLegend` at all: the key drew
++// whatever the reader thought of it, and `FloatingLegend`'s close button had
++// nothing to write.
++describe('the color key is dismissible, like every other row display', () => {
++  function rows(items: MenuItem[]): string[] {
++    return items.flatMap(i => [
++      ...('label' in i && typeof i.label === 'string' ? [i.label] : []),
++      ...('subMenu' in i ? rows(i.subMenu) : []),
++    ])
++  }
++
++  function heatmapDisplay() {
++    const { display, view } = createMafTestEnvironment().createDisplay()
++    display.setRowRendering('heatmap')
++    // the identity plots swap themselves out for the bases at base level
++    view.zoomTo(100)
++    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
++    return display
++  }
++
++  it('offers the shared row where a key exists', () => {
++    const display = heatmapDisplay()
++    expect(rows(display.trackMenuItems())).toContain('Show legend')
++    expect(display.showLegend).toBe(true)
++    display.setShowLegend(false)
++    expect(display.showLegend).toBe(false)
++  })
++
++  it('offers nothing in bases mode, which has no key to show', () => {
++    const { display } = createMafTestEnvironment().createDisplay()
++    expect(display.legendItems).toEqual([])
++    expect(rows(display.trackMenuItems())).not.toContain('Show legend')
++  })
++})
+diff --git a/plugins/maf/src/LinearMafDisplay/renderSvg.test.tsx b/plugins/maf/src/LinearMafDisplay/renderSvg.test.tsx
+index 88efd9ba9f..f11a0d6698 100644
+--- a/plugins/maf/src/LinearMafDisplay/renderSvg.test.tsx
++++ b/plugins/maf/src/LinearMafDisplay/renderSvg.test.tsx
+@@ -26,7 +26,10 @@ function clusteredDisplay() {
+   const { display, view } = createMafTestEnvironment().createDisplay()
+   view.zoomTo(1)
+   display.setSamples({
+-    samples: [{ id: 'hg38' }, { id: 'mm10' }],
++    samples: [
++      { id: 'hg38', label: 'hg38' },
++      { id: 'mm10', label: 'mm10' },
++    ],
+     treeNewick: undefined,
+     samplesCanonical: true,
+   })
+@@ -43,3 +46,18 @@ test('an exported dendrogram carries the locus it was clustered on', async () =>
+   const { display } = clusteredDisplay()
+   expect(draw(await renderSvg(display, {}))).toContain('ctgA')
+ })
++
++// The key is the only decoder an exported figure ships with, and dismissing it
++// on screen used to leave it in the figure: maf was the one row display with no
++// `showLegend` at all.
++test('a dismissed color key stays out of the export', async () => {
++  const { display, view } = clusteredDisplay()
++  display.setRowRendering('heatmap')
++  // the identity plots swap themselves out for the bases at base level
++  view.zoomTo(100)
++  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
++  expect(display.legendItems.length).toBeGreaterThan(0)
++  expect(draw(await renderSvg(display, {}))).toContain('maf-color-legend')
++  display.setShowLegend(false)
++  expect(draw(await renderSvg(display, {}))).not.toContain('maf-color-legend')
++})
+diff --git a/plugins/maf/src/LinearMafDisplay/renderSvg.tsx b/plugins/maf/src/LinearMafDisplay/renderSvg.tsx
+index beb4f787b2..772155a10b 100644
+--- a/plugins/maf/src/LinearMafDisplay/renderSvg.tsx
++++ b/plugins/maf/src/LinearMafDisplay/renderSvg.tsx
+@@ -223,17 +223,20 @@ function MafSvgBody({
+           ticks={conservationTicks(conservationHeight)}
+         />
+       ) : null}
+-      {/* The same color key the display shows on screen (`MafLegends`).
+-          Without it an exported codon or source-chromosome figure has colored
+-          cells and nothing saying what the colors mean — and there the
+-          swatches are the only decoder. No `onDismiss`: an exported legend
+-          can't be clicked. */}
+-      <SvgColorLegend
+-        entries={legendEntries({ items: model.legendItems })}
+-        canvasWidth={width}
+-        maxHeight={height}
+-        testid="maf-color-legend"
+-      />
++      {/* The same color key the display shows on screen (`MafLegends`), on the
++          same `showLegend` gate — without it an exported codon or
++          source-chromosome figure has colored cells and nothing saying what the
++          colors mean, and with the key dismissed it would reappear in the
++          figure the reader dismissed it out of. No `onDismiss`: an exported
++          legend can't be clicked. */}
++      {model.showLegend ? (
++        <SvgColorLegend
++          entries={legendEntries({ items: model.legendItems })}
++          canvasWidth={width}
++          maxHeight={height}
++          testid="maf-color-legend"
++        />
++      ) : null}
+     </SvgClipRect>
+   )
+ }
+diff --git a/plugins/maf/src/LinearMafDisplay/stateModel.ts b/plugins/maf/src/LinearMafDisplay/stateModel.ts
+index 436c0c455c..82b5e4bbe1 100644
+--- a/plugins/maf/src/LinearMafDisplay/stateModel.ts
++++ b/plugins/maf/src/LinearMafDisplay/stateModel.ts
+@@ -24,6 +24,7 @@ import {
+ import { stackBands } from '@jbrowse/core/util/bandLayout'
+ import { copyText } from '@jbrowse/core/util/copyText'
+ import { deepEqual } from '@jbrowse/core/util/deepEqual'
++import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+ import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+@@ -232,6 +233,7 @@ export default function stateModelFactory(
+         BaseDisplay,
+         TrackHeightMixin(),
+         MultiRegionDisplayMixin(),
++        LegendMixin(),
+         RowHeightMixin(),
+         TreeSidebarMixin<MafSource>(),
+         ContextMenuMixin<MafContextMenuInfo>(),
+diff --git a/plugins/maf/src/LinearMafDisplay/trackMenuItems.ts b/plugins/maf/src/LinearMafDisplay/trackMenuItems.ts
+index 57bf4afe15..84f79fb85d 100644
+--- a/plugins/maf/src/LinearMafDisplay/trackMenuItems.ts
++++ b/plugins/maf/src/LinearMafDisplay/trackMenuItems.ts
+@@ -2,6 +2,7 @@ import { lazy } from 'react'
+ 
+ import {
+   makeRadioSubMenu,
++  showLegendCheckboxItem,
+   toggleItem,
+   withHint,
+ } from '@jbrowse/core/ui/menuItems'
+@@ -25,7 +26,8 @@ import type { ConservationMode } from './conservationModes.ts'
+ import type { RowRendering } from './rowRenderings.ts'
+ import type { MafClusterSelf } from './runMafClustering.ts'
+ import type { MafSource } from './stateModel.ts'
+-import type { MenuItem } from '@jbrowse/core/ui'
++import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
++import type { Pin } from '@jbrowse/core/configuration'
+ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+ 
+ const SetRowArrangementDialog = lazy(
+@@ -63,6 +65,12 @@ const HEIGHT_PRESETS = [
+ ]
+ 
+ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
++  // The color key and the shared "Show legend" row over it — LegendMixin's
++  // three members plus the entries they decide the visibility of.
++  legendItems: LegendItem[]
++  showLegend: boolean
++  showLegendDisplayTypeDefault: Pin
++  setShowLegend: (arg: boolean) => void
+   showAllLetters: boolean
+   mismatchRendering: boolean
+   showAsUpperCase: boolean
+@@ -236,6 +244,20 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
+     ),
+     ...treeSidebarShowMenuItems(self),
+     showRowLabelsMenuItem(self),
++    // Only where a key exists to show: `bases` mode paints the reference's own
++    // base colors, which nothing decodes, so the row would toggle a legend that
++    // never draws.
++    ...(self.legendItems.length > 0
++      ? [
++          showLegendCheckboxItem(
++            self.showLegend,
++            () => {
++              self.setShowLegend(!self.showLegend)
++            },
++            { pin: self.showLegendDisplayTypeDefault },
++          ),
++        ]
++      : []),
+     toggleItem(
+       withHint(
+         'Show coverage',
