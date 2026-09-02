@@ -210,7 +210,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   // the same gate `treeSidebarOffset` reserves the gutter under, so the
   // painting and the space kept for it cannot come apart
-  if (!treeIsShowing(model) || !sources?.length) {
+  if (!treeIsShowing(model) || !sources.length) {
     // one of those is "there IS a tree, it just doesn't describe these rows any
     // more" — which needs saying rather than silently drawing nothing. Portaled
     // for the same reason the panel is: it is text in the gutter. The filter

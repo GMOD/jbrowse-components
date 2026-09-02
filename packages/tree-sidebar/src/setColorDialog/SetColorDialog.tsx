@@ -37,7 +37,7 @@ const useStyles = makeStyles()({
 // open and re-reads it after "Clear custom settings", so edits stay uncommitted
 // until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
-  editableSources?: S[]
+  editableSources: S[]
   setLayout: (s: S[]) => void
   clearLayout: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
@@ -83,7 +83,7 @@ export default observer(function SetColorDialog<
   displayControls,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const getSources = () => model.editableSources ?? []
+  const getSources = () => model.editableSources
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)

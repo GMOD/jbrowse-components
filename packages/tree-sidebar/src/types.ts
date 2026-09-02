@@ -78,7 +78,7 @@ export interface TreeSidebarModel {
   rowsTopOffset?: number
   scrollTop?: number
   showTree: boolean
-  sources?: TreeSource[]
+  sources: TreeSource[]
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
   // exactly what `buildSpatialIndex` returns, named rather than restructured:
@@ -89,8 +89,10 @@ export interface TreeSidebarModel {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
-  // optional: displays with a virtual scroll reset it when the subtree filter
-  // re-lays-out the tree, so it shows from the top instead of a stale offset
+  // Optional only because multi-wiggle's duck-typed `MultiWiggleDisplayModel`
+  // does not declare it; the mixin every host composes (TrackHeightMixin) has
+  // it. Displays with a virtual scroll reset it when the subtree filter
+  // re-lays-out the tree, so it shows from the top instead of a stale offset.
   setScrollTop?: (scrollTop: number) => void
 }
 
@@ -109,6 +111,6 @@ export interface TreeDrawingModel {
   effectiveRowHeight: number
   totalHeight?: number
   hoveredTreeNode?: HoveredTreeNode
-  sources?: TreeSource[]
+  sources: TreeSource[]
   isMinimized?: boolean
 }

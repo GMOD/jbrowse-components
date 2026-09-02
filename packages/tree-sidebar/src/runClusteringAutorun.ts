@@ -51,11 +51,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export function setupRunClusteringAutorun(
   self: IStateTreeNode & {
     runClustering?: boolean
-    // The locus the run reads from, if the session named one. Optional on the
-    // type because a display can adopt the trigger without the region.
+    // The locus the run reads from, if the session named one.
     clusterRegion?: string
     setRunClustering: (arg?: boolean) => void
-    setClusterRegion?: (arg?: string) => void
+    setClusterRegion: (arg?: string) => void
     openStatusStream: (isCurrent: () => boolean) => StatusStream
   },
   opts: {
@@ -135,7 +134,7 @@ export function setupRunClusteringAutorun(
             // both halves of the trigger, since the region is its argument: a
             // saved session must not keep a locus that no run is coming for
             self.setRunClustering(undefined)
-            self.setClusterRegion?.(undefined)
+            self.setClusterRegion(undefined)
           }
           applying = false
         }

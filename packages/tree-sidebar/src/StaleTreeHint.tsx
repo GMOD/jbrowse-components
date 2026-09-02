@@ -47,7 +47,7 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   const stale =
     showTree &&
     !!root &&
-    !!sources?.length &&
+    sources.length > 0 &&
     !model.hierarchy &&
     !treeDescribesRows(root, sources)
   return (
