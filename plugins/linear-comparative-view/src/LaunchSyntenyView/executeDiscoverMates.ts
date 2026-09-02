@@ -26,9 +26,10 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
  * turns each group into six numbers, and the CIGARs stay in the worker.
  *
  * No `lodMode`, so an indexed PIF serves its fine tier here whatever the display
- * that launched this is drawing: the coarse tier carries no CIGAR, and walking
- * the CIGAR is what puts a panel on the matching slice of its mate rather than
- * on the whole block.
+ * that launched this is drawing: walking the CIGAR is what puts a panel on the
+ * matching slice of its mate rather than on the whole block, and the coarse
+ * tier's fold only bounds that to its gap. (Serving the fold here would spare
+ * the whole-genome fine fetch a region launch makes; a perf follow-up.)
  */
 export async function executeDiscoverMates({
   pluginManager,

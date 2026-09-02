@@ -9,7 +9,7 @@ import {
   withStopTokenSignal,
 } from '@jbrowse/core/util/stopToken'
 
-import { parsePifLine } from './util.ts'
+import { parsePifHeader, parsePifLine } from './util.ts'
 
 import type { PifLine } from './util.ts'
 import type {
@@ -65,12 +65,25 @@ export class PifFile {
   })
 
   /**
-   * Whether make-pif emitted the coarse tier. It did if any seqid carries an
-   * uppercase T/Q prefix; the tier letter is always the first character, so a
-   * sample whose PanSN name itself starts with T/Q cannot false-positive (its
-   * fine seqid is `t`/`q` + that name).
+   * The `#pif` header's facts, read once: empty for a file built before the
+   * header existed.
+   */
+  meta = cachedSetup({
+    setup: async opts => parsePifHeader(await this.tabix.getHeader(opts)),
+  })
+
+  /**
+   * Whether make-pif emitted the coarse tier. The header says so when there is
+   * one; otherwise it did if any seqid carries an uppercase T/Q prefix — the
+   * tier letter is always the first character, so a sample whose PanSN name
+   * itself starts with T/Q cannot false-positive (its fine seqid is `t`/`q` +
+   * that name).
    */
   async hasCoarseTier(opts?: BaseOptions) {
+    const { tiers } = await this.meta(opts)
+    if (tiers !== undefined) {
+      return tiers.includes('coarse')
+    }
     const names = await this.refSeqNames(opts)
     return names.some(n => n.startsWith('T') || n.startsWith('Q'))
   }

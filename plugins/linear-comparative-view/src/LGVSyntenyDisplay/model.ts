@@ -85,7 +85,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            * #property
            * Level-of-detail tier selection for tiered PIF adapters. 'auto' uses
            * the adapter's bpPerPx threshold; 'fine' pins the per-row CIGAR tier
-           * (t/q); 'coarse' the no-CIGAR tier (T/Q). Matches the synteny view and
+           * (t/q); 'coarse' the tier whose CIGAR is folded to its large
+           * indels (T/Q). Matches the synteny view and
            * dotplot setting of the same name — this display draws the same tracks
            * and had no way to pin a tier.
            */

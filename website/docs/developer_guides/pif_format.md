@@ -84,6 +84,26 @@ identical.
 For the most accurate identity, run minimap2 with `--eqx` so the CIGAR
 distinguishes matches (`=`) from mismatches (`X`).
 
+### Header line
+
+`make-pif` writes one meta line, which the C-locale sort puts first and tabix
+keeps as a header (`tabix -H file.pif.gz` prints it):
+
+```
+#pif	version:i:1	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
+```
+
+- `version`: the format generation
+- `tiers`: `fine` or `fine,coarse`, so a reader need not scan the contig list to
+  know whether the coarse tier exists
+- `coarse`: the coarse tier's accuracy bound in bp, the `--coarse` it was built
+  with; absent when there is no coarse tier
+- `cigars`: whether every input row carried a CIGAR (`all`), none did (`none`),
+  or some (`some`)
+
+Files built before the header existed have none, and readers treat every field
+as optional.
+
 ### Tabix index parameters
 
 The file is sorted, bgzipped, and indexed with:
@@ -176,7 +196,18 @@ zoom the tier is served automatically.
 The tag is also omitted when the row has no CIGAR, and when the CIGAR does not
 close on the row's own coordinate columns (clipping ops, a hand-written `cg`, a
 `cs` whose spans don't add up): the columns are what the fine tier draws, so the
-coarse row must not say anything the walk reconstructed.
+coarse row must not say anything the walk reconstructed. In a file whose header
+states a bound and `cigars:Z:all`, a coarse row without the tag is therefore
+exactly one run, and readers treat it as `<own>:<mate>M` over its columns, so it
+walks, flips and clips like any fold.
+
+The grammar, precisely: the alphabet is `M`, `I`, `D` and `N` plus the run form,
+lengths are non-negative integers, and a run never has a zero side (the writer
+spells such a run as the `I` or `D` it is). A reader also accepts `=` and `X` as
+`M` and ignores `S`, `H` and `P`, which the writer never emits. On the Q row `N`
+keeps the row's own axis, as it does in the fine tier's `cg`. `--coarse` must be
+a positive number of bp: a coarse tier without a bound would be
+indistinguishable from one whose rows all folded to a single run.
 
 ```bash
 # coarse tier is on by default: runs within 10kb of the alignment, indels over 5kb kept
@@ -185,8 +216,7 @@ jbrowse make-pif input.paf
 # a tighter coarse tier: runs within 1kb, indels over 500bp kept
 jbrowse make-pif input.paf --coarse 1000
 
-# coarse rows with no alignment string at all
-jbrowse make-pif input.paf --coarse 0
+
 
 # disable the coarse tier (fine t/q tier only)
 jbrowse make-pif input.paf --no-coarse
@@ -198,8 +228,12 @@ at or above the `--coarse` gap you built with. Below it, the coarse tier is
 served at zooms where the indels it folded away are wide enough to see.
 
 PIF files built before the coarse CIGAR existed still load. Their coarse rows
-were instead split into pieces at large indels and carry no alignment string, so
-they draw as plain ribbons; rebuild with `make-pif` to get the wedges.
+were instead split into pieces at large indels and carry no alignment string,
+and they have no header, so they draw as plain ribbons and nothing walks them;
+rebuild with `make-pif` to get the wedges. The other way round, a JBrowse older
+than the coarse CIGAR reads a new file too: it shows `cr` as a plain attribute
+and draws every coarse row as one straight ribbon, so a site that must serve
+such clients should build with `--no-coarse`.
 
 ### Optional preprocessing with rustybam
 

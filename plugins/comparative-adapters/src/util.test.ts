@@ -1,6 +1,10 @@
 import {
+  coarseRowsAreBounded,
+  makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   parseBed,
+  parsePifHeader,
+  parsePifLine,
   resolveCoarseTier,
   restatementContext,
 } from './util.ts'
@@ -432,5 +436,56 @@ describe('restatementContext', () => {
   // contig start cannot reach below it and the answer needs no clamp
   test('a row at the contig start reaches back inside the contig', () => {
     expect(restatementContext([side(0, 10_000)], 9500, 10_000).start).toBe(9000)
+  })
+})
+
+describe('the #pif header', () => {
+  test('parses the fields make-pif writes, and reads nothing from no header', () => {
+    expect(
+      parsePifHeader(
+        '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:all\n',
+      ),
+    ).toEqual({
+      version: 1,
+      tiers: ['fine', 'coarse'],
+      coarseGap: 10000,
+      cigars: 'all',
+    })
+    expect(parsePifHeader('')).toEqual({})
+  })
+
+  test('coarse rows are bounded only with a bound and a CIGAR on every row', () => {
+    expect(coarseRowsAreBounded({ coarseGap: 10000, cigars: 'all' })).toBe(true)
+    expect(coarseRowsAreBounded({ coarseGap: 10000, cigars: 'some' })).toBe(
+      false,
+    )
+    expect(coarseRowsAreBounded({ cigars: 'all' })).toBe(false)
+    expect(coarseRowsAreBounded({})).toBe(false)
+  })
+})
+
+// A coarse row of a bounded file that carries no fold is the single run its
+// columns describe, so it walks, flips and clips like any fold; a fine row and
+// an unbounded file's coarse row get nothing implied.
+describe('the implied fold of a tagless coarse row', () => {
+  const row = (prefix: string) =>
+    parsePifLine(
+      `${prefix}chr1\t1000\t0\t500\t+\tq1\t1000\t0\t450\t400\t500\t60\tde:f:0.1`,
+    )
+  const feature = (prefix: string, boundedCoarseRows: boolean) =>
+    makeIndexedSyntenyFeature({
+      line: row(prefix),
+      fileOffset: 1,
+      assemblyName: 'a',
+      refName: 'chr1',
+      boundedCoarseRows,
+      mate: { start: 0, end: 450, refName: 'q1', assemblyName: 'b' },
+    })
+  test('implied for a coarse row of a bounded file', () => {
+    expect(feature('T', true).get('coarseCigar')).toBe('500:450M')
+  })
+  test('not for a fine row, nor without the bound', () => {
+    expect(feature('t', true).get('coarseCigar')).toBeUndefined()
+    expect(feature('T', false).get('coarseCigar')).toBeUndefined()
   })
 })

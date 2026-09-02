@@ -614,6 +614,52 @@ export function parsePifLine(line: string) {
 export type PifLine = ReturnType<typeof parsePifLine>
 
 /**
+ * What a PIF's `#pif` header line states (make-pif writes it since the coarse
+ * CIGAR, ADR-104): the format generation, the tiers written, the coarse tier's
+ * accuracy bound in bp, and whether every input row carried a CIGAR. Every
+ * field is optional because a file built before the header has none.
+ */
+export interface PifMeta {
+  version?: number
+  tiers?: string[]
+  coarseGap?: number
+  cigars?: 'all' | 'some' | 'none'
+}
+
+export function parsePifHeader(header: string): PifMeta {
+  const meta: PifMeta = {}
+  const line = header.split('\n').find(l => l.startsWith('#pif'))
+  for (const field of line === undefined ? [] : line.split('\t').slice(1)) {
+    const m = /^([a-z]+):[A-Za-z]:(.*)$/.exec(field)
+    const key = m?.[1]
+    const value = m?.[2]
+    if (key === 'version' && value !== undefined) {
+      meta.version = +value
+    } else if (key === 'tiers' && value !== undefined) {
+      meta.tiers = value.split(',')
+    } else if (key === 'coarse' && value !== undefined) {
+      meta.coarseGap = +value
+    } else if (
+      key === 'cigars' &&
+      (value === 'all' || value === 'some' || value === 'none')
+    ) {
+      meta.cigars = value
+    }
+  }
+  return meta
+}
+
+/**
+ * Whether a coarse row of this file that carries no `cr:Z:` fold is a single
+ * run within the file's bound — true only when the file states a bound and
+ * every input row had a CIGAR. A file without a header (the split format), or
+ * one whose rows had nothing to fold, makes no such promise.
+ */
+export function coarseRowsAreBounded(meta: PifMeta) {
+  return meta.coarseGap !== undefined && meta.cigars === 'all'
+}
+
+/**
  * Whether an all-vs-all row is a degenerate self-diagonal: the SAME sequence
  * aligned to itself at the same coordinates, which minimap2 emits once per
  * sequence unless run with `-X`. Dropped from both of its sides.
@@ -971,8 +1017,8 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
   return duplicate
 }
 
-// The coarse (uppercase T/Q) tier is a no-CIGAR summary served when zoomed out;
-// the fine (lowercase t/q) tier carries per-row CIGARs. A file only has the
+// The coarse (uppercase T/Q) tier folds each CIGAR to its large indels and is
+// served when zoomed out; the fine (lowercase t/q) tier carries per-row CIGARs. A file only has the
 // coarse tier if make-pif emitted it, so a request for 'coarse' still falls back
 // to fine when the tier is absent — the alternative would be returning no data.
 //
@@ -1038,15 +1084,29 @@ export function makeIndexedSyntenyFeature({
   assemblyName,
   refName,
   mate,
+  boundedCoarseRows = false,
 }: {
   line: ReturnType<typeof parsePifLine>
   fileOffset: number
   assemblyName: string
   refName: string
   mate: { start: number; end: number; refName: string; assemblyName: string }
+  // `coarseRowsAreBounded` of the file: a coarse row with no fold then gets
+  // the single run its columns describe, so it walks and flips like any fold
+  boundedCoarseRows?: boolean
 }) {
-  const { extra, strand, indexedStart, indexedEnd } = line
+  const { extra, strand, indexedStart, indexedEnd, indexedName } = line
   const { numMatches = 0, blockLen = 1, cg, cs, cr } = extra
+  const tierLetter = indexedName[0]
+  const coarseRow = tierLetter === 'T' || tierLetter === 'Q'
+  const own = indexedEnd - indexedStart
+  const mateLen = mate.end - mate.start
+  const impliedFold =
+    boundedCoarseRows && coarseRow
+      ? own === mateLen
+        ? `${own}M`
+        : `${own}:${mateLen}M`
+      : undefined
   // a PIF row's tags are untyped strings/numbers, so the alignment tags are
   // narrowed rather than assumed to be strings
   const CIGAR =
@@ -1066,7 +1126,7 @@ export function makeIndexedSyntenyFeature({
     CIGAR,
     cs: typeof cs === 'string' ? cs : undefined,
     // the coarse tier's fold of the CIGAR: runs and the gaps make-pif kept
-    coarseCigar: typeof cr === 'string' ? cr : undefined,
+    coarseCigar: typeof cr === 'string' ? cr : impliedFold,
     syntenyId: fileOffset,
     identity: pafIdentity(extra),
     numMatches,

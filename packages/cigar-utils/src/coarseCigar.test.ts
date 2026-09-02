@@ -82,6 +82,19 @@ describe('coarsenCigar', () => {
   })
 })
 
+describe('one-sided runs and the reader alphabet', () => {
+  test('a run with nothing on one side is written as the indel it is', () => {
+    expect(coarsenCigar('6000D4000I6000D', 10000).ops).toBe('6000D4000I6000D')
+    expect(coarsenCigar('3000I6000D100M', 10000).ops).toBe('3000I6000D100M')
+    // two folded deletions with no match between them are one deletion
+    expect(coarsenCigar('3000D2000D6000I', 10000).ops).toBe('5000D6000I')
+  })
+
+  test('the reader takes = and X as M and steps over clips', () => {
+    expect(words('10=5X3S2H')).toEqual([pack(10, CIGAR_M), pack(5, CIGAR_M)])
+  })
+})
+
 describe('coarseCigarOwnAxis', () => {
   test('keeps own lengths and kept indels, and names a one-sided run', () => {
     expect(coarseCigarOwnAxis('100:90M5000D100M0:30M40:0M7N')).toBe(

@@ -41,7 +41,29 @@ export interface PifStats {
   // at the moment the file is built, which is the only moment anyone is looking.
   pairs: Set<string>
   rows: number
+  // rows that carried an alignment string (cg or cs), which the header reports
+  // so a reader knows whether a coarse row without a fold is a bounded single
+  // run or an alignment nothing could fold
+  cigarRows: number
   skipped: number
+}
+
+/**
+ * The one meta line a PIF carries, sorted first by the C-locale sort and kept
+ * by tabix as a header. It states the format generation, the tiers written,
+ * the coarse tier's accuracy bound (`--coarse`), and whether every input row
+ * had a CIGAR — the facts a reader cannot recover from the rows.
+ */
+export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
+  const cigars =
+    stats.cigarRows === stats.rows
+      ? 'all'
+      : stats.cigarRows === 0
+        ? 'none'
+        : 'some'
+  const tiers = coarseGap === undefined ? 'fine' : 'fine,coarse'
+  const bound = coarseGap === undefined ? '' : `\tcoarse:i:${coarseGap}`
+  return `#pif\tversion:i:1\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
 }
 
 function panSNSample(refName: string) {
@@ -102,9 +124,7 @@ function coarseCigarTag({
   mateLen: number
 }) {
   const coarse =
-    cigar === undefined || coarseGap === 0
-      ? undefined
-      : coarsenCigar(cigar, coarseGap)
+    cigar === undefined ? undefined : coarsenCigar(cigar, coarseGap)
   return coarse !== undefined &&
     (coarse.gapCount > 0 || coarse.opCount > 1) &&
     coarse.ownLen === ownLen &&
@@ -195,8 +215,16 @@ function processLine(
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   addPanSNPair(stats, c1!, c2!)
 
-  const { tags, cigarIdx } = foldCsIntoCg(rest)
+  // an incoming cr:Z: (a PIF turned back into PAF, or a tool that adopted the
+  // tag) is dropped from both tiers: the fine tier never carries one, and the
+  // coarse tier writes its own below
+  const { tags, cigarIdx } = foldCsIntoCg(
+    rest.filter(f => !f.startsWith('cr:Z:')),
+  )
   const cigar = cigarIdx === -1 ? undefined : tags[cigarIdx]!.slice(5)
+  if (cigar !== undefined) {
+    stats.cigarRows++
+  }
 
   // the t-row keeps the CIGAR as PAF spelled it (target perspective); the q-row
   // re-orients it for the query perspective it is indexed under
@@ -279,7 +307,14 @@ function makePifTransform(
       )
     },
     flush(callback) {
-      callback(null, tail ? processLine(tail, coarseGap, stats) : '')
+      // the header goes out last and sorts first: the counts it states are
+      // only known once every row has been seen, and `#` precedes every tier
+      // letter in the C locale
+      callback(
+        null,
+        (tail ? processLine(tail, coarseGap, stats) : '') +
+          pifHeader(coarseGap, stats),
+      )
     },
   })
 }
@@ -296,6 +331,7 @@ export async function createPIF(
     samples: new Set(),
     pairs: new Set(),
     rows: 0,
+    cigarRows: 0,
     skipped: 0,
   }
   const transform = makePifTransform(coarseGap, stats)

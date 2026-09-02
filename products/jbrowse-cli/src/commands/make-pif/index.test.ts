@@ -424,15 +424,54 @@ test('a lopsided cluster of small indels is written as several runs', async () =
   })
 })
 
-test('--coarse 0 writes coarse rows with no alignment string', async () => {
+test('--coarse 0 is rejected: a coarse tier always has a bound', async () => {
   await runInTmpDir(async () => {
-    const lines = await pifLines(pafRow(['cg:Z:40M1000D40M'], { 8: '1080' }), [
+    const { error } = await runCommand([
+      'make-pif',
+      simplePaf,
+      '--out',
+      'o.pif.gz',
       '--coarse',
       '0',
     ])
+    expect(error?.message).toMatch('Invalid --coarse')
+  })
+})
+
+test('the header line sorts first and states the tiers, the bound and the CIGAR census', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(pafRow(['cg:Z:100M']), ['--coarse', '500'])
+    expect(lines[0]).toBe(
+      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all',
+    )
+    expect(lines.filter(l => l.startsWith('#'))).toHaveLength(1)
+  })
+})
+
+test('a fine-only file says so in its header, and a CIGAR-less one too', async () => {
+  await runInTmpDir(async () => {
+    const fineOnly = await pifLines(pafRow(['cg:Z:100M']), ['--no-coarse'])
+    expect(fineOnly[0]).toBe('#pif\tversion:i:1\ttiers:Z:fine\tcigars:Z:all')
+    const noCigar = await pifLines(pafRow(['tp:A:P']))
+    expect(noCigar[0]).toBe(
+      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none',
+    )
+  })
+})
+
+test('an incoming cr:Z: is dropped from both tiers', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      pafRow(['cr:Z:40M1000I40M', 'cg:Z:40M1000D40M'], { 3: '80', 8: '1080' }),
+      ['--coarse', '500'],
+    )
+    for (const l of lines.filter(l => /^[tq]/.test(l))) {
+      expect(l).not.toContain('cr:Z:')
+    }
     const coarseT = lines.find(l => l.startsWith('T'))!
-    expect(coarseT).not.toContain('cr:Z:')
-    expect(coarseT).not.toContain('cg:Z:')
+    expect(coarseT.split('\t').filter(f => f.startsWith('cr:Z:'))).toEqual([
+      'cr:Z:40M1000D40M',
+    ])
   })
 })
 

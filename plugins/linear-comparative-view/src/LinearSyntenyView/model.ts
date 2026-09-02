@@ -178,7 +178,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * Level-of-detail tier selection for PIF adapters. 'auto' uses the
          * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
-         * (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present.
+         * (t/q); 'coarse' forces the tier whose CIGAR is folded to its large
+         * indels (T/Q) when present.
          */
         lodMode: types.stripDefault(
           types.enumeration('LodMode', ['auto', 'fine', 'coarse']),

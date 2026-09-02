@@ -3,7 +3,11 @@ import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { PairwiseAdapterBase } from '../PairwiseAdapterBase.ts'
 import { PifFile } from '../PifFile.ts'
-import { makeIndexedSyntenyFeature, resolveCoarseTier } from '../util.ts'
+import {
+  coarseRowsAreBounded,
+  makeIndexedSyntenyFeature,
+  resolveCoarseTier,
+} from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -12,9 +16,10 @@ import type { Region } from '@jbrowse/core/util/types'
 
 // PIF indexes each line by perspective: a 'q' prefix means indexed by query
 // coordinates (drawn when viewing the query), 't' means indexed by target
-// coordinates. Uppercase T/Q are the optional coarse no-CIGAR tier (see
-// resolveCoarseTier). pickPifPrefix chooses the perspective letter for the fine
-// tier and upper-cases it when the coarse tier should be served.
+// coordinates. Uppercase T/Q are the optional coarse tier, whose CIGAR is
+// folded to its large indels (see resolveCoarseTier). pickPifPrefix chooses the
+// perspective letter for the fine tier and upper-cases it when the coarse tier
+// should be served.
 export function pickPifPrefix({
   flip,
   hasCoarseTier,
@@ -68,6 +73,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
       }
 
       const hasCoarseTier = await this.pif.hasCoarseTier(opts)
+      const boundedCoarseRows = coarseRowsAreBounded(await this.pif.meta(opts))
       const stopTokenCheck = createStopTokenChecker(stopToken)
       const notYetEmitted = this.createSideDedupe(sides)
 
@@ -110,6 +116,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
                   line: parsed,
                   fileOffset,
                   assemblyName,
+                  boundedCoarseRows,
                   refName: parsed.indexedRefName,
                   mate: {
                     start: parsed.mateStart,

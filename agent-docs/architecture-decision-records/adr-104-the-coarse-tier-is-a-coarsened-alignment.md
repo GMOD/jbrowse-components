@@ -65,6 +65,17 @@ only had to store that.
   the columns — the columns are what the fine tier draws. A fold of several
   runs with no kept indel IS written: a lopsided cluster of sub-gap indels
   bends the path by their sum, which a straight ribbon would miss.
+- **A `#pif` header line** states `version`, `tiers`, `coarse` (the bound) and
+  `cigars` (all/some/none). Written last and sorted first, kept by tabix as a
+  header, invisible to older readers. It is what makes a tagless coarse row
+  readable as one run within the bound: readers imply `<own>:<mate>M` for it
+  when the file states a bound and every row had a CIGAR
+  (`coarseRowsAreBounded`), so `hasCigar` and the walks no longer flip with
+  the tier on short-block files where few rows earn a tag. `--coarse 0` is
+  gone for the same reason: a coarse tier always has a bound.
+- **The alphabet is pinned** to `M I D N` plus the run; a run never has a zero
+  side (the writer spells it as the indel it is); a reader takes `=`/`X` as M
+  and skips clips; an incoming `cr` is stripped from both tiers.
 - **In the packed CIGAR a run is `CIGAR_RUN`**, a two-word op (own length, then
   mate length) that `visitCigarRenderedSegments` walks and reports as `CIGAR_M`,
   and that `clipSyntenyFeature` trims with the mate in proportion. Both workers
@@ -122,7 +133,10 @@ read directly, its pairs translate to `cr` runs one for one.
   (`clipLargeBlockToWindow`) takes the fold, `buildCigarMap` puts a point at
   both ends of a leaning run, and the LGV synteny track derives its indel
   mismatches from the fold along the row's own axis (`coarseCigarOwnAxis`) —
-  four gaps a Fable review found in the first cut.
+  four gaps a Fable review found in the first cut. A second review, on format
+  stability, added the header, the positive-only `--coarse`, the one-sided-run
+  rule and the incoming-tag filter before hosted files are rebuilt, and named
+  the min-version note in `HOSTING.md`.
 - The synthetic measurement in `measurements/pif-coarse-tier-bytes.json` was
   taken on the split format; a coarse row now costs the tag on rows with a kept
   gap and nothing on the rest.

@@ -47,11 +47,12 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     /**
      * #slot
      * bpPerPx threshold at which a view on "Level of detail: automatic" switches
-     * from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR
-     * tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. No
-     * coarse tier present in the file = always uses the fine tier. Should be at
-     * least make-pif's `--coarse` gap: below it, coarse ribbons are drawn
-     * straight across indels wide enough to see.
+     * from the per-row CIGAR tier (lowercase t/q prefix) to the coarse tier
+     * (uppercase T/Q prefix), whose CIGAR is folded to its large indels, when
+     * make-pif wrote one. No coarse tier present in the file = always uses the
+     * fine tier. Should be at least make-pif's `--coarse` bound: below it, the
+     * coarse tier is served at zooms where the indels it folded away are wide
+     * enough to see.
      */
     coarseBpPerPxThreshold: {
       type: 'number',

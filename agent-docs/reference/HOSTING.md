@@ -119,10 +119,13 @@ no download. Audited 2026-08-02:
 | `ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz` | no |
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no |
 
-- **Every file above predates the coarse CIGAR.** Since 2026-09-02 `make-pif`
-  writes a `cr:Z:` tag on a coarse row (ADR-104) so the indels it keeps draw as
-  wedges; these files' coarse rows are the older split pieces with no alignment
-  string and draw as plain ribbons. A rebuild is what adds it.
+- **Every file above predates the coarse CIGAR and the `#pif` header.** Since
+  2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
+  indels it keeps draw as wedges, and a header stating the bound; these files'
+  coarse rows are the older split pieces with no alignment string and draw as
+  plain ribbons. One rebuild adds both. A JBrowse older than that date draws a
+  rebuilt file's coarse rows as single straight ribbons, so a hub that must
+  serve such clients builds with `--no-coarse`.
 - **The coarse tier can never engage for a bacterial genome.** It serves only
   past `coarseBpPerPxThreshold` (default 10000 bp/px); E. coli's 4.6Mb across
   1500px is ~3.2 kb/px. Demonstrating it needs a eukaryote-scale PIF.

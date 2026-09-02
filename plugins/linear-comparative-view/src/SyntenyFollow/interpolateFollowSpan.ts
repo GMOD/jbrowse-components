@@ -8,10 +8,11 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * its ends rather than off the far side of the mate.
  *
  * THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, unlike the
- * click-driven move, which refuses (`resolveAlignmentSpan`). A PIF's coarse
- * tier is CIGAR-less by construction and serves whole-genome zoom, so refusing
- * would make the mode work zoomed in and silently stop working zoomed out. The
- * skew is not bounded by the tier's 10kb indel split threshold, so a caller
+ * click-driven move, which refuses (`resolveAlignmentSpan`). A block with
+ * nothing to walk — a CIGAR-less PAF, or a coarse tier built before the fold
+ * existed — still serves whole-genome zoom, so refusing would make the mode
+ * work zoomed in and silently stop working zoomed out. Nothing bounds the skew
+ * across such a block, so a caller
  * that can say the answer is approximate should.
  */
 export function interpolateFollowSpan({

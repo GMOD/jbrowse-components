@@ -33,7 +33,7 @@ export async function run(args?: string[]) {
     coarse: {
       type: 'string',
       description:
-        'Accuracy bound (bp) of the coarse tier. A coarse row replaces its CIGAR with a coarse CIGAR (cr:Z:) that keeps every indel longer than half this length and folds the rest into runs, each run staying within this many bp of the real alignment; 0 writes coarse rows with no alignment string. Defaults to 10000. The coarse tier (prefix T/Q) is emitted alongside the per-row CIGAR fine tier by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
+        'Accuracy bound (bp) of the coarse tier. A coarse row replaces its CIGAR with a coarse CIGAR (cr:Z:) that keeps every indel longer than half this length and folds the rest into runs, each run staying within this many bp of the real alignment. Defaults to 10000. The coarse tier (prefix T/Q) is emitted alongside the per-row CIGAR fine tier by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
     },
     'no-coarse': {
       type: 'boolean',
@@ -66,9 +66,6 @@ export async function run(args?: string[]) {
     '',
     '# a looser coarse tier: runs within 50kb of the alignment, indels over 25kb kept',
     '$ jbrowse make-pif input.paf --coarse 50000',
-    '',
-    '# emit a coarse tier with no alignment strings at all',
-    '$ jbrowse make-pif input.paf --coarse 0',
     '',
     '# emit only the per-row CIGAR fine tier, skipping the coarse tier',
     '$ jbrowse make-pif input.paf --no-coarse',
@@ -116,11 +113,15 @@ export async function run(args?: string[]) {
     : coarse === undefined
       ? DEFAULT_COARSE_GAP
       : +coarse
+  // positive, never 0: a coarse row without a fold means "one run within the
+  // bound", and a tier with no bound would be indistinguishable from one
   if (
     coarseGap !== undefined &&
-    (!Number.isFinite(coarseGap) || coarseGap < 0)
+    (!Number.isFinite(coarseGap) || coarseGap <= 0)
   ) {
-    throw new Error(`Invalid --coarse value: ${coarse}`)
+    throw new Error(
+      `Invalid --coarse value: ${coarse} (must be a positive number of bp)`,
+    )
   }
 
   const bgzipThreads = threads === undefined ? DEFAULT_BGZIP_THREADS : +threads

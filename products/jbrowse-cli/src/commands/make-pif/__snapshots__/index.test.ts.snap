@@ -1,7 +1,8 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`make-pif 1`] = `
-"QctgA	49186	3	1851	+	ctgA	50001	0	1859	1633	2044	60	NM:i:411	ms:i:2207	AS:i:1899	nn:i:0	tp:A:P	cm:i:87	s1:i:696	s2:i:212	zd:i:1	rl:i:0	de:f:0.0908
+"#pif	version:i:1	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
+QctgA	49186	3	1851	+	ctgA	50001	0	1859	1633	2044	60	NM:i:411	ms:i:2207	AS:i:1899	nn:i:0	tp:A:P	cm:i:87	s1:i:696	s2:i:212	zd:i:1	rl:i:0	de:f:0.0908
 QctgA	49186	1860	2214	-	ctgA	50001	1859	2192	321	366	60	NM:i:45	ms:i:501	AS:i:468	nn:i:0	tp:A:I	cm:i:0	s1:i:0	s2:i:0	rl:i:0	de:f:0.0614
 QctgA	49186	2214	15925	+	ctgA	50001	2212	16198	12504	15030	60	NM:i:2526	ms:i:17647	AS:i:15934	nn:i:0	tp:A:P	cm:i:637	s1:i:5099	s2:i:212	zd:i:3	rl:i:0	de:f:0.0837
 QctgA	49186	16409	18309	+	ctgA	50001	16650	18559	1708	2080	60	NM:i:372	ms:i:2437	AS:i:2143	nn:i:0	tp:A:P	cm:i:95	s1:i:761	s2:i:212	zd:i:3	rl:i:0	de:f:0.0792

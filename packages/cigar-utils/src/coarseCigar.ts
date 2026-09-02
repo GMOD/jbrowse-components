@@ -42,9 +42,18 @@ export function coarsenCigar(cigar: string, gap: number): CoarsenedCigar {
   let opCount = 0
   let runOwn = 0
   let runMate = 0
+  // a run with nothing on one side is the indel it amounts to, and is written
+  // as one, so a reader never meets a zero-sided run
   const flushRun = () => {
     if (runOwn > 0 || runMate > 0) {
-      ops += runOwn === runMate ? `${runOwn}M` : `${runOwn}:${runMate}M`
+      ops +=
+        runOwn === runMate
+          ? `${runOwn}M`
+          : runOwn === 0
+            ? `${runMate}I`
+            : runMate === 0
+              ? `${runOwn}D`
+              : `${runOwn}:${runMate}M`
       opCount++
       runOwn = 0
       runMate = 0
@@ -115,16 +124,18 @@ function parseCoarseOps(s: string) {
       ownBeforeColon = len
       len = 0
     } else {
+      // the alphabet is M I D N plus the run; a reader also takes =/X as M and
+      // steps over clips and padding, which a writer never emits
       const op = s[i]!
-      if (op === 'M') {
+      if (op === 'M' || op === '=' || op === 'X') {
         out.push({
           own: ownBeforeColon === undefined ? len : ownBeforeColon,
           mate: len,
-          op,
+          op: 'M',
         })
       } else if (op === 'I') {
         out.push({ own: 0, mate: len, op })
-      } else {
+      } else if (op === 'D' || op === 'N') {
         out.push({ own: len, mate: 0, op })
       }
       ownBeforeColon = undefined
