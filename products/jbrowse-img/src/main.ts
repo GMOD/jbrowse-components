@@ -13,6 +13,7 @@ import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
   batchDroppedOptions,
+  batchOptionNames,
   buildBatchHelp,
   buildHelp,
   comparativeOptionNames,
@@ -86,6 +87,18 @@ async function main() {
     for (const key of Object.keys(rest)) {
       if (!knownOptions.has(key)) {
         console.warn(`Warning: unknown option "--${key}"`)
+      }
+    }
+
+    if (first !== 'batch') {
+      const batchOnly = batchOptionNames.filter(name => name in rest)
+      if (batchOnly.length) {
+        const hint = batchOnly.includes('vcf')
+          ? ' (a variant TRACK is --vcfgz; batch --vcf names a junction file)'
+          : ''
+        console.warn(
+          `Warning: ${batchOnly.map(name => `--${name}`).join(', ')} ${batchOnly.length > 1 ? 'have' : 'has'} no effect without the batch subcommand${hint}`,
+        )
       }
     }
 

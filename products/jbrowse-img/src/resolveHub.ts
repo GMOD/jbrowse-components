@@ -1,5 +1,5 @@
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
-import { hubUrl } from '@jbrowse/core/util/fetchHub'
+import { fetchHub } from '@jbrowse/core/util/fetchHub'
 
 import type { Config } from './types.ts'
 
@@ -7,33 +7,31 @@ import type { Config } from './types.ts'
 // assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
 // its full track set, all as remote URIs. `--hub` pulls one of these so a user
 // gets cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases.
-// The token -> URL mapping is core's (shared with the embedded mounts).
+// The fetch is core's fetchHub (shared with the embedded mounts), which also
+// stamps each relative URI with the config URL as baseUri.
 
 function isUrl(str: string) {
   return /^https?:\/\//i.test(str)
 }
 
-// Fetch a config.json and inject it as an object. `hint` is appended to a fetch
-// failure only for --hub (a bad UCSC db/GenArk token), not a --config URL (an
-// arbitrary hosted config, for which an "available assemblies" pointer would be
-// nonsense).
-async function fetchConfig(url: string, context: string, hint = '') {
+// Fetch a --config that is itself a URL. Same baseUri stamping as fetchHub:
+// jbrowse-web resolves relative URIs because it loads the config from a URL;
+// here the config is injected as an object, so resolveUriLocation needs the
+// baseUri written on each location.
+async function fetchConfig(url: string) {
   const res = await fetch(url)
   if (!res.ok) {
-    throw new Error(`${context}: HTTP ${res.status} from ${url}.${hint}`)
+    throw new Error(
+      `Failed to fetch --config "${url}": HTTP ${res.status} from ${url}.`,
+    )
   }
   const config = (await res.json()) as Config
-  // Hosted configs (e.g. jb2hubs gene tracks) reference data with URIs relative
-  // to the config's own location. jbrowse-web resolves these because it loads
-  // the config from a URL; here the config is fetched and injected as an object,
-  // so stamp each UriLocation with the config URL as baseUri (the same pass
-  // jbrowse-web runs) for later resolveUriLocation to resolve against.
   addRelativeUris(config, new URL(url))
   return config
 }
 
 // Fetch the config object when it must come off the network: a --hub token
-// (resolved to its genomes.jbrowse.org URL) or a --config that is itself a URL.
+// (resolved to its jbrowse.org URL) or a --config that is itself a URL.
 // Returns undefined when neither applies, so readData falls back to its local
 // --config file read.
 export async function resolveConfigObject({
@@ -44,14 +42,12 @@ export async function resolveConfigObject({
   config?: string
 }) {
   if (hub) {
-    return fetchConfig(
-      hubUrl(hub),
-      `Failed to fetch --hub "${hub}"`,
-      ' See https://genomes.jbrowse.org for available assemblies.',
-    )
+    // the same open-record force the --config read applies: `assembly` is
+    // filled in by readData, which is the only consumer
+    return (await fetchHub(hub)) as unknown as Config
   }
   if (config && isUrl(config)) {
-    return fetchConfig(config, `Failed to fetch --config "${config}"`)
+    return fetchConfig(config)
   }
   return undefined
 }

@@ -48,17 +48,16 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-app2": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
-    "@types/jsdom": "^30.0.0",
     "canvas": "^3.2.3",
     "jsdom": "^30.0.1",
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "tmp": "^0.2.7"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@jbrowse/plugin-alignments": "workspace:^",
+    "@types/jsdom": "^30.0.0",
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",

@@ -540,6 +540,12 @@ export const batchOptionDefs: OptionDef[] = [
   },
 ]
 
+// Exposed so the CLI can warn when a batch-only flag is passed without the
+// batch subcommand: every one is in knownOptions, so without this a
+// `--vcf calls.vcf` meant as `--vcfgz` (or as `batch --vcf`) passed the
+// unknown-option check and then rendered nothing from the file, silently.
+export const batchOptionNames = batchOptionDefs.map(o => o.name)
+
 // Options a batch run cannot honor, in the two kinds it has of not honoring
 // them. Neither appears in `batch --help`, which used to list every one.
 //
