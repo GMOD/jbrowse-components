@@ -41,14 +41,9 @@ Liftoff v0.6 gene models built on v1.1.
 
 ## Loading the assembly and the alignment
 
-The Q100 project serves both the assembly and the alignment between the
-haplotypes, and JBrowse reads each from its published URL, so there is nothing
-to download.
-
-We'll start by loading the assembly, one entry under `assemblies`. A name and
-the FASTA URL are everything it carries, since JBrowse picks the adapter from
-the file extension and reads the `.fai` and `.gzi` sitting beside it. The tabs
-below are the three ways to apply it.
+JBrowse reads the assembly and the chain from their published URLs, so there is
+nothing to download. The assembly is a name and the FASTA URL; the adapter comes
+from the extension and the `.fai` and `.gzi` sit beside it.
 
 ```json addassembly
 {
@@ -58,9 +53,8 @@ below are the three ways to apply it.
 }
 ```
 
-Next comes the alignment, a synteny track over the Q100 project's own chain.
-Both of its endpoints are the same assembly, since the two haplotypes are
-contigs of one:
+The alignment is a synteny track over the Q100 chain. Both endpoints are the
+same assembly, since the two haplotypes are contigs of one:
 
 ```json addtrack
 {
@@ -79,19 +73,13 @@ contigs of one:
 
 ## The whole genome first
 
-With those two in place, a dotplot shows whether anything moved between
-chromosomes.
+A dotplot shows whether anything moved between chromosomes. Open **Add → Dotplot
+view**. Both axes read `T2T-HG002 v1.2 (diploid)`, and an axis set to it carries
+both haplotypes interleaved.
 
-Open **Add → Dotplot view**. Both axis dropdowns already read
-`T2T-HG002 v1.2 (diploid)`, the only assembly here, and an axis set to it
-carries both haplotypes, so every maternal and paternal contig lands on both
-axes, interleaved.
-
-Switch to **Manual** and tick **Plot only certain chromosomes**, which puts a
-box beside each assembly. Each takes a comma-separated list of contig names,
-where `*` matches any characters, so `*_MATERNAL` on the X axis and `*_PATERNAL`
-on the Y axis give one haplotype per axis. An empty box takes the whole
-assembly.
+Switch to **Manual** and tick **Plot only certain chromosomes**. Each box takes
+a comma-separated list of contig names with `*` as a wildcard, so `*_MATERNAL`
+on the X axis and `*_PATERNAL` on the Y axis give one haplotype per axis.
 
 <Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
 
@@ -107,12 +95,9 @@ haplotype to chain to, and their column and row stay empty.
 
 ## The 8p23.1 inversion
 
-Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
-heterozygous for (Bosch _et al._ 2009), so the two haplotypes of one person
-differ there at a scale a whole-chromosome view can show. Open **Add → Linear
-synteny view**. The form opens on **Quick start**, which offers the two rows the
-Q100 chain implies and the chain between them, so **Launch** is the only click
-it needs. Then:
+HG002 is heterozygous for the 8p23.1 inversion polymorphism (Bosch _et al._
+2009). Open **Add → Linear synteny view**; **Quick start** already offers the
+two rows and the chain, so click **Launch**. Then:
 
 - go to `chr8_MATERNAL:5,250,000-14,250,000` in the top panel's search box, and
   the same range on `chr8_PATERNAL` below
@@ -120,15 +105,14 @@ it needs. Then:
 - turn the chain track on in each panel's own track selector, where it draws as
   blocks on that panel's own ruler
 
-Genes read the inversion a second way. The JHU Liftoff GFFs are published beside
-the assembly, one per haplotype, on contig names that already match:
+The JHU Liftoff GFFs are published beside the assembly, one per haplotype, on
+matching contig names:
 
-- they annotate v1.1, the newest gene set the project publishes, and on
-  chromosome 8 the lanes still land where the v1.2 ribbons do
-- the gene symbol is in `gene_name` and there is no `Name`, so the label points
-  there
-- load one file per haplotype; the other panel takes the same config with `PAT`
-  in the name and the URL, under its own `trackId`
+- they annotate v1.1, and on chromosome 8 the lanes still land where the v1.2
+  ribbons do
+- the gene symbol is in `gene_name` with no `Name`, so the label points there
+- the paternal panel takes the same config with `PAT` in the name and URL, under
+  its own `trackId`
 
 ```json addtrack
 {
@@ -160,20 +144,19 @@ Then, on each gene lane:
 
 ## Framing both panels on the same sequence
 
-Zoomed in, the same coordinate stops being the same sequence: an indel anywhere
-upstream offsets one haplotype against the other, and the offset accumulates.
-The follow button in the view's header walks the top panel's visible window
-through the alignment's CIGAR and sends the panel below it there, again every
-time you pan. Right-click on a chain block offers **Move other panel to the
-matching region**, which does the same walk once.
+Zoomed in, the same coordinate is no longer the same sequence, because every
+upstream indel offsets one haplotype against the other. The follow button in the
+view's header walks the top panel's window through the alignment's CIGAR and
+sends the panel below there on every pan. Right-clicking a chain block offers
+**Move other panel to the matching region**, the same walk once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Two zoomed-out panels on the same coordinates, where the same genes sit near each other but not under each other, then the header's follow button, then the top panel dragged sideways. The panel below is never touched." />
 
-**Location markers**, in the header's settings menu, reads the alignment inside
-a ribbon. It draws lines through the ribbon at regularly spaced positions, each
-joining a point on the top row to the point it maps to on the bottom.
+**Location markers**, in the header's settings menu, draws lines through each
+ribbon at regular positions, joining a point on the top row to where it maps on
+the bottom.
 
 <Figure caption="The same pair of panels with location markers on, and the settings menu that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
 
