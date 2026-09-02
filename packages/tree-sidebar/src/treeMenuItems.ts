@@ -261,13 +261,15 @@ export function clusterProvenanceMenuItems(
 interface ClusteringMenuModel
   extends ClusterProvenanceMenuModel, SubtreeFilterMenuModel {}
 
-// `disabled` and `disabledHelpText` are `BaseMenuItem`'s, which a divider and a
-// subheader are not; neither is ever a run item, so they pass through untouched.
-function withRowCountGate(item: MenuItem, rowCount: number): MenuItem {
-  return item.type === 'divider' || item.type === 'subHeader'
-    ? item
+// A run row the display has already disabled passes through with its own text:
+// the reason it states is the more specific one — rows still loading, a
+// rendering type with no row axis — and both of those also read as "fewer than
+// two rows" from here.
+function withRowCountGate(runItem: NormalMenuItem, rowCount: number) {
+  return runItem.disabled
+    ? runItem
     : {
-        ...item,
+        ...runItem,
         disabled: rowCount < MIN_CLUSTER_ROWS,
         disabledHelpText: 'Needs at least two rows to cluster',
       }
@@ -287,22 +289,23 @@ function withRowCountGate(item: MenuItem, rowCount: number): MenuItem {
 // undoes one of the three and looks like it undoes all of them. It belongs
 // top-level, gated on `rowOrderIsCustom` (`resetRowOrderMenuItems`).
 //
-// Pass `rowCount` and the run row's `disabled` + `disabledHelpText` come from
-// here instead, the way `sortRowsHereMenuItem` owns its own gate — the "needs
-// two rows" rule is one rule and the four displays each spelled it. Omit it and
-// the run row is used verbatim, which is what a display whose help text has to
-// distinguish "still loading" from "only one row" still wants.
+// `rowCount` is the list the run would cluster, and the run row's "needs at
+// least two rows" gate comes from here — the way `sortRowsHereMenuItem` owns
+// its own. It is one rule and the four displays each spelled it, one of them
+// admitting a single row. Required rather than optional so a fifth display
+// cannot quietly go without it; a display with a reason of its own states that
+// one on the row it passes in and keeps it (`withRowCountGate`).
 export function clusteringMenuItem(
   self: ClusteringMenuModel,
-  runItem: MenuItem,
-  rowCount?: number,
+  runItem: NormalMenuItem,
+  rowCount: number,
 ): MenuItem {
   return {
     label: 'Clustering',
     icon: AccountTreeIcon,
     type: 'subMenu',
     subMenu: [
-      rowCount === undefined ? runItem : withRowCountGate(runItem, rowCount),
+      withRowCountGate(runItem, rowCount),
       ...clusterProvenanceMenuItems(self),
       ...clearSubtreeFilterMenuItems(self),
     ],

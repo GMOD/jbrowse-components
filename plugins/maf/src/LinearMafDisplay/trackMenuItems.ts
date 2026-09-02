@@ -301,21 +301,24 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     // the reference over the drawn rows — so the submenu is where it and the
     // "Clustered on <locus>" provenance belong, and the filter item moves inside
     // with them.
-    clusteringMenuItem(self, {
-      label: 'Cluster rows by identity...',
-      disabled: self.sources.length < 2,
-      // `sources` is the post-filter list, so one row here is as often a
-      // clade focused down to a single species as a track still loading
-      disabledHelpText: self.sourcesKnown
-        ? 'Needs at least two rows to cluster'
-        : 'Loading rows...',
-      onClick: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          MafClusterDialog,
-          { model: self, handleClose },
-        ])
+    clusteringMenuItem(
+      self,
+      {
+        label: 'Cluster rows by identity...',
+        // the count below is `sources`, the post-filter list, so one row there
+        // is as often a clade focused down to a single species as a track still
+        // loading — which is this display's own reason and is stated here
+        disabled: !self.sourcesKnown,
+        disabledHelpText: 'Loading rows...',
+        onClick: () => {
+          getDialogHost(self).queueDialog(handleClose => [
+            MafClusterDialog,
+            { model: self, handleClose },
+          ])
+        },
       },
-    }),
+      self.sources.length,
+    ),
     // The way back from a drag-reorder in the arrangement dialog and from a
     // clustering run alike: both write `layout`, and `clearLayout` also restores
     // the guide tree the run replaced.

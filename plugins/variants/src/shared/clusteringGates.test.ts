@@ -104,7 +104,7 @@ test('refuses to cluster a single sample, and says which is missing', () => {
   const row = clusterRow([{ name: 'HG001' }])
 
   expect(row.disabled).toBe(true)
-  expect(row.disabledHelpText).toBe('Needs at least two samples to cluster')
+  expect(row.disabledHelpText).toBe('Needs at least two rows to cluster')
 })
 
 // Before the adapter reports its samples the count is not "one", it is unknown

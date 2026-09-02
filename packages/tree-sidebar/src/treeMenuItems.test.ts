@@ -84,8 +84,13 @@ describe('clusteringMenuItem', () => {
   const subMenuOf = (item: ReturnType<typeof clusteringMenuItem>) =>
     'subMenu' in item ? item.subMenu : []
 
-  it('leaves the run row alone when no row count is given', () => {
-    expect(subMenuOf(clusteringMenuItem(model, runItem))[0]).toBe(runItem)
+  it('leaves a run row the display already disabled with its own reason', () => {
+    const loading = {
+      ...runItem,
+      disabled: true,
+      disabledHelpText: 'Loading rows...',
+    }
+    expect(subMenuOf(clusteringMenuItem(model, loading, 0))[0]).toBe(loading)
   })
 
   it('disables the run row below two rows and says why', () => {

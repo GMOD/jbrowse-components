@@ -121,7 +121,7 @@ describe('multi-wiggle Clustering submenu', () => {
 
     expect(item).toMatchObject({
       disabled: true,
-      disabledHelpText: 'Needs at least two subtracks to cluster',
+      disabledHelpText: 'Needs at least two rows to cluster',
     })
   })
 

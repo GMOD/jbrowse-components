@@ -92,10 +92,6 @@ export async function runMultiRowClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sourcesWithoutLayout } = model
-  // one row can't be clustered; two-plus is required for a meaningful tree
-  if (sourcesWithoutLayout.length < 2) {
-    return
-  }
   const ret = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
     regions,
     sources: sourcesWithoutLayout.map(s => s.name),

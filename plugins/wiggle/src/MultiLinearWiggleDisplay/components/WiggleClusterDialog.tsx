@@ -1,5 +1,6 @@
 import {
   ClusterDialog,
+  MIN_CLUSTER_ROWS,
   buildClusteredLayout,
   validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
@@ -41,18 +42,13 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       maxWidth="xl"
       matrixLabel="score matrix"
       tsvFilename="scores.tsv"
-      canRun={!!model.sourcesWithoutLayout.length}
+      canRun={model.sourcesWithoutLayout.length >= MIN_CLUSTER_ROWS}
       matrixKey={
         model.sourcesWithoutLayout.length
           ? ['scoreMatrix', sourceNames, samplesPerPixel]
           : null
       }
-      run={async args => {
-        if (model.sourcesWithoutLayout.length < 2) {
-          throw new Error('Need at least two subtracks to cluster')
-        }
-        await runWiggleClustering({ model, samplesPerPixel, ...args })
-      }}
+      run={args => runWiggleClustering({ model, samplesPerPixel, ...args })}
       fetchMatrix={({ rpcManager, sessionId, regions, ...handles }) =>
         rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
           ...clusterScoreMatrixArgs(model, samplesPerPixel, regions),

@@ -54,23 +54,6 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
   expect(tree).toBe('((c,a),b);')
 })
 
-test('skips the RPC when fewer than two rows', async () => {
-  const { model, setLayoutAndClusterTree } = makeModel(['only'])
-  const call = jest.fn()
-
-  await runMultiRowClustering({
-    model,
-    regions,
-    rpcManager: { call },
-    sessionId: 'sess1',
-    stopToken: createStopToken(),
-    statusCallback: () => {},
-  })
-
-  expect(call).not.toHaveBeenCalled()
-  expect(setLayoutAndClusterTree).not.toHaveBeenCalled()
-})
-
 // The key `useFetch` serializes on every render of the open dialog. It used to
 // be the MST display node, which stringifies to the whole display snapshot —
 // `layout` included, so a cohort's worth of rows went through JSON per render

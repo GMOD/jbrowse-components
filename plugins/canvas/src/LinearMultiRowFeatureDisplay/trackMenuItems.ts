@@ -259,19 +259,18 @@ export function buildMultiRowTrackMenuItems(
     // top-level rather than nested under "Clustering", which is only one of the
     // three things that write `layout` — see resetRowOrderMenuItems
     ...resetRowOrderMenuItems(self),
-    clusteringMenuItem(self, {
-      label: 'Cluster rows by similarity...',
-      // clustering reorders rows, so it needs rows to reorder and at least two
-      // of them — the dialog would otherwise open only to report the same
-      // thing after the user clicks Run
-      disabled: self.sourcesWithoutLayout.length < 2,
-      disabledHelpText: 'Needs at least two rows to cluster',
-      onClick: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          MultiRowClusterDialog,
-          { model: self, handleClose },
-        ])
+    clusteringMenuItem(
+      self,
+      {
+        label: 'Cluster rows by similarity...',
+        onClick: () => {
+          getDialogHost(self).queueDialog(handleClose => [
+            MultiRowClusterDialog,
+            { model: self, handleClose },
+          ])
+        },
       },
-    }),
+      self.sourcesWithoutLayout.length,
+    ),
   ]
 }

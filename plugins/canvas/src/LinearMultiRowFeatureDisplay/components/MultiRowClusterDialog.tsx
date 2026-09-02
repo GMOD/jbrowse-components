@@ -1,5 +1,6 @@
 import {
   ClusterDialog,
+  MIN_CLUSTER_ROWS,
   buildClusteredLayout,
   validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
@@ -34,7 +35,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
       description="This procedure will cluster the rows by the colors each one is painted in across the window in view, using hierarchical clustering"
       matrixLabel="feature matrix"
       tsvFilename="features.tsv"
-      canRun={sourcesWithoutLayout.length > 1}
+      canRun={sourcesWithoutLayout.length >= MIN_CLUSTER_ROWS}
       matrixKey={featureMatrixKey(model)}
       run={args => runMultiRowClustering({ model, ...args })}
       fetchMatrix={({ rpcManager, sessionId, ...args }) =>

@@ -38,7 +38,7 @@ export function setupMultiSampleVariantAutoruns(self: Self) {
     // the menu row that opens it is disabled there. Without the count a
     // session naming `runClustering` spent a whole genotype-matrix pass to
     // hand back a one-leaf dendrogram, on exactly the track the menu refuses.
-    // Same getter the menu row counts with, so the two answers cannot
+    // Both count `sources`, the list a run clusters, so the two answers cannot
     // disagree.
     clustering: {
       ready: () => self.autoClusterReady,

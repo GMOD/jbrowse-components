@@ -366,31 +366,30 @@ export function variantTrackMenuItems(
         }),
       ],
     }),
-    clusteringMenuItem(self, {
-      label: 'Cluster rows by genotype...',
-      // Clustering reorders rows, so it needs rows to reorder and at least two
-      // of them — the same gate the other two clustering displays state, and
-      // for the same reason: the dialog would otherwise open only to report it
-      // after the user clicks Run.
-      disabled: !self.hasClusterableRows,
-      // Off the sample list, not `loaded`: the samples arrive on their own RPC
-      // (`MultiSampleVariantGetSources`), which neither waits for the cell data
-      // nor is waited on by it. Keyed on the cell data, the row blamed the
-      // cohort for a sample list that had not landed yet, and called a genuinely
-      // single-sample track still-loading forever.
-      disabledHelpText: self.sourcesVolatile
-        ? 'Needs at least two samples to cluster'
-        : 'Loading samples...',
-      onClick: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          ClusterDialog,
-          {
-            model: self,
-            handleClose,
-          },
-        ])
+    clusteringMenuItem(
+      self,
+      {
+        label: 'Cluster rows by genotype...',
+        // Off the sample list, not `loaded`: the samples arrive on their own RPC
+        // (`MultiSampleVariantGetSources`), which neither waits for the cell data
+        // nor is waited on by it. Keyed on the cell data, the row blamed the
+        // cohort for a sample list that had not landed yet, and called a genuinely
+        // single-sample track still-loading forever. Below that, the row count
+        // is `clusteringMenuItem`'s gate.
+        disabled: !self.sourcesVolatile,
+        disabledHelpText: 'Loading samples...',
+        onClick: () => {
+          getDialogHost(self).queueDialog(handleClose => [
+            ClusterDialog,
+            {
+              model: self,
+              handleClose,
+            },
+          ])
+        },
       },
-    }),
+      self.sources.length,
+    ),
     rowArrangementMenuItem({
       ready: !!self.sourcesVolatile?.length,
       onOpen: () => {

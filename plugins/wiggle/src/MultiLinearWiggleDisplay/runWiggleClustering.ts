@@ -37,32 +37,30 @@ export async function runWiggleClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sourcesWithoutLayout } = model
-  if (sourcesWithoutLayout.length) {
-    const args = clusterScoreMatrixArgs(model, samplesPerPixel, regions)
-    const ret = await rpcManager.call(
-      sessionId,
-      'MultiWiggleClusterScoreMatrix',
+  const args = clusterScoreMatrixArgs(model, samplesPerPixel, regions)
+  const ret = await rpcManager.call(
+    sessionId,
+    'MultiWiggleClusterScoreMatrix',
+    {
+      ...args,
+      stopToken,
+      statusCallback,
+    },
+  )
+  model.setLayoutAndClusterTree(
+    buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
+    ret.tree,
+    // Sampling density belongs in the caption because it changes the matrix:
+    // the columns are pixel bins, so the same locus at a different density is
+    // a different set of measurements. The parsed value, not the raw field
+    // text: `samplesPerPixel` is free text and the matrix was binned at what
+    // `parseSamplesPerPixel` clamped or defaulted it to, so recording the
+    // text would caption the matrix with a density it was never built at.
+    clusterProvenanceFromRegions(args.regions, [
       {
-        ...args,
-        stopToken,
-        statusCallback,
+        name: 'samples/px',
+        value: String(parseSamplesPerPixel(samplesPerPixel)),
       },
-    )
-    model.setLayoutAndClusterTree(
-      buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
-      ret.tree,
-      // Sampling density belongs in the caption because it changes the matrix:
-      // the columns are pixel bins, so the same locus at a different density is
-      // a different set of measurements. The parsed value, not the raw field
-      // text: `samplesPerPixel` is free text and the matrix was binned at what
-      // `parseSamplesPerPixel` clamped or defaulted it to, so recording the
-      // text would caption the matrix with a density it was never built at.
-      clusterProvenanceFromRegions(args.regions, [
-        {
-          name: 'samples/px',
-          value: String(parseSamplesPerPixel(samplesPerPixel)),
-        },
-      ]),
-    )
-  }
+    ]),
+  )
 }

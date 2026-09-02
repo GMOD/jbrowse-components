@@ -98,9 +98,6 @@ export async function runMafClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sources, adapterConfig } = model
-  if (!sources.length) {
-    return
-  }
   const ret = await rpcManager.call(
     sessionId,
     'LinearMafClusterIdentityMatrix',

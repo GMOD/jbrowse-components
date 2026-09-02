@@ -573,25 +573,27 @@ export default function stateModelFactory(
         ]
         return [
           makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
-          clusteringMenuItem(self, {
-            label: 'Cluster rows by score...',
-            // clustering reorders rows, so it needs rows to reorder and at
-            // least two of them — the dialog would otherwise open only to
-            // report the same thing after the user clicks Run
-            disabled: self.isOverlay || self.sourcesWithoutLayout.length < 2,
-            disabledHelpText: self.isOverlay
-              ? 'Only available for multi-row rendering types'
-              : 'Needs at least two subtracks to cluster',
-            onClick: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                WiggleClusterDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
+          clusteringMenuItem(
+            self,
+            {
+              label: 'Cluster rows by score...',
+              // the row-count half of the gate is `clusteringMenuItem`'s, off
+              // the count below; what is this display's own is that an overlay
+              // has no row axis to reorder at all
+              disabled: self.isOverlay,
+              disabledHelpText: 'Only available for multi-row rendering types',
+              onClick: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  WiggleClusterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
             },
-          }),
+            self.sourcesWithoutLayout.length,
+          ),
           // top-level rather than inside the Clustering submenu, where it used
           // to sit as "Clear clustering" — see resetRowOrderMenuItems
           ...resetRowOrderMenuItems(self),
