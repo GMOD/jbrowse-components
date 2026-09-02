@@ -343,6 +343,80 @@ def align_and_sort(target_fa, reads_fa, out_bam, preset, threads, tmp):
     run(['samtools', 'index', out_bam])
 
 
+def polish(backbone, reads_fa, args, tmp):
+    """The reads against the backbone, then a consensus of that pileup, kept
+    only where --min-depth reads support it: the backbone is the longest read,
+    so it overhangs the others at one or both ends and consensus masks those
+    tails to N.
+
+    One round votes the other reads against a single molecule's indels, and
+    wherever depth is thin the backbone's own errors survive the vote. A second
+    round aligns the reads to the first consensus instead, so what they vote
+    against is already a majority call."""
+    seq = backbone
+    for r in range(args.polish_rounds):
+        target = os.path.join(tmp, f'polish_{r}.fa')
+        with open(target, 'w') as fh:
+            fh.write(f'>{args.name}\n{seq}\n')
+        polished_bam = os.path.join(tmp, f'polish_{r}.bam')
+        align_and_sort(target, reads_fa, polished_bam, args.preset, args.threads, tmp)
+        raw_consensus = os.path.join(tmp, f'consensus_{r}.fa')
+        run(['samtools', 'consensus', '-f', 'fasta', '--min-depth', str(args.min_depth),
+             '-o', raw_consensus, polished_bam])
+        consensus = ''.join(
+            line.strip() for line in open(raw_consensus) if not line.startswith('>')
+        )
+        seq = consensus.strip('Nn')
+        if not seq:
+            sys.exit(f'no base of the backbone is supported by >={args.min_depth} '
+                     'reads, so there is no contig to reconstruct; lower --min-depth '
+                     'or widen --window')
+    return seq
+
+
+def primary_spans(sam_path):
+    """(start, end) of every mapped primary alignment, 0-based half-open."""
+    spans = []
+    for line in open(sam_path):
+        if line.startswith('@'):
+            continue
+        f = line.split('\t')
+        if len(f) >= 11 and f[2] != '*':
+            start = int(f[3]) - 1
+            spans.append((start, start + reference_span(f[5])))
+    return spans
+
+
+def mean(xs):
+    return sum(xs) / len(xs) if xs else 0.0
+
+
+JUNCTION_EDGE = 100
+
+
+def junction_steps(rows, depth, spans, window, edge=JUNCTION_EDGE):
+    """Per junction between consecutive placed segments, in contig coordinates:
+    mean depth over `window` bp on either side of it, and the reads whose
+    alignment ends or starts within `edge` bp of it.
+
+    A tumour that still carries the intact homolog puts reads off it onto every
+    segment the derivative shares with the reference, and those reads stop where
+    the derivative leaves that sequence. So the depth steps down at such a
+    junction, to about half when the two copies are at equal dose, and the count
+    of reads ending there is that step read out per molecule."""
+    steps = []
+    for left, right in zip(rows, rows[1:]):
+        pos = int(left[3])
+        steps.append({
+            'junction': pos,
+            'left': mean(depth[max(0, pos - window):pos]),
+            'right': mean(depth[pos:pos + window]),
+            'ending': sum(1 for s, e in spans if abs(e - pos) <= edge),
+            'starting': sum(1 for s, e in spans if abs(s - pos) <= edge),
+        })
+    return steps
+
+
 def read_fai(fasta):
     """Reference sequence lengths, from the FASTA index."""
     if not os.path.exists(fasta + '.fai'):
@@ -696,29 +770,9 @@ def derive(args, tmp):
     # so the contig is not one molecule's error profile.
     name, seq = max(spanning.items(), key=lambda kv: len(kv[1]))
     print(f'backbone read {name} ({len(seq):,} bp)')
-    backbone = os.path.join(tmp, 'backbone.fa')
-    with open(backbone, 'w') as fh:
-        fh.write(f'>{args.name}\n{seq}\n')
-
-    polished_bam = os.path.join(tmp, 'polish.bam')
-    align_and_sort(backbone, reads_fa, polished_bam, args.preset, args.threads, tmp)
+    trimmed = polish(seq, reads_fa, args, tmp)
 
     derivative = f'{args.out}.derivative.fa'
-    raw_consensus = os.path.join(tmp, 'consensus.fa')
-    run(['samtools', 'consensus', '-f', 'fasta', '--min-depth', str(args.min_depth),
-         '-o', raw_consensus, polished_bam])
-
-    # The backbone is the longest read, so it overhangs the others at one or both
-    # ends and consensus masks those tails to N. Keep only the stretch actually
-    # supported by --min-depth reads.
-    consensus = ''.join(
-        line.strip() for line in open(raw_consensus) if not line.startswith('>')
-    )
-    trimmed = consensus.strip('Nn')
-    if not trimmed:
-        sys.exit(f'no base of the backbone is supported by >={args.min_depth} '
-                 'reads, so there is no contig to reconstruct; lower --min-depth '
-                 'or widen --window')
     # Two unrelated things put an N here and they want opposite responses, so
     # report what separates them rather than calling both unsupported. A run of
     # hundreds is a stretch of the allele no read supported at --min-depth: a
@@ -844,6 +898,35 @@ def derive(args, tmp):
     align_and_sort(derivative, reads_fa, proof, args.preset, args.threads, tmp)
     print(f'wrote {proof}')
 
+    # The allele fraction, read off that realignment rather than reasoned about:
+    # where the derivative shares sequence with the reference, reads off the
+    # intact homolog align too and stop at the junction, so the depth steps
+    # there. Reported per junction, with the reads that end at it.
+    depth_tsv = os.path.join(tmp, 'depth.tsv')
+    run_out(['samtools', 'depth', '-a', proof], depth_tsv)
+    depth = [0] * len(trimmed)
+    for line in open(depth_tsv):
+        _, pos, n = line.split('\t')
+        depth[int(pos) - 1] = int(n)
+    proof_sam = os.path.join(tmp, 'proof.sam')
+    run_out(['samtools', 'view', '-F', '0x900', proof], proof_sam)
+    steps = junction_steps(rows, depth, primary_spans(proof_sam), args.depth_window)
+    junctions_tsv = f'{args.out}.junction_depth.tsv'
+    with open(junctions_tsv, 'w') as fh:
+        fh.write('junction\tdepth_left\tdepth_right\tratio\treads_ending\treads_starting\n')
+        for st in steps:
+            ratio = st['right'] / st['left'] if st['left'] else 0.0
+            fh.write(f"{st['junction']}\t{st['left']:.1f}\t{st['right']:.1f}\t"
+                     f"{ratio:.2f}\t{st['ending']}\t{st['starting']}\n")
+    print(f'wrote {junctions_tsv} (mean depth over {args.depth_window} bp either '
+          f'side of each junction; a step to about half is the intact homolog '
+          f'leaving)')
+    for st in steps:
+        ratio = st['right'] / st['left'] if st['left'] else 0.0
+        print(f"    {st['junction']:>7}: {st['left']:.1f}x -> {st['right']:.1f}x "
+              f"({ratio:.2f}); {st['ending']} reads end within {JUNCTION_EDGE} bp, "
+              f"{st['starting']} start")
+
     if args.jbrowse_out:
         config_dir = os.path.dirname(os.path.abspath(args.jbrowse_out))
         os.makedirs(config_dir, exist_ok=True)
@@ -911,6 +994,12 @@ def main():
                    help='drop derivative-vs-reference alignments below this MAPQ')
     d.add_argument('--min-depth', type=int, default=3,
                    help='reads required before a consensus base is called')
+    d.add_argument('--polish-rounds', type=int, default=1,
+                   help='consensus rounds; a second one aligns the reads to the '
+                        'first consensus rather than to the backbone read, which '
+                        'clears its indels where depth is thin')
+    d.add_argument('--depth-window', type=int, default=500,
+                   help='bp either side of a junction the depth step is averaged over')
     d.add_argument('--min-segment', type=int, default=50,
                    help='shortest unplaced stretch of contig worth a second alignment pass')
     d.add_argument('--preset', default='map-ont',

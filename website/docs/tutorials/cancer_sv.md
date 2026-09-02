@@ -129,26 +129,18 @@ approves it for the rest of the session.
 ## Following the chain across panels
 
 A breakpoint split view, the right half of the figure above, stacks the loci the
-chain visits and draws the reads that leave one panel and arrive in another. On
-the tumor track, **Launch → Reconstruct derivative allele...** lists the routes
-the reads describe; pick one, set **Draw as** to **Breakpoint split view** and
-choose **Replace current view**, and the view is replaced by a panel per segment
-of that route, in the order the reads cross it.
-
-The reads already know which loci those are and in what order, so the view is
-built from them. On the tumor track, **Launch → Reconstruct derivative
-allele...** lists the routes the reads describe; pick one, set **Draw as** to
-**Breakpoint split view** and choose **Replace current view**, and the launching
-view is replaced by a panel per segment of that route, in the order the reads
-cross it, carrying the tracks that view had.
+chain visits and draws the reads that leave one panel and arrive in another. The
+reads already know which loci those are and in what order, so the view is built
+from them. On the tumor track, **Launch → Reconstruct derivative allele...**
+lists the routes the reads describe; pick one, set **Draw as** to **Breakpoint
+split view** and choose **Replace current view**, and the launching view is
+replaced by a panel per segment of that route, in the order the reads cross it,
+carrying the tracks that view had.
 
 <Video src="/media/sv/derivative_allele_route.mp4" caption="The route over the chr3 breakpoints: the tumor track menu, the routes the reads describe with the read count and segment sizes behind each one, and Breakpoint split view replacing the window with a panel per segment. The soft-clipped tails at the start return as the curves between panels." />
 
 This chain leaves chr3 and returns to it, so it gets two chr3 panels. Every
 panel opens on the same span, centered on the junction its segment carries.
-**Add → Breakpoint split view** builds a view whose loci you already know, one
-row per panel.
-
 **Add → Breakpoint split view** builds a view whose loci you already know, one
 row per panel.
 
@@ -258,6 +250,9 @@ the next section.
 `derive` builds the allele's **sequence**: it pulls the reads spanning every
 locus, takes the longest as a backbone, polishes it into a consensus with the
 rest, aligns that consensus back to the reference, and realigns the reads to it.
+The in-app picker hands off to it: **Copy derive command** in the **Reconstruct
+derivative allele** dialog writes this command for the route you picked, with
+the track's alignment file and both sides of every junction filled in.
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -287,7 +282,11 @@ junction.
 
 The PAF is a synteny track and the consensus is an assembly, so the
 reconstruction loads against the reference directly. The BED is the same
-segments as a feature track on the derivative. Adding
+segments as a feature track on the derivative. The realigned reads also give the
+allele fraction: `derive` measures the depth either side of each junction and
+the reads that stop there, and writes them to a `junction_depth.tsv`. Where the
+derivative shares sequence with the reference, reads off the intact chromosome 3
+align too and end at the junction, so the depth steps to about half. Adding
 `--jbrowse-out config.json` writes the config that wires those together and
 prints the URL that opens them as a synteny view.
 

@@ -744,6 +744,35 @@ says a change to it did not move the published figures. `chains` against
 its output is quoted in the tutorial (100 junctions, 4 chains, chain 1 is the
 RARB one), so a diff of it is a diff of the docs.
 
+**The picker writes that command.** "Copy derive command" in the
+`Reconstruct derivative allele` dialog (`deriveCommand.ts`) emits `derive` for
+the picked route: `--aln` from the track's BAM/CRAM adapter, `--loci` as both
+sides of every junction read off `observedSegments` (`segmentEntryBp` /
+`segmentExitBp`, so an inverted segment is entered at its high coordinate), and
+`--ref` left as a placeholder because the browser never knows the FASTA. That
+is the handoff between the two tools, and the direction it runs in is the point:
+the picker ranks what the reads say, `derive` builds and checks the sequence.
+
+**`--polish-rounds` defaults to 1 so the byte-for-byte reproduction above
+holds.** One round votes the other reads against the backbone read's own
+indels, and where depth is thin the backbone's errors survive; `2` realigns the
+reads to the first consensus and votes again. The pipeline check runs both and
+asks the second to place the same three segments at MAPQ 60. Nobody has diffed
+the two against the real der(3) yet, which is the measurement to take before
+changing the default.
+
+**`derive` measures the allele fraction it used to leave to the figure spec.**
+After the realignment it runs `samtools depth` over
+`reads_vs_derivative.bam` and writes `<out>.junction_depth.tsv`: per junction,
+mean depth over `--depth-window` (500) bp either side, the ratio, and the reads
+whose primary alignment ends or starts within 100 bp of it (`junction_steps`,
+pinned in `check-build-scripts.py`). On the real der(3) the shape to expect is
+the one `website/scripts/specs/cancer_sv.ts` computed by hand: ~43x to ~19x
+where the derivative leaves shared chr3 sequence, with 13 of 29 primaries
+ending there. The synthetic foldback has no intact homolog, so the pipeline
+check pins the flat case instead: ratio within 0.8–1.25, no read ending at
+either junction.
+
 **The synthetic foldback is now a check, not a recipe.**
 `scripts/check_sv_multihop_pipeline.py` builds the allele below, runs `derive`
 over it and asserts the reconstruction, in about a second and with no network.

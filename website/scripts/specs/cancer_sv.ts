@@ -1261,7 +1261,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // margin, so it pays nothing for the same setting.
               trackLabels: 'offset',
               // ONE HIGHLIGHT, AND IT IS THE ANSWER TO THE COVERAGE (review:
-              // "why would the coverage be uneven in the derived allele").
+              // "why would the coverage be uneven in the derivative allele").
               //
               // It is uneven because the tumour carries two chromosome 3s. The
               // allele's first segment IS reference chr3, so a read off the

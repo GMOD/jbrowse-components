@@ -42,6 +42,7 @@ import {
   buildSplitViewFromPath,
 } from './buildSplitViewFromPath.ts'
 import { derivativeName } from './derivativeName.ts'
+import { alignmentUriOf, deriveCommand } from './deriveCommand.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
 import { segmentMapCaption, segmentMapSvg } from './segmentMapSvg.ts'
 
@@ -512,6 +513,16 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     )
   }
 
+  // The handoff to the offline tool: the picker ranks what the reads say, and
+  // `derive` is where the sequence gets built and checked against them.
+  function copyDeriveCommand(candidate: DerivativeCandidate) {
+    void copyText(
+      track,
+      deriveCommand(candidate, alignmentUriOf(getConf(track, 'adapter'))),
+      'derive command',
+    )
+  }
+
   // The one thing both buttons do, differing only in where the drawing lands.
   function draw(replace: boolean) {
     const candidate = candidates[selected]
@@ -677,6 +688,16 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                   }}
                 >
                   Copy caption
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<ContentCopyIcon />}
+                  data-testid="derivative-copy-derive-command"
+                  onClick={() => {
+                    copyDeriveCommand(candidates[selected]!)
+                  }}
+                >
+                  Copy derive command
                 </Button>
               </div>
             ) : null}

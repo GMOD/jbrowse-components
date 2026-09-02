@@ -349,6 +349,36 @@ def main():
         check('every spanning read realigns to the reconstruction', spanning, 12)
         check('none of them clips at a junction', clipped, 0)
 
+        # Every simulated read is a whole molecule of the allele, so there is no
+        # intact homolog here: the depth is flat across both junctions and no
+        # read stops at either. The real-data shape (a step to about half, reads
+        # ending at it) is recorded in reference/SV_MULTIHOP.md.
+        steps = [l.split('\t') for l in
+                 open(f'{out}.junction_depth.tsv').read().strip().split('\n')[1:]]
+        check('one depth step per junction', len(steps), 2)
+        check('no read stops at a junction of an allele every read spans',
+              [(s[4], s[5]) for s in steps], [('0', '0')] * 2)
+        check_true('the depth does not step where no homolog leaves',
+                   all(0.8 <= float(s[3]) <= 1.25 for s in steps),
+                   ' '.join(s[3] for s in steps))
+
+        # A second polish round realigns the reads to the first consensus. It
+        # must not move a reconstruction the first round already got right.
+        again = subprocess.run(
+            [sys.executable, os.path.join(HERE, 'sv_multihop.py'), 'derive',
+             '--aln', aln, '--ref', ref,
+             '--loci', 'chrA:20000,chrB:1100,chrA:13000',
+             '--out', f'{out}_r2', '--name', 'der1', '--threads', '1',
+             '--polish-rounds', '2'],
+            capture_output=True, text=True,
+        )
+        check('a second polish round runs', again.returncode, 0)
+        if again.returncode == 0:
+            rows2 = parse_paf(f'{out}_r2.vs_reference.paf')
+            check('and still places the three segments at MAPQ 60',
+                  [(r['target'], r['strand'], r['mapq']) for r in rows2],
+                  [(r['target'], r['strand'], r['mapq']) for r in rows])
+
         report(derive)
 
 

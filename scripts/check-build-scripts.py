@@ -1543,6 +1543,24 @@ check("the projected gene track belongs to the derivative",
        if t["trackId"] == sv_multihop.track_ids("der1", "hg38")["genes"]],
       [["der1"]])
 
+# The allele-fraction step: depth on either side of each junction, and the
+# reads that stop there. Rows are PAF rows in contig order, so the junction is
+# the query end of the left one; a read whose alignment ends there is one off
+# the intact homolog, and a step to half is what one allele of two looks like.
+step_rows = [["q", "0", "0", "1000"], ["q", "0", "1000", "1500"]]
+step_depth = [40] * 1000 + [20] * 500
+check("junction_steps averages depth either side of the segment boundary",
+      [(s["junction"], s["left"], s["right"]) for s in
+       sv_multihop.junction_steps(step_rows, step_depth, [], 100)],
+      [(1000, 40.0, 20.0)])
+check("junction_steps counts reads ending or starting at the junction",
+      [(s["ending"], s["starting"]) for s in sv_multihop.junction_steps(
+          step_rows, step_depth, [(0, 1000), (0, 1050), (0, 1500), (990, 1500)],
+          100)],
+      [(2, 1)])
+check("junction_steps has nothing to say about a single segment",
+      sv_multihop.junction_steps(step_rows[:1], step_depth, [], 100), [])
+
 # Everything above is the pure functions. The glue between them -- two alignment
 # passes against merged reference windows, the projection, the files the emitted
 # config points at -- is where the bugs that shipped actually lived, and none of
