@@ -2,6 +2,7 @@ import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { applyClusterOrder } from '../applyClusterOrder.ts'
+import { genotypeMatrixKey } from '../genotypeMatrixKey.ts'
 import { runGenotypeClustering } from '../runGenotypeClustering.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
@@ -36,7 +37,7 @@ const MultiSampleVariantClusterDialog = observer(
         // the display is showing "region too large" — this RPC fetches its own
         // regions, so it happily succeeds there.
         canRun={model.clusteringReady && model.hasClusterableRows}
-        matrixKey={model.sourcesBase ? ['genotypeMatrix', model] : null}
+        matrixKey={genotypeMatrixKey(model)}
         run={args => runGenotypeClustering({ model, ...args })}
         // Same rows the auto path clusters — the ones on screen. Both paths have
         // to agree, or the order pasted back would be indexed against a different
