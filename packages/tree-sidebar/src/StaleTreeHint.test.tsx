@@ -9,7 +9,7 @@ const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
 
 // Only the slice the hint reads; the rest of TreeSidebarModel is the sidebar's
 // canvas plumbing.
-function model(props: Partial<TreeSidebarModel>) {
+function model(props: Partial<TreeSidebarModel>): TreeSidebarModel {
   return {
     showTree: true,
     sources: rows,
@@ -21,7 +21,7 @@ function model(props: Partial<TreeSidebarModel>) {
     setTreeAreaWidth: () => {},
     setSubtreeFilter: () => {},
     ...props,
-  } as TreeSidebarModel
+  }
 }
 
 function draw(props: Partial<TreeSidebarModel>) {

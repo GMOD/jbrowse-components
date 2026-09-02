@@ -101,7 +101,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
-        if (hierarchy && hoveredTreeNode && sources) {
+        if (hierarchy && hoveredTreeNode) {
           const colors = treeHoverColors(getPaletteHost(self).palette)
           ctx.save()
           ctx.translate(0, -scrollTop)
