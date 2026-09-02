@@ -16,9 +16,6 @@ export const VARIANT_FEATURE_WIDGET = {
   id: 'variantFeature',
 }
 
-// Sidebar and label background opacity
-export const SIDEBAR_BACKGROUND_OPACITY = 0.8
-
 // Both displays' connector-line zone is drag-resizable, and both clamp the drag
 // through the shared band rule (`clampBandHeight`) — the floor keeps the resize
 // handle, drawn at lineZoneHeight - 4, reachable. A config or snapshot may still

@@ -4,8 +4,6 @@ import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
 export interface ReducedModel {
   layout: Source[]
-  sourcesWithoutLayout?: Source[]
-  sourcesVolatile?: Source[]
   // The rows the display is showing: layout-ordered and subtree-filtered, and
   // already haplotype-expanded once a phased clustering has written `layout`.
   // What both clustering paths cluster, so a re-run inside a filtered clade
@@ -36,12 +34,10 @@ export interface ReducedModel {
   // hand back a one-leaf dendrogram — which `clusterMatrix` now refuses outright
   // (MIN_CLUSTER_ROWS), so ungated it is an error dialog rather than a no-op.
   hasClusterableRows: boolean
-  setClusterTree: (arg?: string) => void
   setLayout: (arg: Source[]) => void
   setLayoutAndClusterTree: (
     layout: Source[],
     tree?: string,
     provenance?: ClusterProvenance,
   ) => void
-  clearLayout: () => void
 }

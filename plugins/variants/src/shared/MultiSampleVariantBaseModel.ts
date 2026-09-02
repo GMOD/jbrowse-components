@@ -1073,10 +1073,8 @@ export default function MultiSampleVariantBaseModelF(
           return [...keys]
         },
 
-        // Five views on the source list, each with a different consumer:
+        // Four views on the source list, each with a different consumer:
         //
-        // - sourcesWithoutLayout: adapter order, phased-expanded, no subtree
-        //   filter. Used by clustering dialogs and sortByGenotype.
         // - sourcesBeforeSubtreeFilter: layout-ordered, NOT phased-expanded and
         //   NOT subtree-filtered. The granularity `subtreeFilter` names, so it
         //   is what an action computing a filter has to pick its names off.
@@ -1088,15 +1086,6 @@ export default function MultiSampleVariantBaseModelF(
         // - editableSources: dialog view — like `sources` but without the
         //   subtree filter, so submit doesn't wipe filtered samples from
         //   `layout`.
-        get sourcesWithoutLayout() {
-          return self.sourcesVolatile
-            ? getSources({
-                sources: self.sourcesVolatile,
-                renderingMode: self.renderingMode,
-                sampleInfo: self.sampleInfo,
-              })
-            : undefined
-        },
         get sourcesBeforeSubtreeFilter() {
           return self.sourcesVolatile
             ? getSources({
