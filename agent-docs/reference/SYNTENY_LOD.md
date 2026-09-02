@@ -29,7 +29,11 @@ a one-letter prefix on the seqid (tabix column 1):
   carries no tag. The renderer walks `cr` where it would walk `cg` — `CIGAR_RUN`,
   a two-word packed op that `visitCigarRenderedSegments` and `clipSyntenyFeature`
   understand — so a kept gap draws as the same colored wedge in both tiers and
-  nothing visible changes at the switch. Emitted by default; suppress with
+  nothing visible changes at the switch. The walks follow it too
+  (`getAlignmentOps`): move-panel, the follow and the launch's clip-to-region
+  all answer on the coarse tier, and the follow says "approximate" only when a
+  pinned coarse tier is zoomed finer than its threshold. Emitted by default;
+  suppress with
   `--no-coarse` (an error alongside an explicit `--coarse`). **Files built before
   2026-09-02 have no `cr`**: their coarse rows were split into pieces at large
   indels instead, and they still load and draw as plain ribbons.

@@ -68,18 +68,16 @@ export default class SyntenyGetCigarMap extends RpcMethodTypeWithRenameRegions<'
     if (!alignment) {
       return miss
     }
-    const [{ buildCigarMap }, { getCigar, getMate }] = await Promise.all([
-      import('./buildCigarMap.ts'),
-      import('../syntenyMate.ts'),
-    ])
+    const [{ buildCigarMap }, { getAlignmentOps, getMate }] = await Promise.all(
+      [import('./buildCigarMap.ts'), import('../syntenyMate.ts')],
+    )
     const mate = getMate(alignment)
-    const cigar = getCigar(alignment)
+    const cigar = getAlignmentOps(alignment)
     if (!mate || !cigar) {
       return miss
     }
-    const { parseCigar2Typed } = await import('@jbrowse/cigar-utils')
     return rpcResultWithArrayBuffers({
-      ...buildCigarMap(parseCigar2Typed(cigar)),
+      ...buildCigarMap(cigar),
       start: alignment.get('start'),
       end: alignment.get('end'),
       mateStart: mate.start,

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 
-import { getCigar } from '../syntenyMate.ts'
+import { hasAlignmentString } from '../syntenyMate.ts'
 import { SpanLocus } from './PanelList.tsx'
 import SyntenyLaunchDialog from './SyntenyLaunchDialog.tsx'
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
@@ -153,7 +153,7 @@ export default function LaunchSyntenyViewDialog({
       />
       {region ? (
         <ClipToRegionCheckbox
-          hasCigar={!!getCigar(feature)}
+          hasCigar={hasAlignmentString(feature)}
           checked={useRegionOfInterest}
           onChange={setUseRegionOfInterest}
         />

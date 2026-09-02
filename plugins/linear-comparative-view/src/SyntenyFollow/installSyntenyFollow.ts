@@ -706,7 +706,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       },
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
-      approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
+      approximate:
+        !!step &&
+        (!step.windowInsideFeat ||
+          !step.hasCigar ||
+          step.display.coarseWalkIsApproximate),
       noSyntenyTrack,
       partial:
         state.spread?.spreading === false && state.spread.onto

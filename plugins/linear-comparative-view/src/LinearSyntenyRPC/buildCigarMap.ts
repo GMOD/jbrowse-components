@@ -4,6 +4,7 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
+  CIGAR_RUN,
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
@@ -40,14 +41,17 @@ export interface CigarMap {
 
 /**
  * Total indel bases in a CIGAR — how far the two axes drift apart and back over
- * the whole block, which is the budget the point spacing is bought out of.
+ * the whole block, which is the budget the point spacing is bought out of. A
+ * coarse fold's run drifts by the difference of its two lengths.
  */
 function skewVariation(cigar: ArrayLike<number>) {
   let total = 0
   for (let i = 0; i < cigar.length; i++) {
     const packed = cigar[i]!
     const op = packed & 0xf
-    if (op === CIGAR_I || op === CIGAR_D || op === CIGAR_N) {
+    if (op === CIGAR_RUN) {
+      total += Math.abs((packed >>> 4) - (cigar[++i]! >>> 4))
+    } else if (op === CIGAR_I || op === CIGAR_D || op === CIGAR_N) {
       total += packed >>> 4
     }
   }
@@ -120,7 +124,15 @@ export function buildCigarMap(
     if (bends && len > toleranceBp) {
       emit()
     }
-    if (op === CIGAR_I) {
+    if (op === CIGAR_RUN) {
+      // the fold's run: linear inside, so a point at its far end is exact and
+      // is worth putting down whenever it moved the skew
+      featX += len
+      mateX += cigar[++i]! >>> 4
+      if (Math.abs(featX - mateX - lastSkew) > toleranceBp) {
+        emit()
+      }
+    } else if (op === CIGAR_I) {
       mateX += len
     } else if (op === CIGAR_D || op === CIGAR_N) {
       featX += len

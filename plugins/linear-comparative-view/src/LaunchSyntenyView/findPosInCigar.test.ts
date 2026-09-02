@@ -1,4 +1,4 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
+import { parseCigar2, parseCoarseCigar } from '@jbrowse/cigar-utils'
 
 import { findPosInCigar, findPosInCigarByMate } from './findPosInCigar.ts'
 
@@ -111,5 +111,32 @@ describe('findPosInCigarByMate', () => {
     const cigar = parseCigar2('100=10I50=10D100=')
     const [, mateX] = findPosInCigar(cigar, 200)
     expect(findPosInCigarByMate(cigar, mateX)).toEqual([200, mateX])
+  })
+})
+
+// The coarse tier's fold: a `<own>:<mate>M` run packs as a CIGAR_RUN word pair
+// and maps the two axes in proportion, which is within the fold's gap of the
+// alignment's real path (ADR-103).
+describe('coarse CIGAR runs', () => {
+  it('a run advances the mate axis in proportion to the feature axis', () => {
+    expect(findPosInCigar(parseCoarseCigar('100:50M'), 50)).toEqual([50, 25])
+  })
+
+  it('a kept gap after a run is walked like any deletion', () => {
+    // run -> (100, 50); 10D -> (110, 50); 40 of the trailing match -> (150, 90)
+    expect(findPosInCigar(parseCoarseCigar('100:50M10D100M'), 150)).toEqual([
+      150, 90,
+    ])
+  })
+
+  it('the mate-axis walk maps a run the other way round', () => {
+    // run consumed whole -> (100, 50); 10D -> (110, 50); 25 of the match
+    expect(
+      findPosInCigarByMate(parseCoarseCigar('100:50M10D100M'), 75),
+    ).toEqual([135, 75])
+  })
+
+  it('a run with no feature width is the insertion it amounts to', () => {
+    expect(findPosInCigar(parseCoarseCigar('0:30M100M'), 50)).toEqual([50, 80])
   })
 })

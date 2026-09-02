@@ -418,15 +418,15 @@ export async function executeSyntenyFeaturesAndPositions({
     // during decorate, so every record here projects into both views.
 
     const cigarStr = f.get('CIGAR') as string | undefined
-    if (cigarStr) {
-      hasCigar = true
-    }
     // The coarse tier's fold of the CIGAR, walked in the CIGAR's place: runs
     // that each advance the two axes by their own lengths, and the gaps
-    // make-pif kept. Not a CIGAR for `hasCigar`, which gates the walks that
-    // need per-base ops.
+    // make-pif kept. It counts for `hasCigar`, since every walk that flag
+    // gates follows the fold as it follows a CIGAR (`getAlignmentOps`).
     const coarseTag = cigarStr ? undefined : f.get('coarseCigar')
     const coarseStr = typeof coarseTag === 'string' ? coarseTag : undefined
+    if (cigarStr || coarseStr) {
+      hasCigar = true
+    }
     const parsedAlignment = () =>
       cigarStr
         ? parseCigar2Typed(cigarStr)

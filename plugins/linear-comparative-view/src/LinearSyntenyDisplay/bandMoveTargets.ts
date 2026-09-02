@@ -32,15 +32,13 @@ export interface BandMoveTarget {
  * the one that stays. Naming the rows top/bottom is the only phrasing that
  * stays true wherever in a taller stack this band sits.
  *
- * ONLY WHERE THERE IS A CIGAR TO WALK. Without one the mate position can only
- * be interpolated across the block, and a menu item that navigates a panel to a
- * straight-line guess and shows it flush against its neighbour is presenting a
- * guess as a correspondence. A PIF's coarse tier — what serves whole-genome
- * zoom — is CIGAR-less by construction, and the skew inside one coarse row is
- * not bounded by its 10kb split threshold, since smaller indels accumulate
- * without triggering a split. So the items are absent at that zoom rather than
- * approximate: `hasCigar` is per-fetch and flips to true when the fine tier
- * loads.
+ * ONLY WHERE THERE IS AN ALIGNMENT STRING TO WALK. Without one the mate
+ * position can only be interpolated across the block, and a menu item that
+ * navigates a panel to a straight-line guess and shows it flush against its
+ * neighbour is presenting a guess as a correspondence. The coarse tier's
+ * `cr:Z:` fold counts: its runs keep a walk within the fold's `--coarse` gap,
+ * sub-pixel at the zoom the tier is served (ADR-103). What stays absent is a
+ * CIGAR-less PAF, and a coarse tier built before the fold existed.
  *
  * AND ONLY WHERE THE STAYING PANEL IS ACTUALLY SHOWING THIS ALIGNMENT'S CONTIG.
  * That is not implied by the band being on screen: a ribbon is drawn out to the

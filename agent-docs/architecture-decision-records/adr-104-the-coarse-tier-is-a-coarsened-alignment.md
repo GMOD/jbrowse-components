@@ -64,7 +64,7 @@ only had to store that.
   mate length) that `visitCigarRenderedSegments` walks and reports as `CIGAR_M`,
   and that `clipSyntenyFeature` trims with the mate in proportion. Both workers
   parse `coarseCigar` where they would parse `CIGAR`, under the same width gate.
-  `hasCigar` stays keyed on a real CIGAR.
+  `hasCigar` counts the fold as well.
 - **Old files keep working.** A coarse row without `cr` draws as a plain ribbon,
   which is what it did before.
 
@@ -98,11 +98,15 @@ read directly, its pairs translate to `cr` runs one for one.
 
 - A kept gap draws as the same wedge in both tiers; the legend's indel chips
   survive the switch; a coarse click shows the real alignment.
-- `hasCigar` is still false on the coarse tier, so the move-panel item still
-  hides there and follow mode still interpolates whole-block. The skew bound
-  now makes a run-level walk of `cr` in `resolveAlignmentSpan` /
-  `resolveFollowSpan` an honest answer to within `--coarse`; that is the
-  follow-up.
+- **The walks follow the fold.** `getAlignmentOps` (`syntenyMate.ts`) hands
+  every walker the packed CIGAR or, failing that, the packed fold, so
+  `resolveAlignmentSpan` (move-panel, follow), `buildCigarMap` (the follow's
+  per-frame map) and the launch's `resolveSpans` all answer on the coarse tier,
+  within `--coarse` of the truth. `hasCigar` on a fetch means "an alignment
+  string to walk", fold included. The follow reports its placement approximate
+  only when a pinned coarse tier is zoomed finer than the tier's threshold
+  (`coarseWalkIsApproximate`), which is the one zoom where the gap is wider
+  than a pixel.
 - Feature ids still differ across tiers (both are file offsets), so a selection
   does not survive the switch. A per-alignment id stamped on every row of one
   PAF row is the follow-up for that.

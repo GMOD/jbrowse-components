@@ -85,9 +85,11 @@ export interface SyntenyFeatureData {
   mateRefNameIds: Uint32Array
   mateAssemblyNameDict: string[]
   mateAssemblyNameIds: Uint32Array
-  // True when at least one feature in this RPC response carried a CIGAR
-  // string. Used to gate CIGAR-related menu items so they don't appear when
-  // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
+  // True when at least one feature in this RPC response carried an alignment
+  // string to walk — a CIGAR, or the coarse tier's fold of one. Used to gate
+  // the walks and their menu items so they don't appear when nothing in the
+  // response (a CIGAR-less PAF, a coarse tier built before the fold existed)
+  // has per-row ops.
   hasCigar: boolean
   // The alignments this level FETCHED and could not draw a ribbon for, because
   // their mate is on a contig the facing row is not displaying. Counted per
@@ -830,6 +832,25 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
               lodMode: this.view.lodMode,
             })
           : 'fine'
+      },
+      /**
+       * #getter
+       * True while the loaded tier is the coarse one and the zoom is finer
+       * than the tier's own threshold, which only a pinned "Alignment blocks
+       * only" reaches. A walk through a coarse CIGAR is within the fold's
+       * `--coarse` gap of the alignment's real path, and that gap is sub-pixel
+       * at or past the threshold and visible below it, so the follow reports a
+       * placement walked there as approximate.
+       */
+      get coarseWalkIsApproximate() {
+        const connected = this.connectedViews
+        const threshold = getCoarseBpPerPxThreshold(self.parentTrack)
+        return (
+          this.lodTier === 'coarse' &&
+          connected !== undefined &&
+          threshold !== undefined &&
+          Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx) < threshold
+        )
       },
       /**
        * #getter

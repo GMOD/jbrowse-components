@@ -166,7 +166,11 @@ run is one ribbon segment between its corners and each kept gap is a colored
 indel wedge. An insertion or deletion large enough to see at whole-genome zoom
 therefore looks the same in both tiers, and the tier switch changes nothing on
 screen. The row's coordinates, `num_matches` and `block_len` are the fine row's,
-so the feature detail panel shows the same alignment either way.
+so the feature detail panel shows the same alignment either way. Navigation
+walks it as well: "Move other panel to the matching region", the follow mode and
+the launch dialog's clip-to-region all map through the coarse CIGAR, and the
+answer is within `--coarse` bp of the CIGAR's, which is under a pixel at any
+zoom the tier is served automatically.
 
 The tag is also omitted when the row has no CIGAR, and when the CIGAR does not
 close on the row's own coordinate columns (clipping ops, a hand-written `cg`, a

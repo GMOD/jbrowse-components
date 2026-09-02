@@ -6,10 +6,11 @@ import type { FollowStep } from './planFollowStep.ts'
 
 export interface FollowAnswer {
   span: ResolvedSpan
-  // Proportional rather than walked, which is what the header reports. It comes
-  // back with the answer because the PLAN cannot always tell: `hasCigar` is
-  // per-FETCH, so a mixed file reaches the walk with a block that has none and
-  // only the empty result says so.
+  // Proportional rather than walked, which is what the header reports — or
+  // walked through a coarse fold at a zoom where its gap is wider than a pixel.
+  // It comes back with the answer because the PLAN cannot always tell:
+  // `hasCigar` is per-FETCH, so a mixed file reaches the walk with a block that
+  // has none and only the empty result says so.
   approximate: boolean
 }
 
@@ -34,5 +35,7 @@ export async function resolveFollowSpan(
   const walked = hasCigar
     ? await resolveMatchingSpan({ model: display, feat, window, toMate })
     : undefined
-  return walked ? { span: walked, approximate: false } : interpolated()
+  return walked
+    ? { span: walked, approximate: display.coarseWalkIsApproximate }
+    : interpolated()
 }

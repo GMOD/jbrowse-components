@@ -1,4 +1,4 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
+import { parseCigar2, parseCoarseCigar } from '@jbrowse/cigar-utils'
 
 import { findPosInCigar } from '../LaunchSyntenyView/findPosInCigar.ts'
 import { buildCigarMap } from './buildCigarMap.ts'
@@ -121,4 +121,15 @@ test('an empty CIGAR is one degenerate point rather than a throw', () => {
   const m = map('')
   expect([...m.featOffsets]).toEqual([0])
   expect([...m.mateOffsets]).toEqual([0])
+})
+
+// A coarse fold's run is linear inside, so one point at its far end is exact
+// and interpolating within it is the run's own proportion; the kept gap is a
+// step, as any deletion is.
+test('a coarse CIGAR run puts one point at its end and interpolates inside', () => {
+  const m = buildCigarMap(parseCoarseCigar('1000:900M500D1000M'))
+  expect([...m.featOffsets]).toEqual([0, 1000, 1500, 2500])
+  expect([...m.mateOffsets]).toEqual([0, 900, 900, 1900])
+  expect(interpolate(m, 500)).toBeCloseTo(450)
+  expect(interpolate(m, 1250)).toBe(900)
 })

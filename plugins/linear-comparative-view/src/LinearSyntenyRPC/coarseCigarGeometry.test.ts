@@ -94,7 +94,12 @@ test('a coarse row with a kept gap draws the gap as a colored wedge', async () =
   expect(kindsOf(value, 'plain')).toEqual([KIND_BASE])
 })
 
-test('the coarse fold is not a CIGAR for the walks that need per-base ops', async () => {
+test('the coarse fold counts as an alignment string for the walks', async () => {
   const value = await run([coarseRow('with-tag', '1000M50000D1000M')])
+  expect(value.hasCigar).toBe(true)
+})
+
+test('a coarse row without the fold leaves nothing to walk', async () => {
+  const value = await run([coarseRow('plain')])
   expect(value.hasCigar).toBe(false)
 })

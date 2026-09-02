@@ -1,10 +1,8 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
-
 import {
   findPosInCigar,
   findPosInCigarByMate,
 } from '../LaunchSyntenyView/findPosInCigar.ts'
-import { getCigar, getMate } from '../syntenyMate.ts'
+import { getAlignmentOps, getMate } from '../syntenyMate.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -21,19 +19,17 @@ export interface ResolvedSpan {
 
 /**
  * The slice of the OTHER axis that `alignment` puts opposite `window`, walked
- * through the CIGAR.
+ * through the CIGAR — or through the coarse tier's fold of it, whose runs keep
+ * the answer within the fold's `--coarse` gap (ADR-103).
  *
- * `undefined` when the block carries no CIGAR, and that is the point of this
+ * `undefined` when the block carries neither, and that is the point of this
  * function rather than a shortcoming of it. Interpolating across the block is
  * available (`buildSyntenyViewSpec`'s `resolveSpans` does it, and for a launch
  * that is padded by a window size it is fine), but a caller that is going to
  * NAVIGATE a panel to the result and show it flush against its neighbour would
- * be presenting a straight-line guess as a correspondence. A PIF's coarse tier
- * is CIGAR-less by construction: `jbrowse make-pif` folds the CIGAR to a
- * `cr:Z:` coarse CIGAR, whose runs DO bound the skew inside them (to the
- * `--coarse` gap), but nothing here walks that yet, and a straight line across
- * the whole row has no bound at all. So there is no error bound to fall back
- * on, and the honest answer is no answer.
+ * be presenting a straight-line guess as a correspondence, and a straight line
+ * across a whole block has no error bound at all. So the honest answer is no
+ * answer.
  *
  * `toMate` picks the direction: true maps a window on the feature (target) axis
  * onto the mate (query) axis, false maps the mate axis onto the feature axis.
@@ -50,11 +46,10 @@ export function resolveAlignmentSpan({
   toMate: boolean
 }): ResolvedSpan | undefined {
   const mate = getMate(alignment)
-  const cigarStr = getCigar(alignment)
-  if (!mate || !cigarStr) {
+  const cigar = getAlignmentOps(alignment)
+  if (!mate || !cigar) {
     return undefined
   }
-  const cigar = parseCigar2(cigarStr)
   const strand = alignment.get('strand')
   const featStart = alignment.get('start')
   const featEnd = alignment.get('end')

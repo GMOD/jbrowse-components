@@ -22,7 +22,7 @@ import {
 } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { syntenyRegionMenuItems } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
-import { getCigar, getMate } from '../syntenyMate.ts'
+import { getMate, hasAlignmentString } from '../syntenyMate.ts'
 import {
   containingPanelStack,
   matePanelIndexes,
@@ -235,16 +235,15 @@ function openMateItem(
  * Only where this view IS a panel of a stack — in a standalone linear view
  * there is nothing to move, and launching is the whole answer.
  *
- * AND ONLY WITH A CIGAR TO WALK. Without one, `resolvedMateSpan` interpolates
- * across the block — which is the right answer for the launch, whose dialog pads
- * the result by a window size and shows what it resolved, but not for this: this
- * navigates a neighbouring panel and parks it flush against this one, which
- * presents a straight-line guess as a correspondence with nothing on screen to
- * say so. A minimap2 PAF without `-c`, MashMap, MCScan and a PIF's coarse tier
- * all carry no CIGAR. The coarse tier's `cr:Z:` fold does bound the skew inside
- * each of its runs, but nothing walks it for this yet, so the tier stays gated
- * with the rest. The band's own right-click menu gates on the same thing via
- * `featureData.hasCigar`.
+ * AND ONLY WITH AN ALIGNMENT STRING TO WALK — a CIGAR, or the coarse tier's
+ * fold of one, whose runs keep the walk within the fold's `--coarse` gap.
+ * Without either, `resolvedMateSpan` interpolates across the block — which is
+ * the right answer for the launch, whose dialog pads the result by a window size
+ * and shows what it resolved, but not for this: this navigates a neighbouring
+ * panel and parks it flush against this one, which presents a straight-line
+ * guess as a correspondence with nothing on screen to say so. A minimap2 PAF
+ * without `-c`, MashMap and MCScan carry nothing to walk. The band's own
+ * right-click menu gates on the same thing via `featureData.hasCigar`.
  */
 function movePanelItem(
   self: SyntenyContextMenuModel,
@@ -253,7 +252,7 @@ function movePanelItem(
 ): MenuItem[] {
   const view = self.view
   const stack = containingPanelStack(view)
-  if (!stack || !block || !getCigar(feature)) {
+  if (!stack || !block || !hasAlignmentString(feature)) {
     return []
   }
   const anchorIndex = stack.views.indexOf(view)

@@ -103,3 +103,56 @@ test('refuses a block with no CIGAR', () => {
     }),
   ).toBeUndefined()
 })
+
+// The same block from the coarse tier: no CIGAR, but the fold keeps the
+// deletion and writes the runs around it with their own two lengths. Walking
+// that lands within the fold's gap of the CIGAR's answer, here exactly, since
+// each run is genuinely linear.
+function coarseBlock(coarseCigar: string) {
+  return new SimpleFeature({
+    uniqueId: 'c',
+    refName: 'chr1',
+    start: 1000,
+    end: 2100,
+    strand: 1,
+    coarseCigar,
+    mate: {
+      refName: 'ctgA',
+      start: 5000,
+      end: 6000,
+      assemblyName: 'other',
+    },
+  })
+}
+
+test('a coarse fold walks a window inside a run in proportion', () => {
+  // the first run advances the mate 450 for 500 of the feature
+  expect(
+    resolveAlignmentSpan({
+      alignment: coarseBlock('500:450M100D500:550M'),
+      window: { start: 1100, end: 1200 },
+      toMate: true,
+    }),
+  ).toEqual({ refName: 'ctgA', start: 5090, end: 5180 })
+})
+
+test('a coarse fold steps over its kept gap', () => {
+  // past the run (450) and the deletion, 100..200 into the second run at 1.1
+  expect(
+    resolveAlignmentSpan({
+      alignment: coarseBlock('500:450M100D500:550M'),
+      window: { start: 1700, end: 1800 },
+      toMate: true,
+    }),
+  ).toEqual({ refName: 'ctgA', start: 5560, end: 5670 })
+})
+
+test('the reverse direction walks a coarse fold too', () => {
+  expect(
+    resolveAlignmentSpan({
+      alignment: coarseBlock('500:450M100D500:550M'),
+      window: { start: 5560, end: 5670 },
+      toMate: false,
+    }),
+  ).toEqual({ refName: 'chr1', start: 1700, end: 1800 })
+})

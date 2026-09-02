@@ -1,7 +1,5 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
-
 import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
-import { getCigar, getMate } from '../syntenyMate.ts'
+import { getAlignmentOps, getMate } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { SyntenyMate } from '../syntenyMate.ts'
@@ -70,7 +68,8 @@ function mateOffsetToGenomic(
 // two blocks' corners, and reading the mate position off that straight edge is
 // the same answer the picture gives. CIGAR-less blocks are the common case, not
 // an edge one: a PAF from minimap2 without `-c` carries no `cg` tag, and neither
-// do MashMap, MCScan or the coarse PIF tier. Framing every panel on the whole
+// do MashMap or MCScan (the coarse PIF tier carries its fold, which walks like a
+// CIGAR here). Framing every panel on the whole
 // block instead meant a rubberband over one gene of a megabase-long asm5 block
 // opened the whole megabase, on both sides, with no sign the selection had been
 // ignored.
@@ -83,7 +82,7 @@ function resolveSpans({
   mate: SyntenyMate
   region: RegionOfInterest | undefined
 }) {
-  const cigar = getCigar(feature)
+  const cigar = getAlignmentOps(feature)
   const strand = feature.get('strand')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
@@ -96,9 +95,8 @@ function resolveSpans({
     }
   }
   if (cigar) {
-    const p = parseCigar2(cigar)
-    const [fStartX, mStartX] = findPosInCigar(p, region.start - featStart)
-    const [fEndX, mEndX] = findPosInCigar(p, region.end - featStart)
+    const [fStartX, mStartX] = findPosInCigar(cigar, region.start - featStart)
+    const [fEndX, mEndX] = findPosInCigar(cigar, region.end - featStart)
     return {
       featStart: featStart + fStartX,
       featEnd: featStart + fEndX,

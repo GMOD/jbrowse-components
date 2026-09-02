@@ -4,6 +4,7 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
+  CIGAR_RUN,
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
@@ -34,17 +35,24 @@ import {
 // getLengthSansClipping etc.). N (skipped region / intron) consumes the
 // feature/reference axis only, exactly like D, so it is handled alongside it —
 // a spliced CIGAR is rare here but would otherwise mismap across the gap.
-export function findPosInCigar(cigar: number[], startX: number) {
+//
+// A CIGAR_RUN word pair (the coarse tier's fold of a run with its small indels)
+// advances the two axes in proportion, which is within the fold's `--coarse`
+// gap of the alignment's real path. A run with no width on the feature axis
+// behaves as the insertion it amounts to.
+export function findPosInCigar(cigar: ArrayLike<number>, startX: number) {
   let featX = 0
   let mateX = 0
-  for (const packed of cigar) {
-    if (featX >= startX) {
-      break
-    }
+  for (let i = 0; i < cigar.length && featX < startX; i++) {
+    const packed = cigar[i]!
     const len = packed >>> 4
     const opIdx = packed & 0xf
     const min = Math.min(len, startX - featX)
-    if (opIdx === CIGAR_I) {
+    if (opIdx === CIGAR_RUN) {
+      const mateLen = cigar[++i]! >>> 4
+      featX += min
+      mateX += len === 0 ? mateLen : Math.round((min * mateLen) / len)
+    } else if (opIdx === CIGAR_I) {
       mateX += len
     } else if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
       featX += min
@@ -72,23 +80,28 @@ export function findPosInCigar(cigar: number[], startX: number) {
 // whole length on the feature axis. The same half-open tie-break falls out: the
 // loop stops once mateX reaches startX, so a deletion sitting exactly at the
 // boundary is not consumed.
-export function findPosInCigarByMate(cigar: number[], startX: number) {
+export function findPosInCigarByMate(cigar: ArrayLike<number>, startX: number) {
   let featX = 0
   let mateX = 0
-  for (const packed of cigar) {
-    if (mateX >= startX) {
-      break
-    }
+  for (let i = 0; i < cigar.length && mateX < startX; i++) {
+    const packed = cigar[i]!
     const len = packed >>> 4
     const opIdx = packed & 0xf
-    const min = Math.min(len, startX - mateX)
-    if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
-      featX += len
-    } else if (opIdx === CIGAR_I) {
+    if (opIdx === CIGAR_RUN) {
+      const mateLen = cigar[++i]! >>> 4
+      const min = Math.min(mateLen, startX - mateX)
       mateX += min
-    } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
-      mateX += min
-      featX += min
+      featX += mateLen === 0 ? len : Math.round((min * len) / mateLen)
+    } else {
+      const min = Math.min(len, startX - mateX)
+      if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
+        featX += len
+      } else if (opIdx === CIGAR_I) {
+        mateX += min
+      } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
+        mateX += min
+        featX += min
+      }
     }
   }
   return [featX, mateX] as const

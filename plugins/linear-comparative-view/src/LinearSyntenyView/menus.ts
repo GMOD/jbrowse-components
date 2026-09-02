@@ -270,11 +270,11 @@ export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
 /**
  * Whether one synteny display could show CIGAR detail — the per-display half of
  * the view's `hasCigarData`. Three ways to answer "maybe", and the coarse one is
- * the subtle one: a display serving the coarse LOD tier reports `hasCigar` false
- * because that tier omits the CIGARs, NOT because the file lacks them. Reading
- * that as "no CIGAR data" retracted the whole CIGAR control on zoom-out and put
- * it back on zoom-in — the tier switch, an implementation detail, made a
- * setting appear and disappear under the user.
+ * the subtle one: a display serving a coarse LOD tier built before the fold
+ * existed reports `hasCigar` false because that tier omits the CIGARs, NOT
+ * because the file lacks them. Reading that as "no CIGAR data" retracted the
+ * whole CIGAR control on zoom-out and put it back on zoom-in — the tier switch,
+ * an implementation detail, made a setting appear and disappear under the user.
  */
 export function displayCanShowCigar(display: {
   lodTier: LodTier

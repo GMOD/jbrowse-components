@@ -34,9 +34,15 @@ const feat: FeatPos = {
   attributes: {},
 }
 
+// the one display getter the resolve reads: whether a coarse-tier walk is
+// zoomed finer than the tier's threshold
+function display(coarseWalkIsApproximate = false) {
+  return { coarseWalkIsApproximate } as LinearSyntenyDisplayModel
+}
+
 function step(over: Partial<FollowStep> = {}): FollowStep {
   return {
-    display: {} as LinearSyntenyDisplayModel,
+    display: display(),
     feat,
     window: { refName: 'chr1', start: 102_000, end: 103_000 },
     toMate: true,
@@ -84,4 +90,17 @@ test('an envelope is proportional by construction', async () => {
   ).resolves.toEqual({ span: envelope, approximate: true })
   // past one alignment there is no single block to walk
   expect(walk).not.toHaveBeenCalled()
+})
+
+// A walk through the coarse fold is within its `--coarse` gap, which is under a
+// pixel wherever the tier is served automatically; a pinned coarse tier zoomed
+// past its threshold is the one place the display says otherwise.
+test('a walk through a coarse tier zoomed past its threshold is approximate', async () => {
+  walk.mockResolvedValue({ refName: 'Pp01', start: 1_102_500, end: 1_103_400 })
+  await expect(
+    resolveFollowSpan(step({ display: display(true) })),
+  ).resolves.toEqual({
+    span: { refName: 'Pp01', start: 1_102_500, end: 1_103_400 },
+    approximate: true,
+  })
 })
