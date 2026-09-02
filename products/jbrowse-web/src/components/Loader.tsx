@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { setTypeChecking } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
 
 import { markCrashedSession } from '../crashedSession.ts'
@@ -16,6 +17,22 @@ import {
 } from '../permanentPlugins.ts'
 import Renderer from './Renderer.tsx'
 import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
+
+// MST skips run-time type-checking in production builds, where a config or
+// session that doesn't match its model would otherwise fail later and further
+// away. Keep it on: the validation error names the offending path.
+//
+// Said here rather than as a bundler-substituted `process.env.ENABLE_TYPE_CHECK`
+// — the flag is a property of this app, not of the machine that builds it, and
+// an explicit call carries to any bundler instead of needing each one to define
+// a node global that does not exist in a browser.
+//
+// This module rather than `index.tsx`, which is the entry chunk: naming MST
+// there put the whole tree (and mobx behind it) in the one script the browser
+// must parse before it can even discover this chunk. Here it lands beside the
+// first model that reads the flag — `createSessionLoaderFromUrl` below builds
+// one, and every later model is built from it.
+setTypeChecking(true)
 
 export function Loader({ initialTimestamp }: { initialTimestamp?: number }) {
   const [loader, setLoader] = useState(() =>

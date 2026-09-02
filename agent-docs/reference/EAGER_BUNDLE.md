@@ -501,18 +501,22 @@ Chrome page load: every script fetched before the app-ready marker and the
 displays' drawn marks, gzipped from disk), main of 2026-09-02 against the
 landed branch:
 
-| volvox page                   | before | after  |
-| ----------------------------- | -----: | -----: |
-| empty LinearGenomeView        | 796 KB | 584 KB |
-| four tracks, four displays    | 1193 KB | 1102 KB |
+| volvox page                | before  |   after | + eager-UI pass |
+| -------------------------- | ------: | ------: | --------------: |
+| empty LinearGenomeView     |  796 KB |  584 KB |          584 KB |
+| four tracks, four displays | 1193 KB | 1102 KB |         1066 KB |
+
+The third column is the pass described in "The eager UI is the boot shell"
+below, and its shape is the finding: the empty page did not move at all.
 
 `--time`, the same pages over an emulated 4 Mbps / 40 ms link, median of five
 loads: app ready 6.0 s → 4.7 s on the empty page; four displays drawn 26.7 s →
-21.5 s. Bytes only matter through this number, and it moved with them.
+21.5 s. Bytes only matter through this number, and it moved with them. The
+eager-UI pass left both where they were (4.6 s, 21.4 s).
 
 What is left on the empty page is the floor this design does not touch: MUI
-(88 KB), react-dom (49), the MST fork (32), mobx (22), core's own runtime
-(140), the LGV model and app shell. Plugin code is ~40 KB and diffuse — config
+(85 KB), react-dom (59), the MST fork (26), mobx (18), core's own runtime
+(138), the LGV model and app shell. Plugin code is ~40 KB and diffuse — config
 schemas, which stay eager on purpose, and 1-2 KB helpers reached through
 barrels. `--files plugins/` lists them.
 
@@ -651,6 +655,86 @@ That fits a page addition inside the band while still failing on a 38 KB module
 — the size of the MUI `Slider` that section 5 removed. Not done: the delivered
 gzip figure is what a reader downloads and is worth continuing to report, so the
 change is which number CI *gates* on, and that is a call to make deliberately.
+
+## The eager UI is the boot shell, and the barrel that looks like a pin is not one
+
+Measured 2026-09-02 on jbrowse-web's emptiest page (volvox config, one
+`LinearGenomeView`), by walking the source maps of every chunk the browser
+actually fetched before the app-ready marker: **23 chunks, 584 KB gzipped, 1123
+first-party modules holding 326 KB of it. 218 of those are `.tsx`, and they are
+30 KB of the 326.** Every component among them is on screen — the app shell, the
+LGV chrome, and the hierarchical track selector, which volvox's `defaultSession`
+opens. There is nothing left in that set to defer.
+
+**Read `scripts/eager-import-closure.ts` as a candidate list, not a census.** On
+`products/jbrowse-web/src/components/Loader.tsx` it reports 1632 modules, 7.5 MB
+and 309 `.tsx` — roughly 3x the truth, because it follows a barrel edge whole
+where a bundler resolves the re-export to the leaf. `PreferencesDialog`,
+`BaseFeatureDetail/*`, `WorkspaceLayout/*` and `LocalFileChooser` all appear in
+that closure and none of them is in the fetched set. The census is
+`pnpm measure-web-bundle --files <prefix>`, or a source-map walk over the
+fetched chunks when you need more than its top 40.
+
+One genuine oversight turned up: `OverrideBadge.tsx` named
+`TrackSettingsChangesDialog` at module scope, the last `queueDialog` route in
+the tree that was not already `lazy()`. Fixed — and worth **zero bytes on
+webpack**, for the reason below.
+
+### `import * as coreUi` is the reason, and removing it costs more than it saves
+
+`ReExports/modules.ts` still holds `import * as coreUi from '../ui/index.ts'`.
+webpack's used-exports analysis is global, not per chunk, so **a namespace
+import marks every export of the barrel used, and any chunk that holds
+`ui/index.ts` holds all 122 modules under it** whatever its importer asked for.
+Pin 4's "once the spread was gone the barrel tree-shook per-export" describes
+rolldown on the examples site; on webpack the spread never went, it moved behind
+a dynamic import — and jbrowse-web fetches that chunk before app-ready whenever
+the config names a plugin, which volvox's does.
+
+So `SettingsChangesTable`, `JexlFilterDialog`, `FileSelector/*`, `TagTextField`,
+`SvgColorLegend` and 45 more are in the empty page's download with no first-party
+importer at all. Deleting the entry (ABI-breaking, run as a diagnostic only)
+drops 50 of them and 9.8 KB of first-party gzip — and the page gets **bigger**:
+
+| empty LGV | chunks | gzip | first-party |
+| --- | ---: | ---: | ---: |
+| as shipped | 23 | 584 KB | 325.8 KB |
+| `'@jbrowse/core/ui': {}` | 39 | 590 KB | 316.0 KB |
+| that, plus `splitChunks.minSize: 60000` | 23 | 592 KB | — |
+
+Per-export shaking splits the Material UI those components shared into 16 small
+chunks that are all still fetched, several carrying their own copies of
+`FilledInput`, `OutlinedInput` and `@mui/material/utils`. Co-location was buying
+more in compression than the retention was costing. Raising `minSize` to
+suppress the fragments brings them back as duplicates inside the parents
+instead — 592 KB on the empty page and 1102 → 1144 KB on the four-track one.
+`products/jbrowse-web/CLAUDE.md` records `chunks: 'all'` failing the same way.
+
+**The lever that is left, and its price.** Give `@jbrowse/core/ui` the
+`publicUtil.ts` treatment — an explicit named ABI list — with the component half
+behind `lazy()` and **one shared `webpackChunkName`**, so the deferred
+components land in a single chunk nobody fetches at boot rather than 16 that
+everybody does. Worth the ~10 KB above plus whatever Material UI only those
+components hold (`Table*` is the clear case, reached from nothing else once
+`OverrideBadge` is lazy). It is an ABI change: every core/ui component served to
+an external plugin becomes Suspense-wrapped, which is exactly the
+measured-on-open hazard `MuiReExports.ts`'s header describes, so the menu and
+overlay members have to stay eager and each one is a judgement call.
+
+### MST rode in on the entry chunk
+
+`index.tsx` called `setTypeChecking(true)`, and that one import put the MST fork
+(353 KB raw) and mobx (242 KB) into `main.js` — the single script the browser
+fetches and parses before it can even *discover* the lazy Loader chunk. The call
+is now at the top of `components/Loader.tsx`, which is inside that lazy chunk and
+still evaluates before `createSessionLoaderFromUrl` builds the first model.
+
+`main.js` 133 → 97 KB gzip. The four-track page went 1102 → 1066 KB and the
+empty page did not move: the bytes relocate rather than leave, and MST gzips
+~30 KB better beside the code that uses its identifiers than beside react-dom.
+`--time` was unchanged on both pages, which is the honest reading — on a 4 Mbps
+link the empty page's 4.7 s is dominated by the assembly fetch and by parse, not
+by the 1.2 s the bytes themselves take.
 
 ## What is not worth chasing
 

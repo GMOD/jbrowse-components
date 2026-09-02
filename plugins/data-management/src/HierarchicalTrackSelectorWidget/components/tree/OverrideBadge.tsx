@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import {
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
@@ -8,10 +10,12 @@ import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackSettingsChangesDialog from '../dialogs/TrackSettingsChangesDialog.tsx'
-
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+
+const TrackSettingsChangesDialog = lazy(
+  () => import('../dialogs/TrackSettingsChangesDialog.tsx'),
+)
 
 const useStyles = makeStyles()(theme => ({
   editButton: {

@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
@@ -80,8 +82,18 @@ describe('OverrideBadge session-default awareness', () => {
     expect(session.DialogComponent).toBeUndefined()
 
     fireEvent.click(badge)
-    // clicking queues the changes dialog (rendered by the app-level dialog host)
-    expect(session.DialogComponent).toBe(TrackSettingsChangesDialog)
+    // The dialog is lazy, so the queued component is a boundary rather than the
+    // module: render it the way the app-level dialog host does and read what it
+    // draws.
+    const Queued = session.DialogComponent!
+    const { findByText } = render(
+      theme(
+        <Suspense fallback={null}>
+          <Queued {...session.DialogProps} />
+        </Suspense>,
+      ),
+    )
+    expect(await findByText(/Session-wide default/)).toBeTruthy()
   })
 
   it('clears only the session defaults the dialog listed', async () => {
