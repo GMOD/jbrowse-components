@@ -182,7 +182,7 @@ describe('sashimi selection', () => {
   it('records the clicked junction on the model, not in the component', () => {
     const model = stubModel(undefined)
     const { container } = render(<SashimiArcsOverlay model={model} />)
-    fireEvent.click(container.querySelectorAll('path')[0]!)
+    fireEvent.click(container.querySelector('path')!)
     expect(model.setSelectedSashimiKey).toHaveBeenCalledWith(SELECTED)
   })
 
