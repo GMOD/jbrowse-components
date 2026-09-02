@@ -117,4 +117,22 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
     expect(display.layout).toEqual([])
     expect(display.sortRowsBy).toEqual({ refName: 'ctgB', pos: 600 })
   })
+
+  // The shared gate only knows that a region covers the column; one row is the
+  // display's own reason to decline, and it is a temporary one — rows are
+  // discovered from the data, so the second subtrack may still be a fetch away.
+  it('holds the trigger over a single row, which has nothing to rank', async () => {
+    const { createDisplay } = environmentWith({ a: 1 })
+    const { display } = createDisplay({
+      sortRowsBy: { refName: 'ctgA', pos: 600 },
+    })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sourcesWithoutLayout.length).toBe(1)
+    })
+
+    expect(display.layout).toEqual([])
+    expect(display.sortRowsBy).toEqual({ refName: 'ctgA', pos: 600 })
+  })
 })

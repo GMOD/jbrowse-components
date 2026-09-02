@@ -457,10 +457,11 @@ export default function stateModelFactory(
        * `sortRowsBy` carries one across a reload. Resolving that region and
        * refusing the two cases where a sort would only cost a `layout` write
        * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
-       * twin.
+       * twin, and so is the returned "did it sort" the declarative entry point
+       * reads to decide whether to keep its trigger for a later fetch.
        */
       sortRowsByScoreAt(refName: string, pos: number) {
-        sortRowsAtColumn(
+        return sortRowsAtColumn(
           self,
           refName,
           pos,
@@ -513,9 +514,9 @@ export default function stateModelFactory(
       afterAttach() {
         setupTreeSidebarAutoruns(self, {
           name: 'MultiWiggle',
-          sortRows: (refName, pos) => {
-            self.sortRowsByScoreAt(refName, pos)
-          },
+          // Forwarded, not swallowed: `false` is "no loaded region covers that
+          // column", and it holds `sortRowsBy` for the fetch that will.
+          sortRows: (refName, pos) => self.sortRowsByScoreAt(refName, pos),
           // "Cluster rows by score": the score-matrix RPC over the
           // `clusterRegion` locus if the session named one and the visible
           // blocks if not. Refuses a single row, matching the track menu's gate

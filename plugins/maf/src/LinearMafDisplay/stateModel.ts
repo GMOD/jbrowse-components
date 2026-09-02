@@ -41,10 +41,10 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
-  loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
+  sortRowsAtColumn,
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
@@ -1273,22 +1273,21 @@ export default function stateModelFactory(
          * covers, for the reasons the other two displays' twins state: the
          * empty write is not a no-op (`setLayout` drops the tree — here the
          * guide phylogeny — whenever the row set changes), and every row
-         * reading "no base" writes back the order it already had.
+         * reading "no base" writes back the order it already had. Both gates
+         * and the returned "did it sort" are `sortRowsAtColumn`'s.
          */
         sortRowsByBaseAt(refName: string, pos: number) {
-          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
-          const region =
-            index === undefined ? undefined : self.rpcDataMap.get(index)
-          if (region && self.editableSources.length > 1) {
-            self.setLayout(
-              orderMafRowsByBaseAt(
-                self.editableSources,
-                self.sources,
-                region,
-                pos,
-              ),
-            )
-          }
+          return sortRowsAtColumn(
+            self,
+            refName,
+            pos,
+            index => self.rpcDataMap.get(index),
+            // `sources` is the drawn list, which is what the block's
+            // `rowIndex` names — `sortRowsAtColumn` hands over the editable
+            // one, the list being written back to `layout`
+            (sources, region) =>
+              orderMafRowsByBaseAt(sources, self.sources, region, pos),
+          )
         },
       }))
       .views(self => ({
@@ -2599,9 +2598,9 @@ export default function stateModelFactory(
           )
           setupTreeSidebarAutoruns(self, {
             name: 'Maf',
-            sortRows: (refName, pos) => {
-              self.sortRowsByBaseAt(refName, pos)
-            },
+            // Forwarded, not swallowed: `false` is "no loaded region covers
+            // that column", and it holds `sortRowsBy` for the fetch that will.
+            sortRows: (refName, pos) => self.sortRowsByBaseAt(refName, pos),
             // "Cluster rows by identity": two rows minimum, matching the
             // menu's gate — one row has no structure to find and hclust has
             // nothing to merge

@@ -1002,7 +1002,7 @@ export default function stateModelFactory(
          * "sorting" a track that is merely not loaded right now used to wipe it.
          */
         sortRowsByValueAt(refName: string, pos: number) {
-          sortRowsAtColumn(
+          return sortRowsAtColumn(
             self,
             refName,
             pos,
@@ -1222,9 +1222,9 @@ export default function stateModelFactory(
           )
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',
-            sortRows: (refName, pos) => {
-              self.sortRowsByValueAt(refName, pos)
-            },
+            // Forwarded, not swallowed: `false` is "no loaded region covers
+            // that column", and it holds `sortRowsBy` for the fetch that will.
+            sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
             // "Cluster rows by similarity": the feature-matrix RPC over the
             // `clusterRegion` locus if the session named one, the visible
             // blocks if not
