@@ -45,58 +45,40 @@ already showing:
 }
 ```
 
-`assembly` and `loc` are resolved when the view attaches, which works out the
-`displayedRegions` and the window the locus implies. [](/docs/automating) lists
-every field a view takes — `grow` to pad the locus for context, `highlight`,
-`tracklist`, `nav`, and `displayedRegionNames` to open a whole-genome view of
-selected chromosomes. Every other view setting goes on the same object:
-`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`.
+`assembly` and `loc` are resolved when the view attaches. [](/docs/automating)
+lists every field a view takes (`grow`, `highlight`, `tracklist`, `nav`,
+`displayedRegionNames`), and other view settings go on the same object
+(`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`).
 
 A track entry can be an object when it needs display options:
-`{ "trackId": "volvox_genes", "height": 200 }` opens the track 200px tall. Any
-slot the display defines can be set this way.
+`{ "trackId": "volvox_genes", "height": 200 }`. Any slot the display defines can
+be set this way.
 
 ## Referencing tracks by trackId
 
-A view's `tracks` lists `trackId`s from the top-level `tracks` array; the
-session never repeats an adapter. Any track the session opens must exist in that
-array (or come from the assembly), or the session silently fails to open it. If
-a pipeline regenerates `config.json` with different `trackId`s each build, the
-`defaultSession` breaks along with every previously shared link, which is why
+A view's `tracks` lists `trackId`s from the top-level `tracks` array. A track
+missing from that array is silently not opened, which `jbrowse validate`
+reports. A pipeline that changes `trackId`s each build breaks the
+`defaultSession` along with every shared link, so
 [trackIds must stay stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
-
-`jbrowse validate` reports a `defaultSession` naming a `trackId` that does not
-exist.
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
 
 ## Sessions the app exports
 
-The app's export-session option writes a full state snapshot: `id`s,
-`displayedRegions` and the window (`windowStartBp`, `windowWidthBp`) spelled
-out, and each track carrying a `configuration` reference and a `displays` array.
-It is valid as a `defaultSession` and pastes straight in.
-
-It is long, and hand-editing it comes with caveats:
-
-- Every coordinate is resolved, so re-aiming the view means editing base-pair
-  offsets.
-- A display node accepts only that display's state-model properties, so a config
-  slot written there — `"height": 250` on the display — is dropped without
-  warning, where the same key works in a track entry the view opens by id.
-
-Use an export to capture a view you built by clicking, and read the locus and
-track ids off it into a hand-written view for anything you intend to keep
-editing.
+The app's export-session option writes a full state snapshot (`id`s,
+`displayedRegions`, the window, and a `displays` array per track). It pastes
+straight in as a `defaultSession`, but is long to hand-edit: every coordinate is
+resolved, and a display node accepts only that display's state-model properties,
+so `"height": 250` written there is dropped without warning. Use an export to
+capture a view built by clicking, and read the locus and track ids off it into a
+hand-written view.
 
 ## Shipping several named sessions
 
 [`preConfiguredSessions`](/docs/config/jbrowserootconfig/#slot-preconfiguredsessions)
-is a top-level array of the same session objects, each with a `name`, which
-jbrowse-web and jbrowse-desktop list under File → "Pre-configured sessions...".
-Use it where one instance serves several starting points — a figure per
-publication, a locus per assay — that a reader should be able to switch between
-without a link.
+is a top-level array of the same session objects, each with a `name`, listed
+under File → "Pre-configured sessions..." in jbrowse-web and jbrowse-desktop.
 
 ```json
 {
@@ -108,9 +90,7 @@ without a link.
 }
 ```
 
-They are the same format as `defaultSession`: a `name` and a list of views, so a
-set of them is cheap to generate from whatever already knows the loci. The same
-`trackId` caveat applies: a session naming a track that is not in the top-level
+The same `trackId` caveat applies: a session naming a track not in the top-level
 `tracks` array silently opens without it.
 
 ## See also
