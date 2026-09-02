@@ -135,7 +135,11 @@ const stale: string[] = []
 // so the honest figure for what these pages cost is +5, not +3. Lower it again
 // the moment a tested `jb` example fixture exists to point at — that is the
 // conversion this debt is waiting on, and it would buy back most of the six.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '49')
+//
+// 49 -> 52 on 2026-09-02: the agents overview rewrite grew `agents.md` (+2) and
+// `agents_web.md` (+1) — the same standard-library tour, so `agents_web.md` no
+// longer holds the line its own "adds ZERO deliberately" note above described.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '52')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
