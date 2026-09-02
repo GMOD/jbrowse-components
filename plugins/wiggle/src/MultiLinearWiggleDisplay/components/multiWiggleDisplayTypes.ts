@@ -62,6 +62,7 @@ export interface MultiWiggleDisplayModel
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
+  setScrollTop: (scrollTop: number) => void
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void
   selectFeature: (feat: WiggleHoveredFeature) => void

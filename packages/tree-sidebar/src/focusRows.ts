@@ -8,10 +8,10 @@
 export function focusRows(
   model: {
     setSubtreeFilter: (names?: string[]) => void
-    setScrollTop?: (scrollTop: number) => void
+    setScrollTop: (scrollTop: number) => void
   },
   names?: string[],
 ) {
   model.setSubtreeFilter(names)
-  model.setScrollTop?.(0)
+  model.setScrollTop(0)
 }

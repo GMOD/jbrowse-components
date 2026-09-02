@@ -30,6 +30,7 @@ function model(props: Partial<TreeSidebarModel> = {}): TreeSidebarModel {
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
     setSubtreeFilter: () => {},
+    setScrollTop: () => {},
     ...props,
   }
 }
