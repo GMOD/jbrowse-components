@@ -77,7 +77,12 @@ export const viewTypeModes = new Map(
   }),
 )
 
+// LinearGenomeView is deliberately absent from viewTypeModes — a --spec must
+// never select linear — so the subcommand that renders one is answered here
+// rather than by widening that map.
 export function subcommandForViewType(viewType: string) {
-  const mode = viewTypeModes.get(viewType)
+  const mode =
+    viewTypeModes.get(viewType) ??
+    (viewType === 'LinearGenomeView' ? 'linear' : undefined)
   return mode && modeDescriptors[mode].subcommand
 }

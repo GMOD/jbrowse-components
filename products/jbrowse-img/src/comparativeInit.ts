@@ -46,6 +46,13 @@ function sharedComparativeKnobs(opts: Opts): SyntenyViewSharedInit {
   }
 }
 
+// Dotplot takes the shared subset alone. Exported so the --spec path can merge
+// the same flags over the spec's own settings, which is why this is a builder
+// rather than a bare definedOnly call at each site.
+export function dotplotViewKnobs(opts: Opts) {
+  return definedOnly<Partial<DotplotViewInit>>(sharedComparativeKnobs(opts))
+}
+
 // Synteny adds the ribbon-shape knobs a dotplot has no equivalent for. The full
 // set lives in --spec; these are the busy-comparison ones the simple subcommand
 // exposes directly.
@@ -87,7 +94,7 @@ export function dotplotInit(data: Config, opts: Opts): DotplotViewInit {
   return {
     views: comparativeViews(data).slice(0, 2),
     tracks: x && y ? pairSyntenyTrackIds(data, x.name, y.name) : [],
-    ...definedOnly(sharedComparativeKnobs(opts)),
+    ...dotplotViewKnobs(opts),
   }
 }
 
