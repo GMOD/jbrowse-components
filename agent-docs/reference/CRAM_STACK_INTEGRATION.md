@@ -203,9 +203,9 @@ explained it: three arms in one process share `CramRecord.forEachCigarOp`'s
 callback call site, so the arm whose callback does real work degrades while
 the one whose callback is `push` does not. In isolation the same badread
 `readBaseCounts` row is 0.87x, which is the honest number; the in-process
-harness overstates the loss but does not invent it. BENCHMARKING.md's
-"one process per fixture" applies per arm too when the arms meet inside a
-library.
+harness overstates the loss but does not invent it. BENCHMARKING.md
+§"Measuring the wrong thing"'s "**One process per fixture**" applies per arm
+too when the arms meet inside a library.
 
 **What would win, if anything.** Not a callback: a library walk that fills a
 caller-provided buffer (`record.packCigarInto(buf): count`) would keep the

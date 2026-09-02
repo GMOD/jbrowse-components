@@ -144,7 +144,7 @@ height is controlled:
 - Right-click a chip to hide that section. Its reads leave the shared coverage
   scale, the legend and the arcs with it, which is how to read the rest of the
   stack without the section that dominates it. **Show... → Show N hidden
-  groups** puts them back.
+  groups** puts them back.<!-- menu-path-ok -->
 - Dragging the boundary below a section resizes that section alone.
 
 **Show... → Collapse groups to one row** draws every section as a single row

@@ -20,11 +20,11 @@ page is what stays resident afterwards.
 | ---------------------------- | --------------------------- | ------------- | -------------------------- |
 | `RemoteFileWithRangeCache`   | compressed bytes            | module        | its size and idle timeout  |
 | the parser's own chunk cache | decompressed bytes          | JS context    | `decompressedBytesBudget`  |
-| the CRAM record cache        | decoded records             | JS context    | `decodedRecordsBudget`     |
+| the CRAM record cache        | decoded bytes               | JS context    | `decompressedBytesBudget`  |
 | `rpcDataMap`                 | one region's packed columns | display model | the regions the view shows |
 | GPU buffers                  | uploaded vertex data        | display       | per-object guards only     |
 
-The two named budgets live in `packages/core/src/util/cacheBudgets.ts`.
+The budget lives in `packages/core/src/util/cacheBudgets.ts`.
 
 ## Cache budget scope
 
@@ -44,8 +44,8 @@ windows, every cache still well under its own 1 GB ceiling throughout:
 <!-- END GENERATED MEASUREMENT cache-budget-retention-climb -->
 
 The idle timeouts reclaim what has gone quiet, and nothing is quiet while the
-reader browses. So both budgets are **one `SharedBudget` per JS context** — one
-per RPC worker plus one on the main thread.
+reader browses. So it is **one `SharedBudget` per JS context** — one per RPC
+worker plus one on the main thread.
 
 ### Splitting a budget by track count
 
@@ -67,8 +67,9 @@ all: the divisor makes each share too small to hold one working set. A shared
 budget yields only what is globally least-recently-used, so idle tracks hand
 their space to the one being panned.
 
-Two budgets, because `SharedBudget.total` sums over its members and cram weighs
-decoded records where bam and tabix weigh bytes.
+One budget, because `SharedBudget.total` sums over its members, so they must all
+weigh the same unit — cram weighs a decoded slice's byte length, where it used
+to weigh a record count that could not be summed with bam and tabix's bytes.
 
 ## What no budget bounds
 

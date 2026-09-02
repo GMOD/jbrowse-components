@@ -51,6 +51,6 @@ is for jbrowse-desktop, since Electron does not load ESM.
 ## See also
 
 - [](/docs/user_guides/plugin_store)
-- [Developer guide](/docs/developer_guide/)
+- [](/docs/developer_guide/)
 - [No-build plugin](/docs/developer_guides/no_build_plugin)
 - [Simple plugin tutorial](/docs/developer_guides/simple_plugin)

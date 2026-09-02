@@ -107,8 +107,8 @@ changes:
 | [](/docs/config/googledriveoauthinternetaccount) | Google Drive, with the endpoints pre-filled                |
 | [](/docs/config/externaltokeninternetaccount)    | A token the user pastes in, or that your portal hands over |
 
-Every type shares the [BaseInternetAccount](/docs/config/baseinternetaccount)
-slots: `internetAccountId`, `name`, `description`, `domains`, and the
+Every type shares the [](/docs/config/baseinternetaccount) slots:
+`internetAccountId`, `name`, `description`, `domains`, and the
 `authHeader`/`tokenType` pair naming the request header the token goes in. HTTP
 Basic adds
 [`validateWithHEAD`](/docs/config/httpbasicinternetaccount/#slot-validatewithhead),
@@ -248,9 +248,8 @@ JBrowse is a static app with nowhere to keep a client secret, so use the
 authorization-code flow with
 [`needsPKCE`](/docs/config/oauthinternetaccount/#slot-needspkce), the flow
 designed for public clients, and register your JBrowse instance's URL as a
-redirect URI with the provider.
-[OAuthInternetAccount](/docs/config/oauthinternetaccount) lists `scopes`,
-`responseType` and the rest.
+redirect URI with the provider. [](/docs/config/oauthinternetaccount) lists
+`scopes`, `responseType` and the rest.
 
 ## External token
 

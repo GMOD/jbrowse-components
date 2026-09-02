@@ -224,8 +224,8 @@ a link:
 }
 ```
 
-[Customizing feature details](/docs/config_guides/customizing_feature_details)
-covers subfeatures, the session-wide form, and the About dialog.
+[](/docs/config_guides/customizing_feature_details) covers subfeatures, the
+session-wide form, and the About dialog.
 
 ## Feature tracks
 

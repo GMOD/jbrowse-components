@@ -9,8 +9,7 @@ settings under `configuration`. Add a `metadata` object to any track to gain
 filterable columns in the faceted selector.
 
 Tracks appear in config.json order unless `hierarchical` says otherwise.
-[HierarchicalConfigSchema](/docs/config/hierarchicalconfigschema) lists every
-slot; the ones people set:
+[](/docs/config/hierarchicalconfigschema) lists every slot; the ones people set:
 
 ```json
 {
@@ -61,8 +60,8 @@ top-level key of a track's `metadata` object becomes a column to filter or sort
 on, as in the
 [cookbook's metadata track](/docs/cookbook#instance-wide-settings), and columns
 empty for every track are hidden.
-[Basic usage](/docs/user_guides/basic_usage#faceted-track-selector) covers the
-filter panel.
+[](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter
+panel.
 
 ## See also
 

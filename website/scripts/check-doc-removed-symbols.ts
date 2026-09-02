@@ -71,6 +71,19 @@ const ABSENT_ON_PURPOSE = new Map([
   ],
   ['regionStatuses', 'PROGRESS_REPORTING names the implementation it replaced'],
   [
+    'decodedRecordsBudget',
+    'CRAM_STACK_INTEGRATION names the record-counted budget cram merged into decompressedBytesBudget',
+  ],
+  [
+    'ultraLongFeatureCache',
+    'CRAM_STACK_INTEGRATION names the LRU seam 3 removed, on purpose, as a thing that must not come back',
+  ],
+  [
+    'markGlobalPluginLoadSucceeded',
+    'PLUGIN_LISTS names the safe-mode marker from the rung before recordClass-era cleanup',
+  ],
+  ['markPermanentPluginLoadSucceeded', 'PLUGIN_LISTS, the same rung'],
+  [
     'gateBelowForceLoadFloor',
     'MAF_LARGE_BLOCKS names the display-side opt-out the sub-floor budget tier retired',
   ],

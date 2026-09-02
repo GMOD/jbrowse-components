@@ -97,8 +97,8 @@ from then on, so these are defaults for your instance, not a lock:
 }
 ```
 
-[PreferencesConfigSchema](/docs/config/preferencesconfigschema) lists each slot.
-A session that names `useWorkspaces` itself still wins over the preference.
+[](/docs/config/preferencesconfigschema) lists each slot. A session that names
+`useWorkspaces` itself still wins over the preference.
 
 ## Advanced
 

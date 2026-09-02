@@ -14,16 +14,15 @@ their session. This guide covers the config format; for in-app behavior see the
 
 ## Connection config format
 
-Every connection carries the [BaseConnection](/docs/config/baseconnection) slots
-(`type`, `connectionId`, `name`, and an optional `assemblyNames` that matches
-hub tracks to your configured assemblies), plus one location slot per type.
+Every connection carries the [](/docs/config/baseconnection) slots (`type`,
+`connectionId`, `name`, and an optional `assemblyNames` that matches hub tracks
+to your configured assemblies), plus one location slot per type.
 `jbrowse add-connection` writes one from the command line
 ([CLI reference](/docs/cli#jbrowse-add-connection)).
 
 ### UCSC track hub
 
-Points at a hub's `hub.txt`
-([UCSCTrackHubConnection](/docs/config/ucsctrackhubconnection)):
+Points at a hub's `hub.txt` ([](/docs/config/ucsctrackhubconnection)):
 
 ```json
 {
@@ -39,8 +38,7 @@ Points at a hub's `hub.txt`
 ### JB2 track hub
 
 Points at another JBrowse 2 `config.json`, whose `tracks` array becomes the
-connection's track list
-([JB2TrackHubConnection](/docs/config/jb2trackhubconnection)):
+connection's track list ([](/docs/config/jb2trackhubconnection)):
 
 ```json
 {
@@ -58,7 +56,7 @@ connection's track list
 Points at a JBrowse 1 data directory holding `trackList.json` and `tracks.conf`,
 either of which may be absent, and translates its tracks on connect. A JBrowse 1
 connection serves one assembly, so `assemblyNames` is required and holds a
-single entry ([JBrowse1Connection](/docs/config/jbrowse1connection)):
+single entry ([](/docs/config/jbrowse1connection)):
 
 ```json
 {
