@@ -9,7 +9,8 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getDialogHost } from '@jbrowse/core/util'
+import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
   fetchAllRegions,
@@ -36,6 +37,8 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -59,7 +62,7 @@ import {
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Source } from '../util.ts'
-import type { MultiWiggleContextHit } from './components/findHit.ts'
+import type { MultiWiggleContextInfo } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
@@ -126,7 +129,7 @@ export default function stateModelFactory(
       WiggleCommonMixin(),
       LegendMixin(),
       TreeSidebarMixin<Source>(),
-      ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextHit>(),
+      ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextInfo>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -331,8 +334,11 @@ export default function stateModelFactory(
        * 1. **Is there anything to key?** One source names itself by the track
        *    name.
        * 2. **Does anything ELSE on the frame name the colors?** Overlay
-       *    collapses every source onto one plot, so nothing does and a key is
-       *    the only identification there has ever been. A multi-row track names
+       *    collapses every source onto one plot, so nothing does and the key is
+       *    the only identification there has ever been — but it still has to
+       *    pass (3): overlay's row palette is `set1`, which wraps every nine
+       *    sources (`sourcesLogic.ts`), so 40 ungrouped overlay rows would draw
+       *    a 40-row key in nine repeating colors. A multi-row track names
        *    its rows beside them — but only while they carry text
        *    (`rowLabelsCarryText`, asked of the drawing side rather than
        *    restated) AND is drawing them at all — `showRowLabels` off means
@@ -350,19 +356,18 @@ export default function stateModelFactory(
        *    more than one color — both `legendIsReadable`, shared with the other
        *    display that has to decide. Asked of `legendItems`, the very list
        *    that gets drawn, so a key can't be counted in one form and rendered
-       *    in another.
+       *    in another. Every mode answers it, overlay included.
        */
       get overlayLegendApplies() {
-        if (self.numSources < 2) {
-          return false
-        }
-        if (self.isOverlay) {
-          return true
-        }
-        if (self.showRowLabels && rowLabelsCarryText(self.effectiveRowHeight)) {
-          return false
-        }
-        return legendIsReadable(self.legendItems)
+        const namedBesideTheRows =
+          !self.isOverlay &&
+          self.showRowLabels &&
+          rowLabelsCarryText(self.effectiveRowHeight)
+        return (
+          self.numSources >= 2 &&
+          !namedBesideTheRows &&
+          legendIsReadable(self.legendItems)
+        )
       },
 
       /**
@@ -623,6 +628,7 @@ export default function stateModelFactory(
         if (!info) {
           return []
         }
+        const { feature } = info
         return [
           // overlay collapses every source onto one plot, so there is no row
           // axis for a ranking to be read down
@@ -637,6 +643,37 @@ export default function stateModelFactory(
                   },
                 }),
               ]),
+          // The two rows the multi-row painting and the variant displays offer
+          // on a right-click, under the labels they use, so one action is not
+          // three names across three displays. They are about the bin the
+          // pointer is on where the sort is about the rows, and they need the
+          // hit rather than the column — a gap has no record to open or paste.
+          ...(feature
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeature(feature)
+                  },
+                },
+                {
+                  label: 'Copy location',
+                  icon: ContentCopyIcon,
+                  onClick: () => {
+                    void copyText(
+                      self,
+                      assembleLocString({
+                        refName: feature.refName,
+                        start: feature.start,
+                        end: feature.end,
+                      }),
+                      'location',
+                    )
+                  },
+                },
+              ]
+            : []),
           // stays in an overlay mode, where the sort doesn't: an order set in a
           // row mode is still what that display comes back to
           ...resetRowOrderMenuItems(self),

@@ -1,6 +1,18 @@
+import { waitFor } from '@testing-library/react'
+
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
+import type { WiggleHoveredFeature } from '../util.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+// The hit the component resolves alongside the column, for the two items that
+// are about one bin rather than about the row order.
+const binAt50: WiggleHoveredFeature = {
+  refName: 'ctgA',
+  start: 0,
+  end: 100,
+  rows: [{ source: 'b', score: 5 }],
+}
 
 // One source with a single [0, 100) feature at `score`, the shape the RPC ships.
 function scored(name: string, score: number) {
@@ -177,4 +189,84 @@ test('sorts nothing when there is a single row to order', () => {
   display.sortRowsByScoreAt('ctgA', 50)
 
   expect(display.layout).toEqual([])
+})
+
+// The same two rows the multi-row painting and the variant displays offer, so
+// one action is not three names across three displays. They come off the hit
+// under the pointer, where the sort comes off the column.
+describe('the rows about the clicked bin', () => {
+  it('offers them beside the sort', () => {
+    const display = makeDisplay({ a: 1, b: 5 })
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      bp: 50,
+      feature: binAt50,
+    })
+
+    expect(labels(display.contextMenuItems())).toEqual([
+      'Sort rows by score here',
+      'Open feature details',
+      'Copy location',
+    ])
+  })
+
+  // The sort has no row axis to rank down in an overlay, but the bin under the
+  // pointer is still a record.
+  it('offers them in an overlay mode, where the sort is dropped', () => {
+    const display = makeDisplay({ a: 1, b: 5 }, 'multixyplot')
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      bp: 50,
+      feature: binAt50,
+    })
+
+    expect(labels(display.contextMenuItems())).toEqual([
+      'Open feature details',
+      'Copy location',
+    ])
+  })
+
+  it('leaves them out in a gap, where there is no record to open or paste', () => {
+    const display = makeDisplay({ a: 1, b: 5 })
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      bp: 50,
+    })
+
+    expect(labels(display.contextMenuItems())).toEqual([
+      'Sort rows by score here',
+    ])
+  })
+
+  it('copies the bin as a locString', async () => {
+    const writeText = jest.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+    Object.defineProperty(window, 'isSecureContext', {
+      value: true,
+      configurable: true,
+    })
+    const display = makeDisplay({ a: 1, b: 5 })
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      bp: 50,
+      feature: binAt50,
+    })
+
+    click(display.contextMenuItems(), 'Copy location')
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith('ctgA:1..100')
+    })
+  })
 })

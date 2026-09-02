@@ -57,19 +57,26 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   // Resolved from the click, like `onClick` above, rather than from the hover a
   // previous frame recorded — the viewport moves under a stationary cursor. An
-  // overlay rendering with no row order written has no items, which is the
-  // case `openContextMenuFromEvent`'s empty-menu close exists for.
+  // overlay rendering with no row order written and no bin under the pointer
+  // has no items, which is the case `openContextMenuFromEvent`'s empty-menu
+  // close exists for.
   function onContextMenu(event: React.MouseEvent) {
-    const hit = findMultiWiggleContextHit(
-      model,
-      model.host.visibleRegions,
-      eventPoint(event).x,
-    )
+    const regions = model.host.visibleRegions
+    const { x, y } = eventPoint(event)
+    const hit = findMultiWiggleContextHit(model, regions, x)
     openContextMenuFromEvent(
       model,
       event,
       hit
-        ? { clientX: event.clientX, clientY: event.clientY, ...hit }
+        ? {
+            clientX: event.clientX,
+            clientY: event.clientY,
+            ...hit,
+            // the column the sort ranks at and the record under the pointer are
+            // two different answers to one click: the sort needs every row's
+            // score at `bp`, the feature items need the one row `y` picked
+            feature: findMultiWiggleHit(model, regions, x, y),
+          }
         : undefined,
     )
   }

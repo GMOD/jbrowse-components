@@ -156,6 +156,14 @@ export interface MultiWiggleContextHit {
   bp: number
 }
 
+// What the right-click carries into the menu: the column the sort ranks at,
+// plus the hit under the same pointer for the two items that are about one
+// record rather than about the row order. Undefined in the gaps — an overlay
+// column no source has a bin in, a row whose file doesn't cover this contig.
+export interface MultiWiggleContextInfo extends MultiWiggleContextHit {
+  feature?: WiggleHoveredFeature
+}
+
 // The genomic column a right-click names, or undefined when the click wasn't
 // over loaded data. Excludes the tree sidebar for the same reason
 // findMultiWiggleHit does. It resolves a column rather than a feature, so it

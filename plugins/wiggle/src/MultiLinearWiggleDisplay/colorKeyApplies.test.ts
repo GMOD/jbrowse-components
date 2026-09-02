@@ -58,11 +58,34 @@ it('does not apply when the sources cannot collapse into a short key', () => {
   expect(display.overlayLegendApplies).toBe(false)
 })
 
-// Unchanged: overlay collapses every source onto one plot, so a key is the only
+// Overlay collapses every source onto one plot, so a key is the only
 // identification there has ever been, whatever the row height would have been.
 it('applies in overlay mode regardless of row height', () => {
   const display = makeDisplay(cells(9, 9), 600)
   display.setRenderingType('multixyplot')
+  expect(display.overlayLegendApplies).toBe(true)
+})
+
+// Overlay is not exempt from the readability bar. Its row palette is `set1`,
+// which wraps every nine sources, so 40 ungrouped overlay rows are a 40-row key
+// in nine repeating colours — longer than anyone can scan and ambiguous where
+// it wraps.
+it('does not apply in overlay mode when the key is longer than it is readable', () => {
+  const display = makeDisplay(
+    Array.from({ length: 40 }, (_, i) => makeSource(`cell${i}`)),
+    600,
+  )
+  display.setRenderingType('multixyplot')
+  expect(display.legendItems).toHaveLength(40)
+  expect(display.overlayLegendApplies).toBe(false)
+})
+
+// The same 40 sources in four groups collapse to a four-row key, which is what
+// the length bar is asking about — the row count was never the question.
+it('applies in overlay mode when the same sources collapse into a short key', () => {
+  const display = makeDisplay(cells(40, 4), 600)
+  display.setRenderingType('multixyplot')
+  expect(display.legendItems).toHaveLength(4)
   expect(display.overlayLegendApplies).toBe(true)
 })
 
