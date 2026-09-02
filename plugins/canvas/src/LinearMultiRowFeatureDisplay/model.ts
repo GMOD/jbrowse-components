@@ -120,6 +120,11 @@ export interface MultiRowHit {
   refName: string
   start: number
   end: number
+  // Signed bp length change vs the reference, from the `lengthField` slot, and
+  // absent whenever the slot is unset — the block's width is reference span and
+  // says nothing about it, which is what the indel glyphs are for and what the
+  // tooltip reads out.
+  delta?: number
 }
 
 // What a right-click resolves to: the genomic column the menu's
@@ -1109,7 +1114,13 @@ export default function stateModelFactory(
         // the base drawn under the cursor, which the containment test compares
         // against; coord0 names the one to its right when reversed
         const bp = basePaintedAt(p, p.offset)
-        const { featureStarts, featureEnds, featureNames, featureIds } = region
+        const {
+          featureStarts,
+          featureEnds,
+          featureNames,
+          featureIds,
+          featureDeltas,
+        } = region
         const rowHeight = self.effectiveRowHeight
         const { nearest, lowest } = rowsUnderPointer(
           mouseY,
@@ -1141,6 +1152,13 @@ export default function stateModelFactory(
                 refName: p.refName,
                 start: featureStarts[i]!,
                 end: featureEnds[i]!,
+                // the length agreement `regionWithDeltas` makes, for the same
+                // reason: `featureDeltas` is EMPTY rather than zero-filled when
+                // the `lengthField` slot is unset
+                delta:
+                  featureDeltas.length === featureStarts.length
+                    ? featureDeltas[i]!
+                    : undefined,
               }
             }
           }
