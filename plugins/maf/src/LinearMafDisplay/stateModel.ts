@@ -24,6 +24,7 @@ import {
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
@@ -232,6 +233,7 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        LegendMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
@@ -2297,6 +2299,24 @@ export default function stateModelFactory(
           return self.visibleFrames.length > 0
             ? [...rows, ...getFrameLegendItems(palette)]
             : rows
+        },
+        /**
+         * #getter
+         * Whether this display HAS a color key, as opposed to whether one is
+         * drawn right now — which is the question "Show legend" is offered on.
+         * `bases` paints the reference's own base colors and keys nothing; every
+         * other rendering keys what it paints, and the CDS strip keys itself
+         * over whichever won.
+         *
+         * Deliberately not `legendItems.length`: that one declines on an
+         * uninitialized view and on a rank the data has not reported yet, so the
+         * row that turns a dismissed key back on would go missing exactly while
+         * a track was loading, taking the promotable pin with it.
+         */
+        get hasLegendKey(): boolean {
+          return (
+            self.activeRowRendering !== 'bases' || self.visibleFrames.length > 0
+          )
         },
         /**
          * #method

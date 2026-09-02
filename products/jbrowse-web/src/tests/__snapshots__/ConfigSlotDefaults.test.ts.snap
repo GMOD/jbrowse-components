@@ -658,6 +658,7 @@ exports[`every registered schema slot default 1`] = `
     "showConservation": "boolean = false",
     "showCoverage": "boolean = true",
     "showInversions": "boolean = false",
+    "showLegend": "maybeBoolean promotedBase true",
     "showRowLabels": "boolean = true",
     "showTranslation": "boolean = false",
     "showTree": "boolean = true",

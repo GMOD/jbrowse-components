@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import {
   makeRadioSubMenu,
+  showLegendCheckboxItem,
   toggleItem,
   withHint,
 } from '@jbrowse/core/ui/menuItems'
@@ -25,6 +26,7 @@ import type { ConservationMode } from './conservationModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -63,6 +65,12 @@ const HEIGHT_PRESETS = [
 ]
 
 interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
+  // The shared "Show legend" row: LegendMixin's three members, plus whether
+  // this display has a key for them to be about.
+  hasLegendKey: boolean
+  showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
+  setShowLegend: (arg: boolean) => void
   showAllLetters: boolean
   mismatchRendering: boolean
   showAsUpperCase: boolean
@@ -236,6 +244,20 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     ),
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
+    // Only where a key exists to show: `bases` mode paints the reference's own
+    // base colors, which nothing decodes, so the row would toggle a legend that
+    // never draws.
+    ...(self.hasLegendKey
+      ? [
+          showLegendCheckboxItem(
+            self.showLegend,
+            () => {
+              self.setShowLegend(!self.showLegend)
+            },
+            { pin: self.showLegendDisplayTypeDefault },
+          ),
+        ]
+      : []),
     toggleItem(
       withHint(
         'Show coverage',

@@ -46,3 +46,18 @@ test('an exported dendrogram carries the locus it was clustered on', async () =>
   const { display } = clusteredDisplay()
   expect(draw(await renderSvg(display, {}))).toContain('ctgA')
 })
+
+// The key is the only decoder an exported figure ships with, and dismissing it
+// on screen used to leave it in the figure: maf was the one row display with no
+// `showLegend` at all.
+test('a dismissed color key stays out of the export', async () => {
+  const { display, view } = clusteredDisplay()
+  display.setRowRendering('heatmap')
+  // the identity plots swap themselves out for the bases at base level
+  view.zoomTo(100)
+  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  expect(display.legendItems.length).toBeGreaterThan(0)
+  expect(draw(await renderSvg(display, {}))).toContain('maf-color-legend')
+  display.setShowLegend(false)
+  expect(draw(await renderSvg(display, {}))).not.toContain('maf-color-legend')
+})

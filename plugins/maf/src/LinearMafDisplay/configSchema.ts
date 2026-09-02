@@ -143,6 +143,22 @@ export default function configSchemaF() {
       }),
       /**
        * #slot
+       * Show the color key for the active row rendering — the codon-change
+       * categories, the source-chromosome ranks, the identity ramp, and the CDS
+       * frame swatches. In `bases` mode the cells are the reference's own base
+       * colors and there is nothing to key, so nothing draws whatever this says.
+       */
+      showLegend: {
+        type: 'maybeBoolean',
+        description:
+          'show the color key for the active row rendering. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
+        // (true) is what it resolves to when nothing is promoted. Read through
+        // LegendMixin's resolved `showLegend` getter, never raw.
+        promotedBase: true,
+      },
+      /**
+       * #slot
        */
       showCoverage: {
         type: 'boolean',

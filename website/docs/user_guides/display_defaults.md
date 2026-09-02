@@ -125,6 +125,7 @@ the alignments ones) offers only the rows it lists.
 | ReferenceSequenceTrack | [](/docs/config/lineargccontentdisplay) | [`lineWidth`](/docs/config/lineargccontentdisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/lineargccontentdisplay/#slot-scatterpointsize) |
 | GCContentTrack | [](/docs/config/lineargccontenttrackdisplay) | [`lineWidth`](/docs/config/lineargccontenttrackdisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/lineargccontenttrackdisplay/#slot-scatterpointsize) |
 | HicTrack | [](/docs/config/linearhicdisplay) | [`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend) |
+| MafTrack | [](/docs/config/linearmafdisplay) | [`showLegend`](/docs/config/linearmafdisplay/#slot-showlegend) |
 | GWASTrack | [](/docs/config/linearmanhattandisplay) | [`scatterPointSize`](/docs/config/linearmanhattandisplay/#slot-scatterpointsize), [`showLdLegend`](/docs/config/linearmanhattandisplay/#slot-showldlegend) |
 | FeatureTrack | [](/docs/config/linearmultirowfeaturedisplay) | [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) |
 | VariantTrack | [](/docs/config/linearmultisamplevariantdisplay) | [`showLegend`](/docs/config/linearmultisamplevariantdisplay/#slot-showlegend) |

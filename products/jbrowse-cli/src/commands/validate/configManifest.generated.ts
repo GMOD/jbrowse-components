@@ -5012,6 +5012,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "showCoverage",
           "type": "(JexlString | boolean)"
         },

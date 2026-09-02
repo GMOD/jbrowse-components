@@ -223,17 +223,20 @@ function MafSvgBody({
           ticks={conservationTicks(conservationHeight)}
         />
       ) : null}
-      {/* The same color key the display shows on screen (`MafLegends`).
-          Without it an exported codon or source-chromosome figure has colored
-          cells and nothing saying what the colors mean — and there the
-          swatches are the only decoder. No `onDismiss`: an exported legend
-          can't be clicked. */}
-      <SvgColorLegend
-        entries={legendEntries({ items: model.legendItems })}
-        canvasWidth={width}
-        maxHeight={height}
-        testid="maf-color-legend"
-      />
+      {/* The same color key the display shows on screen (`MafLegends`), on the
+          same `showLegend` gate — without it an exported codon or
+          source-chromosome figure has colored cells and nothing saying what the
+          colors mean, and with the key dismissed it would reappear in the
+          figure the reader dismissed it out of. No `onDismiss`: an exported
+          legend can't be clicked. */}
+      {model.showLegend ? (
+        <SvgColorLegend
+          entries={legendEntries({ items: model.legendItems })}
+          canvasWidth={width}
+          maxHeight={height}
+          testid="maf-color-legend"
+        />
+      ) : null}
     </SvgClipRect>
   )
 }

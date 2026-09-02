@@ -169,6 +169,13 @@ const FIXTURES: Fixture[] = [
     ],
   },
   {
+    // The key names whatever the rows are painted by, so `bases` — the default
+    // — has nothing to key and the row is absent by design.
+    displayType: 'LinearMafDisplay',
+    trackId: 'volvox_maf',
+    states: [identityRendering],
+  },
+  {
     displayType: 'LinearMultiSampleVariantDisplay',
     trackId: 'volvox multi-sample sv',
   },
@@ -222,6 +229,19 @@ function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
 function overlayWithSources(d: any) {
   d.setRenderingType('multixyplot')
   d.setRpcData(0, { sources: [{ name: 'a' }, { name: 'b' }] })
+}
+
+// maf's key is the row rendering's, and `bases` (the default) has none: the
+// cells are the reference's own base colors, which nothing decodes. Any of the
+// three identity renderings has one — `hasLegendKey`, deliberately not "a key
+// is on screen", so no fetch or initialized view is needed to reach the row.
+function identityRendering(d: any) {
+  d.setRowRendering('heatmap')
+  // maf's menu reads the view's width (the Launch entries' spans), and the
+  // session's default view has none until something lays it out. Nothing here
+  // needs the view initialized beyond that: `hasLegendKey` is a fact about the
+  // rendering, not about what has been fetched.
+  d.view.setWidth(800)
 }
 
 // A LinearSyntenyDisplay lives on a level of a LinearSyntenyView, not on the

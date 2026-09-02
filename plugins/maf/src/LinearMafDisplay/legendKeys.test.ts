@@ -9,8 +9,9 @@ import {
   SOURCE_CHROM_PALETTE,
   sourceChromLegendItems,
 } from './components/drawSourceChrom.ts'
+import { createMafTestEnvironment } from './testEnv.ts'
 
-import type { LegendItem } from '@jbrowse/core/ui'
+import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
 // The color key is the only decoder an exported figure ships with, so each of
 // these is built by the module that paints the rendering, out of the colors it
@@ -87,5 +88,40 @@ describe('each row rendering keys itself from what it paints', () => {
       expect(getCodonColors(palette).fill.same).toBeUndefined()
       expect(getCodonLegendItems(palette)).toHaveLength(3)
     })
+  })
+})
+
+// maf was the last row display with no `showLegend` at all: the key drew
+// whatever the reader thought of it, and `FloatingLegend`'s close button had
+// nothing to write.
+describe('the color key is dismissible, like every other row display', () => {
+  function rows(items: MenuItem[]): string[] {
+    return items.flatMap(i => [
+      ...('label' in i && typeof i.label === 'string' ? [i.label] : []),
+      ...('subMenu' in i ? rows(i.subMenu) : []),
+    ])
+  }
+
+  function heatmapDisplay() {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    display.setRowRendering('heatmap')
+    // the identity plots swap themselves out for the bases at base level
+    view.zoomTo(100)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    return display
+  }
+
+  it('offers the shared row where a key exists', () => {
+    const display = heatmapDisplay()
+    expect(rows(display.trackMenuItems())).toContain('Show legend')
+    expect(display.showLegend).toBe(true)
+    display.setShowLegend(false)
+    expect(display.showLegend).toBe(false)
+  })
+
+  it('offers nothing in bases mode, which has no key to show', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    expect(display.legendItems).toEqual([])
+    expect(rows(display.trackMenuItems())).not.toContain('Show legend')
   })
 })
