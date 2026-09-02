@@ -953,6 +953,25 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 zero), so callers issue draws unconditionally without tracking which regions have
 data.
 
+`bufferPassId` is how one pass draws off another's instance buffer: chevron
+reads line's and continuation reads rect's, each pair declaring one shared
+struct (`lineInstance.slang`, `rectInstance.slang`) so their attribute layouts
+cannot drift — `sharedInstanceBuffers.test.ts` pins that. What no unit test can
+see is whether each HAL then binds the offsets it was handed (WebGL2 through
+`vertexAttribPointer`/`vertexAttribIPointer`, WebGPU through `vertex.buffers`),
+which would show only as garbled geometry on a GPU machine. That headed check
+was done 2026-09-02 at d477a80121 with
+`browser-tests/probe-continuation-strand.ts`: volvox `gff3tabix_genes` at
+`ctgA:5500..5900`, where + and − features run past both viewport edges, on an
+Intel UHD Graphics 630 (macOS 15.6) through puppeteer's Chrome 152.0.7977.54 —
+WebGL2 via ANGLE Metal, WebGPU via Dawn Metal, both headless (`--use-gl=angle`,
+`--enable-unsafe-webgpu`; the `runner.ts` claim that Chrome cannot render a
+WebGPU canvas under puppeteer did not hold there). Each backend was proved by the
+display canvas's own committed context kind. The »/« markers matched the strand
+arrows on every glyph on all three backends, and the frames differed by 0.04% of
+pixels (webgl vs canvas2d, webgpu vs canvas2d, antialiasing on the chevron
+outline) and 0.00% (webgl vs webgpu).
+
 **An empty upload IS the release.** Every HAL deletes the pass's prior buffer
 *before* looking at the count, so `uploadBuffer(key, pass, data, 0)` is the
 "this pass has nothing this time" instruction, and `uploadPass` passes an empty
