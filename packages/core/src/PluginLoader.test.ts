@@ -1,4 +1,4 @@
-import PluginLoader from './PluginLoader.ts'
+import PluginLoader, { workerScriptLoadMessage } from './PluginLoader.ts'
 import {
   dedupePlugins,
   dropVendoredPlugins,
@@ -546,4 +546,21 @@ test('a host that merely contains localhost is not this machine', async () => {
   await expect(
     loadFrom('https://localhost.evil.example.com/plugin.js'),
   ).resolves.toBe(false)
+})
+
+test('names the module-worker case only when the browser does', () => {
+  const url = 'https://example.com/plugin.umd.js'
+  expect(
+    workerScriptLoadMessage(
+      url,
+      new TypeError(
+        "Failed to execute 'importScripts' on 'WorkerGlobalScope': Module scripts don't support importScripts().",
+      ),
+    ),
+  ).toMatch(/module workers do not support/)
+  // a bundle that dereferences `window` in the worker is the script's own
+  // fault, and its words are the diagnosis
+  expect(
+    workerScriptLoadMessage(url, new ReferenceError('window is not defined')),
+  ).toBe(`Failed to load ${url} in the worker: window is not defined`)
 })

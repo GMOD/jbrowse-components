@@ -73,8 +73,10 @@ const jbrowseGlobals: Plugin = {
     )
     build.onLoad({ filter: /.*/, namespace: 'jbrowse-global' }, args => ({
       // CJS on purpose: the named exports of each module are not knowable at
-      // build time, and this lets esbuild's interop resolve them at runtime
-      contents: `module.exports = window.JBrowseExports[${JSON.stringify(READ_AS[args.path] ?? args.path)}]`,
+      // build time, and this lets esbuild's interop resolve them at runtime.
+      // globalThis, not window: the host loads every runtime plugin into its
+      // RPC worker too, where `window` is a ReferenceError at importScripts.
+      contents: `module.exports = globalThis.JBrowseExports[${JSON.stringify(READ_AS[args.path] ?? args.path)}]`,
       loader: 'js',
     }))
   },
@@ -130,13 +132,17 @@ if (duplicated.length > 0) {
   )
 }
 
+const bundle = readFileSync(outfile, 'utf8')
+
 // the loader reads globalThis[`JBrowsePlugin${name}`], so the name in a config's
 // plugins entry has to be `Blat` for this bundle to be findable at all
-if (
-  !readFileSync(outfile, 'utf8').startsWith(
-    '"use strict";var JBrowsePluginBlat=',
-  )
-) {
+if (!bundle.startsWith('"use strict";var JBrowsePluginBlat=')) {
   throw new Error('bundle does not define the JBrowsePluginBlat global')
+}
+
+if (bundle.includes('window.JBrowseExports')) {
+  throw new Error(
+    'bundle reads window.JBrowseExports, which does not exist in the RPC worker',
+  )
 }
 console.log(`externals clean, defines JBrowsePluginBlat`)
