@@ -6,6 +6,7 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
+  LodTierInfoMixin,
   SyntenyFetchStateMixin,
   comparativeDisplayPhase,
   comparativeFetchFlags,
@@ -56,6 +57,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       'DotplotDisplay',
       BaseDisplay,
       SyntenyFetchStateMixin(),
+      LodTierInfoMixin(),
       types
         .model({
           /**
@@ -406,7 +408,10 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * the main thread, not adapter-side from `bpPerPx`, so it is part of
        * `currentFetchKey` — see `resolveLodTier`. Both axes feed it: CIGAR detail
        * is worth drawing when a block is wide on either one, so dropping to the
-       * no-CIGAR tier is only safe once both are past the threshold.
+       * no-CIGAR tier is only safe once both are past the threshold. The tier
+       * the adapter will serve once `lodTierInfo` has landed: a file with no
+       * coarse tier is 'fine' at any zoom, and the threshold is clamped up to
+       * the file's `--coarse` bound.
        */
       get lodTier(): LodTier {
         const { view } = this
@@ -414,6 +419,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           bpPerPx: Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
           coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
           lodMode: view.lodMode,
+          tierInfo: self.lodTierInfo,
         })
       },
       /**

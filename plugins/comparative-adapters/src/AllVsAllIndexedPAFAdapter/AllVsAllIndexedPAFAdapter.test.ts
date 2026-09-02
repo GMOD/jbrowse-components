@@ -494,3 +494,12 @@ describe('a reciprocal pair in an indexed all-vs-all file', () => {
     expect(ids.size).toBe(1)
   })
 })
+
+// The fixture predates the `#pif` header, so the coarse tier is found from its
+// uppercase T/Q seqids and no bound is stated — what `CoreGetInfo` hands a
+// display for every hosted file built before 2026-09-02
+test('getHeader reports the coarse tier of a headerless two-tier file', async () => {
+  expect(await makeAdapter(['grape', 'peach']).getHeader()).toEqual({
+    hasCoarseTier: true,
+  })
+})

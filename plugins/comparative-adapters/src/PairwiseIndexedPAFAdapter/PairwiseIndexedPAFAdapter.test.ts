@@ -391,4 +391,25 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(adapter.getAssemblyNames()).toEqual(['query_asm', 'target_asm'])
     })
   })
+
+  // What `CoreGetInfo` hands the displays: the header's facts plus whether the
+  // coarse tier exists, so the main thread resolves the tier the adapter will
+  // serve rather than the one the config slot assumes
+  describe('getHeader', () => {
+    it('reports the header bound and the coarse tier of a two-tier file', async () => {
+      const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
+      expect(await adapter.getHeader()).toEqual({
+        version: 1,
+        tiers: ['fine', 'coarse'],
+        coarseGap: 1000,
+        cigars: 'all',
+        hasCoarseTier: true,
+      })
+    })
+
+    it('reports no coarse tier and no bound for a headerless single-tier file', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
+      expect(await adapter.getHeader()).toEqual({ hasCoarseTier: false })
+    })
+  })
 })

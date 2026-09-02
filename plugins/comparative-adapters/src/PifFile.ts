@@ -11,13 +11,14 @@ import {
 
 import { parsePifHeader, parsePifLine } from './util.ts'
 
-import type { PifLine } from './util.ts'
+import type { PifLine, PifMeta } from './util.ts'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
+import type { LodTierInfo } from '@jbrowse/synteny-core'
 
 /**
  * The tabix-indexed PIF file behind the two indexed adapters, and everything
@@ -48,10 +49,23 @@ export class PifFile {
     })
   }
 
-  getHeader(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    return updateStatus('Downloading header', statusCallback, () =>
-      this.tabix.getHeader(),
+  /**
+   * What both adapters answer `CoreGetInfo` with: the header's facts plus
+   * whether the coarse tier exists, in the shape the displays' `lodTier`
+   * getters read (`LodTierInfo`), so the main thread resolves the tier the
+   * adapter will actually serve.
+   */
+  info(opts?: BaseOptions) {
+    return updateStatus(
+      'Downloading header',
+      opts?.statusCallback,
+      async () => {
+        const info: PifMeta & LodTierInfo = {
+          ...(await this.meta(opts)),
+          hasCoarseTier: await this.hasCoarseTier(opts),
+        }
+        return info
+      },
     )
   }
 

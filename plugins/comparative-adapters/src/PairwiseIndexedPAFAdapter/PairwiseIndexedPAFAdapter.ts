@@ -39,7 +39,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
   private pif = new PifFile(this)
 
   getHeader(opts?: BaseOptions) {
-    return this.pif.getHeader(opts)
+    return this.pif.info(opts)
   }
 
   async getRefNames(opts: BaseOptions = {}) {

@@ -222,10 +222,13 @@ jbrowse make-pif input.paf --coarse 1000
 jbrowse make-pif input.paf --no-coarse
 ```
 
-Keep
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
-at or above the `--coarse` gap you built with. Below it, the coarse tier is
-served at zooms where the indels it folded away are wide enough to see.
+is the zoom at which `auto` switches, and the header keeps it honest: a value
+below the `--coarse` the file was built with is raised to it, since below that
+the coarse tier would be served at zooms where the indels it folded away are
+wide enough to see. A file built with `--no-coarse` serves the fine tier at
+every zoom whatever the setting says, and the "Alignment blocks only" pin has
+nothing to switch to.
 
 PIF files built before the coarse CIGAR existed still load. Their coarse rows
 were instead split into pieces at large indels and carry no alignment string,

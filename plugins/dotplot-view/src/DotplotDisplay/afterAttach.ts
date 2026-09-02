@@ -2,6 +2,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
+  installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
@@ -65,6 +66,8 @@ async function hasUnknownRefNames({
 export function doAfterAttach(
   self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
+  installLodTierInfoFetch(self)
+
   installComparativeFetchAutorun(self, {
     name: 'DotplotFetch',
     delay: RPC_DEBOUNCE_MS,

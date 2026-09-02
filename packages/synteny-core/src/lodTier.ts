@@ -20,6 +20,71 @@ export type LodMode = 'auto' | 'fine' | 'coarse'
 export type LodTier = 'fine' | 'coarse'
 
 /**
+ * What a tiered adapter reports about the file it opened, read once per display
+ * (`installLodTierInfoFetch`) off `CoreGetInfo`: whether the coarse tier exists
+ * at all, and the `--coarse` accuracy bound its `#pif` header states, in bp.
+ * `coarseGap` is absent for a file built before the header or with no coarse
+ * tier. The indexed PIF adapters' `getHeader` returns this shape.
+ */
+export interface LodTierInfo {
+  hasCoarseTier: boolean
+  coarseGap?: number
+}
+
+/**
+ * Narrow a `CoreGetInfo` result to {@link LodTierInfo}. Anything else — a
+ * PAFAdapter's `null`, a VCF's header text — reads as unknown, which
+ * {@link resolveLodTier} treats as "trust the config slot".
+ */
+export function readLodTierInfo(info: unknown): LodTierInfo | undefined {
+  const hasCoarseTier =
+    typeof info === 'object' &&
+    info !== null &&
+    'hasCoarseTier' in info &&
+    typeof info.hasCoarseTier === 'boolean'
+      ? info.hasCoarseTier
+      : undefined
+  const coarseGap =
+    typeof info === 'object' &&
+    info !== null &&
+    'coarseGap' in info &&
+    typeof info.coarseGap === 'number'
+      ? info.coarseGap
+      : undefined
+  return hasCoarseTier === undefined ? undefined : { hasCoarseTier, coarseGap }
+}
+
+/**
+ * The zoom at which `auto` may switch to the coarse tier, once the file has had
+ * its say: undefined for an adapter with no threshold slot and for a file that
+ * has no coarse tier; otherwise the slot, raised to the file's `--coarse` bound
+ * when the slot is below it. Below the bound the fold's runs lean by more than
+ * a pixel, so serving coarse there is wrong output rather than slower output —
+ * the clamp is the rule the slot description used to ask the operator to keep
+ * by hand.
+ *
+ * Before the info lands (`tierInfo` undefined) the slot is trusted as-is. That
+ * is what keeps the fetch key still when the info arrives for a file built with
+ * the defaults, which is nearly every file: the answer was already right, so
+ * nothing refetches. Only a file whose header disagrees with the slot moves the
+ * key, once.
+ */
+export function effectiveCoarseThreshold({
+  coarseBpPerPxThreshold,
+  tierInfo,
+}: {
+  coarseBpPerPxThreshold: number | undefined
+  tierInfo: LodTierInfo | undefined
+}) {
+  return coarseBpPerPxThreshold === undefined ||
+    tierInfo?.hasCoarseTier === false
+    ? undefined
+    : tierInfo?.coarseGap === undefined
+      ? coarseBpPerPxThreshold
+      : Math.max(coarseBpPerPxThreshold, tierInfo.coarseGap)
+}
+
+/**
  * The one place `auto` becomes a tier.
  *
  * This *must* run on the main thread, in a display getter that feeds the fetch
@@ -34,23 +99,61 @@ export type LodTier = 'fine' | 'coarse'
  * deliberate: a raw `bpPerPx` in the key would invalidate every fetch on every
  * zoom step. The tier changes only when it flips.
  *
- * An adapter with no tiering has no threshold slot, and only the fine tier to
- * serve, so it resolves to 'fine' at any zoom.
+ * The answer is the tier the adapter will SERVE, not the one the mode asks for:
+ * a file with no coarse tier resolves to 'fine' under every mode, pinned
+ * 'coarse' included, because that is what `resolveCoarseTier` hands back for
+ * it — and a key that said 'coarse' would refetch identical bytes at every
+ * threshold crossing. An adapter with no tiering has no threshold slot and
+ * resolves to 'fine' at any zoom for the same reason.
  */
 export function resolveLodTier({
   bpPerPx,
   coarseBpPerPxThreshold,
   lodMode,
+  tierInfo,
 }: {
   bpPerPx: number
   coarseBpPerPxThreshold: number | undefined
   lodMode: LodMode
+  tierInfo: LodTierInfo | undefined
 }): LodTier {
-  return lodMode === 'auto'
-    ? coarseBpPerPxThreshold !== undefined && bpPerPx >= coarseBpPerPxThreshold
-      ? 'coarse'
-      : 'fine'
-    : lodMode
+  const threshold = effectiveCoarseThreshold({
+    coarseBpPerPxThreshold,
+    tierInfo,
+  })
+  return threshold === undefined
+    ? 'fine'
+    : lodMode === 'auto'
+      ? bpPerPx >= threshold
+        ? 'coarse'
+        : 'fine'
+      : lodMode
+}
+
+/**
+ * Whether a walk through the served coarse tier's fold is off by more than a
+ * pixel: a run stays within `--coarse` bp of the alignment's real path, which
+ * is sub-pixel at any zoom at or past the bound and visible below it. Only a
+ * pinned 'coarse' reaches that zoom, since `auto` never serves coarse below the
+ * bound. The bound is the header's where the file states one, and the slot
+ * where it does not.
+ */
+export function coarseWalkIsApproximate({
+  bpPerPx,
+  lodTier,
+  coarseBpPerPxThreshold,
+  tierInfo,
+}: {
+  bpPerPx: number
+  lodTier: LodTier
+  coarseBpPerPxThreshold: number | undefined
+  tierInfo: LodTierInfo | undefined
+}) {
+  const bound =
+    tierInfo?.coarseGap === undefined
+      ? coarseBpPerPxThreshold
+      : tierInfo.coarseGap
+  return lodTier === 'coarse' && bound !== undefined && bpPerPx < bound
 }
 
 /**
@@ -128,10 +231,9 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
     value: 'coarse',
     // The fallback is named here because the menu cannot avoid offering this:
     // `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed PIF
-    // adapters declare whether or not the file they open carries the tier —
-    // whether it does is `PifFile.hasCoarseTier`, an async question on the
-    // adapter side of the RPC. So a file built with `--no-coarse` gets the full
-    // submenu and `resolveCoarseTier` quietly serves fine, which is the right
+    // adapters declare whether or not the file they open carries the tier. So a
+    // file built with `--no-coarse` gets the full submenu and `resolveLodTier`
+    // quietly resolves fine once the tier info lands, which is the right
     // behaviour (the alternative is no data) and the wrong thing to say nothing
     // about.
     helpText:

@@ -18,7 +18,9 @@ import {
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
 import {
+  LodTierInfoMixin,
   getCoarseBpPerPxThreshold,
+  installLodTierInfoFetch,
   lodMenuItems,
   resolveLodTier,
   trackHasLodTiers,
@@ -72,6 +74,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       .compose(
         'LGVSyntenyDisplay',
         baseModel,
+        LodTierInfoMixin(),
         types.model({
           /**
            * #property
@@ -188,14 +191,23 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * thread, so it lands in `rpcProps` — which is the refetch cache key, so
          * a tier flip trips a refetch and a mid-zoom threshold crossing cannot go
          * unnoticed. Forwarding a raw `bpPerPx` instead would invalidate every
-         * fetch on every zoom step; this changes only when the tier flips.
+         * fetch on every zoom step; this changes only when the tier flips. The
+         * tier the adapter will serve once `lodTierInfo` has landed: a file
+         * with no coarse tier is 'fine' at any zoom, and the threshold is
+         * clamped up to the file's `--coarse` bound.
          */
         get lodTier() {
           return resolveLodTier({
             bpPerPx: self.host.bpPerPx,
             coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
             lodMode: self.lodMode,
+            tierInfo: self.lodTierInfo,
           })
+        },
+      }))
+      .actions(self => ({
+        afterAttach() {
+          installLodTierInfoFetch(self)
         },
       }))
       .views(self => {

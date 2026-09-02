@@ -39,7 +39,8 @@ the eight closed by moving one, and one of them by moving five — the v5.0.0
 release triage, whose thirteen open findings split into six fixed outright, six
 parked as ideas (`refname-mismatch-warning-visibility`,
 `credential-aware-chunk-cache`, `url-params-consumed-but-not-applied`,
-`single-tier-pif-refetches-at-the-threshold`,
+`single-tier-pif-refetches-at-the-threshold` — since fixed and deleted,
+`reference/SYNTENY_LOD.md` §"The file has the last word" —
 `clustering-without-a-named-region`,
 `track-y-offset-cannot-see-the-label-box`) and one measurement in
 [TODO.md](../TODO.md).

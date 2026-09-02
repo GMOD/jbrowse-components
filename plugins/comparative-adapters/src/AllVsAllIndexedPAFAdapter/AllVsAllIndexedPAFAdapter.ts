@@ -72,6 +72,10 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
     },
   })
 
+  getHeader(opts?: BaseOptions) {
+    return this.pif.info(opts)
+  }
+
   // What the file holds, for the message a query naming an unknown assembly
   // raises. The tier letter (t/q/T/Q) is not part of a name.
   private async inventory(opts?: BaseOptions) {

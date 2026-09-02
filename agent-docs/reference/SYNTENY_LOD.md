@@ -90,6 +90,57 @@ Adapter side (`plugins/comparative-adapters/src/util.ts`) is now just
 'coarse'`. A request for coarse on a file without the tier degrades to fine
 rather than querying `T`/`Q` prefixes that match nothing.
 
+## The file has the last word
+
+The slot alone cannot say whether the file HAS a coarse tier or what bound it
+was folded at; both are facts of the file, on the adapter side of the RPC. So
+each of the three displays composes `LodTierInfoMixin` and, in `afterAttach`,
+`installLodTierInfoFetch` makes one `CoreGetInfo` call against the track's
+adapter (the `LinearHicDisplay` binsize pattern: a prerequisite read keyed on
+the adapter config, gated on `trackHasLodTiers` so a PAFAdapter never asks).
+Both indexed PIF adapters answer `getHeader` with `PifFile.info()` — the parsed
+`#pif` header plus `hasCoarseTier`, which for a headerless file comes from the
+`T`/`Q` seqids — and `readLodTierInfo` narrows it to `LodTierInfo` on the main
+thread; the volatile `lodTierInfo` is what `resolveLodTier` reads beside the
+slot. The same object is what the About dialog's file-info panel shows for a
+PIF track.
+
+The resolution rule, in `effectiveCoarseThreshold`:
+
+- **info not yet landed** → the slot is trusted as-is. This is deliberate: the
+  first fetch may already be keyed when the answer arrives, and for a file
+  built with the defaults (`--coarse 10000` against the 10,000 slot) the two
+  answers agree at every zoom, so the landing changes no key and refetches
+  nothing. Only a file whose header disagrees with the slot moves the key, once,
+  and only if its first fetch was issued before the info arrived (the info read
+  has no debounce; the fetches have 500-1000 ms).
+- **`hasCoarseTier: false`** → `'fine'` under every mode, pinned `coarse`
+  included. That is the tier the adapter serves for it, and it is what closed
+  the single-tier refetch: the key no longer flips at a threshold the file
+  cannot honour, so identical bytes are no longer refetched at every crossing.
+- **the header states a bound above the slot** → the threshold is raised to the
+  bound. Below `--coarse` bp/px a run's lean is wider than a pixel, so serving
+  the fold there is wrong output rather than slow output, which is why the
+  clamp goes up and never down: a slot above the bound is a preference for
+  detail and stands.
+- **a headerless two-tier file** (built before 2026-09-02) states no bound and
+  is resolved off the slot alone.
+
+`coarseWalkIsApproximate` (the follow's and move-panel's "approximate" wording)
+reads the served tier and compares the zoom against the header's bound where
+there is one, the slot otherwise — so a slot raised above the bound does not
+widen what counts as approximate, and a `--no-coarse` file never reports it.
+
+A failed info read is not terminal: the display goes on resolving off the slot,
+which is what it did before the header existed, and the primary fetch on the
+same file raises the real error. It is logged with `console.warn` and nothing
+else.
+
+Not done, and the residual the design accepts: the primary fetch is not gated on
+the info (HiC's `awaitingPrerequisite` shape). Gating would remove the one
+possible refetch at landing for a disagreeing file at the cost of one round
+trip before every first paint, on every file, including the agreeing majority.
+
 ## Identity continuity across the switch
 
 **Nothing user-visible may key off which tier is loaded.** Identity is the case
@@ -344,9 +395,10 @@ Two levers, neither built:
   tier's, which was a deliberate choice (see the passthrough comment in
   `pif-generator.ts`).
 - **Decline the switch when it doesn't pay.** Needs the ratio to reach
-  `resolveLodTier`, which is main-thread — so it needs the file to state it, or
-  the adapter to report it the way `LinearHicDisplay` reports its binsize list
-  (one-shot RPC in `afterAttach` → model state → render decisions).
+  `resolveLodTier`, which is main-thread. The channel now exists — the
+  `CoreGetInfo` read behind `LodTierInfoMixin` (§"The file has the last word")
+  carries whatever `PifFile.info()` returns — so this is now `make-pif` writing
+  the ratio into the `#pif` header and the resolver reading one more field.
 
 To reproduce: emit N PAF rows of a fixed block length with a CIGAR of
 proportional op count, run `createPIF` with a 10000 bp coarse gap, and sum

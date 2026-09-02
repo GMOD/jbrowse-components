@@ -1,5 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
@@ -17,6 +19,7 @@ import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } fro
 import configSchemaF from './configSchemaF.ts'
 import stateModelF from './model.ts'
 
+import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -40,12 +43,23 @@ export function createSyntenyEnv({
   trackAssemblyNames = ['volvox', 'volvox_random'],
   loadedAssemblies = ['volvox', 'volvox_random'],
   getCanonicalAssemblyName = () => undefined,
+  adapter,
+  rpcCall = () => new Promise(() => {}),
   extend,
 }: {
   neighbourAssembly?: string
   trackAssemblyNames?: string[]
   loadedAssemblies?: string[]
   getCanonicalAssemblyName?: (name: string) => string | undefined
+  // A stand-in adapter type put on the track, declaring the slots the display
+  // reads off it: `coarseBpPerPxThreshold` is what `trackHasLodTiers` keys on.
+  // None by default, so the track has no adapter and no tiers.
+  adapter?: { name: string; slots: ConfigurationSchemaDefinition }
+  // The session's `rpcManager.call`. Never settles by default, the same as
+  // `createDisplayTestEnvironment`: setting a displayed region wakes the
+  // display's fetch, and an rpcManager without a `call` fails it into a logged
+  // TypeError.
+  rpcCall?: (sessionId: string, method: string, args: unknown) => unknown
   // Menu-item installers from other plugins, run before the elements are
   // created so their `Core-extendPluggableElement` hooks reach this display.
   extend?: (pluginManager: PluginManager) => void
@@ -54,6 +68,19 @@ export function createSyntenyEnv({
   const pluginManager = new PluginManager()
   extend?.(pluginManager)
   const configSchema = configSchemaF(pluginManager)
+
+  if (adapter) {
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: adapter.name,
+          configSchema: ConfigurationSchema(adapter.name, adapter.slots, {
+            explicitlyTyped: true,
+          }),
+          getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
+        }),
+    )
+  }
 
   pluginManager.addTrackType(() => {
     const trackConfigSchema = ConfigurationSchema(
@@ -97,6 +124,7 @@ export function createSyntenyEnv({
       type: 'SyntenyTrack',
       trackId: 'test_track',
       assemblyNames: trackAssemblyNames,
+      ...(adapter ? { adapter: { type: adapter.name } } : {}),
     },
     { pluginManager },
   )
@@ -121,10 +149,7 @@ export function createSyntenyEnv({
       'SyntenyTestSession',
       displayTestSessionModel({
         viewModel: LinearGenomeModel,
-        // Never settles, the same default `createDisplayTestEnvironment` uses:
-        // setting a displayed region wakes the display's fetch, and an
-        // rpcManager without a `call` fails it into a logged TypeError.
-        rpcManager: { call: () => new Promise(() => {}) },
+        rpcManager: { call: rpcCall },
         // Answers for any name: the two panels sit on different assemblies, and
         // the readiness reactions a displayed region wakes only need something
         // to ask.
@@ -187,7 +212,11 @@ export function createSyntenyEnv({
       { refName: 'ctgA', start: 0, end: 1000, assemblyName: assemblies[i]! },
     ])
   }
-  return { session, display: panels[0]!.tracks[0]!.displays[0]! }
+  return {
+    session,
+    view: panels[0]!,
+    display: panels[0]!.tracks[0]!.displays[0]!,
+  }
 }
 
 /**

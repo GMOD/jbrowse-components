@@ -6,9 +6,10 @@ description: bytes are measured; what is left wants the app and the ready gate
 # Time a two-tier PIF to settled, in a browser
 
 Moved out of [TODO.md](../TODO.md) on 2026-09-02. The v5.0.0 draft already
-dropped the paragraph this number would have backed, and the crossing-cost
-bullet below is being closed by the main thread reading the `#pif` header's
-bound. It comes back when a release note wants the stopwatch half.
+dropped the paragraph this number would have backed, and the single-tier half
+of the crossing-cost bullet below closed when the main thread started reading
+the `#pif` header's bound. It comes back when a release note wants the
+stopwatch half.
 
 The v5.0.0 draft carried a two-tier benchmark table nothing in-repo backed, so
 the paragraph came out. **The bytes half is now taken** —
@@ -35,9 +36,10 @@ What is still owed:
 - **The zoomed-in view**, where the fine tier is what should be served and the
   coarse tier's advantage ought to vanish. Only whole-genome is measured, and a
   release note claiming a win needs the case where there isn't one.
-- **The crossing cost**: zooming across `coarseBpPerPxThreshold` refetches, and
-  on a single-tier file it refetches identical bytes — see
-  [ideas/single-tier-pif-refetches-at-the-threshold.md](../ideas/single-tier-pif-refetches-at-the-threshold.md).
+- **The crossing cost**: zooming across `coarseBpPerPxThreshold` refetches. A
+  single-tier file no longer does — the display reads the file's tiers off the
+  header first (`reference/SYNTENY_LOD.md` §"The file has the last word") — so
+  the number to take is the two-tier file's.
 
 Land it as a `measurements/` record with a `repro`, so the next release note
 quotes it through the generator rather than retyping it.

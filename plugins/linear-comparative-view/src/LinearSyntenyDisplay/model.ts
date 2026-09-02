@@ -12,10 +12,12 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
+  LodTierInfoMixin,
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
   bandGroundColor,
   bucketBpPerPx,
+  coarseWalkIsApproximate,
   comparativeDisplayPhase,
   comparativeFetchFlags,
   featureAttributes,
@@ -190,6 +192,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       'LinearSyntenyDisplay',
       BaseDisplay,
       SyntenyFetchStateMixin(),
+      LodTierInfoMixin(),
       types.model({
         /**
          * #property
@@ -819,6 +822,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * coarse is only safe once BOTH axes are past the threshold. Taking the
        * query axis alone lost indel detail on a band whose query was zoomed out
        * but whose target was zoomed in.
+       *
+       * The tier the adapter will serve, once `lodTierInfo` has landed: a file
+       * with no coarse tier is 'fine' at any zoom, and the threshold is clamped
+       * up to the file's `--coarse` bound.
        */
       get lodTier(): LodTier {
         const connected = this.connectedViews
@@ -831,26 +838,29 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
                 self.parentTrack,
               ),
               lodMode: this.view.lodMode,
+              tierInfo: self.lodTierInfo,
             })
           : 'fine'
       },
       /**
        * #getter
-       * True while the loaded tier is the coarse one and the zoom is finer
-       * than the tier's own threshold, which only a pinned "Alignment blocks
-       * only" reaches. A walk through a coarse CIGAR is within the fold's
-       * `--coarse` gap of the alignment's real path, and that gap is sub-pixel
-       * at or past the threshold and visible below it, so the follow reports a
-       * placement walked there as approximate.
+       * True while the served tier is the coarse one and the zoom is finer
+       * than the fold's `--coarse` bound, which only a pinned "Alignment blocks
+       * only" reaches. A walk through a coarse CIGAR is within that bound of
+       * the alignment's real path, and the bound is sub-pixel at or past it
+       * and visible below it, so the follow reports a placement walked there
+       * as approximate.
        */
       get coarseWalkIsApproximate() {
         const connected = this.connectedViews
-        const threshold = getCoarseBpPerPxThreshold(self.parentTrack)
         return (
-          this.lodTier === 'coarse' &&
           connected !== undefined &&
-          threshold !== undefined &&
-          Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx) < threshold
+          coarseWalkIsApproximate({
+            bpPerPx: Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx),
+            lodTier: this.lodTier,
+            coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
+            tierInfo: self.lodTierInfo,
+          })
         )
       },
       /**

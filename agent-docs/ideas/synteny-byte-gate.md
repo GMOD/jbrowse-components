@@ -38,10 +38,10 @@ banners the display's ordinary use. The decision needs:
 - a `fetchSizeLimit` slot on the indexed PAF adapters (or the display) sized
   from SYNTENY_LOD's cost model, generous enough that the coarse tier never
   banners and the fine tier banners only where the parse would genuinely stall;
-- a check that the tier flip (10,000 bp/px) and the budget agree — the gate
-  must not banner a span whose coarse tier would have been cheap, which is
-  adjacent to
-  [single-tier-pif-refetches-at-the-threshold](single-tier-pif-refetches-at-the-threshold.md);
+- a check that the tier flip (10,000 bp/px, or the file's own bound once its
+  header has been read — `reference/SYNTENY_LOD.md` §"The file has the last
+  word") and the budget agree — the gate must not banner a span whose coarse
+  tier would have been cheap;
 - the `byteGateAdapterConfig` question: `LGVSyntenyDisplay` reads different
   tiers at different zooms, so the estimate should measure the tier the fetch
   would actually read, which is what that hook exists for (MAF is the worked

@@ -31,9 +31,10 @@ which tier is loaded — was broken four ways, and three of them were the format
 - The band's move-panel item is gated on the fetch's `hasCigar`, so it vanished
   on the coarse tier and came back zoomed in. (Still true after this ADR; see
   Consequences.)
-- A single-tier file refetches at the threshold
-  (`ideas/single-tier-pif-refetches-at-the-threshold.md`; unrelated to the
-  format, unchanged).
+- A single-tier file refetches at the threshold (unrelated to the format, and
+  unchanged by this ADR; closed afterwards by the displays reading the header
+  through `CoreGetInfo` — `reference/SYNTENY_LOD.md` §"The file has the last
+  word").
 
 What made the fix small is that `visitCigarRenderedSegments` already emits
 non-square match segments: it folds sub-pixel indels into a trapezoid that

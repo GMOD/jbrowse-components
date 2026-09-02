@@ -48,9 +48,10 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
      * #slot
      * bpPerPx threshold at which a view on "Level of detail: automatic" switches
      * from the per-row CIGAR tier (lowercase t/q prefix) to the coarse tier
-     * (uppercase T/Q prefix), whose CIGAR is folded to its large indels, when
-     * make-pif wrote one. No coarse tier present in the file = always uses the
-     * fine tier. Should be at least make-pif's `--coarse` bound: below it, the
+     * (uppercase T/Q prefix), whose CIGAR is folded to its large indels. The
+     * file has the last word: one with no coarse tier (make-pif --no-coarse)
+     * serves the fine tier at every zoom, and a threshold below the `--coarse`
+     * bound its `#pif` header states is raised to that bound, since below it the
      * coarse tier is served at zooms where the indels it folded away are wide
      * enough to see.
      */

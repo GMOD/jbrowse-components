@@ -2,6 +2,7 @@ import {
   getCanonicalRefNameFn,
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
+  installLodTierInfoFetch,
   renameDictLane,
 } from '@jbrowse/synteny-core'
 import { untracked } from 'mobx'
@@ -19,6 +20,8 @@ const RPC_DEBOUNCE_MS = 500
 export function doAfterAttach(
   self: Omit<LinearSyntenyDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
+  installLodTierInfoFetch(self)
+
   installComparativeFetchAutorun(self, {
     name: 'SyntenyFetch',
     delay: RPC_DEBOUNCE_MS,
