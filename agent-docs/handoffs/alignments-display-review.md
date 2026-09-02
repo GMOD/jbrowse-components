@@ -157,3 +157,50 @@ same read-only review on those file sets.
 Third reviewer (tooltip/arc components: AlignmentsTooltip, arcHitTest,
 chainOverlayUtils, sashimiArcs, pileupBezierArcs, ArcDebugOverlay,
 drawAlignmentLabels, *Svg export twins, GroupLabelBox) was still running.
+
+## Second-pass findings: tooltip and arc components reviewer (verified, unassigned)
+
+- bug (dark mode) `components/TlenAxisLabel.tsx:17-25` caption has no `fill`;
+  renders black on dark track and in dark export. Pass `palette.text.primary`
+  down (no `usePalette` on the export path), like `SashimiArcsSvg`.
+- bug (export ≠ screen) `renderSvg.tsx:290-322` `GroupLabelBoxes` places chips
+  at raw projected `coverageTop + 1`; screen (`GroupLabelsOverlay.tsx:151-167`)
+  culls off-screen lanes and pins the chip sticky. Hoist cull + `chipTop` clamp
+  into a helper beside `groupLabelStyle.ts`, use in both.
+- bug (ux) `arcHitTest.ts:322-340`, `ArcHoverOverlay.tsx:60-65`,
+  `CrossRegionArcsOverlay.tsx:117-130` — hover highlight strokes solid over
+  dashed marks (interchrom tick, split read-cloud connector), filling the gaps.
+  Add `dash?: string` to `ArcHighlight`; set for tick hits (generated dash
+  constants, adr-051) and from `arc.dash`; apply as `strokeDasharray`.
+- cleanup `ArcDebugOverlay.tsx:100-103` reaches back into `renderSections` by
+  key with `?? false` for `arcDown`; `computeCrossRegionArcSections`
+  (`overlaySections.ts:190-200`) should emit `arcDown` on the section.
+- ux `AlignmentsTooltip.tsx:248-325` vs `detailWidgets.ts:61-95`: hover has Ref
+  and Deletion rows the click-through coverage widget lacks; build both from
+  one `coverageRows(bin)` in tooltipUtils. Also `strandCounts` and avg-prob
+  expression duplicated (`AlignmentsTooltip.tsx:88-99`, `detailWidgets.ts:85-91`).
+- cleanup `pileupBezierArcs.ts:18-30` `scrollTop` param is dead (both callers
+  pass `model.scrollTop`); drop it, use `model.scrollModel` instead of the
+  hand-built scroll object at `:35-39`.
+- bug (ux) `SashimiArcsOverlay.tsx:83-91,147` selection key is local React
+  state so `SashimiArcsSvg` export never draws the selected-junction outline.
+  Move to a model volatile (`selectedSashimiKey`), clear with other selection.
+- cleanup casts `getContainingView(model) as LinearGenomeViewModel` in
+  `ArcDebugOverlay.tsx:164`, `CrossRegionArcsOverlay.tsx:158`,
+  `SashimiArcsOverlay.tsx:160`, `PileupBezierOverlay.tsx:51` → `model.view`.
+- cleanup `useAlignmentsBase.ts:189-192` reads arcs via `arcsByGroup` by key
+  while `ArcDebugOverlay.tsx:175` reads `sec.arcsRpcDataMap`; widen
+  `resolveArcHover`'s section param and read the lane's own map.
+- cleanup `AlignmentsTooltip.tsx:371` payload switch not exhaustiveness-checked;
+  annotate return type or add `default: never`.
+- bug (minor) `AlignmentsTooltip.tsx:249-259` prints "Ref 0" at a zero-depth
+  column with alleles; gate `refRow` on `depth > 0`.
+- cleanup `TlenAxisLabel.tsx:9` (`x = 42`) and `InsertSizeAxis.tsx:12`
+  (`DOWN_MODE_CAPTION_X = 11`) magic offsets; derive from `AXIS_SVG_WIDTH` /
+  `leftAxisSpineX(0)`.
+- minor: `ArcDebugOverlay` label boxes fixed `width={330}`; `GroupLabelBox`
+  width omits the 14px chevron the screen chip draws, so export chips are
+  ~14px narrower.
+
+All three second-pass reviewers have reported; their lists above are the
+remaining implementation queue.
