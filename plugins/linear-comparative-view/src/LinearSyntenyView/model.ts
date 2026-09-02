@@ -891,6 +891,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    LinearSyntenyView: LinearSyntenyViewStateModel
+  }
+}
 export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
 
 /**

@@ -290,7 +290,7 @@ export function buildCollapsedViewSnapshot({
   soloFeatureId,
   label,
 }: IntronActionArgs) {
-  const { id, ...rest } = getSnapshot(view)
+  const { id: _id, type: _type, ...rest } = getSnapshot(view)
   const tracks =
     soloFeatureId === undefined
       ? rest.tracks

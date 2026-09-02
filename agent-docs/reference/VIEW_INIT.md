@@ -192,6 +192,26 @@ restating it.
 - **The URL parameters page** renders each view's launch keys from the
   registration (`#launchKeys` and the `SPEC_KEYS` marker blocks), rather than
   restating the list.
+- **The compiler**, through `ViewTypeRegistry` rather than through
+  `launchKeys` directly. `withLaunchInput`'s widening cast already makes
+  `SnapshotIn<StateModel>` the authored shape, and `ViewSnapshotInput<N>`
+  (`@jbrowse/core/PluginManager`) reads it off the registry, so
+  `session.addView('LinearGenomeView', { asembly })` — and `replaceView`,
+  `addOrReplaceView`, jbrowse-img's flag-built settings — is a compile error at
+  the literal site, while a name the registry does not know stays
+  `Record<string, unknown>`. A new view earns this by augmenting
+  `ViewTypeRegistry` from its model module and annotating the model it hands
+  to `ViewType` against its own entry (`const stateModel:
+  ViewTypeRegistry['X'] = stateModelFactory(pm)`); `passThrough` spellings are
+  typed as `unknown`. `LinearGenomeView/viewSnapshotInput.test.ts` holds the
+  assertions. `NoInfer` keeps a variable's widened `type: string` from
+  loosening the name, so a spec built in a variable annotates itself
+  (`ViewSnapshotInput<'LinearSyntenyView'>`) or drops `type`, and a row list
+  written out of contract on purpose (`views: [{}, {}]` for the import form)
+  says so with `addView<string>(…)`. `jbrowse-react-app`'s `ManagedView` is
+  still open-shaped: an object carrying its own `type` has no separate
+  parameter to instantiate the name from, and a union with an open fallback
+  member checks nothing.
 
 **An out-of-tree view that registers nothing keeps MST's silent drop until it
 does**, and excess-property checking is TypeScript's literal-site check, so a

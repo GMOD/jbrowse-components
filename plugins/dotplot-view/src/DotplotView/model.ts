@@ -1566,7 +1566,6 @@ export default function stateModelFactory(pm: PluginManager) {
             const { id: _unused1, ...rest1 } = getSnapshot(d1)
             const { id: _unused2, ...rest2 } = getSnapshot(d2)
             const viewSnapshot = {
-              type: 'LinearSyntenyView',
               views: [
                 {
                   type: 'LinearGenomeView',

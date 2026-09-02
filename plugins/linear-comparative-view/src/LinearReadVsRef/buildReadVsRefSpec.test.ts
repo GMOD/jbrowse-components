@@ -2,10 +2,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
+import type { ReadVsRefSpec } from './buildReadVsRefSpec.ts'
+
 // The synthesized config rides on the track that draws it rather than in any
 // session or view-level list, so it goes out with the view.
-function syntenyConf(viewSpec: { levels: { tracks: unknown[] }[] }) {
-  return (viewSpec.levels[0]!.tracks[0] as { configuration: unknown })
+function syntenyConf(viewSpec: ReadVsRefSpec['viewSpec']) {
+  return (viewSpec.levels![0]!.tracks![0] as { configuration: unknown })
     .configuration
 }
 
@@ -160,7 +162,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const topView = spec.viewSpec.views[0] as {
+    const topView = spec.viewSpec.views![0] as {
       displayedRegions: { start: number; end: number }[]
     }
     // 1000 - 50 = 950, 1100 + 50 = 1150
@@ -191,7 +193,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const topView = spec.viewSpec.views[0] as {
+    const topView = spec.viewSpec.views![0] as {
       displayedRegions: { start: number; end: number }[]
     }
     expect(topView.displayedRegions[0]!.start).toBeGreaterThanOrEqual(0)
@@ -272,7 +274,7 @@ describe('buildReadVsRefSpec', () => {
       rand: seqRand,
     })
     expect(spec.viewSpec.showColorLegend).toBe(false)
-    for (const view of spec.viewSpec.views as {
+    for (const view of spec.viewSpec.views! as {
       tracks: { displays: { configuration: unknown }[] }[]
     }[]) {
       const display = view.tracks[0]!.displays[0]!

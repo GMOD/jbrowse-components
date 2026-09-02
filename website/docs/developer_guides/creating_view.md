@@ -80,6 +80,14 @@ export default function DotplotViewF(pluginManager: PluginManager) {
   launcher's dropdown, for a view that only ever arrives from a spec, a
   connection, or another view's action.
 
+The registry entry the snippet annotates against also types the call that opens
+the view. `session.addView('DotplotView', { ... })` checks the snapshot against
+your state model, so a misspelled key is a compile error at the call site rather
+than a key MST drops on attach; `replaceView` and `addOrReplaceView` read the
+same type. A name the registry does not carry still takes anything, which is
+what a view keeps until it augments
+[`ViewTypeRegistry`](/docs/developer_guides/extension_points#typescript-types-for-extension-points).
+
 ## Making the view launchable from a session spec
 
 Registering the view type is what lets a session snapshot _restore_ one. Opening

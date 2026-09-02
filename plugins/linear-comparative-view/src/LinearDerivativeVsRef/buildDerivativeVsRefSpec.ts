@@ -10,6 +10,7 @@ import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
 import { derivativeName } from './derivativeName.ts'
 
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // "Linear read vs ref" for a reconstruction rather than a read. Same view, same
@@ -63,12 +64,7 @@ export interface DerivativeVsRefSpec {
     }
   }
   temporaryAssembly: SyntheticAssembly
-  viewSpec: {
-    type: 'LinearSyntenyView'
-    displayName: string
-    views: unknown[]
-    tracks: unknown[]
-  }
+  viewSpec: ViewSnapshotInput<'LinearSyntenyView'>
 }
 
 export interface BuildDerivativeVsRefArgs {
@@ -383,28 +379,37 @@ export function buildDerivativeVsRefSpec(
           tracks: [],
         },
       ],
-      tracks: [
+      // the band between the two rows. `tracks` on the view means trackIds to
+      // open, so a built track snapshot written there is a launch recipe and
+      // never becomes a band.
+      levels: [
         {
-          type: 'SyntenyTrack',
-          configuration: {
-            type: 'SyntenyTrack',
-            assemblyNames: [trackAssembly, derivativeAssembly],
-            adapter: {
-              type: 'FromConfigAdapter',
-              // both sides of every alignment, so the lower panel can be drawn
-              // against the upper one
-              features: [...features, ...features.map(f => f.mate)],
-            },
-            trackId: syntenyTrackId,
-            name: `${refName} vs ${trackAssembly}`,
-          },
-          displays: [
+          level: 0,
+          tracks: [
             {
-              type: 'LinearSyntenyDisplay',
-              // No `height` here: LinearSyntenyDisplay's is a getter reading the
-              // view level's, so one written into this snapshot is silently
-              // dead. The band is resized through the level (`setHeight`).
-              configuration: `${syntenyTrackId}-LinearSyntenyDisplay`,
+              type: 'SyntenyTrack',
+              configuration: {
+                type: 'SyntenyTrack',
+                assemblyNames: [trackAssembly, derivativeAssembly],
+                adapter: {
+                  type: 'FromConfigAdapter',
+                  // both sides of every alignment, so the lower panel can be
+                  // drawn against the upper one
+                  features: [...features, ...features.map(f => f.mate)],
+                },
+                trackId: syntenyTrackId,
+                name: `${refName} vs ${trackAssembly}`,
+              },
+              displays: [
+                {
+                  type: 'LinearSyntenyDisplay',
+                  // No `height` here: LinearSyntenyDisplay's is a getter
+                  // reading the view level's, so one written into this
+                  // snapshot is silently dead. The band is resized through the
+                  // level (`setHeight`).
+                  configuration: `${syntenyTrackId}-LinearSyntenyDisplay`,
+                },
+              ],
             },
           ],
         },

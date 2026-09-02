@@ -1011,4 +1011,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    BreakpointSplitView: BreakpointViewStateModel
+  }
+}
 export type BreakpointViewModel = Instance<BreakpointViewStateModel>

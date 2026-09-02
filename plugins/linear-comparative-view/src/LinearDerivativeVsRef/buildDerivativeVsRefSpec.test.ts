@@ -5,12 +5,14 @@ import {
 } from './buildDerivativeVsRefSpec.ts'
 import { derivativeName } from './derivativeName.ts'
 
+import type { DerivativeVsRefSpec } from './buildDerivativeVsRefSpec.ts'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // The synthesized config rides on the track that draws it rather than in any
 // session or view-level list, so it goes out with the view.
-function syntenyConf(viewSpec: { tracks: unknown[] }) {
-  return (viewSpec.tracks[0] as { configuration: unknown }).configuration
+function syntenyConf(viewSpec: DerivativeVsRefSpec['viewSpec']) {
+  return (viewSpec.levels![0]!.tracks![0] as { configuration: unknown })
+    .configuration
 }
 
 // The COLO829 der(3) path: two chr3 arms in opposite orientations with short
@@ -80,7 +82,7 @@ describe('buildDerivativeVsRefSpec', () => {
       (sum, seg) => sum + (seg.end - seg.start),
       0,
     )
-    const derivativeView = viewSpec.views[1] as {
+    const derivativeView = viewSpec.views![1] as {
       displayedRegions: { start: number; end: number; refName: string }[]
       windowWidthBp: number
     }
@@ -93,7 +95,7 @@ describe('buildDerivativeVsRefSpec', () => {
 
   it('gives the reference panel one region per locus, padded', () => {
     const { viewSpec } = build()
-    const refView = viewSpec.views[0] as {
+    const refView = viewSpec.views![0] as {
       displayedRegions: { refName: string; start: number; end: number }[]
     }
     // the two chr3 segments overlap, so gatherOverlaps merges them into one
@@ -122,7 +124,7 @@ describe('buildDerivativeVsRefSpec', () => {
     // here: a hand-built `{ type, configuration }` entry has no `displays` and
     // draws nothing. Guarding the snapshot keeps that decision from quietly
     // reverting into a shape that mounts empty tracks.
-    const refView = build().viewSpec.views[0] as {
+    const refView = build().viewSpec.views![0] as {
       tracks: { configuration: unknown }[]
     }
     expect(refView.tracks.map(t => t.configuration)).toEqual([
@@ -137,7 +139,7 @@ describe('buildDerivativeVsRefSpec', () => {
     // reports a width instead. Guarding the snapshot keeps that from quietly
     // reverting.
     const { viewSpec, segmentsTrack, segmentsDisplay } = build()
-    expect((viewSpec.views[1] as { tracks: unknown[] }).tracks).toEqual([])
+    expect((viewSpec.views![1] as { tracks: unknown[] }).tracks).toEqual([])
     expect(segmentsDisplay.configuration.displayId).toBe(
       `${segmentsTrack.trackId}-LinearBasicDisplay`,
     )

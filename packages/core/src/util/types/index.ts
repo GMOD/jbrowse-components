@@ -2,6 +2,7 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { isSessionServices } from './services.ts'
 
+import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type {
   AnyConfigurationModel,
@@ -83,9 +84,9 @@ export type {
 export interface AbstractViewContainer extends IStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
-  addView(
-    typeName: string,
-    initialState?: Record<string, unknown>,
+  addView<N extends string>(
+    typeName: N,
+    initialState?: NoInfer<ViewSnapshotInput<N>>,
   ): AbstractViewModel
 }
 export function isViewContainer(
@@ -286,10 +287,10 @@ export function isSessionModelWithConfigEditing(
  * and the guard is what a launcher asks before offering it.
  */
 export interface SessionWithViewReplacement extends AbstractSessionModel {
-  replaceView(
+  replaceView<N extends string>(
     view: AbstractViewModel,
-    typeName: string,
-    initialState?: Record<string, unknown>,
+    typeName: N,
+    initialState?: NoInfer<ViewSnapshotInput<N>>,
   ): AbstractViewModel
 }
 export function isSessionWithViewReplacement(
@@ -329,15 +330,15 @@ export function canReplaceView(
  * that can't replace a view falls back to appending, so a caller passes the
  * source view unconditionally and never has to ask twice.
  */
-export function addOrReplaceView({
+export function addOrReplaceView<N extends string>({
   session,
   typeName,
   initialState,
   replacing,
 }: {
   session: AbstractViewContainer
-  typeName: string
-  initialState?: Record<string, unknown>
+  typeName: N
+  initialState?: NoInfer<ViewSnapshotInput<N>>
   replacing?: AbstractViewModel
 }) {
   return replacing && isSessionWithViewReplacement(session)

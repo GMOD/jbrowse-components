@@ -4,6 +4,7 @@ import { SessionTracksManagerSessionMixin } from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type {
   SessionWithConfigEditing,
   SessionWithConnections,
@@ -62,7 +63,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #action
        * replaces view in this case
        */
-      addView(typeName: string, initialState = {}) {
+      addView<N extends string>(
+        typeName: N,
+        initialState?: NoInfer<ViewSnapshotInput<N>>,
+      ) {
         self.view = cast({
           ...initialState,
           type: typeName,

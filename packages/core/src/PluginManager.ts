@@ -56,6 +56,7 @@ import type {
   IAnyModelType,
   IStateTreeNode,
   IAnyType,
+  SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType, ReactNode } from 'react'
 
@@ -340,6 +341,22 @@ export interface DisplayTypeRegistry {}
 
 export type ViewTypeName = keyof ViewTypeRegistry
 export type DisplayTypeName = keyof DisplayTypeRegistry
+
+/**
+ * What `addView(name, snapshot)` takes for a view type name. A registered name
+ * gets the view's authored shape — the snapshot type `withLaunchInput` widened
+ * to accept the launch keys beside the declared properties — so a misspelled
+ * key is a compile error at the literal site. `type` is optional because
+ * `addView` writes it. An unregistered name stays `Record<string, unknown>`,
+ * which is what an out-of-tree view's `addView` has always been.
+ *
+ * Read off `ViewTypeRegistry` rather than registered a second time, so the
+ * snapshot type cannot drift from the model: a view that augments the registry
+ * has typed `addView`, `replaceView` and `addOrReplaceView` for free.
+ */
+export type ViewSnapshotInput<N extends string> = N extends ViewTypeName
+  ? Omit<SnapshotIn<ViewTypeRegistry[N]>, 'type'> & { type?: N }
+  : Record<string, unknown>
 
 export interface ExtensionPointRegistry {
   // the session model type, extended and handed back. Callbacks compose, each

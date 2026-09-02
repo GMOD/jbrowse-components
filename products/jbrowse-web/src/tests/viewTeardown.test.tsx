@@ -23,6 +23,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractViewModel } from '@jbrowse/core/util'
@@ -353,7 +354,7 @@ test('an inline view-local config survives a session round trip', async () => {
       ],
     },
   }
-  const viewSnap = {
+  const viewSnap: ViewSnapshotInput<'LinearSyntenyView'> = {
     type: 'LinearSyntenyView',
     views: [
       {

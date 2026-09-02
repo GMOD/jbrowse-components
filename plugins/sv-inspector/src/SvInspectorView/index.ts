@@ -14,6 +14,7 @@ import stateModelFactory from './model.ts'
 import { svChordColor } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { FindJunctionsNear } from '@jbrowse/sv-core'
 
@@ -93,7 +94,8 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('svChordColor', svChordColor)
 
   pluginManager.addViewType(() => {
-    const stateModel = stateModelFactory(pluginManager)
+    const stateModel: ViewTypeRegistry['SvInspectorView'] =
+      stateModelFactory(pluginManager)
     return new ViewType({
       name: 'SvInspectorView',
       displayName: 'SV inspector',

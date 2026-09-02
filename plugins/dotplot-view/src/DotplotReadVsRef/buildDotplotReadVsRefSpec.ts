@@ -6,18 +6,12 @@ import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 import { gatherOverlaps, sum } from '@jbrowse/core/util'
 
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface DotplotReadVsRefSpec {
   temporaryAssembly: SyntheticAssembly
-  viewSpec: {
-    type: 'DotplotView'
-    displayName: string
-    assemblyNames: string[]
-    hview: unknown
-    vview: unknown
-    tracks: unknown[]
-  }
+  viewSpec: ViewSnapshotInput<'DotplotView'>
 }
 
 export interface BuildDotplotReadVsRefArgs {

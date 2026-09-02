@@ -37,9 +37,16 @@ export interface LaunchKeySpec {
   kind: LaunchKeyKind
 }
 
-export interface LaunchKeyRegistration<Commands> {
+export interface LaunchKeyRegistration<
+  Commands,
+  // `never` rather than `string` because this parameter reaches a mapped type:
+  // a widened one turns `LaunchSnapshotIn` into an index signature, which
+  // accepts every misspelling rather than failing the build. A reader that only
+  // wants the list says `string` for itself.
+  PassThrough extends string = never,
+> {
   keys: Record<string, LaunchKeySpec>
-  passThrough: readonly string[]
+  passThrough: readonly PassThrough[]
   /** never assigned; it carries `Commands` to `withLaunchInput`'s return type */
   commands?: Commands
 }
@@ -84,13 +91,16 @@ export function pendingLaunch<C>(launch: LaunchInput<C> | undefined) {
  * every literal site — a `defaultSession` view, an `addView` call, a
  * `createViewState` spec.
  */
-export type LaunchSnapshotIn<M extends IAnyModelType, Commands> = Omit<
-  SnapshotIn<M>,
-  keyof Commands
-> & {
+export type LaunchSnapshotIn<
+  M extends IAnyModelType,
+  Commands,
+  PassThrough extends string = never,
+> = Omit<SnapshotIn<M>, keyof Commands> & {
   [K in keyof Commands]?: K extends keyof SnapshotIn<M>
     ? Commands[K] | SnapshotIn<M>[K]
     : Commands[K]
+} & {
+  [K in PassThrough]?: unknown
 } & {
   /**
    * @deprecated v4's nesting. Write every setting directly on the view object;
@@ -124,9 +134,13 @@ type ReservedKey = 'id' | 'type' | 'launch'
 export type ViewInit<M extends IAnyModelType, Commands> = Commands &
   Partial<Omit<SnapshotIn<M>, keyof Commands | ReservedKey>>
 
-export type LaunchInputModel<M extends IAnyModelType, Commands> =
+export type LaunchInputModel<
+  M extends IAnyModelType,
+  Commands,
+  PassThrough extends string = never,
+> =
   M extends IModelType<infer P, infer O, any, infer S>
-    ? IModelType<P, O, LaunchSnapshotIn<M, Commands>, S>
+    ? IModelType<P, O, LaunchSnapshotIn<M, Commands, PassThrough>, S>
     : never
 
 /**
@@ -140,12 +154,12 @@ export type LaunchInputModel<M extends IAnyModelType, Commands> =
  * `preProcessSnapshot` converts.
  */
 export function defineLaunchKeys<Commands>() {
-  return (
+  return <const P extends readonly string[] = readonly never[]>(
     keys: Record<keyof Commands, LaunchKeySpec>,
-    { passThrough = [] }: { passThrough?: readonly string[] } = {},
-  ): LaunchKeyRegistration<Commands> => ({
+    { passThrough }: { passThrough?: P } = {},
+  ): LaunchKeyRegistration<Commands, P[number]> => ({
     keys,
-    passThrough,
+    passThrough: passThrough ?? [],
   })
 }
 
@@ -208,7 +222,7 @@ interface Partitioned {
 
 function classify(
   snap: Record<string, unknown>,
-  { keys, passThrough }: LaunchKeyRegistration<unknown>,
+  { keys, passThrough }: LaunchKeyRegistration<unknown, string>,
   known: ReadonlySet<string>,
   out: Partitioned,
 ) {
@@ -253,7 +267,7 @@ function classify(
 // per index — which would name "0" and "1" as unknown keys.
 function legacyInitSnapshot(
   init: Record<string, unknown>,
-  { keys }: LaunchKeyRegistration<unknown>,
+  { keys }: LaunchKeyRegistration<unknown, string>,
 ) {
   const rows = Object.entries(keys).find(
     ([, spec]) => spec.kind === 'rows',
@@ -288,10 +302,14 @@ function legacyInitSnapshot(
  * without a word, and `ViewType.stateModel` and every `.properties`
  * introspection site break with it.
  */
-export function withLaunchInput<M extends IAnyModelType, Commands>(
+export function withLaunchInput<
+  M extends IAnyModelType,
+  Commands,
+  PassThrough extends string,
+>(
   model: M,
-  registration: LaunchKeyRegistration<Commands>,
-): LaunchInputModel<M, Commands> {
+  registration: LaunchKeyRegistration<Commands, PassThrough>,
+): LaunchInputModel<M, Commands, PassThrough> {
   const known: ReadonlySet<string> = new Set(Object.keys(model.properties))
   const partitioned = model
     .preProcessSnapshot((snap: unknown) => {
@@ -368,5 +386,5 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
             Object.entries(snap).filter(([key]) => key !== LAUNCH),
           )
     })
-  return partitioned as unknown as LaunchInputModel<M, Commands>
+  return partitioned as unknown as LaunchInputModel<M, Commands, PassThrough>
 }

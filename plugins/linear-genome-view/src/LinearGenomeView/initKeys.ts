@@ -10,7 +10,9 @@ const knownInitKeys = new Set(Object.keys(lgvLaunchKeys.keys))
 // `launch` is the blob the partition fills rather than something anyone writes.
 const RESERVED = new Set(['id', 'type', 'launch'])
 
-const LEGACY_VIEWPORT_PROPS = new Set(lgvLaunchKeys.passThrough)
+const LEGACY_VIEWPORT_PROPS: ReadonlySet<string> = new Set(
+  lgvLaunchKeys.passThrough,
+)
 
 // Partition launch keys three ways, once, for every caller that needs to know
 // which is which:

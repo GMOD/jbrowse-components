@@ -533,6 +533,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    SvInspectorView: SvInspectorViewStateModel
+  }
+}
 export type SvInspectorViewModel = Instance<SvInspectorViewStateModel>
 
 export default SvInspectorViewF

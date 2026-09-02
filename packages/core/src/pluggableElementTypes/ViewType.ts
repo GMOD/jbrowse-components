@@ -26,7 +26,7 @@ export default class ViewType extends PluggableElementBase {
   // What `withLaunchInput` partitioned out of this view's snapshots, published
   // beside the model so an out-of-tree plugin, the doc generator and the
   // validator read one declaration rather than each keeping a list.
-  launchKeys?: LaunchKeyRegistration<unknown>
+  launchKeys?: LaunchKeyRegistration<unknown, string>
 
   displayTypes: DisplayType[] = []
 
@@ -45,7 +45,7 @@ export default class ViewType extends PluggableElementBase {
     name: string
     displayName?: string
     stateModel: IAnyModelType
-    launchKeys?: LaunchKeyRegistration<unknown>
+    launchKeys?: LaunchKeyRegistration<unknown, string>
     extendedName?: string
     viewMetadata?: ViewMetadata
     ReactComponent: ViewComponentType

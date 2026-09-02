@@ -23,6 +23,7 @@ import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -269,7 +270,10 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          */
-        addView(typeName: string, initialState = {}) {
+        addView<N extends string>(
+          typeName: N,
+          initialState?: NoInfer<ViewSnapshotInput<N>>,
+        ) {
           const length = self.views.push({
             ...initialState,
             type: typeName,
@@ -306,7 +310,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * its panel, and the launch that offers a replace is a click on that
          * view's own menu.
          */
-        replaceView(view: IBaseViewModel, typeName: string, initialState = {}) {
+        replaceView<N extends string>(
+          view: IBaseViewModel,
+          typeName: N,
+          initialState?: NoInfer<ViewSnapshotInput<N>>,
+        ) {
           // read before the removal, which is what makes both stale
           const idx = self.views.indexOf(view)
           // `idx` first, so a view already gone from the session short-circuits

@@ -38,7 +38,7 @@ function setup() {
 }
 
 function launch(session: ReturnType<typeof setup>, views: unknown[]) {
-  const view = session.addView('LinearSyntenyView', {
+  const view = session.addView<string>('LinearSyntenyView', {
     views,
   }) as LinearSyntenyViewModel
   view.setWidth(800)

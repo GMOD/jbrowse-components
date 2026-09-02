@@ -40,23 +40,15 @@ import type { ViewMode } from './modes.ts'
 import type { Entry } from './parseArgv.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, OpenTrack, Opts, Track } from './types.ts'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type {
-  BreakpointSplitViewInitView,
-  BreakpointViewModel,
-} from '@jbrowse/plugin-breakpoint-split-view'
+import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'
 import type {
   CircularViewCommands,
   CircularViewModel,
 } from '@jbrowse/plugin-circular-view'
-import type {
-  DotplotViewInit,
-  DotplotViewModel,
-} from '@jbrowse/plugin-dotplot-view'
-import type {
-  LinearSyntenyViewInit,
-  LinearSyntenyViewModel,
-} from '@jbrowse/plugin-linear-comparative-view'
+import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // react-app2 hosts every view type and accepts multiple assemblies, where the
@@ -343,17 +335,14 @@ function resolvedShowTracks(
 // comparativeViews two assemblies. Built eagerly, `jb2export breakpoint
 // --session sv.json` failed on the missing --loc before it could adopt the very
 // view it was pointed at, so the advice renderLinear's error gives led nowhere.
-async function addLaunchView<T extends InitView>(
+//
+// The flag-built settings are checked against the view type's own snapshot
+// type; a `--spec` is the user's JSON, so that path is the untyped `addView`.
+async function addLaunchView<T extends InitView, N extends string>(
   ctx: ModeContext,
-  viewType: string,
-  makeSettings: () =>
-    | SpecSettings
-    | DotplotViewInit
-    | LinearSyntenyViewInit
-    | CircularViewCommands
-    // one entry per stacked panel, which is what BreakpointSplitView's `views`
-    // takes as a recipe
-    | { views: BreakpointSplitViewInitView[] },
+  viewType: N,
+  makeSettings: () => ViewSnapshotInput<N>,
+  settingsFromSpec: (spec: ViewSpec) => SpecSettings,
 ) {
   const { session } = ctx.model
   const suppliedType = ctx.spec ? undefined : sessionViewType(session)
@@ -363,7 +352,9 @@ async function addLaunchView<T extends InitView>(
   const view =
     suppliedType === viewType
       ? session.views[0]
-      : session.addView(viewType, makeSettings())
+      : ctx.spec
+        ? session.addView<string>(viewType, settingsFromSpec(ctx.spec))
+        : session.addView(viewType, makeSettings())
   return readyView(view as T, ctx)
 }
 
@@ -471,23 +462,22 @@ const renderLinear: ModeRenderer = async ctx => {
 }
 
 const renderDotplot: ModeRenderer = async ctx => {
-  const view = await addLaunchView<DotplotViewModel>(ctx, 'DotplotView', () =>
-    ctx.spec
-      ? viewSettingsFromSpec(ctx.spec, dotplotViewKnobs(ctx.opts))
-      : dotplotInit(ctx.data, ctx.opts),
+  const view = await addLaunchView<DotplotViewModel, 'DotplotView'>(
+    ctx,
+    'DotplotView',
+    () => dotplotInit(ctx.data, ctx.opts),
+    spec => viewSettingsFromSpec(spec, dotplotViewKnobs(ctx.opts)),
   )
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
   return svg
 }
 
 const renderSynteny: ModeRenderer = async ctx => {
-  const view = await addLaunchView<LinearSyntenyViewModel>(
+  const view = await addLaunchView<LinearSyntenyViewModel, 'LinearSyntenyView'>(
     ctx,
     'LinearSyntenyView',
-    () =>
-      ctx.spec
-        ? viewSettingsFromSpec(ctx.spec, syntenyViewKnobs(ctx.opts))
-        : syntenyInit(ctx.data, ctx.opts),
+    () => syntenyInit(ctx.data, ctx.opts),
+    spec => viewSettingsFromSpec(spec, syntenyViewKnobs(ctx.opts)),
   )
   const svg = await renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
@@ -538,10 +528,11 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
 }
 
 const renderCircular: ModeRenderer = async ctx => {
-  const view = await addLaunchView<CircularViewModel>(
+  const view = await addLaunchView<CircularViewModel, 'CircularView'>(
     ctx,
     'CircularView',
-    () => (ctx.spec ? viewSettingsFromSpec(ctx.spec) : circularInit(ctx)),
+    () => circularInit(ctx),
+    spec => viewSettingsFromSpec(spec),
   )
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
   return svg
@@ -560,14 +551,17 @@ const renderCircular: ModeRenderer = async ctx => {
 // `addLaunchView`/`readyView` wait on it identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts } = ctx
-  const view = await addLaunchView<BreakpointViewModel>(
+  const view = await addLaunchView<BreakpointViewModel, 'BreakpointSplitView'>(
     ctx,
     'BreakpointSplitView',
     () => ({
-      views: ctx.spec
-        ? breakpointPanelsFromSpec(ctx.spec)
-        : breakpointInit(data, opts, resolvedShowTracks(opts.showTracks, data)),
+      views: breakpointInit(
+        data,
+        opts,
+        resolvedShowTracks(opts.showTracks, data),
+      ),
     }),
+    spec => ({ views: breakpointPanelsFromSpec(spec) }),
   )
   // No second wait on the panels here: this view's own launch clears in the
   // tick it creates the sub-views, each still carrying its pending launch — but

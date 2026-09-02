@@ -8,17 +8,12 @@ import { gatherOverlaps } from '@jbrowse/core/util'
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
 
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
+import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface ReadVsRefSpec {
   temporaryAssembly: SyntheticAssembly
-  viewSpec: {
-    type: 'LinearSyntenyView'
-    displayName: string
-    showColorLegend: boolean
-    views: unknown[]
-    levels: { level: number; tracks: unknown[] }[]
-  }
+  viewSpec: ViewSnapshotInput<'LinearSyntenyView'>
 }
 
 export interface BuildReadVsRefArgs {
