@@ -4,7 +4,6 @@ description:
   Plot somatic copy number across a thousand tumors, one row per sample
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: download
 ---
 
 **TL;DR:** tumors from different patients tend to gain and lose the same

@@ -6,7 +6,6 @@ description:
   configure a gene track to paint it
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
-data: pipeline
 ---
 
 **TL;DR:** a per-transcript statistic goes into the GFF3 attribute column, and a

@@ -6,7 +6,6 @@ description:
   genotypes against the reads that produced them
 guide_category: Tutorials
 tutorial_category: Structural variation
-data: hosted
 ---
 
 **TL;DR:** take one whole-gene deletion out of the 1000 Genomes ensemble SV

@@ -7,7 +7,6 @@ description:
   inversion in a linear synteny view
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: hosted
 ---
 
 **TL;DR:** T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named

@@ -3,7 +3,6 @@ title: RNA-seq visualization
 description: Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
-data: hosted
 ---
 
 **TL;DR:** JBrowse derives splice arcs and spliced read alignments from BAM/CRAM

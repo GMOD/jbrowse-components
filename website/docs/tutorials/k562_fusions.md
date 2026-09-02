@@ -6,7 +6,6 @@ description:
   then find the DNA break the transcript junction does not sit on
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: pipeline
 ---
 
 **TL;DR:** a fusion caller hands you a table of gene pairs and a junction

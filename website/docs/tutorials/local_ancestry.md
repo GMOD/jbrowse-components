@@ -5,7 +5,6 @@ description:
   breeds and eight held-out wolves, from the Dog10K phased panel
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: pipeline
 ---
 
 **TL;DR:** two of these dog breeds are wolf hybrids, so parts of their genome

@@ -3,7 +3,6 @@ title: ChromHMM chromatin states
 description: Paint many-cell-type ChromHMM states in one multi-row track
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
-data: download
 ---
 
 **TL;DR:** ChromHMM labels each region of the genome with a chromatin state,

@@ -6,7 +6,6 @@ description:
   coverage and problematic-region tracks genomes.jbrowse.org already publishes
 guide_category: Tutorials
 tutorial_category: Structural variation
-data: hosted
 ---
 
 **TL;DR:** a pileup looks the same whether its reads belong at a locus or merely

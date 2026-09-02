@@ -5,7 +5,6 @@ description:
   464-haplotype variant callset, and the multiple alignment both come from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: hosted
 ---
 
 **TL;DR:** HPRC release 2's `sv.gfa` is an rGFA, so its segments carry

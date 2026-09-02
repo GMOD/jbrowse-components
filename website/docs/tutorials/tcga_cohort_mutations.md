@@ -5,7 +5,6 @@ description:
   grouped by clinical annotation
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: download
 ---
 
 **TL;DR:** we turn a TCGA project's somatic mutation calls into one matrix, each

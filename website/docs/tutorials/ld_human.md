@@ -6,7 +6,6 @@ description:
   the block's edges
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: hosted
 ---
 
 **TL;DR:** we look at linkage disequilibrium around the lactase gene, where

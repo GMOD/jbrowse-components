@@ -6,7 +6,6 @@ import { baseUrl } from '../../../lib/base-url.ts'
 import { entrySlug } from '../../../lib/docs-sidebar.ts'
 import {
   TUTORIAL_CATEGORIES,
-  TUTORIAL_DATA_COSTS,
   TUTORIAL_FALLBACK,
   TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
@@ -55,14 +54,6 @@ const cardFrom = (entry: (typeof docs)[number], category: string) => ({
   title: entry.data.title,
   description: entry.data.description,
   category,
-  cost: entry.data.data,
-  // A page carrying a video tutorial says so in the grid. The videos are the one
-  // thing on these pages a reader might come looking for and cannot find by
-  // reading, since a still and a clip look the same in a search result. Read off
-  // the page's own `<Video>` rather than declared in frontmatter, so adding one
-  // to a page is the whole of the work — and so the chip cannot go stale against
-  // a corpus that grows a tour at a time.
-  hasVideo: /<Video\s/.test(entry.body ?? ''),
   external: false,
 })
 
@@ -77,8 +68,6 @@ const EXTERNAL_CARDS = [
     description:
       'Live, copy-paste examples for the embeddable React components: themes, per-feature colors, sessions, text search, and more.',
     category: 'Configuration & embedding',
-    cost: undefined as string | undefined,
-    hasVideo: false,
     external: true,
   },
 ]
@@ -108,21 +97,6 @@ const miscategorized = docs
 if (miscategorized.length > 0) {
   throw new Error(
     `Unknown tutorial_category (add it to CATEGORY_ORDER or fix the typo):\n  ${miscategorized.join('\n  ')}`,
-  )
-}
-
-// Same reasoning as the category check above, and it matters more here: an
-// unknown `data` value renders no chip at all, which is indistinguishable from
-// a page that deliberately has none. A typo would quietly demote a page to
-// "cost unstated" rather than show a wrong badge.
-// Every doc that sets the field, not just tutorials/: the quickstarts carry one
-// too, and a typo on those would escape a tutorials-only check.
-const miscosted = docs
-  .filter(entry => entry.data.data && !(entry.data.data in TUTORIAL_DATA_COSTS))
-  .map(entry => `${entry.id}: "${entry.data.data}"`)
-if (miscosted.length > 0) {
-  throw new Error(
-    `Unknown data cost (add it to TUTORIAL_DATA_COSTS or fix the typo):\n  ${miscosted.join('\n  ')}`,
   )
 }
 
@@ -188,27 +162,6 @@ const HAS_THUMB = new Set(
                   {tutorial.title}
                   {tutorial.external && <span class="tut-ext"> ↗</span>}
                 </span>
-                {(tutorial.hasVideo ||
-                  (tutorial.cost && TUTORIAL_DATA_COSTS[tutorial.cost])) && (
-                  <span class="tut-chips">
-                    {tutorial.cost && TUTORIAL_DATA_COSTS[tutorial.cost] && (
-                      <span
-                        class={`tut-cost tut-cost-${tutorial.cost}`}
-                        title={TUTORIAL_DATA_COSTS[tutorial.cost]!.title}
-                      >
-                        {TUTORIAL_DATA_COSTS[tutorial.cost]!.label}
-                      </span>
-                    )}
-                    {tutorial.hasVideo && (
-                      <span
-                        class="tut-cost tut-video"
-                        title="Includes a video tutorial"
-                      >
-                        ▶ Video
-                      </span>
-                    )}
-                  </span>
-                )}
                 {tutorial.description && (
                   <span class="tut-card-desc">{tutorial.description}</span>
                 )}
@@ -302,47 +255,5 @@ const HAS_THUMB = new Set(
     font-size: 0.85rem;
     line-height: 1.4;
     color: var(--color-text-muted);
-  }
-  /* The card body is a flex column, so without a row of its own each chip
-     stretches to the card width and stops reading as a chip. */
-  .tut-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-  }
-  .tut-cost {
-    align-self: flex-start;
-    font-size: 0.68rem;
-    font-weight: 600;
-    line-height: 1.5;
-    padding: 0 0.45rem;
-    border: 1px solid;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-  /* Weight descends with cost, which is the point: the zero-setup pages are
-     what a reader scanning the grid is usually hunting for, so those are the
-     ones that pop and the pipelines recede into the card. */
-  .tut-cost-hosted {
-    color: var(--color-accent-dark);
-    border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  }
-  .tut-cost-download {
-    color: var(--color-primary);
-    border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
-    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
-  }
-  .tut-cost-pipeline {
-    color: var(--color-text-muted);
-    border-color: var(--color-border);
-    background: transparent;
-  }
-  /* Quieter than every cost chip: the cost is what a reader filters the grid
-     by, and a video is a bonus on whichever page they land on. */
-  .tut-video {
-    color: var(--color-text-muted);
-    border-color: var(--color-border);
-    background: var(--color-blockquote-bg);
   }
 </style>

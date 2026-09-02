@@ -6,7 +6,6 @@ description:
   CNV calls against the alignments that support them
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: pipeline
 ---
 
 **TL;DR:** the Cancer Genome in a Bottle project publishes HG008, a matched

@@ -6,7 +6,6 @@ description:
   selection pressure between each pair of copies
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 **TL;DR:** an allopolyploid carries several near-complete copies of its own

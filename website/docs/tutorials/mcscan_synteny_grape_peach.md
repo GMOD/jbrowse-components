@@ -6,7 +6,6 @@ description:
   and convert an MCScanX run into the same files
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 **TL;DR:** a pairwise [jcvi](https://github.com/tanghaibao/jcvi) MCScan run

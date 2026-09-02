@@ -5,7 +5,6 @@ description:
   to a UMAP
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
-data: pipeline
 ---
 
 **TL;DR:** pool each cluster's cells into one coverage BigWig outside JBrowse,

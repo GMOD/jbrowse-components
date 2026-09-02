@@ -6,7 +6,6 @@ description:
   make, reconstruct the derivative allele, and check it against the reads
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: pipeline
 ---
 
 **TL;DR:** a rearrangement can take several junctions to make, and the genes it

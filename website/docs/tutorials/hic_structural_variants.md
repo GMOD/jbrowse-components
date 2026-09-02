@@ -6,7 +6,6 @@ description:
   translocation by opening two chromosomes in one view
 guide_category: Tutorials
 tutorial_category: Structural variation
-data: hosted
 ---
 
 **TL;DR:** JBrowse fetches a Hi-C matrix for every _pair_ of regions on screen.

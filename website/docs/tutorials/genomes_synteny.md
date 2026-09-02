@@ -6,7 +6,6 @@ description:
   from it
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
-data: hosted
 ---
 
 **TL;DR:** genomes.jbrowse.org already carries UCSC's pairwise liftOver

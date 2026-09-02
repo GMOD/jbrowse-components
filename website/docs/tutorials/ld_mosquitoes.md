@@ -5,7 +5,6 @@ description:
   genotyped per mosquito
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: hosted
 ---
 
 **TL;DR:** a 22 Mb inversion reads as one block, from `plink2 --r2-phased`

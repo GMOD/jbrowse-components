@@ -6,7 +6,6 @@ description:
   launched from the genome view and linked back to it
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
-data: hosted
 ---
 
 **TL;DR:** genomes.jbrowse.org loads the protein3d and msaview plugins, so any

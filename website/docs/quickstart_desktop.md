@@ -1,7 +1,6 @@
 ---
 title: JBrowse desktop quick start
 description: Install JBrowse Desktop, open a genome, and add your first tracks
-data: download
 ---
 
 Install JBrowse Desktop, open a genome, add a track and save a session, all from

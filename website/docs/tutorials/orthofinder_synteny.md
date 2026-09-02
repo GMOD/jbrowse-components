@@ -6,7 +6,6 @@ description:
   synteny table
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 **TL;DR:** an [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups

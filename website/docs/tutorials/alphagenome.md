@@ -5,7 +5,6 @@ description:
   score a variant against the reference
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
-data: hosted
 ---
 
 **TL;DR:** AlphaGenome reads a megabase of DNA and says what it does: where it

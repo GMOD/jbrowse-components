@@ -5,7 +5,6 @@ description:
   and pack the whole panel into one Zarr store
 guide_category: Tutorials
 tutorial_category: Structural variation
-data: download
 ---
 
 **TL;DR:** copy number varies from person to person, and we show the whole 1000

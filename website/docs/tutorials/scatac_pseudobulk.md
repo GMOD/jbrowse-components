@@ -3,7 +3,6 @@ title: Single-cell ATAC pseudobulk
 description: Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
-data: pipeline
 ---
 
 **TL;DR:** pseudobulk outside JBrowse, pooling each cluster's cells into one

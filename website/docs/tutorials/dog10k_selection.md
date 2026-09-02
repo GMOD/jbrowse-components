@@ -7,7 +7,6 @@ description:
   genotype matrix
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: pipeline
 ---
 
 **TL;DR:** score every window of the Dog10K phased panel for how far apart

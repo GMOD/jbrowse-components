@@ -6,7 +6,6 @@ description:
   without preparing any data
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
-data: hosted
 ---
 
 **TL;DR:** a RepeatMasker track is one packed lane of colored blocks. The same

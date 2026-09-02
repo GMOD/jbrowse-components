@@ -98,38 +98,6 @@ export const TUTORIAL_CATEGORIES = [
 
 export const TUTORIAL_FALLBACK = 'More tutorials'
 
-// The `data` frontmatter field: what it takes to end up with what a tutorial
-// produces, as a chip on its card. Half these pages open a hosted link and half
-// want pggb, Cactus or minimap2 run first, and until this the cards said
-// nothing either way, so the zero-setup entry points could only be found by
-// opening pages.
-//
-// The question is deliberately "what does it cost to get what this page shows",
-// not "can I read it with nothing installed". Almost every page answers yes to
-// the second — their figures are hosted, which is what makes them figures — so
-// a badge on that axis would mark 30 of 42 pages and mean nothing. Under the
-// first, `dog10k_svs` is a bcftools pipeline whose opening bullet says the
-// figures are free to read, and the card should say pipeline.
-//
-// A page whose cost is not about data leaves the field off: the embedding and
-// display-settings walkthroughs need a text editor and an instance, which is
-// none of these three and does not become one by picking the nearest.
-export const TUTORIAL_DATA_COSTS: Record<string, { label: string; title: string }> =
-  {
-    hosted: {
-      label: 'No setup',
-      title: 'Nothing to install: the data is already served',
-    },
-    download: {
-      label: 'Download',
-      title: 'Fetch and index published files, no analysis tool',
-    },
-    pipeline: {
-      label: 'Pipeline',
-      title: 'Run an analysis tool first (aligner, graph builder, caller)',
-    },
-  }
-
 // Curated order within each tutorial category, by page slug. Sorting
 // alphabetically floated niche pages to the top (the CLI config walkthrough
 // once led Getting started); instead each section leads with its most

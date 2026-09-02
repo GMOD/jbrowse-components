@@ -7,7 +7,6 @@ description:
   to fetch
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
-data: hosted
 ---
 
 **TL;DR:** we look at where the genes sit along human chromosome 1 and which

@@ -4,7 +4,6 @@ description:
   Per-read, aggregate, and allele-specific 5mC from HG002 nanopore reads
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
-data: hosted
 ---
 
 **TL;DR:** JBrowse reads DNA methylation straight from the MM/ML tags nanopore

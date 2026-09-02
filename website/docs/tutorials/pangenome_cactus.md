@@ -5,7 +5,6 @@ description:
   JBrowse
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 **TL;DR:** one `cactus-pangenome` run over five _E. coli_ strains emits the

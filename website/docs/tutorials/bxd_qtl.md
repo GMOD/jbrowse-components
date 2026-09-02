@@ -5,7 +5,6 @@ description:
   Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: download
 ---
 
 **TL;DR:** the BXD mice are inbred strains bred down from two parents, B6 and

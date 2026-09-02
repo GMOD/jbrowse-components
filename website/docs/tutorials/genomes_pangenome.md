@@ -6,7 +6,6 @@ description:
   a hosted page with nothing prepared beforehand
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
-data: hosted
 ---
 
 **TL;DR:** genomes.jbrowse.org's HPRC page draws the human pangenome graph on

@@ -6,7 +6,6 @@ description:
   per parental copy, and read the crossovers off the track
 guide_category: Tutorials
 tutorial_category: Population genomics
-data: pipeline
 ---
 
 **TL;DR:** hap-ibd tells which stretches of a phased child's genome came down
