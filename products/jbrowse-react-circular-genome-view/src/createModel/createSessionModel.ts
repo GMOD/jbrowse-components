@@ -11,7 +11,7 @@ import type {
   SessionWithDrawerWidgets,
 } from '@jbrowse/core/util/types'
 import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 // Compile-time guard binding the shared parent shadow to this product's real
@@ -69,10 +69,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         typeName: N,
         initialState?: NoInfer<ViewSnapshotInput<N>>,
       ) {
+        // `N` is still generic in here, so the spread cannot line up with the
+        // one concrete view type this session holds -- the parameter above is
+        // what checks the snapshot, at the call site
         self.view = cast({
           ...initialState,
           type: typeName,
-        })
+        } as SnapshotIn<typeof self.view>)
         return self.view
       },
 
