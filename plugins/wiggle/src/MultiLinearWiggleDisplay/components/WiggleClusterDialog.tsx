@@ -26,6 +26,13 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
   handleClose: () => void
 }) {
   const { samplesPerPixel, setSamplesPerPixel } = useClusterSamplingOptions()
+  // The two things about this display that change the matrix. The region and
+  // the zoom are `ClusterManualTab`'s own key pieces, so they are not restated
+  // here — and the display model is deliberately NOT one: `useFetch` serializes
+  // the key, so passing the node stringified the whole display snapshot on
+  // every render and re-fetched the matrix for a row relabel that cannot move a
+  // score.
+  const sourceNames = model.sourcesWithoutLayout.map(s => s.name).join('\t')
   return (
     <ClusterDialog
       model={model}
@@ -37,7 +44,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       canRun={!!model.sourcesWithoutLayout.length}
       matrixKey={
         model.sourcesWithoutLayout.length
-          ? ['scoreMatrix', model, samplesPerPixel]
+          ? ['scoreMatrix', sourceNames, samplesPerPixel]
           : null
       }
       run={async args => {
