@@ -45,6 +45,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     adapterConfig,
     renderingMode: 'alleleCount',
     clusteringReady: true,
+    hasClusterableRows: true,
     setClusterTree: jest.fn(),
     setLayout: jest.fn(),
     setLayoutAndClusterTree: jest.fn(),

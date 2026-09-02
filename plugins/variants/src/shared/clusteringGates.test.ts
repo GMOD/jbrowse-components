@@ -14,8 +14,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 //
 // Driven off a real display through the regular display's harness, because the
 // row is built by the shared `variantTrackMenuItems` both multi-sample variant
-// displays take, and the gates read `sourcesWithoutLayout`, a getter over
-// `sourcesVolatile` that a stub would have to restate.
+// displays take, and the gates read `sources`, a getter over `sourcesVolatile`,
+// `layout` and `subtreeFilter` that a stub would have to restate.
 function display(sources?: { name: string }[]) {
   const { display } = createTestEnvironment().createDisplay()
   if (sources) {
@@ -53,6 +53,21 @@ test('the auto path needs the inputs AND the rows', () => {
 // Phased clustering clusters haplotypes, which needs the per-sample ploidy that
 // rides with cellData — so rows alone are not enough there, and the conjunction
 // has to keep failing on the other half.
+// The run clusters the rows on screen, so a clade focused down to one row has
+// nothing to order — and `clusterMatrix` refuses below two rows, so an ungated
+// run is an error dialog rather than a no-op.
+test('a subtree filter down to one row closes the gate', () => {
+  const d = display(two)
+  expect(d.hasClusterableRows).toBe(true)
+
+  d.setSubtreeFilter(['HG001'])
+  expect(d.hasClusterableRows).toBe(false)
+  expect(d.autoClusterReady).toBe(false)
+
+  d.setSubtreeFilter(undefined)
+  expect(d.hasClusterableRows).toBe(true)
+})
+
 test('phased mode holds the auto path back until the ploidy lands', () => {
   const d = display(two)
   d.setPhasedMode('phased')
@@ -93,8 +108,8 @@ test('refuses to cluster a single sample, and says which is missing', () => {
 })
 
 // Before the adapter reports its samples the count is not "one", it is unknown
-// — `sourcesWithoutLayout` is undefined — and a row that blamed the cohort
-// would be wrong about why it is off.
+// — `sourcesVolatile` is undefined — and a row that blamed the cohort would be
+// wrong about why it is off.
 test('says it is still loading before the samples arrive', () => {
   const row = clusterRow()
 

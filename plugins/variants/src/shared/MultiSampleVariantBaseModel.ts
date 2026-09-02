@@ -1180,17 +1180,19 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Whether there is anything to cluster: clustering reorders rows, so it
-         * needs at least two rows to put in an order. Undefined is not "none" —
-         * it is the sample list not having landed yet — but both mean "not
-         * now", which is why one boolean answers for both and the menu's help
-         * text asks `sourcesWithoutLayout` itself which of the two it is.
+         * needs at least two rows to put in an order. An empty list is "none"
+         * and "the sample list hasn't landed yet" alike — both mean "not now",
+         * which is why one boolean answers for both and the menu's help text
+         * asks `sourcesVolatile` itself which of the two it is.
          *
-         * The unfiltered, haplotype-expanded list, because that is the row set
-         * the tree comes back describing.
+         * **The rows on screen**, which is the list the run clusters
+         * (`sourcesBase`, expanded here exactly as the worker expands it) and
+         * so the row set the tree comes back describing. Counting the
+         * unfiltered list instead offered — and let the declarative path fire —
+         * a run over a clade focused down to one row.
          */
         get hasClusterableRows() {
-          const rows = self.sourcesWithoutLayout
-          return rows !== undefined && rows.length > 1
+          return this.sources.length > 1
         },
         /**
          * #getter

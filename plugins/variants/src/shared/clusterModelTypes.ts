@@ -29,6 +29,13 @@ export interface ReducedModel {
   // ("HG001") never match the haplotype rows ("HG001 HP0") and
   // `treeDescribesRows` refuses to draw the dendrogram the run just produced.
   clusteringReady: boolean
+  // Whether there are at least two rows to put in an order, counted on the list
+  // the run actually clusters. Both entry points gate on it for the same reason
+  // they both gate on `clusteringReady`: the dialog's Run button and the
+  // declarative autorun would otherwise spend a whole genotype-matrix pass to
+  // hand back a one-leaf dendrogram — which `clusterMatrix` now refuses outright
+  // (MIN_CLUSTER_ROWS), so ungated it is an error dialog rather than a no-op.
+  hasClusterableRows: boolean
   setClusterTree: (arg?: string) => void
   setLayout: (arg: Source[]) => void
   setLayoutAndClusterTree: (

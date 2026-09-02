@@ -378,7 +378,7 @@ export function variantTrackMenuItems(
       // nor is waited on by it. Keyed on the cell data, the row blamed the
       // cohort for a sample list that had not landed yet, and called a genuinely
       // single-sample track still-loading forever.
-      disabledHelpText: self.sourcesWithoutLayout
+      disabledHelpText: self.sourcesVolatile
         ? 'Needs at least two samples to cluster'
         : 'Loading samples...',
       onClick: () => {
