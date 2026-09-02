@@ -1,16 +1,18 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { READ_COLOR_CATEGORY_BY_INDEX } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
 import { LINKED_READ_SLOT_CATEGORY } from '../shaders/palettes.ts'
+import { COLOR_SCHEMES, isModificationScheme } from './colorSchemes.ts'
 import {
   LEGEND_MAX_WIDTH,
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
+import { modificationData } from './modificationData.ts'
 
-import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorSchemeType } from './types.ts'
+import type { ColorBy, ModificationColorBy } from './types.ts'
 
 // FloatingLegend's own geometry, which decides how much of `LEGEND_MAX_WIDTH` a
 // label actually gets: 1px border either side, 3px left padding, the 20px
@@ -34,44 +36,38 @@ const budget = (marks: number) =>
   DISMISS_GUTTER -
   swatchColumn(marks)
 
-// Every scheme, so the per-scheme relabelings (split segments, first-of-pair,
-// the tag/mate no-value wording) are measured too and not just the base table.
-const SCHEMES: ColorSchemeType[] = [
-  'normal',
-  'strand',
-  'firstOfPairStrand',
-  'insertSize',
-  'insertSizeAndOrientation',
-  'pairOrientation',
-  'mappingQuality',
-  'perBaseQuality',
-  'perBaseLetter',
-  'tag',
-  'mateRefName',
+// Every registered scheme, so the per-scheme relabelings (split segments,
+// first-of-pair, the tag/mate no-value wording) are measured too and not just
+// the base table. Off the registry rather than a list kept here: a hand-kept
+// list left `modifications` out, so its rows went unmeasured. The modification
+// schemes key different rows per sub-mode (the methylated states, the
+// unmodified swatch), so each sub-mode is swept as well.
+const MODIFICATION_MODES: (ModificationColorBy | undefined)[] = [
+  undefined,
+  { twoColor: true },
+  { fillUnmarked: true },
 ]
+const COLOR_BYS: ColorBy[] = Object.values(COLOR_SCHEMES).flatMap(({ type }) =>
+  isModificationScheme(type)
+    ? MODIFICATION_MODES.map(modifications => ({ type, modifications }))
+    : [{ type }],
+)
 
-// Every fixed-swatch bucket at once — not a realistic frame, but the union is
-// what has to fit, and asking for it per scheme lets each scheme's overrides
-// through.
-const ALL: ReadColorCategory[] = [
-  'fwdStrand',
-  'revStrand',
-  'noStrand',
-  'nonSplit',
-  'pairLR',
-  'pairRL',
-  'pairLL',
-  'pairRR',
-  'normalInsert',
-  'longInsert',
-  'shortInsert',
-  'splitInversion',
-  'splitDeletion',
-  'interchrom',
-  'unmappedMate',
-  'supplementary',
-  'mapqUnavailable',
-  'noTagValue',
+// Every bucket at once — not a realistic frame, but the union is what has to
+// fit, and asking for it per scheme lets each scheme's overrides through. The
+// exhaustive category list, so a new swatch bucket is measured without being
+// added here; the dynamic ones (plain/mapq/tag) key no bucket row and are
+// harmless in the set.
+const ALL = new Set(READ_COLOR_CATEGORY_BY_INDEX)
+
+// Every modification type the name table knows, so each name is measured — and
+// a cytosine-only detection, which is the one case that words the blue swatch
+// "Unmethylated" rather than "Unmodified".
+const DETECTED_MODIFICATIONS = [
+  new Map(
+    Object.entries(modificationData).map(([type, { color }]) => [type, color]),
+  ),
+  new Map([['m', modificationData.m!.color]]),
 ]
 
 // The overlap row is appended by the same builder and is the longest label in
@@ -81,16 +77,18 @@ const OVERLAPS = [undefined, 'chain', 'collapsed'] as const
 
 function everyLabel() {
   const out = new Set<string>()
-  for (const type of SCHEMES) {
+  for (const colorBy of COLOR_BYS) {
     for (const overlaps of OVERLAPS) {
-      for (const item of getReadDisplayLegendItems({
-        colorBy: { type },
-        presentCategories: new Set(ALL),
-        palette: makeTestPalette(),
-        detectedModifications: new Map([['m', 'red']]),
-        overlaps,
-      })) {
-        out.add(item.label)
+      for (const detectedModifications of DETECTED_MODIFICATIONS) {
+        for (const item of getReadDisplayLegendItems({
+          colorBy,
+          presentCategories: ALL,
+          palette: makeTestPalette(),
+          detectedModifications,
+          overlaps,
+        })) {
+          out.add(item.label)
+        }
       }
     }
   }
@@ -100,11 +98,7 @@ function everyLabel() {
   // vocabulary ("Split alignment (interchromosomal)") unmeasured, which is not
   // a width `LEGEND_MAX_WIDTH` can claim to be derived from.
   for (const mode of ['arc', 'cloud'] as const) {
-    for (const item of getArcLegendItems(
-      new Set(ALL),
-      makeTestPalette(),
-      mode,
-    )) {
+    for (const item of getArcLegendItems(ALL, makeTestPalette(), mode)) {
       out.add(item.label)
     }
   }
@@ -118,6 +112,22 @@ function everyLabel() {
   }
   return [...out]
 }
+
+// The rows the hand-kept lists used to miss. A sweep that quietly stops
+// reaching a scheme measures nothing for it, so the reach is pinned.
+test('the sweep reaches the modification rows', () => {
+  expect(everyLabel()).toEqual(
+    expect.arrayContaining([
+      'Read, forward strand',
+      'Read, reverse strand',
+      '5mC methylated',
+      '5hmC methylated',
+      'Unmethylated',
+      'Unmodified',
+      'inosine',
+    ]),
+  )
+})
 
 // The box floats over the data and ellipsizes what it can't fit, so a label that
 // outgrows it does not fail loudly — it silently loses its tail, which for this
