@@ -234,7 +234,8 @@ chromosome. One 1 kb probe there parsed 193,008 lines to keep 3 features:
 2734 ms against 8 ms. The probe now passes `topLevelOnly`, which skips the
 expansion, because the flanks provably cannot change a top-level count — see
 `readTabixLinesRedispatched` for the argument and
-[the adapter's `hasIdAttribute`](../../plugins/gff3/src/Gff3TabixAdapter/hasIdAttribute.ts)
+gff-nostream's `hasIdAttribute`, at the adapter's call in
+[`Gff3TabixAdapter.ts`](../../plugins/gff3/src/Gff3TabixAdapter/Gff3TabixAdapter.ts),
 for what bounds the expansion on the paths that still take it.
 
 That chunk granularity is also why the probe is a *sample* rather than an

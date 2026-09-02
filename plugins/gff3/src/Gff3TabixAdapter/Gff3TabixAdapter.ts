@@ -10,10 +10,9 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
-import { parseRecordsLazy } from 'gff-nostream'
+import { hasIdAttribute, parseRecordsLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
-import { hasIdAttribute } from './hasIdAttribute.ts'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -76,7 +75,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         const { gff, dontRedispatchSet } = await this.configure(opts)
         // The bound exists to reach a record's children, so what disqualifies a
         // record is having none. `ID` answers that exactly — nothing can name a
-        // parent that has no name — and the type list covers what it cannot: a
+        // parent that has no name — and gff-nostream decides it with the scan
+        // its linker uses, so a record the tree would attach children to is
+        // never one the bound leaves out. `dontRedispatch` can only approximate
+        // the same question by type: every NCBI `GCF_*_genomic.gff.gz` opens
+        // each reference with a chromosome-long `match` record no list named,
+        // and none of them has an `ID`. The list covers what `ID` cannot see: a
         // record carrying an `ID` that nothing references, which hosted hg19
         // RefSeq's chromosome-long `region` is.
         const canHaveChildren = (line: TabixLine) =>

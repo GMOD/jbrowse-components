@@ -21,7 +21,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   from the gene rather than from the children the fetch returned** — declined
   2026-09-01, closing `handoffs/row-count-follows-the-fetch-window.md`.
 
-  The bound is total (every record with an `ID`, `hasIdAttribute`) because
+  The bound is total (every record with an `ID`, gff-nostream's `hasIdAttribute`) because
   `layoutSubfeatures` sums the heights of whatever `subfeatures` the fetch
   returned, so the count of children a window happens to cover sets the gene's
   height and, through `GranularRectLayout`, every neighbour's row. Under the
