@@ -351,7 +351,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   // The one bpPerPx-dependent worker decision is the amino-acid overlay, so
-  // `regionFetchKey` is that threshold rather than the zoom — a zoom staying on
+  // `zoomFetchKey` is that threshold rather than the zoom — a zoom staying on
   // one side of it reuses the features, and one crossing it refetches. Both
   // zoom IN from a coarser first fetch, so the viewport stays inside the loaded
   // region and `viewportWithinLoadedData` cannot be what explains either result.
@@ -414,7 +414,7 @@ describe('FetchVisibleRegions autorun', () => {
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
-      expect(display.regionFetchKey).toBe('false')
+      expect(display.zoomFetchKey).toBe('false')
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
   })

@@ -3135,7 +3135,7 @@ export default function stateModelFactory(
          * paint floor to a whole one, so the wall stays unbroken.
          *
          * Not an `rpcProps` field — see `perBaseBinBp` on the RPC args for why a
-         * zoom-swinging value belongs at the call site, and `regionFetchKey`
+         * zoom-swinging value belongs at the call site, and `zoomFetchKey`
          * below for what invalidates on it instead.
          */
         get perBaseBinBp() {
@@ -3158,7 +3158,7 @@ export default function stateModelFactory(
          * octaves coarser than the zoom it is drawn at — and it is the half an
          * export lands in, since a reader zooms and then reaches for the menu.
          *
-         * It stays out of `regionFetchKey`, which drives the refetch, and the
+         * It stays out of `zoomFetchKey`, which drives the refetch, and the
          * reason is not that a live key would flip more often — the
          * quantization means it flips per octave either way, and wiggle keys on
          * live `bpPerPx` outright (ADR-008). It is that `FetchVisibleRegions`
@@ -3212,7 +3212,7 @@ export default function stateModelFactory(
          * Its own views block, after the getter it reads, for the reason
          * `rpcProps` has one.
          */
-        get regionFetchKey() {
+        get zoomFetchKey() {
           return String(self.perBaseBinBp)
         },
       }))

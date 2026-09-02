@@ -124,7 +124,7 @@ describe('the summary bars stand in until the alignment lands', () => {
     expect(display.visibleSummaryBars).toHaveLength(2)
   })
 
-  // The tier is the presence hook (`regionHasData`), not `regionFetchKey`,
+  // The tier is the presence hook (`regionHasData`), not `zoomFetchKey`,
   // which stays empty here. A summary/detail key would read as stale the moment
   // the tier flipped and re-read the summary adapter on every zoom back out —
   // the retention `clearAlignmentData`'s one-directional clear exists to buy.

@@ -205,7 +205,7 @@ describe('the region fetch key', () => {
     const { display } = setup()
     await quiet(display)
 
-    // no viewport move: `regionFetchKey` is a view, so what it reads is in this
+    // no viewport move: `zoomFetchKey` is a view, so what it reads is in this
     // autorun's dependency set and moving the key is the whole trigger. As an
     // action MobX would run it untracked and this would never re-run.
     display.setFetchKey('zoomed')
@@ -442,17 +442,45 @@ describe('the dependency set is the contract', () => {
     'LinearGenomeView.windowStartBp',
     'LinearGenomeView.windowWidthBp',
   ]
+  // The settings and adapter axes of `regionFetchKey`, reached through
+  // `isCacheValid` on a covered block: `rpcPropsCacheKey` is the `rpcProps`
+  // existence probe on a display that declares none, and `adapterConfigKey` is
+  // the track's adapter config read through `getConf` — its slots, the
+  // observability probes `readConfObject` makes on them, and one MST snapshot
+  // computed, which MobX names by allocation order and so is normalized below.
+  const fetchKeyAxes = [
+    'ComputedValue@<id>',
+    'CytobandAdapterConfigurationSchema.cytobandLocation',
+    'CytobandAdapterConfigurationSchema.isMobXAtom?',
+    'CytobandAdapterConfigurationSchema.isMobXComputedValue?',
+    'CytobandAdapterConfigurationSchema.isMobXObservableMap?',
+    'CytobandAdapterConfigurationSchema.isMobXObservableSet?',
+    'CytobandAdapterConfigurationSchema.isMobXReaction?',
+    'CytobandAdapterConfigurationSchema.type',
+    'FeatureTrack.configuration?',
+    'FeatureTrackConfigurationSchema.adapter',
+    'FeatureTrackConfigurationSchema.trackId',
+    'FeatureTrackConfigurationSchema.trackId?',
+    'PerRegionTestDisplay.rpcProps?',
+  ]
 
-  it('after a fetch: the signals, the blocking flags, the gate, the track and the viewport', async () => {
+  function dependencies(display: PerRegionTestDisplay) {
+    return reactionDependencies(display, 'FetchVisibleRegions').map(name =>
+      name.replace(/^ComputedValue@\d+$/, 'ComputedValue@<id>'),
+    )
+  }
+
+  it('after a fetch: the signals, the blocking flags, the gate, the track, the viewport and the key', async () => {
     const { display } = setup()
     await quiet(display)
-    expect(reactionDependencies(display, 'FetchVisibleRegions')).toEqual(
+    expect(dependencies(display)).toEqual(
       [
         'DisplayTestSession.assemblyManager',
         'FeatureTrack.configuration',
         'FeatureTrack.minimized',
         'FeatureTrackConfigurationSchema.assemblyNames',
         ...viewport,
+        ...fetchKeyAxes,
         'LinearGenomeView.launch',
         'LinearGenomeView.volatileWidth',
         'PerRegionTestDisplay.byteEstimate',

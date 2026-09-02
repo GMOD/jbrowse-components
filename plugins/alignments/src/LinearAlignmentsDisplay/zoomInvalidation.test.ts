@@ -24,7 +24,7 @@ function simulateLoaded(
 
 // Worker output is absolute genomic uint32, so alignment data stays valid under
 // zoom and alignments overrides neither per-region cache hook: on the empty
-// `regionFetchKey`, no zoom stales a region it has loaded — see
+// `zoomFetchKey`, no zoom stales a region it has loaded — see
 // ARCHITECTURE.md §"Per-region zoom-staleness". These pin the consequence: a zoom
 // that stays inside the fetched buffer must not drop into the loading phase.
 // BreakpointSplitView's overlays depend on it — a cleared `rpcDataMap` makes

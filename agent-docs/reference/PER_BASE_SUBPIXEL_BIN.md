@@ -69,7 +69,7 @@ displays cannot drift on `MIN_BINNED_BP_PER_PX`.
   does, not as an `rpcProps` field — a zoom-swinging value in the payload is a
   `SettingsInvalidate` that drops every fetched region
   ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"How the verdict is built", and
-  "Neither worker budget may be an RPC cache key"). `regionFetchKey` carries the
+  "Neither worker budget may be an RPC cache key"). `zoomFetchKey` carries the
   per-region half, and `dataSuperseded` keeps an SVG export from sampling data
   the settled zoom has already moved past.
 

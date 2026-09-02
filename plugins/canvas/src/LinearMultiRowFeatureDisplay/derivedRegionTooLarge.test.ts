@@ -44,7 +44,7 @@ test('the reactive method hooks are views, not actions', () => {
 
 // A too-large region is marked loaded so the fetch autorun doesn't spin, and
 // stores no rpcData — the presence hook is what refetches it once the gate
-// releases. No zoom rule beside it: `regionFetchKey` stays at the mixin's empty
+// releases. No zoom rule beside it: `zoomFetchKey` stays at the mixin's empty
 // default, so a zoom inside a loaded region reuses the features.
 describe('the presence hook is the whole cache rule', () => {
   it('is invalid for a region the fetch stored nothing for', () => {

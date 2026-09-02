@@ -9,7 +9,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 The score-PLOT config every wiggle-family display shares: the score axis
 (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
 Config only. The strict-`bpPerPx` fetch rule (adr-008) belongs to
-`WiggleCommonMixin`, as its `regionFetchKey`, because it describes what a
+`WiggleCommonMixin`, as its `zoomFetchKey`, because it describes what a
 fetch returns rather than how a plot is drawn — `LinearManhattanDisplay`
 composes this mixin for the score axis and fetches untransformed SNPs.
 

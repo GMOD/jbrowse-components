@@ -97,7 +97,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // adr-008: the worker bins scores to the requested bpPerPx, so a zoom that
   // stays spatially inside the fetched region still holds the wrong summary.
   // `viewportWithinLoadedData` is asserted first so the refetch can only be
-  // `regionFetchKey` — coverage would explain it otherwise.
+  // `zoomFetchKey` — coverage would explain it otherwise.
   it('refetches after a zoom that stays inside the loaded region', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])

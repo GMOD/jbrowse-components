@@ -129,7 +129,7 @@ says nothing about whether it is sweeping the right object.
 
 ## 6. An oracle cited by directory that never asserted its subject
 
-Splitting the per-region cache predicate into a `regionFetchKey` and a
+Splitting the per-region cache predicate into a `zoomFetchKey` and a
 `regionHasData` hook needed to know that the presence half was already covered.
 The plan named its oracle: the five `derivedRegionTooLarge.test.ts` files, one
 per gated display, whose whole subject is a region marked loaded while holding

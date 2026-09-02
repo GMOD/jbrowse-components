@@ -109,7 +109,17 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // Re-fetch when the RPC payload or the adapter changes. The settings key is
   // what rpcProps() *returns*, not what building it reads — see the
   // `rpcPropsCacheKey` getter — and the adapter key is the config a track was
-  // re-pointed at in the config editor, which this family used to miss.
+  // re-pointed at in the config editor.
+  //
+  // Both are axes of `regionFetchKey`, so every loaded region already reads as
+  // stale to `isCacheValid` the moment either moves and the plan would refetch
+  // on its own. What the clear still buys is the rest of `clearAllRpcData`: a
+  // fetch superseded now rather than after it lands, an errored display
+  // unblocked, the display's own maps dropped where its payload is settings-
+  // baked, and the coverage map emptied so `displayPhase` shows the scrim
+  // through the refetch. Keeping stale data drawn through a settings change
+  // instead is per display (ADR-006, canvas already) and is
+  // `ideas/settings-axis-into-region-fetch-key.md`.
   //
   // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `clearAllRpcData()`
   autorunOnReadyView(

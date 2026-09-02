@@ -1206,7 +1206,7 @@ export default function stateModelFactory(
        * again.
        *
        * No zoom rule beside it: the worker's output is absolute genomic uint32,
-       * so `regionFetchKey` stays at its empty default.
+       * so `zoomFetchKey` stays at its empty default.
        *
        * **And the reconciliation for auto partitioning**, which is the second
        * thing this hook is for (MAF's "which of several held payloads answers"

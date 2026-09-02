@@ -101,7 +101,7 @@ export interface FetchFeaturesSelf {
   resolvedByteLimit: () => number | undefined
   // The per-base sampling stride, at the call site for the same reason. What
   // keeps it from being a cache key that never invalidates is that the display
-  // also spells it as its `regionFetchKey`, so a region fetched under one bin is
+  // also spells it as its `zoomFetchKey`, so a region fetched under one bin is
   // not read back under another.
   perBaseBinBp: number
 }

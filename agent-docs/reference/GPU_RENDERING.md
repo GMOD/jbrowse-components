@@ -697,7 +697,7 @@ its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixi
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
 its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
 it overrides neither per-region cache hook, so it sits on the empty
-`regionFetchKey` and no zoom invalidates a region it has loaded. That falls out
+`zoomFetchKey` and no zoom invalidates a region it has loaded. That falls out
 of which mixin it composes rather than needing a statement of its own — the
 strict-`bpPerPx` rule is `WiggleCommonMixin`'s, and Manhattan composes only the
 score config `WiggleCommonMixin` itself sits on top of.
@@ -1760,7 +1760,7 @@ does the Canvas2D-only version); keep them in step with any change here.
   `WiggleScoreConfigMixin` + `makeScoreSubMenu` (see `plugins/gwas` Manhattan).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
   zoom-independent display needs no cache override: the strict-`bpPerPx`
-  `regionFetchKey` rides on `WiggleCommonMixin`, so composing the score config
+  `zoomFetchKey` rides on `WiggleCommonMixin`, so composing the score config
   alone inherits no rule about what a fetch returns.
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).

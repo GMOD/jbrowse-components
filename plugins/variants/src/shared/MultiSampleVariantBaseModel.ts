@@ -1695,7 +1695,7 @@ export default function MultiSampleVariantBaseModelF(
          * read and `FetchVisibleRegions` keeps a stale answer
          * (`isCacheValidTracking.test.ts`).
          */
-        get regionFetchKey(): string {
+        get zoomFetchKey(): string {
           return cellDataMode === 'matrix' ? String(self.host.bpPerPx) : ''
         },
 

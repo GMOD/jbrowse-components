@@ -1803,7 +1803,7 @@ export default function baseStateModelFactory(
         // a track with the overlay off never refetches on zoom at all.
         //
         // A getter, not an action: an action would untrack the view.bpPerPx read.
-        get regionFetchKey(): string {
+        get zoomFetchKey(): string {
           return String(
             self.showAminoAcids &&
               shouldRenderPeptideBackground(getView(self).bpPerPx),

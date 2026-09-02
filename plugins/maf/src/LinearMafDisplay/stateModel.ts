@@ -2527,7 +2527,7 @@ export default function stateModelFactory(
          * trip the bounds-based coverage check, so the answer is which map has
          * it.
          *
-         * The presence hook rather than `regionFetchKey`, which stays empty,
+         * The presence hook rather than `zoomFetchKey`, which stays empty,
          * because the two tiers cache side by side: the detail fetch keeps the
          * summary records (`clearAlignmentData` runs one way only), and a
          * summary/detail key would refetch the summary on every zoom back out.

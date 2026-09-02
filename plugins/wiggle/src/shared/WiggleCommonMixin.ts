@@ -117,7 +117,7 @@ export function WiggleCommonMixin() {
        * what a fetch returns, and `LinearManhattanDisplay` composes that mixin
        * for the score axis while fetching untransformed SNPs.
        */
-      get regionFetchKey(): string {
+      get zoomFetchKey(): string {
         return String(regionHost(self).bpPerPx)
       },
       /**

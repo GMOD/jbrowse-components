@@ -1,16 +1,19 @@
 ---
 name: discrete-zoom-thresholds-in-rpc-props
-description: Three displays answer "which zoom tier am I in" three ways, and two of them put the answer in rpcProps() — so crossing 100 bp/px on canvas's default 'auto' glyph mode, or LGVSyntenyDisplay's LOD tier mid-gesture, fires SettingsInvalidate and a full clearAllRpcData() where a regionFetchKey would invalidate one region's held data. Moving them carries two riders, and one test in the tree currently claims the opposite.
+description: Three displays answer "which zoom tier am I in" three ways, and two of them put the answer in rpcProps() — so crossing 100 bp/px on canvas's default 'auto' glyph mode, or LGVSyntenyDisplay's LOD tier mid-gesture, fires SettingsInvalidate and a full clearAllRpcData() where a zoomFetchKey term would mark the held regions stale and let them draw until the refetch lands. Moving them carries two riders, and one test in the tree currently claims the opposite.
 ---
 
 # A discrete zoom threshold is spelled three ways
 
-`MultiRegionDisplayMixin` states the rule: a per-region content axis is not an
-`rpcProps()` field, because the key invalidates one region's held data where
-`rpcProps` invalidates all of it. Three displays answer the same question three
-ways, and two break that rule:
+`MultiRegionDisplayMixin` states the rule: a zoom-dependent worker decision is
+the display's `zoomFetchKey` term, not an `rpcProps()` field. Both are axes of
+the one `regionFetchKey` now, so either marks every loaded region stale — the
+difference is that an `rpcProps` move also runs `SettingsInvalidate`'s
+`clearAllRpcData()`, which blanks the display and raises the scrim through the
+refetch, where a key term lets the held data draw until the new payload lands.
+Three displays answer the same question three ways, and two break that rule:
 
-- canvas's peptide threshold is a `regionFetchKey` — the rule followed;
+- canvas's peptide threshold is a `zoomFetchKey` — the rule followed;
 - canvas's `effectiveGeneGlyphMode`
   (`plugins/canvas/src/LinearBasicDisplay/model.ts`) is an `rpcProps` field, so
   crossing 100 bp/px on the **default** `'auto'` config fires

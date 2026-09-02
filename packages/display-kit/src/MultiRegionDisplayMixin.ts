@@ -184,24 +184,25 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default `''`): what a fetch issued right now would
-         * produce for a region, as a string — the display's per-region content
-         * axis. `fetchRegions` captures it before it issues the RPC and stamps
-         * it beside the loaded region; `isCacheValid` refetches a region whose
-         * stamp no longer matches. Wiggle returns `String(view.bpPerPx)`
-         * (adr-008), canvas the peptide-overlay threshold, the variant matrix
-         * its zoom in matrix mode only.
+         * Overridable hook (default `''`): the zoom-dependent term of what a
+         * fetch issued right now would produce for a region — the one axis of
+         * the fetch key the display supplies, where the settings and adapter
+         * axes are the mixin's (`regionFetchKey` below). Wiggle returns
+         * `String(view.bpPerPx)` (adr-008), canvas the peptide-overlay
+         * threshold, the variant matrix its zoom in matrix mode only,
+         * alignments its per-base sampling bin.
          *
-         * NOT an `rpcProps()` field: this invalidates one region's held data
-         * where `rpcProps` invalidates all of it, and a zoom-swinging value in
-         * the RPC payload blanks the display at the force-load floor — see
-         * REGION_TOO_LARGE.md §"How the verdict is built".
+         * Here and NOT in `rpcProps()`: a zoom-swinging value in the RPC
+         * payload runs `SettingsInvalidate`'s clear on every crossing, blanking
+         * the display at the force-load floor — see REGION_TOO_LARGE.md §"How
+         * the verdict is built" — where a key term marks the held regions stale
+         * and lets them draw until the refetch lands.
          *
          * A getter, so the observables it reads register as dependencies of
          * `FetchVisibleRegions`; MobX runs an action untracked and the autorun
          * would keep a stale answer.
          */
-        get regionFetchKey(): string {
+        get zoomFetchKey(): string {
           return ''
         },
 
@@ -307,26 +308,41 @@ export default function MultiRegionDisplayMixin() {
       // That worked only by accident — the autorun happened to read
       // `view.visibleRegions`, which moves in lockstep — which made "don't let
       // this be your only dependency" an unwritten precondition on every
-      // override. `regionFetchKey` and `regionHasData` are views for the same
+      // override. `zoomFetchKey` and `regionHasData` are views for the same
       // reason.
       .views(self => ({
+        /**
+         * #getter
+         * What a fetch issued right now would stamp on a region: the settings
+         * axis (`rpcPropsCacheKey`), the adapter axis (`adapterConfigKey`) and
+         * the display's zoom term (`zoomFetchKey`). `fetchRegions` captures it
+         * before the RPC goes out and stamps it beside the loaded region;
+         * `isCacheValid` compares against it. The same three axes the global
+         * family's `currentFetchKey` carries, so a settings change reads as
+         * stale here through the one compare rather than only through the
+         * cleared coverage map — which is what closes the export gate on a
+         * setting the way it already closed on a zoom.
+         */
+        get regionFetchKey(): string {
+          return `${self.rpcPropsCacheKey}|${self.adapterConfigKey}|${self.zoomFetchKey}`
+        },
         /**
          * #method
          * Whether the data held for a region still answers the current view.
          * Not a hook a display fills: a display states its rule as
-         * `regionFetchKey` (what a fetch now would produce) and `regionHasData`
-         * (did the last one store anything), and this compares the key against
-         * the one the region was fetched under. A subclass that changes what it
-         * fetches spells the change in the key, and one that forgets gets a
-         * redundant fetch rather than a cached answer for a zoom the data was
-         * never fetched at.
+         * `zoomFetchKey` (the zoom term of what a fetch now would produce) and
+         * `regionHasData` (did the last one store anything), and this compares
+         * the whole key against the one the region was fetched under. A
+         * subclass that changes what it fetches spells the change in the key,
+         * and one that forgets gets a redundant fetch rather than a cached
+         * answer for a zoom the data was never fetched at.
          *
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
             self.regionHasData(displayedRegionIndex) &&
             self.loadedRegions.get(displayedRegionIndex)?.fetchKey ===
-              self.regionFetchKey
+              this.regionFetchKey
           )
         },
       }))

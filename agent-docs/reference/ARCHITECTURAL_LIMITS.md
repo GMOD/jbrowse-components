@@ -1251,7 +1251,7 @@ only on a real violation):
   `.actions()`.** MobX runs actions untracked, so the reads register no
   dependency and callers keep a stale answer. A declaration of one of those
   names directly inside an `.actions(…)` block is an eslint error
-  (`no-restricted-syntax`, which carries the reason); `regionFetchKey` is spared
+  (`no-restricted-syntax`, which carries the reason); `zoomFetchKey` is spared
   by being a getter, because MST throws on one declared inside `.actions()`. It
   was a hand-copied `getMembers(display).actions` assertion per display family,
   then one `afterAttach` read for every display composing a fetch foundation,

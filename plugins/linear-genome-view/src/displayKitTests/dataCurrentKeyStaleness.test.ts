@@ -7,7 +7,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // `dataCurrent` conjoins `isCacheValid`, and the two halves of that decision
 // fail in opposite directions.
 //
-// Without the term, a zoom that moves `regionFetchKey` leaves every held region
+// Without the term, a zoom that moves `zoomFetchKey` leaves every held region
 // spatially covered and content-stale at once: `dataCurrent` stays true across
 // the `FetchVisibleRegions` debounce plus the RPC, and an export sampling
 // `svgReady` in that window paints data the previous key was fetched under —
@@ -66,5 +66,6 @@ test('the refetch the moved key triggers reopens the gate', async () => {
     },
     { timeout: 10_000 },
   )
-  expect(display.loadedRegions.get(0)?.fetchKey).toBe('b')
+  expect(display.zoomFetchKey).toBe('b')
+  expect(display.loadedRegions.get(0)?.fetchKey).toBe(display.regionFetchKey)
 })

@@ -189,7 +189,7 @@ that is the design to start from.
 ## Wiggle instance packing could move to the worker
 
 `wiggleInstanceBuffer.pack` is **measured ~98ms**, run synchronously inside the
-RPC message handler so it lands mid-frame. Wiggle's `regionFetchKey` is
+RPC message handler so it lands mid-frame. Wiggle's `zoomFetchKey` is
 `String(bpPerPx)`, so a zoom already refetches and a worker-side pack rides along
 free; `MafUploadPayload` is the payload shape to copy.
 

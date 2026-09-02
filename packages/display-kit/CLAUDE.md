@@ -54,7 +54,7 @@ What follows is local.
 
 `no-restricted-syntax` covers the three method-shaped hooks — declaring
 `rpcProps`, `regionHasData` or `isCacheValid` inside an `.actions(…)` block is a
-lint error, and `regionFetchKey` needs no rule because MST throws on a getter
+lint error, and `zoomFetchKey` needs no rule because MST throws on a getter
 declared inside `.actions()`. `assertDisplayContract` is what stayed a runtime
 check: it reports a fetch foundation whose `afterAttach` ran twice on one
 display, which no spelling in one file predicts. `makeRetryContractCheck` is the

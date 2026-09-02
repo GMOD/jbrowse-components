@@ -655,7 +655,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   // The per-base sampling bin is deliberately NOT an rpcProps field: it swings
   // with zoom, and in the payload every swing is a SettingsInvalidate that drops
-  // all fetched data. It rides the per-region `regionFetchKey` instead, so a bin
+  // all fetched data. It rides the per-region `zoomFetchKey` instead, so a bin
   // flip refetches the regions on screen and nothing else. The zoom here is
   // INWARD, which leaves the viewport inside the loaded region — so a refetch
   // can only be the key.

@@ -84,7 +84,7 @@ export default function SharedModelF(
        * from `windowSize`/`windowDelta`/`gcMode` alone and the worker does no
        * per-zoom binning, so data fetched at one zoom is right at every other.
        */
-      get regionFetchKey(): string {
+      get zoomFetchKey(): string {
         return ''
       },
       /**
