@@ -20,9 +20,10 @@ import {
   TOUR_NODE,
   hprcClusterFixtures,
   hprcTourSession,
+  hprcVideoFixtures,
 } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
-import { LOCATION_BOX, displayReady, trackMenu } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND, displayReady, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -158,6 +159,19 @@ const pggbTierStart = sessionSpec(PGGB_CONFIG, {
 // The layout dropdown's own row, which is the same element in every graph view.
 const LAYOUT_SELECT = '[data-testid="graph-layout-select"]'
 
+const {
+  haplotype: HAPLOTYPE,
+  haplotypeNode: HAPLOTYPE_NODE,
+  haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
+  haplotypeSession,
+  launchedZoomOut,
+  tierSession,
+  tierGraphViewId: TIER_GRAPH_VIEW,
+  mhcBubbleNode: MHC_BUBBLE,
+  segmentsTrackName: SEGMENTS_TRACK_NAME,
+  mhcSelection: MHC_SELECTION,
+} = hprcVideoFixtures
+
 // What the HPRC tour drives, named here because a menu label and a testid read
 // as noise inline and each has a reason to be the one it is.
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
@@ -269,6 +283,18 @@ const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${LAYOUT_SELECT}`
 // sample-rows layout onwards, so it is satisfied the instant the dropdown is
 // picked. The row labels going away is the re-layout itself.
 const FORCE_DRAWN = `body:has(${GRAPH_DRAWN}):not(:has([data-testid="graph-row-label"])) ${LAYOUT_SELECT}`
+// A SECOND graph pane has drawn. The tier tour opens with the tier pane
+// already drawn, so GRAPH_DRAWN is satisfied before the fine cut exists; each
+// view's container carries its id, and the tier pane's is pinned by the spec,
+// so the new pane is the drawn one that is not it.
+const FINE_GRAPH_DRAWN = `[data-testid^="view-container-"]:not([data-testid="view-container-${TIER_GRAPH_VIEW}"]) ${GRAPH_DRAWN}`
+// The rubberband's `Graph genome view (this selection)` is a submenu here, one
+// entry per track that can cut the window, because the session holds two: the
+// tier the pane above was cut from and the fine index. Both by testid, since
+// the segments track's name is also its lane's label in the view above.
+const SELECTION_SUBMENU =
+  '[data-testid="cascading-submenu-graph_genome_view_(this_selection)"]'
+const SELECTION_FINE_ENTRY = `[data-testid="cascading-menuitem-${SEGMENTS_TRACK_NAME.toLowerCase().replaceAll(/\s+/g, '_')}"]`
 
 export const pangenomeVideos: VideoSpec[] = [
   // THE ROUTE, FROM NOTHING. Every graph pane in pangenome_ecoli.md was cut this
@@ -717,5 +743,164 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
+  },
+  // OUT OF THE GRAPH AND INTO THE HAPLOTYPE, on the human graph. The E. coli
+  // page films this move as pggb_out_to_strain; on HPRC the page said the
+  // haplotypes could not be loaded, and the end-to-end tour stops at
+  // `Highlight in hg38`. With HG01433 haplotype 2 loaded from its GenArk hub
+  // (hprcHaplotypeSession says why that works), the same node's menu carries
+  // `Open in HG01433.2` with the allele's own locus, and this is that entry
+  // taken. pangenome/hprc_haplotype_launch is the still of what it opens.
+  {
+    name: 'pangenome/hprc_out_to_haplotype',
+    description:
+      "An HPRC allele opened on the haplotype that contributed it: right-click the HG01433.2 node in the MHC class II cut, take its Open in entry, and read the same sequence on that haplotype's own chromosome 6",
+    // 420 on the graph pane, as the still has it: the launched view below is
+    // what the tour is for, and at the pane's own 600 the run put it 265 px
+    // under the frame.
+    url: haplotypeSession(420),
+    // Sized to the state the tour ENDS in: the linear view, the force pane and
+    // the haplotype's view the launch adds under them, off the run's own
+    // tallest-frame report.
+    viewportHeight: 1280,
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    settleMs: 8000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2000,
+        say: 'The MHC class II cut, with HG01433 haplotype 2 loaded',
+      },
+      // the tooltip names contributingAssembly, which is what says which
+      // haplotype to have loaded
+      {
+        type: 'hover',
+        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
+        say: 'Hover an allele for the haplotype that contributed it',
+        hold: 3200,
+      },
+      {
+        type: 'rightclick',
+        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
+        say: `Open in ${HAPLOTYPE}`,
+        hold: 900,
+      },
+      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
+      { type: 'click', text: `Open in ${HAPLOTYPE}` },
+      // Gate on the launched view's own gene lane, fetched off hgdownload: the
+      // launch carries the session's annotation for the assembly it opens.
+      {
+        type: 'waitForSelector',
+        selector: displayReady(HAPLOTYPE_GENES_DISPLAY),
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'HG01433 haplotype 2, on its own chromosome 6',
+      },
+      // The launch frames the pane on the allele alone, so the first thing a
+      // reader does is zoom out for what surrounds it on the haplotype.
+      ...launchedZoomOut(4).map((step, i) =>
+        i === 0 ? { ...step, say: 'Zoom out for its neighbours' } : step,
+      ),
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 3500,
+  },
+  // THE LADDER ON THE HUMAN GRAPH: the bubble tier over a region, down to a
+  // bubble, down to the fine index. pangenome/tier_to_fine films the first rung
+  // on E. coli; here the tier is two megabases of the MHC, the bubble is the
+  // class II one, and the tour goes on to the fine cut, which is the rung the
+  // page states in one sentence and pictures at neither end. Why the tier is
+  // not the whole chromosome the figure draws is at hprcTierSession.
+  //
+  // What the clip shows that the prose can only assert: the fine cut arrives
+  // as a SECOND pane under the tier's, because a graph pane is a cut and does
+  // not follow the linear view.
+  {
+    name: 'pangenome/hprc_tier_to_fine',
+    description:
+      'The HPRC bubble tier over the MHC taken down to segment resolution: the class II node opened in the linear view, then a drag across that span cut again from the fine index',
+    url: tierSession(),
+    // Sized to the state the tour ENDS in: the linear view, the two-row tier
+    // pane, and the force pane the fine cut adds under both, which arrives at
+    // the plugin's full pane height since nothing in a launch can pin it. Off
+    // the run's own tallest-frame report at 1300.
+    viewportHeight: 1490,
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 300000,
+    settleMs: 8000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'The MHC, one node per bubble',
+      },
+      // the hover also syncs a band into the linear view above, so the frame
+      // says where on the chromosome the bubble is before anything is clicked
+      {
+        type: 'hover',
+        anchor: { view: 1, graphNode: MHC_BUBBLE },
+        say: 'Hover the MHC class II bubble',
+        hold: 3200,
+      },
+      {
+        type: 'rightclick',
+        anchor: { view: 1, graphNode: MHC_BUBBLE },
+        say: 'Open in hg38',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Open in hg38' },
+      { type: 'click', text: 'Open in hg38' },
+      // the navigation and the refetch it starts, then the gene lane's own paint
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'waitForSelector', selector: GENES_READY, timeout: 180000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: "The linear view lands on the bubble's own span",
+      },
+      {
+        type: 'drag',
+        fromAnchor: { locus: MHC_SELECTION.start, band: RUBBERBAND },
+        toAnchor: { locus: MHC_SELECTION.end, band: RUBBERBAND },
+        say: 'Drag across the scale bar',
+        hold: 900,
+      },
+      { type: 'waitForSelector', selector: SELECTION_SUBMENU },
+      {
+        type: 'click',
+        selector: SELECTION_SUBMENU,
+        say: 'Graph genome view (this selection)',
+        hold: 1200,
+      },
+      { type: 'waitForSelector', selector: SELECTION_FINE_ENTRY },
+      {
+        type: 'click',
+        selector: SELECTION_FINE_ENTRY,
+        say: 'Cut it from the fine index',
+      },
+      {
+        type: 'waitForSelector',
+        selector: FINE_GRAPH_DRAWN,
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The same window, one node per segment',
+      },
+    ],
+    tailMs: 3500,
   },
 ]

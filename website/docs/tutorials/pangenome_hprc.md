@@ -61,6 +61,11 @@ straight off S3 or through small tabix projections we host beside them.
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+- every release 2 assembly as a UCSC GenArk hub, a 2bit and an alias file per
+  haplotype; this is haplotype 2 of HG01433, the one the graph opens below:
+  https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/
+- that haplotype's CAT annotation, whole genome, from the index above:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01433/assemblies/release2/annotation/cat/HG01433_mat_hprc_r2_v1.0.1_cat_v1.3.gff3.gz
 - the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
   https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
 - GRCh38's RepeatMasker annotation, binned for the repeat-density lanes:
@@ -84,6 +89,78 @@ The link under the clip opens the session it starts in, so pasting a config for
 your own graph walks the same route on it.
 
 <Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
+
+### Every way across {#every-way-across}
+
+Each crossing between the two panels is one menu item, and this is the whole
+list on this graph. Into the graph, from a linear view whose session holds the
+segments track:
+
+1. **Track menu → Launch → Graph genome view (this region)** on the segments
+   lane cuts whatever is on screen.
+2. **Drag across the scale bar** and pick **Graph genome view (this selection)**
+   for a window narrower than the view. Past the view's limit the item greys out
+   and names it.
+3. **Right-click a segment** in the lane for **Graph genome view (this
+   segment)**, which cuts the graph around that one segment, padded by half its
+   length each side. Right-clicking a gene in the RefSeq lane offers the same
+   cut as **Graph genome view (this feature)**; the segments track has to be in
+   the session, not in the view.
+
+Out of the graph:
+
+4. **Hover a node** and its GRCh38 interval is banded across every lane in the
+   linear view above; hover the linear view and the node under the cursor lights
+   up. Nothing to configure.
+5. **Right-click a node** and take **Highlight in hg38**, which writes that
+   interval into the linear view's own highlights, where it stays after the
+   pointer moves.
+6. **Right-click a node** and take **Open in hg38**, which scrolls the linear
+   view to it. On a backbone segment that is the segment's own span; on an
+   allele it is the interval between the two backbone segments the allele leaves
+   and rejoins, and the item says so, **around this node**.
+7. **View menu → Launch → Linear genome view** does the same for the whole
+   window the graph was cut from. Once a contributing haplotype is loaded as an
+   assembly, the node menu gains **Open in** that haplotype at the allele's own
+   coordinates, and with two or more loaded the same **Launch** submenu opens
+   them all as a synteny view;
+   [Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly)
+   sets that up.
+
+The clip above takes 1 and 5, with the layout dropdown between them. The clips
+under [A whole chromosome as a graph](#a-whole-chromosome-as-a-graph) and
+[Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) take 6
+and 2, then 7 on a haplotype.
+
+:::caution What the round trip cannot do
+
+- **A graph pane is a cut, not a live view.** It draws the window it was
+  launched from and stays there when the linear view moves. The next window is
+  the next launch, and every launch is a new pane, so close the one you are done
+  with.
+- **Past about 100 kb the drawing stops being readable at segment resolution.**
+  The layout scales the graph to fit, so ten times the nodes is the same ink at
+  a tenth the size, and a cut is refused outright past 5 Mb. A wider window is
+  the [bubble tier's](#a-whole-chromosome-as-a-graph).
+- **The first cut in a session waits on the index.** Both tabix indexes, about 9
+  MB, download before anything draws; later cuts reuse them.
+- **A node names the haplotype that contributed it, never everyone carrying
+  it.** minigraph collapses, so `contributingAssembly` is the first assembly to
+  add the sequence, and carriage is the [callset's](#the-variant-callset) to
+  say.
+- **A deletion has no haplotype at all.** A dashed edge joins two backbone
+  segments, so it names no donor and opens nowhere but GRCh38.
+- **Only a loaded assembly can be opened.** With hg38 alone, an allele's own
+  coordinates are in its details and the linear view gets the GRCh38 interval
+  around it; the allele itself opens once its haplotype is
+  [loaded](#loading-a-haplotype-as-an-assembly).
+- **Near-identical segmental duplications draw as a bare thread**, because
+  minigraph merged them onto one path: SMN1/SMN2, RHD/RHCE, PMS2/PMS2CL and the
+  CYP clusters among them. A quiet window there is a collapsed one.
+- **The plugin needs a JBrowse 5 build**; see
+  [The GraphGenomeView plugin](#the-graphgenomeview-plugin).
+
+:::
 
 ## HPRC release 2
 
@@ -125,6 +202,13 @@ On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the start
 screen at **Global plugins... → Add custom plugin**, putting that `esmUrl` under
 **Advanced options** in **ESM build URL** and leaving the two fields above it
 empty.
+
+The plugin needs a JBrowse 5 build. It reads two things core first exported in
+v5.0.0-beta.1, the MUI icon factory its menu items draw with and the shared
+**Launch** submenu, so on a JBrowse 4 host it does not load, and a config naming
+it opens with no graph view and neither adapter. The released 4.x web builds and
+Desktop are such hosts; the 5.0 betas and the `main` build the
+[hosted HPRC page](/docs/tutorials/genomes_pangenome) launches into are not.
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
 view's layouts, colors and menus on a smaller graph than this one. The allele
@@ -480,19 +564,134 @@ The lanes above combine into one route:
 The graph states what sequence exists and where it attaches; those three state
 how common it is.
 
-Where the contributing assemblies are themselves loaded, a handful of genomes,
-the same menu opens any of them, or all at once as a synteny view. See the
-[graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
+Where a contributing haplotype is itself loaded, the same menu opens the allele
+on that haplotype's own coordinates, which the next section sets up for any of
+the 464, and with two or more loaded the view's own **Launch** menu opens them
+all at once as a synteny view. The
+[graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
+shows both on five strains.
 
-## Loading CHM13 as an assembly {#the-one-donor-worth-loading}
+## Loading a haplotype as an assembly {#loading-a-haplotype-as-an-assembly}
 
-Two contributors spell their contigs `chr17`-style and can be loaded as
-assemblies: CHM13 and HG002, whose two haplotypes count separately. The other
-460 haplotypes name their contigs by GenBank accession (`CM102524.1`). CHM13 is
-the one with a published reference behind it, T2T-CHM13v2.0, which UCSC serves
-as `hs1`; [](/docs/tutorials/hg002_haplotypes) loads the other. Its coordinates
-are that assembly's: CHM13 segments on chr17 run past the end of GRCh38's chr17
-and inside hs1's.
+Every segment states the assembly that contributed it and its offset there, so a
+node can open the haplotype it came from once that haplotype is loaded.
+[UCSC GenArk](https://hgdownload.soe.ucsc.edu/hubs/) hosts every release 2
+assembly, a 2bit and an alias file each, and names the sequences by the same
+GenBank accessions the graph does: `HG01433.2#2#CM086511.1` in the graph is
+`CM086511.1` in the 2bit. So a haplotype loads under its PanSN sample name with
+nothing translated, and the alias file's `ucsc` column adds `chr6`.
+
+Which haplotype to load is read off the graph. A node's tooltip and details name
+`contributingAssembly`, and over the MHC class II window most alleles name
+HG01433 haplotype 2, whose accession is on the
+[HPRC sample table](https://genomes.jbrowse.org/pangenomes/hprc): haplotype 2 of
+HG01433 is GCA_042027645.1.
+
+```json addassembly
+{
+  "name": "HG01433.2",
+  "displayName": "HG01433 haplotype 2 (HPRC release 2, GCA_042027645.1)",
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.2bit",
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.chromAlias.txt"
+  }
+}
+```
+
+The `name` is the graph's PanSN sample, and that is the whole of the join: the
+view resolves a node's sample against the loaded assemblies by name and alias,
+so an assembly kept under its accession needs `HG01433.2` among its `aliases`
+instead.
+
+A launched view carries the session's annotation for the assembly it opens, and
+the annotation worth carrying is HPRC's own: release 2 runs CAT on every
+assembly, so the haplotype's genes are its own models rather than GRCh38's
+lifted across. The
+[CAT index](https://github.com/human-pangenomics/hprc_intermediate_assembly/blob/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv)
+names one GFF3 per haplotype in its `location` column, whole-genome and
+unindexed, so slice the window once and index the slice:
+
+```bash
+# haplotype 2 of HG01433, from the index's location column; chr6 is CM086511.1 there
+curl -sSL https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01433/assemblies/release2/annotation/cat/HG01433_mat_hprc_r2_v1.0.1_cat_v1.3.gff3.gz \
+  | gzip -dc \
+  | awk -F'\t' '/^#/ {next} $1=="CM086511.1" && $5>=32300000 && $4<=32800000' \
+  | sort -k1,1 -k4,4n > hprc_mhc_HG01433.2.genes.gff3
+bgzip hprc_mhc_HG01433.2.genes.gff3
+tabix -p gff hprc_mhc_HG01433.2.genes.gff3.gz
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "HG01433.2_cat_genes",
+  "name": "CAT genes (HG01433 haplotype 2)",
+  "assemblyNames": ["HG01433.2"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "hprc_mhc_HG01433.2.genes.gff3.gz"
+  }
+}
+```
+
+GenArk's own gene lanes are the alternative that needs no download, and they are
+thin here: its RefSeq mRNAs are other species' transcripts mapped onto the
+assembly, and none lands within 100 kb of this allele.
+
+The segments track draws on the haplotype too once its `assemblyNames` list it,
+with no mapping to add, since the assembly name is already the PanSN sample.
+This replaces the track [above](#load-the-graph), same `trackId`, one more
+assembly:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hprc_minigraph_segments",
+  "name": "HPRC release 2 graph (rGFA segments)",
+  "assemblyNames": ["hg38", "HG01433.2"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+  }
+}
+```
+
+Cut the MHC class II window as a graph and right-click the 1.8 kb allele the
+[layout figure](#the-layout-dropdown) opens its menu on. The menu now carries
+**Open in HG01433.2** with the allele's own locus, beside the GRCh38 entries it
+had before, and taking it adds a linear view of that haplotype's chr6 framed on
+the allele, with its CAT genes and the segments the graph credits to it. The
+launch frames the pane on the allele alone, so zoom out for what surrounds it.
+
+<Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with HG01433 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in HG01433.2 entry adding a view of that haplotype's own chromosome 6 at the allele, and that view zoomed out to the CAT genes around it." />
+
+<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, with the HG01433.2 allele ringed. Below, the view its Open in entry opened, zoomed out from the allele: HG01433 haplotype 2 on its own chromosome 6, the segments the graph credits to it, and its CAT annotation, where HLA-DRB5 spans the whole window." src="/img/pangenome/hprc_haplotype_launch.png" />
+
+On GRCh38 the ringed allele attaches across the 12 kb backbone segment the
+[layout figure](#the-layout-dropdown) highlights, which is most of HLA-DRB5. On
+HG01433 haplotype 2 the same 1.8 kb sits inside a HLA-DRB5 model of its own, so
+the two views state the same structural difference from either side: the graph
+as an allele that replaces 12 kb, the haplotype's annotation as a gene whose
+extent differs from the reference's.
+
+Which haplotype a window offers is build order: minigraph credits an allele to
+the first assembly to contribute it, so a haplotype added late is named on few
+nodes however much it carries, and a backbone-to-backbone deletion names none.
+Loading a haplotype makes its own alleles openable and says nothing about
+carriage, which stays the [callset's](#the-variant-callset).
+
+### T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
+
+CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
+which UCSC serves as `hs1` with RefSeq genes and RepeatMasker, so it loads from
+that host rather than from GenArk; [](/docs/tutorials/hg002_haplotypes) loads
+HG002, the other donor with a reference of its own. Its coordinates are that
+assembly's: CHM13 segments on chr17 run past the end of GRCh38's chr17 and
+inside hs1's.
 
 Load it under its own name, with the graph's spelling as an alias. The view
 resolves a donor through `assemblyManager`, which is keyed by name and aliases
@@ -572,6 +771,35 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
   'CHM13#0#chr17' |
   awk -F'\t' '$6 ~ /^GRCh38/ || $10 ~ /^GRCh38/'
 ```
+
+With two assemblies loaded the graph's own **Launch** menu offers **Linear
+synteny view** as well, one panel per contributor at the locus each contributes
+here, if the session holds a synteny track aligning them. UCSC's hg38-to-hs1
+liftOver is one, rehosted as an indexed PAF:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "hg38_hs1_synteny",
+  "name": "hg38 vs T2T-CHM13 (UCSC liftOver)",
+  "assemblyNames": ["hg38", "hs1"],
+  "adapter": {
+    "type": "PairwiseIndexedPAFAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz",
+    "csi": true,
+    "assemblyNames": ["hs1", "hg38"]
+  }
+}
+```
+
+Taken at the window above, it opens hg38 over hs1, each panel already at the
+interval the graph states for it, with the liftOver ribbons between them.
+Without such a track the entry stays, greyed out, and its tooltip says what is
+missing. The launch opens every loaded contributor, so a session carrying
+several haplotypes opens a panel for each one with a node in the window, whether
+or not the track aligns it.
+
+<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph states for it, with the liftOver ribbons between." src="/img/pangenome/hprc_synteny_launch.png" />
 
 ### What kind of sequence GRCh38 was missing
 
@@ -770,6 +998,19 @@ This is the coarse end of a ladder: a tier node is a bubble, so it says where
 the graph varies and by how much, and nothing about the alleles inside it. The
 node id is the bubble's own source segment, so the same span in the fine index
 is the expanded view of it.
+
+The two granularities are read together, the tier to find an event and the fine
+index to open it, and the move between them is the node's own menu. On a tier
+node **Open in hg38** puts the linear view on the bubble's span, and a drag
+across that span offers **Graph genome view (this selection)** as a submenu
+naming both tracks, since both can cut one. The fine cut arrives as a second
+pane under the tier's: a graph pane keeps the window it was cut from while the
+linear view moves on. The clip takes the tier over two megabases of the MHC,
+where a bubble is tens of pixels wide; on a whole chromosome a bubble is
+narrower than a pixel, so find it in the tier lane or the variability curve
+first and cut the tier around it.
+
+<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, the fine segments lane drawing once the view lands on its span, and a drag across that span cut from the fine index into a second graph pane." />
 
 ### Inversions
 

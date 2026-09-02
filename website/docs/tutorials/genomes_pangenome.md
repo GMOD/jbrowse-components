@@ -92,7 +92,12 @@ lane above, and hovering the lane highlights the node.
 The form is only the first cut. Inside the session, the segments track's menu
 carries **Launch → Graph genome view (this region)**, and rubberbanding a span
 offers **Graph genome view (this selection)**, so a zoomed-in window reopens as
-a graph without going back to the page.
+a graph without going back to the page. The graph reaches back the same way:
+hovering a node bands its interval across the lanes above, right-clicking one
+offers **Highlight in hg38** and **Open in hg38**, and the view's own **Launch**
+menu reopens the whole window as a linear view. The HPRC tutorial lists
+[every crossing](/docs/tutorials/pangenome_hprc#every-way-across) and what each
+cannot do.
 
 ## Drawing a whole chromosome
 

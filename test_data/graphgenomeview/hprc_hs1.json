@@ -1,0 +1,84 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/8f9efd68f339/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      },
+      "cytobands": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+      }
+    },
+    {
+      "name": "hs1",
+      "displayName": "Human (T2T-CHM13v2.0/hs1)",
+      "aliases": ["CHM13", "T2T-CHM13v2.0"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "hs1.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hs1_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hs1)",
+      "assemblyNames": ["hs1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_minigraph_segments",
+      "name": "HPRC release 2 graph (rGFA segments)",
+      "assemblyNames": ["hg38", "hs1"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+        "assemblyNameToPanSN": { "hg38": "GRCh38", "hs1": "CHM13" }
+      },
+      "displayDefaults": {
+        "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38_hs1_synteny",
+      "name": "hg38 vs T2T-CHM13 (UCSC liftOver)",
+      "assemblyNames": ["hg38", "hs1"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz",
+        "csi": true,
+        "assemblyNames": ["hs1", "hg38"]
+      }
+    }
+  ]
+}

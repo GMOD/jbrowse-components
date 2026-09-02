@@ -132,6 +132,15 @@ refilm and none of which the run reports.
   edge once the tour has navigated onto it. Where the point is only WHERE the
   thing is, a `hover` is free: hovering a node syncs the same interval into the
   view above for as long as the pointer is on it, and leaves nothing behind.
+- **A `graphNode` anchor on an anchored tier at chromosome scale lands on a
+  neighbour.** On the whole-chr6 bubble tier (170 Mb in 1900 px, so 90 kb per
+  pixel) the right-click anchored on `s101110` opened the menu of `s100702`, 2.6
+  Mb and 29 px away, and the debug screenshot's tooltip said so. A tier node
+  there is narrower than a pixel and the drawing gives it a floor, so the
+  resolved point and the app's own hit test disagree by the width of a node or
+  two. Cut the tier over a few megabases instead — `hprcTierSession` takes 2 Mb,
+  where the class II bubble is sixty pixels wide — and leave the
+  chromosome-scale picture to a figure, which clicks nothing.
 - **A node's `Open in <assembly>` navigates the connected linear view rather
   than adding one** (the plugin pairs with the single view carrying that
   assembly when no launch created the pairing), so a tour built on it keeps the

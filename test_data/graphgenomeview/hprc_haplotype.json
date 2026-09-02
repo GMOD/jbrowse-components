@@ -1,0 +1,66 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/8f9efd68f339/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      },
+      "cytobands": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+      }
+    },
+    {
+      "name": "HG01433.2",
+      "displayName": "HG01433 haplotype 2 (HPRC release 2, GCA_042027645.1)",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.2bit",
+      "refNameAliases": {
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.chromAlias.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_minigraph_segments",
+      "name": "HPRC release 2 graph (rGFA segments)",
+      "assemblyNames": ["hg38", "HG01433.2"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+      },
+      "displayDefaults": {
+        "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "HG01433.2_cat_genes",
+      "name": "CAT genes (HG01433 haplotype 2)",
+      "assemblyNames": ["HG01433.2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_mhc_HG01433.2.genes.gff3.gz"
+      }
+    }
+  ]
+}

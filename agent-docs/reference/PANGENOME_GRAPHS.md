@@ -609,21 +609,40 @@ apiece, which is the rare combination of drawable and famous: RefSeq's own
 rearrangements… difficulty in determining the organization of this genomic
 region", and SMN1 copy number is what sets spinal muscular atrophy severity.
 
-## Only two donors can be loaded as assemblies
+## Any donor can be loaded as an assembly, from GenArk (corrected 2026-09-02)
 
-Of the 464 donor haplotypes in the segment index, exactly **HG002.1, HG002.2 and
-CHM13** spell their contigs `chr1`-style; the other 460 use GenBank accessions
-(`CM086511.1`). So those are the only contributors a session can open a linear
-view on, and the whole outbound launch menu (`nodeLaunchTargets`,
-`launchableAssemblies`, the synteny launch) is dead on HPRC purely because the
-config loads one assembly.
+This section used to say only **HG002.1, HG002.2 and CHM13** could be opened,
+because the other 460 haplotypes name their contigs by GenBank accession
+(`CM086511.1`) rather than `chr1`-style. That was wrong about what an assembly
+needs. UCSC's GenArk hub for each release 2 assembly names its 2bit sequences
+by exactly those accessions, and its `chromAlias.txt` carries an `hprcV2` column
+spelling the PanSN name the graph uses (`HG01433#2#CM086511.1`) beside the
+`ucsc` spelling (`chr6`). So
 
-CHM13 costs nothing to add: UCSC hosts it as `hs1`
-(`test_data/hs1/config.json` already has the assembly stanza, a TwoBit off
-`hgdownload`), genes are `gbdb/hs1/ncbiRefSeq/ncbiRefSeq.bb`, and
-`goldenPath/hg38/liftOver/hg38ToHs1.over.chain.gz` is 2.7 MB and reads through
-`ChainAdapter`, which is what a synteny launch out of the graph needs. Pair it
-with `assemblyNameToPanSN: { "hs1": "CHM13" }`.
+```json
+{ "name": "HG01433.2", "uri": "<GenArk>/GCA_042027645.1.2bit",
+  "refNameAliases": { "uri": "<GenArk>/GCA_042027645.1.chromAlias.txt" } }
+```
+
+resolves every node HG01433.2 contributed with no mapping: the plugin's
+`assemblySampleResolver` matches the PanSN sample against assembly names and
+aliases, and `RgfaTabixAdapter`'s lookup is keyed `sample\tcontig`, so the
+segments track draws on the haplotype too once its `assemblyNames` list it.
+Sample+haplotype → GCA accession is `hprcSamples.json` in jb2hubs (haplotype 2
+of HG01433 is GCA_042027645.1). Measured on the hosted links index: HG01433.2
+is 42 of the donor link endpoints in the MHC class II window
+(chr6:32,500,000-32,560,000) against 9 for the next haplotype, and
+`pangenome/hprc_haplotype_launch` plus the `pangenome/hprc_out_to_haplotype`
+tour are the figure and the route, off
+`test_data/graphgenomeview/hprc_haplotype.json`.
+
+What stays true: minigraph credits an allele to its FIRST contributor, so which
+haplotype a window offers is build order, and a backbone-to-backbone deletion
+offers none. CHM13 is still the donor worth loading from UCSC's `hs1` rather
+than GenArk, for its RefSeq genes and RepeatMasker; the hg38→hs1 liftOver PIF
+(`jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz`, used by
+`test_data/hg38_hs1_synteny`) is what the synteny launch out of the graph needs
+there, and no per-haplotype alignment is hosted for a GenArk donor.
 
 HG002's parents are **not** in the graph (`pgbi.vcf.gz` has HG002 and HG005 but
 no HG003/HG004), so there is no trio to show inside the pangenome.

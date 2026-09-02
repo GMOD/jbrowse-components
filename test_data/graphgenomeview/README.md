@@ -5,7 +5,7 @@ Backs the `pangenome/graph_rgfa` screenshot spec
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer)
 (view type `GraphGenomeView`) — not bundled in JBrowse Web.
 
-Four configs live here, all data-free:
+Six configs live here, data-free but for one gene slice:
 
 - `config.json` — K12 only, the minimal graph fixture. It is also the start
   state of both E. coli paste tours (`pangenome/pggb_subgraph_launch` and
@@ -31,6 +31,26 @@ Four configs live here, all data-free:
   of the strains that contribute to it. Derived from the hosted
   `demos/ecoli_pangenome/config.json` by keeping the assemblies, genes and
   `ecoli_pggb_ava`, and adding the plugin plus the rGFA track.
+- `hprc_haplotype.json` — hg38, its genes, the HPRC segments track, and one
+  contributing haplotype loaded as an assembly: HG01433 haplotype 2 from its
+  UCSC GenArk hub (GCA_042027645.1), under its PanSN sample name `HG01433.2`.
+  GenArk names the 2bit's sequences by GenBank accession, which is how the graph
+  names a haplotype's contigs too, so the node menu's **Open in HG01433.2**
+  resolves with nothing translated. Its gene lane is
+  `hprc_mhc_HG01433.2.genes.gff3.gz`, HPRC's CAT annotation of that haplotype
+  sliced to `CM086511.1:32,300,000-32,800,000` with the command the tutorial
+  prints (GenArk's own gene lanes are empty around the allele). Backs
+  `pangenome/hprc_haplotype_launch` and the `pangenome/hprc_out_to_haplotype`
+  tour; `hprc.json` deliberately does not carry the assembly, since the extra
+  `Open in` rows would change the node menu the MHC layout figure captures.
+- `hprc_hs1.json` — hg38 and hs1 (T2T-CHM13, the committed `hs1.chrom.sizes`)
+  with both gene tracks, the segments track on both assemblies, and UCSC's
+  hg38-to-hs1 liftOver as a synteny track. Backs
+  `pangenome/hprc_synteny_launch`, the graph's own **Launch → Linear synteny
+  view** at the CHM13 window. It cannot be `hprc.json`: that fixture loads four
+  more haplotypes for the CFHR and inversion figures, one of which contributes
+  at that window too, so the launch there offers three assemblies and a track
+  submenu, and the stack it opens has a panel the liftOver aligns nothing to.
 
 The plugin bundle is served from `jbrowse.org/demos/graphgenomeviewer` and the
 GFA slices from `jbrowse.org/demos/ecoli_pangenome`, so no build output and no

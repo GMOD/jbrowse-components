@@ -6,7 +6,7 @@
 // holds.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
   GRAPH_DRAWN,
   TOOLBAR_READY,
@@ -27,6 +27,8 @@ import type {
 // The view cuts its subgraph from the track's own tabix indexes on attach.
 const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
+// its `name` in every fixture, which is the label a launch submenu lists it by
+const SEGMENTS_TRACK_NAME = 'HPRC release 2 graph (rGFA segments)'
 const MHC_REGION = {
   refName: 'chr6',
   assemblyName: 'hg38',
@@ -836,6 +838,249 @@ export const hprcClusterFixtures = {
   clustered: '[data-testid="tree_sidebar_dendrogram"]',
 }
 
+// The bubble tier and the curve it was built from, shared by the
+// whole-chromosome figure and the chromosome tour.
+//
+// The tier is one node per BUBBLE (scripts/build_bubble_tier.sh over the
+// `gfatools bubble` decomposition, hosted as hprc-v2.0-mc-grch38.tier10000.*),
+// which is what makes a whole chromosome drawable at all: 474 nodes for chr1
+// against ~751k segments in the graph.
+const HPRC_TIER_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'hprc_tier',
+  name: 'HPRC release 2 graph: bubble tier (one node per bubble)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
+    assemblyNameToPanSN: { hg38: 'GRCh38' },
+  },
+}
+
+// The same bubble file as a curve. No new data and no new code:
+// MinigraphBubbleAdapter already sets `score` to the bubble's segment count and
+// extends BaseFeatureDataAdapter, which supplies getRegionQuantitativeStats off
+// `scoresToStats`, so only the track TYPE changes — a FeatureTrack offers no
+// wiggle display to choose. 9,444 bubbles on chr1 with segment counts into the
+// hundreds, so at 249 Mb each pixel aggregates a handful and the profile is
+// real rather than sampled.
+const HPRC_BUBBLE_SCORE_SESSION_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hprc_bubble_score',
+  name: 'HPRC release 2 graph: variability (segments per bubble)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MinigraphBubbleAdapter',
+    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz',
+    assemblyNameToPanSN: { hg38: 'GRCh38' },
+  },
+}
+
+// The ideogram as a lane, on the same axis as the bubbles. The Giemsa stain is
+// column 5 of UCSC's cytoBand BED and lands on `gieStain` positionally
+// (`chr1 125100000 143200000 q12 gvar`); uncoloured the lane is one gold bar
+// the length of the chromosome, and with the stain it is the ideogram, where
+// acen (the centromere) and gvar (1q12) are the two bands that are not grey.
+function cytobandLane() {
+  return {
+    trackId: 'hg38_cytobands_ucsc',
+    type: 'LinearBasicDisplay',
+    displayMode: 'collapsed',
+    showLabels: 'none',
+    color:
+      "jexl:get(feature,'gieStain')=='acen' ? 'rgb(190,50,50)' : " +
+      "get(feature,'gieStain')=='gvar' ? 'rgb(120,120,200)' : " +
+      "get(feature,'gieStain')=='stalk' ? 'rgb(100,160,100)' : " +
+      "get(feature,'gieStain')=='gneg' ? 'rgb(235,235,235)' : " +
+      "get(feature,'gieStain')=='gpos25' ? 'rgb(190,190,190)' : " +
+      "get(feature,'gieStain')=='gpos50' ? 'rgb(150,150,150)' : " +
+      "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
+    height: 30,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// A haplotype loaded as an assembly, which turns the node menu's `Open in`
+// from the reference's flanking interval into the donor's own coordinates
+// ---------------------------------------------------------------------------
+//
+// HG01433 haplotype 2 is the donor minigraph credits most of the MHC class II
+// window to (42 link endpoints over chr6:32,500,000-32,560,000 in the hosted
+// links index, against 9 for the next haplotype), and HPRC_ALLELE above is one
+// of its segments. UCSC's GenArk hub for that assembly (GCA_042027645.1) names
+// its sequences by GenBank accession, which is how the graph names them too
+// (`HG01433.2#2#CM086511.1` in the graph is `CM086511.1` in the 2bit), and its
+// chromAlias file spells the graph's PanSN name in an `hprcV2` column. So the
+// assembly loads under its PanSN sample name with nothing translated, and the
+// launch resolves by that name alone. The fixture is
+// test_data/graphgenomeview/hprc_haplotype.json.
+//
+// The segments track there lists the haplotype among its `assemblyNames`, so
+// the pane the launch opens carries the graph's own segments on the
+// haplotype's coordinates as well as GenArk's RefSeq-mRNA lane.
+const HPRC_HAPLOTYPE_CONFIG = local(
+  'test_data/graphgenomeview/hprc_haplotype.json',
+)
+const HAPLOTYPE = 'HG01433.2'
+// `<trackId>-<displayType>`, the id a track shown with no explicit displayId
+// gets (packages/core/src/util/tracks.ts); the launched pane shows its lanes
+// that way. The lane is HPRC's CAT annotation of this haplotype, sliced to the
+// MHC (test_data/graphgenomeview/hprc_mhc_HG01433.2.genes.gff3.gz): GenArk's
+// own gene lanes are empty here, RefSeq mRNAs mapping nothing within 100 kb of
+// the allele.
+const HAPLOTYPE_GENES_DISPLAY = 'HG01433.2_cat_genes-LinearBasicDisplay'
+const HAPLOTYPE_GENES_READY = `[data-display-id="${HAPLOTYPE_GENES_DISPLAY}"][data-display-phase="ready"]`
+const HAPLOTYPE_LGV = 'hprc_haplotype_lgv'
+const HAPLOTYPE_GRAPH = 'hprc_haplotype_graph'
+// The pane the launch adds is the one view the session did not pin an id for.
+// The launch frames it on the allele alone, 1.8 kb, which shows the segment
+// and nothing around it; a few zoom-outs on that pane's own button bring the
+// haplotype's neighbouring mRNAs and the graph's other segments into frame.
+const LAUNCHED_VIEW = `[data-testid^="view-container-"]:not([data-testid="view-container-${HAPLOTYPE_LGV}"]):not([data-testid="view-container-${HAPLOTYPE_GRAPH}"])`
+const LAUNCHED_ZOOM_OUT = `${LAUNCHED_VIEW} [data-testid="zoom_out"]`
+const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
+  Array.from({ length: clicks }, () => [
+    { type: 'click' as const, selector: LAUNCHED_ZOOM_OUT },
+    { type: 'waitForAppSettled' as const, timeout: 120000 },
+  ]).flat()
+
+// The MHC class II cut with the haplotype loaded and nothing opened yet. The
+// tour takes the node's menu from here; the figure takes it too and captures
+// what it adds.
+//
+// No `connectedViewId` on any of these graph panes, and the recipe worklist is
+// why: it is a session-spec field the figure-recipe dialog cannot map to a
+// click, so carrying it would grow spec-recipe-unmapped.txt. It is also not
+// needed — with one linear view on the assembly in the session, the plugin
+// pairs hover sync and `Open in` with that view (linearViewTarget's fallback).
+export function hprcHaplotypeSession(paneHeight?: number) {
+  return sessionSpec(HPRC_HAPLOTYPE_CONFIG, {
+    views: [
+      {
+        id: HAPLOTYPE_LGV,
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: TOUR_MHC_LOCUS,
+        tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
+      },
+      {
+        id: HAPLOTYPE_GRAPH,
+        type: 'GraphGenomeView',
+        loadedTrackId: SEGMENTS_TRACK,
+        loadedRegion: MHC_REGION,
+        layoutMode: 'force',
+        colorScheme: 'reference-position',
+        ...(paneHeight === undefined ? {} : { paneHeight }),
+      },
+    ],
+  })
+}
+
+// ---------------------------------------------------------------------------
+// The bubble tier over the MHC, the coarse end of the ladder the tier tour
+// climbs down
+// ---------------------------------------------------------------------------
+//
+// Two megabases rather than the whole chromosome the figure draws. On the
+// whole-chromosome tier a bubble is narrower than a pixel and the drawing
+// gives it a floor, and a graph-node anchor there landed on a neighbour: the
+// tour's right-click on s101110 opened s100702, 2.6 Mb away, which at 90 kb per
+// pixel is 29 px. At 1 kb per pixel the class II bubble is sixty pixels wide
+// and its menu is its own. The chromosome-scale picture stays with
+// pangenome/hprc_whole_chromosome, which clicks nothing.
+const MHC_TIER_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 31_500_000,
+  end: 33_500_000,
+}
+const MHC_TIER_WINDOW = 'chr6:31,500,001-33,500,000'
+const MHC_TIER_LGV = 'hprc_mhc_tier_lgv'
+const MHC_TIER_GRAPH = 'hprc_mhc_tier_graph'
+// The MHC class II bubble in the tier, chr6:32,486,309-32,550,924
+// (`tabix …tier10000.segs.bed.gz 'GRCh38#0#chr6:32,400,000-32,600,000'`):
+// 91 segments and a 78 kb longest allele, and the window every MHC figure on
+// the page is cut inside.
+const MHC_TIER_BUBBLE = 's101110'
+
+// No fine segments lane in the view. Over 2 Mb it is not gated, it draws, and
+// a thousand segments packed into rows under `heightMode: 'grow'` took the
+// graph pane off the bottom of a 1300 px frame; the fine cut the tour ends on
+// needs the track in the SESSION, which the config supplies, not in the view.
+export function hprcTierSession() {
+  return sessionSpec(HPRC_CONFIG, {
+    sessionTracks: [HPRC_TIER_SESSION_TRACK, HPRC_BUBBLE_SCORE_SESSION_TRACK],
+    views: [
+      {
+        id: MHC_TIER_LGV,
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: MHC_TIER_WINDOW,
+        tracks: [
+          cytobandLane(),
+          hg38GeneLane(60),
+          {
+            trackId: 'hprc_bubble_score',
+            type: 'LinearWiggleDisplay',
+            height: 90,
+          },
+          {
+            trackId: 'hprc_tier',
+            type: 'LinearBasicDisplay',
+            showLabels: 'none',
+            color: referencePositionColor(MHC_TIER_REGION),
+            height: 50,
+          },
+        ],
+      },
+      {
+        id: MHC_TIER_GRAPH,
+        type: 'GraphGenomeView',
+        loadedTrackId: 'hprc_tier',
+        loadedRegion: MHC_TIER_REGION,
+        layoutMode: 'auto',
+        colorScheme: 'reference-position',
+      },
+    ],
+  })
+}
+
+// ---------------------------------------------------------------------------
+// The synteny launch out of the graph, which needs two loaded contributors AND
+// a synteny track aligning them
+// ---------------------------------------------------------------------------
+//
+// A fixture of its own, hg38 and hs1 and nothing else: the launch opens EVERY
+// loaded contributor, and hprc.json loads four CFHR and inversion haplotypes
+// for its own figures, one of which contributes at the CHM13 window too. That
+// run's menu read `Linear synteny view (3 assemblies)` and cascaded into a
+// submenu of the three synteny tracks in the session, and the stack it would
+// have opened had a haplotype panel the liftOver aligns nothing to. The track
+// is UCSC's hg38-to-hs1 liftOver as an indexed PAF, the same one
+// test_data/hg38_hs1_synteny reads.
+const HPRC_HS1_CONFIG = local('test_data/graphgenomeview/hprc_hs1.json')
+const SYNTENY_LGV = 'hprc_synteny_lgv'
+const SYNTENY_GRAPH = 'hprc_synteny_graph'
+// The entry as graphMenuItems labels it: one synteny track, so no submenu, and
+// the assembly count in the label.
+const SYNTENY_LAUNCH_ITEM = 'Linear synteny view (2 assemblies)'
+
+// What website/scripts/videos/pangenome.ts films on the human graph beyond the
+// end-to-end tour: the two sessions above and the ids their steps click.
+export const hprcVideoFixtures = {
+  haplotype: HAPLOTYPE,
+  haplotypeNode: HPRC_ALLELE,
+  haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
+  haplotypeSession: hprcHaplotypeSession,
+  launchedZoomOut,
+  tierSession: hprcTierSession,
+  tierGraphViewId: MHC_TIER_GRAPH,
+  mhcBubbleNode: MHC_TIER_BUBBLE,
+  segmentsTrackName: SEGMENTS_TRACK_NAME,
+  // inside the bubble the tour lands on, and holding HPRC_ALLELE
+  mhcSelection: { start: 'chr6:32,500,000', end: 'chr6:32,545,000' },
+}
+
 export const hprcGraphSpecs: ScreenshotSpec[] = [
   // A WHOLE HUMAN CHROMOSOME AS A GRAPH. This is the scale claim, and the two
   // numbers that make it are in the header: 249 Mb of GRCh38 chr1, drawn from
@@ -921,39 +1166,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             ],
           },
         },
-        {
-          type: 'FeatureTrack',
-          trackId: 'hprc_tier',
-          name: 'HPRC release 2 graph: bubble tier (one node per bubble)',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'RgfaTabixAdapter',
-            uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
-            assemblyNameToPanSN: { hg38: 'GRCh38' },
-          },
-        },
-        // The same bubble file the tier was built FROM, as a curve. This costs
-        // no new data and no new code: MinigraphBubbleAdapter already sets
-        // `score` to the bubble's segment count, and it extends
-        // BaseFeatureDataAdapter, which supplies getRegionQuantitativeStats off
-        // `scoresToStats` — so a wiggle display gets its axis by scanning the
-        // features it already reads. The only change is the track TYPE, since a
-        // FeatureTrack does not offer a wiggle display to choose.
-        //
-        // 9,444 bubbles on chr1, segment counts into the hundreds, so at 249 Mb
-        // each pixel aggregates a handful and the profile is real rather than
-        // sampled.
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hprc_bubble_score',
-          name: 'HPRC release 2 graph: variability (segments per bubble)',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'MinigraphBubbleAdapter',
-            uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz',
-            assemblyNameToPanSN: { hg38: 'GRCh38' },
-          },
-        },
+        HPRC_TIER_SESSION_TRACK,
+        HPRC_BUBBLE_SCORE_SESSION_TRACK,
       ],
       views: [
         {
@@ -969,28 +1183,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // bubbles, which is the comparison the two callouts were making in
             // words. `showLabels: 'none'` -- 63 band names over 249 Mb is a
             // mat, and the two the figure names are named by the callouts.
-            {
-              trackId: 'hg38_cytobands_ucsc',
-              type: 'LinearBasicDisplay',
-              displayMode: 'collapsed',
-              showLabels: 'none',
-              // The Giemsa stain, which is column 5 of UCSC's cytoBand BED and
-              // lands on `score` positionally (`chr1 125100000 143200000 q12
-              // gvar`). Uncoloured the lane is one gold bar 249 Mb long and
-              // says nothing; with the stain it is the ideogram, on the same
-              // axis as the bubbles -- and the two bands the callouts name are
-              // the two that are not grey: acen for the centromere and gvar
-              // for 1q12.
-              color:
-                "jexl:get(feature,'gieStain')=='acen' ? 'rgb(190,50,50)' : " +
-                "get(feature,'gieStain')=='gvar' ? 'rgb(120,120,200)' : " +
-                "get(feature,'gieStain')=='stalk' ? 'rgb(100,160,100)' : " +
-                "get(feature,'gieStain')=='gneg' ? 'rgb(235,235,235)' : " +
-                "get(feature,'gieStain')=='gpos25' ? 'rgb(190,190,190)' : " +
-                "get(feature,'gieStain')=='gpos50' ? 'rgb(150,150,150)' : " +
-                "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
-              height: 30,
-            },
+            cytobandLane(),
             // Between the bands and the curve, so the reading order down the
             // frame is landmark, name, how much the graph varies there.
             {
@@ -2517,6 +2710,122 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         maxWidth: 340,
         fontSize: 20,
+      },
+    ],
+  },
+  // OUT OF THE GRAPH AND INTO THE HAPLOTYPE, at human scale. The E. coli page
+  // has pangenome/pggb_strain_launch for this move and this page had only
+  // CHM13 (hprc_chm13_allele), on the belief that the other 460 haplotypes
+  // could not be loaded — see hprcHaplotypeSession for why they can. The node
+  // is the 1.8 kb HG01433.2 allele over HLA-DRB5 that the layout pair and the
+  // end-to-end tour already open a menu on; here the menu's `Open in
+  // HG01433.2` entry is taken, and what the frame adds is the pane that opens:
+  // the haplotype's own chr6 (CM086511.1) at the segment's own offset, with
+  // the GenArk RefSeq-mRNA lane and the segments track on those coordinates.
+  //
+  // The menu is driven rather than the end state declared, so the pane is the
+  // one the launch makes, not an imitation of it.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_haplotype_launch',
+    // 420: the same trade the CHM13 figure and the force half of the layout
+    // pair make, since the pane is read for one ringed node beside the chain
+    // it hangs off and the launched pane below needs the height more.
+    url: hprcHaplotypeSession(420),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    settleMs: 8000,
+    viewportWidth: 1100,
+    // off the run's own below-the-fold report at 1150: the launched pane
+    // arrives at its lanes' default heights, which no session pins
+    viewportHeight: 1250,
+    hideTooltip: true,
+    actions: [
+      // the auto-fit has to have finished before the anchor means anything
+      { type: 'delay', ms: 2000 },
+      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
+      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
+      { type: 'click', text: `Open in ${HAPLOTYPE}` },
+      // the launched pane's own gene lane, fetched off hgdownload, not a delay
+      {
+        type: 'waitForSelector',
+        selector: HAPLOTYPE_GENES_READY,
+        timeout: 180000,
+      },
+      // 1.8 kb to ~28 kb, so the allele sits among the haplotype's own genes
+      ...launchedZoomOut(4),
+      { type: 'delay', ms: 3000 },
+    ],
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: HPRC_ALLELE },
+        radius: 20,
+        strokeWidth: 3,
+      },
+    ],
+  },
+  // THE SYNTENY LAUNCH, on the human graph. pangenome/rgfa_launch_out_menu has
+  // it on five E. coli strains; on HPRC it was held to be dead, since a session
+  // loads one assembly. Two are loaded here, hg38 and hs1, the CHM13 window
+  // holds a node each contributes, and a liftOver between them is in the
+  // session, so the graph's own Launch menu offers the view. The menu is driven
+  // so the stack below is the launch's own: hg38 over hs1, each framed on the
+  // locus the graph states for it, with the liftOver ribbons between.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_synteny_launch',
+    url: sessionSpec(HPRC_HS1_CONFIG, {
+      views: [
+        {
+          id: SYNTENY_LGV,
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: CHM13_WINDOW,
+          tracks: [hg38GeneLane(60), hprcSegmentsLane(CHM13_REGION)],
+        },
+        {
+          id: SYNTENY_GRAPH,
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: CHM13_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+          // the CHM13 figure's trade: the pane is read for one arc against
+          // the chain it leaves, and the launched stack below needs the height
+          paneHeight: 320,
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    // the graph's own fetch is ~7 s at this window (see hprc_chm13_allele)
+    settleMs: 14000,
+    viewportWidth: 1100,
+    // off the run's own blank-below-the-content report at 1250
+    viewportHeight: 1070,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        selector: `[data-testid="view-container-${SYNTENY_GRAPH}"] [data-testid="view_menu_icon"]`,
+      },
+      ...menuCascade(['Launch', SYNTENY_LAUNCH_ITEM]),
+      { type: 'click', text: SYNTENY_LAUNCH_ITEM },
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'delay', ms: 3000 },
+    ],
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: CHM13_NODE },
+        radius: 20,
+        strokeWidth: 3,
       },
     ],
   },

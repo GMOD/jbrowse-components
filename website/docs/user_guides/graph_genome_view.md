@@ -43,7 +43,10 @@ loads from any config (see [configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG END -->
 
-`RgfaTabixAdapter` and `MinigraphBubbleAdapter` ship in the same plugin.
+`RgfaTabixAdapter` and `MinigraphBubbleAdapter` ship in the same plugin. It
+needs a JBrowse 5 build (v5.0.0-beta.1 or later): on a JBrowse 4 host the plugin
+does not load, and a config naming it opens with no graph view and neither
+adapter.
 
 :::
 
@@ -161,7 +164,14 @@ hundreds of bp.
 Right-clicking one segment cuts the graph around that segment, padded by half
 its length on each side so it opens with context. Dragging across the ruler and
 picking **Graph genome view (this selection)** does the same for a window you
-choose, with no track menu involved.
+choose, with no track menu involved. Right-clicking a feature in any other
+track, a gene say, offers **Graph genome view (this feature)**, cut from
+whichever graph track the session holds for that assembly, so the graph track
+need not be in the view at all.
+
+A launched pane is a cut: it keeps the window it was launched from while the
+linear view moves on, so the next window is the next launch, and each launch
+adds a pane.
 
 Each line in the launched graph is one graph link, drawn when both of its
 endpoints are inside the cut, so an allele near the window's edge draws only the
@@ -395,10 +405,12 @@ assemblies loaded, the graph's **Launch** menu gains two ways out:
 
 - **one linear view per contributing strain**, framed on that strain's own
   coordinates for this locus. Right-clicking a single allele does it for that
-  segment alone: a CFT073 allele opens CFT073 at the offset its own tags state.
+  segment alone, as **Open in** that strain on the node's own menu: a CFT073
+  allele opens CFT073 at the offset its own tags state.
 - **a synteny view of all of them**, one panel per strain, each already at its
   own locus. Those panel coordinates come from the graph, and the alignment
-  track draws the ribbons between panels.
+  track draws the ribbons between panels. The entry needs a synteny track in the
+  session that aligns the strains, and greys out naming that when there is none.
 
 Only loaded assemblies are offered, and a location goes into the linear view
 already beside the graph. A launched view carries the session's annotation for
@@ -407,6 +419,12 @@ in a
 [synteny track](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)
 offers the same jump from its right-click menu, **Open \<strain\> at the
 matching region**, so a strain reads the same way out of either view.
+
+On HPRC's graph the contributors are its 464 haplotypes, and a session loads
+none of them by default, so a node there offers GRCh38 alone. The
+[HPRC tutorial](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly)
+loads one from UCSC GenArk under its PanSN name, which is all the menu needs to
+offer it.
 
 <Figure caption="Top: the graph's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
