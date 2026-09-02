@@ -43,7 +43,14 @@ export function setupRowSortAutorun(
   },
   opts: {
     name: string
-    sortRows: (refName: string, pos: number) => void
+    // `false` means the sort declined, and the trigger is left set so a later
+    // fetch can re-fire it. Anything else (including a plain `void`) means it
+    // ran. The gate below only knows that a region covers the column, and a
+    // display can have a second reason to decline that the gate cannot ask
+    // about — the multi-sample variant sort needs a RECORD at the position,
+    // not merely a loaded region over it, so a session `sortRowsBy` on a
+    // variant-free column sorted nothing and cleared itself.
+    sortRows: (refName: string, pos: number) => void | boolean
   },
 ) {
   addDisposer(
@@ -79,8 +86,8 @@ export function setupRowSortAutorun(
         if (!loaded) {
           return
         }
-        opts.sortRows(refName, spec.pos)
-        if (isAlive(self)) {
+        const sorted = opts.sortRows(refName, spec.pos)
+        if (sorted !== false && isAlive(self)) {
           self.setSortRowsBy(undefined)
         }
       },

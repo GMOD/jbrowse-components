@@ -87,6 +87,20 @@ export interface RowSortColumnHost<S> {
  * would trade a dendrogram for an empty layout. The right-click item is gated on
  * the same count already; the declarative `sortRowsBy` entry point is not, and
  * lands here.
+ *
+ * Returns whether it sorted, which is what `setupRowSortAutorun`'s `sortRows`
+ * reads to decide whether to clear the trigger or leave it for a later fetch.
+ *
+ * **`order` is handed `editableSources`, which the subtree filter has not
+ * touched** — the list being written to `layout`, not the rows on screen. So an
+ * `order` that derives a STATISTIC from the row set it is given (block sizes,
+ * ranks, a median) is computing it over rows a focused clade is hiding, which
+ * is a different answer from the one the user is looking at. That is deliberate
+ * for the ordering itself, for the reason on `RowSortColumnHost.editableSources`
+ * — a hidden row must keep its place and its overrides. A display that wants the
+ * drawn set for the statistic reads its own `sources` in the closure it passes
+ * as `order`; nothing here can hand it over, because "which rows are drawn" is
+ * downstream of decorations this module does not see.
  */
 export function sortRowsAtColumn<S extends { name: string }, D>(
   self: RowSortColumnHost<S>,
@@ -97,9 +111,11 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
 ) {
   const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
   const data = index === undefined ? undefined : dataAt(index)
-  if (data !== undefined && self.editableSources.length > 1) {
+  const sortable = data !== undefined && self.editableSources.length > 1
+  if (sortable) {
     self.setLayout(order(self.editableSources, data))
   }
+  return sortable
 }
 
 /**
