@@ -81,6 +81,8 @@ function recordingCtx() {
   return { fills, texts, ctx: ctx as unknown as Ctx2D }
 }
 
+const INK = { text: { secondary: 'grey' }, background: { paper: 'white' } }
+
 const BLOCK: RenderBlock = {
   displayedRegionIndex: 0,
   start: 0,
@@ -109,7 +111,8 @@ describe('drawDensityBand', () => {
     drawDensityBand(ctx, [BLOCK], layer, {
       canvasWidth: 100,
       bandHeight: 100,
-      color: 'grey',
+      readout: '',
+      palette: INK,
     })
 
     expect(fills).toHaveLength(2)
@@ -130,8 +133,8 @@ describe('drawDensityBand', () => {
       {
         canvasWidth: 100,
         bandHeight: 100,
-        color: 'grey',
         readout: 'no density data in view',
+        palette: INK,
       },
     )
     expect(fills).toEqual([])

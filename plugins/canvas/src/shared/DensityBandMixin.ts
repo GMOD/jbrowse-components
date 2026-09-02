@@ -100,6 +100,20 @@ export default function DensityBandMixin() {
       .views(self => ({
         /**
          * #getter
+         * The band's line of text with no cursor over it: its peak alone, which
+         * is what the SVG export writes.
+         */
+        get densityPeakReadout() {
+          return densityBandReadout(
+            self.densityBandLayer,
+            bandHost(self).densityBins,
+            undefined,
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The band's line of text: its peak, and the source's value under the
          * cursor while there is one. Blank until the first read lands, so the
          * scrim is not captioned "no density data" for a read still in flight.
@@ -107,11 +121,13 @@ export default function DensityBandMixin() {
         get densityReadout() {
           return densityBandPending(bandHost(self))
             ? ''
-            : densityBandReadout(
-                self.densityBandLayer,
-                bandHost(self).densityBins,
-                self.densityHover,
-              )
+            : self.densityHover
+              ? densityBandReadout(
+                  self.densityBandLayer,
+                  bandHost(self).densityBins,
+                  self.densityHover,
+                )
+              : self.densityPeakReadout
         },
         /**
          * #getter

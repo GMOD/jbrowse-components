@@ -4045,11 +4045,14 @@ export default function stateModelFactory(
             // map is empty even though the fetch is done — gating on that left the
             // loading overlay up forever (and hung any test waiting on first paint).
             //
-            // The density tier fetches nothing into `rpcDataMap`, so its bins
-            // are the other way first paint can be earned.
+            // With the band standing in nothing reaches `rpcDataMap`, so first
+            // paint waits on the band's own read instead.
             render: b =>
-              self.rpcDataMap.size === 0 &&
-              self.densityCoverageRegions.size === 0
+              (
+                self.densityStandsIn
+                  ? densityBandPending(self)
+                  : self.rpcDataMap.size === 0
+              )
                 ? false
                 : b.renderBlocks(self.renderBlocks, self.renderState),
           })
@@ -4235,18 +4238,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        /**
-         * #getter
-         * `FetchMixin`'s hook: the band the display is drawing instead of the
-         * reads has not filled yet. Carries the scrim, and holds an export off
-         * an empty band, wherever the phase is not the banner's — a track
-         * forced to `density` reaches the tier with no refusal at all, so the
-         * ranking below never sees that case.
-         */
-        get awaitingDependentData(): boolean {
-          return self.densityBandActive && densityBandPending(self)
-        },
-
         /**
          * #getter
          * The phase with the band standing in for the reads — see

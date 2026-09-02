@@ -31,7 +31,9 @@ export interface DensityBandPhaseHost
  * an empty band is the honest answer there, where 'loading' would never lift.
  * A failed read lands on the display's own `error`, which outranks this.
  */
-export function densityBandPending(self: DensityBandPhaseHost) {
+export function densityBandPending(
+  self: Pick<DensityBandPhaseHost, 'densityLoading' | 'densityBinsKey'>,
+) {
   return self.densityLoading || self.densityBinsKey === undefined
 }
 

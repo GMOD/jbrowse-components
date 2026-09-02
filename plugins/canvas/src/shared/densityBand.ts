@@ -14,6 +14,15 @@ import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
+/**
+ * What the band takes off a palette: the bars and readout in the secondary
+ * text color, and the page color haloed round the readout where a bar is.
+ */
+export interface DensityBandInk {
+  text: { secondary: string }
+  background: { paper: string }
+}
+
 /** Every region's bars plus the peak they are measured against. */
 export interface DensityBandLayer {
   regions: ReadonlyMap<number, PackedDensityRegion>
@@ -59,13 +68,13 @@ export function drawDensityBand(
   state: {
     canvasWidth: number
     bandHeight: number
-    color: string
-    readout?: string
-    /** the page behind the band, haloed round the readout where a bar is */
-    backing?: string
+    readout: string
+    palette: DensityBandInk
   },
 ) {
-  const { canvasWidth, bandHeight, color, readout, backing } = state
+  const { canvasWidth, bandHeight, readout } = state
+  const color = state.palette.text.secondary
+  const backing = state.palette.background.paper
   const { regions, maxDepth } = layer
   if (maxDepth > 0) {
     const normalize = (depth: number) => depth / maxDepth
@@ -94,12 +103,10 @@ export function drawDensityBand(
   if (readout) {
     ctx.font = `${READOUT_FONT_PX}px sans-serif`
     ctx.textBaseline = 'top'
-    if (backing) {
-      ctx.strokeStyle = backing
-      ctx.lineWidth = 3
-      ctx.lineJoin = 'round'
-      ctx.strokeText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
-    }
+    ctx.strokeStyle = backing
+    ctx.lineWidth = 3
+    ctx.lineJoin = 'round'
+    ctx.strokeText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
     ctx.fillStyle = color
     ctx.fillText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
   }

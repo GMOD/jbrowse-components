@@ -38,6 +38,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="getter-densitybandactive">**densityBandActive**</span><br><code>boolean</code> | Whether the band stands in for the features here — the tier's own decision, plus the view geometry the draw is mapped through. | DensityBandMixin |
 | <span id="getter-densitybandlayer">**densityBandLayer**</span><br><code>DensityBandLayer</code> |  | DensityBandMixin |
+| <span id="getter-densitypeakreadout">**densityPeakReadout**</span><br><code>string</code> | The band's line of text with no cursor over it: its peak alone, which is what the SVG export writes. | DensityBandMixin |
 | <span id="getter-densityreadout">**densityReadout**</span><br><code>string</code> | The band's line of text: its peak, and the source's value under the cursor while there is one. Blank until the first read lands, so the scrim is not captioned "no density data" for a read still in flight. | DensityBandMixin |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | The foundation's phase with the too-large banner swapped for the band — see `densityBandDisplayPhase`. | DensityBandMixin |
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | The export gate with the same swap — see `densityBandSvgReady`. | DensityBandMixin |

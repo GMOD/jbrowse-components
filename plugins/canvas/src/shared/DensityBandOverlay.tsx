@@ -54,9 +54,8 @@ const DensityBandCanvas = observer(function DensityBandCanvas({
         drawDensityBand(ctx, renderBlocks, densityBandLayer, {
           canvasWidth: canvasWidthPx,
           bandHeight: height,
-          color: palette.text.secondary,
           readout: densityReadout,
-          backing: palette.background.paper,
+          palette,
         })
         // the feature canvas under this one draws nothing while the tier is
         // active, so the band is the display's first paint

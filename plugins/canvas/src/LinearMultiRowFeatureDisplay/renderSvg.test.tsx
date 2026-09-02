@@ -102,7 +102,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     drawsWhenTooLarge: false,
     densityBandActive: false,
     densityBandLayer: { regions: new Map(), maxDepth: 0 },
-    densityBins: new Map(),
+    densityPeakReadout: '',
     svgReady: true,
     drawnRegionData: new Map([[0, makeRegionData()]]),
     renderState: {

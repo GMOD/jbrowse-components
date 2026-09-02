@@ -185,13 +185,13 @@ test('a forced density tier stands in with no refusal at all', () => {
   expect(display.lanes).toEqual([])
   expect(display.sourceSections).toHaveLength(1)
   expect(display.sourceSections[0]!.laidOutPileupMap.size).toBe(0)
-  expect(display.awaitingDependentData).toBe(true)
+  expect(display.svgReady).toBe(false)
 
   display.setDensityBins(
     [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
     { regions: [], bucket: 0, adapterKey: 'test-key' },
   )
-  expect(display.awaitingDependentData).toBe(false)
+  expect(display.svgReady).toBe(true)
   expect(display.densityCoverageRegions.size).toBe(1)
 })
 

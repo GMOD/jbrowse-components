@@ -7,7 +7,6 @@ import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawDensityBand } from '../shared/densityBand.ts'
-import { densityBandReadout } from '../shared/densityBandViews.ts'
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
@@ -20,7 +19,6 @@ import type {
   MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './rowSources.ts'
-import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -42,7 +40,7 @@ export interface RenderSvgModel extends SvgExportable {
   drawsWhenTooLarge: boolean
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
-  densityBins: ReadonlyMap<number, FeatureDensity>
+  densityPeakReadout: string
   drawnRegionData: { get: (key: number) => MultiRowRegionData | undefined }
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
@@ -107,13 +105,8 @@ function MultiRowSvgBody({
               drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
                 canvasWidth,
                 bandHeight: height,
-                color: exportPalette.text.secondary,
-                readout: densityBandReadout(
-                  self.densityBandLayer,
-                  self.densityBins,
-                  undefined,
-                ),
-                backing: exportPalette.background.paper,
+                readout: self.densityPeakReadout,
+                palette: exportPalette,
               })
             }
             drawMultiRowBlocks(ctx, self.drawnRegionData, renderBlocks, state)
