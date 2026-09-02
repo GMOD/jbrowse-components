@@ -80,9 +80,9 @@ export interface VariantTopBands {
   bottom: number
 }
 
-// Floor/ceiling for a resized lane, and the ceiling is also the size menu's —
-// the menu is the only way to set this, so a slider that stopped short of the
-// clamp would be two different answers to "how tall can it get". 120 holds
+// Floor/ceiling for a resized lane, and the ceiling is also the size menu's,
+// so the slider, the drag and the clamp give one answer to "how tall can it
+// get" rather than a slider that stops short of where a drag lands. 120 holds
 // roughly six labeled rows of the band's compact layout; past that it is
 // spending the rows' height on empty band. The floor is where a record stops
 // reading as more than a hairline.
