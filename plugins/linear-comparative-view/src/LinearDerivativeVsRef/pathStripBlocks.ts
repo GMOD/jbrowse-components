@@ -56,7 +56,11 @@ function segmentLength(seg: DerivativeSegment) {
  * enough — pinning three slivers of a four-segment path shrinks the fourth by
  * the same amount, and a path of forty hops is all floor.
  */
-function allocateWidths(lengths: number[], available: number, min: number) {
+export function allocateWidths(
+  lengths: number[],
+  available: number,
+  min: number,
+) {
   const n = lengths.length
   if (available <= n * min) {
     // No proportional information survives at this size, so don't pretend to

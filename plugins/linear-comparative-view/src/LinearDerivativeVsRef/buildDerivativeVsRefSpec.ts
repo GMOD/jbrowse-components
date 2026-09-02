@@ -4,6 +4,7 @@ import {
   gatherOverlaps,
   getBpDisplayStr,
 } from '@jbrowse/core/util'
+import { letterSegments } from '@jbrowse/plugin-alignments'
 
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
 
@@ -262,16 +263,20 @@ export function buildDerivativeVsRefSpec(
   // The same walk again, as a feature track on the derivative panel. Without it
   // that panel is an empty axis: the allele has no sequence and no annotation of
   // its own, so a reader gets a row of ribbons and nothing saying which
-  // reference interval any of them is. Each segment is labelled with where it
-  // came from, which is what turns the lower panel from a ruler into the
-  // ribbons' legend, and it costs nothing extra to compute.
+  // reference interval any of them is. Each segment is labelled with the letters
+  // of the reference pieces it carries and where it came from, which is what
+  // turns the lower panel from a ruler into the ribbons' legend.
+  //
+  // Letters from `observedSegments`: the drawn outer segments carry a context
+  // flank, and a flank is not a piece of the allele.
+  const { segmentLetters } = letterSegments(candidate.observedSegments)
   const segmentFeatures = features.map((feat, idx) => ({
     uniqueId: `${refName}-${idx}-label`,
     refName,
     start: feat.mate.start,
     end: feat.mate.end,
     strand: feat.strand,
-    name: `${assembleLocString({
+    name: `${segmentLetters[idx]?.join('') ?? ''} · ${assembleLocString({
       refName: feat.refName,
       start: feat.start,
       end: feat.end,

@@ -64,7 +64,10 @@ test('a path that revisits a chromosome gets a panel per visit', () => {
     // arrived at inverted, so the path lands on this segment's END
     'chr9:28056001-28066000',
   ])
-  expect(viewSnapshot.displayName).toBe('chr9 → chr9 (inverted)')
+  // the fold-back written as SV papers write it: the arm, then a piece of the
+  // same chromosome read backwards — and B is the 27 kb between the two that
+  // the derivative leaves out
+  expect(viewSnapshot.displayName).toBe('A C′ · chr9 → chr9 (inverted)')
 })
 
 // An inverted segment is crossed from its high coordinate to its low one, so

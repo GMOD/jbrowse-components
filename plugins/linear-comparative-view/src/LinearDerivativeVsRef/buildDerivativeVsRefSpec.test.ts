@@ -174,13 +174,15 @@ describe('buildDerivativeVsRefSpec', () => {
     expect(huge.segmentsDisplay.height).toBe(260)
   })
 
-  it('names each label for its reference interval, marking the inverted ones', () => {
+  it('names each label with its letters and reference interval, marking the inverted ones', () => {
     const { segmentsTrack } = build()
+    // the first arm carries three pieces because the returning arm's edges cut
+    // it, which is what lets a reader see B twice
     expect(segmentsTrack.adapter.features.map(f => f.name)).toEqual([
-      'chr3:25,326,822..25,359,568 (32.7Kbp)',
-      'chr10:58,717,464..58,717,662 (199bp)',
-      'chr12:72,273,112..72,273,294 (183bp, inv)',
-      'chr3:25,352,684..25,359,111 (6.43Kbp, inv)',
+      'ABC · chr3:25,326,822..25,359,568 (32.7Kbp)',
+      'D · chr10:58,717,464..58,717,662 (199bp)',
+      'E′ · chr12:72,273,112..72,273,294 (183bp, inv)',
+      'B′ · chr3:25,352,684..25,359,111 (6.43Kbp, inv)',
     ])
   })
 

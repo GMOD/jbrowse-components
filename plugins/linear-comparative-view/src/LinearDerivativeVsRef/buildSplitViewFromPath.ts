@@ -1,5 +1,9 @@
 import { stripTrackIds } from '@jbrowse/core/util'
-import { segmentEntryBp, segmentExitBp } from '@jbrowse/plugin-alignments'
+import {
+  letterSegments,
+  segmentEntryBp,
+  segmentExitBp,
+} from '@jbrowse/plugin-alignments'
 
 import { derivativePathLabel } from './buildDerivativeVsRefSpec.ts'
 
@@ -158,7 +162,7 @@ export function buildSplitViewFromPath({
   return {
     viewSnapshot: {
       type: 'BreakpointSplitView',
-      displayName: derivativePathLabel(candidate),
+      displayName: `${letterSegments(candidate.observedSegments).derivative} · ${derivativePathLabel(candidate)}`,
       views: segments.map(() => ({
         type: 'LinearGenomeView' as const,
         hideHeader: true as const,

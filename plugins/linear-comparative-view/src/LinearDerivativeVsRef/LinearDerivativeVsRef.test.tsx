@@ -138,6 +138,57 @@ test('the row sizes what the reads saw, not what the view will open on', () => {
   expect(screen.queryByText(/2\.5Kbp/)).toBeNull()
 })
 
+// The lettered string is the row's headline: `route(2)` is two pieces of chr3
+// with the reference between them skipped, which is a deletion, and a deletion
+// is written A C.
+test('the row leads with the derivative as a lettered string', () => {
+  render(
+    <DerivativeVsRefDialog
+      model={{
+        derivativePathCandidates: [route(2)],
+        hasReadsForDerivativePaths: true,
+        derivativePathEvidence: READS,
+        medianReadSpanBp: ONT_SPAN_BP,
+      }}
+      track={makeTrack().track}
+      handleClose={() => {}}
+    />,
+  )
+  // the dialog renders in a portal, so the body is where its text is
+  expect(document.body.textContent).toContain('A Cchr3 → chr3')
+})
+
+test('the segment map saves as an SVG named for the route', () => {
+  const blobs: Blob[] = []
+  const names: string[] = []
+  const createObjectURL = jest.fn((blob: Blob) => {
+    blobs.push(blob)
+    return 'blob:segment-map'
+  })
+  Object.assign(URL, { createObjectURL, revokeObjectURL: jest.fn() })
+  const click = jest
+    .spyOn(HTMLAnchorElement.prototype, 'click')
+    .mockImplementation(function (this: HTMLAnchorElement) {
+      names.push(this.download)
+    })
+  render(
+    <DerivativeVsRefDialog
+      model={{
+        derivativePathCandidates: [route(2)],
+        hasReadsForDerivativePaths: true,
+        derivativePathEvidence: READS,
+        medianReadSpanBp: ONT_SPAN_BP,
+      }}
+      track={makeTrack().track}
+      handleClose={() => {}}
+    />,
+  )
+  fireEvent.click(screen.getByTestId('derivative-save-segment-map'))
+  expect(blobs).toHaveLength(1)
+  expect(blobs[0]!.type).toBe('image/svg+xml')
+  click.mockRestore()
+})
+
 // bounds the count — a real ngmlr-aligned ONT record in COLO829 carries 943 SA
 // entries. Disabled rather than truncated: a prefix of a path drawn under the
 // whole path's name is worse than not drawing it.

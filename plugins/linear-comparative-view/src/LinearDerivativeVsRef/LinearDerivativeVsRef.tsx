@@ -6,10 +6,20 @@ import {
   addOrReplaceView,
   getContainingView,
   getSession,
+  renderToStaticMarkup,
+  saveAs,
 } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  derivativeLetterSummary,
+  letterSegments,
+} from '@jbrowse/plugin-alignments'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import DownloadIcon from '@mui/icons-material/Download'
+import {
+  Button,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -22,8 +32,10 @@ import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
 import DerivativePathStrip from './DerivativePathStrip.tsx'
+import SegmentMapFigure, { segmentMapCaption } from './SegmentMapFigure.tsx'
 import {
   buildDerivativeVsRefSpec,
+  derivativeName,
   derivativePathLabel,
   derivativePathTestIds,
   selectedCandidateIndex,
@@ -45,6 +57,18 @@ const useStyles = makeStyles()(theme => ({
   },
   path: {
     fontWeight: 'bold',
+  },
+  // The chromosome route beside the lettered string: the letters are what a
+  // paper writes, the route says which chromosomes they are on.
+  route: {
+    fontWeight: 'normal',
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(1),
+  },
+  figureActions: {
+    display: 'flex',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1),
   },
   row: {
     // a three-line row against its neighbour's three lines reads as six lines
@@ -215,18 +239,23 @@ function CandidateRow({
   partOfListed: boolean
 }) {
   const { classes } = useStyles()
+  // `observedSegments`, not `segments`, for the letters and the strip alike: the
+  // drawn ones carry a context flank at the path's two outer edges, and this
+  // row is exactly where that lies. The caveat below tells the reader to spot
+  // an aligner artefact by its segments all being one read long — and a
+  // short-read path is two segments, so the flank lands on both and reports
+  // two 2kb blocks whatever the reads saw.
+  const lettering = letterSegments(candidate.observedSegments)
   return (
     <div className={classes.row}>
-      <div className={classes.path}>{derivativePathLabel(candidate)}</div>
-      {/*
-        `observedSegments`, not `segments`: the drawn ones carry a context flank
-        at the path's two outer edges, and this row is exactly where that lies.
-        The caveat below tells the reader to spot an aligner artefact by its
-        segments all being one read long — and a short-read path is two
-        segments, so the flank lands on both and reports two 2kb blocks whatever
-        the reads saw.
-      */}
-      <DerivativePathStrip segments={candidate.observedSegments} />
+      <div className={classes.path}>
+        {derivativeLetterSummary(lettering)}
+        <span className={classes.route}>{derivativePathLabel(candidate)}</span>
+      </div>
+      <DerivativePathStrip
+        segments={candidate.observedSegments}
+        letters={lettering.segmentLetters.map(run => run.join(''))}
+      />
       <div className={classes.detail}>
         {candidate.readCount} {noun} · {candidate.observedSegments.length}{' '}
         segments · {segmentSizeSummary(candidate.observedSegments)}
@@ -456,6 +485,34 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     handleClose()
   }
 
+  // The segment map as a file: the figure SV papers draw by hand, for the route
+  // the reader has picked. SVG rather than PNG so the letters stay text.
+  function saveSegmentMap(candidate: DerivativeCandidate) {
+    const svg = renderToStaticMarkup(
+      <SegmentMapFigure
+        candidate={candidate}
+        lettering={letterSegments(candidate.observedSegments)}
+        noun={noun}
+      />,
+    )
+    saveAs(
+      new Blob([svg], { type: 'image/svg+xml' }),
+      `${derivativeName(candidate)}_segment_map.svg`,
+    )
+  }
+
+  function copyCaption(candidate: DerivativeCandidate) {
+    void copyText(
+      track,
+      segmentMapCaption(
+        candidate,
+        letterSegments(candidate.observedSegments),
+        noun,
+      ),
+      'segment map caption',
+    )
+  }
+
   // The one thing both buttons do, differing only in where the drawing lands.
   function draw(replace: boolean) {
     const candidate = candidates[selected]
@@ -600,6 +657,29 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 listed. A window that produces this many is usually repetitive
                 rather than rearranged.
               </Typography>
+            ) : null}
+            {candidates[selected] ? (
+              <div className={classes.figureActions}>
+                <Button
+                  size="small"
+                  startIcon={<DownloadIcon />}
+                  data-testid="derivative-save-segment-map"
+                  onClick={() => {
+                    saveSegmentMap(candidates[selected]!)
+                  }}
+                >
+                  Save segment map (SVG)
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<ContentCopyIcon />}
+                  onClick={() => {
+                    copyCaption(candidates[selected]!)
+                  }}
+                >
+                  Copy caption
+                </Button>
+              </div>
             ) : null}
             <FormControl className={classes.drawAs}>
               <FormLabel>Draw as</FormLabel>

@@ -209,7 +209,9 @@ A split read is an ordered, oriented list of reference intervals, which is what
 a derivative allele is. The alignments track menu's **Launch → Reconstruct
 derivative allele...** groups the reads in the window by the route their split
 alignments describe and lists each route with the number of reads that
-independently take it. **Draw as** picks which view it opens in: a linear
+independently take it, written as a lettered string of reference pieces with a
+prime on an inverted one. **Save segment map (SVG)** writes that map for the
+picked route as a figure. **Draw as** picks which view it opens in: a linear
 synteny view puts the allele along the bottom and the loci it visits along the
 top, a breakpoint split view stacks those loci in the order the reads cross
 them. Either goes into the launching view's place or into a new view below it.

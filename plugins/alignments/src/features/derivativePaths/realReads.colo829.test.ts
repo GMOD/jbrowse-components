@@ -1,6 +1,7 @@
 import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
+import { letterSegments } from './letterSegments.ts'
 
 import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
 
@@ -720,6 +721,22 @@ describe('COLO829 der(3), tumour', () => {
     expect([segs[1]!.start, segs[1]!.end]).toEqual([58_717_463, 58_717_662])
     expect([segs[2]!.start, segs[2]!.end]).toEqual([72_273_111, 72_273_294])
     expect(segs[3]!.end).toBe(25_359_111)
+  })
+
+  it('letters it as the inverted duplication the papers describe', () => {
+    // The returning arm lies inside the outgoing one, so its edges cut that arm
+    // into A B | C and B is carried twice, once each way: a DUP-INV with 382 bp
+    // of chr10 and chr12 templated in at the fold.
+    const [candidate] = candidatesFor(TUMOUR).candidates
+    const { derivative, pieces } = letterSegments(candidate!.observedSegments)
+    expect(derivative).toBe('A B C D E′ B′')
+    expect(pieces.map(p => [p.letter, p.refName, p.copies])).toEqual([
+      ['A', 'chr3', 1],
+      ['B', 'chr3', 2],
+      ['C', 'chr3', 1],
+      ['D', 'chr10', 1],
+      ['E', 'chr12', 1],
+    ])
   })
 
   it('is not sensitive to the order the reads arrive in', () => {

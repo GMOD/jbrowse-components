@@ -198,6 +198,11 @@ A read count ranks the paths, and each row also draws its segments to scale: a
 rearrangement is usually a long arm carrying short inserts, and a read the
 aligner chopped into pieces is a row of equal blocks of the same total length.
 
+Each row leads with the route as a lettered string, the reference cut into
+pieces at every breakpoint and a prime on a piece crossed against it. **Save
+segment map (SVG)** writes that map for the picked route as a figure, and **Copy
+caption** puts the string and each letter's coordinates on the clipboard.
+
 This dataset is the reconstruction at its easiest: ONT reads tens of kilobases
 long, an event that moves whole arms, and 29 molecules crossing all three loci.
 Scored across two published somatic callsets, it recovers 129 of the 130
@@ -250,6 +255,10 @@ rows. The first is the whole event: a 52.3 kb arm of chr3, 199 bp of chr10, 183
 bp of chr12 inverted, then 8.43 kb of chr3 inverted. The second is that route
 with the chr12 piece missing, and two reads take it; both cross the same first
 junction, so the disagreement is about what follows it.
+
+Lettered, the first row reads `A B C D E′ B′`: B is carried twice, forward in
+the arm and inverted at the end, an inverted duplication with the chr10 and
+chr12 pieces templated in at the fold.
 
 The reconstruction is anchored on the window the pileup was showing, so the
 reference row is tens of kilobases of chr3 with the two insert loci a few pixels
