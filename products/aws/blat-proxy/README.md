@@ -30,12 +30,10 @@ response comes back as `text/html`, because hgPcr's **result** is an HTML page
 of FASTA amplicons. A "No matches" page is a 200, not an error — an empty result
 is an answer. Only an actual Cloudflare challenge is a 502.
 
-`GET /status` — `{ok, message?, budget?}` without touching UCSC. The plugin's
-dialogs read it on open and show `message` as a warning when `ok` is false, so a
-UCSC-side change the shipped client cannot absorb is a sentence in the dialog
-rather than a parse error. `ok` is false for an operator notice (below) or when
-the budget store cannot be read, since queries fail closed without it. A client
-that cannot reach the route at all shows nothing — offline is not an outage.
+`GET /status` — `{ok, message?, budget?}` without touching UCSC. `ok` is false
+for an operator notice (below) or when the budget store cannot be read, since
+queries fail closed without it. The canary asserts it, and it is the quick way
+to read the day's spend.
 
 `OPTIONS` on either path — CORS preflight.
 
@@ -144,11 +142,12 @@ still cached, and still metered). The daily canary
 
 ## Outage notice
 
-The `notice` item in the budget table is the kill switch. While it exists,
-`/status` answers `ok: false` with its `message`, and every open BLAT and
-in-silico PCR dialog shows it. Queries are not blocked — a desktop user with
-their own key can still go to UCSC directly — so the sentence should say what is
-broken and what to do about it. No redeploy involved:
+The `notice` item in the budget table turns `/status` to `ok: false` with its
+`message`. Nothing in the shipped client reads it yet: a UCSC-side change the
+client cannot parse still surfaces as the parse error, and the fix for that
+class is a v2 route where the proxy does the parsing, not a banner. The item is
+here so the canary and an operator have one place to record an outage. No
+redeploy involved:
 
 ```bash
 aws dynamodb put-item --table-name jbrowse-blat-proxy-budget \

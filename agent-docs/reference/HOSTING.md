@@ -119,6 +119,10 @@ no download. Audited 2026-08-02:
 | `ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz` | no |
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no |
 
+- **Every file above predates the coarse CIGAR.** Since 2026-09-02 `make-pif`
+  writes a `cr:Z:` tag on a coarse row (ADR-103) so the indels it keeps draw as
+  wedges; these files' coarse rows are the older split pieces with no alignment
+  string and draw as plain ribbons. A rebuild is what adds it.
 - **The coarse tier can never engage for a bacterial genome.** It serves only
   past `coarseBpPerPxThreshold` (default 10000 bp/px); E. coli's 4.6Mb across
   1500px is ~3.2 kb/px. Demonstrating it needs a eukaryote-scale PIF.
@@ -160,9 +164,9 @@ BLAT proxy: `https://api.jbrowse.org/ucsc/v1/{blat,ispcr}`, stack
 config-merger and the `*.jbrowse.org` ACM cert all live, and an HTTP API custom
 domain is regional so its cert must match. Subdomain rather than a path on
 jbrowse.org, which would mean adding an API origin to the website distribution.
-`GET .../v1/status` is what the dialogs read on open; the `notice` item in the
-budget table is the no-redeploy kill switch (proxy README §"Outage notice"), and
-`.github/workflows/blat-canary.yml` probes both routes daily.
+`GET .../v1/status` reports the day's spend and an operator notice (proxy README
+§"Outage notice"); `.github/workflows/blat-canary.yml` probes it and both routes
+daily.
 
 ## Private files in S3
 

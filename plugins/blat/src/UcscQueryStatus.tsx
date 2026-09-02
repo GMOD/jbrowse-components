@@ -1,6 +1,6 @@
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { isElectron } from '@jbrowse/core/util'
-import { Alert, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { UcscQuery } from './useUcscQuery.ts'
@@ -13,10 +13,9 @@ const UcscQueryStatus = observer(function UcscQueryStatus({
 }: {
   query: UcscQuery
 }) {
-  const { error, challenged, notFound, notice } = query
+  const { error, challenged, notFound } = query
   return (
     <>
-      {notice ? <Alert severity="warning">{notice}</Alert> : null}
       {notFound ? (
         <Typography color="textSecondary">{notFound}</Typography>
       ) : null}

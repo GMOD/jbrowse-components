@@ -16,11 +16,7 @@
  */
 import { revcom } from '@jbrowse/core/util'
 
-import {
-  buildBlatBody,
-  parseBlatResponse,
-  parseProxyStatus,
-} from './blatQuery.ts'
+import { buildBlatBody, parseBlatResponse } from './blatQuery.ts'
 import { buildIsPcrBody, parseIsPcrResponse } from './ispcrQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 
@@ -93,8 +89,7 @@ maybe('live UCSC proxy round-trip', () => {
   it('reports itself usable', async () => {
     const res = await fetch(`${base}/status`)
     expect(res.status).toBe(200)
-    const status = parseProxyStatus(await res.json())
-    expect(status).toEqual({ ok: true })
+    expect(await res.json()).toMatchObject({ ok: true })
   }, 30000)
 
   it('serves a BLAT hit that converts to a placeable SAM record', async () => {

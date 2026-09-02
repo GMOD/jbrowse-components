@@ -2,9 +2,7 @@ import {
   buildBlatBody,
   fastaRecordCount,
   parseBlatResponse,
-  parseProxyStatus,
   parsePslRows,
-  proxyStatusUrl,
   pslToFeatures,
   queryLabel,
   stripFasta,
@@ -212,26 +210,4 @@ test('names the track after the first FASTA record', () => {
 
 test('names the track after the leading bases of a bare sequence', () => {
   expect(queryLabel('ACGTACGTACGTACGTACGT')).toBe('ACGTACGTACGT…')
-})
-
-test('finds the status route beside the query route', () => {
-  expect(proxyStatusUrl('https://api.jbrowse.org/ucsc/v1/blat')).toBe(
-    'https://api.jbrowse.org/ucsc/v1/status',
-  )
-  expect(proxyStatusUrl('https://api.jbrowse.org/ucsc/v1/ispcr')).toBe(
-    'https://api.jbrowse.org/ucsc/v1/status',
-  )
-})
-
-test('an operator notice is the only thing that reads as an outage', () => {
-  expect(parseProxyStatus({ ok: false, message: 'UCSC changed' })).toEqual({
-    ok: false,
-    message: 'UCSC changed',
-  })
-  expect(parseProxyStatus({ ok: true, budget: { used: 1 } })).toEqual({
-    ok: true,
-  })
-  expect(parseProxyStatus({ ok: false })).toEqual({ ok: true })
-  expect(parseProxyStatus('<html>')).toEqual({ ok: true })
-  expect(parseProxyStatus(null)).toEqual({ ok: true })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   isElectron,
@@ -10,8 +10,6 @@ import {
   BlatChallengeError,
   challengeError,
   isChallengePage,
-  parseProxyStatus,
-  proxyStatusUrl,
 } from './blatQuery.ts'
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
@@ -126,36 +124,6 @@ export async function runUcscFetch<T>({
   return parse(text)
 }
 
-// Asks the shared proxy whether it is usable before a query is sent, so a
-// UCSC-side change the shipped client cannot absorb reaches the user as the
-// operator's sentence rather than a parse error. Only the shared proxy has a
-// status route, so a server the user typed is not asked. Failing to reach the
-// route says nothing — the client may be offline, or the proxy down with the
-// desktop fallback about to take over — so it is not an outage either.
-function useProxyNotice(statusUrl: string | undefined) {
-  const [notice, setNotice] = useState('')
-  useEffect(() => {
-    let stale = false
-    if (statusUrl) {
-      fetch(statusUrl)
-        .then(response => response.json())
-        .then((data: unknown) => {
-          const status = parseProxyStatus(data)
-          if (!stale) {
-            setNotice(status.ok ? '' : status.message)
-          }
-        })
-        .catch((e: unknown) => {
-          console.warn(`BLAT proxy status unavailable (${e})`)
-        })
-    }
-    return () => {
-      stale = true
-    }
-  }, [statusUrl])
-  return statusUrl ? notice : ''
-}
-
 // Shared state and lifecycle for the BLAT and in-silico PCR dialogs: the UCSC
 // connection fields (assembly/db/url/apiKey), and the submit → CAPTCHA-challenge
 // → retry flow. Each dialog supplies its own inputs, validation, and query.
@@ -215,10 +183,6 @@ export function useUcscQuery({
   // server, and the browser (which cannot reach UCSC), get one attempt
   const fallbackUrl =
     isElectron && urlBase === defaultUrl ? directUrl : undefined
-
-  const notice = useProxyNotice(
-    urlBase === defaultUrl ? proxyStatusUrl(defaultUrl) : undefined,
-  )
 
   // `fetchResult` returns the hit list (which the results widget lists) and,
   // optionally, how to display it — a BLAT query returns a SAM alignments track
@@ -295,7 +259,6 @@ export function useUcscQuery({
     challenged,
     error,
     notFound,
-    notice,
     setDb,
     setUrlBase,
     changeApiKey,
