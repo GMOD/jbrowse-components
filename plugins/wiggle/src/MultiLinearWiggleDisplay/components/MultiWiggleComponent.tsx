@@ -189,8 +189,14 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
 
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and
-          both are hard to eyeball across a tall stack of plots */}
-      {model.hoveredFeature && mouseState ? (
+          both are hard to eyeball across a tall stack of plots.
+
+          Drawn for the pointer, not for a hit, the way the multi-row feature
+          and variant displays draw theirs: the row guide's whole job is to say
+          which row the cursor is on, and a row with no bin at that base is
+          exactly where it is needed. `DisplayCrosshairs` drops the genomic
+          guide over the sidebar itself. */}
+      {mouseState ? (
         <DisplayCrosshairs
           model={model}
           mouseX={mouseState.x}

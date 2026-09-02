@@ -78,11 +78,11 @@ function TooltipContents({ feature }: { feature: WiggleHoveredFeature }) {
 }
 
 // Non-plot areas (e.g. the tree sidebar) are excluded by the caller's
-// `computeHit` returning undefined, not by a geometry check here — so hover, the
-// cursor guides, and click-to-select share one definition of "over the plot".
-// The guides themselves belong to each display component (a vertical line for
-// the single-source plots, the full crosshair for multi-wiggle), gated on the
-// same `hoveredFeature` this reads.
+// `computeHit` returning undefined, not by a geometry check here — so hover and
+// click-to-select share one definition of "over the plot". The cursor guides
+// belong to each display component and do NOT share it: multi-wiggle's
+// crosshair follows the pointer, because a row with no bin at that base is
+// where the row guide is most needed.
 const WiggleTooltip = observer(function WiggleTooltip({
   model,
   mouseState,
