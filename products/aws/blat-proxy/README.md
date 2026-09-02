@@ -45,23 +45,25 @@ hgPcr would spend twice the cap on one key.
 
 ## Deploy
 
-Requires the AWS SAM CLI and credentials. Get a UCSC apiKey first (Genome
-Browser account → **My Data / Hub Development** → API key section → generate).
+Requires the AWS SAM CLI and credentials for the JBrowse account.
 
 ```bash
 pnpm install
-UCSC_API_KEY=your_key ./deploy.sh        # first time: sam deploy --guided
+./deploy.sh
 ```
 
-Deploy with a custom domain (what the JBrowse deployment uses):
+That updates production (`api.jbrowse.org/ucsc/v1`). The script fills in
+everything the stack needs:
 
-```bash
-UCSC_API_KEY=your_key \
-DOMAIN_NAME=api.jbrowse.org \
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:<account>:certificate/<id> \
-HOSTED_ZONE_ID=<route53 zone for the domain> \
-  ./deploy.sh
-```
+- **The UCSC apiKey** comes from SSM Parameter Store,
+  `/jbrowse/blat-proxy/ucsc-api-key` (a SecureString), so a redeploy for a code
+  change needs no secret in hand. Rotating the key is one `put-parameter` and a
+  deploy. `UCSC_API_KEY` in the environment overrides it, which is how the
+  parameter was first seeded (UCSC account → **My Data / Hub Development** → API
+  key → generate).
+- **The domain, certificate and hosted zone** default to production's. Set
+  `DOMAIN_NAME=` (empty) for a scratch deployment with no domain, and
+  `STACK_NAME` so it does not update the production stack.
 
 Region defaults to **us-east-1**: the rest of the JBrowse infrastructure is
 there, and an HTTP API custom domain is _regional_, so its ACM certificate has
