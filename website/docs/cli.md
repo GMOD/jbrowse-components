@@ -649,13 +649,14 @@ Options:
 
       --csi                  Create a CSI index for the PIF file instead of TBI
 
-      --coarse               Minimum insertion/deletion length (bp) the coarse
-                             tier keeps. A coarse row replaces its CIGAR with a
-                             coarse CIGAR (cr:Z:) of the indels at least this
-                             long and the runs between them; 0 writes coarse
-                             rows with no alignment string. Defaults to 10000.
-                             The coarse tier (prefix T/Q) is emitted alongside
-                             the per-row CIGAR fine tier by default so
+      --coarse               Accuracy bound (bp) of the coarse tier. A coarse
+                             row replaces its CIGAR with a coarse CIGAR (cr:Z:)
+                             that keeps every indel longer than half this length
+                             and folds the rest into runs, each run staying
+                             within this many bp of the real alignment; 0 writes
+                             coarse rows with no alignment string. Defaults to
+                             10000. The coarse tier (prefix T/Q) is emitted
+                             alongside the per-row CIGAR fine tier by default so
                              whole-genome synteny views can auto-switch to it;
                              pass --no-coarse to omit it.
 
@@ -684,7 +685,7 @@ $ jbrowse make-pif input.paf --out output.pif.gz
 # use a CSI index for assemblies with chromosomes longer than ~512 Mb
 $ jbrowse make-pif input.paf --csi
 
-# keep only indels of 50kb or more in the coarse tier
+# a looser coarse tier: runs within 50kb of the alignment, indels over 25kb kept
 $ jbrowse make-pif input.paf --coarse 50000
 
 # emit a coarse tier with no alignment strings at all
