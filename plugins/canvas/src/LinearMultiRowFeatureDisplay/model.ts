@@ -466,9 +466,17 @@ export default function stateModelFactory(
          * columns, and a region that disagreed is a different partition rather
          * than a tiebreak — which is why a disagreeing region is refetched (see
          * `regionHasData`) instead of being averaged in here.
+         *
+         * Off `rpcDataMap`, not `drawnRegionData`, and so is `regionHasData`,
+         * which compares against it. What the density band swaps out is what
+         * the display DRAWS; this is a fact about the payloads it holds. Read
+         * through the swap the pin fell back to auto while every held region
+         * still named its own field, so the reconciliation below read all of
+         * them as holding nothing and the fetch plan re-issued the lot, on a
+         * track whose whole point is that it is fetching nothing.
          */
         get answeredPartitionField(): string | undefined {
-          return [...self.drawnRegionData.values()].find(
+          return [...self.rpcDataMap.values()].find(
             data => data.partitionValues.length > 0,
           )?.resolvedPartitionField
         },
@@ -520,10 +528,15 @@ export default function stateModelFactory(
          * Empty until something is loaded, which is the menu's own disabled
          * condition — the names are discovered from the data rather than declared,
          * the same way the rows themselves are.
+         *
+         * Off the held payloads for the same reason as the pin above: the menu
+         * offers a repartition, which is a fetch input, and the band standing
+         * in over the rows says nothing about which columns the file has. Read
+         * through the swap the whole submenu vanished while it was up.
          */
         get partitionCandidates(): string[] {
           const names = new Set<string>()
-          for (const data of self.drawnRegionData.values()) {
+          for (const data of self.rpcDataMap.values()) {
             for (const name of data.partitionCandidates) {
               names.add(name)
             }

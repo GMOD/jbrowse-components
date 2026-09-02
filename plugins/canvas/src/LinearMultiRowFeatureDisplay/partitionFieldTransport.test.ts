@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 // The `partitionField` slot is a DEFERRED expression: the worker binds `feature`
@@ -187,5 +189,51 @@ describe('regions that resolved differently reconcile to the pin', () => {
 
     expect(display.regionHasData(0)).toBe(true)
     expect(display.regionHasData(1)).toBe(true)
+  })
+})
+
+// The band swaps out what is DRAWN, and the pin is not that. `drawnRegionData`
+// is empty while the density tier stands in, so reading the pin off it made
+// every held region disagree with an auto sentinel, `regionHasData` answered
+// no for all of them, and the fetch plan re-issued the lot on every pass over
+// a track that is deliberately fetching nothing. The "Partition by..." submenu
+// went with it, since its candidates are discovered from the same data.
+describe('the pin survives the density band standing in', () => {
+  function bandedDisplay() {
+    const { createDisplay } = createTestEnvironment({
+      densityAdapter: { type: 'BigWigAdapter', uri: 'segments.bw' },
+    })
+    const { display, view } = createDisplay()
+    view.zoomTo(100)
+    display.setRpcData(0, regionData('repClass'))
+    setConf(display, 'densityTier', 'density')
+    expect(display.densityBandActive).toBe(true)
+    return display
+  }
+
+  it('keeps the field a loaded region answered', () => {
+    const display = bandedDisplay()
+
+    expect(display.pinnedPartitionField).toBe('repClass')
+    expect(display.effectivePartitionField).toBe('repClass')
+  })
+
+  it('does not re-issue every held region', () => {
+    const display = bandedDisplay()
+
+    expect(display.regionHasData(0)).toBe(true)
+  })
+
+  it('keeps the "Partition by..." candidates the data carries', () => {
+    const display = bandedDisplay()
+
+    expect(display.partitionCandidates).toEqual(['repClass', 'repFamily'])
+  })
+
+  // and the rows themselves still go, which is the swap doing its job
+  it('still empties the drawn rows', () => {
+    const display = bandedDisplay()
+
+    expect(display.sources).toHaveLength(0)
   })
 })
