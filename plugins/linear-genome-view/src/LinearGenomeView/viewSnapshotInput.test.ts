@@ -1,5 +1,8 @@
 import { addOrReplaceView } from '@jbrowse/core/util'
 
+// the empty list is the statement: the assertions below rest on the registry
+// augmentation `model.ts` declares, which exports no name to ask for
+// eslint-disable-next-line unicorn/require-module-specifiers
 import type {} from './model.ts'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
