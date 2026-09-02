@@ -61,3 +61,33 @@ export function computeViewStatus({
   const pending = loading()
   return pending ? { type: 'loading', ...pending } : { type: 'ready' }
 }
+
+/**
+ * The slice of `AssemblyManager` this needs, spelled out rather than imported:
+ * the real type is an MST model a `PluginManager` built, so naming it here
+ * would cost this leaf the whole application's type graph (`util/CLAUDE.md`).
+ */
+interface AssemblyErrorSource {
+  get: (name: string) => { error?: unknown } | undefined
+}
+
+/**
+ * The assembly failures behind a view's `assemblyNames`, joined, or `undefined`
+ * when there are none.
+ *
+ * **Undefined and not `''`**, which is the whole reason this is shared. Three
+ * views spelled it as a bare `.join(', ')`, and a getter that answers the empty
+ * string for "nothing failed" reads as an error to every `!== undefined` test —
+ * `DotplotView.error` folded it in with `??`, so the view reported a terminal
+ * error permanently and jbrowse-img refused to render any dotplot. The in-app
+ * readers all happened to be truthiness tests, which is why it stayed invisible.
+ */
+export function assemblyErrorMessage(
+  assemblyManager: AssemblyErrorSource,
+  assemblyNames: string[],
+) {
+  const errors = assemblyNames
+    .map(name => assemblyManager.get(name)?.error)
+    .filter(e => !!e)
+  return errors.length > 0 ? errors.join(', ') : undefined
+}

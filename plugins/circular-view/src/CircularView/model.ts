@@ -16,7 +16,10 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import {
+  assemblyErrorMessage,
+  computeViewStatus,
+} from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -567,10 +570,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames
-          .map(name => assemblyManager.get(name)?.error)
-          .filter(e => !!e)
-          .join(', ')
+        return assemblyErrorMessage(assemblyManager, this.assemblyNames)
       },
 
       /**

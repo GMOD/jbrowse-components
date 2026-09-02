@@ -8,6 +8,7 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
@@ -963,16 +964,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
-        })()
+        runLazyAfterAttach(
+          self,
+          async () => (await import('./afterAttach.ts')).doAfterAttach,
+        )
       },
     }))
 }

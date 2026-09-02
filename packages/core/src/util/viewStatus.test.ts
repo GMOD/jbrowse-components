@@ -1,4 +1,4 @@
-import { computeViewStatus } from './viewStatus.ts'
+import { assemblyErrorMessage, computeViewStatus } from './viewStatus.ts'
 
 const loadingAt = (message: string, progress?: number) => () => ({
   message,
@@ -73,4 +73,40 @@ test('the loading term is not evaluated once a terminal state is decided', () =>
     loading,
   })
   expect(loading).not.toHaveBeenCalled()
+})
+
+const managerWith = (errors: Record<string, unknown>) => ({
+  get: (name: string) => ({ error: errors[name] }),
+})
+
+// The regression this exists to hold. `''` is falsy, so every in-app reader
+// (`if (this.error)`, `find(v => v.error)`) agreed with `undefined` and nothing
+// showed — while `DotplotView.error` folded it in with `??` and jbrowse-img
+// tests `!== undefined`, so every dotplot render failed with an empty message.
+test('no assembly failed is undefined, never the empty string', () => {
+  expect(assemblyErrorMessage(managerWith({}), ['volvox', 'volvox2'])).toBe(
+    undefined,
+  )
+  expect(assemblyErrorMessage(managerWith({}), [])).toBe(undefined)
+})
+
+test('the failures that happened are joined', () => {
+  expect(
+    assemblyErrorMessage(managerWith({ volvox2: 'fai missing' }), [
+      'volvox',
+      'volvox2',
+    ]),
+  ).toBe('fai missing')
+  expect(
+    assemblyErrorMessage(
+      managerWith({ volvox: 'no such file', volvox2: 'fai missing' }),
+      ['volvox', 'volvox2'],
+    ),
+  ).toBe('no such file, fai missing')
+})
+
+test('an assembly the manager cannot resolve is not a failure of its own', () => {
+  expect(assemblyErrorMessage({ get: () => undefined }, ['volvox'])).toBe(
+    undefined,
+  )
 })

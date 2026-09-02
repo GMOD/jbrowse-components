@@ -86,7 +86,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | CircularView |
 | <span id="getter-launchassemblyname">**launchAssemblyName**</span><br><code>string &#124; undefined</code> | The assembly a pending launch names, which is what the gates below wait on before `displayedRegions` exist. A blob carrying only tracks names none, and waiting on one nobody named never ends. | CircularView |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  | CircularView |
-| <span id="getter-assemblyerrors">**assemblyErrors**</span><br><code>string</code> |  | CircularView |
+| <span id="getter-assemblyerrors">**assemblyErrors**</span><br><code>string &#124; undefined</code> |  | CircularView |
 | <span id="getter-error">**error**</span><br><code>unknown</code> |  | CircularView |
 | <span id="getter-hassomethingtoshow">**hasSomethingToShow**</span><br><code>boolean</code> |  | CircularView |
 | <span id="getter-showloading">**showLoading**</span><br><code>boolean</code> | Whether to show a loading indicator instead of the import form or view | CircularView |
