@@ -59,3 +59,26 @@ test('addSessionTrackConf lands the track where desktop keeps tracks', () => {
     'derivative-segments-1',
   )
 })
+
+// desktop's destination is the config, whose own adder appends without
+// looking — so a re-add used to leave two entries under one id, the first
+// winning. Same content answers the existing one; different content is refused.
+test('re-adding under a known trackId neither duplicates nor silently keeps the old one', () => {
+  const session = createSession()
+  session.addSessionTrackConf(CONF)
+  session.addSessionTrackConf(CONF)
+  expect(
+    session.tracks.filter(
+      (t: { trackId: string }) => t.trackId === 'derivative-segments-1',
+    ),
+  ).toHaveLength(1)
+  expect(() =>
+    session.addSessionTrackConf({
+      ...CONF,
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [{ uniqueId: 'a', refName: 'ctgA', start: 1, end: 2 }],
+      },
+    }),
+  ).toThrow(/already in this session with a different configuration/)
+})

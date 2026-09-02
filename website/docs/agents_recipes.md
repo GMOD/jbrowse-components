@@ -309,10 +309,10 @@ return {
 ```
 
 A fresh `trackId` and `adapterId` per computation is deliberate. Re-adding a
-known `trackId` returns the existing config, and the adapter cache is keyed on
-`adapterId`, so a recomputed track under the old ids keeps showing the first
-values it saw. Plan for a few thousand features and no more; above that, write a
-real file and load it with `jb.addTrack`.
+known `trackId` with different content is refused, and the adapter cache is
+keyed on `adapterId`, so a recomputed track under the old ids keeps showing the
+first values it saw. Plan for a few thousand features and no more; above that,
+write a real file and load it with `jb.addTrack`.
 
 ## Restyle, and read back what landed
 

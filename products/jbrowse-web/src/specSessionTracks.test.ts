@@ -68,3 +68,24 @@ test('an admin loading a spec keeps its tracks in the session', async () => {
   ).toEqual(['spec_track'])
   expect(session.jbrowse.tracks).toHaveLength(0)
 })
+
+// The trap a recomputed track walks into: a known trackId hands back the OLD
+// config and says nothing, so the new features never show. Same content is
+// still idempotent (jb.addTrack's content-hashed ids rely on that).
+test('re-adding a session track with different content is refused, same content is not', async () => {
+  const { pluginManager, rootModel } = setup()
+  await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
+  const { session } = rootModel
+
+  expect(session.addSessionTrackConf(TRACK).trackId).toBe('spec_track')
+  expect(() =>
+    session.addSessionTrackConf({
+      ...TRACK,
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [{ uniqueId: 'a', refName: 'ctgA', start: 1, end: 2 }],
+      },
+    }),
+  ).toThrow(/already in this session with a different configuration/)
+  expect(session.sessionTracks).toHaveLength(1)
+})

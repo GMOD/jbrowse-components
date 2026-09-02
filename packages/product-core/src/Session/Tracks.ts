@@ -1,9 +1,11 @@
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { computed } from 'mobx'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
+import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -146,6 +148,19 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       addSessionTrackConf(trackConf: AnyConfiguration) {
         assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')
+        // the config's own adder appends without looking, so a re-add under a
+        // known id used to leave two entries with the first one winning
+        const expanded = expandLooseTrackConfig(trackConf, pluginManager)
+        const { trackId, type } = expanded as { trackId: string; type: string }
+        const existing = self.getTrackById(trackId)
+        if (existing) {
+          assertNotReaddedDifferently(pluginManager, existing, {
+            ...expanded,
+            trackId,
+            type,
+          })
+          return existing
+        }
         return self.jbrowse.addTrackConf(trackConf)
       },
 

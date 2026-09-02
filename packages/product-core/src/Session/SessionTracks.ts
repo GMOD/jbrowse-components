@@ -14,6 +14,7 @@ import {
 import { compareStructural } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
+import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -440,6 +441,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // and dropping its trackConfigDeltas override semantics.
         const existing = self.getTrackById(trackId)
         if (existing) {
+          if (self.sessionTracks.includes(existing)) {
+            assertNotReaddedDifferently(pluginManager, existing, {
+              ...trackConf,
+              trackId,
+              type,
+            })
+          }
           return existing
         }
         // sessionTracks is a typed MST array (unlike the frozen
