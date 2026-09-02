@@ -1,6 +1,6 @@
 ---
 name: cram-stack-integration
-description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the five non-integrations that are deliberate, which seams closed and how, the two BAM optimizations that do not transfer, and the ready-to-apply recordClass plan for @gmod/cram 14. Read before adding a CRAM read-path optimization.
+description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the four non-integrations that are deliberate, which seams closed and how, the two BAM optimizations that do not transfer, and the @gmod/cram 14 adoption (recordClass, the byte-weighed slice cache) with its measurement. Read before adding a CRAM read-path optimization.
 audience: internal
 ---
 
@@ -16,8 +16,8 @@ Read it before adding anything to the CRAM read path.
 ## The layers, and what crosses each join
 
 ```
-plugins/alignments  CramAdapter -> CramSlightlyLazyFeature (a wrapper, not a
-                    recordClass — @gmod/cram has no such hook)
+plugins/alignments  CramAdapter -> CramSlightlyLazyFeature, the recordClass
+                    @gmod/cram constructs per read (extends CramRecord)
         |           CramRecord.forEachMismatch / forEachCigarOp called directly
         v
 @gmod/cram          IndexedCramFile.getRecordsForRange
@@ -47,7 +47,8 @@ about.
 | `cramFilehandle` / `index` | yes | `openLocation`, `CraiIndex` |
 | `fetchReferenceSequence` | yes | `seqFetch`, resolving the refName against the sequence adapter's own names first |
 | `checkSequenceMD5` | yes | `false` — the check needs the slice's whole declared span |
-| `cacheBudget` | yes | `decodedRecordsBudget`, records not bytes — see below |
+| `cacheBudget` | yes | `decompressedBytesBudget`, the one budget BAM and tabix share — 14 weighs bytes, see seam 2 |
+| `recordClass` | yes | `CramSlightlyLazyFeature extends CramRecord`, measured — see the 14 adoption below |
 | `useSliceWorkerPool` | yes | config slot |
 | `numSliceWorkers` | yes | `sliceWorkerCount()`, halved from the library default because the pool is per JS context and tracks spread over up to five RPC workers |
 | `onProgress` (index + records) | yes | `downloadStatus` on both phases |
@@ -60,7 +61,7 @@ about.
 | `getPairOrientation` | yes | `pair_orientation` |
 | `getReadBases` | yes | `seq`, and only off the modification / bisulfite / per-base-letter paths |
 | `qualityScores` | yes | one view per read, then indexed per base — the documented right shape |
-| `cacheSize` | no | library default; `cacheBudget` bounds the sum, which is the part that matters |
+| `maxCacheBytes` | no | library default, 1 GB — the same number the shared budget holds, so the budget is what binds from the second file on |
 | `cacheIdleTimeoutMs` | no | library default (3 min) is the intent |
 | `decodeTags` | **no** | deliberate — see below |
 | `viewAsPairs` / `pairAcrossChr` / `maxInsertSize` | **no** | deliberate, same reason as BAM |
@@ -72,7 +73,7 @@ about.
 | `setSyntheticReadName` / `addReferenceSequence` | no | writer-side entry points |
 | `destroySharedSliceWorkerPool` | no | same as bgzf: the pool reaps itself |
 
-## The five non-integrations that are deliberate
+## The four non-integrations that are deliberate
 
 **`decodeTags`.** `@gmod/cram` will skip the tag column entirely, and this
 consumer cannot use it: the render path reads `MM`/`ML` (modifications), `SA`
@@ -94,28 +95,17 @@ details panel touch it, once — so the array it leaves behind is the thing a
 subsequent consumer wants anyway. Do not "fix" this without first showing a
 render path that reads `CIGAR`.
 
-**A `recordClass`.** BAM injects `BamSlightlyLazyFeature` into `@gmod/bam` so a
-read is one object rather than a record plus a wrapper (ADR-049); `@gmod/cram`
-has no such hook and CRAM pays a wrapper per record per fetch. ADR-049's own
-finding is why this was not worth chasing against 13: the win there was moving
-the wrapper from **retained** to transient, and CRAM's wrapper is already
-transient. `@gmod/cram` grew the hook on its main branch anyway, alongside the
-change that makes it cheap to offer (a record is a view constructed on the host
-from a transferred slice, so there is nothing to rehydrate); the adoption is
-written out in "When @gmod/cram 14 is published" below and waits only on the
-release.
-
 **`cacheIdleTimeoutMs`.** Left at the library's 3 minutes. `CramFileOptions`
 names this consumer while documenting it: `CramAdapter` memoizes one
 `IndexedCramFile` for the life of the track, so a tab parked on a region holds
 its last view until the track is closed, times every open track. The 3-minute
 sweep is the only thing that lowers an idle cache, and it is doing that job.
 
-## Seam 1 — the reference read was strictly downstream of the slice decode (closed in the library, lands with 14)
+## Seam 1 — the reference read was strictly downstream of the slice decode (closed in the library, with 14)
 
-**Closed on the library side by `@gmod/cram` `674bef2` (main, unreleased —
-it ships in 14), the CRAM twin of BAM's seam 3, which was closed here and
-measured at 1.50x on a pan.**
+**Closed on the library side by `@gmod/cram` `674bef2`, shipped in 14 — the
+CRAM twin of BAM's seam 3, which was closed here and measured at 1.50x on a
+pan.**
 
 What the seam was: `applyReferenceSequence` computed the span it needed from
 **the slice's decoded records**, so the read could not be issued until the
@@ -147,7 +137,7 @@ proposed (a throwaway `getSequence` for the queried region alongside
 read for the same chunks the library now asks for at the same moment. Not
 measured on this side; the number would need emulated latency
 (`products/jbrowse-web/browser-tests/seqfetch-timing-probe.ts` pointed at a
-CRAM track) and only exists once the adapter builds against 14.
+CRAM track).
 
 ## The per-base walks stay on the packed array (measured, rejected)
 
@@ -225,22 +215,26 @@ resolution. Not worth a cram-js API. The retained array on a long read was
 the other half of the argument and it belongs to seam 3 below, which closes
 it from the other side.
 
-## Seam 2 — the record-count budget cannot see `getReadBases`
+## Seam 2 — the budget counted records, not bytes (closed with 14, one note remains)
 
-`decodedRecordsBudget` is a `SharedBudget(1_000_000)` in **records**, which is
-the only unit a decoded-slice cache has (`@gmod/cram` says so at `cacheSize`,
-and `packages/core/src/util/cacheBudgets.ts` names the pair). `getReadBases()`
-memoizes the decoded sequence **onto the cached record**, so reading `seq` turns
-a compact record into one retaining its own bases — 50 kB apiece on ONT data,
-against a budget that counts it as 1.
+Until 14 `@gmod/cram` weighed its slice cache in **records**, the only unit a
+decoded record had, so this side kept a `decodedRecordsBudget` of 1,000,000
+that could not be added to the byte budget BAM and tabix share and did not
+bound long-read data at all — a 6 MB ONT slice counted as 37. 14 weighs a slice
+by `DecodedSlice.byteLength` (its ADR 0013: the typed columns exactly, the
+strings by estimate, within 1–8% of the measured heap), the default is the same
+1 GB as `@gmod/bam`'s, and `cacheBudget` is `decompressedBytesBudget` for every
+alignments track whichever format it reads. `cramBudgetWiring.test.ts` pins a
+CRAM and a BAM landing in one total, in bytes; ADR-064's amendment and
+`packages/core/src/util/cacheBudgets.ts` carry the rest.
 
-It is bounded in practice and that is why this is a note rather than a bug: the
-plugin reads `seq` only on the modification, bisulfite and per-base-letter
-paths, long-read slices hold few records, and the 3-minute idle sweep drops
-them. But it is the same shape as the problem ADR-064 fixed for bytes — a
-ceiling in a unit that does not track the thing being retained — and if a CRAM
-memory question ever comes up on a modification track, this is where to look
-first.
+What remains is a note. The weight is taken when the decode settles, and
+`getReadBases()` memoizes the reconstructed sequence **onto the slice** after
+that — 50 kB a read on ONT data the budget never sees. Bounded in practice for
+the same reasons as before: the plugin reads `seq` only on the modification,
+bisulfite and per-base-letter paths, long-read slices hold few records, and the
+3-minute idle sweep drops them. If a CRAM memory question ever comes up on a
+modification track, this is where to look first.
 
 ## Seam 3 — `ultraLongFeatureCache` (measured, removed)
 
@@ -371,181 +365,120 @@ Stated so the next audit does not re-derive them.
   file reads against BAM's 13, which is free locally and is seam 7's problem
   remotely.
 
-## When @gmod/cram 14 is published
+## The @gmod/cram 14 adoption
 
-Three things on the library's main branch concern this adapter and land
-together in 14 (`04c05a6`, `674bef2`, `91b4926` there; ADR 0012 and
-MIGRATION.md have the reader-facing story):
+Four things in 14 concerned this adapter (`04c05a6`, `674bef2`, `91b4926`,
+`5e344e6` there; ADR 0012, ADR 0013 and MIGRATION.md have the reader-facing
+story), and all four are taken:
 
 - **A `CramRecord` is a view** — `new CramRecord(slice, index)` over a
   per-slice column set (`DecodedSlice`), every field a getter, records handed
-  out fresh per query. Retained heap on short reads fell ~17%.
+  out fresh per query. Retained heap on short reads fell ~17% in the library.
 - **The reference fetch overlaps the slice decode** — seam 1 above.
 - **`recordClass`** — the hook `@gmod/bam` has: a `CramRecord` subclass
   constructed as `new RecordClass(slice, index)` and handed out from every
   query. It survives the worker pool for free, because what crosses the
-  boundary is the `DecodedSlice` and the views are constructed on the host
-  (`DecodedSlice.records(filter, RecordClass)`).
-
-The paragraph under "A `recordClass`" in the deliberate non-integrations is
-therefore obsolete the day 14 is adopted, and this is the adoption. It is
-written so it can be applied as-is once `plugins/alignments/package.json`
-moves to `^14`; **do not apply any of it against 13** — `CramRecord` there
-has the options constructor and standalone fields, and the subclass below
-would not construct.
+  boundary is the `DecodedSlice` and the views are constructed on the host.
+  `IndexedCramFile<T>` and `CramFile<T>` are generic on it, so the query comes
+  back typed with no cast.
+- **The slice cache weighs bytes** — seam 2 above.
 
 ### `CramSlightlyLazyFeature extends CramRecord`
 
-```ts
-// plugins/alignments/src/CramAdapter/CramSlightlyLazyFeature.ts
-import { CramRecord } from '@gmod/cram'
+`plugins/alignments/src/CramAdapter/CramSlightlyLazyFeature.ts`, the shape
+`BamSlightlyLazyFeature` has. No explicit constructor: the implicit one forwards
+`(slice, index)`. `adapter` is a field the adapter's emit loop assigns
+(`record.adapter = this`, then `observer.next(record)`), exactly as
+`BamAdapter` does, and `shouldFilterRecord` keeps its `CramRecord` parameter and
+runs before that assignment, which is why `cramReadGroup` takes the header
+explicitly. `start`, `end` and `flags` are gone — the base answers identically,
+`CramRecord.end` having had bam_endpos semantics since 13.4.3 — and `packCigar`
+takes `this`.
 
-export default class CramSlightlyLazyFeature
-  extends CramRecord
-  implements MismatchFeature
-{
-  // set by CramAdapter.getFeatures on every record it emits, exactly as
-  // BamAdapter does with `record.adapter = this`
-  public adapter!: CramAdapter
-
-  private numericCigar?: ArrayLike<number>
-
-  private clipStart?: number
-
-  // every `this.record.x` in the wrapper becomes `this.x`; the members below
-  // are the ones whose body changes shape, the rest are a mechanical rename
-  ...
-}
-```
-
-No explicit constructor: the implicit one forwards `(slice, index)` to
-`CramRecord`, which is what `new RecordClass(slice, index)` wants and what
-`BamSlightlyLazyFeature` does. The wrapper's `record` and `adapter` parameter
-properties go, and every `this.record.` becomes `this.`.
-
-**Members to DELETE, because the base already answers identically** (each
-would otherwise be a shadow the guard test below rejects):
-
-- `start` — `CramRecord.start`.
-- `end` — `CramRecord.end` is `start + Math.max(lengthOnRef ?? 0, 1)` since
-  13.4.3 (`0a53bef`, bam_endpos semantics), the same floor-at-1 this wrapper
-  spells.
-- `flags` — `CramRecord.flags`.
-- `forEachCigarOp` — the wrapper's is a pure delegation; `walkCigar` duck-types
-  the name and finds the inherited one.
-
-**Members that become `override`s**, and the only four allowed to:
+The four overrides, and the only four allowed:
 
 - `forEachMismatch(callback, opts?)` — keeps the `MISMATCH_OPTS` reuse and the
-  `origin = this.start` translation, calling `super.forEachMismatch(callback,
-  MISMATCH_OPTS)`. Its signature has to stay compatible with
-  `CramRecord.forEachMismatch(callback, opts?: MismatchOptions)`, the same
-  constraint `@gmod/bam` 8.6.0 put on the BAM twin.
+  `origin = this.start` translation and calls
+  `super.forEachMismatch(callback, MISMATCH_OPTS)`. Its signature has to stay
+  compatible with `CramRecord.forEachMismatch(callback, opts?: MismatchOptions)`.
 - `getTag(name)` — the RG arm through `cramReadGroup(this.adapter.samHeader,
   this)`, else `super.getTag(name)`.
-- `tags` — the getter that splices the header's RG over `super.tags`. The base
-  also declares a `tags` setter; a getter-only override makes assignment throw
-  in strict mode, which is the behaviour this side wants.
+- `tags` — splices the header's RG over `super.tags`. The base declares a
+  getter/setter pair; a getter-only override makes assignment throw in strict
+  mode, which is the behaviour this side wants.
 - `toJSON()` — a `SimpleFeatureSerialized`, where `CramRecord.toJSON` emits the
-  library's own field names. Same collision `BamSlightlyLazyFeature` carries.
+  library's own field names.
 
-Everything else the wrapper defines (`name`, `score`, `strand`, `qual`,
-`qualRaw`, `refName`, `pair_orientation`, `template_length`, `next_ref`,
-`nextRefId`, `next_segment_position`, `next_pos`, `seq`, `NUMERIC_CIGAR`,
-`clipLengthAtStartOfRead`, `CIGAR`, `id`, `recordId`, `get`, `parent`,
-`children`, `mismatches`, `fields`) is a name `CramRecord` does not have, as
-of its main branch. `cramReadGroup` keeps its `(samHeader, record)` signature —
-the adapter's tag filter calls it on records it has not yet decorated.
-
-### The adapter
-
-```ts
-// plugins/alignments/src/CramAdapter/CramAdapter.ts, configure()
-const cram = new IndexedCramFile({
-  ...,
-  recordClass: CramSlightlyLazyFeature,
-})
-
-// getFeatures(), the emit loop
-for (const record of records) {
-  report()
-  if (shouldFilterRecord(record, filterBy, samHeader)) {
-    continue
-  }
-  record.adapter = this
-  observer.next(record)
-}
-```
-
-One typing gap to close before this lands: `@gmod/bam` is `BamFile<T extends
-BamRecordLike>` with `T` inferred from `recordClass`, so `BamAdapter`'s loop
-sees `BamSlightlyLazyFeature` with no cast; `IndexedCramFile` on cram-js main
-is not generic and `getRecordsForRange` returns `CramRecord[]`. Ask the library
-for the same generic (`IndexedCramFile<T extends CramRecord = CramRecord>`,
-`recordClass?: CramRecordClass<T>`) before 14 ships, so this side does not have
-to spell `(await ...) as CramSlightlyLazyFeature[]`. `shouldFilterRecord`
-keeps its `CramRecord` parameter and runs before `adapter` is assigned, which
-is why `cramReadGroup` takes the header explicitly rather than reading it off
-`record.adapter`.
+`cramRecordOverrides.test.ts` pins that list in both directions, for the same
+reason `bamRecordOverrides.test.ts` exists: an additive minor release of the
+library can shadow a member here without semver saying anything, and the quiet
+case — a `name`, `score` or `seq` whose signature happens to be compatible — is
+the one tsc does not catch.
 
 ### `ultraLongFeatureCache`
 
-Already gone (seam 3), and it **must not come back** under 14 in any form
-that retains a record. A view pins its `DecodedSlice` — the whole
-slice's read-feature arena, quality column and tag column — so an LRU of 500
-long-read views would hold up to 500 slices' columns outside the
-`decodedRecordsBudget` that is supposed to bound them. The same hazard existed
-under 13 (a standalone `CramRecord` held references to those columns too) and
-was tolerated because the cache was small; with `recordClass` there is also
-nothing left for it to memoize, since the feature *is* the record and is
-handed out fresh per query by design (ADR 0012: "views are handed out fresh
-by each query and are meant to be short-lived").
+Gone (seam 3), and it **must not come back** in any form that retains a
+record. A view pins its `DecodedSlice` — the whole slice's read-feature arena,
+quality column and tag column — so an LRU of 500 long-read views would hold up
+to 500 slices' columns outside the `decompressedBytesBudget` that bounds them,
+and with `recordClass` there is nothing left for it to memoize: the feature
+*is* the record and is handed out fresh per query by design (ADR 0012: "views
+are handed out fresh by each query and are meant to be short-lived").
 
-### The guard test
+### Measured
 
-`bamRecordOverrides.test.ts` exists because inheriting from a library class
-lets a purely additive minor release shadow one of this side's members without
-semver saying anything. The CRAM twin, to land in the same commit as the
-inheritance:
+The adoption was measured rather than assumed, on the harness seam 3 used:
+`CramAdapter.getFeatures` plus `extractFeatureArrays` over a ten-window pan,
+one adapter and so one `IndexedCramFile` per arm (slice cache warm for every
+arm from the second round), a warm-up pan per arm, CPU time via
+`process.cpuUsage` beside wall clock, min of N rounds, on a box at a load
+average of 50–100. The arms: the wrapper (`new CramSlightlyLazyFeature(record,
+adapter)` over 14's views, the adapter as it was before this change), the
+subclass, and a second copy of the subclass as control. Every row emitted
+identical output (a hash over every feature's `start`/`end`/`strand`/`flags`/
+`clipLengthAtStart` and the mark counts).
 
-```ts
-// plugins/alignments/src/CramAdapter/cramRecordOverrides.test.ts
-import { CramRecord } from '@gmod/cram'
+Three arms interleaved in one process, subclass against wrapper with the
+control in brackets, above 1.00 is faster:
 
-import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
+| pan | rounds | cpu | wall |
+| --- | --: | --: | --: |
+| wgsim.cram, 14,184 x 149 bp a pan, default colour | 30 | 1.20 [1.31] | 0.95 [1.01] |
+| deep_sequencing.cram, 38,475 x 70 bp, default | 25 | 0.96 [0.99] | 0.98 [1.04] |
+| badread.cram, 126 x 3.7 kb, default | 30 | 1.02 [0.96] | 1.04 [1.03] |
+| HG002 ONT, 134 x 58 kb, default | 25 | 1.00 [1.00] | 1.00 [1.00] |
+| deep_sequencing.cram, per-base quality | 20 | 0.97 [1.00] | 1.02 [1.04] |
+| HG002 ONT, per-base quality | 20 | 0.99 [1.00] | 0.98 [1.00] |
+| arabidopsis ONT modBAM, modifications | 20 | 1.00 [1.00] | 0.98 [0.97] |
 
-const INTENDED_OVERRIDES = ['forEachMismatch', 'getTag', 'tags', 'toJSON']
+Parity everywhere, and the wgsim CPU row measured nothing (its control is at
+1.31). This is the in-process trap both sections above name, from a third
+angle: the three arms share one bundled `@gmod/cram`, the wrapper arm's records
+are plain `CramRecord`s and the two subclass arms' are two further classes, so
+every base-class site that reads a column is polymorphic across three shapes
+and the arm that pays is not the one being asked about.
 
-const own = (c: { prototype: object }) =>
-  Object.getOwnPropertyNames(c.prototype).filter(n => n !== 'constructor')
+One arm per process — wrap, subclass, control rotated, three reps, min of 15–25
+rounds inside each, min across reps:
 
-test('CramSlightlyLazyFeature shadows only what it means to', () => {
-  const base = new Set(own(CramRecord))
-  const collisions = own(CramSlightlyLazyFeature).filter(n => base.has(n))
-  expect(collisions.sort()).toEqual([...INTENDED_OVERRIDES].sort())
-})
+| pan | wrapper | subclass | control |
+| --- | --: | --: | --: |
+| deep_sequencing.cram, default, wall | 101.8 ms | 85.1 ms, **1.20x** | 86.5 ms, 1.18x |
+| deep_sequencing.cram, default, cpu | 183.3 ms | 120.3 ms, 1.52x | 125.7 ms, 1.46x |
+| wgsim.cram, default, wall | 15.56 ms | 14.82 ms, **1.05x** | 14.68 ms, 1.06x |
+| wgsim.cram, default, cpu | 25.27 ms | 20.01 ms, 1.26x | 19.77 ms, 1.28x |
+| HG002 ONT, per-base quality, wall | 236.9 ms | 240.0 ms, 0.99x | 240.1 ms, 0.99x |
+| HG002 ONT, per-base quality, cpu | 243.1 ms | 244.9 ms, 0.99x | 244.9 ms, 0.99x |
 
-test('the intended overrides still exist on both sides', () => {
-  for (const name of INTENDED_OVERRIDES) {
-    expect(own(CramRecord)).toContain(name)
-    expect(own(CramSlightlyLazyFeature)).toContain(name)
-  }
-})
-```
+The control tracks the subclass to within 0.01–0.02 on every row, which is the
+sign the ratio is the code and not the harness. So: never slower outside the
+floor; long reads at parity, where 134 objects a pan were never the cost; short
+reads 1.05–1.20x wall, which is one object per read instead of two and one
+fewer hop on every property the extract pass reads. Retained heap was not
+measured — the wrapper was already transient, so ADR-049's number has no CRAM
+twin to look for.
 
-The first test is what catches the quiet case — `CramRecord` growing a
-`name`, `score` or `seq` whose signature happens to be compatible with ours —
-and the second is what catches one of the four overrides being renamed away
-so the base silently takes over (a `toJSON` emitting `readName` instead of
-`name` is the visible symptom).
-
-### What to re-measure after
-
-`benches/recordShape.bench.ts` is the reproducible form of ADR-049's number
-for BAM; run its CRAM analogue over the same fixtures the per-base measurement
-above used. The expectation is small — with records as views the wrapper was
-already transient, so this is one object per read rather than two, and
-ADR-049's own finding is that transient objects are the cheap kind. The reason
-to do it anyway is that it is the change that makes `MismatchFeature` and
-`CramRecord` one prototype chain, which is what `hasCigarOpWalk` and
-`isMismatchFeature` probe by name.
+The lesson for the next measurement is the in-process reading: it read as
+parity-to-slightly-worse on the two rows that turned out to be the largest
+wins. On a harness whose arms meet inside a library, one arm per process is the
+number to quote, and the interleaved run is only the identity check.
