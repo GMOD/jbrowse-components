@@ -1,6 +1,11 @@
 import fs from 'node:fs'
 
-const { questions, events } = JSON.parse(fs.readFileSync(process.argv[2]))
+const { questions, system, events } = JSON.parse(
+  fs.readFileSync(process.argv[2]),
+)
+if (system) {
+  console.log(`SYSTEM: ${system.trim().replaceAll(/\s+/g, ' ')}\n`)
+}
 let turn = -1
 for (const ev of events) {
   if (ev.type === 'assistant') {
@@ -11,6 +16,8 @@ for (const ev of events) {
       if (b.type === 'tool_use') {
         const arg = String(
           b.input?.code ??
+            b.input?.command ??
+            b.input?.file_path ??
             b.input?.text ??
             b.input?.target ??
             b.input?.topic ??

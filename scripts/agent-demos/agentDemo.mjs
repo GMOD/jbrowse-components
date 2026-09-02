@@ -27,12 +27,28 @@ fs.mkdirSync(framesDir, { recursive: true })
 
 // Short, and the way someone would actually type them. Everything else is the
 // agent's problem, which is the point of filming one.
-const TURNS = [
-  'Open hg38 at CDKN1A, with genes and vertebrate conservation.',
-  'Add the human ATAC-seq from GEO that compares nutlin against a vehicle control, as one stacked track.',
-  'Show me log2 nutlin over vehicle across this view, as its own track.',
-  'Zoom to about 20kb around the biggest gain and check every track really drew.',
-]
+const DEFAULT_TAKE = {
+  TURNS: [
+    'Open hg38 at CDKN1A, with genes and vertebrate conservation.',
+    'Add the human ATAC-seq from GEO that compares nutlin against a vehicle control, as one stacked track.',
+    'Show me log2 nutlin over vehicle across this view, as its own track.',
+    'Zoom to about 20kb around the biggest gain and check every track really drew.',
+  ],
+  SHELL: false,
+  SYSTEM: () => '',
+}
+
+// A take module (takes/*.mjs) exports TURNS, SHELL and SYSTEM. SHELL takes
+// hand the agent Bash and the file tools beside the MCP tools, for the takes
+// whose point is work the app cannot do itself (an aligner, a fold, a
+// consensus); SYSTEM, a function of the working directory, is appended to the system
+// prompt, so the on-camera question stays as short as a person would type it.
+const take = process.argv[3]
+  ? await import(path.resolve(process.argv[3]))
+  : DEFAULT_TAKE
+const TURNS = take.TURNS
+const SHELL = take.SHELL ?? false
+const SYSTEM = take.SYSTEM ?? (() => '')
 
 function socketPath() {
   const label = os.userInfo().username.replaceAll(/[^\w.-]+/g, '_')
@@ -269,6 +285,9 @@ try {
 
   const cwd = path.join(outDir, 'cwd')
   fs.mkdirSync(cwd, { recursive: true })
+  const mcpTools =
+    'mcp__jbrowse__run_javascript,mcp__jbrowse__open,mcp__jbrowse__docs,mcp__jbrowse__screenshot'
+  const system = SYSTEM(cwd)
   claude = spawn(
     'claude',
     [
@@ -281,9 +300,10 @@ try {
       '--mcp-config',
       mcpConfig,
       '--strict-mcp-config',
-      '--restricted',
-      '--allowedTools',
-      'mcp__jbrowse__run_javascript,mcp__jbrowse__open,mcp__jbrowse__docs,mcp__jbrowse__screenshot',
+      ...(SHELL
+        ? ['--allowedTools', `${mcpTools},Bash,Read,Write,Edit,Glob,Grep`]
+        : ['--restricted', '--allowedTools', mcpTools]),
+      ...(system ? ['--append-system-prompt', system] : []),
       // offered but not allowlisted is worse than absent: the model tries one,
       // gets denied, and narrates the denial on camera
       '--disallowedTools',
@@ -314,14 +334,18 @@ try {
           console.log(`  claude: ${state.status.slice(0, 120)}`)
           void paint()
         }
-        // the CLI's own schema-fetch step is plumbing, not the demo
+        // the CLI's own schema-fetch step is plumbing, not the demo; a shell
+        // take's Bash and file tools are the demo, so they paint too
         if (
           block.type === 'tool_use' &&
-          block.name.startsWith('mcp__jbrowse__')
+          (block.name.startsWith('mcp__jbrowse__') ||
+            ['Bash', 'Read', 'Write', 'Edit'].includes(block.name))
         ) {
           const tool = block.name.replace('mcp__jbrowse__', '')
           const arg = String(
             block.input?.code ??
+              block.input?.command ??
+              block.input?.file_path ??
               block.input?.target ??
               block.input?.topic ??
               '',
@@ -376,7 +400,11 @@ try {
   // asked — which is the first thing a reviewer wants to read.
   fs.writeFileSync(
     path.join(outDir, 'transcript.json'),
-    JSON.stringify({ questions: TURNS, events: transcript }, null, 2),
+    JSON.stringify(
+      { questions: TURNS, system, shell: SHELL, events: transcript },
+      null,
+      2,
+    ),
   )
   if (frames.length) {
     fs.writeFileSync(

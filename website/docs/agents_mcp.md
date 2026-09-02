@@ -14,7 +14,9 @@ from a file each time.
 
 Desktop only. It is safe because of where it runs, a local socket only your own
 account can reach, and the same surface behind anything network reachable would
-be a remote code execution hole. See [Turning it off](#turning-it-off).
+be a remote code execution hole. See [Turning it off](#turning-it-off). Three
+filmed sessions of Claude Code driving it, with a shell beside the MCP tools,
+open [](/docs/agents).
 
 ## Connect a client
 

@@ -17,22 +17,44 @@ already has everything it needs. Nothing has to be installed and no server is
 involved, because the page it is reading is the app.
 
 This is the same `jb` library JBrowse Desktop serves over
-[MCP](/docs/agents_mcp). The two pages describe one surface reached two ways, so
-what a session looks like and what to ask for are documented there rather than
-repeated here. What follows is what differs in a browser.
+[MCP](/docs/agents_mcp), reached from inside the page instead of over a socket.
 
 ## What is the same
 
-Everything in [](/docs/agents_mcp) under "What the agent gets" and "A session".
-Orient with `jb.sessionSummary()`, find track ids with `jb.listTracks()`, build
-views with `jb.loadSessionSpec()`, restyle through
-`jb.trackModel(id).applyDisplaySettings({...})`, read data with
-`jb.getFeatures({trackId})`, and settle with `jb.waitReady()`.
+The library, and the way a session goes. Orient first, because a person can
+click between calls. Find track ids in the catalog rather than guessing them,
+build views from the same spec JSON that `&session=spec-` URLs take
+([](/docs/urlparams)), read the data as live Feature objects and aggregate in
+code, restyle a shown track in place and read back what landed, then wait for
+drawing before looking:
 
-The [four traps](/docs/agents_mcp#four-traps) are the same traps, and they are
-the reason to use the library rather than walking the session by hand. Each of
-them renders as a plausible looking browser with something quietly missing.
-[](/docs/agents_recipes) is the same library at work, one ask per section.
+```js
+jb.sessionSummary()
+jb.listTracks('clinvar')
+jb.loadSessionSpec({
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'hg38',
+      loc: 'chr17:7,668,421-7,687,490',
+      tracks: ['hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'],
+    },
+  ],
+})
+jb.getFeatures({ trackId: 'hg38-clinvarMain' })
+jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ height: 220 })
+jb.waitReady(30000)
+```
+
+The traps are the same too, and each renders as a plausible looking browser with
+something quietly missing: a data file spelling reference names differently from
+the assembly answers nothing (`jb.getFeatures` renames for you); an unknown
+settings key is dropped (`jb.describeSlots` lists what a display accepts); a
+track over its fetch size limit raises no error and is reported only under
+`notReady` by `jb.waitReady`; and `jb.loadSessionSpec` replaces the session, so
+re-read it through `jb.session`. The full reference is
+[](/docs/agents_live_model) and [](/docs/agents_recipes) is the same library at
+work, one ask per section.
 
 ## What is different
 

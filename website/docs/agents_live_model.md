@@ -35,7 +35,12 @@ the last expression (see [](/docs/agents_web)). In scope either way:
     (default 30000, reporting what is still not ready), returns the summary. It
     REPLACES the session, so the `session` argument you were given is a dead
     node afterwards — every `jb` helper re-reads the live one for you, and
-    `jb.session` is it if you need to rebind: `session = jb.session`
+    `jb.session` is it if you need to rebind: `session = jb.session`. A spec
+    `layout` indexes the spec's own `views` array; a view a plugin launcher
+    creates alongside its own (the genome view a connected `ProteinView` opens)
+    is not an index. The live action `session.applyLayoutSpec` takes the same
+    tree with `viewIds` (view id strings) in place of `views`, and accepts the
+    wrong key silently, collapsing the workspace into one tab
   - `track.applyDisplaySettings(settings)` — in-place styling of the track's
     `activeDisplay`; returns { applied, unapplied, failed } (`failed` means you
     got a key wrong; `unapplied` also lists keys that are not config slots)

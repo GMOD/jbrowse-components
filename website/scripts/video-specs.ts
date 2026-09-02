@@ -84,7 +84,29 @@ export interface ExternalClip {
   description: string
 }
 
-export const externalClips: ExternalClip[] = []
+export const externalClips: ExternalClip[] = [
+  {
+    name: 'mcp/agent_protein_take1',
+    width: 1920,
+    height: 1222,
+    description:
+      'Claude Code over the Desktop MCP socket with a shell: HBB opened at the gene, the transcript translated and folded with ESMFold, the sickle variant folded beside it, the two compared',
+  },
+  {
+    name: 'mcp/agent_synteny_take1',
+    width: 1920,
+    height: 1222,
+    description:
+      'Claude Code over the Desktop MCP socket with a shell: two fly genomes with no published alignment, aligned with minimap2, shown as synteny and dotplot, the largest inversion found and navigated to',
+  },
+  {
+    name: 'mcp/agent_derivative_take1',
+    width: 1920,
+    height: 1222,
+    description:
+      'Claude Code over the Desktop MCP socket with a shell: a three-chromosome somatic rearrangement found in a callset, its allele rebuilt from the tumor reads, loaded as an assembly and audited at every junction',
+  },
+]
 
 // The track configs a tour TYPES into the app, paired with the page that prints
 // them, for `check-paste-configs`.

@@ -1,0 +1,131 @@
+SYSTEM: You are driving JBrowse Desktop over its MCP tools and you also have a shell with minimap2, samtools, jq and the jbrowse CLI on PATH. Your working directory is /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd. Every file you create goes there, and the alignment runs in the shell, outside the app. The two genome FASTAs are already in /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd as sim.fa.gz (D. simulans GCF_016746395.2) and mau.fa.gz (D. mauritiana GCF_004382145.1); their hosted JBrowse configs are at jbrowse.org under hubs/genark. After every change to the app, screenshot and read the image.
+
+  TEXT: I'll start by orienting myself — checking the app state and the local files.
+  -> ToolSearch 
+  -> Bash ls -la && which minimap2 samtools jq jbrowse
+  -> Bash file sim.fa.gz mau.fa.gz && (samtools faidx sim.fa.gz 2>&1 | head -3); ls
+  -> run_javascript return jb.sessionSummary()
+  -> Bash zcat < sim.fa.gz | grep '^>' | head -12; echo ---; zcat < mau.fa.gz | grep '^>' | head -12; echo ---; sysctl -n hw.ncpu
+  -> docs hosted-data
+  TEXT: Starting the alignment in the background while I set up the browser.
+  -> Bash minimap2 -cx asm10 --cs -t 14 sim.fa.gz mau.fa.gz > mau_vs_sim.paf 2> minimap2.log; echo "EXIT=$?"; wc -l mau_vs_sim.paf
+  -> Bash for a in GCF_016746395.2 GCF_004382145.1; do p=$(echo $a | sed -E 's/^(GC[AF])_([0-9]{3})([0-9]{3})([0-9]{3}).*/\1\/\2\/\3\/\4/'); u="https://jbrowse.org/hubs/genark/$p/$a/config.json"; echo "== $a $u"; curl -s "$u" | jq -c '{asm: .assemblies[0].name, seq: .as
+  -> Bash for a in GCF_016746395.2 GCF_004382145.1; do p=$(echo $a|sed -E 's/^(GC[AF])_([0-9]{3})([0-9]{3})([0-9]{3}).*/\1\/\2\/\3\/\4/'); echo "== $a"; curl -s "https://hgdownload.soe.ucsc.edu/hubs/$p/$a/$a.chromAlias.txt" | head -8; done
+  -> docs session-spec
+  -> Grep 
+  -> Read /Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/6a44407c-9e1f-401d-8cad-f19c758733ff/tool-results/mcp-jbrowse-docs-1788318725122.txt
+  -> docs config:ChainAdapter
+  -> Bash tail -3 minimap2.log 2>/dev/null; ls -la mau_vs_sim.paf 2>/dev/null
+  TEXT: Chain adapter confirmed. Writing the PAF→chain converter and merged config while minimap2 runs.
+  -> Write /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd/paf2chain.py
+  -> Bash curl -s -o sim.chromAlias.txt https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.chromAlias.txt curl -s -o mau.chromAlias.txt https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.chromAlias.txt 
+  TEXT: Now building the merged two-assembly config while the alignment runs.
+  -> Bash curl -s https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/config.json -o hub_sim.json curl -s https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/config.json -o hub_mau.json jq -c '{assemblies:[.assemblies[].name], defaultSession: (.d
+  -> Bash jq -c '.tracks[] | select(.type=="SyntenyTrack")' hub_sim.json; echo ---; jq -c '.plugins, .configuration' hub_sim.json
+  -> Bash SIMB=https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/ MAUB=https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/ abs() { jq --arg b "$1" 'def fix: walk(if type=="object" and has("uri") and (.uri|type=="string") and (.uri|test("^(http
+  -> Bash tail -2 minimap2.log; ls -la mau_vs_sim.paf
+  -> Write /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd/build_config.sh
+  -> Edit /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd/build_config.sh
+  -> Bash chmod +x build_config.sh paf2chain.py && ./build_config.sh && tail -2 minimap2.log && ls -la mau_vs_sim.paf
+  TEXT: Config built. Opening it to get both genomes side by side while minimap2 finishes.
+  -> open /private/tmp/claude-501/-Users-colin-src-jbrowse-components/83098bcf-0f34-4348-84b0-9de43078314f/scratchpad/out/synteny/cwd/config.json
+  -> run_javascript const s = jb.sessionSummary(); const asms = jb.session.assemblyManager.assemblies.map(a=>({name:a.name, loaded:a.loaded, err:String(a.error||''), n:a.regions?.length, first:a.regions?.slice(0,3).map(r=>r.refName+':'+r.end)})); return {s, asms};
+  -> run_javascript const am = jb.session.assemblyManager; const out = []; for (const n of ['GCF_016746395.2','GCF_004382145.1']) { const a = await am.waitForAssembly(n); out.push({name:n, nRegions:a.regions.length, chroms:a.regions.filter(r=>r.refName.length<8).map(r=>r.refName+
+  -> Bash tail -2 minimap2.log; ls -la mau_vs_sim.paf; ps aux | grep -c "[m]inimap2"
+  TEXT: Alignment still running. Meanwhile I'll open the two genomes side by side so the layout is ready.
+  -> run_javascript await jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', views: [ { assembly: 'GCF_016746395.2', loc: 'chr2L' }, { assembly: 'GCF_004382145.1', loc: 'chr2L' }, ], }], }, 8000); return jb.sessionSummary();
+  -> screenshot 
+  TEXT: Both genomes are up side by side. Now waiting on the alignment.
+  -> Bash sleep 120; tail -2 minimap2.log; ls -la mau_vs_sim.paf; pgrep -f "[m]inimap2" >/dev/null && echo RUNNING || echo DONE
+  -> Bash until ! pgrep -f "[m]inimap2" >/dev/null; do sleep 10; done; echo DONE; tail -3 minimap2.log; wc -l mau_vs_sim.paf
+  TEXT: Alignment done: 17,760 PAF records. Converting to chain.
+  -> Bash ./paf2chain.py mau_vs_sim.paf --t-alias sim.chromAlias.txt --q-alias mau.chromAlias.txt -o sim_mau.chain 2> paf2chain.log; echo "exit=$?"; cat paf2chain.log; ls -la sim_mau.chain; head -6 sim_mau.chain
+  TEXT: Chain built, all 17,760 records passed the span check. Loading it into the app.
+  -> Bash awk '$1=="chain" && $10=="-" && $3=="chr4" {print; exit}' sim_mau.chain; echo "--- strand counts:"; awk '$1=="chain"{c[$10]++} END{for(k in c) print k, c[k]}' sim_mau.chain; echo "--- per target chrom (top):"; awk '$1=="chain" && $3 ~ /^chr[234X]/ {n[$3]++; b[
+  -> Bash zcat < sim.fa.gz | bgzip -@ 6 > sim.bgz.fa.gz && samtools faidx sim.bgz.fa.gz && zcat < mau.fa.gz | bgzip -@ 6 > mau.bgz.fa.gz && samtools faidx mau.bgz.fa.gz && echo INDEXED
+  -> run_javascript return jb.listTracks('sim_mau');
+  -> run_javascript await jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], views: [ { assembly: 'GCF_016746395.2', loc: 'chr2L' }, { assembly: 'GCF_004382145.1', loc: 'chr2L' }, ], }], }, 20000); return jb.sessionSummary();
+  -> screenshot 
+  TEXT: Now validating the chain independently against the actual sequence — checking a reverse-strand record.
+  -> Bash cat > /tmp/checkchain.py <<'EOF' import subprocess, random, sys def alias(path): m={} with open(path) as f: h=f.readline().lstrip('#').split(); u=h.index('ucsc'); r=h.index('refseq') for l in f: c=l.rstrip('\n').split('\t') if len(c)>u and c[u]: m[c[u]]=c[r] r
+  TEXT: Chain verified: 96–98.5% identity on both strands, spans exact. Now tuning the display.
+  -> run_javascript const t = jb.trackModel('sim_mau_minimap2_chain'); const slots = jb.describeSlots(t.activeDisplay.configuration); const inspect = jb.inspect('views.0'); return {slots, viewGetters: inspect.getters?.filter(g=>/min|color|curve|alpha|height|offscreen/i.test(g)), 
+  -> run_javascript const v = jb.session.views[0]; v.setMinAlignmentLength(5000); v.setColorBy('strand'); v.setAlpha(0.5); v.setDrawCurves(false); v.resizeAllLevelHeights(220); return {min: v.minAlignmentLength, colorBy: v.colorBy, alpha: v.alpha, heights: v.levels.map(l=>l.heigh
+  -> screenshot 
+  -> Bash awk '$1=="chain" && $3=="chr2L" && $8=="chr2L" && $6<5000000 && $7>5300000 {print $0}' sim_mau.chain | head -5
+  -> Bash awk '$1=="chain" && $3=="chr2L" && $8=="chr2L" && $6<5100000 && $7>5100000 {print $6, $7, $10, $11, $12, $7-$6}' sim_mau.chain | sort -k6,6nr | head -5
+  -> Bash jq -r '.tracks[].trackId' abs_mau.json | grep -i refseq
+  -> run_javascript await jb.loadSessionSpec({ views: [ { type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], colorBy: 'strand', alpha: 0.45, minAlignmentLength: 5000, levelHeights: [150], views: [ { assembly: 'GCF_016746395.2', loc: 'chr2L' }, { assembly: 'GCF_0043821
+  -> screenshot 
+  TEXT: The second view is clipped. Compacting heights.
+  -> run_javascript const [v1, v2] = jb.session.views; v1.resizeAllLevelHeights(90); v2.resizeAllLevelHeights(130); const res = []; for (const v of v2.views) { for (const t of v.tracks) { res.push(t.applyDisplaySettings({ height: 85, displayMode: 'collapsed' })); } } return {res,
+  -> run_javascript const [v1, v2] = jb.session.views; v1.resizeAllLevelHeights(-150); // this action takes a delta v2.resizeAllLevelHeights(-150); return {h1: v1.levels.map(l=>l.height), h2: v2.levels.map(l=>l.height)};
+  -> screenshot 
+  TEXT: The empty rows cost ~90px each. Reloading with `collapseEmptyRows` on the overview.
+  -> run_javascript await jb.loadSessionSpec({ views: [ { type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], colorBy: 'strand', alpha: 0.45, minAlignmentLength: 5000, levelHeights: [110], collapseEmptyRows: true, views: [ { assembly: 'GCF_016746395.2', loc: 'chr2L' },
+  -> screenshot 
+  -> run_javascript const f = await jb.getFeatures('sim_mau_minimap2_chain', 'chr2L:5,100,000-5,120,000', { assembly: 'GCF_016746395.2' }); return { n: f.length, sample: f.slice(0,3).map(x=>({refName:x.refName, start:x.start, end:x.end, strand:x.strand, mate:x.mate, keys:Object.k
+  -> run_javascript return String(jb.getFeatures).slice(0, 600);
+  -> run_javascript const f = await jb.getFeatures({ trackId: 'sim_mau_minimap2_chain', loc: 'chr2L:5,100,000-5,120,000', assembly: 'GCF_016746395.2' }); const arr = Array.isArray(f) ? f : f.features; return { n: arr.length, sample: arr.slice(0,3) };
+  TEXT: Verified through the adapter. Saving the session so it can be reopened.
+  -> run_javascript const snap = jb.session.snapshot ?? getSnapshot(jb.session); return Object.keys(rootModel).filter(k=>/save|session/i.test(k));
+  -> run_javascript const { getSnapshot } = require('mobx-state-tree'); const snap = getSnapshot(jb.session); globalThis.__snap = snap; return { keys: Object.keys(snap), nviews: snap.views.length };
+  -> run_javascript const i = jb.inspect(''); return {actions: i.actions?.filter(a=>/save|session|snapshot/i.test(a)), root: Object.keys(rootModel).slice(0,40)};
+  -> Bash cat > session_spec.json <<'EOF' { "views": [ { "type": "LinearSyntenyView", "tracks": ["sim_mau_minimap2_chain"], "colorBy": "strand", "alpha": 0.45, "minAlignmentLength": 5000, "levelHeights": [110], "collapseEmptyRows": true, "views": [ { "assembly": "GCF_01
+  -> Write /Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/memory/jbrowse-synteny-view-sizing.md
+  -> Bash M=/Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/memory/MEMORY.md; touch "$M"; grep -q jbrowse-synteny-view-sizing "$M" || printf -- '- [JBrowse synteny
+  TEXT: Done. Both genomes are open side by side with a chain file I built from scratch. **The chain** There was no published sim↔mau alignment, so: 1. `minimap2 -cx asm10 --cs -t 14 sim.fa.gz mau.fa.gz` → 17,760 PAF records (226 s wall). 2. `paf2chain.py` walks each PAF CIGAR into UCSC chain `size dt dq` blocks → `sim_mau.chain` (7.3 MB, 17,760 chains). It also renames the RefSeq accessions in the FASTAs (`NC_052520.2`) to the UCSC names (`chr2L`) the GenArk hubs use as canonical refNames, so nothing depends on alias resolution. Reverse-strand records get their query coordinates flipped into the revcomp frame that chain format requires — that's the easy thing to get wrong, so I checked it against sequence rather than trusting it. **Verification** - All 17,760 chains span exactly the interval their header declares (built-in check, zero mismatches). - Six chains — including reverse-strand ones — re-extracted from the FASTAs and scored base by base: **95.9–98.6% identity**, spans exact. That's the expected sim/mau divergence. - Read back through JBrowse's own `ChainAdapter`: sim `chr2L:5,086,373-5,171,915` ↔ mau `chr2L:5,024,836-5,112,395` at 94.8% identity, matching the chain header. **The app** `config.json` merges both GenArk hub configs into one document declaring both assemblies (a per-assembly hub config only declares one, which won't carry a two-genome synteny track), with all relative URIs absolutized, plus the chain as a `SyntenyTrack`. Two views are showing: whole chr2L overview (colored by strand, ≥5 kb alignments) over a 100 kb detail view with NCBI RefSeq genes on both rows. In the detail view the gene models line up across the ribbon, with visible indel wedges and a couple of small inverted blocks in purple. One judgment call worth flagging: at whole-chromosome scale the ribbon saturates into a solid band. That's real — chr2L is essentially collinear between these species — not a rendering artifact, but it means the overview is only useful for spotting the breakdown near 20 Mb, which is why I paired it with the zoomed view. Files, provenance and reproduction steps are in `README.md`; `session_spec.json` restores this exact layout against `config.json`.
+
+===== turn 0 done in 497s =====
+=== NEXT: Now a dotplot of the whole genome, under the synteny view.
+
+  -> Bash grep -n "Dotplot\|dotplot" /Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/6a44407c-9e1f-401d-8cad-f19c758733ff/tool-results/mcp-jbrowse-docs-17883187251
+  -> Read /Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/6a44407c-9e1f-401d-8cad-f19c758733ff/tool-results/mcp-jbrowse-docs-1788318725122.txt
+  TEXT: Adding a whole-genome dotplot as a third view, minimizing the detail synteny view to make room.
+  -> run_javascript const spec = { views: [ { type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], colorBy: 'strand', alpha: 0.45, minAlignmentLength: 5000, levelHeights: [110], collapseEmptyRows: true, views: [ { assembly: 'GCF_016746395.2', loc: 'chr2L' }, { assembly:
+  -> screenshot 
+  TEXT: The unplaced scaffolds swamp both axes and the chromosomes aren't diagonalized. Fixing both — first quantifying what restricting to assembled chromosomes drops.
+  -> Bash awk '$1=="chain"{ t=$3; q=$8; span=$7-$6; tot+=span; n++; tmain = (t=="chr2L"||t=="chr2R"||t=="chr3L"||t=="chr3R"||t=="chr4"||t=="chrX"); qmain = (q=="chr2L"||q=="chr2R"||q=="chr3L"||q=="chr3R"||q=="chr4"||q=="chrX"); if (tmain && qmain) {mm+=span; nmm++} else
+  TEXT: Chromosome↔chromosome pairs are 64.7% of aligned bp. Restricting both axes to the assembled chromosomes, in matching order.
+  -> run_javascript const CHROMS = ['chr2L', 'chr2R', 'chr3L', 'chr3R', 'chr4', 'chrX']; await jb.loadSessionSpec({ views: [ { type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], colorBy: 'strand', alpha: 0.45, minAlignmentLength: 5000, levelHeights: [100], collapseEmp
+  -> screenshot 
+  TEXT: The diagonal is clean, but the x-axis labels are clipped. Trimming heights.
+  -> run_javascript const [sv, dp] = jb.session.views; sv.resizeAllLevelHeights(-25); // delta: 100 -> 75 dp.setHeight ? dp.setHeight(390) : null; return { level: sv.levels.map(l=>l.height), dpHeight: dp.height };
+  -> screenshot 
+  TEXT: chr X is cropped on the y axis (107 Mb shown of 127 Mb) — the height change didn't refit the axis.
+  -> run_javascript const dp = jb.session.views[1]; const i = jb.inspect('views.1'); return {actions: i.actions?.filter(a=>/fit|showAll|zoom|square|aspect/i.test(a)), vi: jb.inspect('views.1.vview').actions?.filter(a=>/fit|showAll|zoom/i.test(a))};
+  -> run_javascript const dp = jb.session.views[1]; dp.showAllRegions(); return { x: dp.hview.totalBp, y: dp.vview.totalBp, xbp: dp.hview.bpPerPx, ybp: dp.vview.bpPerPx };
+  -> screenshot 
+  -> Bash python3 - <<'EOF' import json spec = json.load(open('session_spec.json')) CH = ["chr2L","chr2R","chr3L","chr3R","chr4","chrX"] spec['views'] = [spec['views'][0], spec['views'][1], { "type": "DotplotView", "tracks": ["sim_mau_minimap2_chain"], "height": 390, "m
+  -> Bash cat >> README.md <<'EOF' ## Whole-genome dotplot `session_spec.json` also carries a `DotplotView` of the whole genome, with both axes restricted to the six assembled chromosomes in matching order (`displayedRegionNames: [chr2L, chr2R, chr3L, chr3R, chr4, chrX]
+  -> Edit /Users/colin/.claude3/projects/-private-tmp-claude-501--Users-colin-src-jbrowse-components-83098bcf-0f34-4348-84b0-9de43078314f-scratchpad-out-synteny-cwd/memory/jbrowse-synteny-view-sizing.md
+  TEXT: Dotplot is up under the synteny view, drawing from the same chain file. **What it shows:** one continuous diagonal running chr2L → chr2R → chr3L → chr3R → chr4 → chrX, 121 Mb (simulans, x) by 127 Mb (mauritiana, y). No inversions or translocations at this scale — just sparse off-diagonal dots where repeats and paralogs cross-match, plus a small tangle at the chr2L/chr2R boundary. **One scoping decision you should know about.** I restricted both axes to the six assembled chromosomes rather than plotting literally every contig. The first attempt was the true whole genome, and it was unusable: mauritiana's 347 unplaced scaffolds filled the top third of the y axis as a solid noise band, simulans' 89 jammed the right edge, and because the two assemblies order their contigs differently the diagonal broke into a disconnected staircase. Setting `displayedRegionNames` to the same six names on both axes fixed both problems at once. That excludes real alignments — from the chain file's 179.2 Mb of aligned span: | | chains | span | | |---|---|---|---| | both ends on an assembled chromosome | 4,331 | 116.0 Mb | **64.7% — plotted** | | one end on an unplaced scaffold | 4,613 | 20.6 Mb | 11.5% — not plotted | | both ends on unplaced scaffolds | 8,816 | 42.5 Mb | 23.7% — not plotted | So a third of the aligned sequence is off the plot. Say the word and I'll drop the restriction, or add a second dotplot showing the scaffold-involving alignments on their own. To fit three views in an 858px window I minimized the 100 kb gene-level detail synteny view — it's the collapsed bar between the two; clicking `+` on it restores it. Also worth flagging: after changing the dotplot's height, the axes kept their old scale and the y axis silently cropped to 107 Mb of 127 Mb, hiding part of chrX. `showAllRegions()` fixed it, and the current screenshot is the corrected one. `session_spec.json` and `README.md` are updated with the dotplot and the exclusion table.
+
+===== turn 1 done in 161s =====
+=== NEXT: Which chromosome arm carries the largest inversion? Take me there.
+
+  -> Bash awk '$1=="chain" && $3==$8 && $3 ~ /^chr(2L|2R|3L|3R|4|X)$/ && $10=="-" {printf "%s\t%d\t%d\t%d\t%s\t%d\t%d\t%s\n", $3, $6, $7, $7-$6, $8, $11, $12, $13}' sim_mau.chain | sort -k4,4nr | head -20
+  -> Bash awk '$1=="chain" && $3==$8 && $3 ~ /^chr(2L|2R|3L|3R|4|X)$/ {s[$3"\t"$10]+=$7-$6} END{for(k in s) print k, s[k]}' sim_mau.chain | sort | awk '{printf "%s %s %12d bp\n", $1,$2,$3}'
+  TEXT: Every arm is globally collinear, so the reverse-strand blocks are candidate inversions. But I need to separate true inversions from repeat cross-matches — checking whether the same region also has a collinear alignment.
+  -> Bash echo "=== chrX chains >20kb, ordered by sim position ===" awk '$1=="chain" && $3=="chrX" && $8=="chrX" && ($7-$6)>20000 {printf "%9d %9d %7d %s mau %9d %9d\n", $6,$7,$7-$6,$10,$11,$12}' sim_mau.chain | sort -n
+  TEXT: The top candidates need care — a reverse-strand block that overlaps collinear alignment is a repeat cross-match, not an inversion. Testing each properly.
+  -> Bash cat > /tmp/find_inv.py <<'PY' import sys from collections import defaultdict ARMS = {'chr2L','chr2R','chr3L','chr3R','chr4','chrX'} chains=[] for line in open('sim_mau.chain'): if not line.startswith('chain'): continue f=line.split() t,tS,tE,q,qStrand,qS,qE = 
+  TEXT: My earlier read of the raw chain columns was in the reverse-strand frame; converting to forward mau coordinates changes the picture. Let me tighten the clustering and check the flanks.
+  -> Bash cat > /tmp/inv2.py <<'PY' ARMS={'chr2L','chr2R','chr3L','chr3R','chr4','chrX'} ch=[] for line in open('sim_mau.chain'): if not line.startswith('chain'): continue f=line.split() t,tS,tE,q,st,qS,qE,qL=f[2],int(f[5]),int(f[6]),f[7],f[9],int(f[10]),int(f[11]),int(
+  TEXT: Decisive now. Verifying the top candidate against sequence before navigating.
+  -> Bash cat > /tmp/verify_inv.py <<'PY' import subprocess def al(p): m={} with open(p) as f: h=f.readline().lstrip('#').split(); u=h.index('ucsc'); r=h.index('refseq') for l in f: c=l.rstrip('\n').split('\t') if len(c)>u and c[u]: m[c[u]]=c[r] return m S,M=al('sim.chr
+  TEXT: Confirmed: as simulans coordinates rise 8.30→8.75 Mb, mauritiana falls 8.98→8.53 Mb — a monotone anti-diagonal at 96.8–98.3% identity, the same as the collinear flank (98.2%). Real inversion, not a repeat. Taking you there.
+  -> run_javascript await jb.loadSessionSpec({ views: [ { type: 'LinearSyntenyView', tracks: ['sim_mau_minimap2_chain'], colorBy: 'strand', alpha: 0.7, levelHeights: [190], views: [ { assembly: 'GCF_016746395.2', loc: 'chrX:8,270,000-8,790,000', tracks: ['GCF_016746395.2-ncbiRefS
+  TEXT: The dotplot ignored the per-axis `loc`. Navigating its axes directly.
+  -> run_javascript const dp = jb.session.views[1]; const i = jb.inspect('views.1.hview'); return { actions: i.actions?.filter(a=>/nav|loc|zoomTo|display/i.test(a)) };
+  -> run_javascript const dp = jb.session.views[1]; dp.hview.setDisplayedRegions([{ refName: 'chrX', start: 8270000, end: 8790000, assemblyName: 'GCF_016746395.2' }]); dp.vview.setDisplayedRegions([{ refName: 'chrX', start: 8495000, end: 9015000, assemblyName: 'GCF_004382145.1' }
+  -> screenshot 
+  TEXT: The synteny view shows the classic bow-tie. The dotplot below is clipped — trimming.
+  -> run_javascript const [sv, dp] = jb.session.views; sv.resizeAllLevelHeights(-50); // 190 -> 140 dp.setHeight(250); dp.showAllRegions(); return { level: sv.levels.map(l=>l.height), dp: dp.height, x: dp.hview.totalBp, y: dp.vview.totalBp };
+  -> screenshot 
+  -> Bash python3 /tmp/inv2.py > inversion_candidates.txt 2>&1 cp /tmp/inv2.py find_inversions.py; cp /tmp/verify_inv.py verify_inversion.py cat >> README.md <<'EOF' ## Largest inversion: chrX `find_inversions.py` clusters same-arm reverse-strand chains that are adjacen
+  TEXT: **chrX** — and you're looking at it. **chrX:8,304,208–8,752,357** (simulans) ↔ **chrX:8,530,265–8,980,209** (mauritiana), 448 kb. The synteny view shows the bow-tie: blue reverse-strand ribbons crossing over the full window, with red collinear alignment closing in at both edges. The dotplot below is the same thing as a single clean anti-diagonal running top-left to bottom-right, with short positive segments in the corners where the flanks resume. **How I picked it.** Ranking reverse-strand chains by size isn't enough — a reversed block that overlaps collinear alignment is a repeat cross-match. The test is whether the forward-strand backbone closes up tightly on *both* axes. This one does: flank gaps of 1.1 kb / 15.4 kb on the left and 4.6 kb / 4.4 kb on the right. Re-extracting all 10 blocks from the FASTAs, mauritiana runs monotonically *backwards* 8,980,209 → 8,530,265 as simulans runs forwards, at 96.8–98.3% identity — the same as the collinear flank at 98.2%, so it's orthologous sequence, not a diverged repeat. **One caveat on "largest."** There's a nominally bigger 499 kb reverse block at chrX:21,531,149–22,030,225, but it runs to the very end of the simulans arm (22,032,822 bp) with no right flank at all, and its left flank is inconsistent by −712 kb on the mauritiana axis. That's a subtelomeric assembly-orientation difference, not a confirmed inversion — so I took you to the 448 kb one instead. If you'd rather judge that one yourself, I can navigate there. I should also correct something from my last message: I said the whole-genome dotplot showed "no inversions at this scale." That was wrong — a 448 kb anti-diagonal is roughly two pixels on a 121 Mb axis, so the plot simply couldn't resolve it. The dotplot ruled out chromosome-scale rearrangements, nothing smaller. chr2R's reverse blocks are all in its first ~2.3 Mb, the pericentromeric end, where the assemblies disagree wholesale — flank gaps of hundreds of kb, no clean single inversion. `find_inversions.py`, `verify_inversion.py` and the full candidate list in `inversion_candidates.txt` are in the working directory; README and `session_spec.json` are updated with this locus.
+
+===== turn 2 done in 220s =====
+=== NEXT: (end)
+

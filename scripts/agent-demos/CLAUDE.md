@@ -24,14 +24,25 @@ The Swift helpers compile on demand the first time a script needs them.
 
 ## The takes
 
-**`agentDemo.mjs <outdir>`** — JBrowse Desktop over MCP, driven by a real
-`claude -p` session. Serves the built renderer, launches Electron, opens three
-MCP connections (Claude's own, a camera that screenshots on a loop, a stage that
-paints the caption strip), then feeds it the questions in `TURNS`. The captions
-are what Claude actually said and actually sent; nothing here authors the
-JavaScript on screen. Needs `pnpm --filter @jbrowse/desktop build` first, and
-**no other JBrowse Desktop running** — the single-instance lock silently
-forwards to the running one.
+**`agentDemo.mjs <outdir> [takes/<name>.mjs]`** — JBrowse Desktop over MCP,
+driven by a real `claude -p` session. Serves the built renderer, launches
+Electron, opens three MCP connections (Claude's own, a camera that screenshots
+on a loop, a stage that paints the caption strip), then feeds it the questions
+in `TURNS`. The captions are what Claude actually said and actually sent;
+nothing here authors the JavaScript on screen. Needs
+`pnpm --filter @jbrowse/desktop build` first, and **no other JBrowse Desktop
+running** — the single-instance lock silently forwards to the running one.
+
+Without a take module it runs the GEO take that became take 5. A take module
+exports `TURNS`, `SHELL` and `SYSTEM`. `SHELL: true` drops `--restricted` and
+allows Bash and the file tools beside the MCP ones, for the takes whose point is
+work the app cannot do (an aligner, a fold, a consensus); `SYSTEM`, a function
+of the working directory, is appended to the system prompt, so the working
+directory and the pre-staged files are handed over off camera and the question
+on screen stays as short as a person would type it. The three shell takes are in
+`takes/`, each with a `.md` beside it saying what was verified, what a good take
+does turn by turn, and what is still open. Pre-stage into `<outdir>/cwd` before
+running; the harness creates that directory and leaves what is in it.
 
 **`panelDemo.mjs <outdir> [rehearse]`** — Chrome with the real Claude side
 panel, questions typed on the keyboard. **Its turn-completion detection is known
@@ -75,6 +86,8 @@ reviewer wants.
 `take5-transcript.txt` is the last desktop take rendered by `readTranscript.mjs`
 — kept because that clip is still awaiting a verdict, and reading what the agent
 did is faster than scrubbing the video. Delete it when the clip lands.
+`takes/*-take1-transcript.txt` are the same for the shell takes; their clips are
+`website/static/media/mcp/agent_<take>_take1.mp4`.
 
 ## The clips are not committed
 

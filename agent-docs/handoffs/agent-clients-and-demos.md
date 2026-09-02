@@ -17,6 +17,21 @@ recorded in the tree.
 
 Delete this when the videos row lands.
 
+## The shell takes, 2026-09-01
+
+Three takes whose point is work the app cannot do itself (a fold, a
+whole-genome alignment, a consensus) live in `scripts/agent-demos/takes/`, one
+`.mjs` of turns and one `.md` of what was verified each. `agentDemo.mjs` takes
+the module as a third argument and, for `SHELL: true`, hands the agent Bash and
+the file tools beside the MCP ones. All three were rehearsed end to end on
+2026-09-01 (`takes/*-take1-transcript.txt`, clips under
+`website/static/media/mcp/agent_*_take1.mp4`, gitignored and not yet pushed to
+the store). Every substantive answer was right. Each `.md` ends with a
+"Rehearsal" section; the protein one records three app-side gaps worth fixing
+before a reshoot: ProteinView absent from the bundled docs, the live
+`applyLayoutSpec` wanting `viewIds` where the spec `layout` wants `views`, and
+the connected genome view not being a layout index.
+
 ## What the Chrome extension actually is
 
 - **Its tools are deferred.** A headless `claude -p --chrome` session lists only

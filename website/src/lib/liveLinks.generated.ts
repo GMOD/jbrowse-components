@@ -762,6 +762,18 @@ export const videoFrames: Record<
   "genomes_basics/find_a_track": {
     "width": 1920,
     "height": 520
+  },
+  "mcp/agent_protein_take1": {
+    "width": 1920,
+    "height": 1222
+  },
+  "mcp/agent_synteny_take1": {
+    "width": 1920,
+    "height": 1222
+  },
+  "mcp/agent_derivative_take1": {
+    "width": 1920,
+    "height": 1222
   }
 }
 

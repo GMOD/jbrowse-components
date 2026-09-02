@@ -1,11 +1,11 @@
 ---
 name: land-the-agent-client-demo-videos
-description: take 5 of the Claude Code demo is shot and encoded but unapproved, and the side-panel take is blocked on knowing when a turn ended
+description: three shell takes of Claude Code driving Desktop are published and embedded on the agents overview awaiting a verdict; the side-panel take is blocked on knowing when a turn ended
 metadata:
   area: agents, website, videos
   category: visual-call
   order: 1
-  first_move: "watch take 5 and say yes or no — everything downstream is blocked on that one verdict, and the take is already on disk"
+  first_move: "watch the three clips on /docs/agents and say yes, reshoot, or cut; each take doc ends with what to change before a reshoot"
 ---
 
 # Land the agent client demo videos
@@ -13,30 +13,24 @@ metadata:
 MCP ships in v5.0.0 with nothing showing it running. Three clients were wanted:
 Claude Code, Claude Desktop, the Chrome extension.
 
-## Claude Code over desktop MCP — shot, encoded, awaiting a verdict
+## Claude Code over desktop MCP — three takes published, awaiting a verdict
 
-A 60s mp4 with poster, filmed by a real `claude -p` session driving JBrowse
-Desktop over its MCP socket, captioned from what Claude actually said and
-actually sent.
+Take 5 (the GEO ATAC take) was encoded but its mp4 was never pushed to the
+store and the scratchpad that held it is gone; only
+`scripts/agent-demos/take5-transcript.txt` remains. It was superseded on
+2026-09-01 by three shell-capable takes, each a real `claude -p` session with
+Bash beside the MCP tools: fold the transcript (HBB, ESMFold), two assemblies
+with no alignment (D. simulans against D. mauritiana), and the derivative allele
+(COLO829). Plans, verified numbers and rehearsal notes are
+`scripts/agent-demos/takes/*.md`; transcripts are beside them.
 
-It is a good take on the merits, which is why it is worth watching rather than
-re-shooting: the agent verified hg38 from the bigWig header rather than
-trusting the GEO series metadata, checked its log2 normalization against
-control loci (gene deserts came out at exactly 0.00, which is what says the
-offset is locus-specific), and its closing audit caught a stale precomputed
-window it had introduced two turns earlier and rebuilt the track on camera.
-
-The clip is at `website/static/media/mcp/agent_demo.mp4` with its poster (that
-directory is gitignored; the bytes reach the store through `figures:push`), and
-what the agent actually did, turn by turn, is
-[`scripts/agent-demos/take5-transcript.txt`](../../scripts/agent-demos/take5-transcript.txt)
-— faster to judge than scrubbing 60 seconds.
-
-**Approve it in the Videos tab, then:** an `externalClips` entry in
-`website/scripts/video-specs.ts` — the generator cannot film this one, since
-there is no url to load, no steps to run and no live session to hand a reader —
-then the `<Video>` embed, `pnpm figures:push`, commit `media.lock`, then
-`pnpm autogen`. That order is in `website/CLAUDE.md` and no check enforces it.
+The clips are in the media store (`website/media.lock`, `mcp/agent_*_take1`),
+registered in `externalClips`, and embedded at the top of
+`website/docs/agents.md`. What is left is the visual verdict, and three
+app-side gaps the protein take exposed, recorded at the bottom of
+`takes/protein.md`: ProteinView absent from the bundled `docs`, the live
+`applyLayoutSpec` taking `viewIds` where the spec `layout` takes indexes, and
+the connected genome view not being a layout index.
 
 ## The Chrome side panel take — ready to re-shoot
 
