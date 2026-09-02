@@ -972,20 +972,30 @@ function schemeLegend({
       { hue: 60, label: 'MAPQ 60' },
     ])
   }
+  // Both per-base schemes paint their marks over the flat 'plain' body, which is
+  // not a CATEGORY_LEGEND bucket, so the body is keyed here after the marks —
+  // the same row the modification scheme gets through modFwd/modRev.
+  const readBody = { color: rgb255(palette.colorPairLR), label: 'Read' }
   if (colorType === 'perBaseQuality') {
-    return hslRamp(55, [
-      { hue: 0, label: 'BQ 0' },
-      { hue: 15, label: 'BQ 10' },
-      { hue: 30, label: 'BQ 20' },
-      { hue: 45, label: 'BQ 30' },
-      { hue: 60, label: 'BQ 40' },
-    ])
+    return [
+      ...hslRamp(55, [
+        { hue: 0, label: 'BQ 0' },
+        { hue: 15, label: 'BQ 10' },
+        { hue: 30, label: 'BQ 20' },
+        { hue: 45, label: 'BQ 30' },
+        { hue: 60, label: 'BQ 40' },
+      ]),
+      readBody,
+    ]
   }
   if (colorType === 'perBaseLetter') {
-    return BASE_LEGEND.map(({ key, label }) => ({
-      color: rgb255(palette[key]),
-      label,
-    }))
+    return [
+      ...BASE_LEGEND.map(({ key, label }) => ({
+        color: rgb255(palette[key]),
+        label,
+      })),
+      readBody,
+    ]
   }
   if (isModificationScheme(colorType)) {
     return modificationLegend(

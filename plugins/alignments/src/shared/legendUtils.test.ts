@@ -177,8 +177,36 @@ describe('getReadDisplayLegendItems', () => {
       'BQ 20',
       'BQ 30',
       'BQ 40',
+      'Read',
       'Split segment (same strand)',
     ])
+  })
+
+  // The per-base marks sit on the flat 'plain' body, and 'plain' keys no bucket
+  // row, so without an explicit row the grey most of the frame shows had no
+  // name — the gap the modification scheme closed with modFwd/modRev.
+  test('per-base schemes name the read body under their marks', () => {
+    expect(labels('perBaseQuality', ['plain'])).toEqual([
+      'BQ 0',
+      'BQ 10',
+      'BQ 20',
+      'BQ 30',
+      'BQ 40',
+      'Read',
+    ])
+    expect(labels('perBaseLetter', ['plain'])).toEqual([
+      'A',
+      'C',
+      'G',
+      'T',
+      'N',
+      'Read',
+    ])
+    const plainFill = legendFor({ type: 'normal' }, ['plain'])[0]!.color
+    for (const type of ['perBaseQuality', 'perBaseLetter'] as const) {
+      const body = legendFor({ type }, ['plain']).find(i => i.label === 'Read')
+      expect(body?.color).toBe(plainFill)
+    }
   })
 
   // Both classifiers run the same strand-equality test, on disjoint data (one
