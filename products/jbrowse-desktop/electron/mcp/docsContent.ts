@@ -36,7 +36,7 @@ const TOPICS: Record<string, { summary: string; text: string }> = {
   },
   automating: {
     summary:
-      'Overview of automating JBrowse: launch settings, the four front ends that accept them',
+      'The config and session document every front end takes, the fields a view launches with, where it comes from, and jbrowse validate',
     text: automating,
   },
 }

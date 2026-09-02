@@ -34,7 +34,6 @@
       "label": "Configuration",
       "overview": "config_guide",
       "items": [
-        "config_and_session_json",
         "automating",
         "urlparams",
         {

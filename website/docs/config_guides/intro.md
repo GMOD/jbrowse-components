@@ -109,7 +109,7 @@ createViewState({
 
 ## See also
 
-- [](/docs/config_and_session_json)
+- [](/docs/automating)
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [](/docs/config_guides/deploying)

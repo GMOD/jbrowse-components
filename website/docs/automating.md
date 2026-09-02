@@ -1,28 +1,93 @@
 ---
-title: Automating JBrowse
-sidebar_label: Automating JBrowse
+title: Config and session JSON
+sidebar_label: Config and session JSON
 description:
-  Launch and preset views from a URL, embedded app, config file, or session spec
+  The one JSON document every JBrowse surface takes, the fields a view launches
+  with, where the document comes from, and how to check it
 ---
 
-You can open JBrowse directly into a specific assembly, location, and set of
-tracks from a URL link, an embedded app, a config file, or a saved session spec.
-Every one of them writes the same settings directly on the view object: the
-assembly, location, tracks, and highlights it shows.
+A JBrowse session is a JSON document: the genomes loaded, the tracks and where
+their data lives, and the views that are open, at what locus, with which
+settings. You write or generate it and open it. Every surface takes the same
+document:
 
-For headless static-image export see [@jbrowse/img](/docs/jbrowse-img); for
-screenshotting a real running instance see [](/docs/agents_capture); for the
-Python/notebook API see [](/docs/jbrowse_anywidget). If a coding agent is doing
-the automating, start at [](/docs/agents).
+| Surface                                            | How it takes the document                                       |
+| -------------------------------------------------- | --------------------------------------------------------------- |
+| [jbrowse-web](/docs/quickstart_web)                | `config.json` beside the app, or `?config=` pointing at one     |
+| a link to jbrowse-web                              | `&session=`, or the per-view parameters in [](/docs/urlparams)  |
+| [jbrowse-desktop](/docs/quickstart_desktop)        | an opened `.jbrowse` file: the same format with a session in it |
+| [embedded components](/docs/embedded_components)   | the object passed to `createViewState`                          |
+| [](/docs/jbrowser) and [](/docs/jbrowse_anywidget) | what the helper functions assemble for you                      |
+| [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
+
+A running JBrowse also takes the document a piece at a time, an assembly or a
+track at once, with no file to edit. Every config block in these docs carries
+that route beside the file and the CLI command, on its own tab.
+
+## What a session document contains
+
+The genome, a track, and the view to open on:
+
+```json
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "BRCA1",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr17:43,044,295-43,170,245",
+        "tracks": ["ncbi_genes"]
+      }
+    ]
+  }
+}
+```
+
+- **`assemblies` and `tracks` are the catalog.** A file with just those works.
+  [](/docs/config_guides/intro) covers them and the optional top-level fields
+  beside them (`plugins`, `connections`, `internetAccounts`,
+  `aggregateTextSearchAdapters`, `configuration`).
+- **The session says what is open.** A view names a track by the `trackId` the
+  config gave it; the join above is the one string `"ncbi_genes"`.
+  [](/docs/config_guides/default_session) covers the session object, the
+  exported snapshot form, and shipping several named sessions.
+- **Settings live on the track, state lives in the session.** Color, height,
+  display mode and filters are [configuration slots](/docs/config_guides/tracks)
+  under the track's `displayDefaults`. What is open and where it is scrolled to
+  is session state. A view can still set a slot per launch by writing the track
+  entry as an object: `{ "trackId": "ncbi_genes", "height": 250 }`.
+- **A session can carry tracks of its own.** `sessionTracks` takes the same
+  track configs as `tracks`, but they travel with the session and never reach
+  the `config.json` the server hands every visitor. It is how a link adds a
+  track to somebody else's instance.
+- **On desktop the halves are one file.** A `.jbrowse` file is this document
+  with the session saved into it.
 
 ## What a view takes
 
-The settings that need resolving when the view attaches — an assembly, a
-location, track ids, highlights — are the `InitState` set below. Beneath it is
-`LinearGenomeViewLaunchProps`, the other half of what a launch may set: every
-plain view property, derived from the model, so a setting you can reach from a
-menu is generally settable at launch too. Both go on the view object, written
-the same way.
+The settings that need resolving when the view attaches are the `InitState` set.
+Beneath it is `LinearGenomeViewLaunchProps`: every plain view property, derived
+from the model, so a setting you can reach from a menu is settable at launch
+too. Both go on the view object, written the same way.
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 
@@ -78,13 +143,7 @@ export type LinearGenomeViewLaunchProps = Partial<
 >
 ```
 
-`loc` takes several whitespace-separated locstrings
-(`'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`) to open a
-discontinuous view of all of them; `displayedRegionNames` takes whole
-chromosomes, and is ignored when `loc` is set. `grow` needs a `loc` to expand.
-
-A `TrackInit` is either a track id string, or an object that also sets initial
-display options:
+A `TrackInit` is a track id string, or an object that also sets display options:
 
 <!-- include: packages/core/src/util/tracks.ts#trackInit -->
 
@@ -105,234 +164,103 @@ export type TrackInit =
     }
 ```
 
-Any other key on that object is folded into the display snapshot, so
-`{ trackId, height: 250 }` is the shorthand for the nested form above.
+- The init keys are applied once when the view attaches, then cleared, so a
+  saved session never retains them.
+- A `highlight` entry is a locstring, or a JSON object when it needs a color or
+  label:
+  `{"refName":"chr1","start":1000,"end":2000,"color":"#ff000055","label":"my region"}`.
+  In a URL the JSON form must contain no spaces.
+- Circular, dotplot, synteny, spreadsheet, breakpoint-split and SV-inspector
+  views each take their own launch fields, listed per view type in the
+  [session spec reference](/docs/urlparams#session-spec).
 
-The keys needing resolution are applied once when the view attaches, then
-cleared, so a saved session never retains them.
+## Where the view object goes
 
-## Ways to automate a view
+The same object serves every launch route unchanged:
 
-- Link to JBrowse Web at a location with
-  [URL query parameters](/docs/urlparams).
-- Embed a view in your own page or app by passing `location` (and related
-  fields) to `createViewState`, see
-  [](/docs/tutorials/embed_linear_genome_view).
-- Ship a preset view in a config file with a `defaultSession` in config.json,
-  see [](/docs/config_guides/default_session).
-- Open a preset session programmatically with a session spec, which lists these
-  same fields on each view, see [URL params → session spec](/docs/urlparams).
+- **A config file**, as `defaultSession`:
 
-## URL parameters
-
-JBrowse Web maps query parameters straight onto the view:
-
-```
-?assembly=hg19&loc=chr1:1,000-2,000&tracks=genes,variants&tracklist=true&nav=false&highlight=chr1:1,500-1,600
-```
-
-See [](/docs/urlparams) for every parameter, session specs for all view types,
-and shareable/encoded sessions.
-
-Embedded components (`@jbrowse/react-linear-genome-view2`,
-`@jbrowse/react-app2`) make no assumptions about URL parameters; that logic is
-up to the host application.
-
-## Embedded components (`createViewState`)
-
-`createViewState` accepts `location` and `highlight` and routes them through the
-same launch path, so an embedded view shows the loading spinner while the
-assembly loads:
-
-```js
-const state = createViewState({
-  assembly,
-  tracks,
-  location: 'chr1:1,000-2,000',
-  highlight: ['chr1:1,500-1,600'],
-})
-```
-
-For full track control at launch, provide a `defaultSession` whose view names
-its tracks. See [](/docs/tutorials/embed_linear_genome_view).
-
-`createViewState` also takes `localFiles` — `name -> bytes` — for a host whose
-data lives in a process rather than at a URL: a notebook kernel, an R session,
-anywhere with no web server and no CORS. `tracks` can then refer to a registered
-name as if it were a URL; register an index under its conventional sibling name
-(`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the file stays indexed, so only the
-bytes the current view needs are read.
-
-Two more options are the embedded LGV's own chrome, off by default because an
-embedded view is the chrome a host asked for and nothing more: `menuBar` draws
-the app-shaped `File` menu bar above the view, with the two items an embed can
-honour (open track, open connection), and `disableAddTracks` empties that menu
-back out and removes the track selector's own add-track affordances. (`height`
-now covers what `drawerViewHeight` used to — pass `height` instead.)
-
-### Non-React controllers
-
-The imperative `createLinearGenomeView` (see
-[non-React hosts](/docs/embedded_components#non-react-hosts)) takes callbacks in
-place of the props a React component would use: `onLocationChange` fires with
-the visible region as the user pans or zooms, `onFeatureSelect` fires with the
-clicked feature, `onSessionChange` fires with the view's layout whenever it
-settles (for a host offering "save this view"), and `onError` fires when the
-build itself fails — a genome that won't resolve, a plugin that won't fetch —
-since building is asynchronous and that throw can't reach your own call to it.
-`createApp`'s `onPluginsUpdated` fires instead when something changes the
-running plugin set (the plugin store widget, `session.addSessionPlugin`), with
-what a rebuild needs to remount the app on the new set.
-
-## Config / session files
-
-A `defaultSession` in config.json (or any session snapshot) carries the same
-view object a spec or a URL does:
-
-```json session
-{
-  "defaultSession": {
-    "name": "My session",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "hg19",
-        "loc": "chr1:1,000,000-2,000,000",
-        "tracks": ["genes", "variants"]
-      }
-    ]
+  ```json session
+  {
+    "defaultSession": {
+      "name": "My session",
+      "views": [
+        {
+          "type": "LinearGenomeView",
+          "assembly": "hg19",
+          "loc": "chr1:1,000,000-2,000,000",
+          "tracks": ["genes", "variants"]
+        }
+      ]
+    }
   }
-}
+  ```
+
+- **A link**, as query parameters mapped straight onto one linear view:
+
+  ```
+  ?assembly=hg19&loc=chr1:1,000-2,000&tracks=genes,variants&tracklist=true&nav=false&highlight=chr1:1,500-1,600
+  ```
+
+- **A session spec**, for several views, other view types, or tracks that exist
+  only in that link: the whole session as JSON after `&session=spec-`, with
+  every view type's fields on [](/docs/urlparams#session-spec).
+- **An embedded component**, as the object passed to `createViewState`
+  ([](/docs/embedded_components#driving-it-from-your-code)).
+
+## Where the document comes from
+
+- [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and
+  `jbrowse add-track` append to `config.json`, inferring the track type and the
+  adapter from the file you hand them; a track is an id, a uri and its assembly
+  ([the shortest track](/docs/config_guides/tracks#the-shortest-track)).
+- **The app tells you what to put in the session part.** Set the view up by
+  clicking; the URL bar shows the assembly, locus and track ids a view needs,
+  and `jbrowse set-default-session` installs a session file into a config.
+- **A track hub needs no config file at all.** `&hubURL=` loads a
+  [UCSC track hub](/docs/user_guides/hub_url) straight from a link, and
+  [](/docs/config_guides/connections) makes that permanent in a file.
+- **For a lot of tracks, generate it.** [](/docs/config_guides/deploying) covers
+  building `config.json` from a script.
+- **The generated reference** lists every slot of every type under
+  [](/docs/config) and every state model under [](/docs/models), both from the
+  release you are running. [](/docs/config_guides/file_types) maps a file format
+  to its adapter, and [](/docs/config_guides/slot_types) says what a slot's type
+  accepts.
+
+## Checking a document
+
+```bash
+jbrowse validate config.json
 ```
 
-One view object therefore serves a config, a
-[session spec](/docs/urlparams#session-spec) and an `addView` call alike, and
-the plain view settings — `colorByCDS`, `showAminoAcids`, `showCenterLine`,
-`trackLabels`, `showHighlightChips` — sit beside `loc` and `tracks` on it.
+The [validate command](/docs/cli#jbrowse-validate) checks a config or a saved
+`.jbrowse` session against a manifest generated from the same schemas. It
+catches what JBrowse itself ignores: a misspelled slot that leaves the setting
+doing nothing, a track naming an assembly that is not defined, a
+`defaultSession` naming a `trackId` that does not exist, and a slot written on a
+snapshot's display node where only a state-model property is read.
 
-See [](/docs/config_guides/default_session).
+## Drawing the document as a static image
 
-## Highlights
+The same document renders headlessly. `jb2export`, from
+[@jbrowse/img](/docs/jbrowse-img), takes the same config, assembly, location and
+tracks and writes SVG, PNG or PDF:
 
-A `highlight` entry can be a plain locstring (`chr1:1,000-2,000`) or, when you
-need a custom color or label, a JSON object:
-
-```
-{"refName":"chr1","start":1000,"end":2000,"color":"#ff000055","label":"my region"}
-```
-
-In a URL, `highlight` is space-separated and the JSON form must not contain
-spaces (a space inside a label is split apart); the JSON form is most reliable
-for programmatic `createViewState`/session-JSON launches. See the
-[`&highlight=` reference](/docs/urlparams) for details.
-
-## Other view types
-
-Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
-views each accept their own set of launch fields, applied once on launch in the
-same way. Their fields are documented per view type in the [](/docs/urlparams)
-session-spec section.
-
-## Headless / puppeteer
-
-When you want a static image of a view, reach for
-[@jbrowse/img](/docs/jbrowse-img) first, as it renders SVG/PNG/PDF from the
-command line without a browser.
-
-Drive the full JBrowse Web app with puppeteer (or Playwright) for a real
-screenshot of the running UI, a transient state (an open menu, a hover popover,
-a loaded track after user interaction), or scraped DOM. The URL parameters above
-set the initial state, so the pattern is to navigate to a URL carrying that
-state, wait for it to settle, then act.
-
-Three things commonly trip people up when driving JBrowse headlessly.
-
-- **GPU rendering.** JBrowse renders tracks on the GPU, and headless Chrome has
-  no GPU, so canvases come up blank without a software renderer. Launch with
-  `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
-- **Knowing when a view has finished loading.** JBrowse publishes its own state
-  onto the DOM for exactly this: a view carries `data-view-phase="loading"`
-  while it is still waiting on its assembly (or on its launch navigation) and
-  has mounted no displays yet, and each track display carries
-  `data-display-phase="loading"` for the whole of its fetch. Waiting until
-  neither is present reads the app's own state. Key the wait on those
-  attributes: the loading overlay keeps the literal `Loading…` in the DOM behind
-  `opacity: 0`, so a text scan needs a computed-style check on top.
-- **`screenshot({ fullPage: true })`.** Puppeteer implements it by resizing the
-  viewport to the scroll size and restoring it afterwards, and that resize
-  invalidates the page raster, so on a loaded machine the capture can come back
-  before the content has redrawn: app chrome around a white, empty content area.
-  JBrowse fills the window and does not scroll the page, so a plain
-  `page.screenshot()` already captures the whole app. Set a taller viewport if
-  you want a taller image.
-
-```js
-import puppeteer from 'puppeteer'
-
-const browser = await puppeteer.launch({
-  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
-})
-const page = await browser.newPage()
-// deviceScaleFactor 2 gives a crisp, retina-resolution capture
-await page.setViewport({ width: 1500, height: 800, deviceScaleFactor: 2 })
-
-// the same URL params documented above put the view into the desired state
-await page.goto(
-  'https://jbrowse.org/code/jb2/main/?config=test_data/config.json' +
-    '&assembly=hg19&loc=chr1:1,000,000-2,000,000&tracks=ncbi_gff_hg19,clinvar_hg19&nav=false',
-  { waitUntil: 'networkidle0' },
-)
-
-// every view has its assembly and has mounted its displays
-await page.waitForFunction(
-  () => !document.querySelector('[data-view-phase="loading"]'),
-)
-// every track display has finished fetching and drawing
-await page.waitForFunction(
-  () => !document.querySelector('[data-display-phase="loading"]'),
-)
-
-await page.screenshot({ path: 'view.png' })
-await browser.close()
+```bash
+jb2export --config hg38.json --assembly hg38 \
+  --loc chr17:43,044,295-43,170,245 --track ncbi_genes --out brca1.png
 ```
 
-The waits return as soon as a display is finished rather than pending, so they
-will not tell you a capture came out empty: check the frame, or assert on
-something the data itself produces.
-
-Two of the terminal states replace the display's whole subtree rather than
-overlaying it, and so publish no `data-display-phase` at all: "too large", and a
-rendering-backend failure. An ordinary fetch error is an overlay on the still
-mounted canvas, and does publish `error`. The waits above are unaffected — none
-of the three is `loading` — but a census over `[data-display-phase]` counts the
-first two as absent, not as terminal.
-
-For a longer-form session (multiple views, per-track display options) encode a
-full session spec rather than individual params. See the session-spec section of
-the [](/docs/urlparams).
-
-Nearly every figure on this documentation site is produced this way. Each one is
-a declarative spec in
-[`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts)
-that names a config, a session, and what to wait for, and the generator turns it
-into the committed PNG the docs embed. That is also why most figures carry an
-"Open this view in JBrowse" link: the image and the link come from the same
-spec, so a figure can't drift from the app it depicts.
-
-That generator does everything above and handles several finicky details:
-freezing CSS animations so menus and popovers aren't caught mid-transition,
-calling `requestAnimationFrame` twice before capture so a freshly-composited GPU
-layer is actually rasterized, and using a fresh browser per navigation to
-sidestep service-worker caching. For a complete worked example, see
-[`website/scripts/generate-screenshots.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/generate-screenshots.ts)
-and the reusable wait helpers (`waitForViewPhases`, `waitForDisplayPhases`,
-`waitForDisplaysDone`, `waitForLoadingComplete`, `waitForQuiescent`) it imports
-from
-[`packages/browser-test-utils`](https://github.com/GMOD/jbrowse-components/tree/main/packages/browser-test-utils).
+For a screenshot of the running app, a menu or a hover, see
+[](/docs/agents_capture). Nearly every figure on this site is rendered from one
+of these documents, which is why most carry an "Open this view in JBrowse" link:
+the image and the live session come from the same spec.
 
 ## See also
 
-- [](/docs/config_and_session_json)
-- [](/docs/embedded_components)
-- [](/docs/config_guides/default_session)
-- [](/docs/urlparams)
+- [](/docs/config_guide), how to configure each part of the file
+- [](/docs/cookbook), recipes short enough to copy
+- [](/docs/config_guides/default_session), the session object in full
+- [](/docs/urlparams), the same session expressed in a link
+- [](/docs/cli), the commands that write the file for you

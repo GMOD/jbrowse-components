@@ -59,12 +59,50 @@ views.
 
 ## Non-React hosts
 
-Every package exports an imperative controller (`createLinearGenomeView`,
-`createCircularGenomeView`, `createApp`) with no JSX and no React root to
-manage. The [Python anywidget](/docs/jbrowse_anywidget), R htmlwidgets and plain
-`<script>` pages are built on it; the vanillajs rows in
-[bundler examples](#bundler-examples) are reference implementations. Driving one
-from your own code is covered in [](/docs/automating).
+Every package also exports an imperative controller — `createLinearGenomeView`,
+`createCircularGenomeView`, `createApp` — with no JSX and no React root for you
+to manage. It's what the [Python anywidget](/docs/jbrowse_anywidget), R
+htmlwidgets, and plain `<script>` pages are built on. See the vanillajs rows in
+[bundler examples](#bundler-examples) below for a working reference
+implementation of each.
+
+## Driving it from your code
+
+`createViewState` takes the same view fields a config or a link does
+([](/docs/automating#what-a-view-takes)), and routes `location` and `highlight`
+through the same launch path, so an embedded view shows the loading spinner
+while the assembly loads:
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'chr1:1,000-2,000',
+  highlight: ['chr1:1,500-1,600'],
+})
+```
+
+- **Full track control at launch** is a `defaultSession` whose view names its
+  tracks ([](/docs/tutorials/embed_linear_genome_view)).
+- **`localFiles`**, a `name -> bytes` map, serves a host whose data lives in a
+  process rather than at a URL: a notebook kernel, an R session, anywhere with
+  no web server and no CORS. `tracks` then refers to a registered name as if it
+  were a URL. Register an index under its conventional sibling name
+  (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and only the bytes the view needs are
+  read.
+- **`menuBar`** draws the app-shaped `File` menu bar above the embedded linear
+  view, with the two items an embed can honour (open track, open connection);
+  **`disableAddTracks`** empties that menu and removes the track selector's
+  add-track affordances. Both are off by default. `height` sets the view's
+  height.
+- **The imperative controllers take callbacks** in place of props:
+  `onLocationChange` fires with the visible region as the user pans or zooms,
+  `onFeatureSelect` with the clicked feature, `onSessionChange` with the view's
+  layout whenever it settles (for a host offering "save this view"), and
+  `onError` when the build itself fails, since building is asynchronous and that
+  throw cannot reach your own call. `createApp`'s `onPluginsUpdated` fires when
+  something changes the running plugin set, with what a rebuild needs to remount
+  the app on the new set.
 
 ## Bundler examples
 
@@ -83,7 +121,6 @@ from your own code is covered in [](/docs/automating).
 
 ## See also
 
-- [](/docs/automating)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/jbrowse_anywidget): Python equivalent
 - [](/docs/jbrowser): R/Shiny equivalent

@@ -371,8 +371,8 @@ A "session spec" encodes a session as JSON in the URL, as the value of
 
 Each view object lists the keys that view launches with, written directly on the
 view as below. A `defaultSession` in a config carries the same object (see
-[Config / session files](/docs/automating#config--session-files)), so a view
-moves between a spec, a config and an `addView` call unchanged.
+[Where the view object goes](/docs/automating#where-the-view-object-goes)), so a
+view moves between a spec, a config and an `addView` call unchanged.
 
 Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
 [extension point](/docs/developer_guides/extension_points) that builds the view
@@ -1693,7 +1693,6 @@ For everyone opening a config to have the plugin, put it in that config's own
 
 ## See also
 
-- [](/docs/config_and_session_json)
 - [](/docs/automating)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/config_guides/default_session)

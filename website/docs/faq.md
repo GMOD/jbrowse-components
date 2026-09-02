@@ -48,8 +48,8 @@ local file never travels in a share link. See
 Every genome view has an "Export SVG" option that writes exactly what is on
 screen, ready for Illustrator or Inkscape. To regenerate figures as the data
 changes, [@jbrowse/img](/docs/jbrowse-img) renders from the command line, and
-[](/docs/automating#headless--puppeteer) drives the running app for a screenshot
-of a menu or an interaction.
+[](/docs/agents_capture) drives the running app for a screenshot of a menu or an
+interaction.
 
 ### How do I cite JBrowse 2
 
