@@ -76,7 +76,6 @@ export interface PerRegionTestControl {
 /** Which of the gate's opt-in hooks this display overrides. */
 export interface GateOptIns {
   gateEnabled?: boolean
-  densityGateEnabled?: boolean
 }
 
 function makeStateModel(
@@ -112,9 +111,6 @@ function makeStateModel(
     .views(self => ({
       get gateEnabled() {
         return gate.gateEnabled ?? false
-      },
-      get densityGateEnabled() {
-        return gate.densityGateEnabled ?? false
       },
       get densityTooLarge() {
         return control.densityTooLarge

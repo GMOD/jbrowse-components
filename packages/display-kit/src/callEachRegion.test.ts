@@ -1,4 +1,4 @@
-import { callEachRegion } from './MultiRegionDisplayMixin.ts'
+import { callEachRegion } from './fetchEachRegion.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'

@@ -2,6 +2,7 @@ import {
   AUTO_FORCE_LOAD_BP,
   SUB_FLOOR_BYTE_BUDGET_FACTOR,
 } from '@jbrowse/display-kit/regionTooLargeUtils'
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
 import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
 
@@ -168,10 +169,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
 // bpPerPx — with nothing measured under it at the span being judged, so it
 // keeps the floor the byte axis dropped.
 describe('densityGateActive', () => {
-  const gate: GateOptIns = {
-    gateEnabled: true,
-    densityGateEnabled: true,
-  }
+  const gate: GateOptIns = { gateEnabled: true }
 
   it('is on above the floor', () => {
     const { display, view } = setup(gate)
@@ -182,13 +180,6 @@ describe('densityGateActive', () => {
   it('is off below the floor, while the byte axis stays on', () => {
     const { display, view } = setup(gate)
     zoomTo(view, NARROW)
-    expect(display.gateActive).toBe(true)
-    expect(display.densityGateActive).toBe(false)
-  })
-
-  it('is off for a display that did not opt the axis in', () => {
-    const { display, view } = setup({ gateEnabled: true })
-    zoomTo(view, WIDE)
     expect(display.gateActive).toBe(true)
     expect(display.densityGateActive).toBe(false)
   })
@@ -293,7 +284,7 @@ describe('gateMeasurementStale', () => {
 // honestly answer no. Density falls with bpPerPx by construction.
 describe('zoomCanReleaseGate', () => {
   function overBudget(display: PerRegionTestDisplay, bytes = 1_000_000_000) {
-    display.setByteEstimate({ bytes, viewport: display.gateViewport! })
+    stageByteEstimate(display, bytes)
   }
 
   it('is true before anything has been measured', () => {
@@ -337,16 +328,13 @@ describe('zoomCanReleaseGate', () => {
   // zooms, so the flag sets while the banner is held by density — and the
   // banner would then withhold the one way out that works.
   it('stays true on a density banner, however flat the bytes are', () => {
-    const { display, view, control } = setup({
-      gateEnabled: true,
-      densityGateEnabled: true,
-    })
+    const { display, view, control } = setup({ gateEnabled: true })
     control.densityTooLarge = true
     zoomTo(view, WIDE)
-    display.setByteEstimate({ bytes: 1000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1000)
     // still above the floor, so the density axis is the one holding the banner
     zoomTo(view, CLOSER)
-    display.setByteEstimate({ bytes: 1000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1000)
 
     expect(display.byteEstimate!.zoomIneffective).toBe(true)
     expect(display.tooLargeStatus.axis).toBe('density')

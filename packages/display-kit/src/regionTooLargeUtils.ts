@@ -99,8 +99,6 @@ export type GateEvent =
     }
   | { kind: 'invalidated' }
   | { kind: 'forceLoad'; approved: boolean }
-  /** changes nothing, so a walk over events can assert that it doesn't */
-  | { kind: 'viewportMoved' }
 
 /**
  * The commit protocol, pure so `nextGateState.test.ts` can walk event
@@ -111,9 +109,6 @@ export type GateEvent =
  */
 export function nextGateState(prev: GateState, event: GateEvent): GateState {
   switch (event.kind) {
-    case 'viewportMoved': {
-      return prev
-    }
     case 'forceLoad': {
       return { ...prev, forceLoadTrack: event.approved }
     }

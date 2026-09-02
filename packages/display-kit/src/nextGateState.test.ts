@@ -101,11 +101,6 @@ describe('the four rules, named', () => {
     expect(cleared.forceLoadTrack).toBe(true)
     expect(cleared.byteEstimate).toBeUndefined()
   })
-
-  it('is a no-op on an ordinary pan, so the banner does not flicker', () => {
-    const loaded = nextGateState(EMPTY, measured({ bytes: 500 }))
-    expect(nextGateState(loaded, { kind: 'viewportMoved' })).toBe(loaded)
-  })
 })
 
 // A seeded LCG, so a failure is reproducible from the seed printed with it.
@@ -137,7 +132,7 @@ function applyToModel(model: Model, event: GateEvent, liveTier: string) {
   } else if (event.kind === 'invalidated') {
     model.bytes = undefined
     model.key = undefined
-  } else if (event.kind === 'measurement') {
+  } else {
     const { issued, bytes } = event
     // a measurement counts only if it was issued against the file we are still
     // asking about
@@ -177,8 +172,6 @@ describe('a seeded walk over event sequences agrees with the rules as stated', (
           currentTierKey: liveTier,
           bytes: rand() < 0.75 ? Math.floor(rand() * 1_000_000) : undefined,
         })
-      } else if (roll < 0.7) {
-        event = { kind: 'viewportMoved' }
       } else if (roll < 0.85) {
         event = { kind: 'invalidated' }
       } else {

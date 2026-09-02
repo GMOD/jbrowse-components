@@ -31,6 +31,8 @@ function applyGateEvent(self: GateState, event: GateEvent) {
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
   configuration: RegionTooLargeConfigModel
+  /** `FetchMixin`'s: the retry every composing display carries, which `forceLoad` runs after the approval */
+  reload: () => void
   /**
    * `FetchMixin`'s serialized `rpcProps()`, which both foundations compose
    * beside this mixin. A term of the measurement, never of the budget — see
@@ -94,14 +96,6 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Whether the density axis applies. `CanvasFeatureGateMixin` contributes
-       * `true` beside its measurement; byte-only displays leave it.
-       */
-      get densityGateEnabled(): boolean {
-        return false
-      },
-      /**
-       * #getter
        * The adapter config the gate measures — the one at `byteGateAdapterPath`.
        * Overridable for a display whose adapter config is synthesized rather
        * than read off the track.
@@ -122,7 +116,9 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The density axis's verdict; canvas overrides it.
+       * The density axis's verdict, and the whole of that axis's opt-in:
+       * `CanvasFeatureGateMixin` overrides it beside the measurement that
+       * fills it, and a byte-only display leaves it false.
        */
       get densityTooLarge(): boolean {
         return false
@@ -262,13 +258,12 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * `gateActive` plus the density axis's own terms: the axis is on, and the
-       * span is above the floor.
+       * Whether the density axis may act: `gateActive`, and the span is above
+       * the floor — the one axis the floor applies to. Whether it has anything
+       * to say is `densityTooLarge`.
        */
       get densityGateActive(): boolean {
-        return (
-          self.gateActive && self.densityGateEnabled && self.aboveForceLoadFloor
-        )
+        return self.gateActive && self.aboveForceLoadFloor
       },
       /**
        * #method
@@ -346,24 +341,6 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * The bytes half of a measurement alone, for a test staging a display.
-       * Production commits through `commitFetchBytes`.
-       */
-      setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
-        applyGateEvent(self, {
-          kind: 'measurement',
-          issued: {
-            viewport: measurement.viewport,
-            gated: false,
-            tierKey: undefined,
-          },
-          currentTierKey: undefined,
-          bytes: measurement.bytes,
-        })
-      },
-
-      /**
-       * #action
        * Drops the estimate and the viewport stamp. `forceLoadTrack` survives:
        * it is a track-wide approval.
        */
@@ -377,12 +354,6 @@ export default function RegionTooLargeMixin() {
       setForceLoadTrack(flag: boolean) {
         applyGateEvent(self, { kind: 'forceLoad', approved: flag })
       },
-
-      /**
-       * #action
-       * Overridden by the composing display.
-       */
-      reload() {},
     }))
     .actions(self => ({
       /**
@@ -414,7 +385,7 @@ export default function RegionTooLargeMixin() {
        */
       forceLoad() {
         self.setForceLoadTrack(true)
-        self.reload()
+        host(self).reload()
       },
     }))
     .actions(self => ({

@@ -1,3 +1,4 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -71,10 +72,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('trips when the captured byte estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    }) // over the 5MB config
+    stageByteEstimate(display, 8_000_000) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -82,10 +80,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('releases when a re-measure comes back under the cap', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom alone is not a verdict — the stored figure is what the index quoted,
@@ -95,10 +90,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
 
-    display.setByteEstimate({
-      bytes: 1_600_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_600_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -109,10 +101,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('releases the same estimate below the force-load floor, on the budget tier', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(20)
@@ -120,10 +109,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(false)
 
     // and the axis is still live down there — it is a tier, not an off-switch
-    display.setByteEstimate({
-      bytes: 40_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 40_000_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
@@ -143,7 +129,11 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     expect(view.visibleBp).toBeLessThan(issued.spanBp)
 
-    display.setByteEstimate({ bytes: 7_500_000, viewport: issued })
+    display.commitFetchBytes([7_500_000], {
+      viewport: issued,
+      gated: false,
+      tierKey: undefined,
+    })
 
     expect(display.byteEstimate?.measuredSpanBp).toBe(issued.spanBp)
     expect(display.estimatedFetchBytes).toBe(7_500_000)
@@ -160,10 +150,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     }).createDisplay()
     view.zoomTo(100)
     // 8MB is over the 5MB display config but under the 50MB adapter limit
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -171,10 +158,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('force-load exempts the track and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.forceLoad()
@@ -186,10 +170,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.configuration.setSlot('forceLoad', true)
@@ -202,10 +183,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('clears the cached estimate on region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     expect(display.regionTooLarge).toBe(true)
 
     // MultiRegionDisplayMixin's DisplayedRegionsChange autorun drops the
@@ -226,7 +204,11 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     const issued = display.gateViewport!
-    display.setByteEstimate({ bytes: 8_000_000, viewport: issued })
+    display.commitFetchBytes([8_000_000], {
+      viewport: issued,
+      gated: false,
+      tierKey: undefined,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -315,10 +297,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('keeps force-load across region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 8_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 8_000_000)
     display.forceLoad()
 
     // track-wide approval, so the nav clears survive it

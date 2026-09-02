@@ -63,8 +63,7 @@ function axisOriginBp(
 
 /**
  * The LD matrix fetch, as the three phases `installGlobalFetchAutorun` runs it
- * in. `afterAttach` hands these to the skeleton; a test wanting one round trip
- * on demand passes them to `runGlobalFetchOnce`. Every gate is the installed
+ * in, which `afterAttach` hands to the skeleton. Every gate is the installed
  * declaration's — minimized, view not initialized, the byte-gate skip, and the
  * signature against the stamp its own commit wrote — as are the byte
  * measurement the result carries and that stamp, so what is left here is LD's

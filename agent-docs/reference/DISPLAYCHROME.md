@@ -694,12 +694,14 @@ raw flag can never flip:
   past base resolution, LD with the triangle off — had wired the *scrim* and the
   *export* by hand, through two hooks that have since become one (`fetchInert`),
   and missed the third reader, the one outside the display.
-- **`paintInert`** — a fetch that failed before first paint. The error bar is an
+- **`paintInert`** — a paint that is never coming: a fetch that failed before
+  first paint, a standing user cancel, or an empty viewport. The error bar is an
   *overlay*, so the canvas stays mounted, nothing draws into it, and the flag
-  stays false for the rest of the session. Both families fill the hook with
-  `!!error`. Arc was immune only by accident: its `painted` is
-  `features !== undefined || !!error`, a hand-written expression that carried
-  the term the shared getter never got.
+  stays false for the rest of the session; a cancel is the same shape, being
+  durable until Retry or a viewport change. Both families fill the hook with
+  `foundationPaintInert`. Arc was immune only by accident: its `painted` is
+  `features !== undefined || self.paintInert`, a hand-written expression that
+  carried the term the shared getter never got.
 
 Either way the failure is the same and it is invisible: `PENDING_DISPLAYS`
 selects `[data-display-drawn="false"]`, so a zoomed-out reference sequence track

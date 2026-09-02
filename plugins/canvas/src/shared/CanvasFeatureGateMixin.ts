@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
-import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
@@ -70,13 +70,6 @@ export default function CanvasFeatureGateMixin() {
        * declares it; `no-restricted-syntax` fails the other order.
        */
       get gateEnabled() {
-        return true
-      },
-      /**
-       * #getter
-       * The density axis is on where something measures it.
-       */
-      get densityGateEnabled() {
         return true
       },
       /**

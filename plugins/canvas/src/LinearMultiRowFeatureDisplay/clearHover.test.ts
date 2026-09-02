@@ -1,3 +1,5 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MultiRowHit } from './model.ts'
@@ -65,20 +67,14 @@ test('the display scrolling under the cursor clears the hover', () => {
 // paints a box on a block the cursor is nowhere near.
 test('the too-large banner clears the hover', () => {
   const { display } = hovering()
-  display.setByteEstimate({
-    bytes: 500_000_000,
-    viewport: display.gateViewport!,
-  })
+  stageByteEstimate(display, 500_000_000)
   expect(display.regionTooLarge).toBe(true)
   expect(display.hoveredFeature).toBeUndefined()
 })
 
 test('force load releasing the banner clears it too', () => {
   const { display } = hovering()
-  display.setByteEstimate({
-    bytes: 500_000_000,
-    viewport: display.gateViewport!,
-  })
+  stageByteEstimate(display, 500_000_000)
   display.setHoveredFeature(HIT)
 
   display.setForceLoadTrack(true)

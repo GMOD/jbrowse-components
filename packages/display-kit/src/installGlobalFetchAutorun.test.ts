@@ -104,8 +104,8 @@ const TestDisplay = types
     // handed — the byte gate's whole main-thread surface now that the fetch
     // itself measures
     committedBytes: [] as (number | undefined)[][],
-    // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and
-    // `signatureCurrent` compares against
+    // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and `dataCurrent`
+    // compares against
     loadedFetchSignature: undefined as string | undefined,
   }))
   .volatile(self => ({
@@ -135,7 +135,7 @@ const TestDisplay = types
         .map(b => b.key)
         .join(',')}|${this.rpcPropsCacheKey}`
     },
-    get signatureCurrent() {
+    get dataCurrent() {
       return isDataCurrent(self.loadedFetchSignature, this.fetchSignature)
     },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
@@ -697,7 +697,7 @@ describe('a blocked display still re-measures', () => {
   })
 
   // The same invariant against a display that is HOLDING data for the viewport
-  // it returns to, which is the half `signatureCurrent` used to break: the
+  // it returns to, which is the half the freshness compare used to break: the
   // freshness gate answers "nothing owed" for a span whose data was committed
   // earlier, while the banner is hiding that very data and this fetch is the
   // only re-measure. What makes `regionTooLarge` outrank it is `committedKey`
@@ -708,7 +708,7 @@ describe('a blocked display still re-measures', () => {
   it('fetches a viewport whose data it still holds, and only once', async () => {
     const { view, display, fetched } = await setup(() => true, 'data')
     await settle()
-    expect(display.signatureCurrent).toBe(true)
+    expect(display.dataCurrent).toBe(true)
     const afterFirst = fetched.count
 
     display.setTooLarge(true, /* stale */ true)

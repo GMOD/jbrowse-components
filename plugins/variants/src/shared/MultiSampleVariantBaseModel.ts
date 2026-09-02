@@ -23,10 +23,9 @@ import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import MultiRegionDisplayMixin, {
-  fetchRegionsBatched,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   RowHeightMixin,
@@ -68,7 +67,7 @@ import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'

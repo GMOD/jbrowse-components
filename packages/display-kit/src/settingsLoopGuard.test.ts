@@ -13,7 +13,7 @@
  * throws at a user. Neither shows up in any other test, because in every other
  * test the guard is simply never called twice.
  */
-import { makeSettingsLoopGuard } from './MultiRegionDisplayMixin.ts'
+import { makeSettingsLoopGuard } from './displayAutoruns.ts'
 
 test('a runaway synchronous loop throws, naming the autorun and the cause', () => {
   const guard = makeSettingsLoopGuard('SettingsInvalidate')

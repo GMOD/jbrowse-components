@@ -1,6 +1,7 @@
 import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
 import { createRpcTestEnvironment } from './testUtils.ts'
 
@@ -48,10 +49,7 @@ function densityDisplay({
   const { display, view } = createDisplay()
   view.zoomTo(100)
   if (refused) {
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
   }
   return { display, view }
 }
@@ -93,7 +91,7 @@ test('the tier is loading until its bins land, then ready', () => {
 
   display.setDensityBins(
     [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    'test-key',
+    { regions: [], bucket: 0, adapterKey: 'test-key' },
   )
   expect(display.densityCoverageRegions.size).toBe(1)
   expect(display.displayPhase).toBe('ready')
@@ -105,7 +103,7 @@ test('the swap does not release the fetch gate', () => {
   const { display } = refusedDisplay({ withSource: true })
   display.setDensityBins(
     [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    'test-key',
+    { regions: [], bucket: 0, adapterKey: 'test-key' },
   )
   expect(display.regionTooLarge).toBe(true)
   expect(display.gateActive).toBe(true)
@@ -120,7 +118,7 @@ test('the band draws off the bins and the pileup uploads nothing', () => {
         bins: bins([0, 50_000], [50_000, 100_000], [1000, 4000]),
       },
     ],
-    'test-key',
+    { regions: [], bucket: 0, adapterKey: 'test-key' },
   )
   const region = display.densityCoverageRegions.get(0)!
   expect(region.coveragePackedBuffer.byteLength).toBeGreaterThan(0)
@@ -176,7 +174,7 @@ test('a forced density tier stands in with no refusal at all', () => {
 
   display.setDensityBins(
     [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    'test-key',
+    { regions: [], bucket: 0, adapterKey: 'test-key' },
   )
   expect(display.awaitingDependentData).toBe(false)
   expect(display.densityCoverageRegions.size).toBe(1)
@@ -190,10 +188,7 @@ describe('the band fetches nothing where the gate is not blocking', () => {
     setConf(display, 'densityTier', 'density')
     expect(display.fetchSuspended).toBe(true)
 
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.fetchSuspended).toBe(true)
   })
 
@@ -203,10 +198,7 @@ describe('the band fetches nothing where the gate is not blocking', () => {
     expect(display.densityTierActive).toBe(true)
     expect(display.fetchSuspended).toBe(true)
 
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.fetchSuspended).toBe(false)
   })
 

@@ -1,8 +1,7 @@
-import { runGlobalFetchOnce } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
-import { ldFetchPhases } from './ldFetchPhases.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { awaitFetch, createTestEnvironment } from './testEnv.ts'
 
 // Derived regionTooLarge: a pure function of the cached byte estimate scaled to
 // the current viewport. These lock in the behavior the imperative path got
@@ -27,10 +26,7 @@ describe('LD derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -42,10 +38,7 @@ describe('LD derived regionTooLarge', () => {
   it('holds until a fresh measurement releases it, not on zoom alone', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
@@ -54,17 +47,14 @@ describe('LD derived regionTooLarge', () => {
     // ...and the autorun knows to go and ask again
     expect(display.gateMeasurementStale).toBe(true)
 
-    display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 700_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // pan (same zoom) keeps it too large; the estimate is not cleared
@@ -76,10 +66,7 @@ describe('LD derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -89,10 +76,7 @@ describe('LD derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -104,10 +88,7 @@ describe('LD derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out: the scaled estimate grows past the raw captured bytes, so a
@@ -128,26 +109,21 @@ describe('LD derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     expect(display.adapterFetchSizeLimit).toBeUndefined()
-    display.setByteEstimate({
-      bytes: 3_000_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 3_000_000)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  // The release mechanism itself, driven through the fetch rather than through
-  // setByteEstimate: `installGlobalFetchAutorun` skips only on `regionTooLarge
-  // && !gateMeasurementStale`, so a blocked display still runs one fetch per
-  // settled viewport and that fetch's pre-flight is what re-measures. What
-  // these pin is the phases and the commit — that `ldFetchPhases` does not
-  // restate the too-large skip itself (when it did, the gate RPC was never
-  // reached and no amount of zooming could clear the banner: only force-load or
-  // chromosome nav could), and that the measurement rides in the fetch. The
-  // GATE those phases run under is the installed declaration's, and
-  // `installGlobalFetchAutorun.test.ts` is what drives it —
-  // `runGlobalFetchOnce` deliberately has none, so a decline here would be the
-  // plan's own.
+  // The release mechanism itself, driven through the installed fetch rather
+  // than through a staged estimate: `installGlobalFetchAutorun` skips only on
+  // `regionTooLarge && !gateMeasurementStale`, so a blocked display still runs
+  // one fetch per settled viewport and that fetch's pre-flight is what
+  // re-measures. What these pin is the phases and the commit — that
+  // `ldFetchPhases` does not restate the too-large skip itself (when it did,
+  // the gate RPC was never reached and no amount of zooming could clear the
+  // banner: only force-load or chromosome nav could), and that the measurement
+  // rides in the fetch. The gate terms themselves are
+  // `installGlobalFetchAutorun.test.ts`'s.
   it('still measures while the banner holds, so a fresh estimate releases it', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
@@ -155,10 +131,7 @@ describe('LD derived regionTooLarge', () => {
     await new Promise(res => setTimeout(res, 0))
 
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom in: the stored estimate is now about a viewport the user has left.
@@ -175,7 +148,7 @@ describe('LD derived regionTooLarge', () => {
     // counted from here, since the autorun installed above has already run one
     // fetch of its own against the default (undefined-returning) mock
     mockRpcCall.mockClear()
-    await runGlobalFetchOnce(display, ldFetchPhases(display))
+    await awaitFetch(mockRpcCall, display)
 
     // one call, not two: the measurement rides in the fetch that would have
     // followed it
@@ -186,18 +159,18 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // A return to a viewport this display already HOLDS data for, so
-  // `signatureCurrent` is true from that earlier commit — and the fetch still
+  // A return to a viewport this display already HOLDS data for, so the
+  // signature compare is satisfied by that earlier commit — and the fetch still
   // has to reach the RPC, because the banner is hiding that data and the
   // measurement is the only thing that releases it. What this pins is the LD
   // side of it: one RPC, carrying the byte limit, and a commit that clears both
   // the banner and the stale-measurement flag. The PRECEDENCE that lets the run
   // through is the installed autorun's `committedKey`, which reads as absent
   // while `regionTooLarge` holds — `installGlobalFetchAutorun.test.ts`'s
-  // 'fetches a viewport whose data it still holds, and only once' is what pins
-  // that, since `runGlobalFetchOnce` here has no gates to consult. Before the
-  // precedence existed this shipped as a display stuck at `tooLarge` with zero
-  // RPCs and no way out but force-load or chromosome nav.
+  // 'fetches a viewport whose data it still holds, and only once' pins that on
+  // the skeleton. Before the precedence existed this shipped as a display stuck
+  // at `tooLarge` with zero RPCs and no way out but force-load or chromosome
+  // nav.
   it('fetches at a viewport whose data it still holds', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
@@ -208,7 +181,7 @@ describe('LD derived regionTooLarge', () => {
     mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
       method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
     )
-    await runGlobalFetchOnce(display, ldFetchPhases(display))
+    await awaitFetch(mockRpcCall, display)
     expect(display.dataCurrent).toBe(true)
 
     // out to a viewport the gate refuses
@@ -218,7 +191,7 @@ describe('LD derived regionTooLarge', () => {
         ? { regionTooLarge: true, bytes: 6_000_000 }
         : null,
     )
-    await runGlobalFetchOnce(display, ldFetchPhases(display))
+    await awaitFetch(mockRpcCall, display)
     expect(display.regionTooLarge).toBe(true)
 
     // back to the one whose data is still in hand: the banner holds, the
@@ -234,7 +207,7 @@ describe('LD derived regionTooLarge', () => {
       method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
     )
     mockRpcCall.mockClear()
-    await runGlobalFetchOnce(display, ldFetchPhases(display))
+    await awaitFetch(mockRpcCall, display)
 
     // exactly one, and it released the banner
     expect(
@@ -266,7 +239,7 @@ describe('LD derived regionTooLarge', () => {
         : null,
     )
     mockRpcCall.mockClear()
-    await runGlobalFetchOnce(display, ldFetchPhases(display))
+    await awaitFetch(mockRpcCall, display)
 
     const calls = mockRpcCall.mock.calls.filter(c => c[1] === 'RenderLDData')
     expect(calls).toHaveLength(1)
@@ -291,10 +264,7 @@ describe('LD derived regionTooLarge', () => {
     await new Promise(res => setTimeout(res, 0))
 
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([

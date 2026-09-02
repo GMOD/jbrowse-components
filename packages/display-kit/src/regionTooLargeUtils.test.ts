@@ -444,9 +444,10 @@ describe('a gating display whose schema declares no budget', () => {
     const display = NoBudgetDisplay.create()
     expect(display.resolvedByteLimit()).toBe(BASE_FETCH_SIZE_LIMIT)
 
-    display.setByteEstimate({
-      bytes: BASE_FETCH_SIZE_LIMIT + 1,
+    display.commitFetchBytes([BASE_FETCH_SIZE_LIMIT + 1], {
       viewport: VIEWPORT,
+      gated: false,
+      tierKey: undefined,
     })
     expect(display.regionTooLarge).toBe(true)
   })

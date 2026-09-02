@@ -140,6 +140,17 @@ export default function GlobalFetchMixin() {
       },
       /**
        * #getter
+       * Fills `RenderLifecycleMixin`'s hook off `fetchInert`: a display that
+       * will never fetch here shows a placeholder where its canvas would be, so
+       * `painted` and the pre-first-paint scrim term stop waiting on a paint
+       * that cannot come. Sequence and LD each carried this as a second
+       * override beside `fetchInert`, always its negation.
+       */
+      get rendersCanvas(): boolean {
+        return !self.fetchInert
+      },
+      /**
+       * #getter
        * Signature of the fetch the current view and settings call for — the
        * display's `viewSignature` plus the serialized `rpcProps()` axis. The
        * fetch skeleton's freshness key: captured at issue, compared against the
@@ -152,23 +163,7 @@ export default function GlobalFetchMixin() {
           : `${base}|${self.rpcPropsCacheKey}`
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The freshness compare: data has been committed (`loadedFetchSignature`
-       * is only ever written beside it) and it was fetched for the current view
-       * and settings. A pan inside the loaded blocks stays current; a block
-       * entering, a tier step, a settings change or a `reload()` moves one side
-       * of it and the fetch autorun refetches. **What the fetch autorun gates on
-       * is the same compare inside `installFetch`**, not this getter — the
-       * skeleton owns it so a reload can override it. This one is for the
-       * readers outside the fetch, through `dataCurrent` below. The per-region
-       * twin is `isCacheValid`: what decides a refetch, and deliberately not the
-       * whole freshness answer.
-       */
-      get signatureCurrent(): boolean {
-        return isDataCurrent(self.loadedFetchSignature, self.fetchSignature)
-      },
+    .views(() => ({
       /**
        * #getter
        * Overridable hook (default false): the held data answers the signature,
@@ -179,8 +174,8 @@ export default function GlobalFetchMixin() {
        * anything the display fetches outside its primary fetch, and an export
        * sampling `svgReady` in that window paints the half-filled frame.
        *
-       * Folded into `dataCurrent` and NOT into `signatureCurrent`, so it holds
-       * the export and never re-runs the primary fetch. It fails hung, not
+       * A term of `dataCurrent` and NOT of the skeleton's freshness gate, so it
+       * holds the export and never re-runs the primary fetch. It fails hung, not
        * stale: a value that latches true parks `awaitSvgReady` on its backstop,
        * so state only what a later commit is guaranteed to clear.
        */
@@ -191,12 +186,23 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The shared freshness answer every foundation gives (`dataCurrent`):
-       * the fetch gate above, minus the display's own supersession. What the
-       * export gate reads; never what the fetch gate reads.
+       * The shared freshness answer every foundation gives: data has been
+       * committed (`loadedFetchSignature` is only ever written beside it), it
+       * was fetched for the current view and settings, and the display is not
+       * about to supersede it itself. A pan inside the loaded blocks stays
+       * current; a block entering, a tier step, a settings change or a
+       * `reload()` moves one side of the compare. **What the fetch autorun
+       * gates on is the same compare inside `installFetch`**, not this getter —
+       * the skeleton owns it so a reload can override it. This one is for the
+       * readers outside the fetch, the export gate above all. The per-region
+       * twin is `isCacheValid`: what decides a refetch, and deliberately not
+       * the whole freshness answer.
        */
       get dataCurrent(): boolean {
-        return self.signatureCurrent && !self.dataSuperseded
+        return (
+          isDataCurrent(self.loadedFetchSignature, self.fetchSignature) &&
+          !self.dataSuperseded
+        )
       },
     }))
     .views(self => ({
@@ -278,11 +284,13 @@ export default function GlobalFetchMixin() {
          * reload epoch is what makes that bump override the freshness gate, even
          * against a fetch that commits mid-reload, so nothing here has to
          * remember to invalidate for the retry's sake) plus this family's one
-         * addition, for the overlay rather than the refetch: dropping the loaded
-         * signature sends `dataCurrent` false, so the refetch shows as loading
-         * rather than as a display claiming fresh data. The data itself survives,
-         * staying on screen under that overlay. A subclass whose reload needs
-         * extra teardown can override and chain.
+         * addition, for the export gate rather than the refetch: dropping the
+         * loaded signature sends `dataCurrent` false, so an export started
+         * after the click waits for the refetch instead of capturing what the
+         * retry is about to replace. `displayPhase` never reads `dataCurrent`
+         * on this family, so nothing changes on screen until the fetch begins;
+         * the data itself survives, staying on screen under that overlay. A
+         * subclass whose reload needs extra teardown can override and chain.
          */
         reload() {
           superReload()

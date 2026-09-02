@@ -4,7 +4,7 @@ import type { RenderAlignmentDataArgs } from '../RenderAlignmentDataRPC/types.ts
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
-import type { FetchContext } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 
 // The right-click feature-details fetch, and the sequence adapter both of this
 // display's RPCs hand the worker. Out of the model because it reads none of its

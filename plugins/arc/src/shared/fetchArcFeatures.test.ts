@@ -1,7 +1,9 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 // Arc's regionTooLarge is DERIVED (byte-only), identical to the LD pattern
-// (ArcFetchModel), so it is exercised the same way: drive setByteEstimate
+// (ArcFetchModel), so it is exercised the same way: stage a byte estimate
 // synchronously — before the async afterAttach installs its autoruns — and read
 // the derived getter. This is the de-specialization the migration achieved:
 // there is no imperative setRegionTooLarge and no "don't early-return" hack.
@@ -14,10 +16,7 @@ describe('arc derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -29,10 +28,7 @@ describe('arc derived regionTooLarge', () => {
   it('holds until a fresh measurement releases it, not on zoom alone', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
@@ -41,20 +37,14 @@ describe('arc derived regionTooLarge', () => {
     // ...and the autorun knows to go and ask again
     expect(display.gateMeasurementStale).toBe(true)
 
-    display.setByteEstimate({
-      bytes: 400_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 400_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('does not flicker on pan: the estimate survives a viewport shift', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.scrollTo(view.offsetPx + 200)
@@ -65,10 +55,7 @@ describe('arc derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out: a fresh measurement comes back bigger, so a
@@ -82,10 +69,7 @@ describe('arc derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -118,10 +102,7 @@ describe('arc displayPhase', () => {
     expect(display.displayPhase).toBe('error')
 
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
     expect(display.displayPhase).toBe('tooLarge')
   })

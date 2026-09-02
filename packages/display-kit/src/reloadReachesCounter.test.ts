@@ -12,9 +12,9 @@
 //
 // Source-level rather than per-display, because what has to be pinned is the set
 // of overrides and a runtime test only ever covers the displays someone
-// remembered to add. An empty body passes: all three that exist are placeholders
-// a composing model replaces (`BaseDisplayModel`, `RegionTooLargeMixin`, and the
-// chrome test stub), and an empty `reload()` claims nothing to be wrong about.
+// remembered to add. An empty body passes: both that exist are placeholders a
+// composing model replaces (`BaseDisplayModel` and the chrome test stub), and an
+// empty `reload()` claims nothing to be wrong about.
 
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'

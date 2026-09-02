@@ -134,13 +134,13 @@ const HOOKS: Hook[] = [
     name: 'rendersCanvas',
     owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
     ifNotOverridden:
-      '`painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout',
+      '`!fetchInert` on both LGV foundations, so a placeholder declared through that hook already stops `painted` waiting; the raw `true` reaches only a display composing `RenderLifecycleMixin` outside them, where `painted` waits on a canvas that is never mounted and every `waitForDisplaysDone` on the page burns its timeout',
   },
   {
     name: 'paintInert',
     owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
     ifNotOverridden:
-      'same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own',
+      'same, for a paint that is never coming — both fetch families fill it with `foundationPaintInert` (a failed fetch, a standing user cancel, an empty viewport), so a display outside them owes its own',
   },
   {
     name: 'gateEnabled',
@@ -154,22 +154,10 @@ const HOOKS: Hook[] = [
     ifNotOverridden: 'byte-only gating, no feature-density axis',
   },
   {
-    name: 'densityGateEnabled',
-    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
-    ifNotOverridden:
-      'no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off',
-  },
-  {
     name: 'byteGateAdapterPath',
     owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path',
-  },
-  {
-    name: 'byteGateAdapterConfig',
-    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
-    ifNotOverridden:
-      'the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches',
   },
   {
     name: 'clearDisplaySpecificData',

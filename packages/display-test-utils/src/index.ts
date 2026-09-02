@@ -3,6 +3,7 @@ export {
   displayTestSessionModel,
   takeSnackbarAction,
 } from './displayTestSessionModel.ts'
+export { stageByteEstimate } from './stageByteEstimate.ts'
 export { testAssembly, testAssemblyManager } from './testAssembly.ts'
 
 export type {

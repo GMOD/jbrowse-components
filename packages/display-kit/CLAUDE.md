@@ -24,12 +24,13 @@ gate, the freshness gate with its reload epoch, and both contract checks.
 `installGlobalFetchAutorun` is a declaration over that skeleton (its gates, its
 signature as the freshness key, `FetchMixin`'s rotation lent through the
 `rotation` option so `cancelFetch` reaches the fetch it installs), the same way
-the comparative installer is. **`runGlobalFetchOnce` beside it has no gates and
-must not grow any** — it is the same phases, rotation and lifecycle for a test
-that wants one round trip and its promise, and the gate copy it carried until
-2026-08-31 had drifted from the installed one on three of four terms. Gate
-behaviour is `installGlobalFetchAutorun.test.ts`'s, which drives the autorun.
-Both entries take `FetchMixin`'s begin/end/error trio from
+the comparative installer is. There is no on-demand entry beside it: the one
+there was (`runGlobalFetchOnce`, for tests wanting one round trip) carried a
+copy of the family's gates that drifted from the installed ones on three of four
+terms, and a test that wants a fetch drives the installed autorun through the
+view and waits for its RPC (`plugins/variants/src/LDDisplay/testEnv.ts`'s
+`awaitFetch`). Gate behaviour is `installGlobalFetchAutorun.test.ts`'s. The
+declaration takes `FetchMixin`'s begin/end/error trio from
 `fetchMixinLifecycle`, which `runFetch` uses too. `FetchMixin.runFetch` is the
 MST-flow wrapper the per-region family holds `runFetchOnce` through — it needs
 the flow (so a fetch autorun's synchronous prefix runs untracked) because its
@@ -200,8 +201,8 @@ The per-region family answers `dataCurrent` with spatial coverage AND
 `isCacheValid` per visible block, so the foundation owns one staleness compare
 for every display: the key a region was fetched under against the key a fetch
 now would use. The global family gets that answer from the signature, where
-every fetch input is a term (`signatureCurrent`, which is also its fetch gate);
-synteny and dotplot from theirs.
+every fetch input is a term (the compare inside `dataCurrent`, which is also its
+fetch gate); synteny and dotplot from theirs.
 
 `dataSuperseded` (default `false`, declared on both LGV foundations and folded
 into `dataCurrent` and never into the fetch gate) is the remainder — staleness a

@@ -1,5 +1,5 @@
-rows: 33600
-distinct behaviors: 73
+rows: 16800
+distinct behaviors: 55
 distinct observable behaviors: 32
 distinct banner-facing states: 7
 
@@ -11,149 +11,113 @@ distinct banner-facing states: 7
   tooLarge=true axis=density zoomCanRelease=true skips=false
   tooLarge=true axis=density zoomCanRelease=true skips=true
 
-gateEnabled=false gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x840
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x1680
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=false aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x840
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=false aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x840
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
-gateEnabled=false gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x2520
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x5040
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x2520
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=false gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x2520
-  e.g. gateEnabled=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x840
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x88
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x88
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x40
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x40
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x40
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x40
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x360
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x360
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x72
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x72
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x72
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x72
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x152
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x152
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x132
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x132
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x60
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x60
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x60
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x60
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x68
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x68
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=true
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=false
-gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=false byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x28
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=true
+gateEnabled=false gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x420
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x840
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=false aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x420
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=false aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x420
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+gateEnabled=false gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x1260
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x2520
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x1260
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=false gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x1260
+  e.g. gateEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x420
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x44
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x44
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x20
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=true stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x20
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=true stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x20
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x20
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=500000 bytes=1000001 zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x180
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x180
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x36
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=true stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x36
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=true stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x36
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=2000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x36
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=2000001 zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x76
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x76
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x4
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=true stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x4
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=true stale=true
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x4
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=false stale=false
+gateEnabled=true gateExempt=false aboveFloor=false gateActive=true densityGateActive=false byteLimit=8000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x4
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=4000000 bytes=8000001 zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x66
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x66
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x60
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x60
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=true stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x60
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x60
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=1000001 zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=density zoomCanRelease=true stale=false skips=true   x66
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=1000000 tooLarge=true axis=density zoomCanRelease=true stale=true skips=false   x66
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x34
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x34
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=true stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x8
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x8
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=4000001 zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=density zoomCanRelease=true stale=false skips=true   x34
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=4000000 tooLarge=true axis=density zoomCanRelease=true stale=true skips=false   x34
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=4000000 bytes=undefined zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x14
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x14
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=false stale=false skips=true   x28
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=false stale=true skips=false   x28
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=true stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=true stale=false skips=true   x28
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=bytes zoomCanRelease=true stale=true skips=false   x28
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=500001 zoomIneffective=false stale=true
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=density zoomCanRelease=true stale=false skips=true   x14
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=false
 gateEnabled=true gateExempt=false aboveFloor=true gateActive=true densityGateActive=true byteLimit=500000 tooLarge=true axis=density zoomCanRelease=true stale=true skips=false   x14
-  e.g. gateEnabled=true densityEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
-gateEnabled=true gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x2520
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x5040
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x2520
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
-gateEnabled=true gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x2520
-  e.g. gateEnabled=true densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true
+  e.g. gateEnabled=true densityTooLarge=true cfgForceLoad=false forceLoadTrack=false span=20000 adapterLimit=500000 bytes=undefined zoomIneffective=false stale=true
+gateEnabled=true gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x1260
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=true aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x2520
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=undefined adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x1260
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false
+gateEnabled=true gateExempt=true aboveFloor=true gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=true skips=false   x1260
+  e.g. gateEnabled=true densityTooLarge=false cfgForceLoad=false forceLoadTrack=true span=20000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=true

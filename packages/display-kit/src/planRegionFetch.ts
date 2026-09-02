@@ -78,10 +78,10 @@ export interface RegionFetchInputs {
    */
   gateSkipsMeasuredViewport: boolean
   /**
-   * `FetchMixin.fetchSuspended`: the display is drawing something in the
-   * features' place and does not want them fetched, the density band under a
-   * forced mode or a bp/px threshold. Tracked in the autorun, so the flip back
-   * to false is what re-fires the fetch — an override declining inside
+   * `MultiRegionDisplayMixin.fetchSuspended`: the display is drawing something
+   * in the features' place and does not want them fetched, the density band
+   * under a forced mode or a bp/px threshold. Tracked in the autorun, so the
+   * flip back to false is what re-fires the fetch — an override declining inside
    * `fetchNeeded` runs untracked and would leave the display empty until the
    * next pan.
    */
@@ -101,9 +101,9 @@ export interface RegionFetchInputs {
    */
   gateBlocked: boolean
   /**
-   * A fetch is in flight. A **thunk**, and untracked at the call site: tracking
-   * it would re-fire the autorun on the `isLoading` flip mid-fetch, when
-   * `fetchGeneration` at fetch end is the real re-trigger.
+   * A fetch is in flight. A **thunk** so it is read only past the gates above
+   * it, and tracked there: the flip at fetch start costs one idle run of the
+   * plan, and `fetchGeneration` at fetch end is the re-trigger.
    */
   isLoading: () => boolean
   /**

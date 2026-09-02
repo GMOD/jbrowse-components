@@ -147,11 +147,11 @@ export function RenderLifecycleMixin() {
        * never called and `canvasDrawn` can never flip).
        *
        * Lives here, beside `canvasDrawn`, because every consumer of "has this
-       * display painted" needs the pair — and until 2026-08 each family
-       * declared its own copy (per-region hard-coded `true`, global carried the
-       * hook for LD), so a display could express the state only to whichever
-       * family it happened to compose. See `painted` below for the reader that
-       * was missed.
+       * display painted" needs the pair. Both LGV fetch foundations fill it
+       * with `!fetchInert`, so a display there states its placeholder once,
+       * through that hook; the raw default reaches only a display composing
+       * this mixin outside them. See `painted` below for the reader that was
+       * missed while the two were separate overrides.
        */
       get rendersCanvas(): boolean {
         return true

@@ -19,10 +19,10 @@ import type { ByteEstimate } from './regionTooLargeUtils.ts'
 // `nextGateState.test.ts` walks event sequences over them — the two tests
 // divide the gate between them exactly there.
 //
-// The leaves every derived getter sits on are the display opt-ins, the two
-// force-load flags, the viewport, the two limits, the stored estimate and the
-// measured-viewport key. All nine are overridden here, so no view, track or
-// config node is involved and a row costs one `create`.
+// The leaves every derived getter sits on are the display opt-in and its
+// density verdict, the two force-load flags, the viewport, the two limits, the
+// stored estimate and the measured-viewport key. All eight are overridden here,
+// so no view, track or config node is involved and a row costs one `create`.
 
 const VIEWPORT_KEY = 'chr1:0-100'
 
@@ -32,7 +32,6 @@ const TruthTableDisplay = types
     RegionTooLargeMixin(),
     types.model({
       inGateEnabled: types.boolean,
-      inDensityEnabled: types.boolean,
       inDensityTooLarge: types.boolean,
       inConfigForceLoad: types.boolean,
       inConfigLimit: types.number,
@@ -43,9 +42,6 @@ const TruthTableDisplay = types
   .views(self => ({
     get gateEnabled() {
       return self.inGateEnabled
-    },
-    get densityGateEnabled() {
-      return self.inDensityEnabled
     },
     get densityTooLarge() {
       return self.inDensityTooLarge
@@ -71,7 +67,6 @@ const TruthTableDisplay = types
   .actions(self => ({
     setInputs(row: Row) {
       self.inGateEnabled = row.gateEnabled
-      self.inDensityEnabled = row.densityEnabled
       self.inDensityTooLarge = row.densityTooLarge
       self.inConfigForceLoad = row.configForceLoad
       self.inAdapterLimit = row.adapterLimit
@@ -95,7 +90,6 @@ const CONFIG_LIMIT = 1_000_000
 
 interface Row {
   gateEnabled: boolean
-  densityEnabled: boolean
   densityTooLarge: boolean
   configForceLoad: boolean
   forceLoadTrack: boolean
@@ -149,30 +143,27 @@ const BYTES = [
 function enumerateRows() {
   const rows: Row[] = []
   for (const gateEnabled of BOOLS) {
-    for (const densityEnabled of BOOLS) {
-      for (const densityTooLarge of BOOLS) {
-        for (const configForceLoad of BOOLS) {
-          for (const forceLoadTrack of BOOLS) {
-            for (const spanBp of SPANS) {
-              for (const adapterLimit of ADAPTER_LIMITS) {
-                for (const bytes of BYTES) {
-                  for (const zoomIneffective of bytes === undefined
-                    ? [false]
-                    : BOOLS) {
-                    for (const stale of BOOLS) {
-                      rows.push({
-                        gateEnabled,
-                        densityEnabled,
-                        densityTooLarge,
-                        configForceLoad,
-                        forceLoadTrack,
-                        spanBp,
-                        adapterLimit,
-                        bytes,
-                        zoomIneffective,
-                        stale,
-                      })
-                    }
+    for (const densityTooLarge of BOOLS) {
+      for (const configForceLoad of BOOLS) {
+        for (const forceLoadTrack of BOOLS) {
+          for (const spanBp of SPANS) {
+            for (const adapterLimit of ADAPTER_LIMITS) {
+              for (const bytes of BYTES) {
+                for (const zoomIneffective of bytes === undefined
+                  ? [false]
+                  : BOOLS) {
+                  for (const stale of BOOLS) {
+                    rows.push({
+                      gateEnabled,
+                      densityTooLarge,
+                      configForceLoad,
+                      forceLoadTrack,
+                      spanBp,
+                      adapterLimit,
+                      bytes,
+                      zoomIneffective,
+                      stale,
+                    })
                   }
                 }
               }
@@ -185,13 +176,12 @@ function enumerateRows() {
   return rows
 }
 
-// ONE NODE FOR ALL 33,600 ROWS, rewritten per row. A node per row was 9.1s of
+// ONE NODE FOR ALL 16,800 ROWS, rewritten per row. A node per row was 9.1s of
 // this suite against 0.6s of test bodies, all of it MST instantiation and all of
-// it at module load. Nothing carries between rows: the seven inputs and all
+// it at module load. Nothing carries between rows: the six inputs and all
 // three volatiles are written every time, and the mixin has no other state.
 const display = TruthTableDisplay.create({
   inGateEnabled: false,
-  inDensityEnabled: false,
   inDensityTooLarge: false,
   inConfigForceLoad: false,
   inConfigLimit: CONFIG_LIMIT,
@@ -248,9 +238,9 @@ function outKey(out: Out) {
 
 // What a *consumer* of the gate can tell apart. The golden key above names
 // every intermediate getter as well, which is what makes it a tripwire — but it
-// is also why the count reads as a subsystem with 73 states, and that is not
+// is also why the count reads as a subsystem with 55 states, and that is not
 // what anyone downstream sees. `DisplayChrome` and the fetch autoruns read four
-// things between them, and they take **7** distinct combinations over all 67,200
+// things between them, and they take **7** distinct combinations over all 16,800
 // rows; the worker budget's five values are what take that to 32.
 function bannerKey(out: Out) {
   return [
@@ -268,7 +258,6 @@ function observableKey(out: Out) {
 function rowKey(row: Row) {
   return [
     `gateEnabled=${row.gateEnabled}`,
-    `densityEnabled=${row.densityEnabled}`,
     `densityTooLarge=${row.densityTooLarge}`,
     `cfgForceLoad=${row.configForceLoad}`,
     `forceLoadTrack=${row.forceLoadTrack}`,

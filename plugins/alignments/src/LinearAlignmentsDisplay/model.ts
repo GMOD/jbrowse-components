@@ -36,14 +36,13 @@ import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import MultiRegionDisplayMixin, {
-  fetchEachRegion,
-  onDisplayedRegionsChange,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { densityBinSize } from '@jbrowse/display-kit/densityBins'
 import { resolveFetchSuspended } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { foundationSvgReady } from '@jbrowse/display-kit/foundationSvgReady'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
@@ -218,8 +217,8 @@ import type {
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

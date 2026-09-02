@@ -1,13 +1,11 @@
-import { fetchEachRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 
 import type { RegionGateMeasurement } from './CanvasFeatureGateMixin.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
-import type {
-  FetchContext,
-  FetchEachRegionModel,
-  IndexedRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
+import type { FetchEachRegionModel } from '@jbrowse/display-kit/fetchEachRegion'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 interface GatedFetchModel extends FetchEachRegionModel {

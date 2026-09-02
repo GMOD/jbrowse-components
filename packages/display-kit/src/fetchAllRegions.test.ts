@@ -21,7 +21,7 @@
  * exactly why it needs a test rather than why it does not: an edit hoisting the
  * commit out of the guard breaks nothing anyone can see.
  */
-import { fetchAllRegions } from './MultiRegionDisplayMixin.ts'
+import { fetchAllRegions } from './fetchEachRegion.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'

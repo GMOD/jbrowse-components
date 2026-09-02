@@ -1,6 +1,5 @@
-import { runGlobalFetchOnce } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { waitFor } from '@testing-library/react'
 
-import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
@@ -18,25 +17,29 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
   // let afterAttach's dynamic import resolve and install its autoruns
   await new Promise(res => setTimeout(res, 0))
 
+  // the first matrix RPC is held open; a later one, issued for the moved
+  // viewport, stays pending and never lands
   let landData: ((result: LDDataResult) => void) | undefined
   mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
     method === 'RenderLDData'
       ? new Promise(res => {
-          landData = res
+          landData ??= res
         })
       : 700_000,
   )
 
+  // a new block set, so the installed autorun issues a fetch for it
+  view.zoomTo(10)
   const issuedOffsetPx = view.offsetPx
   const issuedSignature = display.fetchSignature
-  const fetching = runGlobalFetchOnce(display, ldFetchPhases(display))
-  // the byte-gate pre-flight resolves first, so the matrix RPC is a few
-  // microtasks out; nothing here waits long enough to reach the 500ms debounce
-  while (!landData) {
-    await new Promise(res => setTimeout(res, 0))
-  }
+  await waitFor(
+    () => {
+      expect(landData).toBeDefined()
+    },
+    { timeout: 3000 },
+  )
   view.scrollTo(issuedOffsetPx + 137)
-  landData({
+  landData!({
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
@@ -50,9 +53,10 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
     signedLD: false,
     snps: [],
   })
-  await fetching
+  await waitFor(() => {
+    expect(display.loadedFetchSignature).toBe(issuedSignature)
+  })
 
-  expect(display.loadedFetchSignature).toBe(issuedSignature)
   // the pan moved the block set out from under the fetch, so the data is not
   // current and an export waits for the refetch
   expect(display.dataCurrent).toBe(false)

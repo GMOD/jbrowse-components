@@ -240,7 +240,7 @@ const noFetchHookInActions = {
 
 // `CanvasFeatureGateMixin` and `RegionTooLargeMixin` (which
 // `MultiRegionDisplayMixin` brings in) both declare `gateEnabled` and
-// `densityGateEnabled`, and `types.compose` resolves a member collision by
+// `densityTooLarge`, and `types.compose` resolves a member collision by
 // ARGUMENT POSITION — so which of two arguments in one call comes first is the
 // whole difference between a gated display and one that downloads whatever the
 // viewport covers. esquery's sibling combinator reads exactly that: the base
@@ -253,7 +253,7 @@ const noGateMixinComposedFirst = {
   selector:
     "CallExpression[callee.name='CanvasFeatureGateMixin'] ~ CallExpression[callee.name='MultiRegionDisplayMixin']",
   message:
-    'CanvasFeatureGateMixin() must be composed AFTER MultiRegionDisplayMixin(), and this types.compose has them the other way round. Both declare `gateEnabled` and `densityGateEnabled` — the gate mixin contributes `true`, RegionTooLargeMixin (which MultiRegionDisplayMixin brings in) defaults them `false` — and types.compose resolves a member collision to the LATER argument, so composing the gate first hands both opt-ins back to those defaults. The entire region-too-large gate is then off for this display: no banner, no error, nothing the type system objects to, and the track downloads whatever the viewport covers. Move CanvasFeatureGateMixin() below MultiRegionDisplayMixin() in the same call. See agent-docs/reference/REGION_TOO_LARGE.md.',
+    'CanvasFeatureGateMixin() must be composed AFTER MultiRegionDisplayMixin(), and this types.compose has them the other way round. Both declare `gateEnabled` and `densityTooLarge` — the gate mixin contributes the opt-in and the density verdict, RegionTooLargeMixin (which MultiRegionDisplayMixin brings in) defaults both `false` — and types.compose resolves a member collision to the LATER argument, so composing the gate first hands them back to those defaults. The entire region-too-large gate is then off for this display: no banner, no error, nothing the type system objects to, and the track downloads whatever the viewport covers. Move CanvasFeatureGateMixin() below MultiRegionDisplayMixin() in the same call. See agent-docs/reference/REGION_TOO_LARGE.md.',
 }
 
 // `HeightModeMixin` overrides `TrackHeightMixin`'s `height` getter and

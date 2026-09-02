@@ -18,8 +18,8 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
 }))
 
 // The shared display harness wired for the multi-row display. Exercises the
-// byte gate through the real state model without a worker: drive
-// setByteEstimate and read the derived regionTooLarge. `createDisplay()` takes
+// byte gate through the real state model without a worker: stage a byte
+// estimate and read the derived regionTooLarge. `createDisplay()` takes
 // the displayed regions, so a test can load one contig out of the two the
 // assembly declares.
 export function createTestEnvironment(opts?: {

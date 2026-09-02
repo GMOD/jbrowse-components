@@ -4,16 +4,21 @@
  * serve them.
  */
 export interface PaintInertFoundation {
-  /** `FetchMixin`'s / `GlobalFetchMixin`'s: a fetch that failed */
+  /** `FetchMixin`'s: a fetch that failed */
   error: unknown
+  /** `FetchMixin`'s: a standing user cancel, durable until Retry or a viewport change */
+  fetchCanceled: boolean
   /** the foundation's: no content block is on screen — see `viewportEmpty` */
   viewportEmpty: boolean
 }
 
 /**
- * `paintInert` for a display foundation: the two states in which a display that
- * *would* paint a canvas never gets to, so `painted` must answer *finished*
- * rather than *pending*.
+ * `paintInert` for a display foundation: the three states in which a display
+ * that *would* paint a canvas never gets to, so `painted` must answer
+ * *finished* rather than *pending*. A standing cancel is one of them for the
+ * reason it is terminal for the scrim and the export: nothing restarts the
+ * fetch but Retry or a viewport change, and a capture waiting on
+ * `data-display-drawn` causes neither.
  *
  * The third of the foundation mappings, beside `foundationSvgReady` and
  * `foundationDisplayPhase`, and it exists for the reason those do: the
@@ -29,5 +34,5 @@ export interface PaintInertFoundation {
  * them still owes its own.
  */
 export function foundationPaintInert(self: PaintInertFoundation): boolean {
-  return !!self.error || self.viewportEmpty
+  return !!self.error || self.fetchCanceled || self.viewportEmpty
 }

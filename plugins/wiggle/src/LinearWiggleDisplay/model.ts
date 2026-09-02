@@ -8,10 +8,9 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
-import MultiRegionDisplayMixin, {
-  fetchAllRegions,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   axisPlotBox,
@@ -41,7 +40,7 @@ import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'

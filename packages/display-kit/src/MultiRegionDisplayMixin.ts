@@ -22,30 +22,6 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
-export type { FetchContext } from './FetchMixin.ts'
-
-// The fan-out helpers, the view-lifecycle autoruns, the plan and the commit
-// contract each live in their own file; re-exported so a consumer still has one
-// import for the family.
-export {
-  autorunOnReadyView,
-  makeSettingsLoopGuard,
-  onDisplayedRegionsChange,
-} from './displayAutoruns.ts'
-export {
-  callEachRegion,
-  fetchAllRegions,
-  fetchEachRegion,
-  fetchRegionsBatched,
-} from './fetchEachRegion.ts'
-export type { FetchEachRegionModel } from './fetchEachRegion.ts'
-export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
-// The plan's output type, and so every `fetchNeeded` override's parameter.
-// Absent from this re-export until 2026-08-31, which is why all seven plugins
-// spelled it inline and canvas re-declared it.
-export type { IndexedRegion } from './planRegionFetch.ts'
-export type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
-
 /**
  * #stateModel MultiRegionDisplayMixin
  * #displayFoundationDef Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
@@ -126,6 +102,16 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * Fills `RenderLifecycleMixin`'s hook off `fetchInert`, as
+         * `GlobalFetchMixin` does: a display that will never fetch here shows a
+         * placeholder where its canvas would be.
+         */
+        get rendersCanvas(): boolean {
+          return !self.fetchInert
+        },
+
+        /**
+         * #getter
          * true when every visible block lies within an already-fetched region —
          * i.e. the viewport shows data we actually loaded, not the stale fringe
          * left after a zoom-out/pan. Drives the loading overlay through the
@@ -161,6 +147,23 @@ export default function MultiRegionDisplayMixin() {
          */
         get viewportEmpty(): boolean {
           return viewportEmpty(this.host)
+        },
+
+        /**
+         * #getter
+         * Overridable hook (default false), read by the fetch plan: the display
+         * is drawing something in the features' place and wants no fetch while
+         * it does. `DensityTierMixin` says it while the band is up and the gate
+         * is not blocking, so a track forced to `density` never downloads the
+         * features it will not draw, while a refused viewport keeps its
+         * measurement pass and the gate can still release.
+         *
+         * Not `fetchInert`: that one suppresses the scrim and ends the export
+         * wait, and a display saying this still has its stand-in to load. On
+         * this foundation alone, because only this family's plan reads it.
+         */
+        get fetchSuspended(): boolean {
+          return false
         },
 
         /**

@@ -18,10 +18,9 @@ import {
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
-import MultiRegionDisplayMixin, {
-  fetchEachRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { GetSequenceDialog } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -43,7 +42,7 @@ import type {
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -234,30 +233,14 @@ export function modelFactory(
       },
       /**
        * #getter
-       * Showing the message means `canvasRef` is never called and `canvasDrawn`
-       * can never flip. Overrides `RenderLifecycleMixin`'s default-true hook,
-       * which is what makes `painted` — and so `data-display-drawn`, which
-       * `PENDING_DISPLAYS` selects on — report finished instead of hanging
-       * every `waitForDisplaysDone` on a page that shows the reference sequence
-       * track zoomed out.
-       *
-       * The two hooks below are the same condition on the other two axes.
-       * Three hooks for one fact looks redundant and isn't: they answer the
-       * scrim, the SVG export and first paint, and each has a different set of
-       * readers — but only this one states the condition, so they cannot drift.
-       */
-      get rendersCanvas() {
-        return this.placeholderMessage === undefined
-      },
-      /**
-       * #getter
-       * Past base resolution the body is a static message and no fetch is
-       * coming, which is what every consumer of this hook needs to know: the
-       * loading scrim must not cover it, and `svgReady` must resolve without
-       * data. See FetchMixin.fetchInert.
+       * Showing the message means no fetch is coming and `canvasRef` is never
+       * called, which is what every consumer of this hook needs to know: the
+       * loading scrim must not cover it, `svgReady` must resolve without data,
+       * and `painted` — so `data-display-drawn`, which `PENDING_DISPLAYS`
+       * selects on — must report finished. See FetchMixin.fetchInert.
        */
       get fetchInert() {
-        return !this.rendersCanvas
+        return this.placeholderMessage !== undefined
       },
       /**
        * #getter
@@ -276,7 +259,9 @@ export function modelFactory(
        * sequence; otherwise sized to fit the visible rows.
        */
       get computedHeight() {
-        return this.rendersCanvas ? this.sequenceHeight : COLLAPSED_HEIGHT_PX
+        return this.placeholderMessage === undefined
+          ? this.sequenceHeight
+          : COLLAPSED_HEIGHT_PX
       },
       /**
        * #getter

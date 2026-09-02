@@ -30,12 +30,13 @@ import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import MultiRegionDisplayMixin, {
-  autorunOnReadyView,
-  onDisplayedRegionsChange,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
+import {
+  autorunOnReadyView,
+  onDisplayedRegionsChange,
+} from '@jbrowse/display-kit/displayAutoruns'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -126,7 +127,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {

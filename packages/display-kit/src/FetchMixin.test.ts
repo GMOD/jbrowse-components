@@ -3,7 +3,7 @@ import { downloadStatus } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
-import { callEachRegion } from './MultiRegionDisplayMixin.ts'
+import { callEachRegion } from './fetchEachRegion.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { Region } from '@jbrowse/core/util'

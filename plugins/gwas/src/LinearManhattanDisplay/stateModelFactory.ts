@@ -13,10 +13,9 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import MultiRegionDisplayMixin, {
-  fetchEachRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   WiggleScoreConfigMixin,
@@ -58,7 +57,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { VisibleEntry } from '@jbrowse/wiggle-core'

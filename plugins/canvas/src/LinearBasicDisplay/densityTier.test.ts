@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
 import {
   makeFeatureData,
@@ -31,10 +32,7 @@ function refusableDisplay(densityAdapter?: Record<string, unknown>) {
 }
 
 function refuseOnBytes(display: RefusableDisplay) {
-  display.setByteEstimate({
-    bytes: 400_000_000,
-    viewport: display.gateViewport!,
-  })
+  stageByteEstimate(display, 400_000_000)
 }
 
 type RefusableDisplay = ReturnType<typeof refusableDisplay>['display']
@@ -94,7 +92,11 @@ describe('the density tier stands in for the too-large banner', () => {
     refuseOnBytes(display)
     expect(display.displayPhase).toBe('loading')
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], 'k')
+    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+      regions: [],
+      bucket: 0,
+      adapterKey: 'k',
+    })
     expect(display.displayPhase).toBe('ready')
     expect(display.densityBandActive).toBe(true)
     expect(display.densityBandLayer.maxDepth).toBeGreaterThan(0)
@@ -195,7 +197,11 @@ describe('the band stands alone, and fetches nothing', () => {
     expect(display.displayPhase).toBe('loading')
     expect(display.svgReady).toBe(false)
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], 'k')
+    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+      regions: [],
+      bucket: 0,
+      adapterKey: 'k',
+    })
     expect(display.displayPhase).toBe('ready')
     expect(display.svgReady).toBe(true)
   })

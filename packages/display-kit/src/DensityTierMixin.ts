@@ -48,14 +48,29 @@ interface DensityIssue {
   adapterConfig: Record<string, unknown>
 }
 
-function densityIssueKey({ regions, bpPerPx, adapterConfig }: DensityIssue) {
+/** What one read was issued over, and so what the held bins answer for. */
+interface DensityRead {
+  regions: BufferedVisibleRegion[]
+  bucket: number
+  adapterKey: string
+}
+
+function densityRead({ regions, bpPerPx, adapterConfig }: DensityIssue) {
+  return {
+    regions,
+    bucket: densityZoomBucket(bpPerPx),
+    adapterKey: JSON.stringify(adapterConfig),
+  }
+}
+
+function densityReadKey({ regions, bucket, adapterKey }: DensityRead) {
   const regionKey = regions
     .map(
       ({ region: r, displayedRegionIndex }) =>
         `${displayedRegionIndex}:${r.refName}:${Math.floor(r.start)}-${Math.ceil(r.end)}`,
     )
     .join(',')
-  return `${densityZoomBucket(bpPerPx)}|${regionKey}|${JSON.stringify(adapterConfig)}`
+  return `${bucket}|${regionKey}|${adapterKey}`
 }
 
 /**
@@ -82,22 +97,11 @@ export default function DensityTierMixin() {
       densityBins: regionDataMap<FeatureDensity>('densityBins'),
       /**
        * #volatile
-       * The issue key of the bins held, which the read compares against.
-       */
-      densityBinsKey: undefined as string | undefined,
-      /**
-       * #volatile
        * What the held bins were read over: the buffered regions, the zoom
        * bucket and the adapter, so a pan or a zoom inside them re-reads
-       * nothing.
+       * nothing. Undefined until a read lands.
        */
-      densityBinsRead: undefined as
-        | {
-            regions: BufferedVisibleRegion[]
-            bucket: number
-            adapterKey: string
-          }
-        | undefined,
+      densityBinsRead: undefined as DensityRead | undefined,
       /**
        * #volatile
        */
@@ -132,6 +136,15 @@ export default function DensityTierMixin() {
     .views(self => ({
       /**
        * #getter
+       * The key of the read the held bins came from, which the fetch skeleton
+       * compares an issue against; undefined until a read lands.
+       */
+      get densityBinsKey(): string | undefined {
+        const read = self.densityBinsRead
+        return read === undefined ? undefined : densityReadKey(read)
+      },
+      /**
+       * #getter
        */
       get hasDensitySource() {
         const conf = self.densitySourceConfig
@@ -157,9 +170,10 @@ export default function DensityTierMixin() {
     .views(self => ({
       /**
        * #getter
-       * `FetchMixin`'s hook, from `resolveFetchSuspended` over the tier's
-       * verdict. A display whose band needs somewhere to draw (alignments,
-       * whose coverage band can be hidden) overrides it with that term.
+       * `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over the
+       * tier's verdict. A display whose band needs somewhere to draw
+       * (alignments, whose coverage band can be hidden) overrides it with that
+       * term.
        */
       get fetchSuspended() {
         return resolveFetchSuspended({
@@ -175,18 +189,12 @@ export default function DensityTierMixin() {
        */
       setDensityBins(
         entries: { displayedRegionIndex: number; bins: FeatureDensity }[],
-        key: string,
-        read?: {
-          regions: BufferedVisibleRegion[]
-          bucket: number
-          adapterKey: string
-        },
+        read: DensityRead,
       ) {
         self.densityBins.clear()
         for (const { displayedRegionIndex, bins } of entries) {
           self.densityBins.set(displayedRegionIndex, bins)
         }
-        self.densityBinsKey = key
         self.densityBinsRead = read
       },
       /**
@@ -194,7 +202,6 @@ export default function DensityTierMixin() {
        */
       clearDensityBins() {
         self.densityBins.clear()
-        self.densityBinsKey = undefined
         self.densityBinsRead = undefined
       },
       /**
@@ -238,7 +245,7 @@ export default function DensityTierMixin() {
                 }
               : undefined
           },
-          fetchKey: densityIssueKey,
+          fetchKey: issue => densityReadKey(densityRead(issue)),
           committedKey: () => self.densityBinsKey,
           run: (issue, ctx) =>
             ctx.callRpc('CoreGetFeatureDensity', {
@@ -252,12 +259,7 @@ export default function DensityTierMixin() {
                 const bins = result[i]
                 return bins ? [{ displayedRegionIndex, bins }] : []
               }),
-              densityIssueKey(issue),
-              {
-                regions: issue.regions,
-                bucket: densityZoomBucket(issue.bpPerPx),
-                adapterKey: JSON.stringify(issue.adapterConfig),
-              },
+              densityRead(issue),
             )
           },
           // the display's own error, so the banner and its Retry are the ones

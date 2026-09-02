@@ -1,5 +1,5 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
-import { installFetch, runFetchOnce } from '@jbrowse/core/util/installFetch'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
@@ -65,13 +65,12 @@ export interface GlobalFetchAutorunHost
   // `FetchMixin`'s, read only by the retry contract check the skeleton
   // installs: "a prerequisite fetch has not landed" defers the verdict.
   awaitingPrerequisite: boolean
-  // The gate's own two, and neither is on the base above: an on-demand round
-  // trip is the caller asking for a fetch, so only the installed trigger judges
-  // whether one is owed. `RegionTooLargeMixin`'s combined skip is not listed as
-  // its two terms — this helper reads only the combined one, and naming the
-  // parts here would invite the expression back. A display that opts into no
-  // byte gate reads `regionTooLarge` as a literal false, which makes it false
-  // too.
+  // The gate's own two, and neither is on the base above: the plan captures and
+  // commits, the trigger judges whether a fetch is owed.
+  // `RegionTooLargeMixin`'s combined skip is not listed as its two terms — this
+  // helper reads only the combined one, and naming the parts here would invite
+  // the expression back. A display that opts into no byte gate reads
+  // `regionTooLarge` as a literal false, which makes it false too.
   isMinimized: boolean
   gateSkipsMeasuredViewport: boolean
   // The committed side of the skeleton's freshness gate, and the verdict that
@@ -108,9 +107,7 @@ interface GlobalFetchLanding<TResult> {
 /**
  * The family's phases wrapped into the shared skeleton's shape: capture the
  * signature and the gate state at issue, measure-and-refuse or commit-and-stamp
- * at landing. One plan serves both entries — the installed autorun and the
- * on-demand {@link runGlobalFetchOnce} — so the commit rules cannot drift
- * between them.
+ * at landing.
  */
 function globalFetchPlan<TArgs, TResult>(
   self: GlobalFetchHost,
@@ -147,38 +144,6 @@ function globalFetchPlan<TArgs, TResult>(
       }
     },
   }
-}
-
-/**
- * One fetch through the phases on demand: the same plan, rotation and lifecycle
- * the installed autorun runs, and **none of its gates** — a caller here is
- * asking for a round trip, not for the trigger's judgement about whether one is
- * owed. Returns the fetch's promise, or `undefined` for the one decline that is
- * the plan's rather than the skeleton's: no computable signature, or the
- * display's own `prepare` declining.
- *
- * The installed autorun is the production trigger; this is what a caller that
- * wants exactly one round trip and its promise drives — the per-display fetch
- * tests. It carried a copy of the family's gates until 2026-08-31, and that copy
- * is the drift the declaration over `installFetch` exists to close: it had no
- * reload override, no `initialized` term and no byte-gate skip, so the entry the
- * LD suite drove and the entry production runs disagreed about three of the four
- * gates while reading as the same thing. Gate behaviour belongs to
- * `installGlobalFetchAutorun.test.ts`, which drives the installed autorun.
- */
-export function runGlobalFetchOnce<TArgs, TResult>(
-  self: GlobalFetchHost,
-  phases: GlobalFetchPhases<TArgs, TResult>,
-) {
-  const plan = globalFetchPlan(self, phases)
-  const issue = plan.prepare()
-  return issue === undefined
-    ? undefined
-    : runFetchOnce(self, self.fetchRotation.begin(), issue, {
-        run: plan.run,
-        commit: plan.commit,
-        ...fetchMixinLifecycle(self),
-      })
 }
 
 /**

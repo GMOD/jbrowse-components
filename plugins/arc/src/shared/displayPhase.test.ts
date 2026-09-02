@@ -1,3 +1,5 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { Region } from '@jbrowse/core/util'
@@ -19,10 +21,7 @@ describe('arc displayPhase', () => {
   it('ranks tooLarge above loading', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(2000)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.displayPhase).toBe('tooLarge')
   })
 

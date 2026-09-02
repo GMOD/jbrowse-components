@@ -13,7 +13,7 @@
  * the commits have to name the same list or the display marks loaded a span it
  * never asked for.
  */
-import { fetchRegionsBatched } from './MultiRegionDisplayMixin.ts'
+import { fetchRegionsBatched } from './fetchEachRegion.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'

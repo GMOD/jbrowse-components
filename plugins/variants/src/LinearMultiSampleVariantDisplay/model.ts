@@ -8,7 +8,7 @@ import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { getPaletteHost } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { autorunOnReadyView } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   HEIGHT_MULTIPLIERS,

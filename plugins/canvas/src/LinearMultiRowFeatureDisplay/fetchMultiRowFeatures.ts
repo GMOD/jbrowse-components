@@ -1,13 +1,11 @@
-import { fetchEachRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
-import type {
-  FetchEachRegionModel,
-  IndexedRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { FetchEachRegionModel } from '@jbrowse/display-kit/fetchEachRegion'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
 interface FetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>

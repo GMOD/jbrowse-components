@@ -13,7 +13,7 @@
  * reason it is not simply hoisted: a region that arrives before the user moves
  * on still commits.
  */
-import { fetchEachRegion } from './MultiRegionDisplayMixin.ts'
+import { fetchEachRegion } from './fetchEachRegion.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'

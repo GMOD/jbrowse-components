@@ -759,7 +759,7 @@ non-monotone in span in a way the byte axis is not. It is what remains of the
 
 **Measured, and the floor costs nothing today.** A scan of all 60 indexed files
 here found exactly two that would banner below 20kb, both
-`LinearMultiRowFeatureDisplay` tracks, which set `densityGateEnabled: false`. The
+`LinearMultiRowFeatureDisplay` tracks, which have no density verdict. The
 densest track with the axis on peaks at 590 features per 20kb and falls
 monotonically. So removing the floor would buy nothing measurable, and keeping it
 hides nothing measurable.
@@ -1214,7 +1214,7 @@ only on a real violation):
 **Checked without a runtime check:**
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `gateEnabled` and `densityGateEnabled` and the later
+  Both define `gateEnabled` and `densityTooLarge` and the later
   argument wins, so swapping them switches the whole size gate off with no error
   ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)). **An argument order is a
   declaration**, and esquery's sibling combinator reads it directly: the rule is

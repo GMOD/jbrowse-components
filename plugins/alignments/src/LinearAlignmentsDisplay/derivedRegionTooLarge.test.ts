@@ -1,3 +1,4 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createRpcTestEnvironment as createTestEnvironment } from './testUtils.ts'
@@ -24,10 +25,7 @@ describe('alignments derived regionTooLarge', () => {
   it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -39,7 +37,7 @@ describe('alignments derived regionTooLarge', () => {
   it('keeps gating below the AUTO_FORCE_LOAD_BP floor', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1e9)
     expect(display.regionTooLarge).toBe(true)
 
     // zooming past the floor is not a way to download what the gate just
@@ -58,12 +56,12 @@ describe('alignments derived regionTooLarge', () => {
   it('stops offering zoom once two measurements say it does not help', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1e9)
     expect(display.zoomCanReleaseGate).toBe(true)
 
     view.zoomTo(0.01)
     expect(view.visibleBp).toBeLessThan(20_000)
-    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1e9)
     expect(display.gateActive).toBe(true)
     expect(display.zoomCanReleaseGate).toBe(false)
     expect(display.regionTooLarge).toBe(true)
@@ -81,7 +79,7 @@ describe('alignments derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
-    display.setByteEstimate({ bytes: 300_000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 300_000)
     expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -89,10 +87,7 @@ describe('alignments derived regionTooLarge', () => {
   it('releases when a re-measure comes back under the cap', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // zoom alone changes nothing — the stored number is a measurement, not a
@@ -102,17 +97,14 @@ describe('alignments derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
 
     // the while-gated re-measure lands and the BAI really does quote less here
-    display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 700_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.scrollTo(view.offsetPx + 200)
@@ -123,10 +115,7 @@ describe('alignments derived regionTooLarge', () => {
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -136,10 +125,7 @@ describe('alignments derived regionTooLarge', () => {
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     // the declarative equivalent of clicking "Force load"
@@ -151,10 +137,7 @@ describe('alignments derived regionTooLarge', () => {
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(400)
@@ -168,10 +151,7 @@ describe('alignments derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
 
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     view.setDisplayedRegions([
@@ -188,20 +168,14 @@ describe('alignments derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
 
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
 
     view.setDisplayedRegions([
       { assemblyName: 'volvox', start: 0, end: 8_000_000, refName: 'ctgA' },
     ])
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -220,10 +194,7 @@ describe('alignments derived regionTooLarge', () => {
     })
     expect(display.featureIdUnderMouse).toBe('read-123')
 
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
     expect(display.featureIdUnderMouse).toBeUndefined()
   })
@@ -233,10 +204,7 @@ describe('alignments derived regionTooLarge', () => {
   it('clears the hover again when force load releases the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({
-      bytes: 1_500_000,
-      viewport: display.gateViewport!,
-    })
+    stageByteEstimate(display, 1_500_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.setHoverState({

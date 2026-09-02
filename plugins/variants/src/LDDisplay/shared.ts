@@ -279,35 +279,18 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Override of the `GlobalFetchMixin` hook that gates the initial
-       * pre-first-paint loading scrim (`rendersCanvas && !canvasDrawn`). With
-       * the triangle toggled off, `LDDisplayComponent` renders an EmptyState
-       * ("Enable LD triangle…") instead of a canvas, so `canvasDrawn` never
-       * flips. Returning false here keeps the scrim from sitting permanently
-       * over that placeholder. This is the *only* override of the hook — do not
-       * remove it as dead-looking single-use code: without it the LD track
-       * shows a stuck loading spinner whenever the triangle is disabled. If the
-       * EmptyState is ever moved outside `DisplayChrome`, revisit together.
+       * With the triangle off the display shows an EmptyState ("Enable LD
+       * triangle…") instead of a canvas and its `prepare` declines forever, so
+       * nothing is loading and nothing ever will. Every reader needs that: the
+       * scrim would otherwise park over the placeholder — permanently, once a
+       * cancel has been clicked, since `fetchCanceled` is durable —
+       * `awaitSvgReady` is an unbounded `when`, so one such track hangs the
+       * whole view's SVG export, and `canvasDrawn` never flips, so `painted`
+       * reads off this through the foundation's `rendersCanvas`.
        */
       // reads the slot rather than the sibling `showLDTriangle` getter: that one
       // lives in this same `.views()` block, where `self` isn't yet typed with
       // it (see BaseLinearDisplay/CLAUDE.md on block-local `self` typing)
-      get rendersCanvas(): boolean {
-        return getConf(self, 'showLDTriangle')
-      },
-      /**
-       * #getter
-       * With the triangle off the display shows an EmptyState and its
-       * `prepare` declines forever, so nothing is loading and nothing ever
-       * will. Both readers need that: the scrim would otherwise park over the
-       * placeholder — permanently, once a cancel has been clicked, since
-       * `fetchCanceled` is durable — and `awaitSvgReady` is an unbounded
-       * `when`, so one such track hangs the whole view's SVG export.
-       *
-       * Deliberately not spelled `!self.rendersCanvas`: "paints no canvas" and
-       * "will never fetch" are independent axes that merely coincide here, and
-       * arc is the display that has the second without the first.
-       */
       get fetchInert(): boolean {
         return !getConf(self, 'showLDTriangle')
       },

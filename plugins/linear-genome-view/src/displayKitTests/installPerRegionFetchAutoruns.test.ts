@@ -1,3 +1,4 @@
+import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { reactionDependencies } from '@jbrowse/render-core/namedReactions'
 import { waitFor } from '@testing-library/react'
 
@@ -276,7 +277,7 @@ describe('DisplayedRegionsChange', () => {
   it('clears loaded data and the byte estimate on chromosome navigation', async () => {
     const { display, view } = setup({ measuresBytes: true })
     await quiet(display)
-    display.setByteEstimate({ bytes: 1000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1000)
     expect(display.estimatedFetchBytes).toBe(1000)
 
     view.setDisplayedRegions([
@@ -291,9 +292,9 @@ describe('DisplayedRegionsChange', () => {
   // clearAllRpcData deliberately leaves the estimate alone, so an ordinary
   // viewport-change clear does not flicker the banner.
   it('an ordinary clear keeps the byte estimate', async () => {
-    const { display } = setup()
+    const { display } = setup({ measuresBytes: true })
     await quiet(display)
-    display.setByteEstimate({ bytes: 1000, viewport: display.gateViewport! })
+    stageByteEstimate(display, 1000)
     display.clearAllRpcData()
     expect(display.estimatedFetchBytes).toBe(1000)
   })

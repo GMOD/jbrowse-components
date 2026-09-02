@@ -30,7 +30,6 @@ plugin's rather than one display's", not "two displays compose it".
 | Member | Description |
 | --- | --- |
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | The byte-gate opt-in, contributed here. `types.compose` resolves a collision to the later argument, so this mixin must follow the one that declares it; `no-restricted-syntax` fails the other order. |
-| <span id="getter-densitygateenabled">**densityGateEnabled**</span><br><code>boolean</code> | The density axis is on where something measures it. |
 | <span id="getter-visiblefeaturedensityperpx">**visibleFeatureDensityPerPx**</span><br><code>number</code> | Density at the debounced `coarseBpPerPx`, so the verdict shares the layout cadence. Zero before the view is measured. |
 | <span id="getter-maxfeaturedensity">**maxFeatureDensity**</span><br><code>number &#124; undefined</code> | The worker's density budget; undefined when the axis may not act. |
 | <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> | The density axis of the verdict, through the same `overDensityBudget` the worker's short-circuits use. |

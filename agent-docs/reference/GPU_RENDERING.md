@@ -1721,9 +1721,7 @@ does the Canvas2D-only version); keep them in step with any change here.
     it is the display's gate, so what it read to decline stays tracked (HiC
     declines until `effectiveResolution` lands, LD while `showLDTriangle` is
     off); `run` owns every await and writes nothing; `commit` writes while the
-    fetch is still current. `runGlobalFetchOnce(self, phases)` is the same
-    phases, rotation and lifecycle with no trigger and no gates, for a test
-    wanting one round trip and its promise.
+    fetch is still current.
   - Compose `RenderLifecycleMixin()` directly only when neither fetch surface is
     needed (rare).
   - Add a cached `renderState` view.

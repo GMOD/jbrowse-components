@@ -845,6 +845,10 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
 
   plugins/arc:
     dependencies:

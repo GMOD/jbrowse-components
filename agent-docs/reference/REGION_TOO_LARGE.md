@@ -400,7 +400,7 @@ budget name one file; `byteGateAdapterConfig`, for an adapter config that is
 synthesized rather than read. `fetchSizeLimit` and `forceLoad` are the mixin's
 own slots (`regionTooLargeConfigSchemaFields`), spread into every composer's
 schema. `CanvasFeatureGateMixin` contributes `gateEnabled` and
-`densityGateEnabled`, so it must be composed after the mixin that declares
+`densityTooLarge`, so it must be composed after the mixin that declares
 them; `no-restricted-syntax` fails the other order.
 
 **The budget.** `resolveByteLimit` prefers the adapter's declared
