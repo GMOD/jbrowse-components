@@ -2,7 +2,9 @@
 // time (esbuild `.md` loader) so the packaged app and the standalone stdio
 // server both carry it. Loaded lazily from stdioServer so jest, which has no
 // .md loader, never resolves these imports.
+import hostedData from '../../../../website/docs/agents_hosted_data.md'
 import liveModelGuide from '../../../../website/docs/agents_live_model.md'
+import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
 import { readDocSection } from './docSections.ts'
@@ -16,6 +18,16 @@ const TOPICS: Record<string, { summary: string; text: string }> = {
     summary:
       'Driving the live session from run_javascript: model orientation, MST rules, direct adapter data access, waiting on renders',
     text: liveModelGuide,
+  },
+  recipes: {
+    summary:
+      'Worked run_javascript snippets, each verified against the app: finding tracks, opening a hosted genome at a gene, tabulating and joining what is on screen, derived tracks, restyling, figures per locus, adding remote data',
+    text: recipes,
+  },
+  'hosted-data': {
+    summary:
+      'The hosted genomes: the config URL for any UCSC database or GenArk accession, what a hosted config contains, and adding your own file beside its tracks',
+    text: hostedData,
   },
   'session-spec': {
     summary:
@@ -41,7 +53,7 @@ export function docsToolResult(
   if (topic === 'types') {
     return { text: typeIndex(typePages) }
   }
-  const typed = lookupTypeDoc(typePages, topic)
+  const typed = topic ? lookupTypeDoc(typePages, topic) : undefined
   if (typed) {
     return 'text' in typed ? readDocSection(typed.text, section) : typed
   }

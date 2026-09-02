@@ -307,10 +307,36 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     if (crop.error !== undefined) {
       return { error: crop.error }
     }
-    const image = await win.webContents.capturePage(crop.rect)
-    const settle = settled.error
-      ? { warning: settled.error }
-      : (settled.result as object | undefined)
+    // An occluded window composites nothing new, and capturePage then answers
+    // with whatever frame it last had: three captures across two navigations
+    // came back byte-identical, each under a settled: true. Throttling off for
+    // the capture lets the hidden page paint the settled DOM, and the renderer
+    // says when a frame has actually been produced.
+    const contents = win.webContents
+    const throttled = contents.getBackgroundThrottling()
+    contents.setBackgroundThrottling(false)
+    let painted
+    let image
+    try {
+      painted = await relayToRenderer('paint', {}, 10_000)
+      image = await contents.capturePage(crop.rect)
+    } finally {
+      contents.setBackgroundThrottling(throttled)
+    }
+    const paint = (painted.result ?? {}) as {
+      hidden?: boolean
+      painted?: boolean
+    }
+    const settle = {
+      ...(settled.error
+        ? { warning: settled.error }
+        : (settled.result as object | undefined)),
+      ...(painted.error !== undefined || paint.painted === false
+        ? {
+            warning: `the window is hidden and produced no new frame before the capture, so the image may be stale — bring JBrowse Desktop to the front (${painted.error ?? 'paint timed out'})`,
+          }
+        : {}),
+    }
     return {
       result: crop.rect ? { ...settle, cropped: crop.rect } : settle,
       image: { data: image.toPNG().toString('base64'), mimeType: 'image/png' },

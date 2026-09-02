@@ -20,6 +20,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   allSessionTracks,
+  getConfAssemblyNamesOrNone,
   guessTrackConfForLocation,
   isSameAssemblyName,
   viewCanDisplayTrack,
@@ -527,10 +528,6 @@ function pickView(
   return canDisplay[0]!
 }
 
-function firstAssemblyName(conf: BaseTrackConfig) {
-  return readConfObject(conf, 'assemblyNames')[0]
-}
-
 interface JbRegion {
   refName: string
   start: number
@@ -548,7 +545,9 @@ async function locToRegion(
   loc: string,
   assemblyArg: string | undefined,
 ): Promise<JbRegion> {
-  const assemblyName = assemblyArg ?? firstAssemblyName(conf)
+  // getConfAssemblyNamesOrNone, not the assemblyNames slot: an assembly's own
+  // sequence track has no such slot and answers through its parent assembly
+  const assemblyName = assemblyArg ?? getConfAssemblyNamesOrNone(conf)[0]
   if (assemblyName === undefined) {
     throw new Error('The track names no assembly; pass assembly explicitly')
   }
@@ -579,21 +578,22 @@ async function visibleRegionsOf(
   // freshly spec-loaded view stays in that state briefly even after the
   // app-phase marker reads ready, since a view with no width has no display
   // fetching anything.
-  const candidates = allViews(session)
-    .map(v => viewSelf(v))
-    .filter(v => (!viewId || v.id === viewId) && 'visibleRegions' in v)
+  const candidates = allViews(session).filter(
+    v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
+  )
   // among region-bearing views, the one actually showing the track wins — two
   // views on two assemblies would otherwise send the first view's namespace to
   // the second view's file, which answers nothing, silently
-  const view =
+  const chosen =
     candidates.find(v =>
-      v.tracks?.some(t => t.configuration.trackId === preferTrackId),
+      viewTracks(v).some(t => t.configuration.trackId === preferTrackId),
     ) ?? candidates[0]
-  if (!view) {
+  if (!chosen) {
     throw new Error(
       'No view that shows a region — pass loc, or open a linear view first',
     )
   }
+  const view = viewSelf(chosen)
   const deadline = Date.now() + 10_000
   let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
   while (visible === undefined) {
@@ -615,10 +615,12 @@ async function visibleRegionsOf(
     }
     await delay(250)
   }
+  // whole bases: a block edge is a fractional bp, and 30000.000000000004
+  // reads as a bug in every answer that echoes it
   return visible.map(({ refName, start, end, assemblyName }) => ({
     refName,
-    start,
-    end,
+    start: Math.floor(start),
+    end: Math.ceil(end),
     assemblyName,
   }))
 }
@@ -875,14 +877,19 @@ async function addTrack(
   if (!location) {
     throw new Error('jb.addTrack needs a location (local path or URL)')
   }
-  const assembly =
+  const requested =
     typeof args.assembly === 'string' ? args.assembly : session.assemblyNames[0]
-  if (assembly === undefined) {
+  if (requested === undefined) {
     throw new Error('The session has no assemblies to attach the track to')
   }
-  if (!session.assemblyNames.includes(assembly)) {
+  // resolved to the session's own spelling: an alias ("vvx" for "volvox",
+  // "GRCh38" for "hg38") names the assembly and would otherwise be refused
+  const assembly = session.assemblyNames.find(name =>
+    isSameAssemblyName(name, requested, session.assemblyManager),
+  )
+  if (assembly === undefined) {
     throw new Error(
-      `Assembly "${assembly}" is not in this session (has: ${session.assemblyNames.join(', ')})`,
+      `Assembly "${requested}" is not in this session (has: ${session.assemblyNames.join(', ')})`,
     )
   }
   const conf = guessTrackConfForLocation(

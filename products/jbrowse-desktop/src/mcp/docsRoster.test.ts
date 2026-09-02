@@ -24,6 +24,10 @@ const copies = {
     path.join(mcpDir, '../../../../website/docs/agents_live_model.md'),
     'utf8',
   ),
+  recipes: fs.readFileSync(
+    path.join(mcpDir, '../../../../website/docs/agents_recipes.md'),
+    'utf8',
+  ),
   skill: fs.readFileSync(
     path.join(mcpDir, '../../../../.claude/skills/jbrowse-mcp/SKILL.md'),
     'utf8',

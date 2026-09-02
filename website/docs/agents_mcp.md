@@ -126,6 +126,9 @@ features and no more, because that array is held in memory and re-serialized by
 every autosave. Above that the agent should run the tool that does the job,
 write a real indexed file, and load that.
 
+[](/docs/agents_recipes) carries these and a dozen more as verified snippets,
+and the same page is `docs topic:"recipes"` inside the app.
+
 ## Four traps
 
 Each of these renders as a plausible looking browser with something quietly

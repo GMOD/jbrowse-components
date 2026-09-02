@@ -32,6 +32,7 @@ views with `jb.loadSessionSpec()`, restyle through
 The [four traps](/docs/agents_mcp#four-traps) are the same traps, and they are
 the reason to use the library rather than walking the session by hand. Each of
 them renders as a plausible looking browser with something quietly missing.
+[](/docs/agents_recipes) is the same library at work, one ask per section.
 
 ## What is different
 

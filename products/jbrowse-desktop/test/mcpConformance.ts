@@ -154,6 +154,33 @@ function startMcpClient() {
   }
 }
 
+function recipeFences() {
+  const page = fs.readFileSync(
+    path.join(repoRoot, 'website/docs/agents_recipes.md'),
+    'utf8',
+  )
+  const fences: { heading: string; code: string }[] = []
+  let heading = ''
+  let fence: string[] | undefined
+  for (const line of page.split('\n')) {
+    const h = /^## (.+)$/.exec(line)
+    if (h) {
+      heading = h[1]!
+    }
+    if (fence) {
+      if (line.startsWith('```')) {
+        fences.push({ heading, code: fence.join('\n') })
+        fence = undefined
+      } else {
+        fence.push(line)
+      }
+    } else if (/^```js\s*$/.test(line)) {
+      fence = []
+    }
+  }
+  return fences
+}
+
 function check(name: string, condition: boolean, detail?: unknown) {
   if (condition) {
     console.log(`ok    ${name}`)
@@ -501,6 +528,38 @@ try {
       fresh.value.assemblyNames.includes('volvox'),
     fresh,
   )
+
+  // The recipes page promises every snippet was run against the app. This is
+  // what keeps that true: each js fence runs verbatim, in page order, against
+  // the reopened volvox session the page describes. Fences over the hosted
+  // hg38 config, or reaching a remote host, need the network and are left to
+  // the page's own verification.
+  await run(`
+    return jb.loadSessionSpec({
+      sessionName: 'recipes',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-30,000',
+          tracks: [
+            { trackId: 'gff3tabix_genes', height: 140 },
+            { trackId: 'volvox_test_vcf', height: 100 },
+          ],
+        },
+      ],
+    })`)
+  for (const { heading, code } of recipeFences()) {
+    if (!code.includes('hg38') && !code.includes('https://')) {
+      const outcome = await client
+        .call('run_javascript', { code, timeoutMs: 60_000 })
+        .then(
+          () => '',
+          (e: Error) => e.message,
+        )
+      check(`recipe runs: ${heading}`, outcome === '', outcome)
+    }
+  }
 
   console.log(process.exitCode ? 'FAILED' : 'PASSED')
 } finally {

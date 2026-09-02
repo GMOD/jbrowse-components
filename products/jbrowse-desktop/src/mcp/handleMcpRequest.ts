@@ -250,6 +250,22 @@ export async function handleMcpRequest(
     const { x, y, width, height } = element.getBoundingClientRect()
     return { x, y, width, height }
   }
+  // a frame after the DOM settled: rAF fires in a hidden page only while the
+  // bridge has throttling off, which is exactly the window this is called in
+  if (tool === 'paint') {
+    const painted = await new Promise<boolean>(resolve => {
+      const timer = setTimeout(() => {
+        resolve(false)
+      }, 5000)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          clearTimeout(timer)
+          resolve(true)
+        })
+      })
+    })
+    return { hidden: document.hidden, painted }
+  }
   if (!pluginManager || !session) {
     throw new Error(
       'No session is open. Use the open tool with a config/session file or URL, or bare to list recent sessions.',

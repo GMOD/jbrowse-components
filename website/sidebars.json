@@ -96,7 +96,8 @@
         "agents_capture",
         "agents_mcp",
         "agents_web",
-        "agents_live_model"
+        "agents_live_model",
+        "agents_recipes"
       ]
     },
     "embedded_components",

@@ -18,9 +18,12 @@ discipline for using it.
 
 ## The loop
 
-- **`docs topic:"live-model"` before your first `run_javascript`**, and
-  `docs topic:"session-spec"` before composing a nontrivial `jb.loadSessionSpec`
-  — it answers with a table of contents; read
+- **`docs topic:"live-model"` before your first `run_javascript`**,
+  `docs topic:"recipes"` for a verified snippet of the ask in hand (tabulate,
+  join, derive a track, a figure per locus, add a remote file),
+  `docs topic:"hosted-data"` for the config URL of any UCSC or GenArk assembly
+  when nothing is open, and `docs topic:"session-spec"` before composing a
+  nontrivial `jb.loadSessionSpec` — it answers with a table of contents; read
   `section:"Fields every view takes"` and the section for your view type. They
   carry working examples for exactly the traps below.
 - **Orient before acting**: `return jb.sessionSummary()`. Never assume state

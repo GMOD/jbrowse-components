@@ -22,7 +22,8 @@ JBrowse Desktop can also be driven the other way round, as an
 that is already open instead of writing a new one from a file: see
 [](/docs/agents_mcp). JBrowse Web publishes the same helper library on `window`
 for an agent running inside the browser, with no server and nothing to install:
-see [](/docs/agents_web).
+see [](/docs/agents_web). [](/docs/agents_recipes) is a set of worked snippets
+for either, each run against the app before it was written down.
 
 Every tutorial on this site was written with an agent in the loop: fetching and
 subsetting the data, authoring the config, rendering the figure, then reading
