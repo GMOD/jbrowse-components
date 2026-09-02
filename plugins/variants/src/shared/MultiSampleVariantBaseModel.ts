@@ -149,6 +149,10 @@ const PORTABLE_CONFIG_KEYS = [
   'showRowLabels',
   'showRowSeparators',
   'showTooltips',
+  // A promotable `maybeBoolean`: `getConf` answers the raw slot, so an explicit
+  // true/false ports as itself and the unset "follow the display-type default"
+  // state ports as unset rather than being frozen into whatever it resolved to.
+  'showLegend',
   'showTree',
   'showBranchLength',
   'referenceDrawingMode',

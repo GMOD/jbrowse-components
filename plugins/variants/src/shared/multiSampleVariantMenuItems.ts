@@ -67,8 +67,8 @@ function sampleAttributeItems(
 }
 
 // Items for the "Show..." submenu — the toggles both displays share. Extended
-// by subclasses via super-capture (the regular display adds "Show reference
-// alleles"); the subtree filter has its own entry via `clusteringMenuItem`.
+// by subclasses via super-capture (the regular display adds its variant lane
+// rows); the subtree filter has its own entry via `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
@@ -83,6 +83,18 @@ export function variantShowSubmenuItems(
       },
       { pin: self.showLegendDisplayTypeDefault },
     ),
+    {
+      label: 'Show reference alleles',
+      helpText:
+        'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
+      type: 'checkbox',
+      checked: self.referenceDrawingMode !== 'skip',
+      onClick: () => {
+        self.setReferenceDrawingMode(
+          self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
+        )
+      },
+    },
     {
       label: 'Show tooltips',
       helpText:

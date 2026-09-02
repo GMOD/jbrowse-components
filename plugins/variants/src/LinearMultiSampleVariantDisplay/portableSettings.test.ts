@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingTrack } from '@jbrowse/core/util'
 
 import { createDisplayTestEnvironment } from '../shared/testEnv.ts'
@@ -64,6 +65,19 @@ describe('getPortableSettings', () => {
     expect(snapshot).not.toHaveProperty('height')
     expect(display.height).toBe(height)
     expect(display.rowHeight).toBe(rowHeight)
+  })
+
+  // A hidden legend is a deliberate sizing choice on a short track, so it has
+  // to survive the switch — and the unset state has to survive as unset, since
+  // that is what follows the session-wide display-type default.
+  it('ports the legend visibility, including the unset state', () => {
+    const { display, targetId } = setup('')
+    display.getPortableSettings(targetId)
+    expect(readConfObject(display.configuration, 'showLegend')).toBeUndefined()
+
+    display.setShowLegend(false)
+    display.getPortableSettings(targetId)
+    expect(display.showLegend).toBe(false)
   })
 
   // The tree's provenance and the subtree filter are the two pieces of
