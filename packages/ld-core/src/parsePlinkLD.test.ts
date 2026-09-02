@@ -57,8 +57,17 @@ describe('parsePlinkLDLine', () => {
     expect(parsePlinkLDLine('1 . rs1 1 . rs2 0.85', header)).toBeNull()
   })
 
-  it('coerces an unparsable r2 to 0 (NaN must not leak downstream)', () => {
-    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2 nan', header)?.r2).toBe(0)
-    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2', header)?.r2).toBe(0)
+  // Undefined, not 0. A file with no R2 column at all — plink's `--r2 dprime`
+  // writes one, and `parsePlinkLDHeader` accepts it because it requires only
+  // ONE of R2/DP — read back as every pair in perfect linkage equilibrium,
+  // which is a plausible-looking matrix and a plausible-looking Manhattan plot
+  // with nothing anywhere saying the column was missing. `resolveMetric` and
+  // `buildLdToIndex` both branch on the absence.
+  it('reports a missing or unparsable r2 as absent, never as zero', () => {
+    expect(
+      parsePlinkLDLine('1 100 rs1 1 200 rs2 nan', header)?.r2,
+    ).toBeUndefined()
+    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2', header)?.r2).toBeUndefined()
+    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2 0', header)?.r2).toBe(0)
   })
 })

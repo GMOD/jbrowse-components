@@ -17,6 +17,7 @@ export function createDisplayTestEnvironment<T>({
   configSchema,
   stateModel,
   extraDisplays = [],
+  trackType = 'VariantTrack',
 }: {
   displayName: string
   configSchema: AnyConfigurationSchemaType
@@ -27,9 +28,12 @@ export function createDisplayTestEnvironment<T>({
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
   }[]
+  // The track the display hangs off. Defaults to the family's own; the LD
+  // display reads a pre-computed file and so sits on `LDTrack`.
+  trackType?: string
 }) {
   return createSharedEnvironment<T>({
-    trackType: 'VariantTrack',
+    trackType,
     displayName,
     configSchema: () => configSchema,
     stateModel: () => stateModel,

@@ -4,11 +4,9 @@ import LDColorLegendContent from './LDColorLegendContent.tsx'
 
 export default function LDColorLegend({
   ldMetric,
-  signedLD = false,
   idSuffix,
 }: {
   ldMetric: string
-  signedLD?: boolean
   idSuffix: string
 }) {
   return (
@@ -28,11 +26,7 @@ export default function LDColorLegend({
       // instead of selecting them (see `useSideScroll`).
       data-gesture-owner="true"
     >
-      <LDColorLegendContent
-        ldMetric={ldMetric}
-        signedLD={signedLD}
-        idSuffix={idSuffix}
-      />
+      <LDColorLegendContent ldMetric={ldMetric} idSuffix={idSuffix} />
     </svg>
   )
 }

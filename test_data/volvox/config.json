@@ -2865,6 +2865,20 @@
       "assemblyNames": ["volvox"]
     },
     {
+      "type": "LDTrack",
+      "trackId": "volvox_ld",
+      "name": "volvox LD (PLINK --r2)",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "PlinkLDAdapter",
+        "ldLocation": {
+          "uri": "volvox.ld",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "volvox multi-sample sv",
       "name": "volvox multi-sample sv",

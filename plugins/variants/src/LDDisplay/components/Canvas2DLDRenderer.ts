@@ -28,7 +28,7 @@ export function drawLDBlocks(
   state: LDRenderState,
 ) {
   const { yScalar, viewScale, viewOffsetX } = state
-  const { ldValues, boundaries, numCells, band, signedLD } = data
+  const { ldValues, boundaries, numCells, band } = data
   if (numCells === 0) {
     return
   }
@@ -52,7 +52,7 @@ export function drawLDBlocks(
       if (!ldValueComputed(ldVal)) {
         continue
       }
-      const t = mapLDValue(ldVal, signedLD)
+      const t = mapLDValue(ldVal)
 
       // The four corners of the pre-rotation rect [px,px+cw] x [py,py+ch], each
       // put through the same map the shader's `diagonalCellToClip` applies —

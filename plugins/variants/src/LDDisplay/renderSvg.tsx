@@ -27,13 +27,8 @@ function LdSvgBody({
   height,
   opts,
 }: LgvSvgBodyProps<SharedLDModel>) {
-  const {
-    rpcData,
-    effectiveLdMetric,
-    effectiveSignedLD,
-    showLegend,
-    effectiveLineZoneHeight,
-  } = self
+  const { rpcData, effectiveLdMetric, showLegend, effectiveLineZoneHeight } =
+    self
 
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
   // this narrows the single nullable fetch blob for TS only — unreachable at
@@ -46,7 +41,7 @@ function LdSvgBody({
   // otherwise the export's legend drifts from the matrix when the genome
   // doesn't fill the viewport or spans multiple regions.
   const visibleWidth = self.canvasWidth
-  const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
+  const ramp = generateLDColorRamp(rpcData.metric)
   const triangleHeight = height - effectiveLineZoneHeight
 
   return (
@@ -67,11 +62,9 @@ function LdSvgBody({
             // viewScale === 1 and viewOffsetX === max(0, -offsetPx) — the left
             // gap when the region doesn't reach the viewport edge — which keeps
             // the triangle aligned with the connector lines and VariantLabels.
-            // The same narrowing the live upload uses, rather than a hand-built
-            // one: assembling it here took `signedLD` off the config slot while
-            // the ramp beside it took the packed matrix's own convention, so a
-            // toggle in flight could remap the values through a ramp built for
-            // the other range.
+            // The same narrowing the live upload uses, rather than a
+            // hand-built one, so the export cannot pack the matrix differently
+            // from the screen.
             paint={ctx => {
               drawLDBlocks(ctx, toLDUploadData(rpcData), ramp, self.renderState)
             }}
@@ -83,7 +76,6 @@ function LdSvgBody({
         <LDSVGColorLegend
           ldMetric={effectiveLdMetric}
           width={visibleWidth}
-          signedLD={effectiveSignedLD}
           idSuffix={self.id}
           positionOutside={svgLegendAreaReserved(opts)}
         />

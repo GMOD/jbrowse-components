@@ -23,8 +23,6 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
     genomicMode: false,
     metric: 'r2',
     hasDprime: true,
-    method: 'phased',
-    signedLD: false,
   }
 }
 

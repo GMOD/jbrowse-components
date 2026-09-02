@@ -19,12 +19,12 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 
 ## Related links
 
+- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
 - **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 - **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
 - **Extended by:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Extended by:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
-- **Extended by:** [SharedLDDisplay](../sharedlddisplay)
 - **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
 
 ## Config slots

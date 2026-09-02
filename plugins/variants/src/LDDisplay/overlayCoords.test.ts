@@ -34,8 +34,6 @@ function ldData(
     genomicMode: false,
     metric: 'r2',
     hasDprime: true,
-    method: 'phased',
-    signedLD: false,
     ...overrides,
   }
 }

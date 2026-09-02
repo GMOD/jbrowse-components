@@ -49,8 +49,6 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
     genomicMode: false,
     metric: 'r2',
     hasDprime: true,
-    method: 'phased',
-    signedLD: false,
     snps: [],
   })
   await waitFor(() => {

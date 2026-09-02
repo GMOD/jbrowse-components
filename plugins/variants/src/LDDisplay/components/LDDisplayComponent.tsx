@@ -38,34 +38,19 @@ function LDTooltip({
   x,
   y,
   ldMetric,
-  ldMethod,
-  signedLD,
 }: {
   item: LDFlatbushItem
   x: number
   y: number
   ldMetric: string
-  ldMethod: string | undefined
-  signedLD: boolean
 }) {
   const distance = Math.abs(item.snp1.start - item.snp2.start)
-  // Sign only carries meaning when signed values were requested; positive =
-  // coupling (alleles co-occur), negative = repulsion (opposite haplotypes).
-  const phase =
-    signedLD && item.ldValue !== 0
-      ? item.ldValue > 0
-        ? ' (coupling)'
-        : ' (repulsion)'
-      : ''
-
   return (
     <BaseTooltip clientPoint={{ x, y }}>
       <SnpRow snp={item.snp1} />
       <SnpRow snp={item.snp2} />
       <div>
-        {ldMetricLabel(ldMetric, signedLD)}:{' '}
-        {ldValueText(item.ldValue, ldMetric, ldMethod)}
-        {phase}
+        {ldMetricLabel(ldMetric)}: {ldValueText(item.ldValue)}
       </div>
       <div>Distance: {getBpDisplayStr(distance)}</div>
     </BaseTooltip>
@@ -105,8 +90,6 @@ const LDCanvas = observer(function LDCanvas({
     // built from `rpcData`), so a label off the config would name a statistic
     // and a range that are not on screen.
     effectiveLdMetric,
-    effectiveSignedLD,
-    ldMethod,
     effectiveLineZoneHeight,
     canvasWidth: width,
     canvasHeight,
@@ -194,16 +177,10 @@ const LDCanvas = observer(function LDCanvas({
           x={mouseState.clientX}
           y={mouseState.clientY}
           ldMetric={effectiveLdMetric}
-          ldMethod={ldMethod}
-          signedLD={effectiveSignedLD}
         />
       ) : null}
       {showLegend ? (
-        <LDColorLegend
-          ldMetric={effectiveLdMetric}
-          signedLD={effectiveSignedLD}
-          idSuffix={model.id}
-        />
+        <LDColorLegend ldMetric={effectiveLdMetric} idSuffix={model.id} />
       ) : null}
       <LDStatusBar model={model} />
       <LDColumnZone model={model} />

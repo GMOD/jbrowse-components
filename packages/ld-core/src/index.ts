@@ -5,30 +5,7 @@ export {
   resolvePlinkLDHeader,
 } from './parsePlinkLD.ts'
 export type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
-export { calculateLDStats } from './calculateLDStats.ts'
-export {
-  calculateLDStatsDosageBits,
-  packDosages,
-} from './calculateLDStatsDosage.ts'
-export type { PackedDosages } from './calculateLDStatsDosage.ts'
-export {
-  bandedCellCount,
-  dprimeFinalize,
-  ldValueComputed,
-} from './ldStats.generated.ts'
+export { bandedCellCount, ldValueComputed } from './ldStats.generated.ts'
 export { LD_NOT_COMPUTED } from './ldNotComputed.ts'
-export {
-  calculateLDStatsPhasedBits,
-  packHaplotypesWithCounts,
-} from './calculateLDStatsPhased.ts'
-export type {
-  HaplotypeCounts,
-  PackedHaplotypes,
-} from './calculateLDStatsPhased.ts'
 export { isLDRecordSource } from './ldRecordSource.ts'
 export type { LDRecordSource } from './ldRecordSource.ts'
-export {
-  getChiSquareCritical,
-  normalInverseCDF,
-  passesHweFilter,
-} from './hweFilter.ts'

@@ -3623,6 +3623,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "ldLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.ld",
+        },
+        "type": "PlinkLDAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "name": "volvox LD (PLINK --r2)",
+      "trackId": "volvox_ld",
+      "type": "LDTrack",
+    },
+    {
+      "adapter": {
         "samplesTsvLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.sv.samples.tsv",

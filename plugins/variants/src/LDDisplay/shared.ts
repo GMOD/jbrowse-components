@@ -5,10 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
-import {
-  activeJexlFilters,
-  configuredJexlFilters,
-} from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
@@ -22,11 +18,10 @@ import {
 } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { ldValueComputed } from '@jbrowse/ld-core'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
-import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
@@ -35,19 +30,14 @@ import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
-import type {
-  FilterStats,
-  LDMethod,
-  LDMetric,
-  LDSnp,
-} from '../VariantRPC/getLDMatrix.ts'
+import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
-import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type {
   LDCellKey,
   LDRenderState,
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
+import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
 import type { LDRpcProps } from './ldFetchPhases.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -85,14 +75,6 @@ export default function sharedModelFactory(
       LegendMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Runtime "General JEXL filters..." override, already `jexl:`-prefixed.
-         * When set (even to an empty list) it replaces the `jexlFilters` config
-         * slot; when undefined the config default applies. The two-tier contract
-         * every display with this row implements — see `JexlFilterModel`.
-         */
-        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -129,9 +111,6 @@ export default function sharedModelFactory(
           clampLineZoneHeight(getConf(self, 'lineZoneHeight'), n),
         )
       },
-      setMafFilter(arg: number) {
-        setConf(self, 'minorAlleleFrequencyFilter', arg)
-      },
       setLDMetric(metric: LDMetric) {
         setConf(self, 'ldMetric', metric)
       },
@@ -141,12 +120,6 @@ export default function sharedModelFactory(
       setSquashToHeight(value: boolean) {
         setConf(self, 'squashToHeight', value)
       },
-      setHweFilter(threshold: number) {
-        setConf(self, 'hweFilterThreshold', threshold)
-      },
-      setCallRateFilter(threshold: number) {
-        setConf(self, 'callRateFilter', threshold)
-      },
       setShowVerticalGuides(show: boolean) {
         setConf(self, 'showVerticalGuides', show)
       },
@@ -155,12 +128,6 @@ export default function sharedModelFactory(
       },
       setUseGenomicPositions(value: boolean) {
         setConf(self, 'useGenomicPositions', value)
-      },
-      setSignedLD(value: boolean) {
-        setConf(self, 'signedLD', value)
-      },
-      setJexlFilters(filters?: string[]) {
-        self.jexlFiltersSetting = cast(filters)
       },
     }))
     .views(self => ({
@@ -173,12 +140,6 @@ export default function sharedModelFactory(
       get prefersOffset() {
         return true
       },
-      get minorAlleleFrequencyFilter() {
-        return getConf(self, 'minorAlleleFrequencyFilter')
-      },
-      get lengthCutoffFilter() {
-        return getConf(self, 'lengthCutoffFilter')
-      },
       get lineZoneHeight() {
         return getConf(self, 'lineZoneHeight')
       },
@@ -190,12 +151,6 @@ export default function sharedModelFactory(
       },
       get squashToHeight() {
         return getConf(self, 'squashToHeight')
-      },
-      get hweFilterThreshold() {
-        return getConf(self, 'hweFilterThreshold')
-      },
-      get callRateFilter() {
-        return getConf(self, 'callRateFilter')
       },
       get maxVariantSeparation() {
         return getConf(self, 'maxVariantSeparation')
@@ -213,31 +168,6 @@ export default function sharedModelFactory(
       get useGenomicPositions() {
         return getConf(self, 'useGenomicPositions')
       },
-      get signedLD() {
-        return getConf(self, 'signedLD')
-      },
-      /**
-       * #getter
-       * Which estimator the `ldMethod` config slot ASKS for. Named apart from
-       * `ldMethod` below, which is what the RPC actually ran — they differ
-       * whenever the request cannot be honoured ('phased' on unphased data) and
-       * whenever 'auto' resolves.
-       */
-      get configuredLDMethod() {
-        return getConf(self, 'ldMethod')
-      },
-      /**
-       * #method
-       * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
-       * Prefixing on read is what makes a config-declared filter work at all —
-       * the slot stores them unprefixed (deferred evaluation) and
-       * `stringToJexlExpression` throws on anything else, so before this an
-       * admin following the slot's own documented convention got a worker
-       * exception.
-       */
-      configuredFilters(): string[] {
-        return configuredJexlFilters(self)
-      },
       /**
        * #getter
        * The loaded matrix's SNPs, in the order they are drawn along the column
@@ -254,9 +184,6 @@ export default function sharedModelFactory(
        */
       get cellWidth() {
         return self.rpcData?.uniformW ?? 0
-      },
-      get filterStats(): FilterStats | undefined {
-        return self.rpcData?.filterStats
       },
       /**
        * #getter
@@ -291,34 +218,12 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * True when this display reads LD out of a file (PLINK, ldmat) rather
-       * than computing it from a VCF's genotypes — which decides the fetch
-       * path, whether the filter menus mean anything, and whether the byte gate
-       * has a `getFeatures` to measure with.
-       */
-      get isPrecomputedLD() {
-        return isPrecomputedLDAdapter(self.adapterConfig.type)
-      },
-      /**
-       * #getter
        * Metric the loaded data actually represents. A pre-computed file with no
        * D' column downgrades a 'dprime' request to 'r2', so the legend and the
        * metric radios read this rather than the raw requested `ldMetric`.
        */
       get effectiveLdMetric(): LDMetric {
         return self.rpcData?.metric ?? getConf(self, 'ldMetric')
-      },
-      /**
-       * #getter
-       * Whether the loaded values actually carry a sign. Reads the packed
-       * matrix rather than the slot for the same reason as `effectiveLdMetric`:
-       * a pre-computed file states magnitudes and cannot honor the request, so
-       * a track configured `signedLD: true` against one would otherwise get a
-       * legend reading -1..1 and a tooltip calling r² "R" over 0..1 values. The
-       * cells already follow the data (the ramp is built from `rpcData`).
-       */
-      get effectiveSignedLD(): boolean {
-        return self.rpcData?.signedLD ?? getConf(self, 'signedLD')
       },
       /**
        * #getter
@@ -346,21 +251,11 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * How the loaded LD values were derived: 'phased' (exact haplotypic),
-       * 'composite' (Weir estimate from unphased genotypes), or 'precomputed'
-       * (read from a PLINK/ldmat file). Undefined until data loads. This is
-       * what RAN, which is not always what `configuredLDMethod` asked for.
-       */
-      get ldMethod(): LDMethod | undefined {
-        return self.rpcData?.method
-      },
-      /**
-       * #getter
        * The pair-separation window the LOADED matrix was computed at, in
        * variants, or undefined when it covers the whole triangle. Read off the
-       * result rather than off `maxVariantSeparation`, for the same reason
-       * `ldMethod` is: the slot is a request, and `resolveBand` clamps it to
-       * `n - 1`, at which point there is no window to report.
+       * result rather than off `maxVariantSeparation`: the slot is a request,
+       * and `resolveBand` clamps it to `n - 1`, at which point there is no
+       * window to report.
        *
        * The status bar names it because nothing else on screen can. A pair past
        * the window is not drawn, and an in-band pair at r² = 0 is painted at the
@@ -389,35 +284,15 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Opt into RegionTooLargeMixin's derived byte gate (byte axis only, no
-       * density axis). On for every adapter, including the pre-computed ones
-       * (PlinkLD*), which serve no features at all: `RenderLDData` measures the
-       * genotype adapter it is about to read and skips those entirely, so they
-       * report no bytes — "unmeasurable", the same answer a BigWig gives — and
-       * an unmeasurable estimate keeps the byte axis out of the verdict without
-       * anything here having to know which adapter it has.
-       *
-       * This is the last display-side answer to an adapter-side question to go
-       * — the same shape as the `alwaysRender` estimate flag that preceded it —
-       * so the opt-in has no "except when the adapter would explode" caveat
-       * anywhere in the tree. It used to cost one pre-flight round trip per
-       * pre-computed fetch, returning undefined by construction; folded into
-       * the fetch, it costs nothing at all.
+       * Off: `RegionTooLargeMixin`'s gate is a byte axis, and the byte estimate
+       * comes from a feature adapter's index. An LD record source serves no
+       * features, so there is nothing to measure and the gate can only ever
+       * return "unmeasurable" — which is a verdict of no verdict, dressed as
+       * one. Declining it outright is what keeps the banner and the force-load
+       * control off a display where neither can act.
        */
       get gateEnabled() {
-        return true
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * The filters actually applied, `jexl:`-prefixed: the runtime override
-       * when set, otherwise the config tier. In its own block after
-       * `configuredFilters` so it reaches it through `self`, the arrangement
-       * `LinearBasicDisplay` uses for the same pair.
-       */
-      activeFilters(): string[] {
-        return activeJexlFilters(self)
+        return false
       },
     }))
     .views(self => ({
@@ -496,14 +371,7 @@ export default function sharedModelFactory(
       rpcProps(): LDRpcProps {
         return {
           ldMetric: self.ldMetric,
-          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-          lengthCutoffFilter: self.lengthCutoffFilter,
-          hweFilterThreshold: self.hweFilterThreshold,
-          callRateFilter: self.callRateFilter,
           maxVariantSeparation: self.maxVariantSeparation,
-          jexlFilters: self.activeFilters(),
-          signedLD: self.signedLD,
-          ldMethod: self.configuredLDMethod,
           useGenomicPositions: self.useGenomicPositions,
         }
       },
@@ -515,7 +383,7 @@ export default function sharedModelFactory(
        */
       // Resolved geometry, never undefined: it's pure view/settings state, and
       // "no data yet" is the render callback's gate. The two data-derived
-      // fields (signedLD, uniformW) ride with the payload instead — see
+      // fields (uniformW) ride with the payload instead — see
       // LDUploadData.
       get renderState(): LDRenderState {
         const { viewScale, viewOffsetX } = this.viewTransform
@@ -703,7 +571,7 @@ export default function sharedModelFactory(
           },
           encode: (d, _props, key) =>
             key === 'colorRamp'
-              ? generateLDColorRamp(d.metric, d.signedLD)
+              ? generateLDColorRamp(d.metric)
               : toLDUploadData(d),
           // The backend answers "did real content reach the canvas". It used to
           // be this callback's answer, because a monolithic `render` returned

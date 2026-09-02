@@ -192,7 +192,7 @@ const FIXTURES: Fixture[] = [
     displayType: 'LinearMultiSampleVariantMatrixDisplay',
     trackId: 'volvox multi-sample sv',
   },
-  { displayType: 'LDDisplay', trackId: 'volvox multi-sample sv' },
+  { displayType: 'LDTrackDisplay', trackId: 'volvox_ld' },
   {
     // The key is derived from what the anchor lane draws, so the row exists
     // only once the display has colors that key something: the ortholog records
@@ -228,8 +228,6 @@ const FIXTURES: Fixture[] = [
 const NO_FIXTURE = new Set([
   // needs a HicTrack, and volvox has no .hic file
   'LinearHicDisplay',
-  // the LDTrack twin of LDDisplay, which the VariantTrack fixture above covers
-  'LDTrackDisplay',
 ])
 
 // The wiggle family gates its two size rows on the rendering type, and the two

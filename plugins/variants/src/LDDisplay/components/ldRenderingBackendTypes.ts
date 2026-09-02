@@ -9,17 +9,14 @@ export interface LDRenderState {
   viewOffsetX: number
 }
 
-// `signedLD` and `uniformW` ride with the data, not the frame state: they
-// describe the matrix the worker packed (its metric's sign convention, its
-// uniform cell width), so a frame can't color one payload by another's
-// convention — and it's what keeps `renderState` resolvable (a bare getter must
-// never hand back undefined) with no data loaded.
+// `uniformW` rides with the data, not the frame state: it describes the matrix
+// the worker packed, and it is what keeps `renderState` resolvable (a bare
+// getter must never hand back undefined) with no data loaded.
 export interface LDUploadData {
   ldValues: Float32Array
   boundaries: Float32Array
   numCells: number
   band: number
-  signedLD: boolean
   uniformW: number
   // Present only for genomic positions mode (pre-computed per-cell positions)
   positions?: Float32Array
@@ -27,7 +24,7 @@ export interface LDUploadData {
 }
 
 // Two cells, both encoded off the one fetch result: the matrix, and the colour
-// ramp its metric and sign select. `upload` tells them apart by the cell's type.
+// ramp its metric selects. `upload` tells them apart by the cell's type.
 export type LDCellKey = 'data' | 'colorRamp'
 
 export interface LDRenderingBackend extends GlobalRenderingBackend<
@@ -39,8 +36,7 @@ export interface LDRenderingBackend extends GlobalRenderingBackend<
   uploadColorRamp(colors: Uint8Array): void
 }
 
-// The fetch blob carries more than the backends draw from (hover metadata, the
-// filter stats, …), so upload and render share this one narrowing instead of
+// The fetch blob carries more than the backends draw from (hover metadata, the SNP list, …), so upload and render share this one narrowing instead of
 // each spelling out the field list. The parameter must stay the WIDE type: typed
 // `LDUploadData` this was an identity function, and tsc checked nothing — a field
 // added to `LDUploadData` and forgotten here would fail at neither end.
@@ -50,7 +46,6 @@ export function toLDUploadData(data: LDDataResult): LDUploadData {
     boundaries: data.boundaries,
     numCells: data.numCells,
     band: data.band,
-    signedLD: data.signedLD,
     uniformW: data.uniformW,
     positions: data.positions,
     cellSizes: data.cellSizes,

@@ -1,0 +1,7 @@
+CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2 DP
+ctgA 1000 v1 ctgA 2000 v2 0.92 0.98
+ctgA 1000 v1 ctgA 3000 v3 0.41 0.77
+ctgA 1000 v1 ctgA 4000 v4 0.05 0.19
+ctgA 2000 v2 ctgA 3000 v3 0.63 0.88
+ctgA 2000 v2 ctgA 4000 v4 0.12 0.31
+ctgA 3000 v3 ctgA 4000 v4 0.78 0.95

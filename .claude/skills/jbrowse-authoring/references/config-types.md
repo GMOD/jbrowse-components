@@ -28,7 +28,7 @@ inference.
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
   displays: ChordVariantDisplay, LinearVariantDisplay,
   LinearMultiSampleVariantDisplay, LinearMultiSampleVariantMatrixDisplay,
-  LDDisplay, LinearPairedArcDisplay
+  LinearPairedArcDisplay
 - [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays:
   LDTrackDisplay
 - [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)
@@ -58,7 +58,6 @@ inference.
 - [LinearVariantDisplay](https://jbrowse.org/jb2/docs/config/linearvariantdisplay.md)
 - [LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay.md)
 - [LinearMultiSampleVariantMatrixDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantmatrixdisplay.md)
-- [LDDisplay](https://jbrowse.org/jb2/docs/config/lddisplay.md)
 - [LDTrackDisplay](https://jbrowse.org/jb2/docs/config/ldtrackdisplay.md)
 - [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay.md)
 - [MultiLinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/multilinearwiggledisplay.md)

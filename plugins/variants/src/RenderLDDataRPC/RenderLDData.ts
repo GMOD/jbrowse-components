@@ -1,15 +1,11 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { LDMethodRequest, LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { LDMetric } from '../VariantRPC/ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type {
-  GatedFetchArgs,
-  RegionTooLargeResult,
-} from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
-export interface RenderLDDataArgs extends GatedFetchArgs {
+export interface RenderLDDataArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   /**
@@ -21,20 +17,8 @@ export interface RenderLDDataArgs extends GatedFetchArgs {
    */
   originBp: number
   ldMetric: LDMetric
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
-  hweFilterThreshold: number
-  callRateFilter: number
   /** plink's `--ld-window`; 0 for the full triangle. See `ldBand.ts`. */
   maxVariantSeparation: number
-  /**
-   * Which estimator to ask for. A request, not an instruction: unphased data
-   * has no gametes to count, so `resolveLDMethod` declines to composite and the
-   * result's `method` reports what actually ran.
-   */
-  ldMethod: LDMethodRequest
-  jexlFilters: string[]
-  signedLD: boolean
   useGenomicPositions: boolean
 }
 
@@ -42,16 +26,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderLDData: {
       args: RenderLDDataArgs
-      return: LDDataResult | RegionTooLargeResult
-      // Only the data half owns buffers to transfer, so only it is wrapped —
-      // the refusal marker crosses as itself.
-      //
-      // The odd one out among the Render* family until now: `ldValues` is the
-      // O(n²) pair matrix — 4MB at a thousand SNPs — and it crossed by structure
-      // clone on every fetch, alongside three more Float32Arrays. Every buffer
-      // in the result is freshly allocated per call (`getLDMatrix`,
-      // `getLDMatrixFromPlink`, `computeBoundaries`, `buildGenomicCellBuffers`,
-      // and both empty results), so there is nothing held across calls for the
+      return: LDDataResult
+      // `ldValues` is the O(n²) pair matrix — 4MB at a thousand SNPs — and it
+      // crossed by structure clone on every fetch, alongside three more
+      // Float32Arrays. Every buffer in the result is freshly allocated per call
+      // (`getLDMatrixFromPlink`, `computeBoundaries`, `buildGenomicCellBuffers`,
+      // and the empty result), so there is nothing held across calls for the
       // transfer to detach.
       transferables: LDDataResult
     }

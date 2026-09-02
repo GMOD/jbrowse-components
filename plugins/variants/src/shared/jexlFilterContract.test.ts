@@ -1,38 +1,29 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import ldConfigSchemaFactory from '../LDDisplay/configSchemaVariant.ts'
-import ldSharedModelFactory from '../LDDisplay/shared.ts'
 import variantConfigSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import variantStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
 import { createDisplayTestEnvironment } from './testEnv.ts'
 
-import type { SharedLDModel } from '../LDDisplay/shared.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleVariantDisplay/model.ts'
 
-// The two-tier jexl-filter contract (`JexlFilterModel`), asserted on both
-// displays in this plugin. Both used to implement one half of it and a different
-// half each, and both failures were silent:
+// The two-tier jexl-filter contract (`JexlFilterModel`), asserted on the
+// multi-sample variant displays. They used to implement one half of it, and the
+// failures were silent:
 //
 // - the multi-sample displays declared an MST property literally named
 //   `jexlFilters`, which shadowed the `jexlFilters` config slot they inherit
 //   from `baseLinearDisplayConfigSchema`, so a track config declaring filters
 //   was read by nothing;
-// - neither prefixed, so a filter written the way the base slot documents
+// - they did not prefix, so a filter written the way the base slot documents
 //   (bare, because slot values are deferred-evaluation) reached
 //   `stringToJexlExpression` unprefixed, which throws.
 //
+// The LD display was the third participant until it stopped reading genotypes:
+// it draws a file of already-computed pairs and has no features to filter.
+//
 // `LinearBasicDisplay` has always had the whole contract; it is asserted in
 // plugins/canvas's own suite.
-
-const ldConfigSchema = ldConfigSchemaFactory()
-const ld = createDisplayTestEnvironment<SharedLDModel>({
-  displayName: 'LDDisplay',
-  configSchema: ldConfigSchema,
-  stateModel: ldSharedModelFactory(ldConfigSchema)
-    .named('LDDisplay')
-    .props({ type: types.literal('LDDisplay') }),
-})
 
 const variantConfigSchema = variantConfigSchemaFactory()
 const variant =
@@ -43,7 +34,6 @@ const variant =
   })
 
 const CASES = [
-  ['LDDisplay', ld.createDisplay],
   ['LinearMultiSampleVariantDisplay', variant.createDisplay],
 ] as const
 

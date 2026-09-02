@@ -107,6 +107,12 @@ export async function buildLdToIndex({
   const r2ByKey = new Map<string, number>()
   let indexFound = false
   for (const r of records) {
+    // A record with no r² is a file with no R2 column — `--r2 dprime` emits
+    // one. It used to read back as 0, which colored every partner at the
+    // ramp's floor with nothing anywhere saying the column was missing.
+    if (r.r2 === undefined) {
+      continue
+    }
     // indexSnp is in the caller's scheme too (GetManhattanData rewrites it
     // through the same rename as the region), so compare against keys built in
     // that scheme, not against the record's own `chrA`/`chrB`.

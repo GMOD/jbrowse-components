@@ -103,9 +103,9 @@ export class GpuLDRenderer
     uploadColorRampLut(this.hal, colors, [PASS_MAIN, PASS_GENOMIC])
   }
 
-  // signedLD/uniformW come from the payload the buffers were packed from, so an
-  // uploaded buffer with no current data draws nothing rather than coloring by
-  // a stand-in convention. The resize and the beginFrame/endFrame around this
+  // uniformW comes from the payload the buffers were packed from, so an
+  // uploaded buffer with no current data draws nothing rather than laying cells
+  // out at a stand-in pitch. The resize and the beginFrame/endFrame around this
   // belong to `GpuGlobalRenderingBackend`.
   protected draw(data: LDUploadData, state: LDRenderState) {
     const hasMain = this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
@@ -124,7 +124,6 @@ export class GpuLDRenderer
       yScalar: state.yScalar,
       viewScale: state.viewScale,
       viewOffsetX: state.viewOffsetX,
-      signedLd: data.signedLD ? 1 : 0,
       uniformW: data.uniformW,
       // Uniform mode's vertex shader turns instance_index back into (i, j)
       // through this; genomic mode carries per-cell positions and ignores it.

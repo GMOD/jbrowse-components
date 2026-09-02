@@ -126,7 +126,7 @@ loaded, and from a served `config.json` it does so for every visitor:
 
 JBrowse routes each key in `displayDefaults` to the display that uses it. Spell
 out the full `displays` array when you are _selecting_ a non-default display
-type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, and so on); see
+type (`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`, and so on); see
 [configuring tracks](/docs/config_guides/tracks) for both forms.
 
 The track then opens paired, colored and soft-clipped, with no clicking.

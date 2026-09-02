@@ -6,7 +6,7 @@ import {
   bandRowFirstColumn,
 } from '../VariantRPC/ldBand.ts'
 
-import type { LDSnp } from '../VariantRPC/getLDMatrix.ts'
+import type { LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
 // Index of the region a SNP sits in, or -1. Regions are the worker-side

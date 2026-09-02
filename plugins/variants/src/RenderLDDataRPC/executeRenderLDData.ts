@@ -1,16 +1,12 @@
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
-import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 import { bandCellCount } from '../VariantRPC/ldBand.ts'
 import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
 import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
-import { isPrecomputedLDAdapter } from './types.ts'
 
-import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { LDMatrixResult } from '../VariantRPC/ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -20,27 +16,21 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 // the one the driver delivers.
 type ExecuteArgs = RpcExecuteArgs<'RenderLDData'>
 
-// Nothing to lay out — no SNPs passed the filters, or there is no region to lay
-// them out in. `filterStats` rides along regardless: an empty triangle is
-// exactly when the status bar's "0 / 812 variants shown (812 MAF)" is the only
-// thing on screen explaining it.
+// Nothing to lay out — the file named no pairs here, or there is no region to
+// lay them out in.
 //
 // `genomicMode` is the requested mode rather than a flat `false`, because the
 // display branches its *chrome* on it and not only its matrix:
 // `effectiveUseGenomicPositions` picks the label zone over the connector zone
 // and, through `effectiveLineZoneHeight`, decides how much room sits above the
-// canvas. Reporting `false` here made a filter that emptied the result also
-// move the whole triangle down by `lineZoneHeight` (100px by default) and
-// shrink it — a layout jump on the one frame whose only content is the status
-// bar explaining the emptiness, and it un-jumped when the filter came back
-// down. There is no matrix either way; the honest answer for the chrome is the
-// mode the display is in.
+// canvas. Reporting `false` here moved the whole triangle down by
+// `lineZoneHeight` (100px by default) on the one frame with no content in it.
+// There is no matrix either way; the honest answer for the chrome is the mode
+// the display is in.
 function emptyResult(
-  { metric, method, hasDprime, filterStats }: LDMatrixResult,
-  signedLD: boolean,
+  { metric, hasDprime }: LDMatrixResult,
   genomicMode: boolean,
   originBp: number,
-  bytes: number | undefined,
 ) {
   return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues: new Float32Array(0),
@@ -52,11 +42,7 @@ function emptyResult(
     genomicMode,
     metric,
     hasDprime,
-    method,
-    signedLD,
     snps: [],
-    filterStats,
-    bytes,
   })
 }
 
@@ -67,59 +53,15 @@ export async function executeRenderLDData({
   pluginManager: PluginManager
   args: ExecuteArgs
 }) {
-  const {
-    sessionId,
-    adapterConfig,
-    regions,
-    originBp,
-    signedLD,
-    useGenomicPositions,
-    byteLimit,
-    stopToken,
-    statusCallback,
-  } = args
+  const { regions, originBp, useGenomicPositions, statusCallback } = args
 
-  const isPrecomputed = isPrecomputedLDAdapter(adapterConfig.type)
-
-  // Measured on the adapter this fetch is about to READ, which is the genotype
-  // feature adapter — the same one `getLDMatrix` resolves a moment later, out
-  // of the same cache. The pre-computed adapters (`PlinkLD*`) are skipped
-  // entirely: they are not feature adapters at all, so there is no index
-  // estimate to take and measuring them was always a measurement of nothing.
-  // An absent `bytes` keeps the byte axis out of the display's verdict, which
-  // is the same answer the old pre-flight round trip produced for them.
-  const measured =
-    byteLimit === undefined || isPrecomputed
-      ? { bytes: undefined, tooLarge: undefined }
-      : await measureRegionBytes({
-          dataAdapter: await getFeatureAdapterOrThrow({
-            pluginManager,
-            sessionId,
-            adapterConfig,
-          }),
-          regions,
-          byteLimit,
-          stopToken,
-          statusCallback,
-        })
-  if (measured.tooLarge) {
-    return measured.tooLarge
-  }
-  // What the values in hand will actually be, not what was asked for: the
-  // pre-computed path reads magnitudes out of a file and has no genotypes to
-  // recover a sign from, so it cannot honor the request. Answering honestly here
-  // is what keeps the ramp, the legend and the tooltip (all of which read this
-  // back off the result) describing the same numbers.
-  const signedResult = signedLD && !isPrecomputed
-  // `args` whole, never a re-listed subset: both matrix builders take a
+  // `args` whole, never a re-listed subset: the matrix builder takes a
   // structural superset of the payload, and re-spelling the fields is how
-  // `maxVariantSeparation` and `ldMethod` came to be declared, sent, and then
-  // dropped on the floor here while every layer around them looked wired.
-  const ldData = await (isPrecomputed
-    ? updateStatus('Downloading LD data', statusCallback, () =>
-        getLDMatrixFromPlink({ pluginManager, args }),
-      )
-    : getLDMatrix({ pluginManager, args }))
+  // `maxVariantSeparation` came to be declared, sent, and then dropped on the
+  // floor here while every layer around it looked wired.
+  const ldData = await updateStatus('Downloading LD data', statusCallback, () =>
+    getLDMatrixFromPlink({ pluginManager, args }),
+  )
 
   // Resolved before the empty check so both exits report the same thing.
   // Genomic-positions mode maps each SNP onto a single continuous bp axis
@@ -131,13 +73,7 @@ export async function executeRenderLDData({
 
   const region = regions[0]
   if (ldData.snps.length === 0 || !region) {
-    return emptyResult(
-      ldData,
-      signedResult,
-      genomicMode,
-      originBp,
-      measured.bytes,
-    )
+    return emptyResult(ldData, genomicMode, originBp)
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -178,11 +114,7 @@ export async function executeRenderLDData({
     genomicMode,
     metric: ldData.metric,
     hasDprime: ldData.hasDprime,
-    method: ldData.method,
-    signedLD: signedResult,
     snps,
-    filterStats: ldData.filterStats,
-    bytes: measured.bytes,
     ...cellBuffers,
   })
 }

@@ -148,8 +148,10 @@ export function parsePlinkLDLine(
     snpB,
     // parseFloat of a malformed/"nan" cell yields NaN, which `?? 0` does NOT
     // catch (only null/undefined) — guard on finiteness so callers never see a
-    // NaN r² leak into the matrix.
-    r2: r2 !== undefined && Number.isFinite(r2) ? r2 : 0,
+    // NaN r² leak into the matrix. Undefined rather than 0: a file with no R2
+    // column at all read back as every pair in perfect equilibrium, which is a
+    // plausible-looking matrix and a plausible-looking Manhattan plot.
+    r2: r2 !== undefined && Number.isFinite(r2) ? r2 : undefined,
     dprime,
     mafA,
     mafB,

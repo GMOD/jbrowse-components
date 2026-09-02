@@ -45,7 +45,6 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearsyntenydisplay) | LinearSyntenyView |
 |  | [](/docs/config/multiwaysyntenydisplay) | LinearGenomeView |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay) | CircularView |
-|  | [](/docs/config/lddisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultisamplevariantdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultisamplevariantmatrixdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearpairedarcdisplay) | LinearGenomeView |

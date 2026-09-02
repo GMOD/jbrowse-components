@@ -202,5 +202,5 @@ memo that doesn't re-run also stops tracking `bpPerPx`/`offsetPx`.
 The two counters in `shared/alleleCounts.ts` are context-tuned, not duplication:
 the VCF hot path accumulates into an object because mutating captured primitives
 inside the `processGenotypes` closure forces a V8 deopt. MAF is over **called**
-alleles; LD must land on the same number by counting **alleles**, not genotype
-classes. A monomorphic site is not dropped.
+alleles, not genotype classes, so a mixed-ploidy site weights a haploid call
+once. A monomorphic site is not dropped.

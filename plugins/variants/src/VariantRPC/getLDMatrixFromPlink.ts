@@ -3,12 +3,7 @@ import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 
-import type {
-  FilterStats,
-  LDMatrixResult,
-  LDMetric,
-  LDSnp,
-} from './getLDMatrix.ts'
+import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -20,32 +15,58 @@ function snpKey(refName: string, pos: number) {
   return `${refName}:${pos}`
 }
 
-function finiteOrZero(v: number | undefined) {
+// The value painted into a cell for the chosen metric. A record missing the
+// resolved metric's column reads as 0 so rendering never branches on NaN;
+// `resolveMetric` has already ruled out the case where the whole FILE is
+// missing it, which is the one that would paint a confident matrix of zeros.
+function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
+  const v = ldMetric === 'dprime' ? record.dprime : record.r2
   return v !== undefined && Number.isFinite(v) ? v : 0
 }
 
-// The value painted into a cell for the chosen metric. D' can be absent in the
-// file (falls back to r²) or unparsable (finiteOrZero keeps the matrix finite
-// so rendering never branches on NaN).
-function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
-  return finiteOrZero(
-    ldMetric === 'dprime' ? (record.dprime ?? record.r2) : record.r2,
-  )
+/**
+ * The metric the file can actually serve, given what was asked for.
+ *
+ * Both directions matter and only one of them used to. A `--r2 dprime` emit
+ * carries DP and no R2, and `parsePlinkLDLine` reported a missing r² as 0 —
+ * so an r² request against such a file painted every pair at the ramp's floor
+ * with nothing anywhere saying so. `parsePlinkLDHeader` accepts the file (it
+ * requires only *one* of the two columns), so this is where the mismatch has
+ * to be caught.
+ */
+function resolveMetric(
+  ldMetric: LDMetric,
+  { hasR2, hasDprime }: { hasR2: boolean; hasDprime: boolean },
+): LDMetric {
+  if (ldMetric === 'dprime') {
+    return hasDprime ? 'dprime' : 'r2'
+  }
+  return hasR2 ? 'r2' : 'dprime'
 }
 
 // Deduplicate both endpoints of every record into a unique SNP list sorted by
 // (refName, position). Sorted order defines the matrix row/column index.
+//
+// `maf` rides along from the file's MAF_A/MAF_B columns when it has them
+// (plink's `--r2 with-freqs`, plink2's NONMAJ_FREQ_*), which the tooltip prints.
+// `parsePlinkLDLine` has always read those columns; nothing collected them.
 function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
   const snpMap = new Map<string, LDSnp>()
-  const add = (refName: string, pos: number, id: string) => {
+  const add = (refName: string, pos: number, id: string, maf?: number) => {
     const key = snpKey(refName, pos)
     if (!snpMap.has(key)) {
-      snpMap.set(key, { id, refName, start: pos, end: pos + 1 })
+      snpMap.set(key, {
+        id,
+        refName,
+        start: pos,
+        end: pos + 1,
+        maf: maf !== undefined && Number.isFinite(maf) ? maf : undefined,
+      })
     }
   }
   for (const r of records) {
-    add(r.chrA, r.bpA, r.snpA)
-    add(r.chrB, r.bpB, r.snpB)
+    add(r.chrA, r.bpA, r.snpA, r.mafA)
+    add(r.chrB, r.bpB, r.snpB, r.mafB)
   }
   return [...snpMap.values()].sort((a, b) =>
     a.refName === b.refName
@@ -88,10 +109,15 @@ export async function getLDMatrixFromPlink({
     )
   }
 
-  // D' is only present if the file has a DP column. Without it, a 'dprime'
-  // request must fall back to r² rather than mislabel r² as D' in the legend.
-  const hasDprime = (await dataAdapter.getHeader()).dprimeIdx >= 0
-  const metric: LDMetric = ldMetric === 'dprime' && !hasDprime ? 'r2' : ldMetric
+  // Which columns the file actually has: a request for a metric it does not
+  // carry is downgraded rather than mislabeled in the legend, and `hasDprime`
+  // rides back so the display can disable the D' option outright.
+  const header = await dataAdapter.getHeader()
+  const hasDprime = header.dprimeIdx >= 0
+  const metric = resolveMetric(ldMetric, {
+    hasR2: header.r2Idx >= 0,
+    hasDprime,
+  })
 
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
@@ -131,25 +157,11 @@ export async function getLDMatrixFromPlink({
     }
   }
 
-  // Pre-computed LD has no per-variant genotypes, so nothing is filtered.
-  const filterStats: FilterStats = {
-    filteredByCallRate: 0,
-    totalVariants: n,
-    passedVariants: n,
-    filteredByMaf: 0,
-    filteredByLength: 0,
-    filteredByMultiallelic: 0,
-    filteredByHwe: 0,
-    filteredByJexl: 0,
-  }
-
   return {
     snps,
     ldValues,
     metric,
     hasDprime,
-    method: 'precomputed',
     band,
-    filterStats,
   }
 }

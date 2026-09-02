@@ -65,7 +65,7 @@ function makeRenderState(overrides?: Partial<LDRenderState>): LDRenderState {
   }
 }
 
-// signedLD/uniformW describe the packed matrix, so they live on the data (see
+// uniformW describes the packed matrix, so it lives on the data (see
 // LDUploadData), not the per-frame render state.
 function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
   return {
@@ -73,7 +73,6 @@ function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
     ldValues: new Float32Array([0.5]),
     numCells: 1,
     band: 1_000_000,
-    signedLD: false,
     uniformW: 10,
     ...overrides,
   }
@@ -145,61 +144,35 @@ describe('Canvas2DLDRenderer', () => {
     expect(ctx.lineTo).toHaveBeenCalledTimes(3)
   })
 
-  test('signedLD mode maps -1..1 to 0..1 for ramp lookup', () => {
+  test('ldValue is the ramp position directly, and clamps at both ends', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DLDRenderer(canvas)
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([-1]), signedLD: true }),
+      makeOneCell({ ldValues: new Float32Array([0.5]) }),
       makeRenderState(),
     )
-
-    expect(ctx.fillStyle).toBe('rgba(0,0,0,1.000)')
-  })
-
-  test('signedLD maps 1 to ramp end', () => {
-    const { canvas, ctx } = createMockCanvas()
-    const renderer = new Canvas2DLDRenderer(canvas)
-    renderer.uploadColorRamp(makeColorRamp())
+    expect(ctx.fillStyle).toBe('rgba(128,128,128,1.000)')
 
     renderer.render(
-      makeOneCell({ ldValues: new Float32Array([1]), signedLD: true }),
+      makeOneCell({ ldValues: new Float32Array([1]) }),
       makeRenderState(),
     )
-
     expect(ctx.fillStyle).toBe('rgba(255,255,255,1.000)')
   })
 
-  test('unsigned mode uses ldValue directly as ramp position', () => {
-    const { canvas, ctx } = createMockCanvas()
-    const renderer = new Canvas2DLDRenderer(canvas)
-    renderer.uploadColorRamp(makeColorRamp())
-
-    renderer.render(
-      makeOneCell({ ldValues: new Float32Array([0.5]), signedLD: false }),
-      makeRenderState(),
-    )
-
-    expect(ctx.fillStyle).toBe('rgba(128,128,128,1.000)')
-  })
-
   // Every ramp a display can reach is opaque, which is why the painter has no
-  // alpha gate: `generateLDColorRamp` returns one of four LUTs, all built by
+  // alpha gate: `generateLDColorRamp` returns one of two LUTs, both built by
   // `opaqueRampLut`. A translucent one would need a matching `discard` in
   // ldUniforms.slang, which gates on `ldValueComputed` alone — so a gate here
   // would be a Canvas2D-only skip.
-  test.each(['r2', 'dprime'])(
-    'every %s ramp entry is opaque, signed and unsigned',
-    metric => {
-      for (const signedLD of [false, true]) {
-        const ramp = generateLDColorRamp(metric, signedLD)
-        for (let i = 0; i < 256; i++) {
-          expect(ramp[i * 4 + 3]).toBe(255)
-        }
-      }
-    },
-  )
+  test.each(['r2', 'dprime'])('every %s ramp entry is opaque', metric => {
+    const ramp = generateLDColorRamp(metric)
+    for (let i = 0; i < 256; i++) {
+      expect(ramp[i * 4 + 3]).toBe(255)
+    }
+  })
   // The shader's own transform (render-core `diagonalCellToClip`), so the
   // assertion below is against what the GPU actually draws rather than against
   // a second copy of the Canvas2D arithmetic.
@@ -342,7 +315,6 @@ describe('drawLDBlocks over a real band', () => {
         ldValues: new Float32Array(numCells).fill(0.5),
         numCells,
         band,
-        signedLD: false,
         uniformW: CELL,
       },
       makeColorRamp(),
@@ -417,7 +389,6 @@ describe('drawLDBlocks over a cell nothing computed', () => {
         ldValues,
         numCells: ldValues.length,
         band: BAND,
-        signedLD: false,
         uniformW: CELL,
       },
       makeColorRamp(),

@@ -1,8 +1,7 @@
-import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { LD_NOT_COMPUTED, ldValueComputed } from '@jbrowse/ld-core'
 
-import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
+import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 import {
   bandCellCount,
   bandPairIndex,
@@ -11,23 +10,18 @@ import {
 } from '../VariantRPC/ldBand.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
-import type {
-  LDMatrixResult,
-  LDMethodRequest,
-  LDSnp,
-} from '../VariantRPC/getLDMatrix.ts'
+import type { LDMatrixResult, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
 // Wider than any n these fixtures use, so the banded layout collapses to the
 // triangular one these expectations were written against.
 const FULL_BAND = 1_000_000
 
-jest.mock('../VariantRPC/getLDMatrix.ts', () => ({
-  ...jest.requireActual('../VariantRPC/getLDMatrix.ts'),
-  getLDMatrix: jest.fn(),
+jest.mock('../VariantRPC/getLDMatrixFromPlink.ts', () => ({
+  ...jest.requireActual('../VariantRPC/getLDMatrixFromPlink.ts'),
+  getLDMatrixFromPlink: jest.fn(),
 }))
 
 const SPAN = 1000
@@ -64,29 +58,8 @@ function matrix(snps: LDSnp[], band = FULL_BAND): LDMatrixResult {
     ldValues,
     metric: 'r2',
     hasDprime: true,
-    method: 'composite',
     band,
-    filterStats: {
-      totalVariants: n,
-      passedVariants: n,
-      filteredByMaf: 0,
-      filteredByLength: 0,
-      filteredByMultiallelic: 0,
-      filteredByHwe: 0,
-      filteredByCallRate: 0,
-      filteredByJexl: 0,
-    },
   }
-}
-
-// This suite never passes a `byteLimit`, so the executor measures nothing and
-// the refusal arm of its return is unreachable. Narrowed once here rather than
-// at every assertion.
-function payload<T>(result: T | RegionTooLargeResult) {
-  if (isRegionRefused(result)) {
-    throw new Error('unexpected region-too-large result')
-  }
-  return result
 }
 
 async function run(
@@ -94,15 +67,14 @@ async function run(
   snps: LDSnp[],
   useGenomicPositions: boolean,
   maxVariantSeparation = 0,
-  ldMethod: LDMethodRequest = 'auto',
 ) {
   // The band comes off the window the EXECUTOR forwarded, never off the one
   // this harness was handed. Manufacturing it from the local argument injected
   // the band the executor was supposed to cause, which is how the executor
-  // dropping `maxVariantSeparation` on its way to `getLDMatrix` — the full
+  // dropping `maxVariantSeparation` on its way to the matrix builder — the full
   // triangle every time, in production — sat under a green suite.
   jest
-    .mocked(getLDMatrix)
+    .mocked(getLDMatrixFromPlink)
     .mockImplementation(({ args }) =>
       Promise.resolve(
         matrix(snps, resolveBand(snps.length, args.maxVariantSeparation ?? 0)),
@@ -110,34 +82,26 @@ async function run(
     )
   // the envelope `deserializeReturn` takes off for the real caller: the four
   // Float32Arrays are transferred rather than cloned
-  return payload(
-    unwrapRpcResult(
-      await executeRenderLDData({
-        pluginManager: {} as PluginManager,
-        args: {
-          sessionId: 'test',
-          adapterConfig: {
-            type: 'VcfTabixAdapter',
-          },
-          regions,
-          originBp: 0,
-          ldMetric: 'r2',
-          minorAlleleFrequencyFilter: 0,
-          lengthCutoffFilter: 0,
-          hweFilterThreshold: 0,
-          callRateFilter: 0,
-          maxVariantSeparation,
-          ldMethod,
-          jexlFilters: [],
-          signedLD: false,
-          useGenomicPositions,
+  return unwrapRpcResult(
+    await executeRenderLDData({
+      pluginManager: {} as PluginManager,
+      args: {
+        sessionId: 'test',
+        adapterConfig: {
+          type: 'PlinkLDTabixAdapter',
         },
-      }),
-    ),
+        regions,
+        originBp: 0,
+        ldMetric: 'r2',
+        maxVariantSeparation,
+        useGenomicPositions,
+      },
+    }),
   )
 }
 
-const lastMatrixArgs = () => jest.mocked(getLDMatrix).mock.lastCall![0].args
+const lastMatrixArgs = () =>
+  jest.mocked(getLDMatrixFromPlink).mock.lastCall![0].args
 
 // LD value for a pair of SNPs, found by position rather than by index, so the
 // lookup doesn't assume either orientation's ordering.
@@ -331,35 +295,20 @@ describe('a screen-order pair the source band never computed', () => {
   })
 })
 
-// Both of these were declared on `RenderLDDataArgs`, sent by the model, and
-// then dropped: the executor listed the fields of `getLDMatrix`'s argument
-// object by hand and neither was on the list, so `maxVariantSeparation`
-// defaulted to 0 (the full triangle, and a 4.66 GiB Float32Array at 50k
-// variants) and `ldMethod` to 'auto' (exact haplotypic LD on a phased callset a
-// track had asked to score with the composite estimator). Asserted on what
-// crossed into the matrix builder, because everything on either side of that
-// call reads correct.
+// `maxVariantSeparation` was declared on `RenderLDDataArgs`, sent by the model,
+// and then dropped: the executor listed the fields of the matrix builder's
+// argument object by hand and it was not on the list, so the window defaulted
+// to 0 — the full triangle — in production while every layer around it looked
+// wired. Asserted on what crossed into the matrix builder, because everything
+// on either side of that call reads correct.
 describe('the executor forwards the whole payload it was handed', () => {
-  test('the pair-separation window reaches getLDMatrix', async () => {
+  test('the pair-separation window reaches the matrix builder', async () => {
     await run([region('a', false)], SNPS, false, 2)
     expect(lastMatrixArgs().maxVariantSeparation).toBe(2)
   })
 
-  test('the requested estimator reaches getLDMatrix', async () => {
-    await run([region('a', false)], SNPS, false, 0, 'composite')
-    expect(lastMatrixArgs().ldMethod).toBe('composite')
-  })
-
-  test('the filters and the metric reach it too', async () => {
+  test('the metric reaches it too', async () => {
     await run([region('a', false)], SNPS, false)
-    expect(lastMatrixArgs()).toMatchObject({
-      ldMetric: 'r2',
-      minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: 0,
-      hweFilterThreshold: 0,
-      callRateFilter: 0,
-      jexlFilters: [],
-      signedLD: false,
-    })
+    expect(lastMatrixArgs()).toMatchObject({ ldMetric: 'r2' })
   })
 })

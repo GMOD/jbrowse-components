@@ -2,65 +2,27 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'
 
-import { LD_FILTER_CATEGORIES } from '../../shared/ldFilterCategories.ts'
-
-import type { FilterStats, LDMethod } from '../../VariantRPC/getLDMatrix.ts'
 import type { SharedLDModel } from '../shared.ts'
 
 // Structural, so the text is assertable without building a display — the same
 // arrangement `buildLDTrackMenuItems` uses for the track menu's shape.
 export interface LDStatusSelf {
-  filterStats: FilterStats | undefined
-  isPrecomputedLD: boolean
-  ldMethod: LDMethod | undefined
   loadedLDWindow: number | undefined
 }
 
 /**
- * What the triangle on screen covers, in the order a reader needs it: how many
- * variants are on the axis, how the numbers were derived, and how far apart two
- * variants may be for their pair to have been computed at all.
+ * How far apart two variants may be for their pair to be drawn at all.
  *
- * The parts are assembled as a list rather than concatenated inline because a
- * pre-computed matrix has only the last of them — a PLINK file carries no
- * per-variant genotypes, so there are no filter counts and no estimator to
- * name, but `maxVariantSeparation` windows it exactly as it windows a VCF.
+ * Nothing in the plot says a window is in force: a pair past it is not drawn,
+ * and against a light theme an in-band pair at r² = 0 — the ramp's white end,
+ * at full alpha — is the same pixel as the background those undrawn cells
+ * leave. So long-range LD, the case worth looking for, reads as absent rather
+ * than as unmeasured unless the window is named somewhere.
  */
-export function ldStatusParts({
-  filterStats,
-  isPrecomputedLD,
-  ldMethod,
-  loadedLDWindow,
-}: LDStatusSelf) {
-  const parts: string[] = []
-  const stats = isPrecomputedLD ? undefined : filterStats
-  if (stats) {
-    const dropped = LD_FILTER_CATEGORIES.filter(c => stats[c.key] > 0)
-    const reasons =
-      dropped.length > 0
-        ? ` (${dropped.map(c => `${stats[c.key]} ${c.label}`).join(', ')})`
-        : ''
-    parts.push(
-      `${stats.passedVariants} / ${stats.totalVariants} variants shown${reasons}`,
-    )
-    // The ESTIMATOR, not the file. `ldMethod: 'composite'` is honoured on a
-    // phased callset — that is what the slot exists for — so "unphased" here
-    // described data that may well be phased.
-    if (ldMethod === 'phased') {
-      parts.push('LD: phased haplotypes (exact)')
-    } else if (ldMethod === 'composite') {
-      parts.push('LD: composite (Weir)')
-    }
-  }
-  // Nothing in the plot says a window is in force: a pair past it is not drawn,
-  // and against a light theme an in-band pair at r² = 0 — the ramp's white end,
-  // at full alpha — is the same pixel as the background those undrawn cells
-  // leave. So long-range LD, the case worth looking for, reads as absent rather
-  // than as unmeasured unless the window is named somewhere.
-  if (loadedLDWindow !== undefined) {
-    parts.push(`pairs up to ${loadedLDWindow} variants apart`)
-  }
-  return parts
+export function ldStatusParts({ loadedLDWindow }: LDStatusSelf) {
+  return loadedLDWindow === undefined
+    ? []
+    : [`pairs up to ${loadedLDWindow} variants apart`]
 }
 
 const LDStatusBar = observer(function LDStatusBar({

@@ -2,7 +2,6 @@ import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
-import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -18,7 +17,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  */
 export type LDRpcProps = Omit<
   RenderLDDataArgs,
-  'adapterConfig' | 'regions' | 'originBp' | keyof GatedFetchArgs
+  'adapterConfig' | 'regions' | 'originBp'
 >
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
@@ -29,9 +28,6 @@ export interface LDFetchSelf extends IStateTreeNode {
   host: RegionHost
   adapterConfig: Record<string, unknown>
   rpcProps(): LDRpcProps
-  // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
-  // the banner compares against
-  resolvedByteLimit(): number | undefined
   setRpcData(data: LDDataResult): void
 }
 
@@ -67,10 +63,8 @@ function axisOriginBp(
  * The LD matrix fetch, as the three phases `installGlobalFetchAutorun` runs it
  * in, which `afterAttach` hands to the skeleton. Every gate is the installed
  * declaration's — minimized, view not initialized, the byte-gate skip, and the
- * signature against the stamp its own commit wrote — as are the byte
- * measurement the result carries and that stamp, so what is left here is LD's
- * own: the triangle toggle, the block set, the axis origin, and the budget the
- * worker measures against.
+ * signature against the stamp its own commit wrote — so what is left here is
+ * LD's own: the triangle toggle, the block set and the axis origin.
  */
 export function ldFetchPhases(
   self: LDFetchSelf,
