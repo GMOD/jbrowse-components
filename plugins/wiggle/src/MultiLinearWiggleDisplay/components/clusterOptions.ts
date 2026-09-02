@@ -13,19 +13,17 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // to be reproducible on a machine that has never opened the dialog.
 export const DEFAULT_SAMPLES_PER_PIXEL = '1'
 
-// The auto and manual dialogs persist these sampling controls to the same
-// localStorage keys so a value set in one dialog carries to the other — sharing
-// one hook keeps the keys from drifting apart.
+// The auto and manual dialogs persist the sampling density to the same
+// localStorage key so a value set in one dialog carries to the other — sharing
+// one hook keeps the key from drifting apart. The advanced-options disclosure
+// is `ClusterAdvancedOptions`', which owns that key for every clusterable
+// display.
 export function useClusterSamplingOptions() {
-  const [showAdvanced, setShowAdvanced] = useLocalStorage(
-    'cluster-showAdvanced',
-    false,
-  )
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',
     DEFAULT_SAMPLES_PER_PIXEL,
   )
-  return { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel }
+  return { samplesPerPixel, setSamplesPerPixel }
 }
 
 // Score-matrix RPC args shared by MultiWiggleClusterScoreMatrix (auto) and
@@ -33,27 +31,27 @@ export function useClusterSamplingOptions() {
 // density so both RPCs bin at the same resolution and produce comparable
 // matrices.
 //
-// `regions` overrides the visible blocks for a `clusterRegion` run, and the
-// density is then derived from that span rather than from the view's own zoom.
-// It has to be: the columns are pixel bins, so clustering a 140 kb locus while
-// the view shows 10 Mb would bin it into a handful of columns and the matrix
-// would be degenerate without anything saying so. Deriving it from the span is
-// the density the same locus would have if you had zoomed to it, which is what
-// the setting means.
+// `regions` is the run's own — the `clusterRegion` locus for a session-triggered
+// run, the visible blocks for a dialog one — and both entry points resolve it
+// before they get here (`ClusterRunArgs.regions`). The density is derived from
+// that span rather than from the view's own zoom. It has to be: the columns are
+// pixel bins, so clustering a 140 kb locus while the view shows 10 Mb would bin
+// it into a handful of columns and the matrix would be degenerate without
+// anything saying so. Deriving it from the span is the density the same locus
+// would have if you had zoomed to it, which is what the setting means.
 export function clusterScoreMatrixArgs(
   model: ReducedModel,
   samplesPerPixel: string,
-  regions?: Region[],
+  regions: Region[],
 ) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const density = parseSamplesPerPixel(samplesPerPixel)
   const width = view.width || 1
-  const span = regions?.reduce((a, r) => a + (r.end - r.start), 0)
-  const bpPerPx = span ? span / width : view.bpPerPx
+  const span = regions.reduce((a, r) => a + (r.end - r.start), 0)
   return {
-    regions: regions ?? view.dynamicBlocks.contentBlocks,
+    regions,
     sources: model.sourcesWithoutLayout,
     adapterConfig: model.adapterConfig,
-    bpPerPx: bpPerPx / density,
+    bpPerPx: span / width / density,
   }
 }

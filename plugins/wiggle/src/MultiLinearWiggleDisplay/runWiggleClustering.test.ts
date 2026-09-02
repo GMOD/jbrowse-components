@@ -22,12 +22,28 @@ async function loadedDisplay() {
   return { display, view }
 }
 
-const rpcManager = {
-  call: () => Promise.resolve({ order: [1, 0], tree: '(b,a);' }),
+function recordingRpc() {
+  const calls: { bpPerPx?: number }[] = []
+  return {
+    calls,
+    rpcManager: {
+      call: (
+        _sid: string,
+        _name: 'MultiWiggleClusterScoreMatrix',
+        args: {
+          bpPerPx: number
+        },
+      ) => {
+        calls.push(args)
+        return Promise.resolve({ order: [1, 0], tree: '(b,a);' })
+      },
+    },
+  }
 }
 
 async function clusterAt(samplesPerPixel: string) {
   const { display, view } = await loadedDisplay()
+  const { calls, rpcManager } = recordingRpc()
   await runWiggleClustering({
     model: display,
     rpcManager,
@@ -37,18 +53,30 @@ async function clusterAt(samplesPerPixel: string) {
     stopToken: 'token',
     statusCallback: () => {},
   })
-  return display.clusterProvenance?.settings
+  return { settings: display.clusterProvenance?.settings, calls, view }
 }
 
 // The caption has to name the density the matrix was actually binned at:
 // `samplesPerPixel` is a free-text field and `parseSamplesPerPixel` clamps and
 // defaults it before the RPC sees it.
 test('captions a clamped density with the value the RPC binned at', async () => {
-  expect(await clusterAt('5000')).toEqual([
-    { name: 'samples/px', value: '100' },
-  ])
+  const { settings } = await clusterAt('5000')
+  expect(settings).toEqual([{ name: 'samples/px', value: '100' }])
 })
 
 test('captions unparseable text with the default density', async () => {
-  expect(await clusterAt('abc')).toEqual([{ name: 'samples/px', value: '1' }])
+  const { settings } = await clusterAt('abc')
+  expect(settings).toEqual([{ name: 'samples/px', value: '1' }])
+})
+
+// The columns are pixel bins over the run's own regions, so the resolution is
+// that span across the view's width, divided by the sampling density — never
+// the view's own bpPerPx, which describes whatever it happens to be showing.
+test('bins the matrix over the span of the regions it was given', async () => {
+  const { calls, view } = await clusterAt('2')
+  const span = view.dynamicBlocks.contentBlocks.reduce(
+    (a, r) => a + (r.end - r.start),
+    0,
+  )
+  expect(calls[0]!.bpPerPx).toBeCloseTo(span / view.width / 2)
 })

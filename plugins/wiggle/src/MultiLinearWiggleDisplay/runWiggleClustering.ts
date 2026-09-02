@@ -30,9 +30,9 @@ export async function runWiggleClustering({
   rpcManager: ClusterScoreMatrixCaller
   sessionId: string
   samplesPerPixel: string
-  // The `clusterRegion` locus, when a session named one; the dialog passes
-  // nothing and gets the visible blocks
-  regions?: Region[]
+  // The `clusterRegion` locus when a session named one, the visible blocks when
+  // the dialog ran it — resolved by whichever entry point called, never here
+  regions: Region[]
   stopToken: StopToken
   statusCallback: (status: RpcStatus) => void
 }) {
