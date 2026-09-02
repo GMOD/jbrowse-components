@@ -47,19 +47,15 @@ lab at the University of Michigan
 
 ## The QuicK-mer2 estimates
 
-[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates are from the Kidd
-lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub, which
-publishes bigBed heat maps for the UCSC browser; the files this page reads are
-the lab's raw per-sample bigWigs.
-
-QuicK-mer2 counts only k-mers that occur exactly once in the reference, so its
-estimates are per _paralog_.
+The [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates come from the
+Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub;
+this page reads the lab's raw per-sample bigWigs. QuicK-mer2 counts only k-mers
+that occur exactly once in the reference, so its estimates are per _paralog_.
 
 ## Load the panel as one track
 
-The whole panel goes in as one track, so the display, the clustering and the
-color settings are declared once. It sits on hg38, so set that assembly up first
-if you haven't:
+The whole panel goes in as one track on hg38, so the display, clustering and
+color settings are declared once:
 
 ```json addtrack
 {
@@ -98,21 +94,16 @@ display settings turn that into a copy-number heatmap:
   losses.
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
-  scale, so two copies are the same color in every window and after every
-  navigation.
+  scale, so two copies are the same color in every window. Keep the bounds
+  **symmetric around the pivot**: the ramp divides both sides by the longer one,
+  so 0 to 4 lets both extremes saturate, and gains past 4 clamp.
 
-  Keep the bounds **symmetric around the pivot**: the ramp divides both sides by
-  the longer one, so 0 to 4 lets both extremes saturate, and gains past 4 clamp,
-  which the legend shows.
-
-Then run **Clustering → Cluster rows by score...** in the track menu, which
-brings similar samples together so the copy-number classes read as blocks. Rows
-are in file order until you do.
+Rows are in file order until **Clustering → Cluster rows by score...** in the
+track menu brings similar samples together.
 
 ## Read the copy-number heatmap
 
-The heatmap summarizes per-sample profiles. Six individuals spanning the range,
-each plotted as a profile:
+Six individuals spanning the range, each plotted as a profile:
 
 <Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
@@ -123,31 +114,27 @@ carries anywhere from zero to ten copies.
 
 ## The same window in the 1000 Genomes SV map
 
-The 1000 Genomes phase 3 integrated SV map, the standard variant-level answer
-for this cohort, covers this window with one CNV record. It sits at
-chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`, `<CN3>`,
-`<CN4>`), and it ends about 35 kb before the block where depth resolves the
-widest range. Between 36,155,499 and 36,461,232 the GRCh38 release of that
-callset has no copy-number record at all.
+The 1000 Genomes phase 3 integrated SV map covers this window with one CNV
+record, at chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`,
+`<CN3>`, `<CN4>`). It ends about 35 kb before the block where depth resolves the
+widest range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
+copy-number record.
 
-A VCF record is one interval with fixed breakpoints and a small set of symbolic
-alleles, and nested multiallelic copy number is neither. Depth in turn carries
-no genotype, allele frequency or phasing, all of which the callset has.
-
-Where the variation does fit the representation, they agree:
+A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
+which nested multiallelic copy number is not. Depth in turn carries no genotype,
+allele frequency or phasing. Where the variation fits the representation, they
+agree:
 
 <Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## Scaling past one population
 
-The track above stops at 104 individuals, about where one BigWig per sample
-stops being pleasant.
+The track above stops at 104 individuals.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-counts what filling this tutorial's window costs each way at panel scale, all
-2504 BigWigs against a store holding those same 2504 samples, by wrapping
-`fetch` around the same readers the browser uses. It takes the same
-`name`/`group`/`url` TSV as the converter, so the sample list the
-[build script](#reproduce-it-end-to-end) writes drives it directly:
+counts what filling this window costs at panel scale, all 2504 BigWigs against a
+store holding the same samples, using the readers the browser uses. It takes the
+same `name`/`group`/`url` TSV as the converter, which the
+[build script](#reproduce-it-end-to-end) writes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
@@ -167,26 +154,21 @@ Against the hosted files, at a median range request of 25 ms:
 | wall clock                                | 24.5 s       | 0.2 s      |
 
 Six reads per BigWig, against two metadata reads plus one chunk of 2504 samples
-by 256 bins.
+by 256 bins. Every BigWig needs a few dependent reads to find where a region's
+values live, so the cost is a round trip times the number of files. One array of
+samples by bins, where a single read covers every sample, answers in a couple of
+requests.
 
-The request count is the cost: every BigWig needs a few reads to find where a
-region's values live, once per file and waiting on each other, so the cost is a
-round trip times the number of files. One array of samples by bins, stored so
-that a single read covers every sample at once, answers the same question in a
-couple of requests.
-
-[Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
-[zarrita.js](https://github.com/manzt/zarrita.js) reads chunks straight off
-static hosting.
+[Zarr](https://zarr.dev/) v3 is that format and needs no tile server:
+[zarrita.js](https://github.com/manzt/zarrita.js) reads chunks off static
+hosting.
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
-`MultiWiggleZarrAdapter` that reads one, and because a multi-sample quantitative
-adapter is duck-typed, the display, the clustering and the settings above are
+`MultiWiggleZarrAdapter`, and the display, clustering and settings above are
 unchanged.
 
 The plugin is in **beta** and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is
-hosted, so it loads from any config today (see
-[configuring plugins](/docs/config_guides/plugins)):
+[plugin store](/docs/user_guides/plugin_store) yet, but its built bundle is
+hosted (see [configuring plugins](/docs/config_guides/plugins)):
 
 ```json
 {
@@ -220,24 +202,21 @@ hosted, so it loads from any config today (see
 ```
 
 The adapter config is the store's location and nothing else: the sample list,
-the bin size and the resolution levels are attributes of the store, written by
-the converter. A relative `uri` resolves against the config that holds it, so a
-store sitting beside `config.json` needs no absolute URL.
+bin size and resolution levels are attributes of the store. A relative `uri`
+resolves against the config that holds it.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies: the CCL3L1/CCL4L1 block stands in flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-Two of the requests are metadata and happen once per store; the rest are chunks,
-and a chunk carries every sample across a range of bins, so what a view costs
-follows the width of the window. This frame is wider than the one measured above
-and spans a few more chunks.
+Two requests are metadata, once per store; the rest are chunks, each carrying
+every sample across a range of bins, so a view's cost follows the width of the
+window.
 
 ## Build the store
 
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
 turns a list of BigWigs into one store. It takes a TSV of `name` and `url`, with
-an optional `group` column between them (here the population, which labels the
-rows and groups them in the clustering sidebar). It imports two npm packages and
-nothing else, so it runs on its own:
+an optional `group` column between them (here the population, which labels and
+groups the rows). It imports two npm packages and nothing else:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_signal_zarr.ts
@@ -252,52 +231,45 @@ node build_signal_zarr.ts \
 ```
 
 That is the command behind this tutorial's figures, all 2504 samples over the
-windows the page visits. The converter prints the sizes as it writes; this store
-lands at 1.4 MB.
+windows the page visits; this store lands at 1.4 MB.
 
 `--levels` is the resolution pyramid: one samples-by-bins array per entry,
 coarser ones averaged from the finest. The adapter reads the coarsest level
-whose bins are still no wider than a screen pixel, so a whole-chromosome view
-costs the same couple of requests the CCL3L1 window does. Give it your input's
-bin size first, then steps of roughly 3x: `10000,30000,100000` rather than
-`10000,100000`, since a 10x gap leaves a view landing just under a level
-fetching 10x the bins it can draw.
+whose bins are no wider than a screen pixel, so a whole-chromosome view costs
+the same couple of requests. Give it your input's bin size first, then steps of
+roughly 3x: `10000,30000,100000` rather than `10000,100000`, since a 10x gap
+leaves a view fetching 10x the bins it can draw.
 
 Every level above the finest stores the minimum and maximum of the bins it
-averages alongside the mean, the way a BigWig zoom record carries all three.
+averages alongside the mean.
 [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
-picks which one a view draws, so an amplification narrower than a bin is visible
-under `max` and averaged back to the diploid baseline under `avg`.
+picks which a view draws, so an amplification narrower than a bin is visible
+under `max` and averaged away under `avg`.
 
-The finest level is the one to choose deliberately, being the only one held
-whole in memory while the rest derive from it. Drop the `--region` flags and
-this panel is a few GB of matrix at 10 kb bins and about 31 GB at the BigWigs'
-own 1 kb, so a whole-genome pyramid starts coarse. The converter prints the size
-of that level before it allocates, and refuses when it will not fit.
+The finest level is held whole in memory while the rest derive from it. Without
+the `--region` flags this panel is a few GB at 10 kb bins and about 31 GB at the
+BigWigs' own 1 kb, so a whole-genome pyramid starts coarse. The converter prints
+that level's size before allocating and refuses when it will not fit.
 
-The output is an ordinary folder of files. Copy it to any static host with CORS
-enabled and point a track at it, the same way you would host a BigWig.
-
-If you would rather write a store from something other than BigWigs, the
+The output is a folder of files. Copy it to any static host with CORS enabled
+and point a track at it. To write a store from something other than BigWigs, the
 plugin's
 [store format](https://github.com/cmdcolin/jbrowse-plugin-zarr#store-format)
-gives the layout the adapter expects.
+gives the layout.
 
 ## Your own samples
 
-To put a genome of your own on the same scale, run
-[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over its aligned reads. The
-lab's [tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md)
-takes one 30x 1000 Genomes CRAM through `count` and `est` command by command,
-with its own sample output to check against. For GRCh38 its k-mer index is
-[prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/),
-which skips the `search` pass over the reference. It is a cluster-sized job
-either way: the tutorial reports 67 GB of reference files, roughly 50 GB of RAM
-to hold the index, and about 25 minutes on six threads per sample.
+Run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over your aligned reads.
+The lab's
+[tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
+one 30x 1000 Genomes CRAM through `count` and `est`, and for GRCh38 the k-mer
+index is
+[prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
+It is a cluster-sized job: the tutorial reports 67 GB of reference files,
+roughly 50 GB of RAM, and about 25 minutes on six threads per sample.
 
-What that leaves for JBrowse is one conversion. `est` writes copy number in 1 kb
-windows, and its four columns are bedGraph once the decoy and EBV contigs are
-dropped:
+`est` writes copy number in 1 kb windows, and its four columns are bedGraph once
+the decoy and EBV contigs are dropped:
 
 ```bash
 grep -v decoy sample.qm2.CN.1k.bed | grep -v chrEBV >sample.bedgraph
@@ -307,16 +279,14 @@ bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
 ```
 
 Host it, then add its URL to `bigWigs`, or a `name` and `url` row to
-`samples.tsv` for the Zarr build, and the sample is another row on the same
-color ramp. Running an individual the panel already covers gives the lab's
-estimate of that genome as a check.
+`samples.tsv` for the Zarr build. Running an individual the panel already covers
+gives the lab's estimate as a check.
 
 ## Reproduce it end to end
 
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
-converter over it. It fetches the converter and installs its two packages beside
-its own output, so one download is the whole setup:
+converter over it, fetching the converter and its two packages itself:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh
