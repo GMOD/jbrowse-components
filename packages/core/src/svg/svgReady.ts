@@ -152,6 +152,7 @@ export async function awaitSvgReady(
 export async function awaitViewInitialized(view: {
   initialized: boolean
   error: unknown
+  pendingLaunch?: unknown
 }) {
   if (!(await whenViewSettled(view))) {
     // the wait only resolves on one of the two, so `error` is set here — and

@@ -301,9 +301,17 @@ mode one level up: `view.initialized` folds in the assemblies, so an assembly
 that fails to load leaves it false forever and a bare
 `when(() => model.initialized)` hangs the export with the dialog spinner up and
 nothing said. Use `awaitViewInitialized(model)`
-(`@jbrowse/core/svg/svgReady`) — it waits on `initialized || error` and throws
-the error when the view never initialized, which surfaces in the dialog's error
-banner. Only a view that never initialized is fatal *here*: an errored track on
+(`@jbrowse/core/svg/svgReady`) — it waits on
+`(initialized && !pendingLaunch) || error` and throws the error when the view
+never initialized, which surfaces in the dialog's error banner. The
+`pendingLaunch` term is there because `initialized` can go true mid-launch
+(LGV's flips when displayedRegions land, with the same apply pass still
+attaching tracks), so a wait without it captures a positioned view with its
+tracks missing — the headless renderer (jbrowse-img) calls `renderToSvg`
+right after building a view, which is where that race is routine. The
+breakpoint split view waits on its panels as well as itself: its own launch
+clears in the same tick it creates the sub-views, and each panel's launch
+still holds that panel's loc and tracks. Only a view that never initialized is fatal *here*: an errored track on
 an initialized view is fatal too, but the displays' own readiness waits report it
 after this one has let the export start.
 

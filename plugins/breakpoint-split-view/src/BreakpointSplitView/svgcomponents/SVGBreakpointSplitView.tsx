@@ -29,6 +29,12 @@ type BSV = BreakpointViewModel
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   await awaitViewInitialized(model)
+  // The panels too: the split view's own launch turns its recipe into
+  // sub-views and clears in the same tick, so `model.initialized` holds while
+  // each panel's OWN launch — carrying its loc and, decisively, its tracks —
+  // is still being applied. Reading `views` there exported correctly
+  // positioned, correctly labelled, completely empty panels.
+  await Promise.all(model.views.map(view => awaitViewInitialized(view)))
   const {
     fontSize = 13,
     // destructured after fontSize so the label band can scale with it

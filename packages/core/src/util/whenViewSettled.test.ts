@@ -39,3 +39,42 @@ test('an initialized view carrying an error still settles true', async () => {
     whenViewSettled({ initialized: true, error: new Error('a track failed') }),
   ).resolves.toBe(true)
 })
+
+function launchingView(): {
+  initialized: boolean
+  error: unknown
+  pendingLaunch?: unknown
+} {
+  return observable({
+    initialized: true,
+    error: undefined,
+    pendingLaunch: { loc: 'chr1:1-100' },
+  })
+}
+
+// `initialized` can go true mid-launch (LGV's flips when displayedRegions
+// land, with tracks still to attach), so the wait holds until the launch
+// machinery consumes the blob
+test('an initialized view still applying its launch is not settled', async () => {
+  const view = launchingView()
+  const p = whenViewSettled(view)
+  let done = false
+  void p.then(() => {
+    done = true
+  })
+  await Promise.resolve()
+  expect(done).toBe(false)
+  runInAction(() => {
+    view.pendingLaunch = undefined
+  })
+  await expect(p).resolves.toBe(true)
+})
+
+test('a launch failure that errors the view settles false', async () => {
+  const view = launchingView()
+  const p = whenViewSettled(view)
+  runInAction(() => {
+    view.error = new Error('launch failed')
+  })
+  await expect(p).resolves.toBe(false)
+})
