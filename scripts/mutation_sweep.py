@@ -23,6 +23,7 @@ all 39 as caught against a baseline that was already red:
 
 import argparse
 import atexit
+import glob
 import json
 import os
 import signal
@@ -123,15 +124,55 @@ def related_tests(targets):
     """
     names = set()
     for path in targets:
-        names.add(os.path.basename(path).rsplit('.', 1)[0])
+        base = os.path.basename(path).rsplit('.', 1)[0]
+        # a barrel's or a type file's name is not a name for the unit: for
+        # packages/tree-sidebar/src the two of them alone selected 748 test
+        # files, against 58 for every export of every other file
+        if base not in ('index', 'types'):
+            names.add(base)
         names |= {n for n in EXPORTED.findall(open(path).read()) if len(n) > 3}
     pattern = r'\b(' + '|'.join(sorted(names)) + r')\b'
     out = subprocess.run(
         ['grep', '-rlE', pattern, '--include=*.test.ts', '--include=*.test.tsx',
-         '--exclude-dir=node_modules', '--exclude-dir=esm', '--exclude-dir=.claude',
-         'plugins', 'packages', 'products'],
+         '--exclude-dir=node_modules', '--exclude-dir=esm', '--exclude-dir=.claude']
+        + importing_packages(targets),
         capture_output=True, text=True).stdout
     return sorted(set(out.split()))
+
+
+def importing_packages(targets):
+    """The unit's own package plus every workspace package that depends on it.
+
+    A test in a package that cannot import the unit is not exercising it, so
+    the naming grep is restricted to those that can. For a plugin unit the
+    products still qualify (they depend on every plugin) and the pilot's
+    selection is unchanged; for a shared package it is what keeps a
+    data-management suite that says "hierarchy" four times, and a jbrowse-web
+    suite that says it once, out of an oracle they made 421s long and red.
+    """
+    roots = {package_root(t) for t in targets}
+    roots.discard(None)
+    if not roots:
+        return ['plugins', 'packages', 'products']
+    own = {json.load(open(os.path.join(r, 'package.json')))['name'] for r in roots}
+    out = set(roots)
+    for pkg in glob.glob('plugins/*/package.json') + glob.glob('packages/*/package.json') + glob.glob('products/*/package.json'):
+        info = json.load(open(pkg))
+        deps = set()
+        for field in ('dependencies', 'devDependencies', 'peerDependencies'):
+            deps |= set(info.get(field, {}))
+        if deps & own:
+            out.add(os.path.dirname(pkg))
+    return sorted(out)
+
+
+def package_root(path):
+    d = os.path.dirname(os.path.abspath(path))
+    while d and d != os.path.dirname(d):
+        if os.path.exists(os.path.join(d, 'package.json')):
+            return os.path.relpath(d)
+        d = os.path.dirname(d)
+    return None
 
 
 # A mutant can make a suite hang rather than fail, and jest's `testTimeout` will

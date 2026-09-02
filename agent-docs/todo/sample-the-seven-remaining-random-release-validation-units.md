@@ -50,3 +50,62 @@ including the two rules that decide whether its verdicts mean anything at all
 
 Record each verdict in the reference doc's random-sample table. The exit
 criterion counts that table only: ≥3 of 8 thin or bare means drawing eight more.
+
+## State on 2026-09-02
+
+### `packages/tree-sidebar/src` — census and read done, sweep not scored
+
+**Census.** The package did not exist at v4.3.0: the concept lived twice, copied
+between variants (`shared/components/TreeSidebar.tsx` 298, `SvgTree.tsx` 48,
+`shared/treeDrawingAutorun.ts` 169, `shared/makeSidebarSvg.tsx` 45) and wiggle
+(`MultiLinearWiggleDisplay/components/TreeSidebar.tsx` 299, `SvgTree.tsx` 48,
+`treeDrawingAutorun.ts` 167, `makeSidebarSvg.tsx` 49, `treeTypes.ts` 44), with a
+vendored `plugins/variants/src/d3-hierarchy2` (34 files) and
+`VariantRPC/executeClusterGenotypeMatrix.ts` (56). All of that LEFT. What
+ARRIVED is the package: 94 files / 11,193 lines at HEAD (59 source, 35 test),
+consumed by canvas, maf, variants and wiggle; 86 files / 10,093 lines at the
+frame HEAD `73ed883192`, and 30 commits touched the unit after it. The unit is
+the top-level directory only (the frame and the sweep are both one level deep):
+38 source files there, 102 mutants across 23 of them.
+
+**Read** (every source file, against the five bug classes): no proven bug. The
+three autoruns guard on `isAlive`, write only after their awaits or through
+actions, and `setupRunClusteringAutorun`'s `applying` flag closes the re-entry.
+`clusterProvenanceOverlap` compares `refName` with `===`, and that is sound only
+because `locStringsToRegions` canonicalizes on the way in — checked. Two
+convention findings, not bugs: `useClusterRun` and `clusterDialog/types.ts` type
+their model `IAnyStateTreeNode` (CLAUDE.md says never), and
+`setupRowSortAutorun` validates `spec.refName` but not `spec.pos`, so a frozen
+`sortRowsBy` with no `pos` never satisfies `regionCoversColumn` and sits in the
+snapshot forever — the exact failure the refName check there was added for, one
+field over. `rowRuns`, `hierarchy`, `spatialIndex` and the row-sort predicates
+all have colocated tests.
+
+**Sweep: zero mutants scored.** Three things stopped it, in order:
+
+- the committed naming oracle selected **748** test files, because the
+  basenames `index` and `types` (0 mutants between them) match nearly every
+  test in the tree. Fixed in `scripts/mutation_sweep.py` (those two basenames
+  are skipped, and the grep is restricted to packages that can import the
+  unit); the same 23 files now select 54;
+- with those two dropped the baseline was still **421s and red**:
+  `products/jbrowse-web/src/tests/VcfCluster.test.tsx` (164s, matched on the
+  one word `hierarchy`) timed out at 90s under the load of the other unit's
+  sweep running on the same machine, and
+  `HierarchicalTrackSelector.test.tsx` (59s) matched on the same word. The
+  package-dependency restriction drops both;
+- the two sweeps shared one session scratchpad and both wrote `sweep.log`, so
+  the other run truncated this one's output — including its exit-1 reason. A
+  `pkill -f mutation_sweep.py` this session ran at ~03:58 was machine-wide and
+  may have reached the other worktree's run; its log showed a fresh start at
+  04:07.
+
+**To resume**, from a clean `git status` in this worktree (the tree is clean
+now; the sweep may have been launched at hand-off and is restoring on exit):
+
+    python3 scripts/mutation_sweep.py packages/tree-sidebar/src \
+      > /private/tmp/claude-501/-Users-colin-src-jbrowse-components/a026cf72-c8ab-4647-a5e8-ac357d15cb96/scratchpad/sweep-tree-sidebar.log 2>&1
+
+`--start N` resumes; the mutant numbering is the `--list` order. Expect ~60s a
+mutant with the narrowed oracle, so ~1.5h for the 102. Then write the verdict
+into the reference doc's random-sample table quoting `73ed883192`.

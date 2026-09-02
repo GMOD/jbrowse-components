@@ -99,6 +99,16 @@ Each rule is here because the absence of it wasted a run.
   exports gives **20**. The error direction is safe: a test that exercises a
   target without naming it is missed, so a mutant can read as SURVIVED that
   something in fact caught — triage cost, never a hidden gap.
+- **A barrel's name is not a name for the unit, and neither is a test that
+  cannot import it.** `packages/tree-sidebar/src` selected **748** test files by
+  naming — `index` and `types`, with no mutant between them, match nearly every
+  test in the tree — and with those two dropped the baseline was still 421s and
+  red: a jbrowse-web integration suite that says `hierarchy` once (164s, timing
+  out under the load of a second sweep on the machine) and a data-management
+  suite that says it four times (59s). The script now skips those two basenames
+  and greps only the unit's own package plus the packages whose `package.json`
+  depends on it, which leaves the pilot's plugin selection unchanged (products
+  depend on every plugin) and cuts this unit's oracle to 54 files.
 - **The baseline must be green before anything is scored.** Otherwise every
   mutant reads as "caught" against an already-red run and the sweep reports a
   subsystem as perfectly pinned. Not hypothetical: a re-verification once scored
