@@ -424,6 +424,18 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * Whether anything is painted right now — no loaded region, an empty
+         * contig, or the density band standing in for them all answer no. What
+         * the configured `legend` slot is gated on, the way the auto-derived
+         * key is gated on the same data by construction.
+         */
+        get hasDrawnFeatures(): boolean {
+          return [...self.drawnRegionData.values()].some(
+            data => data.featureIds.length > 0,
+          )
+        },
+        /**
+         * #getter
          * Whether the loaded data colored itself via `itemRgb` (only possible with
          * the `color` slot at its default). Suppresses the per-row palette, which
          * would otherwise paint over those colors.
@@ -650,11 +662,17 @@ export default function stateModelFactory(
        * per-feature-colored rows. Empty in per-row palette / sampleColorMap mode
        * (where the sidebar labels are the key) and for non-categorical (unnamed /
        * all-distinct) data. See resolveConfiguredLegend / buildColorLegend.
+       *
+       * Both halves are gated on there being a painting to key: the derived one
+       * by construction, since it reads `drawnRegionData`, and the configured
+       * one through `hasDrawnFeatures` — a declared key is still a claim about
+       * colors on screen, and while the density band stands in (or before the
+       * first fetch lands, or over an empty contig) there are none.
        */
       get colorLegend() {
-        const configured = resolveConfiguredLegend(
-          readConfObject(self.conf, 'legend'),
-        )
+        const configured = self.hasDrawnFeatures
+          ? resolveConfiguredLegend(readConfObject(self.conf, 'legend'))
+          : []
         return configured.length
           ? configured
           : buildColorLegend(
