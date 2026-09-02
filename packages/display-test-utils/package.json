@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/display-test-utils",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "private": true,
   "type": "module",
   "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session and the stub assembly manager",

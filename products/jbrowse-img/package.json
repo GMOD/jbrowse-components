@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "main": "esm/index.js",
   "types": "esm/index.d.ts",
   "repository": {

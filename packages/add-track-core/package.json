@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/add-track-core",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "type": "module",
   "description": "The file-format table the add-track guessers and the CLI both read — no framework deps",
   "keywords": [

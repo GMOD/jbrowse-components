@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/display-kit",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "type": "module",
   "description": "The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract",
   "keywords": [
