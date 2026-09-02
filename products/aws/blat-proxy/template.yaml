@@ -4,6 +4,12 @@ Description:
   JBrowse BLAT proxy — injects a UCSC apiKey + CORS in front of hgBlat
 
 Parameters:
+  AlertEmail:
+    Type: String
+    Default: jbrowse2@berkeley.edu
+    Description: >-
+      Where the daily canary (.github/workflows/blat-canary.yml) reports a red
+      run. The subscription has to be confirmed from that inbox once.
   Stage:
     Type: String
     Default: prod
@@ -221,6 +227,40 @@ Resources:
         AttributeName: expiresAt
         Enabled: true
 
+  # The canary runs in GitHub Actions, which has no mail of its own, so a red
+  # run publishes here. The policy lets any principal in this account publish:
+  # the CI user is one of several uploader users with no policies of their own,
+  # and an alert topic is not worth a per-user grant.
+  CanaryAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: jbrowse-blat-canary
+      DisplayName: JBrowse BLAT canary
+
+  CanaryAlertSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CanaryAlertTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  CanaryAlertTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref CanaryAlertTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action: sns:Publish
+            Resource: !Ref CanaryAlertTopic
+            Condition:
+              StringEquals:
+                aws:PrincipalAccount: !Ref AWS::AccountId
+
   BlatProxyFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -249,6 +289,9 @@ Outputs:
   BlatProxyExecuteApiUrl:
     Description: The generated endpoint, for debugging the API without DNS
     Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
+  CanaryAlertTopicArn:
+    Description: Topic the canary workflow publishes a red run to
+    Value: !Ref CanaryAlertTopic
   BlatProxyFunctionArn:
     Description: BLAT proxy Lambda Function ARN
     Value: !GetAtt BlatProxyFunction.Arn

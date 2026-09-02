@@ -140,6 +140,13 @@ still cached, and still metered). The daily canary
 (`.github/workflows/blat-canary.yml`) sends it, since a probe answered from a
 24h cache would report a broken UCSC as fine.
 
+## Canary alerts
+
+A red `.github/workflows/blat-canary.yml` run publishes to the stack's
+`jbrowse-blat-canary` SNS topic, which mails `AlertEmail` (jbrowse2@berkeley.edu
+by default). The email subscription needs a one-time confirmation click from
+that inbox after the first deploy; until then SNS drops the message.
+
 ## Outage notice
 
 The `notice` item in the budget table turns `/status` to `ok: false` with its
