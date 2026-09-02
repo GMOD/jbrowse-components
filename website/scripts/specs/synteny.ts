@@ -1756,6 +1756,75 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 820,
   },
 
+  // The same join at cohort scale: 47 E. coli and Shigella genomes under K-12
+  // at the atp operon, every lane carrying its own PGAP gene models and every
+  // gene one color down the stack. Densest-first puts the reduced Shigella
+  // genomes at the bottom; the [rev] lanes are chromosomes deposited the
+  // other way round.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_symbol_atp_operon',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'MG1655',
+            loc: 'NC_000913.3:3,910,000-3,925,000',
+            tracks: [
+              {
+                trackId: 'ecoli_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                height: 1100,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 1400,
+  },
+
+  // The join's negative at cohort scale: the O-antigen cluster between galF
+  // and gnd, whose genes differ by serotype and share no symbol. The K-12
+  // derivatives sort to the top and match it gene for gene; every lane below
+  // chains the flanks and draws its own cluster with no ribbon.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_symbol_oantigen',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'MG1655',
+            loc: 'NC_000913.3:2,095,000-2,115,000',
+            tracks: [
+              {
+                trackId: 'ecoli_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                height: 1100,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 1400,
+  },
+
   // The grasses radiation as lanes: the rice window the
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene

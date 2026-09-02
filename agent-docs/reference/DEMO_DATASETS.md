@@ -286,6 +286,15 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   anchor's scale, siamang reversed), `chr2:112,500,000-115,500,000` (the 2q13
   fusion, every ape lane on one of its two chromosomes), the AMY1 cluster at
   `chr1:103,500,000-103,800,000` as the join's negative (LOC ids in the apes).
+- **`demos/ecoli_orthologs` is the same join at cohort scale**
+  (`build_ecoli_orthologs.sh`): the 47 of those 100 accessions whose longest
+  sequence is a chromosome of 4 Mb or more and whose annotation names at least
+  2,000 genes, `--unnamed '_RS[0-9]+$'` for PGAP's locus tags. Loci: the atp
+  operon `NC_000913.3:3,910,000-3,925,000` (every lane places), the O-antigen
+  cluster `NC_000913.3:2,095,000-2,115,000` as the accessory-genome negative.
+  Past about 500 kb the stack is unreadable and no figure should try: the
+  display has no coarse tier, and at 47 lanes the bridged ribbons of any
+  sparse lane sweep the whole track.
 
 ## Other demos
 

@@ -358,6 +358,18 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'orthofinder_synteny/vertebrates.png',
     band: [0.05, 0.95],
   },
+  primate_orthologs_synteny: {
+    // The human lane and the first four ape lanes with their ribbons, past
+    // the app chrome and the track header.
+    src: 'multiway_synteny/primate_tp53_lanes.png',
+    band: [0.22, 0.75],
+  },
+  ecoli_orthologs_synteny: {
+    // The top of the 47-lane stack at the atp operon, where the ortholog
+    // colour columns run straight down.
+    src: 'multiway_synteny/ecoli_symbol_atp_operon.png',
+    band: [0.14, 0.5],
+  },
   allvsall_synteny: {
     // The five-strain stack, past the app chrome. collapseEmptyRows on this
     // figure's own spec dropped every row's "No tracks active" chip to a bare

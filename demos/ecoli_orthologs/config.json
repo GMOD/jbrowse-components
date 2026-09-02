@@ -1,0 +1,1974 @@
+{
+  "assemblies": [
+    {
+      "name": "MG1655",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "MG1655-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "MG1655.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "DH10B",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "DH10B-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "DH10B.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sakai",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sakai-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Sakai.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "EDL933",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "EDL933-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "EDL933.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "CFT073",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CFT073-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "CFT073.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "UTI89",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "UTI89-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "UTI89.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S88",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S88-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S88.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "UMN026",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "UMN026-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "UMN026.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "IAI39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IAI39-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "IAI39.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "IAI1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IAI1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "IAI1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Ec55989",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Ec55989-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Ec55989.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "ED1a",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ED1a-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "ED1a.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "O104H4",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "O104H4-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "O104H4.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "E24377A",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "E24377A-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "E24377A.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HS",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HS-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "HS.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "SE11",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "SE11-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "SE11.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "ATCC8739",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ATCC8739-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "ATCC8739.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "SMS35",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "SMS35-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "SMS35.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "BL21DE3",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "BL21DE3-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "BL21DE3.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "APECO1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "APECO1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "APECO1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Nissle1917",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Nissle1917-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Nissle1917.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "NCTC86",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "NCTC86-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "NCTC86.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sflex301",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sflex301-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Sflex301.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sdys197",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sdys197-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Sdys197.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sboy227",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sboy227-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Sboy227.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sson53G",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sson53G-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "Sson53G.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "ST540",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ST540-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "ST540.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "ST2747",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ST2747-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "ST2747.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "BL21_TaKaRa",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "BL21_TaKaRa-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "BL21_TaKaRa.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "SF_166",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "SF_166-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "SF_166.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "K_12_substr_MG1655",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "K_12_substr_MG1655-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "K_12_substr_MG1655.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S2012C_4227",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S2012C_4227-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S2012C_4227.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S2011C_4315",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S2011C_4315-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S2011C_4315.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "UPEC_26_1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "UPEC_26_1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "UPEC_26_1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "FORC_028",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "FORC_028-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "FORC_028.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S210221272",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S210221272-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S210221272.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "D8",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "D8-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "D8.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "M19",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "M19-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "M19.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S30",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S30-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S30.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S56",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S56-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S56.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "tolC",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "tolC-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "tolC.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "WCHEC050613",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "WCHEC050613-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "WCHEC050613.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "MGY",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "MGY-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "MGY.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "JJ2434",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "JJ2434-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "JJ2434.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "CI5",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CI5-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "CI5.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "GB089",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GB089-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "GB089.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "S06_00048",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "S06_00048-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "S06_00048.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "MG1655_genes",
+      "name": "MG1655 genes (RefSeq)",
+      "assemblyNames": ["MG1655"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "MG1655.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "MG1655.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "DH10B_genes",
+      "name": "DH10B genes (RefSeq)",
+      "assemblyNames": ["DH10B"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "DH10B.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "DH10B.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sakai_genes",
+      "name": "Sakai genes (RefSeq)",
+      "assemblyNames": ["Sakai"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sakai.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sakai.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "EDL933_genes",
+      "name": "EDL933 genes (RefSeq)",
+      "assemblyNames": ["EDL933"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "EDL933.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "EDL933.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "CFT073_genes",
+      "name": "CFT073 genes (RefSeq)",
+      "assemblyNames": ["CFT073"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "CFT073.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "CFT073.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "UTI89_genes",
+      "name": "UTI89 genes (RefSeq)",
+      "assemblyNames": ["UTI89"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "UTI89.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "UTI89.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S88_genes",
+      "name": "S88 genes (RefSeq)",
+      "assemblyNames": ["S88"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S88.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S88.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "UMN026_genes",
+      "name": "UMN026 genes (RefSeq)",
+      "assemblyNames": ["UMN026"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "UMN026.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "UMN026.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IAI39_genes",
+      "name": "IAI39 genes (RefSeq)",
+      "assemblyNames": ["IAI39"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "IAI39.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "IAI39.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IAI1_genes",
+      "name": "IAI1 genes (RefSeq)",
+      "assemblyNames": ["IAI1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "IAI1.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "IAI1.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Ec55989_genes",
+      "name": "Ec55989 genes (RefSeq)",
+      "assemblyNames": ["Ec55989"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Ec55989.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Ec55989.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ED1a_genes",
+      "name": "ED1a genes (RefSeq)",
+      "assemblyNames": ["ED1a"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "ED1a.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ED1a.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "O104H4_genes",
+      "name": "O104H4 genes (RefSeq)",
+      "assemblyNames": ["O104H4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "O104H4.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "O104H4.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "E24377A_genes",
+      "name": "E24377A genes (RefSeq)",
+      "assemblyNames": ["E24377A"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "E24377A.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "E24377A.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "HS_genes",
+      "name": "HS genes (RefSeq)",
+      "assemblyNames": ["HS"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "HS.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "HS.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "SE11_genes",
+      "name": "SE11 genes (RefSeq)",
+      "assemblyNames": ["SE11"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "SE11.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "SE11.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ATCC8739_genes",
+      "name": "ATCC8739 genes (RefSeq)",
+      "assemblyNames": ["ATCC8739"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "ATCC8739.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ATCC8739.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "SMS35_genes",
+      "name": "SMS35 genes (RefSeq)",
+      "assemblyNames": ["SMS35"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "SMS35.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "SMS35.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "BL21DE3_genes",
+      "name": "BL21DE3 genes (RefSeq)",
+      "assemblyNames": ["BL21DE3"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "BL21DE3.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "BL21DE3.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "APECO1_genes",
+      "name": "APECO1 genes (RefSeq)",
+      "assemblyNames": ["APECO1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "APECO1.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "APECO1.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Nissle1917_genes",
+      "name": "Nissle1917 genes (RefSeq)",
+      "assemblyNames": ["Nissle1917"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Nissle1917.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Nissle1917.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "NCTC86_genes",
+      "name": "NCTC86 genes (RefSeq)",
+      "assemblyNames": ["NCTC86"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "NCTC86.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "NCTC86.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sflex301_genes",
+      "name": "Sflex301 genes (RefSeq)",
+      "assemblyNames": ["Sflex301"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sflex301.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sflex301.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sdys197_genes",
+      "name": "Sdys197 genes (RefSeq)",
+      "assemblyNames": ["Sdys197"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sdys197.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sdys197.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sboy227_genes",
+      "name": "Sboy227 genes (RefSeq)",
+      "assemblyNames": ["Sboy227"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sboy227.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sboy227.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sson53G_genes",
+      "name": "Sson53G genes (RefSeq)",
+      "assemblyNames": ["Sson53G"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Sson53G.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Sson53G.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ST540_genes",
+      "name": "ST540 genes (RefSeq)",
+      "assemblyNames": ["ST540"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "ST540.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ST540.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ST2747_genes",
+      "name": "ST2747 genes (RefSeq)",
+      "assemblyNames": ["ST2747"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "ST2747.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "ST2747.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "BL21_TaKaRa_genes",
+      "name": "BL21_TaKaRa genes (RefSeq)",
+      "assemblyNames": ["BL21_TaKaRa"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "BL21_TaKaRa.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "BL21_TaKaRa.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "SF_166_genes",
+      "name": "SF_166 genes (RefSeq)",
+      "assemblyNames": ["SF_166"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "SF_166.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "SF_166.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "K_12_substr_MG1655_genes",
+      "name": "K_12_substr_MG1655 genes (RefSeq)",
+      "assemblyNames": ["K_12_substr_MG1655"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "K_12_substr_MG1655.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "K_12_substr_MG1655.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S2012C_4227_genes",
+      "name": "S2012C_4227 genes (RefSeq)",
+      "assemblyNames": ["S2012C_4227"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S2012C_4227.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S2012C_4227.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S2011C_4315_genes",
+      "name": "S2011C_4315 genes (RefSeq)",
+      "assemblyNames": ["S2011C_4315"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S2011C_4315.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S2011C_4315.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "UPEC_26_1_genes",
+      "name": "UPEC_26_1 genes (RefSeq)",
+      "assemblyNames": ["UPEC_26_1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "UPEC_26_1.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "UPEC_26_1.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "FORC_028_genes",
+      "name": "FORC_028 genes (RefSeq)",
+      "assemblyNames": ["FORC_028"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "FORC_028.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "FORC_028.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S210221272_genes",
+      "name": "S210221272 genes (RefSeq)",
+      "assemblyNames": ["S210221272"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S210221272.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S210221272.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "D8_genes",
+      "name": "D8 genes (RefSeq)",
+      "assemblyNames": ["D8"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "D8.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "D8.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "M19_genes",
+      "name": "M19 genes (RefSeq)",
+      "assemblyNames": ["M19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "M19.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "M19.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S30_genes",
+      "name": "S30 genes (RefSeq)",
+      "assemblyNames": ["S30"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S30.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S30.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S56_genes",
+      "name": "S56 genes (RefSeq)",
+      "assemblyNames": ["S56"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S56.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S56.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "tolC_genes",
+      "name": "tolC genes (RefSeq)",
+      "assemblyNames": ["tolC"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "tolC.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "tolC.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "WCHEC050613_genes",
+      "name": "WCHEC050613 genes (RefSeq)",
+      "assemblyNames": ["WCHEC050613"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "WCHEC050613.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "WCHEC050613.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "MGY_genes",
+      "name": "MGY genes (RefSeq)",
+      "assemblyNames": ["MGY"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "MGY.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "MGY.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "JJ2434_genes",
+      "name": "JJ2434 genes (RefSeq)",
+      "assemblyNames": ["JJ2434"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "JJ2434.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "JJ2434.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "CI5_genes",
+      "name": "CI5 genes (RefSeq)",
+      "assemblyNames": ["CI5"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "CI5.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "CI5.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "GB089_genes",
+      "name": "GB089 genes (RefSeq)",
+      "assemblyNames": ["GB089"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "GB089.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "GB089.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "S06_00048_genes",
+      "name": "S06_00048 genes (RefSeq)",
+      "assemblyNames": ["S06_00048"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "S06_00048.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "S06_00048.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "ecoli_orthologs",
+      "name": "E. coli orthologs by gene symbol (47 genomes, RefSeq)",
+      "assemblyNames": [
+        "MG1655",
+        "DH10B",
+        "Sakai",
+        "EDL933",
+        "CFT073",
+        "UTI89",
+        "S88",
+        "UMN026",
+        "IAI39",
+        "IAI1",
+        "Ec55989",
+        "ED1a",
+        "O104H4",
+        "E24377A",
+        "HS",
+        "SE11",
+        "ATCC8739",
+        "SMS35",
+        "BL21DE3",
+        "APECO1",
+        "Nissle1917",
+        "NCTC86",
+        "Sflex301",
+        "Sdys197",
+        "Sboy227",
+        "Sson53G",
+        "ST540",
+        "ST2747",
+        "BL21_TaKaRa",
+        "SF_166",
+        "K_12_substr_MG1655",
+        "S2012C_4227",
+        "S2011C_4315",
+        "UPEC_26_1",
+        "FORC_028",
+        "S210221272",
+        "D8",
+        "M19",
+        "S30",
+        "S56",
+        "tolC",
+        "WCHEC050613",
+        "MGY",
+        "JJ2434",
+        "CI5",
+        "GB089",
+        "S06_00048"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "ecoli.blocks",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": [
+          "MG1655",
+          "DH10B",
+          "Sakai",
+          "EDL933",
+          "CFT073",
+          "UTI89",
+          "S88",
+          "UMN026",
+          "IAI39",
+          "IAI1",
+          "Ec55989",
+          "ED1a",
+          "O104H4",
+          "E24377A",
+          "HS",
+          "SE11",
+          "ATCC8739",
+          "SMS35",
+          "BL21DE3",
+          "APECO1",
+          "Nissle1917",
+          "NCTC86",
+          "Sflex301",
+          "Sdys197",
+          "Sboy227",
+          "Sson53G",
+          "ST540",
+          "ST2747",
+          "BL21_TaKaRa",
+          "SF_166",
+          "K_12_substr_MG1655",
+          "S2012C_4227",
+          "S2011C_4315",
+          "UPEC_26_1",
+          "FORC_028",
+          "S210221272",
+          "D8",
+          "M19",
+          "S30",
+          "S56",
+          "tolC",
+          "WCHEC050613",
+          "MGY",
+          "JJ2434",
+          "CI5",
+          "GB089",
+          "S06_00048"
+        ],
+        "bedLocations": [
+          {
+            "uri": "MG1655.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "DH10B.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Sakai.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "EDL933.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "CFT073.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "UTI89.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S88.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "UMN026.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "IAI39.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "IAI1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Ec55989.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "ED1a.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "O104H4.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "E24377A.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "HS.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "SE11.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "ATCC8739.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "SMS35.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "BL21DE3.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "APECO1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Nissle1917.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "NCTC86.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Sflex301.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Sdys197.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Sboy227.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "Sson53G.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "ST540.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "ST2747.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "BL21_TaKaRa.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "SF_166.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "K_12_substr_MG1655.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S2012C_4227.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S2011C_4315.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "UPEC_26_1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "FORC_028.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S210221272.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "D8.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "M19.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S30.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S56.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "tolC.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "WCHEC050613.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "MGY.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "JJ2434.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "CI5.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "GB089.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "S06_00048.bed",
+            "locationType": "UriLocation"
+          }
+        ],
+        "assemblyNames": [
+          "MG1655",
+          "DH10B",
+          "Sakai",
+          "EDL933",
+          "CFT073",
+          "UTI89",
+          "S88",
+          "UMN026",
+          "IAI39",
+          "IAI1",
+          "Ec55989",
+          "ED1a",
+          "O104H4",
+          "E24377A",
+          "HS",
+          "SE11",
+          "ATCC8739",
+          "SMS35",
+          "BL21DE3",
+          "APECO1",
+          "Nissle1917",
+          "NCTC86",
+          "Sflex301",
+          "Sdys197",
+          "Sboy227",
+          "Sson53G",
+          "ST540",
+          "ST2747",
+          "BL21_TaKaRa",
+          "SF_166",
+          "K_12_substr_MG1655",
+          "S2012C_4227",
+          "S2011C_4315",
+          "UPEC_26_1",
+          "FORC_028",
+          "S210221272",
+          "D8",
+          "M19",
+          "S30",
+          "S56",
+          "tolC",
+          "WCHEC050613",
+          "MGY",
+          "JJ2434",
+          "CI5",
+          "GB089",
+          "S06_00048"
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
+          "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+          "height": 1100
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "E. coli orthologs",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "MG1655",
+        "loc": "NC_000913.3:3,910,000-3,925,000",
+        "tracks": ["ecoli_orthologs"]
+      }
+    ]
+  }
+}
