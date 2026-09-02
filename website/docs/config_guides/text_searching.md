@@ -10,9 +10,8 @@ guide_category: Core configuration
 once, for a genome-wide gene-name index. A **per-track index** (a track's
 `textSearching` slot) makes just one track searchable.
 
-An aggregate index looks like this. `uri` points at the `.ix` that
-`jbrowse text-index` wrote, and the `.ixx` and `_meta.json` beside it are
-derived from that name:
+An aggregate index. `uri` points at the `.ix` that `jbrowse text-index` wrote,
+and the `.ixx` and `_meta.json` beside it derive from that name:
 
 ```json
 {
@@ -26,7 +25,7 @@ derived from that name:
 }
 ```
 
-A per-track config looks like this:
+A per-track index, with the two slots that decide what `text-index` puts in it:
 
 ```json addtrack
 {
@@ -50,99 +49,61 @@ A per-track config looks like this:
 }
 ```
 
-The `textSearching` slots control what gets indexed when you run
-`jbrowse text-index` against this track:
-
-- [`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes),
-  feature attributes to index
-- [`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude),
-  feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
-  genes/transcripts users search for
+[`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes)
+and
+[`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude)
+are the per-track form of `--attributes` and `--exclude`.
 
 ## Indexable formats
 
-`text-index` reads GFF3 (`Gff3Adapter`, `Gff3TabixAdapter`), GTF (`GtfAdapter`)
-and VCF (`VcfAdapter`, `VcfTabixAdapter`) tracks; other adapters are skipped.
-For VCF, variant IDs are indexed along with any INFO fields named in
-`--attributes`.
+`text-index` reads GFF3, GTF and VCF tracks and skips every other adapter type;
+[the CLI page](/docs/cli#jbrowse-text-index) lists the adapters. Two formats
+differ from GFF3:
 
-GTF has no gene or transcript rows, so rows are grouped by `gene_id` and
-`transcript_id` and each gene or transcript is indexed once across its rows.
-`indexingFeatureTypesToExclude` does not apply to GTF. The default attributes
-also match the GTF spellings (`gene_name`, `transcript_name`, `gene_id`,
-`transcript_id`).
-
-See [jbrowse text-index](/docs/cli#jbrowse-text-index) and the
-[Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter).
+- **VCF** indexes the variant IDs plus any INFO fields named in `--attributes`.
+- **GTF** has no gene or transcript rows, only exon/CDS/UTR rows repeating a
+  `gene_id`, so `text-index` groups rows by `gene_id` and `transcript_id` and
+  indexes each gene or transcript once. `indexingFeatureTypesToExclude` does not
+  apply to GTF, since dropping rows would only truncate those spans.
 
 ## TrixTextSearchAdapter config
 
 `text-index` writes three files, and the `uri` shorthand names the first and
-derives the other two:
+derives the other two: `ixFilePath` (the `.ix` the search box reads),
+`ixxFilePath` (`uri` plus an `x`, the prefix index) and `metaFilePath` (`uri`
+with `.ix` replaced by `_meta.json`, recording what the index was built from).
+Set the three [slots](/docs/config/trixtextsearchadapter) individually when the
+files do not sit together under those names.
 
-- `ixFilePath` - the trix `.ix` file the search box reads
-- `ixxFilePath` - the `.ixx` prefix index, `uri` plus an `x`
-- `metaFilePath` - `uri` with `.ix` replaced by `_meta.json`, recording what the
-  index was built from
-
-Set the three slots individually when the files do not sit together under those
-names.
-
-See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
-for all options.
-
-## JBrowse1TextSearchAdapter config
-
-A names index from JBrowse 1's `generate-names.pl` works through
-`JBrowse1TextSearchAdapter` with `namesIndexLocation` pointing at the names
-directory. See the
-[JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter),
-and
-[creating a text search adapter](/docs/developer_guides/creating_text_search_adapter)
-for a custom one.
+A names index from JBrowse 1's `generate-names.pl` still works through
+[`JBrowse1TextSearchAdapter`](/docs/config/jbrowse1textsearchadapter), with
+`namesIndexLocation` pointing at the names directory. To build your own adapter,
+see
+[creating a text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
 ## Troubleshooting
 
-### Search returns no results after running text-index
-
-Usually stale 0-byte `.ix`/`.ixx` files from an interrupted run. Overwrite them:
-
-```bash
-jbrowse text-index --force
-```
-
-### Running out of disk space while indexing
-
-`jbrowse text-index` writes temporary data to `/tmp`. Override the directory:
-
-```bash
-TMPDIR=~/alt_tmp_dir jbrowse text-index
-```
-
-### Only some genes are searchable
-
-`text-index` indexes `Name`, `ID`, and `symbol` attributes by default. Add
-others with `--attributes`:
-
-```bash
-jbrowse text-index --attributes=Name,ID,symbol,gene_name
-```
-
-Also check that the feature type carrying the name is not in
-[`--exclude`](/docs/cli#jbrowse-text-index).
+- **No results after running text-index.** Usually stale 0-byte `.ix`/`.ixx`
+  files from an interrupted run; `jbrowse text-index --force` overwrites them.
+- **Out of disk space while indexing.** `text-index` writes temporary data to
+  `/tmp`; `TMPDIR=~/alt_tmp_dir jbrowse text-index` moves it.
+- **Only some genes are searchable.** The default attributes are `Name`, `ID`
+  and `symbol`; add others with `--attributes=Name,ID,symbol,gene_name`, and
+  check that the feature type carrying the name is not in
+  [`--exclude`](/docs/cli#jbrowse-text-index).
 
 ## The trix index format
 
-The format follows the
-[UCSC trix spec](https://genome.ucsc.edu/goldenPath/help/trix.html),
-re-implemented in the JBrowse CLI so no UCSC tools are needed. Given input like:
+`jbrowse text-index` re-implements the
+[UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html) so no UCSC
+tools are needed. Given input like:
 
 ```
 GENEID001  Wnt signalling
 GENEID002  ey  Pax6
 ```
 
-It generates an `.ix` file, sorted alphabetically:
+it writes an `.ix` file sorted alphabetically by word:
 
 ```
 ey  GENEID002
@@ -151,14 +112,9 @@ signalling  GENEID001
 Wnt  GENEID001
 ```
 
-A second file, `.ixx`, records the byte offset of each line, e.g.:
-
-```
-signa000000435
-```
-
-JBrowse extends the format: the `.ix` file also encodes each feature's name and
-genomic location.
+and an `.ixx` file recording the byte offset of each prefix (`signa000000435`).
+JBrowse extends the format: each `.ix` line also carries the feature's name and
+genomic location in an encoded form.
 
 ## See also
 

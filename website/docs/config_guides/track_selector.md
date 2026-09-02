@@ -8,30 +8,9 @@ guide_category: Appearance
 settings under `configuration`. Add a `metadata` object to any track to gain
 filterable columns in the faceted selector.
 
-By default, tracks appear in the order defined in config.json. The following
-options control sorting and default collapse behavior.
-
-- [`hierarchical.sort.trackNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsorttracknames):
-  sort track names alphabetically
-
-- [`hierarchical.sort.categories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsortcategories):
-  sort categories alphabetically (independent of track name sorting)
-
-- [`hierarchical.defaultCollapsed.categoryNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedcategorynames):
-  category names to collapse at startup. For nested categories, use a
-  comma-joined path (e.g. `"Wiggle,Wiggle Rendering Styles"`)
-
-- [`hierarchical.defaultCollapsed.topLevelCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories):
-  collapse all top-level categories at startup
-
-- [`hierarchical.defaultCollapsed.subCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedsubcategories):
-  collapse all sub-categories at startup
-
-<Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
-
-<Figure caption="Screenshot showing that the end-user can toggle these options as well" src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
-
-Example config.json with examples of these hierarchical settings:
+Tracks appear in config.json order unless `hierarchical` says otherwise.
+[HierarchicalConfigSchema](/docs/config/hierarchicalconfigschema) lists every
+slot; the ones people set:
 
 ```json
 {
@@ -45,97 +24,45 @@ Example config.json with examples of these hierarchical settings:
         "categoryNames": ["VCF"],
         "topLevelCategories": true,
         "subCategories": true
-      }
-    }
-  }
-}
-```
-
-`defaultCollapsed` options only apply on initial startup. Afterwards the user's
-preference is preserved in their session.
-
-Typing in the filter box opens every category for as long as the query is
-active, so a match inside a collapsed category or a folder is still shown.
-Clearing the box restores whatever was collapsed before.
-
-## Folder categories (supertracks)
-
-Categories can be displayed in "folder mode", which replaces the entire category
-with a compact folder row showing how many of its tracks are turned on. Clicking
-a folder opens a faceted track selector scoped to just the tracks in that
-category.
-
-- [`hierarchical.defaultFolderCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultfoldercategories):
-  categories to display as folders at startup. Use the category name for
-  top-level categories, or a comma-joined path for nested categories (e.g.
-  `"Wiggle,Wiggle Rendering Styles"`)
-
-Users can also switch any category between folder and normal mode at runtime via
-the category's context menu ("Show as folder" / "Show as list"). Top-level group
-rows (the config's own tracks, and each connection) can't become folders, since
-clicking a connection's row is what loads it.
-
-Example config.json:
-
-```json
-{
-  "configuration": {
-    "hierarchical": {
+      },
       "defaultFolderCategories": ["Wiggle", "Alignments,Coverage"]
     }
   }
 }
 ```
 
-Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
-startup. Afterwards the user's preference is preserved in their session.
+- **A nested category is a comma-joined path** in `categoryNames` and
+  `defaultFolderCategories` (`"Wiggle,Wiggle Rendering Styles"`).
+- **`defaultCollapsed` and `defaultFolderCategories` apply on first load only.**
+  Afterwards the user's own choice is kept in their session.
+- **Typing in the filter box opens every category** while the query is active,
+  so a match inside a collapsed category or a folder still shows. Clearing the
+  box restores what was collapsed.
 
-For plugin developers: the category ID used internally is
-`Tracks-{categoryPath}` (the full comma-joined path), which is the value matched
-against in the `TrackSelector-folderDialog` extension point.
+<Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-See the [hierarchical config schema docs](/docs/config/hierarchicalconfigschema)
-for the full auto-generated reference, including each slot's type and default
-value.
+<Figure caption="Screenshot showing that the end-user can toggle these options as well" src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
+
+## Folder categories (supertracks)
+
+A folder category replaces the whole category with one row showing how many of
+its tracks are on; clicking it opens a faceted selector scoped to that category.
+Users switch any category between folder and list from its context menu ("Show
+as folder" / "Show as list"). Top-level group rows (the config's own tracks, and
+each connection) cannot become folders, since clicking a connection's row is
+what loads it. Plugins replace the folder dialog through
+[`TrackSelector-folderDialog`](/docs/developer_guides/extension_points#trackselector-folderdialog).
 
 ## Faceted track selector
 
-The faceted track selector shows all tracks as a searchable, filterable table.
-Open it by clicking the filter icon in the top right of the "Available tracks"
-widget (or via a folder category's context menu).
-
-Default columns shown for every track:
-
-- **Name**
-- **Category** (from `category` in the track config)
-- **Adapter** (adapter type, e.g. `Gff3TabixAdapter`)
-- **Description**
-
-Columns that are empty for every track are hidden automatically.
-
-### Adding metadata columns
-
-Any `metadata` object in a track config adds extra filterable columns, one per
-top-level key:
-
-```json
-{
-  "trackId": "my_track",
-  "name": "My Track",
-  "metadata": {
-    "origin": "public",
-    "tissue": "liver",
-    "date_added": "2024-02-20"
-  }
-}
-```
-
-The faceted selector gains **origin**, **tissue**, and **date_added** columns to
-filter or sort on.
-
-The left-hand filter panel shows checkboxes for each distinct value in a column.
-You can combine filters across multiple columns, and use the search box at the
-top to further narrow results by name, category, or description.
+The faceted selector shows all tracks as a filterable table, opened from the
+filter icon in the "Available tracks" widget or a folder's context menu. Every
+top-level key of a track's `metadata` object becomes a column to filter or sort
+on, as in the
+[cookbook's metadata track](/docs/cookbook#instance-wide-settings), and columns
+empty for every track are hidden.
+[Basic usage](/docs/user_guides/basic_usage#faceted-track-selector) covers the
+filter panel.
 
 ## See also
 

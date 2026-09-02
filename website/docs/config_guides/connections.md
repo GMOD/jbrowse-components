@@ -12,33 +12,18 @@ the top-level `connections` array; connections a user adds at runtime live in
 their session. This guide covers the config format; for in-app behavior see the
 [Connections user guide](/docs/user_guides/connections).
 
-## Where connections live
-
-Connections come from two places, combined in the track selector:
-
-- **`connections`**: a top-level array in your `config.json`, alongside
-  `assemblies` and `tracks`. These are administrator-defined and available to
-  everyone who loads the config.
-- **Session connections**: connections a user adds at runtime. These live in the
-  saved session, not the admin config.
-
-Both render identically as categories in the track selector.
-
 ## Connection config format
 
-Every connection shares the base fields from [](/docs/config/baseconnection):
-
-- `type`: the connection type (e.g. `UCSCTrackHubConnection`)
-- `connectionId`: a unique id for the connection
-- `name`: a human-readable name, shown as the category label
-- `assemblyNames`: optional list of assemblies the connection applies to, used
-  to match hub tracks to the assemblies configured in your instance
-
-Each type then adds its own location slot.
+Every connection carries the [BaseConnection](/docs/config/baseconnection) slots
+(`type`, `connectionId`, `name`, and an optional `assemblyNames` that matches
+hub tracks to your configured assemblies), plus one location slot per type.
+`jbrowse add-connection` writes one from the command line
+([CLI reference](/docs/cli#jbrowse-add-connection)).
 
 ### UCSC track hub
 
-Points at a hub's `hub.txt`. See [](/docs/config/ucsctrackhubconnection).
+Points at a hub's `hub.txt`
+([UCSCTrackHubConnection](/docs/config/ucsctrackhubconnection)):
 
 ```json
 {
@@ -54,7 +39,8 @@ Points at a hub's `hub.txt`. See [](/docs/config/ucsctrackhubconnection).
 ### JB2 track hub
 
 Points at another JBrowse 2 `config.json`, whose `tracks` array becomes the
-connection's track list. See [](/docs/config/jb2trackhubconnection).
+connection's track list
+([JB2TrackHubConnection](/docs/config/jb2trackhubconnection)):
 
 ```json
 {
@@ -69,11 +55,10 @@ connection's track list. See [](/docs/config/jb2trackhubconnection).
 
 ### JBrowse 1 data directory
 
-Points at a legacy JBrowse 1 data directory — the one holding `trackList.json`
-and `tracks.conf`, either of which may be absent. Its tracks are translated to
-JBrowse 2 equivalents on connect. A JBrowse 1 connection serves one assembly, so
-`assemblyNames` is required and holds a single entry. See
-[](/docs/config/jbrowse1connection).
+Points at a JBrowse 1 data directory holding `trackList.json` and `tracks.conf`,
+either of which may be absent, and translates its tracks on connect. A JBrowse 1
+connection serves one assembly, so `assemblyNames` is required and holds a
+single entry ([JBrowse1Connection](/docs/config/jbrowse1connection)):
 
 ```json
 {
@@ -90,35 +75,13 @@ JBrowse 2 equivalents on connect. A JBrowse 1 connection serves one assembly, so
 #### Migrating a JBrowse 1 instance
 
 [This gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
-is a standalone script to adapt: it reads a JBrowse 1 data directory's
-`trackList.json` and `tracks.conf`, follows their `include`s, and writes the
-resulting tracks into a JBrowse 2 `config.json` — a one-time conversion. It
-follows the same table as
-[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts):
-covers the usual alignment, variant, annotation, quantitative and sequence
-stores, matches an unrecognized `storeClass` on the filename, and leaves a
-placeholder track naming the format where there's no JBrowse 2 equivalent. Check
-the result with `jbrowse validate config.json`.
-
-To keep serving the JBrowse 1 directory itself instead of converting it once,
-add it as a [connection](#jbrowse-1-data-directory):
-
-```bash
-jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19
-```
-
-Same conversion, run on every connect instead of once.
-
-## Adding a connection with the CLI
-
-```bash
-jbrowse add-connection https://example.com/hub.txt \
-  --type UCSCTrackHubConnection \
-  --name "My Hub"
-```
-
-This appends a connection to the target `config.json`. See
-[`jbrowse add-connection`](/docs/cli#jbrowse-add-connection) for all options.
+converts a directory once: it reads `trackList.json` and `tracks.conf`, follows
+their `include`s, and writes the tracks into a JBrowse 2 `config.json` using the
+same table as
+[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts).
+An unrecognized `storeClass` is matched on the filename, and a format with no
+JBrowse 2 equivalent leaves a placeholder track naming it. Check the result with
+`jbrowse validate config.json`.
 
 ## How connections are stored in a session
 
@@ -135,10 +98,6 @@ session small even against a very large hub.
 :::
 
 <!-- GOTCHA BaseConnection END -->
-
-In the app the list is fetched when the connection's category is expanded. An
-opened track reopens on reload without re-fetching the whole hub, and editing it
-saves the change to the session.
 
 ## See also
 

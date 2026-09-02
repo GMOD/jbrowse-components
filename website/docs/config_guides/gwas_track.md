@@ -17,27 +17,10 @@ and `colorBy: "ld"` to color points by linkage disequilibrium to an index SNP.
 
 `GWASAdapter` reads a bgzipped, tabix-indexed BED-like file with a `#`-prefixed
 header row whose score column is in **-log₁₀(p) units**.
-
-For a file storing raw p-values, set the adapter's
-[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) slot to
-`negLog10` (raw p-value) or `negLog10FromLn` (natural-log p-value, e.g. a
-Pan-UKBB `ln P` column) and the conversion happens at read time.
-
-Prefix the header so tabix skips it, sort the data rows by chromosome and
-position, and bgzip/tabix:
-
-```bash
-# `jbrowse sort-bed` is `sort -k1,1 -k2,2n` with every #-prefixed line kept on
-# top rather than sorted into the data, and pins LC_ALL=C so the grouping tabix
-# indexes on comes out the same everywhere
-sed '1s/^/#/' results.tsv | jbrowse sort-bed | bgzip > results.sorted.txt.gz
-tabix -p bed results.sorted.txt.gz
-```
-
-The `name` column (4th BED field) is the SNP identifier used for LD lookups. If
-it is absent, lookups fall back to `chr:bp` (1-based).
-
-Example file:
+[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) converts a raw
+p-value column (`negLog10`) or a natural-log one (`negLog10FromLn`, a Pan-UKBB
+`ln P` column) at read time. The `name` column (4th BED field) is the SNP id LD
+lookups key on; without it they fall back to `chr:bp` (1-based).
 
 ```
 #chrom  chromStart  chromEnd  name      neg_log_pvalue
@@ -45,106 +28,51 @@ chr1    109817590   109817591 rs4970383 1.234
 chr1    110162459   110162460 rs4971059 7.891
 ```
 
-## Preparing the LD file
-
-LD data must be in PLINK `--r2` output format. Generate it from a PLINK binary
-fileset (`.bed`/`.bim`/`.fam`) or a VCF:
+Prefix the header so tabix skips it, then sort, bgzip and index:
 
 ```bash
-# From a PLINK binary fileset. "dprime" adds the D' column (DP)
+sed '1s/^/#/' results.tsv | jbrowse sort-bed | bgzip > results.sorted.txt.gz
+tabix -p bed results.sorted.txt.gz
+```
+
+`jbrowse sort-bed` is `sort -k1,1 -k2,2n` under `LC_ALL=C` with every `#` line
+kept on top. A `.txt.gz` auto-detects as `GWASAdapter` in the Add track dialog;
+another extension such as `.bed.gz` needs the adapter picked by hand.
+
+## Preparing the LD file
+
+LD data is PLINK's `--r2` table, from a binary fileset (`--bfile study`) or a
+VCF (`--vcf study.vcf.gz`):
+
+```bash
+# "dprime" adds the D' column (DP)
 plink --bfile study --r2 dprime with-freqs \
   --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
   --out study
-
-# Or starting from a VCF
-plink --vcf study.vcf.gz --r2 dprime with-freqs \
-  --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
-  --out study
 ```
 
-This writes `study.ld` with columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2` (plus
-`DP` for D' and `MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags).
-`--ld-window-r2 0` keeps every pair (PLINK otherwise drops pairs below r²=0.2),
-and the `--ld-window*` flags raise the default limits on how far apart paired
-SNPs may be. Tune them to the span you want rendered.
+- **`--ld-window-r2 0`** keeps every pair; PLINK otherwise drops pairs below
+  r²=0.2. The `--ld-window*` flags bound how far apart paired SNPs may be, so
+  tune them to the span you want drawn
+- **`dprime`** also switches r² to the haplotype-frequency estimate, so the R2
+  column of a run with it and a run without it are two different statistics
+- **This is PLINK 1.9**; plink2 replaced `--r2` with `--r2-phased` and
+  `--r2-unphased`
 
-`dprime` also switches r² itself to the haplotype-frequency estimate, so the R2
-column of a run with it and a run without it are two different statistics. This
-is PLINK 1.9; plink2 replaced `--r2` with `--r2-phased` and `--r2-unphased`.
-
-For regional analyses the plain `study.ld` file works as-is with
+A regional `study.ld` loads as-is with
 [`PlinkLDAdapter`](/docs/config/plinkldadapter). For chromosome-scale or
-genome-wide LD, bgzip and tabix the file so only pairs in the visible region are
-fetched, then use [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter):
+genome-wide LD, bgzip and tabix it and use
+[`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter), which fetches only
+the pairs in view; its page has the retab, `sort-bed` and `tabix` commands and
+why the header is commented with `#`.
 
-```bash
-# plink pads its columns with spaces and tabix indexes on tabs, so the awk
-# retabs as well as commenting the header. `jbrowse sort-bed` is then
-# `sort -k1,1 -k2,2n` under LC_ALL=C with that `#` line kept on top.
-awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' study.ld |
-  jbrowse sort-bed | bgzip > study.sorted.ld.gz
+## Example
 
-# BP positions in PLINK output are 1-based, matching tabix's default
-tabix -s 1 -b 2 -e 2 study.sorted.ld.gz
-```
-
-The `#` is worth the extra step. tabix keeps a header two ways: commented with
-the meta character, or counted with `-S 1`. Only the commented form is what
-`tabix -H` prints and what most readers, JBrowse included, ask for first, so a
-`-S 1` file's header is easy for a tool to miss entirely — which costs you the
-`DP` column, and with it the option of drawing D' rather than r². Marking the
-header with `-c C` makes the meta character `C`, so every `chr1`-style data row
-reads as a comment.
-
-A file already indexed with `-S 1` still loads; JBrowse reads the header either
-way.
-
-## GWASAdapter
-
-`GWASAdapter` reads the bgzipped results from `bedGzLocation` with a tabix
-`index.location`, or from the
-[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), which
-resolves the sibling `<file>.tbi`. `scoreColumn` names the header column plotted
-on the Y axis. See the autogenerated [](/docs/config/gwasadapter) docs for
-defaults and the full slot list.
-
-The bgzipped output above ends in `.txt.gz`, which auto-detects as `GWASAdapter`
-in the Add Track dialog. Other extensions such as `.bed.gz` require manual
-adapter selection.
-
-## LinearManhattanDisplay
-
-On the display:
-
-- `color` sets the point color, a CSS literal or a `jexl:` expression
-- `colorBy: "ld"` colors points by r² to the index SNP, and requires an
-  `ldAdapter` sub-adapter on the `GWASAdapter`
-- `scatterPointSize` sets the point diameter in px
-
-See the autogenerated [](/docs/config/linearmanhattandisplay) docs for defaults
-and the full slot list.
-
-## Examples
-
-A minimal track, using the
-[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for the
-tabix index:
-
-```json addtrack
-{
-  "type": "GWASTrack",
-  "trackId": "my_gwas",
-  "name": "My GWAS",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "GWASAdapter",
-    "uri": "https://yourhost/results.bed.gz"
-  }
-}
-```
-
-Coloring points by LD to the index SNP. Swap `PlinkLDAdapter` for
-`PlinkLDTabixAdapter` when the `.ld` file is bgzipped and tabix-indexed:
+`colorBy: "ld"` on the display colors points by r² to the index SNP and needs an
+`ldAdapter` sub-adapter on the `GWASAdapter`; swap in `PlinkLDTabixAdapter` for
+an indexed `.ld.gz`. `color` takes a CSS literal or a `jexl:` expression per
+feature, and `scatterPointSize` sets the point diameter in px
+([](/docs/config/linearmanhattandisplay)):
 
 ```json addtrack
 {
@@ -166,12 +94,6 @@ Coloring points by LD to the index SNP. Swap `PlinkLDAdapter` for
   }
 }
 ```
-
-For a per-feature color, set `color` to a jexl expression such as
-`"jexl:feature.score > 7.3 ? 'red' : '#0068d1'"`. See the
-[jexl guide](/docs/config_guides/jexl), and
-[property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get)
-for when to use the `get(feature,'score')` form.
 
 ## See also
 

@@ -8,16 +8,12 @@ guide_category: Deployment
 names on load, never file URLs or data, and `disableAnalytics: true` in the
 global `configuration` block turns both endpoints off.
 
-jbrowse-web and jbrowse-desktop collect anonymous usage data, sent to Google
-Analytics and a JBrowse analytics endpoint.
-
-The report is sent on load and carries the JBrowse version, counts of tracks,
-assemblies and open views, track type names, plugin names, screen size, and
-which renderer was selected. No file URLs, track names or data are included —
-your data files are read by the browser directly and never pass through a
-JBrowse server.
-
-Setting `disableAnalytics: true` turns off both endpoints:
+The report goes to Google Analytics and a JBrowse analytics endpoint on load. It
+carries the JBrowse version, counts of tracks, assemblies and open views, track
+type names, plugin names, screen size, and which renderer was selected. No file
+URLs, track names or data are included: the browser reads your data files
+directly and they never pass through a JBrowse server. Embedded components
+collect nothing.
 
 ```json
 {
@@ -26,13 +22,6 @@ Setting `disableAnalytics: true` turns off both endpoints:
   }
 }
 ```
-
-Embedded components do not collect any analytics.
-
-`disableAnalytics` is one of the global `configuration` slots. See the
-[intro to the config.json format](/docs/config_guides/intro) for where it sits,
-and the [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration)
-for the other global slots.
 
 ## See also
 

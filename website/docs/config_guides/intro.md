@@ -10,8 +10,6 @@ guide_category: Core configuration
 [assemblies](/docs/config_guides/assemblies) and
 [tracks](/docs/config_guides/tracks); everything else is optional.
 
-The JBrowse 2 config file (typically `config.json`) is structured as follows:
-
 ```json
 {
   "configuration": {/* global configs here */},
@@ -31,15 +29,12 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 }
 ```
 
-`assemblies` and `tracks` carry the data, and an entry in either is a name and a
-file: `{ "name": "hg38", "uri": "hg38.fa.gz" }` for an
-[assembly](/docs/config_guides/assemblies), and
+An entry in `assemblies` or `tracks` is a name and a file:
+`{ "name": "hg38", "uri": "hg38.fa.gz" }` for an assembly and
 `{ "trackId": "genes", "uri": "genes.gff.gz", "assemblyNames": ["hg38"] }` for a
-track. A config with one assembly supplies `assemblyNames` itself (see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track)). The
-adapter and track type come from the extension.
-
-Every other top-level field is optional:
+track, with the adapter and track type read off the extension
+([the shortest track](/docs/config_guides/tracks#the-shortest-track)). The
+optional fields each have a guide:
 
 | Field                         | Guide                                   |
 | ----------------------------- | --------------------------------------- |
@@ -51,18 +46,20 @@ Every other top-level field is optional:
 | `preConfiguredSessions`       | [](/docs/config_guides/default_session) |
 | `configuration`               | [](/docs/config/jbrowseconfiguration)   |
 
-These guides cover the common cases. Every option for a track or adapter type is
-in the generated [config reference](/docs/config_guide), one page per type, e.g.
-[](/docs/config/bamadapter) or [](/docs/config/linearwiggledisplay). For many
-tracks, [](/docs/config_guides/deploying) generates `config.json` from a script.
-
-On jbrowse-desktop, saved `.jbrowse` sessions use this same format.
+Every slot of every track, display and adapter type is in the generated
+[config reference](/docs/config), one page per type. On jbrowse-desktop a saved
+session is this same format in a `.jbrowse` file, and embedded components take
+the same object at runtime, with one assembly:
+`createViewState({ ...config, assembly: config.assemblies[0] })`.
 
 ## Checking a config with jbrowse validate
 
-**A config key JBrowse does not recognize is ignored rather than reported.** The
-track still appears, so the only symptom of a misspelled setting is that your
-color, height or filter does nothing. `jbrowse validate` catches this:
+**JBrowse silently ignores a config key it does not recognize.** The track still
+appears, so the only symptom of a misspelled setting, or one written in an older
+JBrowse version's format, is a color, height or filter that does nothing.
+[`jbrowse validate`](/docs/cli#jbrowse-validate) checks for exactly this,
+against the slot definitions read out of JBrowse itself, without opening any
+data file:
 
 ```bash
 jbrowse validate myconfig.json
@@ -76,36 +73,8 @@ error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in
 3 error(s), 0 warning(s) in myconfig.json
 ```
 
-It checks against slot definitions read out of JBrowse itself and never opens
-your data files. Two levels:
-
-- **error** — JBrowse accepts it and silently does the wrong thing: an unknown
-  slot, a key a `defaultSession` view or display does not declare, a track
-  naming an undefined assembly, a `defaultSession` naming a missing `trackId`, a
-  duplicate `trackId`
-- **warning** — JBrowse reports or handles it itself on load: a type name it
-  does not know (expected when a plugin registers it), or a legacy key a
-  migration rewrites
-
-`--json` gives machine-readable output, and a non-zero exit on errors can gate a
-deploy. See [](/docs/agents) if an AI assistant is writing the config.
-
-Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take the config
-as an object at runtime (see
-[embedding a linear genome view](/docs/tutorials/embed_linear_genome_view)):
-
-```typescript
-const url = 'config.json'
-const response = await fetch(url)
-if (!response.ok) {
-  throw new Error(`HTTP status ${response.status} fetching ${url}`)
-}
-const config = await response.json()
-createViewState({
-  ...config,
-  assembly: config.assemblies[0], // the embedded LGV takes a single assembly
-})
-```
+It exits non-zero on errors (`--json` for machine-readable output), so it can
+gate a deploy; see [](/docs/agents) if an AI assistant is writing the config.
 
 ## See also
 

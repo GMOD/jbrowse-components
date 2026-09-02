@@ -8,8 +8,6 @@ guide_category: Track types
 Loop and interaction calls (BEDPE) are a separate `VariantTrack` drawn with a
 `LinearPairedArcDisplay`.
 
-Example Hi-C track config:
-
 ```json addtrack
 {
   "type": "HicTrack",
@@ -23,42 +21,14 @@ Example Hi-C track config:
 }
 ```
 
-## HicAdapter config
+`HicAdapter` takes the `.hic` file through the `uri` shorthand; the longhand
+slot is `hicLocation` ([](/docs/config/hicadapter)).
 
-The `HicAdapter` needs only the `.hic` file location, given here with the `uri`
-shorthand. The longhand form uses a `hicLocation` slot. See the
-[HicAdapter config docs](/docs/config/hicadapter) for all options.
+## Display settings
 
-## Color scheme
-
-The display's slots for the coloring and its controls:
-
-- [`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) — `juicebox`,
-  `fall`, or `viridis`
-- [`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale) — log scaling
-- [`useColorPercentile`](/docs/config/linearhicdisplay/#slot-usecolorpercentile)
-  — percentile clipping
-- [`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend) — the overlay's
-  legend
-- [`showResolutionControls`](/docs/config/linearhicdisplay/#slot-showresolutioncontrols)
-  — the binsize dropdown
-
-See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for the
-full list, and
+The coloring and its controls are [](/docs/config/linearhicdisplay) slots, and
 [adjusting the color scale](/docs/user_guides/hic_track#adjusting-the-color-scale)
-for what each one does to the picture.
-
-## Normalization and resolution
-
-[`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
-names the matrix-balancing scheme to request (`KR`, `SCALE`, `VC`, `VC_SQRT`,
-`NONE`). It is resolved at runtime against what the file actually provides, so a
-config naming a scheme the file lacks falls back rather than erroring — see
-[normalization](/docs/user_guides/hic_track#normalization).
-
-[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) is a
-signed offset from the zoom-derived binsize, so the choice stays meaningful as
-the view zooms: negative is finer, positive coarser.
+shows what each does to the picture:
 
 ```json addtrack
 {
@@ -73,17 +43,26 @@ the view zooms: negative is finer, positive coarser.
   "displayDefaults": {
     "selectedNormalization": "KR",
     "useLogScale": true,
+    "colorScheme": "viridis",
     "showLegend": true
   }
 }
 ```
 
+- **[`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)**
+  names the matrix-balancing scheme (`KR`, `SCALE`, `VC`, `VC_SQRT`, `NONE`).
+  JBrowse resolves it against what the file provides, so a scheme the file lacks
+  falls back with no error
+  ([normalization](/docs/user_guides/hic_track#normalization))
+- **[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias)** is
+  a signed offset from the zoom-derived binsize, so the choice survives zooming:
+  negative is finer, positive coarser
+
 ## Loops and interactions as arcs
 
-BEDPE loop/interaction calls load as a `VariantTrack` with a
-`LinearPairedArcDisplay`. `color` is jexl-evaluated per feature and `lineWidth`
-sets the arc stroke width in pixels (also draggable from the track menu). This
-example draws only the high-scoring calls, in dark red, as thin arcs:
+BEDPE loop calls load as a `VariantTrack` with a `LinearPairedArcDisplay`.
+`color` is evaluated per feature and `lineWidth` is the arc stroke in pixels.
+This draws only the high-scoring calls, in dark red, as thin arcs:
 
 ```json addtrack
 {
@@ -107,14 +86,14 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
 
 ## Compartments and subcompartments
 
-The compartment eigenvector is a BigWig and needs nothing beyond its location.
-The bicolor rendering around zero is what a
-[quantitative track](/docs/config_guides/quantitative_track) does with signed
-data by default; set
-[`minScore`](/docs/config/linearwiggledisplay/#slot-minscore) and
-[`maxScore`](/docs/config/linearwiggledisplay/#slot-maxscore) when two of these
-tracks have to be read against each other, so neither autoscales to its own
-extremes:
+The compartment eigenvector is a BigWig, drawn as a
+[quantitative track](/docs/config_guides/quantitative_track) in two colors
+around zero. Pin [`minScore`](/docs/config/linearwiggledisplay/#slot-minscore)
+and [`maxScore`](/docs/config/linearwiggledisplay/#slot-maxscore) when two of
+these tracks are read against each other, so neither autoscales to its own
+extremes; the
+[user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
+covers the sign check that goes with it:
 
 ```json addtrack
 {
@@ -134,9 +113,8 @@ extremes:
 ```
 
 Subcompartments are a BED whose color column carries the class color. ENCODE's
-copies are not tabix-indexed, so they load with the plain
-[`BedAdapter`](/docs/config/bedadapter), which reads the whole file — a few
-hundred kilobytes here:
+copies are not tabix-indexed, so the plain
+[`BedAdapter`](/docs/config/bedadapter) reads the whole file:
 
 ```json addtrack
 {
@@ -165,15 +143,16 @@ hundred kilobytes here:
 }
 ```
 
-[`columnNames`](/docs/config/bedadapter/#slot-columnnames) is doing two jobs
-here. The file has twelve columns whose last three are not BED12's block fields,
-so under the positional BED layout the cluster count is taken for a `blockCount`
-and every feature grows a row of nonexistent subfeatures. Naming column nine
-`itemRgb` is what makes the classes paint their own colors: the file's own
-header spells it `itemRGB`, which is not the name JBrowse looks for, and the
-header would not be consulted anyway because a second comment line follows the
-column line — the parser takes the last header line as the definition, and that
-one has no tab-separated fields. Neither failure raises an error.
+[`columnNames`](/docs/config/bedadapter/#slot-columnnames) does two jobs here,
+and neither failure it prevents raises an error:
+
+- **The file's last three columns are not BED12's block fields**, so the
+  positional layout takes the cluster count for a `blockCount` and grows every
+  feature a row of nonexistent subfeatures
+- **Naming column nine `itemRgb`** is what paints the classes their own colors.
+  The file's header spells it `itemRGB`, which JBrowse does not look for, and a
+  second comment line follows the column line, so the parser takes that last
+  line as the definition and finds no tab-separated fields in it
 
 ## See also
 

@@ -41,8 +41,7 @@ Where a data file lives. The shorthand is a plain URL string:
 ```
 
 Most adapters accept a bare `uri` at the top level (see an adapter page's
-_Example usage_) and expand it to the full object form for you. The full form
-names the location kind explicitly:
+_Example usage_) and expand it to the full form, which names the location kind:
 
 ```json
 { "uri": "https://example.com/data.bam", "locationType": "UriLocation" }
@@ -53,7 +52,7 @@ only) and `BlobLocation` (a file opened from the browser's file picker).
 
 ## stringEnum
 
-One value from a fixed set. The allowed values are listed next to the slot, e.g.
+One value from a fixed set, listed next to the slot, e.g.
 `stringEnum (linear, log)`.
 
 ## color
@@ -65,9 +64,8 @@ Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 ## frozen
 
 An arbitrary JSON value (object or array) stored as-is, for structured settings
-such as a `colorBy` of `{ "type": "methylation" }` or a `groupBy` of
-`{ "type": "strand" }`. The shape a given `frozen` slot expects is described in
-that slot's own text.
+such as a `colorBy` of `{ "type": "methylation" }`. The shape a given `frozen`
+slot expects is described in that slot's own text.
 
 ## text
 
@@ -78,14 +76,13 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 `maybeNumber`, `maybeBoolean`, `maybeStringEnum`, and `maybeFrozen` each accept
 everything the type without the prefix accepts, plus one more state: **unset**.
 
-A slot left unset follows the display-type default (see
-[defaults for all tracks](/docs/user_guides/display_defaults)) and keeps
+A slot left unset follows the display-type default
+([defaults for all tracks](/docs/user_guides/display_defaults)) and keeps
 following it as that default changes; writing a value, even the one the default
-happens to hold, pins the track to that value. These types are used wherever
-"follow the default" has to stay distinguishable from an identical-looking
-explicit choice — a display's `heightMode` or `displayMode`, or an alignments
-track's `colorBy`, where every scheme including `normal` is something a user
-might deliberately pin.
+happens to hold, pins the track to it. A display's `heightMode` or an alignments
+track's `colorBy` use these types, since every scheme including `normal` is
+something a user might deliberately pin, and "follow the default" has to stay
+distinguishable from an identical-looking explicit choice.
 
 ## See also
 

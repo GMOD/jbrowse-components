@@ -9,10 +9,6 @@ one display. Use the `bigWigs` array for quick absolute-URL setups, or
 `subadapters` when you need relative URLs or per-subtrack `color`, `group`, and
 `source`.
 
-## MultiQuantitativeTrack config
-
-Example MultiQuantitativeTrack config:
-
 ```json addtrack
 {
   "type": "MultiQuantitativeTrack",
@@ -45,23 +41,14 @@ and `source`.
 
 <!-- GOTCHA MultiWiggleAdapter END -->
 
-### The source field
+## The subadapters form
 
-Each subtrack has a `source` identifier used as its label in the UI and carried
-on features as `feature.get('source')`. When using `bigWigs`, `source` is
-auto-derived from the URL filename. When using `subadapters`, set it explicitly.
-`name` is an alias, and `source` takes priority if both are set.
-
-Since features carry a `source` attribute, you can reference it in
-[jexl color callbacks](/docs/config_guides/jexl), e.g.
-`jexl:feature.source=='k1'?'red':'blue'`.
-
-The `subadapters` slot also supports:
-
-- `color` - default subtrack color
-- `group` - grouping label for organizing subtracks
-
-Example:
+Each subtrack carries a `source`: its label in the UI, and `feature.source` in a
+[jexl color callback](/docs/config_guides/jexl)
+(`jexl:feature.source=='k1'?'red':'blue'`). `bigWigs` derives it from the file
+name; `subadapters` sets it explicitly (`name` is an alias, and `source` wins
+when both are set), plus a default `color` and a `group` label
+([](/docs/config/multiwiggleadapter)):
 
 ```json addtrack
 {
@@ -92,14 +79,8 @@ Example:
 }
 ```
 
-See the [MultiWiggleAdapter config docs](/docs/config/multiwiggleadapter) for
-all options.
-
-### Generating the subadapters from a samplesheet
-
-Because `subadapters` is just an array of objects, it templates cleanly from
-repetitive data like an RNA-seq timecourse. Given rows of
-`{ timepoint, bigwig }`, build the track in a script:
+`subadapters` is an array of objects, so it templates from a samplesheet such as
+an RNA-seq timecourse:
 
 ```js
 // rows: [{ timepoint: '0h', bigwig: 's3://.../t0.bw' }, ...]
@@ -119,26 +100,18 @@ const track = {
 }
 ```
 
-See [](/docs/config_guides/deploying) for the full pattern of generating
-`config.json` from a samplesheet in a CI/CD pipeline.
+[](/docs/config_guides/deploying) generates a whole `config.json` this way in a
+CI/CD pipeline.
 
 ## Loading bedMethyl as a multi-quantitative track
 
-[modkit](https://github.com/nanoporetech/modkit) pileup produces a
-[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
-tab-separated BED format where each row reports the methylation fraction at a
-single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
-`BedTabixAdapter` and maps to `MultiQuantitativeTrack`, with one subtrack per
-modification type:
-
-```bash
-modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
-bgzip output.bedmethyl
-tabix -p bed output.bedmethyl.gz
-```
-
-`--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
-fraction). Omit it for separate 5mC and 5hmC rows.
+A [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) from
+[modkit pileup](https://github.com/nanoporetech/modkit) reports the methylation
+fraction at each CpG, one row per modification type. Bgzipped and tabix-indexed
+(the [methylation tutorial](/docs/tutorials/methylation) has the commands), it
+loads through `BedTabixAdapter` as a `MultiQuantitativeTrack` with one subtrack
+per modification type, which is also what a `.bedmethyl.gz` auto-detects as in
+the Add track form:
 
 ```json addtrack
 {
@@ -153,14 +126,9 @@ fraction). Omit it for separate 5mC and 5hmC rows.
 }
 ```
 
-JBrowse reads two of the columns:
-
-- `score` (column 11) — the percent methylation, 0–100
-- `name` (column 4) — the modification code, such as `m` for 5mC or `h` for
-  5hmC, used as the subtrack source label
-
-In the "Add a track" form, pasting the URL to a `.bedmethyl.gz` file
-auto-detects `BedTabixAdapter` and `MultiQuantitativeTrack`.
+JBrowse reads two columns: `score` (column 11), the percent methylation from 0
+to 100, and `name` (column 4), the modification code (`m` for 5mC, `h` for 5hmC)
+used as the subtrack label.
 
 ## See also
 

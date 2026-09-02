@@ -9,18 +9,10 @@ attributes as plain properties (`feature.strand`). When an expression outgrows
 one line, register your own function from a small plugin and call it like a
 built-in.
 
-We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
-callbacks, which look like this:
-
-```json
-"color": "jexl:feature.strand==-1?'red':'blue'"
-```
-
-**Feature operations**
-
-Read any feature attribute as a plain property, e.g. `feature.strand`. Nested
-attributes work too (`feature.INFO.SVTYPE`), and `feature.parent` gives the
-parent feature:
+A callback is a [Jexl](https://github.com/TomFrost/Jexl) expression in a slot
+that takes one, `"color": "jexl:feature.strand==-1?'red':'blue'"`. Any feature
+attribute is a plain property, nested attributes work (`feature.INFO.SVTYPE`),
+and `feature.parent` is the parent feature:
 
 ```js
 jexl: feature.start // start coordinate, 0-based half open
@@ -33,73 +25,31 @@ jexl: feature.id // the feature's id attribute, e.g. a GFF3 ID=
 jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if none)
 ```
 
+The [cookbook](/docs/cookbook#colors) has the common expressions (a lookup table
+by type, a threshold, a gradient, a label with a fallback), and the
+["Jexl callback examples" track](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19&tracks=jexl_callbacks_demo_hg19)
+on the hosted demo combines a lookup-table color with a template-string
+mouseover. `formatDetails` is the one slot family whose callback returns an
+object, one key per row
+([customizing feature details](/docs/config_guides/customizing_feature_details)).
+
 ### Property access vs `get()` {#property-access-vs-get}
 
-`feature.start` (property access) and `get(feature,'start')` (function form) are
-equivalent. The `get()` form works on every JBrowse release, while property
-access was added more recently, so prefer `get()` if your config must run on
-older versions. Otherwise use whichever reads more clearly. The examples in this
-guide use property access.
-
-What `feature` actually is depends on which callback you are in:
+`feature.start` and `get(feature,'start')` are equivalent; `get()` also works on
+older JBrowse releases. What `feature` is depends on the callback:
 
 | Callback                                                                 | `feature` is                    | Property form | `get()` form |
 | ------------------------------------------------------------------------ | ------------------------------- | ------------- | ------------ |
 | Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filterBy`) | a `SimpleFeature`               | yes           | yes          |
 | [`formatDetails`](/docs/config_guides/customizing_feature_details)       | a plain object from the session | yes           | **no**       |
 
-`formatDetails` runs against the serialized feature the detail panel holds, not
-a `SimpleFeature`, so `feature.get('start')` fails there. Property form works
-everywhere.
+In JavaScript plugin code a `SimpleFeature` handed to your own function is the
+real object, read with `feature.get('start')`.
 
-In JavaScript plugin code the rule is different again: a `SimpleFeature` handed
-to your own function is the real object, so use `feature.get('start')`.
+## Functions
 
-## Common patterns
-
-A few callbacks cover most real configs:
-
-Color by feature type. Index a lookup table by an attribute, with a default for
-types not in the map:
-
-```json
-"color": "jexl:{CDS:'red',exon:'green',gene:'blue'}[feature.type] || 'gray'"
-```
-
-Color by a threshold, a ternary on a numeric attribute:
-
-```json
-"color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'"
-```
-
-Label with a fallback. The first non-empty attribute wins:
-
-```json
-"name": "jexl:feature.name || feature.id"
-```
-
-Add a row to the click-details panel. `formatDetails` is the one slot family
-whose callback returns an **object** rather than a single value: each key
-becomes a field, and a key set to `undefined` hides one. Returning a bare value
-here produces no rows:
-
-```json
-"formatDetails": {
-  "feature": "jexl:{UniProt:'https://www.uniprot.org/uniprotkb/'+feature.uniprot_id, phase:undefined}"
-}
-```
-
-See
-[customizing feature details](/docs/config_guides/customizing_feature_details).
-
-The
-["Jexl callback examples" track](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19&tracks=jexl_callbacks_demo_hg19)
-on the hosted demo config combines a lookup-table color with a template-string
-mouseover.
-
-Other functions available in jexl include the categories below. The `getTag`
-function smooths over slight differences in BAM and CRAM features to access
-their tags.
+Beyond the feature's own properties, jexl has these functions. `getTag` smooths
+over the differences between BAM and CRAM features to reach their tags.
 
 <!-- JEXL_CATALOG START -->
 
@@ -201,50 +151,31 @@ jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, 
 
 <!-- JEXL_CATALOG END -->
 
-The catalog above is generated from the registrations themselves — core's in
-[`packages/core/src/util/jexl.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/jexl.ts),
-and each plugin's alongside the display it serves. A plugin you install can add
-more; those are documented by the plugin.
+The catalog is generated from the registrations themselves, core's in
+[`packages/core/src/util/jexl.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/jexl.ts)
+and each plugin's beside the display it serves. The last two groups come from
+plugins that ship with JBrowse:
 
-The last two groups come from plugins that ship with JBrowse:
+- **the variant functions** are what the variant track's filter and color menus
+  write, so a menu choice can be copied into a config and edited
+  ([variant tracks](/docs/config_guides/variant_track))
+- **the slot defaults** are what those slots evaluate to unconfigured, listed so
+  you can compose with one
 
-- **the variant functions** are the same ones the variant track's filter and
-  color menus write for you, so a menu choice can be copied into a config and
-  then edited (see [](/docs/config_guides/variant_track))
-- **the slot defaults** are what those slots already evaluate to unconfigured,
-  listed so you can compose with one
-
-**Template strings**
-
-Our jexl fork supports JavaScript-style template literals with backticks and
-`${...}` interpolation, handy for building colors, for example an HSL color
-derived from a feature value:
-
-```json
-"color": "jexl:`hsl(${feature.start/100000},50%,50%)`"
-```
-
-The equivalent with concatenation:
-
-```json
-"color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
-```
+**Template strings.** The jexl fork supports backtick template literals with
+`${...}` interpolation, so a color derived from a value is
+``"color": "jexl:`hsl(${feature.start/100000},50%,50%)`"``.
 
 ## Adding your own jexl function
 
-Jexl has no way to define a variable or a branchy helper, so past a certain
-point an expression stops being readable. The escape hatch is to add your own
-function to the jexl language from a small plugin and call it like any built-in:
-
-```json
-"color": "jexl:colorFeature(feature)"
-```
-
-The plugin is a single file with no build step. See
-[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
-the color version and
+Jexl has no variables or branchy helpers, so past a certain point an expression
+stops being readable. A small plugin file with no build step adds a function to
+the language, called like any built-in: `"color": "jexl:customColor(feature)"`.
+The [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) is the
+plugin;
+[customizing feature colors](/docs/config_guides/customizing_feature_colors) and
 [customizing feature details](/docs/config_guides/customizing_feature_details)
-for reshaping detail panels the same way.
+call it from a color slot and a details slot.
 
 ## See also
 

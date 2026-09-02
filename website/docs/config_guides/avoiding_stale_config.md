@@ -5,8 +5,9 @@ description:
 guide_category: Deployment
 ---
 
-Some servers aggressively cache `config.json`. To force a fresh fetch, add this
-`<script>` to the `<head>` of JBrowse's index.html:
+Some servers aggressively cache `config.json`. This `<script>` in the `<head>`
+of JBrowse's index.html appends a random query string to the config.json
+request, bypassing the browser cache:
 
 ```html
 <script>
@@ -14,22 +15,17 @@ Some servers aggressively cache `config.json`. To force a fresh fetch, add this
 </script>
 ```
 
-This appends a random query string to the config.json request, bypassing the
-browser cache. It is a single line, so a build script can inject it.
-
 ## Loading config.json from another path
 
-The same `<head>` script can also move the config JBrowse loads by default, for
-a deployment whose config does not sit next to index.html:
+The same `<head>` script moves the config JBrowse loads by default, for a
+deployment whose config does not sit next to index.html. A
+[`?config=`](/docs/urlparams#config) in the URL still wins over it:
 
 ```html
 <script>
   window.__jbrowseConfigPath = '/configs/production.json'
 </script>
 ```
-
-This changes the default only; a [`?config=`](/docs/urlparams#config) in the URL
-still takes precedence.
 
 ## See also
 

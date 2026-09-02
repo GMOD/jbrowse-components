@@ -10,24 +10,8 @@ and `adapter` out when the extension does not say enough, and put appearance
 settings (`color`, `height`, etc.) in a `displayDefaults` object, which JBrowse
 routes to the right display.
 
-All tracks can contain:
-
-- `trackId` - internal track ID, must be unique
-- `name` - displayed track name
-- `assemblyNames` - an array of assembly names a track is associated with, often
-  just a single assemblyName
-- `category` - (optional) array of categories to display in a
-  [hierarchical track selector](/docs/config_guides/track_selector)
-
-See the [BaseTrack config docs](/docs/config/basetrack) for every slot common to
-all track types.
-
-File locations in adapter configs use a `{ "uri": "..." }` object. The
-`"locationType": "UriLocation"` field is optional for URI locations, and needed
-only where the type cannot be inferred (e.g. local file paths on desktop).
-
 A complete `config.json` with one assembly and one BigBed track, showing where a
-track config sits:
+track sits:
 
 ```json
 {
@@ -53,15 +37,19 @@ track config sits:
 }
 ```
 
-Two shorthands keep it short: the assembly is written as just `{ name, uri }`
-(see [assemblies](/docs/config_guides/assemblies)), and the adapter uses the
-[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), whose
-longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
-`assemblyNames` is what ties it to the `hg19` assembly above.
+- `trackId` is the unique id every session and link names the track by;
+  `assemblyNames` ties it to the assembly above; `category` nests it in the
+  [track selector](/docs/config_guides/track_selector). Every slot common to all
+  track types is on the [BaseTrack config docs](/docs/config/basetrack).
+- The adapter uses the
+  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) (longhand
+  here: `"bigBedLocation": { "uri": "..." }`). A `{ "uri": "..." }` location
+  needs `"locationType"` only where the type cannot be inferred, such as a local
+  file path on desktop.
 
 ## The shortest track
 
-The same config, with the track written short:
+The same track written short:
 
 ```json
 {
@@ -80,48 +68,20 @@ The same config, with the track written short:
 }
 ```
 
-The track type and adapter come from the extension, the same guess the "Add
-track" dialog makes (see [file types](/docs/config_guides/file_types)). The
-index location is derived, and `name` defaults to the file name. With one
-assembly in the config the track is on it; with several, write `assemblyNames`.
-Any other key beside `uri` wins over the guess: `name`, `category`,
-`displayDefaults`, `index` for an index elsewhere, or `type` to pick a track
-type the extension would not.
-
-The same entry works in `createViewState`'s `tracks`, where the component
-supplies the assembly. In a session's `sessionTracks` nothing implies one, so
-write `assemblyNames` there.
+The type, adapter and index location come from the extension, the same guess the
+"Add track" dialog makes, `name` defaults to the file name, and a config with
+one assembly supplies `assemblyNames`. Any key written beside `uri` wins over
+the guess
+([the whole-track shorthand](/docs/config_guides/file_types#the-whole-track-shorthand)
+lists the extensions). Two places imply no assembly: a session's
+`sessionTracks`, where a track without `assemblyNames` belongs to nothing, and a
+config with several assemblies. Name it there.
 
 ## Configuring displays
 
-Appearance settings (`color`, `height`, `labels`, jexl color callbacks) belong
-to a track's **displays**, the different ways a track can be drawn. Set them in
-a `displayDefaults` object for the common case, or the full `displays` array for
-precise control.
-
-### Shorthand object
-
-Put your settings in a `displayDefaults` object and JBrowse applies each one to
-the display that defines it:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "repeats_hg19",
-  "name": "Repeats",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
-  },
-  "displayDefaults": { "color": "green", "height": 200 }
-}
-```
-
-A setting goes to every display with a slot by that name. Displays drawn
-differently usually name their slots differently, so each setting lands where it
-belongs: a `VariantTrack` colors its linear display with `color` and its chord
-display with `strokeColor`, both in the same object.
+Appearance settings belong to a track's **displays**, the ways a track can be
+drawn. A `displayDefaults` object routes each setting to every display whose
+schema has a slot by that name:
 
 ```json addtrack
 {
@@ -133,20 +93,20 @@ display with `strokeColor`, both in the same object.
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/file.vcf.gz"
   },
-  "displayDefaults": { "color": "green", "strokeColor": "red" }
+  "displayDefaults": { "color": "green", "strokeColor": "red", "height": 200 }
 }
 ```
 
-Where a name is shared, the setting reaches all of them: `height` in
-`displayDefaults` sets the height of every display the track has. A setting no
-display defines is ignored, with a console warning so typos show up.
+- **Differently named slots land on different displays.** `color` reaches the
+  linear display and `strokeColor` the circular (chord) one.
+- **A shared name reaches every display.** `height` sets all of them.
+- **A name no display defines is ignored**, with a console warning so typos show
+  up.
 
-### Full array
-
-To give two displays different values for one setting, choose the default
-display, or set an explicit `displayId`, pass `displays` as an array. Each entry
-names a display `type`; `displayId` defaults to `{trackId}-{displayType}`. The
-two forms combine, and an explicit entry wins over `displayDefaults`.
+A `displays` array gives precise control: two displays with different values for
+one setting, a non-default display type, or an explicit `displayId` (default
+`{trackId}-{displayType}`). An entry wins over `displayDefaults` for any setting
+it names itself.
 
 ```json addtrack
 {
@@ -168,8 +128,7 @@ two forms combine, and an explicit entry wins over `displayDefaults`.
 }
 ```
 
-The display types available, grouped by the track type they attach to. Most
-tracks can be drawn more than one way, and the `displays` array picks which:
+The display types, grouped by the track type they attach to:
 
 <!-- DISPLAY_TYPES START -->
 
@@ -191,38 +150,31 @@ tracks can be drawn more than one way, and the `displays` array picks which:
 
 <!-- DISPLAY_TYPES END -->
 
-See the [config guides](/docs/config_guide) for per-track display options.
-
 ## Copying a track's config out of the app
 
-From the track menu on the track label:
-
-- **Copy track** copies the track's full config JSON. **Copy and open track**
-  also opens the copy in the current view
-- **Settings** opens the configuration editor, where every slot's current value
-  can be reviewed and copied. A non-admin's edits become a per-session override,
-  and "Reset track settings" clears it
-
-Either way the result pastes into `config.json` or into a
-[generation script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
+- **Copy track** in the track menu copies the track's full config JSON; "Copy
+  and open track" also opens the copy in the current view.
+- **Settings** in the same menu opens the configuration editor, where every
+  slot's current value can be read off. A non-admin's edits become a per-session
+  override of the shared `config.json`, and "Reset track settings" clears it.
 
 ## The "Zoom in to see more features" limits
 
-Two limits guard the region, and either shows the message: the bytes the fetch
-would download, and the features that would land on screen. The banner reads
-"Zoom in to see features or force load (may be slow)", usually with the
-estimated size, and **Force load** downloads the region anyway.
+Two limits guard a region, and either one shows "Zoom in to see features or
+force load (may be slow)" with a **Force load** button: the bytes the fetch
+would download, and the features that would land on screen. Regions under about
+20 kb are never held back, and adapters that summarize at screen resolution
+(bigWig, Hi-C, MultiWiggle, sequence) are never too large.
 
-On alignments and MAF tracks the message can appear at any zoom, because their
-cost scales with read depth or the number of aligned species, which zooming does
-not reduce. Other tracks are not guarded below about 20 kb.
+Alignments and MAF tracks are the exception: their cost per reference base
+scales with read depth or with the number of aligned species, which zooming does
+not reduce, so the message can appear at any zoom and offers only **Force
+load**.
 
 ### Raising the feature limit
 
 [`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
-is **features per pixel of track width**, so the budget grows with the window.
-At the default of `1`, a track draws roughly as many features as the window is
-pixels wide; `2` allows twice that.
+is features per pixel of track width, so the budget grows with the window:
 
 ```json addtrack
 {
@@ -235,19 +187,15 @@ pixels wide; `2` allows twice that.
 }
 ```
 
-For a one-off, **Force load** needs no config change. Where nobody can press the
-button (an embedded view, a notebook, a screenshot), set
-[`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display.
+Where nobody can press the button (an embedded view, a notebook, a screenshot),
+[`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display
+loads the region regardless.
 
 ### Raising the byte limit
 
 [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is a
-plain byte count. Regions under 20kb are never held back, and adapters that
-summarize at screen resolution (bigWig, Hi-C, MultiWiggle, sequence) are never
-too large, so neither limit applies to them.
-
-The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`, and an adapter's
-limit takes priority over the display's, so for those formats set it on the
+byte count. The BAM, CRAM and VCF adapters carry their own `fetchSizeLimit`,
+which takes priority over the display's, so for those formats set it on the
 adapter:
 
 ```json addtrack
@@ -264,18 +212,11 @@ adapter:
 }
 ```
 
-## Finding every option for a track or adapter type
-
-Every slot for every track, display and adapter type is in the generated
-**config reference**, in the docs sidebar. For example:
-
-- [](/docs/config/bamadapter), [](/docs/config/vcftabixadapter),
-  [](/docs/config/bigwigadapter)
-- [](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay)
-
 ## See also
 
 - [](/docs/config_guides/file_types)
 - [](/docs/config_guides/track_selector)
 - [](/docs/config_guides/deploying#generating-configjson-from-a-script)
 - [](/docs/tutorials/display_settings)
+- [Config reference](/docs/config), every slot of every track, display and
+  adapter type

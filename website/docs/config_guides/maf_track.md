@@ -11,12 +11,6 @@ of several species against a reference, one row per species with a coverage
 summary on top. JBrowse reads three formats (BigMaf, tabix MAF, bgzipped TAF).
 Supply the species with a `samples` array, an `nhLocation` Newick tree, or both.
 
-A MAF track shows a multiple alignment of several species against a reference
-genome: one row per aligned species, with a coverage summary on top. JBrowse
-reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
-For what the track looks like once loaded, see the
-[MAF track user guide](/docs/user_guides/maf_track).
-
 ## Adapters
 
 <!-- FILE_TYPES maf START -->
@@ -31,18 +25,10 @@ For what the track looks like once loaded, see the
 
 <!-- FILE_TYPES maf END -->
 
-Provide the aligned species as one of the following (see
-[below](#the-samples-array)):
-
-- a `samples` array, in track order
-- an `nhLocation` Newick tree, which both supplies the species and orders/labels
-  the rows as a dendrogram
-- both
-
-Example using the tabix-indexed BED form (the UCSC ce11 26-way, ordered by its
-phylogenetic tree). `MafTabixAdapter` takes the
-[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), resolving
-the sibling `.tbi`, plus an `nhUri` for the tree:
+The UCSC ce11 26-way as a tabix BED, ordered by its phylogenetic tree.
+`MafTabixAdapter` takes the
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for the BED
+and its `.tbi`, plus an `nhUri` for the tree:
 
 ```json addtrack
 {
@@ -58,43 +44,38 @@ the sibling `.tbi`, plus an `nhUri` for the tree:
 }
 ```
 
-`BigMafAdapter` is the one MAF adapter with no `uri` shorthand: it takes a
-`bigBedLocation`, as in the 470-way example below, and may also carry the two
-optional sub-adapters.
+`BigMafAdapter` has no `uri` shorthand and takes a `bigBedLocation`, as in the
+[470-way example](#a-larger-example-the-human-470-way).
 
 ## The samples array
 
-A [`samples`](/docs/config/maftabixadapter/#slot-samples) entry is either a bare
-id string or an object. The id is the token matched against the MAF's `src`
-column, haplotype suffix included, so a `hg38.chr1` row matches the sample
-`hg38`. The object form adds:
+The species come from a `samples` array, an `nhLocation`/`nhUri` Newick tree, or
+both. With a tree, its leaf names are the sample set and the row order, and
+`samples` becomes an override table matched by id; a leaf with no entry keeps
+its own name as its label.
 
-- **`label`** — the sidebar label, for an id that is not itself readable.
-- **`color`** — the row's color.
-- **`assemblyName`** — the assembly this species' own genome is loaded as, which
-  makes its rows navigable: right-clicking a drag selection then offers
+A [`samples`](/docs/config/maftabixadapter/#slot-samples) entry is a bare id
+string or an object. The id is matched against the MAF's `src` column with the
+haplotype suffix included, so a `hg38.chr1` row matches `hg38`. The object form
+adds:
+
+- **`label`** the sidebar label
+- **`color`** the row's color
+- **`assemblyName`** the assembly this species' genome is loaded as, which makes
+  its rows navigable: right-clicking a drag selection offers
   [that row's locus in the species' own coordinates](/docs/user_guides/maf_track#jumping-to-a-species-own-genome).
-  Rows of a sample that leaves it unset are not offered. It has to be written
-  out: ids are UCSC db names in some alignments, scientific names in others
-  (which map to several assemblies) and lab-internal ids in others still, so a
-  name lookup can land on the wrong genome and report coordinates that are
-  silently wrong.
-- **`assemblyConfigLocation`** — the config to load `assemblyName` out of when
-  the session does not already have it. Omit it when the assembly is already in
-  the config the user opened. A site hosting many genomes keeps one config per
-  genome, so an alignment's species usually are not present in that config;
-  JBrowse fetches just the named assembly from here at click time, which keeps a
-  26-way or 470-way navigable. It is a `UriLocation`, so a relative uri resolves
-  against the declaring config rather than against the page.
+  Rows of a sample that leaves it unset are not offered. Write it out: ids are
+  UCSC db names in some alignments, scientific names in others and lab-internal
+  ids in others still, so a name lookup can land on the wrong genome and report
+  coordinates that are silently wrong
+- **`assemblyConfigLocation`** the config to load `assemblyName` from when the
+  session does not already hold it. JBrowse fetches just that assembly at click
+  time, which keeps a 26-way or 470-way navigable on a site with one config per
+  genome. A relative uri resolves against the declaring config
 
-**A tree and a `samples` array compose**, which is how a tree-ordered alignment
-also gets navigable rows. With an `nhLocation`/`nhUri` the tree's leaf names are
-the sample set and the row order, and `samples` becomes an override table
-matched by id; a leaf with no matching entry keeps its own name as its label.
-
-This track has one row pointing at an assembly the config already holds, one
-loading its assembly from a sibling config on click, and one plain row that is
-not navigable:
+One row pointing at an assembly the config holds, one loading its assembly from
+a sibling config on click, and one plain row that is not navigable
+([runnable config](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_maf_navigation.json)):
 
 ```json addtrack
 {
@@ -122,19 +103,14 @@ not navigable:
 }
 ```
 
-The hosted
-[`config_maf_navigation.json`](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_maf_navigation.json)
-is the runnable version of that config, also reachable from the no-config
-screen.
-
 ## Producing the tabix BED from a MAF
 
 `MafTabixAdapter` reads a BED whose sixth column packs every row of an alignment
-block as comma-separated `src:start:size:strand:srcSize:seq`, with the first
-three columns giving that block's interval on the reference.
-[maf2bed](https://github.com/cmdcolin/maf2bed) writes it. It takes the assembly
-to use as the reference, so a `hg38.chr1` row becomes a `chr1` line and every
-other species rides in column 6:
+block as `src:start:size:strand:srcSize:seq`, with the first three columns
+giving the block's interval on the reference.
+[maf2bed](https://github.com/cmdcolin/maf2bed) writes it, streaming, from a file
+or a pipe (`pigz -dc file.maf.gz | maf2bed hg38 | ...`), and takes the assembly
+to use as the reference:
 
 ```bash
 cargo install maf2bed
@@ -144,57 +120,32 @@ maf2bed hg38 < file.maf | sort -k1,1 -k2,2n | bgzip > file.bed.gz
 tabix -p bed file.bed.gz
 ```
 
-It streams, so a whole-genome MAF costs no more memory than a small one, and it
-reads from a pipe (`pigz -dc file.maf.gz | maf2bed hg38 | ...`). Without a Rust
-toolchain,
-[`maf2bed.pl`](https://github.com/GMOD/jbrowse-plugin-mafviewer/blob/master/bin/maf2bed.pl)
-is the same conversion in Perl and its output is interchangeable.
-
 Every block has to be rooted on the assembly you name, which a MAF from
 `hal2maf --refGenome <name>` or from UCSC already is. A MAF whose blocks are
-rooted on different genomes, as `pggb -M` produces, needs re-rooting first; see
-[](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection).
-
-## Sub-adapters: summary and CDS frames
-
-Two optional sub-adapters hang off the MAF **adapter**, alongside the main
-location:
-
-- **`summaryAdapter`**: the zoom-out tier, described in its own section
-  [below](#the-zoom-out-tier). Either a UCSC `bigMafSummary` (a `BigBedAdapter`
-  over `bigMafSummary.bb`) or a `BedTabixAdapter` over the summary
-  [maf2bed](https://github.com/cmdcolin/maf2bed) writes.
-- **`annotationAdapter`**: a UCSC `mafFrames` file (a `BigBedAdapter` over
-  `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
-  through the alignment, one record per (species, region), keyed by `src`
-  species. It enables the "Show CDS frames" overlay and the "Codon changes
-  (amino acids)" row coloring, neither on by default. When the file carries a
-  record for the reference `src`, the reference row shows its own gene structure
-  too.
+rooted on different genomes, as `pggb -M` produces, needs re-rooting first
+([pangenome tutorial](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)).
 
 ## The zoom-out tier
 
 Every MAF format packs each block's species sequences together, so a zoomed-out
-query downloads them all: on a deep alignment a single screen can be tens of
-megabytes. JBrowse blocks that with a "requested too much data" prompt, which
-means a track with no `summaryAdapter` has no zoom-out view — only the prompt.
+query downloads them all, and JBrowse blocks it with a "requested too much data"
+prompt. A track with no `summaryAdapter` has no zoom-out view at all.
 
-The `summaryAdapter` slot points at a second, much smaller file holding one row
-per species per aligned region, with a score but **no sequence**. Where it is
-configured, zooming out past the force-load threshold swaps the per-base rows
-for per-species presence bars read from that file instead of blocking.
+[`summaryAdapter`](/docs/config/maftabixadapter/#slot-summaryadapter) points at
+a much smaller file with one row per species per aligned region, a score and no
+sequence. Past the force-load threshold the display swaps the per-base rows for
+per-species presence bars read from it, shaded by that score (UCSC writes a
+normalized alignment score, `maf2bed` percent identity to the reference; both
+are 0..1). The conservation band is computed from the alignment itself and needs
+no file.
 
-For a **BigMaf** track, UCSC ships one alongside the alignment:
-
-```json
-"summaryAdapter": {
-  "type": "BigBedAdapter",
-  "bigBedLocation": { "uri": "https://example.com/multiz470waySummary.bb" }
-}
-```
-
-For the other three, `maf2bed --summary` writes one in the same pass that
-converts the alignment, so it costs no extra scan of the MAF:
+- **BigMaf**: UCSC ships a `bigMafSummary.bb` beside the alignment; point a
+  `BigBedAdapter` at it, as in the
+  [470-way example](#a-larger-example-the-human-470-way)
+- **The other three**: `maf2bed --summary` writes one in the same pass that
+  converts the alignment. It needs maf2bed v0.6.0 or newer; an older version
+  ignores the flag, exits 0 and writes only the alignment BED, so check that
+  `summary.bed` exists before wiring the slot
 
 ```bash
 export LC_ALL=C
@@ -206,10 +157,6 @@ tabix -p bed file.bed.gz
 sort -k1,1 -k2,2n summary.bed | bgzip > summary.bed.gz
 tabix -p bed summary.bed.gz
 ```
-
-`--summary` needs maf2bed v0.6.0 or newer. Versions before that read only the
-first argument and ignore the rest, so the command above exits 0 and writes only
-the alignment BED; check that `summary.bed` exists before wiring the slot.
 
 Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 
@@ -234,38 +181,26 @@ Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 }
 ```
 
-The bars are shaded by the summary's score, and hovering one reports it as a
-number alongside the species and the aligned block. The two producers put
-different metrics there — UCSC a normalized alignment score, `maf2bed` percent
-identity to the reference — but both are 0..1 and both shade the same way, so
-the tooltip labels it as the file's `score` rather than as either. Both are
-distinct from the conservation band, which is computed from the alignment itself
-and needs no file.
-
-`BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot, and the same
-`maf2bed --summary` BED serves them. Their `.tai` index seeks within an
-alignment, so a read costs what is on screen rather than what the blocks happen
-to span. That bounds the span a read covers, not the number of rows, and a read
-costs both. On a deep alignment an index moves the zoom-out ceiling; the summary
-file removes it. Each slot doc quotes the bytes per base measured for that
-format on HPRC's published alignment:
+`BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot and the same
+summary BED. Their `.tai` index bounds a read to the span on screen, which moves
+the zoom-out ceiling on a deep alignment; the summary file removes it. Each slot
+doc quotes the bytes per base measured on HPRC's published alignment:
 [`BgzipMafAdapter`](/docs/config/bgzipmafadapter/#slot-summaryadapter),
 [`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter/#slot-summaryadapter).
 
-## Display options
+## CDS frames
 
-The conservation band, the identity plots (heatmap / X-Y plot),
-source-chromosome coloring, and the inversion (strand-flip) overlay are all
-derived from the alignment with no extra configuration, picked from the track
-menu. The [user guide](/docs/user_guides/maf_track) covers what each one shows.
+`annotationAdapter` on the MAF adapter points at a UCSC `mafFrames` file (a
+`BigBedAdapter` over `multiz<N>wayFrames.bb`): each gene's CDS reading frame
+projected through the alignment, one record per (species, region), keyed by
+`src` species. It enables the "Show CDS frames" overlay and the "Codon changes
+(amino acids)" row coloring, neither on by default. A record for the reference
+`src` gives the reference row its own gene structure too.
 
 ## A larger example: the human 470-way
 
-These features work at genome scale. The UCSC hg38 **470-way multiz** (the
-Zoonomia mammals and more) is a `BigMafAdapter` over `multiz470way.bigMaf`, with
-its `multiz470waySummary.bb` (zoom-out) and `multiz470wayFrames.bb` (CDS frames
-/ codon view): the same three pieces as the smaller examples, pointed at the
-UCSC downloads.
+The UCSC hg38 470-way multiz as a `BigMafAdapter`, with its summary (zoom-out)
+and frames (codon view) files from the same download directory:
 
 ```json addtrack
 {
@@ -293,10 +228,6 @@ UCSC downloads.
   }
 }
 ```
-
-A subtree filter (from the track menu) narrows the hundreds of species to a
-focused set for detailed reading; see the
-[user guide](/docs/user_guides/maf_track) for how the large alignment renders.
 
 ## See also
 

@@ -13,11 +13,10 @@ sequence.
 
 ## FromConfigAdapter
 
-Each entry in `features` is a feature object. `refName`, `start`, `end`, and a
-unique `uniqueId` are required. `type`, `name`, and any other attributes are
-optional, and any extra attribute is readable from a
-[jexl callback](/docs/config_guides/jexl). Use it with any feature track type,
-such as a `FeatureTrack`:
+Each entry in `features` needs `refName`, `start`, `end` and a unique
+`uniqueId`; `type`, `name` and any other attribute are optional and readable
+from a [jexl callback](/docs/config_guides/jexl). It works under any feature
+track type:
 
 ```json addtrack
 {
@@ -51,10 +50,8 @@ such as a `FeatureTrack`:
 
 ## FromConfigSequenceAdapter
 
-A `FromConfigAdapter` optimized for sequence features, as the adapter of a
-reference sequence track (see
-[configuring assemblies](/docs/config_guides/assemblies)); each feature's `seq`
-holds the bases for its region:
+The sequence adapter of an [assembly](/docs/config_guides/assemblies), with each
+feature's `seq` holding the bases for its region:
 
 ```json
 {
@@ -85,10 +82,9 @@ holds the bases for its region:
 
 ## FromConfigRegionsAdapter
 
-Supplies refNames and their lengths with no sequence, so a view can be navigated
-and tracks drawn against an assembly whose FASTA you don't have or don't want to
-load. Same place in the config as `FromConfigSequenceAdapter`, and each feature
-is just an interval:
+Names and lengths with no sequence, so a view can navigate and tracks can draw
+against an assembly whose FASTA you do not have or do not want to load. Same
+place in the config, and each feature is just an interval:
 
 ```json
 {
@@ -105,7 +101,7 @@ is just an interval:
 }
 ```
 
-For the same thing from a file, use a
+The same thing from a file is a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes`.
 
 ## See also

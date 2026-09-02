@@ -24,8 +24,8 @@ The `admin-server` is for temporary configuration, **not for production.**
 
 ## Prerequisites
 
-- [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
-- [JBrowse 2 web application](/docs/quickstart_web/#download-jbrowse-2)
+- [JBrowse CLI](/docs/quickstart_web/#install-and-run)
+- [JBrowse 2 web application](/docs/quickstart_web/#install-and-run)
 
 ## Starting JBrowse 2 admin server
 

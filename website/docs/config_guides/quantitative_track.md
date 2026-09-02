@@ -8,29 +8,6 @@ guide_category: Track types
 and color options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.)
 go in `displayDefaults`.
 
-Example QuantitativeTrack config:
-
-```json addtrack
-{
-  "type": "QuantitativeTrack",
-  "trackId": "my_wiggle_track",
-  "name": "My Wiggle Track",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://yourhost/file.bw"
-  }
-}
-```
-
-## Display options
-
-Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
-`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) go in the
-[`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays).
-`defaultRendering` picks the plot style and accepts `xyplot`, `density`, `line`,
-or `scatter`:
-
 ```json addtrack
 {
   "type": "QuantitativeTrack",
@@ -41,22 +18,27 @@ or `scatter`:
     "type": "BigWigAdapter",
     "uri": "https://yourhost/file.bw"
   },
-  "displayDefaults": { "scaleType": "log" }
+  "displayDefaults": { "defaultRendering": "line", "scaleType": "log" }
 }
 ```
 
-See the [LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for
-the full list of display slots and their defaults.
+## Display options
+
+Scale and color settings (`scaleType`, `autoscale`, `minScore`, `maxScore`,
+`color`, `bicolorPivot`) are
+[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots, set through
+`displayDefaults`.
+[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
+picks `xyplot`, `density`, `line` or `scatter`. The
+[cookbook](/docs/cookbook#quantitative-wiggle-tracks) has the single-color and
+bicolor recipes.
 
 ## Adapters
 
-- `BigWigAdapter` - a BigWig file
-- `BedGraphTabixAdapter` - a bgzip+tabix-indexed bedGraph, for large data
-- `BedGraphAdapter` - a small plain `.bedGraph`
-
-The examples above use the reduced `uri` form. See the
-[](/docs/config/bigwigadapter), [](/docs/config/bedgraphtabixadapter), and
-[](/docs/config/bedgraphadapter) config docs for all options.
+`BigWigAdapter`, `BedGraphTabixAdapter` (bgzip plus tabix, for large data) and
+`BedGraphAdapter` (a small plain `.bedGraph`) all take the `uri` shorthand;
+[supported file types](/docs/config_guides/file_types#quantitative--signal)
+lists them with their config pages.
 
 ## See also
 
