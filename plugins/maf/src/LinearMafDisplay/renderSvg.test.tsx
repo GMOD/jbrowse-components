@@ -26,7 +26,10 @@ function clusteredDisplay() {
   const { display, view } = createMafTestEnvironment().createDisplay()
   view.zoomTo(1)
   display.setSamples({
-    samples: [{ id: 'hg38' }, { id: 'mm10' }],
+    samples: [
+      { id: 'hg38', label: 'hg38' },
+      { id: 'mm10', label: 'mm10' },
+    ],
     treeNewick: undefined,
     samplesCanonical: true,
   })
