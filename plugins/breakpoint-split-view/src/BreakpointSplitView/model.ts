@@ -216,9 +216,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * True on the import form too: with no panels and none pending there is
+       * nothing left to initialize, and `AppReadyMarker` reads a false here as
+       * the app still loading — which held `data-app-phase` at `loading` for
+       * as long as an empty split view stayed open.
        */
       get initialized() {
-        return self.views.length > 0 && self.views.every(v => v.initialized)
+        return (
+          this.pendingLaunch === undefined &&
+          self.views.every(v => v.initialized)
+        )
       },
 
       /**

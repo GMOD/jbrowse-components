@@ -241,13 +241,14 @@ export default function stateModelFactory() {
            */
           async applyInit(init: LaunchInput<SpreadsheetViewCommands>) {
             const { importWizard } = self
-            const { assembly, uri, fileType, filterText } = init
+            const { assembly, uri, baseUri, fileType, filterText } = init
             if (assembly) {
               importWizard.setSelectedAssemblyName(assembly)
             }
             if (uri) {
               const fileLocation = {
                 uri,
+                baseUri,
                 locationType: 'UriLocation' as const,
               }
               importWizard.setFileSource(fileLocation)

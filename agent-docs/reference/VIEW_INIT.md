@@ -421,6 +421,69 @@ is the record: what the split cost, the two alternatives rejected before this on
 and still rejected on the same grounds, and why the state props did not have to
 be renamed. Read it before proposing that a surface get its own shape back.
 
+## Verified in a browser
+
+jsdom cannot see a view that comes up blank, sits on a readiness gate or falls
+back to its import form, so every migrated view was driven in headless Chrome
+against the built app on each surface. LGV, synteny and dotplot went first
+(2026-08-30, numbers not kept); the four below went on 2026-09-02 with
+`products/jbrowse-web/browser-tests/probe-view-launch-surfaces.ts`, which is
+the reusable driver. It readies on the positive session gate, then
+`waitForViewPhases` (the one that sees `[data-view-component-pending]` — a lazy
+view body reads "Loading…" for a couple of seconds after `data-app-phase` is
+already `ready`, and a probe gating on the app marker alone photographs a hang),
+then the display phases and paint, then the app holding `ready`. The census is
+an element capture of every `<canvas>` and of every view body, counting the
+pixels off the modal colour at 4 bits per channel — not a look at the
+screenshot. All against the volvox fixture at a 1400x900 viewport.
+
+| view | flat spec URL | flat `defaultSession` | census |
+| --- | --- | --- | --- |
+| CircularView (`volvox_sv_test`) | painted | painted, identical | 8 chords, body 1396x436: 64,623 or 64,628 px — below |
+| SpreadsheetView (`volvox.filtered.vcf.gz`) | painted | painted, identical | 22 rows, body 1396x480: 104,730 px |
+| SvInspectorView (`volvox.dup.vcf.gz`) | painted | painted, identical | 8 chords, 8 rows, body 1396x538: 92,289 px |
+| BreakpointSplitView (2 × `volvox_sv`, `ctgA:1-50000`) | painted | painted, identical | canvases 1386x250: 85,903 and 61,796 px; body 1396x697: 246,463 px |
+
+A snapshot whose only launch content is a typo (`asembly`, `veiws`) opens on the
+import form with nothing pending and raises the one warning, on all four. On a
+spec URL the same typo is named as an error and the launcher then does what it
+always did with a missing key: spreadsheet and sv-inspector open their import
+form, circular and breakpoint refuse (`No assembly provided`, `needs a "views"
+array`) with no view opened — LGV's policy, and no hang either way.
+
+One caveat on "identical", because it costs a run to rediscover: a
+`CircularView` body is not bit-stable from one page load to the next. Chrome
+rasterizes the same SVG two ways — 263 pixels of the rotated `ctgA`/`ctgB`
+labels and the ring's two tangent points, a net 5 of 64,623 — and which way it
+lands does not track the surface, so two spec-URL loads differ exactly as often
+as a spec URL and a `defaultSession` do. The geometry under it does not move at
+all (`bpPerPx` 56.91611773867309 and `radiusPx` 160 on eight consecutive loads),
+which is what says this is the rasterizer and not the launch input. So the probe
+compares a body count within a tenth of a percent and everything else — phases,
+chord and row counts, canvas count and sizes, canvas pixel counts — exactly.
+Only the SVG bodies drift; every canvas count came back bit-identical across
+every run.
+
+The five `SvInspectorView` figures were spot-checked rather than re-shot:
+`node scripts/generate-screenshots.ts --check --filter sv_inspector` from
+`website/` renders each twice and compares them without touching a committed
+PNG, and all six it selects came out stable to 0.000% with every page readied by
+the app's own `ready` marker. They author the flat shape the probe drives, and
+`sv_inspector_importform_after` is the bare `{ type: 'SvInspectorView' }` that
+has to reach the import form.
+
+Two things the run found that jsdom could not:
+
+- **A config loaded from a URL stamps `baseUri` beside every `uri` it carries,
+  a `defaultSession` view's included** (`addRelativeUris`). Spreadsheet and
+  sv-inspector reported it as a typo on every such config and dropped it, so the
+  sheet's file resolved against the page while the tracks beside it resolved
+  against the config. It is a launch key now and rides into the file location.
+- **An empty BreakpointSplitView held `data-app-phase` at `loading`.** Its
+  `initialized` required at least one panel, and `AppReadyMarker` reads a false
+  there as the app still loading — so a split view on its import form, from a
+  typo or from the Add menu, was a page every capture gate waited on forever.
+
 ## Tests
 
 `packages/core/src/util/withLaunchInput.test.ts` for the partition itself, and

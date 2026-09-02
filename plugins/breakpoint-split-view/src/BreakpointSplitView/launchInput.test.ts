@@ -92,7 +92,10 @@ test('an unknown key is reported once', () => {
 })
 
 // Read as work to do, `hasSomethingToShow` is true with no panels coming and
-// the view sits on its spinner rather than dropping to the import form.
+// the view sits on its spinner rather than dropping to the import form. And
+// `initialized` has to hold on that form: AppReadyMarker reads a false as the
+// app still loading, so an empty split view kept `data-app-phase` at `loading`
+// for as long as it stayed open.
 test('a typo alone leaves nothing pending', () => {
   const view = open({ showIntraViewLinks: false })
   expect(view.launch).toEqual({ unknown: { showIntraViewLinks: false } })
@@ -100,6 +103,11 @@ test('a typo alone leaves nothing pending', () => {
   expect(view.hasSomethingToShow).toBe(false)
   expect(view.showLoading).toBe(false)
   expect(view.showImportForm).toBe(true)
+  expect(view.initialized).toBe(true)
+})
+
+test('an empty split view is initialized', () => {
+  expect(open({}).initialized).toBe(true)
 })
 
 describe('the rows discriminator', () => {

@@ -17,6 +17,10 @@ export interface SpreadsheetViewCommands {
   // the file to load into the sheet. A spec view is untyped user input, so this
   // can be absent, and the view then opens on the import form
   uri?: string
+  // what a relative `uri` resolves against. A config loaded from a URL stamps
+  // this beside every `uri` it carries, a `defaultSession` view's included, so
+  // the sheet's file resolves against the config the way a track's does
+  baseUri?: string
   // the file's format. Otherwise detected from the extension, falling back to
   // VCF, so name it for a file the extension does not identify
   fileType?: string

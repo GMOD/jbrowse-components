@@ -1237,6 +1237,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `assembly` | the assembly the sheet's rows are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
+| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text, applied once the file is loaded |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
@@ -1283,6 +1284,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `assembly` | the assembly both halves are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
+| `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |

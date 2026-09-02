@@ -64,6 +64,23 @@ describe('the v4 nested form', () => {
   })
 })
 
+// The `baseUri` a config loaded from a URL stamps beside every `uri`, the
+// view's own included. It used to be reported as a typo on every such config
+// and dropped, so the sheet's file resolved against the page while the tracks
+// beside it resolved against the config.
+test('a config-relative uri carries the config location into the wizard', () => {
+  const view = open({
+    uri: 'calls.vcf.gz',
+    baseUri: 'https://host/data/config.json',
+  })
+  expect(view.importWizard.cachedFileLocation).toEqual({
+    uri: 'calls.vcf.gz',
+    baseUri: 'https://host/data/config.json',
+    locationType: 'UriLocation',
+  })
+  expect(warnings()).toEqual([])
+})
+
 test('a key naming neither a launch key nor a property is named on attach', () => {
   open({ assembly: 'volvox', fileTypes: 'BEDPE' })
   expect(warnings()).toContain(

@@ -5698,6 +5698,7 @@ export const configManifest: ConfigManifest = {
       ],
       "launchKeys": [
         "assembly",
+        "baseUri",
         "fileType",
         "filterText",
         "uri"
@@ -5718,6 +5719,7 @@ export const configManifest: ConfigManifest = {
       ],
       "launchKeys": [
         "assembly",
+        "baseUri",
         "fileType",
         "filterText",
         "uri"
