@@ -59,8 +59,8 @@ function parseCSVRow(line: string, delim: string): string[] {
 const nonEmptyLines = (val: string) =>
   val
     .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean)
+    .map(l => l.replace(/\r$/, ''))
+    .filter(l => l.trim() !== '')
 
 const zipRecord = (fields: string[], cols: string[]) =>
   Object.fromEntries(fields.map((f, i) => [f, cols[i] ?? '']))

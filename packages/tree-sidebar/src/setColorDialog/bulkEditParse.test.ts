@@ -63,6 +63,26 @@ describe('parseRowsByName', () => {
       new Map([['HG1', { name: 'HG1', color: '#f00' }]]),
     )
   })
+
+  // A leading tab is an empty first cell, not padding: trimming it shifted every
+  // column left, so the row was filed under the colour or dropped entirely.
+  it('keeps an empty leading cell in a TSV row', () => {
+    expect(parseRowsByName('group\tname\tcolor\n\tHG1\t#f00')).toEqual(
+      new Map([['HG1', { group: '', name: 'HG1', color: '#f00' }]]),
+    )
+  })
+
+  it('keeps an empty leading cell in a CSV row', () => {
+    expect(parseRowsByName('group,name,color\n,HG1,#f00')).toEqual(
+      new Map([['HG1', { group: '', name: 'HG1', color: '#f00' }]]),
+    )
+  })
+
+  it('strips carriage returns from CRLF input', () => {
+    expect(parseRowsByName('name\tcolor\r\nHG1\t#f00\r\n')).toEqual(
+      new Map([['HG1', { name: 'HG1', color: '#f00' }]]),
+    )
+  })
 })
 
 describe('mergeParsedRows', () => {
