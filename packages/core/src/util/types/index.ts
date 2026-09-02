@@ -591,6 +591,9 @@ export function isSessionWithSessionPlugins(
  */
 export interface SessionWithPermanentPlugins extends AbstractSessionModel {
   permanentPlugins: PluginDefinition[]
+  // true while the list is being skipped (safe mode), when adding to it would
+  // take a plugin out of the session and load it nowhere
+  permanentPluginsSkipped: boolean
   addPermanentPlugin: (plugin: PluginDefinition) => void
   removePermanentPlugin: (plugin: PluginDefinition) => void
 }

@@ -46,7 +46,8 @@ function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
           // the session instead — and only when there is a list to skip and it
           // isn't already being skipped.
           extraActions={
-            !permanentPluginSafeMode() && readPermanentPlugins().length ? (
+            !permanentPluginSafeMode() &&
+            readPermanentPlugins().some(p => !p.disabled) ? (
               <Button
                 color="secondary"
                 variant="contained"

@@ -92,9 +92,18 @@ export function newPluginHome(session: AbstractSessionModel): PluginHome {
   return session.adminMode ? 'config' : 'session'
 }
 
-/** Whether this product offers the permanent list at all (jbrowse-web does). */
+/**
+ * Whether the permanent list can take a plugin right now: the product keeps one
+ * (jbrowse-web does), and it is not being skipped. Under safe mode the pin
+ * would move the plugin out of the session and into a list this load ignores,
+ * so the plugin vanishes — and stays gone until safe mode is turned off.
+ */
 export function canInstallPermanently(session: AbstractSessionModel) {
-  return !session.adminMode && isSessionWithPermanentPlugins(session)
+  return (
+    !session.adminMode &&
+    isSessionWithPermanentPlugins(session) &&
+    !session.permanentPluginsSkipped
+  )
 }
 
 /**

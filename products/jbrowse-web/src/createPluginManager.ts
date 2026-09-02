@@ -14,6 +14,7 @@ import {
   markPermanentPluginLoadFinished,
   permanentPluginSafeMode,
   permanentPluginSafeModeSuspects,
+  readPermanentPlugins,
 } from './permanentPlugins.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
@@ -107,15 +108,22 @@ export function createPluginManager(
 // whatever those plugins provide. Said on the session because that is the one
 // surface that exists by now — the fatal error dialog, which is where safe mode
 // is usually entered from, is by definition not on screen if we got this far.
+//
+// Said for both reasons. `?safeMode` sticks to the url across reloads, so a
+// user who asked for it once, or was handed a link carrying it, would otherwise
+// be missing their plugins on every visit with nothing on screen saying why.
+// Only when there is a list being skipped: an empty one is a no-op, not news.
 function notifyPermanentPluginSafeMode(rootModel: WebRootModel) {
   const reason = permanentPluginSafeMode()
-  if (reason !== 'previousLaunchFailed') {
+  if (!reason || !readPermanentPlugins().some(p => !p.disabled)) {
     return
   }
   const suspects = permanentPluginSafeModeSuspects()
   rootModel.session?.notify(
     [
-      'Permanently installed plugins were skipped because the last load of this JBrowse did not finish.',
+      reason === 'previousLaunchFailed'
+        ? 'Permanently installed plugins were skipped because the last load of this JBrowse did not finish.'
+        : 'Permanently installed plugins were skipped because this URL asks for safe mode.',
       suspects.length ? `Loading: ${suspects.join(', ')}.` : '',
       'Tools → Permanent plugins to switch one off or turn them back on.',
     ]

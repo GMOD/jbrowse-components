@@ -8,6 +8,7 @@ import {
 import {
   addPermanentPlugin,
   onPermanentPluginsChanged,
+  permanentPluginSafeMode,
   readPermanentPlugins,
   removePermanentPlugin,
 } from '../permanentPlugins.ts'
@@ -60,6 +61,11 @@ export default function sessionModelFactory({
          * must not carry it.
          */
         permanentPlugins: readPermanentPlugins(),
+        /**
+         * #volatile
+         * whether this load skipped the list (safe mode), decided once at boot
+         */
+        permanentPluginsSkipped: permanentPluginSafeMode() !== undefined,
       }))
       .actions(self => ({
         /**
