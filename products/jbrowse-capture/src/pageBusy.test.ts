@@ -102,3 +102,18 @@ test("a display in a view's own track container is busy", () => {
   })
   expect(isPageBusyInPage()).toBe(true)
 })
+
+// The raw prop the same containers hang off on a deployed build older than the
+// `trackContainers` getter — the spelling the session gate walks. Each walker
+// used to read only one of the two.
+test('a display on a levels-only synteny view is busy', () => {
+  stubSession({
+    views: [
+      {
+        tracks: [],
+        levels: [{ tracks: [{ displays: [{ message: 'Downloading' }] }] }],
+      },
+    ],
+  })
+  expect(isPageBusyInPage()).toBe(true)
+})

@@ -145,7 +145,7 @@ await page.waitForFunction(
     }
     const tracksOf = (v: ViewState): TrackState[] => [
       ...(v.tracks ?? []),
-      ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+      ...(v.trackContainers ?? v.levels ?? []).flatMap(l => l.tracks ?? []),
       ...(v.views ?? []).flatMap(tracksOf),
     ]
     const open = new Set(

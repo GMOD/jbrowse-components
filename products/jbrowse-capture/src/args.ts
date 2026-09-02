@@ -21,6 +21,7 @@ export interface ParsedArgs {
 }
 
 const NUMERIC = new Set(['width', 'height', 'scale', 'timeout', 'settle'])
+const POSITIVE = new Set(['width', 'height', 'scale'])
 const FLAGS = new Set([
   'fullPage',
   'headed',
@@ -80,6 +81,12 @@ export function parseArgs(argv: string[]): ParsedArgs {
       throw new Error(`unknown flag "${arg}"`)
     }
     if (FLAGS.has(name)) {
+      // `--fullPage=false` used to set the flag true, silently.
+      if (eq !== -1) {
+        throw new Error(
+          `--${name} is a flag and takes no value; omit it to leave it off`,
+        )
+      }
       out[name] = true
       continue
     }
@@ -93,6 +100,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
       const n = Number(value)
       if (!Number.isFinite(n)) {
         throw new Error(`--${name} needs a number, got "${value}"`)
+      }
+      // A zero-size viewport or scale otherwise fails much later, inside
+      // puppeteer, with an error naming neither the flag nor the value.
+      if (POSITIVE.has(name) && n <= 0) {
+        throw new Error(`--${name} needs a positive number, got "${value}"`)
       }
       out[name] = n
     } else {

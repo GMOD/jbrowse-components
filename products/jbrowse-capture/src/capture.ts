@@ -1,3 +1,6 @@
+import { mkdirSync } from 'node:fs'
+import { dirname } from 'node:path'
+
 import puppeteer from 'puppeteer'
 
 import {
@@ -5,314 +8,14 @@ import {
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
+import { waitForJBrowseReady } from './ready.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
-import {
-  describePendingDisplays,
-  hasPaintContract,
-  pendingDisplayStates,
-  readInstrumentation,
-  readSessionSummary,
-  waitForSession,
-} from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
-import {
-  delay,
-  hasAppReadyMarker,
-  waitForAppReady,
-  waitForDisplayPhases,
-  waitForDisplaysDone,
-  waitForLoadingComplete,
-  waitForQuiescent,
-  waitForQuietPeriod,
-  waitForViewPhases,
-} from './waits.ts'
+import { waitForAppSettled } from './waits.ts'
 
-import type {
-  Instrumentation,
-  PendingDisplay,
-  SessionExpectations,
-} from './sessionGate.ts'
+import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
-
-// A build with no per-display paint attributes gives no signal between "the
-// overlay cleared" and "the canvas has pixels on it", so the only thing left is
-// to wait. Sized from the measured gap on jbrowse.org/code/jb2/latest between
-// the overlay clearing and the tracks being fully drawn.
-const LEGACY_PAINT_SETTLE_MS = 1500
-// ...and the gap at the OTHER end, which is the one that lands a capture on an
-// app that has drawn nothing at all. Measured on the same instance with two
-// remote tracks: the session gate is satisfied at ~2.5s, and the loading overlay
-// — the only remaining signal there — does not go up until ~3.5s. An
-// instrumented build has no such window: `data-display-phase` appears in the
-// same frame as the display it belongs to.
-//
-// So on an uninstrumented build the app has to be seen to START working, and
-// then hold still, before it counts as finished. The window is how long the
-// first indicator gets to appear before "nothing to wait for" is the better
-// reading; the quiet is how long the idle then has to hold.
-const LEGACY_BUSY_WINDOW_MS = 4000
-const LEGACY_QUIET_MS = 2000
-
-export interface ReadyOptions extends SessionExpectations {
-  /** Budget for each individual wait stage. */
-  timeout?: number
-  /**
-   * Also wait out adapter "Downloading…" status text, which can outlive the
-   * loading overlay when a track streams a large remote file.
-   */
-  waitForDownloads?: boolean
-  /** Extra settle after everything reports done, for animations and tooltips. */
-  settleMs?: number
-  /**
-   * Skip the session gate. Only for a page that is not jbrowse-web and so
-   * publishes no `window.JBrowseSession` — an embedded component, say. You lose
-   * the only check that the data you asked for is the data on screen.
-   */
-  expectSession?: boolean
-  /**
-   * Return the report instead of throwing when a wait stage times out. For
-   * capturing a page that is deliberately mid-load, or accepting a known-slow
-   * one. The unsettled stages are still listed in the report either way.
-   */
-  allowUnsettled?: boolean
-}
-
-export interface ReadyReport {
-  /** Displays still reporting unpainted at the end of the wait. */
-  pending: string[]
-  /**
-   * The same displays with the phase each one publishes, which is what
-   * separates a slow fetch from a display that says it finished without
-   * painting. Empty whenever `pending` is.
-   */
-  pendingStates: PendingDisplay[]
-  /**
-   * Whether every display's paint state was actually measurable — false when
-   * tracks are open but the build publishes no `data-display-drawn`. With this
-   * false, an empty `pending` means "cannot tell", not "all done".
-   */
-  paintContract: boolean
-  /** Wait stages that hit their timeout instead of being satisfied. */
-  unsettled: string[]
-  /**
-   * Which readiness attributes the build published, read once the session was
-   * up. Every `false` here is a wait that could not fail rather than one that
-   * passed, and the chain compensates for it — see LEGACY_QUIET_MS.
-   */
-  instrumentation: Instrumentation
-  /**
-   * Whether the page published `[data-app-phase]`, the one positive readiness
-   * selector. True means the wait was that selector and nothing else; false
-   * means the build predates it and the fallback chain ran.
-   */
-  appMarker: boolean
-}
-
-/**
- * Wait until a JBrowse page has finished loading AND finished drawing.
- *
- * One positive gate, then the negative ones. The order is the whole point: the
- * DOM waits all pass on a page that has not started yet, so without the session
- * gate in front the chain returns in under a second (see sessionGate.ts). After
- * it, each stage is only meaningful once the previous has passed — a view still
- * resolving its assembly has mounted no displays, and a display that has mounted
- * but not fetched has nothing to be drawn yet.
- */
-export async function waitForJBrowseReady(
-  page: Page,
-  {
-    timeout = 60000,
-    waitForDownloads = true,
-    settleMs = 0,
-    expectSession = true,
-    assembly,
-    trackIds,
-    allowUnsettled = false,
-  }: ReadyOptions = {},
-): Promise<ReadyReport> {
-  const unsettled: string[] = []
-  const stage = async (name: string, work: Promise<boolean>) => {
-    if (!(await work)) {
-      unsettled.push(name)
-    }
-  }
-  // The two hard waits reject with puppeteer's own `Waiting failed: Nms
-  // exceeded`, which names neither the stage nor the selector — the whole
-  // failure mode this module exists to avoid, arriving as an error message
-  // instead of as a blank image. Say which gate it was and what to do.
-  const required = async <T>(name: string, work: Promise<T>): Promise<T> => {
-    try {
-      return await work
-    } catch {
-      throw new Error(
-        `gave up waiting after ${timeout}ms: ${name}. Raise the timeout if the ` +
-          'page is merely slow; if it never finishes, open the same URL in a ' +
-          'browser — this gate has no content to fall through to.',
-      )
-    }
-  }
-
-  // 0. the session exists and holds what was asked for. Positive, and throws.
-  if (expectSession) {
-    await waitForSession(page, { assembly, trackIds, timeout })
-  }
-  // 1. THE WHOLE ANSWER, on any build that has it: the session renders
-  //    `[data-app-phase="ready"]` when no view is resolving an assembly and no
-  //    display is fetching. It is positive, so unlike everything below it
-  //    cannot be satisfied by an app that has not started, and there is nothing
-  //    to assemble — wait for the selector and stop.
-  //
-  //    Everything after this point is the fallback for a deployment older than
-  //    the marker, and can be deleted the day the oldest supported build has
-  //    it.
-  if (await hasAppReadyMarker(page)) {
-    const ready = await waitForAppReady(page, { timeout })
-    if (!ready) {
-      unsettled.push('the app never reported itself ready')
-    }
-    // One thing the marker does not answer, so this stage stays even here: the
-    // marker is about WORK, and a display whose fetch failed is not working. It
-    // reads `ready` over an error banner, which is a correct answer to a
-    // different question than a capture is asking. `data-display-drawn` is the
-    // stricter gate — the two comparative canvases publish it from `settled`,
-    // which holds an error open deliberately so a golden regenerated during an
-    // outage fails here instead of absorbing the banner as expected output.
-    // Ordered after the marker rather than instead of it, which is what makes an
-    // absence meaningful (see waitForDisplaysDone), and free on a page that has
-    // no such canvas.
-    await stage(
-      'a display never reported its first paint',
-      waitForDisplaysDone(page, timeout),
-    )
-    if (settleMs > 0) {
-      await delay(settleMs)
-    }
-    const pendingStates = await pendingDisplayStates(page)
-    const report = {
-      pending: pendingStates.map(d => d.name),
-      pendingStates,
-      paintContract: await hasPaintContract(page),
-      unsettled,
-      instrumentation: await readInstrumentation(page),
-      appMarker: true,
-    }
-    if (!allowUnsettled && unsettled.length > 0) {
-      throw new Error(unsettledMessage(timeout, unsettled, pendingStates))
-    }
-    return report
-  }
-
-  // 1b. what an older build can be asked instead. On one that publishes none of
-  //     these, the stages below are not gates at all: they are assertions about
-  //     absent attributes that no page can fail.
-  const instrumentation = await readInstrumentation(page)
-  const instrumented =
-    instrumentation.displayPhase || instrumentation.displayDrawn
-  // A page with no tracks open has nothing to load, so the quiet gate below
-  // would be a fixed sleep for an import form or a menu shot.
-  const summary = await readSessionSummary(page)
-  const needsQuietGate = !instrumented && (summary?.trackIds.length ?? 0) > 0
-
-  // 2. the view has an assembly and its React component has arrived. Also not
-  //    best-effort: a view stuck here has no content to fall through to.
-  await required(
-    'a view never left its loading phase (still resolving its assembly, or its ' +
-      'lazily-imported component never arrived)',
-    waitForViewPhases(page, timeout),
-  )
-  // 2. no track is still fetching. One call, two outcomes: the overlay half is
-  //    required (an overlay that never clears is a fetch that never finished,
-  //    with nothing behind it) and throws; the "Downloading…" half is
-  //    best-effort and comes back as the boolean.
-  const downloadsSettled = await required(
-    'the loading overlay never cleared (a track fetch never finished)',
-    waitForLoadingComplete(page, { timeout, waitForDownloads }),
-  )
-  if (!downloadsSettled) {
-    unsettled.push('a track was still downloading')
-  }
-  await stage(
-    'a display was still in its loading phase',
-    waitForDisplayPhases(page, timeout),
-  )
-  // 3. no display is still pending its first paint
-  await stage(
-    'a display never reported its first paint',
-    waitForDisplaysDone(page, timeout),
-  )
-  // 4. no visible "Loading…/Rendering…/Computing…" text remains, which is how
-  //    the views that publish no phase attribute report themselves
-  await stage(
-    'a "Loading…/Rendering…" label was still on screen',
-    waitForQuiescent(page, { timeout }),
-  )
-  // 5. and on a build that answered none of the above, the one gate that does
-  //    not depend on an attribute existing: the app has to hold still. Every
-  //    stage before this one passed the moment it was asked, so without it the
-  //    chain returns while the first fetch is still being set up.
-  if (needsQuietGate) {
-    await stage(
-      'the app never went quiet for ' +
-        `${LEGACY_QUIET_MS}ms (this build publishes no readiness attributes, ` +
-        'so being seen to work and then stop is the only finished signal there ' +
-        'is)',
-      waitForQuietPeriod(page, {
-        quietMs: LEGACY_QUIET_MS,
-        busyWindowMs: LEGACY_BUSY_WINDOW_MS,
-        timeout,
-      }),
-    )
-  }
-
-  const paintContract = await hasPaintContract(page)
-  if (!paintContract) {
-    await delay(LEGACY_PAINT_SETTLE_MS)
-  }
-  if (settleMs > 0) {
-    await delay(settleMs)
-  }
-  const pendingStates = await pendingDisplayStates(page)
-  const report = {
-    pending: pendingStates.map(d => d.name),
-    pendingStates,
-    paintContract,
-    unsettled,
-    instrumentation,
-    appMarker: false,
-  }
-  if (!allowUnsettled && unsettled.length > 0) {
-    // Throwing is the point. Each of these stages swallows its own timeout so a
-    // slow page is not failed for being slow, which historically meant the run
-    // ended with an image and an exit code of 0 whether it had settled or not.
-    // A caller that genuinely wants the frame anyway asks for it by name.
-    throw new Error(unsettledMessage(timeout, unsettled, pendingStates))
-  }
-  return report
-}
-
-/**
- * What a timed-out wait says. The stage names alone were the whole message, and
- * they name the QUESTION rather than the answer — "a display never reported its
- * first paint" reads identically for a slow fetch, a failed one and a display
- * that never had a canvas to paint. Appending the census answers it, and the
- * `ready` case is the one that most changes what a reader does next: a longer
- * timeout is the fix for `loading` and never the fix for that.
- */
-function unsettledMessage(
-  timeout: number,
-  unsettled: string[],
-  pending: PendingDisplay[],
-) {
-  return (
-    `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ${
-      pending.length > 0
-        ? `Still unpainted: ${describePendingDisplays(pending)}. `
-        : ''
-    }Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ` +
-    `capture the frame as it stands.`
-  )
-}
 
 export interface OpenOptions extends JBrowseUrlOptions, ReadyOptions {
   width?: number
@@ -357,7 +60,10 @@ export async function openJBrowse(
     executablePath = findChromeExecutable(),
     args = [],
     onConsole,
-    timeout,
+    // Defaulted here as well as in waitForJBrowseReady, so the navigation gets
+    // the same budget as the wait stages — puppeteer's own goto default is 30s,
+    // half of what a caller passing nothing was told each stage would get.
+    timeout = 60000,
     trackIds,
     // Pulled out only to keep them out of `urlOptions`, which becomes the
     // query string. They reach the ready wait through the `...options` spread
@@ -399,19 +105,17 @@ export async function openJBrowse(
       // construction. Listing them by hand is what dropped `allowUnsettled`:
       // it was declared, documented, recommended by this function's own timeout
       // message, and silently never forwarded, so `--allowUnsettled` did
-      // nothing and a timing-out stage always threw. Only the two options
-      // derived from the URL are overridden below.
+      // nothing and a timing-out stage always threw. Overridden below: the
+      // defaulted timeout, and the two options derived from the URL.
       ...options,
+      timeout,
       // A session spec's own assembly wins over the hub name. `--hub hg38
       // --session spec.json` where the spec opens something else is legitimate
       // (the hub is just supplying the config), and expecting the hub name there
       // would fail a capture that is entirely correct.
-      assembly:
-        urlOptions.assembly ??
-        (urlOptions.session
-          ? assemblyFromSession(urlOptions.session)
-          : undefined) ??
-        (urlOptions.session ? undefined : urlOptions.hub),
+      assembly: urlOptions.session
+        ? (urlOptions.assembly ?? assemblyFromSession(urlOptions.session))
+        : (urlOptions.assembly ?? urlOptions.hub),
       trackIds:
         trackIds ??
         urlOptions.tracks ??
@@ -422,8 +126,9 @@ export async function openJBrowse(
     return { browser, page, url, ...report }
   } catch (error) {
     // A launch that got as far as a page and then failed still holds a Chrome
-    // process; without this the caller has no handle to close it.
-    await browser.close()
+    // process; without this the caller has no handle to close it. The close is
+    // guarded so its own failure cannot replace the error worth reporting.
+    await browser.close().catch(() => {})
     throw error
   }
 }
@@ -431,7 +136,14 @@ export async function openJBrowse(
 export interface CaptureOptions extends OpenOptions {
   /** PNG path to write. Omit to get the buffer back and write it yourself. */
   out?: string
-  /** Capture the whole scrollable page rather than the viewport. */
+  /**
+   * Capture the whole scrollable page rather than the viewport. Implemented by
+   * growing the viewport to the page height and re-settling, never by
+   * `page.screenshot({ fullPage: true })` — puppeteer implements that flag with
+   * the same viewport resize but shoots immediately, and the capture can return
+   * before the content re-rasters (measured in the browser-test suites as a
+   * 10–25% image diff that moves run to run).
+   */
   fullPage?: boolean
 }
 
@@ -448,9 +160,31 @@ export async function captureJBrowse(
   options: CaptureOptions = {},
 ): Promise<CaptureResult> {
   const { out, fullPage = false, ...openOptions } = options
+  if (out) {
+    // Before the browser launches: a missing parent directory otherwise fails
+    // at the screenshot, after the whole launch-navigate-wait cycle.
+    mkdirSync(dirname(out), { recursive: true })
+  }
   const { browser, page, url, ...report } = await openJBrowse(openOptions)
   try {
-    const image = await page.screenshot({ path: out, fullPage })
+    if (fullPage) {
+      const viewport = page.viewport()
+      const pageHeight = await page.evaluate(() =>
+        Math.ceil(
+          Math.max(
+            document.documentElement.scrollHeight,
+            document.body.scrollHeight,
+          ),
+        ),
+      )
+      if (viewport && pageHeight > viewport.height) {
+        await page.setViewport({ ...viewport, height: pageHeight })
+        // The resize invalidates the raster and can start work (a display that
+        // grew gained rows to draw), so the frame has to settle again.
+        await waitForAppSettled(page, { timeout: openOptions.timeout })
+      }
+    }
+    const image = await page.screenshot({ path: out })
     return { url, image, ...report }
   } finally {
     await browser.close()

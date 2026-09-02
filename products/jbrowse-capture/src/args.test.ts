@@ -49,6 +49,26 @@ test('a non-numeric size is an error', () => {
   )
 })
 
+// `--fullPage=false` used to set the flag TRUE: the flags branch never looked
+// past the name, so the one spelling a user reaches for to turn a flag off was
+// the one that silently turned it on.
+test('a value handed to a flag is an error, not true', () => {
+  expect(() => parseArgs(['--fullPage=false'])).toThrow(
+    '--fullPage is a flag and takes no value',
+  )
+})
+
+test('a zero or negative viewport dimension is an error', () => {
+  expect(() => parseArgs(['--scale', '0'])).toThrow(
+    '--scale needs a positive number, got "0"',
+  )
+  expect(() => parseArgs(['--width', '-5'])).toThrow(
+    '--width needs a positive number, got "-5"',
+  )
+  // zero is a meaningful timeout/settle, so those two stay unconstrained
+  expect(parseArgs(['--settle', '0']).settle).toBe(0)
+})
+
 test('a bare positional is an error', () => {
   expect(() => parseArgs(['hg38'])).toThrow('unexpected argument "hg38"')
 })

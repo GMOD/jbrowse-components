@@ -41,11 +41,18 @@ interface ViewState {
   tracks?: TrackState[]
   // A container view keeps its open tracks somewhere other than `tracks`, and
   // reading only the top level makes it look like nothing is open at all. A
-  // LinearSyntenyView/DotplotView holds the synteny tracks on its LEVELS (one
-  // per gap between adjacent rows) and the per-row LGV tracks on its SUB-VIEWS;
-  // its own `tracks` is empty in both cases. So a capture of any synteny view
-  // used to time out with "tracks []" while the track was open and drawn on
-  // screen, and the error blamed the caller's config.
+  // LinearSyntenyView holds the synteny tracks on its LEVELS (one per gap
+  // between adjacent rows) and the per-row LGV tracks on its SUB-VIEWS; its own
+  // `tracks` is empty in both cases. So a capture of any synteny view used to
+  // time out with "tracks []" while the track was open and drawn on screen, and
+  // the error blamed the caller's config.
+  //
+  // `trackContainers` is the published AbstractViewModel contract for the same
+  // thing (a getter over `levels` on today's synteny view); `levels` is the raw
+  // prop, and the only spelling a deployed build older than the getter has. The
+  // walks read the contract first and fall back, so a view implementing either
+  // one is seen — and only one, so a view carrying both is not double-counted.
+  trackContainers?: LevelState[]
   levels?: LevelState[]
   views?: ViewState[]
 }
@@ -91,7 +98,7 @@ export function readSessionSummaryInPage(): SessionSummary | undefined {
   function collect(v: ViewState): TrackState[] {
     return [
       ...(v.tracks ?? []),
-      ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+      ...(v.trackContainers ?? v.levels ?? []).flatMap(l => l.tracks ?? []),
       ...(v.views ?? []).flatMap(collect),
     ]
   }
@@ -160,7 +167,7 @@ export async function waitForSession(
         }
         const tracksOf = (v: ViewState): TrackState[] => [
           ...(v.tracks ?? []),
-          ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+          ...(v.trackContainers ?? v.levels ?? []).flatMap(l => l.tracks ?? []),
           ...(v.views ?? []).flatMap(tracksOf),
         ]
         const open = new Set(
@@ -174,7 +181,10 @@ export async function waitForSession(
     )
     // #endregion session-gate
   } catch {
-    const summary = await readSessionSummary(page)
+    // Best-effort: the wait may have failed because the page crashed or
+    // navigated, and an unguarded evaluate here would replace the diagnostic
+    // below with its own opaque error.
+    const summary = await readSessionSummary(page).catch(() => undefined)
     const found = summary
       ? `${summary.views} view(s), assemblies [${summary.assemblies.join(', ')}], tracks [${summary.trackIds.join(', ')}]`
       : 'no session on the page at all (is this a jbrowse-web instance?)'
@@ -273,12 +283,8 @@ export function readInstrumentation(page: Page): Promise<Instrumentation> {
  * result means nothing at all on a build with no paint contract — check
  * `paintContract` before reading it as good news.
  */
-export function pendingDisplays(page: Page): Promise<string[]> {
-  return page.evaluate(() =>
-    [
-      ...document.querySelectorAll<HTMLElement>('[data-display-drawn="false"]'),
-    ].map(el => el.dataset.testid ?? (el.id || 'unnamed display')),
-  )
+export async function pendingDisplays(page: Page): Promise<string[]> {
+  return (await pendingDisplayStates(page)).map(d => d.name)
 }
 
 /** One unpainted display and what it says about itself. */

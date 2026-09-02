@@ -1,4 +1,5 @@
-export { captureJBrowse, openJBrowse, waitForJBrowseReady } from './capture.ts'
+export { captureJBrowse, openJBrowse } from './capture.ts'
+export { waitForJBrowseReady } from './ready.ts'
 export {
   PAINT_CONTRACT_NOTE,
   describePendingDisplays,
@@ -53,9 +54,8 @@ export type {
   CaptureResult,
   OpenOptions,
   OpenResult,
-  ReadyOptions,
-  ReadyReport,
 } from './capture.ts'
+export type { ReadyOptions, ReadyReport } from './ready.ts'
 export type {
   Instrumentation,
   PendingDisplay,

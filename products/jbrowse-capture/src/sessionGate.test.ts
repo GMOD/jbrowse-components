@@ -75,6 +75,32 @@ test('a container view reports the tracks open on its rows', () => {
   })
 })
 
+// The published AbstractViewModel spelling of the same containers. A view
+// implementing the contract without a `levels` prop was invisible here while
+// the busy walk in waits.ts (which read only `trackContainers`) saw it — the
+// two walkers each covered one spelling. Both now read the contract first and
+// fall back, and reading one or the other keeps a live synteny view, which
+// carries both, from being counted twice.
+test('a view publishing only the trackContainers contract reports its tracks', () => {
+  stub({
+    views: [
+      {
+        tracks: [],
+        trackContainers: [{ tracks: [track('mat_vs_pat')] }],
+      },
+    ],
+  })
+  expect(readSessionSummaryInPage()?.trackIds).toEqual(['mat_vs_pat'])
+})
+
+test('a view carrying both spellings is not double-counted', () => {
+  const containers = [{ tracks: [track('synteny')] }]
+  stub({
+    views: [{ tracks: [], trackContainers: containers, levels: containers }],
+  })
+  expect(readSessionSummaryInPage()?.trackIds).toEqual(['synteny'])
+})
+
 test('a track with no configuration is named rather than dropped', () => {
   stub({ views: [{ tracks: [{}] }] })
   expect(readSessionSummaryInPage()?.trackIds).toEqual(['(unnamed)'])
