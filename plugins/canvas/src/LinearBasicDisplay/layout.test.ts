@@ -1198,6 +1198,61 @@ test('incremental memo: toggling dropBelowLabelRows recomputes its group', () =>
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
+// The memo compares expandedGeneIds by reference, the way it compares the
+// pinned set: the model hands it a stable set until a badge is clicked, and a
+// click hands it a new one.
+test('incremental memo: a new expandedGeneIds set recomputes its group, the same set reuses it', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const expandedGeneIds: ReadonlySet<string> = new Set(['f1'])
+  const first = memo(new Map([[0, a]]), { ...incInputs(), expandedGeneIds })
+  const same = memo(new Map([[0, a]]), { ...incInputs(), expandedGeneIds })
+  expect(same.get(0)).toBe(first.get(0))
+  const fresh = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    expandedGeneIds: new Set(['f1']),
+  })
+  expect(fresh.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: changing maxIsoformsPerGene recomputes its group, the same count reuses it', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const first = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    maxIsoformsPerGene: 3,
+  })
+  const same = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    maxIsoformsPerGene: 3,
+  })
+  expect(same.get(0)).toBe(first.get(0))
+  const fewer = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    maxIsoformsPerGene: 2,
+  })
+  expect(fewer.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: changing collapseDepth recomputes its group, the same depth reuses it', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const first = memo(new Map([[0, a]]), { ...incInputs(), collapseDepth: 25 })
+  const same = memo(new Map([[0, a]]), { ...incInputs(), collapseDepth: 25 })
+  expect(same.get(0)).toBe(first.get(0))
+  const shallower = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    collapseDepth: 5,
+  })
+  expect(shallower.get(0)).not.toBe(first.get(0))
+})
+
 test('incremental: adding a new region does not move features in existing regions', () => {
   const a = makeFeatureData({
     features: [
