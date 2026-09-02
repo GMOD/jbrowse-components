@@ -135,9 +135,10 @@ const settled = await jb.waitReady(30000)
 Then a screenshot, and read both the image and the settle result, because a
 picture cannot show a track as missing.
 
-### Four traps
+### Four traps {#four-traps}
 
-Each renders as a plausible looking browser with something quietly missing.
+Each renders as a plausible looking browser with something quietly missing. They
+are the same in Desktop and in a browser, so they are written here once.
 
 - **Reference names.** A file using `1` where the assembly says `chr1` answers
   nothing, silently. `jb.getFeatures` renames for you; raw adapter code must

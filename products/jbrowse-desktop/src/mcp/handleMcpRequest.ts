@@ -249,7 +249,14 @@ export async function handleMcpRequest(
       )
     }
     const { x, y, width, height } = element.getBoundingClientRect()
-    return { x, y, width, height }
+    return {
+      x,
+      y,
+      width,
+      height,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    }
   }
   // a frame after the DOM settled: rAF fires in a hidden page only while the
   // bridge has throttling off, which is exactly the window this is called in

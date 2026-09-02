@@ -14,6 +14,7 @@ import {
   getRpcSessionId,
   isElectron,
   isSessionWithAddSessionTrack,
+  objectHash,
   parseLocString,
   renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
@@ -409,11 +410,49 @@ export async function waitReady(
         .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
         .filter(t => 'phase' in t || 'error' in t)
     : []
+  const offscreen = session ? offscreenViews(session, root) : undefined
   return {
     ...outcome,
     ...(messages.length ? { notifications: messages } : {}),
     ...(notReady.length ? { notReady } : {}),
+    ...(offscreen ? { offscreen } : {}),
   }
+}
+
+// A session taller than the window scrolls, and a screenshot of the viewport
+// then shows a plausible browser with the bottom view cut off or the top one
+// scrolled away: every filmed take spent turns shrinking tracks after a
+// picture, and one found its genome view at y = -267. Reported from the DOM
+// the views are laid out in, so the agent knows before it looks.
+function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
+  const win = root.ownerDocument?.defaultView ?? window
+  const windowHeight = win.innerHeight
+  const pageHeight = win.document.documentElement.scrollHeight
+  const containers = new Map(
+    [
+      ...root.querySelectorAll<HTMLElement>('[data-testid^="view-container-"]'),
+    ].map(el => [el.dataset.testid!.slice('view-container-'.length), el]),
+  )
+  const views = allViews(session).flatMap(view => {
+    const rect = containers.get(view.id)?.getBoundingClientRect()
+    return rect && (rect.top < 0 || rect.bottom > windowHeight)
+      ? [
+          {
+            viewId: view.id,
+            top: Math.round(rect.top),
+            bottom: Math.round(rect.bottom),
+          },
+        ]
+      : []
+  })
+  return pageHeight > windowHeight || views.length
+    ? {
+        pageHeight,
+        windowHeight,
+        views,
+        note: 'the session is taller than the window; a viewport screenshot cuts these views off — shrink track heights, or screenshot with fullPage: true',
+      }
+    : undefined
 }
 
 function trackEntry(conf: BaseTrackConfig) {
@@ -719,6 +758,51 @@ function fileLocation(spec: string): FileLocation {
   return { localPath: spec, locationType: 'LocalPathLocation' }
 }
 
+// A stacked set of bigWigs is one track over a MultiWiggleAdapter, which the
+// per-file guesser cannot express — the web take hand-wrote the config. The
+// subadapters form rather than the `bigWigs` shorthand: that one takes
+// absolute URLs only, and desktop's locations are paths.
+// the file's name without its bigWig extension, or undefined for any other file
+function bigWigStem(location: string) {
+  const fileName = location.split(/[/\\]/).pop() ?? location
+  const match = /^(.+)\.(bw|bigwig)$/i.exec(fileName)
+  return match?.[1]
+}
+
+function multiWiggleTrackConf(locations: string[], assemblyName: string) {
+  const stems = locations.map(l => bigWigStem(l))
+  const notBigWig = locations.filter((_, i) => stems[i] === undefined)
+  if (notBigWig.length) {
+    throw new Error(
+      `jb.addTrack takes a list of locations only for bigWigs (one stacked MultiQuantitativeTrack); not bigWig: ${notBigWig.join(', ')}. Add other formats one at a time.`,
+    )
+  }
+  const adapter = {
+    type: 'MultiWiggleAdapter',
+    subadapters: locations.map((l, i) => ({
+      type: 'BigWigAdapter',
+      name: stems[i],
+      bigWigLocation: fileLocation(l),
+    })),
+  }
+  return {
+    trackId: `multiwiggle-${objectHash(adapter).slice(0, 8)}`,
+    type: 'MultiQuantitativeTrack',
+    name: stems.join(', '),
+    assemblyNames: [assemblyName],
+    adapter,
+  }
+}
+
+// one location, a list of them, or nothing usable
+function locationsOf(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((l): l is string => typeof l === 'string')
+    : typeof value === 'string'
+      ? value
+      : ''
+}
+
 interface SlotDescription {
   type: string
   description?: string
@@ -812,19 +896,31 @@ export function createJbApi(pluginManager: PluginManager) {
       loadSpec(pluginManager, { spec, settleMs }),
     addTrack: (opts: Record<string, unknown>) =>
       addTrack(pluginManager, live(), opts),
-    getFeatures: async (fetchArgs: {
-      trackId: string
-      loc?: string
-      assembly?: string
-      regions?: JbRegion[]
-      viewId?: string
-      // raises the region-too-large refusal for a read you mean to be big
-      byteLimit?: number
-    }) => {
+    // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
+    // turn to "No track with trackId undefined" — so the positional form is
+    // simply accepted alongside the object it was documented as.
+    getFeatures: async (
+      args:
+        | string
+        | {
+            trackId: string
+            loc?: string
+            assembly?: string
+            regions?: JbRegion[]
+            viewId?: string
+            // raises the region-too-large refusal for a read you mean to be big
+            byteLimit?: number
+          },
+      positionalLoc?: string,
+    ) => {
+      const fetchArgs =
+        typeof args === 'string' ? { trackId: args, loc: positionalLoc } : args
       const session = live()
       const conf = session.getTrackById(fetchArgs.trackId)
       if (!conf) {
-        throw new Error(`No track with trackId "${fetchArgs.trackId}"`)
+        throw new Error(
+          `No track with trackId "${fetchArgs.trackId}" — jb.listTracks() shows what is available`,
+        )
       }
       const regions =
         fetchArgs.regions ??
@@ -864,8 +960,8 @@ async function addTrack(
   if (!isSessionWithAddSessionTrack(session)) {
     throw new Error('This session cannot add tracks')
   }
-  const location = typeof args.location === 'string' ? args.location : ''
-  if (!location) {
+  const location = locationsOf(args.location)
+  if (!location.length) {
     throw new Error('jb.addTrack needs a location (local path or URL)')
   }
   const requested =
@@ -883,12 +979,14 @@ async function addTrack(
       `Assembly "${requested}" is not in this session (has: ${session.assemblyNames.join(', ')})`,
     )
   }
-  const conf = guessTrackConfForLocation(
-    fileLocation(location),
-    typeof args.index === 'string' ? fileLocation(args.index) : undefined,
-    pluginManager,
-    assembly,
-  )
+  const conf = Array.isArray(location)
+    ? multiWiggleTrackConf(location, assembly)
+    : guessTrackConfForLocation(
+        fileLocation(location),
+        typeof args.index === 'string' ? fileLocation(args.index) : undefined,
+        pluginManager,
+        assembly,
+      )
   session.addSessionTrackConf({
     ...conf,
     ...(typeof args.name === 'string' ? { name: args.name } : {}),

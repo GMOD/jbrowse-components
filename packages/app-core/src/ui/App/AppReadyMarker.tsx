@@ -11,6 +11,13 @@ import type {
  * contract. Duck-typed because they are view- and display-family specifics
  * (`showLoading` is the LGV's), not part of AbstractViewModel — absent means
  * not loading, the same rule the phase attributes follow.
+ *
+ * `showLoading` is also the one hook a view type outside this tree has into
+ * readiness: a plugin view that fetches something no display publishes a
+ * phase for (protein3d's structure load into Molstar) publishes it as this
+ * getter, and `jb.waitReady`, the capture tools and this marker all wait on it
+ * without knowing the view. Before it, an agent driving that view waited on
+ * guessed timers.
  */
 interface ViewFlags {
   showLoading?: boolean

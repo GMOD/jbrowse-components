@@ -31,8 +31,10 @@ discipline for using it.
   calls.
 - After building or changing anything, **`screenshot` and actually read the
   image** — cropped to the view with `selector` when it is one track you are
-  judging. A wrong trackId, an empty region, or a dropped settings key all
-  render as a plausible-looking browser with something quietly missing.
+  judging, `fullPage: true` when the settle result says `offscreen` (a session
+  taller than the window is cut off in a viewport capture). A wrong trackId, an
+  empty region, or a dropped settings key all render as a plausible-looking
+  browser with something quietly missing.
 - Verify data claims with `jb.getFeatures` aggregations, never from the picture
   alone. Every result carries `logs` (the code's console output) and
   `notifications` (the session's own toasts since your previous call, each

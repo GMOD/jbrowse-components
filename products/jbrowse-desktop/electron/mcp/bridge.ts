@@ -253,6 +253,30 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     )
   }
 
+  // what the renderer's `measure` answers: the element's viewport box plus the
+  // page's scroll offset, so the box can be re-addressed in document space
+  interface Measured extends Rectangle {
+    scrollX: number
+    scrollY: number
+  }
+
+  function isMeasured(value: unknown): value is Measured {
+    return (
+      isRect(value) &&
+      typeof (value as Measured).scrollX === 'number' &&
+      typeof (value as Measured).scrollY === 'number'
+    )
+  }
+
+  function documentRect(measured: Measured): Rectangle {
+    return {
+      x: measured.x + measured.scrollX,
+      y: measured.y + measured.scrollY,
+      width: measured.width,
+      height: measured.height,
+    }
+  }
+
   // capturePage takes integer DIP coordinates inside the page; a CSS rect off
   // the renderer is fractional and may hang past the window edge
   function clampRect(rect: Rectangle, bounds: Rectangle): Rectangle {
@@ -266,20 +290,66 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     }
   }
 
+  // A selector measures where the element sits in the VIEWPORT; the full-page
+  // capture is addressed in document coordinates, so a scrolled page has the
+  // renderer's scroll offset added back
   async function cropRect(
     args: Record<string, unknown>,
     bounds: Rectangle,
+    inDocument: boolean,
   ): Promise<{ rect?: Rectangle; error?: string }> {
     const selector = typeof args.selector === 'string' ? args.selector : ''
     if (selector) {
       const measured = await relayToRenderer('measure', { selector }, 30_000)
-      return measured.error !== undefined
-        ? { error: measured.error }
-        : isRect(measured.result)
-          ? { rect: clampRect(measured.result, bounds) }
-          : { error: 'the page did not report a rectangle for the selector' }
+      if (measured.error !== undefined) {
+        return { error: measured.error }
+      }
+      if (!isMeasured(measured.result)) {
+        return { error: 'the page did not report a rectangle for the selector' }
+      }
+      const rect = inDocument ? documentRect(measured.result) : measured.result
+      return { rect: clampRect(rect, bounds) }
     }
     return isRect(args.rect) ? { rect: clampRect(args.rect, bounds) } : {}
+  }
+
+  // capturePage sees the viewport and nothing past it, and a session taller
+  // than the window is the common case in every filmed take. The devtools
+  // protocol captures the laid-out document instead, by widening the viewport
+  // for the one frame — the same thing puppeteer's fullPage does.
+  interface CapturedImage {
+    data: string
+    rect?: Rectangle
+    page?: { width: number; height: number }
+  }
+
+  async function captureFullPage(
+    contents: BrowserWindow['webContents'],
+    args: Record<string, unknown>,
+  ): Promise<CapturedImage | { error: string }> {
+    const dbg = contents.debugger
+    dbg.attach('1.3')
+    try {
+      const metrics = (await dbg.sendCommand('Page.getLayoutMetrics')) as {
+        cssContentSize?: { width: number; height: number }
+        contentSize: { width: number; height: number }
+      }
+      const content = metrics.cssContentSize ?? metrics.contentSize
+      const bounds = { x: 0, y: 0, ...content }
+      const crop = await cropRect(args, bounds, true)
+      if (crop.error !== undefined) {
+        return { error: crop.error }
+      }
+      const clip = crop.rect ?? bounds
+      const shot = (await dbg.sendCommand('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: true,
+        clip: { ...clip, scale: 1 },
+      })) as { data: string }
+      return { rect: crop.rect, page: content, data: shot.data }
+    } finally {
+      dbg.detach()
+    }
   }
 
   async function screenshot(
@@ -303,7 +373,10 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       return { error: 'JBrowse Desktop has no window open' }
     }
     const { width, height } = win.getContentBounds()
-    const crop = await cropRect(args, { x: 0, y: 0, width, height })
+    const fullPage = args.fullPage === true
+    const crop = fullPage
+      ? {}
+      : await cropRect(args, { x: 0, y: 0, width, height }, false)
     if (crop.error !== undefined) {
       return { error: crop.error }
     }
@@ -316,12 +389,22 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     const throttled = contents.getBackgroundThrottling()
     contents.setBackgroundThrottling(false)
     let painted
-    let image
+    let captured: CapturedImage | { error: string }
     try {
       painted = await relayToRenderer('paint', {}, 10_000)
-      image = await contents.capturePage(crop.rect)
+      captured = fullPage
+        ? await captureFullPage(contents, args)
+        : {
+            rect: crop.rect,
+            data: (await contents.capturePage(crop.rect))
+              .toPNG()
+              .toString('base64'),
+          }
     } finally {
       contents.setBackgroundThrottling(throttled)
+    }
+    if ('error' in captured) {
+      return captured
     }
     const paint = (painted.result ?? {}) as {
       hidden?: boolean
@@ -336,10 +419,12 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
             warning: `the window is hidden and produced no new frame before the capture, so the image may be stale — bring JBrowse Desktop to the front (${painted.error ?? 'paint timed out'})`,
           }
         : {}),
+      ...(captured.rect ? { cropped: captured.rect } : {}),
+      ...(captured.page ? { page: captured.page } : {}),
     }
     return {
-      result: crop.rect ? { ...settle, cropped: crop.rect } : settle,
-      image: { data: image.toPNG().toString('base64'), mimeType: 'image/png' },
+      result: settle,
+      image: { data: captured.data, mimeType: 'image/png' },
     }
   }
 

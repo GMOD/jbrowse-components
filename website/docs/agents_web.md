@@ -46,15 +46,9 @@ jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ height: 220 })
 jb.waitReady(30000)
 ```
 
-The traps are the same too, and each renders as a plausible looking browser with
-something quietly missing: a data file spelling reference names differently from
-the assembly answers nothing (`jb.getFeatures` renames for you); an unknown
-settings key is dropped (`jb.describeSlots` lists what a display accepts); a
-track over its fetch size limit raises no error and is reported only under
-`notReady` by `jb.waitReady`; and `jb.loadSessionSpec` replaces the session, so
-re-read it through `jb.session`. The full reference is
-[](/docs/agents_live_model) and [](/docs/agents_recipes) is the same library at
-work, one ask per section.
+The [four traps](/docs/agents#four-traps) are the same too. The full reference
+is [](/docs/agents_live_model) and [](/docs/agents_recipes) is the same library
+at work, one ask per section.
 
 ## What is different
 

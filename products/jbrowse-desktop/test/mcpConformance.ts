@@ -443,6 +443,15 @@ try {
     variants.value?.variants > 0,
     variants,
   )
+  // two of the four filmed takes wrote it this way first
+  const positional = await run(`
+    const feats = await jb.getFeatures('volvox_test_vcf', 'ctgA:1-30,000')
+    return feats.length`)
+  check(
+    'getFeatures takes the trackId and loc positionally',
+    positional.value === variants.value?.variants,
+    positional,
+  )
   check(
     'describeSlots names displayMode',
     variants.value?.displayModeSlot === true,
@@ -510,6 +519,31 @@ try {
     'screenshot also returns the settle result the docs promise',
     shotText !== undefined && shotText.text?.includes('settled') === true,
     shotText?.text?.slice(0, 200),
+  )
+
+  // the viewport is what capturePage sees; the document is what the session
+  // occupies, and every filmed take had the second taller than the first
+  const pngHeight = (data: string | undefined) =>
+    data === undefined ? 0 : Buffer.from(data, 'base64').readUInt32BE(20)
+  const whole = await client.callAll('screenshot', { fullPage: true })
+  const wholeImage = whole.find(c => c.type === 'image')
+  const wholeText = JSON.parse(whole.find(c => c.type === 'text')?.text ?? '{}')
+  check(
+    'a fullPage screenshot captures the laid-out document and says how big it is',
+    wholeImage !== undefined &&
+      pngHeight(wholeImage.data) >= pngHeight(shotImage?.data) &&
+      wholeText.page?.height >= pngHeight(shotImage?.data),
+    { viewport: pngHeight(shotImage?.data), page: wholeText.page },
+  )
+  const wholeCropped = await client.callAll('screenshot', {
+    fullPage: true,
+    selector: `[data-testid="view-container-${viewId}"]`,
+  })
+  check(
+    'a fullPage screenshot crops to a selector in document coordinates',
+    pngWidth(wholeCropped.find(c => c.type === 'image')?.data) <
+      pngWidth(wholeImage?.data),
+    wholeCropped.map(c => (c.type === 'image' ? pngWidth(c.data) : c.text)),
   )
 
   const recent = await client.callJson('open')

@@ -98,10 +98,10 @@ return jb.loadSessionSpec({
 })
 ```
 
-A `loc` that is a gene name goes through text search, and landing on a search
-hit also shows the track its index was built from. On a hosted config that is
-the full RefSeq track, so a spec asking for the curated one gets both; hide the
-extra with `view.hideTrack(trackId)`.
+A `loc` that is a gene name goes through text search. Typed into the search box,
+a hit also shows the track its index was built from; a spec that names its own
+tracks gets exactly those, and only a spec naming no tracks keeps the search-box
+behaviour.
 
 Read the underlying data rather than describing the picture. Features come back
 as live objects, so aggregate in code and return only the answer:
@@ -131,28 +131,20 @@ write a real indexed file, and load that.
 [](/docs/agents_recipes) carries these and a dozen more as verified snippets,
 and the same page is `docs topic:"recipes"` inside the app.
 
-## Four traps
+## Looking at the result
 
-Each of these renders as a plausible looking browser with something quietly
-missing.
+`screenshot` captures the window after the app settles, and its text part
+carries the same settle report `jb.waitReady` returns: the session's
+notifications, `notReady` for a track that settled without drawing, and
+`offscreen` when the session is taller than the window. That last one is the
+common case in a real session, and a viewport capture then shows a plausible
+browser with the bottom view cut off. Pass `fullPage: true` to capture the whole
+laid-out document instead, or shrink track heights until `offscreen` goes away.
+`selector` crops to one view, `[data-testid="view-container-<view.id>"]`.
 
-**Data files may spell reference names differently from the assembly.** A file
-using `1` where the assembly says `chr1` answers nothing, silently.
-`jb.getFeatures` renames for you. Raw adapter code must call
-`jb.renameRegionsIfNeeded` first. See [](/docs/config_guide) for refName
-aliasing.
-
-**An unknown settings key is dropped.** Use `jb.describeSlots` to see what a
-display accepts, and read the `failed` list that comes back.
-
-**A track over the fetch size limit raises no error.** It replaces its own
-contents, so the screenshot looks fine. `jb.waitReady` and `screenshot` both
-report it under `notReady` with `phase: 'tooLarge'`, which is why the settle
-result is worth reading alongside the image.
-
-**`jb.loadSessionSpec` replaces the session.** The `session` argument the code
-was given is a dead node afterwards. The `jb` helpers re-read the live session
-for you, and `jb.session` rebinds it.
+The traps every agent hits, each rendering as a plausible looking browser with
+something quietly missing, are on the [overview](/docs/agents#four-traps): they
+are the same in Desktop and in a browser, so they are written once.
 
 ## Turning it off
 

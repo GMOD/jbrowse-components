@@ -51,20 +51,22 @@ the last expression (see [](/docs/agents_web)). In scope either way:
     `activeDisplay`; returns { applied, unapplied, failed } (`failed` means you
     got a key wrong; `unapplied` also lists keys that are not config slots)
   - `jb.addTrack({ location, index?, assembly?, name?, show? })` — local path or
-    URL, format inferred from the extension
-  - `jb.getFeatures({ trackId, loc? })` — the track's data as live Feature
-    objects (see below)
+    URL, format inferred from the extension; a list of bigWig locations becomes
+    one stacked `MultiQuantitativeTrack`
+  - `jb.getFeatures({ trackId, loc? })`, or `jb.getFeatures(trackId, loc?)` —
+    the track's data as live Feature objects (see below)
   - `await jb.visibleRegions(viewId?)` — the visible region as numbers
     (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
     reads by default; use it to bin or recompute over exactly what is on screen
   - `jb.rootModel` — the root model (`jbrowse` config, menus, `session`)
   - `jb.waitReady(timeoutMs)` — resolves when tracks finish loading/drawing. Its
-    result carries `notifications` (the session's error toasts) and `notReady`:
+    result carries `notifications` (the session's error toasts), `notReady`:
     tracks whose display settled without drawing anything, each with its `phase`
-    (`tooLarge`, `error`, `renderError`, `loading`). A display over the
-    fetch-size gate raises NO toast and replaces its own subtree, so this is the
-    only way to tell it apart from a track that drew — the screenshot looks fine
-    either way
+    (`tooLarge`, `error`, `renderError`, `loading`), and `offscreen` when the
+    session is taller than the window, naming the views a viewport screenshot
+    would cut off. A display over the fetch-size gate raises NO toast and
+    replaces its own subtree, so this is the only way to tell it apart from a
+    track that drew — the screenshot looks fine either way
 
   Lower level:
   - `jb.require(name)` — the module registry plugins link against, by the same
@@ -234,11 +236,10 @@ return jb.waitReady(60000)
 is hashed instead. `addSessionTrackConf` is the destination for a track you
 stood up on the user's behalf — `session.tracks` is the site's catalog.
 
-**Recomputed the values? Delete, re-add, and change the `adapterId`.** Both
-halves fail silently otherwise: `addSessionTrackConf` returns the EXISTING conf
-when the trackId is already known, so re-adding with new features keeps the old
-ones; and the adapter cache is keyed on `adapterId`, so the same id with new
-features keeps serving the first array it saw.
+**Recomputed the values? Delete, re-add, and change the `adapterId`.**
+`addSessionTrackConf` refuses a known trackId whose content differs (the same
+content is idempotent), and the adapter cache is keyed on `adapterId`, so the
+same id with new features keeps serving the first array it saw.
 
 ```js
 const old = session.sessionTracks.find(t => t.trackId === 'nutlin-log2')
@@ -286,8 +287,10 @@ Long synchronous loops block the UI thread — chunk big work with
 
 ## Looking closely
 
-A whole-window screenshot spends most of its pixels on chrome. `screenshot`
-takes `selector` to crop to one element — a view is
+A whole-window screenshot spends most of its pixels on chrome, and a session
+taller than the window is cut off at the bottom — the settle result says so
+under `offscreen`. `screenshot` takes `fullPage: true` for the whole laid-out
+document, `selector` to crop to one element — a view is
 `[data-testid="view-container-<view.id>"]` with the id from
 `jb.sessionSummary()` — or `rect` with a box you measured:
 

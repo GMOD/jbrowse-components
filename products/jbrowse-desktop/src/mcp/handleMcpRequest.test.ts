@@ -90,7 +90,14 @@ describe('measure', () => {
       },
       undefined,
     )
-    expect(out).toEqual({ x: 10.5, y: 20, width: 300, height: 200 })
+    expect(out).toEqual({
+      x: 10.5,
+      y: 20,
+      width: 300,
+      height: 200,
+      scrollX: 0,
+      scrollY: 0,
+    })
   })
 
   it('says what a view is called when nothing matches', async () => {

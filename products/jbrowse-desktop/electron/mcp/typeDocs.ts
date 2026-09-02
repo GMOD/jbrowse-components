@@ -67,9 +67,13 @@ export function lookupTypeDoc(
       .filter(k => k.toLowerCase().includes(needle))
       .map(k => `${kind}:${k}`),
   )
+  // The bundled pages cover in-tree types; a type a runtime plugin registers
+  // (ProteinView, from jbrowse-plugin-protein3d) has no page, and the filmed
+  // take that hit this read the plugin off the live tree only after trying
+  // three other routes. Say so, and say how.
   return prefixed || near.length > 0
     ? {
-        error: `No ${prefixed ? `${prefixed[1]} ` : ''}type "${name}".${near.length > 0 ? ` Near matches: ${near.slice(0, 12).join(', ')}.` : ''} Topic "types" lists every documented type.`,
+        error: `No ${prefixed ? `${prefixed[1]} ` : ''}type "${name}".${near.length > 0 ? ` Near matches: ${near.slice(0, 12).join(', ')}.` : ''} Topic "types" lists every documented type. A type registered by a plugin has no page here: introspect it live instead — pluginManager.getViewType('${name}') says whether it exists, and jb.inspect on an instance (session.addView('${name}', {}) for a view) lists its getters and actions.`,
       }
     : undefined
 }

@@ -92,7 +92,33 @@ describe('waitReady', () => {
 
   it('settles once the marker is ready and nothing is loading', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
-    expect(await waitReady(5000, session)).toMatchObject({ settled: true })
+    const settle = await waitReady(5000, session)
+    expect(settle).toMatchObject({ settled: true })
+    expect(settle).not.toHaveProperty('offscreen')
+  })
+
+  it('names the views a viewport screenshot would cut off', async () => {
+    document.body.innerHTML =
+      '<div data-app-phase="ready"></div><div data-testid="view-container-v2"></div>'
+    const container = document.querySelector(
+      '[data-testid="view-container-v2"]',
+    )!
+    container.getBoundingClientRect = () =>
+      ({ top: 700, bottom: 1100 }) as DOMRect
+    const tall = {
+      views: [
+        { id: 'v1', allViews: [{ id: 'v1', ownTracks: [] }] },
+        { id: 'v2', allViews: [{ id: 'v2', ownTracks: [] }] },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, tall)).toMatchObject({
+      settled: true,
+      offscreen: {
+        windowHeight: 768,
+        views: [{ viewId: 'v2', top: 700, bottom: 1100 }],
+      },
+    })
   })
 
   it('delivers each toast once, with its level, and never a stale one twice', async () => {
@@ -141,6 +167,59 @@ describe('addTrack in a browser', () => {
     await expect(
       createJbApi(pluginManager).addTrack({ location: '/data/x.bam' }),
     ).rejects.toThrow(/local path/)
+  })
+
+  it('stacks a list of bigWig URLs into one MultiQuantitativeTrack', async () => {
+    const added: Record<string, unknown>[] = []
+    const stacking = {
+      ...session,
+      addSessionTrackConf: (conf: Record<string, unknown>) => {
+        added.push(conf)
+      },
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi({
+      rootModel: { session: stacking },
+    } as unknown as PluginManager)
+    const summary = await jb.addTrack({
+      location: ['https://x.org/a.bw', 'https://x.org/b.bigwig'],
+      show: false,
+    })
+    expect(summary).toMatchObject({
+      trackType: 'MultiQuantitativeTrack',
+      adapterType: 'MultiWiggleAdapter',
+    })
+    expect(added[0]).toMatchObject({
+      name: 'a, b',
+      adapter: {
+        subadapters: [
+          { type: 'BigWigAdapter', name: 'a' },
+          { type: 'BigWigAdapter', name: 'b' },
+        ],
+      },
+    })
+  })
+
+  it('refuses a list that is not all bigWigs', async () => {
+    await expect(
+      createJbApi(pluginManager).addTrack({
+        location: ['https://x.org/a.bw', 'https://x.org/b.bam'],
+      }),
+    ).rejects.toThrow(/not bigWig: https:\/\/x.org\/b.bam/)
+  })
+})
+
+describe('getFeatures', () => {
+  const session = {
+    getTrackById: () => undefined,
+  } as unknown as AbstractSessionModel
+  const jb = createJbApi({
+    rootModel: { session },
+  } as unknown as PluginManager)
+
+  it('takes the trackId positionally, the way two filmed takes wrote it', async () => {
+    await expect(jb.getFeatures('genes', 'ctgA:1-100')).rejects.toThrow(
+      /No track with trackId "genes"/,
+    )
   })
 })
 

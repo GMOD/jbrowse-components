@@ -195,13 +195,13 @@ nothing in it.
 Once the session holds what you asked for, these are meaningful. Each says
 something the others do not, so waiting on one is not waiting on the rest:
 
-| Wait until absent                 | Means                                                                                                                                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `[data-view-phase="loading"]`     | no view is still resolving its assembly. Until this clears a view has mounted no displays, so every row below is silent                            |
-| `[data-view-component-pending]`   | no view is still waiting on its lazily-imported React component                                                                                    |
-| `[data-testid="loading-overlay"]` | no track is still fetching                                                                                                                         |
-| `[data-display-phase="loading"]`  | no display is still in its own fetch. The direct read that the rows above only approximate                                                         |
-| `[data-display-drawn="false"]`    | every display has painted. `data-display-drawn` flips on FIRST paint, so wait on the fetch rows before this one or it proves nothing about content |
+| Wait until absent                 | Means                                                                                                                                                                                                                                                           |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[data-view-phase="loading"]`     | no view is still resolving its assembly, or still loading something of its own. A view type publishes a `showLoading` getter for the latter (the protein view's structure load); until this clears a view has mounted no displays, so every row below is silent |
+| `[data-view-component-pending]`   | no view is still waiting on its lazily-imported React component                                                                                                                                                                                                 |
+| `[data-testid="loading-overlay"]` | no track is still fetching                                                                                                                                                                                                                                      |
+| `[data-display-phase="loading"]`  | no display is still in its own fetch. The direct read that the rows above only approximate                                                                                                                                                                      |
+| `[data-display-drawn="false"]`    | every display has painted. `data-display-drawn` flips on FIRST paint, so wait on the fetch rows before this one or it proves nothing about content                                                                                                              |
 
 **Targeting one display rather than all of them.** `data-testid` names the
 display _type_ (`pileup-display`, `wiggle-display`, `synteny_canvas`, …) and is
