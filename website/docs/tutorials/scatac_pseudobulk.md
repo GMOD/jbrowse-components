@@ -38,36 +38,31 @@ clustered and cell-type-labeled by that tool's own pipeline.
 
 ## Pooling cells into rows
 
-One ATAC cell contributes only a few thousand fragments, so a coverage track of
-a single cell is almost entirely zero. Pseudobulking pools every fragment
-belonging to a label into one profile, and each cell type comes out as a dense
-track resembling a bulk ATAC experiment on that cell type alone. JBrowse stacks
-the resulting files as rows of one track.
+One ATAC cell contributes only a few thousand fragments, so a single cell's
+coverage track is almost entirely zero. Pseudobulking pools every fragment
+belonging to a label into one profile, a dense track resembling a bulk ATAC
+experiment on that cell type. JBrowse stacks the files as rows of one track.
 
 PBMC markers are the check: at a T-cell marker the T-cell rows carry the signal,
 and at a B-cell marker the B-cell rows light up.
 
-The pseudobulk step runs in the same environment your clustering does, so the
-BigWigs it writes can also be viewed inline through the
-[Python anywidget interface](/docs/jbrowse_anywidget) (or [](/docs/jbrowser))
-without leaving the session.
+The BigWigs can also be viewed inline from the clustering environment through
+the [Python anywidget interface](/docs/jbrowse_anywidget) or [](/docs/jbrowser).
 
 ## Generating per-group BigWigs
 
 Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
-Signac, or SnapATAC2. Two settings decide whether the rows this page draws can
-be compared to each other, whichever tool writes them:
+Signac, or SnapATAC2. Two settings decide whether the rows can be compared,
+whichever tool writes them:
 
-- **Normalization.** Groups differ in cell count and in total fragments, so each
+- **Normalization.** Groups differ in cell count and total fragments, so each
   track needs normalizing (CPM / RPKM, or per-cell-count) for a peak's height to
-  mean accessibility.
-- **Bin size**, which trades resolution against file size. Peak shape is the
-  readable part of an ATAC track, so the bin has to stay well inside one peak;
-  `export_coverage` below uses 25 bp.
+  mean accessibility
+- **Bin size**, which trades resolution against file size. The bin has to stay
+  well inside one peak; `export_coverage` below uses 25 bp
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
-normalized BigWig per group in a single call, which covers the pseudobulk step
-for this dataset:
+normalized BigWig per group in a single call:
 
 <!-- from: scripts/build_scatac_pseudobulk.sh -->
 
@@ -90,13 +85,10 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-`n_jobs` is a memory knob: each worker holds a whole genome-wide coverage
-vector, and the BigWig writer dies partway through the groups when memory runs
-out. Two workers fit this dataset.
-
-`groupby` is the whole decision: pass the cluster column (`"leiden"`) to get one
-row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
-type.
+`n_jobs` is a memory knob: each worker holds a genome-wide coverage vector, and
+the writer dies partway through the groups when memory runs out. `groupby` picks
+the rows: the cluster column (`"leiden"`) for one per cluster, or the annotated
+column (`"cell_type"`) for one per cell type.
 
 ### Other starting points
 
@@ -104,30 +96,25 @@ Every route ends at one `.bw` per cell type. The tools are linked under
 [References](#references):
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
-  groups cells, sums their Tn5 insertions and writes one BigWig per group.
-  `normMethod = "ReadsInTSS"` normalizes by signal-in-TSS, accounting for depth
-  and data quality together; `"nCells"` and `"nFrags"` are the alternatives.
-- **A barcoded BAM** (Cell Ranger ATAC, or what a Signac workflow starts from):
-  split it by label with `sinto filterbarcodes`, passing the barcode-to-label
-  table and the barcode tag, then run deepTools `bamCoverage` on each with
-  `--binSize 25 --normalizeUsing CPM --extendReads`. `RPGC` also needs
-  `--effectiveGenomeSize`; CPM and RPKM do not.
-- **A `fragments.tsv.gz` and nothing else**: filter it to each cluster's
-  barcodes, then `bedtools genomecov -bg` and `bedGraphToBigWig` per group. This
-  route is unnormalized, so scale each group yourself (1e6 / total fragments for
-  CPM) before the conversion.
+  writes one BigWig per group. `normMethod = "ReadsInTSS"` normalizes by
+  signal-in-TSS; `"nCells"` and `"nFrags"` are the alternatives
+- **A barcoded BAM** (Cell Ranger ATAC, or a Signac workflow's input): split it
+  by label with `sinto filterbarcodes`, then run deepTools `bamCoverage` on each
+  with `--binSize 25 --normalizeUsing CPM --extendReads`. `RPGC` also needs
+  `--effectiveGenomeSize`
+- **A `fragments.tsv.gz` alone**: filter it to each cluster's barcodes, then
+  `bedtools genomecov -bg` and `bedGraphToBigWig` per group. This route is
+  unnormalized, so scale each group yourself (1e6 / total fragments for CPM)
+  before the conversion
 
 ## Loading the BigWigs as a MultiWiggle track
 
-In JBrowse, all the per-cell-type BigWigs go into one track: a
-`MultiQuantitativeTrack` whose `MultiWiggleAdapter` holds one `BigWigAdapter`
-per file. Each subadapter carries a `name` (the row label), an optional `color`,
-and an optional `group`.
-
-`assemblyNames` names an assembly already configured in JBrowse, `hg38` here,
-which is what the BigWigs above were built against. See the
-[assemblies configuration guide](/docs/config_guides/assemblies) if it is not
-set up yet. Minimal three-cell-type example:
+All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
+`MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name`, an
+optional `color`, and an optional `group`. `assemblyNames` names an assembly
+already configured (see the
+[assemblies configuration guide](/docs/config_guides/assemblies)). Three cell
+types:
 
 ```json addtrack
 {
@@ -167,15 +154,14 @@ set up yet. Minimal three-cell-type example:
 
 Three things in that list are worth writing by hand:
 
-- **Order.** Subadapters draw in the order given, so list them grouped by
-  lineage.
+- **Order.** Subadapters draw in the order given, so group them by lineage
 - **`color`.** Take each row's from the cluster's color in your analysis, so a
-  cell type is the same color in the browser as on the UMAP.
+  cell type matches its UMAP color
 - **`group`.** What the sidebar tree branches on, and what
-  [](/docs/user_guides/clustering) reorders.
+  [](/docs/user_guides/clustering) reorders
 
-If you don't need per-row names, colors or groups, the `bigWigs` shorthand takes
-a plain array of URLs and derives each row's label from its filename:
+Without per-row names, colors or groups, the `bigWigs` shorthand takes a plain
+array of URLs and labels each row from its filename:
 
 ```json addtrack
 {
@@ -194,39 +180,30 @@ a plain array of URLs and derives each row's label from its filename:
 }
 ```
 
-A `uri` reaches anywhere, so a published atlas needs no pipeline at all:
-[CATlas](https://www.catlas.org/) serves hg38 coverage from
+A published atlas needs no pipeline at all: [CATlas](https://www.catlas.org/)
+serves hg38 coverage from
 `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
-per cell type, and naming the ones you want is the whole track. Percent-encode
-the `+` in a cell-type name — `T_lymphocyte_2_CD4%2B.bw` — which is the one way
-those URLs go wrong quietly.
+per cell type. Percent-encode the `+` in a cell-type name
+(`T_lymphocyte_2_CD4%2B.bw`), the one way those URLs go wrong quietly.
 
-The display is a `MultiLinearWiggleDisplay`, and how the rows are drawn is one
-slot:
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
-lists every mode, and the track menu switches between them live. `multirowxy`
-(the default, and the figures on this page) is best for comparing peak shape;
-`multirowdensity` maps score to color, which fits more rows in the same space.
+lists every drawing mode, and the track menu switches between them live.
+`multirowxy` (the default, and the figures here) compares peak shape;
+`multirowdensity` maps score to color and fits more rows.
 [](/docs/user_guides/multiquantitative_track) covers the rest of the menu.
-
-Loaded, the twelve rows put the marker check in one frame:
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Building the subadapter list from files
 
-Two workflows write the list for you, from a set of files rather than one entry
-at a time.
+Two workflows write the list from a set of files.
 
-"Add multi-wiggle track", in the "Add track" workflow, takes the BigWig URLs one
-per line, or a JSON array of subadapter objects, and builds the
-`MultiQuantitativeTrack` from them. Exporting the session gets the JSON config
-back out. On JBrowse Desktop it reads the `.bw` files straight from local disk
-with no web server.
+"Add multi-wiggle track", in the "Add track" workflow, takes BigWig URLs one per
+line, or a JSON array of subadapter objects. Exporting the session gets the JSON
+config back out. On JBrowse Desktop it reads local `.bw` files directly.
 
 `jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
-usual single positional file. The row labels come from the filenames, which the
-pseudobulk step already named after the groups:
+single positional file, labeling rows from the filenames:
 
 ```bash
 jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
@@ -234,10 +211,9 @@ jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
   --load copy --subDir bw --out /var/www/html/jbrowse2
 ```
 
-`--load copy --subDir bw` copies local files in beside `config.json`, and both
-drop out for BigWigs already served over HTTP. To carry per-row names, colors,
-and groups, pass a `.json` file of subadapter objects, the same objects as the
-config above, instead of the comma list.
+`--load copy --subDir bw` copies local files in beside `config.json`; both drop
+out for BigWigs already served over HTTP. For per-row names, colors and groups,
+pass a `.json` file of subadapter objects instead of the comma list.
 
 ## Reproduce it end to end
 
@@ -250,28 +226,23 @@ bash build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
 npx --yes serve scatac_pseudobulk_build/jbrowse2
 ```
 
-Its input is SnapATAC2's annotated release of the 10x 5k-PBMC dataset, which is
-what that tool's
-[standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html) and
+Its input is SnapATAC2's annotated release of the 10x 5k-PBMC dataset, what that
+tool's [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html)
+and
 [cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
-tutorials already produce: fragments imported, cells QC-filtered and clustered,
-and each cluster labeled by transferring cell types from a matched multiome
-reference. That `AnnData` carries per-barcode fragments alongside an
-`obs["cell_type"]` call, which is the pair pseudobulking needs, so the script's
-own work is short:
+tutorials produce: per-barcode fragments alongside an `obs["cell_type"]` call.
+The script's own work:
 
-- `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`,
-  which writes one BigWig per cell type into `bw/`
+- `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`, one
+  BigWig per cell type into `bw/`
 - a `sources.json` of subadapters, taking each row's color from the same object
   and its `group` and position from a lineage map the script states outright.
   Running it on your own experiment means replacing that map
 - `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
-  the one `MultiQuantitativeTrack` those subadapters make up
+  the one `MultiQuantitativeTrack`
 
-Navigate the finished instance to the two markers in the figure and read the
-rows against the labels. Rows that stay open everywhere usually mean the
-normalization step was skipped, since an unnormalized group's height tracks its
-cell count.
+Rows that stay open everywhere usually mean the normalization step was skipped,
+since an unnormalized group's height tracks its cell count.
 
 ## See also
 
