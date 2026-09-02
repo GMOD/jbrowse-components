@@ -1,0 +1,73 @@
+{
+  "id": "pif-coarse-fold-bytes",
+  "measured": "2026-09-02",
+  "source": {
+    "kind": "bench",
+    "repro": "Invert the hosted hs1ToMm39.over.chain.pif.gz (HOSTING.md) back to PAF from its t rows: gzip -dc hosted.pif.gz | awk -F'\\t' 'BEGIN{OFS=\"\\t\"} $1 ~ /^t/ { $1=substr($1,2); q=$6; ql=$7; qs=$8; qe=$9; $6=$1; $7=$2; $8=$3; $9=$4; $1=q; $2=ql; $3=qs; $4=qe; print }' > hosted.paf. Rebuild with the current writer: jbrowse make-pif hosted.paf --out new.pif.gz (default --coarse 10000). Per tier: gzip -dc <pif> | awk -F'\\t' '{ c=substr($1,1,1); n[c]++; b[c]+=length($0)+1 } END { for (k in n) print k, n[k], b[k] }'; the gzip column is one perspective's T rows piped through gzip -c | wc -c; the fold census runs coarsenCigar(cg, 10000) over every PAF row and counts gapCount/opCount and the ops' lengths.",
+    "notes": "Disk cost of the coarse CIGAR (ADR-104) against the split format it replaced, on the one eukaryote-scale PIF that is hosted. Both arms are the same 75,076 alignments; the old tier has 662 more rows because it split at indels >= 10 kb, the new one is one row per alignment. Bytes are uncompressed per perspective (the T rows; Q is identical in size), so a whole-genome pass reads one of them. Every one of the 75,076 folds closed on its columns, so the columns-verbatim fallback never fired on chain2paf output. 5,047 rows (6.7%) carry a fold; 1,678 of those have no kept indel and exist only because a lopsided cluster of small indels bent the path. 142,236 indels are kept, 96,538 of them between 5 and 10 kb (kept by the half-gap rule, sub-pixel at the 10,000 bp/px threshold): they are about two thirds of the fold's bytes and are the price of the interpolation bound. The largest fold is one 90 Mb chr4 chain, 9,038 ops, 72 kB; the longest run is 80.6 Mb, so nothing chunks at 2^28."
+  },
+  "columns": [
+    {
+      "key": "format",
+      "label": "coarse tier of hs1 vs mm39, one perspective"
+    },
+    {
+      "key": "rows",
+      "label": "rows",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "bytes",
+      "label": "uncompressed",
+      "format": "MB",
+      "precision": 2,
+      "align": "right"
+    },
+    {
+      "key": "gzip",
+      "label": "gzip",
+      "format": "MB",
+      "precision": 2,
+      "align": "right"
+    },
+    {
+      "key": "tagged",
+      "label": "rows with cr",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "foldShare",
+      "label": "fold share of bytes",
+      "format": "percent",
+      "precision": 0,
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "format": "split pieces, no CIGAR (before 2026-09-02)",
+        "rows": 75738,
+        "bytes": 7.24,
+        "gzip": 2.01,
+        "tagged": 0,
+        "foldShare": 0
+      }
+    },
+    {
+      "values": {
+        "format": "coarse CIGAR (cr:Z:)",
+        "rows": 75076,
+        "bytes": 9.79,
+        "gzip": 3.41,
+        "tagged": 5047,
+        "foldShare": 26
+      },
+      "emphasize": [
+        "gzip"
+      ]
+    }
+  ]
+}
