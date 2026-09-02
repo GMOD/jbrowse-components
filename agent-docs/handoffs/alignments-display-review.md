@@ -5,11 +5,10 @@ description: Review of plugins/alignments LinearAlignmentsDisplay — every veri
 
 # LinearAlignmentsDisplay review handoff
 
-Worktree: `.claude/worktrees/alignments-display-review`, branched from local
-`main` at `ac47137850`. Two implementation commits are on the worktree branch:
-batch one (`9f598924f7`) landed every first-pass finding, and batch two landed
-all three second-pass reviewer lists except the items under "Still open". The
-branch has not been rebased or merged to `main` yet.
+Landed on `main` as a fast-forward on 2026-09-02: batch one (`8e44ed5a78`)
+covers every first-pass finding, batch two (`d68391829b`) all three second-pass
+reviewer lists except the items under "Still open". The worktree
+`.claude/worktrees/alignments-display-review` can be removed.
 
 ## Landed (both batches; verified by lint, typecheck, `test-related --with-web`)
 
