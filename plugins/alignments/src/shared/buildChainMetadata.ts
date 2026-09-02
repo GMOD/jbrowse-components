@@ -52,7 +52,7 @@ function summarizeChain(chain: ChainFeatureData[]) {
   let maxEnd = Number.NEGATIVE_INFINITY
   let hasSupp = false
   let paired = false
-  let primaryStrand = 1
+  let primaryStrand = 0
   let primaryPairOrientation = 0
   let mate0Primary = 0
   let mate1Primary = 0

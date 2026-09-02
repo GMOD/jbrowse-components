@@ -206,7 +206,7 @@ function buildChainResultFields(
   const chainFirstReadSeen = new Uint8Array(numChains)
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
-    const cIdx = featureIdToChainIdx.get(f.id) ?? 0
+    const cIdx = featureIdToChainIdx.get(f.id)!
     // Split bits are per-MATE: BOTH segments of a split mate get them so the
     // whole split read stands out; the normal partner mate has none and keeps
     // its pair color. ORed onto the chain's has-supp/frame bits rather than

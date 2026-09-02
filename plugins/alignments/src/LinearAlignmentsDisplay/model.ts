@@ -2611,17 +2611,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Read ids of the hovered chain's members, empty unless in chain mode.
-         * Single source for the "is this a chain highlight" decision that both
-         * `highlightBoxes` (which ids to box) and `HighlightOverlay` (how
-         * strongly to shade them) read, so the two can't drift.
-         */
-        get highlightChainReadIds() {
-          return self.isChainMode ? self.highlightedChainReadIds : []
-        },
-
-        /**
-         * #getter
          * Screen boxes for the hovered read / chain, painted by the
          * `HighlightOverlay` div. Deliberately NOT part of `renderState`: the
          * hovered id changes on nearly every mousemove, and routing it through
@@ -2629,7 +2618,7 @@ export default function stateModelFactory(
          */
         get highlightBoxes() {
           const view = self.host
-          const chainReadIds = this.highlightChainReadIds
+          const chainReadIds = self.highlightedChainReadIds
           const ids =
             chainReadIds.length > 0
               ? chainReadIds
@@ -2703,6 +2692,19 @@ export default function stateModelFactory(
          */
         readIdsSharingChain(rpcData: WorkerPileupData, index: number) {
           return chainReadIdsAt(rpcData, index, self.readIdsByChainName)
+        },
+
+        /**
+         * #method
+         * `readIdsSharingChain` from a read id alone, for a caller holding no
+         * block — the bezier overlay, whose arcs carry ids. Empty outside chain
+         * mode and for an id no fetched region holds.
+         */
+        readIdsSharingChainWith(featureId: string) {
+          const hit = self.isChainMode
+            ? self.findFeatureInRpcData(featureId)
+            : undefined
+          return hit ? this.readIdsSharingChain(hit.rpcData, hit.idx) : []
         },
 
         getFeatureInfoById(featureId: string) {
@@ -3945,7 +3947,8 @@ export default function stateModelFactory(
            * right-click menu is open: `openContextMenu` pins the hover to the
            * read the menu acts on, and a frame queued before the click would
            * otherwise land on top of that pin. `highlightedChainReadIds` is
-           * empty outside chain mode.
+           * a chain's reads in chain mode, and outside it the two ends of a
+           * hovered connector.
            */
           setHoverState(state: {
             overCigarItem: boolean
@@ -4172,6 +4175,20 @@ export default function stateModelFactory(
                 self.setRpcData(displayedRegionIndex, result)
               },
             })
+          },
+
+          /**
+           * #action
+           * Select a read and, in chain mode, mark the rest of its chain — the
+           * one click both the canvas and the bezier overlay land on, so a
+           * connector and the read it joins select the same thing.
+           */
+          selectReadWithChain(featureId: string) {
+            void self.selectFeatureById(featureId)
+            const chain = self.readIdsSharingChainWith(featureId)
+            if (chain.length > 0) {
+              self.setSelectedChainReadIds(chain)
+            }
           },
         }
       })

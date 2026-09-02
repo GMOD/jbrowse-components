@@ -1,4 +1,5 @@
 export { ARC_HIT_SLOP_PX, bestArcMark } from './arcHitRanking.ts'
+export { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from './hiddenSegments.ts'
 export type { ArcCandidate } from './arcHitRanking.ts'
 export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitViewChoiceDialog.tsx'
 export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'

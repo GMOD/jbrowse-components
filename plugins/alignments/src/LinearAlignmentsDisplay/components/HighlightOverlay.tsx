@@ -30,7 +30,7 @@ const HighlightOverlay = observer(function HighlightOverlay({
 }) {
   const { classes, cx } = useStyles()
   const boxes = model.highlightBoxes
-  const isChain = model.highlightChainReadIds.length > 0
+  const isChain = model.highlightedChainReadIds.length > 0
   return (
     <>
       {boxes.map((b, i) => (

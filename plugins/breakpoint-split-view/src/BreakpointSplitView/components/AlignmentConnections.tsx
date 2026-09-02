@@ -1,5 +1,6 @@
 import { connectionEndpointBps } from '@jbrowse/cigar-utils'
-import { bezierConnectorPath, pluralize } from '@jbrowse/core/util'
+import { bezierConnectorPath } from '@jbrowse/core/util'
+import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -126,7 +127,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
               dip: level1 === level2 && isAbnormal,
             })
             const hiddenNote = hiddenSegmentsBetween?.length
-              ? `hidden ${pluralize(hiddenSegmentsBetween.length, 'segment')} not in view: ${hiddenSegmentsBetween.join(', ')}`
+              ? hiddenSegmentsNote(hiddenSegmentsBetween)
               : undefined
             return [
               {
@@ -136,7 +137,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
                 // junctions emphasizes all of them and boxes every segment
                 emphasisGroup: `chunk-${chunkIndex}`,
                 stroke: orientation?.color ?? theme.palette.text.disabled,
-                strokeDasharray: hiddenNote ? '4 3' : undefined,
+                strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
                 tooltip: () =>
                   buildPairTooltip(
                     f1,

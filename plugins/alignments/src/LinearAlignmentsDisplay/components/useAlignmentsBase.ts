@@ -480,16 +480,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           snpBaseFromCigar(result.cigarHit),
         )
         return
-      case 'feature': {
-        const { hit, resolved } = result
-        void model.selectFeatureById(hit.id)
-        if (model.isChainMode) {
-          model.setSelectedChainReadIds(
-            model.readIdsSharingChain(resolved.rpcData, hit.index),
-          )
-        }
+      case 'feature':
+        model.selectReadWithChain(result.hit.id)
         return
-      }
       case 'none':
         model.clearSelection()
         return

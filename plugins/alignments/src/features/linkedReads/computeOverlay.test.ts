@@ -4,6 +4,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
@@ -34,8 +35,6 @@ import {
   bezierConnectionLegendItems,
   computePileupBezierArcs,
   enumerateBezierPairs,
-  HIDDEN_SEGMENT_DASH,
-  hiddenSegmentsNote,
 } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -769,6 +768,37 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
+  })
+
+  // The same co-linear split between two chromosomes is a translocation, and
+  // the display's convention is that a straight line means normal. The label
+  // still names the strands; only the shape changes.
+  it('curves the same-strand split when its ends are on different refNames', () => {
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
+      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ C /)
+    expect(arcs[0]!.label).toBe('Split alignment (same strand)')
+  })
+
+  it('carries the read name and both endpoint xs for the overlay', () => {
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
+      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+    })
+    expect(arcs[0]).toMatchObject({
+      readName: 'r',
+      id1: 'r-primary',
+      id2: 'r-supplementary',
+      x1: 2500,
+      x2: 9000,
+    })
   })
 })
 

@@ -1,11 +1,9 @@
 import { useState } from 'react'
 
+import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import {
-  bezierArcKey,
-  hiddenSegmentsNote,
-} from '../../features/linkedReads/computeOverlay.ts'
+import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   BEZIER_ARC_STROKE_WIDTH,
@@ -15,6 +13,9 @@ import { formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+
+const SELECTED_STROKE_WIDTH = 5
+const HOVERED_STROKE_WIDTH = 3
 
 // Takes the whole arc rather than positional (label, id1, id2) so the two ids
 // can't be transposed at the call site.
@@ -39,15 +40,26 @@ function arcTooltip(
     : connection
 }
 
+function nearerEndpoint(arc: PileupArc, x: number) {
+  return Math.abs(x - arc.x1) <= Math.abs(x - arc.x2) ? arc.id1 : arc.id2
+}
+
+// The reads a hovered connector boxes: its chain in chain mode, else its two
+// ends — what a canvas hover on one of those reads would box, so crossing from
+// a read onto its connector does not drop the highlight.
+function hoveredReadIds(model: LinearAlignmentsDisplayModel, arc: PileupArc) {
+  const chain = model.readIdsSharingChainWith(arc.id1)
+  return chain.length > 0 ? chain : [arc.id1, arc.id2]
+}
+
 const PileupBezierOverlay = observer(function PileupBezierOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
-  const [hoveredArcId, setHoveredArcId] = useState<string | null>(null)
+  const [hoveredReadName, setHoveredReadName] = useState<string | null>(null)
   const { view } = model
-  const { bezierArcScope, height } = model
+  const { bezierArcScope, height, selectedFeatureId } = model
 
   // `view.width` is read AFTER this gate, never destructured alongside
   // `initialized` above it: destructuring evaluates the getter, and `width`
@@ -71,16 +83,24 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
     return null
   }
 
-  // Paint an emphasized (hovered/selected) curve last so a thin crossing curve
-  // can't sit on top of it. The base order is otherwise preserved.
-  //
-  // The key is built once per arc rather than inside the comparator, which ran
-  // it O(n log n) times over a list the map below then re-keys anyway.
-  const keyed = arcs.map(arc => {
-    const id = bezierArcKey(arc)
-    return { arc, id, emphasis: id === hoveredArcId || id === selectedArcId }
-  })
-  const ordered = keyed.sort((a, b) => Number(a.emphasis) - Number(b.emphasis))
+  // Selection is the model's, not a local mirror of the last click: clearing
+  // it on the canvas or selecting another read has to un-thicken the arc too.
+  const selectedChain = new Set(model.selectedChainReadIds)
+  const isSelected = (arc: PileupArc) =>
+    arc.id1 === selectedFeatureId ||
+    arc.id2 === selectedFeatureId ||
+    selectedChain.has(arc.id1) ||
+    selectedChain.has(arc.id2)
+
+  // Emphasized curves are painted last so a thin crossing curve can't sit on
+  // top of one. Every arc of the hovered read thickens, not only the one under
+  // the cursor, the way the breakpoint split view thickens a whole chain.
+  const plain: PileupArc[] = []
+  const emphasized: PileupArc[] = []
+  for (const arc of arcs) {
+    const emphasis = arc.readName === hoveredReadName || isSelected(arc)
+    ;(emphasis ? emphasized : plain).push(arc)
+  }
 
   return (
     <svg
@@ -95,13 +115,13 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         overflow: 'visible',
       }}
     >
-      {ordered.map(({ arc, id: arcId }) => {
-        const isSelected = arcId === selectedArcId
-        const isHovered = arcId === hoveredArcId
-        const strokeWidth = isSelected
-          ? 5
+      {[...plain, ...emphasized].map(arc => {
+        const arcId = bezierArcKey(arc)
+        const isHovered = arc.readName === hoveredReadName
+        const strokeWidth = isSelected(arc)
+          ? SELECTED_STROKE_WIDTH
           : isHovered
-            ? 3
+            ? HOVERED_STROKE_WIDTH
             : BEZIER_ARC_STROKE_WIDTH
         return (
           <g key={arcId}>
@@ -117,19 +137,17 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
               // `CrossRegionArcsOverlay` follows and for its reason:
               // `pointerEvents: 'stroke'` answers on the INK, so a dashed
               // connector would hover in its dashes and go dead in its gaps.
-              // Same geometry and same width, so a solid arc's target is exactly
-              // where its ink is.
               style={{ pointerEvents: 'none' }}
             />
             <path
               data-testid="pileup-bezier-arc-target"
               d={arc.d}
               stroke="transparent"
-              strokeWidth={strokeWidth}
+              strokeWidth={strokeWidth + 2 * ARC_HIT_SLOP_PX}
               fill="none"
               style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
               onMouseEnter={() => {
-                setHoveredArcId(arcId)
+                setHoveredReadName(arc.readName)
                 // Through `setHoverState`, as `CrossRegionArcsOverlay` is: it is
                 // the one write the right-click menu's hover pin can refuse, so
                 // a curve crossed while the menu is open cannot overwrite the
@@ -138,28 +156,25 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                   overCigarItem: false,
                   featureIdUnderMouse: undefined,
                   mouseoverExtraInformation: arcTooltip(model, arc),
-                  highlightedChainReadIds: [],
+                  highlightedChainReadIds: hoveredReadIds(model, arc),
                 })
               }}
               onMouseLeave={() => {
-                setHoveredArcId(prev => (prev === arcId ? null : prev))
+                setHoveredReadName(prev =>
+                  prev === arc.readName ? null : prev,
+                )
                 model.clearMouseoverState()
               }}
-              onClick={() => {
-                setSelectedArcId(isSelected ? null : arcId)
-                void model.selectFeatureById(arc.id1)
-                // The chain the curve belongs to, exactly as a canvas click on
-                // one of its reads resolves it (`useAlignmentsBase`'s
-                // handleClick) — otherwise clicking the connector selected one
-                // end and left the rest of the chain unmarked.
-                const hit = model.isChainMode
-                  ? model.findFeatureInRpcData(arc.id1)
-                  : undefined
-                if (hit) {
-                  model.setSelectedChainReadIds(
-                    model.readIdsSharingChain(hit.rpcData, hit.idx),
-                  )
-                }
+              onClick={e => {
+                const svg = e.currentTarget.ownerSVGElement
+                model.selectReadWithChain(
+                  svg
+                    ? nearerEndpoint(
+                        arc,
+                        e.clientX - svg.getBoundingClientRect().left,
+                      )
+                    : arc.id1,
+                )
               }}
             />
           </g>

@@ -118,9 +118,14 @@ matters.
   deliberately whether the new marks belong to the `all` scope only.
 - **Cost.** The `crossRegion` short-circuit measures 0.0ms at 200k reads; the
   multi-region case that does enumerate is ~63–80ms, against the 587–1317ms
-  `buildLaidOutChainMap` relayout beside it. Nobody has measured the
-  single-region grouping this would newly pay for, so that is a measurement to
-  take, not a number to carry over.
+  `buildLaidOutChainMap` relayout beside it. The single-region grouping the
+  lift would newly pay is measured now (`benches/bezierEnumerate.probe.ts`,
+  synthetic reads, min of 15 rounds): **~375ms at 200k short reads, 10%
+  paired**, ~285ms at 50% paired, and ~10ms at 20k reads. That is the deep
+  short-read view paying a third of a second for a mark only a split read can
+  carry, so the lift has to be gated on something cheaper than `map.size` —
+  `readSuppAlignments` being present is the obvious one, since the worker
+  ships it only when some read in the group has an SA tag.
 - **Gate on the settings that exist**: `drawLongRange` ("Draw long-range
   read-connection arcs") and `drawInter` ("Draw inter-chromosomal
   read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
@@ -179,16 +184,14 @@ measurement.
 
 ---
 
-## Live finding
-
-`PileupBezierOverlay`'s `onClick` always calls `model.selectFeatureById(arc.id1)`
-(`components/PileupBezierOverlay.tsx`, line ~118), so the far endpoint of a
-multi-hop arc cannot be reached by clicking it. `arcTooltip` directly above
-already takes the whole arc for both ids, so the data is there; the click is what
-never grew the second case. Whether it should toggle, pick the nearer endpoint,
-or open both is a UI call, not a plumbing one.
-
 ## Closed — do not re-file
+
+- **The overlay click always selected `arc.id1`**, so the far endpoint of a hop
+  was unreachable from its arc. Fixed: `PileupArc` carries both endpoint xs and
+  the click selects the nearer one, through the same `selectReadWithChain` the
+  canvas click uses. The hover boxes the whole chain (or both ends outside chain
+  mode) and thickens every arc of the hovered read, and selection is read off
+  the model rather than a local mirror of the last click.
 
 - **`arcIsVisible` culling a bowed curve by its endpoints' Y alone.** Fixed. It
   pads by `BEZIER_CONNECTOR_MAX_REACH_PX` and is now over-inclusive rather than

@@ -1,8 +1,8 @@
 import {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   bezierConnectorPath,
-  pluralize,
 } from '@jbrowse/core/util'
+import { HIDDEN_SEGMENT_DASH } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
@@ -12,6 +12,7 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
+import { readNameAt } from '../../shared/readNameBlock.ts'
 import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
@@ -34,24 +35,17 @@ function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   )
 }
 
-// `stroke-dasharray` for a junction whose read passes through segments this view
-// never fetched: the connector is real, its DIRECTNESS is not. Same '4 3' the
-// breakpoint split view's `AlignmentConnections` dashes the same finding with,
-// deliberately, since the two draw the same read the same way one band apart.
-export const HIDDEN_SEGMENT_DASH = '4 3'
-
-// The tooltip line naming the loci a dashed connector skipped, word for word the
-// one `AlignmentConnections` shows in the breakpoint split view — the reader who
-// met this finding there should not have to learn a second phrasing for it.
-export function hiddenSegmentsNote(loci: string[]) {
-  return `hidden ${pluralize(loci.length, 'segment')} not in view: ${loci.join(', ')}`
-}
-
 export interface PileupArc {
   d: string
   stroke: string
   id1: string
   id2: string
+  // The QNAME both ends share, so a hover can emphasize every arc of one read
+  // the way the breakpoint split view thickens every junction of a chain.
+  readName: string
+  // Screen x of each endpoint, so a click can pick the nearer read.
+  x1: number
+  x2: number
   // Connection classification for the hover tooltip. An inverted split gets
   // its own color (colorSplitReadInversion), distinct from the RR-pair blue, so
   // the two are tellable apart at a glance; the tooltip names which evidence
@@ -272,22 +266,27 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     // never reach here — the GPU / Canvas2D pipeline owns those). Everything
     // curving here is therefore discordant, so it dips, matching
     // BreakpointSplitView: a line is normal, a curve below the reads is not.
+    // A same-strand split junction between two chromosomes keeps its strand
+    // label but not the line: the split view curves every cross-ref connection
+    // and the arc band draws none, so a straight line across chromosomes would
+    // be the one mark calling a translocation normal.
     // Endpoint 2 is a split junction's 5' leading edge (folds back) for a split
     // read, or the mate's 3' edge for a pair.
-    const d = c.isNormal
-      ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-      : bezierConnectorPath({
-          x1: sx1,
-          y1: sy1,
-          x2: sx2,
-          y2: sy2,
-          s1: c.s1,
-          s2: c.s2,
-          leadingEnd2: c.isSplit,
-          reversed1: !!r1.reversed,
-          reversed2: !!r2.reversed,
-          dip: true,
-        })
+    const d =
+      c.isNormal && r1.refName === r2.refName
+        ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
+        : bezierConnectorPath({
+            x1: sx1,
+            y1: sy1,
+            x2: sx2,
+            y2: sy2,
+            s1: c.s1,
+            s2: c.s2,
+            leadingEnd2: c.isSplit,
+            reversed1: !!r1.reversed,
+            reversed2: !!r2.reversed,
+            dip: true,
+          })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 
     result.push({
@@ -298,6 +297,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       // `getFeatureInfoById`. One pair per drawn arc, not per read.
       id1: readIdAt(e1.data, e1.readIdx)!,
       id2: readIdAt(e2.data, e2.readIdx)!,
+      readName: readNameAt(e1.data, e1.readIdx),
+      x1: sx1,
+      x2: sx2,
       dash: hiddenSegmentsBetween?.length ? HIDDEN_SEGMENT_DASH : undefined,
       hiddenSegmentsBetween,
     })
