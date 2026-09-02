@@ -25,14 +25,31 @@ without going in the dep array:
 import { useEffect, useRef } from 'react'
 
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
+import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { Theme } from '@mui/material'
 
 /**
- * Shared absolutely-positioned band canvas for the MAF conservation and
- * row-identity bands. Runs `draw` inside an `autorun` so observable map
+ * What a band paints, given the display and the theme. **A module-level
+ * function, never a closure built in the parent's render** — it is an `autorun`
+ * dependency, so a fresh identity per render tore the autorun down and rebuilt
+ * it on every parent render. Taking the model as an argument is also what keeps
+ * the reads inside the autorun: a closure over `model.conservationHeight` read
+ * that value during the render instead, leaving the autorun tracking nothing
+ * and the rebuild doing the redraw it looked like mobx was doing.
+ */
+export type BandDraw = (
+  ctx: CanvasRenderingContext2D,
+  model: LinearMafDisplayModel,
+  theme: Theme,
+) => void
+
+/**
+ * Shared absolutely-positioned band canvas for the MAF conservation band and
+ * the Canvas2D rows layer. Runs `draw` inside an `autorun` so observable map
  * mutations (`rpcDataMap`/`renderBlocks`) redraw without `useEffect` deps —
  * `observable.map` keeps a stable outer reference. Hidden and not drawn when
  * `show` is false.
@@ -57,20 +74,21 @@ const TrackBandCanvas = observer(function TrackBandCanvas({
   top: number
   height: number
   show: boolean
-  draw: (ctx: CanvasRenderingContext2D) => void
+  draw: BandDraw
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const width = model.canvasWidthPx
+  const theme = useTheme()
 
   useEffect(
     () =>
       autorun(() => {
         const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
         if (ctx && show) {
-          draw(ctx)
+          draw(ctx, model, theme)
         }
       }),
-    [width, height, show, draw],
+    [model, width, height, show, draw, theme],
   )
 
   return show ? (
@@ -163,6 +181,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   BaseDisplay,
   TrackHeightMixin(),
   MultiRegionDisplayMixin(),
+  LegendMixin(),
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),
