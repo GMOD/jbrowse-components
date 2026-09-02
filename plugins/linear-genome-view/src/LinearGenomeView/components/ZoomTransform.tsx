@@ -18,6 +18,10 @@ const useStyles = makeStyles()({
     position: 'absolute',
     height: '100%',
     pointerEvents: 'none',
+    // its own compositor layer: a pan then moves the layer instead of
+    // re-rasterizing the root layer's tiles, which paid for the gridline paths
+    // on every frame
+    willChange: 'transform',
   },
 })
 
