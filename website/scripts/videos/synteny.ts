@@ -613,11 +613,15 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The state the toggle exists for, held long enough to find the same gene
       // names in both lanes and see that they are not under each other.
-      { type: 'delay', ms: 5000, say: 'Both panels on the same coordinates' },
+      {
+        type: 'delay',
+        ms: 5000,
+        say: 'Same coordinates typed into both panels: the genes sit 240 kb apart',
+      },
       {
         type: 'click',
         selector: '[data-testid="follow-synteny-toggle"]',
-        say: 'Follow the matching region',
+        say: 'Follow: the panel below is placed from the top one via the chain',
         hold: 600,
       },
       // ON CAMERA: the follow's exact pass is an RPC per level off the anchor's
@@ -634,7 +638,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'The gene lanes are now under each other',
+        say: 'The same genes now sit under each other, the markers upright',
       },
       // THE SCROLL. Three drags on the maternal panel's gene lane, each 800 kb
       // of the same collinear chain, each slow enough to watch the row below
@@ -646,7 +650,11 @@ export const syntenyVideos: VideoSpec[] = [
       // only at the width it was written at. They step forward with the window,
       // since a locus the pan has already carried off the frame resolves to a
       // point outside the viewport and fails the drag.
-      panMaternal('14,400,000', '13,600,000', 'Drag the top panel sideways'),
+      panMaternal(
+        '14,400,000',
+        '13,600,000',
+        'Drag the top panel: the one below keeps pace untouched',
+      ),
       panMaternal('15,200,000', '14,400,000'),
       panMaternal('16,000,000', '15,200,000'),
       { type: 'waitForAppSettled', timeout: 120000 },
