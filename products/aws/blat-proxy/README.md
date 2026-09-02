@@ -143,9 +143,11 @@ still cached, and still metered). The daily canary
 ## Canary alerts
 
 A red `.github/workflows/blat-canary.yml` run publishes to the stack's
-`jbrowse-blat-canary` SNS topic, which mails `AlertEmail` (jbrowse2@berkeley.edu
-by default). The email subscription needs a one-time confirmation click from
-that inbox after the first deploy; until then SNS drops the message.
+`jbrowse-blat-canary` SNS topic, which mails `AlertEmail` and
+`SecondAlertEmail`. Each email subscription needs a one-time confirmation click
+from that inbox after the first deploy; until then SNS drops the message. The
+berkeley.edu alias never surfaced its confirmation mail, which is why there are
+two.
 
 ## Outage notice
 

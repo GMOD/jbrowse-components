@@ -10,6 +10,12 @@ Parameters:
     Description: >-
       Where the daily canary (.github/workflows/blat-canary.yml) reports a red
       run. The subscription has to be confirmed from that inbox once.
+  SecondAlertEmail:
+    Type: String
+    Default: colin.diesh@gmail.com
+    Description: >-
+      A second destination. The berkeley.edu alias never surfaced its
+      confirmation mail (2026-09-02), so this is the one known to deliver.
   Stage:
     Type: String
     Default: prod
@@ -243,6 +249,13 @@ Resources:
       TopicArn: !Ref CanaryAlertTopic
       Protocol: email
       Endpoint: !Ref AlertEmail
+
+  SecondCanaryAlertSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CanaryAlertTopic
+      Protocol: email
+      Endpoint: !Ref SecondAlertEmail
 
   CanaryAlertTopicPolicy:
     Type: AWS::SNS::TopicPolicy
