@@ -15,16 +15,11 @@ The track menu's **Plot type** submenu (backed by the display's
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 slot) offers these styles:
 
-- XY plot - filled bar chart; good for coverage and discrete peaks
-- Density - a single-row heatmap where color intensity encodes the value;
-  compact for browsing many tracks at once
-- Line (step) - traces the tops of the bars as a stepped line; best for dense
-  binned data where each pixel is a real bin
-- Line (interpolated) - joins the midpoint of each data point straight to the
-  next; smoother for sparse or discrete signals where the stepped plateaus look
-  wrong
-- Scatter - draws individual points without filling; useful for sparse data and
-  seeing single values
+- XY plot - filled bar chart
+- Density - a single-row heatmap, compact for many tracks at once
+- Line (step) - the tops of the bars as a stepped line
+- Line (interpolated) - midpoint to midpoint, smoother for sparse signals
+- Scatter - individual points, for sparse data
 
 <Figure caption="The same BigWig rendered in every plot type at once (XY plot, Density, Line (step), Line (interpolated), and Scatter), so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
@@ -35,61 +30,51 @@ settings below are grouped under **Score**.
 
 ### Autoscale type
 
-Controls the Y-axis range (the display's
+The Y-axis range (the display's
 [`autoscale`](/docs/config/linearwiggledisplay/#slot-autoscale) slot). All three
-rescale to the region in view, and differ in how they treat outliers:
+rescale to the region in view and differ in how they treat outliers:
 
-- Local - the plain min and max of the visible data, so one anomalous position
-  flattens everything else against the axis
-- Local (99th percentile) - clips the outermost 1% of each sign, which keeps a
-  few extreme positions from setting the scale for the whole track
-- Local ± 3σ - scales to three standard deviations of the local signal, a harder
-  clip than the percentile when the spikes are very tall
+- Local - the plain min and max, so one anomalous position flattens the rest
+- Local (99th percentile) - clips the outermost 1% of each sign
+- Local ± 3σ - three standard deviations of the local signal, a harder clip when
+  the spikes are very tall
 
 ### Summary score mode
 
-Zoomed out, a BigWig serves precomputed summary bins rather than per-base
-values, and this picks which statistic of the bin a pixel draws: **Minimum**,
-**Maximum**, **Average**, or **Whiskers**, which draws all three at once as a
-darker average band inside the lighter min-to-max range
+Zoomed out, a BigWig serves precomputed summary bins, and this picks which
+statistic a pixel draws: **Minimum**, **Maximum**, **Average**, or **Whiskers**,
+a darker average band inside the lighter min-to-max range
 ([`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)).
-Density mode maps score to color rather than height, so it has no whiskers
-presentation and draws the average instead.
+Density mode draws the average, since it maps score to color.
 
-A narrow peak that is obvious at full resolution can fade out across a whole
-chromosome, because averaging it over a wide bin flattens it. **Maximum** keeps
-it visible.
+A narrow peak fades out across a whole chromosome when averaged over a wide bin.
+**Maximum** keeps it visible.
 
 ### Other score options
 
-- Scale type - switch the Y axis between linear and log scaling; log is useful
-  when signal spans several orders of magnitude
-- Resolution - JBrowse auto-selects resolution from the view width; use this to
-  override it
-- Set min/max score - pin the Y axis to specific values for side-by-side
-  comparison across samples
+- Scale type - linear or log Y axis
+- Resolution - overrides the resolution chosen from the view width
+- Set min/max score - pins the Y axis, for comparison across samples
 
 ## Viewing whole-genome coverage for CNV profiling
 
-To get a chromosome-scale view of copy-number changes:
+For a chromosome-scale view of copy-number changes:
 
-- Open your BigWig track
-- Show all regions in the assembly to get the whole-genome overview
+- Open the BigWig track
+- Show all regions in the assembly
 - Set **Autoscale type** to **Local ± 3σ** to clip outlier spikes
-- Increase the **Resolution** a few times until the profile looks smooth
-
-Drag the bottom edge of the track down to make it taller.
+- Increase the **Resolution** until the profile looks smooth
+- Drag the bottom edge of the track down to make it taller
 
 <Figure caption="Whole-genome CNV coverage profile from a BigWig file. Each chromosome is shown as a separate region; the signal represents read depth normalized by the pipeline. Copy-number gains appear as elevated signal; losses as depressed signal." src="/img/bigwig/whole_genome_coverage.png" />
 
-For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
-[Multi-quantitative tracks](/docs/user_guides/multiquantitative_track). To scale
-this up to a whole cohort, one row per tumor, see the
+For tumor vs normal on one Y-axis, see
+[Multi-quantitative tracks](/docs/user_guides/multiquantitative_track); for a
+whole cohort, the
 [TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).
 
-Coverage is shaped by GC content, mappability, repeats, PCR bias, and (when
-mapping a divergent strain) hyper-divergent regions, so not every dip or spike
-is a true copy-number change.
+Coverage is also shaped by GC content, mappability, repeats and PCR bias, so not
+every dip or spike is a copy-number change.
 
 ## See also
 
