@@ -3,6 +3,8 @@ import { waitFor } from '@testing-library/react'
 import { runWiggleClustering } from './runWiggleClustering.ts'
 import { createTestEnvironment, makeMultiWiggleData } from './testEnv.ts'
 
+import type { Region } from '@jbrowse/core/util'
+
 beforeEach(() => {
   jest.useFakeTimers()
 })
@@ -19,7 +21,8 @@ async function loadedDisplay() {
   await waitFor(() => {
     expect(display.sourcesWithoutLayout.length).toBe(2)
   })
-  return { display, view }
+  const regions: Region[] = view.dynamicBlocks.contentBlocks
+  return { display, regions, width: view.width }
 }
 
 function recordingRpc() {
@@ -42,18 +45,23 @@ function recordingRpc() {
 }
 
 async function clusterAt(samplesPerPixel: string) {
-  const { display, view } = await loadedDisplay()
+  const { display, regions, width } = await loadedDisplay()
   const { calls, rpcManager } = recordingRpc()
   await runWiggleClustering({
     model: display,
     rpcManager,
     sessionId: 'sid',
     samplesPerPixel,
-    regions: view.dynamicBlocks.contentBlocks,
+    regions,
     stopToken: 'token',
     statusCallback: () => {},
   })
-  return { settings: display.clusterProvenance?.settings, calls, view }
+  return {
+    settings: display.clusterProvenance?.settings,
+    calls,
+    regions,
+    width,
+  }
 }
 
 // The caption has to name the density the matrix was actually binned at:
@@ -73,10 +81,7 @@ test('captions unparseable text with the default density', async () => {
 // that span across the view's width, divided by the sampling density — never
 // the view's own bpPerPx, which describes whatever it happens to be showing.
 test('bins the matrix over the span of the regions it was given', async () => {
-  const { calls, view } = await clusterAt('2')
-  const span = view.dynamicBlocks.contentBlocks.reduce(
-    (a, r) => a + (r.end - r.start),
-    0,
-  )
-  expect(calls[0]!.bpPerPx).toBeCloseTo(span / view.width / 2)
+  const { calls, regions, width } = await clusterAt('2')
+  const span = regions.reduce((a, r) => a + (r.end - r.start), 0)
+  expect(calls[0]!.bpPerPx).toBeCloseTo(span / width / 2)
 })
