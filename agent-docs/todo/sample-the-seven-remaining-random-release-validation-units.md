@@ -5,7 +5,7 @@ metadata:
   area: release validation, tests
   category: ready
   order: 7
-  first_move: "read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. Seven of the estimate's eight draws are outstanding, and the estimate is what says the release is safe"
+  first_move: "read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. All seven draws are still outstanding, but `packages/tree-sidebar/src` is half done: its census and read are in the 2026-09-02 section, so resume that unit's sweep with the command there rather than restarting it"
 ---
 
 # Sample the seven remaining random release-validation units
