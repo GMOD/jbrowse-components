@@ -362,6 +362,34 @@ It fetches the ONT COLO829 somatic SV calls and coverage and runs both
 `sv_multihop.py` steps against the tumor CRAM over HTTP. The same script builds
 the K562 half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 
+## Related tools
+
+`sv_multihop.py` is a companion to this page, and each of its steps has a
+dedicated tool built for the general case.
+
+- **Calling somatic SVs and their complex clusters from long reads**:
+  [Severus](https://github.com/KolmogorovLab/Severus) (Keskus et al. 2025)
+  builds breakpoint graphs from phased tumor and normal reads and reports
+  multi-break rearrangements as clusters. It was benchmarked on COLO829.
+- **Ordering junctions into a derivative chromosome**: LINX (Shale et al. 2022)
+  chains breakends using allele-specific copy number from the Hartwig pipeline,
+  and [JaBbA](https://github.com/mskilab-org/JaBbA) with gGnome (Hadi et
+  al. 2020) infers junction-balanced genome graphs whose walks are allelic
+  paths. RCK (Aganezov and Raphael 2020) reconstructs haplotype-specific
+  karyotypes under evolutionary constraints. All three take copy number, which
+  `chains` does not.
+- **Assembling the allele's sequence**: a local de novo assembly of the reads
+  pulled at the loci, with [hifiasm](https://github.com/chhylp123/hifiasm) or
+  [Shasta](https://github.com/paoloshasta/shasta), is the stronger version of
+  `derive`'s single-backbone consensus, and
+  [sawfish](https://github.com/PacificBiosciences/sawfish) (Saunders et
+  al. 2025) assembles SV haplotypes as part of calling on HiFi reads.
+- **Drawing the figure**:
+  [ReConPlot](https://github.com/cortes-ciriano-lab/ReConPlot) (Espejo
+  Valle-Inclán and Cortés-Ciriano 2023) draws rearrangement and copy number
+  plots for complex events in R, and Ribbon (Nattestad et al. 2021) draws one
+  read's path across the reference, which the split view above follows.
+
 ## See also
 
 - [](/docs/tutorials/k562_fusions)
@@ -383,3 +411,21 @@ the K562 half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 - Nattestad M, Aboukhalil R, Chin CS, Schatz MC. Ribbon: intuitive visualization
   for complex genomic variation. _Bioinformatics_ (2021).
   https://doi.org/10.1093/bioinformatics/btaa1080
+- Keskus A, et al. Severus detects somatic structural variation and complex
+  rearrangements in cancer genomes using long-read sequencing. _Nature
+  Biotechnology_ (2025). https://doi.org/10.1038/s41587-025-02618-8
+- Shale C, et al. Unscrambling cancer genomes via integrated analysis of
+  structural variation and copy number. _Cell Genomics_ (2022).
+  https://doi.org/10.1016/j.xgen.2022.100112
+- Hadi K, et al. Distinct classes of complex structural variation uncovered
+  across thousands of cancer genome graphs. _Cell_ (2020).
+  https://doi.org/10.1016/j.cell.2020.08.006
+- Aganezov S, Raphael BJ. Reconstruction of clone- and haplotype-specific cancer
+  genome karyotypes from bulk tumor samples. _Genome Research_ (2020).
+  https://doi.org/10.1101/gr.256701.119
+- Saunders CT, et al. Sawfish: improving long-read structural variant discovery
+  and genotyping with local haplotype modeling. _Bioinformatics_ (2025).
+  https://doi.org/10.1093/bioinformatics/btaf136
+- Espejo Valle-Inclán J, Cortés-Ciriano I. ReConPlot: an R package for the
+  visualization and interpretation of genomic rearrangements. _Bioinformatics_
+  (2023). https://doi.org/10.1093/bioinformatics/btad719

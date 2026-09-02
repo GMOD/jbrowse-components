@@ -867,6 +867,25 @@ this repo has purity, ploidy or allele-specific CN, so a `chains` that grew an
 orderer would be guessing at precisely the step the literature solves with data
 we do not have. Load LINX's output as a track instead.
 
+## Related tools, and which half of the job each does
+
+Added 2026-09-02 after the question "what else does this". The tutorial's
+"Related tools" section is the reader-facing copy; this is the reasoning.
+
+| Job | Tool | Why it is the stronger version |
+| --- | --- | --- |
+| Somatic SV + complex clusters, long reads | [Severus](https://github.com/KolmogorovLab/Severus) (Keskus 2025, Nat Biotech) | Breakpoint graph over phased tumor/normal; benchmarked on COLO829, so it is the cross-check for der(3) |
+| Ordering junctions with CN | LINX (Shale 2022) | Allele-specific CN + centromere constraint; already the doc's answer to "should `chains` order" |
+| Junction-balanced graphs, walks | JaBbA + gGnome (Hadi 2020, Cell) | Closest published analogue to what the picker draws, CN-aware, short-read |
+| Haplotype-specific karyotypes | RCK (Aganezov & Raphael 2020) | ILP over evolutionary constraints; academic, needs a solver |
+| Sequence of the allele | hifiasm / Shasta on the pulled reads; sawfish (Saunders 2025) for HiFi | Real assembly against `derive`'s one-backbone consensus; the "external tool can do de novo" case |
+| The figure | ReConPlot (Espejo Valle-Inclán 2023); Ribbon | ReConPlot is aimed at the hand-pieced-figure audience directly |
+
+Not listed on the page, known: Weaver, InfoGenomeR, CouGaR (older karyotype
+reconstruction), ChainFinder and ClusterSV (cluster, do not reconstruct),
+SplitThreader (already cited), Wakhan (haplotype-specific CN from ONT, preprint
+at the time of writing).
+
 ## The line this feature does not cross
 
 Worth stating plainly, because every idea in this area is one step from a
