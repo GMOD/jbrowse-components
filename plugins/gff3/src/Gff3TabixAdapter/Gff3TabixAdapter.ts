@@ -35,7 +35,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           this.pluginManager,
         ),
         chunkCacheBudget: decompressedBytesBudget,
-        bgzfWorkerPool: sharedBgzfWorkerPool(),
+        bgzfWorkerPool: this.getConf('useBgzfWorkerPool')
+          ? sharedBgzfWorkerPool()
+          : undefined,
       })
       return {
         gff,
