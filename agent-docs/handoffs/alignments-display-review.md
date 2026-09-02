@@ -118,3 +118,42 @@ same read-only review on those file sets.
   microtask, so no double fetch. Dropped.
 - Layout, hit-test and both renderers' math checked against their parity tests;
   no wrong-answer bug found there.
+
+## Second-pass findings: chain and layout helpers reviewer (verified, unassigned)
+
+- bug `chainStrandConsensus.ts:246-252,160,306` — consensus frame depends on
+  chain ENCOUNTER order: ids assigned in walk order, sweep is id-ordered, and
+  the sign anchor needs a strict majority so a two-chain conflict flips either
+  way. Region arrival order alone paints both chains red or both blue. Fix:
+  assign ids in sorted-name order; strengthen `chainStrandConsensus.test.ts:211`
+  with regions listing chains in opposite order (current fixture passes
+  vacuously).
+- bug `chainStrandConsensus.ts:111` — zero-length segment gives `0/0` = NaN
+  vote, poisons the locus total, no chain there ever flips. Fix:
+  `t > 0 ? (f - r) / t : 0`.
+- cleanup `computeChainLayout.ts:247-254` `computeChainLayout` has no production
+  caller (test-only); delete, tests use `computeMultiRegionChainLayout([[0,d]])`.
+- perf `spanOverlaps.ts` + `collapsedLayout.ts:48-62` — one object per segment
+  per collapsed relayout; add typed-array `overlapIntervalsInto`, and
+  `mergeSpans(overlapIntervals(...))` at `computeChainLayout.ts:351` re-sorts
+  already-sorted output.
+- bug (visual) `GroupLabelsOverlay.tsx:34` applies `GROUP_LABEL_BG_OPACITY` as
+  element `opacity` (fades text+icons); SVG `GroupLabelBox.tsx:41` applies it
+  to the rect fill only. Use `alpha(background.paper, …)` on screen; hover rule
+  at `:67` becomes a background swap.
+- cleanup: chip inset `4` and compact-axis `fontSize 9` spelled in both
+  screen and export paths; move into `groupLabelStyle.ts`/`coverageAxisStyle.ts`.
+- perf `chainStrandConsensus.ts:244-287` two full read walks; seed frames in
+  the first loop. `:266` `numSegs < 2` half of the guard is unreachable.
+- contract `insertSizeTicks.ts:115-117` down mode inverts `YScaleTicks`
+  yTop/yBottom meaning; document or rename fields.
+- perf `chainSuppAcrossRegions.ts:89`, `chainStrandConsensus.ts:319` allocate
+  the replacement array before knowing anything changed; allocate lazily.
+- cleanup `computeChainLayout.ts:385` cast `undefined as Flatbush | undefined`;
+  `chainStrandConsensus.ts:115` forEach re-indexes; `:232` getOrCreate before
+  the `isChainData` guard; `insertSizeTicks.ts:16` dead `v === 0` branch;
+  `spanOverlaps.ts:41` duplicates `plugins/canvas/src/shared/mergeSpans.ts`.
+
+Third reviewer (tooltip/arc components: AlignmentsTooltip, arcHitTest,
+chainOverlayUtils, sashimiArcs, pileupBezierArcs, ArcDebugOverlay,
+drawAlignmentLabels, *Svg export twins, GroupLabelBox) was still running.
