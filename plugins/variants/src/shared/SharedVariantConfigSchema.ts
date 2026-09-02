@@ -3,6 +3,7 @@ import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   rowHeightConfigSchemaFields,
+  rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar'
 
@@ -39,17 +40,7 @@ export default function sharedVariantConfigFactory() {
         tree: 'Show the sample clustering tree in the sidebar',
         rowLabels: 'Show the per-sample row labels in the sidebar',
       }),
-      /**
-       * #slot
-       * Draw a hairline between adjacent sample rows. Off by default, and only
-       * drawn once rows are at least 4px tall — below that the line is as
-       * thick as the row it borders.
-       */
-      showRowSeparators: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'draw separator lines between sample rows',
-      },
+      ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot
        * Show the hover tooltip naming the genotype, the sample and the record

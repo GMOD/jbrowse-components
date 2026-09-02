@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import {
   rowHeightConfigSchemaFields,
+  rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar'
 
@@ -198,25 +199,7 @@ export default function configSchemaF() {
         description: 'fraction of the row height each block fills',
         advanced: true,
       },
-      /**
-       * #slot
-       * Draw a hairline between adjacent rows. Off by default: a painting whose
-       * neighbouring rows differ in color already separates itself, and the line
-       * only earns its pixel where they don't — a run of same-colored rows (an
-       * ancestry painting where most animals are one color, a cohort sorted so
-       * like sits next to like) reads as one block without it, and the row count
-       * can't be recovered by eye.
-       *
-       * Only drawn once rows are at least 4px tall. Below
-       * that the line is as thick as the row it borders, so a dense painting
-       * would be turned into a grid of hairlines with a little color between
-       * them.
-       */
-      showRowSeparators: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'draw separator lines between rows',
-      },
+      ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot
        * Tint each sidebar label box with the color that row's blocks are painted

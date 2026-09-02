@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
+import {
+  rowSeparatorsConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from '@jbrowse/tree-sidebar'
 
 import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
@@ -148,14 +151,7 @@ const configSchema = ConfigurationSchema(
       tree: 'Show the subtrack clustering tree in the sidebar',
       rowLabels: 'Name each subtrack row down the left edge',
     }),
-    /**
-     * #slot
-     */
-    showRowSeparators: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'Draw separator lines between subtrack rows',
-    },
+    ...rowSeparatorsConfigSchemaFields(),
     /**
      * #slot
      */

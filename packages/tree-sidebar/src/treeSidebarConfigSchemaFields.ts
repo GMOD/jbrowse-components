@@ -62,6 +62,48 @@ export function treeSidebarConfigSchemaFields({
 }
 
 /**
+ * The row-separators slot, for the three row displays that draw them — spread
+ * beside {@link treeSidebarConfigSchemaFields} rather than folded into it,
+ * because MAF composes the sidebar and deliberately draws no separators (its
+ * rows already carry a `rowProportion` gap), and a slot it ignores would read
+ * as one it honors.
+ *
+ * The three that do draw them had written the triple out identically bar the
+ * row noun, and the prose had drifted three ways: one display explained why the
+ * default is off, one restated the height rule in half a sentence, and one said
+ * nothing at all.
+ *
+ * **The description is the whole explanation**, for the reason
+ * `rowHeightConfigSchemaFields` states: a slot reached by spreading a table
+ * renders on its config page from this string alone, since this file declares
+ * no config schema for a JSDoc body to be filed under. It is a parameter only
+ * so a display whose rows are something more specific than "rows" can say so.
+ *
+ * The getter and setter over this stay per display, unlike the sidebar's three:
+ * `TreeSidebarMixin` declares those because this package's own code reads them,
+ * and nothing here reads this one — `showRowSeparatorsMenuItem` is handed the
+ * value. Declaring them in the mixin would mean MAF holding a `getConf` for a
+ * slot it does not have.
+ */
+export function rowSeparatorsConfigSchemaFields({
+  rowSeparators = 'draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them',
+}: {
+  /** Overridable, but the default sentence fits any row display. */
+  rowSeparators?: string
+} = {}) {
+  return {
+    /**
+     * #slot
+     */
+    showRowSeparators: {
+      type: 'boolean',
+      defaultValue: false,
+      description: rowSeparators,
+    },
+  } as const
+}
+
+/**
  * What `TreeSidebarMixin` asks a composing display's `configuration` to be — the
  * three slots above and nothing else, which is all the mixin touches. Narrow so
  * `getConf`/`setConf` still check the slot name; see `ConfigModelForFields`.
