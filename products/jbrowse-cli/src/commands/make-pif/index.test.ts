@@ -380,6 +380,39 @@ test('--coarse and --no-coarse together is an error', async () => {
   })
 })
 
+test.each(['0', '-1', '2.5', 'many', '4; rm -rf /'])(
+  '--threads %s is rejected rather than reaching the bgzip command line',
+  async threads => {
+    await runInTmpDir(async () => {
+      const { error } = await runCommand([
+        'make-pif',
+        simplePaf,
+        '--out',
+        'o.pif.gz',
+        `--threads=${threads}`,
+      ])
+      expect(error?.message).toMatch('Invalid --threads')
+    })
+  },
+)
+
+test('--threads writes the same PIF the default does', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    await runCommand(['make-pif', simplePaf, '--out', 'one.pif.gz'])
+    await runCommand([
+      'make-pif',
+      simplePaf,
+      '--out',
+      'eight.pif.gz',
+      '--threads',
+      '8',
+    ])
+    expect(
+      gunzipSync(fs.readFileSync(path.join(dir, 'eight.pif.gz'))).toString(),
+    ).toBe(gunzipSync(fs.readFileSync(path.join(dir, 'one.pif.gz'))).toString())
+  })
+})
+
 test('a file with no valid PAF rows fails instead of writing an empty PIF', async () => {
   await runInTmpDir(async ({ dir }) => {
     const notPaf = path.join(dir, 'notpaf.txt')

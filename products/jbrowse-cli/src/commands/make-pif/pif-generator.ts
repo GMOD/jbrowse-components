@@ -374,15 +374,29 @@ export async function createPIF(
   return stats
 }
 
-export function spawnSortProcess(outputFile: string, useCsi: boolean) {
-  const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k3,3n`
-  const bgzipCommand = `bgzip > "$1"`
+// bgzip is the only stage of this pipeline that cannot use more than one core on
+// its own: sort parallelizes itself and tabix is I/O bound. 4 is enough to take
+// compression off the critical path on the files this command is pointed at
+// without claiming a whole machine.
+export const DEFAULT_BGZIP_THREADS = 4
+
+export function spawnSortProcess(
+  outputFile: string,
+  useCsi: boolean,
+  threads = DEFAULT_BGZIP_THREADS,
+) {
+  // -s: tabix wants the rows ordered by (refName, start) and by nothing else,
+  // so the whole-line comparison a non-stable sort falls back to on a tie is
+  // comparing multi-kb CIGARs to pick an order no reader can observe
+  const sortCmd = `sort -s -t"\`printf '\\t'\`" -k1,1 -k3,3n`
+  const bgzipCommand = `bgzip -@ ${threads} > "$1"`
   const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 "$1"`
   // `&&` (not `;`) so a bgzip failure aborts before tabix runs and propagates
   // as the pipeline's exit code. The output path is passed as the shell's "$1"
   // positional rather than interpolated into the command string, so a path
   // with shell metacharacters (`"`, `$(...)`, backticks) can't break out and
-  // execute — same technique as sort-utils.ts. useCsi is a fixed literal.
+  // execute — same technique as sort-utils.ts. useCsi is a fixed literal, and
+  // the caller has already checked threads is a positive integer.
   const fullCommand = `${sortCmd} | ${bgzipCommand} && ${tabixCommand}`
   return spawn('sh', ['-c', fullCommand, 'sh', outputFile], {
     env: { ...process.env, LC_ALL: 'C' },

@@ -660,6 +660,10 @@ Options:
       --no-coarse            Do not emit the coarse no-CIGAR tier; write only
                              the per-row CIGAR fine tier.
 
+      --threads              Compression threads for bgzip. Defaults to 4. Raise
+                             it on a machine with cores to spare, or set 1 to
+                             leave the rest of the machine alone.
+
 Notes:
 
 Use --csi for assemblies containing sequences longer than ~512 Mb. The default
@@ -683,6 +687,9 @@ $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier
 $ jbrowse make-pif input.paf --no-coarse
+
+# give bgzip more (or fewer) compression threads than the default 4
+$ jbrowse make-pif input.paf --threads 8
 ```
 
 ## jbrowse make-density

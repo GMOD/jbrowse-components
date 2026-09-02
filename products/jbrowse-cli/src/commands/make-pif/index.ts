@@ -7,6 +7,7 @@ import {
   validateRequiredCommands,
 } from '../shared/validators.ts'
 import {
+  DEFAULT_BGZIP_THREADS,
   DEFAULT_COARSE_SPLIT_GAP,
   createPIF,
   getOutputFilename,
@@ -39,6 +40,11 @@ export async function run(args?: string[]) {
       description:
         'Do not emit the coarse no-CIGAR tier; write only the per-row CIGAR fine tier.',
     },
+    threads: {
+      type: 'string',
+      description:
+        'Compression threads for bgzip. Defaults to 4. Raise it on a machine with cores to spare, or set 1 to leave the rest of the machine alone.',
+    },
   } as const
   const { values: flags, positionals } = parseArgs({
     args,
@@ -63,6 +69,9 @@ export async function run(args?: string[]) {
     '',
     '# emit only the per-row CIGAR fine tier, skipping the coarse tier',
     '$ jbrowse make-pif input.paf --no-coarse',
+    '',
+    '# give bgzip more (or fewer) compression threads than the default 4',
+    '$ jbrowse make-pif input.paf --threads 8',
   ]
 
   const notes =
@@ -86,7 +95,13 @@ export async function run(args?: string[]) {
   validateFileArgument(file, 'make-pif', 'paf')
   validateRequiredCommands(['sh', 'sort', 'tabix', 'bgzip'])
 
-  const { out, csi = false, coarse, 'no-coarse': noCoarse = false } = flags
+  const {
+    out,
+    csi = false,
+    coarse,
+    'no-coarse': noCoarse = false,
+    threads,
+  } = flags
   const outputFile = getOutputFilename(file, out)
   // --no-coarse used to silently win over an explicit --coarse, so a run asking
   // for both wrote a file with no coarse tier and said nothing about it
@@ -105,7 +120,12 @@ export async function run(args?: string[]) {
     throw new Error(`Invalid --coarse value: ${coarse}`)
   }
 
-  const child = spawnSortProcess(outputFile, csi)
+  const bgzipThreads = threads === undefined ? DEFAULT_BGZIP_THREADS : +threads
+  if (!Number.isInteger(bgzipThreads) || bgzipThreads < 1) {
+    throw new Error(`Invalid --threads value: ${threads}`)
+  }
+
+  const child = spawnSortProcess(outputFile, csi, bgzipThreads)
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
