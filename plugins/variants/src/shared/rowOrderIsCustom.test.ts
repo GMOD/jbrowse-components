@@ -27,6 +27,20 @@ test('a reorder away from the configured arrangement is custom', () => {
   expect(display.rowOrderIsCustom).toBe(false)
 })
 
+// The second "Color by..." re-arranges the layout already on screen rather than
+// adapter order, and that path merges through `getSources`, which stamps a
+// `sampleName` the config-derived arrangement has no reason to carry.
+test('a second color-by is still not a custom row order', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setColorBy('population')
+  display.setSources([
+    { name: 'HG001', population: 'EUR', super_pop: 'EUR' },
+    { name: 'HG002', population: 'AFR', super_pop: 'AFR' },
+  ])
+  display.setColorBy('super_pop')
+  expect(display.rowOrderIsCustom).toBe(false)
+})
+
 test('with nothing configured any written layout is custom', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources([{ name: 'HG001' }, { name: 'HG002' }])

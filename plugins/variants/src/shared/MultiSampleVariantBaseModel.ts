@@ -262,6 +262,15 @@ function stripPaletteColors(rows: Source[]): Source[] {
   return rows.map(({ color: _color, labelColor: _labelColor, ...rest }) => rest)
 }
 
+// `applyArrangement` merges a non-empty layout through `getSources`, which
+// stamps `sampleName` on every row it returns, while the arrangement the config
+// alone produces has never been through it. Comparing the two therefore ignores
+// that key, or a second "Color by..." makes every track's row order read as
+// custom and "Reset row order" appears with nothing to reset.
+function withoutSampleName(rows: Source[]): Source[] {
+  return rows.map(({ sampleName: _sampleName, ...rest }) => rest)
+}
+
 // The slice `applyArrangement` drives. Structural so the helper can live beside
 // `arrangeSources` rather than inside the actions block that calls it.
 interface ArrangeableModel {
@@ -989,8 +998,10 @@ export default function MultiSampleVariantBaseModelF(
             !(
               sources &&
               deepEqual(
-                self.layout,
-                arrangeSources(self.colorBy, self.groupBy, sources),
+                withoutSampleName(self.layout),
+                withoutSampleName(
+                  arrangeSources(self.colorBy, self.groupBy, sources),
+                ),
               )
             )
           )
