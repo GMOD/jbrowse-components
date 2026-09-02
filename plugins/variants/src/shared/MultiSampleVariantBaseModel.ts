@@ -1058,13 +1058,16 @@ export default function MultiSampleVariantBaseModelF(
           return [...keys]
         },
 
-        // Four views on the source list, each with a different consumer:
+        // Five views on the source list, each with a different consumer:
         //
         // - sourcesWithoutLayout: adapter order, phased-expanded, no subtree
         //   filter. Used by clustering dialogs and sortByGenotype.
-        // - sourcesBase: layout-ordered, subtree-filtered, NOT phased-expanded.
-        //   Used by rpcProps — must not read sampleInfo (which is fetch-result-
-        //   derived; reading it would loop SettingsInvalidate).
+        // - sourcesBeforeSubtreeFilter: layout-ordered, NOT phased-expanded and
+        //   NOT subtree-filtered. The granularity `subtreeFilter` names, so it
+        //   is what an action computing a filter has to pick its names off.
+        // - sourcesBase: that, subtree-filtered. Used by rpcProps — must not
+        //   read sampleInfo (which is fetch-result-derived; reading it would
+        //   loop SettingsInvalidate).
         // - sources: rendering view — sourcesBase + phased expansion (reads
         //   sampleInfo). Subtree-filtered, so only visible rows show up.
         // - editableSources: dialog view — like `sources` but without the
@@ -1079,19 +1082,21 @@ export default function MultiSampleVariantBaseModelF(
               })
             : undefined
         },
+        get sourcesBeforeSubtreeFilter() {
+          return self.sourcesVolatile
+            ? getSources({
+                sources: self.sourcesVolatile,
+                layout: self.layout.length ? self.layout : undefined,
+                renderingMode: 'alleleCount',
+              })
+            : undefined
+        },
         get sourcesBase() {
-          if (!self.sourcesVolatile) {
-            return undefined
-          }
-          const base = getSources({
-            sources: self.sourcesVolatile,
-            layout: self.layout.length ? self.layout : undefined,
-            renderingMode: 'alleleCount',
-          })
           // filterRowsBySubtree keys on `name`, not `sampleName`: phased
           // clustering stores haplotype names ("HG001 HP0") as tree leaves and
           // that is what subtreeFilter holds.
-          return filterRowsBySubtree(base, self.subtreeFilter)
+          const base = this.sourcesBeforeSubtreeFilter
+          return base && filterRowsBySubtree(base, self.subtreeFilter)
         },
       }))
       .views(self => ({
@@ -1544,14 +1549,24 @@ export default function MultiSampleVariantBaseModelF(
          */
         focusGroup(label: string) {
           const value = label === UNLABELED_GROUP ? '' : label
-          // `editableSources`, the unfiltered list: a second click on another
-          // group has to reach the rows the first click hid
-          focusRows(
-            self,
-            self.editableSources
-              .filter(s => String(s[self.colorBy] ?? '') === value)
-              .map(s => s.name),
-          )
+          // Names off `sourcesBeforeSubtreeFilter`, the granularity
+          // `filterRowsBySubtree` matches against: in phased mode
+          // `editableSources` is haplotype-expanded ("S0 HP0") while the rows
+          // the filter runs over are still sample-level unless a phased
+          // clustering run put haplotypes in `layout`, so the expanded names
+          // matched nothing and the click drew zero rows. Unfiltered, so this
+          // reaches rows an earlier focus hid — the group section itself is
+          // gone from the legend by then (one group distinguishes nothing), so
+          // the way back is the sidebar chip or "Clear subtree filter".
+          const rows = self.sourcesBeforeSubtreeFilter
+          if (rows) {
+            focusRows(
+              self,
+              rows
+                .filter(s => String(s[self.colorBy] ?? '') === value)
+                .map(s => s.name),
+            )
+          }
         },
       }))
       .views(self => ({
