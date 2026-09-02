@@ -214,15 +214,18 @@ interface InitView {
   setWidth: (n: number) => void
   initialized: boolean
   pendingLaunch?: unknown
+  error?: unknown
 }
 
 // A comparative/circular view sets `initialized` true as soon as it has regions
 // to show, but its launch blob is consumed a moment later by an async autorun
 // (which awaits assemblies, navigates each sub-view, and attaches tracks). The
-// SVG only has content once that autorun has cleared it. On failure the
-// dotplot/synteny autorun deliberately KEEPS the blob (interactive recovery) but
-// reports the error to the session, so waiting on `!pendingLaunch` alone would
-// hang — also resolve on a session error, which is then rethrown.
+// SVG only has content once that autorun has cleared it. This is core's
+// `whenViewSettled` condition plus a session escape: a launch that fails before
+// the view materializes keeps its blob and sets the view's `error`
+// (installInitAutorun's failure policy), and a failure reported only to the
+// session — a bad track config, an assembly fetch — should fail the render now
+// rather than after a wait that has nothing left to wait for.
 //
 // `pendingLaunch` and NOT the views' own `initPending`, which looks like the
 // obvious predicate and is the wrong one here: that getter answers "should a
@@ -240,8 +243,12 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
   await when(
     () =>
       (view.initialized && !view.pendingLaunch) ||
+      view.error !== undefined ||
       firstRenderError(session) !== undefined,
   )
+  if (view.error !== undefined) {
+    throw toError(view.error)
+  }
   throwOnRenderError(session)
 }
 
@@ -552,7 +559,7 @@ const renderCircular: ModeRenderer = async ctx => {
 // but it is the same launch state machine underneath, so
 // `addLaunchView`/`readyView` wait on it identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
-  const { data, opts, model } = ctx
+  const { data, opts } = ctx
   const view = await addLaunchView<BreakpointViewModel>(
     ctx,
     'BreakpointSplitView',
@@ -562,22 +569,11 @@ const renderBreakpoint: ModeRenderer = async ctx => {
         : breakpointInit(data, opts, resolvedShowTracks(opts.showTracks, data)),
     }),
   )
-  // A SECOND wait, because this view's launch state is consumed one level above
-  // the one that matters. Its autorun turns the panel array into sub-views and
-  // clears it in the same tick, so `readyView` is satisfied the moment the
-  // panels EXIST — while each sub-view still carries its own pending launch
-  // holding the loc and, decisively, the tracks. Rendering there produced two
-  // correctly
-  // positioned, correctly labelled, completely empty panels: the exact
-  // failure `whenViewReady` warns about for LGV's `initPending`, one level of
-  // nesting further out. Unconditional, since an adopted session view's panels
-  // carry their own launches just as a freshly built one's do.
-  await when(
-    () =>
-      view.views.every(v => !v.pendingLaunch) ||
-      firstRenderError(model.session) !== undefined,
-  )
-  throwOnRenderError(model.session)
+  // No second wait on the panels here: this view's own launch clears in the
+  // tick it creates the sub-views, each still carrying its pending launch — but
+  // renderToSvg awaits every panel itself (awaitViewInitialized covers
+  // pendingLaunch), and renderRegion's throwOnRenderError catches a failure
+  // that reached only the session.
   const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     createCanvas: nodeCanvas,
