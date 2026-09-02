@@ -1,14 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from 'react'
 
-import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, getStrokeProps } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
+import { BandSeamHandle } from './BandSeamHandle.tsx'
 import { connectorLineAlpha } from './connectorLineAlpha.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -38,13 +37,6 @@ export interface ConnectorLinesModel {
 function round(px: number) {
   return Math.round(px * 100) / 100
 }
-
-const useStyles = makeStyles()({
-  resizeHandle: {
-    height: 5,
-    boxSizing: 'border-box',
-  },
-})
 
 // The red connector line drawn for the hovered (or crosshair) column.
 function ConnectorLine({
@@ -207,17 +199,15 @@ export const ConnectorZoneResizeHandle = observer(
     model: ConnectorLinesModel
     top: number
   }) {
-    const { classes } = useStyles()
     return (
-      <ResizeHandle
-        style={{ position: 'absolute', top: top - 4 }}
+      <BandSeamHandle
+        top={top}
         // from where the handle is drawn, not from the slot: in LD's genomic
         // mode the zone is only as tall as what is switched on, and dragging
         // the slot up from under it would eat the first N pixels doing nothing
         onDrag={d => {
           model.setLineZoneHeight(top + d)
         }}
-        className={classes.resizeHandle}
       />
     )
   },

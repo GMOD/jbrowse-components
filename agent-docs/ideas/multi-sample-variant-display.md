@@ -57,12 +57,10 @@ preset with zero worker-plumbing changes:
   tiers `getVariantImpact` currently collapses to.
 Each is a new entry alongside `CONSEQUENCE_IMPACT_JEXL` plus a legend key.
 
-**Per-site summary lane.** The matrix already reserves a resizable `lineZoneHeight`
-band above the grid (`components/LinesConnectingMatrixToGenomicPosition.tsx`). A
-companion lane showing **carrier count / allele frequency / call-rate** per site would
-give the "which sites matter" read that's missing. `mostFrequentAlt`'s AF is already
-computed for the MAF filter (`shared/minorAlleleFrequencyUtils.ts`) and then discarded —
-surfacing it is mostly a rendering task.
+**Per-site summary strip.** Carrier count / allele frequency / call-rate per
+site, as a band above the rows. Designed in
+[a-per-site-summary-strip-is-a-scalar-band-on-the-coverage-anchor](a-per-site-summary-strip-is-a-scalar-band-on-the-coverage-anchor.md),
+which is also the second consumer the coverage y anchor has been waiting for.
 
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
 group's legend swatch focuses that group (`focusGroup`, over `subtreeFilter`),

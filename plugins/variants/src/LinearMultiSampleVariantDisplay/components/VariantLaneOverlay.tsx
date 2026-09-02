@@ -1,6 +1,5 @@
-import { ResizeHandle, hoverBoxStyle } from '@jbrowse/core/ui'
+import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   isHitFeature,
   paintFeatureBand,
@@ -10,6 +9,7 @@ import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
+import { BandSeamHandle } from '../../shared/BandSeamHandle.tsx'
 import { buildVariantLaneHit } from '../../shared/buildVariantHit.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
@@ -23,13 +23,6 @@ interface VariantLaneHit {
   fields: VariantTooltipFields
   hit: HitFeatureResult
 }
-
-const useStyles = makeStyles()({
-  resizeHandle: {
-    height: 5,
-    boxSizing: 'border-box',
-  },
-})
 
 /**
  * The record under the cursor in the lane, through plugin-canvas's own hit test.
@@ -183,31 +176,6 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
 })
 
 /**
- * The drag handle on the lane's seam with the rows. The target is the reserved
- * height plus the delta, read off the model inside the callback: a slot holding
- * a value outside the bounds would otherwise count down toward the ceiling
- * while the handle stayed pinned at it.
- */
-const VariantLaneResizeHandle = observer(function VariantLaneResizeHandle({
-  model,
-}: {
-  model: LinearMultiSampleVariantDisplayModel
-}) {
-  const { classes } = useStyles()
-  return (
-    <ResizeHandle
-      data-testid="variant_lane_resize_handle"
-      style={{ position: 'absolute', top: model.topBands.laneHeight - 4 }}
-      className={classes.resizeHandle}
-      title="Drag to resize the variant lane"
-      onDrag={d => {
-        model.setVariantLaneHeight(model.topBands.laneHeight + d)
-      }}
-    />
-  )
-})
-
-/**
  * The variant lane: a `LinearVariantDisplay`-shaped band above the genotype rows,
  * drawn by plugin-canvas.
  *
@@ -270,7 +238,17 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
         }}
       />
       <VariantLaneInteraction model={model} />
-      <VariantLaneResizeHandle model={model} />
+      {/* the target is the reserved height plus the delta, read off the model
+          in the callback: a slot holding a value past the ceiling would
+          otherwise count down toward it while the handle stayed pinned */}
+      <BandSeamHandle
+        data-testid="variant_lane_resize_handle"
+        top={laneHeight}
+        title="Drag to resize the variant lane"
+        onDrag={d => {
+          model.setVariantLaneHeight(model.topBands.laneHeight + d)
+        }}
+      />
     </div>
   ) : null
 })
