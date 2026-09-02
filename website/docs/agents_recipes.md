@@ -124,7 +124,9 @@ return {
 `f.get('start')` is zero-based and `f.get('end')` exclusive. A VCF feature also
 answers `REF`, `ALT` (an array), `QUAL`, `FILTER`, `INFO` and `samples`; a GFF
 feature its column-nine attributes by name. `Object.keys(f.toJSON())` lists what
-one feature has.
+one feature has, and is worth a look before filtering on `name`: the hosted
+RefSeq GFF names a gene by `ID` and `gene_id` with no `Name`, so `name` is
+`null` on every gene there and `id` is the symbol.
 
 The same shape over ClinVar on the hosted hg38 config, where the field is the
 clinical significance. The whole BRCA1 view is over the read's byte gate, so

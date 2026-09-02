@@ -45,7 +45,9 @@ claude mcp add jbrowse -s user -- "/Applications/JBrowse 2.app/Contents/MacOS/JB
 Any other MCP client takes the same command and argument. On Windows the binary
 is `%LOCALAPPDATA%\Programs\JBrowse 2\jbrowse-desktop.exe` and on Linux it is
 the AppImage you downloaded. From a source checkout, run
-`node <checkout>/products/jbrowse-desktop/build/mcpServer.js` instead.
+`node <checkout>/products/jbrowse-desktop/build/mcpServer.js` instead. The app
+knows which of these it is: **Help, Connect an AI agent...** shows the config
+for the install you are running, with a copy button for each form.
 
 Restart the client, then ask it to open JBrowse with no target. It lists your
 recent sessions, which is the shortest round trip that proves the whole path.

@@ -1,10 +1,15 @@
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { BrowserWindow, Menu, app, shell } from 'electron'
+import { BrowserWindow, Menu, app, clipboard, dialog, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
 import { BLAT_PARTITION } from './blatSession.ts'
+import {
+  claudeCodeAddCommand,
+  mcpClientConfigJson,
+  mcpCommand,
+} from './mcp/clientConfig.ts'
 import {
   isAppUrl,
   isOAuthRedirect,
@@ -55,6 +60,53 @@ function openExternal(url: string) {
   }
 }
 
+// The setup text for this install, with the exact path the docs can only
+// guess at per platform. Native, so it works from the start screen and with
+// no session open.
+async function showConnectAgentDialog() {
+  if (process.env.JBROWSE_DISABLE_MCP) {
+    await dialog.showMessageBox({
+      type: 'info',
+      title: 'Connect an AI agent',
+      message: 'The MCP server is turned off',
+      detail:
+        'JBROWSE_DISABLE_MCP is set in this environment. Unset it and relaunch JBrowse Desktop to let an MCP client such as Claude Desktop or Claude Code drive it.',
+    })
+    return
+  }
+  const command = mcpCommand({
+    execPath: process.execPath,
+    packaged: app.isPackaged,
+    mcpServerScript: path.join(app.getAppPath(), 'build/mcpServer.js'),
+  })
+  const json = mcpClientConfigJson(command)
+  const claudeCode = claudeCodeAddCommand(command)
+  const { response } = await dialog.showMessageBox({
+    type: 'info',
+    title: 'Connect an AI agent',
+    message:
+      'Leave JBrowse Desktop running and point an MCP client at it. The client then reads and changes the open session: builds views, adds tracks, reads feature data and takes screenshots.',
+    detail: `Claude Desktop (Settings, Developer, Edit Config):\n${json}\n\nClaude Code:\n${claudeCode}\n\nAny code the agent runs has the same access to this computer as the app. Set JBROWSE_DISABLE_MCP=1 to turn the server off.`,
+    buttons: [
+      'Copy Claude Desktop config',
+      'Copy Claude Code command',
+      'Open the documentation',
+      'Close',
+    ],
+    cancelId: 3,
+    defaultId: 0,
+  })
+  if (response === 0) {
+    await clipboard.writeText(json)
+  } else if (response === 1) {
+    await clipboard.writeText(claudeCode)
+  } else if (response === 2) {
+    shell
+      .openExternal('https://jbrowse.org/jb2/docs/agents_mcp/')
+      .catch(logError)
+  }
+}
+
 function createMenu(autoUpdater: AppUpdater) {
   return Menu.buildFromTemplate([
     { role: 'appMenu' },
@@ -84,6 +136,13 @@ function createMenu(autoUpdater: AppUpdater) {
             shell
               .openExternal('https://github.com/GMOD/jbrowse-components/issues')
               .catch(logError)
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Connect an AI agent...',
+          click: () => {
+            showConnectAgentDialog().catch(logError)
           },
         },
         { type: 'separator' },

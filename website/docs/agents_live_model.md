@@ -135,7 +135,22 @@ view.hideTrack('mytrack')
 // a shown track's live display model (getters are rich) — find by trackId,
 // view.tracks is every shown track; activeDisplay is the one being drawn
 const display = jb.trackModel('mytrack')?.activeDisplay
+// the same track drawn by another of its display types (read arcs instead of
+// the pileup): display ids are `<trackId>-<DisplayType>`, and the track's
+// config lists the ones it has
+const track = jb.trackModel('mytrack')
+track.configuration.displays.map(d => d.displayId)
+track.replaceDisplay(
+  display.configuration.displayId,
+  'mytrack-LinearReadArcsDisplay',
+)
 ```
+
+A feature's label is whatever `name` it carries, else its `id`, and a file
+decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
+carries no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
+symbol. `Object.keys(f.toJSON())` says what one feature has before you filter on
+a field.
 
 MST rules: reads are plain property/getter access; **mutations only through
 actions** (`view.setWidth(800)` works, `view.width = 800` throws). Snapshots

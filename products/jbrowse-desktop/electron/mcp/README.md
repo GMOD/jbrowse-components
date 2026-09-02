@@ -69,7 +69,9 @@ Development checkout:
 ```
 
 JBrowse Desktop itself must be running (it serves the socket); tool calls made
-while it is closed return a message saying to launch it.
+while it is closed return a message saying to launch it. **Help, Connect an AI
+agent...** in the app shows both forms above for the running install, with a
+copy button for each (`mcp/clientConfig.ts`).
 
 ## Tools
 
