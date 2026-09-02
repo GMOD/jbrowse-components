@@ -5,6 +5,18 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { MenuItem } from '@jbrowse/core/ui'
+
+// The menu is one level of submenus deep ("Show..."), and the legend row lives
+// inside it.
+function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
+  return display.trackMenuItems().flatMap(function labels(m): string[] {
+    return [
+      ...('label' in m && typeof m.label === 'string' ? [m.label] : []),
+      ...('subMenu' in m ? m.subMenu.flatMap(labels) : []),
+    ]
+  })
+}
 
 // An admin-declared key for an itemRgb ancestry painting: the categories are
 // encoded in the block colors and nothing else names them.
@@ -77,6 +89,27 @@ describe('the color key waits for a painting to key', () => {
     expect(display.densityBandActive).toBe(true)
     expect(display.colorLegend).toHaveLength(0)
     expect(display.hasLegendEntries).toBe(false)
+  })
+
+  // The draw is what the data gates, never the toggle: the user configured a
+  // key, and a track waiting on its first fetch — or standing behind the
+  // density band — must not lose the menu row that turns it back on, nor the
+  // promotable pin `PromotablePinCoverage` reaches through it.
+  it('keeps the "Show legend" toggle while nothing is painted', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: { legend: LEGEND },
+    }).createDisplay()
+
+    expect(display.hasLegendEntries).toBe(false)
+    expect(display.hasLegendToShow).toBe(true)
+    expect(menuLabels(display)).toContain('Show legend')
+  })
+
+  it('offers no toggle on a track that declares no key at all', () => {
+    const { display } = createTestEnvironment().createDisplay()
+
+    expect(display.hasLegendToShow).toBe(false)
+    expect(menuLabels(display)).not.toContain('Show legend')
   })
 
   it('is empty over a contig that came back with no features', () => {

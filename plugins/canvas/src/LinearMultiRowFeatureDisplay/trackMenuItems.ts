@@ -68,8 +68,10 @@ interface MultiRowMenuSelf
   colorLegend: LegendEntry[]
   // covers the display's other color key too (see `rowGroupLegend`) — not
   // toggleable per-category, but under the same `showLegend` slot, so the "Show
-  // legend" item has to see it
-  hasLegendEntries: boolean
+  // legend" item has to see it. The "has one at all" reading rather than the
+  // "one is drawn right now" one: a configured key waiting on its first fetch,
+  // or standing behind the density band, still owns the toggle.
+  hasLegendToShow: boolean
   hiddenCategories: readonly string[]
   // the model's derived Set of the above, which is where every other consumer
   // asks whether a category is hidden — the checkbox below has to agree with the
@@ -111,7 +113,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // color is exactly what makes `buildColorLegend` return nothing — so
     // gating on `colorLegend` alone let a user dismiss the group key with no
     // menu item left to bring it back.
-    ...(self.hasLegendEntries
+    ...(self.hasLegendToShow
       ? [
           showLegendCheckboxItem(
             self.showLegend,

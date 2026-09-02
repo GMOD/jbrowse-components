@@ -539,6 +539,18 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The `legend` config slot, validated into key rows. Its own getter
+       * because two different questions read it: what is DRAWN (gated on there
+       * being a painting, below) and whether this display has a key at all
+       * (`hasLegendToShow`, which the menu offers the toggle on).
+       */
+      get configuredLegend() {
+        return resolveConfiguredLegend(readConfObject(self.conf, 'legend'))
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Categorical color key. The explicit `legend` config slot wins when set
        * (for color-encoded categories with no feature attribute to key on, e.g.
        * an itemRgb ancestry painting); otherwise it's auto-derived from the
@@ -554,9 +566,7 @@ export default function stateModelFactory(
        * first fetch lands, or over an empty contig) there are none.
        */
       get colorLegend() {
-        const configured = self.hasDrawnFeatures
-          ? resolveConfiguredLegend(readConfObject(self.conf, 'legend'))
-          : []
+        const configured = self.hasDrawnFeatures ? self.configuredLegend : []
         return configured.length
           ? configured
           : buildColorLegend(
@@ -715,6 +725,19 @@ export default function stateModelFactory(
        */
       get hasLegendEntries() {
         return self.colorLegend.length > 0 || self.rowGroupLegend.length > 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the display HAS a key, as opposed to whether one is on screen
+       * right now — which is the question "Show legend" is offered on. A
+       * configured `legend` slot counts before its first fetch and while the
+       * density band stands in: the toggle is the user's, and a key merely
+       * waiting for data must not take the way back to it with it.
+       */
+      get hasLegendToShow() {
+        return self.hasLegendEntries || self.configuredLegend.length > 0
       },
     }))
     .views(self => ({
