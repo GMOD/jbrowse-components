@@ -5,8 +5,8 @@
 # core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or `git push --no-verify`.
 #
 # IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
-# this runs the fixer: `pnpm autogen` whenever its `--check` says anything is
-# stale, both linters with `--fix`, and `pnpm format` over the whole tree.
+# this runs the fixer: `pnpm autogen --fix-stale` when its check says anything
+# is stale, both linters with `--fix`, and `pnpm format` over the whole tree.
 # Reporting "regenerate and commit" only to have the person run the exact
 # command the hook already knew was minutes of waiting to be told to wait
 # minutes more.
@@ -45,28 +45,39 @@
 # too slow per commit and about right per push, which is also the moment the
 # cost lands on other people rather than on you.
 #
-# WHAT IT COSTS. Measured warm in a worktree on 2026-08-23, with what this file
-# said before that pass beside it — every one that moved was a serial loop over
-# independent processes, or a process pool recompiling the same modules, not
-# work that had grown:
-#   pnpm autogen --check    46s   (118s sequential)
-#   pnpm check-docs         50s   (344s, of which one validator was 218s)
-#                                 — and 50s is what an idle machine gives; the
-#                                 CPU behind it, 247s to 85s, is the stable half
-#   pnpm lint               13s   type-aware oxlint; `lint:fast` is 4s of it
-#   pnpm lint:eslint         9s   (127s without --cache)
-#   pnpm format             12s   whole tree, 6908 files
-#   pnpm build:esm           5s   incremental
-# ~100s wall, with check-docs overlapping the three fixers after it. Every gate
-# here is CPU-bound and this machine runs several agents, so a wall number
-# swings by a factor of two with what else is running — the same check-docs run
-# measured 46s, 53s and 81s over one afternoon.
+# WHAT IT COSTS. Measured warm on 2026-09-01, on a machine at load 6-12 with
+# other agents running:
+#   pnpm figures:check       1.5s
+#   pnpm autogen --check    22.5s  of which ONE generator is 21s: `config/model/
+#                                  api docs` builds a whole-repo TypeScript
+#                                  program, and all 29 others hide behind it in
+#                                  the pool. It is the long pole of this hook.
+#   pnpm check-docs          9.2s  31s of validators, pooled four at a time,
+#                                  and free: it finishes inside the fixers
+#   pnpm lint               10.1s  type-aware oxlint; `lint:fast` is 4s of it
+#   pnpm lint:eslint         5.6s  (127s without --cache)
+#   pnpm format              9.4s  whole tree, 6908 files
+#   pnpm build:esm           1.7s  incremental
+# 60-68s end to end with nothing stale, over three interleaved A/B pairs
+# against the version before this pass, which took 81-106s on the same tree
+# minutes apart. Every gate here is CPU-bound and this machine runs several
+# agents, so a wall number swings by a factor of two with what else is running
+# — which is why the numbers above are only worth reading in pairs.
 #
 # THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
 # write to the same files: autogen emits sources the linters then lint, and both
 # linters rewrite the same `.ts`. Only the two read-only gates still overlap.
 # That costs nothing in wall time — contention was eating the parallelism
 # anyway.
+#
+# GOING FURTHER DOWN THAT ROAD DOES NOT WORK, and was measured on 2026-09-01
+# rather than reasoned about: running `autogen --check` and `check-docs` as one
+# read-only lane ALONGSIDE the fixers, which on paper folds two ~23s lanes into
+# one, came out at 83s and 84s against the sequential version's 79s and 85s in
+# an interleaved A/B. The lanes want ~22 cores between them on a 16-core machine
+# that already has 6-12 in use, so the overlap buys nothing and the wall number
+# is set by what else is running. The wait here is not something scheduling can
+# fix; it is the 21s program above, paid once.
 #
 # A COLD `build:esm` is worse and happens once per checkout — tsc has no
 # .tsbuildinfo to reuse and takes a minute or more. Every run after that is the
@@ -119,6 +130,25 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 0
 fi
 
+# EVERY GATE BELOW RUNS AS ITS OWN BINARY, NOT AS `pnpm run <script>`. pnpm
+# spends ~1.7s starting up before it does anything at all (`pnpm --version` is
+# 1.65s here), and this hook runs seven of them — twelve seconds of the wait,
+# buying nothing. Resolving the commands out of package.json rather than
+# spelling them out keeps that from drifting away from what `pnpm run` would
+# have done, `post<script>` included, in one 5ms node start.
+PATH="$root/node_modules/.bin:$PATH"
+export PATH
+eval "$(node -e '
+  const scripts = require("./package.json").scripts
+  for (const name of process.argv.slice(1)) {
+    const chain = [scripts[name], scripts[`post${name}`]].filter(Boolean)
+    if (chain.length === 0) {
+      throw new Error(`package.json has no ${name} script`)
+    }
+    console.log(`cmd_${name.replace(/\W/g, "_")}=${JSON.stringify(chain.join(" && "))}`)
+  }
+' figures:check autogen check-docs lint lint:eslint format build:esm)"
+
 # stdin is one `<local ref> <local sha> <remote ref> <remote sha>` line per ref.
 # A zero local sha is a branch deletion (nothing to check); a zero remote sha is
 # a branch the remote has never seen, so bound the range by what the remote
@@ -159,7 +189,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~60s, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -181,9 +211,9 @@ git status --porcelain -uall 2>/dev/null | sed 's/^...//; s/.* -> //' \
   >"$tmp/dirty-before" || : >"$tmp/dirty-before"
 
 # The two files a REVIEW APP writes, which no fixer here writes. The comparison
-# above is a before/after over a ~2min window, so anything that changes during
-# the run is attributed to the fixers — including a person filing verdicts in
-# `pnpm review-screenshots-web` or `pnpm review-snapshots-web` in another
+# above is a before/after over a minute-plus window, so anything that changes
+# during the run is attributed to the fixers — including someone filing verdicts
+# in `pnpm review-screenshots-web` or `pnpm review-snapshots-web` in another
 # window, which is a normal thing to be doing while a push runs. Blocking on
 # those told someone their own half-finished review was a fixer's output and
 # demanded they commit it mid-pass, which is neither true nor what they want.
@@ -240,7 +270,7 @@ autogen_flags=
 autogen_skipped=
 if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ]; then
   autogen_skipped="no figure corpora on disk ('pnpm figures:pull' installs them)"
-elif ! pnpm figures:check >"$tmp/figures.log" 2>&1; then
+elif ! eval "$cmd_figures_check" >"$tmp/figures.log" 2>&1; then
   autogen_skipped="figures on disk differ from figures.lock ('pnpm figures:check' says which)"
 fi
 if [ -n "$autogen_skipped" ]; then
@@ -248,18 +278,17 @@ if [ -n "$autogen_skipped" ]; then
   echo "pre-push: skipping the figure-dependent generators, because $autogen_skipped" >&2
 fi
 
-# ASKS BEFORE IT WRITES. `--check` writes nothing and runs every generator
-# pooled, so it costs about half what the rewrite does. On the push where
-# nothing is stale, which is most of them, that is the whole of the autogen
-# cost. The rewrite keeps the doc chain in order (two generators splice into
-# one doc), so it is only paid when there is something to regenerate — the
-# push this hook exists for, and the one already paying for a commit.
+# ASKS BEFORE IT WRITES, AND THEN REWRITES ONLY WHAT MOVED. `--fix-stale` runs
+# every generator's `--check` pooled, which writes nothing, and then rewrites
+# the ones that failed plus anything downstream reading their output. On the
+# push where nothing is stale, which is most of them, the check is the whole of
+# the autogen cost; on the push where something is, the rewrite is the three
+# tables that drifted rather than all thirty generators. That distinction is
+# most of the wait: `config/model/api docs` builds a whole-repo TypeScript
+# program and costs the same 21s in both passes, so the old "check everything,
+# then rewrite everything" paid for it twice whatever had actually gone stale.
 astatus=0
-pnpm autogen --check $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
-if [ "$astatus" != 0 ]; then
-  astatus=0
-  pnpm autogen $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
-fi
+eval "$cmd_autogen --fix-stale $autogen_flags" >"$tmp/autogen.log" 2>&1 || astatus=$?
 if [ "$astatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm autogen failed" >&2
@@ -295,7 +324,7 @@ done
 
 # check-docs has no fixer and reads only what autogen has now finished writing,
 # so it is the one thing that can overlap the linters.
-pnpm check-docs >"$tmp/docs.log" 2>&1 &
+eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
 docs_pid=$!
 
 # Both linters, because they catch different things and CI runs both: oxlint is
@@ -306,7 +335,7 @@ docs_pid=$!
 # `--fix` still exits nonzero for anything it could not fix, so this is one pass
 # and not a fix-then-verify pair.
 lstatus=0
-pnpm lint --fix >"$tmp/lint.log" 2>&1 || lstatus=$?
+eval "$cmd_lint --fix" >"$tmp/lint.log" 2>&1 || lstatus=$?
 if [ "$lstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm lint --fix left errors it cannot fix" >&2
@@ -321,7 +350,7 @@ fi
 # every time and would only pay to write a cache nothing reads, which is why the
 # flag is on this line rather than in the script.
 estatus=0
-pnpm lint:eslint --fix --cache --cache-location node_modules/.cache/eslint/ \
+eval "$cmd_lint_eslint --fix --cache --cache-location node_modules/.cache/eslint/" \
   >"$tmp/eslint.log" 2>&1 || estatus=$?
 if [ "$estatus" != 0 ]; then
   echo >&2
@@ -352,7 +381,7 @@ fi
 # which nothing here covered before: after this runs, that job is satisfied by
 # construction rather than checked. ~7s for 6300 files.
 fstatus=0
-pnpm format >"$tmp/format.log" 2>&1 || fstatus=$?
+eval "$cmd_format" >"$tmp/format.log" 2>&1 || fstatus=$?
 if [ "$fstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm format failed" >&2
@@ -378,7 +407,7 @@ fi
 # compiled as browser source is exactly how main broke on 2026-08-13. It runs
 # last because it compiles what the fixers have just rewritten.
 bstatus=0
-pnpm build:esm >"$tmp/build.log" 2>&1 || bstatus=$?
+eval "$cmd_build_esm" >"$tmp/build.log" 2>&1 || bstatus=$?
 if [ "$bstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm build:esm failed" >&2

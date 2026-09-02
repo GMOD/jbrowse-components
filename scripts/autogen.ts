@@ -3,7 +3,9 @@
 // once; the fix is always `pnpm autogen`.
 //
 //   pnpm autogen                          rewrite everything
-//   pnpm autogen --check                  verify everything (CI and the hooks)
+//   pnpm autogen --check                  verify everything (CI)
+//   pnpm autogen --fix-stale              verify everything, then rewrite only
+//                                         what the verify found stale (the hooks)
 //   pnpm autogen gallery                  only generators whose name contains 'gallery'
 //   pnpm autogen --skip-figure-dependent  drop the generators that read the
 //                                         figure corpus or figures.lock
@@ -16,7 +18,7 @@ import { fileURLToPath } from 'node:url'
 import { figureRootPulled } from '../website/scripts/figure-paths.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const FLAGS = ['--check', '--skip-figure-dependent']
+const FLAGS = ['--check', '--fix-stale', '--skip-figure-dependent']
 const args = process.argv.slice(2)
 const unknownFlags = args.filter(a => a.startsWith('--') && !FLAGS.includes(a))
 if (unknownFlags.length > 0) {
@@ -25,8 +27,10 @@ if (unknownFlags.length > 0) {
   )
   process.exit(1)
 }
-const check = args.includes('--check')
+const fixStale = args.includes('--fix-stale')
 const skipFigureDependent = args.includes('--skip-figure-dependent')
+// `--fix-stale` starts as a check and flips once it knows what to rewrite.
+let checking = args.includes('--check') || fixStale
 const filters = args.filter(a => !a.startsWith('--'))
 
 interface Generator {
@@ -131,8 +135,10 @@ const GENERATORS: Generator[] = [
     figureDependent: true,
   },
   {
+    // Mirrors the README the entry above rewrites.
     name: 'jbrowse-img doc',
     argv: web('generate-img-doc.ts'),
+    needs: ['jbrowse-img README commands'],
     figureDependent: true,
     figureRoot: 'products/jbrowse-img/img',
   },
@@ -169,6 +175,7 @@ const GENERATORS: Generator[] = [
     // entry above writes.
     name: 'published measurement tables',
     argv: web('sync-measurements.ts'),
+    needs: ['measurement tables'],
   },
   {
     // Single values a sentence quotes out of one of those tables.
@@ -280,17 +287,22 @@ if (figureSkipped.length > 0) {
 }
 const selected = matched.filter(g => !figureSkipped.includes(g))
 
-const superseded = check
-  ? []
-  : selected.filter(
-      g =>
-        g.redundantWith !== undefined &&
-        selected.some(other => other.name === g.redundantWith),
-    )
-for (const { name, redundantWith } of superseded) {
-  console.log(`Skipping ${name}: ${redundantWith} rewrites the same tables`)
+// A rewrite drops the generators another one in the same run redoes; a check
+// keeps them, since that one names the stale table where the other can only
+// name the directory.
+function forRewrite(set: Generator[]) {
+  const superseded = set.filter(
+    g =>
+      g.redundantWith !== undefined &&
+      set.some(other => other.name === g.redundantWith),
+  )
+  for (const { name, redundantWith } of superseded) {
+    console.log(`Skipping ${name}: ${redundantWith} rewrites the same tables`)
+  }
+  return set.filter(g => !superseded.includes(g))
 }
-const running = selected.filter(g => !superseded.includes(g))
+
+let running = checking ? selected : forRewrite(selected)
 
 function skipsForMissingFigures({ name, figureRoot }: Generator) {
   const missing = figureRoot !== undefined && !figureRootPulled(figureRoot)
@@ -314,7 +326,7 @@ async function runGenerator(generator: Generator, stream: boolean) {
     }
     const started = performance.now()
     const { status, output } = await run(
-      check ? [...argv, '--check'] : argv,
+      checking ? [...argv, '--check'] : argv,
       stream,
     )
     if (status !== 0) {
@@ -389,7 +401,42 @@ async function rewriteAll() {
   ])
 }
 
-await (check ? checkAll() : rewriteAll())
+await (checking ? checkAll() : rewriteAll())
+
+// `--fix-stale`: the check just paid for every generator, so rewrite the ones it
+// found stale rather than the whole list. Several here build a whole-repo
+// TypeScript program and cost the same in both passes — running all of them
+// again to reach the four that moved was most of what a push waited on.
+if (fixStale && failed.length > 0) {
+  const rewriting = new Set(failed.map(f => f.name))
+  // Its output is a downstream generator's input, so a rewrite here leaves that
+  // one stale however its own check just answered.
+  for (let grew = true; grew;) {
+    grew = false
+    for (const { name, needs = [] } of selected) {
+      if (!rewriting.has(name) && needs.some(n => rewriting.has(n))) {
+        rewriting.add(name)
+        grew = true
+      }
+    }
+  }
+  const downstream = [...rewriting].filter(
+    name => !failed.some(f => f.name === name),
+  )
+  console.log(
+    `\nChecked in ${Math.round(performance.now() - startedAt)}ms. Rewriting ` +
+      `${rewriting.size} of ${selected.length}${
+        downstream.length > 0
+          ? `, ${downstream.join(' and ')} downstream of them`
+          : ''
+      }`,
+  )
+  failed.length = 0
+  timings.length = 0
+  checking = false
+  running = forRewrite(selected.filter(g => rewriting.has(g.name)))
+  await rewriteAll()
+}
 
 const ms = (n: number) => Math.round(n).toString().padStart(6)
 console.log('\ntimings (ms):')
@@ -403,7 +450,7 @@ if (failed.length > 0) {
     .map(f => `  - ${f.name} (exited ${f.status ?? 'on a signal'})`)
     .join('\n')
   console.error(
-    check
+    checking
       ? `\n${failed.length} generator(s) reported a stale artifact or failed:\n${named}\n\n` +
           `Run 'pnpm autogen' and commit the result. A generator whose output ` +
           `above is a crash rather than a stale-artifact report needs its cause ` +
@@ -416,6 +463,6 @@ if (failed.length > 0) {
 }
 
 console.log(
-  (check ? '\nAll generated artifacts up to date' : '\nRegenerated') +
+  (checking ? '\nAll generated artifacts up to date' : '\nRegenerated') +
     (skipped.length > 0 ? ` (skipped: ${skipped.join(', ')})` : ''),
 )
