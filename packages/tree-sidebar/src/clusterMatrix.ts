@@ -25,6 +25,20 @@ export type NumericRow = ArrayLike<number> & Iterable<number>
 export type ClusterMatrix = Map<string, NumericRow>
 
 /**
+ * Fewest rows a hierarchical clustering can be asked for. One row has no
+ * neighbour to merge with, so there is no tree and no order to return; the
+ * dendrogram is then either absent or a single leaf drawn over a row that was
+ * never moved.
+ *
+ * Every menu row, dialog gate and `ready()` predicate on the way here states
+ * this same rule, and two of the run functions state it as `length > 0` — so
+ * the refusal lives at the one point all four RPCs pass through, and the gates
+ * upstream are there to keep the user from reaching it rather than to be the
+ * only thing that does.
+ */
+export const MIN_CLUSTER_ROWS = 2
+
+/**
  * The tail every clustering RPC shares: hand a name→values matrix to hclust,
  * forward its progress onto the status channel, and return the row `order` plus
  * the tree as newick. What differs between the multi-sample-variant, multi-wiggle
@@ -49,6 +63,11 @@ export async function clusterMatrix({
   statusCallback?: StatusCallback
   stopTokenCheck?: StopTokenChecker
 }) {
+  if (data.size < MIN_CLUSTER_ROWS) {
+    throw new Error(
+      `Clustering needs at least ${MIN_CLUSTER_ROWS} rows, got ${data.size}`,
+    )
+  }
   // hclust takes parallel arrays, so the map is walked once into both rather
   // than spread twice. This is the only place the two are ever separated.
   const rows: ArrayLike<number>[] = []

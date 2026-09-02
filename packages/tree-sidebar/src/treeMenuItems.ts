@@ -4,6 +4,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { MIN_SEPARATOR_ROW_PX } from './RowSeparatorLines.tsx'
+import { MIN_CLUSTER_ROWS } from './clusterMatrix.ts'
 import { describeClusterProvenance } from './clusterProvenance.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
@@ -273,16 +274,29 @@ interface ClusteringMenuModel
 // `clusterTree` — so a reset filed under "Clustering" and gated on that tree
 // undoes one of the three and looks like it undoes all of them. It belongs
 // top-level, gated on `rowOrderIsCustom` (`resetRowOrderMenuItems`).
+//
+// Pass `rowCount` and the run row's `disabled` + `disabledHelpText` come from
+// here instead, the way `sortRowsHereMenuItem` owns its own gate — the "needs
+// two rows" rule is one rule and the four displays each spelled it. Omit it and
+// the run row is used verbatim, which is what a display whose help text has to
+// distinguish "still loading" from "only one row" still wants.
 export function clusteringMenuItem(
   self: ClusteringMenuModel,
   runItem: MenuItem,
+  rowCount?: number,
 ): MenuItem {
   return {
     label: 'Clustering',
     icon: AccountTreeIcon,
     type: 'subMenu',
     subMenu: [
-      runItem,
+      rowCount === undefined
+        ? runItem
+        : {
+            ...runItem,
+            disabled: rowCount < MIN_CLUSTER_ROWS,
+            disabledHelpText: 'Needs at least two rows to cluster',
+          },
       ...clusterProvenanceMenuItems(self),
       ...clearSubtreeFilterMenuItems(self),
     ],

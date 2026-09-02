@@ -67,7 +67,7 @@ export {
 } from './clusterUtils.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'
-export { clusterMatrix } from './clusterMatrix.ts'
+export { MIN_CLUSTER_ROWS, clusterMatrix } from './clusterMatrix.ts'
 // `ClusterMatrix` is part of the dialog's public shape (`fetchMatrix` returns
 // one), so it has to be nameable by the plugins that implement it.
 export type { ClusterMatrix, NumericRow } from './clusterMatrix.ts'

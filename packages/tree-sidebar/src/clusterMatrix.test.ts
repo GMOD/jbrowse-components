@@ -74,3 +74,17 @@ test('hclust escapes leaf names, which is why clusterMatrix does not', () => {
   expect(toNewick({ name: 'cells (vHMEC)', height: 0 })).toBe("'cells (vHMEC)'")
   expect(toNewick({ name: 'Sample 0', height: 0 })).toBe('Sample 0')
 })
+
+// Every menu row and dialog gate on the way here says "needs at least two
+// rows", and two of the four run functions say it as "at least one" — so a
+// single-row track reached hclust, which has nothing to merge and returns a
+// tree with no structure. Refused once, at the point all four RPCs pass
+// through.
+test('refuses a matrix with fewer than two rows', async () => {
+  await expect(
+    clusterMatrix({ data: new Map([['GM12878', [0, 0]]]) }),
+  ).rejects.toThrow(/at least 2 rows, got 1/)
+  await expect(clusterMatrix({ data: new Map() })).rejects.toThrow(
+    /at least 2 rows, got 0/,
+  )
+})

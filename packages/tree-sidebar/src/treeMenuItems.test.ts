@@ -1,6 +1,7 @@
 import { clusterProvenanceFromRegions } from './clusterProvenance.ts'
 import {
   clusterProvenanceMenuItems,
+  clusteringMenuItem,
   resetRowOrderMenuItems,
 } from './treeMenuItems.ts'
 
@@ -71,5 +72,32 @@ describe('resetRowOrderMenuItems', () => {
         clearLayout: jest.fn(),
       }),
     ).toEqual([])
+  })
+})
+
+// The "needs two rows" rule is stated a dozen times across the four displays'
+// menus, dialogs, autorun gates and run functions, and two of those spellings
+// let one row through. Passing `rowCount` moves the menu half of it here.
+describe('clusteringMenuItem', () => {
+  const runItem = { label: 'Cluster rows by score...', onClick: () => {} }
+  const subMenuOf = (item: ReturnType<typeof clusteringMenuItem>) =>
+    'subMenu' in item ? item.subMenu : []
+
+  it('leaves the run row alone when no row count is given', () => {
+    expect(subMenuOf(clusteringMenuItem({}, runItem))[0]).toBe(runItem)
+  })
+
+  it('disables the run row below two rows and says why', () => {
+    expect(subMenuOf(clusteringMenuItem({}, runItem, 1))[0]).toMatchObject({
+      label: 'Cluster rows by score...',
+      disabled: true,
+      disabledHelpText: 'Needs at least two rows to cluster',
+    })
+  })
+
+  it('enables the run row at two rows', () => {
+    expect(subMenuOf(clusteringMenuItem({}, runItem, 2))[0]).toMatchObject({
+      disabled: false,
+    })
   })
 })
