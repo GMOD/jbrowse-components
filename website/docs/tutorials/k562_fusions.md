@@ -62,15 +62,13 @@ breakpoints on hg19:
 
 K562 is a chronic myeloid leukemia line carrying the Philadelphia chromosome,
 the t(9;22) that fuses _BCR_ to _ABL1_. Its transcripts here are long RNA reads,
-its fusion calls come out of DepMap's pipeline over short ones, and its DNA
-breakpoints come from a linked-read run, so the transcript answer and the DNA
-answer are three different assays apart.
+its fusion calls come from DepMap's short-read pipeline, and its DNA breakpoints
+from a linked-read run.
 
-Both DepMap tables cover every line in the release, so each starts with a row
-filter. `depmap_to_jbrowse.py` does that filter and writes what JBrowse reads: a
-STAR-Fusion TSV out of the fusion table, and a bedGraph out of the copy-number
-segments, which becomes the copy-number lane. K562 is model `ACH-000551`, and
-its WGS copy-number profile is `PR-aheaZL`:
+Both DepMap tables cover every line in the release. `depmap_to_jbrowse.py`
+filters to one line and writes a STAR-Fusion TSV from the fusion table and a
+bedGraph from the copy-number segments. K562 is model `ACH-000551`, and its WGS
+copy-number profile is `PR-aheaZL`:
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -82,10 +80,9 @@ sort -k1,1 -k2,2n K562_cn.bedGraph |
 bedGraphToBigWig K562_cn.sorted.bedGraph hg38.chrom.sizes K562_cn.bw
 ```
 
-The DNA breakpoints arrive on hg19, and lifting a BND callset is the one step
-here that fails quietly. A breakend record carries a second coordinate inside
-its `ALT` string, so a plain `liftOver` of the `POS` column produces a valid VCF
-whose partner coordinates still point at hg19.
+The DNA breakpoints arrive on hg19. A breakend record carries a second
+coordinate inside its `ALT` string, so a plain `liftOver` of the `POS` column
+produces a valid VCF whose partner coordinates still point at hg19.
 [`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
 moves both:
 
@@ -102,29 +99,24 @@ the output VCF and a scratch directory.
 
 ## Triaging the calls
 
-The SV inspector opens DepMap's STAR-Fusion output as a table beside a circular
-view of it, one chord per row. **Add → SV inspector**, then a File Type of
-STAR-Fusion, which the wizard cannot infer from this file's `.tsv` extension.
-Both of those steps are live links under the figure below.
+The SV inspector opens the STAR-Fusion table beside a circular view of it, one
+chord per row. **Add → SV inspector**, then a File Type of STAR-Fusion, which
+the wizard cannot infer from a `.tsv` extension.
 
-Searching the table narrows both halves, since the circle draws the rows the
-search leaves. `chr9` leaves `BCR--ABL1` and `NUP214--XKR3`, one junction seen
-from both sides, carrying more junction reads than anything else in the file.
+Searching the table narrows both halves. `chr9` leaves `BCR--ABL1` and
+`NUP214--XKR3`, one junction seen from both sides, with more junction reads than
+anything else in the file.
 
-Every row carries a menu on its caret, and **Open in linear genome view** takes
-it to its own breakpoint; type the partner's window into the location box after
-it and the view holds both side by side.
-
-Then turn on **Read connections → View as pairs**. That merges each molecule's
-two alignments onto one row across the two regions, so the fusion reads as a
-flat line per molecule. Flip the chr22 region as well (`[rev]`), since _XKR3_ is
-on the minus strand and the flip runs both halves of a molecule the same way.
+Each row's caret menu has **Open in linear genome view**, which goes to its
+breakpoint. Type the partner's window into the location box after it to hold
+both side by side, then turn on **Read connections → View as pairs** to merge
+each molecule's two alignments onto one row. Flip the chr22 region (`[rev]`),
+since _XKR3_ is on the minus strand.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
-That is the `NUP214--XKR3` side of the pair, and `BCR--ABL1` takes the rest of
-this page in the same layout, off the STAR-Fusion calls the build script adds as
-this track:
+`BCR--ABL1` takes the rest of this page in the same layout. The build script
+adds the STAR-Fusion calls as this track:
 
 ```json addtrack
 {
@@ -141,53 +133,42 @@ this track:
 
 ## BCR-ABL1 across three regions
 
-The Iso-Seq reads stop and start at the bases STAR-Fusion reported from short
-reads. Putting both partners in one view as displayed regions lays the fusion
-out the way FusionInspector does: right-click a read that crosses the junction
-and choose **Split current view to show split alignments**, or type the
-locations into the location box, separated by spaces. The transcript reaches
-_ABL1_ at more than one place, so this view uses three regions, the _BCR_ donor
-and two acceptor windows.
+Right-click a read that crosses the junction and choose **Split current view to
+show split alignments**, or type the locations into the location box separated
+by spaces. The transcript reaches _ABL1_ at more than one place, so this view
+uses three regions, the _BCR_ donor and two acceptor windows.
 
-A read that crosses the junction is one alignment on chr22 and a supplementary
+A read crossing the junction is one alignment on chr22 and a supplementary
 alignment on chr9. **Read connections → Use curved connectors** draws a curve
-between the two, and with both partners displayed those curves cross from one
-region into the other. **Filter by... → Split alignments → Only split
-alignments** then drops every read that stays on one chromosome, so the pileup
-is the fusion's own support.
+between the two across the region divider. **Filter by... → Split alignments →
+Only split alignments** drops every read that stays on one chromosome.
 
-Near-identical curves stack into one line, so a curve per molecule cannot show
-how many molecules agree on a junction. **Read connections → Show read arcs**
+Near-identical curves stack into one line. **Read connections → Show read arcs**
 adds a band under the coverage where each junction is drawn once, thickened by
-the reads behind it. An arc is drawn when both of its ends are in view, so it
-reaches across a region divider, and each acceptor window receives one. The
-vertical at the _BCR_ donor stands for the molecules whose _ABL1_ alignment
-lands in neither window.
+the reads behind it. An arc needs both ends in view, and each acceptor window
+receives one. The vertical at the _BCR_ donor stands for the molecules whose
+_ABL1_ alignment lands in neither window.
 
 <Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window carries a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 ## Where the DNA broke
 
 BCR-ABL1 is amplified as well as expressed. Both chr9 breakpoints fall inside a
-segment at roughly seven copies, while the chr22 partners sit at one, so what is
-amplified is the piece of chr9 that the two junctions cut out. DepMap's
-segmentation covers no interval over _BCR_ itself, which is why that window has
-an arc but no copy-number step under it.
+segment at roughly seven copies while the chr22 partners sit at one. DepMap's
+segmentation covers no interval over _BCR_ itself, so that window has an arc but
+no copy-number step.
 
-A fusion caller only reports junctions that are transcribed, so those arcs land
-on exon boundaries and cannot say where the amplified block begins. The DNA
-answer comes from a different assay: ENCODE's 10X Chromium linked-read run on
-K562 (ENCSR053AXS), whose large-SV calls are on hg19 and are lifted to hg38 by
-the build script. Its chr9 breakpoint for BCR-ABL1 is at 130,731,760, and
-DepMap's copy-number segmentation steps up at 130,731,326. The transcript
-junction is 122 kb to the right of both, inside _ABL1_'s first intron: the
-amplicon boundary is a DNA break, and the transcript is spliced from it to the
-nearest exon.
+A fusion caller only reports transcribed junctions, so its arcs land on exon
+boundaries and cannot say where the amplified block begins. ENCODE's 10X
+Chromium linked-read run on K562 (ENCSR053AXS) puts the chr9 DNA breakpoint at
+130,731,760, and DepMap's copy-number segmentation steps up at 130,731,326. The
+transcript junction is 122 kb to the right of both, inside _ABL1_'s first
+intron: the amplicon boundary is a DNA break, and the transcript is spliced from
+it to the nearest exon.
 
-This is the reasoning SplitThreader applied to the _ERBB2_ amplicon in SK-BR-3
+SplitThreader applied the same reasoning to the _ERBB2_ amplicon in SK-BR-3
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)): copy-number
-steps and breakpoints that describe the same interval are evidence of one event.
-Here two independent assays put that interval's edge in the same place.
+steps and breakpoints describing the same interval are evidence of one event.
 
 ## Reproduce it end to end
 
@@ -200,10 +181,10 @@ bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 
-It pulls the four ENCODE Iso-Seq alignments and merges them, converts the DepMap
-release into a STAR-Fusion TSV and a copy-number bigWig, and lifts the ENCODE
-linked-read breakpoints onto hg38. The same run builds the COLO829 half of the
-demo, which [](/docs/tutorials/cancer_sv) walks through.
+It merges the four ENCODE Iso-Seq alignments, converts the DepMap release into a
+STAR-Fusion TSV and a copy-number bigWig, and lifts the ENCODE linked-read
+breakpoints onto hg38. The same run builds the COLO829 half of the demo, which
+[](/docs/tutorials/cancer_sv) walks through.
 
 ## See also
 
