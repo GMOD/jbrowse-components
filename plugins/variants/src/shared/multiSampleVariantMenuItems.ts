@@ -450,20 +450,17 @@ export function variantContextMenuItems(
         // is about the rows.
         ...breakendSplitViewMenuItem(self, feat),
         // The shared row: one label shape and one `< 2 rows` gate across the
-        // four displays that sort rows at a column. The help text is this
-        // display's own — what a genotype sort does to the rows around the
-        // anchor is not what a score or a base sort does.
-        {
-          ...sortRowsHereMenuItem({
-            label: 'Sort rows by genotype here',
-            rowCount: self.editableSources.length,
-            onClick: () => {
-              self.sortByGenotype(feat.id())
-            },
-          }),
-          helpText:
-            'Sort rows by their genotype at this variant, then by how far each row matches its neighbours to either side. The shared haplotype block around this variant reads as a solid rectangle and frays outward where recombination ends it',
-        },
+        // four displays that sort rows at a column. No helpText of its own, as
+        // on those three — what the flanking tiebreak does to the rows around
+        // the anchor is on `sortByGenotype`, which is where a reader of the
+        // model docs looks for it.
+        sortRowsHereMenuItem({
+          label: 'Sort rows by genotype here',
+          rowCount: self.editableSources.length,
+          onClick: () => {
+            self.sortByGenotype(feat.id())
+          },
+        }),
         // the undo for the item above, in the menu it was invoked from — the
         // same item the track menu spreads, so it must not read as two actions
         ...resetRowOrderMenuItems(self),
