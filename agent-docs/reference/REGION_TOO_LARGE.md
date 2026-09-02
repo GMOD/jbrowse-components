@@ -481,11 +481,11 @@ implement no `getRegionByteSize` and need no exemption. `LinearManhattanDisplay`
 never opts in, by decision: its case is a genome-wide summary-stats view.
 `LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
 implements the estimate, so its gate is inert
-([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)). LD's
-pre-computed adapters (`PlinkLDAdapter`, `PlinkLDTabixAdapter`, `LdmatAdapter`)
-are skipped in `executeRenderLDData` before the measurement is taken, because
-they are not feature adapters and have no index estimate to read, so the byte
-axis is absent for them. `HtsgetBamAdapter` inherits `BamAdapter`'s
+([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)).
+`LDTrackDisplay` declines the gate outright (`gateEnabled` is false): an LD
+record source (`PlinkLDAdapter`, `PlinkLDTabixAdapter`) serves no features and
+has no index estimate to read, so the only verdict the byte axis could return is
+"unmeasurable" (`gateDeclined.test.ts`). `HtsgetBamAdapter` inherits `BamAdapter`'s
 `getRegionByteSize`, which answers `undefined` without a `bam.index`, and htsget
 has no index — so it is never byte-gated, and the budget table lists it only
 because that scan walks `extends` chains. MAF's `mafFrames` overlay is bounded

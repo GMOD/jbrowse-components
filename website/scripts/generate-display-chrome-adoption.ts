@@ -179,11 +179,9 @@ function returnedObjectLiterals(src: ts.SourceFile, name: string) {
 
 /**
  * A property of a registration's object literal, following `...helper(...)`
- * spreads into the object that helper returns. The LD pair is registered that
- * way: `...makeLDStateModel('LDDisplay')` supplies both `configSchema` and
- * `stateModel`, because the two registrations differ only in their names and
- * the helper is how they avoid being a loop — see the comment in
- * `plugins/variants/src/LDDisplay/index.ts` for why a loop is not an option.
+ * spreads into the object that helper returns — a registration that differs
+ * from a sibling only in its names can be spelled that way (the LD pair was,
+ * before d725f75263 left one of them).
  *
  * Only same-file helpers are followed, which is every one today and is what
  * keeps the caller's import map the right one to resolve the result against.

@@ -27,8 +27,9 @@ that bite while editing are `plugins/variants/src/CLAUDE.md`.
 - **`LinearMultiSampleVariantMatrixDisplay`** draws the same rows but lays
   columns out by feature *index* at equal widths, and ties each column back to
   its locus with a connector line.
-- **`LDDisplay`** is a different subject: a cell is a pair of sites, coloured by
-  r² or D' through a 256-entry ramp.
+- **`LDTrackDisplay`** (on an `LDTrack`, reading a plink file) is a different
+  subject: a cell is a pair of sites, coloured by r² or D' through a 256-entry
+  ramp.
 
 The matrix answers "what is the genotype pattern"; the regular display answers
 "where are these variants and how long are they". So SVs go in the regular one,

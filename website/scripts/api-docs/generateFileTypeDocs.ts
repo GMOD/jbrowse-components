@@ -159,11 +159,9 @@ export function writeFileTypeDocs(
 // MafTrack/GWASTrack/HicTrack/SyntenyTrack/LDTrack, each of which has its own
 // guide page in the same directory.
 //
-// Not every registered type has a config page: displays parameterized from a
-// shared factory at runtime (LDDisplay, LDTrackDisplay) carry no individually
-// tagged #config, and neither do a few one-off displays. Link only what exists,
-// so the table can still name them without emitting a dead link that fails the
-// CI anchor check.
+// Not every registered type has a config page: a few one-off displays carry no
+// #config tag. Link only what exists, so the table can still name them without
+// emitting a dead link that fails the CI anchor check.
 export function writeDisplayTypeDocs(
   displayTypesByTrack: Map<string, string[]>,
   configNames: Set<string>,

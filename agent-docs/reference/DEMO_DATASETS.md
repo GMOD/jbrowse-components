@@ -114,7 +114,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   30 kb window inside the inversion has r² mean **0.026** vs **0.033** in a
   flank — no block. An inversion suppresses recombination only *between*
   arrangements, so a local window recombines normally; the block is a long-range
-  phenomenon needing 4000+ SNPs on screen. LDDisplay wants local kb-scale
+  phenomenon needing 4000+ SNPs on screen. The LD heatmap wants local kb-scale
   haplotype blocks, not Mb-scale low-frequency SVs.
 - **One sample showing an inversion in both short and long reads.** HG02768 is
   not in the 1000G ONT set, and HGSV_2721 is a private singleton — HG02768 is
@@ -253,9 +253,9 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   costs no new file either.
 - **Precomputed LD is region-queried, so file size doesn't matter.**
   `PlinkLDTabixAdapter` + `LDTrack` render plink `--r2` output;
-  `plugins/variants/scripts/plink2ld.sh` does the conversion. Note that
-  `LDDisplay` suppresses its "… variants shown" status bar for precomputed LD,
-  so never gate a screenshot on that text.
+  `plugins/variants/scripts/plink2ld.sh` does the conversion. Its status bar
+  names only the pair window, so never gate a screenshot on a "… variants
+  shown" text.
 - **A `plink --maf` floor decides what an LD panel can say.** Both Anopheles
   2La panels are built at `--maf 0.2`, and Gabon's inverted arrangement is 5 of
   138 haplotypes — so its tag variants are below the floor and simply absent

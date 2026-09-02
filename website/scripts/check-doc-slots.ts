@@ -21,9 +21,9 @@
 //
 //   1. a literal value that NO declaration of that slot name could accept. A
 //      slot name can be declared by many schemas and not always as the same
-//      kind — `colorBy` is a stringEnum on SharedLDDisplay and a plain string
-//      on the variant displays, `showLabels` is a five-way enum on the canvas
-//      displays and a boolean on SharedLDDisplay. So the value is checked
+//      kind — `colorBy` is a stringEnum on the Manhattan display and a plain
+//      string on the variant displays, `showLabels` is a five-way enum on the
+//      canvas displays and a boolean on LDTrackDisplay. So the value is checked
 //      against every declaration and only reported when all of them reject it:
 //      "karyotype" survives via `colorBy`'s string declaration, while "on" is
 //      rejected by the enums and cannot be a boolean either.
@@ -218,7 +218,7 @@ function checkProse(
 // `generateConfigDocs` renders the `#slot` JSDoc in PREFERENCE to `description`,
 // so a slot carrying the sentence in only one of them is either checked there
 // and unread by anyone, or read here and checked by nothing — and both exist:
-// `SharedLDConfigSchema`'s `showLegend` puts it in the JSDoc with no
+// `LDTrackDisplay`'s `showLegend` puts it in the JSDoc with no
 // `description`, `LinearMultiRowFeatureDisplay`'s `showLabels` the other way
 // round. The page is the honest oracle, because it is the artifact the promise
 // is actually made on, and it prints the base beside the prose.

@@ -322,11 +322,10 @@ for them.
 
 **Wherever two rows name one component, the two display types render the same
 element**, so they share a `data-testid` base and are told apart only by
-`data-display-id`. Three pairs: the two GC content displays, the two arc
-displays, and `LDDisplay`/`LDTrackDisplay` — the same display against a
-VariantTrack's own genotypes and against an LDTrack's precomputed file. The
-hand-written version of this section missed the LD pair, which is why the table
-is generated now.
+`data-display-id`. Two pairs: the two GC content displays and the two arc
+displays. A third, `LDDisplay`/`LDTrackDisplay`, went when the genotype LD
+estimator did (d725f75263); the hand-written version of this section had missed
+it, which is why the table is generated now.
 
 **The last two columns are the same question asked of the export**, resolved
 from the registration's `stateModel` rather than its `ReactComponent`: the model

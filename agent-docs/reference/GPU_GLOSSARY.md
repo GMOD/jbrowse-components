@@ -432,8 +432,8 @@ this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
 | **Dynamic uniform offset** | the per-draw `dynamicOffset` in `drawPass` | `webgpuHal.ts` |
 | **Ring buffer** | `uniformRingBuffer` — ⚠️ reset to slot 0 every `beginFrame`, so it is a per-frame linear arena, not a ring that wraps across frames | `webgpuHal.ts` |
 | **Staging buffer** | `uniformStaging` — coalesces a frame's uniform writes into one `queue.writeBuffer` at submit | `webgpuHal.ts` |
-| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs) | `getLDMatrixGPU.ts` |
-| **Compute pipeline / workgroup dispatch** | same words; 2D workgroup grid to clear `maxComputeWorkgroupsPerDimension` | `getLDMatrixGPU.ts` |
+| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs). No in-tree user since the LD compute kernels went (d725f75263) | — |
+| **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. No in-tree user since d725f75263 | — |
 | **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
 | **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount` and 4 unless a display says otherwise; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |

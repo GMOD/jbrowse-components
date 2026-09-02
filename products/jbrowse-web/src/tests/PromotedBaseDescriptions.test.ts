@@ -15,7 +15,7 @@ import corePlugins from '../corePlugins.ts'
 // This reads `description`, which is NOT everything a reader sees.
 // `generateConfigDocs` renders the `#slot` JSDoc in preference to it, so a slot
 // that carries the sentence only in its JSDoc is invisible here — `showLegend`
-// on SharedLDConfigSchema is one, and it reaches LDDisplay.md all the same.
+// on LDTrackDisplay is one, and it reaches LDTrackDisplay.md all the same.
 // `website/scripts/check-doc-slots.ts` closes that by asking the same question
 // of the generated pages, where the promise and the base sit on one row; this
 // stays because it runs against the assembled schemas rather than a build

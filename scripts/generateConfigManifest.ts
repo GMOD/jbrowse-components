@@ -565,11 +565,11 @@ const documented = new Set(
   docFiles.map(file => file.replace(/\.md$/, '').toLowerCase()),
 )
 
-// Some displays are two registered types built from one shared schema
-// (LDDisplay + LDTrackDisplay from SharedLDDisplay), and the #config tag — so
-// the docs page — lives on the shared one. Saying "no docs page" for those is
-// wrong: the slots are documented, just under another name. Find the Shared*
-// page that names the type.
+// Some displays take their schema from a shared one (the multi-sample variant
+// displays from SharedVariantDisplay), and the #config tag — so the docs page —
+// lives on the shared one. Saying "no docs page" for those is wrong: the slots
+// are documented, just under another name. Find the Shared* page that names the
+// type.
 const sharedPageFor = new Map<string, string>()
 for (const file of docFiles.filter(f => f.startsWith('Shared'))) {
   const body = readFileSync(path.join(docsDir, file), 'utf8')

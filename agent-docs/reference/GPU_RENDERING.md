@@ -1712,10 +1712,9 @@ ever dropped:
   storage buffers are a consequence of generic marks, not a performance choice
   — our marks are specific, so the constraint never binds.
 
-Storage buffers *are* used where there is no GLSL target and the access pattern
-is the one they serve: the LD compute kernels
-(`plugins/variants/src/VariantRPC/getLDMatrixGPU.ts`) bind `read-only-storage`
-input and `storage` output, and are WebGPU-only by construction.
+Storage buffers *are* what a compute pass with no GLSL target would use, and
+the tree has had none since the LD compute kernels went with the in-browser
+estimator.
 
 **Depth buffer / early-Z.** No pass declares a depth-stencil state and no
 attachment carries one; overdraw is not depth-tested away. Every pass blends:

@@ -583,14 +583,10 @@ const SHOW_LEGEND_DISPLAYS = new Set([
 // display's trackMenus.ts says so in as many words).
 const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 
-// The three displays declaring `squashToHeight`, all of which draw a triangle
+// The two displays declaring `squashToHeight`, both of which draw a triangle
 // whose natural height is half the view width: the Hi-C contact matrix and the
-// two LD heatmaps. They share one menu-item helper, so they share the label.
-const SQUASH_TO_HEIGHT_DISPLAYS = new Set([
-  'LinearHicDisplay',
-  'LDDisplay',
-  'LDTrackDisplay',
-])
+// LD heatmap. They share one menu-item helper, so they share the label.
+const SQUASH_TO_HEIGHT_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
 
 // linkedReads, drawInter, drawLongRange, readConnectionsHeight and sortedBy are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
