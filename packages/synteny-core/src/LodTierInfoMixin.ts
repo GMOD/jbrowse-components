@@ -1,11 +1,11 @@
-import { installFetch } from '@jbrowse/core/util/installFetch'
+import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { readLodTierInfo, trackHasLodTiers } from './lodTier.ts'
 
 import type { LodTierInfo } from './lodTier.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
+import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisiteFetch'
 
 /**
  * #stateModel LodTierInfoMixin
@@ -36,31 +36,28 @@ export function LodTierInfoMixin() {
     }))
 }
 
-export interface LodTierInfoHost extends FetchSkeletonHost {
-  adapterConfig: Record<string, unknown>
-  isMinimized: boolean
+export interface LodTierInfoHost extends PrerequisiteFetchHost {
   parentTrack: { configuration: AnyConfigurationModel }
   setLodTierInfo: (info: LodTierInfo | undefined) => void
 }
 
 /**
  * The one-shot read behind {@link LodTierInfoMixin}: `CoreGetInfo` against the
- * track's adapter, keyed on the adapter config so an edit re-reads and an
- * un-minimize does not, and gated on the threshold slot so a PAFAdapter never
- * asks. A failure is not terminal — the display keeps resolving off the slot,
- * which is what it did before the header existed, and the primary fetch on the
- * same file raises the real error — so it is only logged. No `contract`: this
- * is the second fetch on a host whose primary fetch installed the checks.
+ * track's adapter, the shared prerequisite-read declaration (the adapter-config
+ * trigger and key, the minimized gate, no `contract`) plus this read's own
+ * terms — gated on the threshold slot so a PAFAdapter never asks, and narrating
+ * nothing, since a header is not a load. A failure is not terminal — the
+ * display keeps resolving off the slot, which is what it did before the header
+ * existed, and the primary fetch on the same file raises the real error — so it
+ * is only logged.
  */
 export function installLodTierInfoFetch(self: LodTierInfoHost) {
-  installFetch(self, {
+  installPrerequisiteFetch(self, {
     name: 'LodTierInfo',
     delay: 0,
     report: { setStatusMessage: () => {} },
-    gate: () => !self.isMinimized && trackHasLodTiers(self.parentTrack),
-    prepare: () => ({ adapterConfig: self.adapterConfig }),
-    fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
-    run: async ({ adapterConfig }, ctx) =>
+    gate: () => trackHasLodTiers(self.parentTrack),
+    run: async (adapterConfig, ctx) =>
       readLodTierInfo(await ctx.callRpc('CoreGetInfo', { adapterConfig })),
     commit: info => {
       self.setLodTierInfo(info)

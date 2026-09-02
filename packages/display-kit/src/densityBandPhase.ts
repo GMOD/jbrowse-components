@@ -1,6 +1,7 @@
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 
+import type { DensityRead } from './DensityTierMixin.ts'
 import type { DisplayPhaseFoundation } from './foundationDisplayPhase.ts'
 import type { SvgReadyFoundation } from './foundationSvgReady.ts'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -15,7 +16,7 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 export interface DensityBandPhaseHost
   extends DisplayPhaseFoundation, SvgReadyFoundation {
   host: { effectiveBodyMounted: boolean }
-  densityBinsKey: string | undefined
+  densityBinsRead: DensityRead | undefined
   densityLoading: boolean
   densityBandActive: boolean
   viewportWithinLoadedData: boolean
@@ -24,17 +25,18 @@ export interface DensityBandPhaseHost
 
 /**
  * Whether the band is still waiting on its first read for what is on screen.
- * The key, not a per-region check against `visibleRegions`: that array rebuilds
- * on every frame of every gesture, and this feeds `displayPhase`. It is cleared
- * on navigation with the bins, so it cannot answer for a region the user has
- * left, and a read that committed nothing for a region still ends the wait —
- * an empty band is the honest answer there, where 'loading' would never lift.
- * A failed read lands on the display's own `error`, which outranks this.
+ * Whether a read has landed at all, not a per-region check against
+ * `visibleRegions`: that array rebuilds on every frame of every gesture, and
+ * this feeds `displayPhase`. The read is cleared on navigation with the bins,
+ * so it cannot answer for a region the user has left, and a read that
+ * committed nothing for a region still ends the wait — an empty band is the
+ * honest answer there, where 'loading' would never lift. A failed read lands on
+ * the display's own `error`, which outranks this.
  */
 export function densityBandPending(
-  self: Pick<DensityBandPhaseHost, 'densityLoading' | 'densityBinsKey'>,
+  self: Pick<DensityBandPhaseHost, 'densityLoading' | 'densityBinsRead'>,
 ) {
-  return self.densityLoading || self.densityBinsKey === undefined
+  return self.densityLoading || self.densityBinsRead === undefined
 }
 
 /**

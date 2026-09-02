@@ -342,6 +342,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           fetchCanceled: self.fetchCanceled,
           loadedFetchKey: self.loadedFetchKey,
           currentFetchKey: this.currentFetchKey,
+          adapterConfig: self.adapterConfig,
         })
       },
       /**
@@ -516,13 +517,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * — and had to special-case `undefined` because the skeleton clears the
        * error through the same setter before every fetch.
        */
-      setRpcData(
-        data: DotplotRpcData,
-        fetchKey: string,
-        warnings: ComparativeWarning[],
-      ) {
+      setRpcData(data: DotplotRpcData, warnings: ComparativeWarning[]) {
         self.rpcData = data
-        self.loadedFetchKey = fetchKey
         self.fetchWarnings = warnings
         // The hover index describes the geometry built from the OUTGOING
         // rpcData, so it is meaningless against what replaces it: a surviving

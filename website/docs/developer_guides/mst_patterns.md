@@ -126,14 +126,12 @@ everything else untracked:
 <!-- include: plugins/dotplot-view/src/DotplotDisplay/afterAttach.ts#untracked -->
 
 ```ts
-const fetchKey = self.currentFetchKey
 // Untracked: the values behind that key. Reading them here rather than
 // as deps keeps raw offsetPx/width changes from refiring the fetch,
 // while the worker still sees the current axes.
-// eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, fetchKey is the decision
+// eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
 return untracked(() => ({
-  fetchKey,
-  // the resolved tier, which is what `currentFetchKey` above carries —
+  // the resolved tier, which is what `currentFetchKey` carries —
   // `view.lodMode` stays 'auto' while the tier flips under it
   lodTier: self.lodTier,
   hViewSnap: makeViewSnap(view.hview),
@@ -312,11 +310,7 @@ the fetch:
   // consuming the retry here costs nothing — while a reload landing
   // mid-flight is answered by the re-run the counter read above already
   // guarantees.
-  if (
-    fetchKey !== undefined &&
-    isDataCurrent(heldKey(), fetchKey(args)) &&
-    reloadEpoch === issuedEpoch
-  ) {
+  if (held !== undefined && held(args) && reloadEpoch === issuedEpoch) {
     noteFetchAutorunRun?.('declined')
     return false
   }

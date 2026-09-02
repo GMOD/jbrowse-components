@@ -74,19 +74,18 @@ export function doAfterAttach(
     prepare: () => {
       const { view } = self
       if (view.initialized) {
-        // The only tracked view dep. `currentFetchKey` folds every input this
-        // fetch depends on — LOD tier, both axes' zoom and displayed-region
-        // order, and the snapped h-axis fetch window — into one computed, so
-        // the autorun refires exactly when a refetch is actually needed.
+        // `view.initialized` is this gate's only tracked read. The installer
+        // reads `currentFetchKey` — LOD tier, both axes' zoom and
+        // displayed-region order, the snapped h-axis fetch window — beside the
+        // adapter config, so the autorun refires exactly when a refetch is
+        // needed.
         // #region untracked
-        const fetchKey = self.currentFetchKey
         // Untracked: the values behind that key. Reading them here rather than
         // as deps keeps raw offsetPx/width changes from refiring the fetch,
         // while the worker still sees the current axes.
-        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, fetchKey is the decision
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
         return untracked(() => ({
-          fetchKey,
-          // the resolved tier, which is what `currentFetchKey` above carries —
+          // the resolved tier, which is what `currentFetchKey` carries —
           // `view.lodMode` stays 'auto' while the tier flips under it
           lodTier: self.lodTier,
           hViewSnap: makeViewSnap(view.hview),
@@ -139,13 +138,12 @@ export function doAfterAttach(
         }))
       return { result, mismatched }
     },
-    commit: ({ result, mismatched }, { fetchKey }) => {
+    commit: ({ result, mismatched }) => {
       // Before the data lands — see the synteny twin: the accumulated ramp
       // domain has to outlive the payload whose span it was widened by.
       self.view.observeAttributeRanges(result.attributeRanges)
       self.setRpcData(
         result,
-        fetchKey,
         mismatched
           ? [
               {

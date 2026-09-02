@@ -1,4 +1,5 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { comparativeFetchKey } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -201,9 +202,10 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     mateRefNameDict: ['ctgA'],
   })
   for (const display of view.dotplotDisplays) {
-    // `currentFetchKey`, so `dataCurrent` holds and the export's svgReady gate
+    display.setRpcData(rpcData, [])
+    // the live key, so `dataCurrent` holds and the export's svgReady gate
     // opens instead of waiting out the whole test on a key that never matches
-    display.setRpcData(rpcData, display.currentFetchKey, [])
+    display.setLoadedFetchKey(comparativeFetchKey(display))
     // svgReady also wants instance geometry; nothing needs to be IN it, the
     // legend is drawn outside the plot rect
     display.setInstanceData(fakeDotplotInstanceData(0))

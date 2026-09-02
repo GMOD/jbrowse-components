@@ -184,7 +184,10 @@ export type {
   ComparativeDisplayFetchState,
   ComparativeSurface,
 } from './comparativeReadiness.ts'
-export { comparativeFetchFlags } from './comparativeFetchFlags.ts'
+export {
+  comparativeFetchFlags,
+  comparativeFetchKey,
+} from './comparativeFetchFlags.ts'
 export type {
   ComparativeFetchFlags,
   ComparativeFetchInputs,

@@ -5,13 +5,13 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getContainingView } from '@jbrowse/core/util'
+import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
   gradientSvgLegendWidth,
 } from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import { installPrerequisiteFetch } from '@jbrowse/display-kit/installPrerequisiteFetch'
 import { triangleScreenToData } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -659,6 +659,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // pre-first-paint scrim is up on `canvasDrawn` rather than on
         // `isLoading` — and the reason there is no `contract` here.
         installPrerequisiteFetch(self, {
+          report: { statusWindow: self.statusWindow },
           run: async (adapterConfig, ctx) =>
             (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
               norms?: string[]

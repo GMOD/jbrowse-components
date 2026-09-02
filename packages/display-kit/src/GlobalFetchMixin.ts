@@ -104,10 +104,12 @@ export default function GlobalFetchMixin() {
        * binsize. `undefined` means "not computable yet" (view unmeasured, a
        * prerequisite header still in flight) and holds the fetch off.
        *
-       * Settings are deliberately not the display's half: `fetchSignature`
-       * below appends `rpcPropsCacheKey`, so a field added to `rpcProps()`
-       * invalidates held data structurally. HiC hand-folded one settings term
-       * in and would have silently missed the second.
+       * Settings and the adapter are deliberately not the display's half:
+       * `fetchSignature` below appends `rpcPropsCacheKey` and
+       * `adapterConfigKey`, so a field added to `rpcProps()` or a track
+       * re-pointed in the config editor invalidates held data structurally.
+       * HiC hand-folded one settings term in and would have silently missed
+       * the second.
        *
        * Default `undefined`, so a display that forgets the override never
        * fetches and never exports — hung is diagnosable, stale ships wrong
@@ -151,16 +153,17 @@ export default function GlobalFetchMixin() {
       },
       /**
        * #getter
-       * Signature of the fetch the current view and settings call for — the
-       * display's `viewSignature` plus the serialized `rpcProps()` axis. The
-       * fetch skeleton's freshness key: captured at issue, compared against the
-       * stamp below, and written to it at commit.
+       * Signature of the fetch the current view, settings and adapter call for
+       * — the display's `viewSignature` plus the serialized `rpcProps()` axis
+       * plus the adapter config. The fetch skeleton's freshness key: captured
+       * at issue, compared against the stamp below, and written to it at
+       * commit.
        */
       get fetchSignature(): string | undefined {
         const base = self.viewSignature
         return base === undefined
           ? undefined
-          : `${base}|${self.rpcPropsCacheKey}`
+          : `${base}|${self.rpcPropsCacheKey}|${self.adapterConfigKey}`
       },
     }))
     .views(() => ({

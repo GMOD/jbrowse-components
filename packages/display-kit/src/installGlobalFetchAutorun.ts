@@ -47,7 +47,7 @@ export interface GlobalFetchHost
   // rotation they cannot see.
   fetchRotation: StopTokenRotation
   // `GlobalFetchMixin`'s freshness pair: the resolved signature of what the
-  // view and settings call for, captured at issue, and the commit that stamps
+  // view, settings and adapter call for, captured at issue, and the commit that stamps
   // it in the same transaction as the display's own store. The signature, not
   // `dataCurrent`: that one also carries `dataSuperseded`, which holds the
   // export and must not refetch.

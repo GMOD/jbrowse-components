@@ -1,10 +1,11 @@
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { isDataCurrent } from '@jbrowse/core/util'
+import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 
 /**
  * What a comparative display's own fetch state looks like: the terms the flags
- * below are built from, plus the two fetch keys the freshness compare reads.
- * Named the same on both displays, which is what lets one function serve them.
+ * below are built from, plus the inputs of the freshness compare. Named the
+ * same on both displays, which is what lets one function serve them.
  */
 export interface ComparativeFetchInputs {
   /**
@@ -27,10 +28,29 @@ export interface ComparativeFetchInputs {
   fetchInert: boolean
   /** `SyntenyFetchStateMixin`'s durable Cancel flag */
   fetchCanceled: boolean
-  /** the key the data on screen was fetched for */
+  /**
+   * the key the data on screen was fetched for — `comparativeFetchKey`'s
+   * output, stamped by `installComparativeFetchAutorun` at commit
+   */
   loadedFetchKey: string | undefined
-  /** the key a fetch issued right now would use */
+  /** the display's half of the key a fetch issued right now would use */
   currentFetchKey: string
+  /** the other half: the adapter that fetch would run against */
+  adapterConfig: Record<string, unknown>
+}
+
+/**
+ * The whole key a comparative fetch is issued under: the display's own
+ * `currentFetchKey` plus the adapter axis. The installer reads it to gate and
+ * stamp, `dataCurrent` below reads it to compare, so the two cannot carry
+ * different axes. They did: the installer folded the adapter in for itself and
+ * `dataCurrent` compared the display's key alone, so an adapter edit refetched
+ * while the export gate held the stale plot current.
+ */
+export function comparativeFetchKey(
+  self: Pick<ComparativeFetchInputs, 'currentFetchKey' | 'adapterConfig'>,
+) {
+  return `${self.currentFetchKey}\n${adapterConfigKey(self.adapterConfig)}`
 }
 
 /** The four flags every consumer of a comparative display reads. */
@@ -82,7 +102,10 @@ export function comparativeFetchFlags(
   self: ComparativeFetchInputs,
 ): ComparativeFetchFlags {
   const refetching = self.fetching && self.ready && !self.error
-  const dataCurrent = isDataCurrent(self.loadedFetchKey, self.currentFetchKey)
+  const dataCurrent = isDataCurrent(
+    self.loadedFetchKey,
+    comparativeFetchKey(self),
+  )
   return {
     loading: !self.ready && !self.error && !self.fetchInert,
     refetching,

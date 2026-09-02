@@ -1318,9 +1318,10 @@ only on a real violation):
   for what each display bails on.
 
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
-  `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
-  correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
-  omission for everyone else. Checkable only behind an explicit opt-out
+  `rpcPropsCacheKey` returns `''`, so `SettingsInvalidate` (installed on every
+  per-region display since 2026-09, for the adapter axis it also watches) fires
+  on no setting — correct for `LinearReferenceSequenceDisplay`,
+  indistinguishable from an omission for everyone else. Checkable only behind an explicit opt-out
   (`noSettingsInvalidation: true`), which the foundation's own test display
   (`plugins/linear-genome-view/src/displayKitTests/perRegionTestEnv.ts`, which defines no `rpcProps`
   because it is testing the autoruns rather than a payload) would also have to

@@ -31,7 +31,6 @@ after `RegionTooLargeMixin`; the display decides how the bins are drawn.
 | <span id="getter-densitysourceconfig">**densitySourceConfig**</span><br><code>unknown</code> | The `densityAdapter` slot of the adapter the gate measures, read off the live track config so a tiered display's swap follows it. |
 | <span id="getter-densitytiermode">**densityTierMode**</span><br><code>"auto" &#124; "density" &#124; "features"</code> |  |
 | <span id="getter-densitytierthresholdbpperpx">**densityTierThresholdBpPerPx**</span><br><code>number</code> |  |
-| <span id="getter-densitybinskey">**densityBinsKey**</span><br><code>string &#124; undefined</code> | The key of the read the held bins came from, which the fetch skeleton compares an issue against; undefined until a read lands. |
 | <span id="getter-hasdensitysource">**hasDensitySource**</span><br><code>boolean</code> |  |
 | <span id="getter-densitytieractive">**densityTierActive**</span><br><code>boolean</code> | Whether the band stands in for features right now. |
 | <span id="getter-fetchsuspended">**fetchSuspended**</span><br><code>boolean</code> | `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over the tier's verdict. A display whose band needs somewhere to draw (alignments, whose coverage band can be hidden) overrides it with that term. |

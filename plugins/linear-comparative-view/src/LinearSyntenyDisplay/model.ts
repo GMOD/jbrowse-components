@@ -261,11 +261,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
         instanceData: SyntenyGeometry | undefined,
-        fetchKey: string,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
-        self.loadedFetchKey = fetchKey
         self.hoveredInstanceIdx = -1
         self.clickedInstanceIdx = -1
         self.contextMenuAnchor = undefined
@@ -445,6 +443,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           fetchCanceled: self.fetchCanceled,
           loadedFetchKey: self.loadedFetchKey,
           currentFetchKey: this.currentFetchKey,
+          adapterConfig: self.adapterConfig,
         })
       },
       /**

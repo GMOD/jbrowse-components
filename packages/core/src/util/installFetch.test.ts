@@ -56,7 +56,12 @@ function writeStatus(self: unknown) {
  * takes a duck-typed node, and booting one would put two plugins between each
  * rule and its assertion.
  */
-function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
+function makeHost(opts?: {
+  enabled?: boolean
+  keyed?: boolean
+  /** the predicate form of the freshness gate: held once its key was committed */
+  held?: boolean
+}) {
   const Host = types
     .model('PrerequisiteHost', {})
     .volatile(self => ({
@@ -121,11 +126,14 @@ function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
           },
           // this fetch's inputs are the host's alone, so its args are empty —
           // `undefined` is reserved for the decline
-          prepare: () => (opts?.keyed ? { key: self.key } : {}),
+          prepare: () => (opts?.keyed || opts?.held ? { key: self.key } : {}),
           // declared only in `keyed` mode, which is the same flag that makes
           // `prepare` return a key — so every other test drives the skeleton
           // with no freshness gate at all, and here the key is always set
           fetchKey: opts?.keyed ? ({ key }) => key! : undefined,
+          heldAnswers: opts?.held
+            ? ({ key }) => self.committed.includes(key!)
+            : undefined,
           run: (_args, ctx) => {
             const d = deferred()
             self.runs.push(d)
@@ -461,4 +469,29 @@ test('a failed fetch leaves the freshness gate open', async () => {
   await settleDebounce(() => host.runs.length > 1)
   expect(host.runs).toHaveLength(2)
   spy.mockRestore()
+})
+
+// The predicate form is the same gate: a decline on it is a decline, and the
+// reload epoch overrides it. What it buys is a "held" that string equality
+// cannot spell — here "this key was committed once", for the density tier "the
+// held read contains the viewport".
+test('a predicate freshness gate declines, and a reload overrides it', async () => {
+  const host = makeHost({ held: true })
+  await flush()
+  host.runs[0]!.resolve('a')
+  await settleDebounce(() => host.committed.length > 0)
+
+  const before = host.probe.bodyRuns
+  host.setEnabled(false)
+  host.setEnabled(true)
+  await settleDebounce(() => host.probe.bodyRuns > before)
+  expect(host.runs).toHaveLength(1)
+
+  host.reload()
+  await settleDebounce(() => host.runs.length > 1)
+  expect(host.runs).toHaveLength(2)
+
+  host.setKey('b')
+  await settleDebounce(() => host.runs.length > 2)
+  expect(host.runs).toHaveLength(3)
 })

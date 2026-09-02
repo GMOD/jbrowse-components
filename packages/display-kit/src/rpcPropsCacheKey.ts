@@ -1,3 +1,5 @@
+import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
+
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -24,4 +26,20 @@ export function serializeRpcProps(
 ) {
   const { rpcProps } = self
   return rpcProps ? JSON.stringify(rpcProps.call(self)) : ''
+}
+
+/**
+ * The other non-viewport axis of a fetch, beside the settings above: the
+ * adapter the fetch runs against, as `adapterConfigKey` spells it everywhere.
+ * Reached through `FetchMixin.adapterConfigKey` and watched by the same two
+ * readers as `rpcPropsCacheKey`, so a track re-pointed in the config editor
+ * refetches on both LGV families the way it already did on the comparative
+ * one. `adapterConfig` is `BaseDisplay`'s, looked up dynamically for the
+ * reason `rpcProps` is; `''` for a node without one.
+ */
+export function serializeAdapterConfig(
+  self: IStateTreeNode & { adapterConfig?: Record<string, unknown> },
+) {
+  const { adapterConfig } = self
+  return adapterConfig ? adapterConfigKey(adapterConfig) : ''
 }

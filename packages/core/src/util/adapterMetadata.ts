@@ -1,3 +1,4 @@
+import { adapterConfigKey } from './adapterConfigKey.ts'
 import { getRpcSessionId } from './parentWalk.ts'
 import { getRpcHost } from './sessionServices.ts'
 
@@ -24,7 +25,7 @@ export function createAdapterMetadataFetch(
 ) {
   let cached: { key: string; promise: Promise<unknown> } | undefined
   return () => {
-    const key = JSON.stringify(self.adapterConfig)
+    const key = adapterConfigKey(self.adapterConfig)
     if (cached?.key !== key) {
       const promise = getRpcHost(self)
         // eslint-disable-next-line no-restricted-syntax -- nothing to narrate, nothing a cancel could save

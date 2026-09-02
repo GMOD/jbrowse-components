@@ -41,12 +41,14 @@ export function SyntenyFetchStateMixin() {
       fetching: false,
       /**
        * #volatile
-       * Fetch-input signature the currently held data was fetched for (each
-       * display builds its own `currentFetchKey`). Compared against the live
-       * inputs in `dataCurrent` to catch data gone stale after a region/zoom
-       * change — including during the pre-refetch debounce gap, where
-       * `fetching` is still false and would otherwise report done on content
-       * drawn against the old viewport.
+       * The `comparativeFetchKey` the held data was fetched under — the
+       * display's `currentFetchKey` plus the adapter axis. Written only by
+       * `installComparativeFetchAutorun`'s commit, in the same transaction as
+       * the display's own store, and compared against the live key in
+       * `dataCurrent` to catch data gone stale after a region/zoom change —
+       * including during the pre-refetch debounce gap, where `fetching` is
+       * still false and would otherwise report done on content drawn against
+       * the old viewport.
        */
       loadedFetchKey: undefined as string | undefined,
       /**
@@ -142,6 +144,16 @@ export function SyntenyFetchStateMixin() {
       },
       /**
        * #action
+       * The commit-side stamp, for `installComparativeFetchAutorun` and for a
+       * test staging already-loaded data. A display never calls it: the
+       * installer writes it beside the display's own store, which is what
+       * keeps `dataCurrent` derivable rather than remembered.
+       */
+      setLoadedFetchKey(key: string | undefined) {
+        self.loadedFetchKey = key
+      },
+      /**
+       * #action
        * Install-time wiring, called once by
        * `installComparativeFetchAutorun` — see `stopActiveFetch` for why the
        * stop arrives from there rather than being built here.
@@ -188,6 +200,13 @@ export function SyntenyFetchStateMixin() {
        * bumped the counter alone would wake the autorun into a run the gate
        * still refuses — the dead Retry `makeRetryContractCheck` reports, and
        * the one the overlay's own button would be.
+       *
+       * Drops `loadedFetchKey` too, for the same reason `GlobalFetchMixin.reload`
+       * drops its stamp: not for the refetch, which the skeleton's reload epoch
+       * already forces, but so `dataCurrent` reads false through the debounce
+       * before it starts and an export begun after the click waits for the
+       * result instead of capturing what the retry is about to replace. The
+       * data itself survives under that flag.
        */
       reload() {
         // The cancel gate, cleared synchronously: the overlay flips off
@@ -198,6 +217,7 @@ export function SyntenyFetchStateMixin() {
         // no fetch clears it on the way past (it cannot be true at a fetch
         // start, since the gate is above the fetch).
         self.fetchCanceled = false
+        self.loadedFetchKey = undefined
         self.reloadCounter += 1
       },
     }))

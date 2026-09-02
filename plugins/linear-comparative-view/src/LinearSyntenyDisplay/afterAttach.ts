@@ -33,15 +33,15 @@ export function doAfterAttach(
       const connected = self.fetchInert ? undefined : self.connectedViews
       if (connected) {
         const { v0, v1 } = connected
-        // The only other tracked dep. `currentFetchKey` folds every input this
-        // fetch depends on — both views' region sets, the snapped fetch window,
-        // the log2 zoom bucket, the CIGAR draw options and the resolved
-        // LOD tier — into one computed, so the autorun refires exactly when a
-        // refetch is needed. Tracking the underlying observables individually
-        // (as this once did) is strictly noisier: a setDisplayedRegions that
-        // yields an identical region signature would refetch data that is still
-        // valid. Same shape as dotplot's fetch.
-        const fetchKey = self.currentFetchKey
+        // `fetchInert` and `connectedViews` are this gate's only tracked reads.
+        // The installer reads `currentFetchKey` — both views' region sets, the
+        // snapped fetch window, the log2 zoom bucket, the CIGAR draw options
+        // and the resolved LOD tier — beside the adapter config, so the autorun
+        // refires exactly when a refetch is needed. Tracking the underlying
+        // observables individually (as this once did) is strictly noisier: a
+        // setDisplayedRegions that yields an identical region signature would
+        // refetch data that is still valid. Same shape as dotplot's fetch.
+        //
         // Untracked: the values behind that key, and the raw geometry the
         // worker culls with. Reading them here rather than as deps keeps
         // offsetPx/width changes from refiring the fetch, while the worker
@@ -51,11 +51,10 @@ export function doAfterAttach(
         // width; the target axis (v1) supplies its cumBp index + cull geometry,
         // and its own fetch window only when the view asked for the second
         // query (`targetFetchRegions` is [] otherwise).
-        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, fetchKey is the decision
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, currentFetchKey is the decision
         return untracked(() => {
           const { view } = self
           return {
-            fetchKey,
             drawCIGAR: view.drawCIGAR,
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
             lodTier: self.lodTier,
@@ -200,13 +199,13 @@ export function doAfterAttach(
         ),
       }
     },
-    commit: ({ instanceData, ...featureData }, { fetchKey }) => {
+    commit: ({ instanceData, ...featureData }) => {
       // Before the data lands, because the accumulated domain has to outlive
       // this payload: `attributeRanges` reports the span of the SLICE this
       // window fetched, and the ramp an `attribute:<column>` mode paints would
       // otherwise re-scale on every pan that rolls the window over.
       self.view.observeAttributeRanges(featureData.attributeRanges)
-      self.setRpcData(featureData, instanceData, fetchKey)
+      self.setRpcData(featureData, instanceData)
     },
   })
 

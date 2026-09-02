@@ -228,6 +228,20 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    */
   committedKey?: () => string | undefined
   /**
+   * The predicate form of the freshness gate, for a fetch whose "I have exactly
+   * this already" is not string equality: the density tier holds bins over a
+   * buffered read and answers a viewport those bins *contain*, which no key can
+   * spell. Same rules as `fetchKey` — declined runs report `declined`, and a
+   * `reloadCounter` advanced since the last issued fetch overrides it — so the
+   * comparison lives here and not in `prepare`, where a reload could not reach
+   * it. Runs inside the autorun, so what it reads is tracked: read the
+   * committed state off an observable, and the commit that changes the answer
+   * wakes the declined run.
+   *
+   * Either this or `fetchKey`, not both.
+   */
+  heldAnswers?: (args: TArgs) => boolean
+  /**
    * Install the two display-contract checks under this name. Omitted
    * by a **secondary** fetch on a host whose primary foundation already
    * installed them: `assertDisplayContract` would report the second install as
@@ -328,6 +342,7 @@ export function installFetch<TArgs, TResult>(
     contract,
     fetchKey,
     committedKey,
+    heldAnswers,
     prepare,
     run,
     commit,
@@ -352,6 +367,13 @@ export function installFetch<TArgs, TResult>(
       ? observable.box<string | undefined>()
       : undefined
   const heldKey = committedKey ?? (() => stamp?.get())
+  // the freshness gate in whichever form the caller declared it
+  const held =
+    heldAnswers !== undefined
+      ? heldAnswers
+      : fetchKey !== undefined
+        ? (args: TArgs) => isDataCurrent(heldKey(), fetchKey(args))
+        : undefined
   const commitAndStamp = stamp
     ? (result: TResult, args: TArgs) => {
         runInAction(() => {
@@ -400,11 +422,7 @@ export function installFetch<TArgs, TResult>(
       // consuming the retry here costs nothing — while a reload landing
       // mid-flight is answered by the re-run the counter read above already
       // guarantees.
-      if (
-        fetchKey !== undefined &&
-        isDataCurrent(heldKey(), fetchKey(args)) &&
-        reloadEpoch === issuedEpoch
-      ) {
+      if (held !== undefined && held(args) && reloadEpoch === issuedEpoch) {
         noteFetchAutorunRun?.('declined')
         return false
       }

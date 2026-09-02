@@ -1,5 +1,6 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
+import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -59,18 +60,8 @@ function densityRead({ regions, bpPerPx, adapterConfig }: DensityIssue) {
   return {
     regions,
     bucket: densityZoomBucket(bpPerPx),
-    adapterKey: JSON.stringify(adapterConfig),
+    adapterKey: adapterConfigKey(adapterConfig),
   }
-}
-
-function densityReadKey({ regions, bucket, adapterKey }: DensityRead) {
-  const regionKey = regions
-    .map(
-      ({ region: r, displayedRegionIndex }) =>
-        `${displayedRegionIndex}:${r.refName}:${Math.floor(r.start)}-${Math.ceil(r.end)}`,
-    )
-    .join(',')
-  return `${bucket}|${regionKey}|${adapterKey}`
 }
 
 /**
@@ -134,15 +125,6 @@ export default function DensityTierMixin() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * The key of the read the held bins came from, which the fetch skeleton
-       * compares an issue against; undefined until a read lands.
-       */
-      get densityBinsKey(): string | undefined {
-        const read = self.densityBinsRead
-        return read === undefined ? undefined : densityReadKey(read)
-      },
       /**
        * #getter
        */
@@ -225,28 +207,32 @@ export default function DensityTierMixin() {
           delay: 300,
           report: { statusWindow: host(self).statusWindow },
           gate: () => self.densityTierActive && !host(self).isMinimized,
-          // nothing to read while the held bins still cover the screen at
-          // this zoom bucket for this adapter, so a pan or a small zoom
-          // inside the buffered read draws what is held
           prepare: () => {
             const v = view(self)
-            const adapterConfig = host(self).byteGateAdapterConfig
-            const read = self.densityBinsRead
-            const covered =
-              read !== undefined &&
-              read.bucket === densityZoomBucket(v.coarseBpPerPx) &&
-              read.adapterKey === JSON.stringify(adapterConfig) &&
-              densityBinsCover(read.regions, v.visibleRegions)
-            return v.initialized && !covered
+            return v.initialized
               ? {
                   regions: v.bufferedVisibleRegions,
                   bpPerPx: v.coarseBpPerPx,
-                  adapterConfig,
+                  adapterConfig: host(self).byteGateAdapterConfig,
                 }
               : undefined
           },
-          fetchKey: issue => densityReadKey(densityRead(issue)),
-          committedKey: () => self.densityBinsKey,
+          // Nothing to read while the held bins still cover the screen at this
+          // zoom bucket for this adapter, so a pan or a small zoom inside the
+          // buffered read draws what is held. The skeleton's freshness gate in
+          // its predicate form, because "the read contains the viewport" is not
+          // a key equality — and there rather than in `prepare`, so a Retry
+          // overrides it the way it overrides every other freshness gate.
+          heldAnswers: issue => {
+            const read = self.densityBinsRead
+            const issued = densityRead(issue)
+            return (
+              read !== undefined &&
+              read.bucket === issued.bucket &&
+              read.adapterKey === issued.adapterKey &&
+              densityBinsCover(read.regions, view(self).visibleRegions)
+            )
+          },
           run: (issue, ctx) =>
             ctx.callRpc('CoreGetFeatureDensity', {
               adapterConfig: issue.adapterConfig,

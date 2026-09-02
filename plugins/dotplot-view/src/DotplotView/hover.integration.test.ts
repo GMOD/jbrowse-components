@@ -33,7 +33,7 @@ function commit(
   v: [number, number],
 ) {
   const rpcData = fakeRpcData(h, v)
-  display.setRpcData(rpcData, `fake-${display.displayKey}`, [])
+  display.setRpcData(rpcData, [])
   display.setInstanceData(
     buildLineSegments(
       rpcData,
@@ -201,7 +201,7 @@ test.each([
   [
     'a refetch',
     (a: DotplotDisplayModel) => {
-      a.setRpcData(fakeRpcData([5000, 6000], [5000, 6000]), 'next', [])
+      a.setRpcData(fakeRpcData([5000, 6000], [5000, 6000]), [])
     },
   ],
   [

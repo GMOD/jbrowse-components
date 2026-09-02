@@ -197,11 +197,7 @@ test('a section whose every row is gated out takes its heading with it', async (
   // so the assertion below reads the previous frame
   act(() => {
     for (const d of view.allSyntenyDisplays) {
-      d.setRpcData(
-        packSyntenyFeatureData([], { hasCigar: false }),
-        undefined,
-        'k',
-      )
+      d.setRpcData(packSyntenyFeatureData([], { hasCigar: false }), undefined)
     }
   })
   expect(view.hasCigarData).toBe(false)
@@ -220,11 +216,7 @@ test('a section keeps its heading while any one row survives', async () => {
 
   act(() => {
     for (const d of view.allSyntenyDisplays) {
-      d.setRpcData(
-        packSyntenyFeatureData([], { hasCigar: false }),
-        undefined,
-        'k',
-      )
+      d.setRpcData(packSyntenyFeatureData([], { hasCigar: false }), undefined)
     }
   })
 

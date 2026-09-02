@@ -1,12 +1,14 @@
 import { getContainingView, getNotificationSink } from '@jbrowse/core/util'
-import { installPrerequisiteFetch } from '@jbrowse/display-kit/installPrerequisiteFetch'
+import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 
 import type { Source } from './types.ts'
-import type { PrerequisiteFetchHost } from '@jbrowse/display-kit/installPrerequisiteFetch'
+import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisiteFetch'
+import type { StatusWindow } from '@jbrowse/core/util/progress'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiSampleVariantSourcesAutorun(
   self: PrerequisiteFetchHost & {
+    statusWindow: StatusWindow
     setError: (error?: unknown) => void
     setSources: (sources: Source[]) => void
   },
@@ -19,6 +21,7 @@ export function getMultiSampleVariantSourcesAutorun(
   // rotation, the currency-guarded error rule and the retired status slot are
   // all doing work.
   installPrerequisiteFetch(self, {
+    report: { statusWindow: self.statusWindow },
     // The view-measured term this read has carried since it was hand-rolled.
     // It reads no view geometry itself, so nothing here throws before init —
     // the gate is what keeps a full-file scan from starting ahead of the

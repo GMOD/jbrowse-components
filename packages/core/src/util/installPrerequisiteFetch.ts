@@ -1,14 +1,16 @@
-import { installFetch } from '@jbrowse/core/util/installFetch'
+import { adapterConfigKey } from './adapterConfigKey.ts'
+import { installFetch } from './installFetch.ts'
 
-import type { FetchContext } from '@jbrowse/core/util/fetchContext'
-import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
-import type { StatusWindow } from '@jbrowse/core/util/progress'
+import type { StatusReporter } from './createStopTokenRotation.ts'
+import type { FetchContext } from './fetchContext.ts'
+import type { FetchSkeletonHost } from './installFetch.ts'
 
 /**
  * What a prerequisite read needs of the display it runs on, beside the
  * skeleton's own three. Duck-typed rather than a foundation's `Instance` type,
- * because the two hosts compose different foundations — one per fetch family —
- * and this is the only thing they have in common.
+ * because the hosts compose different foundations — one per fetch family, and
+ * the comparative displays compose none of them — and this is the only thing
+ * they have in common.
  */
 export interface PrerequisiteFetchHost extends FetchSkeletonHost {
   /**
@@ -17,20 +19,16 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
    */
   adapterConfig: Record<string, unknown>
   isMinimized: boolean
-  /**
-   * The display's own window, lent, so this read takes a slot beside the
-   * display's primary fetch rather than opening a second writer over the one
-   * status field (ADR-081).
-   */
-  statusWindow: StatusWindow
 }
 
 /**
  * A **prerequisite read**: one RPC about the adapter itself, beside the
- * display's primary fetch and gating it. Two in the tree — HiC's `CoreGetInfo`
- * header read, whose `resolutions` every contacts fetch waits on, and the
- * multi-sample sample list, which `fetchNeeded` declines until — and they are on
- * opposite fetch foundations, which is why this sits beside neither.
+ * display's primary fetch. Three in the tree — HiC's `CoreGetInfo` header read,
+ * whose `resolutions` every contacts fetch waits on; the multi-sample sample
+ * list, which `fetchNeeded` declines until; and the tiered alignment file's
+ * `CoreGetInfo` header, which decides the LOD tier a synteny fetch asks for —
+ * and they sit on three different fetch foundations, which is why this sits in
+ * core beside the skeleton and not beside any of them.
  *
  * They had the shape below hand-copied, comment for comment, and each term is a
  * rule rather than a preference:
@@ -43,19 +41,23 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
  * - **minimized is the gate**, and a display with a second condition of its own
  *   passes `gate` — the sample-list read waits for the LGV to be measured as
  *   well, so a full-file scan does not start ahead of the display's own first
- *   fetch.
+ *   fetch, and the tier read waits on the track declaring a tier threshold at
+ *   all.
  * - **no `contract`.** This is the second fetch on a display whose foundation
  *   installed both checks already: `assertDisplayContract` would report the
  *   double-attach it exists to catch, and a second retry check would consume the
  *   same `reloadCounter` bumps as the first.
- * - **the status window is the display's, lent** — see
- *   {@link PrerequisiteFetchHost.statusWindow}. It matters more here than for
- *   most fetches: a prerequisite runs inside the pre-first-paint window, where
- *   the scrim is up because nothing is drawn rather than because `isLoading` is,
- *   so `statusMessage` is the only thing that can say what is happening.
+ * - **where the status goes is the caller's** (`report`). The two LGV reads
+ *   lend the display's own status window, so the read takes a slot beside the
+ *   primary fetch rather than opening a second writer over the one status field
+ *   (ADR-081) — and it matters more here than for most fetches: a prerequisite
+ *   runs inside the pre-first-paint window, where the scrim is up because
+ *   nothing is drawn rather than because `isLoading` is, so `statusMessage` is
+ *   the only thing that can say what is happening. The tier read narrates
+ *   nothing; a header is not a load.
  *
- * `createAdapterMetadataFetch` (core) keys on the same serialized adapter config
- * and is deliberately NOT one of these: no trigger, no stop token and no status,
+ * `createAdapterMetadataFetch` keys on the same adapter config and is
+ * deliberately NOT one of these: no trigger, no stop token and no status,
  * because it is fetched lazily when a details widget opens and the widget opens
  * on the result. A prerequisite read is the one a display's own fetch waits on.
  *
@@ -82,6 +84,7 @@ export function installPrerequisiteFetch<TResult>(
   {
     name,
     delay,
+    report,
     gate = () => true,
     run,
     commit,
@@ -89,6 +92,7 @@ export function installPrerequisiteFetch<TResult>(
   }: {
     name: string
     delay: number
+    report: StatusReporter
     /** an extra term of the display's own, ANDed under `!isMinimized` */
     gate?: () => boolean
     run: (
@@ -102,10 +106,10 @@ export function installPrerequisiteFetch<TResult>(
   installFetch(self, {
     name,
     delay,
-    report: { statusWindow: self.statusWindow },
+    report,
     gate: () => !self.isMinimized && gate(),
     prepare: () => ({ adapterConfig: self.adapterConfig }),
-    fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
+    fetchKey: ({ adapterConfig }) => adapterConfigKey(adapterConfig),
     run: ({ adapterConfig }, ctx) => run(adapterConfig, ctx),
     commit,
     setError,

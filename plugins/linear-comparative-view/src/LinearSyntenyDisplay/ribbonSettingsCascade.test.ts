@@ -252,11 +252,7 @@ const GEOMETRY: SyntenyGeometry = {
 }
 
 function markerAlpha(display: LinearSyntenyDisplayModel) {
-  display.setRpcData(
-    packSyntenyFeatureData([{ start: 0, end: 100 }]),
-    GEOMETRY,
-    'k',
-  )
+  display.setRpcData(packSyntenyFeatureData([{ start: 0, end: 100 }]), GEOMETRY)
   return abgrAlpha(display.computedColors![1]!)
 }
 

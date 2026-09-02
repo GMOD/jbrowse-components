@@ -53,12 +53,17 @@ function expectFetchErrorLogged() {
   }
 }
 
-function setup(opts?: { measuresBytes?: boolean; estimateBytes?: number }) {
+function setup(opts?: Parameters<typeof createPerRegionTestEnvironment>[0]) {
   const env = createPerRegionTestEnvironment(opts)
   const created = env.createDisplay() as {
     display: PerRegionTestDisplay
     view: LinearGenomeViewModel
-    track: { setMinimized: (flag: boolean) => void }
+    track: {
+      setMinimized: (flag: boolean) => void
+      configuration: {
+        adapter: { setSlot: (name: string, value: unknown) => void }
+      }
+    }
   }
   return { ...env, ...created }
 }
@@ -144,6 +149,23 @@ describe('the trigger list', () => {
     expect(await quiet(display)).toBe(1)
 
     track.setMinimized(false)
+    expect(await quiet(display)).toBe(2)
+  })
+
+  // The adapter is an axis of the fetch, beside the settings: a track
+  // re-pointed in the config editor is a different fetch, and until 2026-09
+  // this family kept the old file's data until something else moved. The
+  // display declares no `rpcProps`, so the settings half of the trigger is
+  // constant and only the adapter key can fire this.
+  it('refetches an adapter edited in the config editor, off SettingsInvalidate', async () => {
+    const { display, track } = setup({
+      adapter: {
+        name: 'PerRegionTestAdapter',
+        slots: { flavor: { type: 'string', defaultValue: 'a' } },
+      },
+    })
+    await quiet(display)
+    track.configuration.adapter.setSlot('flavor', 'b')
     expect(await quiet(display)).toBe(2)
   })
 

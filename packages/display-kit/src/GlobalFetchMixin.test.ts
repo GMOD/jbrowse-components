@@ -224,3 +224,37 @@ describe('an empty viewport is a resting state, so it is terminal', () => {
     expect(model.displayPhase).toBe('error')
   })
 })
+
+// The adapter is an axis of the signature beside the view and the settings: a
+// track re-pointed in the config editor is a different fetch, and until 2026-09
+// this family's key could not see it — the display kept the old file's matrix
+// until a block boundary or a setting moved.
+test('fetchSignature moves with the adapter config', () => {
+  const Display = types
+    .compose(
+      'TestAdapterKeyedDisplay',
+      GlobalFetchMixin(),
+      types.model({ type: types.literal('TestAdapterKeyedDisplay') }),
+    )
+    .volatile(() => ({
+      adapterConfig: { type: 'A' } as Record<string, unknown>,
+    }))
+    .views(() => ({
+      get viewSignature() {
+        return 'blocks'
+      },
+    }))
+    .actions(self => ({
+      setAdapterConfig(config: Record<string, unknown>) {
+        self.adapterConfig = config
+      },
+    }))
+  const model: Instance<typeof Display> = hostView(Display, {
+    type: 'TestAdapterKeyedDisplay',
+  }).display
+  const before = model.fetchSignature
+  expect(before).toBeDefined()
+
+  model.setAdapterConfig({ type: 'B' })
+  expect(model.fetchSignature).not.toBe(before)
+})

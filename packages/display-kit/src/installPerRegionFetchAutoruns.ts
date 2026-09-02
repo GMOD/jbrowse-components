@@ -43,6 +43,7 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
   regionTooLarge: boolean
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
   rpcPropsCacheKey: string
+  adapterConfigKey: string
   isCacheValid: (displayedRegionIndex: number) => boolean
   fetchNeeded: (needed: IndexedRegion[]) => void
   setError: (error?: unknown) => void
@@ -104,22 +105,23 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     'DisplayedRegionsChange',
   )
 
-  // Re-fetch when the RPC payload changes. The cache key is what rpcProps()
-  // *returns*, not what building it reads — see the `rpcPropsCacheKey` getter.
+  const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
+  // Re-fetch when the RPC payload or the adapter changes. The settings key is
+  // what rpcProps() *returns*, not what building it reads — see the
+  // `rpcPropsCacheKey` getter — and the adapter key is the config a track was
+  // re-pointed at in the config editor, which this family used to miss.
   //
-  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()`
-  if ((self as { rpcProps?: () => unknown }).rpcProps) {
-    const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
-    autorunOnReadyView(
-      self,
-      () => {
-        void self.rpcPropsCacheKey
-        loopGuard()
-        self.clearAllRpcData()
-      },
-      { name: 'SettingsInvalidate' },
-    )
-  }
+  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `clearAllRpcData()`
+  autorunOnReadyView(
+    self,
+    () => {
+      void self.rpcPropsCacheKey
+      void self.adapterConfigKey
+      loopGuard()
+      self.clearAllRpcData()
+    },
+    { name: 'SettingsInvalidate' },
+  )
 
   // When the viewport moves while an error or a canceled fetch is set, clear so
   // the fetch autorun retries. (The too-large gate is derived — a pure function

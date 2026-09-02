@@ -17,6 +17,7 @@ import { isStopped } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { SyntenyFetchStateMixin } from './SyntenyFetchStateMixin.ts'
+import { comparativeFetchKey } from './comparativeFetchFlags.ts'
 import { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 
 import type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
@@ -42,9 +43,9 @@ const TestDisplayBase = types
   .volatile(() => ({
     error: undefined as unknown,
     statusMessage: undefined as RpcStatus | undefined,
-    // the fetch input, standing in for `currentFetchKey`. Observable, so
-    // changing it refires the autorun the way a zoom does.
-    fetchKey: 'k1',
+    // the view input behind `currentFetchKey` below. Observable, so changing
+    // it refires the autorun the way a zoom does.
+    viewKey: 'k1',
     // read inside `untracked` by prepare below, so it must NOT refire anything
     geometry: 0,
     gated: false,
@@ -57,8 +58,8 @@ const TestDisplayBase = types
     setStatusMessage(status?: RpcStatus) {
       self.statusMessage = status
     },
-    setFetchKey(key: string) {
-      self.fetchKey = key
+    setViewKey(key: string) {
+      self.viewKey = key
     },
     setGeometry(n: number) {
       self.geometry = n
@@ -84,6 +85,11 @@ const TestDisplay = types
     get adapterConfig() {
       return { type: self.adapterType }
     },
+    // the display's half of the freshness key, which the installer reads
+    // tracked beside `adapterConfig`
+    get currentFetchKey() {
+      return self.viewKey
+    },
     // overrides the mixin's default-false hook, which the retry check the
     // skeleton installs reads. `gated` is a state this display deliberately
     // does not fetch in, which is exactly what the hook names — so a decline
@@ -92,13 +98,14 @@ const TestDisplay = types
       return self.gated
     },
   }))
-  .actions(self => ({
-    // the stamp both displays' `setRpcData` write, which the skeleton's key
-    // gate compares against
-    setLoadedFetchKey(key: string) {
-      self.loadedFetchKey = key
-    },
-  }))
+
+// the whole key the installer gates on and stamps, for a given view input
+function keyFor(viewKey: string, adapterType = 'TestAdapter') {
+  return comparativeFetchKey({
+    currentFetchKey: viewKey,
+    adapterConfig: { type: adapterType },
+  })
+}
 
 // isSessionModel duck-types on rpcManager + configuration; that plus
 // assemblyManager is the whole session surface the skeleton touches.
@@ -124,7 +131,6 @@ const TestRoot = types.model('TestRoot', {
 type TestDisplayModel = Instance<typeof TestDisplay>
 
 interface Args {
-  fetchKey: string
   geometry: number
 }
 
@@ -140,25 +146,22 @@ async function setup({
 }) {
   const root = TestRoot.create({ session: { display: {} } })
   const { display } = root.session
-  // the args of every run that reached a fetch. Not every `prepare` call: a
-  // commit stamps `loadedFetchKey`, which the key gate reads, so each commit
-  // wakes one body run that declines
+  // the args of every run that reached a fetch. Not every `prepare` call: the
+  // installer's commit stamps `loadedFetchKey`, which the key gate reads, so
+  // each commit wakes one body run that declines
   const prepared: Args[] = []
   const committed: { result: string; args: Args }[] = []
   installComparativeFetchAutorun(display, {
     name: 'TestComparativeFetch',
     delay: DELAY,
     prepare: () =>
-      prepare
-        ? prepare(display)
-        : { fetchKey: display.fetchKey, geometry: display.geometry },
+      prepare ? prepare(display) : { geometry: display.geometry },
     run: (args, ctx) => {
       prepared.push(args)
       return run(args, ctx)
     },
     commit: (result, args) => {
       committed.push({ result, args })
-      display.setLoadedFetchKey(args.fetchKey)
     },
   })
   await Promise.resolve()
@@ -186,9 +189,7 @@ describe('installComparativeFetchAutorun', () => {
       run: () => Promise.resolve('r1'),
     })
     await settle()
-    expect(committed).toEqual([
-      { result: 'r1', args: { fetchKey: 'k1', geometry: 0 } },
-    ])
+    expect(committed).toEqual([{ result: 'r1', args: { geometry: 0 } }])
     expect(display.fetching).toBe(false)
     expect(display.statusMessage).toBeUndefined()
   })
@@ -196,8 +197,7 @@ describe('installComparativeFetchAutorun', () => {
   it('skips the fetch entirely when prepare declines', async () => {
     const { display, prepared } = await setup({
       run: () => Promise.resolve('r1'),
-      prepare: d =>
-        d.gated ? { fetchKey: d.fetchKey, geometry: 0 } : undefined,
+      prepare: d => (d.gated ? { geometry: 0 } : undefined),
     })
     expect(prepared).toHaveLength(0)
     // no flags touched, so a declined run can't strand the overlay
@@ -213,10 +213,10 @@ describe('installComparativeFetchAutorun', () => {
 
     // geometry is read inside prepare's untracked block in the real displays;
     // here it is simply not read until after the key, so only the key refires
-    display.setFetchKey('k2')
+    display.setViewKey('k2')
     await settle()
     expect(prepared).toHaveLength(2)
-    expect(prepared[1]!.fetchKey).toBe('k2')
+    expect(display.loadedFetchKey).toBe(keyFor('k2'))
   })
 
   // `FetchPhases.run` promises nothing it reads is tracked, and `run` being
@@ -234,7 +234,7 @@ describe('installComparativeFetchAutorun', () => {
       // fires the first run before it returns one
       prepare: d => {
         display = d
-        return { fetchKey: d.fetchKey, geometry: 0 }
+        return { geometry: 0 }
       },
       run: async () => {
         seen.push(display!.geometry)
@@ -254,18 +254,24 @@ describe('installComparativeFetchAutorun', () => {
 
   it('commits against the args its own prepare captured, not the live state', async () => {
     const gate = deferred<string>()
-    const { display, committed } = await setup({ run: () => gate.promise })
+    let n = 0
+    const { display, committed } = await setup({
+      // the first run lands; the refetch the view move issues stays out, so
+      // the stamp below is the first commit's and not the refetch's
+      run: () => (n++ === 0 ? gate.promise : new Promise(() => {})),
+    })
 
     // the view moves while the RPC is in flight; the commit must still be
-    // tagged with the key the data was fetched for
-    display.setFetchKey('k2')
+    // stamped with the key the data was fetched for, not the live one
+    display.setViewKey('k2')
     gate.resolve('r1')
     await settle()
 
     expect(committed[0]).toEqual({
       result: 'r1',
-      args: { fetchKey: 'k1', geometry: 0 },
+      args: { geometry: 0 },
     })
+    expect(display.loadedFetchKey).toBe(keyFor('k1'))
   })
 
   describe('latest-wins', () => {
@@ -275,7 +281,7 @@ describe('installComparativeFetchAutorun', () => {
       const { display, committed } = await setup({
         run: () => gates[n++]!.promise,
       })
-      display.setFetchKey('k2')
+      display.setViewKey('k2')
       await settle()
       expect(n).toBe(2)
 
@@ -291,7 +297,7 @@ describe('installComparativeFetchAutorun', () => {
       const gates = [deferred<string>(), deferred<string>()]
       let n = 0
       const { display } = await setup({ run: () => gates[n++]!.promise })
-      display.setFetchKey('k2')
+      display.setViewKey('k2')
       await settle()
 
       // fetch B is still in flight; A resolving late must leave fetching true
@@ -309,7 +315,7 @@ describe('installComparativeFetchAutorun', () => {
       const gates = [deferred<string>(), deferred<string>()]
       let n = 0
       const { display } = await setup({ run: () => gates[n++]!.promise })
-      display.setFetchKey('k2')
+      display.setViewKey('k2')
       await settle()
 
       gates[0]!.reject(new Error('stale failure'))
@@ -356,7 +362,7 @@ describe('installComparativeFetchAutorun', () => {
     expect(display.error).toBeDefined()
 
     fail = false
-    display.setFetchKey('k2')
+    display.setViewKey('k2')
     await settle()
     expect(display.error).toBeUndefined()
     spy.mockRestore()
@@ -372,7 +378,7 @@ describe('installComparativeFetchAutorun', () => {
 test('a gate flip over unchanged inputs re-runs nothing', async () => {
   const { display, prepared, committed } = await setup({
     run: () => Promise.resolve('r1'),
-    prepare: d => (d.gated ? undefined : { fetchKey: d.fetchKey, geometry: 0 }),
+    prepare: d => (d.gated ? undefined : { geometry: 0 }),
   })
   await settle()
   expect(committed).toHaveLength(1)
@@ -385,21 +391,25 @@ test('a gate flip over unchanged inputs re-runs nothing', async () => {
   expect(committed).toHaveLength(1)
 })
 
-// Neither display's `currentFetchKey` carries an adapter term, so the wrapper
-// folds one in. Gate on the display's key alone and an adapter edited in the
-// config editor wakes the autorun straight into a decline: the editor silently
-// stops refetching.
+// Neither display's `currentFetchKey` carries an adapter term, so
+// `comparativeFetchKey` adds one. Gate on the display's key alone and an
+// adapter edited in the config editor wakes the autorun straight into a
+// decline: the editor silently stops refetching. And the stamp carries the same
+// axis, so `dataCurrent` cannot call the plot fetched against the old adapter
+// current.
 test('an adapter edit refetches over an unchanged display key', async () => {
   const { display, committed } = await setup({
     run: () => Promise.resolve('r1'),
   })
   await settle()
   expect(committed).toHaveLength(1)
+  expect(display.loadedFetchKey).toBe(keyFor('k1'))
 
   display.setAdapterType('EditedAdapter')
+  expect(display.loadedFetchKey).not.toBe(keyFor('k1', 'EditedAdapter'))
   await settle()
   expect(committed).toHaveLength(2)
-  expect(display.loadedFetchKey).toBe('k1')
+  expect(display.loadedFetchKey).toBe(keyFor('k1', 'EditedAdapter'))
 })
 
 // The retry contract for the comparative displays. After an error every fetch
@@ -436,7 +446,7 @@ test('reload() refires even while the gate is closed, so the wake chain holds', 
   // not swallowed.
   const { display, prepared } = await setup({
     run: () => Promise.resolve('ok'),
-    prepare: d => (d.gated ? undefined : { fetchKey: d.fetchKey, geometry: 0 }),
+    prepare: d => (d.gated ? undefined : { geometry: 0 }),
   })
   await settle()
   expect(prepared).toHaveLength(1)
@@ -463,8 +473,7 @@ test('a reload the gate does not clear is reported as a dead button', async () =
     run: () => Promise.resolve('ok'),
     // declines on something `reload()` does not touch, and does NOT say
     // `fetchInert` — the shape the check exists for
-    prepare: d =>
-      d.geometry > 0 ? undefined : { fetchKey: d.fetchKey, geometry: 0 },
+    prepare: d => (d.geometry > 0 ? undefined : { geometry: 0 }),
   })
   await settle()
   expect(prepared).toHaveLength(1)
@@ -525,7 +534,7 @@ describe('the user cancel', () => {
     await settle()
 
     // the zoom/pan that would refetch on any other run
-    display.setFetchKey('k2')
+    display.setViewKey('k2')
     await settle()
     expect(prepared).toHaveLength(1)
 
