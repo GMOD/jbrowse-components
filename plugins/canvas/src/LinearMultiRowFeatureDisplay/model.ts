@@ -14,6 +14,7 @@ import {
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
+import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -73,7 +74,7 @@ import {
   findTopDrawnFeatureInRow,
 } from './rendering/featurePainting.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
-import { paintedSpanContainsBp } from './rendering/rowBand.ts'
+import { paintedSpanContainsBp, rowBand } from './rendering/rowBand.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -1048,10 +1049,20 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * Hit-test the feature under a display-relative pixel: row from
-       * `mouseY / rowHeight`, genomic bp from the view, then the first feature on
-       * that row whose PAINTED block covers the bp. Returns undefined over the
-       * sidebar, off-row, out-of-bounds, or over a gap.
+       * Hit-test the feature under a display-relative pixel: the rows whose
+       * painted band covers it, genomic bp from the view, then the first
+       * feature on one of those rows whose PAINTED block covers the bp. Returns
+       * undefined over the sidebar, off-row, out-of-bounds, or over a gap.
+       *
+       * The row comes from `rowsUnderPointer`, the shared rule maf, variants
+       * and wiggle read their stacks with, rather than `mouseY / rowHeight`.
+       * Two things follow. The question is asked at the pixel's CENTRE, which
+       * is the scanline that decided the colour the reader is pointing at — at
+       * the 0.32 px rows a cohort painting fits into, the top edge names a row
+       * one and a half off. And a sub-pixel row is painted at
+       * MIN_DRAWN_ROW_PX, so several rows share one drawn pixel: the walk from
+       * `nearest` down to `lowest` finds whichever of them actually put a block
+       * there, which is the block the reader can see.
        *
        * Painted rather than genomic, because the painters widen a sub-pixel
        * block to `MULTI_ROW_MIN_CELL_PX` and a bare `[start,end)` then answers
@@ -1067,11 +1078,6 @@ export default function stateModelFactory(
        */
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
         if (mouseX < treeSidebarRightEdge(self)) {
-          return undefined
-        }
-        const targetRow = Math.floor(mouseY / self.effectiveRowHeight)
-        const row = self.sources[targetRow]
-        if (!row) {
           return undefined
         }
         const view = self.view
@@ -1091,30 +1097,42 @@ export default function stateModelFactory(
         // against; coord0 names the one to its right when reversed
         const bp = basePaintedAt(p, p.offset)
         const { featureStarts, featureEnds, featureNames, featureIds } = region
-        // `findTopDrawnFeatureInRow` owns both halves of "which feature is
-        // under this pixel" that the painters also own: which features are
-        // drawn at all, and which of two overlapping ones is on top. All this
-        // adds is the span, and `paintedSpanContainsBp` owns both the
-        // zero-length case and the sub-pixel widening within that.
-        const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
-          paintedSpanContainsBp(
-            featureStarts[i]!,
-            featureEnds[i]!,
-            bp,
-            view.bpPerPx,
-          ),
+        const rowHeight = self.effectiveRowHeight
+        const { nearest, lowest } = rowsUnderPointer(
+          mouseY,
+          { rowHeight },
+          rowBand(rowHeight, self.rowProportion).height,
         )
-        return i === -1
-          ? undefined
-          : {
-              id: featureIds[i]!,
-              regionIndex: p.index,
-              rowName: row.name,
-              name: featureNames[i]!,
-              refName: p.refName,
-              start: featureStarts[i]!,
-              end: featureEnds[i]!,
+        for (let targetRow = nearest; targetRow >= lowest; targetRow--) {
+          const row = self.sources[targetRow]
+          if (row) {
+            // `findTopDrawnFeatureInRow` owns both halves of "which feature is
+            // under this pixel" that the painters also own: which features are
+            // drawn at all, and which of two overlapping ones is on top. All
+            // this adds is the span, and `paintedSpanContainsBp` owns both the
+            // zero-length case and the sub-pixel widening within that.
+            const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
+              paintedSpanContainsBp(
+                featureStarts[i]!,
+                featureEnds[i]!,
+                bp,
+                view.bpPerPx,
+              ),
+            )
+            if (i !== -1) {
+              return {
+                id: featureIds[i]!,
+                regionIndex: p.index,
+                rowName: row.name,
+                name: featureNames[i]!,
+                refName: p.refName,
+                start: featureStarts[i]!,
+                end: featureEnds[i]!,
+              }
             }
+          }
+        }
+        return undefined
       },
     }))
     .views(self => ({

@@ -229,6 +229,68 @@ describe('featureAt', () => {
     expect(display.featureAt(100, 10)?.id).toBe('onepx')
   })
 
+  // A cohort painting fits its rows into the display rather than scrolling them,
+  // so 1,000 rows in 320px is 0.32px a row and the two rules
+  // `rowStackGeometry` exists for both bite: the pixel's CENTRE is the scanline
+  // the colour was decided on, and several rows share one drawn pixel because
+  // `rowBand` floors what it paints at MIN_DRAWN_ROW_PX.
+  describe('sub-pixel rows', () => {
+    // One region carrying 1000 rows and a feature on the named ones, spanning the
+    // whole displayed region so only the row arithmetic decides the hit.
+    function cohort(featureRows: number[]) {
+      const partitionValues = Array.from(
+        { length: 1000 },
+        (_, i) => `row${String(i).padStart(3, '0')}`,
+      )
+      return {
+        featureStarts: Uint32Array.from(featureRows, () => 0),
+        featureEnds: Uint32Array.from(featureRows, () => 1000),
+        featureColors: Uint32Array.from(featureRows, () => RED),
+        featureDeltas: new Int32Array(0),
+        partitionValues,
+        featurePartitionIndex: Uint32Array.from(featureRows),
+        featureNames: featureRows.map(() => ''),
+        featureIds: featureRows.map(r => `f${r}`),
+        usedItemRgb: false,
+        partitionCandidates: [],
+        legendCandidates: [],
+        resolvedPartitionField: 'name',
+      } satisfies MultiRowRegionData
+    }
+
+    function cohortDisplay(featureRows: number[]) {
+      const { display } = createTestEnvironment().createDisplay(CTGA_1KB)
+      display.setRowHeight(0)
+      display.setRpcData(0, cohort(featureRows))
+      display.setHeight(320)
+      expect(display.effectiveRowHeight).toBeCloseTo(0.32)
+      return display
+    }
+
+    it('asks at the pixel centre, not its top edge', () => {
+      // px 0 spans rows 0, 1 and 2; its centre, 0.5, is on row 1, and row 1 is
+      // also the last of the three the painter drew there
+      const display = cohortDisplay([1])
+
+      expect(display.featureAt(500, 0)?.id).toBe('f1')
+    })
+
+    it('finds the row that actually painted the pixel', () => {
+      // nearest is row 1 and it drew nothing; row 0 shares the same drawn pixel
+      // and is what the reader sees there
+      const display = cohortDisplay([0])
+
+      expect(display.featureAt(500, 0)?.id).toBe('f0')
+    })
+
+    it('does not reach past the pixel the rows are drawn into', () => {
+      const display = cohortDisplay([0])
+
+      // px 4 is rows 12-15; row 0 is nowhere near it
+      expect(display.featureAt(500, 4)).toBeUndefined()
+    })
+  })
+
   describe('hidden legend categories', () => {
     // usedItemRgb suppresses the per-row palette, which is what leaves the rows
     // painting their per-feature colors and gives the legend something to key on
