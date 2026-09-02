@@ -63,7 +63,13 @@ at 9); context menu gains "Open feature details" / "Copy location"; dead
 args type names `summaryScoreMode`; `defaultRendering` doc lists the two
 `*linecenter` modes; `matrixKey` is a stable key not the MST model.
 
-**variants** (`plugins/variants`): phased legend focus (`focusGroup`
+**variants** — COMPLETE, all eleven items committed, 118 suites green.
+Variants already forwards the sort boolean (wave two can drop that row for
+variants). `focusGroup` now reads a new `sourcesBeforeSubtreeFilter`
+getter; `hasClusterableRows` counts `sources`; `sourcesWithoutLayout` is
+gone. The three variant model doc pages under `website/docs/models` were
+regenerated and committed with it.
+Items (`plugins/variants`): phased legend focus (`focusGroup`
 collected haplotype names, `sourcesBase` filtered sample names → zero rows);
 `rowOrderIsCustom` compared a `sampleName`-stamped layout to a raw one so
 "Reset row order" never cleared; `sortRowsByGenotypeAt` decline; "Group
