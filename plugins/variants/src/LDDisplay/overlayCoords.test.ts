@@ -33,6 +33,7 @@ function ldData(
     originBp: 0,
     genomicMode: false,
     metric: 'r2',
+    hasR2: true,
     hasDprime: true,
     ...overrides,
   }

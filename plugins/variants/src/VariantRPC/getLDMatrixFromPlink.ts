@@ -110,14 +110,12 @@ export async function getLDMatrixFromPlink({
   }
 
   // Which columns the file actually has: a request for a metric it does not
-  // carry is downgraded rather than mislabeled in the legend, and `hasDprime`
-  // rides back so the display can disable the D' option outright.
+  // carry is downgraded rather than mislabeled in the legend, and both flags
+  // ride back so the display can disable the radio for the missing one.
   const header = await dataAdapter.getHeader()
+  const hasR2 = header.r2Idx >= 0
   const hasDprime = header.dprimeIdx >= 0
-  const metric = resolveMetric(ldMetric, {
-    hasR2: header.r2Idx >= 0,
-    hasDprime,
-  })
+  const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
 
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
@@ -161,6 +159,7 @@ export async function getLDMatrixFromPlink({
     snps,
     ldValues,
     metric,
+    hasR2,
     hasDprime,
     band,
   }

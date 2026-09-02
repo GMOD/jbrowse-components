@@ -48,6 +48,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
     originBp: 500,
     genomicMode: false,
     metric: 'r2',
+    hasR2: true,
     hasDprime: true,
     snps: [],
   })

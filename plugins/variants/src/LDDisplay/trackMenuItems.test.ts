@@ -10,6 +10,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
   const stub = {
     effectiveLdMetric: 'r2' as const,
+    r2Available: true,
     dprimeAvailable: true,
     focalSnpIndex: -1,
     showLDTriangle: true,
@@ -94,6 +95,23 @@ test('a file with no DP column offers D-prime disabled, and says why', () => {
   expect('disabled' in dprime && dprime.disabled).toBe(true)
   expect('helpText' in dprime && dprime.helpText).toBe(
     "This LD file has no D' (DP) column",
+  )
+})
+
+// The other direction of the same downgrade: a `--r2 dprime` emit has DP and
+// no R2, and used to read back as every pair at r² = 0.
+test('a file with no R2 column offers r-squared disabled, and says why', () => {
+  const metric = subMenuOf(
+    buildLDTrackMenuItems(
+      makeSelf({ r2Available: false, effectiveLdMetric: 'dprime' }),
+    ),
+    'LD metric',
+  )!
+  const r2 = metric.find(i => labelOf(i) === 'R² (squared correlation)')!
+
+  expect('disabled' in r2 && r2.disabled).toBe(true)
+  expect('helpText' in r2 && r2.helpText).toBe(
+    'This LD file has no r² (R2) column',
   )
 })
 

@@ -27,6 +27,7 @@ const NO_PAIRS: LDMatrixResult = {
   snps: [],
   ldValues: new Float32Array(0),
   metric: 'r2',
+  hasR2: true,
   hasDprime: true,
   band: 0,
 }

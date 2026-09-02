@@ -18,8 +18,11 @@ export interface LDMatrixResult {
   // metric, but a file lacking a D' column downgrades a 'dprime' request to
   // 'r2' rather than silently mislabeling r² as D'.
   metric: LDMetric
-  // Whether D' is available — false for a file with no DP column, so the
-  // display can disable D'.
+  // Which of the two columns the file carries, so the display can disable the
+  // radio for the one it does not: `resolveMetric` downgrades in both
+  // directions, and a radio that silently serves the other column is the
+  // matrix-of-zeros bug wearing a different label.
+  hasR2: boolean
   hasDprime: boolean
   /**
    * The pair-separation window `ldValues` was laid out at — `resolveBand` of

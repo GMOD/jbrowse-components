@@ -83,12 +83,11 @@ const LDCanvas = observer(function LDCanvas({
   const view = model.view
   const {
     showLegend,
-    // The metric and sign convention the loaded values ACTUALLY have, not the
-    // ones asked for: a pre-computed file with no D' column downgrades a
-    // 'dprime' request to r², and one that states magnitudes cannot honor a
-    // signed request at all. The cells already follow the data (the ramp is
-    // built from `rpcData`), so a label off the config would name a statistic
-    // and a range that are not on screen.
+    // The metric the loaded values ACTUALLY have, not the one asked for: a
+    // file with no D' column downgrades a 'dprime' request to r², and one with
+    // no R2 column the other way. The cells already follow the data (the ramp
+    // is built from `rpcData`), so a label off the config would name a
+    // statistic that is not on screen.
     effectiveLdMetric,
     effectiveLineZoneHeight,
     canvasWidth: width,

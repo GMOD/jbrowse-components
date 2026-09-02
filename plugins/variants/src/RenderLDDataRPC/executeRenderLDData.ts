@@ -28,7 +28,7 @@ type ExecuteArgs = RpcExecuteArgs<'RenderLDData'>
 // There is no matrix either way; the honest answer for the chrome is the mode
 // the display is in.
 function emptyResult(
-  { metric, hasDprime }: LDMatrixResult,
+  { metric, hasR2, hasDprime }: LDMatrixResult,
   genomicMode: boolean,
   originBp: number,
 ) {
@@ -41,6 +41,7 @@ function emptyResult(
     originBp,
     genomicMode,
     metric,
+    hasR2,
     hasDprime,
     snps: [],
   })
@@ -113,6 +114,7 @@ export async function executeRenderLDData({
     originBp,
     genomicMode,
     metric: ldData.metric,
+    hasR2: ldData.hasR2,
     hasDprime: ldData.hasDprime,
     snps,
     ...cellBuffers,

@@ -33,8 +33,9 @@ export interface LDDataResult {
   // The metric the file could actually serve, which is not always the one
   // requested — see `resolveMetric`.
   metric: LDMetric
-  // Whether D' is selectable — false for a file with no DP column, so the
-  // display can disable the D' metric option.
+  // Which of the two columns the file carries, so the display can disable the
+  // radio for the one it does not.
+  hasR2: boolean
   hasDprime: boolean
   snps: LDSnp[]
   // Only present for genomic positions mode (pre-computed per-cell positions

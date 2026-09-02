@@ -243,6 +243,15 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * Whether the file carries an R2 column. A `--r2 dprime` emit does not,
+       * and the r² radio is disabled against it rather than serving D' under
+       * the wrong name.
+       */
+      get r2Available(): boolean {
+        return self.rpcData?.hasR2 ?? true
+      },
+      /**
+       * #getter
        * Whether the D' metric can be shown — false only for a pre-computed file
        * lacking a DP column, which disables the D' option.
        */

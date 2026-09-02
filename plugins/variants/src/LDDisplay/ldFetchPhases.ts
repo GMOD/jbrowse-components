@@ -13,7 +13,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * the payload cannot arrive under a different name — and named here so the
  * model can ANNOTATE `rpcProps` with it. Structural assignability of a method's
  * return type admits extra properties, so an unannotated `rpcProps` returning
- * `ldMethod` before the RPC declared one typechecked and was silently dropped.
+ * a field before the RPC declared it typechecked and was silently dropped.
  */
 export type LDRpcProps = Omit<
   RenderLDDataArgs,

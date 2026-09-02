@@ -15,6 +15,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // silently turns off checking for every member below.
 export interface LDMenuSelf extends IStateTreeNode {
   effectiveLdMetric: LDMetric
+  r2Available: boolean
   dprimeAvailable: boolean
   focalSnpIndex: number
   showLDTriangle: boolean
@@ -42,8 +43,10 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
       label: 'R² (squared correlation)',
       type: 'radio',
       checked: self.effectiveLdMetric === 'r2',
-      helpText:
-        'Squared correlation between the two variants (0-1), read from the LD file.',
+      disabled: !self.r2Available,
+      helpText: self.r2Available
+        ? 'Squared correlation between the two variants (0-1), read from the LD file.'
+        : 'This LD file has no r² (R2) column',
       onClick: () => {
         self.setLDMetric('r2')
       },

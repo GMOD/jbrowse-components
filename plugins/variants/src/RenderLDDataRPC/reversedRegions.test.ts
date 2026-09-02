@@ -57,6 +57,7 @@ function matrix(snps: LDSnp[], band = FULL_BAND): LDMatrixResult {
     snps,
     ldValues,
     metric: 'r2',
+    hasR2: true,
     hasDprime: true,
     band,
   }

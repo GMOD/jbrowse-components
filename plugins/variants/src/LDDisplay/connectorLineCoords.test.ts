@@ -22,6 +22,7 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
     originBp,
     genomicMode: false,
     metric: 'r2',
+    hasR2: true,
     hasDprime: true,
   }
 }
