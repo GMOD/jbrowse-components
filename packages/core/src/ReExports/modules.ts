@@ -17,45 +17,11 @@ import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
 import { sharedModules } from './sharedModules.ts'
-import {
-  CORE_UI_NAMES,
-  MATERIAL_UI_CORE_NAMES,
-  MATERIAL_UI_LAB_NAMES,
-  MOBX_REACT_NAMES,
-  MUI_MATERIAL_NAMES,
-  MUI_STYLES_NAMES,
-  MUI_UTILS_NAMES,
-  REACT_DOM_CLIENT_NAMES,
-  REACT_DOM_NAMES,
-  TSS_REACT_NAMES,
-} from './workerNamespaceNames.ts'
 
 function makeLegacyMakeStyles() {
   return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {
     const useStyles = makeStyles()(args)
     return () => useStyles().classes
-  }
-}
-
-// A name real here but missing from workerNamespaceNames.ts (or vice versa)
-// would leave the RPC worker's stub for `label` shaped differently from what
-// this module actually serves -- silently, since nothing renders in the
-// worker to notice. This is what keeps the two in agreement.
-function assertNamesMatch(
-  label: string,
-  real: object,
-  expected: readonly string[],
-) {
-  const realNames = Object.keys(real).sort()
-  const expectedNames = [...expected].sort()
-  const missing = expectedNames.filter(n => !realNames.includes(n))
-  const extra = realNames.filter(n => !expectedNames.includes(n))
-  if (missing.length > 0 || extra.length > 0) {
-    throw new Error(
-      `${label}'s real exports have drifted from workerNamespaceNames.ts ` +
-        `(missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}). ` +
-        'The RPC worker stubs this module using that file -- update it to match.',
-    )
   }
 }
 
@@ -80,21 +46,7 @@ const materialUiLabLib = {
   ToggleButton: Entries.ToggleButton,
   ToggleButtonGroup: Entries.ToggleButtonGroup,
 }
-// makeStyles is deliberately absent from MUIStyles itself (see
-// MuiStylesReExports.ts) and added back here, so the name list checked below
-// is this object's, not the raw import's.
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
-
-assertNamesMatch('react-dom', ReactDom, REACT_DOM_NAMES)
-assertNamesMatch('react-dom/client', ReactDomClient, REACT_DOM_CLIENT_NAMES)
-assertNamesMatch('mobx-react', mxreact, MOBX_REACT_NAMES)
-assertNamesMatch('@mui/material/utils', MUIUtils, MUI_UTILS_NAMES)
-assertNamesMatch('tss-react', tssReact, TSS_REACT_NAMES)
-assertNamesMatch('@mui/material/styles', muiStylesLib, MUI_STYLES_NAMES)
-assertNamesMatch('@jbrowse/core/ui', coreUi, CORE_UI_NAMES)
-assertNamesMatch('@mui/material', muiMaterialLib, MUI_MATERIAL_NAMES)
-assertNamesMatch('@material-ui/core', materialUiCoreLib, MATERIAL_UI_CORE_NAMES)
-assertNamesMatch('@material-ui/lab', materialUiLabLib, MATERIAL_UI_LAB_NAMES)
 
 const libs = {
   ...sharedModules,

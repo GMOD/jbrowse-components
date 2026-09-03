@@ -841,9 +841,11 @@ that one bundler's algorithm work, by name. It did not make `for...in` +
 `getPrototypeOf` — so it fixed the reported bundler rather than the shape.
 `uiNamespace` fixes the shape instead: a plain object's own keys are real for
 every one of those, because it does not answer through a trap at all.
-`modules.ts` throws at load time if a `uiNamespace` name list drifts from what
-that module actually re-exports (`workerNamespaceNames.ts`); `workerModules.
-test.ts` covers `esbuild`'s and Babel/webpack's interop shapes and a bare
+`workerModules.test.ts` compares each stub's own keys to the real module's
+(`workerNamespaceNames.ts` is the hand-written list in between; a load-time
+throw in `modules.ts` was tried and dropped, since a react-dom or MUI bump
+that adds an export would white-screen the app rather than fail a test). It
+also covers `esbuild`'s and Babel/webpack's interop shapes and a bare
 `Object.assign`, so a bundler this file has never heard of is exactly as
 supported as the two it names.
 

@@ -5,8 +5,7 @@ import type { ComponentType } from 'react'
 // Every entry lazy-loads the same '@mui/x-data-grid' chunk and picks one named
 // export off it, so they're generated from a name list rather than written out
 // 45 times. The static import specifier means webpack still emits a single
-// x-data-grid chunk shared by all entries. workerNamespaceNames.ts reuses this
-// list to shape the RPC worker's stub for the same module.
+// x-data-grid chunk shared by all entries.
 export const DATA_GRID_NAMES = [
   'DataGrid',
   'GridActionsCellItem',

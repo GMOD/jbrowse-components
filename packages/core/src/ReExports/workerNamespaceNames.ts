@@ -1,18 +1,8 @@
 import { DATA_GRID_NAMES } from './MuiDataGridReExports.ts'
 import { MUI_COMPONENT_NAMES } from './muiComponentNames.ts'
 
-/**
- * Every real own-key name of a namespace-shaped module the RPC worker stubs
- * instead of importing (`workerModules.ts`), so the stub can carry the same
- * own properties as the module it stands in for rather than answering every
- * name through a proxy trap. `modules.ts` throws at load time if one of these
- * drifts from what it actually re-exports.
- *
- * `@mui/material`/`@material-ui/core`'s 112 component names live in
- * `MUI_COMPONENT_NAMES` already — that list is also type-checked against
- * `MuiReExports.ts`'s `Entries`, so only the handful of non-component exports
- * each adds are written out here.
- */
+// Own-key names of each namespace-shaped UI module the RPC worker stubs.
+// workerModules.test.ts pins them to modules.ts; agent-docs/reference/EAGER_BUNDLE.md
 
 export const REACT_DOM_NAMES = [
   '__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE',
@@ -271,14 +261,6 @@ export const CORE_UI_NAMES = [
   'wrapComponent',
 ]
 
-/**
- * Module specifier -> its real own-key names, for every UI entry the worker
- * shapes as a namespace object rather than a bare stub. Anything in
- * `list.ts`'s `reExportsList` that is absent here is a single-value module
- * (one component per `@mui/material/Name` path, `@jbrowse/core/ui/BaseTooltip`)
- * and gets the bare stub, which is already callable/constructible/readable at
- * any depth.
- */
 export const WORKER_NAMESPACE_NAMES: Record<string, readonly string[]> = {
   'react-dom': REACT_DOM_NAMES,
   'react-dom/client': REACT_DOM_CLIENT_NAMES,

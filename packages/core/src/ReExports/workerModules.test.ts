@@ -22,12 +22,6 @@ test('a single-value UI module is the bare stub', () => {
   expect(workerModules['@jbrowse/core/ui/BaseTooltip']).toBe(uiStub)
 })
 
-// The regression this guards: an own-key set that only agrees with the main
-// thread's by construction of one hand-written list (workerNamespaceNames.ts)
-// could still silently drift from what modules.ts actually serves. Comparing
-// the two realms' real Object.keys() directly, rather than trusting the list
-// in between, is what makes that impossible to land unnoticed -- independent
-// of which bundler or interop pattern a plugin happens to use.
 test('a namespace-shaped UI module has the same own keys in both realms', () => {
   for (const name of Object.keys(WORKER_NAMESPACE_NAMES)) {
     const real = Object.keys(modules[name as keyof typeof modules] as object)
@@ -79,10 +73,7 @@ function esbuildToESM(mod: object) {
   return ns
 }
 
-// The babel/webpack shape: `for...in` + `hasOwnProperty`, not
-// `Object.getOwnPropertyNames` -- and, unlike esbuild's helper, no
-// `getPrototypeOf` involved at all. A stub that only answers reads through a
-// proxy trap (rather than carrying real own keys) copies nothing here.
+// babel's interopRequireWildcard
 function babelInteropRequireWildcard(mod: Record<string, unknown>) {
   const ns: Record<string, unknown> = {}
   for (const key in mod) {
@@ -109,10 +100,6 @@ test.each([
 })
 
 test('a plain-object copy of a namespace-shaped module keeps every name', () => {
-  // Object.assign only ever reads own enumerable properties -- no
-  // getPrototypeOf, no proxy trap of any kind -- so this is the strictest
-  // version of the same check: whatever this copies is exactly what the
-  // module's real own keys are.
   const copy = Object.assign({}, workerModules['tss-react/mui'] as object)
   expect(Object.keys(copy).sort()).toEqual(['cx', 'keyframes', 'makeStyles'])
   expect(typeof (copy as Record<string, unknown>).makeStyles).toBe('function')
