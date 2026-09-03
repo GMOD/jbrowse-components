@@ -57,7 +57,7 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { when } from 'mobx'
+import { observable, when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
@@ -539,6 +539,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #volatile
+         * Height of each track's in-flow label band, measured by
+         * TrackContainer as the rendering container's offset inside its Paper.
+         * Absent (0) while the label is hidden, overlapping, or not yet
+         * measured. Observable, unlike `trackRefs`, so the offset and height
+         * getters below re-derive when a band changes.
+         */
+        trackLabelBands: observable.map<string, number>(),
+        /**
+         * #volatile
          */
         volatileWidth: undefined as number | undefined,
         /**
@@ -988,14 +997,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * A track's full cost beyond its display height.
        *
-       * The track *label* is not counted, and cannot be: an offset label is an
-       * in-flow box whose height is whatever the theme renders a Paper of icon
-       * buttons at — 31.140625px on the stock theme, and not a number this file
-       * can derive. So these getters are exact while labels are hidden or
-       * overlapping, and short by one label box per labelled track otherwise.
-       * Anything needing the offset to the pixel with labels showing measures
-       * the DOM; `BreakpointSplitViewOverlay` does, and falls back to this
-       * arithmetic only for a track with no mounted div.
+       * The track *label* is not counted here: an offset label is an in-flow
+       * box whose height is whatever the theme renders a Paper of icon buttons
+       * at, so it is measured into `trackLabelBands` per track and added by
+       * `trackLabelBand` rather than derived.
        */
       get trackChromeHeight() {
         return this.trackLeadingChrome + this.trackTrailingChrome
@@ -1050,6 +1055,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
+       * the measured in-flow label band above a track's rendering container,
+       * 0 until TrackContainer has measured one or when no label is in flow
+       */
+      trackLabelBand(track: (typeof self.tracks)[number]) {
+        return self.trackLabelBands.get(track.configuration.trackId) ?? 0
+      },
+
+      /**
        * #getter
        */
       get trackHeights() {
@@ -1060,7 +1074,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeightsWithChrome() {
-        return this.trackHeights + self.tracks.length * this.trackChromeHeight
+        return (
+          this.trackHeights +
+          self.tracks.length * this.trackChromeHeight +
+          sum(self.tracks.map(t => this.trackLabelBand(t)))
+        )
       },
 
       /**
@@ -1082,15 +1100,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * first, then unpinned), from the same constants TrackContainer lays its
        * Paper out with. Returns `undefined` if the track is not present.
        *
-       * Exact while track labels are hidden or overlapping. With an offset
-       * label the answer is short by one label box per labelled track above
-       * this one — see `trackChromeHeight` for why that box is not derivable
-       * here.
+       * Includes each track's measured label band, this track's own included,
+       * since an in-flow label sits above the rendering container inside the
+       * same Paper. Exact once TrackContainer has measured; before that it is
+       * short by the unmeasured bands.
        */
       getTrackYOffset(trackId: string) {
         let y =
           this.headerHeight + this.scalebarHeight + this.trackLeadingChrome
         for (const t of [...self.pinnedTracks, ...self.unpinnedTracks]) {
+          y += this.trackLabelBand(t)
           if (t.configuration.trackId === trackId) {
             return y
           }
@@ -1318,6 +1337,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // the gesture into one refetch, its in-flight guard caps concurrent
       // batches at one, and rpcDataMap is overwritten in place rather than
       // cleared, so nothing blanks (ADR-008, ADR-006).
+      setTrackLabelBand(trackId: string, band: number) {
+        if (band === 0) {
+          self.trackLabelBands.delete(trackId)
+        } else {
+          self.trackLabelBands.set(trackId, band)
+        }
+      },
+
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
         if (newWidth > 0 && self.windowWidthBp <= 0) {

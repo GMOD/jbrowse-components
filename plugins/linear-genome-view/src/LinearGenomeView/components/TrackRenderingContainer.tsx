@@ -105,9 +105,11 @@ const TrackDisplayRegion = observer(function TrackDisplayRegion({
 const TrackRenderingContainer = observer(function TrackRenderingContainer({
   model,
   track,
+  ref,
 }: {
   model: LGV
   track: BaseTrackModel
+  ref?: React.Ref<HTMLDivElement>
 }) {
   const { classes } = useStyles()
   // an LGV track always holds at least one linear display (activeDisplay =
@@ -133,6 +135,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
 
   return (
     <div
+      ref={ref}
       className={classes.trackRenderingContainer}
       style={{
         height: minimized ? MINIMIZED_TRACK_HEIGHT : height,

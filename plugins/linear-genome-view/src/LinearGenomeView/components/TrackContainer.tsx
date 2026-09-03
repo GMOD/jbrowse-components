@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
+
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -75,6 +78,47 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
+// Measures the in-flow label band, the distance from the Paper's content top to
+// the rendering container, into the model. Observes the Paper: it grows and
+// shrinks with the label, the label setting, and the display, and each of those
+// can move the container. Published after a requestAnimationFrame like
+// useWidthSetter, and cleared on unmount so a removed track leaves no band.
+function useTrackLabelBand(model: LGV, trackId: string) {
+  const [paper, setPaper] = useState<HTMLDivElement | null>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (paper && container && 'ResizeObserver' in window) {
+      let token: number | undefined
+      const publish = () => {
+        token = requestAnimationFrame(() => {
+          if (isAlive(model)) {
+            const paperRect = paper.getBoundingClientRect()
+            const band =
+              container.getBoundingClientRect().top -
+              paperRect.top -
+              paper.clientTop
+            model.setTrackLabelBand(trackId, band)
+          }
+        })
+      }
+      publish()
+      const observer = new ResizeObserver(publish)
+      observer.observe(paper)
+      return () => {
+        observer.disconnect()
+        if (token !== undefined) {
+          cancelAnimationFrame(token)
+        }
+        if (isAlive(model)) {
+          model.setTrackLabelBand(trackId, 0)
+        }
+      }
+    }
+    return undefined
+  }, [paper, container, model, trackId])
+  return { setPaper, setContainer }
+}
+
 const TrackContainer = observer(function TrackContainer({
   model,
   track,
@@ -98,9 +142,11 @@ const TrackContainer = observer(function TrackContainer({
     model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
       : classes.trackLabelOverlap
+  const { setPaper, setContainer } = useTrackLabelBand(model, track.trackId)
 
   return (
     <Paper
+      ref={setPaper}
       className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
@@ -148,7 +194,11 @@ const TrackContainer = observer(function TrackContainer({
             <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
           )}
         >
-          <TrackRenderingContainer model={model} track={track} />
+          <TrackRenderingContainer
+            model={model}
+            track={track}
+            ref={setContainer}
+          />
         </ErrorBoundary>
       </TrackOverlaySlot>
       {/* so the separator masks the track content at the same x the data is

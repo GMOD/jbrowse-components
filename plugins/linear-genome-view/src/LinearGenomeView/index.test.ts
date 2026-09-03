@@ -2236,6 +2236,43 @@ describe('TrackInit with display configuration', () => {
     expect(model.tracks[1]!.configuration.trackId).toBe('track2')
   })
 
+  test('a measured label band moves the track offsets and the view height', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    const top1 = model.getTrackYOffset('track1')!
+    const top2 = model.getTrackYOffset('track2')!
+    const height = model.height
+    const perTrack =
+      model.trackHeight(model.tracks[0]) + model.trackChromeHeight
+    expect(top2 - top1).toBe(perTrack)
+
+    model.setTrackLabelBand('track1', 31.14)
+    expect(model.getTrackYOffset('track1')).toBeCloseTo(top1 + 31.14)
+    expect(model.getTrackYOffset('track2')).toBeCloseTo(top2 + 31.14)
+    expect(model.height).toBeCloseTo(height + 31.14)
+
+    model.setTrackLabelBand('track2', 31.14)
+    expect(model.getTrackYOffset('track2')).toBeCloseTo(top2 + 2 * 31.14)
+    expect(model.height).toBeCloseTo(height + 2 * 31.14)
+
+    model.setTrackLabelBand('track1', 0)
+    model.setTrackLabelBand('track2', 0)
+    expect(model.getTrackYOffset('track2')).toBe(top2)
+    expect(model.height).toBe(height)
+  })
+
   test('init with object trackIds allows specifying display type via displaySnapshot', async () => {
     const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
     const session = Session.create({ configuration: {} }, { pluginManager })

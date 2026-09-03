@@ -16,6 +16,17 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **Have `getTrackYOffset` return `undefined` when offset labels are showing,
+  so a caller cannot silently take a short answer** — declined 2026-09-03. The
+  signature was already `number | undefined` and the one consumer read
+  `domYOffsets?.[level] ?? viewTop + (view.getTrackYOffset(trackId) ?? 0)`,
+  so the missing number became `viewTop + 0`: "this body starts at the top of
+  the row", the exact failure `BreakpointSplitViewOverlay` measures `undefined`
+  rather than `0` to avoid. Making it honest meant a nullable `OverlayLevel.yOffset`
+  and every overlay kind's drop path, larger than the fix. The band is measured
+  into `trackLabelBands` instead, which also fixes `height`, which carried the
+  same omission and left a multi-row fallback short by every band above.
+
 - **Tighten the GFF3 redispatch bound to records whose `ID` some line in the
   query actually names as a `Parent`, and let the layout take a gene's row count
   from the gene rather than from the children the fetch returned** — declined

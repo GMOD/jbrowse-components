@@ -16,7 +16,7 @@ export const SVG_SCALEBAR_CAP = 5
 // TrackContainer lays its Paper out from these same three and nothing else —
 // the previous spelling had the model on a 3 while the CSS rendered 2 + 1 + 4,
 // which put every model-derived track offset 5px per track above the pixels.
-// The track *label* is deliberately not among them; see `trackChromeHeight`.
+// The track *label* is not among them: it is measured, see `trackLabelBand`.
 export const RESIZE_HANDLE_HEIGHT = 4
 export const TRACK_TOP_GAP = 2
 export const TRACK_OUTLINE_BORDER = 1
