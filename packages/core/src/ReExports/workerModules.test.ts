@@ -3,6 +3,7 @@ import modules from './modules.ts'
 import { sharedModules } from './sharedModules.ts'
 import { uiStub } from './uiStub.ts'
 import workerModules from './workerModules.ts'
+import { WORKER_NAMESPACE_NAMES } from './workerNamespaceNames.ts'
 
 test('the worker publishes exactly the keys the main thread publishes', () => {
   expect(Object.keys(workerModules).sort()).toEqual([...reExportsList].sort())
@@ -13,29 +14,60 @@ test('a non-UI entry is the same module in both realms', () => {
   for (const key of Object.keys(sharedModules)) {
     expect(workerModules[key]).toBe(modules[key as keyof typeof modules])
   }
-  expect(workerModules['react-dom']).toBe(uiStub)
-  expect(workerModules['@mui/material']).toBe(uiStub)
-  expect(workerModules['@jbrowse/core/ui']).toBe(uiStub)
+})
+
+test('a single-value UI module is the bare stub', () => {
+  expect(workerModules['@mui/material/Button']).toBe(uiStub)
+  expect(workerModules['@mui/material/SvgIcon']).toBe(uiStub)
+  expect(workerModules['@jbrowse/core/ui/BaseTooltip']).toBe(uiStub)
+})
+
+// The regression this guards: an own-key set that only agrees with the main
+// thread's by construction of one hand-written list (workerNamespaceNames.ts)
+// could still silently drift from what modules.ts actually serves. Comparing
+// the two realms' real Object.keys() directly, rather than trusting the list
+// in between, is what makes that impossible to land unnoticed -- independent
+// of which bundler or interop pattern a plugin happens to use.
+test('a namespace-shaped UI module has the same own keys in both realms', () => {
+  for (const name of Object.keys(WORKER_NAMESPACE_NAMES)) {
+    const real = Object.keys(modules[name as keyof typeof modules] as object)
+    const stub = Object.keys(workerModules[name] as object)
+    expect(stub.sort()).toEqual(real.sort())
+  }
+})
+
+test('every value in a namespace-shaped UI module is the stub', () => {
+  for (const name of Object.keys(WORKER_NAMESPACE_NAMES)) {
+    const mod = workerModules[name] as Record<string, unknown>
+    for (const value of Object.values(mod)) {
+      expect(value).toBe(uiStub)
+    }
+  }
 })
 
 test('the stub survives what a plugin does with UI at module scope', async () => {
   const mui = workerModules['@mui/material'] as Record<string, unknown>
-  const { Button, styled } = mui as {
-    Button: (props: unknown) => unknown
+  const styles = workerModules['@mui/material/styles'] as Record<
+    string,
+    unknown
+  >
+  const { Button } = mui as { Button: (props: unknown) => unknown }
+  const { styled } = styles as {
     styled: (c: unknown) => (s: unknown) => unknown
   }
   expect(typeof Button).toBe('function')
   expect(styled(Button)({ margin: 1 })).toBe(uiStub)
   expect('Dialog' in mui).toBe(true)
   expect(`${mui.Dialog}`).toBe('')
-  expect(await mui.something).toBe(uiStub)
-  expect(new (mui.Thing as new () => unknown)()).toBe(uiStub)
+  expect(await mui.Dialog).toBe(uiStub)
+  expect(new (mui.Dialog as new () => unknown)()).toBe(uiStub)
+  // a name genuinely absent from the served ABI -- not even the stub
+  expect(mui.somethingNeverServed).toBeUndefined()
 })
 
-// how `import { makeStyles } from 'tss-react/mui'` reaches JBrowseExports in a
+// How `import { makeStyles } from 'tss-react/mui'` reaches JBrowseExports in a
 // published plugin: esbuild's `__toESM` copies the module's own names onto a
-// fresh object rather than reading through it. The stub reports `__esModule`,
-// so this is the branch esbuild takes for it.
+// fresh object rather than reading through it.
 function esbuildToESM(mod: object) {
   const ns: Record<string, unknown> = Object.create(Object.getPrototypeOf(mod))
   for (const key of Object.getOwnPropertyNames(mod)) {
@@ -47,14 +79,41 @@ function esbuildToESM(mod: object) {
   return ns
 }
 
-test("the stub survives esbuild's namespace wrapper", () => {
-  const wrap = (name: string) => esbuildToESM(workerModules[name] as object)
+// The babel/webpack shape: `for...in` + `hasOwnProperty`, not
+// `Object.getOwnPropertyNames` -- and, unlike esbuild's helper, no
+// `getPrototypeOf` involved at all. A stub that only answers reads through a
+// proxy trap (rather than carrying real own keys) copies nothing here.
+function babelInteropRequireWildcard(mod: Record<string, unknown>) {
+  const ns: Record<string, unknown> = {}
+  for (const key in mod) {
+    if (Object.prototype.hasOwnProperty.call(mod, key)) {
+      ns[key] = mod[key]
+    }
+  }
+  return ns
+}
 
-  const { makeStyles } = wrap('tss-react/mui')
+test.each([
+  ['esbuild', esbuildToESM],
+  ['babel/webpack', babelInteropRequireWildcard],
+])("the stub survives %s's namespace wrapper", (_label, wrap) => {
+  const { makeStyles } = wrap(
+    workerModules['tss-react/mui'] as Record<string, unknown>,
+  )
   expect(typeof makeStyles).toBe('function')
   expect((makeStyles as () => (rules: unknown) => unknown)()({})).toBe(uiStub)
 
-  const mui = wrap('@mui/material')
+  const mui = wrap(workerModules['@mui/material'] as Record<string, unknown>)
   expect(typeof mui.Button).toBe('function')
-  expect(typeof mui.default).toBe('function')
+  expect(typeof mui.Dialog).toBe('function')
+})
+
+test('a plain-object copy of a namespace-shaped module keeps every name', () => {
+  // Object.assign only ever reads own enumerable properties -- no
+  // getPrototypeOf, no proxy trap of any kind -- so this is the strictest
+  // version of the same check: whatever this copies is exactly what the
+  // module's real own keys are.
+  const copy = Object.assign({}, workerModules['tss-react/mui'] as object)
+  expect(Object.keys(copy).sort()).toEqual(['cx', 'keyframes', 'makeStyles'])
+  expect(typeof (copy as Record<string, unknown>).makeStyles).toBe('function')
 })

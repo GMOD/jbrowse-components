@@ -794,14 +794,58 @@ Two things that looked like the fix and measured worse, both reverted:
 
 When a config does name a UMD plugin, the worker publishes
 `ReExports/workerModules.ts` instead of the full map: the same keys, with the
-non-UI entries (`sharedModules.ts`, which `modules.ts` also builds on) real and
-every UI entry — react-dom, mobx-react, Material UI, the core `ui` namespace —
-set to `uiStub`, a callable proxy whose every read and call is itself. A plugin
-bundle is one file for both realms and reads UI at module scope
-(`styled(Box)(...)`, destructured components, `observer(C)`), so the keys must
-all exist and every read and call must succeed; nothing in a worker renders, so
-no code path reaches a difference. `workerModules.test.ts` pins key parity
-between the realms.
+non-UI entries (`sharedModules.ts`, which `modules.ts` also builds on) real. A
+UI entry that is a single value on the main thread (one component per
+`@mui/material/Name` path, `@jbrowse/core/ui/BaseTooltip`) is `uiStub`, a
+callable proxy whose every read and call is itself. A UI entry that is a
+namespace on the main thread (react-dom, mobx-react, Material UI, the core `ui`
+barrel) is `uiNamespace(names)` — a plain object with one real own property per
+real export name, each holding `uiStub` — rather than the proxy answering any
+key: see the next section for why. A plugin bundle is one file for both realms
+and reads UI at module scope (`styled(Box)(...)`, destructured components,
+`observer(C)`), so the keys must all exist and every read and call must
+succeed; nothing in a worker renders, so no code path reaches a difference.
+`workerModules.test.ts` pins key parity between the realms, per module, not
+just at the top level.
+
+### A proxy that answers any key is not the same shape as the module it stands in
+
+The stub above used to be one proxy for everything: every UI-module key held
+the *same* callable proxy, and its `get`/`has` traps answered any property name
+at all rather than only the real ones. That is invisible to code that reads a
+property (`mod.Button`), which is most plugin code — but not to code that
+*enumerates* a module's own keys, which several bundlers' ESM-interop helpers
+do: `Object.keys`, `for...in` + `hasOwnProperty`, `Object.getOwnPropertyNames`,
+a plain `Object.assign({}, mod)`. A proxy whose target is a bare function has
+none of those as real own properties, so every one of those enumeration paths
+copied nothing, silently.
+
+esbuild's `__toESM` is one such helper (`@fal-works/esbuild-plugin-global-
+externals`, which every published plugin's build uses to route a bare import at
+`JBrowseExports[name]`): it builds `Object.create(Object.getPrototypeOf(mod))`
+plus a copy of `mod`'s own names. On the proxy that was `Object.create({})`
+essentially — nothing to inherit, nothing to copy — so a plugin's module-scope
+`const { makeStyles } = ...` off the worker's `tss-react/mui` stub produced
+`undefined`, and calling it threw before the plugin's `default` export was ever
+assigned: every runtime plugin PluginLoader was loading alongside it went to the
+app's error page too. Reproduced 2026-09-03, the day after 0d034e2bd8 shipped,
+against the published jbrowse-plugin-protein3d 0.9.0 bundle, and against 4 of
+the other 13 plugins in the store at the time (jbrowse-plugin-msaview,
+-ideogram, -trackhub-registry, -tview) — every one of them reading a named UI
+export at module scope.
+
+The fix that shipped first (`getPrototypeOf` returning a second answer-anything
+proxy, so `__toESM`'s `Object.create` inherited a working prototype chain) made
+that one bundler's algorithm work, by name. It did not make `for...in` +
+`hasOwnProperty` or `Object.assign` work — those never consult
+`getPrototypeOf` — so it fixed the reported bundler rather than the shape.
+`uiNamespace` fixes the shape instead: a plain object's own keys are real for
+every one of those, because it does not answer through a trap at all.
+`modules.ts` throws at load time if a `uiNamespace` name list drifts from what
+that module actually re-exports (`workerNamespaceNames.ts`); `workerModules.
+test.ts` covers `esbuild`'s and Babel/webpack's interop shapes and a bare
+`Object.assign`, so a bundler this file has never heard of is exactly as
+supported as the two it names.
 
 Two more edges held react-dom in the worker and were cut with it: the worker
 entry's `enableStaticRendering` import from mobx-react (which imports react-dom
