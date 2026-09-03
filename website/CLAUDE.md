@@ -1,8 +1,9 @@
 # Website
 
 Astro, deployed to `s3://jbrowse.org/jb2/` on commits to `main` containing
-"update docs". `pnpm index` once for local search. `deploy_staging.sh` wraps a
-staging deploy. Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
+"update docs". `pnpm index` once for local search. `deploy.sh` does that same
+deploy by hand, without the commit message; `deploy_staging.sh` is the staging
+one. Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
 
 ## Figures
 

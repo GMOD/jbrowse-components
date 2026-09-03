@@ -88,6 +88,8 @@ export default defineConfig({
   redirects: {
     '/docs/jbrowse_jupyter/': `${BASE}/docs/jbrowse_anywidget/`,
     '/docs/config_and_session_json/': `${BASE}/docs/automating/`,
+    '/docs/agents_mcp/': `${BASE}/docs/agents/`,
+    '/docs/agents_web/': `${BASE}/docs/agents/`,
   },
   // Astro's default HTML minifier strips whitespace-only text nodes between
   // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and
