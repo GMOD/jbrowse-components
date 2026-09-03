@@ -22,6 +22,12 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export interface LoadedRegion extends Region {
   /** the `regionFetchKey` the fetch that stored this region was issued under */
   fetchKey: string
+  /**
+   * The settings and adapter half of that key (`settingsFetchKey`), stamped
+   * beside it so `staleSettingsDrawn` can tell a settings change from a zoom —
+   * the whole key moves on either, and only one of the two raises the scrim.
+   */
+  settingsKey: string
 }
 
 /**

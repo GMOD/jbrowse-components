@@ -1779,6 +1779,13 @@ export default function MultiSampleVariantBaseModelF(
           self.setCellData(undefined)
         },
 
+        // The row set is a setting and the payload is one matrix over every
+        // visible region, so there is no per-region replacement for stale cells
+        // to draw under — see the hook.
+        clearSettingsBakedData() {
+          self.setCellData(undefined)
+        },
+
         // Ignores `needed` and refetches all visible regions because the
         // cellData RPC payload is monolithic — one call returns data covering
         // all visible regions, so partial refetches don't fit. That is why the

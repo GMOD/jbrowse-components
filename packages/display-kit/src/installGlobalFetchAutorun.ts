@@ -168,8 +168,9 @@ function globalFetchPlan<TArgs, TResult>(
  *   fetch this installs.
  *
  * `rpcProps()` loop hazard: unlike MultiRegion's `SettingsInvalidate` (which
- * clears data in a *separate, undelayed* autorun and so loops synchronously if
- * `rpcProps()` *returns* fetch-derived state — caught by `makeSettingsLoopGuard`),
+ * supersedes the fetch in a *separate, undelayed* autorun and so loops
+ * synchronously if `rpcProps()` *returns* fetch-derived state — caught by
+ * `makeSettingsLoopGuard`),
  * this fetch reads the key and starts the round trip in the *same* debounced
  * body. A fetch-derived value in the payload here loops on the async-fetch
  * cadence (refetch → commit → key changes → reschedule after `delay` →

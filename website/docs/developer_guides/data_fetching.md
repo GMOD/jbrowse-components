@@ -27,7 +27,7 @@ for which foundation each in-tree display uses.
 | Autorun | Fires on | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` |
-| `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `clearAllRpcData()` |
+| `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `invalidateSettings()`: supersede the in-flight fetch, clear a blocking error or cancel, drop settings-baked data. `loadedRegions` stays, so the held data draws under the `staleSettingsDrawn` scrim until the refetch lands |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 | `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (immediate, then debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 
@@ -210,9 +210,13 @@ the class of bug the helpers exist to make unavailable.
 ## rpcProps: the cache key
 
 `SettingsInvalidate` watches `rpcPropsCacheKey`, the **serialized return value**
-of `rpcProps()`. When that string changes it calls `clearAllRpcData()` and
-restarts the fetch cycle. This is how config changes (color scheme, filter
-settings, etc.) trigger a full refetch.
+of `rpcProps()`. When that string changes, every loaded region's fetch-key stamp
+is stale, and the autorun calls `invalidateSettings()` — the in-flight fetch is
+superseded, a blocking error is cleared, and the display drops any data it
+cannot honestly draw under the new setting (`clearSettingsBakedData`) — so the
+fetch cycle restarts while the held data stays on screen under the loading
+scrim. This is how config changes (color scheme, filter settings, etc.) trigger
+a full refetch.
 
 What is watched is the method's return value: building the payload usually reads
 far more observables than it returns — a whole config snapshot, or a value that

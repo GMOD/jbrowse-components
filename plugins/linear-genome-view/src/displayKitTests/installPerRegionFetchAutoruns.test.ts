@@ -195,6 +195,90 @@ describe('the trigger list', () => {
   })
 })
 
+// What `SettingsInvalidate` does beside the refetch the key already owes. It
+// used to run `clearAllRpcData`, and the emptied coverage map was the scrim:
+// every display but canvas blanked for the debounce plus the RPC. The reset is
+// `invalidateSettings` now — supersede, unblock, drop settings-baked data — and
+// the scrim is `staleSettingsDrawn`, which compares the settings half of the
+// stamp alone, so it stays down on a zoom.
+describe('SettingsInvalidate keeps the held data drawn', () => {
+  // an adapter slot to edit: the display declares no `rpcProps`, so the adapter
+  // axis is the settings trigger this harness can fire
+  const withAdapterSlot = () =>
+    setup({
+      adapter: {
+        name: 'PerRegionTestAdapter',
+        slots: { flavor: { type: 'string', defaultValue: 'a' } },
+      },
+    })
+
+  it('keeps loadedRegions and scrims through the refetch, then clears', async () => {
+    const { display, track } = withAdapterSlot()
+    await quiet(display)
+    display.markCanvasDrawn()
+    expect(display.displayPhase).toBe('ready')
+
+    track.configuration.adapter.setSlot('flavor', 'b')
+    expect(display.loadedRegions.size).toBe(1)
+    expect(display.staleSettingsDrawn).toBe(true)
+    expect(display.viewportWithinLoadedData).toBe(true)
+    expect(display.displayPhase).toBe('loading')
+    // the canvas is still marked drawn, and `data-display-drawn` must not say
+    // so: a capture waiting on it wants the refetch, not these pixels
+    expect(display.canvasDrawn).toBe(true)
+    expect(display.painted).toBe(false)
+
+    expect(await quiet(display)).toBe(2)
+    expect(display.staleSettingsDrawn).toBe(false)
+    expect(display.displayPhase).toBe('ready')
+    expect(display.painted).toBe(true)
+  })
+
+  it('raises no scrim on a zoom-key move', async () => {
+    const { display } = setup()
+    await quiet(display)
+    display.markCanvasDrawn()
+
+    display.setFetchKey('b')
+    expect(display.isCacheValid(0)).toBe(false)
+    expect(display.staleSettingsDrawn).toBe(false)
+    expect(display.displayPhase).toBe('ready')
+  })
+
+  it('supersedes a fetch in flight rather than waiting it out', async () => {
+    const { display, track, control } = withAdapterSlot()
+    await quiet(display)
+    control.fetchDelayMs = 5_000
+    display.setFetchKey('b')
+    await jest.advanceTimersByTimeAsync(700)
+    expect(display.isLoading).toBe(true)
+
+    track.configuration.adapter.setSlot('flavor', 'b')
+    // the cancel drops the token synchronously; the plan is free to reissue
+    expect(display.isLoading).toBe(false)
+    control.fetchDelayMs = 0
+    expect(await quiet(display)).toBe(3)
+    expect(display.loadedRegions.get(0)?.settingsKey).toBe(
+      display.settingsFetchKey,
+    )
+  })
+
+  it('unblocks an errored display', async () => {
+    const check = expectFetchErrorLogged()
+    const { display, track, control } = withAdapterSlot()
+    await quiet(display)
+    control.failNextFetch = true
+    display.setFetchKey('b')
+    await quiet(display)
+    expect(display.error).toBeDefined()
+
+    track.configuration.adapter.setSlot('flavor', 'b')
+    expect(display.error).toBeUndefined()
+    expect(await quiet(display)).toBe(3)
+    check()
+  })
+})
+
 // The third invalidation axis, and the one this mixin owns: the display says
 // what a fetch issued now would produce, `fetchRegions` stamps that beside the
 // region it loads, and a region whose stamp no longer matches refetches.

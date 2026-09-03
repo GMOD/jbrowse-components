@@ -39,7 +39,7 @@ afterEach(() => {
 })
 
 // Architecture under test:
-//   rpcProps changes → SettingsInvalidate clears RPC data → fetch re-runs
+//   rpcProps changes → SettingsInvalidate supersedes the fetch → fetch re-runs
 //   gpuProps changes → per-region encode autoruns re-fire, re-uploading
 //                      the GPU buffer (no RPC roundtrip)
 //   renderState-only changes → render autorun re-runs (no upload, no fetch)
@@ -203,7 +203,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // Guard against the foot-gun in feedback_rpcprops_no_fetch_results: if any
   // rpcProps field is derived from rpcDataMap (or any other fetch result),
   // populating it during fetch will change rpcProps, which SettingsInvalidate
-  // watches → clearAllRpcData → infinite loop. A direct shape comparison
+  // watches → invalidateSettings → infinite loop. A direct shape comparison
   // before/after fetch catches that the moment a new field is added wrong.
   it('rpcProps shape is unchanged after a fetch populates rpcDataMap', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()

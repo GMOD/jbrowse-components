@@ -11,6 +11,19 @@ Accepted for viewport-agnostic display types (canvas today). Revises
 ADR-003's blank-on-settings-change stance. Viewport-baked display types
 keep clearing — see "When to preserve vs clear" below.
 
+**Since 2026-09 the settings trigger preserves for every per-region display.**
+`SettingsInvalidate` runs `invalidateSettings` — supersede the in-flight
+fetch, clear a blocking error or cancel, drop settings-baked data — and never
+`clearAllRpcData`: the settings and adapter axes are in `regionFetchKey`, so
+every held region already reads stale and the plan refetches it, and the scrim
+comes from `staleSettingsDrawn` rather than from an emptied coverage map. A
+settings change does not move `bpPerPx`, so the test below does not apply to
+it; what a display may still drop there is a payload whose *shape* the setting
+decides, through the `clearSettingsBakedData` hook (the variant matrix's cell
+payload, MAF's two tiers under one stamp). The preserve-vs-clear test keeps
+governing `clearDisplaySpecificData`, which runs on a displayed-regions change,
+on a viewport move past an error or a cancel, and on `reload()`.
+
 **Naming reconciled to current source.** The decision holds and is live in
 `plugins/canvas/src/LinearBasicDisplay/baseModel.ts`, but the symbols in the
 original code blocks were renamed. Map:

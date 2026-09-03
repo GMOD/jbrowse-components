@@ -544,6 +544,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   always pinned. Read that conjunct as this entry being reopened and you will
   delete a fix; the entry stands for the phase.
 
+  **`staleSettingsDrawn` went into the phase 2026-09 and is not this fold
+  either.** It compares the settings and adapter half of the stamp
+  (`LoadedRegion.settingsKey`) against `settingsFetchKey`, never the zoom
+  axis, so it is the scrim the emptied coverage map used to raise on a
+  settings change — now raised over data still drawn — and stays false on
+  every zoom. `zoomInvalidation.test.ts` and `displayPhaseWiring.test.ts` pin
+  what they always pinned.
+
   **`dataSuperseded` went into the phase 2026-08-26 and is likewise not this
   fold.** `displayPhase` now takes `viewportWithinLoadedData &&
   !dataSuperseded`, because a display that opts into `dataSuperseded` is drawing

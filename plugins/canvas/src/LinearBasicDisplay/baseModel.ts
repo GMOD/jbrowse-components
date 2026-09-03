@@ -1437,7 +1437,9 @@ export default function baseStateModelFactory(
         // This display deliberately does NOT override
         // `clearDisplaySpecificData` (MultiRegionDisplayMixin's no-op default
         // stands), so a `clearAllRpcData` keeps everything below and the track
-        // stays painted through the refetch window:
+        // stays painted through the refetch window — the stance ADR-006 took
+        // for this display alone, and the one `invalidateSettings` takes for
+        // every per-region display since 2026-09:
         //
         // - `rpcDataMap` and the gate's density stats survive, so features stay
         //   on screen and the derived `regionTooLarge` banner stays stable across

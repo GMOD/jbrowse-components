@@ -530,10 +530,14 @@ describe('SettingsInvalidate autorun', () => {
     })
     expect(display.rpcDataMap.size).toBe(1)
 
-    // Trigger settings-driven invalidation. clearAllRpcData fires but
-    // must NOT empty rpcDataMap — labels would flash off otherwise.
+    // Trigger settings-driven invalidation. `invalidateSettings` fires but
+    // must NOT empty rpcDataMap — labels would flash off otherwise — and
+    // keeps the coverage map too, so the phase reads the scrim off
+    // `staleSettingsDrawn` rather than off an emptied `loadedRegions`.
     display.setShowOnlyGenes(true)
     expect(display.rpcDataMap.size).toBe(1)
+    expect(display.loadedRegions.size).toBe(1)
+    expect(display.staleSettingsDrawn).toBe(true)
   })
 
   it('triggers refetch when settings change while fetch is in progress (regression)', async () => {
@@ -550,8 +554,8 @@ describe('SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setShowOnlyGenes(true)
-    // clearAllRpcData() fires synchronously, cancels the in-flight fetch and
-    // clears laidOutDataMap. FetchVisibleRegions re-fetches after 600ms.
+    // invalidateSettings() fires synchronously and cancels the in-flight
+    // fetch. FetchVisibleRegions re-fetches after 600ms.
     jest.advanceTimersByTime(800)
 
     // waitFor, not a bare read: fetchRegions consults the byte gate (an async
@@ -569,7 +573,7 @@ describe('SettingsInvalidate autorun', () => {
     const { display } = createDisplay()
 
     // Change setting before FetchVisibleRegions fires (delay: 600ms).
-    // clearAllRpcData() runs synchronously, incrementing fetchGeneration.
+    // invalidateSettings() runs synchronously, incrementing fetchGeneration.
     // FetchVisibleRegions fires once at t=600ms using the current showOnlyGenes.
     display.setShowOnlyGenes(true)
 

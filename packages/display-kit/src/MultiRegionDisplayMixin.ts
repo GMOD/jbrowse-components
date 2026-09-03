@@ -193,10 +193,12 @@ export default function MultiRegionDisplayMixin() {
          * alignments its per-base sampling bin.
          *
          * Here and NOT in `rpcProps()`: a zoom-swinging value in the RPC
-         * payload runs `SettingsInvalidate`'s clear on every crossing, blanking
-         * the display at the force-load floor — see REGION_TOO_LARGE.md §"How
-         * the verdict is built" — where a key term marks the held regions stale
-         * and lets them draw until the refetch lands.
+         * payload runs `SettingsInvalidate` on every crossing — the in-flight
+         * fetch superseded, the scrim raised over the held data, and the
+         * display blanked where it drops settings-baked data — see
+         * REGION_TOO_LARGE.md §"How the verdict is built" — where a key term
+         * marks the held regions stale and lets them draw, unscrimmed, until
+         * the refetch lands.
          *
          * A getter, so the observables it reads register as dependencies of
          * `FetchVisibleRegions`; MobX runs an action untracked and the autorun
@@ -248,25 +250,25 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * Overridable hook (default false): the held data is loaded and covers
          * the viewport, but a fetch input has moved past it, so the data is
-         * about to be cleared and refetched. A display says so here rather than
-         * overriding `dataCurrent`, for the reason `FetchMixin.fetchInert` is a
-         * hook: an override has to restate the freshness terms and then misses
-         * the next one added.
+         * about to be refetched. A display says so here rather than overriding
+         * `dataCurrent`, for the reason `FetchMixin.fetchInert` is a hook: an
+         * override has to restate the freshness terms and then misses the next
+         * one added.
          *
          * Both answers a display gives about being finished read it — the
          * export gate through `dataCurrent`, the loading scrim through
          * `displayPhase`. The export gate is the sharper case: `awaitSvgReady`
          * samples freshness once, and an export that samples it inside this
-         * window renders the data that is about to be discarded — or, once the
-         * clear lands mid-render, nothing at all. GWAS's LD auto-index is that
-         * case: adopting the top hit as the index SNP is an `rpcProps` change,
-         * so the very load that produced the top hit is what it invalidates.
+         * window renders the data that is about to be replaced. GWAS's LD
+         * auto-index is that case: adopting the top hit as the index SNP is an
+         * `rpcProps` change, so the very load that produced the top hit is what
+         * it invalidates — and `SettingsInvalidate` lands a tick after the
+         * write, so until it does not even `staleSettingsDrawn` has seen it.
          *
          * The window is NOT invisible on screen, which this used to say while
-         * `displayPhase` took a spatial-only argument: the clear lands a tick
-         * later, so until it does the display keeps drawing the superseded data
-         * with no scrim over it. Alignments' per-base wall spends the debounce
-         * plus the RPC painting a 1 px stripe every 8 px.
+         * `displayPhase` took a spatial-only argument: alignments' per-base
+         * wall spends the debounce plus the RPC painting a 1 px stripe every
+         * 8 px, with nothing in the key having moved yet.
          *
          * **The input need not have settled yet.** Alignments counts the
          * debounce window ahead of its per-base bin, where the bin the data was
@@ -313,18 +315,30 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
-         * What a fetch issued right now would stamp on a region: the settings
-         * axis (`rpcPropsCacheKey`), the adapter axis (`adapterConfigKey`) and
-         * the display's zoom term (`zoomFetchKey`). `fetchRegions` captures it
-         * before the RPC goes out and stamps it beside the loaded region;
-         * `isCacheValid` compares against it. The same three axes the global
-         * family's `currentFetchKey` carries, so a settings change reads as
-         * stale here through the one compare rather than only through the
-         * cleared coverage map — which is what closes the export gate on a
-         * setting the way it already closed on a zoom.
+         * The settings axis (`rpcPropsCacheKey`) and the adapter axis
+         * (`adapterConfigKey`) of `regionFetchKey`: everything a fetch issued
+         * right now would stamp on a region except the zoom. Stamped beside
+         * the whole key (`LoadedRegion.settingsKey`) so `staleSettingsDrawn`
+         * can compare these two axes alone.
+         */
+        get settingsFetchKey(): string {
+          return `${self.rpcPropsCacheKey}|${self.adapterConfigKey}`
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * What a fetch issued right now would stamp on a region:
+         * `settingsFetchKey` plus the display's zoom term (`zoomFetchKey`).
+         * `fetchRegions` captures it before the RPC goes out and stamps it
+         * beside the loaded region; `isCacheValid` compares against it. The
+         * same three axes the global family's `currentFetchKey` carries, so a
+         * settings change reads as stale here through the one compare — which
+         * is what closes the export gate on a setting the way it closes on a
+         * zoom, and what lets `SettingsInvalidate` keep the coverage map.
          */
         get regionFetchKey(): string {
-          return `${self.rpcPropsCacheKey}|${self.adapterConfigKey}|${self.zoomFetchKey}`
+          return `${self.settingsFetchKey}|${self.zoomFetchKey}`
         },
         /**
          * #method
@@ -354,6 +368,32 @@ export default function MultiRegionDisplayMixin() {
       // sibling. Nothing captures them today; the split is what keeps that true
       // by construction instead of by luck.
       .views(self => ({
+        /**
+         * #getter
+         * A visible block's held data was fetched under a settings or adapter
+         * key that has since moved: drawn, and wrong for the current settings,
+         * until the refetch `isCacheValid` already owes lands. The loading
+         * scrim's third staleness term, beside spatial coverage and
+         * `dataSuperseded` — the one that used to come from `SettingsInvalidate`
+         * emptying the coverage map, and the reason it no longer has to.
+         *
+         * False on a zoom by construction: `LoadedRegion.settingsKey` is the
+         * key minus its zoom axis, so a moved `zoomFetchKey` raises no scrim.
+         * That is the whole distance from the fold REJECTED_IDEAS.md "Folding
+         * content staleness into `displayPhase`" declines, which compared the
+         * whole key and put the overlay 250 ms into every zoom.
+         */
+        get staleSettingsDrawn(): boolean {
+          const { host } = self
+          const settingsKey = self.settingsFetchKey
+          return (
+            host.initialized &&
+            host.visibleRegions.some(block => {
+              const loaded = self.loadedRegions.get(block.displayedRegionIndex)
+              return loaded !== undefined && loaded.settingsKey !== settingsKey
+            })
+          )
+        },
         /**
          * #getter
          * This family's answer to the shared freshness question every display
@@ -445,6 +485,17 @@ export default function MultiRegionDisplayMixin() {
         get paintInert(): boolean {
           return foundationPaintInert(self)
         },
+        /**
+         * #getter
+         * Fills `RenderLifecycleMixin`'s hook with `staleSettingsDrawn`, so
+         * `painted` — and `data-display-drawn` through it — reads pending over
+         * a canvas painted under the previous settings until the refetch
+         * lands. `clearAllRpcData` used to reset `canvasDrawn` for the same
+         * effect; the hook says it without blanking anything.
+         */
+        get paintSuperseded(): boolean {
+          return self.staleSettingsDrawn
+        },
 
         /**
          * #getter
@@ -480,7 +531,10 @@ export default function MultiRegionDisplayMixin() {
         get displayPhase(): DisplayPhase {
           return foundationDisplayPhase(
             self,
-            () => self.viewportWithinLoadedData && !self.dataSuperseded,
+            () =>
+              self.viewportWithinLoadedData &&
+              !self.dataSuperseded &&
+              !self.staleSettingsDrawn,
             () => self.host.effectiveBodyMounted,
           )
         },
@@ -508,8 +562,13 @@ export default function MultiRegionDisplayMixin() {
           // default's type lands as `any` and the published signature stopped
           // constraining the one field `isCacheValid` compares
           fetchKey: string = self.regionFetchKey,
+          settingsKey: string = self.settingsFetchKey,
         ) {
-          self.loadedRegions.set(displayedRegionIndex, { ...region, fetchKey })
+          self.loadedRegions.set(displayedRegionIndex, {
+            ...region,
+            fetchKey,
+            settingsKey,
+          })
         },
 
         /**
@@ -523,9 +582,33 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #action
-         * no-op base — subclasses override to clear rpcDataMap etc.
+         * Overridable hook (no-op base): drop this display's own stores —
+         * `rpcDataMap` and whatever sits beside it. Called by
+         * `clearAllRpcData`, which runs on a displayed-regions change, on a
+         * viewport move past an error or a cancel, and on `reload()`.
          */
         clearDisplaySpecificData() {},
+        /**
+         * #action
+         * Overridable hook (no-op base): drop what this display holds that is
+         * wrong under a changed setting rather than merely stale — a payload
+         * whose shape the setting decides. Called by `invalidateSettings`,
+         * where `clearDisplaySpecificData` is deliberately not: bins, reads
+         * and features fetched under the previous setting draw honestly under
+         * the scrim `staleSettingsDrawn` raises until the refetch lands, the
+         * way canvas has kept its features since ADR-006 and every display
+         * does since 2026-09.
+         *
+         * Two displays override it, for two structural reasons. The variant
+         * matrix holds one payload for every visible region and the row set
+         * is a setting, so there is no per-region replacement to wait for.
+         * MAF holds a summary tier and a detail tier under one
+         * `displayedRegionIndex` with one stamp between them: a refetch under
+         * the new setting restamps the region for the tier it fetched, and the
+         * other tier's map — still the old setting's rows — would then read as
+         * cache-valid on the next zoom across the threshold.
+         */
+        clearSettingsBakedData() {},
       }))
       .actions(self => {
         const superReload = self.reload
@@ -544,6 +627,24 @@ export default function MultiRegionDisplayMixin() {
             self.loadedRegions.clear()
             self.clearDisplaySpecificData()
             self.resetCanvasDrawn()
+          },
+
+          /**
+           * #action
+           * `SettingsInvalidate`'s reset: the half of `clearAllRpcData` a
+           * settings change still needs now that the settings and adapter
+           * axes are in `regionFetchKey`. The in-flight fetch is superseded
+           * now rather than when its payload lands stamped stale, a blocking
+           * error or cancel is cleared so the plan is not `blocked`, and the
+           * display drops its settings-baked data. `loadedRegions` and the
+           * canvas-drawn flag stay: every held region already reads
+           * `!isCacheValid`, so the plan refetches it, and until that lands the
+           * data stays on screen under the scrim `staleSettingsDrawn` raises.
+           */
+          invalidateSettings() {
+            self.cancelFetch()
+            self.setError(undefined)
+            self.clearSettingsBakedData()
           },
 
           /**
@@ -602,6 +703,7 @@ export default function MultiRegionDisplayMixin() {
             work: (ctx: RegionFetchContext) => Promise<void>,
           ) {
             const fetchKey = self.regionFetchKey
+            const settingsKey = self.settingsFetchKey
             const issued = new Map(
               needed.map(n => [n.displayedRegionIndex, n.region]),
             )
@@ -621,7 +723,12 @@ export default function MultiRegionDisplayMixin() {
                     checks.unknownRegion(displayedRegionIndex, issued.keys())
                   } else if (!ctx.isStale()) {
                     committed++
-                    self.setLoadedRegion(displayedRegionIndex, region, fetchKey)
+                    self.setLoadedRegion(
+                      displayedRegionIndex,
+                      region,
+                      fetchKey,
+                      settingsKey,
+                    )
                   }
                 },
               })

@@ -947,7 +947,7 @@ knowing it exists — which is what keeps them here rather than in
 
 `LinearBasicDisplay`'s `rpcProps()` returns the slots the worker reads. Every
 returned field is an RPC cache key, so `SettingsInvalidate` fires
-`clearAllRpcData()` and every visible region refetches. **One `color` /
+`invalidateSettings()` and every visible region refetches. **One `color` /
 `utrColor` / `connectorColor` slot edit re-downloads and re-parses every region
 of every canvas feature track**, because those slots are per-feature jexl
 callback slots and only the worker has the feature to evaluate them against.
@@ -994,8 +994,8 @@ payload to carry the invalidation. Both gate budgets work that way now —
 `maxFeatureDensity` behind `maxFeatureScreenDensity`. The density one was a cache
 key until 2026-08-04, and because `gateActive` folds in `AUTO_FORCE_LOAD_BP` it
 flipped `undefined ↔ number` at 20 kb of visible span: zooming across that floor
-fired `SettingsInvalidate` and blanked the whole display, for data identical on
-both sides of it. See
+fired `SettingsInvalidate` and refetched the whole display, for data identical
+on both sides of it. See
 [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"Neither budget is an RPC cache key"
 for why nothing is left unguarded by that.
 `loadedRegions`, not `rpcDataMap`, is the signal when measuring — the

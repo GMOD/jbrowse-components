@@ -2442,6 +2442,13 @@ export default function stateModelFactory(
           // measured yet.
           self.framesGateBlocked = false
         },
+        // Two tiers under one stamp: a settings refetch restamps a region for
+        // the tier it fetched, and the other tier's map would then read as
+        // cache-valid on the next zoom across the threshold while holding the
+        // old setting's rows. So every map goes, as it does on chromosome nav.
+        clearSettingsBakedData() {
+          self.clearDisplaySpecificData()
+        },
         // reload() not overridden — MultiRegionDisplayMixin's base default
         // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
         startRenderingBackend(backend: MafRenderingBackend) {

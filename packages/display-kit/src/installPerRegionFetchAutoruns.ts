@@ -48,6 +48,7 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
   fetchNeeded: (needed: IndexedRegion[]) => void
   setError: (error?: unknown) => void
   clearAllRpcData: () => void
+  invalidateSettings: () => void
   clearHoveredFeature: () => void
 }
 
@@ -112,23 +113,22 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // re-pointed at in the config editor.
   //
   // Both are axes of `regionFetchKey`, so every loaded region already reads as
-  // stale to `isCacheValid` the moment either moves and the plan would refetch
-  // on its own. What the clear still buys is the rest of `clearAllRpcData`: a
-  // fetch superseded now rather than after it lands, an errored display
-  // unblocked, the display's own maps dropped where its payload is settings-
-  // baked, and the coverage map emptied so `displayPhase` shows the scrim
-  // through the refetch. Keeping stale data drawn through a settings change
-  // instead is per display (ADR-006, canvas already) and is
-  // `ideas/settings-axis-into-region-fetch-key.md`.
+  // stale to `isCacheValid` the moment either moves and the plan refetches on
+  // its own; `staleSettingsDrawn` raises the scrim over the data meanwhile.
+  // What this still buys is `invalidateSettings`: a fetch superseded now rather
+  // than after it lands, an errored display unblocked, and the display's own
+  // settings-baked data dropped. Not `clearAllRpcData`, whose emptied coverage
+  // map is what used to raise the scrim — and blank every display but canvas
+  // for the debounce plus the RPC.
   //
-  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `clearAllRpcData()`
+  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `invalidateSettings()`: supersede the in-flight fetch, clear a blocking error or cancel, drop settings-baked data. `loadedRegions` stays, so the held data draws under the `staleSettingsDrawn` scrim until the refetch lands
   autorunOnReadyView(
     self,
     () => {
       void self.rpcPropsCacheKey
       void self.adapterConfigKey
       loopGuard()
-      self.clearAllRpcData()
+      self.invalidateSettings()
     },
     { name: 'SettingsInvalidate' },
   )

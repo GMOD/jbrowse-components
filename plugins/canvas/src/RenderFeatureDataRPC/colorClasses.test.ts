@@ -140,7 +140,7 @@ describe('the main thread resolves the classes', () => {
 // The payload, not a toggle: the test session's palette is fixed, and the
 // payload is where the invalidation lived. Every field of `rpcProps()` is an RPC
 // cache key, so while the theme was one of them a light/dark switch —
-// `SettingsInvalidate` -> `clearAllRpcData()` -> refetch — re-downloaded and
+// `SettingsInvalidate` -> `invalidateSettings()` -> refetch — re-downloaded and
 // re-parsed every visible region of every canvas feature track.
 describe('the theme is not an RPC cache key', () => {
   it('sends no theme in the worker payload', () => {

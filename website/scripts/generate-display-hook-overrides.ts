@@ -152,6 +152,12 @@ const HOOKS: Hook[] = [
       'same, for a paint that is never coming — both fetch families fill it with `foundationPaintInert` (a failed fetch, a standing user cancel, an empty viewport), so a display outside them owes its own',
   },
   {
+    name: 'paintSuperseded',
+    owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
+    ifNotOverridden:
+      'false, so `painted` answers off the raw flag alone; the per-region foundation fills it with `staleSettingsDrawn`, which is what makes `data-display-drawn` wait for a settings refetch instead of reporting the previous setting’s pixels finished',
+  },
+  {
     name: 'gateEnabled',
     owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
@@ -173,6 +179,12 @@ const HOOKS: Hook[] = [
     owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
       'a no-op, so `clearAllRpcData` drops `loadedRegions` and nothing else — the payload store keeps its entries and the refetch overwrites them region by region, which is what a display that wants stale data drawn under the refetch (ADR-006) is choosing, and what a display holding a second store has silently not cleared',
+  },
+  {
+    name: 'clearSettingsBakedData',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+    ifNotOverridden:
+      'a no-op, so a settings change keeps every store: the held data draws under the `staleSettingsDrawn` scrim until the refetch lands, which is honest for a payload the refetch replaces region by region and wrong for one whose shape the setting decides (the variant matrix) or that shares a stamp with a second tier (MAF)',
   },
   {
     name: 'hoveredFeature',

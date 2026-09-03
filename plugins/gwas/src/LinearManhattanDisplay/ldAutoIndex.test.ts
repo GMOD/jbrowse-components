@@ -52,10 +52,11 @@ async function settle(times: number) {
 
 describe('LinearManhattanDisplay LD auto-index', () => {
   // Regression: indexSnp is both a fetch input (rpcProps -> SettingsInvalidate
-  // -> clearAllRpcData) and derived from the fetched data (topSnp). Reading a
-  // partial load made the index flip between each partially-loaded winner and
-  // the true top hit, each flip wiping the data and refetching — forever, with
-  // the plot never painting. Gating on a settled load makes topSnp a fixpoint.
+  // -> invalidateSettings) and derived from the fetched data (topSnp). Reading
+  // a partial load made the index flip between each partially-loaded winner
+  // and the true top hit, each flip superseding the fetch and refetching —
+  // forever, with the plot never settling. Gating on a settled load makes
+  // topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       colorBy: 'ld',

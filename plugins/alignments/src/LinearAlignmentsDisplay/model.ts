@@ -3926,8 +3926,8 @@ export default function stateModelFactory(
               })
             }
             // No explicit invalidation here: `linkedReads` is an `rpcProps()`
-            // key, so `SettingsInvalidate` runs `clearAllRpcData` when this
-            // action ends.
+            // key, so `SettingsInvalidate` runs `invalidateSettings` when this
+            // action ends and the plan refetches every held region.
           },
 
           /**

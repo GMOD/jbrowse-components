@@ -1,6 +1,6 @@
 ---
 name: discrete-zoom-thresholds-in-rpc-props
-description: Three displays answer "which zoom tier am I in" three ways, and two of them put the answer in rpcProps() — so crossing 100 bp/px on canvas's default 'auto' glyph mode, or LGVSyntenyDisplay's LOD tier mid-gesture, fires SettingsInvalidate and a full clearAllRpcData() where a zoomFetchKey term would mark the held regions stale and let them draw until the refetch lands. Moving them carries two riders, and one test in the tree currently claims the opposite.
+description: Three displays answer "which zoom tier am I in" three ways, and two of them put the answer in rpcProps() — so crossing 100 bp/px on canvas's default 'auto' glyph mode, or LGVSyntenyDisplay's LOD tier mid-gesture, fires SettingsInvalidate, which supersedes the fetch and scrims the held data, where a zoomFetchKey term would let it draw unscrimmed until the refetch lands. Moving them carries two riders, and one test in the tree currently claims the opposite.
 ---
 
 # A discrete zoom threshold is spelled three ways
@@ -9,18 +9,19 @@ description: Three displays answer "which zoom tier am I in" three ways, and two
 the display's `zoomFetchKey` term, not an `rpcProps()` field. Both are axes of
 the one `regionFetchKey` now, so either marks every loaded region stale — the
 difference is that an `rpcProps` move also runs `SettingsInvalidate`'s
-`clearAllRpcData()`, which blanks the display and raises the scrim through the
-refetch, where a key term lets the held data draw until the new payload lands.
-Three displays answer the same question three ways, and two break that rule:
+`invalidateSettings()`, which supersedes the in-flight fetch and raises the
+`staleSettingsDrawn` scrim over the held data through the refetch, where a key
+term lets it draw unscrimmed until the new payload lands. Three displays answer
+the same question three ways, and two break that rule:
 
 - canvas's peptide threshold is a `zoomFetchKey` — the rule followed;
 - canvas's `effectiveGeneGlyphMode`
   (`plugins/canvas/src/LinearBasicDisplay/model.ts`) is an `rpcProps` field, so
   crossing 100 bp/px on the **default** `'auto'` config fires
-  `SettingsInvalidate` and a full `clearAllRpcData()`;
+  `SettingsInvalidate`, a superseded fetch and the scrim;
 - `LGVSyntenyDisplay`'s `lodTier` is an `rpcProps` field read off **live**
-  `bpPerPx`, so a zoom gesture crossing the tier fires that full clear
-  mid-gesture.
+  `bpPerPx`, so a zoom gesture crossing the tier fires that supersede and
+  scrim mid-gesture.
 
 Moving the last two into their displays' keys carries two riders. The glyph mode
 must then ride as a call-site RPC argument, the way the per-base bin does, since

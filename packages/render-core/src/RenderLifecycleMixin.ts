@@ -176,6 +176,26 @@ export function RenderLifecycleMixin() {
       get paintInert(): boolean {
         return false
       },
+
+      /**
+       * #getter
+       * Overridable hook (default false): what is on the canvas was painted
+       * from data a later change has made wrong, so `painted` below should
+       * answer *pending* until the repaint lands even though `canvasDrawn` is
+       * still true. The per-region fetch foundation fills it with
+       * `staleSettingsDrawn` — held data drawn under settings that have since
+       * moved — which is the state `clearAllRpcData` used to express by
+       * resetting `canvasDrawn` on every settings change, blanking the display
+       * to do it. A capture waiting on `data-display-drawn` then waits for the
+       * refetch rather than snapshotting the previous setting's pixels.
+       *
+       * A hook and not a reset of the flag, because the flag is re-marked by
+       * any redraw — a pan between the settings change and the refetch would
+       * report the stale canvas drawn — and a derivation cannot be raced.
+       */
+      get paintSuperseded(): boolean {
+        return false
+      },
     }))
     .views(self => ({
       /**
@@ -198,10 +218,16 @@ export function RenderLifecycleMixin() {
        *
        * `paintInert` is the third term and the same argument once more, for the
        * state where a display *would* paint a canvas and never gets to — a fetch
-       * that failed before first paint. See that hook.
+       * that failed before first paint. `paintSuperseded` is the fourth, and
+       * the one that subtracts: a canvas painted from data a settings change
+       * has made wrong is drawn and not finished. See both hooks.
        */
       get painted(): boolean {
-        return self.canvasDrawn || !self.rendersCanvas || self.paintInert
+        return (
+          (self.canvasDrawn && !self.paintSuperseded) ||
+          !self.rendersCanvas ||
+          self.paintInert
+        )
       },
     }))
     .actions(self => ({
