@@ -29,7 +29,7 @@
   },
   {
     "plugin": "MsaView",
-    "breaks": []
+    "breaks": ["@jbrowse/core/util#renderToStaticMarkup"]
   },
   {
     "plugin": "Protein3d",
@@ -53,7 +53,7 @@
   },
   {
     "plugin": "TView",
-    "breaks": []
+    "breaks": ["@jbrowse/core/util#renderToStaticMarkup"]
   },
   {
     "plugin": "UCSC",

@@ -9,7 +9,6 @@ import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
 
 import * as coreUi from '../ui/index.ts'
-import { renderToStaticMarkup } from '../util/renderToStaticMarkup.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
@@ -55,18 +54,6 @@ const lazyBaseTooltip = lazyMap({
 
 const libs = {
   ...sharedModules,
-
-  // The one name `@jbrowse/core/util` serves on the main thread only. It stays
-  // out of publicUtil.ts so the worker's graph never reaches react-dom through
-  // the util barrel, and is added back here so a published plugin that imports
-  // it from `@jbrowse/core/util` still finds it -- react-msaview's SVG export
-  // does, and through it jbrowse-plugin-msaview and jbrowse-plugin-tview.
-  // ReExports/documentOnlyNames.ts is the declaration both realms read.
-  '@jbrowse/core/util': {
-    ...sharedModules['@jbrowse/core/util'],
-    renderToStaticMarkup,
-  },
-
   'mobx-react': mxreact,
   'react-dom': ReactDom,
   'react-dom/client': ReactDomClient,

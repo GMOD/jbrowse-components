@@ -387,7 +387,6 @@
     "registerStopTokenBroadcaster",
     "renameRegionIfNeeded",
     "renameRegionsIfNeeded",
-    "renderToStaticMarkup",
     "reorder",
     "resolvePlugin",
     "resolveSelectedIds",

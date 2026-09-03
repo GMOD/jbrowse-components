@@ -9,10 +9,15 @@ import { createRoot } from 'react-dom/client'
 // reason to pull react/react-dom/@emotion, and the barrel is imported by
 // worker-side adapter code that never renders.
 //
-// It is still served to plugins as `@jbrowse/core/util`'s `renderToStaticMarkup`,
-// on the main thread only -- react-msaview's SVG export reads it there, so the
-// name cannot leave the ABI. ReExports/documentOnlyNames.ts is how the one name
-// gets across without the barrel carrying it.
+// It is not part of the plugin ABI either, and that removal did break two
+// published bundles before anyone noticed: react-msaview's SVG export read it
+// off `@jbrowse/core/util`, and jbrowse-plugin-msaview and -tview bundle
+// react-msaview. Resolved on their side -- react-msaview owns its own copy now
+// (packages/lib/src/renderToStaticMarkup.ts there) -- because a rendering
+// library asking its host for a renderer was the coupling worth removing, and
+// because react-dom is a host external for a plugin anyway, so it costs them a
+// few hundred bytes rather than a duplicate react. sharedModules.purity.test.ts
+// is what keeps this file off the worker's graph now.
 //
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(node: React.ReactElement) {

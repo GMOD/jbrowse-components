@@ -871,33 +871,38 @@ worker-only is data code (bbi, bgzf, the alignments and wiggle renderers) plus
 the ~36 KB of Material UI's style engine that rides with `ui/theme.ts`, which
 renderers read.
 
-**`renderToStaticMarkup` came back as an ABI name, and the shape it came back in
-is the reusable part.** The commit that cut it said the published-plugin scan
-named no plugin importing it. That was wrong: react-msaview reads it off the
+**The `renderToStaticMarkup` cut was right and its published-plugin claim was
+wrong, and the second half is the part to learn from.** That commit said the
+scan named no plugin importing it. react-msaview reads it off the
 `@jbrowse/core/util` namespace for its SVG export, and jbrowse-plugin-msaview
 (3.4.0) and jbrowse-plugin-tview (2.2.1) both bundle react-msaview, so two
-published bundles were linked against a name the host had stopped serving —
-`publishedPluginBreaks.json` caught it a day later. Per `abi.test.ts`, that is
-the failure mode the baseline exists to prevent, and it is not fixable by a
-plugin release: the already-published bundles are what a v5 host loads.
+published bundles were linked against a name the host had stopped serving.
+`publishedPluginBreaks.json` caught it the next day.
 
-The fix keeps both halves. The name stays out of `publicUtil.ts` (which is what
-the worker publishes, so serving it there is what put react-dom on the worker's
-graph) and is added to the main thread's copy of the module in `modules.ts`,
-which already loads react-dom; the worker fills the same key with `uiStub`.
-`ReExports/documentOnlyNames.ts` is the declaration both realms read, and
-`workerModules.test.ts` pins both directions — a name missing on the main thread
-is an `undefined` inside a published plugin, a name real in the worker is
-react-dom back on the worker's graph. A worker never had a working
-`renderToStaticMarkup` anyway; before the split it was the real function and
-threw on `document.createElement`.
+**What made it invisible: the only caller was off the boot path.** Both plugins
+loaded normally on a v5 host and threw the first time a user asked for an SVG.
+Their own release gate boots them on real hosted releases and asserts the app
+loads and the plugin global is defined, which is the right gate for the
+error-page class and cannot see this one. So *"which published plugins read this
+name"* is not answerable by booting them, and `check-published-plugins.ts` reads
+the bytes for exactly that reason — it was right, and the commit message was
+written as though it had said something else.
 
-So `@jbrowse/core/util` is the first ABI module that is neither wholly shared
-nor wholly UI, and **the `sharedModules`/`uiStub` split is per name, not just per
-module.** `sharedModules.purity.test.ts` walks the worker half's static graph and
-fails on react-dom, printing the trail — the guard the original cut did not have,
-and the one that makes "move it back into the barrel, it's simpler" fail loudly
-instead of silently re-adding 90 KB to every worker.
+**Fixed on the plugin side, not by putting the name back.** react-msaview owns
+its own `renderToStaticMarkup` as of 6.3; a rendering library asking its host for
+a renderer was the odd coupling, which is why the name was easy to delete in the
+first place, and `react-dom` is a host external for a plugin so it costs a few
+hundred bytes rather than a duplicate react. Serving it on the main thread only
+was measured as the alternative — 328 B on `modules.ts`, nothing in the worker —
+and dropped anyway: the bytes were never the objection, the standing exception
+was, since `@jbrowse/core/util` would have become the one ABI module that is
+neither wholly shared nor wholly UI.
+
+**What core kept is the guard.** `sharedModules.purity.test.ts` walks the worker
+half's static graph and fails on react-dom, printing the import trail. The
+original cut had no such test, so the barrel re-export that put react-dom back
+would have been silent; now it names itself (`sharedModules.ts -> ... ->
+../../util/index.ts -> ./renderToStaticMarkup.ts -> react-dom`).
 
 `scripts/eager-import-closure.ts` overstates a worker or app closure several
 times over: it walks a barrel whole, so one eager import of a constant from
