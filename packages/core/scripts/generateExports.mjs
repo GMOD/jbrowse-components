@@ -21,6 +21,14 @@ const preservedExports = [
   '@jbrowse/core/configuration/configurationSchema',
   // Referenced as string literals in ReExports runtime module registry
   '@jbrowse/core/util/layouts',
+  // Same shape, found the hard way: this is in ReExports/list.ts and served by
+  // modules.ts, but sharedModules.ts is its only reader and reaches it by
+  // relative path, so the scan below never saw it and it left `exports`. The
+  // host went on serving it while `import ... from
+  // '@jbrowse/core/util/mst-reflection'` failed to resolve for every plugin.
+  // exportsSurface.test.ts now fails on that gap rather than waiting for it to
+  // be noticed.
+  '@jbrowse/core/util/mst-reflection',
   // The registry a plugin's jbrequire resolves against, and the module bag it
   // is filled from. In-repo only handleMcpRequest.ts names either by subpath —
   // PluginManager and PluginLoader reach the registry by relative path, which
