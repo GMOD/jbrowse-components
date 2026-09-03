@@ -889,7 +889,8 @@ the bytes for exactly that reason — it was right, and the commit message was
 written as though it had said something else.
 
 **Fixed on the plugin side, not by putting the name back.** react-msaview owns
-its own `renderToStaticMarkup` as of 6.3; a rendering library asking its host for
+its own `renderToStaticMarkup` (GMOD/react-msaview 71e835ae, unreleased at
+time of writing; 6.2.0 is the published lib). A rendering library asking its host for
 a renderer was the odd coupling, which is why the name was easy to delete in the
 first place, and `react-dom` is a host external for a plugin so it costs a few
 hundred bytes rather than a duplicate react. Serving it on the main thread only
