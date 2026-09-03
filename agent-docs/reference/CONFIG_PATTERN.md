@@ -43,18 +43,19 @@ boundaries"). It takes the display **state node**, not the bare config.
   const { rpcProps: superRpcProps } = self
   return {
     rpcProps() {
-      const base = superRpcProps()
       return {
-        ...base,
-        displayConfig: {
-          ...base.displayConfig,
-          geneGlyphMode: self.effectiveGeneGlyphMode,
-        } as DisplayConfig,
+        ...superRpcProps(),
+        showOnlyGenes: self.showOnlyGenes,
       }
     },
   }
 })
 ```
+
+A value that swings with zoom (canvas's `effectiveGeneGlyphMode`, the synteny
+LOD tier, alignments' per-base bin) is NOT an `rpcProps` field: it is a
+`zoomFetchKey` term and a call-site RPC argument, so a threshold crossing
+refetches the regions on screen without a settings invalidation.
 
 Both snapshot helpers return ALL config values including defaults (unlike
 `getSnapshot()`, which strips defaults via `postProcessSnapshot`). JEXL callback

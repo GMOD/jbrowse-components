@@ -2708,7 +2708,12 @@ export default function stateModelFactory(
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
           const region = hit && self.loadedRegions.get(hit.displayedRegionIndex)
-          return hit && region ? readInfo(hit, region, featureId) : undefined
+          return hit && region
+            ? {
+                ...readInfo(hit, region, featureId),
+                lodMode: self.rpcDataMap.get(hit.displayedRegionIndex)?.lodMode,
+              }
+            : undefined
         },
 
         /**
@@ -3063,7 +3068,7 @@ export default function stateModelFactory(
         //
         // Lives in its own views block, after every field it reads, so it can
         // read them off `self`: a subclass overriding it captures the base as a
-        // bare function (LGVSyntenyDisplay), which would lose a `this`.
+        // bare function, which would lose a `this`.
         /**
          * #method
          */
@@ -3107,13 +3112,29 @@ export default function stateModelFactory(
             // measurements), which puts connections back where the rest of the
             // arc settings already are: a draw setting that repaints from data
             // already in memory.
-            // Detail tier, for adapters that serve more than one (the tiered PIF
-            // adapters behind LGVSyntenyDisplay, which overrides this to resolve
-            // it). Declared here — undefined meaning "whatever the adapter picks"
-            // — so every consumer of the props bag, notably the feature-details
-            // fetch, can read the tier without knowing which subclass set it.
-            lodMode: undefined as BaseOptions['lodMode'],
           }
+        },
+
+        /**
+         * #getter
+         * Overridable hook (default undefined, "whatever the adapter picks"):
+         * the detail tier a fetch issued now asks a tiered adapter for, off the
+         * settled zoom. `LGVSyntenyDisplay` resolves it for the tiered PIF
+         * adapters. A `zoomFetchKey` term and a call-site RPC argument rather
+         * than an `rpcProps` field, for the reason `perBaseBinBp` below is.
+         */
+        get lodTier(): BaseOptions['lodMode'] {
+          return undefined
+        },
+
+        /**
+         * #getter
+         * Overridable hook: the same tier off the LIVE zoom, read by
+         * `dataSuperseded` alone — see `livePerBaseBinBp` for the window it
+         * covers.
+         */
+        get liveLodTier(): BaseOptions['lodMode'] {
+          return undefined
         },
 
         /**
@@ -3201,25 +3222,27 @@ export default function stateModelFactory(
         /**
          * #getter
          * `MultiRegionDisplayMixin`'s per-region content axis: what a fetch
-         * issued right now would produce. Only the per-base bin moves it, so in
-         * every other color mode this is one constant string and a zoom never
-         * refetches on its account; in the two per-base modes a bin flip
-         * refetches the regions on screen and leaves the rest of the held data
-         * alone, which is the whole reason the bin is not in `rpcProps`.
+         * issued right now would produce. Only the per-base bin and the detail
+         * tier move it, so for a read track in every other color mode this is
+         * one constant string and a zoom never refetches on its account; a bin
+         * or tier flip refetches the regions on screen and leaves the rest of
+         * the held data alone, which is the whole reason neither is in
+         * `rpcProps`.
          *
-         * Its own views block, after the getter it reads, for the reason
+         * Its own views block, after the getters it reads, for the reason
          * `rpcProps` has one.
          */
         get zoomFetchKey() {
-          return String(self.perBaseBinBp)
+          const bin = String(self.perBaseBinBp)
+          return self.lodTier === undefined ? bin : `${bin}|${self.lodTier}`
         },
       }))
       .views(self => ({
         /**
          * #getter
          * `MultiRegionDisplayMixin`'s supersession hook: the settled per-base bin
-         * has not moved yet, but the live zoom has already left it, so the clear
-         * is inevitable and not yet committed.
+         * or detail tier has not moved yet, but the live zoom has already left
+         * it, so the clear is inevitable and not yet committed.
          *
          * **Only the debounce half is here.** Once the settled bin moves, the
          * stamp a region was fetched under stops matching `regionFetchKey` and
@@ -3237,7 +3260,10 @@ export default function stateModelFactory(
          * hangs to `awaitSvgReady`'s timeout rather than one that fails.
          */
         get dataSuperseded(): boolean {
-          return self.perBaseBinBp !== self.livePerBaseBinBp
+          return (
+            self.perBaseBinBp !== self.livePerBaseBinBp ||
+            self.lodTier !== self.liveLodTier
+          )
         },
       }))
       .views(self => ({

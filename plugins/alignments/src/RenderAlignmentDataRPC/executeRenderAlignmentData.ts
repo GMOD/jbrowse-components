@@ -667,5 +667,8 @@ export async function executeRenderAlignmentData({
     })
   }
 
-  return rpcResult({ groups, bytes }, collectGroupedTransferables(groups))
+  return rpcResult(
+    { groups, bytes, lodMode },
+    collectGroupedTransferables(groups),
+  )
 }

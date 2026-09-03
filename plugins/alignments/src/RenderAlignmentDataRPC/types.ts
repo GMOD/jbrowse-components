@@ -51,11 +51,10 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   groupBy?: GroupBy
   // Which detail tier a tiered adapter should serve. Set only by the synteny
   // displays, whose PIF adapters carry a coarse no-CIGAR tier for zoomed-out
-  // views; read adapters have no tiers and ignore it. A tier-1 refetch setting
-  // (in rpcProps): switching tiers means different rows, so the worker must
-  // re-run. Resolved to an explicit 'fine'/'coarse' rather than passed as a raw
-  // bpPerPx so the rpcProps cache key changes only when the tier actually flips,
-  // not on every zoom step.
+  // views; read adapters have no tiers and ignore it. A call-site argument
+  // rather than an `rpcProps()` field, like `perBaseBinBp` below: it swings
+  // with zoom, and the display spells it as its `zoomFetchKey`, so a tier flip
+  // refetches the regions on screen and leaves the rest alone.
   lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
   /**
@@ -512,4 +511,11 @@ export interface GroupedAlignmentsResult {
    * rather than only on the ones it refuses.
    */
   bytes?: number
+  /**
+   * The tier this region was fetched at, echoed so a lookup by id against the
+   * adapter (the feature-details fetch) asks the tier the ids came from — a
+   * tiered adapter numbers its coarse and fine rows from different file
+   * offsets, and the region on screen may predate a tier flip.
+   */
+  lodMode?: BaseOptions['lodMode']
 }

@@ -21,7 +21,7 @@ import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
-import baseStateModelFactory, { getView } from './baseModel.ts'
+import baseStateModelFactory from './baseModel.ts'
 import {
   collapseIntronsMenuItem,
   isGeneLikeType,
@@ -133,14 +133,15 @@ export default function stateModelFactory(
         return resolveConf(self, 'displayDirectionalChevrons')
       },
 
+      // The base's hook for the mode the worker collapses genes under, off
+      // the debounced zoom so a gesture crossing the `auto` threshold moves
+      // `zoomFetchKey` once it settles, on the same cadence as the layout.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
-        if (this.geneGlyphMode === 'auto') {
-          // coarseBpPerPx (debounced) so crossing the threshold during a zoom
-          // gesture doesn't thrash the RPC cache key — the collapse refetch
-          // fires once zoom settles, on the same cadence as the layout.
-          return getView(self).coarseBpPerPx > 100 ? 'longestCoding' : 'all'
-        }
-        return this.geneGlyphMode
+        return this.geneGlyphMode === 'auto'
+          ? self.host.coarseBpPerPx > 100
+            ? 'longestCoding'
+            : 'all'
+          : this.geneGlyphMode
       },
 
       // The base's hook for the fit ladder's isoform rung. Read off the RAW
@@ -231,17 +232,8 @@ export default function stateModelFactory(
       const { rpcProps: superRpcProps } = self
       return {
         rpcProps() {
-          const base = superRpcProps()
           return {
-            ...base,
-            displayConfig: {
-              ...base.displayConfig,
-              // effectiveGeneGlyphMode is a zoom-dependent transform (not a plain
-              // promotable resolve), so it's substituted here; the promotable
-              // slots (chevrons, subfeatureLabels) are already resolved by the
-              // base rpcProps via getConfigSnapshotWithPromotables.
-              geneGlyphMode: self.effectiveGeneGlyphMode,
-            },
+            ...superRpcProps(),
             showOnlyGenes: self.showOnlyGenes,
           }
         },

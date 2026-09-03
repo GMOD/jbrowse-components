@@ -14,6 +14,11 @@ than one it derives from an id index: the volatile, the getter that fills
 volatile cannot take the name directly), the setter, and the clear. Compose
 it after `BaseDisplay` so the typed getter wins.
 
+`sameHit` is the identity a display's pointer handler resolves fresh on every
+move: a display whose hit is a new object per frame names the fields that
+make two of them one hover, so a mouse moving inside one block writes
+nothing and invalidates no observer.
+
 ## Volatiles
 
 <!-- prettier-ignore -->

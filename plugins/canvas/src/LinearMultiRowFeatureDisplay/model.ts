@@ -16,6 +16,7 @@ import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
@@ -122,17 +123,22 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearMultiRowFeatureDisplay',
-      BaseDisplay,
-      TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
-      // After the foundation, whose region-too-large verdict it keys off: where
-      // the gate refuses the features, a track with a density sidecar draws
-      // features per bin in the banner's place.
-      DensityBandMixin(),
-      LegendMixin(),
+      types.compose(
+        BaseDisplay,
+        TrackHeightMixin(),
+        MultiRegionDisplayMixin(),
+        // After the foundation, whose region-too-large verdict it keys off: where
+        // the gate refuses the features, a track with a density sidecar draws
+        // features per bin in the banner's place.
+        DensityBandMixin(),
+        LegendMixin(),
+      ),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
+      StoredHoverMixin<MultiRowHit>(
+        (a, b) => a.id === b.id && a.regionIndex === b.regionIndex,
+      ),
       types.model({
         /**
          * #property
@@ -159,17 +165,6 @@ export default function stateModelFactory(
       // #region volatile
       rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
       prefersOffset: true,
-      /**
-       * #volatile
-       * The feature under the mouse, or undefined when not hovering a block. Pure
-       * hover identity — the cursor position that places the tooltip is component
-       * state, so moving inside one block doesn't invalidate this.
-       *
-       * Named apart from the `hoveredFeature` getter it fills, because
-       * `BaseDisplay` declares that hook as a computed and MST refuses to
-       * instantiate a volatile over one.
-       */
-      hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
       // #endregion
     }))
     .views(self => ({
@@ -190,14 +185,6 @@ export default function stateModelFactory(
        */
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
-      },
-      /**
-       * #getter
-       * Fills `BaseDisplay`'s cross-display hover hook, which the view reads to
-       * publish `session.hovered`.
-       */
-      get hoveredFeature() {
-        return self.hoveredMultiRowFeature
       },
       /**
        * #getter
@@ -1064,18 +1051,6 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Writes only when the hovered block actually changes, so a mouse moving
-         * within one block (blocks are many px wide) doesn't invalidate the
-         * observers watching this.
-         */
-        setHoveredFeature(arg?: MultiRowHit) {
-          const cur = self.hoveredMultiRowFeature
-          if (arg?.id !== cur?.id || arg?.regionIndex !== cur?.regionIndex) {
-            self.hoveredMultiRowFeature = arg
-          }
-        },
-        /**
-         * #action
          * Re-fetch the full clicked feature by id and open it in the feature
          * details widget. The painting ships only the slim render arrays, so the
          * complete feature is fetched on demand (GetCanvasFeatureDetails). A
@@ -1236,19 +1211,6 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       return {
-        /**
-         * #action
-         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
-         * foundation's reaction calls on every viewport change.
-         *
-         * The painting is a sticky canvas, so a pan or zoom fires no
-         * mousemove and no mouseleave and `hoveredFeature` keeps naming
-         * whatever used to be under the cursor.
-         */
-        clearHoveredFeature() {
-          self.setHoveredFeature(undefined)
-        },
-
         afterAttach() {
           // What makes `drawnFeaturesByRow` a memo at all: its consumers are
           // pointer handlers, and MobX discards an unobserved computed's value

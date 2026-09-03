@@ -27,9 +27,9 @@ proxy for cost, and a bad one — the gate's whole history
 (`HISTORICAL.md § The byte estimate was a rate`) is the discovery that bytes do
 not follow span.
 
-Two earlier tiers also put their tier choice in `rpcProps()`
-(`discrete-zoom-thresholds-in-rpc-props.md`), where crossing the threshold
-mid-gesture fires `SettingsInvalidate` and drops every loaded region.
+Two earlier tiers also put their tier choice in `rpcProps()`, where crossing
+the threshold mid-gesture fired `SettingsInvalidate` and dropped every loaded
+region; both have since moved to their displays' `zoomFetchKey`.
 
 ## Decision
 

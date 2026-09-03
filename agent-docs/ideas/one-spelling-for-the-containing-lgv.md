@@ -20,9 +20,8 @@ get view() {
 and another 27 sites inline the cast — alignments' context menu three times,
 the arc displays inside `laidOutArcs`, three tree-sidebar components. HiC uses
 `self.host` and `self.view` in adjacent getters; multi-way synteny calls its
-copy `lgv`. The parked
-[discrete-zoom-thresholds](discrete-zoom-thresholds-in-rpc-props.md) note
-counts four spellings of the same read for a zoom alone.
+copy `lgv`. A zoom alone is read four ways: a `getContainingView` cast,
+`self.host`, `getView` and `self.view`.
 
 The fold is one function, `getContainingLgv(node)`, and the question is where
 it lives. display-kit sits below the LGV plugin and cannot name the type. The
@@ -35,12 +34,11 @@ before saying it is free. A subpath export (`@jbrowse/plugin-linear-genome-view/
 containingLgv`) for a two-line file would sidestep that, and is the version
 worth taking if the package ever grows subpaths for another reason.
 
-Two other folds the same census declined, so they are not re-proposed:
+One other fold the same census declined, so it is not re-proposed: **a shared
+LGV readiness base under both fetch foundations.** `foundationParity.test.ts`
+pins the duplicated getters on purpose; ADR-041 measured the extra compose layer
+pushing twelve display chains past TypeScript's inference depth.
 
-- **A shared LGV readiness base under both fetch foundations.**
-  `foundationParity.test.ts` pins the duplicated getters on purpose; ADR-041
-  measured the extra compose layer pushing twelve display chains past
-  TypeScript's inference depth.
-- **`StoredHoverMixin` on `LinearMultiRowFeatureDisplay`.** Its
-  `types.compose` call has ten arguments, which is the overload ceiling; the
-  display keeps its hand-spelled trio and says so.
+The multi-row display's `StoredHoverMixin` fold, declined at the time for the
+ten-argument `types.compose` ceiling, landed by nesting a `types.compose` inside
+the outer one — the shape to reach for when another chain hits it.

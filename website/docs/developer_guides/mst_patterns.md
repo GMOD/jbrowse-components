@@ -441,17 +441,6 @@ should reset. The multi-row display's block, in full:
 ```ts
 rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
 prefersOffset: true,
-/**
- * #volatile
- * The feature under the mouse, or undefined when not hovering a block. Pure
- * hover identity — the cursor position that places the tooltip is component
- * state, so moving inside one block doesn't invalidate this.
- *
- * Named apart from the `hoveredFeature` getter it fills, because
- * `BaseDisplay` declares that hook as a computed and MST refuses to
- * instantiate a volatile over one.
- */
-hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot

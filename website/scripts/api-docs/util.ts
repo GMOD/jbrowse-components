@@ -1782,6 +1782,31 @@ export interface ComposeCall {
   mixins: string[]
 }
 
+function isComposeCall(node: ts.Node): node is ts.CallExpression {
+  return (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.name.text === 'compose'
+  )
+}
+
+// The head identifier of each compose argument, so `TrackHeightMixin()` reads
+// as `TrackHeightMixin`. An argument that is itself a `types.compose(...)` — the
+// nesting a chain uses once it hits compose's ten-argument overload ceiling —
+// contributes its own arguments in place.
+function composeArgHeads(args: readonly ts.Expression[]): string[] {
+  return args.flatMap(arg => {
+    if (isComposeCall(arg)) {
+      return composeArgHeads(arg.arguments)
+    }
+    let expr: ts.Expression = arg
+    while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
+      expr = expr.expression
+    }
+    return ts.isIdentifier(expr) ? [expr.text] : []
+  })
+}
+
 // Every `types.compose('<name>', A(), B(), types.model({}))` in a file.
 //
 // Two generated tables read composition — the display-foundations "Composes"
@@ -1793,23 +1818,13 @@ export interface ComposeCall {
 export function composeCalls(file: string, text?: string): ComposeCall[] {
   const out: ComposeCall[] = []
   const walk = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isPropertyAccessExpression(node.expression) &&
-      node.expression.name.text === 'compose'
-    ) {
+    if (isComposeCall(node)) {
       const [first, ...rest] = node.arguments
       if (first && ts.isStringLiteral(first)) {
         out.push({
           name: first.text,
           pos: node.getStart(),
-          mixins: rest.flatMap(arg => {
-            let expr: ts.Expression = arg
-            while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
-              expr = expr.expression
-            }
-            return ts.isIdentifier(expr) ? [expr.text] : []
-          }),
+          mixins: composeArgHeads(rest),
         })
       }
     }

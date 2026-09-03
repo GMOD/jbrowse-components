@@ -131,8 +131,13 @@ export interface DisplayConfig {
 // helper: tsc errors on a key this omits, naming it, and on a name that is not a
 // `DisplayConfig` key. So the list cannot drift from the interface, which is the
 // only reason it is safe for it to exist at all.
-const WORKER_READS: Record<keyof DisplayConfig, true> = {
-  geneGlyphMode: true,
+// `geneGlyphMode` is the one worker-read slot NOT picked here: what the worker
+// gets is the zoom-resolved mode, added at the RPC call site the way the
+// per-base bin is, so a crossing of its `auto` threshold is the display's
+// `zoomFetchKey` moving rather than a settings invalidation.
+export type SettingsDisplayConfig = Omit<DisplayConfig, 'geneGlyphMode'>
+
+const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   subfeatureLabels: true,
   transcriptTypes: true,
   canonicalTranscriptField: true,
@@ -152,7 +157,9 @@ const WORKER_READS: Record<keyof DisplayConfig, true> = {
   labels: true,
 }
 
-const DISPLAY_CONFIG_KEYS = Object.keys(WORKER_READS) as (keyof DisplayConfig)[]
+const DISPLAY_CONFIG_KEYS = Object.keys(
+  WORKER_READS,
+) as (keyof SettingsDisplayConfig)[]
 
 /**
  * The worker's half of a display config snapshot: exactly the slots
@@ -195,5 +202,5 @@ export function pickDisplayConfig(snapshot: ResolvedConfigSnapshot) {
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = snapshot[key]
   }
-  return picked as unknown as DisplayConfig
+  return picked as unknown as SettingsDisplayConfig
 }

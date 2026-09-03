@@ -287,7 +287,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; {…}</code> |  | LinearBasicDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { showOnlyGenes: boolean; displayConfig: {…}; ... 4 more…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { showOnlyGenes: boolean; displayConfig: {…}; ... 4 more ...; expandedGeneIds: (IMSTArray&lt;…&gt; &amp; IStateTreeNode&lt;…&gt;) &#124; undefined; }</code></pre></dialog></span> |  | LinearBasicDisplay |
 | <span id="method-featurenarrowings">**featureNarrowings**</span><br><code>() =&gt; { showOnlyGenes: { count: number; clear: () =&gt; void; }; }</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |

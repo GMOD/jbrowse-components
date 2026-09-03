@@ -194,18 +194,30 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         },
         /**
          * #getter
-         * The tier this display's fetch asks for. Resolved here, on the main
-         * thread, so it lands in `rpcProps` — which is the refetch cache key, so
-         * a tier flip trips a refetch and a mid-zoom threshold crossing cannot go
-         * unnoticed. Forwarding a raw `bpPerPx` instead would invalidate every
-         * fetch on every zoom step; this changes only when the tier flips. The
-         * tier the adapter will serve once `lodTierInfo` has landed: a file
-         * with no coarse tier is 'fine' at any zoom, and the threshold is
-         * clamped up to the file's `--coarse` bound.
+         * The tier this display's fetch asks for: the alignments base's hook,
+         * resolved here on the main thread off the SETTLED zoom. It is the
+         * base's `zoomFetchKey` term and rides the RPC at the call site, so a
+         * tier flip refetches the regions on screen while they keep drawing —
+         * and, being settled, a gesture travelling through the threshold does
+         * not hand `FetchVisibleRegions` a tier of a zoom it never stops at,
+         * on the pipeline whose extract is the expensive one. The tier the
+         * adapter will serve once `lodTierInfo` has landed: a file with no
+         * coarse tier is 'fine' at any zoom, and the threshold is clamped up
+         * to the file's `--coarse` bound.
          */
         get lodTier() {
+          return this.tierAt(self.host.coarseBpPerPx)
+        },
+        /**
+         * #getter
+         * The same tier off the live zoom, for the base's `dataSuperseded`.
+         */
+        get liveLodTier() {
+          return this.tierAt(self.host.bpPerPx)
+        },
+        tierAt(bpPerPx: number) {
           return resolveLodTier({
-            bpPerPx: self.host.bpPerPx,
+            bpPerPx,
             coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
             lodMode: self.lodMode,
             tierInfo: self.lodTierInfo,
@@ -217,21 +229,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           installLodTierInfoFetch(self)
         },
       }))
-      .views(self => {
-        const superRpcProps = self.rpcProps
-        return {
-          /**
-           * #method
-           * Adds the resolved detail tier to the base alignments RPC payload.
-           */
-          rpcProps() {
-            return {
-              ...superRpcProps(),
-              lodMode: self.lodTier,
-            }
-          },
-        }
-      })
       .actions(self => ({
         /**
          * #action

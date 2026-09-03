@@ -350,12 +350,14 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  // The one bpPerPx-dependent worker decision is the amino-acid overlay, so
-  // `zoomFetchKey` is that threshold rather than the zoom — a zoom staying on
-  // one side of it reuses the features, and one crossing it refetches. Both
-  // zoom IN from a coarser first fetch, so the viewport stays inside the loaded
-  // region and `viewportWithinLoadedData` cannot be what explains either result.
-  describe('the peptide threshold is the only zoom that refetches', () => {
+  // The two bpPerPx-dependent worker decisions are the amino-acid overlay and
+  // the gene-glyph `auto` collapse, so `zoomFetchKey` is those two thresholds
+  // rather than the zoom — a zoom staying on one side of both reuses the
+  // features, and one crossing either refetches. Every zoom here sits under the
+  // glyph threshold, and both zoom IN from a coarser first fetch, so the
+  // viewport stays inside the loaded region and `viewportWithinLoadedData`
+  // cannot be what explains either result.
+  describe('the peptide threshold refetches and no other zoom under 100 bp/px does', () => {
     // 2 bp/px is above PEPTIDE_BACKGROUND_MAX_BP_PER_PX, so the first fetch
     // carries no amino-acid overlay
     async function loadedAboveTheThreshold() {
@@ -414,7 +416,73 @@ describe('FetchVisibleRegions autorun', () => {
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
-      expect(display.zoomFetchKey).toBe('false')
+      expect(display.zoomFetchKey).toBe('false|all')
+      expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    })
+  })
+
+  // `auto` collapses each gene to one transcript past 100 bp/px. The mode is
+  // what the worker collapses under, so the crossing has to refetch — and it is
+  // the zoom axis of the key, not the settings axis, so the held features draw
+  // unscrimmed until the collapsed payload lands rather than being superseded.
+  // Both zoom IN from the collapsed side, so the viewport stays inside the
+  // loaded region and only the key can explain a refetch.
+  describe('the gene-glyph auto threshold', () => {
+    async function loadedCollapsed(mode?: 'all') {
+      const { createDisplay, mockRpcCall } = createTestEnvironment()
+      mockRpcCall.mockResolvedValue(makeFeatureData())
+      const { display, view } = createDisplay()
+      if (mode) {
+        display.setGeneGlyphMode(mode)
+      }
+      view.setDisplayedRegions([
+        { assemblyName: 'volvox', start: 0, end: 500_000, refName: 'ctgA' },
+      ])
+      view.zoomTo(200)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+      await waitFor(() => {
+        expect(display.loadedRegions.size).toBe(1)
+      })
+      return { display, view, mockRpcCall }
+    }
+
+    it('rides in the zoom key and the RPC call, not in rpcProps', async () => {
+      const { display, view, mockRpcCall } = await loadedCollapsed()
+      const settingsKey = display.settingsFetchKey
+      expect(display.zoomFetchKey).toBe('false|longestCoding')
+      expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
+        displayConfig: { geneGlyphMode: 'longestCoding' },
+      })
+      expect(display.rpcProps().displayConfig).not.toHaveProperty(
+        'geneGlyphMode',
+      )
+
+      view.zoomTo(50)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      await waitFor(() => {
+        expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
+          displayConfig: { geneGlyphMode: 'all' },
+        })
+      })
+      expect(display.zoomFetchKey).toBe('false|all')
+      expect(display.settingsFetchKey).toBe(settingsKey)
+      expect(display.staleSettingsDrawn).toBe(false)
+    })
+
+    it('does not move for a fixed mode', async () => {
+      const { display, view, mockRpcCall } = await loadedCollapsed('all')
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      view.zoomTo(50)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      expect(display.zoomFetchKey).toBe('false|all')
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
   })
@@ -1687,6 +1755,8 @@ describe('region identity is stored with the data it describes', () => {
 // Adding a worker slot means editing `DisplayConfig` and this list together —
 // which is the whole of the additive contract, and cheap. Adding a MAIN-THREAD
 // slot, to this display or to any schema it inherits, means editing neither.
+// `geneGlyphMode` is the one worker slot missing: it is zoom-resolved, so it
+// joins at the RPC call site off `zoomFetchKey` rather than here.
 test('the worker payload is exactly the slots DisplayConfig declares', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
@@ -1698,7 +1768,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'containerTypes',
     'displayDirectionalChevrons',
     'featureHeight',
-    'geneGlyphMode',
     'hideSourceFeatures',
     'impliedUTRs',
     'jexlFilters',

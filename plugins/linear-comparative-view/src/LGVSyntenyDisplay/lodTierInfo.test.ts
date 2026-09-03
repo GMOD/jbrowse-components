@@ -35,14 +35,45 @@ function openTiered(info: unknown) {
   return { ...env, methods }
 }
 
-// 16 Mb across 800 px fits at 20,000 bp/px, past the default threshold
+// 16 Mb across 800 px fits at 20,000 bp/px, past the default threshold. A
+// placement rather than a `zoomTo`: the tier resolves off the settled zoom, and
+// a gesture settles on the coarse-block throttle these tests never wait out.
 function zoomOut(view: ReturnType<typeof createSyntenyEnv>['view']) {
   view.setDisplayedRegions([
     { refName: 'ctgA', start: 0, end: 16_000_000, assemblyName: 'volvox' },
   ])
-  view.zoomTo(20000)
-  expect(view.bpPerPx).toBeGreaterThanOrEqual(10000)
+  view.setNewView(20000, 0)
+  expect(view.coarseBpPerPx).toBeGreaterThanOrEqual(10000)
 }
+
+// The tier is the zoom axis of the fetch key and a call-site argument, not a
+// settings field: a flip moves `zoomFetchKey` alone, so the held regions draw
+// on until the refetch lands instead of being superseded and scrimmed. Off the
+// settled zoom, so a gesture through the threshold reads as superseded until
+// it lands, and refetches once.
+test('a tier flip is a zoom-key move, not a settings change', async () => {
+  const { display, view } = openTiered({
+    hasCoarseTier: true,
+    coarseGap: 10000,
+  })
+  zoomOut(view)
+  await flush()
+  const settingsKey = display.settingsFetchKey
+  expect(display.lodTier).toBe('coarse')
+  expect(display.zoomFetchKey).toBe('1|coarse')
+  expect(display.rpcProps()).not.toHaveProperty('lodMode')
+
+  view.zoomTo(5000)
+  expect(display.lodTier).toBe('coarse')
+  expect(display.liveLodTier).toBe('fine')
+  expect(display.dataSuperseded).toBe(true)
+
+  view.setNewView(5000, 0)
+  expect(display.lodTier).toBe('fine')
+  expect(display.dataSuperseded).toBe(false)
+  expect(display.zoomFetchKey).toBe('1|fine')
+  expect(display.settingsFetchKey).toBe(settingsKey)
+})
 
 test('a file with no coarse tier resolves fine once its info lands, whatever the mode', async () => {
   const { display, view } = openTiered({ hasCoarseTier: false })
@@ -50,7 +81,7 @@ test('a file with no coarse tier resolves fine once its info lands, whatever the
   expect(display.lodTier).toBe('coarse')
   await flush()
   expect(display.lodTier).toBe('fine')
-  expect(display.rpcProps().lodMode).toBe('fine')
+  expect(display.zoomFetchKey).toBe('1|fine')
   display.setLodMode('coarse')
   expect(display.lodTier).toBe('fine')
 })
@@ -63,10 +94,10 @@ test('a default-built file leaves the resolved tier where it was', async () => {
     coarseGap: 10000,
   })
   zoomOut(view)
-  const before = display.rpcProps()
+  const before = display.regionFetchKey
   await flush()
   expect(display.lodTierInfo).toEqual({ hasCoarseTier: true, coarseGap: 10000 })
-  expect(display.rpcProps()).toEqual(before)
+  expect(display.regionFetchKey).toBe(before)
   expect(display.lodTier).toBe('coarse')
   // this display's afterAttach sits beside the base alignments display's
   // rather than over it — the fork auto-chains the hook, and the primary fetch

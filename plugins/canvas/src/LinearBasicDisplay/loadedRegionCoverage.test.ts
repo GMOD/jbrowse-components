@@ -113,11 +113,11 @@ async function settle() {
 const BYTES_PER_BP = 20
 
 // Every zoom the scenarios below use sits above 100 bp/px, on one side of the
-// gene-glyph `auto` threshold. Crossing it moves `effectiveGeneGlyphMode`, which
-// is an RPC cache key, so `SettingsInvalidate` supersedes the fetch and the
-// refetch that follows hides the freeze — a zoom pair straddling 100 passes for the
-// wrong reason. (The random walk at the bottom deliberately does cross it: an
-// extra refetch must not be a way to end up wrong either.)
+// gene-glyph `auto` threshold. Crossing it moves `effectiveGeneGlyphMode`, a
+// `zoomFetchKey` term, so the refetch that follows hides the freeze — a zoom
+// pair straddling 100 passes for the wrong reason. (The random walk at the
+// bottom deliberately does cross it: an extra refetch must not be a way to end
+// up wrong either.)
 const WARM_BP_PER_PX = 150
 const WIDE_BP_PER_PX = 1500
 // where the density verdict has fallen back under budget while the viewport is

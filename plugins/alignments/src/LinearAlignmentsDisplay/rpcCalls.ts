@@ -14,13 +14,13 @@ import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 
 export interface FetchFeatureDetailsSelf {
   adapterConfig: Record<string, unknown>
-  rpcProps: () => { lodMode?: BaseOptions['lodMode'] }
   getFeatureInfoById: (id: string) =>
     | {
         refName: string
         assemblyName: string
         start: number
         end: number
+        lodMode: BaseOptions['lodMode']
       }
     | undefined
 }
@@ -63,15 +63,14 @@ export async function fetchFeatureDetails(
       adapterConfig: self.adapterConfig,
       regions: [region],
       featureId,
-      // The tier the pileup was fetched at. A tiered PIF adapter numbers its
-      // coarse and fine rows from different file offsets, so ids only match
-      // within one tier — querying the default (fine) tier for a feature drawn
-      // from the coarse one found nothing, and the details silently never came.
-      // Read live rather than recorded with the data because the two can't
-      // drift: `lodMode` is part of `rpcProps`, so a tier flip trips
-      // SettingsInvalidate, which drops every fetched region. Data on screen was
-      // always fetched at the tier `rpcProps` names right now.
-      lodMode: self.rpcProps().lodMode,
+      // The tier the region was fetched at, recorded with its data. A tiered
+      // PIF adapter numbers its coarse and fine rows from different file
+      // offsets, so ids only match within one tier — querying the default
+      // (fine) tier for a feature drawn from the coarse one found nothing, and
+      // the details silently never came. Recorded rather than read live because
+      // a tier flip is a `zoomFetchKey` move: the held regions keep drawing
+      // until the refetch lands, at the tier they were fetched at.
+      lodMode: info.lodMode,
     },
   )
   if (!feature) {
@@ -103,6 +102,9 @@ export interface FetchFeaturesSelf {
   // also spells it as its `zoomFetchKey`, so a region fetched under one bin is
   // not read back under another.
   perBaseBinBp: number
+  // The detail tier, at the call site for the same reason — undefined where the
+  // adapter has one tier to serve.
+  lodTier: BaseOptions['lodMode']
 }
 
 // One RPC for both pileup and chain modes; the worker branches on `linkedReads`
@@ -116,5 +118,6 @@ export function fetchFeaturesForRegion(
     ...rpcArgs(self),
     regions: [region],
     perBaseBinBp: self.perBaseBinBp,
+    lodMode: self.lodTier,
   })
 }

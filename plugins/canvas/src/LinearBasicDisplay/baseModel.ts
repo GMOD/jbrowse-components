@@ -769,8 +769,7 @@ export default function baseStateModelFactory(
           const snapshot = getConfigSnapshotWithPromotables(self)
           const workerConfig = pickDisplayConfig(snapshot)
           return {
-            // jexlFilters carries the effective runtime filters (mirrors the
-            // effectiveGeneGlyphMode substitution in the concrete model); reading
+            // jexlFilters carries the effective runtime filters; reading
             // activeFilters() here makes it an RPC cache key so toggling filters
             // refetches. buildFeatureAdmission normalizes the prefix either way.
             displayConfig: {
@@ -903,6 +902,17 @@ export default function baseStateModelFactory(
          */
         get showsEveryIsoform() {
           return false
+        },
+        /**
+         * #getter
+         * Overridable hook: the gene-glyph mode the worker collapses under.
+         * The raw slot here; `LinearBasicDisplay` resolves `auto` against the
+         * zoom. A term of `zoomFetchKey` and a call-site RPC argument rather
+         * than an `rpcProps` field, so a crossing of the `auto` threshold
+         * refetches the regions on screen without a settings invalidation.
+         */
+        get effectiveGeneGlyphMode(): GeneGlyphMode {
+          return getConf(self, 'geneGlyphMode')
         },
         /**
          * #getter
@@ -1797,18 +1807,19 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The only bpPerPx-dependent worker decision is the amino-acid overlay,
+        // Two bpPerPx-dependent worker decisions: the amino-acid overlay,
         // fetched under `showAminoAcids && shouldRenderPeptideBackground`
-        // (executeRenderFeatureData), so the key is that gate rather than the
-        // zoom itself — every other zoom change reuses the cached features, and
-        // a track with the overlay off never refetches on zoom at all.
+        // (executeRenderFeatureData), so the term is that gate rather than the
+        // zoom itself, and the gene-glyph mode `auto` resolves against the
+        // settled zoom. Every other zoom change reuses the cached features, and
+        // a track with the overlay off and a fixed mode never refetches on zoom.
         //
         // A getter, not an action: an action would untrack the view.bpPerPx read.
         get zoomFetchKey(): string {
-          return String(
+          const peptides =
             self.showAminoAcids &&
-              shouldRenderPeptideBackground(getView(self).bpPerPx),
-          )
+            shouldRenderPeptideBackground(getView(self).bpPerPx)
+          return `${peptides}|${self.effectiveGeneGlyphMode}`
         },
         /**
          * #method
@@ -1911,8 +1922,13 @@ export default function baseStateModelFactory(
                 const assembly = getSession(self).assemblyManager.get(
                   region.assemblyName,
                 )
+                const args = rpcArgs(self)
                 return ctx.callRpc('RenderFeatureData', {
-                  ...rpcArgs(self),
+                  ...args,
+                  displayConfig: {
+                    ...args.displayConfig,
+                    geneGlyphMode: self.effectiveGeneGlyphMode,
+                  },
                   geneticCodeId: assembly?.getGeneticCodeId(region.refName),
                   region,
                   bpPerPx,

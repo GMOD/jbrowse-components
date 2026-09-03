@@ -30,8 +30,3 @@ behind `bidirectionalFetch` ([two-axis-synteny-fetch.md](two-axis-synteny-fetch.
 so each row can be served at its own tier and joined on `syntenyId`. Measure
 on a real hub file how often the two rows straddle the threshold before
 building it.
-
-Related and already parked: LGVSyntenyDisplay reads its tier off live
-`bpPerPx` inside `rpcProps`, so a threshold crossing mid-gesture clears every
-region's held data —
-[discrete-zoom-thresholds-in-rpc-props.md](discrete-zoom-thresholds-in-rpc-props.md).
