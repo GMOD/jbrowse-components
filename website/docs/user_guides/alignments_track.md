@@ -107,7 +107,7 @@ size** highlight discordant pairs, the main way to scan short reads for
 structural variants: unexpectedly large inserts turn red, small ones pink, and
 abnormal orientations get their own colors. **Insert size and orientation**
 paints whichever cue is strongest. The
-[SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation-color-scheme)
+[SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation)
 has the color tables, the expected-insert threshold, and what each pattern means
 at a breakpoint.
 

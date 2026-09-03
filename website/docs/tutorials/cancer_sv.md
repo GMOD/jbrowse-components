@@ -199,7 +199,7 @@ long, an event that moves whole arms, and 29 molecules crossing all three loci.
 Junctions under 1 kb are mostly missed, because the aligner writes them inside a
 read's CIGAR rather than as a split alignment. What the reconstruction needs,
 and how to weigh a route once it appears, is in
-[](/docs/user_guides/sv_visualization#what-the-reconstruction-needs).
+[](/docs/user_guides/derivative_allele#what-the-reconstruction-needs).
 
 The result is the view **Linear read vs ref** produces from a read, with the
 lower panel holding the path a group of reads agrees on. Running **Linear read

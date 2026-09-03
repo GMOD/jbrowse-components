@@ -349,16 +349,16 @@ const darkNeutrals: NeutralTokens = {
 export const colorFwdStrand = '#EC8B8B'
 /** #color alignments-strand | Reverse strand | Read maps to the reverse strand */
 export const colorRevStrand = '#8F8FD8'
-/** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
+/** #color alignments-pair-orientation | LR (→ ←) | Normal proper pair */
 export const colorPairLR = '#d3d3d3'
 // Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
 // blocks against a dark track background. Wired into the dark alignmentFill.
 export const colorPairLRDark = '#8a8a8a'
-/** #color alignments-pair-orientation | RL (← →, mates point away from each other) | Abnormal orientation */
+/** #color alignments-pair-orientation | RL (← →) | Mates point away from each other */
 export const colorPairRL = '#0099bb'
-/** #color alignments-pair-orientation | LL (→ →, both mates forward strand) | Abnormal orientation */
+/** #color alignments-pair-orientation | LL (→ →) | Both mates on the forward strand */
 export const colorPairLL = '#4d9a4d'
-/** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
+/** #color alignments-pair-orientation | RR (← ←) | Both mates on the reverse strand */
 export const colorPairRR = '#5555bb'
 // Was `colorNostrand`, which named the one thing it essentially never paints. A
 // SAM record's strand is DEFINED from the reverse flag inside the adapter's
@@ -384,8 +384,8 @@ export const colorPairRR = '#5555bb'
 // settle it, and the dark-mode half is `agent-docs/TODO.md`.
 export const colorNeutralRead = '#c8c8c8'
 /**
- * #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation
- * #color alignments-insert-size | Mate on a different chromosome | Suggests an inter-chromosomal event
+ * #color alignments-pair-orientation | Inter-chromosomal | Mate on another chromosome
+ * #color alignments-insert-size | Inter-chromosomal | Mate on another chromosome
  */
 // THIS SLOT AND `colorUnmappedMate` WERE CHOSEN TOGETHER, and reading either one
 // alone is how the previous pair got stuck. Both are warm, both belong to all
@@ -417,9 +417,9 @@ export const colorNeutralRead = '#c8c8c8'
 // neighbour that must not be confusable: red means "insert too long", and a
 // second red would read as a second statement about insert size.
 export const colorInterchrom = '#af4d19'
-/** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
+/** #color alignments-insert-size | Insert larger than expected | Deletion between the mates */
 export const colorLongInsert = '#ff0000'
-/** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
+/** #color alignments-insert-size | Insert smaller than expected | Insertion between the mates */
 // This slot has TWO neighbours it must stay clear of, and every past value has
 // solved one by walking into the other. They sit at opposite ends of the
 // lightness axis, which is what makes it a balance rather than a direction:
@@ -467,8 +467,8 @@ export const colorLongInsert = '#ff0000'
 // them.
 export const colorShortInsert = '#f582c0'
 /**
- * #color alignments-pair-orientation | Mate unmapped | The other end of the pair aligned nowhere, so orientation and insert size say nothing
- * #color alignments-insert-size | Mate unmapped | The other end of the pair aligned nowhere, so insert size says nothing
+ * #color alignments-pair-orientation | Mate unmapped | Mate aligned nowhere
+ * #color alignments-insert-size | Mate unmapped | Mate aligned nowhere
  */
 // A NON-COLOUR, at the dark end of the neutral scale on BOTH themes. It takes
 // the first half of the `readOverlap` pattern and not the second, and that split
@@ -539,7 +539,7 @@ export const colorUnmappedMate = '#000000'
 // the least that still reads as a read rather than as a hole.
 export const colorUnmappedMateDark = '#4a4a4a'
 export const colorLongreadInv = '#7755bb'
-/** #color alignments-pair-orientation | Split paired-end read (inverted) | A paired read's supplementary segment maps opposite-strand to its primary, so the junction is inverted — an inversion or an inverted duplication */
+/** #color alignments-pair-orientation | Split read (inverted) | Supplementary segment on the opposite strand to its primary */
 export const colorSplitReadInversion = '#9b30b0'
 export const colorSupplementary = '#f0b878'
 
