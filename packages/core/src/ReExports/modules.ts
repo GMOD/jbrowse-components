@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-restricted-imports
-import * as React from 'react'
-
 import { alpha, createTheme, useTheme } from '@mui/material'
 import SvgIcon, { createSvgIcon } from '@mui/material/SvgIcon'
 import * as MUIUtils from '@mui/material/utils'
@@ -8,7 +5,6 @@ import * as mxreact from 'mobx-react'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
 
-import * as coreUi from '../ui/index.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
@@ -16,6 +12,7 @@ import { Entries } from './MuiReExports.ts'
 import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
+import * as coreUi from './publicUi.tsx'
 import { sharedModules } from './sharedModules.ts'
 
 function makeLegacyMakeStyles() {
@@ -47,10 +44,6 @@ const materialUiLabLib = {
   ToggleButtonGroup: Entries.ToggleButtonGroup,
 }
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
-
-const lazyBaseTooltip = lazyMap({
-  BaseTooltip: React.lazy(() => import('../ui/BaseTooltip.tsx')),
-})
 
 const libs = {
   ...sharedModules,
@@ -100,18 +93,10 @@ const libs = {
   '@material-ui/lab/Alert': Entries.Alert,
   '@material-ui/lab': materialUiLabLib,
 
-  // BaseTooltip is deliberately absent from the *source* barrel ui/index.ts: the
-  // re-export alone held @floating-ui (~266KB) on the startup path, since eager
-  // plugin entries import that barrel. That is a fact about ui/index.ts, and it
-  // leaked into the ABI, where it is only a trap -- served at its own path but
-  // not on the namespace, so `import { BaseTooltip } from '@jbrowse/core/ui'`,
-  // the spelling the docs give for every other component, compiled and then
-  // yielded undefined at runtime. Serving the same React.lazy on both keeps the
-  // two spellings honest and holds the startup path either way, since the barrel
-  // itself is untouched. (Published apollo 1.1.1 reads it off the namespace,
-  // which is how the trap was found; react-msaview takes the deep path.)
-  '@jbrowse/core/ui': { ...coreUi, ...lazyBaseTooltip },
-  '@jbrowse/core/ui/BaseTooltip': lazyBaseTooltip.BaseTooltip,
+  '@jbrowse/core/ui': coreUi,
+  // the same lazy component publicUi.tsx puts on the namespace; published
+  // react-msaview deep-imports this path, apollo reads the namespace
+  '@jbrowse/core/ui/BaseTooltip': coreUi.BaseTooltip,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 

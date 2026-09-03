@@ -22,9 +22,13 @@
 // by the time this was written. A list that has to be edited by hand cannot
 // drift that way.
 //
-// The same split is worth making for '@jbrowse/core/ui' (115 pinned names) and
-// '@jbrowse/core/util/tracks' (36), which have the same shape and the same
-// history: BaseTooltip and getParentRenderProps each left this way.
+// '@jbrowse/core/ui' (publicUi.tsx, 128) and '@jbrowse/core/util/tracks'
+// (publicTracks.ts, 51) are split the same way now, and each had already lost a
+// name to the coupling: BaseTooltip and getParentRenderProps. publicUi.tsx also
+// carries the part this file has no use for -- an ABI file may serve a component
+// its barrel does not export, behind lazy(). That is what makes "take it out of
+// the barrel so it leaves the startup path" a different edit from "stop serving
+// it to plugins", which here they were not.
 export {
   AuthNeededError,
   BEZIER_CONNECTOR_MAX_REACH_PX,

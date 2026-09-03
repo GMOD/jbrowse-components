@@ -24,8 +24,8 @@ import * as coreIo from '../util/io/index.ts'
 import * as coreLayouts from '../util/layouts/index.ts'
 import * as coreMstReflection from '../util/mst-reflection.ts'
 import * as rxjs from '../util/rxjs.ts'
-import * as trackUtils from '../util/tracks.ts'
 import * as mstTypes from '../util/types/mst.ts'
+import * as trackUtils from './publicTracks.ts'
 import * as coreUtil from './publicUtil.ts'
 
 // The part of the runtime plugin ABI that is not UI: what a plugin evaluated in
