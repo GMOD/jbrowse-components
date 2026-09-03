@@ -864,15 +864,40 @@ Two more edges held react-dom in the worker and were cut with it: the worker
 entry's `enableStaticRendering` import from mobx-react (which imports react-dom
 for update batching; a worker has no observers to batch), and
 `util/renderToStaticMarkup.ts`, a `document`-only helper the `util` barrel and
-the `@jbrowse/core/util` ABI entry re-exported. It is now only importable from
-`@jbrowse/core/util/renderToStaticMarkup`; the published-plugin scan
-(`publishedPluginBreaks.json`) names no plugin importing it, and the ABI
-baseline records the removal. Measured on the committed volvox config, which
-names one UMD plugin: four tracks 1103 → 1013 KB, worker-only bytes 272 → 182
+the `@jbrowse/core/util` ABI entry re-exported. Measured on the committed volvox
+config, which names one UMD plugin: four tracks 1103 → 1013 KB, worker-only bytes 272 → 182
 KB, and the react-dom chunk is no longer fetched by the worker. What is left
 worker-only is data code (bbi, bgzf, the alignments and wiggle renderers) plus
 the ~36 KB of Material UI's style engine that rides with `ui/theme.ts`, which
 renderers read.
+
+**`renderToStaticMarkup` came back as an ABI name, and the shape it came back in
+is the reusable part.** The commit that cut it said the published-plugin scan
+named no plugin importing it. That was wrong: react-msaview reads it off the
+`@jbrowse/core/util` namespace for its SVG export, and jbrowse-plugin-msaview
+(3.4.0) and jbrowse-plugin-tview (2.2.1) both bundle react-msaview, so two
+published bundles were linked against a name the host had stopped serving —
+`publishedPluginBreaks.json` caught it a day later. Per `abi.test.ts`, that is
+the failure mode the baseline exists to prevent, and it is not fixable by a
+plugin release: the already-published bundles are what a v5 host loads.
+
+The fix keeps both halves. The name stays out of `publicUtil.ts` (which is what
+the worker publishes, so serving it there is what put react-dom on the worker's
+graph) and is added to the main thread's copy of the module in `modules.ts`,
+which already loads react-dom; the worker fills the same key with `uiStub`.
+`ReExports/documentOnlyNames.ts` is the declaration both realms read, and
+`workerModules.test.ts` pins both directions — a name missing on the main thread
+is an `undefined` inside a published plugin, a name real in the worker is
+react-dom back on the worker's graph. A worker never had a working
+`renderToStaticMarkup` anyway; before the split it was the real function and
+threw on `document.createElement`.
+
+So `@jbrowse/core/util` is the first ABI module that is neither wholly shared
+nor wholly UI, and **the `sharedModules`/`uiStub` split is per name, not just per
+module.** `sharedModules.purity.test.ts` walks the worker half's static graph and
+fails on react-dom, printing the trail — the guard the original cut did not have,
+and the one that makes "move it back into the barrel, it's simpler" fail loudly
+instead of silently re-adding 90 KB to every worker.
 
 `scripts/eager-import-closure.ts` overstates a worker or app closure several
 times over: it walks a barrel whole, so one eager import of a constant from

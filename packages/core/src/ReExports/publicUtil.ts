@@ -25,6 +25,12 @@
 // The same split is worth making for '@jbrowse/core/ui' (115 pinned names) and
 // '@jbrowse/core/util/tracks' (36), which have the same shape and the same
 // history: BaseTooltip and getParentRenderProps each left this way.
+//
+// One name the served module has that this list does not: `renderToStaticMarkup`,
+// added in modules.ts. It is the barrel's only reach into react-dom, and this
+// file is what the RPC worker publishes, so serving it from here would put
+// react-dom back on the worker's graph -- see documentOnlyNames.ts. Read this
+// list as the ABI plus that one, which abiBaseline.json pins either way.
 export {
   AuthNeededError,
   BEZIER_CONNECTOR_MAX_REACH_PX,

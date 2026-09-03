@@ -250,6 +250,18 @@ const baselineShape = () =>
     2,
   )}\n`
 
+// Compared parsed, not as text: `--write` emits JSON.stringify's one-entry-per-
+// line arrays and the repo's formatter collapses the short ones back, so a
+// string compare called every refreshed baseline out of date -- and printed no
+// per-plugin line to say why, since nothing had actually moved.
+const sameContent = (a: string, b: string) => {
+  try {
+    return JSON.stringify(JSON.parse(a)) === JSON.stringify(JSON.parse(b))
+  } catch {
+    return false
+  }
+}
+
 if (process.argv.includes('--write')) {
   fs.writeFileSync(BASELINE, baselineShape())
   console.log(`wrote ${BASELINE}`)
@@ -258,7 +270,7 @@ if (process.argv.includes('--write')) {
   const committed = fs.existsSync(BASELINE)
     ? fs.readFileSync(BASELINE, 'utf8')
     : ''
-  if (fresh === committed) {
+  if (sameContent(fresh, committed)) {
     const broken = report.filter(r => r.breaks.length > 0)
     console.log(
       `unchanged: ${broken.length} of ${report.length} break against this build`,

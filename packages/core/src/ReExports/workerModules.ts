@@ -1,3 +1,4 @@
+import { DOCUMENT_ONLY_NAMES } from './documentOnlyNames.ts'
 import reExportsList from './list.ts'
 import { sharedModules } from './sharedModules.ts'
 import { uiNamespace, uiStub } from './uiStub.ts'
@@ -14,6 +15,14 @@ const libs: Record<string, unknown> = {
     ]),
   ),
   ...sharedModules,
+
+  // modules.ts serves the real function here; a worker has no `document` to
+  // render into, so it gets the same stub a whole UI module gets and the same
+  // key list. documentOnlyNames.ts says why the name is not simply shared.
+  '@jbrowse/core/util': {
+    ...sharedModules['@jbrowse/core/util'],
+    ...uiNamespace(DOCUMENT_ONLY_NAMES['@jbrowse/core/util']),
+  },
 }
 
 export default libs

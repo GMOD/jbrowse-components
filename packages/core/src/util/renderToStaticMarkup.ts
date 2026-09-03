@@ -9,6 +9,11 @@ import { createRoot } from 'react-dom/client'
 // reason to pull react/react-dom/@emotion, and the barrel is imported by
 // worker-side adapter code that never renders.
 //
+// It is still served to plugins as `@jbrowse/core/util`'s `renderToStaticMarkup`,
+// on the main thread only -- react-msaview's SVG export reads it there, so the
+// name cannot leave the ABI. ReExports/documentOnlyNames.ts is how the one name
+// gets across without the barrel carrying it.
+//
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')

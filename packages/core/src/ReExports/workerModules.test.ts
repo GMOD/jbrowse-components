@@ -1,3 +1,4 @@
+import { DOCUMENT_ONLY_NAMES } from './documentOnlyNames.ts'
 import reExportsList from './list.ts'
 import modules from './modules.ts'
 import { sharedModules } from './sharedModules.ts'
@@ -12,8 +13,45 @@ test('the worker publishes exactly the keys the main thread publishes', () => {
 
 test('a non-UI entry is the same module in both realms', () => {
   for (const key of Object.keys(sharedModules)) {
-    expect(workerModules[key]).toBe(modules[key as keyof typeof modules])
+    if (!(key in DOCUMENT_ONLY_NAMES)) {
+      expect(workerModules[key]).toBe(modules[key as keyof typeof modules])
+    }
   }
+})
+
+// The one shape that is neither wholly shared nor wholly UI: a worker-safe
+// module carrying a name whose implementation needs `document`. Both halves are
+// worth pinning, because they fail in opposite directions -- a name missing from
+// the main thread is an `undefined` inside a published plugin, and a name real
+// in the worker is react-dom back on the worker's graph.
+test('a document-only name is real on the main thread and stubbed in the worker', () => {
+  for (const [key, names] of Object.entries(DOCUMENT_ONLY_NAMES)) {
+    const real = modules[key as keyof typeof modules] as Record<string, unknown>
+    const stub = workerModules[key] as Record<string, unknown>
+    expect(Object.keys(stub).sort()).toEqual(Object.keys(real).sort())
+    for (const name of names) {
+      expect(typeof real[name]).toBe('function')
+      expect(real[name]).not.toBe(uiStub)
+      expect(stub[name]).toBe(uiStub)
+    }
+    for (const name of Object.keys(real).filter(n => !names.includes(n))) {
+      expect(stub[name]).toBe(real[name])
+    }
+  }
+})
+
+// react-msaview's SVG export reads this off the `@jbrowse/core/util` namespace,
+// and jbrowse-plugin-msaview and jbrowse-plugin-tview bundle react-msaview, so
+// published copies of both are linked against the name. Dropping it from the
+// barrel in 0d034e2bd8 broke their export on a v5 host; publishedPluginBreaks.json
+// recorded it.
+test('the util module a plugin links against still serves renderToStaticMarkup', () => {
+  const util = modules['@jbrowse/core/util'] as Record<string, unknown>
+  expect(typeof util.renderToStaticMarkup).toBe('function')
+  // through the wrapper the shipped bundle actually reads it with: the entry is
+  // a plain object rather than a module namespace, so pin that __toESM still
+  // carries the name across
+  expect(typeof esbuildToESM(util).renderToStaticMarkup).toBe('function')
 })
 
 test('a single-value UI module is the bare stub', () => {
