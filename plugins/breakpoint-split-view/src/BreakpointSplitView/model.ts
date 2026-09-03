@@ -460,11 +460,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // shifting every level below it. An uninitialized view resolves no
           // bpToPx, so getX already returns undefined and callers drop the
           // connection.
+          // present in every view, the same invariant `tracks[level]` leans on
           const d = tracks[level]!.displays[0]!
           levels.push({
             yOffset:
               yOffsetsOverride?.[level] ??
-              viewTop + (view.getTrackYOffset(trackId) ?? 0),
+              viewTop + view.getTrackYOffset(trackId)!,
             height: d.height,
             coverageOffset: d.coverageDisplayHeight ?? 0,
             scrollTop: yOffsetsOverride ? 0 : (d.scrollTop ?? 0),

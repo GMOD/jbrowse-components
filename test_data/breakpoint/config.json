@@ -139,7 +139,6 @@
                 ]
               }
             ],
-            "hideControls": false,
             "hideHeader": true,
             "trackSelectorType": "hierarchical"
           },
@@ -184,7 +183,6 @@
                 ]
               }
             ],
-            "hideControls": false,
             "hideHeader": true,
             "trackSelectorType": "hierarchical"
           }
