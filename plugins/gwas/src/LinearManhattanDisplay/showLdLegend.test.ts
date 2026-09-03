@@ -51,7 +51,7 @@ describe('Manhattan showLdLegend', () => {
       false,
     )
     expect(display.showLdLegend).toBe(false)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
+    expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
   })
 
   // A `maybeBoolean` sentinel slot, so an explicit value wins in EITHER
@@ -87,7 +87,7 @@ describe('Manhattan showLdLegend', () => {
 
   // The pin's click applies the value to the open tracks; the toast's one
   // action is what makes it the display type's default (ADR-048).
-  it('the menu row carries the pin, and it promotes the current value', () => {
+  it('the menu row carries the pin, and it turns the key on', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
@@ -96,10 +96,11 @@ describe('Manhattan showLdLegend', () => {
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()
 
     display.showLdLegendDisplayTypeDefault.toggle()
+    expect(display.showLdLegend).toBe(true)
     takeSnackbarAction(session)
     expect(
       session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
-    ).toBe(false)
+    ).toBe(true)
   })
 
   // The row is greyed out without LD coloring, but it is still built and still

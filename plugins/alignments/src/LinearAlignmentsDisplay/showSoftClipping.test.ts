@@ -577,8 +577,7 @@ describe('alignments fit-to-display-height session default', () => {
 // mismatchAlpha fades mismatch bases by their per-base Phred quality. It is a
 // promotable `maybeBoolean` slot: resolved through getConf (track pin →
 // session default → off), reaches the renderers via renderState (tier-4
-// rerender), and its "make default" pin is symmetric (unlike showSoftClipping,
-// an explicit off can be customized over an on session default).
+// rerender), and an explicit off can be customized over an on session default.
 describe('alignments mismatchAlpha (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
@@ -620,10 +619,11 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     expect(display.mismatchAlpha).toBe(false)
   })
 
-  it('the pin promotes the current value as the session default', () => {
+  it('the pin promotes on as the session default, from an unchecked row too', () => {
     const { session, display } = createDisplay()
-    display.setMismatchAlpha(true)
+    display.setMismatchAlpha(false)
     display.mismatchAlphaDisplayTypeDefault.toggle()
+    expect(display.mismatchAlpha).toBe(true)
     promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'mismatchAlpha'),
@@ -681,17 +681,18 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin promotes the current value, including off', () => {
+  it('the pin turns labels on, from an unchecked row too', () => {
     const { session, display } = createDisplay()
     display.setShowSashimiLabels(false)
     display.showSashimiLabelsDisplayTypeDefault.toggle()
+    expect(display.showSashimiLabels).toBe(true)
     promote(session)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
         'showSashimiLabels',
       ),
-    ).toBe(false)
+    ).toBe(true)
     expect(display.showSashimiLabelsDisplayTypeDefault.active).toBe(true)
   })
 
@@ -741,14 +742,15 @@ describe('alignments showLegend (color-scheme key)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin promotes the current value, including off', () => {
+  it('the pin shows the legend, from an unchecked row too', () => {
     const { session, display } = createDisplay()
     display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()
+    expect(display.showLegend).toBe(true)
     promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
-    ).toBe(false)
+    ).toBe(true)
     expect(display.showLegendDisplayTypeDefault.active).toBe(true)
   })
 
@@ -774,7 +776,7 @@ describe('alignments showLegend (color-scheme key)', () => {
     promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
-    ).toBe(false)
+    ).toBe(true)
   })
 })
 

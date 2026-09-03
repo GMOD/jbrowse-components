@@ -17,9 +17,9 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin applies
-// this value to every open track of the display type, offering the display-type
-// default as its snackbar's one action. Always shown so the capability is
-// discoverable.
+// the pin's on-value — `true`, for a plain boolean slot — to every open track
+// of the display type, offering the display-type default as its snackbar's one
+// action. Always shown so the capability is discoverable.
 //
 // **The row itself is `checkboxItem`'s**, so the two builders can only ever
 // differ by the pin. They used to be two literals, and had already drifted: this

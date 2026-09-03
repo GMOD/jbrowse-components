@@ -146,17 +146,19 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
     expect(display.showLegendDisplayTypeDefault.active).toBe(false)
   })
 
-  // Symmetric: it carries whichever value the track is showing, rather than
-  // only ever carrying "on". The click applies it to the open tracks; the
-  // snackbar's one action is what makes it the display type's default.
-  it('the pin promotes the value the track is showing', () => {
+  // The pin turns the legend on whatever the row shows: beside an unchecked
+  // box it reads as "show it everywhere", and it does. The click applies it to
+  // the open tracks; the snackbar's one action is what makes it the display
+  // type's default.
+  it('the pin shows the legend, from a hidden one too', () => {
     const { session, display } = makeSession({ promotedBase })
-    display.setShowLegend(!promotedBase)
+    display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()
+    expect(display.showLegend).toBe(true)
     session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
-    ).toBe(!promotedBase)
+    ).toBe(true)
     expect(display.showLegendDisplayTypeDefault.active).toBe(true)
   })
 })

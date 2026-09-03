@@ -367,7 +367,7 @@ export default function stateModelFactory(
                   !self.displayDirectionalChevrons,
                 )
               },
-              pin: makePin(self, 'displayDirectionalChevrons'),
+              pin: makePin(self, 'displayDirectionalChevrons', true),
             }),
           ]
         },

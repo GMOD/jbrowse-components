@@ -362,10 +362,13 @@ function applyPinClick(
  * - **Give it** for a per-value pin — "make *arcs* the default" — independent of
  *   what the track currently shows. Use on an always-visible pin so it can never
  *   promote a meaningless value, and so two rows sharing one slot (arcs `'arc'`
- *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
+ *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent. A
+ *   checkbox row over a `maybeBoolean` slot gives `true`: the pin beside an
+ *   unchecked box reads as "turn this on everywhere", and a pin that carried the
+ *   row's current state applied *off* there, visibly doing nothing.
  * - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
- *   a symmetric or continuous setting where no fixed on-value makes sense
- *   (wiggle point size, arc line width, `mismatchAlpha`).
+ *   a continuous setting where no fixed on-value makes sense (wiggle point size,
+ *   arc line width).
  *
  * One function with an optional argument, rather than the two exported builders
  * it replaces — a per-value one and a `…CurrentValue…` one, the second of which

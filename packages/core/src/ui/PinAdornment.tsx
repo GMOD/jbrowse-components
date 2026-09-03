@@ -22,19 +22,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// How the pin names what it acts on. Two shapes, decided by the on-value:
-//
-// - **A boolean on-value carries a state**, and the row's label names the
-//   setting rather than a value ("Show legend", "Show soft clipping"). A pin on
-//   an unchecked such row applies the setting *off*, so the value-shaped copy
-//   below stated the opposite of what the click does — and then, once filled,
-//   claimed the setting was on by default when it had just been turned off.
-// - **Everything else IS what the label says**: a radio option ("Compact"), a
-//   size row whose caller folds the value into the label ("Line width (2px)").
-//
-// One `typeof` rather than a flag on the row, because the two forms of
-// `makePin` are exactly this distinction: a symmetric pin over a `maybeBoolean`
-// slot is the only way a pin's value and its label can disagree.
+// A boolean on-value carries a state, and the row's label names the setting
+// rather than a value ("Show legend"), so the copy says which state. Every
+// other on-value IS what the label says: a radio option ("Compact"), a size
+// row whose caller folds the value into the label ("Line width (2px)").
 function pinPredicate(onValue: unknown) {
   return typeof onValue === 'boolean'
     ? `${onValue ? 'on' : 'off'} by default`

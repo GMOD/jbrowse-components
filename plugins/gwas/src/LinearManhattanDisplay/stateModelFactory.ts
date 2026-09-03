@@ -241,11 +241,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * "apply the current LD-key visibility to the open tracks" control
-         * (pin): symmetric, so it carries whichever value the track shows.
+         * "show the LD key on every open track of this type" control (pin)
          */
         get showLdLegendDisplayTypeDefault() {
-          return makePin(self, 'showLdLegend')
+          return makePin(self, 'showLdLegend', true)
         },
         /**
          * #getter

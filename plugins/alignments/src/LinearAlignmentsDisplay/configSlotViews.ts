@@ -148,11 +148,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnectionsDown')
     },
     /** #getter */
-    // "apply this to the open tracks" control (pin): carries the track's
-    // current resolved value, so either direction (below or above the coverage
-    // band) can be applied and then promoted.
+    // "draw arcs below the coverage band on every open track of this type"
+    // control (pin)
     get readConnectionsDownDisplayTypeDefault() {
-      return makePin(self, 'readConnectionsDown')
+      return makePin(self, 'readConnectionsDown', true)
     },
     /** #getter */
     // Sentinel promotable slot: a track pins arcs on/off explicitly, else
@@ -162,11 +161,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * "apply the current sashimi on/off state to the open tracks" control
-     * (pin) for the submenu's own checkbox.
+     * "show sashimi arcs on every open track of this type" control (pin) for
+     * the submenu's own checkbox.
      */
     get showSashimiArcsDisplayTypeDefault() {
-      return makePin(self, 'showSashimiArcs')
+      return makePin(self, 'showSashimiArcs', true)
     },
     /** #getter */
     // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -209,11 +208,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
 
     /** #getter */
-    // "apply the current soft-clipping state to the open tracks" control
-    // (pin): symmetric, so it carries whichever value the track currently
-    // shows.
+    // "show soft clipping on every open track of this type" control (pin)
     get softClippingDisplayTypeDefault() {
-      return makePin(self, 'showSoftClipping')
+      return makePin(self, 'showSoftClipping', true)
     },
   }
 }

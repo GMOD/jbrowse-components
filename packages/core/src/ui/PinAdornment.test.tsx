@@ -69,10 +69,8 @@ describe('PinAdornment', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  // A symmetric pin over a maybeBoolean slot carries whatever the row is
-  // currently showing, so on an unchecked row it applies the setting OFF. The
-  // value-shaped copy every other pin uses states the opposite of what the
-  // click does — "apply Show legend" to turn the legend off.
+  // A boolean on-value is a state, so the copy names it rather than using the
+  // value-shaped "apply Show legend" every other pin gets.
   it('names the state a boolean pin applies, not just the setting', () => {
     const { getByRole } = renderAdornment(
       fakeControl(false, () => {}, false),

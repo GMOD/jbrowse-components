@@ -50,21 +50,15 @@ const THIN_FADE_HELP =
  *
  * The checkbox and the pin write the same promotable config slot, exactly as
  * any other promotable setting's row: the checkbox writes this view's synteny
- * displays (every level — `setDrawCurves` fans out), the pin makes the value
- * the session-wide default for the display type. A reader who prefers straight
- * chords over an inherited "curves on" pins that back from the same row.
+ * displays (every level — `setDrawCurves` fans out), the pin turns the setting
+ * on for every open display of the type and offers that as the session-wide
+ * default.
  *
  * `display` is the level the pin writes through — any one of them, since a
  * promoted default is keyed by display type rather than by track. A view with
  * no synteny display yet (the import form, a track still arriving) has no slot
  * to write and no ribbon to draw, so its row is disabled rather than a
  * checkbox that ticks nothing.
- *
- * The pin takes the value-omitted `makePin`, not `makePin(display, slot, value)`
- * over the `value` the row is checked by. The two are the same value — `value`
- * is `ribbonSettingsSample.effective*`, i.e. `resolveConf` off this very
- * display — and spelling it a second time only creates a way for them to
- * disagree, which `makePin` answers by throwing.
  */
 function ribbonToggle({
   display,
@@ -87,7 +81,7 @@ function ribbonToggle({
         onToggle: () => {
           setValue(!value)
         },
-        pin: makePin(display, slot),
+        pin: makePin(display, slot, true),
         ...opts,
       })
     : toggleItem(label, value, setValue, {
