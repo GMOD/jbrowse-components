@@ -106,6 +106,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'COMPILER_TERNARY_FINDING names the hook whose inlining removed the hazard',
   ],
   ['Client', 'BAM_STACK_INTEGRATION names @gmod/bam types'],
+  [
+    'clientXY',
+    "DISPLAYCHROME names canvas's own retired pointer-position useState",
+  ],
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],
   ['filterPaf', 'DEMO_DATASETS names a step in SVbyEye'],
   [
