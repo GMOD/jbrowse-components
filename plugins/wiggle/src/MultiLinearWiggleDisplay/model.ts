@@ -10,8 +10,9 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import LegendMixin, {
+  legendCheckboxItem,
+} from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -63,8 +64,7 @@ import {
 } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { WiggleHoveredFeature } from '../util.ts'
-import type { Source } from '../util.ts'
+import type { WiggleHoveredFeature, Source } from '../util.ts'
 import type { MultiWiggleContextInfo } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
