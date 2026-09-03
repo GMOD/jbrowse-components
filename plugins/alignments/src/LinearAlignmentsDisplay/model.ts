@@ -3032,14 +3032,24 @@ export default function stateModelFactory(
           }
           // Read once per resolve rather than per foot: the breakend feet need
           // it for both of their endpoints and this getter re-runs on every pan
-          // frame, where `displayedRegions[i]` is a MobX array read.
+          // frame, where `displayedRegions[i]` is a MobX array read. The
+          // extents are two projections per region, beside the two per arc.
+          const bpToScreenX = makeBpToScreenX(view)
           const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
+          const extentByRegion = view.displayedRegions.map((r, i) => {
+            const a = bpToScreenX(r.refName, r.start, i)
+            const b = bpToScreenX(r.refName, r.end, i)
+            return a === undefined || b === undefined
+              ? undefined
+              : { left: Math.min(a, b), right: Math.max(a, b) }
+          })
           const sections = computeCrossRegionArcSections({
             sections: self.renderSections,
-            bpToScreenX: makeBpToScreenX(view),
+            bpToScreenX,
             arcsYDomainBp: this.arcsYDomainBp,
             pxPerBp: view.bpPerPx > 0 ? 1 / view.bpPerPx : 0,
             regionReversed: i => reversedByRegion[i] ?? false,
+            regionScreenExtent: i => extentByRegion[i],
             lineWidth: self.readConnectionsLineWidth,
             colors: self.colorPalette,
             screenWidthPx: view.width,

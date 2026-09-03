@@ -51,6 +51,7 @@ function draw(
       screenWidthPx: 800,
     },
     regionReversed: () => false,
+    regionScreenExtent: () => undefined,
     lineWidth: 1,
     colors: makeTestPalette(),
     onCapped,

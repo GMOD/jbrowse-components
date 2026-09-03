@@ -15,7 +15,7 @@ import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generat
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcPaintOrder } from './arcColors.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { arcMarkScreenPath } from './arcPath.ts'
+import { ARC_FOOT_PX, arcMarkScreenPath } from './arcPath.ts'
 import { arcMarkFrom } from './mark.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 
@@ -158,6 +158,13 @@ export interface ComputeCrossRegionArcsOpts {
   // because that is what the projection above is keyed on and a session is free
   // to reverse one region and not another.
   regionReversed: (displayedRegionIndex: number) => boolean
+  // The screen span a displayed region occupies, which bounds the feet: an
+  // interchromosomal arc's two feet sit in different regions by construction,
+  // and one within a foot's length of a seam would otherwise draw across it.
+  // Undefined where the caller has no projection, and the foot is unbounded.
+  regionScreenExtent: (
+    displayedRegionIndex: number,
+  ) => { left: number; right: number } | undefined
   lineWidth: number
   colors: ColorPalette
   // Told how many it dropped, once per resolve, rather than dropping them
@@ -181,21 +188,47 @@ export interface ComputeCrossRegionArcsOpts {
 // view is panned across a seam, for the identical junction. Interchromosomal
 // cannot: two refNames never share a region, so every arc in that family is
 // always drawn right here.
+//
+// Each foot's length is bounded by its OWN region's screen extent and nothing
+// else — not by the other foot's anchor, which looks equivalent and is not: two
+// feet pointing the same way must keep overrunning each other, since they
+// overlap precisely because both ends keep the same stretch (`ARC_FOOT_PX`
+// carries the worked case). `arcFeetPath.test.ts` pins that against the mistake.
 function screenFeet(
   arc: CrossRegionArc,
-  regionReversed: (displayedRegionIndex: number) => boolean,
+  sx1: number,
+  sx2: number,
+  regionReversed: ComputeCrossRegionArcsOpts['regionReversed'],
+  regionScreenExtent: ComputeCrossRegionArcsOpts['regionScreenExtent'],
   strokeWidth: number,
 ) {
   if (arc.colorType !== ARC_COLOR_INTERCHROM) {
     return undefined
   }
+  const dir1 = arc.p1Dir * (regionReversed(arc.p1RegionIndex) ? -1 : 1)
+  const dir2 = arc.p2Dir * (regionReversed(arc.p2RegionIndex) ? -1 : 1)
   return {
-    dir1: arc.p1Dir * (regionReversed(arc.p1RegionIndex) ? -1 : 1),
-    dir2: arc.p2Dir * (regionReversed(arc.p2RegionIndex) ? -1 : 1),
+    dir1,
+    dir2,
+    len1: footLength(sx1, dir1, regionScreenExtent(arc.p1RegionIndex)),
+    len2: footLength(sx2, dir2, regionScreenExtent(arc.p2RegionIndex)),
     // Half the arc's own stroke, so the tick clears the band's clip by exactly
     // its own half-width whatever `support` made it — see `feetSubpaths`.
     insetPx: strokeWidth / 2,
   }
+}
+
+function footLength(
+  sx: number,
+  dir: number,
+  extent: { left: number; right: number } | undefined,
+) {
+  return extent === undefined
+    ? ARC_FOOT_PX
+    : Math.max(
+        0,
+        Math.min(ARC_FOOT_PX, dir > 0 ? extent.right - sx : sx - extent.left),
+      )
 }
 
 // Everything about a mark that is not its path: the stroke, the split variant's
@@ -248,6 +281,7 @@ export function computeCrossRegionArcs({
   bpToScreenX,
   frame,
   regionReversed,
+  regionScreenExtent,
   lineWidth,
   colors,
   onCapped,
@@ -309,7 +343,14 @@ export function computeCrossRegionArcs({
         sx2,
         yBp: arc.yBp,
         shapeType: arc.shapeType,
-        feet: screenFeet(arc, regionReversed, strokeWidth),
+        feet: screenFeet(
+          arc,
+          sx1,
+          sx2,
+          regionReversed,
+          regionScreenExtent,
+          strokeWidth,
+        ),
       },
       frame,
     )

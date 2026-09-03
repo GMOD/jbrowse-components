@@ -10,8 +10,10 @@ import { arcMark } from './mark.ts'
 import type { ArcBandFrame, ArcDome, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// How long a breakend foot is drawn, in CSS px — `plugins/arc`'s and
-// BreakpointSplitView's length, so the three ticks in the repo are one number.
+// How long a breakend foot is drawn, in CSS px, where its displayed region has
+// the room (`screenFeet` shortens one that would cross a seam) — `plugins/arc`'s
+// and BreakpointSplitView's length, so the three ticks in the repo are one
+// number.
 //
 // It was 10 first, on the argument that this band is ~25-60 px where those two
 // draw across a whole track, and that a longer tick would read as a second
@@ -72,12 +74,14 @@ function feetSubpaths({ mid, rx, anchorY, down, feet }: ArcDome) {
     return ''
   }
   const y = arcMarkY(anchorY, feet.insetPx, down)
-  const left = feet.leftDir
-    ? ` M ${mid - rx} ${y} L ${mid - rx + feet.leftDir * ARC_FOOT_PX} ${y}`
-    : ''
-  const right = feet.rightDir
-    ? ` M ${mid + rx} ${y} L ${mid + rx + feet.rightDir * ARC_FOOT_PX} ${y}`
-    : ''
+  const left =
+    feet.leftDir && feet.leftLen > 0
+      ? ` M ${mid - rx} ${y} L ${mid - rx + feet.leftDir * feet.leftLen} ${y}`
+      : ''
+  const right =
+    feet.rightDir && feet.rightLen > 0
+      ? ` M ${mid + rx} ${y} L ${mid + rx + feet.rightDir * feet.rightLen} ${y}`
+      : ''
   return left + right
 }
 

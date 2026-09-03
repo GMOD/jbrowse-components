@@ -146,6 +146,9 @@ export interface CrossRegionArcSectionsInput {
   // no scale yet.
   pxPerBp: number
   regionReversed: (displayedRegionIndex: number) => boolean
+  regionScreenExtent: (
+    displayedRegionIndex: number,
+  ) => { left: number; right: number } | undefined
   lineWidth: number
   colors: ColorPalette
   // The WHOLE VIEW's width — see `ComputeCrossRegionArcsOpts`, which says why
@@ -173,6 +176,7 @@ export function computeCrossRegionArcSections(
     arcsYDomainBp,
     pxPerBp,
     regionReversed,
+    regionScreenExtent,
     lineWidth,
     colors,
     screenWidthPx,
@@ -208,6 +212,7 @@ export function computeCrossRegionArcSections(
             screenWidthPx,
           },
           regionReversed,
+          regionScreenExtent,
           lineWidth,
           colors,
           onCapped: (dropped, kept) => {

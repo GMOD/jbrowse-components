@@ -116,6 +116,12 @@ export interface ArcBar extends ArcMarkBase {
 export interface ArcFeet {
   leftDir: number
   rightDir: number
+  // How far each tick reaches, in CSS px: `ARC_FOOT_PX`, or less where the
+  // foot's own displayed region ends sooner. A foot lies over sequence the
+  // junction keeps, so it stops at the seam rather than crossing onto a contig
+  // the junction says nothing about. Zero draws nothing.
+  leftLen: number
+  rightLen: number
   // How far inside the band the ticks are drawn, as an offset from the anchor —
   // unresolved for the reason `destY` is: the mark is band-local and
   // `offsetArcMark` moves the anchor, so a foot stored as an absolute y would
@@ -185,7 +191,13 @@ export interface ProjectedArc {
   // Breakend feet, in sx1/sx2 order and already in screen direction — see
   // `ArcFeet`, which is what this resolves into. Omitted by the per-region
   // `arcMark` path, which has no per-foot direction to give.
-  feet?: { dir1: number; dir2: number; insetPx: number }
+  feet?: {
+    dir1: number
+    dir2: number
+    len1: number
+    len2: number
+    insetPx: number
+  }
 }
 
 export function arcMark(
@@ -255,6 +267,8 @@ export function arcMarkFrom(
         : {
             leftDir: sx1 <= sx2 ? feet.dir1 : feet.dir2,
             rightDir: sx1 <= sx2 ? feet.dir2 : feet.dir1,
+            leftLen: sx1 <= sx2 ? feet.len1 : feet.len2,
+            rightLen: sx1 <= sx2 ? feet.len2 : feet.len1,
             insetPx: feet.insetPx,
           },
   }

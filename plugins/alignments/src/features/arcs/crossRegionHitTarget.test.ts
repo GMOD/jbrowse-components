@@ -48,6 +48,7 @@ function draw(arcs: CrossRegionArc[], lineWidth: number) {
       screenWidthPx: 800,
     },
     regionReversed: () => false,
+    regionScreenExtent: () => undefined,
     lineWidth,
     colors: makeTestPalette(),
   })

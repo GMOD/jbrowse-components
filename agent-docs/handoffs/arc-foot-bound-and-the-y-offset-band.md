@@ -1,78 +1,14 @@
 ---
 name: arc-foot-bound-and-the-y-offset-band
-description: The breakend-foot region bound is written but UNCOMMITTED in the worktree with one bad import, so the tree neither builds nor reverts cleanly — it needs a one-line import fix and the checks below. Beside it, the track-y-offset label-box research is done and refutes its own idea doc's recommended fix, so that thread waits on an approach decision, not on more digging.
+description: The track-y-offset label-box research is done and refutes its own idea doc's recommended fix, so that thread waits on an approach decision, not on more digging. The breakend-foot region bound that used to share this file landed.
 ---
 
-# The arc foot bound (uncommitted) and the y-offset label band
+# The track y-offset label band
 
-Two threads from the 2026-09-03 pass over `ideas/`. The first is a **dirty
-worktree** and should be closed before anything else; the second is finished
-research waiting on a decision.
+Research from the 2026-09-03 pass over `ideas/`. The breakend-foot region
+bound that shared this file landed (see `git log -- plugins/alignments/src/features/arcs/crossRegionFeetBound.test.ts`).
 
-## 1. Breakend-foot region bound — written, uncommitted, one bad import
-
-Implements
-[`ideas/bound-a-breakend-foot-by-its-displayed-region.md`](../ideas/bound-a-breakend-foot-by-its-displayed-region.md).
-Nine modified files plus one untracked test, none committed:
-
-- `features/arcs/mark.ts` — `ArcFeet` grows `leftLen`/`rightLen`,
-  `ProjectedArc.feet` grows `len1`/`len2`, and `arcMarkFrom` sorts the lengths
-  onto left/right through the same `sx1 <= sx2` compare that already sorts the
-  directions, so a length always travels with its own direction.
-- `features/arcs/crossRegionOverlay.ts` — new `regionScreenExtent` option; a
-  `footLength(sx, dir, extent)` helper returns
-  `min(ARC_FOOT_PX, dir > 0 ? extent.right - sx : sx - extent.left)` floored at
-  0. Both `sx` and `dir` are already screen-space there.
-- `features/arcs/arcPath.ts` — `feetSubpaths` traces `feet.leftLen`/`rightLen`
-  and skips a foot of length 0; `ARC_FOOT_PX` is now a **maximum**.
-- `LinearAlignmentsDisplay/model.ts` — `crossRegionArcSections` projects each
-  displayed region's `start`/`end` once per resolve into `extentByRegion`,
-  beside the existing `reversedByRegion`.
-- `LinearAlignmentsDisplay/overlaySections.ts` threads the option through.
-- Three existing `computeCrossRegionArcs` tests get
-  `regionScreenExtent: () => undefined`; `arcFeetPath.test.ts` passes explicit
-  lengths and its comment now points at the new test.
-
-**The one break.** `features/arcs/crossRegionFeetBound.test.ts` (new, untracked)
-imports `makeTestPalette` from `./crossRegionTestPalette.ts`, which does not
-exist. It lives at `LinearAlignmentsDisplay/testUtils.ts:37` and that is the
-path the sibling `crossRegionHitTarget.test.ts` already uses. `eslint --fix`
-sorts the import block afterwards.
-
-**Then:**
-`npx jest plugins/alignments/src/features/arcs plugins/alignments/src/LinearAlignmentsDisplay`,
-`pnpm typecheck` (the new `ArcFeet` fields are required, so a missed producer is
-a type error), lint `--fix`, `pnpm format`, `pnpm test-related`. Delete the idea
-doc and `pnpm autogen`.
-
-**`--with-web` is not owed** — no config slot, menu, label or snapshot shape
-moves. Confirmed the only `.snap` files carrying elliptical-arc path commands
-are the circular-genome-view ones, which are a different plugin's chord paths.
-
-**The one test at risk is `arcBreakendFeet.test.ts`**, because it drives the real
-model and so now gets real extents. Checked by hand and it is safe: two 10 kb
-regions at bpPerPx 40 make each region 250 px wide, the ctgA read sits 25 px
-from its region's left edge and the ctgB mate 50 px in, so both clear a 20 px
-foot in the forward and `reverseSecondRegion` cases. If it goes red, read the
-fixture margin, not the bound.
-
-**Do not bound a foot by the other foot's anchor.** That version looks
-equivalent, was written, and was reverted: two feet pointing the same way must
-keep overrunning each other, because they overlap precisely when both ends keep
-the same stretch. `arcFeetPath.test.ts` pins it.
-
-**Cost, which the idea doc asked to measure:** the ratio answers it without a
-bench — two projections per displayed region (1–10) once per resolve, against
-two per arc for up to `CROSS_REGION_ARC_CAP` arcs (600–5000 in the regime the
-cap exists for).
-
-**Accepted edge:** `makeBpToScreenX` falls back to an unindexed `view.bpToPx`
-when the indexed lookup misses, so an endpoint can project outside the extent
-its own `p1RegionIndex` names; `footLength` floors at 0, so the foot draws
-nothing rather than pointing the wrong way — the safe direction for a mark whose
-whole content is a direction, in a case where that claim was already unreliable.
-
-## 2. The track y-offset label band — research done, refutes its own idea doc
+## Research done, refutes its own idea doc
 
 For
 [`ideas/track-y-offset-cannot-see-the-label-box.md`](../ideas/track-y-offset-cannot-see-the-label-box.md).
