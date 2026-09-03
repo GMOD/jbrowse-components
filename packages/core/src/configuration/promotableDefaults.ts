@@ -295,17 +295,11 @@ export function applySlotToOpenTracks(
 }
 
 /**
- * The pin's click. Two branches, chosen by whether this value is *already* the
- * display type's promoted default:
- *
- * - **It isn't** — write `value` into every open track of the type, and offer
- *   the promotion as a snackbar action. Applying to the tracks in front of the
- *   user is the click they mean far more often, so it is the one that needs no
- *   second click; a default outlives the tracks it was set for and governs every
- *   track of the type opened later, so it is the escalation (ADR-048).
- * - **It is** — clear it, touching no track. The open tracks hold their values
- *   because the user applied them, so reverting them here would make a toggle
- *   into a bulk discard.
+ * The pin's click: write `value` into every open track of the type, and offer
+ * the promotion as a snackbar action. Applying to the tracks in front of the
+ * user is the click they mean far more often, so it is the one that needs no
+ * second click; a default outlives the tracks it was set for and governs every
+ * track of the type opened later, so it is the escalation (ADR-048).
  *
  * The apply is one operation over *every* open track, not a labeled pair over
  * the tracks that differ and the tracks that follow. Overwriting a customized
@@ -321,33 +315,38 @@ export function applySlotToOpenTracks(
  * the map the write lands in. ADR-048 has the decisions this does not change:
  * no track set and no apply/promote decision may be closed over.
  */
-function applyPinClick(
+function applyAndOfferDefault(
   self: ResolvableDisplay,
   slot: string,
   value: unknown,
-  isDefault: boolean,
 ): void {
   const session = getSession(self)
   const displayType = self.type
-  if (isDefault) {
-    session.setDisplayTypeDefault(displayType, slot, undefined)
-    session.notify('Cleared the default', 'info')
-  } else {
-    const open = openTracksOfType(self)
-    applySlotToOpenTracks(open, slot, value)
-    session.notify(
-      `Applied to ${open.length} open ${pluralize(open.length, 'track')}`,
-      'info',
-      {
-        name: 'Set as the default',
-        onClick: () => {
-          if (isAlive(session)) {
-            session.setDisplayTypeDefault(displayType, slot, value)
-          }
-        },
+  const open = openTracksOfType(self)
+  applySlotToOpenTracks(open, slot, value)
+  session.notify(
+    `Applied to ${open.length} open ${pluralize(open.length, 'track')}`,
+    'info',
+    {
+      name: 'Set as the default',
+      onClick: () => {
+        if (isAlive(session)) {
+          session.setDisplayTypeDefault(displayType, slot, value)
+        }
       },
-    )
-  }
+    },
+  )
+}
+
+/**
+ * A value pin's click when its value is already the promoted default: clear
+ * it, touching no track. The open tracks hold their values because the user
+ * applied them, so reverting them here would make a toggle into a bulk discard.
+ */
+function clearDefault(self: ResolvableDisplay, slot: string): void {
+  const session = getSession(self)
+  session.setDisplayTypeDefault(self.type, slot, undefined)
+  session.notify('Cleared the default', 'info')
 }
 
 /**
@@ -425,7 +424,11 @@ export function makePin<
     onValue,
     active,
     toggle: () => {
-      applyPinClick(self, slot, onValue, active)
+      if (active) {
+        clearDefault(self, slot)
+      } else {
+        applyAndOfferDefault(self, slot, onValue)
+      }
     },
   }
 }
@@ -447,7 +450,18 @@ export function makePin<
 export function makeTogglePin<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
->(self: ResolvableDisplay<CONFMODEL>, slot: SLOT): Pin {
+>(
+  self: ResolvableDisplay<CONFMODEL>,
+  // `never` for a slot the schema resolves to anything but a boolean, so the
+  // runtime throw below is only for a schema widened to `any`
+  slot: SLOT &
+    (ConfigurationSlotValueResolved<
+      ConfigurationSchemaForModel<CONFMODEL>,
+      SLOT
+    > extends boolean
+      ? unknown
+      : never),
+): Pin {
   const current: unknown = resolveSlot(self, slot).value
   if (typeof current !== 'boolean') {
     throw new Error(
@@ -460,7 +474,7 @@ export function makeTogglePin<
     onValue,
     active: current,
     toggle: () => {
-      applyPinClick(self, slot, onValue, false)
+      applyAndOfferDefault(self, slot, onValue)
     },
   }
 }

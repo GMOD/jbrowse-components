@@ -14,6 +14,15 @@ because its failure mode is real and the new shape has to answer for it.
 Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
 §"UI surface".
 
+**Amended 2026-09-02** for checkbox rows: their pin is the row's own checkbox
+over every open track of the type (`makeTogglePin`). Its fill mirrors the row, a
+click flips the state on every open track and offers the new state as the
+default, and it never clears a default — flipping back and taking the offer
+promotes the other value. The "filled means promoted, click to clear" reading
+below now holds only for the value pins on radio and size rows. What prompted
+it: the symmetric pin carried the row's current state, so beside an unchecked
+"Show legend" it applied *off* everywhere and visibly did nothing.
+
 ## Context
 
 The make-default pin sits on every promotable menu row. The question this ADR

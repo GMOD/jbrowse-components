@@ -206,7 +206,7 @@ and visibly did nothing.
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT) => Pin
+<…>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT & (ConfigurationSlotValueResolved<...> extends boolean ? unknown : never)) => Pin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

@@ -37,8 +37,9 @@ export interface Pin {
    */
   slot: string
   /**
-   * The value `toggle` promotes — the on-value {@link makePin} was given, or the
-   * track's current resolved value for the value-omitted form.
+   * The value `toggle` promotes — the on-value {@link makePin} was given, the
+   * track's current resolved value for its value-omitted form, or the flipped
+   * state for a `makeTogglePin`.
    *
    * `PinAdornment` words itself from this: a **boolean** on-value is a
    * `makeTogglePin` over a checkbox row, and the copy names the state the click
