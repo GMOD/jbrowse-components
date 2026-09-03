@@ -10,7 +10,7 @@ import { makeStyles } from '../../util/tss-react/index.ts'
 import { panelAssemblyName } from './panelAssemblyName.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
+import type { FeatureDetailsModel } from '../types.tsx'
 
 // lazies
 const SequenceFeatureDetails = lazy(
@@ -36,7 +36,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
   model,
   feature,
 }: {
-  model: BaseFeatureWidgetModel
+  model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
 }) {
   const { classes } = useStyles()

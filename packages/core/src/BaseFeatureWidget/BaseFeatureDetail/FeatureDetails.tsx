@@ -14,8 +14,11 @@ import CoreDetails from './CoreDetails.tsx'
 import { generateTitle } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Descriptors, FeatureFormatter } from '../types.tsx'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  Descriptors,
+  FeatureDetailsModel,
+  FeatureFormatter,
+} from '../types.tsx'
 
 function SectionHeader({ title }: { title: string }) {
   return <Typography variant="overline">{title}</Typography>
@@ -44,13 +47,7 @@ const coreDetails = [
 ]
 
 interface FeatureDetailsProps {
-  // TODO: this wants to be BaseFeatureWidgetModel -- it reads `maxDepth` and
-  // hands the model to the sequence panel, which needs the real thing. It can't
-  // be: every widget composing the base model overrides the `type` literal,
-  // which makes the composed instance non-assignable to the base. So the panel
-  // relies on IAnyStateTreeNode being assignable to anything, and a model
-  // missing e.g. `sequenceFeatureDetails` is not a compile error here.
-  model: IAnyStateTreeNode
+  model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]

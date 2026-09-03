@@ -1,8 +1,9 @@
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { FeatureDetailsModel } from '@jbrowse/core/BaseFeatureWidget'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export interface SyntenyFeatureDetailModel {
+export interface SyntenyFeatureDetailModel extends FeatureDetailsModel {
   // BaseFeatureWidget declares this `types.maybe(types.string)` and only fills
   // it in once the widget's track reference resolves
   trackId?: string
