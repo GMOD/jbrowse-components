@@ -25,3 +25,28 @@ test('@mui/material/SvgIcon exposes createSvgIcon to external plugins (#5606)', 
   // the named export icons-material's createSvgIcon call needs
   expect(typeof SvgIcon.createSvgIcon).toBe('function')
 })
+
+// `lazyMap`'s prefix builds *module map* keys -- one call yields
+// '@mui/material/Button', '@mui/material/Dialog' and the rest as separate served
+// modules. Passing one to a call that builds the *contents* of a single module
+// makes that module's keys full subpaths, and then the documented
+// `import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'`
+// reads undefined -- while every in-tree consumer writes the same import and
+// resolves it to the real module, so nothing in the repo can see it. Published
+// ideogram 2.0.0 shipped against that shape for BaseCard and FeatureDetails.
+//
+// check-published-plugins.ts cannot catch this class: it diffs names against the
+// previous release, and a module whose shape it could not read there
+// (`shapeMismatchModules`) has nothing to diff. The invariant is local anyway --
+// a served module's keys are export names, so none of them contains a slash.
+test('a served @jbrowse/core module is keyed by export name, not by subpath', () => {
+  const offenders = Object.entries(libs)
+    .filter(([name]) => name.startsWith('@jbrowse/core/'))
+    .filter(([, mod]) => mod !== null && typeof mod === 'object')
+    .flatMap(([name, mod]) =>
+      Object.keys(mod as object)
+        .filter(key => key.includes('/'))
+        .map(key => `${name} -> ${key}`),
+    )
+  expect(offenders).toEqual([])
+})

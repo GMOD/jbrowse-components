@@ -562,11 +562,12 @@
     "trackConfigActions"
   ],
   "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail": [
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes",
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseAttributes",
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard",
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCoreDetails",
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails"
+    "Attributes",
+    "BaseAttributes",
+    "BaseCard",
+    "BaseCoreDetails",
+    "FeatureDetails",
+    "FeatureWash"
   ],
   "@jbrowse/core/data_adapters/BaseAdapter": [
     "BaseAdapter",

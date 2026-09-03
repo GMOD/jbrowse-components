@@ -24,5 +24,14 @@ export const BaseFeatureDetail = lazyMap(
         import('../BaseFeatureWidget/BaseFeatureDetail/BaseCoreDetails.tsx'),
     ),
   },
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/',
+  // No prefix. lazyMap's prefix builds *module map* keys -- it is how one call
+  // yields '@mui/material/Button', '@mui/material/Dialog' and the rest as
+  // separate served modules. This call is the contents of a single served
+  // module, so a prefix here made its keys the full subpaths
+  // ('@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'), and the
+  // documented `import { BaseCard } from
+  // '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'` -- which every in-tree
+  // consumer writes, and which resolves to the real module for them -- read
+  // undefined out of JBrowseExports for an external plugin. Published ideogram
+  // 2.0.0 does exactly that for BaseCard and FeatureDetails.
 )
