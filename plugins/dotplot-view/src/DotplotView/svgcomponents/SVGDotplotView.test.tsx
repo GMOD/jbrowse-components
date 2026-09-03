@@ -1,5 +1,4 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { comparativeFetchKey } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -124,7 +123,7 @@ test('an errored track fails the export, naming every track that failed', async 
   // reports the terminal state, and both displays must be in it at once. After
   // the fetches land, so the autorun that clears the error before a fetch isn't
   // still to come.
-  await when(() => view.dotplotDisplays.every(d => d.ready))
+  await when(() => view.dotplotDisplays.every(d => d.fetchLanded))
   // setError logs, and these errors are the fixture — keep them off stderr
   const log = jest.spyOn(console, 'error').mockImplementation(() => {})
   for (const display of view.dotplotDisplays) {
@@ -190,7 +189,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     },
   })
   await view.launchTrack('ortho')
-  await when(() => view.dotplotDisplays.every(d => d.ready))
+  await when(() => view.dotplotDisplays.every(d => d.fetchLanded))
 
   // Committed directly rather than fetched, the way the errored-tracks test
   // above sets its terminal state: what matters here is that a display holding
@@ -202,10 +201,12 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     mateRefNameDict: ['ctgA'],
   })
   for (const display of view.dotplotDisplays) {
-    display.setRpcData(rpcData, [])
-    // the live key, so `dataCurrent` holds and the export's svgReady gate
-    // opens instead of waiting out the whole test on a key that never matches
-    display.setLoadedFetchKey(comparativeFetchKey(display))
+    // stamped with the live key, so `dataCurrent` holds and the export's
+    // svgReady gate opens instead of waiting out the whole test on a key that
+    // never matches
+    display.commitFetchResult(() => {
+      display.setRpcData(rpcData, [])
+    }, display.currentFetchKey!)
     // svgReady also wants instance geometry; nothing needs to be IN it, the
     // legend is drawn outside the plot rect
     display.setInstanceData(fakeDotplotInstanceData(0))

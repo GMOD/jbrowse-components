@@ -80,7 +80,7 @@ render, so an observer re-resolves under a moving viewport by construction.
 `hoveredFeature` is an overridable getter on `BaseDisplay` (default
 `undefined`), and `LinearGenomeViewContainer` reads it off every display of
 every track to feed `session.hovered`, the view-wide "what is the user pointing
-at" channel. It is a hook for the reason `SyntenyFetchStateMixin.fetchInert` is
+at" channel. It is a hook for the reason `FetchMixin.fetchInert` is
 one: a cross-display consumer can only read a name the base declares. The
 container used to read `featureUnderMouse`, which only the wiggle, alignments
 and Manhattan families spelled that way — canvas said `hoveredFeature`, variants

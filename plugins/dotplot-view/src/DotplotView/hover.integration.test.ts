@@ -106,7 +106,7 @@ async function setup() {
     })
     await view.launchTrack(trackId)
   }
-  await when(() => view.dotplotDisplays.every(d => d.ready))
+  await when(() => view.dotplotDisplays.every(d => d.fetchLanded))
   const [a, b] = view.dotplotDisplays
   // A is on the diagonal at 1000..2000; B is somewhere else entirely, so a hit
   // on one is a miss on the other.

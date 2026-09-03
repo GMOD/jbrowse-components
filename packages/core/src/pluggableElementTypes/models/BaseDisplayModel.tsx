@@ -125,7 +125,7 @@ function stateModelFactory() {
        * pointing at" channel a plugin can subscribe to.
        *
        * Declared here because a cross-display consumer can only read a name the
-       * base declares — the same reason `SyntenyFetchStateMixin.fetchInert` is a
+       * base declares — the same reason `FetchMixin.fetchInert` is a
        * hook rather than a getter each display invents. The container used to
        * read `featureUnderMouse`, which only the wiggle, alignments and
        * Manhattan families spelled that way — canvas said `hoveredFeature`,

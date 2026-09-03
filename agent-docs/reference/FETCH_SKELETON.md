@@ -24,8 +24,8 @@ The pieces underneath it, and who reaches them directly:
 
 | what | where | who runs on it |
 | --- | --- | --- |
-| the whole sequence above, plus the autorun over it | `installFetch` / `runFetchOnce` | every fetch — `FetchMixin.runFetch` holds `runFetchOnce` for the per-region family (it needs the MST flow, since its trigger is `planRegionFetch`'s autorun), and everything else takes the installer: the global family (`installGlobalFetchAutorun` lends `FetchMixin`'s rotation through the `rotation` option, so `cancelFetch` reaches the fetch it installs), the comparative family, chord, the breakpoint overlay and the prerequisite reads |
-| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080), releasing a completed fetch's token at `end()` | `createStopTokenRotation` | all of them, through the skeleton — `FetchMixin` holds one as a member and lends it to the skeleton for the global family, `installFetch` one per installation otherwise, and `withDiagonalizeProgress` one directly |
+| the whole sequence above, plus the autorun over it | `installFetch` / `runFetchOnce` | every fetch — `FetchMixin.runFetch` holds `runFetchOnce` for the per-region family (it needs the MST flow, since its trigger is `planRegionFetch`'s autorun), and everything else takes the installer: the two keyed families (`installGlobalFetchAutorun` and `installComparativeFetchAutorun` lend `FetchMixin`'s rotation through the `rotation` option, so `cancelFetch` and the Cancel button reach the fetch they install), chord, the breakpoint overlay and the prerequisite reads |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080), releasing a completed fetch's token at `end()` | `createStopTokenRotation` | all of them, through the skeleton — `FetchMixin` holds one as a member and lends it to the skeleton for the global and comparative families, `installFetch` one per installation otherwise, and `withDiagonalizeProgress` one directly |
 | the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the skeleton, so the global and comparative families with it; per-region is deliberately not this shape, see `RegionFetchContext` |
 | the leading-edge scheduler | `leadingEdgeAutorun` | every installer, plus the dotplot view's region autorun |
 | the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `runFetchOnce`, so all of them |
@@ -76,12 +76,11 @@ three writes).
 What is left per site is the part that genuinely differs, and it is exactly the
 parameter list: the trigger list (which reads wake it, i.e. `prepare` plus
 `gate`), the commit shape (one payload versus N streaming regions), where the
-loading flag lives (`FetchMixin`'s `activeStopToken` versus the comparative
-family's `fetching` — ADR-054 keeps that split), where the status goes
-(`report`), and the context a `run` is handed. A family wanting a richer context
-than `FetchContext` wraps its own `run` rather than the skeleton growing an
-option for it, which is how the comparative family adds `adapterConfig` /
-`rename` / `assemblyManager`.
+loading flag and the status live (`FetchMixin`'s, through a lent `rotation`, or
+the installer's own `report` for a host with no mixin), and the context a `run`
+is handed. A family wanting a richer context than `FetchContext` wraps its own
+`run` rather than the skeleton growing an option for it, which is how the
+comparative family adds `adapterConfig` / `rename` / `assemblyManager`.
 
 ## `untracked` names its ground, and a perf guard is not one
 

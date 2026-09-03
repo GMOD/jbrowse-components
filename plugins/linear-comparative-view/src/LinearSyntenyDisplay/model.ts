@@ -12,14 +12,13 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
+  ComparativeFetchMixin,
   LodTierInfoMixin,
   NO_CIGAR_OPS,
-  SyntenyFetchStateMixin,
   bandGroundColor,
   bucketBpPerPx,
   coarseWalkIsApproximate,
   comparativeDisplayPhase,
-  comparativeFetchFlags,
   featureAttributes,
   getCoarseBpPerPxThreshold,
   fetchWindowSignature,
@@ -155,6 +154,7 @@ export function getFeatureAtIndex(
 
 /**
  * #stateModel LinearSyntenyDisplay
+ * #displayFoundation ComparativeFetchMixin
  *
  * Pure-data model. The containing LinearSyntenyView owns the shared GPU
  * backend, the upload autorun (which watches every display's `instanceData`
@@ -191,7 +191,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
     .compose(
       'LinearSyntenyDisplay',
       BaseDisplay,
-      SyntenyFetchStateMixin(),
+      ComparativeFetchMixin(),
       LodTierInfoMixin(),
       types.model({
         /**
@@ -412,57 +412,27 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * A fetch has completed (data is present, even if it mapped zero
-       * features). Not `numFeats > 0` — an empty-but-finished fetch is ready,
-       * otherwise an empty result spins the loading overlay forever.
+       * `ComparativeFetchMixin`'s hook: a fetch has completed (data is present,
+       * even if it mapped zero features). Not `numFeats > 0` — an
+       * empty-but-finished fetch has landed, otherwise an empty result spins
+       * the loading overlay forever.
        */
-      get ready() {
+      get fetchLanded() {
         return self.featureData !== undefined
       },
       /**
        * #getter
-       * Overrides `SyntenyFetchStateMixin`'s default-false hook with the two
-       * states where this display's fetch autorun deliberately never runs:
-       * minimized, or a level whose two rows aren't both showing regions. A
-       * display in one of them draws nothing (`renderParams` is undefined for
-       * exactly the same pair) and has no data coming, so anything waiting on
-       * data has to treat it as terminal rather than wait forever. One getter
-       * because four places answer it — the autorun's own gate, the loading
-       * overlay, the SVG export, and (through the mixin) `displaysSettled`.
+       * Overrides `FetchMixin`'s default-false hook with the two states where
+       * this display's fetch autorun deliberately never runs: minimized, or a
+       * level whose two rows aren't both showing regions. A display in one of
+       * them draws nothing (`renderParams` is undefined for exactly the same
+       * pair) and has no data coming, so anything waiting on data has to treat
+       * it as terminal rather than wait forever. One getter because four
+       * places answer it — the autorun's own gate, the loading overlay, the
+       * SVG export, and (through the mixin) `displaysSettled`.
        */
       get fetchInert() {
         return self.isMinimized || !this.connectedViews
-      },
-      get fetchFlags() {
-        return comparativeFetchFlags({
-          ready: this.ready,
-          hasDrawable: this.ready,
-          fetching: self.fetching,
-          error: self.error,
-          fetchInert: this.fetchInert,
-          fetchCanceled: self.fetchCanceled,
-          loadedFetchKey: self.loadedFetchKey,
-          currentFetchKey: this.currentFetchKey,
-          adapterConfig: self.adapterConfig,
-        })
-      },
-      /**
-       * #getter
-       * First load: no data has arrived yet. Drives the full striped
-       * LoadingOverlay.
-       */
-      get loading() {
-        return this.fetchFlags.loading
-      },
-      /**
-       * #getter
-       * Refetch in-flight: a new fetch is running but stale ribbons are still
-       * on screen (e.g. zoom-out across a log2 bucket, region change). Drives a
-       * subtle corner indicator instead of the full overlay so the visible
-       * ribbons aren't masked on every viewport change.
-       */
-      get refetching() {
-        return this.fetchFlags.refetching
       },
       /**
        * #getter
@@ -485,16 +455,18 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Fetch-input signature (region set/order, snapped fetch window, zoom
-       * bucket, CIGAR draw options, LOD tier) for the view's current
-       * state — the same tracked deps the fetch autorun refetches on. Reactive:
-       * flips the instant any of them changes. Before both connected views are
-       * ready it collapses to a degenerate signature (empty region sig, no
+       * `KeyedFetchMixin`'s hook, this display's half of `currentFetchKey`:
+       * the fetch-input signature (region set/order, snapped fetch window,
+       * zoom bucket, CIGAR draw options, LOD tier) for the view's current
+       * state — the same tracked deps the fetch autorun refetches on. The
+       * mixin appends the settings and adapter axes. Reactive: flips the
+       * instant any of them changes. Before both connected views are ready it
+       * collapses to a degenerate signature (empty region sig, no
        * fetch-window/zoom keys) that no connected fetch can produce — a real
-       * fetch requires non-empty displayedRegions — so `dataCurrent` reads false
-       * until a real fetch lands. Non-nullable so it mirrors dotplot's.
+       * fetch requires non-empty displayedRegions — so `dataCurrent` reads
+       * false until a real fetch lands. Non-nullable so it mirrors dotplot's.
        */
-      get currentFetchKey(): string {
+      get viewSignature(): string {
         const view = this.view
         return [
           this.fetchRegionsKey,
@@ -523,29 +495,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * True when the rendered data was fetched for the view's current inputs.
-       * Goes false the instant a region/zoom/draw-option change makes the held
-       * ribbons stale — including during the pre-refetch debounce gap where
-       * `fetching` is still false so `refetching` alone can't catch it.
-       *
-       * This is the shared freshness hook every display foundation answers,
-       * expressed the signature-compare way (as arc and dotplot do); the
-       * per-region families answer it with spatial coverage instead.
-       */
-      get dataCurrent(): boolean {
-        return this.fetchFlags.dataCurrent
-      },
-      /**
-       * #getter
-       * Off-screen SVG export gate: "Export SVG" waits on this before drawing
-       * (see the [SVG export guide](/docs/developer_guides/svg_export)) via the
-       * shared `awaitSvgReady`. The terms are in `comparativeFetchFlags`.
-       */
-      get svgReady() {
-        return this.fetchFlags.svgReady
-      },
-      /**
-       * #getter
        * The display's own mutually-exclusive state, the way every LGV display
        * publishes one — so `AppReadyMarker` counts this display's fetch, and the
        * app stops reporting itself ready over a ribbon that is still
@@ -557,16 +506,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * backend failure.
        */
       get displayPhase(): DisplayStatusPhase {
-        return comparativeDisplayPhase(
-          {
-            error: self.error,
-            fetchInert: this.fetchInert,
-            loading: this.loading,
-            refetching: this.refetching,
-            dataCurrent: this.dataCurrent,
-          },
-          this.parentHelper.surfaceReadiness,
-        )
+        return comparativeDisplayPhase(self, this.parentHelper.surfaceReadiness)
       },
       /**
        * #getter

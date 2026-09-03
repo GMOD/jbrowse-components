@@ -7,13 +7,12 @@ import { fetchMixinLifecycle } from './FetchMixin.ts'
 import { autorunOnReadyView } from './displayAutoruns.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 
-import type { FetchContext, FetchLifecycleHost } from './FetchMixin.ts'
+import type { FetchContext } from './FetchMixin.ts'
+import type { KeyedFetchHost } from './KeyedFetchMixin.ts'
 import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
-import type { StopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * This family's spelling of the shared three-phase contract. The rules live on
@@ -35,25 +34,12 @@ export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
   ) => Promise<TResult | RegionTooLargeResult | undefined>
 }
 
-// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves through
-// `STNValue<any, …>` to `any`, so extending it silently turns off checking for
-// every member below, and a host missing one of them would compile. See the note
-// on `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
-export interface GlobalFetchHost
-  extends IStateTreeNode, FetchLifecycleHost, GateCommitHost {
-  // `FetchMixin`'s, beside the begin/end/error trio `FetchLifecycleHost` above
-  // names: the rotation this family lends the fetch skeleton, so `cancelFetch`
-  // and `cancelFetchByUser` reach the fetch it installs rather than a second
-  // rotation they cannot see.
-  fetchRotation: StopTokenRotation
-  // `GlobalFetchMixin`'s freshness pair: the resolved signature of what the
-  // view, settings and adapter call for, captured at issue, and the commit that stamps
-  // it in the same transaction as the display's own store. The signature, not
-  // `dataCurrent`: that one also carries `dataSuperseded`, which holds the
-  // export and must not refetch.
-  currentFetchKey: string | undefined
-  commitFetchResult: (commit: () => void, signature: string) => void
-}
+// `KeyedFetchHost` is the rotation this family lends the skeleton, the
+// begin/end/error trio, and the freshness pair with the commit that stamps it —
+// the key, not `dataCurrent`: that one also carries `dataSuperseded`, which
+// holds the export and must not refetch. The byte gate's commit is this
+// family's own.
+export interface GlobalFetchHost extends KeyedFetchHost, GateCommitHost {}
 
 export interface GlobalFetchAutorunHost
   extends GlobalFetchHost, FetchSkeletonHost {
@@ -73,10 +59,9 @@ export interface GlobalFetchAutorunHost
   // `regionTooLarge` as a literal false, which makes it false too.
   isMinimized: boolean
   gateSkipsMeasuredViewport: boolean
-  // The committed side of the skeleton's freshness gate, and the verdict that
-  // outranks it: while the banner holds, the stamp reads as absent, because the
-  // banner is hiding that data and this fetch is the only re-measure.
-  loadedFetchKey: string | undefined
+  // The verdict that outranks the committed side of the skeleton's freshness
+  // gate: while the banner holds, the stamp reads as absent, because the banner
+  // is hiding that data and this fetch is the only re-measure.
   regionTooLarge: boolean
   // The hosting view, for the not-yet-initialized gate: view-derived getters
   // (`dynamicBlocks`, `width`) throw before init by design, so the signature

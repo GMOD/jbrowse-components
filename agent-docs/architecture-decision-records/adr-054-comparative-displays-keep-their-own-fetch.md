@@ -1,11 +1,18 @@
 ---
-status: Rejected
-summary: "The comparative displays don't compose `FetchMixin`; the third fetch shape is structural, and everything drift-prone they share with the LGV families is already shared as plain functions"
+status: Superseded
+summary: "The comparative displays don't compose `FetchMixin` — superseded by ADR-105, which composes them onto `KeyedFetchMixin` after every one of the four grounds below lapsed"
 ---
 
 # ADR-054: Comparative displays keep their own fetch; no `SignatureFetchMixin` on `FetchMixin`
 
 ## Status
+
+**Superseded by ADR-105** (2026-09). The `SignatureFetchMixin` this rejected
+exists as `KeyedFetchMixin`, and both comparative displays compose it through
+`ComparativeFetchMixin`; `SyntenyFetchStateMixin` and `comparativeFetchFlags`
+are gone. ADR-105 takes the four sections below in turn and says which
+observation each rested on stopped being true. The reasoning is retained as the
+decision as it was made.
 
 Rejected (2026-08). Retires a long-standing `TODO.md` entry; same genre as
 [ADR-042](adr-042-no-shared-assembly-swap-autorun-installer.md), which rejected a

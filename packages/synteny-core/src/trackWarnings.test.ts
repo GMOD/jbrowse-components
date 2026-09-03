@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { collectTrackWarnings } from './trackWarnings.ts'
 
-import type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
+import type { ComparativeWarning } from './ComparativeFetchMixin.ts'
 import type { WarningSource } from './trackWarnings.ts'
 
 const TrackConf = ConfigurationSchema('Track', {

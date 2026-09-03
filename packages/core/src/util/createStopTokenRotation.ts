@@ -25,9 +25,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export type StatusReporter =
   | {
       /**
-       * The host's own window, present on any display composing the LGV fetch
-       * mixins. The rotation reports through it rather than opening a SECOND on
-       * the same status field — which is what one-window-per-owner exists to
+       * The host's own window, present on any display composing `FetchMixin`.
+       * The rotation reports through it rather than opening a SECOND on the
+       * same status field — which is what one-window-per-owner exists to
        * prevent.
        */
       statusWindow: StatusWindow
@@ -35,10 +35,11 @@ export type StatusReporter =
     }
   | {
       /**
-       * The sink for the window the rotation opens for itself. This is the mode
-       * the displays this helper was written for are in (dotplot, synteny),
-       * which compose no fetch mixin, along with every
-       * {@link createStatusChannel} holder.
+       * The sink for the window the rotation opens for itself: the mode of a
+       * fetch on a host with no window of its own — the prerequisite reads,
+       * chord, the breakpoint overlay — along with every
+       * {@link createStatusChannel} holder. The comparative displays this
+       * helper was written for lend a window now (ADR-105).
        */
       setStatusMessage: (status?: RpcStatus) => void
       statusWindow?: never

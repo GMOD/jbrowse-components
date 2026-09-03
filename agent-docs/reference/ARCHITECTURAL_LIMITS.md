@@ -1310,7 +1310,7 @@ only on a real violation):
   check watches: it is `prepare()` returning `undefined`, which conflates
   "nothing to fetch" with "not ready yet", so a Retry clicked before either view
   initializes reads as a decline. The exemption half already exists as
-  `SyntenyFetchStateMixin.fetchInert`, and the seam for the other half exists
+  `FetchMixin.fetchInert`, and the seam for the other half exists
   too — `installFetch`'s separate `fetchKey` gate, written for exactly this
   split ("`prepare` returning `undefined` is *nothing to fetch* ... this is *I
   have exactly this already*"), which `installComparativeFetchAutorun` forwards

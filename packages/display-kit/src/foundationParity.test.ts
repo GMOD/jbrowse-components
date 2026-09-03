@@ -11,22 +11,28 @@
 // not — so this test reads both declarations and requires the bodies to agree.
 // `this` and `self` are the same node in an MST view; a getter reaching a
 // sibling declared in its own block has to say `this`.
+//
+// `dataSuperseded` is the one whose global-side copy sits a layer down, on
+// `KeyedFetchMixin` — the keyed half of the global family, split out so the
+// comparative foundation composes it too (ADR-105). Still one body against the
+// per-region copy, and still read here.
 
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-const foundations = {
+const files = {
   MultiRegionDisplayMixin: 'MultiRegionDisplayMixin.ts',
   GlobalFetchMixin: 'GlobalFetchMixin.ts',
+  KeyedFetchMixin: 'KeyedFetchMixin.ts',
 }
 
-const SHARED = [
-  'host',
-  'viewportEmpty',
-  'canRender',
-  'dataSuperseded',
-  'paintInert',
-  'svgReady',
+const SHARED: [string, keyof typeof files][] = [
+  ['host', 'GlobalFetchMixin'],
+  ['viewportEmpty', 'GlobalFetchMixin'],
+  ['canRender', 'GlobalFetchMixin'],
+  ['dataSuperseded', 'KeyedFetchMixin'],
+  ['paintInert', 'GlobalFetchMixin'],
+  ['svgReady', 'GlobalFetchMixin'],
 ]
 
 function bodyFrom(source: string, open: number) {
@@ -57,20 +63,26 @@ function getterBody(source: string, name: string) {
 }
 
 const sources = Object.fromEntries(
-  Object.entries(foundations).map(([name, file]) => [
+  Object.entries(files).map(([name, file]) => [
     name,
     readFileSync(path.join(__dirname, file), 'utf8'),
   ]),
+) as Record<keyof typeof files, string>
+
+test.each(SHARED)(
+  'both foundations declare %s over one body',
+  (name, globalSide) => {
+    expect(getterBody(sources[globalSide], name)).toBe(
+      getterBody(sources.MultiRegionDisplayMixin, name),
+    )
+  },
 )
 
-test.each(SHARED)('both foundations declare %s over one body', name => {
-  expect(getterBody(sources.GlobalFetchMixin!, name)).toBe(
-    getterBody(sources.MultiRegionDisplayMixin!, name),
-  )
-})
-
 test('both foundations map displayPhase through foundationDisplayPhase, differing only in the staleness argument', () => {
-  for (const source of Object.values(sources)) {
+  for (const source of [
+    sources.MultiRegionDisplayMixin,
+    sources.GlobalFetchMixin,
+  ]) {
     const body = getterBody(source, 'displayPhase')
     expect(body).toMatch(
       /^return foundationDisplayPhase\( self, \(\) => .*, \(\) => self\.host\.effectiveBodyMounted, \)$/,

@@ -1,15 +1,15 @@
 import { getSession } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { runInAction } from 'mobx'
+import { fetchMixinLifecycle } from '@jbrowse/display-kit/FetchMixin'
 
-import { comparativeFetchKey } from './comparativeFetchFlags.ts'
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
-import type { AssemblyManager, Region, RpcStatus } from '@jbrowse/core/util'
+import type { AssemblyManager, Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
+import type { KeyedFetchHost } from '@jbrowse/display-kit/KeyedFetchMixin'
 
 export interface ComparativeFetchContext extends FetchContext {
   adapterConfig: Record<string, unknown>
@@ -25,61 +25,45 @@ export interface ComparativeFetchContext extends FetchContext {
   assemblyManager: AssemblyManager
 }
 
-interface ComparativeFetchHost extends IStateTreeNode {
+/**
+ * `KeyedFetchHost` is the rotation this family lends the skeleton, the
+ * begin/end/error trio, and the freshness pair with the commit that stamps it;
+ * `FetchSkeletonHost` the counter, the durable cancel and the inert hook the
+ * skeleton reads above every gate. The adapter is what a `run` here is handed
+ * beside the context.
+ */
+interface ComparativeFetchHost extends KeyedFetchHost, FetchSkeletonHost {
   adapterConfig: Record<string, unknown>
-  /**
-   * The display's half of the freshness key — its view inputs as one computed
-   * string. Read tracked here, beside `adapterConfig`, through
-   * `comparativeFetchKey`; the display's own `prepare` reads nothing tracked
-   * but its gate.
-   */
-  currentFetchKey: string
-  /** `SyntenyFetchStateMixin`'s retry counter — the skeleton reads it */
-  reloadCounter: number
-  /**
-   * `SyntenyFetchStateMixin`'s: the key this installer stamps at commit, and
-   * what the skeleton's freshness gate compares a run's key against. The same
-   * stamp `comparativeFetchFlags.dataCurrent` reads, against the same
-   * `comparativeFetchKey`, so the two never disagree.
-   */
-  loadedFetchKey: string | undefined
-  setLoadedFetchKey: (key: string | undefined) => void
-  /** `SyntenyFetchStateMixin`'s durable user-cancel flag — the skeleton gates on it */
-  fetchCanceled: boolean
-  /**
-   * `SyntenyFetchStateMixin`'s: the states where this display's fetch autorun
-   * deliberately never runs, so a `prepare` declining in one of them is not the
-   * dead Retry the skeleton's contract check hunts for. Same name and same
-   * meaning as `FetchMixin.fetchInert` on the LGV side, which is what lets one
-   * check serve all three fetch families.
-   */
-  fetchInert: boolean
-  setError: (error?: unknown) => void
-  setFetching: (fetching: boolean) => void
-  setStatusMessage: (status?: RpcStatus) => void
-  /**
-   * Takes this installation's stop for `cancelFetchByUser` to call. The
-   * rotation is a closure inside `installFetch` rather than a member here, and
-   * a `fetchCanceled` the RPC outlives is not a cancel —
-   * `SyntenyFetchStateMixin.stopActiveFetch` has the whole argument.
-   */
-  setStopActiveFetch: (stop: () => void) => void
 }
 
 /** what `prepare` captures, beside the display's own args */
-interface ComparativeArgs<TArgs> {
+interface ComparativeIssue<TArgs> {
   args: TArgs
   key: string
   adapterConfig: Record<string, unknown>
 }
 
 /**
- * The comparative displays' (dotplot, synteny) spelling of the shared fetch
- * skeleton: `installFetch` owns the rotation, the leading-edge debounce, the
- * unconditional `reloadCounter` read, the durable cancel gate, the clear-at-start
- * rule and the latest-wins staleness discipline; this adds what is this family's
- * own — the `fetching` flag (ADR-054 keeps that split from `FetchMixin`'s
- * `activeStopToken`), and the richer context a `run` here is handed.
+ * The comparative displays' (dotplot, synteny) declaration over the shared
+ * fetch skeleton, the way `installGlobalFetchAutorun` is the LGV global
+ * family's: `installFetch` owns the leading-edge debounce, the unconditional
+ * `reloadCounter` read, the durable cancel gate, the freshness gate with its
+ * reload override, the clear-at-start rule, the latest-wins staleness
+ * discipline and both contract checks; `FetchMixin` lends its rotation, so
+ * `cancelFetchByUser` reaches the fetch this installs, and its begin/end/error
+ * bookkeeping; `KeyedFetchMixin` supplies the key and the commit that stamps
+ * it. What is this family's own is the richer context a `run` is handed — the
+ * adapter config and the refName rename — and one deliberate absence.
+ *
+ * **The absence is the viewport-change clear.** Both LGV installers lapse a
+ * user cancel when the view moves (`ClearBlockingStateOnViewportChange`,
+ * `ClearCancelOnViewportChange`), because their viewport is an observable
+ * separate from the fetch inputs. Here the viewport *is* the fetch input, so
+ * the same clear would un-cancel on every trigger — and these displays sit on
+ * single RPCs that can run for minutes against a remote index, where a cancel
+ * any pan quietly undoes is not a cancel and a retry that re-arms itself
+ * hammers the server that just failed. The gate holds until `reload()`, which
+ * is the overlay's Retry button and nothing else.
  *
  * The three phases are {@link FetchPhases}, the same contract the LGV global
  * family runs on, over this family's own context. The rules are there.
@@ -96,21 +80,14 @@ interface ComparativeArgs<TArgs> {
  * "`rpcProps()` must never return fetch-derived state", and nothing checks
  * either one.
  *
- * **The freshness key is `comparativeFetchKey`, read here and stamped here.**
- * The display's `currentFetchKey` and its `adapterConfig` are both read in
- * `prepare`, tracked, so an adapter edited in the config editor refetches the
- * way a zoom does (`run`'s reads are untracked by contract). The commit stamps
- * that same key onto the mixin's `loadedFetchKey`, in the same transaction as
- * the display's own store, and `comparativeFetchFlags.dataCurrent` compares
- * against it with the same function — one key, one stamp, so the gate and the
+ * **The freshness key is `currentFetchKey`, read here and stamped here.** The
+ * display's `viewSignature` plus the settings and adapter axes, read tracked in
+ * `prepare` (so an adapter edited in the config editor refetches the way a zoom
+ * does; `run`'s reads are untracked by contract), stamped onto `loadedFetchKey`
+ * by `commitFetchResult` in the same transaction as the display's own store,
+ * and compared by `dataCurrent` — one key, one stamp, so the fetch gate and the
  * export gate cannot disagree on which axes a fetch has. A display's `prepare`
  * and `commit` never see the key.
- *
- * This family's cancel is durable until Retry, where the two LGV families' also
- * lapse on a viewport change: their viewport is an observable separate from the
- * fetch inputs, and here it *is* the fetch input, so the same clear would
- * un-cancel on every trigger — which is the durability this consolidation
- * rejected.
  */
 export function installComparativeFetchAutorun<TArgs, TResult>(
   self: ComparativeFetchHost,
@@ -125,22 +102,24 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     delay: number
   },
 ) {
-  const cancel = installFetch<ComparativeArgs<TArgs>, TResult>(self, {
+  installFetch<ComparativeIssue<TArgs>, TResult>(self, {
     name,
     delay,
-    report: self,
+    rotation: self.fetchRotation,
     contract: `${name}'s installComparativeFetchAutorun`,
     fetchKey: ({ key }) => key,
     loadedKey: () => self.loadedFetchKey,
+    // The display's `prepare` first, the key second: both displays gate on
+    // the view being initialized inside `prepare`, and their `viewSignature`
+    // reads view geometry that throws before it is — so the key is read only
+    // once the gate is open, where the global family reads it first because
+    // its `viewSignature` answers `undefined` for the same state.
     prepare: () => {
       const args = prepare()
-      return args === undefined
+      const key = args === undefined ? undefined : self.currentFetchKey
+      return args === undefined || key === undefined
         ? undefined
-        : {
-            args,
-            key: comparativeFetchKey(self),
-            adapterConfig: self.adapterConfig,
-          }
+        : { args, key, adapterConfig: self.adapterConfig }
     },
     run: ({ args, adapterConfig }, ctx) => {
       const sessionId = getRpcSessionId(self)
@@ -159,29 +138,10 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
       })
     },
     commit: (result, { args, key }) => {
-      runInAction(() => {
+      self.commitFetchResult(() => {
         commit(result, args)
-        self.setLoadedFetchKey(key)
-      })
+      }, key)
     },
-    setError: error => {
-      self.setError(error)
-    },
-    onBegin: () => {
-      self.setFetching(true)
-    },
-    onEnd: current => {
-      // under the staleness guard: a superseded run must not clear the flag the
-      // run that replaced it just set
-      if (current) {
-        self.setFetching(false)
-      }
-    },
-  })
-  // The user-facing cancel, handed to the model because the rotation is the
-  // skeleton's. Wrapped rather than passed by reference so `cancel` can never
-  // be called with arguments it does not declare today.
-  self.setStopActiveFetch(() => {
-    cancel()
+    ...fetchMixinLifecycle(self),
   })
 }

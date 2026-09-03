@@ -198,7 +198,7 @@ try {
   await page.waitForFunction(
     () =>
       (window as any).JBrowseSession.views[0].dotplotDisplays.every(
-        (d: any) => d.dataCurrent && !d.fetching,
+        (d: any) => d.dataCurrent && !d.isLoading,
       ),
     { timeout: 90000, polling: 250 },
   )

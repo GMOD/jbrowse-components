@@ -642,6 +642,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../display-kit
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../display-ui

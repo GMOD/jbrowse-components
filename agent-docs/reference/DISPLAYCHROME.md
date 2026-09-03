@@ -575,7 +575,7 @@ They render their own banner, and `ErrorBanner`'s `onReset` is optional and
 silently draws no button without it, so a dotplot GPU error, a dotplot fetch
 error and a synteny fetch error each rendered a banner whose only remedy was
 reloading the tab. Both halves are wired now: `retry()` from
-`useRenderingBackend` for the backend, `reload()` on `SyntenyFetchStateMixin` for
+`useRenderingBackend` for the backend, `reload()` on `FetchMixin` for
 the fetch. `reload()` hit the same trap the LGV family did — clearing the error
 is not enough, because after a failure every fetch input is unchanged, so
 `prepare()` recomputes the same key and nothing refires. It bumps a

@@ -18,8 +18,8 @@ import type { ReactNode } from 'react'
 // missing provider.
 
 // The buttons' wiring is on every model this component takes
-// (`SyntenyFetchStateMixin` gives both displays all three members), so it is
-// defaulted here and each test overrides only the one it drives.
+// (`FetchMixin` gives both displays all three members), so it is defaulted
+// here and each test overrides only the one it drives.
 const idle: ComparativeStatusModel = {
   loading: false,
   refetching: false,
@@ -81,7 +81,7 @@ test('with no provider it keeps JBrowse its own Material look', async () => {
 
 test('a refetch draws the background chip rather than the scrim', async () => {
   // `loading` and `refetching` are different questions on
-  // `SyntenyFetchStateMixin` — a refetch has drawn content underneath it, so it
+  // `ComparativeFetchMixin` — a refetch has drawn content underneath it, so it
   // reports through the corner rather than covering the canvas.
   const { findByTestId, queryByTestId } = renderIn(
     children => <DisplayUIProvider>{children}</DisplayUIProvider>,

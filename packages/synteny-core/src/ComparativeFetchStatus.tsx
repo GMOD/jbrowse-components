@@ -10,16 +10,16 @@ import { observer } from 'mobx-react'
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 
 /**
- * What the shared status reads. The getters are `SyntenyFetchStateMixin`'s
+ * What the shared status reads. The getters are `ComparativeFetchMixin`'s
  * vocabulary (see there for why `loading` and `refetching` are different
  * questions), plus the status channel every display reports progress through.
  *
  * The last three are the overlay's two buttons, and they are **required** where
  * `DisplayLoadingOverlayModel` has them optional: that interface is written for
  * any display anywhere, while both models this one describes compose
- * `SyntenyFetchStateMixin` and so have all three. Optional here would let a
- * display lose its Cancel and its Retry by composing the wrong thing, and the
- * only symptom is a button nobody can find.
+ * `FetchMixin` and so have all three. Optional here would let a display lose
+ * its Cancel and its Retry by composing the wrong thing, and the only symptom
+ * is a button nobody can find.
  */
 export interface ComparativeStatusModel {
   loading: boolean
@@ -97,8 +97,8 @@ const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
  * elapses. Same rule the LGV chrome's overlay set carries. The chip has no such
  * timer and is mounted conditionally.
  *
- * `immediate` because `loading` is `!ready` — always a first load, with nothing
- * on screen for the indicator to flash over.
+ * `immediate` because `loading` is `!fetchLanded` — always a first load, with
+ * nothing on screen for the indicator to flash over.
  *
  * **The error banner is deliberately not here.** Dotplot raises one per display;
  * synteny stacks every display's error together with the level's GPU error into

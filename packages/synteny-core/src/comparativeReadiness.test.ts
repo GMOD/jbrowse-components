@@ -5,8 +5,7 @@ import { displaysSettled } from './comparativeReadiness.ts'
 // display is never done, and a display that will never fetch does not hold the
 // whole view un-done on account of data that is not coming.
 const busy = {
-  loading: false,
-  refetching: false,
+  isLoadingOrCanceled: false,
   dataCurrent: true,
   fetchInert: false,
 }
@@ -22,24 +21,26 @@ describe('displaysSettled', () => {
     expect(displaysSettled([busy, busy])).toBe(true)
   })
 
-  it('is false during a first load', () => {
-    expect(
-      displaysSettled([busy, { ...busy, loading: true, dataCurrent: false }]),
-    ).toBe(false)
-  })
-
-  it('is false during a refetch over stale content', () => {
+  it('is false while a fetch is in flight', () => {
     expect(
       displaysSettled([
         busy,
-        { ...busy, refetching: true, dataCurrent: false },
+        { ...busy, isLoadingOrCanceled: true, dataCurrent: false },
       ]),
+    ).toBe(false)
+  })
+
+  it('is false over a load the user canceled', () => {
+    // durable until Retry, and a capture presses nothing — the same reason an
+    // error holds this gate shut below
+    expect(
+      displaysSettled([busy, { ...busy, isLoadingOrCanceled: true }]),
     ).toBe(false)
   })
 
   it('is false in the pre-refetch debounce gap', () => {
     // nothing in flight yet, but the held data no longer matches the viewport —
-    // the state loading/refetching alone cannot see
+    // the state the loading flag alone cannot see
     expect(displaysSettled([{ ...busy, dataCurrent: false }])).toBe(false)
   })
 
@@ -52,8 +53,7 @@ describe('displaysSettled', () => {
       displaysSettled([
         busy,
         {
-          loading: false,
-          refetching: false,
+          isLoadingOrCanceled: false,
           dataCurrent: false,
           fetchInert: true,
         },

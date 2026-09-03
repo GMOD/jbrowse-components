@@ -121,8 +121,8 @@ export function fetchMixinLifecycle(self: FetchLifecycleHost) {
 // re-evaluate after a fetch completes; isLoading is not used as a dependency to
 // avoid an extra fire on fetch start.
 //
-// Composed by both per-region (MultiRegionDisplayMixin) and single-data
-// (GlobalFetchMixin) families.
+// Composed by the per-region family (MultiRegionDisplayMixin) directly, and
+// by the global and comparative families through KeyedFetchMixin.
 /**
  * #stateModel FetchMixin
  * #category display
@@ -155,9 +155,9 @@ export default function FetchMixin() {
        * an error every other fetch input is unchanged. It is also the half
        * that survives a `reload()` override that forgets to invalidate, which
        * is the dead Retry button `makeRetryContractCheck` reports. Declared
-       * here because this is the one mixin both LGV fetch foundations compose,
+       * here because this is the one mixin every fetch foundation composes,
        * the same argument that put `fetchInert` below; the comparative family
-       * carries its own on `SyntenyFetchStateMixin` (ADR-054).
+       * carried its own until ADR-105.
        */
       reloadCounter: 0,
 
@@ -226,7 +226,7 @@ export default function FetchMixin() {
        * token. A display's *primary* fetch is this wrapper; a second concurrent
        * fetch on the same node holds a rotation of its own, which is why the
        * primitive is the thing that exists and this is the thing built on it
-       * (ADR-054 §1).
+       * (ADR-054 §1, the one section ADR-105 keeps).
        *
        * It is lent this display's `statusWindow`, so the fetch takes a slot on
        * the one field rather than opening a second window over it — the whole
@@ -289,9 +289,10 @@ export default function FetchMixin() {
        * family, which had already collapsed them. Both LGV displays that
        * override it returned one expression for all three, and one of the three
        * was hard-coded `false` on the global family for a while, which is how
-       * LD came to be able to express only half its own state. Same name and
-       * same meaning as `SyntenyFetchStateMixin.fetchInert` now, so the retry
-       * check reads one field across all three fetch families. ADR-082.
+       * LD came to be able to express only half its own state. One
+       * declaration for all three fetch families since the comparative one
+       * composed this mixin (ADR-105), so the retry check reads one field
+       * everywhere. ADR-082.
        *
        * A hook rather than a `displayPhase` override, because overriding the
        * getter means restating the whole loading condition — which is how

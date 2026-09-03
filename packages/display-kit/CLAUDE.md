@@ -11,10 +11,14 @@ that plugin.
 (autoruns, `fetchRegions`, `loadedRegions`, overridable hooks). Status chrome is
 `DisplayChrome.tsx` — `agent-docs/reference/DISPLAYCHROME.md`, adr-026.
 
-**Two foundations, not three.** `GlobalFetchMixin` is the whole global family
-now; `GlobalDataDisplayMixin` was deleted on 2026-08-23 and the reason it
+**Two LGV foundations, not three.** `GlobalFetchMixin` is the whole global
+family now; `GlobalDataDisplayMixin` was deleted on 2026-08-23 and the reason it
 existed — arc declining `RenderLifecycleMixin` — is in ARCHITECTURE.md's
 "Display stacks". `installGlobalFetchAutorun` lives in its own file beside it.
+`KeyedFetchMixin` is a layer under it, not a foundation: `FetchMixin` plus the
+`currentFetchKey` / `loadedFetchKey` compare, split out on 2026-09 so the
+comparative foundation (`ComparativeFetchMixin`, `@jbrowse/synteny-core`)
+composes the same pair instead of restating it (ADR-105).
 
 **The fetch sequence itself is in core**, not here: `runFetchOnce` /
 `installFetch` (`@jbrowse/core/util/installFetch`) own begin → clear the error →
@@ -72,10 +76,10 @@ the jest gate through `console.error`, so a harness replacing it opts itself
 out; a test provoking a violation calls `takeContractReports()`.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
-`SyntenyFetchStateMixin`, on `ChordVariantDisplay` and on the breakpoint split
-view too, for the fetches that compose no mixin in common with these — declared
-once per family and read off the node, not options an installer passes in,
-because they describe the display rather than its autorun.
+`ChordVariantDisplay` and on the breakpoint split view too, the two fetches that
+compose no mixin in common with these — declared once and read off the node, not
+options an installer passes in, because they describe the display rather than
+its autorun.
 
 **A user cancel is durable, and the skeleton owns how durable.** No fetch
 trigger un-cancels it: every installer reads `fetchCanceled` tracked, under
@@ -204,10 +208,10 @@ now would use. The global family gets that answer from the signature, where
 every fetch input is a term (the compare inside `dataCurrent`, which is also its
 fetch gate); synteny and dotplot from theirs.
 
-`dataSuperseded` (default `false`, declared on both LGV foundations and folded
-into `dataCurrent` and never into the fetch gate) is the remainder — staleness a
-key is structurally blind to. Three shapes in the tree, and all are invisible on
-screen, which is exactly why they need stating.
+`dataSuperseded` (default `false`, declared on `MultiRegionDisplayMixin` and
+`KeyedFetchMixin` and folded into `dataCurrent` and never into the fetch gate)
+is the remainder — staleness a key is structurally blind to. Three shapes in the
+tree, and all are invisible on screen, which is exactly why they need stating.
 
 **A fetch input written from the data it fetched.** GWAS's LD auto-index is the
 case: the autorun adopts the loaded top hit as `indexSnp`, which is in

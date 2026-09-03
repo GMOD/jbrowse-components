@@ -43,7 +43,7 @@ export interface FetchLifecycle {
   /**
    * Runs synchronously as the fetch starts, after the rotation has superseded
    * whatever it replaced: the loading flag (`FetchMixin`'s `activeStopToken`,
-   * the comparative family's `fetching`), and anything a display blanks
+   * through `fetchMixinLifecycle`), and anything a display blanks
    * because it has no freshness signature to keep stale data honest with
    * (chord's refName map).
    *
@@ -215,10 +215,10 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    */
   fetchKey?: (args: TArgs) => string
   /**
-   * The key of the data already committed, when the host keeps one — the
-   * comparative displays stamp `loadedFetchKey`, which their `dataCurrent`
-   * flag reads too, so a second stamp would be one more thing to disagree with
-   * it. Omitted, the skeleton stamps its own at commit.
+   * The key of the data already committed, when the host keeps one —
+   * `KeyedFetchMixin` stamps `loadedFetchKey`, which its `dataCurrent` reads
+   * too, so a second stamp would be one more thing to disagree with it.
+   * Omitted, the skeleton stamps its own at commit.
    *
    * **Either way the stamp is observable**, and the read is tracked. Zoom A→B
    * issues a fetch for B; zoom back to A before B commits and the re-run
@@ -312,12 +312,13 @@ function ownRotation(self: IStateTreeNode, report: StatusReporter) {
  * unconditional trigger reads, the gates, and {@link runFetchOnce} under them.
  *
  * Every fetch in the tree is this shape except one family — the prerequisite
- * reads (HiC's header, the multi-sample sample list), the LGV global family
- * (`installGlobalFetchAutorun`, which lends `FetchMixin`'s rotation through the
- * `rotation` option so `cancelFetch` reaches the fetch it installs), both
- * comparative displays, the circular view's chord fetch, the breakpoint overlay
- * fetch and the multi-way synteny display's two DEPENDENT fetches (lane genes,
- * lane links, each gated on the key its own commit stamps) all take it. The
+ * reads (HiC's header, the multi-sample sample list), the two keyed families
+ * (`installGlobalFetchAutorun` and `installComparativeFetchAutorun`, which lend
+ * `FetchMixin`'s rotation through the `rotation` option so `cancelFetch` and
+ * the Cancel button reach the fetch they install), the circular view's chord
+ * fetch, the breakpoint overlay fetch and the multi-way synteny display's two
+ * DEPENDENT fetches (lane genes, lane links, each gated on the key its own
+ * commit stamps) all take it. The
  * exception is the per-region family's `FetchMixin.runFetch`: its trigger is
  * `planRegionFetch`'s autorun and its commits stream per region through
  * `ctx.commitRegion`, so it holds `runFetchOnce` directly and the autorun above
@@ -326,10 +327,6 @@ function ownRotation(self: IStateTreeNode, report: StatusReporter) {
  * What a caller supplies is exactly what differs between them: which reads wake
  * it (`prepare`, plus `gate`), what a round trip commits, where the loading
  * flag lives (`onBegin` / `onEnd`) and where the status goes (`report`).
- *
- * Returns the rotation's `cancel`, for a family whose model owns the user-facing
- * Cancel button: the flag alone is not a cancel — nothing rotates the token, the
- * stopped RPC stays current, and it commits over the load the user just stopped.
  */
 export function installFetch<TArgs, TResult>(
   self: FetchSkeletonHost,
@@ -450,6 +447,4 @@ export function installFetch<TArgs, TResult>(
     // #endregion
     { name, delay },
   )
-
-  return rotation.cancel
 }

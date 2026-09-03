@@ -23,8 +23,7 @@ const painted: ComparativeSurface = {
 const done = {
   error: undefined,
   fetchInert: false,
-  loading: false,
-  refetching: false,
+  isLoadingOrCanceled: false,
   dataCurrent: true,
 }
 
@@ -33,25 +32,24 @@ describe('comparativeDisplayPhase', () => {
     expect(comparativeDisplayPhase(done, painted)).toBe('ready')
   })
 
-  it('is loading on a first fetch', () => {
+  it('is loading while a fetch is in flight', () => {
     expect(
       comparativeDisplayPhase(
-        { ...done, loading: true, dataCurrent: false },
+        { ...done, isLoadingOrCanceled: true, dataCurrent: false },
         painted,
       ),
     ).toBe('loading')
   })
 
-  it('is loading through a refetch over stale content', () => {
+  // a cancel keeps the overlay, and with it the Retry button, the way the LGV
+  // families do through the same `computeLoadingTerm` input
+  it('is loading over a load the user canceled', () => {
     expect(
-      comparativeDisplayPhase(
-        { ...done, refetching: true, dataCurrent: false },
-        painted,
-      ),
+      comparativeDisplayPhase({ ...done, isLoadingOrCanceled: true }, painted),
     ).toBe('loading')
   })
 
-  // the state loading/refetching alone cannot see: the debounce gap after a
+  // the state the loading flag alone cannot see: the debounce gap after a
   // region or zoom change, where nothing is in flight and the held ribbons are
   // already stale
   it('is loading in the pre-refetch debounce gap', () => {
@@ -103,7 +101,7 @@ describe('comparativeDisplayPhase', () => {
     it('is still loading while its fetch is in flight', () => {
       expect(
         comparativeDisplayPhase(
-          { ...done, loading: true, dataCurrent: false },
+          { ...done, isLoadingOrCanceled: true, dataCurrent: false },
           unmounted,
         ),
       ).toBe('loading')
@@ -208,7 +206,7 @@ describe('comparativeSurfacePhase', () => {
   })
 
   it('takes the loudest phase its displays report', () => {
-    const busy = { ...done, loading: true, dataCurrent: false }
+    const busy = { ...done, isLoadingOrCanceled: true, dataCurrent: false }
     const failed = { ...done, error: new Error('nope'), dataCurrent: false }
     expect(comparativeSurfacePhase(painted, [done, busy])).toBe('loading')
     expect(comparativeSurfacePhase(painted, [done, failed])).toBe('error')
@@ -227,7 +225,7 @@ describe('comparativeSurfacePhase', () => {
     expect(comparativeDisplayPhase(done, lost)).toBe('error')
     expect(comparativeSurfacePhase(lost, [done])).toBe('error')
     // outranks a fetch that is still running, and does not read as loading
-    const busy = { ...done, loading: true, dataCurrent: false }
+    const busy = { ...done, isLoadingOrCanceled: true, dataCurrent: false }
     expect(comparativeSurfacePhase(lost, [busy])).toBe('error')
     // ...and an empty surface answers it too, where there is no display to ask
     expect(comparativeSurfacePhase(lost, [])).toBe('error')

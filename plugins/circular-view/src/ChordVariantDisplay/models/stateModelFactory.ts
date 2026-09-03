@@ -112,9 +112,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * Same name and same meaning as `FetchMixin.fetchInert` and
-       * `SyntenyFetchStateMixin.fetchInert`, on a display that composes
-       * neither: the fetch autorun deliberately never runs while the view holds
+       * Same name and same meaning as `FetchMixin.fetchInert`, on a display
+       * that does not compose it: the fetch autorun deliberately never runs while the view holds
        * no displayed regions, and the view menu offers its track selector from
        * the import form — so a track opened there rests forever in "fetch not
        * started". Two readers, which is why it is one name: the SVG export

@@ -87,14 +87,14 @@ test('the scan finds the reload declarations it is about', () => {
   // The files, not the line numbers, which move under every edit. The two fetch
   // foundations and the display that overrides one of them are what the rule
   // exists for; canvas is the one it was written against. (The global family's
-  // displays no longer appear: GlobalFetchMixin.reload owns their signature
-  // invalidation; and the variants sources fetch reads `reloadCounter`
+  // displays no longer appear: KeyedFetchMixin.reload owns their key
+  // invalidation, for the comparative displays too; and the variants sources fetch reads `reloadCounter`
   // directly through the shared fetch skeleton, so its override is gone too.)
   const files = declarations.map(d => d.where.split(':')[0])
   for (const expected of [
     'packages/display-kit/src/FetchMixin.ts',
     'packages/display-kit/src/MultiRegionDisplayMixin.ts',
-    'packages/display-kit/src/GlobalFetchMixin.ts',
+    'packages/display-kit/src/KeyedFetchMixin.ts',
     'plugins/canvas/src/LinearBasicDisplay/baseModel.ts',
     'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
   ]) {

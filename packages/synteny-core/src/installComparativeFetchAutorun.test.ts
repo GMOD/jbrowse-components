@@ -14,14 +14,14 @@
 // is synchronous and unreachable unless the fetch is still current.
 
 import { isStopped } from '@jbrowse/core/util'
+import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { SyntenyFetchStateMixin } from './SyntenyFetchStateMixin.ts'
-import { comparativeFetchKey } from './comparativeFetchFlags.ts'
+import { ComparativeFetchMixin } from './ComparativeFetchMixin.ts'
 import { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 
 import type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
-import type { RpcStatus, StopToken } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -36,14 +36,12 @@ function deferred<T>() {
   return { promise, resolve, reject }
 }
 
-// Everything the skeleton wants that a real display gets from `BaseDisplay` —
-// the status members, plus this test's stand-ins for the fetch inputs.
+// This test's stand-ins for the fetch inputs; the status members and the
+// fetch state are the mixin's own.
 const TestDisplayBase = types
   .model('TestDisplayBase', { id: types.optional(types.identifier, 'd1') })
   .volatile(() => ({
-    error: undefined as unknown,
-    statusMessage: undefined as RpcStatus | undefined,
-    // the view input behind `currentFetchKey` below. Observable, so changing
+    // the view input behind `viewSignature` below. Observable, so changing
     // it refires the autorun the way a zoom does.
     viewKey: 'k1',
     // read inside `untracked` by prepare below, so it must NOT refire anything
@@ -52,12 +50,6 @@ const TestDisplayBase = types
     adapterType: 'TestAdapter',
   }))
   .actions(self => ({
-    setError(error?: unknown) {
-      self.error = error
-    },
-    setStatusMessage(status?: RpcStatus) {
-      self.statusMessage = status
-    },
     setViewKey(key: string) {
       self.viewKey = key
     },
@@ -72,22 +64,28 @@ const TestDisplayBase = types
     },
   }))
 
-// The real `SyntenyFetchStateMixin`, composed in the order both displays
-// compose it — after the model carrying `BaseDisplay`'s status members — rather
-// than hand-rolled volatiles. `fetching`, `reloadCounter`, `fetchCanceled`,
-// `reload()` and `cancelFetchByUser()` are the mixin's, so the retry and cancel
-// tests below drive the same two actions the overlay's buttons do, against the
-// gate the skeleton actually installs. The pair is only meaningful together:
-// the mixin holds the state and the skeleton holds the stop.
+// The real `ComparativeFetchMixin`, composed the way both displays compose it,
+// rather than hand-rolled volatiles. `isLoading`, `reloadCounter`,
+// `fetchCanceled`, `reload()` and `cancelFetchByUser()` are `FetchMixin`'s, so
+// the retry and cancel tests below drive the same two actions the overlay's
+// buttons do, against the gate the skeleton actually installs — and the
+// rotation the cancel stops is the one the skeleton was lent.
 const TestDisplay = types
-  .compose('TestDisplay', TestDisplayBase, SyntenyFetchStateMixin())
+  .compose('TestDisplay', TestDisplayBase, ComparativeFetchMixin())
   .views(self => ({
     get adapterConfig() {
       return { type: self.adapterType }
     },
-    // the display's half of the freshness key, which the installer reads
-    // tracked beside `adapterConfig`
-    get currentFetchKey() {
+    // the display's half of the freshness key; `currentFetchKey` appends the
+    // settings and adapter axes, which is how the installer tracks the adapter.
+    // It THROWS while gated, the way both real displays' signatures throw on
+    // view geometry before the view is initialized: the installer has to read
+    // `prepare` first and the key only once the gate is open, or the first
+    // autorun run of every dotplot dies in a reaction error.
+    get viewSignature() {
+      if (self.gated) {
+        throw new Error('width not initialized')
+      }
       return self.viewKey
     },
     // overrides the mixin's default-false hook, which the retry check the
@@ -99,12 +97,11 @@ const TestDisplay = types
     },
   }))
 
-// the whole key the installer gates on and stamps, for a given view input
+// the whole key the installer gates on and stamps, for a given view input:
+// `KeyedFetchMixin.currentFetchKey`'s three axes, the settings one empty
+// because this display declares no `rpcProps`
 function keyFor(viewKey: string, adapterType = 'TestAdapter') {
-  return comparativeFetchKey({
-    currentFetchKey: viewKey,
-    adapterConfig: { type: adapterType },
-  })
+  return `${viewKey}||${adapterConfigKey({ type: adapterType })}`
 }
 
 // isSessionModel duck-types on rpcManager + configuration; that plus
@@ -181,7 +178,7 @@ describe('installComparativeFetchAutorun', () => {
       run: () => new Promise(() => {}),
     })
     expect(prepared).toHaveLength(1)
-    expect(display.fetching).toBe(true)
+    expect(display.isLoading).toBe(true)
   })
 
   it('commits the result and clears the loading flags', async () => {
@@ -190,7 +187,7 @@ describe('installComparativeFetchAutorun', () => {
     })
     await settle()
     expect(committed).toEqual([{ result: 'r1', args: { geometry: 0 } }])
-    expect(display.fetching).toBe(false)
+    expect(display.isLoading).toBe(false)
     expect(display.statusMessage).toBeUndefined()
   })
 
@@ -201,7 +198,7 @@ describe('installComparativeFetchAutorun', () => {
     })
     expect(prepared).toHaveLength(0)
     // no flags touched, so a declined run can't strand the overlay
-    expect(display.fetching).toBe(false)
+    expect(display.isLoading).toBe(false)
   })
 
   it('re-runs when an observable prepare read changes, and not on an untracked one', async () => {
@@ -303,11 +300,11 @@ describe('installComparativeFetchAutorun', () => {
       // fetch B is still in flight; A resolving late must leave fetching true
       gates[0]!.resolve('first')
       await settle()
-      expect(display.fetching).toBe(true)
+      expect(display.isLoading).toBe(true)
 
       gates[1]!.resolve('second')
       await settle()
-      expect(display.fetching).toBe(false)
+      expect(display.isLoading).toBe(false)
     })
 
     it('does not let a superseded fetch raise its error', async () => {
@@ -333,7 +330,7 @@ describe('installComparativeFetchAutorun', () => {
     })
     await settle()
     expect(display.error).toEqual(new Error('boom'))
-    expect(display.fetching).toBe(false)
+    expect(display.isLoading).toBe(false)
     spy.mockRestore()
   })
 
@@ -344,9 +341,9 @@ describe('installComparativeFetchAutorun', () => {
     })
     await settle()
     // an abort is the one exit neither the commit nor the error path covers;
-    // without the finally it strands `fetching` true forever
+    // without the finally it strands `isLoading` true forever
     expect(display.error).toBeUndefined()
-    expect(display.fetching).toBe(false)
+    expect(display.isLoading).toBe(false)
     expect(spy).not.toHaveBeenCalled()
     spy.mockRestore()
   })
@@ -374,7 +371,7 @@ describe('installComparativeFetchAutorun', () => {
 // `SyntenyGetFeaturesAndPositions` there is a redundant round trip on the most
 // expensive fetch in the product — with the corner spinner over data that is
 // already right. The compare is against the mixin's `loadedFetchKey`, the stamp
-// `comparativeFetchFlags.dataCurrent` reads, so the two gates cannot disagree.
+// `dataCurrent` reads, so the two gates cannot disagree.
 test('a gate flip over unchanged inputs re-runs nothing', async () => {
   const { display, prepared, committed } = await setup({
     run: () => Promise.resolve('r1'),
@@ -391,12 +388,11 @@ test('a gate flip over unchanged inputs re-runs nothing', async () => {
   expect(committed).toHaveLength(1)
 })
 
-// Neither display's `currentFetchKey` carries an adapter term, so
-// `comparativeFetchKey` adds one. Gate on the display's key alone and an
-// adapter edited in the config editor wakes the autorun straight into a
-// decline: the editor silently stops refetching. And the stamp carries the same
-// axis, so `dataCurrent` cannot call the plot fetched against the old adapter
-// current.
+// Neither display's `viewSignature` carries an adapter term, so
+// `currentFetchKey` adds one. Gate on the display's half alone and an adapter
+// edited in the config editor wakes the autorun straight into a decline: the
+// editor silently stops refetching. And the stamp carries the same axis, so
+// `dataCurrent` cannot call the plot fetched against the old adapter current.
 test('an adapter edit refetches over an unchanged display key', async () => {
   const { display, committed } = await setup({
     run: () => Promise.resolve('r1'),
@@ -501,7 +497,7 @@ describe('the user cancel', () => {
         return gate.promise
       },
     })
-    expect(display.fetching).toBe(true)
+    expect(display.isLoading).toBe(true)
 
     display.cancelFetchByUser()
 
@@ -509,9 +505,10 @@ describe('the user cancel', () => {
     // the only thing that stops the reads still in flight
     expect(isStopped(stopToken)).toBe(true)
     expect(display.fetchCanceled).toBe(true)
-    // the run's `finally` writes `fetching` only while its own guard is open,
-    // and the cancel closed it — so nothing but the cancel itself ever will
-    expect(display.fetching).toBe(false)
+    // the run's `finally` writes `isLoading` only while its own guard is
+    // open, and the cancel closed it — so nothing but the cancel itself ever
+    // will
+    expect(display.isLoading).toBe(false)
 
     // and the display's half: a fetch the user stopped watching must not
     // commit when it lands. Without the stop above it still would — nothing
@@ -520,7 +517,7 @@ describe('the user cancel', () => {
     gate.resolve('late')
     await settle()
     expect(committed).toEqual([])
-    expect(display.fetching).toBe(false)
+    expect(display.isLoading).toBe(false)
   })
 
   it('is durable: an input change does not restart the load', async () => {

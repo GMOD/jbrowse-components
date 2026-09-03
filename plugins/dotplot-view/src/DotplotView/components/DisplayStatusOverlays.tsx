@@ -36,7 +36,7 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
       {model.dotplotDisplays.map(display => (
         <div key={display.id}>
           {display.error ? (
-            // `onReset` is the display's own `reload()` (SyntenyFetchStateMixin),
+            // `onReset` is the display's own `reload()` (FetchMixin's),
             // not a page refresh: a PAF/adapter failure here used to render a
             // banner with no button at all, so the only way out was reloading the
             // tab. See DISPLAYCHROME.md §"The retry contract".

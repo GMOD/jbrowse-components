@@ -93,8 +93,9 @@ interface RetryContractHost {
   reloadCounter: number
   fetchInert: boolean
   /**
-   * Optional: the comparative family has no two-stage fetch, so nothing there
-   * declares it. A family that grows one declares it and gets the deferral.
+   * Optional: chord and the breakpoint overlay have no two-stage fetch, so
+   * neither declares it. A fetch that grows one declares it and gets the
+   * deferral.
    */
   awaitingPrerequisite?: boolean
   /**

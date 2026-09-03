@@ -16,52 +16,57 @@ The rules here generalize past these two views. Any container that owns a canvas
 several children draw on — a future stacked view, a multi-track overlay — hits
 the keying, empty-frame and readiness sections unchanged.
 
-## The third shape: displays that own their fetch
-
-Folding them onto `FetchMixin` was proposed and rejected in
-[ADR-054](../architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md),
-which is the thing to read before re-proposing it. This is deliberate, not a
-migration nobody finished.
+## The third shape: a keyed fetch onto a canvas the view owns
 
 Both comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
-`BaseDisplay` + `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their
-fetch in a bare autorun. Neither gets `FetchMixin`'s cancel/stale machinery,
-`RegionTooLargeMixin` or `loadedRegions`; instead the pieces are shared à la
-carte:
+`BaseDisplay` + `ComparativeFetchMixin` (`@jbrowse/synteny-core`), which is
+`KeyedFetchMixin` (`@jbrowse/display-kit`) — `FetchMixin` plus the
+`currentFetchKey` / `loadedFetchKey` compare the LGV global family runs on —
+under the two-way loading answer a shared canvas wants. Until 2026-09 they
+composed `SyntenyFetchStateMixin` instead, a second spelling of every
+`FetchMixin` member the overlay reads;
+[ADR-054](../architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
+kept that split and
+[ADR-105](../architecture-decision-records/adr-105-the-comparative-displays-compose-fetchmixin.md)
+records how each of its four grounds lapsed. What the family gets from the
+shared mixins, and what stays its own:
 
-- `SyntenyFetchStateMixin` holds `fetching` / `loadedFetchKey` /
-  `assembliesSwapped` plus the overridable `fetchInert` hook (see
-  [SVG_EXPORT.md](SVG_EXPORT.md) and "the on-screen twin" in ARCHITECTURE.md's
-  SVG export section) — and the overlay's two buttons: `reloadCounter` +
-  `reload()` behind Retry, `fetchCanceled` + `cancelFetchByUser()` behind
-  Cancel. Those two are the same names `FetchMixin` publishes, so one overlay
-  set draws all three families; what they are not is `FetchMixin`'s
-  *implementation* of them, and one difference is deliberate. **A comparative
-  cancel is durable until Retry** — no clear-on-viewport-change autorun here,
-  because these displays sit on single RPCs that can run for minutes and a
-  cancel any pan undoes is not one.
-- The stop behind that cancel comes back the other way: the rotation lives in
-  the installer's closure, so it hands `cancel` to the mixin at install
-  (`setStopActiveFetch`). The flag alone would not do — nothing else rotates
-  the token, so the cancelled RPC stays `isCurrent()` and commits its plot over
-  the load the user stopped.
-- `createStopTokenRotation` (core) does latest-wins token rotation plus the
-  `isCurrent()` guard every post-await write is gated on.
-- The autorun is `leadingEdgeAutorun`, the same leading-edge scheduler the
-  other two fetch installers run on.
+- `FetchMixin`'s: the rotation `cancelFetchByUser` stops (lent to the skeleton
+  at install, so the stop and the flag are one action — a flag alone is not a
+  cancel, since nothing else rotates the token and the cancelled RPC would
+  commit its plot over the load the user stopped), `isLoading`, `error`, the
+  status window, `reloadCounter` + `reload()` behind Retry, `fetchCanceled` +
+  `cancelFetchByUser()` behind Cancel, and the overridable `fetchInert` hook
+  (see [SVG_EXPORT.md](SVG_EXPORT.md) and "the on-screen twin" in
+  ARCHITECTURE.md's SVG export section).
+- `KeyedFetchMixin`'s: the `viewSignature` hook each display fills with its two
+  views' state, `currentFetchKey` over it plus the settings and adapter axes,
+  the `loadedFetchKey` stamp `commitFetchResult` writes beside the display's own
+  store, and `dataCurrent`.
+- `ComparativeFetchMixin`'s own: the `fetchLanded` / `hasDrawable` hooks, `loading`
+  (first load — full overlay) versus `refetching` (stale plot still on screen —
+  corner chip), `svgReady`, and `assembliesSwapped`.
 
-`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) welds those together
-with the loading/error flags and the refName rename into one skeleton both
-displays install, so each supplies only the three `FetchPhases` — the same
-contract the LGV global family runs on, over this family's own context. The
-skeleton logs whatever it `setError`s, so neither display overrides `setError` to
-log it a second time. Its autorun body is synchronous and kicks the awaits off
-into their own function: an async body stops tracking at its first await, and
-saying so structurally beats every read here happening to sit above it.
+**A comparative cancel is durable until Retry**, and that is the one deliberate
+difference from the LGV families: no clear-on-viewport-change autorun here,
+because these displays sit on single RPCs that can run for minutes and a cancel
+any pan undoes is not one — and their viewport *is* their fetch input, so the
+LGV clear would un-cancel on every trigger.
+
+`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) is a declaration over
+the shared `installFetch` skeleton the way `installGlobalFetchAutorun` is: the
+lent rotation, `fetchMixinLifecycle`'s begin/end/error trio, `currentFetchKey`
+as the freshness key against `loadedFetchKey`, `commitFetchResult` at commit.
+What it adds is the refName rename a `run` here is handed; each display supplies
+only the three `FetchPhases`. The skeleton logs whatever it `setError`s, so
+neither display overrides `setError` to log it a second time. Its autorun body
+is synchronous and kicks the awaits off into their own function: an async body
+stops tracking at its first await, and saying so structurally beats every read
+here happening to sit above it.
 
 It installs `makeRetryContractCheck` too, so this family's Retry is watched like
-the other two — `fetchInert` is the exemption, and it is the same field name the
-LGV displays publish (ADR-081).
+the other two — `fetchInert` is the exemption, and it is the same field the LGV
+displays publish (ADR-081).
 
 `installAssemblySwapCheck` is the companion installer for the one-shot
 reversed-assembly check, off the fetch path — shared for its two `isAlive`
@@ -69,16 +74,15 @@ guards (teardown fires the parent atom the gate reads; the RPC resolves long
 after a view can be closed), each invisible until a user closes a view mid-load.
 
 They also answer the shared `dataCurrent` freshness question and run the shared
-`computeSvgReady` policy, just via a signature compare (`isDataCurrent` over each
-display's `currentFetchKey`) rather than spatial coverage —
-which is where the stale-capture bugs lived
-([SVG_EXPORT.md](SVG_EXPORT.md) §"On-screen capture gate").
+`computeSvgReady` policy, just via a key compare (`isDataCurrent` over
+`currentFetchKey`) rather than spatial coverage — which is where the
+stale-capture bugs lived ([SVG_EXPORT.md](SVG_EXPORT.md) §"On-screen capture
+gate").
 
-Both autoruns track the one signature computed (`currentFetchKey`) plus
-`adapterConfig`, and read every value behind it `untracked`, so a pan inside the
+Both autoruns track the one key computed (`currentFetchKey`, which carries the
+adapter axis) and read every value behind it `untracked`, so a pan inside the
 buffered window can't refire the fetch. The third tracked read is
-`SyntenyFetchStateMixin`'s `reloadCounter`, taken **before** `prepare()`'s
-bail-outs: after a failure every fetch input is unchanged, so `prepare`
+`FetchMixin`'s `reloadCounter`, taken **before** `prepare()`'s bail-outs: after a failure every fetch input is unchanged, so `prepare`
 recomputes the same key and nothing refires the autorun — which is why clearing
 the error was not enough and the banner's Retry was inert on both views. Same
 law, and the same one-line fix, as the global family's `reloadCounter`; see

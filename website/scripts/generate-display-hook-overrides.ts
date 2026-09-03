@@ -50,9 +50,9 @@ interface Hook {
 }
 
 // A hook whose default lives in more than one file declares each of them, and
-// every one has to still be there. `fetchInert` is the case: the LGV foundations
-// and the comparative one compose no mixin in common, so one name is declared
-// twice on purpose — which is also why a single row is the honest rendering.
+// every one has to still be there. `dataSuperseded` is the case: the per-region
+// foundation and the keyed layer under the other two declare the same default
+// on purpose — which is also why a single row is the honest rendering.
 function ownersOf(hook: Hook) {
   return hook.owner === null
     ? []
@@ -90,9 +90,21 @@ const HOOKS: Hook[] = [
   },
   {
     name: 'viewSignature',
-    owner: 'packages/display-kit/src/GlobalFetchMixin.ts',
+    owner: 'packages/display-kit/src/KeyedFetchMixin.ts',
     ifNotOverridden:
-      'undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census)',
+      'undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). Both keyed families fill it: the global one from its block set, the comparative one from both views’ state',
+  },
+  {
+    name: 'fetchLanded',
+    owner: 'packages/synteny-core/src/ComparativeFetchMixin.ts',
+    ifNotOverridden:
+      'false forever, so `loading` never clears and the first-load overlay never lifts — diagnosable, where a default `true` would report a plot done over nothing',
+  },
+  {
+    name: 'hasDrawable',
+    owner: 'packages/synteny-core/src/ComparativeFetchMixin.ts',
+    ifNotOverridden:
+      '`fetchLanded`, which is right where the fetched payload is what the export draws; the dotplot overrides it with its instance geometry, since `svgReady` is polled outside any reactive context and its `geometry` computed would recolor every segment per poll',
   },
   {
     name: 'layoutReady',
@@ -104,17 +116,14 @@ const HOOKS: Hook[] = [
     name: 'dataSuperseded',
     owner: [
       'packages/display-kit/src/MultiRegionDisplayMixin.ts',
-      'packages/display-kit/src/GlobalFetchMixin.ts',
+      'packages/display-kit/src/KeyedFetchMixin.ts',
     ],
     ifNotOverridden:
       'false — `dataCurrent` is the foundation’s own compare alone (spatial coverage plus `isCacheValid` per block, or the signature), which is blind to a load the display invalidates itself: a fetch input it writes from the data it fetched, a debounced key the live view has already moved past, a dependent fetch of its own still out. An export sampling `svgReady` in that window paints the frame that is about to be replaced',
   },
   {
     name: 'fetchInert',
-    owner: [
-      'packages/display-kit/src/FetchMixin.ts',
-      'packages/synteny-core/src/SyntenyFetchStateMixin.ts',
-    ],
+    owner: 'packages/display-kit/src/FetchMixin.ts',
     ifNotOverridden:
       'false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled`',
   },

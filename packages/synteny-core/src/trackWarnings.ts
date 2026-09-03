@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 
-import type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
+import type { ComparativeWarning } from './ComparativeFetchMixin.ts'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 

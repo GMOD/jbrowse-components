@@ -83,7 +83,11 @@ export interface ComparativeSurface {
   hostMounted: boolean
 }
 
-/** One comparative display's fetch state, as its readiness is computed from. */
+/**
+ * One comparative display's fetch state, as its readiness is computed from —
+ * `FetchMixin`'s and `KeyedFetchMixin`'s members under their own names, so a
+ * display passes itself.
+ */
 export interface ComparativeDisplayFetchState {
   error: unknown
   /**
@@ -91,8 +95,13 @@ export interface ComparativeDisplayFetchState {
    * coming — minimized, or a level whose two rows aren't both showing regions.
    */
   fetchInert: boolean
-  loading: boolean
-  refetching: boolean
+  /**
+   * A fetch is in flight, or the user canceled one — never a bare `isLoading`,
+   * for the reason `computeLoadingTerm` gives: the cancel drops the stop token
+   * synchronously, and the overlay carrying Retry unmounts on `ready`.
+   */
+  isLoadingOrCanceled: boolean
+  /** the drawn data was fetched for the view's current inputs */
   dataCurrent: boolean
 }
 
@@ -102,9 +111,9 @@ export interface ComparativeDisplayFetchState {
  *
  * `computeDisplayStatusPhase` and `computeLoadingTerm` rather than a hand-written
  * conjunction, and each term goes where its documented meaning puts it:
- * `fetchInert` is the same field `computeLoadingTerm` reads on an LGV display
- * (a display drawing nothing by design gets no scrim and no wait),
- * `loading || refetching` is `isLoadingOrCanceled`, and
+ * `fetchInert` and `isLoadingOrCanceled` are the same fields
+ * `computeLoadingTerm` reads on an LGV display (a display drawing nothing by
+ * design gets no scrim and no wait; a canceled load keeps its overlay), and
  * the surface supplies first paint plus the two "what is on screen is not the
  * answer" flags through the `viewportCurrent` thunk. Neither view has a
  * `regionTooLarge` state — synteny never gates on region size and dotplot gates
@@ -136,7 +145,7 @@ export function comparativeDisplayPhase(
           // surface whose extent is the two views' whole span, not a block set
           // that can empty out from under them
           viewportEmpty: false,
-          isLoadingOrCanceled: display.loading || display.refetching,
+          isLoadingOrCanceled: display.isLoadingOrCanceled,
           awaitingDependentData: false,
           rendersCanvas: true,
           canvasDrawn: surface.painted,
@@ -190,7 +199,7 @@ export function comparativeSurfacePhase(
 // The display half of both views' `settled` gate, written once so the two
 // can't drift on what "done" means. `dataCurrent` is what makes it a done test
 // rather than a not-busy test: in the debounce gap after a region/zoom change
-// the held data is stale yet no fetch is in flight, so loading/refetching alone
+// the held data is stale yet no fetch is in flight, so the loading flag alone
 // would report done on content drawn against the old viewport.
 //
 // `fetchInert` short-circuits that, and must: a display that will never fetch
@@ -210,15 +219,13 @@ export function comparativeSurfacePhase(
 // legitimately has no display — `comparativeSurfaceSettled` gates on
 // `initPending` for the window where init has yet to add them.
 export function displaysSettled(
-  displays: {
-    loading: boolean
-    refetching: boolean
-    dataCurrent: boolean
-    fetchInert: boolean
-  }[],
+  displays: Pick<
+    ComparativeDisplayFetchState,
+    'isLoadingOrCanceled' | 'dataCurrent' | 'fetchInert'
+  >[],
 ) {
   return displays.every(
-    d => d.fetchInert || (!d.loading && !d.refetching && d.dataCurrent),
+    d => d.fetchInert || (!d.isLoadingOrCanceled && d.dataCurrent),
   )
 }
 

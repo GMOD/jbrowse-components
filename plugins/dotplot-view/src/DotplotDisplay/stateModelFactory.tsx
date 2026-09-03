@@ -6,10 +6,9 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
+  ComparativeFetchMixin,
   LodTierInfoMixin,
-  SyntenyFetchStateMixin,
   comparativeDisplayPhase,
-  comparativeFetchFlags,
   getCoarseBpPerPxThreshold,
   resolveLodTier,
   swappedAssembliesWarning,
@@ -49,6 +48,7 @@ function px(n: number) {
 
 /**
  * #stateModel DotplotDisplay
+ * #displayFoundation ComparativeFetchMixin
  * #category display
  */
 export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
@@ -56,7 +56,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
     .compose(
       'DotplotDisplay',
       BaseDisplay,
-      SyntenyFetchStateMixin(),
+      ComparativeFetchMixin(),
       LodTierInfoMixin(),
       types
         .model({
@@ -134,12 +134,23 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * A fetch has completed (data is present, even if it mapped zero
-       * features). Not a feature-count test — an empty-but-finished fetch is
-       * ready, otherwise an empty plot spins the loading overlay forever.
+       * `ComparativeFetchMixin`'s hook: a fetch has completed (data is present,
+       * even if it mapped zero features). Not a feature-count test — an
+       * empty-but-finished fetch has landed, otherwise an empty plot spins the
+       * loading overlay forever.
        */
-      get ready() {
+      get fetchLanded() {
         return self.rpcData !== undefined
+      },
+      /**
+       * #getter
+       * `ComparativeFetchMixin`'s hook, answered with the instance geometry
+       * rather than `fetchLanded` or the `geometry` computed: `svgReady` is polled
+       * outside any reactive context, and a `geometry` read there recolors
+       * every segment per poll.
+       */
+      get hasDrawable() {
+        return self.instanceData !== undefined
       },
       /**
        * #getter
@@ -332,36 +343,6 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         }
         return { path, color: abgrToCssRgba(colors[start]!) }
       },
-      get fetchFlags() {
-        return comparativeFetchFlags({
-          ready: this.ready,
-          hasDrawable: !!self.instanceData,
-          fetching: self.fetching,
-          error: self.error,
-          fetchInert: self.fetchInert,
-          fetchCanceled: self.fetchCanceled,
-          loadedFetchKey: self.loadedFetchKey,
-          currentFetchKey: this.currentFetchKey,
-          adapterConfig: self.adapterConfig,
-        })
-      },
-      /**
-       * #getter
-       * First load: no data has arrived yet. Drives the centered overlay.
-       */
-      get loading() {
-        return this.fetchFlags.loading
-      },
-      /**
-       * #getter
-       * Refetch in-flight: a new fetch is running but a stale plot is still on
-       * screen (zoom, diagonalize reorder, pan past the buffer). Drives a
-       * subtle corner indicator instead of the full overlay so the visible
-       * plot isn't masked on every viewport change.
-       */
-      get refetching() {
-        return this.fetchFlags.refetching
-      },
       /**
        * #getter
        * The h-axis fetch window: the visible content blocks expanded by the
@@ -381,14 +362,16 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The fetch-input signature (see fetchKey.ts) for the view's current
-       * state. Reactive: recomputes when either axis's zoom or displayed-region
-       * order/orientation changes, or when a pan carries the h axis into a new
-       * snapped fetch window. As a computed it only notifies when the string
-       * itself changes, which is what lets the fetch autorun track it and stay
-       * quiet through sub-buffer pans.
+       * `KeyedFetchMixin`'s hook, this display's half of `currentFetchKey`: the
+       * fetch-input signature (see fetchKey.ts) for the view's current state.
+       * The mixin appends the settings and adapter axes. Reactive: recomputes
+       * when either axis's zoom or displayed-region order/orientation changes,
+       * or when a pan carries the h axis into a new snapped fetch window. As a
+       * computed it only notifies when the string itself changes, which is
+       * what lets the fetch autorun track it and stay quiet through sub-buffer
+       * pans.
        */
-      get currentFetchKey(): string {
+      get viewSignature(): string {
         const { view } = this
         return dotplotFetchKey(
           this.lodTier,
@@ -425,17 +408,6 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * True when the rendered rpcData was fetched for the view's current
-       * inputs. Goes false the instant a zoom or diagonalize reorder changes the
-       * axes — before the debounced refetch begins and while stale geometry is
-       * still on screen — so the `settled` done-gate can't fire on it. The
-       * dotplot analog of LGV's `viewportWithinLoadedData`.
-       */
-      get dataCurrent(): boolean {
-        return this.fetchFlags.dataCurrent
-      },
-      /**
-       * #getter
        * The display's own mutually-exclusive state, the way every LGV display
        * publishes one — so `AppReadyMarker` counts this display's fetch, and the
        * app stops reporting itself ready over a plot that is still
@@ -447,16 +419,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * backend failure.
        */
       get displayPhase(): DisplayStatusPhase {
-        return comparativeDisplayPhase(
-          {
-            error: self.error,
-            fetchInert: self.fetchInert,
-            loading: this.loading,
-            refetching: this.refetching,
-            dataCurrent: this.dataCurrent,
-          },
-          this.view.surfaceReadiness,
-        )
+        return comparativeDisplayPhase(self, this.view.surfaceReadiness)
       },
       /**
        * #getter
@@ -471,18 +434,6 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               ),
             ]
           : self.fetchWarnings
-      },
-      /**
-       * #getter
-       * Off-screen SVG export gate: "Export SVG" waits on this before drawing
-       * (see the [SVG export guide](/docs/developer_guides/svg_export)) via the
-       * shared `awaitSvgReady`. A failed track fails the export rather than
-       * drawing itself into the plot; every display paints that one rect, so
-       * `SVGDotplotView` fans them out through `awaitSvgRenders` and names all
-       * of them at once. The terms are in `comparativeFetchFlags`.
-       */
-      get svgReady() {
-        return this.fetchFlags.svgReady
       },
     }))
     .views(self => ({
@@ -506,10 +457,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        *
        * The loading flags are deliberately NOT touched here: this runs as
        * `installComparativeFetchAutorun`'s `commit`, whose `finally` clears
-       * `fetching` and the status line under the same staleness guard. Clearing
-       * them here too meant one of the two comparative displays wrote
-       * `fetching` directly instead of through `setFetching`, for no effect the
-       * skeleton wasn't about to have anyway.
+       * `isLoading` and the status line under the same staleness guard.
        *
        * `setError` is not overridden either: the two callers that set one
        * (the fetch skeleton's `catch`, `afterAttach`'s) already log it, so the
