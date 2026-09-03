@@ -488,6 +488,22 @@ describe('SessionLoader', () => {
       })
     })
 
+    // `&tracklist=1`, `&regions=` and `&highlight=` beside a hub used to be
+    // gated on loc/assembly, so they were stripped from the address bar and
+    // applied nowhere, with nothing saying so
+    it('carries an init with no loc or assembly, so loadHubSpec can report it', () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        tracklist: true,
+        initialTimestamp: Date.now(),
+      })
+      loader.decodeHubSpec()
+      expect(loader.sessionSource).toMatchObject({
+        type: 'hub',
+        viewInit: { tracklist: true },
+      })
+    })
+
     // regression: isJb1StyleSession was checked first, so a hand-written
     // ?hubURL=...&loc=... built a bare LGV and dropped the hub entirely
     it('a hub with loc resolves to the hub, not a bare LGV spec', async () => {

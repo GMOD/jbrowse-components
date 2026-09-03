@@ -747,11 +747,14 @@ const SessionLoader = types
         // inside a value that is supposed to be plain JSON
         hubSpec: { hubURL: [...(self.hubURL ?? [])] },
         // a hand-written link may carry the loc/assembly/tracks shorthand too;
-        // loadHubSpec applies it on top of the hub session. Gated on loc/assembly
-        // (not on the init being non-empty, as the defaultSession path is): a hub
-        // launch resolves against one of the hub's own genomes, so an init with
-        // no way to name one has nothing to launch against.
-        viewInit: self.isJb1StyleSession ? self.urlViewInit : undefined,
+        // loadHubSpec applies it on top of the hub session. Gated on the init
+        // being non-empty, as the defaultSession path is, rather than on
+        // loc/assembly: an init naming no assembly still cannot launch against a
+        // hub genome, but handing it on is what lets loadHubSpec say so instead
+        // of the params being stripped from the address bar in silence.
+        viewInit: Object.keys(self.urlViewInit).length
+          ? self.urlViewInit
+          : undefined,
         // ungated, unlike viewInit: a `&sessionTracks=` is worth registering
         // whether or not the link also says where to look. Dropping it here is
         // what made `?hubURL=…&sessionTracks=…&tracks=my_track` open the hub

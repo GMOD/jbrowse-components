@@ -13,6 +13,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
+// where an init key is not spelled the way the URL param that set it is
+const URL_PARAM_FOR_INIT_KEY: Record<string, string | undefined> = {
+  displayedRegionNames: 'regions',
+}
+
 // the hub.txt shortLabel line, used as a human-readable session name
 export function parseHubShortLabel(hubTxt: string) {
   return hubTxt
@@ -164,8 +169,11 @@ export async function loadHubSpec(
     if (launchInit) {
       await launchHubView(session, launchInit, pluginManager)
     } else {
+      const carried = Object.keys(viewInit)
+        .map(k => `&${URL_PARAM_FOR_INIT_KEY[k] ?? k}=`)
+        .join(', ')
       session.notify(
-        '&loc= alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.',
+        `${carried} alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.`,
         'warning',
       )
     }

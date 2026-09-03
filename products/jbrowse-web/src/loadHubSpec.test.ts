@@ -273,13 +273,30 @@ describe('loadHubSpec with a view init', () => {
 
     const session = rootModel.session!
     expect(
-      session.snackbarMessages.some((s: { message: string }) =>
-        s.message.includes('&assembly='),
+      session.snackbarMessages.some(
+        (s: { message: string }) =>
+          s.message.includes('&loc=') && s.message.includes('&assembly='),
       ),
     ).toBe(true)
     // the hub itself still loaded, non-silently, so its own defaultPos launch
     // remains the best guess available
     expect(session.connectionInstances[0].silent).toBe(false)
+  })
+
+  it('names whichever params an assembly-less init carried', async () => {
+    const { pluginManager, rootModel } = setup()
+    resolvingFetch()
+
+    await loadHubSpec(
+      { hubURL, viewInit: { tracklist: true, displayedRegionNames: ['chr1'] } },
+      pluginManager,
+    )
+
+    expect(
+      rootModel.session!.snackbarMessages.some((s: { message: string }) =>
+        s.message.startsWith('&tracklist=, &regions= alongside &hubURL='),
+      ),
+    ).toBe(true)
   })
 })
 

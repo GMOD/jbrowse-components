@@ -1,6 +1,6 @@
 ---
 name: clustering-without-a-named-region
-description: `runClustering: true` with no `clusterRegion` clusters over the view's dynamicBlocks, which are viewport-width dependent — so the same session spec produces a different tree on a different monitor. The algorithm is deterministic; the input is not. Four ways to close it, and which one keeps the convenience the fallback exists for.
+description: `runClustering: true` with no `clusterRegion` clusters over the view's dynamicBlocks, which are viewport-width dependent — so the same session spec produces a different tree on a different monitor on first run. A saved session is already self-describing (`clusterTree` and `clusterProvenance` persist), so what is left is the spec-level guarantee, and each way to get it costs the one-parameter form.
 ---
 
 # `runClustering` without a `clusterRegion` is not reproducible
@@ -35,9 +35,13 @@ usable without a second parameter.
 - **Refuse quietly and say so** — run nothing, notify that `clusterRegion` is
   required. Same as the first option with a better failure.
 
-The third is the one that costs nothing and fixes the case people actually hit
-(a shared session), so it is the place to start unless the spec-level guarantee
-is what is wanted.
+The third is already the case in effect: the run's output persists as
+`clusterTree` and `clusterProvenance` (the regions the matrix was built over,
+`TreeSidebarMixin`), so a saved session carries the tree it drew and says what
+it came from, whatever the spec that produced it said. What remains open is the
+spec-level guarantee — a fresh `runClustering: true` still varies with the
+viewport on first run — and that is one of the other three, each a decision
+about the one-parameter form.
 
 Whichever lands: `clusterRegion` with a typo in it already surfaces through the
 autorun's own error path, which is where the notify would go.
