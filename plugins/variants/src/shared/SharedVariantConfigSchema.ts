@@ -52,7 +52,7 @@ export default function sharedVariantConfigFactory() {
        * A config slot rather than a display property, so a track config can
        * ship with it off and a figure capture keeps it off across a reload.
        * Both multi-sample displays honor it: they draw the same tooltip off the
-       * same `hoveredGenotype` slot.
+       * same `hoveredFeature` slot.
        */
       showTooltips: {
         type: 'boolean',

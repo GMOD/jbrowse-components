@@ -1,9 +1,6 @@
-import {
-  resolveSubMenu,
-  showLegendCheckboxItem,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { resolveSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   collapseGroupRowsItems,
   groupByRadioMenuItem,
@@ -110,13 +107,7 @@ interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // menu, which this display also builds.
 export function getSyntenyShowMenuItems(model: ShowModel) {
   return makeShowSubMenu([
-    showLegendCheckboxItem(
-      model.showLegend,
-      () => {
-        model.setShowLegend(!model.showLegend)
-      },
-      { pin: model.showLegendDisplayTypeDefault },
-    ),
+    legendCheckboxItem(model),
     toggleItem('Show coverage', model.showCoverage, model.setShowCoverage, {
       helpText:
         'Draw a histogram of how deeply each reference base is covered by ' +

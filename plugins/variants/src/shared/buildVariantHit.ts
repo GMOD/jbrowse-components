@@ -9,7 +9,7 @@ import type { VariantFeatureInfo } from './types.ts'
 // display-specific carrier (`featureInfo`/`cell` vs `featureData`) as a sibling
 // so building them here keeps the two displays from drifting. The index
 // signature reflects that these records are open — the model merges sample
-// metadata attributes into them (`{...source, ...hoveredGenotype}`) before the
+// metadata attributes into them (`{...source, ...hoveredFeature}`) before the
 // tooltip table renders — and lets them satisfy the hook's/model's
 // `Record<string, unknown>` hovered-genotype slot without a laundering spread.
 export interface VariantTooltipFields {
@@ -28,7 +28,7 @@ export interface VariantTooltipFields {
 
 // Hover-dedup identity for a hovered cell — same feature+sample+genotype in the
 // same displayed region means the same tooltip AND the same highlight geometry,
-// so `hoverVariantSurface` skips redundant setHoveredGenotype calls. The region
+// so `hoverVariantSurface` skips redundant setHoveredFeature calls. The region
 // term matters when overlapping displayed regions show two copies of one
 // record: without it, sliding onto the second copy deduped away the `onHover`
 // that moves the highlight box. Shared so both displays key hovers identically,

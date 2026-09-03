@@ -9,8 +9,10 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   axisPlotBox,
@@ -37,6 +39,7 @@ import {
 import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_RENDERINGS } from '../util.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
+import type { WiggleHoveredFeature } from '../util.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -88,6 +91,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
+      StoredHoverMixin<WiggleHoveredFeature>(),
       types.model({
         /**
          * #property
@@ -290,14 +294,12 @@ export default function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: IndexedRegion[]) {
-        const { adapterConfig } = self
         const { bpPerPx } = self.host
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
             ctx.callRpc('RenderWiggleData', {
-              adapterConfig,
+              ...rpcArgs(self),
               regions,
-              ...self.rpcProps(),
               bpPerPx,
             }),
           onResult: (idx, result) => {

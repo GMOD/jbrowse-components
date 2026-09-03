@@ -100,7 +100,7 @@ function MafSvgBody({
   return (
     <SvgClipRect
       id={`maf-clip-${svgNodeId(model)}`}
-      width={view.width}
+      width={width}
       height={height}
     >
       {coverageBandActive ? (

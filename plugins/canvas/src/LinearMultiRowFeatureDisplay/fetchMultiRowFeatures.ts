@@ -1,4 +1,5 @@
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
@@ -22,7 +23,6 @@ export function fetchMultiRowFeatures(
   self: FetchSelf,
   needed: IndexedRegion[],
 ) {
-  const byteLimit = self.resolvedByteLimit()
   const props = self.rpcProps()
   // An empty slot means "resolve it from the data", which the worker does off a
   // sample of the region it packs — so a region loaded later can pick a
@@ -41,10 +41,8 @@ export function fetchMultiRowFeatures(
   return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
       ctx.callRpc('MultiRowGetFeatures', {
-        adapterConfig: self.adapterConfig,
+        ...rpcArgs(self),
         region,
-        byteLimit,
-        ...props,
         partitionField,
       }),
     onResult: (idx, result) => {

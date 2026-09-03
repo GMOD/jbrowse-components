@@ -1,4 +1,5 @@
 import { SimpleFeature, getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
 import type { RenderAlignmentDataArgs } from '../RenderAlignmentDataRPC/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -90,16 +91,14 @@ export async function fetchFeatureDetails(
 // of never caught one either. `fetchAutorun.test.ts` is what pins membership,
 // and it does it by refetch behaviour rather than by shape.
 export interface FetchFeaturesSelf {
+  adapterConfig: Record<string, unknown>
   rpcProps: () => Omit<
     RenderAlignmentDataArgs,
     'adapterConfig' | 'sequenceAdapter' | 'regions' | keyof GatedFetchArgs
   >
-  // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
-  // the banner compares against. Passed at the call rather than through
-  // `rpcProps()` because it swings at the 20kb span tier and would otherwise be
-  // an RPC cache key — see REGION_TOO_LARGE.md §"How the verdict is built".
   resolvedByteLimit: () => number | undefined
-  // The per-base sampling stride, at the call site for the same reason. What
+  // The per-base sampling stride, at the call site rather than in `rpcProps()`
+  // because it swings with zoom and would otherwise be an RPC cache key. What
   // keeps it from being a cache key that never invalidates is that the display
   // also spells it as its `zoomFetchKey`, so a region fetched under one bin is
   // not read back under another.
@@ -110,15 +109,12 @@ export interface FetchFeaturesSelf {
 // (passed via rpcProps).
 export function fetchFeaturesForRegion(
   self: FetchFeaturesSelf,
-  adapterConfig: Record<string, unknown>,
   region: Region,
   ctx: FetchContext,
 ) {
   return ctx.callRpc('RenderAlignmentData', {
-    adapterConfig,
+    ...rpcArgs(self),
     regions: [region],
-    byteLimit: self.resolvedByteLimit(),
     perBaseBinBp: self.perBaseBinBp,
-    ...self.rpcProps(),
   })
 }

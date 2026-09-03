@@ -14,7 +14,7 @@ import type { MouseState } from '@jbrowse/core/ui'
 // display stacking a band above them (the regular one's variant lane) passes
 // false while the pointer is up there — a crosshair drawn over the lane names a
 // genotype row the pointer is not on. The tooltip has no such restriction: it
-// describes whatever set `hoveredGenotype`, which in that band is the record the
+// describes whatever set `hoveredFeature`, which in that band is the record the
 // lane mark stands for.
 const MultiSampleVariantCrosshairs = observer(
   function MultiSampleVariantCrosshairs({

@@ -20,9 +20,9 @@ function makeModel() {
   const calls: (VariantTooltipFields | undefined)[] = []
   return {
     calls,
-    hoveredGenotype: undefined as VariantTooltipFields | undefined,
-    setHoveredGenotype(g?: VariantTooltipFields) {
-      this.hoveredGenotype = g
+    hoveredFeature: undefined as VariantTooltipFields | undefined,
+    setHoveredFeature(g?: VariantTooltipFields) {
+      this.hoveredFeature = g
       calls.push(g)
     },
     clearHoveredFeature() {},
@@ -61,7 +61,7 @@ test('a hit naming another sample writes again', () => {
   hoverVariantSurface(model, surfaceOf(fields({})), 10, 10)
   hoverVariantSurface(model, surfaceOf(fields({ name: 'HG003' })), 10, 10)
   expect(model.calls).toHaveLength(2)
-  expect(model.hoveredGenotype?.name).toBe('HG003')
+  expect(model.hoveredFeature?.name).toBe('HG003')
 })
 
 test('leaving the hit clears both the tooltip and the surface highlight', () => {
@@ -69,6 +69,6 @@ test('leaving the hit clears both the tooltip and the surface highlight', () => 
   hoverVariantSurface(model, surfaceOf(fields({})), 10, 10)
   const empty = surfaceOf(undefined)
   hoverVariantSurface(model, empty, 10, 10)
-  expect(model.hoveredGenotype).toBeUndefined()
+  expect(model.hoveredFeature).toBeUndefined()
   expect(empty.hovered).toEqual([undefined])
 })

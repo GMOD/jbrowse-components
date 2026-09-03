@@ -3,7 +3,7 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 // The genotype matrix is a sticky canvas, so when the content moves and the
 // pointer doesn't there is no `mousemove` and no `mouseleave` to fire.
 // The chrome's pointer measurement clears the hover on the axis where the
-// *pointer* moved and on nothing else, so a stored `hoveredGenotype` outlives a
+// *pointer* moved and on nothing else, so a stored `hoveredFeature` outlives a
 // pan, a zoom and an internal scroll — and the tooltip then reports one
 // sample's genotype while the cursor sits over another's.
 //
@@ -18,8 +18,8 @@ const HOVER = { genotype: '0|1', name: 'HG002' }
 
 function hovering() {
   const { display, view } = createTestEnvironment().createDisplay()
-  display.setHoveredGenotype(HOVER)
-  expect(display.hoveredGenotype).toBeDefined()
+  display.setHoveredFeature(HOVER)
+  expect(display.hoveredFeature).toBeDefined()
   return { display, view }
 }
 
@@ -29,14 +29,14 @@ function hovering() {
 test('the genotype hover fills BaseDisplay hoveredFeature', () => {
   const { display } = hovering()
   expect(display.hoveredFeature).toEqual(HOVER)
-  display.setHoveredGenotype(undefined)
+  display.setHoveredFeature(undefined)
   expect(display.hoveredFeature).toBeUndefined()
 })
 
 test('a zoom clears the hover', () => {
   const { display, view } = hovering()
   view.zoomTo(view.bpPerPx * 2)
-  expect(display.hoveredGenotype).toBeUndefined()
+  expect(display.hoveredFeature).toBeUndefined()
 })
 
 test('a pan clears the hover, with no zoom change', () => {
@@ -44,7 +44,7 @@ test('a pan clears the hover, with no zoom change', () => {
   const { bpPerPx } = view
   view.horizontalScroll(100)
   expect(view.bpPerPx).toBe(bpPerPx)
-  expect(display.hoveredGenotype).toBeUndefined()
+  expect(display.hoveredFeature).toBeUndefined()
 })
 
 // `setScrollTop` is clamped against `scrollableHeight`, which is 0 in
@@ -59,7 +59,7 @@ test('the rows scrolling under the cursor clears the hover', () => {
 
   display.setScrollTop(40)
   expect(display.scrollTop).toBe(40)
-  expect(display.hoveredGenotype).toBeUndefined()
+  expect(display.hoveredFeature).toBeUndefined()
 })
 
 // The reaction reads hover state in its effect to skip a no-op clear. As an
@@ -67,5 +67,5 @@ test('the rows scrolling under the cursor clears the hover', () => {
 // body and clear it again immediately.
 test('setting a hover does not clear it', () => {
   const { display } = hovering()
-  expect(display.hoveredGenotype).toEqual(HOVER)
+  expect(display.hoveredFeature).toEqual(HOVER)
 })

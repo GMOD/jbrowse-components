@@ -2,11 +2,11 @@ import { makePin } from '@jbrowse/core/configuration'
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   promotableRadioItems,
-  showLegendCheckboxItem,
   toggleItem,
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -142,17 +142,7 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
     toggleItem('Show outline', self.showOutline, self.setShowOutline),
-    ...(self.colorLegend.length
-      ? [
-          showLegendCheckboxItem(
-            self.showLegend,
-            () => {
-              self.setShowLegend(!self.showLegend)
-            },
-            { pin: self.showLegendDisplayTypeDefault },
-          ),
-        ]
-      : []),
+    ...(self.colorLegend.length ? [legendCheckboxItem(self)] : []),
   ]
 }
 

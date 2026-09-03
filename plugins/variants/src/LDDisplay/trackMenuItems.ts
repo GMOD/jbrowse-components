@@ -1,8 +1,9 @@
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
@@ -126,13 +127,7 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
     toggleItem('Show LD triangle', self.showLDTriangle, self.setShowLDTriangle),
-    showLegendCheckboxItem(
-      self.showLegend,
-      () => {
-        self.setShowLegend(!self.showLegend)
-      },
-      { pin: self.showLegendDisplayTypeDefault },
-    ),
+    legendCheckboxItem(self),
     toggleItem('Show variant labels', self.showLabels, self.setShowLabels),
     toggleItem(
       'Show vertical guides on hover',

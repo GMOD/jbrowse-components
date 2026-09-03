@@ -4,10 +4,12 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
+import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type {
   ConfigModelForFields,
+  Pin,
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
 
@@ -43,7 +45,7 @@ const confNode = (self: object) => self as LegendHost
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend`
+ * #crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin, `setShowLegend`, and `legendCheckboxItem(self)`, the "Show legend" row a track menu lists
  *
  * Six displays carried a character-identical copy of these three members —
  * alignments, Hi-C, multi-row features, multi-wiggle, the multi-sample variant
@@ -108,4 +110,22 @@ export default function LegendMixin() {
  */
 export function gradientSvgLegendWidth(self: { showLegend: boolean }) {
   return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
+}
+
+/**
+ * The "Show legend" checkbox for a display composing `LegendMixin`: the slot,
+ * the toggle and the display-type pin, so a track menu lists it in one call.
+ */
+export function legendCheckboxItem(self: {
+  showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
+  setShowLegend: (arg: boolean) => void
+}) {
+  return showLegendCheckboxItem(
+    self.showLegend,
+    () => {
+      self.setShowLegend(!self.showLegend)
+    },
+    { pin: self.showLegendDisplayTypeDefault },
+  )
 }

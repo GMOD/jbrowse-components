@@ -117,7 +117,7 @@ export function stateModelFactory(
         /**
          * #volatile
          * The genotype cell under the pointer, as the highlight box draws it.
-         * Beside the base's `hoveredGenotype` (the tooltip) rather than folded
+         * Beside the base's `hoveredFeature` (the tooltip) rather than folded
          * into it: the tooltip is the shared cross-display slot, and the box
          * needs the cell's placed geometry that slot has no reason to carry.
          */

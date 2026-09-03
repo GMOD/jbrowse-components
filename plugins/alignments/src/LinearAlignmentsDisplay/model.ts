@@ -4172,8 +4172,7 @@ export default function stateModelFactory(
            */
           async fetchNeeded(needed: IndexedRegion[]) {
             await fetchEachRegion(self, needed, {
-              call: (region, ctx) =>
-                fetchFeaturesForRegion(self, self.adapterConfig, region, ctx),
+              call: (region, ctx) => fetchFeaturesForRegion(self, region, ctx),
               onResult: (displayedRegionIndex, result) => {
                 self.setRpcData(displayedRegionIndex, result)
               },

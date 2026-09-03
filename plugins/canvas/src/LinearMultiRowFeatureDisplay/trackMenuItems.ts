@@ -1,14 +1,10 @@
 import { lazy } from 'react'
 
 import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
-import {
-  checkboxItem,
-  radioItems,
-  showLegendCheckboxItem,
-  withHint,
-} from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, radioItems, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -118,17 +114,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // color is exactly what makes `buildColorLegend` return nothing — so
     // gating on `colorLegend` alone let a user dismiss the group key with no
     // menu item left to bring it back.
-    ...(self.hasLegendKey
-      ? [
-          showLegendCheckboxItem(
-            self.showLegend,
-            () => {
-              self.setShowLegend(!self.showLegend)
-            },
-            { pin: self.showLegendDisplayTypeDefault },
-          ),
-        ]
-      : []),
+    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
     showRowSeparatorsMenuItem(self),
     // Sits under the labels toggle it depends on, and only while they are on:
     // with the labels hidden this tints nothing (SvgRowLabels' swatch stripe

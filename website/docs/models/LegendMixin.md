@@ -6,7 +6,7 @@ sidebar_label: Mixin -> LegendMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
 
-#crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend`
+#crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin, `setShowLegend`, and `legendCheckboxItem(self)`, the "Show legend" row a track menu lists
 
 Six displays carried a character-identical copy of these three members —
 alignments, Hi-C, multi-row features, multi-wiggle, the multi-sample variant

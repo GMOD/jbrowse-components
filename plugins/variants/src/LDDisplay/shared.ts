@@ -11,9 +11,7 @@ import {
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
-import GlobalFetchMixin, {
-  blockKeySignature,
-} from '@jbrowse/display-kit/GlobalFetchMixin'
+import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
   gradientSvgLegendWidth,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -21,6 +19,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   triangleDataToScreen,
   triangleScreenToData,
+  triangleViewTransform,
 } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { ldValueComputed } from '@jbrowse/ld-core'
@@ -272,10 +271,7 @@ export default function sharedModelFactory(
        * appends.
        */
       get viewSignature(): string | undefined {
-        const view = self.host
-        return view.initialized
-          ? blockKeySignature(view.dynamicBlocks.contentBlocks)
-          : undefined
+        return self.dynamicBlockSignature
       },
       /**
        * #getter
@@ -542,12 +538,7 @@ export default function sharedModelFactory(
        * a stale triangle draws at its genomic position while a refetch runs.
        */
       get viewTransform() {
-        const { bpPerPx, offsetPx } = self.host
-        const originBp = self.rpcData?.originBp ?? 0
-        return {
-          viewScale: 1 / bpPerPx,
-          viewOffsetX: originBp / bpPerPx - offsetPx,
-        }
+        return triangleViewTransform(self.host, self.rpcData?.originBp ?? 0)
       },
       /**
        * #getter

@@ -88,9 +88,13 @@ and Manhattan families spelled that way — canvas said `hoveredFeature`, varian
 types and nothing said which.
 
 One MST constraint shapes the fill: **a volatile cannot instantiate over a base
-computed**, so a display that *stores* its hit stores it under its own name
-(`hoveredWiggleFeature`, `hoveredManhattanHit`, `hoveredMultiRowFeature`) and
-answers the hook with a getter over it.
+computed**, so a display that *stores* its hit stores it under another name and
+answers the hook with a getter over it. `StoredHoverMixin<T>` (display-kit) is
+that trio — the volatile, the getter, `setHoveredFeature`, `clearHoveredFeature`
+— composed after `BaseDisplay` by the wiggle, Manhattan and multi-sample variant
+displays. `LinearMultiRowFeatureDisplay` spells the same trio by hand
+(`hoveredMultiRowFeature`) because its `types.compose` call is already at the
+ten-argument ceiling.
 
 ## Two correct answers and one wrong one
 

@@ -2,12 +2,12 @@ import { lazy } from 'react'
 
 import {
   makeRadioSubMenu,
-  showLegendCheckboxItem,
   toggleItem,
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -247,17 +247,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     // Only where a key exists to show: `bases` mode paints the reference's own
     // base colors, which nothing decodes, so the row would toggle a legend that
     // never draws.
-    ...(self.hasLegendKey
-      ? [
-          showLegendCheckboxItem(
-            self.showLegend,
-            () => {
-              self.setShowLegend(!self.showLegend)
-            },
-            { pin: self.showLegendDisplayTypeDefault },
-          ),
-        ]
-      : []),
+    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
     toggleItem(
       withHint(
         'Show coverage',

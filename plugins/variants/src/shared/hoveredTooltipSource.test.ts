@@ -24,7 +24,7 @@ function displayWithSamples() {
 // record's fields, which is what puts a `samplesTsv` column in the tooltip.
 test('a genotype hover merges the hovered rows metadata in', () => {
   const display = displayWithSamples()
-  display.setHoveredGenotype({ genotype: '0|1', name: 'HG002' })
+  display.setHoveredFeature({ genotype: '0|1', name: 'HG002' })
   expect(display.hoveredTooltipSource).toMatchObject({
     genotype: '0|1',
     population: 'EUR',
@@ -38,7 +38,7 @@ test('a genotype hover merges the hovered rows metadata in', () => {
 // (see clearHover.test.ts).
 test('a variant-lane hover reports the record with no row merged in', () => {
   const display = displayWithSamples()
-  display.setHoveredGenotype(buildVariantLaneHit({ info, featureId: 'v0' }))
+  display.setHoveredFeature(buildVariantLaneHit({ info, featureId: 'v0' }))
   expect(display.hoveredTooltipSource).toMatchObject({
     featureName: 'rs123',
     alleles: 'A > T',

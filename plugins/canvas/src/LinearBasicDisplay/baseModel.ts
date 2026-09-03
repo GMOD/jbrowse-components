@@ -37,6 +37,7 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -1891,10 +1892,8 @@ export default function baseStateModelFactory(
           fetchNeeded(needed: IndexedRegion[]) {
             const view = getView(self)
             const bpPerPx = view.bpPerPx
-            // Both gate budgets, read once for the whole batch. Not in
-            // `rpcProps()` — see the note there for why they must not be cache
-            // keys.
-            const byteLimit = self.resolvedByteLimit()
+            // Not in `rpcProps()` — see the note there for why it must not be a
+            // cache key.
             const maxFeatureDensity = self.maxFeatureDensity
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
@@ -1915,12 +1914,10 @@ export default function baseStateModelFactory(
                   region.assemblyName,
                 )
                 return ctx.callRpc('RenderFeatureData', {
-                  adapterConfig: self.adapterConfig,
+                  ...rpcArgs(self),
                   geneticCodeId: assembly?.getGeneticCodeId(region.refName),
-                  ...self.rpcProps(),
                   region,
                   bpPerPx,
-                  byteLimit,
                   maxFeatureDensity,
                 })
               },

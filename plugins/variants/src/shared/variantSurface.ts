@@ -8,8 +8,8 @@ import type { Feature } from '@jbrowse/core/util'
 import type { MouseEvent } from 'react'
 
 interface SurfaceModel {
-  hoveredGenotype?: { genotype: string; name: string }
-  setHoveredGenotype: (g?: VariantTooltipFields) => void
+  hoveredFeature?: { genotype: string; name: string }
+  setHoveredFeature: (g?: VariantTooltipFields) => void
   clearHoveredFeature: () => void
   selectFeature: (f: Feature) => void
   openContextMenu: (info: VariantContextMenuInfo) => void
@@ -47,12 +47,12 @@ export function hoverVariantSurface<H>(
 ) {
   const hit = surface.getHit(x, y)
   const tooltip = hit ? surface.getTooltip(hit) : undefined
-  const current = model.hoveredGenotype
+  const current = model.hoveredFeature
   if (
     (tooltip && variantTooltipKey(tooltip)) !==
     (current && variantTooltipKey(current))
   ) {
-    model.setHoveredGenotype(tooltip)
+    model.setHoveredFeature(tooltip)
     surface.onHover?.(hit)
   }
 }

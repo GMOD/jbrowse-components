@@ -1,3 +1,5 @@
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
@@ -85,11 +87,9 @@ export function ldFetchPhases(
     },
     run: ({ regions, originBp }, ctx) =>
       ctx.callRpc('RenderLDData', {
-        adapterConfig: self.adapterConfig,
+        ...rpcArgs(self),
         regions,
         originBp,
-        byteLimit: self.resolvedByteLimit(),
-        ...self.rpcProps(),
       }),
     commit: result => {
       self.setRpcData(result)

@@ -1,10 +1,10 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -76,13 +76,7 @@ export function variantShowSubmenuItems(
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
     showRowSeparatorsMenuItem(self),
-    showLegendCheckboxItem(
-      self.showLegend,
-      () => {
-        self.setShowLegend(!self.showLegend)
-      },
-      { pin: self.showLegendDisplayTypeDefault },
-    ),
+    legendCheckboxItem(self),
     {
       label: 'Show reference alleles',
       helpText:

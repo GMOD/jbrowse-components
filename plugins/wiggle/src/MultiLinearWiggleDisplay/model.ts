@@ -7,14 +7,16 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -61,6 +63,7 @@ import {
 } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
+import type { WiggleHoveredFeature } from '../util.ts'
 import type { Source } from '../util.ts'
 import type { MultiWiggleContextInfo } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
@@ -127,6 +130,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
+      StoredHoverMixin<WiggleHoveredFeature>(),
       LegendMixin(),
       TreeSidebarMixin<Source>(),
       ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextInfo>(),
@@ -493,7 +497,7 @@ export default function stateModelFactory(
         // fetched — so every region's payload stays complete and consistent.
         // Filtering here instead would leave regions fetched under a stale
         // filter missing sources when the filter is later widened.
-        const { adapterConfig, sourcesWithoutLayout } = self
+        const { sourcesWithoutLayout } = self
         const { bpPerPx } = view
         // Batched, not per-region: every subtrack adapter gets all the
         // visible regions in one call, so a whole-genome or
@@ -503,10 +507,9 @@ export default function stateModelFactory(
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
             ctx.callRpc('RenderMultiWiggleData', {
-              adapterConfig,
+              ...rpcArgs(self),
               regions,
               sources: sourcesWithoutLayout,
-              ...self.rpcProps(),
               bpPerPx,
             }),
           onResult: (idx, result) => {
@@ -564,17 +567,7 @@ export default function stateModelFactory(
                 showRowLabelsMenuItem(self),
               ]),
           // the color key only renders as an overlay of >1 source
-          ...(self.overlayLegendApplies
-            ? [
-                showLegendCheckboxItem(
-                  self.showLegend,
-                  () => {
-                    self.setShowLegend(!self.showLegend)
-                  },
-                  { pin: self.showLegendDisplayTypeDefault },
-                ),
-              ]
-            : []),
+          ...(self.overlayLegendApplies ? [legendCheckboxItem(self)] : []),
           // density maps score to color, so score-axis cross hatches are
           // meaningless there (`showCrossHatches` enforces the same on the
           // drawing side)

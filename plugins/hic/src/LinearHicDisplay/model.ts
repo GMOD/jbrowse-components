@@ -12,7 +12,11 @@ import LegendMixin, {
 } from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import { triangleScreenToData } from '@jbrowse/display-kit/triangleTransform'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import {
+  triangleScreenToData,
+  triangleViewTransform,
+} from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -402,12 +406,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * genomic position under the live map.
        */
       get viewTransform() {
-        const { bpPerPx, offsetPx } = self.host
-        const originBp = self.rpcData?.originBp ?? 0
-        return {
-          viewScale: 1 / bpPerPx,
-          viewOffsetX: originBp / bpPerPx - offsetPx,
-        }
+        return triangleViewTransform(self.host, self.rpcData?.originBp ?? 0)
       },
     }))
     .views(self => ({
@@ -728,12 +727,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           },
           run: async ({ resolution, regions, axisBlocks, originBp }, ctx) =>
             await ctx.callRpc('RenderHicData', {
-              adapterConfig: self.adapterConfig,
+              ...rpcArgs(self),
               regions,
               axisBlocks,
               originBp,
               resolution,
-              ...self.rpcProps(),
             }),
           commit: result => {
             self.setRpcData(result)

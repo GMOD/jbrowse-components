@@ -1,9 +1,6 @@
-import {
-  promotableToggleItem,
-  showLegendCheckboxItem,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { promotableToggleItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
 import { collapseGroupRowsItems, hiddenGroupsItems } from './groupByMenu.ts'
 
@@ -72,13 +69,7 @@ function softClippingItem(model: ReadsModel) {
 
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
-    showLegendCheckboxItem(
-      model.showLegend,
-      () => {
-        model.setShowLegend(!model.showLegend)
-      },
-      { pin: model.showLegendDisplayTypeDefault },
-    ),
+    legendCheckboxItem(model),
     toggleItem('Show coverage', model.showCoverage, show => {
       model.setShowCoverage(show)
     }),

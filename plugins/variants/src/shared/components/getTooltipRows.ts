@@ -23,7 +23,7 @@ export interface TooltipRow {
   value: string
 }
 
-// Turn a hovered {...source, ...hoveredGenotype} record into ordered,
+// Turn a hovered {...source, ...hoveredFeature} record into ordered,
 // human-labeled rows: variant identity first (fixed order), then sample
 // metadata attributes (capitalized). Skips internal plumbing keys and
 // empty/undefined values so the table stays free of blank rows.

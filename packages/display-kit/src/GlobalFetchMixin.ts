@@ -89,6 +89,17 @@ export default function GlobalFetchMixin() {
           ? blockKeySignature(host.staticBlocks.contentBlocks)
           : undefined
       },
+      /**
+       * #getter
+       * The same over `dynamicBlocks`, for a display whose fetch window is the
+       * live viewport rather than the snapped block set (LD).
+       */
+      get dynamicBlockSignature(): string | undefined {
+        const { host } = this
+        return host.initialized
+          ? blockKeySignature(host.dynamicBlocks.contentBlocks)
+          : undefined
+      },
     }))
     .views(self => ({
       /**

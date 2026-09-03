@@ -77,3 +77,23 @@ export function triangleScreenToData(
     uy: (rx + ry) * Math.SQRT1_2,
   }
 }
+
+/**
+ * The live half of the map from a triangle payload's pre-rotation data space
+ * (origin-relative bp / √2) to canvas px: pure view arithmetic, so pan and zoom
+ * move it every frame with no refetch, and the payload's own axis origin folds
+ * back in here in double precision, which is what keeps float32 instance
+ * positions small. Stale data under a refetch draws at its own genomic position
+ * under the live map. HiC and LD both read it into their render state, hit
+ * test and SVG export, so the three cannot disagree.
+ */
+export function triangleViewTransform(
+  host: { bpPerPx: number; offsetPx: number },
+  originBp: number,
+) {
+  const { bpPerPx, offsetPx } = host
+  return {
+    viewScale: 1 / bpPerPx,
+    viewOffsetX: originBp / bpPerPx - offsetPx,
+  }
+}

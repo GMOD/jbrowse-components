@@ -14,8 +14,10 @@ import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   WiggleScoreConfigMixin,
@@ -106,6 +108,7 @@ export function stateModelFactory(
         MultiRegionDisplayMixin(),
         WiggleScoreConfigMixin(),
         ContextMenuMixin<ManhattanContextMenuInfo>(),
+        StoredHoverMixin<ManhattanHit>(),
         types.model({
           type: types.literal('LinearManhattanDisplay'),
           /**
@@ -134,20 +137,8 @@ export function stateModelFactory(
         // a single-region fetch only re-wraps that region (whole-genome views
         // land 20+ regions serially; a derived view would re-wrap them all).
         flatbushes: regionDataMap<Flatbush>('flatbushes'),
-        // Currently hovered point — drives the hover circle + tooltip. Named
-        // apart from the `hoveredFeature` getter below it fills, because
-        // `BaseDisplay` declares that hook as a computed and MST refuses to
-        // instantiate a volatile over one.
-        hoveredManhattanHit: undefined as ManhattanHit | undefined,
       }))
       .views(self => ({
-        /**
-         * #getter
-         * Fills `BaseDisplay`'s cross-display hover hook.
-         */
-        get hoveredFeature() {
-          return self.hoveredManhattanHit
-        },
         /**
          * #getter
          * the config typed off the concrete schema; `ConfigurationReference`
@@ -511,12 +502,6 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setHoveredFeature(hit: ManhattanHit | undefined) {
-          self.hoveredManhattanHit = hit
-        },
-        /**
-         * #action
-         */
         setShowLdLegend(val: boolean) {
           setConf(self, 'showLdLegend', val)
         },
@@ -686,14 +671,9 @@ export function stateModelFactory(
          * #action
          */
         fetchNeeded(needed: IndexedRegion[]) {
-          const { adapterConfig } = self
           return fetchEachRegion(self, needed, {
             call: (region, ctx) =>
-              ctx.callRpc('GetManhattanData', {
-                adapterConfig,
-                region,
-                ...self.rpcProps(),
-              }),
+              ctx.callRpc('GetManhattanData', { ...rpcArgs(self), region }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)
             },
@@ -734,23 +714,6 @@ export function stateModelFactory(
           // MultiRegionDisplayMixin's afterAttach already runs (see
           // afterAttachAutoChain.test.ts). An explicit call would double-install
           // its fetch autoruns.
-          /**
-           * #action
-           * Fills `BaseDisplay`'s hover-clear hook, which the fetch
-           * foundation's reaction calls on every viewport change.
-           *
-           * The hover highlight is a DOM ring positioned from the hit's
-           * screenX/screenY, captured when the pointer last moved — so a
-           * pan/zoom/scroll under a stationary cursor (none of which fires a
-           * mousemove over a painted canvas) leaves it parked on empty space
-           * while the tooltip beside it describes a SNP that has moved. All
-           * three axes, not just bpPerPx: see
-           * `installClearHoverOnViewportChange`.
-           */
-          clearHoveredFeature() {
-            self.setHoveredFeature(undefined)
-          },
-
           afterAttach() {
             // LocusZoom-style default: while no index SNP is pinned, keep the
             // index anchored on the highest-scoring loaded SNP, re-tracking it as

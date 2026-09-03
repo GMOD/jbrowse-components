@@ -10,7 +10,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // `showTooltips` was a display prop before the multi-sample rewrite, came back
 // as a config slot, and is the only hover affordance the checkbox reaches: the
 // crosshairs, the hovered-cell highlight and the cross-display `hoveredFeature`
-// channel all read `hoveredGenotype`, which stays written either way.
+// channel all read `hoveredFeature`, which stays written either way.
 
 const HOVER = { genotype: '0|1', name: 'HG002' }
 
@@ -49,13 +49,13 @@ describe('showTooltips', () => {
 
   it('suppresses the tooltip and nothing else beside it', () => {
     const display = regularDisplay()
-    display.setHoveredGenotype(HOVER)
+    display.setHoveredFeature(HOVER)
     expect(display.hoveredTooltipSource).toMatchObject({ genotype: '0|1' })
 
     display.setShowTooltips(false)
     expect(display.hoveredTooltipSource).toBeUndefined()
     // the hit test still ran and the session-wide hover channel still sees it
-    expect(display.hoveredGenotype).toEqual(HOVER)
+    expect(display.hoveredFeature).toEqual(HOVER)
     expect(display.hoveredFeature).toEqual(HOVER)
   })
 

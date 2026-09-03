@@ -89,24 +89,8 @@ export function WiggleCommonMixin() {
        * #volatile
        */
       rpcDataMap: regionDataMap<WiggleDataResult>('rpcDataMap'),
-      /**
-       * #volatile
-       * The stored hit. Named apart from the `hoveredFeature` getter below it
-       * fills, because `BaseDisplay` declares that hook as a computed and MST
-       * refuses to instantiate a volatile over one — a display filling it stores
-       * under its own name and exposes a getter, which is what canvas,
-       * alignments and the variant displays already did.
-       */
-      hoveredWiggleFeature: undefined as WiggleHoveredFeature | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       * Fills `BaseDisplay`'s cross-display hover hook.
-       */
-      get hoveredFeature() {
-        return self.hoveredWiggleFeature
-      },
       /**
        * #getter
        * Strict zoom equality (adr-008): the worker bins scores to the requested
@@ -316,12 +300,6 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setHoveredFeature(feat?: WiggleHoveredFeature) {
-        self.hoveredWiggleFeature = feat
-      },
-      /**
-       * #action
-       */
       selectFeature(feat: WiggleHoveredFeature) {
         openFeatureWidget(self, wiggleFeatureWidgetData(feat))
       },
@@ -372,17 +350,6 @@ export function WiggleCommonMixin() {
        */
       setLineWidth(val?: number) {
         setConf(confNode(self), 'lineWidth', val)
-      },
-    }))
-    .actions(self => ({
-      // The plot is a painted canvas with no element travelling with its
-      // features, so a pan/zoom/scroll under a stationary cursor fires no
-      // mousemove and no mouseleave: the tooltip would stay open reporting the
-      // bp and score the cursor was over *before* the content moved.
-      // `MultiRegionDisplayMixin` installs the reaction that catches all four
-      // axes; this is the half it calls.
-      clearHoveredFeature() {
-        self.setHoveredFeature(undefined)
       },
     }))
 }

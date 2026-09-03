@@ -24,8 +24,10 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   RowHeightMixin,
@@ -86,6 +88,11 @@ import type {
 // label with: these displays paint their cells by genotype, so a row has no
 // `color` of its own to spend, and carrying the tint under that name is what
 // once made them the last display drawing its own label component.
+
+type VariantHoverFields = Record<string, unknown> & {
+  genotype: string
+  name: string
+}
 export function maybeApplyColorByPalette(
   colorBy: string,
   sources: Source[],
@@ -419,6 +426,7 @@ export default function MultiSampleVariantBaseModelF(
         MultiRegionDisplayMixin(),
         LegendMixin(),
         RowHeightMixin(),
+        StoredHoverMixin<VariantHoverFields>(),
         TreeSidebarMixin<Source>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
         types.model({
@@ -485,12 +493,6 @@ export default function MultiSampleVariantBaseModelF(
          * #volatile
          */
         sourcesVolatile: undefined as Source[] | undefined,
-        /**
-         * #volatile
-         */
-        hoveredGenotype: undefined as
-          | (Record<string, unknown> & { genotype: string; name: string })
-          | undefined,
         /**
          * #volatile
          *
@@ -824,14 +826,6 @@ export default function MultiSampleVariantBaseModelF(
                 console.error(e)
                 getNotificationSink(self).notifyError(`${e}`, e)
               })
-          },
-          /**
-           * #action
-           */
-          setHoveredGenotype(
-            arg?: Record<string, unknown> & { genotype: string; name: string },
-          ) {
-            self.hoveredGenotype = arg
           },
           /**
            * #action
@@ -1427,15 +1421,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Fills `BaseDisplay`'s cross-display hover hook with the genotype cell
-         * under the pointer, so the view's `session.hovered` channel sees this
-         * display like every other one.
-         */
-        get hoveredFeature() {
-          return self.hoveredGenotype
-        },
-        /**
-         * #getter
          * The hovered thing as the tooltip table reads it: the record's fields,
          * with the hovered sample row's metadata attributes merged underneath
          * them so a cohort colored by a `samplesTsv` column reports that column
@@ -1450,15 +1435,15 @@ export default function MultiSampleVariantBaseModelF(
          * `showTooltips` is gated here rather than in the component, so the one
          * getter feeding the tooltip is the one place that answers "is there a
          * tooltip" — the hit test, `hoveredFeature` and the hovered-cell
-         * highlight go on reading `hoveredGenotype` and are unaffected.
+         * highlight go on reading `hoveredFeature` and are unaffected.
          */
         get hoveredTooltipSource() {
-          const { hoveredGenotype, sourceMap } = self
-          if (!hoveredGenotype || !self.showTooltips) {
+          const { hoveredFeature, sourceMap } = self
+          if (!hoveredFeature || !self.showTooltips) {
             return undefined
           }
-          const source = sourceMap.get(hoveredGenotype.name)
-          return source ? { ...source, ...hoveredGenotype } : hoveredGenotype
+          const source = sourceMap.get(hoveredFeature.name)
+          return source ? { ...source, ...hoveredFeature } : hoveredFeature
         },
       }))
       .actions(self => ({
@@ -1783,7 +1768,7 @@ export default function MultiSampleVariantBaseModelF(
         // visible region, so there is no per-region replacement for stale cells
         // to draw under — see the hook.
         clearSettingsBakedData() {
-          self.setCellData(undefined)
+          self.clearDisplaySpecificData()
         },
 
         // Ignores `needed` and refetches all visible regions because the
@@ -1803,22 +1788,15 @@ export default function MultiSampleVariantBaseModelF(
           // Resolved before the await, so the RPC sends exactly what
           // `fetchNeeded` is about to mark loaded — no second view read across
           // the async boundary.
-          const rpcProps = self.rpcProps()
-          const { adapterConfig } = self
+          const args = rpcArgs(self)
           // One RPC serves every region, so the whole batch is held or none of
           // it is, and `fetchRegionsBatched` marks them loaded together.
           await fetchRegionsBatched(self, regions, {
             call: (batch, ctx) =>
               ctx.callRpc('MultiSampleVariantGetCellData', {
-                adapterConfig,
+                ...args,
                 regions: batch.map(r => r.region),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
-                // Passed at the call rather than through `rpcProps()`: it
-                // swings at the 20kb span tier and would otherwise be an RPC
-                // cache key — see REGION_TOO_LARGE.md §"How the verdict is
-                // built".
-                byteLimit: self.resolvedByteLimit(),
-                ...rpcProps,
                 // bound at factory call time, per subclass
                 mode: cellDataMode,
               }),
@@ -1832,22 +1810,6 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
-        /**
-         * #action
-         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
-         * foundation's reaction calls on every viewport change.
-         *
-         * The matrix is a sticky canvas, so a pan, a zoom or an internal
-         * wheel-scroll fires no mousemove and no mouseleave, and
-         * `hoveredGenotype` goes on naming a cell that has moved out from under
-         * the pointer — the tooltip then reports another sample's genotype at
-         * the cursor. The chrome's `onPointerPosition` only covers the cases
-         * where the *pointer* moves.
-         */
-        clearHoveredFeature() {
-          self.setHoveredGenotype(undefined)
-        },
-
         afterAttach() {
           runLazyAfterAttach(
             self,

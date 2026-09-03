@@ -1,11 +1,11 @@
 import {
   makeRadioSubMenu,
   radioItems,
-  showLegendCheckboxItem,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
 import GridOnIcon from '@mui/icons-material/GridOn'
@@ -91,13 +91,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    showLegendCheckboxItem(
-      self.showLegend,
-      () => {
-        self.setShowLegend(!self.showLegend)
-      },
-      { pin: self.showLegendDisplayTypeDefault },
-    ),
+    legendCheckboxItem(self),
     ...(self.hasResolutions
       ? [
           toggleItem(
