@@ -187,15 +187,14 @@ public struct Uniforms {
 // mark, with the ON run starting at coord 0 — the phase `ctx.setLineDash` and
 // `stroke-dasharray` give, so the three backends dash alike.
 //
-// The rotation is what makes both ends soft, and it is the whole reason this is
-// shared. arcFlat.slang and arcLine.slang each had a dash, and each got a
-// different half of it right. arcLine measured `min(phase, dashPx - phase)`
-// straight off the wrap, so a dash's TRAILING edge ramped and its LEADING edge
-// stepped 0 -> 0.5 in no distance at all; arcFlat rotated the run to the middle
-// of the period (fixing that) but then ramped over a constant 1 CSS px, which on
-// a dpr=2 display is two device px — twice the softness of the sides of the very
-// same line. Centring the run at half a period puts the wrap deep in the gap
-// where nothing is drawn, and `aaPx(dpr)` is the sides' own ramp.
+// The rotation is what makes both ends soft, and both halves of it were got
+// wrong here before. Measuring `min(phase, dashPx - phase)` straight off the
+// wrap ramps a dash's TRAILING edge and steps its LEADING edge 0 -> 0.5 in no
+// distance at all; rotating the run to the middle of the period fixes that but
+// then ramping over a constant 1 CSS px is two device px on a dpr=2 display —
+// twice the softness of the sides of the very same line. Centring the run at
+// half a period puts the wrap deep in the gap where nothing is drawn, and
+// `aaPx(dpr)` is the sides' own ramp.
 //
 // The reduction is `t - period * floor(t / period)` rather than the obvious
 // `frac(t / period) * period`, which are the same number only in exact

@@ -37,10 +37,9 @@ static const float ARC_FLAT_MIN_PX = 2.5;
 // vanishes into the background. Exported so drawCanvas.ts strokes the same value.
 static const float ARC_FLAT_ALPHA = 0.7;
 // The split-read variant's dash, in CSS px — samplot.py's dotted style. Declared
-// here and exported for the same reason arcLine.slang's tick dash is: the
-// Canvas2D twin spelled it `setLineDash([3, 3])` and the SVG cross-region
-// overlay would have been a third spelling, each held to the other two by a
-// comment. One declaration, three consumers.
+// here and exported because the Canvas2D twin spelled it `setLineDash([3, 3])`
+// and the SVG cross-region overlay would have been a third spelling, each held
+// to the other two by a comment. One declaration, three consumers.
 static const float ARC_FLAT_DASH_PX = 3.0;
 static const float ARC_FLAT_GAP_PX = 3.0;
 
@@ -123,10 +122,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // a 3.0/6.0 pair spelled into the arithmetic — the SVG twin passes them to
   // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
   // in numbers is a period only a comment holds the other two to.
-  //
-  // `dashCoverage` (alignmentsUniforms) is the pattern arcLine.slang's tick also
-  // cuts: a periodic cut along the segment, on top of the single cut the
-  // coverage above makes at each end.
   if (fragIn.dashed > 0.5) {
     alpha *= dashCoverage(
       fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.devicePixelRatio);

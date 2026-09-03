@@ -1,8 +1,4 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import {
-  ARC_LINE_DASH_PX,
-  ARC_LINE_GAP_PX,
-} from '../../shaders/slang/arcLine.consts.generated.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
 import { drawArcs } from './drawCanvas.ts'
 import { ARC_SHAPE_ARC } from './shapes.ts'
@@ -16,8 +12,8 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the dash pattern in force at each stroke, which is the whole question
 // here: `setLineDash` is state on the context rather than an argument to the
-// stroke, so a test that only checked it was CALLED would pass on a call made
-// after the tick it was meant to dash.
+// stroke, so a tick painted after the arc loop's split-connector dash would
+// inherit it unless this pass sets its own.
 function recordingCtx() {
   const strokes: number[][] = []
   let dash: number[] = []
@@ -80,39 +76,22 @@ function paint(arcs: ComputedArc[], lines: ComputedLine[]) {
   return strokes
 }
 
-// A tick and a cross-region arc's FOOT land on the same x whenever a breakpoint
-// reaches one acceptor the view shows and another it does not — the ordinary
-// shape of a translocation seen through two windows. Both are
-// ARC_COLOR_INTERCHROM and both run the band's height there, so drawn solid the
-// pair reads as a single mark and the tick's claim ("there is more, off
-// screen") is invisible. Support cannot separate them either: `arcLineWidth`
-// caps at 4x around 44 reads, so a 206-read tick and a 37-read one are the same
-// 8 device px.
-//
-// The pattern is arcLine.slang's, imported rather than repeated, so this fails
-// if the CPU twin and the shader ever disagree about it (adr-051).
-describe('interchromosomal ticks are dashed', () => {
-  it('strokes the tick with the shader pattern', () => {
-    expect(paint([], [tick(4000)])).toEqual([
-      [ARC_LINE_DASH_PX, ARC_LINE_GAP_PX],
-    ])
+// The band paints ticks first and arcs after, and the arc loop sets a dash per
+// arc for split connectors. Every mark in this band is solid except that one,
+// so the tick pass has to state it rather than inherit whatever the context
+// was last left with.
+describe('interchromosomal ticks are solid', () => {
+  it('strokes the tick with no dash', () => {
+    expect(paint([], [tick(4000)])).toEqual([[]])
   })
 
   it('leaves the arcs solid, in the same draw', () => {
-    // The tick pass runs first (`ARC_PASSES`, ticks under arcs), so a dash left
-    // set would land on every curve behind it. Order matters here: the tick's
-    // stroke is the first entry and the arc's the second.
-    expect(paint([arc(1000, 9000)], [tick(4000)])).toEqual([
-      [ARC_LINE_DASH_PX, ARC_LINE_GAP_PX],
-      [],
-    ])
+    expect(paint([arc(1000, 9000)], [tick(4000)])).toEqual([[], []])
   })
 
-  it('does not leave the dash set when there are no arcs to reset it', () => {
-    // The arc loop sets a dash per arc, so with arcs present the reset is
-    // incidental. With none, nothing downstream would clear it — which is why
-    // the tick loop resets for itself rather than relying on the next painter.
+  it('strokes solid even when the context arrives with a dash set', () => {
     const { ctx, strokes } = recordingCtx()
+    ctx.setLineDash([3, 3])
     drawArcs(
       ctx,
       arcsToRegionResult([], [tick(4000)]),
@@ -129,10 +108,6 @@ describe('interchromosomal ticks are dashed', () => {
       true,
       800,
     )
-    expect(strokes).toHaveLength(1)
-    // Stroke a probe line the way a later painter would, with no dash of its own.
-    ctx.beginPath()
-    ctx.stroke()
-    expect(strokes[1]).toEqual([])
+    expect(strokes).toEqual([[]])
   })
 })

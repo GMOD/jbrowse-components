@@ -5,10 +5,6 @@ import {
   ARC_FAR_SCREEN_WIDTHS,
   ARC_HEIGHT_MARGIN,
 } from '../../shaders/slang/arc.consts.generated.ts'
-import {
-  ARC_LINE_DASH_PX,
-  ARC_LINE_GAP_PX,
-} from '../../shaders/slang/arcLine.consts.generated.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
 import type { ArcHitBandOptions } from './arcHitTest.ts'
@@ -216,9 +212,9 @@ describe('a band of ticks and no arcs', () => {
     expect(highlight?.lineWidth).toBeGreaterThan(OPTS.lineWidth)
   })
 
-  test("the highlight is dashed on the shader's own pattern", () => {
+  test('the highlight carries no dash', () => {
     const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
-    expect(highlight?.dash).toBe(`${ARC_LINE_DASH_PX} ${ARC_LINE_GAP_PX}`)
+    expect(highlight?.dash).toBeUndefined()
   })
 })
 

@@ -18,7 +18,7 @@ an interchromosomal connection joins". The reason is sound: the cloud's Y axis i
 back to the endpoint gap — about 1.07e8 for a real chr9/chr22 junction — which
 becomes a genuine `maxFlatArcSpanBp` and rescales the whole cloud.
 
-A tick is a dashed vertical spanning the band (`arcLine.slang`). Reported from
+A tick is a solid vertical spanning the band (`arcLine.slang`). Reported from
 use: over a read cloud they are hard to read, because a vertical crossing every
 plotted row looks like it belongs to each of them and belongs to none.
 

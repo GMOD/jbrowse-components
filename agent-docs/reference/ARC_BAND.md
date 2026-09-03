@@ -1,6 +1,6 @@
 ---
 name: arc-band
-description: The alignments arc band draws two mark families — curved/flat arcs and interchromosomal connector ticks — into one rect, one Y scale and one palette, so paint order, hit-test priority, support floors and the dashed tick are all one subsystem rather than per-mark choices. Also holds why an interchromosomal arc is the only arc with breakend feet, and the two producers that disagree on which direction a foot points. Read before adding a mark to this band, changing what hides an arc, or re-deriving an arc's geometry at a call site.
+description: The alignments arc band draws two mark families — curved/flat arcs and interchromosomal connector ticks — into one rect, one Y scale and one palette, so paint order, hit-test priority, support floors and the tick's stroke are all one subsystem rather than per-mark choices. Also holds why an interchromosomal arc is the only arc with breakend feet, and the two producers that disagree on which direction a foot points. Read before adding a mark to this band, changing what hides an arc, or re-deriving an arc's geometry at a call site.
 audience: internal
 ---
 
@@ -200,7 +200,7 @@ GAP and not the DIAMETER: 40 pairs spaced exactly one window apart chain into on
 cluster spanning 39 of them, where the prose reads as a diameter claim. That one is
 filed rather than fixed — `agent-docs/TODO.md`.
 
-## Support, and why a tick is dashed
+## Support, and why a tick can hide behind an arc's foot
 
 **Both families carry `support` and both spend it the same way.** An arc and a
 tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is the
@@ -268,30 +268,36 @@ Filed with the options in
 — it changes what every published translocation figure looks like, so it is a
 decision and not a fix.
 
-**A tick is DASHED, and that is what separates it from an arc's foot.** The two
-land on the same x whenever a breakpoint reaches one acceptor the view shows and
-another it does not — the ordinary shape of a translocation seen through two
-windows, and the ordinary shape of a fusion whose transcript has more than one
-acceptor. Both marks are `ARC_COLOR_INTERCHROM` and both run the band's height
-there, so solid they read as one mark: on `cancer_sv/k562_bcr_abl_split` that hid
-a junction carrying six times the drawn arc's support behind what looked like the
-arc's own leg, and the figure shipped that way.
+**A tick is SOLID, and nothing in the mark separates it from an arc's foot.**
+The two land on the same x whenever a breakpoint reaches one acceptor the view
+shows and another it does not — the ordinary shape of a translocation seen
+through two windows, and the ordinary shape of a fusion whose transcript has
+more than one acceptor. Both marks are `ARC_COLOR_INTERCHROM` and both run the
+band's height there, so they read as one mark: on
+`cancer_sv/k562_bcr_abl_split` that hid a junction carrying six times the drawn
+arc's support behind what looked like the arc's own leg, and the figure shipped
+that way.
+
+The tick was dashed for exactly this reason and is solid again by Colin's call
+(2026-09-02) — the dash was disliked on sight, and that decision outranks the
+collision. **Do not re-dash it without asking.** What is still true is the
+collision and the reason the obvious alternative does not work.
 
 **Support cannot do this job**, which is the part worth knowing before reaching
 for it: `arcLineWidth` caps at 4x the base width around 44 reads, so a 206-read
 tick and a 37-read one are the same 8 device px. Re-framing a figure to thin the
 bar cannot work, and two people have now expected it to.
 
-The pattern is declared in `arcLine.slang` (`ARC_LINE_DASH_PX` /
-`ARC_LINE_GAP_PX`) and the CPU side imports the generated twin, adr-051's rule.
-Its period is deliberately not arcFlat's `[3, 3]` split-line dash — the other
-dashed mark in this band, and in read-cloud mode both can be on screen at once.
-`SvgCanvas.setLineDash` carries it into the export, so the third renderer needs
-nothing of its own. `tickDash.test.ts` pins the pattern in force AT each stroke
-rather than that `setLineDash` was called, since a call after the stroke it was
-meant to dash would pass the weaker test.
+Solid is stated at each of the three renderers rather than left to the context:
+`drawArcs` sets an empty dash before the tick loop (the arc loop after it sets a
+dash per split connector), `arcLine.slang`'s fragment carries no
+`dashCoverage`, and `resolveArcBandHover` leaves `ArcHighlight.dash` undefined
+for a tick. `tickSolid.test.ts` pins the pattern in force AT each stroke rather
+than that `setLineDash` was called, since a call after the stroke it governs
+would pass the weaker test. arcFlat's `[3, 3]` split-line dash is now the only
+dashed mark in this band.
 
-The hover carries the same fact in words: `partnerOffView` on
+The hover carries the claim in words: `partnerOffView` on
 `ArcLineTooltipPayload` prints "Outside the displayed regions". Naming the mate
 chromosome is the whole content of a tick and it is actively misleading when that
 chromosome is on screen. **The claim is safe unconditionally in arc mode and false

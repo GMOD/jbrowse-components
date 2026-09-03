@@ -2,7 +2,3 @@
 // Do not edit. Run `pnpm gen:shaders` to regenerate.
 
 export const ARC_COLOR_INTERCHROM = 3
-
-export const ARC_LINE_DASH_PX = 5
-
-export const ARC_LINE_GAP_PX = 4
