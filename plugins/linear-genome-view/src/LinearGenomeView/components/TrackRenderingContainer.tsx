@@ -1,4 +1,4 @@
-import { Suspense, useCallback } from 'react'
+import { Suspense } from 'react'
 
 import { LoadingOverlay } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -116,22 +116,9 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   // displays[0]); narrow to the linear shape for height/RenderingComponent
   const display = track.activeDisplay as LinearDisplayModel
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs, showTrackOutlines } = model
+  const { showTrackOutlines } = model
   const trackId = track.trackId
   const minimized = track.minimized
-
-  // callback ref keeps trackRefs in sync as the rendering div mounts/unmounts
-  // (e.g. on minimize/restore), unlike a useEffect that misses the toggle
-  const setRef = useCallback(
-    (el: HTMLDivElement | null) => {
-      if (el) {
-        trackRefs[trackId] = el
-      } else {
-        delete trackRefs[trackId]
-      }
-    },
-    [trackRefs, trackId],
-  )
 
   return (
     <div
@@ -147,7 +134,6 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
           <TrackDisplayRegion
             model={model}
             track={track}
-            ref={setRef}
             className={classes.renderingComponentContainer}
             style={{ left: showTrackOutlines ? -1 : 0 }}
           >

@@ -38,12 +38,6 @@ export interface OverlayProps {
   trackId: string
   /** SVG export: fixed track tops, scrollTops zeroed */
   yOffsetsOverride?: number[]
-  /**
-   * Live rendering: DOM-measured track tops relative to the overlay SVG.
-   * A level whose rendering div isn't mounted is `undefined`, not 0, so the
-   * model-derived offset is used for it instead.
-   */
-  domYOffsets?: (number | undefined)[]
 }
 
 // One place the overlay opens a feature widget: the two kinds differ only in
@@ -288,7 +282,6 @@ export const OverlayPaths = observer(function OverlayPaths({
   model,
   trackId,
   yOffsetsOverride,
-  domYOffsets,
   pathTestId,
   strokeWidth,
   hoverStrokeWidth,
@@ -300,11 +293,7 @@ export const OverlayPaths = observer(function OverlayPaths({
   const session = getSession(model)
   const { hoveredOverlay } = model
   const match = model.overlayMatches.get(trackId)
-  const overlayData = model.getTrackOverlayData(
-    trackId,
-    yOffsetsOverride,
-    domYOffsets,
-  )
+  const overlayData = model.getTrackOverlayData(trackId, yOffsetsOverride)
   const hoveredId =
     yOffsetsOverride === undefined && hoveredOverlay?.trackId === trackId
       ? hoveredOverlay.id

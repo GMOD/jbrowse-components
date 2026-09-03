@@ -432,14 +432,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * feature layout records to SVG coordinates.
        *
        * `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
-       * `domYOffsets` — live rendering: DOM-measured track tops (relative to
-       * the overlay SVG), scrollTops still read from model.
+       * Live rendering stacks each view's `height` and reads its
+       * `getTrackYOffset`, which the LGV keeps equal to the pixels (its label
+       * bands are measured into the model), so the overlay re-renders from
+       * MobX alone rather than polling the DOM.
        */
-      getTrackOverlayData(
-        trackId: string,
-        yOffsetsOverride?: number[],
-        domYOffsets?: (number | undefined)[],
-      ) {
+      getTrackOverlayData(trackId: string, yOffsetsOverride?: number[]) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
         const levels: OverlayLevel[] = []
@@ -466,7 +464,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           levels.push({
             yOffset:
               yOffsetsOverride?.[level] ??
-              domYOffsets?.[level] ??
               viewTop + (view.getTrackYOffset(trackId) ?? 0),
             height: d.height,
             coverageOffset: d.coverageDisplayHeight ?? 0,

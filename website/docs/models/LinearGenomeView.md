@@ -80,13 +80,12 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="volatile-tracklabelbands">**trackLabelBands**</span><br><code>trackLabelBands: observable.map&lt;string, number&gt;()</code> | Height of each track's in-flow label band, measured by TrackContainer as the rendering container's offset inside its Paper. Absent (0) while the label is hidden, overlapping, or not yet measured. Observable, unlike `trackRefs`, so the offset and height getters below re-derive when a band changes. | LinearGenomeView |
+| <span id="volatile-tracklabelbands">**trackLabelBands**</span><br><code>trackLabelBands: observable.map&lt;string, number&gt;()</code> | Height of each track's in-flow label band, measured by TrackContainer as the rendering container's offset inside its Paper. Absent (0) while the label is hidden, overlapping, or not yet measured. Observable, so the offset and height getters re-derive when a band changes. | LinearGenomeView |
 | <span id="volatile-volatilewidth">**volatileWidth**</span><br><code>volatileWidth: undefined as number &#124; undefined</code> |  | LinearGenomeView |
 | <span id="volatile-minimumblockwidth">**minimumBlockWidth**</span><br><code>minimumBlockWidth: 3</code> |  | LinearGenomeView |
 | <span id="volatile-draggingtrackid">**draggingTrackId**</span><br><code>draggingTrackId: undefined as undefined &#124; string</code> |  | LinearGenomeView |
 | <span id="volatile-lasttrackdragy">**lastTrackDragY**</span><br><code>lastTrackDragY: undefined as undefined &#124; number</code> |  | LinearGenomeView |
 | <span id="volatile-volatileerror">**volatileError**</span><br><code>volatileError</code> |  | LinearGenomeView |
-| <span id="volatile-trackrefs">**trackRefs**</span><br><code>trackRefs</code> |  | LinearGenomeView |
 | <span id="volatile-coarsedynamicblocks">**coarseDynamicBlocks**</span><br><code>coarseDynamicBlocks: [] as ContentBlock[]</code> |  | LinearGenomeView |
 | <span id="volatile-coarsetotalbp">**coarseTotalBp**</span><br><code>coarseTotalBp: 0</code> |  | LinearGenomeView |
 | <span id="volatile-coarsebpperpx">**coarseBpPerPx**</span><br><code>coarseBpPerPx: self.legacyBpPerPx &#124;&#124; 1</code> |  | LinearGenomeView |

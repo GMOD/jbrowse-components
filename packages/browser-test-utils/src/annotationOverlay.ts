@@ -306,7 +306,6 @@ export function drawAnnotationOverlay(
     id: string
     views?: AnchorableView[]
     assemblyNames?: string[]
-    trackRefs?: Record<string, Element | undefined>
     getHighlightCoords?: (region: {
       assemblyName?: string
       refName: string
@@ -330,11 +329,12 @@ export function drawAnnotationOverlay(
     if (!view) {
       return undefined
     }
-    const el = anchor.track
-      ? view.trackRefs?.[anchor.track]
-      : (document.querySelector(
-          `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
-        ) ?? undefined)
+    const el =
+      document.querySelector(
+        anchor.track
+          ? `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.track)}"]`
+          : `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
+      ) ?? undefined
     if (!el) {
       return undefined
     }

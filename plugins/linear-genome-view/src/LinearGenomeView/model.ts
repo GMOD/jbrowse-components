@@ -535,15 +535,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // typed locals so `unknown`/`Record` aren't narrowed to `undefined`/`{}`; inline
       // type assertions here get stripped by no-unnecessary-type-assertion
       const volatileError: unknown = undefined
-      const trackRefs: Record<string, HTMLDivElement> = {}
       return {
         /**
          * #volatile
          * Height of each track's in-flow label band, measured by
          * TrackContainer as the rendering container's offset inside its Paper.
          * Absent (0) while the label is hidden, overlapping, or not yet
-         * measured. Observable, unlike `trackRefs`, so the offset and height
-         * getters below re-derive when a band changes.
+         * measured. Observable, so the offset and height getters re-derive
+         * when a band changes.
          */
         trackLabelBands: observable.map<string, number>(),
         /**
@@ -567,11 +566,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
 
         volatileError,
-        /**
-         * #volatile
-         */
-
-        trackRefs,
         /**
          * #volatile
          */

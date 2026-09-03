@@ -28,8 +28,8 @@ const useStyles = makeStyles()({
   // described in TrackRenderingContainer. flow-root keeps the block formatting
   // context that `overflow: hidden` used to establish as a side effect (neither
   // `clip` nor no overflow does), so child margins still can't collapse through
-  // and shift the track — which the breakpoint split view would pick up, since
-  // its connector overlay measures trackRefs' getBoundingClientRect().top.
+  // and shift the track — which would put the pixels off the model's offset
+  // arithmetic, which the breakpoint split view draws its connectors from.
   root: {
     marginTop: TRACK_TOP_GAP,
     position: 'relative',
