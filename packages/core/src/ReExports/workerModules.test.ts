@@ -31,3 +31,30 @@ test('the stub survives what a plugin does with UI at module scope', async () =>
   expect(await mui.something).toBe(uiStub)
   expect(new (mui.Thing as new () => unknown)()).toBe(uiStub)
 })
+
+// how `import { makeStyles } from 'tss-react/mui'` reaches JBrowseExports in a
+// published plugin: esbuild's `__toESM` copies the module's own names onto a
+// fresh object rather than reading through it. The stub reports `__esModule`,
+// so this is the branch esbuild takes for it.
+function esbuildToESM(mod: object) {
+  const ns: Record<string, unknown> = Object.create(Object.getPrototypeOf(mod))
+  for (const key of Object.getOwnPropertyNames(mod)) {
+    Object.defineProperty(ns, key, {
+      get: () => Reflect.get(mod, key),
+      enumerable: true,
+    })
+  }
+  return ns
+}
+
+test("the stub survives esbuild's namespace wrapper", () => {
+  const wrap = (name: string) => esbuildToESM(workerModules[name] as object)
+
+  const { makeStyles } = wrap('tss-react/mui')
+  expect(typeof makeStyles).toBe('function')
+  expect((makeStyles as () => (rules: unknown) => unknown)()({})).toBe(uiStub)
+
+  const mui = wrap('@mui/material')
+  expect(typeof mui.Button).toBe('function')
+  expect(typeof mui.default).toBe('function')
+})
