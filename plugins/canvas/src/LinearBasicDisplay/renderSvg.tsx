@@ -129,7 +129,7 @@ function CanvasFeaturesSvgBody({
               canvasWidth,
               bandHeight: height,
               readout: model.densityPeakReadout,
-              palette: palette,
+              palette,
             })
           }}
         />
