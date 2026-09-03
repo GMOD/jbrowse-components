@@ -2,7 +2,6 @@
   {
     "plugin": "Apollo",
     "breaks": [
-      "@jbrowse/core/ui#BaseTooltip",
       "@jbrowse/core/util#isContainedWithin",
       "@jbrowse/core/util/tracks#getParentRenderProps",
       "worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')"

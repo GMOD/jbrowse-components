@@ -22,6 +22,28 @@
 // nothing in the repo could confirm — the same shape of claim as the six typed
 // figures that this release's draft got wrong.
 //
+// A break here is not automatically ours to fix. The two shapes read very
+// differently:
+//
+//   `<module>#<name>` -- a name the host stopped serving. Nobody is going to
+//   rebuild the bundle that reads it, so this one is ours by default, and the
+//   fix is usually to put the name back (see ReExports/documentOnlyNames.ts for
+//   the case where it can only go back on the main thread).
+//
+//   `worker eval: ...` -- the bundle threw evaluating against the worker's
+//   realm. If the message is a missing global (`document`, `window`), the plugin
+//   reads the DOM at module scope and no ABI change can help: the worker calls
+//   `load`, not `loadSettled`, so this takes the worker down. Only the plugin
+//   can fix it.
+//
+// Checked 2026-09-03: Apollo 1.1.1's `createElement` throw is
+// `globalThis.document.createElement('canvas')` at module scope, and Ideogram
+// 2.0.0's is a bare `window` read -- both plugin-side. Apollo's two remaining
+// name breaks (`isContainedWithin`, `getParentRenderProps`) were deliberate
+// deletions of dead code and are deliberately not being restored: Apollo has a
+// JBrowse 5 branch in progress, so the rebuild that fixes its worker throw picks
+// up the current ABI anyway.
+//
 // Why bundles: a plugin externalizes `@jbrowse/core/*`, so at runtime a bare
 // import is a property read on the host's JBrowseExports. Nothing about that is
 // visible in the plugin's source, its types, or its build -- a name we dropped

@@ -135,6 +135,7 @@ export const CORE_UI_NAMES = [
   'ActionLink',
   'AssemblySelector',
   'BaseExportSvgDialog',
+  'BaseTooltip',
   'CONTEXT_MENU_Z_INDEX',
   'CascadingMenu',
   'CascadingMenuButton',

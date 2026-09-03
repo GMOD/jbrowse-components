@@ -49,6 +49,10 @@ const materialUiLabLib = {
 }
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
 
+const lazyBaseTooltip = lazyMap({
+  BaseTooltip: React.lazy(() => import('../ui/BaseTooltip.tsx')),
+})
+
 const libs = {
   ...sharedModules,
 
@@ -109,18 +113,18 @@ const libs = {
   '@material-ui/lab/Alert': Entries.Alert,
   '@material-ui/lab': materialUiLabLib,
 
-  '@jbrowse/core/ui': coreUi,
-  // BaseTooltip is deliberately absent from the '@jbrowse/core/ui' barrel: the
+  // BaseTooltip is deliberately absent from the *source* barrel ui/index.ts: the
   // re-export alone held @floating-ui (~266KB) on the startup path, since eager
-  // plugin entries import that barrel. Serving it as its own module behind
-  // React.lazy keeps it off that path while leaving external plugins a way to
-  // reach it -- published apollo deep-imports this exact path, and react-msaview
-  // (bundled by tview and msaview) reads it too, so dropping it from the barrel
-  // with no ABI home is what broke them.
-  ...lazyMap(
-    { BaseTooltip: React.lazy(() => import('../ui/BaseTooltip.tsx')) },
-    '@jbrowse/core/ui/',
-  ),
+  // plugin entries import that barrel. That is a fact about ui/index.ts, and it
+  // leaked into the ABI, where it is only a trap -- served at its own path but
+  // not on the namespace, so `import { BaseTooltip } from '@jbrowse/core/ui'`,
+  // the spelling the docs give for every other component, compiled and then
+  // yielded undefined at runtime. Serving the same React.lazy on both keeps the
+  // two spellings honest and holds the startup path either way, since the barrel
+  // itself is untouched. (Published apollo 1.1.1 reads it off the namespace,
+  // which is how the trap was found; react-msaview takes the deep path.)
+  '@jbrowse/core/ui': { ...coreUi, ...lazyBaseTooltip },
+  '@jbrowse/core/ui/BaseTooltip': lazyBaseTooltip.BaseTooltip,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 

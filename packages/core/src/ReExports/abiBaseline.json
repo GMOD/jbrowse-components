@@ -45,6 +45,7 @@
     "ActionLink",
     "AssemblySelector",
     "BaseExportSvgDialog",
+    "BaseTooltip",
     "CascadingMenu",
     "CascadingMenuButton",
     "ConfirmDialog",
