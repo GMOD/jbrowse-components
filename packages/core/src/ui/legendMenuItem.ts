@@ -18,8 +18,8 @@ import type { MenuItem } from './MenuTypes.ts'
  * values legitimately differ (a Hi-C color scale is off by default, a variant
  * genotype key on), and their descriptions describe genuinely different legends.
  * What they now share is being *promotable* — pass `opts.pin` and the row gains
- * the pin that shows the legend on every open track of this display type,
- * offering the display-type default as its snackbar's one action. Every
+ * the pin that toggles the legend on every open track of this display type,
+ * offering the new state as the display-type default in its snackbar. Every
  * display whose legend is backed by a config slot passes one, and gets it from
  * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling `makePin`
  * itself: the slot is the per-display half, the accessors over it are not.

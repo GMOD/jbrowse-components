@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   makePin,
+  makeTogglePin,
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -367,7 +368,7 @@ export default function stateModelFactory(
                   !self.displayDirectionalChevrons,
                 )
               },
-              pin: makePin(self, 'displayDirectionalChevrons', true),
+              pin: makeTogglePin(self, 'displayDirectionalChevrons'),
             }),
           ]
         },

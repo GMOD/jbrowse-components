@@ -168,11 +168,13 @@ describe('alignments showSoftClipping session default', () => {
   })
 
   describe('softClippingDisplayTypeDefault', () => {
-    it('promotes soft-clipping-on as the session default', () => {
-      const { session, display } = createDisplay({ showSoftClipping: true })
+    it('is the checkbox over the open tracks: fill mirrors the row, a click flips it', () => {
+      const { session, display } = createDisplay()
       expect(display.softClippingDisplayTypeDefault.active).toBe(false)
 
       display.softClippingDisplayTypeDefault.toggle()
+      expect(display.showSoftClipping).toBe(true)
+      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
       promote(session)
       expect(
         session.getDisplayTypeDefault(
@@ -180,22 +182,21 @@ describe('alignments showSoftClipping session default', () => {
           'showSoftClipping',
         ),
       ).toBe(true)
-      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
     })
 
-    it('clears the session default when toggled off', () => {
+    it('flips a checked row off and offers off as the default', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      display.softClippingDisplayTypeDefault.toggle()
-      promote(session)
       expect(display.softClippingDisplayTypeDefault.active).toBe(true)
 
       display.softClippingDisplayTypeDefault.toggle()
+      expect(display.showSoftClipping).toBe(false)
+      promote(session)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
           'showSoftClipping',
         ),
-      ).toBeUndefined()
+      ).toBe(false)
     })
   })
 
@@ -619,7 +620,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     expect(display.mismatchAlpha).toBe(false)
   })
 
-  it('the pin promotes on as the session default, from an unchecked row too', () => {
+  it('the pin flips the row across the open tracks and offers the new state', () => {
     const { session, display } = createDisplay()
     display.setMismatchAlpha(false)
     display.mismatchAlphaDisplayTypeDefault.toggle()
@@ -681,7 +682,7 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin turns labels on, from an unchecked row too', () => {
+  it('the pin flips labels on from an unchecked row', () => {
     const { session, display } = createDisplay()
     display.setShowSashimiLabels(false)
     display.showSashimiLabelsDisplayTypeDefault.toggle()
@@ -742,7 +743,7 @@ describe('alignments showLegend (color-scheme key)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin shows the legend, from an unchecked row too', () => {
+  it('the pin flips the legend on from an unchecked row', () => {
     const { session, display } = createDisplay()
     display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()

@@ -25,7 +25,7 @@ describe('Manhattan showLdLegend', () => {
   it('is on by default, from promotedBase rather than a volatile initializer', () => {
     const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
     expect(display.showLdLegend).toBe(true)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
+    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
   })
 
   // The whole point of the volatile -> config move. A volatile write was lost
@@ -87,7 +87,7 @@ describe('Manhattan showLdLegend', () => {
 
   // The pin's click applies the value to the open tracks; the toast's one
   // action is what makes it the display type's default (ADR-048).
-  it('the menu row carries the pin, and it turns the key on', () => {
+  it('the menu row carries the pin, and it flips the key', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()

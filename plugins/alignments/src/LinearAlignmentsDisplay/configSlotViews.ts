@@ -1,4 +1,9 @@
-import { getConf, makePin, resolveConf } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  makePin,
+  makeTogglePin,
+  resolveConf,
+} from '@jbrowse/core/configuration'
 
 import type { ArcColorByType } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
@@ -148,10 +153,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnectionsDown')
     },
     /** #getter */
-    // "draw arcs below the coverage band on every open track of this type"
-    // control (pin)
+    // the arcs-below-coverage checkbox over every open track of this type (pin)
     get readConnectionsDownDisplayTypeDefault() {
-      return makePin(self, 'readConnectionsDown', true)
+      return makeTogglePin(self, 'readConnectionsDown')
     },
     /** #getter */
     // Sentinel promotable slot: a track pins arcs on/off explicitly, else
@@ -161,11 +165,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * "show sashimi arcs on every open track of this type" control (pin) for
-     * the submenu's own checkbox.
+     * the submenu's own sashimi checkbox over every open track of this type
+     * (pin)
      */
     get showSashimiArcsDisplayTypeDefault() {
-      return makePin(self, 'showSashimiArcs', true)
+      return makeTogglePin(self, 'showSashimiArcs')
     },
     /** #getter */
     // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -208,9 +212,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
 
     /** #getter */
-    // "show soft clipping on every open track of this type" control (pin)
+    // the soft-clipping checkbox over every open track of this type (pin)
     get softClippingDisplayTypeDefault() {
-      return makePin(self, 'showSoftClipping', true)
+      return makeTogglePin(self, 'showSoftClipping')
     },
   }
 }

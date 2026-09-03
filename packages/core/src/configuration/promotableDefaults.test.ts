@@ -15,6 +15,7 @@ import {
   isPromotableDefault,
   isSlotCustomized,
   makePin,
+  makeTogglePin,
   openTracksOfType,
   getConfigSnapshotWithPromotables,
 } from './promotableDefaults.ts'
@@ -568,6 +569,26 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', 'yes')
     expect(resolveConf(display, 'chevrons')).toBe(true)
+  })
+
+  test('toggle pin mirrors the row, flips it, and offers the new state', () => {
+    const { session, display } = createDisplay(configSchema, {
+      chevrons: false,
+    })
+    const pin = makeTogglePin(display, 'chevrons')
+    expect(pin.active).toBe(false)
+    expect(pin.onValue).toBe(true)
+
+    pin.toggle()
+    expect(resolveConf(display, 'chevrons')).toBe(true)
+    expect(makeTogglePin(display, 'chevrons').active).toBe(true)
+    soleAction(session.lastNotify).onClick()
+    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(true)
+
+    makeTogglePin(display, 'chevrons').toggle()
+    expect(resolveConf(display, 'chevrons')).toBe(false)
+    soleAction(session.lastNotify).onClick()
+    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
   })
 })
 

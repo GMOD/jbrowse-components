@@ -16,10 +16,11 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 // promotable and plain forms of a row can differ only by the pin.
 
 // A promotable setting as one native checkbox menu row: the value toggles the
-// track (inheriting native hover/sizing/keyboard), and a trailing pin applies
-// the pin's on-value — `true`, for a plain boolean slot — to every open track
-// of the display type, offering the display-type default as its snackbar's one
-// action. Always shown so the capability is discoverable.
+// track (inheriting native hover/sizing/keyboard), and a trailing pin is that
+// same checkbox over every open track of the display type — `makeTogglePin` for
+// a plain boolean slot, or a per-value `makePin` where several checkbox rows
+// share one slot — offering the new state as the display-type default in its
+// snackbar. Always shown so the capability is discoverable.
 //
 // **The row itself is `checkboxItem`'s**, so the two builders can only ever
 // differ by the pin. They used to be two literals, and had already drifted: this

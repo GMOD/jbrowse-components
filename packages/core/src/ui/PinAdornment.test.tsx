@@ -69,28 +69,29 @@ describe('PinAdornment', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  // A boolean on-value is a state, so the copy names it rather than using the
-  // value-shaped "apply Show legend" every other pin gets.
+  // A boolean on-value is a toggle pin: the copy names the state the click
+  // applies rather than the value-shaped "apply Show legend" every other pin
+  // gets, and a filled one (row checked) still names a click, not a clear.
   it('names the state a boolean pin applies, not just the setting', () => {
     const { getByRole } = renderAdornment(
-      fakeControl(false, () => {}, false),
+      fakeControl(false, () => {}, true),
+      'Show legend',
+    )
+    expect(
+      getByRole('button', {
+        name: 'turn Show legend on for all open tracks of this type',
+      }),
+    ).toBeTruthy()
+  })
+
+  it('a filled boolean pin offers the flip, not a clear', () => {
+    const { getByRole } = renderAdornment(
+      fakeControl(true, () => {}, false),
       'Show legend',
     )
     expect(
       getByRole('button', {
         name: 'turn Show legend off for all open tracks of this type',
-      }),
-    ).toBeTruthy()
-  })
-
-  it('names the state a filled boolean pin holds', () => {
-    const { getByRole } = renderAdornment(
-      fakeControl(true, () => {}, true),
-      'Show legend',
-    )
-    expect(
-      getByRole('button', {
-        name: 'clear the default for Show legend for all tracks of this type',
       }),
     ).toBeTruthy()
   })

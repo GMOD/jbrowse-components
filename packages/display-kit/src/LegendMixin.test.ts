@@ -140,26 +140,32 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
 
   // The pin is what `showLegendCheckboxItem` puts on the row, and it names the
   // slot it promotes — the fact `promotableSlotsWithoutPin` audits.
-  it('the pin is over showLegend and starts inactive', () => {
+  it('the pin is over showLegend and its fill mirrors the row', () => {
     const { display } = makeSession({ promotedBase })
     expect(display.showLegendDisplayTypeDefault.slot).toBe('showLegend')
-    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(promotedBase)
   })
 
-  // The pin turns the legend on whatever the row shows: beside an unchecked
-  // box it reads as "show it everywhere", and it does. The click applies it to
-  // the open tracks; the snackbar's one action is what makes it the display
-  // type's default.
-  it('the pin shows the legend, from a hidden one too', () => {
+  // The pin is the legend checkbox over the open tracks: a click flips the
+  // row's state, and the snackbar's one action is what makes the new state the
+  // display type's default.
+  it('the pin flips the legend and offers the new state as the default', () => {
     const { session, display } = makeSession({ promotedBase })
     display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()
     expect(display.showLegend).toBe(true)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
     session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
     ).toBe(true)
-    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
+
+    display.showLegendDisplayTypeDefault.toggle()
+    expect(display.showLegend).toBe(false)
+    session.lastAction!.onClick()
+    expect(
+      session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
+    ).toBe(false)
   })
 })
 

@@ -362,13 +362,12 @@ function applyPinClick(
  * - **Give it** for a per-value pin — "make *arcs* the default" — independent of
  *   what the track currently shows. Use on an always-visible pin so it can never
  *   promote a meaningless value, and so two rows sharing one slot (arcs `'arc'`
- *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent. A
- *   checkbox row over a `maybeBoolean` slot gives `true`: the pin beside an
- *   unchecked box reads as "turn this on everywhere", and a pin that carried the
- *   row's current state applied *off* there, visibly doing nothing.
+ *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
  * - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
  *   a continuous setting where no fixed on-value makes sense (wiggle point size,
  *   arc line width).
+ *
+ * A checkbox row over a `maybeBoolean` slot takes neither: {@link makeTogglePin}.
  *
  * One function with an optional argument, rather than the two exported builders
  * it replaces — a per-value one and a `…CurrentValue…` one, the second of which
@@ -427,6 +426,41 @@ export function makePin<
     active,
     toggle: () => {
       applyPinClick(self, slot, onValue, active)
+    },
+  }
+}
+
+/**
+ * #api core/configuration
+ * The pin for a checkbox row: the row's own checkbox, acting on every open
+ * track of the display type. `active` mirrors the row, so the pin draws filled
+ * exactly when the box is ticked; a click flips the row's state on every open
+ * track and offers the new state as the display type's default. It never
+ * clears a default the way {@link makePin}'s filled pin does — flipping back
+ * and taking the offer promotes the other value, and promoting the base value
+ * is indistinguishable from no default.
+ *
+ * Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
+ * row's current state: beside an unchecked box that applied *off* everywhere
+ * and visibly did nothing.
+ */
+export function makeTogglePin<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT): Pin {
+  const current: unknown = resolveSlot(self, slot).value
+  if (typeof current !== 'boolean') {
+    throw new Error(
+      `cannot build a toggle pin over config slot "${slot}": it resolves to ${JSON.stringify(current)}, not a boolean`,
+    )
+  }
+  const onValue = !current
+  return {
+    slot,
+    onValue,
+    active: current,
+    toggle: () => {
+      applyPinClick(self, slot, onValue, false)
     },
   }
 }

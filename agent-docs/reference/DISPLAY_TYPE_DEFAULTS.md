@@ -571,7 +571,8 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
 | `makePin(self, slot, onValue)` | `Pin` `{ slot, onValue, active, toggle }` on one fixed value — "make arcs the default", independent of what the track shows, so two rows sharing a slot (arcs `'arc'` vs cloud `'cloud'`) stay independent | an always-visible per-value pin |
-| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a continuous setting with no sensible fixed on-value (wiggle point size, arc line width). Not a checkbox row: see `promotableToggleItem` below |
+| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a continuous setting with no sensible fixed on-value (wiggle point size, arc line width) |
+| `makeTogglePin(self, slot)` | `Pin` whose `active` mirrors the row's checked state and whose click flips it on every open track, offering the new state as the default. Throws on a slot that does not resolve to a boolean | every checkbox row over a plain `maybeBoolean` slot |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots)` | clears the named promoted defaults for this display's type | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
@@ -887,24 +888,20 @@ of a row can only differ by the pin:
 - **`promotableToggleItem`** — a `type:'checkbox'` row (native
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
-  value; the pin applies the setting's on-value across the open tracks. **A
-  checkbox row's pin is always per-value, and over `true` for a plain
-  `maybeBoolean` slot** — `makePin(self, slot, true)`. It used to take the
-  value-omitted form and carry whichever state the track showed, and that read
-  wrong at the one place it differs: the pin beside an *unchecked* box looks
-  like "turn this on everywhere", and clicking it applied *off* to every open
-  track, which changed nothing on screen. What that gave up is promoting "off"
-  for a slot whose `promotedBase` is on (`showSashimiArcs`,
-  `readConnectionsDown`, the variant `showLegend`): a filled pin clears the
-  default back to base, and there is no pin route to "off for tracks opened
-  later". A two-valued setting dressed as a checkbox (`readConnectionsDown`'s
-  below/above, `drawCurves`'s curves/chords) is the case that loses something
-  real, and the fix for one of those is a radio pair with a pin per option, not a
-  symmetric pin. The per-value form over another value is for the checkbox rows
-  that *share* a multi-valued slot and each stand for one of its values:
-  `readConnections` is one slot behind an "Arcs" row pinning `'arc'` and a "Read
-  cloud" row pinning `'cloud'`, which stay independent only because each names
-  its own on-value. Row built by `checkboxItem`, so it offers
+  value; the pin is **that same checkbox over every open track of the type** —
+  `makeTogglePin(self, slot)` for a plain `maybeBoolean` slot. Its fill mirrors
+  the row, a click flips the row's state on every open track, and the snackbar
+  offers the new state as the default. It never clears a default: flipping
+  back and taking the offer promotes the other value, and a promoted base value
+  is indistinguishable from none. The value pins' "filled means promoted, click
+  to clear" reading is what these rows dropped — a symmetric value-omitted
+  `makePin` carried the row's current state, so the pin beside an *unchecked*
+  box, which reads as "turn this on everywhere", applied *off* to every open
+  track and changed nothing on screen. The per-value `makePin` form is for the
+  checkbox rows that *share* a multi-valued slot and each stand for one of its
+  values: `readConnections` is one slot behind an "Arcs" row pinning `'arc'` and
+  a "Read cloud" row pinning `'cloud'`, which stay independent only because
+  each names its own on-value. Row built by `checkboxItem`, so it offers
   that builder's full option set (`subLabel`, `disabled`, `disabledHelpText`, …);
   it used to drop three of them.
 - **`promotableRadioItems`** — a whole `type:'radio'` group over a multi-value

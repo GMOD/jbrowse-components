@@ -1,4 +1,4 @@
-import { makePin } from '@jbrowse/core/configuration'
+import { makeTogglePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import {
   promotableToggleItem,
@@ -50,9 +50,9 @@ const THIN_FADE_HELP =
  *
  * The checkbox and the pin write the same promotable config slot, exactly as
  * any other promotable setting's row: the checkbox writes this view's synteny
- * displays (every level — `setDrawCurves` fans out), the pin turns the setting
- * on for every open display of the type and offers that as the session-wide
- * default.
+ * displays (every level — `setDrawCurves` fans out), the pin is that checkbox
+ * over every open display of the type and offers the new state as the
+ * session-wide default.
  *
  * `display` is the level the pin writes through — any one of them, since a
  * promoted default is keyed by display type rather than by track. A view with
@@ -81,7 +81,7 @@ function ribbonToggle({
         onToggle: () => {
           setValue(!value)
         },
-        pin: makePin(display, slot, true),
+        pin: makeTogglePin(display, slot),
         ...opts,
       })
     : toggleItem(label, value, setValue, {

@@ -10,6 +10,7 @@ import {
   ConfigurationReference,
   getConf,
   makePin,
+  makeTogglePin,
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -780,10 +781,10 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * "show sashimi labels on every open track of this type" control (pin)
+         * the sashimi-labels checkbox over every open track of this type (pin)
          */
         get showSashimiLabelsDisplayTypeDefault() {
-          return makePin(self, 'showSashimiLabels', true)
+          return makeTogglePin(self, 'showSashimiLabels')
         },
 
         /**
@@ -796,11 +797,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * "hide non-canonical junctions on every open track of this type"
-         * control (pin)
+         * the non-canonical-junction checkbox over every open track of this
+         * type (pin)
          */
         get hideNonCanonicalJunctionsDisplayTypeDefault() {
-          return makePin(self, 'hideNonCanonicalJunctions', true)
+          return makeTogglePin(self, 'hideNonCanonicalJunctions')
         },
 
         /**
@@ -852,10 +853,9 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // "fade low quality mismatches on every open track of this type"
-        // control (pin)
+        // the fade-by-quality checkbox over every open track of this type (pin)
         get mismatchAlphaDisplayTypeDefault() {
-          return makePin(self, 'mismatchAlpha', true)
+          return makeTogglePin(self, 'mismatchAlpha')
         },
 
         /**

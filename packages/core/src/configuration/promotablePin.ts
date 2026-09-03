@@ -40,18 +40,20 @@ export interface Pin {
    * The value `toggle` promotes — the on-value {@link makePin} was given, or the
    * track's current resolved value for the value-omitted form.
    *
-   * `PinAdornment` words itself from this: a **boolean** on-value promotes a
-   * *state*, so a row whose label names the setting rather than a value ("Show
-   * legend") says which state the pin applies. A checkbox row's pin is built
-   * over `true` — the pin beside an unchecked box turns the setting on, which
-   * is what the pin reads as. Every other on-value IS what the row's label says
-   * — a radio option, a slider's current size — so those keep the value-shaped
-   * copy.
+   * `PinAdornment` words itself from this: a **boolean** on-value is a
+   * `makeTogglePin` over a checkbox row, and the copy names the state the click
+   * applies ("Turn Show legend off for all open tracks of this type"). Every
+   * other on-value IS what the row's label says — a radio option, a slider's
+   * current size — so those keep the value-shaped copy.
    *
    * Required, like `slot`: a pin that cannot say what it promotes cannot word
    * itself.
    */
   onValue: unknown
+  /**
+   * What the filled pin means: for a value pin, that `onValue` is the display
+   * type's promoted default; for a toggle pin, that the row is checked.
+   */
   active: boolean
   toggle: () => void
 }

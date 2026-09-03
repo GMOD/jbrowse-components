@@ -1,4 +1,8 @@
-import { makePin, resolveConf, setConf } from '@jbrowse/core/configuration'
+import {
+  makeTogglePin,
+  resolveConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -75,11 +79,11 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * The "show the legend on every open track of this type" control.
+       * The legend checkbox over every open track of this type.
        * `showLegendCheckboxItem` takes this as its `pin`.
        */
       get showLegendDisplayTypeDefault() {
-        return makePin(confNode(self), 'showLegend', true)
+        return makeTogglePin(confNode(self), 'showLegend')
       },
     }))
     .actions(self => ({

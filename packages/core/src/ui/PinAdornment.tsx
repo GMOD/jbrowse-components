@@ -22,32 +22,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// A boolean on-value carries a state, and the row's label names the setting
-// rather than a value ("Show legend"), so the copy says which state. Every
-// other on-value IS what the label says: a radio option ("Compact"), a size
-// row whose caller folds the value into the label ("Line width (2px)").
-function pinPredicate(onValue: unknown) {
-  return typeof onValue === 'boolean'
-    ? `${onValue ? 'on' : 'off'} by default`
-    : 'the default'
-}
-
-// The click, which is not the state the pin draws: an outline pin applies the
-// value to the open tracks, a filled one clears the default it stands for.
+// A boolean on-value is a toggle pin over a checkbox row: the copy names the
+// state the click applies, and the fill mirrors the checkbox. Every other
+// on-value IS what the label says — a radio option ("Compact"), a size row whose
+// caller folds the value into the label ("Line width (2px)") — and there the
+// fill means the value is the promoted default, so a click clears it.
 //
 // The aria-label carries "of this type" wherever the tooltip does: it used to
 // stop at "for all open tracks", stating a wider blast radius than the control
 // has.
-function pinCopy(label: string, onValue: unknown, isDefault: boolean) {
-  return isDefault
+function pinCopy(label: string, onValue: unknown, active: boolean) {
+  return typeof onValue === 'boolean'
     ? {
-        title: `${label} is ${pinPredicate(onValue)} for all tracks of this type (click to clear)`,
-        ariaLabel: `clear the default for ${label} for all tracks of this type`,
+        title: `Turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
+        ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
       }
-    : typeof onValue === 'boolean'
+    : active
       ? {
-          title: `Turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
-          ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
+          title: `${label} is the default for all tracks of this type (click to clear)`,
+          ariaLabel: `clear the default for ${label} for all tracks of this type`,
         }
       : {
           title: `Apply ${label} to all open tracks of this type`,
@@ -61,15 +54,12 @@ function pinCopy(label: string, onValue: unknown, isDefault: boolean) {
 // ToggleButton (native button a11y + a clear selected tint) with a pin —
 // distinct from the value checkbox.
 //
-// **The click and the state are two different things.** One click writes the
-// value into every open track of this display type and raises a snackbar
-// offering to keep it as the display type's default; the filled pin means that
-// default is in place, so a click on a filled pin clears it and touches no
-// track. A default therefore takes two deliberate clicks, which is what it costs
-// to govern every track of the type opened later (ADR-048). Always shown so the
-// capability is discoverable. stopPropagation keeps the click off the row value
-// / menu dismissal. "of this type" because a promoted default is scoped to the
-// display type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
+// One click writes the value into every open track of this display type and
+// raises a snackbar offering to keep it as the display type's default, so a
+// default takes two deliberate clicks (ADR-048). Always shown so the capability
+// is discoverable. stopPropagation keeps the click off the row value / menu
+// dismissal. "of this type" because a promoted default is scoped to the display
+// type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
 export function PinAdornment({
   pin,
   disabled,
@@ -79,8 +69,7 @@ export function PinAdornment({
 }) {
   const { classes } = useStyles()
   const { label, control } = pin
-  const isDefault = control.active
-  const { title, ariaLabel } = pinCopy(label, control.onValue, isDefault)
+  const { title, ariaLabel } = pinCopy(label, control.onValue, control.active)
   return (
     <Tooltip title={title}>
       <span className={classes.wrapper}>
@@ -88,7 +77,7 @@ export function PinAdornment({
           className={classes.button}
           value="default"
           disabled={disabled}
-          selected={isDefault}
+          selected={control.active}
           color="primary"
           size="small"
           aria-label={ariaLabel}
@@ -97,7 +86,7 @@ export function PinAdornment({
             control.toggle()
           }}
         >
-          {isDefault ? (
+          {control.active ? (
             <PushPinIcon fontSize="small" />
           ) : (
             <PushPinOutlinedIcon fontSize="small" />

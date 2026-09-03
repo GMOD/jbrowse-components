@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makePin,
+  makeTogglePin,
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -241,10 +241,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * "show the LD key on every open track of this type" control (pin)
+         * the LD-key checkbox over every open track of this type (pin)
          */
         get showLdLegendDisplayTypeDefault() {
-          return makePin(self, 'showLdLegend', true)
+          return makeTogglePin(self, 'showLdLegend')
         },
         /**
          * #getter

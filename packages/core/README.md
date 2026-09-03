@@ -461,8 +461,10 @@ identical:
   promote a meaningless value, and so two rows sharing one slot (arcs `'arc'` vs
   read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
 - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
-  a symmetric or continuous setting where no fixed on-value makes sense (wiggle
-  point size, arc line width, `mismatchAlpha`).
+  a continuous setting where no fixed on-value makes sense (wiggle point size,
+  arc line width).
+
+A checkbox row over a `maybeBoolean` slot takes neither: makeTogglePin.
 
 One function with an optional argument, rather than the two exported builders it
 replaces — a per-value one and a `…CurrentValue…` one, the second of which was
@@ -473,6 +475,27 @@ argument now says what the longer name said.
 ```js
 // type signature
 <CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => Pin
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### makeTogglePin
+
+The pin for a checkbox row: the row's own checkbox, acting on every open track
+of the display type. `active` mirrors the row, so the pin draws filled exactly
+when the box is ticked; a click flips the row's state on every open track and
+offers the new state as the display type's default. It never clears a default
+the way makePin's filled pin does — flipping back and taking the offer promotes
+the other value, and promoting the base value is indistinguishable from no
+default.
+
+Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
+row's current state: beside an unchecked box that applied _off_ everywhere and
+visibly did nothing.
+
+```js
+// type signature
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT) => Pin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
