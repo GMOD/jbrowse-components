@@ -157,10 +157,13 @@ describe('drawMafBlocks cell geometry', () => {
 describe('drawMafBlocks binned cell geometry', () => {
   const BIN = 4
   // 8 bases in 2 bins of 4. Bin 0 spans bp [1000,1004), bin 1 [1004,1008).
+  // The two bins carry different bases so they stay two fills — same-colour
+  // neighbours merge into one run (see below).
   const N = 8
+  const TWO_BINS = 'AAAACCCC'
 
   test('forward block: bins tile left to right, one base-span wide each', () => {
-    const rects = draw(false, N, BIN)
+    const rects = draw(false, N, BIN, TWO_BINS)
     expect(rects).toHaveLength(2)
     expect(rects[0]!.x).toBeCloseTo(0)
     expect(rects[1]!.x).toBeCloseTo(BIN * PX_PER_BP)
@@ -168,7 +171,7 @@ describe('drawMafBlocks binned cell geometry', () => {
   })
 
   test('reversed block: a bin covers its own span, not the one after it', () => {
-    const rects = draw(true, N, BIN)
+    const rects = draw(true, N, BIN, TWO_BINS)
     expect(rects).toHaveLength(2)
     // Reversed, bp 1000 is rightmost. Bin 0 spans bp [1000,1004) => screen
     // [200-4*20, 200] = [120,200]. Anchoring on the cell-left pivot instead
@@ -184,7 +187,7 @@ describe('drawMafBlocks binned cell geometry', () => {
     // Dropping the seam fudge (which always grows rightward) leaves spans that
     // are exact mirrors — the strongest statement that no bin drifted.
     const spans = (reversed: boolean) =>
-      draw(reversed, N, BIN)
+      draw(reversed, N, BIN, TWO_BINS)
         .map(r => [r.x, r.x + r.w - 0.4] as const)
         .sort((a, b) => a[0] - b[0])
 
@@ -200,7 +203,7 @@ describe('drawMafBlocks binned cell geometry', () => {
 
   test('a trailing partial bin clamps to the block end', () => {
     // 6 bases, bin 4 => bin 1 covers only bp [1004,1006), half a bin.
-    const rects = draw(false, 6, BIN)
+    const rects = draw(false, 6, BIN, 'AAAACC')
     expect(rects).toHaveLength(2)
     expect(rects[1]!.w).toBeCloseTo(2 * PX_PER_BP + 0.4)
   })
@@ -213,13 +216,13 @@ describe('drawMafBlocks binned cell geometry', () => {
 // through the next, and another box on the left of the third.
 describe('drawMafBlocks boundary gaps', () => {
   test('a trailing gap run paints no cells', () => {
-    const rects = draw(false, 5, 1, 'AAA--')
+    const rects = draw(false, 5, 1, 'ACA--')
     expect(rects).toHaveLength(3)
     expect(rects.map(r => r.x)).toEqual([0, PX_PER_BP, 2 * PX_PER_BP])
   })
 
   test('a leading gap run paints no cells', () => {
-    const rects = draw(false, 5, 1, '--AAA')
+    const rects = draw(false, 5, 1, '--ACA')
     expect(rects).toHaveLength(3)
     expect(rects[0]!.x).toBeCloseTo(2 * PX_PER_BP)
   })
@@ -229,6 +232,44 @@ describe('drawMafBlocks boundary gaps', () => {
   })
 
   test('an interior gap run still paints', () => {
-    expect(draw(false, 5, 1, 'A--AA')).toHaveLength(5)
+    expect(draw(false, 5, 1, 'A--AC')).toHaveLength(4)
+  })
+})
+
+// Same-colour neighbours are one fill. The match tone is translucent, so a fill
+// per cell — each padded by the seam offset — stacked it more than twice deep
+// at sub-pixel cell pitch and the Canvas2D rows band came out darker than the
+// GPU's, which merges runs into one quad.
+describe('drawMafBlocks runs', () => {
+  test('a run of one colour is one fill, padded once', () => {
+    const rects = draw(false, 5, 1, 'AAAAA')
+    expect(rects).toHaveLength(1)
+    expect(rects[0]!.x).toBeCloseTo(0)
+    expect(rects[0]!.w).toBeCloseTo(5 * PX_PER_BP + 0.4)
+  })
+
+  test('a reversed run spans the same bases from the other end', () => {
+    const rects = draw(true, 5, 1, 'AAAAA')
+    expect(rects).toHaveLength(1)
+    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - 5 * PX_PER_BP)
+    expect(rects[0]!.w).toBeCloseTo(5 * PX_PER_BP + 0.4)
+  })
+
+  test('a colour change ends the run', () => {
+    const rects = draw(false, 5, 1, 'AACAA')
+    expect(rects.map(r => r.x)).toEqual([0, 2 * PX_PER_BP, 3 * PX_PER_BP])
+    expect(rects[0]!.w).toBeCloseTo(2 * PX_PER_BP + 0.4)
+  })
+
+  test('an interior gap run is one fill of its own', () => {
+    const rects = draw(false, 5, 1, 'A--AA')
+    expect(rects.map(r => r.x)).toEqual([0, PX_PER_BP, 3 * PX_PER_BP])
+    expect(rects[1]!.w).toBeCloseTo(2 * PX_PER_BP + 0.4)
+  })
+
+  test('binned same-colour bins merge too', () => {
+    const rects = draw(false, 8, 4, 'AAAAAAAA')
+    expect(rects).toHaveLength(1)
+    expect(rects[0]!.w).toBeCloseTo(8 * PX_PER_BP + 0.4)
   })
 })

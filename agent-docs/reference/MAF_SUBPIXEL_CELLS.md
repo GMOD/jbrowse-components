@@ -76,9 +76,11 @@ measurement agrees: the wash-out is visible in the numbers.
 
 ## Still open
 
-- **The Canvas2D path over-paints the match tone**, which is now the whole
-  cross-backend gap and is larger than the floor question ever was:
-  [ideas/maf-canvas2d-overpaints-the-match-tone.md](../ideas/maf-canvas2d-overpaints-the-match-tone.md).
+- ~~The Canvas2D path over-paints the match tone~~ — closed: `renderBases`
+  merges same-colour cells into one fill, the way the GPU encoder merges runs
+  into one quad, so the seam pad lands once per run and the translucent match
+  tone no longer compounds. Re-measure the cross-backend gap before quoting the
+  26.58 above again.
 - **Nothing pixel-compares MAF.** `'MAF Track'` is in `CI_GATE_SUITES`, but its
   four tests assert scroll and height behaviour and take no `canvasSnapshot` /
   `dualSnapshot`, so the suite contributes zero pairs to the cross-backend gate.

@@ -38,18 +38,34 @@ export function renderBases(
     flank,
   )
 
-  // Assigning `fillStyle` re-parses the CSS color string every time, and this
-  // walk is one iteration per base per row. An alignment is mostly runs of one
-  // color — a conserved stretch is all `matchColor`, a gap run all `gapColor` —
-  // so remembering the last one assigned skips nearly every assignment while
-  // painting identical pixels. The GPU encoder gets the same saving structurally
-  // by merging runs into one quad; this path can't merge (each cell is its own
-  // `fillBpSpan`, which insets a gap stroke) but it can still stop re-parsing.
+  // Consecutive cells of one color are one fill, the way the GPU encoder
+  // merges runs into one quad. An alignment is mostly runs — a conserved
+  // stretch is all `matchColor`, a gap run all `gapColor` — so this is most of
+  // the fills gone, and it is what keeps the seam pad from compounding: the
+  // match tone is translucent, and padding every sub-pixel cell stacked it
+  // ~2.3 deep at 3 bp/px, which painted the rows band darker than the GPU.
   //
   // Per row rather than per block: `forEachClippedBlock`'s `restore()` resets
   // the context state at each render block, and re-asserting the color on the
-  // first painted cell of a row is correct under any caller.
-  let lastCss: string | undefined
+  // first painted run of a row is correct under any caller.
+  let runCss: string | undefined
+  let runStart = 0
+  let runEnd = 0
+  const flush = () => {
+    if (runCss !== undefined) {
+      ctx.fillStyle = runCss
+      fillBpSpan(
+        ctx,
+        bpToPx,
+        startBp + runStart,
+        startBp + runEnd,
+        rowTop,
+        h,
+        GAP_STROKE_OFFSET,
+      )
+      runCss = undefined
+    }
+  }
   for (let gpos = 0; gpos < refLen; gpos += binBp) {
     const col = colForGpos[gpos]!
     // Malformed files can ship a row shorter than the reference; nothing past
@@ -57,23 +73,21 @@ export function renderBases(
     if (col >= alignment.length) {
       break
     }
-    if (col >= firstCol && col <= lastCol) {
-      const css = resolveCellColor(seq[col]!, alignment[col]!, cellColorConfig)
+    const css =
+      col >= firstCol && col <= lastCol
+        ? resolveCellColor(seq[col]!, alignment[col]!, cellColorConfig)
+        : undefined
+    const cellEnd = Math.min(gpos + binBp, refLen)
+    if (css === runCss && css !== undefined) {
+      runEnd = cellEnd
+    } else {
+      flush()
       if (css !== undefined) {
-        if (css !== lastCss) {
-          ctx.fillStyle = css
-          lastCss = css
-        }
-        fillBpSpan(
-          ctx,
-          bpToPx,
-          startBp + gpos,
-          startBp + Math.min(gpos + binBp, refLen),
-          rowTop,
-          h,
-          GAP_STROKE_OFFSET,
-        )
+        runCss = css
+        runStart = gpos
+        runEnd = cellEnd
       }
     }
   }
+  flush()
 }
