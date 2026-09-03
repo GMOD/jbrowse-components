@@ -1236,10 +1236,6 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       return {
-        // No superAfterAttach() call: the fork auto-chains hooks, so
-        // MultiRegionDisplayMixin's afterAttach already runs (see
-        // afterAttachAutoChain.test.ts). An explicit call would double-install
-        // its fetch autoruns.
         /**
          * #action
          * Fills `BaseDisplay`'s hover-clear hook, which the fetch

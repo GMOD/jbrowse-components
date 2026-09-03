@@ -2601,10 +2601,6 @@ export default function stateModelFactory(
           return renderSvg(self as LinearMafDisplayModel, opts)
         },
         // #endregion
-        // No superAfterAttach() call: @jbrowse/mobx-state-tree auto-chains hooks,
-        // so MultiRegionDisplayMixin's afterAttach already runs (see
-        // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
-        // the mixin's fetch autoruns.
         afterAttach() {
           // `rowIndexBySrc` is read in the autorun body rather than inside the
           // action: an MST action's own reads are untracked, so the placement

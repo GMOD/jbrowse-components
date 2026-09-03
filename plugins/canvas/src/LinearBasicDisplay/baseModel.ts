@@ -26,9 +26,7 @@ import {
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import HeightModeMixin, {
-  installGrowExitBake,
-} from '@jbrowse/display-kit/HeightModeMixin'
+import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -38,7 +36,7 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -1932,13 +1930,6 @@ export default function baseStateModelFactory(
         return {
           /**
            * #action
-           */
-          // No superAfterAttach() call: the fork auto-chains hooks, so
-          // MultiRegionDisplayMixin's afterAttach already runs (see
-          // afterAttachAutoChain.test.ts). An explicit call would double-install
-          // its fetch autoruns.
-          /**
-           * #action
            * Fills `BaseDisplay`'s hover-clear hook, which the fetch
            * foundation's reaction calls on every viewport change.
            *
@@ -1951,20 +1942,6 @@ export default function baseStateModelFactory(
           },
 
           afterAttach() {
-            // Grow mode needs no autorun to drive height: the `height` getter
-            // returns `grownHeight` reactively (see the getter above), so
-            // consumers recompute when the laid-out content changes without ever
-            // writing the height config slot. Leaving grow is the one write —
-            // bake the grown height into the slot on any grow->non-grow exit
-            // (menu switch, reset-to-default, or a session-default change flipping
-            // a track that follows the default) so fixed/fit resume from the height the user was
-            // seeing, not the stale slot.
-            addDisposer(self, installGrowExitBake(self, getView(self)))
-
-            // The scroll clamp (both the shrink autorun and the bound on
-            // setScrollTop) is TrackHeightMixin's, earned by overriding
-            // `scrollableHeight`.
-
             // Reset scroll to the top on an actual region-list change
             // (chromosome navigation) — not on same-region zoom/pan, which must
             // keep the user's scroll position (see clearDisplaySpecificData). The

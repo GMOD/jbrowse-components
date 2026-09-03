@@ -34,9 +34,7 @@ import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
-import HeightModeMixin, {
-  installGrowExitBake,
-} from '@jbrowse/display-kit/HeightModeMixin'
+import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -4368,16 +4366,6 @@ export default function stateModelFactory(
               { name: 'AlignmentsFitHeight' },
             ),
           )
-          // Grow mode needs no autorun to drive height: the `height` getter
-          // returns `grownHeight` reactively (see the getter above), so consumers
-          // recompute when the laid-out content changes without ever writing the
-          // height config slot. Leaving grow is the one write — bake the grown
-          // height into the slot on any grow->non-grow exit (menu switch,
-          // reset-to-default, or a session-default change flipping a track that
-          // follows the default) so fixed/fit resume from the height the user was
-          // seeing, not the stale slot.
-          addDisposer(self, installGrowExitBake(self, self.host))
-
           // Drop the collapses and height overrides whenever the grouping key
           // space moves. A reaction rather than a line in `setGroupBy`, because
           // the effective grouping also moves with no action of this display

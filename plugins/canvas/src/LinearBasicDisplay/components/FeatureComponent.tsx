@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
-import {
-  ScrollEdgeShadow,
-  VerticalScrollbar,
-  useMouseState,
-} from '@jbrowse/core/ui'
+import { ScrollEdgeShadow, VerticalScrollbar } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
@@ -15,6 +11,7 @@ import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
+import { PointerLayer } from '@jbrowse/display-kit/PointerLayer'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -38,7 +35,6 @@ import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -165,40 +161,21 @@ const FeatureComponent = observer(function FeatureComponent({
               itself to. It used to sit in `DisplayContainer` one level up —
               also relative, so the geometry is unchanged. */}
           <ColorLegendOverlay model={model} />
-          {/* Its own component, and a sibling of the body rather than a child
-              of it, so that following the pointer re-renders the tooltip alone.
-              This was a `clientXY` useState inside `FeatureBody`, written from
-              the canvas's own `onMouseMove`, which re-rendered the body and
-              every overlay under it on each raw (uncoalesced) move while a
-              feature was hovered. See `useMouseTracking`. maf was the last
-              other one and is converted too, so no display holds a pointer
-              position in React state now. */}
-          <FeatureTooltipLayer model={model} mouseTracker={mouseTracker} />
+          {/* `mouseoverExtraInformation` decides whether there is a tooltip:
+              the hit test that sets it runs on the canvas's own handlers, from
+              the event's coordinates, because the click and right-click paths
+              share it. Only the position comes from the chrome's tracker. */}
+          <PointerLayer mouseTracker={mouseTracker}>
+            {mouseState => (
+              <FeatureTooltip
+                rows={model.mouseoverExtraInformation}
+                mouseState={mouseState}
+              />
+            )}
+          </PointerLayer>
         </>
       )}
     </DisplayChrome>
-  )
-})
-
-// `mouseoverExtraInformation` is what decides whether there is a tooltip at
-// all — the hit test that sets it runs on the canvas's own handlers, from the
-// event's own coordinates, because the click and right-click paths share it
-// (coalesced to a frame for the hover alone; see `hover` below). Only the
-// *position* comes from the chrome's tracker, and client coordinates are
-// viewport-relative, so it makes no difference which element measured them.
-const FeatureTooltipLayer = observer(function FeatureTooltipLayer({
-  model,
-  mouseTracker,
-}: {
-  model: LinearCanvasBaseDisplayModel
-  mouseTracker: MouseTracker
-}) {
-  const mouseState = useMouseState(mouseTracker)
-  return (
-    <FeatureTooltip
-      rows={model.mouseoverExtraInformation}
-      mouseState={mouseState}
-    />
   )
 })
 

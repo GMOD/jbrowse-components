@@ -1,7 +1,7 @@
-import { useMouseState } from '@jbrowse/core/ui'
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-kit/PointerLayer'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -9,7 +9,6 @@ import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 import type { SequenceHover } from './sequenceHover.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 
 const SequenceBody = observer(function SequenceBody({
   model,
@@ -61,37 +60,6 @@ function HoverContents({ hover }: { hover: SequenceHover }) {
   )
 }
 
-// The hover tooltip, in its own component so that following the pointer
-// re-renders it alone.
-//
-// The hover used to be `useState` in `SequenceDisplayComponent`, written from an
-// `onMouseMove` on `DisplayChrome` — so every mousemove re-rendered the chrome,
-// its status container and all three overlays, and ran `hoverAt` plus a
-// `getBoundingClientRect()` per *raw* event rather than once a frame. See
-// `useMouseTracking`.
-//
-// Resolving `hoverAt` here rather than in the handler also keeps the readout
-// live: it is an observer, so a base under a stationary cursor re-reads when the
-// sequence data or the viewport moves, instead of staying frozen at whatever the
-// last mousemove saw.
-const SequenceHoverTooltip = observer(function SequenceHoverTooltip({
-  model,
-  mouseTracker,
-}: {
-  model: LinearReferenceSequenceDisplayModel
-  mouseTracker: MouseTracker
-}) {
-  const mouseState = useMouseState(mouseTracker)
-  const hover = mouseState
-    ? model.hoverAt(mouseState.x, mouseState.y)
-    : undefined
-  return (
-    <HoverTooltip hit={hover} mouseState={mouseState}>
-      {hover ? <HoverContents hover={hover} /> : null}
-    </HoverTooltip>
-  )
-})
-
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model,
 }: {
@@ -108,7 +76,21 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
       {({ canvasRef, mouseTracker }) => (
         <>
           <SequenceBody model={model} canvasRef={canvasRef} />
-          <SequenceHoverTooltip model={model} mouseTracker={mouseTracker} />
+          {/* `hoverAt` resolved in the layer, not a handler, so the readout
+              under a stationary cursor re-reads when the sequence or the
+              viewport moves */}
+          <PointerLayer mouseTracker={mouseTracker}>
+            {mouseState => {
+              const hover = mouseState
+                ? model.hoverAt(mouseState.x, mouseState.y)
+                : undefined
+              return (
+                <HoverTooltip hit={hover} mouseState={mouseState}>
+                  {hover ? <HoverContents hover={hover} /> : null}
+                </HoverTooltip>
+              )
+            }}
+          </PointerLayer>
         </>
       )}
     </DisplayChrome>

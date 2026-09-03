@@ -174,11 +174,25 @@ function composeInOrder(...mixins: any[]) {
 
 // `afterAttach` fires on attach to a parent, which is how a display is really
 // created (it hangs off a track), so the fixture mounts one rather than a
-// standalone root.
+// standalone root — and the parent is view-shaped (`width` + `setWidth`, which
+// is what `getContainingView` looks for), since the mixin's grow-exit bake
+// reads the view's `initialized` while in grow mode.
 function mount(...mixins: any[]) {
-  const Parent = types.model('TestTrack', {
-    display: composeInOrder(...mixins),
-  })
+  const Parent = types
+    .model('TestView', {
+      width: 800,
+      display: composeInOrder(...mixins),
+    })
+    .views(() => ({
+      get initialized() {
+        return true
+      },
+    }))
+    .actions(self => ({
+      setWidth(width: number) {
+        self.width = width
+      },
+    }))
   const { display } = Parent.create({
     display: { type: 'test', configuration: {} },
   })

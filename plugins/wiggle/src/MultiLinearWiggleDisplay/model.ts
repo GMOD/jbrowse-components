@@ -518,10 +518,6 @@ export default function stateModelFactory(
         })
       },
 
-      // No superAfterAttach() call: the fork auto-chains hooks, so
-      // MultiRegionDisplayMixin's afterAttach already runs (see
-      // afterAttachAutoChain.test.ts). An explicit call would double-install
-      // its fetch autoruns.
       afterAttach() {
         setupTreeSidebarAutoruns(self, {
           name: 'MultiWiggle',

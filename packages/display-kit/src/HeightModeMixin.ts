@@ -1,12 +1,13 @@
 import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
 import type { HeightMode } from './heightMode.ts'
 import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IReactionDisposer } from 'mobx'
 
 /**
@@ -38,7 +39,7 @@ const heightHost = (self: object) =>
 /**
  * #stateModel HeightModeMixin
  * #category display
- * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`
+ * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
  *
  * The whole track-height strategy every display with a promotable `heightMode`
  * config slot shares (the canvas feature display, the alignments display), so the
@@ -214,6 +215,16 @@ export default function HeightModeMixin() {
         return heightHost(self).setHeight(displayed + distance) - displayed
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          installGrowExitBake(
+            self as typeof self & { setHeight: (height: number) => number },
+          ),
+        )
+      },
+    }))
 }
 
 /**
@@ -223,8 +234,8 @@ export default function HeightModeMixin() {
  * the call inside `setHeightMode` because the resolved `heightMode` also flips
  * without any imperative action — resetting a track customized to grow, or changing the
  * session-wide default out from under grow-following tracks that inherit it (the
- * promotable cascade) — and every such exit must bake. Install from `afterAttach`
- * on both displays that own a `grownHeight`.
+ * promotable cascade) — and every such exit must bake. Installed from the
+ * mixin's own `afterAttach`, which the fork chains under the display's.
  *
  * The captured height is `prev.grown`, computed in the tracked expression while
  * still in grow mode: by the time the effect runs the mode has flipped and
@@ -241,19 +252,20 @@ export default function HeightModeMixin() {
  * slot untouched, so they still bake the displayed height here.
  */
 export function installGrowExitBake(
-  self: {
+  self: IStateTreeNode & {
     heightMode: HeightMode
     autoHeight: boolean
     grownHeight: number
     fitTargetHeight: number
     setHeight: (height: number) => number
   },
-  view: { initialized: boolean },
 ): IReactionDisposer {
+  const view = () => getContainingView(self) as RegionHost
   return reaction(
     () => ({
       mode: self.heightMode,
-      grown: self.autoHeight && view.initialized ? self.grownHeight : undefined,
+      grown:
+        self.autoHeight && view().initialized ? self.grownHeight : undefined,
       slot: self.fitTargetHeight,
     }),
     (curr, prev) => {

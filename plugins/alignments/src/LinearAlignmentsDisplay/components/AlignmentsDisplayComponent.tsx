@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
+import { PointerLayer } from '@jbrowse/display-kit/PointerLayer'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -14,19 +14,6 @@ import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
-
-// The tooltip, in its own component so that following the pointer re-renders
-// the tooltip and nothing else.
-//
-// This used to be a `mouseCoord` useState in `AlignmentsDisplayComponent`, set
-// from an `onMouseMove` on `DisplayChrome`. Two things were wrong with that, and
-// both are why hovering a pileup was the most expensive hover in the app:
-// the write re-rendered `DisplayChrome`, the status container and `PileupBody`
-// with all its overlays — to move one tooltip — and it did so on every *raw*
-// mousemove, uncoalesced, with a `getBoundingClientRect()` per event on top.
-// `useMouseTracking` publishes the position instead and coalesces it to one
-// update per frame. See there.
 
 // Layout only, and deliberately no `theme =>` argument: this is the alignments
 // entry in the "themed makeStyles in the display render path" list that
@@ -40,22 +27,6 @@ const useStyles = makeStyles()({
     width: '100%',
     minHeight: '100%',
   },
-})
-
-const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
-  model,
-  mouseTracker,
-}: {
-  model: LinearAlignmentsDisplayModel
-  mouseTracker: MouseTracker
-}) {
-  const { TooltipComponent } = model
-  const mouseState = useMouseState(mouseTracker)
-  return (
-    <Suspense fallback={null}>
-      <TooltipComponent model={model} mouseState={mouseState} />
-    </Suspense>
-  )
 })
 
 // The corner controls, in their own observer for the reason every other layer
@@ -135,7 +106,16 @@ const AlignmentsDisplayComponent = observer(
           <>
             <PileupBody model={model} canvasRef={canvasRef} />
             <AlignmentsCornerControls model={model} />
-            <AlignmentsTooltipLayer model={model} mouseTracker={mouseTracker} />
+            <PointerLayer mouseTracker={mouseTracker}>
+              {mouseState => (
+                <Suspense fallback={null}>
+                  <model.TooltipComponent
+                    model={model}
+                    mouseState={mouseState}
+                  />
+                </Suspense>
+              )}
+            </PointerLayer>
             <DisplayContextMenu model={model} />
           </>
         )}
