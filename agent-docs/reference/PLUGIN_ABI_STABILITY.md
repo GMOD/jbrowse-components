@@ -184,8 +184,10 @@ one either.
 
 None of this is checked against a published bundle: `abi.test.ts` pins
 `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters
-its findings on that same prefix, so neither reaches a plugin `exports` object
-or the session. `pluginFacingSessionApi.test.ts` is the one thing that reaches
+its static findings on that same prefix, so neither reaches a plugin `exports`
+object or the session. The script does also evaluate every store bundle against
+the worker's export map, which is what catches a UI stub of the wrong shape or a
+module-scope `document` read, but nothing yet boots one on the main thread. `pluginFacingSessionApi.test.ts` is the one thing that reaches
 narrower than a bare removal here: it pins what published bundles actually
 call for fifteen session members, and performs the call, which is why
 `getReferring`'s changed signature is caught even though nothing pins session

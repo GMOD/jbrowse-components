@@ -127,3 +127,99 @@ describe('a missing pluggable type says what is missing', () => {
     )
   })
 })
+
+function lazyViewPlugin(onExtend: (pm: PluginManager) => void) {
+  class LazyPlugin extends Plugin {
+    name = 'LazyPlugin'
+    install(pm: PluginManager) {
+      pm.addViewType(
+        () =>
+          new ViewType({
+            name: 'EagerView',
+            stateModel: types.model('EagerView', { type: 'EagerView' }),
+            ReactComponent: () => null,
+          }),
+      )
+      pm.addViewType(
+        () =>
+          new ViewType({
+            name: 'LazyView',
+            stateModel: () =>
+              Promise.resolve(types.model('LazyView', { type: 'LazyView' })),
+            ReactComponent: () => null,
+          }),
+      )
+      onExtend(pm)
+    }
+  }
+  return new PluginManager([new LazyPlugin()])
+}
+
+describe('Core-extendPluggableElement on a lazily registered state model', () => {
+  test('a callback that reads and reassigns stateModel runs once the loader resolves', async () => {
+    const seen: string[] = []
+    const pm = lazyViewPlugin(pm => {
+      pm.addToExtensionPoint('Core-extendPluggableElement', (elt, props) => {
+        if (props.group === 'view') {
+          seen.push(elt.name)
+        }
+        if (elt.name === 'LazyView') {
+          const view = elt as ViewType
+          view.stateModel = view.stateModel.views(() => ({
+            get extended() {
+              return 'yes'
+            },
+          }))
+        }
+        return elt
+      })
+    })
+      .createPluggableElements()
+      .configure()
+    expect(seen).toEqual(['EagerView'])
+    const loaded = await pm.getViewType('LazyView').loadStateModel()
+    expect(seen).toEqual(['EagerView', 'LazyView'])
+    const instance = loaded.create({}) as { extended?: string }
+    expect(instance.extended).toBe('yes')
+    expect(pm.getViewType('LazyView').stateModel).toBe(loaded)
+  })
+
+  test('the point fires once however many times the model is loaded', async () => {
+    let fired = 0
+    const pm = lazyViewPlugin(pm => {
+      pm.addToExtensionPoint('Core-extendPluggableElement', elt => {
+        if (elt.name === 'LazyView') {
+          fired++
+        }
+        return elt
+      })
+    })
+      .createPluggableElements()
+      .configure()
+    const viewType = pm.getViewType('LazyView')
+    await Promise.all([viewType.loadStateModel(), viewType.loadStateModel()])
+    await viewType.loadStateModel()
+    expect(fired).toBe(1)
+  })
+
+  test('a callback returning a different element replaces the registered one', async () => {
+    const pm = lazyViewPlugin(pm => {
+      pm.addToExtensionPoint('Core-extendPluggableElement', elt =>
+        elt.name === 'LazyView'
+          ? new ViewType({
+              name: 'LazyView',
+              stateModel: types.model('Replaced', { type: 'LazyView' }),
+              ReactComponent: () => null,
+            })
+          : elt,
+      )
+    })
+      .createPluggableElements()
+      .configure()
+    const original = pm.getViewType('LazyView')
+    const loaded = await original.loadStateModel()
+    expect(loaded.name).toBe('Replaced')
+    expect(pm.getViewType('LazyView')).not.toBe(original)
+    expect(pm.getViewType('LazyView').stateModel).toBe(loaded)
+  })
+})

@@ -535,6 +535,13 @@ Add functionality to pluggable elements, e.g. extra right-click context menus.
 Your callback receives **every** pluggable element registered to the system, so
 it must select the one it means.
 
+Most view and display types register their state model lazily. For those the
+point fires when the state model loads rather than at startup, so
+`elt.stateModel = extend(elt.stateModel)` in the callback sees a loaded model
+and works the way it did in v4. A callback that instead changes something the
+host reads before any model loads, such as a display's `configSchema`, runs too
+late for a lazy element.
+
 For the two common cases use `extendViewType` / `extendDisplayType`, which check
 the `group` and look the name up in a registry:
 

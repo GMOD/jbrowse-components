@@ -464,6 +464,17 @@ eager per display is its registration and its **config schema**, which has to be
 built at install time for the config editor, the track config union and the
 `displayDefaults` merge.
 
+`Core-extendPluggableElement` fires for a lazily registered view or display when
+its loader resolves, not at `createPluggableElements()`. The v4 shape a plugin
+wrote — `elt.stateModel = extend(elt.stateModel)` inside the callback — keeps
+working because `stateModel` has a setter and the read sees a loaded model, and
+`extendViewType`/`extendDisplayType` compose the same way from inside that
+fold. The two published plugins that hit the gap (protein3d and msaview) each
+duck-typed `extendStateModel` as a workaround before this held; neither needs
+it. What a callback cannot do for a lazy element is mutate something the host
+reads before any model loads, the config schema above all, since the callback
+has not run yet then.
+
 The rule that keeps it working: **nothing in the eager graph may hold a value
 edge into a model module.** A plugin barrel re-exporting a model factory is
 exactly that edge, and it is invisible — tsc, lint and jest all pass with the

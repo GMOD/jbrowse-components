@@ -4,7 +4,8 @@
     "breaks": [
       "@jbrowse/core/ui#BaseTooltip",
       "@jbrowse/core/util#isContainedWithin",
-      "@jbrowse/core/util/tracks#getParentRenderProps"
+      "@jbrowse/core/util/tracks#getParentRenderProps",
+      "worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')"
     ]
   },
   {
@@ -21,7 +22,7 @@
   },
   {
     "plugin": "Ideogram",
-    "breaks": []
+    "breaks": ["worker eval: ReferenceError: window is not defined"]
   },
   {
     "plugin": "Linkout",
@@ -29,7 +30,7 @@
   },
   {
     "plugin": "MsaView",
-    "breaks": []
+    "breaks": ["@jbrowse/core/util#renderToStaticMarkup"]
   },
   {
     "plugin": "Protein3d",
@@ -53,7 +54,7 @@
   },
   {
     "plugin": "TView",
-    "breaks": []
+    "breaks": ["@jbrowse/core/util#renderToStaticMarkup"]
   },
   {
     "plugin": "UCSC",

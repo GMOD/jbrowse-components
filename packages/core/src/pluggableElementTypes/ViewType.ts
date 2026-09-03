@@ -31,6 +31,14 @@ export default class ViewType extends PluggableElementBase {
     return this.loadedStateModel!
   }
 
+  set stateModel(stateModel: IAnyModelType) {
+    this.loadedStateModel = stateModel
+  }
+
+  // set by PluginManager.addElementType: runs Core-extendPluggableElement once
+  // the loader resolves, so a callback reading `stateModel` sees a model
+  onStateModelLoaded?: () => void
+
   // named `stateModel` + `Loader` because pluggableMstType and
   // pruneUnbuildableNodes probe `${fieldName}Loader` generically
   stateModelLoader?: () => Promise<IAnyModelType>
@@ -126,7 +134,8 @@ export default class ViewType extends PluggableElementBase {
       }
       this.pendingStateModelExtensions = []
       this.loadedStateModel = stateModel
-      return stateModel
+      this.onStateModelLoaded?.()
+      return this.stateModel
     })
     return this.stateModelPromise
   }

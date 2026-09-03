@@ -28,6 +28,12 @@
 // just becomes `undefined` inside a build nobody is going to make again. So the
 // only honest check is what the shipped bytes actually reach for.
 //
+// Reading is half of it. Each bundle is also *evaluated* against the RPC
+// worker's export map (`ReExports/workerModules.ts`, built here with esbuild),
+// since a plugin loads in the worker too and a UI stub of the wrong shape --
+// `Vs.makeStyles is not a function` -- or a module-scope `document` read is a
+// NetworkError in the browser and error-pages every session naming the plugin.
+//
 // The distinction that matters, and that grepping the bundle for a name gets
 // wrong: several plugins *bundle* core helpers (react-msaview carries a pile of
 // deep imports, multilevel-linear-view2 vendors the whole util barrel), so the
@@ -38,6 +44,11 @@
 // which --experimental-strip-types will not load. The two are kept in sync with
 // modules.ts by a load-time throw and by abi.test.ts respectively.
 import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import vm from 'node:vm'
+
+import { build } from 'esbuild'
 
 import reExportsList from '../packages/core/src/ReExports/list.ts'
 
@@ -108,8 +119,60 @@ function hostAliases(src: string) {
   return aliases
 }
 
+async function workerExports() {
+  const outfile = path.join(
+    fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-worker-exports-')),
+    'workerModules.mjs',
+  )
+  await build({
+    entryPoints: ['packages/core/src/ReExports/workerModules.ts'],
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    outfile,
+    logLevel: 'warning',
+  })
+  const mod = (await import(outfile)) as { default: Record<string, unknown> }
+  return mod.default
+}
+
+// What the worker's `importScripts` does to the bundle, in a fresh realm with
+// the worker's export map and no DOM. The UMD wrapper assigns onto `this`.
+function evaluateInWorkerRealm(
+  src: string,
+  JBrowseExports: Record<string, unknown>,
+) {
+  const realm: Record<string, unknown> = {
+    JBrowseExports,
+    console,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    queueMicrotask,
+    TextEncoder,
+    TextDecoder,
+    URL,
+    URLSearchParams,
+    Blob,
+    fetch,
+    AbortController,
+    performance,
+    crypto,
+  }
+  realm.self = realm
+  realm.globalThis = realm
+  try {
+    vm.runInNewContext(src, realm, { filename: 'plugin.umd.js' })
+    return undefined
+  } catch (e) {
+    return `worker eval: ${e instanceof Error ? e.message : String(e)}`
+  }
+}
+
 const removed = removedNames()
 const served = new Set(reExportsList)
+const worker = await workerExports()
 const res = await fetch(STORE)
 if (!res.ok) {
   throw new Error(`HTTP ${res.status} fetching ${STORE}`)
@@ -162,6 +225,10 @@ for (const p of plugins) {
         breaks.push(`${mod}#${name}`)
       }
     }
+  }
+  const evalError = evaluateInWorkerRealm(src, worker)
+  if (evalError) {
+    breaks.push(evalError)
   }
   report.push({
     plugin: p.name,

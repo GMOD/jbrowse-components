@@ -83,6 +83,18 @@ export const pluggableElementTypeGroups = [
 export type PluggableElementTypeGroup =
   (typeof pluggableElementTypeGroups)[number]
 
+interface LazyStateModelElement {
+  stateModel: IAnyModelType
+  isStateModelLoaded: boolean
+  onStateModelLoaded?: () => void
+}
+
+function isUnloadedLazyElement(
+  element: PluggableElementType,
+): element is PluggableElementType & LazyStateModelElement {
+  return 'isStateModelLoaded' in element && !element.isStateModelLoaded
+}
+
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: Record<string, ElementClass> = {}
@@ -823,15 +835,30 @@ export default class PluginManager {
           `${groupName} ${newElement.name} already registered, cannot register it again`,
         )
       } else {
-        typeRecord.add(
-          newElement.name,
+        const extend = () =>
           this.evaluateExtensionPoint(
             /** #extensionPoint Core-extendPluggableElement | sync | Mutate any pluggable element after it is created */
             'Core-extendPluggableElement',
             newElement,
             { group: groupName },
-          ),
-        )
+          )
+        // A lazily registered state model is not there for a callback to
+        // extend yet, so the point fires when the loader resolves instead.
+        // agent-docs/reference/EAGER_BUNDLE.md
+        if (isUnloadedLazyElement(newElement)) {
+          newElement.onStateModelLoaded = () => {
+            const extended = extend()
+            if (extended !== newElement) {
+              typeRecord.add(newElement.name, extended)
+              if ('isStateModelLoaded' in extended) {
+                newElement.stateModel = extended.stateModel
+              }
+            }
+          }
+          typeRecord.add(newElement.name, newElement)
+        } else {
+          typeRecord.add(newElement.name, extend())
+        }
       }
     })
 

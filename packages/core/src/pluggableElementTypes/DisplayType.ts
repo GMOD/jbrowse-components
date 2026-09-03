@@ -12,6 +12,14 @@ export default class DisplayType extends PluggableElementBase {
     return this.loadedStateModel!
   }
 
+  set stateModel(stateModel: IAnyModelType) {
+    this.loadedStateModel = stateModel
+  }
+
+  // set by PluginManager.addElementType: runs Core-extendPluggableElement once
+  // the loader resolves, so a callback reading `stateModel` sees a model
+  onStateModelLoaded?: () => void
+
   stateModelLoader?: () => Promise<IAnyModelType>
 
   private stateModelPromise?: Promise<IAnyModelType>
@@ -83,7 +91,8 @@ export default class DisplayType extends PluggableElementBase {
       }
       this.pendingStateModelExtensions = []
       this.loadedStateModel = stateModel
-      return stateModel
+      this.onStateModelLoaded?.()
+      return this.stateModel
     })
     return this.stateModelPromise
   }
