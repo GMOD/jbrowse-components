@@ -17,6 +17,7 @@ exports[`every registered schema slot default 1`] = `
     "bamLocation": "fileLocation = {"uri":"/path/to/my.bam","locationType":"UriLocation"}",
     "densityAdapter": "frozen = null",
     "fetchSizeLimit": "number = 5000000",
+    "useBgzfWorkerPool": "boolean = true",
   },
   "adapter: BedAdapter": {
     "autoSql": "string = """,
@@ -169,6 +170,7 @@ exports[`every registered schema slot default 1`] = `
     "densityAdapter": "frozen = null",
     "dontRedispatch": "stringArray = ["chromosome","region","contig","supercontig","scaffold"]",
     "gffGzLocation": "fileLocation = {"uri":"/path/to/my.gff.gz","locationType":"UriLocation"}",
+    "useBgzfWorkerPool": "boolean = true",
   },
   "adapter: GtfAdapter": {
     "aggregateField": "string = "gene_name"",
@@ -314,6 +316,7 @@ exports[`every registered schema slot default 1`] = `
     "densityAdapter": "frozen = null",
     "fetchSizeLimit": "number = 5000000",
     "samplesTsvLocation": "fileLocation = {"uri":"/path/to/samples.tsv","locationType":"UriLocation"}",
+    "useBgzfWorkerPool": "boolean = true",
     "vcfGzLocation": "fileLocation = {"uri":"/path/to/my.vcf.gz","locationType":"UriLocation"}",
   },
   "connection: JB2TrackHubConnection": {
