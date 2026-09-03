@@ -33,9 +33,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       filehandle: openLocation(vcfGzLocation, this.pluginManager),
       ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
       chunkCacheBudget: decompressedBytesBudget,
-      bgzfWorkerPool: this.getConf('useBgzfWorkerPool')
-        ? sharedBgzfWorkerPool()
-        : undefined,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
     const header = await vcf.getHeader()
     return {

@@ -81,10 +81,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "useBgzfWorkerPool",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "densityAdapter",
           "type": "(JexlString | frozen)"
         }
@@ -541,10 +537,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
-          "name": "useBgzfWorkerPool",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "densityAdapter",
           "type": "(JexlString | frozen)"
         }
@@ -888,10 +880,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "useBgzfWorkerPool",
-          "type": "(JexlString | boolean)"
         },
         {
           "name": "densityAdapter",

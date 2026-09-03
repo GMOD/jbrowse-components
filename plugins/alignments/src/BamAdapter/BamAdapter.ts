@@ -100,9 +100,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
           // tabix adapters — see bgzfWorkerPool for why it is one pool per JS
           // context, why the import inside it has to be dynamic, and why it
           // degrades to inflating in process rather than throwing.
-          bgzfWorkerPool: this.getConf('useBgzfWorkerPool')
-            ? sharedBgzfWorkerPool()
-            : undefined,
+          bgzfWorkerPool: sharedBgzfWorkerPool(),
         }),
       }
     }

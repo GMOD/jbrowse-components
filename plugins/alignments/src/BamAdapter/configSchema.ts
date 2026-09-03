@@ -99,20 +99,6 @@ const configSchema = ConfigurationSchema(
       defaultValue: 5_000_000,
       advanced: true,
     },
-    /**
-     * #slot useBgzfWorkerPool
-     */
-    // On by default, matching @gmod/bam. The slot exists so the pool can be
-    // turned off without rebuilding — which is how its effect on a real track
-    // gets measured, since the inflate happens in an RPC worker where no test
-    // hook reaches. Mirrors CramAdapter's useSliceWorkerPool.
-    useBgzfWorkerPool: {
-      type: 'boolean',
-      description:
-        'inflate BGZF blocks on a pool of workers rather than in the thread that asked',
-      defaultValue: true,
-      advanced: true,
-    },
     ...densityAdapterConfigSchemaFields,
   },
   {
