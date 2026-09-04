@@ -55,9 +55,9 @@ test('a prerelease version flows through the names unaltered', () => {
   ).toContain('jbrowse-desktop-v5.0.0-beta.1-mac.zip')
 })
 
-// The browser-test harness resolves the binary to launch from here rather than
-// from a build, so darwin is only ever right if this is — and it was not: a
-// two-way win32/linux ternary sent a macOS run at the linux path.
+// The browser-test harness has no build to ask, so darwin is only right here if
+// it is right below. It was not: a win32/linux ternary sent macOS at the linux
+// path.
 test('the unpacked tree is where @electron/packager puts it', () => {
   const names = { appName: 'jbrowse-desktop', productName: 'JBrowse 2' }
   expect(unpackedApp('linux', names)).toMatchObject({

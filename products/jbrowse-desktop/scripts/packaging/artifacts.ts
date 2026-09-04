@@ -48,16 +48,12 @@ export const winArtifacts = (app: AppRelease) => ({
   manifest: 'latest.yml',
 })
 
-// The unpacked electron tree, which dist/ stages rather than publishes.
 // @electron/packager calls the app `name` and writes
 // `unpacked/<name>-<platform>-<arch>/` holding an executable of the same name —
-// on darwin a `<name>.app` bundle with the binary two levels further in.
-//
-// One derivation because five places used to spell parts of it: the packager's
-// own `name` and `executableName`, the `.app` the mac signing and ditto steps
-// act on, the `.exe` windows.ts signs, and the browser-test harness, which has
-// no build to ask and had a two-way win32/linux ternary that resolved to a
-// linux path on darwin. Paths are relative to dist/; config.ts joins them.
+// on darwin a `<name>.app` bundle with the binary two levels further in. The
+// packager options, the mac signing steps, the exe windows.ts signs and the
+// browser-test harness all read that rule from here. Paths are relative to
+// dist/, which config.ts joins on.
 const TARGETS = {
   linux: { platform: 'linux', arch: 'x64' },
   mac: { platform: 'darwin', arch: 'universal' },
