@@ -210,11 +210,18 @@ test('a ribbon click keeps its outline id until empty canvas or a refetch', () =
   display.selectHovered()
   expect(display.clickedFeatureId).toBe(0)
 
-  // and so does a refetch, whose targets the index no longer addresses
+  // and so does a refetch, whose targets a bare index no longer addresses
   display.setHoverTarget({ label: 'link', feature, targetIdx: 3 })
   display.selectHovered()
   display.setFeatures([])
   expect(display.clickedFeatureId).toBe(0)
+
+  // a group-keyed click re-resolves against the rebuilt geometry instead,
+  // since the click's own widget resizes the view and that refetches
+  display.setHoverTarget({ label: 'g', feature, groupKey: 'g1', targetIdx: 2 })
+  display.selectHovered()
+  display.setFeatures([])
+  expect(display.clickedTarget).toEqual({ groupKey: 'g1', targetIdx: 2 })
 })
 
 // `session.selection` is global, so before the `ownFeatureIds` gate a

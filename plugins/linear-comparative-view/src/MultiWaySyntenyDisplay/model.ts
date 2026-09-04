@@ -245,8 +245,12 @@ export function stateModelFactory(
        */
       setFeatures(f: Feature[]) {
         self.features = f
-        // a direct-link targetIdx addresses the outgoing targets array
-        self.clickedTarget = undefined
+        // a bare targetIdx addresses the outgoing targets array; a group KEY
+        // re-resolves against the rebuilt geometry — load-bearing, since the
+        // click's own widget resizes the view and that refetches
+        if (self.clickedTarget?.groupKey === undefined) {
+          self.clickedTarget = undefined
+        }
       },
       /**
        * #action
@@ -266,7 +270,9 @@ export function stateModelFactory(
       setLaneLinks(links: Map<string, Feature[]>, key: string) {
         self.laneLinks = links
         self.laneLinksKey = key
-        self.clickedTarget = undefined
+        if (self.clickedTarget?.groupKey === undefined) {
+          self.clickedTarget = undefined
+        }
       },
       /**
        * #action
