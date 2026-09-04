@@ -849,14 +849,18 @@ export default defineConfig(
     },
   },
   // Style rules can't apply to codegen output: the transpiler emits `1.0` for a
-  // float literal and nests Math.max to mirror the shader's own two-argument
-  // max, and autofixing either edits a file `pnpm gen:shaders` immediately
-  // overwrites — the Shaders CI job diffs it.
+  // float literal, nests Math.max to mirror the shader's own two-argument
+  // max, and spells `sqrt(a*a + b*b)` because that is what the shader spells —
+  // `Math.hypot` is a DIFFERENT, more accurate function, so taking the autofix
+  // would stop the twin from matching the GPU, which is the file's whole
+  // purpose. Autofixing any of them also edits a file `pnpm gen:shaders`
+  // immediately overwrites — the Shaders CI job diffs it.
   {
     files: ['**/*.generated.ts'],
     rules: {
       'unicorn/no-zero-fractions': 'off',
       'unicorn/prefer-flat-math-min-max': 'off',
+      'unicorn/prefer-modern-math-apis': 'off',
     },
   },
   // Guards against regressions in the SVG-export pipeline. See
