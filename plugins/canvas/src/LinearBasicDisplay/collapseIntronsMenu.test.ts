@@ -241,3 +241,58 @@ describe('isGeneLikeType', () => {
     expect(isGeneLikeType(type)).toBe(false)
   })
 })
+
+// `labels.name` is a jexl slot, so a track can name its features by any
+// attribute -- and then the glyph's label, the hover and this menu's own
+// transcript row all read that, while the record's `name` is a different string
+// underneath. Titling the collapsed view from the record opened a view named
+// after something the user has never seen on this track.
+describe('the collapsed view is titled the way the track labels', () => {
+  const labelled = makeFlatbushItem({
+    featureId: 'EDEN',
+    type: 'gene',
+    name: 'dystrophin',
+    startBp: 1050,
+    endBp: 9000,
+  })
+  const labelledIsoform = {
+    ...isoform('EDEN.1', 'mRNA'),
+    displayLabel: 'dystrophin-201',
+  }
+
+  function setupLabelled(subfeatureInfos: SubfeatureInfo[]) {
+    const { createDisplay } = createTestEnvironment()
+    const { display, session, mockRpcCall } = createDisplay()
+    mockRpcCall.mockResolvedValue({ feature: fullGene })
+    display.setRpcData(
+      0,
+      makeFeatureData({ flatbushItems: [labelled], subfeatureInfos }),
+      ctgA,
+    )
+    display.setLoadedRegion(0, ctgA)
+    return { display, session }
+  }
+
+  it('titles the gene scope with the drawn gene label', async () => {
+    const { display, session } = setupLabelled([])
+    rightClick(display, labelled)
+
+    const item = collapseItem(display)
+    if (!('onClick' in item)) {
+      throw new Error('expected a clickable item')
+    }
+    item.onClick()
+
+    expect((await queuedDialogProps(session)).featureName).toBe('dystrophin')
+  })
+
+  it('titles the transcript scope with the drawn isoform label', async () => {
+    const { display, session } = setupLabelled([labelledIsoform])
+    rightClick(display, labelled, labelledIsoform)
+    clickSubMenu(collapseItem(display), 'This transcript (dystrophin-201)')
+
+    expect((await queuedDialogProps(session)).featureName).toBe(
+      'dystrophin-201',
+    )
+  })
+})

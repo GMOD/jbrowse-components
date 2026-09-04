@@ -63,7 +63,7 @@ export function collapseIntronsMenuItem(
   info: FeatureContextMenuInfo,
 ): MenuItem {
   const {
-    item: { featureId },
+    item: { featureId, name: drawnFeatureName },
     subfeature,
     displayedRegionIndex,
   } = info
@@ -117,10 +117,23 @@ export function collapseIntronsMenuItem(
             // its top-level id, so this stays the gene even when a single transcript
             // was picked
             featureId,
-            // names the resulting view; the scope that was chosen, not
-            // transcripts[0], since the gene scope collapses the union of all its
-            // transcripts
-            featureName: getFeatureName(target) ?? 'feature',
+            // Names the resulting view: the scope that was chosen, not
+            // transcripts[0], since the gene scope collapses the union of all
+            // its transcripts.
+            //
+            // The DRAWN name of that scope -- the track's `labels.name`
+            // expression resolved the glyph's label, and titling the new view
+            // with a field the user has never seen on this track is how a
+            // configured label and its own view stop agreeing. The record's
+            // name is only the floor, for a track whose expression names
+            // nothing: the view still needs a title, and nothing on screen
+            // contradicts it there.
+            featureName:
+              (subfeatureId === undefined
+                ? drawnFeatureName
+                : subfeature?.displayLabel) ??
+              getFeatureName(target) ??
+              'feature',
             trackId: readConfObject(
               getContainingTrack(self).configuration,
               'trackId',
