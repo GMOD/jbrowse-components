@@ -107,10 +107,6 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
     this.regions.deleteRegion(regionKey)
   }
 
-  pruneRegions(active: Iterable<number>) {
-    this.regions.prune(active)
-  }
-
   uploadTexture(
     passId: string,
     data: Uint8Array,

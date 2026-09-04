@@ -198,17 +198,6 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     super.deleteRegion(regionKey)
   }
 
-  pruneRegions(active: Iterable<number>) {
-    const activeSet = new Set(active)
-    this.record('pruneRegions', [...activeSet])
-    for (const regionKey of this.drawnThisFrame.keys()) {
-      if (!activeSet.has(regionKey)) {
-        this.noteRegionReplaced(regionKey)
-      }
-    }
-    super.pruneRegions(activeSet)
-  }
-
   private noteReplaced(regionKey: number, passId: string) {
     if (this.frameOpen && this.drawnThisFrame.get(regionKey)?.has(passId)) {
       this.replacedWhileDrawnLog.push(`${regionKey}:${passId}`)

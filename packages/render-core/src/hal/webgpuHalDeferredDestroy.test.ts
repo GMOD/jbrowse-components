@@ -164,7 +164,7 @@ test('outside a frame the release is immediate', async () => {
   resetDeviceGpuCacheForTests(device)
 })
 
-test('deleteRegion and pruneRegions defer through the same registry hook', async () => {
+test('deleteRegion defers through the registry hook', async () => {
   const { device, events } = fakeDevice()
   const hal = await makeHal(device)
 
@@ -172,7 +172,7 @@ test('deleteRegion and pruneRegions defer through the same registry hook', async
   hal.uploadBuffer(1, 'rect', instance, 1)
   hal.beginFrame(0, 0, 0)
   hal.deleteRegion(0)
-  hal.pruneRegions([0])
+  hal.deleteRegion(1)
 
   expect(events).toEqual([])
 

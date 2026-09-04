@@ -467,7 +467,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
    * {@link pendingDestroy} for why the frame decides when.
    *
    * Every buffer release routes here through the `RegionRegistry` destroy hook,
-   * so `uploadBuffer`, `deleteBuffer`, `deleteRegion`, `pruneRegions` and
+   * so `uploadBuffer`, `deleteBuffer`, `deleteRegion` and
    * `dispose` are all covered without any of them knowing a frame is open.
    */
   private destroyWhenIdle(resource: { destroy: () => void }) {

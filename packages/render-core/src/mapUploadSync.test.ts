@@ -10,9 +10,6 @@ function harness() {
     remove: (b, k) => {
       b.calls.push(`rm:${k}`)
     },
-    prune: (b, active) => {
-      b.calls.push(`prune:${[...active].join(',')}`)
-    },
   })
   return { backend, calls, sync }
 }
@@ -25,16 +22,7 @@ test('reports whether anything reached the backend', () => {
   expect(sync(backend, new Map([[0, 'b']]))).toBe(true)
   expect(sync(backend, new Map())).toBe(true)
   expect(sync(backend, new Map())).toBe(false)
-  expect(calls).toEqual([
-    'up:0:a',
-    'prune:0',
-    'prune:0',
-    'up:0:b',
-    'prune:0',
-    'rm:0',
-    'prune:',
-    'prune:',
-  ])
+  expect(calls).toEqual(['up:0:a', 'up:0:b', 'rm:0'])
 })
 
 test('an entry whose data is undefined uploads once, not on every run', () => {

@@ -1,9 +1,6 @@
-// Per-(region, pass) buffer registry shared by WebGL2Hal and WebGPUHal.
-// Owns the nested map and the destroy semantics so the two HALs only have to
-// supply a leaf-buffer type and its destroy hook. Both HALs used to ship
-// near-identical deleteBuffer/deleteRegion/deleteAll/prune/getOrCreate
-// implementations; centralizing avoids drift when one side's lifecycle is
-// tweaked and the other isn't. Contract pinned by regionRegistry.test.ts.
+// Per-(region, pass) buffer registry shared by WebGL2Hal and WebGPUHal: the
+// nested map plus destroy semantics, so each HAL supplies only its leaf-buffer
+// type and destroy hook.
 export class RegionRegistry<Buf> {
   private regions = new Map<number, Map<string, Buf>>()
 
@@ -56,15 +53,5 @@ export class RegionRegistry<Buf> {
       }
     }
     this.regions.clear()
-  }
-
-  // Delete every region whose key is NOT in `active`.
-  prune(active: Iterable<number>): void {
-    const activeSet = new Set(active)
-    for (const regionKey of this.regions.keys()) {
-      if (!activeSet.has(regionKey)) {
-        this.deleteRegion(regionKey)
-      }
-    }
   }
 }

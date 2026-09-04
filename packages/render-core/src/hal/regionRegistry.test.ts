@@ -80,30 +80,6 @@ test('deleteAll destroys everything and clears the registry', () => {
   expect(reg.get(0, 'x')?.id).toBe(99)
 })
 
-test('prune deletes regions absent from the active set', () => {
-  const { reg, destroyed } = makeRegistry()
-  reg.set(0, 'a', makeBuf(1))
-  reg.set(1, 'a', makeBuf(2))
-  reg.set(2, 'a', makeBuf(3))
-
-  reg.prune([0, 2])
-
-  expect(destroyed).toEqual([2])
-  expect(reg.get(0, 'a')?.id).toBe(1)
-  expect(reg.get(1, 'a')).toBeUndefined()
-  expect(reg.get(2, 'a')?.id).toBe(3)
-})
-
-test('prune with empty active set deletes everything', () => {
-  const { reg, destroyed } = makeRegistry()
-  reg.set(0, 'a', makeBuf(1))
-  reg.set(1, 'b', makeBuf(2))
-
-  reg.prune([])
-
-  expect(destroyed.sort()).toEqual([1, 2])
-})
-
 test('replacing a buffer requires explicit deleteBuffer first (set does not destroy)', () => {
   const { reg, destroyed } = makeRegistry()
   reg.set(0, 'a', makeBuf(1))

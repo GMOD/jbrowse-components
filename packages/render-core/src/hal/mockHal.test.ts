@@ -216,7 +216,7 @@ describe('MockHal mid-frame buffer replacement', () => {
     expect(hal.replacedWhileDrawn()).toEqual([])
   })
 
-  it('counts a deleteRegion and a prune over a drawn region, and only the open frame', () => {
+  it('counts a deleteRegion over a drawn region, and only the open frame', () => {
     const hal = new MockHal([pass('a')])
     hal.uploadBuffer(0, 'a', new Float32Array([1]), 1)
     hal.uploadBuffer(1, 'a', new Float32Array([1]), 1)
@@ -224,7 +224,7 @@ describe('MockHal mid-frame buffer replacement', () => {
     hal.drawPass('a', 0)
     hal.drawPass('a', 1)
     hal.deleteRegion(0)
-    hal.pruneRegions([0])
+    hal.deleteRegion(1)
     hal.endFrame()
     // after endFrame the frame is closed, so the same calls are unremarkable
     hal.uploadBuffer(2, 'a', new Float32Array([1]), 1)

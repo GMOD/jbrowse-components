@@ -588,8 +588,8 @@ The bases own everything that's truly shared:
   `upload` / `release` / `dispose` as no-ops,
   since the source of truth is the `regions` map.
 - `GpuPerRegionRenderingBackend` owns the `hal` reference and a pre-allocated
-  uniform scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
-  `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`. It also
+  uniform scratch `ArrayBuffer`. Default `release(key)` delegates to
+  `hal.deleteRegion(key)`; default `dispose()` calls `hal.dispose()`. It also
   owns `upload`, over the `regionPasses` the subclass declares — six
   subclasses used to write that method, each restating an instance count the
   packed buffer already stated and each spelling the empty case differently. A
@@ -600,8 +600,8 @@ Two invariants keep the renderer implementations small and uniform:
 
 - `renderBlocks` receives the model's data map as its second argument — the
   renderer holds no `Map<number, ...>` field of its own. GPU buffer lifecycle
-  delegates to `hal.pruneRegions(active)`; Canvas2D backends read everything from
-  `regions` at render time.
+  delegates to `hal.deleteRegion(key)` per departed key; Canvas2D backends read
+  everything from `regions` at render time.
 - `hal.drawPass` short-circuits when the region has no buffer for that pass, so
   GPU renderers issue draws unconditionally — no per-region flag cache.
 
@@ -964,8 +964,7 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 - *Draw* — `drawPass(passId, regionKey, bufferPassId?)`, `setScissor` /
   `clearScissor`, `setViewport` / `clearViewport`.
 - *Lifecycle* — `deleteBuffer(regionKey, passId)`, `deleteRegion(key)`,
-  `pruneRegions(active)`, `resize(width, height)`, `setErrorHandler(handler)`,
-  `dispose()`.
+  `resize(width, height)`, `setErrorHandler(handler)`, `dispose()`.
 
 `drawPass` short-circuits when the region has no buffer for that pass (or count is
 zero), so callers issue draws unconditionally without tracking which regions have
@@ -1008,7 +1007,7 @@ validation error after the submit. `WebGPUHal` therefore pushes every release
 onto `pendingDestroy` while `currentEncoder` is non-null and drains it after the
 submit in `endFrame` (and on that method's throwing path, and in `dispose`).
 It runs through the `RegionRegistry` destroy hook, so `uploadBuffer`,
-`deleteBuffer`, `deleteRegion`, `pruneRegions` and `dispose` all get it without
+`deleteBuffer`, `deleteRegion` and `dispose` all get it without
 a per-call-site guard, and `uploadTexture`'s replacement goes the same way.
 WebGL2 needs none of this: it is immediate-mode, and the driver has already
 consumed the bytes by the time `deleteBuffer` runs.
@@ -1136,9 +1135,10 @@ GPU renderer classes own only what is intrinsically per-instance:
 
 What does NOT belong as renderer instance state:
 
-- **Region-lifecycle bookkeeping** — call `hal.pruneRegions(active)` instead of
-  mirroring HAL's region map in a renderer-side `Map<number, ...>`. HAL is the
-  authoritative owner of "which regions have GPU buffers."
+- **Region-lifecycle bookkeeping** — `installUpload` releases each departed
+  key through `hal.deleteRegion(key)`; don't mirror HAL's region map in a
+  renderer-side `Map<number, ...>`. HAL is the authoritative owner of "which
+  regions have GPU buffers."
 - **Per-region metadata derivable from `rpcDataMap`** — `hasRects` / `hasLines` /
   `outlineColor` style fields. `drawPass` skips missing buffers so the boolean
   flags aren't needed; per-region scalars used in uniforms should be passed into
@@ -1159,8 +1159,8 @@ and never mutated in place: `RenderLifecycleMixin` bumps `renderTick` after ever
 upload, so the render autorun re-fires and the cache cannot stale. Alignments is
 the one display built that way, its GPU side having to hold buffers anyway. Still
 forbidden: a cache populated from anywhere else, one whose entries get patched in
-place, and mirroring HAL's region map instead of calling
-`hal.pruneRegions(active)`.
+place, and mirroring HAL's region map instead of letting `installUpload`
+release each departed key.
 
 ## Shaders (Slang codegen)
 

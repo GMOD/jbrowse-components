@@ -133,17 +133,15 @@ test('an over-limit texture is refused and reported', () => {
   logged.mockRestore()
 })
 
-test('deleteRegion and pruneRegions destroy through the leaf hook', () => {
+test('deleteRegion destroys through the leaf hook', () => {
   const { hal } = makeHal()
   hal.uploadBuffer(0, 'rect', new Uint8Array(8), 1)
   hal.uploadBuffer(1, 'rect', new Uint8Array(8), 1)
-  hal.uploadBuffer(2, 'rect', new Uint8Array(8), 1)
 
   hal.deleteRegion(0)
-  hal.pruneRegions([2])
 
-  expect(hal.destroyed).toEqual([0, 1])
-  expect(hal.getBufferCount(2, 'rect')).toBe(1)
+  expect(hal.destroyed).toEqual([0])
+  expect(hal.getBufferCount(1, 'rect')).toBe(1)
 })
 
 test('dispose releases once however many times it is called', () => {

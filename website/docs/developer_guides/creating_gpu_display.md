@@ -512,8 +512,8 @@ What each backend refuses to allocate is
   CI enforces this with `git diff --exit-code`.
 - Renderers stay stateless. Don't cache per-region data on the renderer class
   (`private regions = new Map()`); the model's `rpcDataMap` is the single source
-  of truth and is passed into `renderBlocks`. Delegate GPU buffer lifecycle to
-  `hal.pruneRegions(active)`.
+  of truth and is passed into `renderBlocks`. `installUpload` releases each
+  departed key through `hal.deleteRegion(key)`.
 - Render the canvas through `DisplayChrome`, never by calling
   `useRenderingBackend` in your own component.
 

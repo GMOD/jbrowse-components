@@ -1,14 +1,6 @@
 export interface MapUploadTarget<K, T, B> {
   upload: (backend: B, key: K, data: T) => void
-  /**
-   * How a key that left the map is released. `remove` deletes it by itself;
-   * `prune` is handed the keys still present and releases everything else.
-   * `installUpload` takes the first, which is the only correct shape on a
-   * canvas several displays share and does the same job on a display's own
-   * map.
-   */
   remove?: (backend: B, key: K) => void
-  prune?: (backend: B, active: ReadonlySet<K>) => void
 }
 
 /**
@@ -53,7 +45,6 @@ export function createMapUploadSync<K, T, B>(target: MapUploadTarget<K, T, B>) {
         changed = true
       }
     }
-    target.prune?.(backend, new Set(entries.keys()))
     return changed
   }
 }
