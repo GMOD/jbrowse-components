@@ -102,7 +102,10 @@ export type { DensityRampName } from './shared/densityColorRamp.ts'
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
 export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
-export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
+export {
+  WiggleScoreConfigMixin,
+  wiggleScoreConfigExtraSlots,
+} from './shared/WiggleScoreConfigMixin.ts'
 export {
   WiggleFamilySvgFrame,
   svgLegendRightPx,

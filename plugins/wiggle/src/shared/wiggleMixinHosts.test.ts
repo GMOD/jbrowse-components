@@ -29,3 +29,23 @@ test('both hosts check the slot names their mixin reads', () => {
   }
   expect([wiggleCommonPin, wiggleScoreConfigPin, reads, writes]).toHaveLength(4)
 })
+
+// A checked name is not the same as a name every composer declares, and
+// `HostChecksSlotNames` above only asks the first. `LinearManhattanDisplay`
+// composes WiggleScoreConfigMixin against a schema holding the score axis and
+// its own slots, so a wiggle-only slot reached through that host answers
+// `undefined` at runtime with no diagnostic anywhere — which is how
+// `symlogConstant` shipped one mixin too high once already. The narrower host is
+// what makes it a compile error instead, and this is what says so.
+test('the score-config host cannot reach a slot only wiggle declares', () => {
+  const common = {} as WiggleCommonHost
+  const score = {} as WiggleScoreConfigHost
+  const reads = () => [
+    getConf(common, 'symlogConstant'),
+    // @ts-expect-error
+    getConf(score, 'symlogConstant'),
+    // @ts-expect-error
+    getConf(score, 'posColor'),
+  ]
+  expect([reads]).toHaveLength(1)
+})

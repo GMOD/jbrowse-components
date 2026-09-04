@@ -2,8 +2,33 @@ import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 
-import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type {
+  ConfigModelForFields,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
+import type { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
+
+/**
+ * The one slot this mixin reads that no shared field table holds. The score
+ * axis table carries the rest; `scatterPointSize` cannot join it because the
+ * two composers disagree about the part that is genuinely per display — a
+ * wiggle point is 2px and advanced, a Manhattan point is the display's primary
+ * glyph and basic. They agree about the type and about being promotable, which
+ * is all the cast needs.
+ *
+ * A runtime value rather than a bare type so the restatement can be checked
+ * against the real declarations — see `legendMixinSlots` for why, and
+ * `RestatedMixinSlots.test.ts` for the comparison. The `promotedBase` is a
+ * placeholder; only its presence is what makes the type drop the inherit
+ * sentinel, and the test checks presence, not value.
+ */
+export const wiggleScoreConfigExtraSlots = {
+  scatterPointSize: { type: 'maybeNumber', promotedBase: 2 },
+} as const
+
+type WiggleScoreConfigModel = ConfigModelForFields<
+  typeof scoreAxisConfigSchemaFields & typeof wiggleScoreConfigExtraSlots
+>
 
 // The mixin composes onto a display that supplies these props, but they're
 // declared by the concrete display, not here, so `self` isn't typed with them.
@@ -12,12 +37,21 @@ import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 // field table rather than `AnyConfigurationModel` so the slot names stay
 // checked.
 //
+// Exactly the slots read below, and NOT the whole wiggle table: naming that
+// table made every wiggle-only slot typecheck here, and this mixin's other
+// composer is `LinearManhattanDisplay`, whose schema declares none of them.
+// `getConf` on an undeclared slot returns `undefined` and reports nothing at any
+// layer, so that is a silent wrong value — which is exactly how `symlogConstant`
+// shipped on this mixin once already (it now lives on `WiggleCommonMixin`, whose
+// host really does hold the slot). `HostChecksSlotNames` cannot catch it: it
+// asks whether the names are checked, not whether both composers declare them.
+//
 // It extends `ResolvableDisplay` rather than declaring `configuration` alone
-// because two of the slots read through it (`scatterPointSize`, `lineWidth`) are
-// promotable, and the cascade keys the session-wide tier on `type`. Every display
-// this composes onto is a BaseDisplay, so both members are really there — the
-// cast is about what the *mixin* can see, not about what the node has.
-export type ConfNode = ResolvableDisplay<WiggleConfigModel>
+// because `scatterPointSize` is promotable, and the cascade keys the
+// session-wide tier on `type`. Every display this composes onto is a
+// BaseDisplay, so both members are really there — the cast is about what the
+// *mixin* can see, not about what the node has.
+export type ConfNode = ResolvableDisplay<WiggleScoreConfigModel>
 export const confNode = (self: object) => self as ConfNode
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
