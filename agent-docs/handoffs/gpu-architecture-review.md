@@ -1,6 +1,6 @@
 ---
 name: gpu-architecture-review
-description: An outside read of the GPU stack against GenomeSpy's — waiting on the Canvas2D generation census, whose count decides whether generated painters and generated hit-test geometry happen at all. The "deliberately does not have" list edits and the buffer-pool measurement landed 2026-09-04 (buffer-churn-pan, declined). Also records two things examined and declined (storage buffers in the render path, compute-driven packing) and the reasoning behind the choices that should not change
+description: An outside read of the GPU stack against GenomeSpy's — the census landed 2026-09-04 (38 of 45 passes interpretable, build Tier B on the coverage band first) and the doc now waits on that first conversion and on the shader-derived hit test. The "deliberately does not have" list edits and the buffer-pool measurement landed 2026-09-04 (buffer-churn-pan, declined). Also records two things examined and declined (storage buffers in the render path, compute-driven packing) and the reasoning behind the choices that should not change
 ---
 
 # GPU architecture review
@@ -19,7 +19,16 @@ follows. What follows is only the part that suggests an action.
 
 ## What is worth doing
 
-### 1. Census which Canvas2D painters could be generated
+### 1. Census which Canvas2D painters could be generated — DONE 2026-09-04
+
+Answered in [ideas/canvas2d-painter-generation](../ideas/canvas2d-painter-generation.md):
+45 distinct passes, 38 interpretable (Tier B), 2 transliterable-only, 5 never,
+0 declarable today because no pass exports its colour as a scalar. Build B, not
+C; coverage band first (`coverageBar.slang`), then `modification`/`perBaseQuality`.
+Read its honesty section before converting anything else — the seam pads are
+deliberate, three B rows carry a documented divergence, the pileup collides with
+`one-mark-declaration-per-feature`, and text was never in either backend.
+
 
 **Do this first; it decides whether the rest of the item exists.**
 
@@ -235,7 +244,8 @@ have.
 
 ## Owed
 
-- The census in item 1. Everything downstream of it is conditional on the count.
+- The coverage-band Tier B conversion the census recommends first, and the
+  struct-parameter decision it forces.
 - Items 1 and 2 were not run, profiled, or opened in a browser; item 4 was
   (`buffer-churn-pan`). The field counts in "Storage buffers" came from reading
   the `.slang` structs, and the vertex-attribute limits are the WebGPU/WebGL2
