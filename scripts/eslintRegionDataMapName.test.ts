@@ -10,7 +10,7 @@ import { regionDataMapNamesItsField } from './eslintRegionDataMapName.ts'
 // has to ignore, including the two the scope resolution exists for.
 
 const IMPORT =
-  "import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'\n"
+  "import { regionDataMap } from '@jbrowse/render-core/regionDataMap'\n"
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -59,9 +59,9 @@ ruleTester.run('region-data-map-names-its-field', regionDataMapNamesItsField, {
       // would go silent on this, which is a gate you leave by writing ordinary
       // code.
       name: 'an aliased import is still the same function',
-      code: "import { regionDataMap as perRegionMap } from '@jbrowse/render-core/installPerRegionLifecycle'\nconst v = { flatbushes: perRegionMap<Flatbush>('rpcDataMap') }",
+      code: "import { regionDataMap as perRegionMap } from '@jbrowse/render-core/regionDataMap'\nconst v = { flatbushes: perRegionMap<Flatbush>('rpcDataMap') }",
       output:
-        "import { regionDataMap as perRegionMap } from '@jbrowse/render-core/installPerRegionLifecycle'\nconst v = { flatbushes: perRegionMap<Flatbush>('flatbushes') }",
+        "import { regionDataMap as perRegionMap } from '@jbrowse/render-core/regionDataMap'\nconst v = { flatbushes: perRegionMap<Flatbush>('flatbushes') }",
       errors: [
         {
           messageId: 'mismatch',
