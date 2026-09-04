@@ -582,6 +582,10 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // prune": the HAL method the per-key release replaced, named to say why the
   // prune shape cannot come back on a shared canvas.
   'pruneRegions',
+  // packages/tree-sidebar/CLAUDE.md §"`RowSource` is the row vocabulary": the
+  // misspelling one display shipped for `showRowLabels`, named to say why the
+  // mixin now declares the accessors — the name must stay unwritten.
+  'showSidebarLabels',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
