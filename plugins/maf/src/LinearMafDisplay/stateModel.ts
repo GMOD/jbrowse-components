@@ -999,6 +999,11 @@ export default function stateModelFactory(
          * read time: a band dragged tall on a tall track keeps its stated height
          * when the track is then dragged short, and painting that height put the
          * band over the rows and its resize handle outside the display.
+         *
+         * What the stack RESERVES, which is not a ceiling. `statedBandBounds`
+         * is undefined wherever the track height is derived from the bands, so
+         * in fit mode this is the slot verbatim — `conservationHeight: 5000`
+         * with no `height` reserves 5000px and the track grows to hold it.
          */
         get conservationDisplayHeight() {
           return self.topBands.reserved.conservation
