@@ -92,17 +92,30 @@ describe('alignments grow-mode reactive height', () => {
     expect(display.height).toBe(250)
   })
 
-  it('drives height from content without writing the slot; exit bakes it', () => {
+  // No layout yet means the content height is unknown, not the bare coverage
+  // band: the track holds the slot rather than collapsing to the band and
+  // growing again when the reads land.
+  it('holds the slot while no layout exists', () => {
     const { view, display } = createEnv()
     view.setWidth(800)
     view.setDisplayedRegions([
       { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
     ])
     expect(view.initialized).toBe(true)
+    expect(display.layoutReady).toBe(false)
+
+    display.setHeightMode('grow')
+    expect(display.sections.contentHeight).not.toBe(250)
+    expect(display.height).toBe(250)
+  })
+
+  it('drives height from content without writing the slot; exit bakes it', () => {
+    const { view, display } = createEnvWithPileup(20)
+    expect(view.initialized).toBe(true)
 
     display.setHeightMode('grow')
     const grown = display.grownHeight
-    // The coverage-band content height, distinct from the 250px slot default.
+    expect(grown).toBe(display.sections.contentHeight)
     expect(grown).not.toBe(250)
     // height tracks the content, but the persisted slot is untouched.
     expect(display.height).toBe(grown)
@@ -119,11 +132,7 @@ describe('alignments grow-mode reactive height', () => {
   // change flipping a track that follows the default. The bake is a reaction on
   // the resolved mode, so that exit bakes too, instead of snapping to the stale slot.
   it('bakes on a cascade-driven grow exit (reset), not just the menu action', () => {
-    const { view, display } = createEnv()
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
+    const { display } = createEnvWithPileup(20)
 
     display.setHeightMode('grow')
     const grown = display.grownHeight
@@ -144,11 +153,7 @@ describe('alignments grow-mode reactive height', () => {
   // bake must not clobber the drag delta: the height ends at grown + distance,
   // not just the baked grown height.
   it('a drag-resize leaving grow keeps the drag delta on top of the grown height', () => {
-    const { view, display } = createEnv()
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
+    const { display } = createEnvWithPileup(20)
 
     display.setHeightMode('grow')
     const grown = display.grownHeight

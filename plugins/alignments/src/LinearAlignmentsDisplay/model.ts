@@ -2542,9 +2542,17 @@ export default function stateModelFactory(
          * value there rather than the fitted pitch — which is what lets the
          * mixin's `height` return it without cycling. `grownHeight`, the `height`
          * override and the grow-aware `resizeHeight` all come from the mixin.
+         *
+         * With no layout — reads not landed, or the too-large banner up — the
+         * content height is unknown rather than the bare coverage band, so the
+         * track holds the slot: otherwise a grow track loaded at 250 px,
+         * collapsed to the band, and grew again once the reads landed, and the
+         * banner was squeezed into the band's height.
          */
         get growTargetHeight() {
-          return this.sections.contentHeight
+          return self.layoutReady
+            ? this.sections.contentHeight
+            : self.fitTargetHeight
         },
 
         /**
