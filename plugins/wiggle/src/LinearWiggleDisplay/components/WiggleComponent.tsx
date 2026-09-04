@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { Crosshairs, useMouseState } from '@jbrowse/core/ui'
+import { Crosshairs } from '@jbrowse/core/ui'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-ui'
 import {
   CrossHatches,
   ScoreRules,
@@ -87,7 +88,6 @@ const WiggleBody = observer(function WiggleBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const mouseState = useMouseState(mouseTracker)
   const { yTop, plotHeight } = model.plotGeometry
   // Pin the right-aligned score legend to the content's right edge, not the
   // full track width. The view publishes the clamped SCALAR: deriving it here
@@ -149,10 +149,16 @@ const WiggleBody = observer(function WiggleBody({
       {/* no mouseY, so no horizontal guide: y here is the score axis, which
           CrossHatches above already rules, and a second line at the cursor would
           read as another threshold */}
-      {model.hoveredFeature && mouseState ? (
-        <Crosshairs mouseX={mouseState.x} width={width} height={height} />
-      ) : null}
-      <WiggleTooltip model={model} mouseState={mouseState} />
+      <PointerLayer mouseTracker={mouseTracker}>
+        {mouseState => (
+          <>
+            {model.hoveredFeature && mouseState ? (
+              <Crosshairs mouseX={mouseState.x} width={width} height={height} />
+            ) : null}
+            <WiggleTooltip model={model} mouseState={mouseState} />
+          </>
+        )}
+      </PointerLayer>
     </>
   )
 })

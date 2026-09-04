@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayContextMenu,
@@ -124,7 +124,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const mouseState = useMouseState(mouseTracker)
   const { yTop, plotHeight } = model.plotGeometry
   const labelOffset = treeSidebarOffset(model)
 
@@ -203,14 +202,20 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           which row the cursor is on, and a row with no bin at that base is
           exactly where it is needed. `DisplayCrosshairs` drops the genomic
           guide over the sidebar itself. */}
-      {mouseState ? (
-        <DisplayCrosshairs
-          model={model}
-          mouseX={mouseState.x}
-          mouseY={mouseState.y}
-        />
-      ) : null}
-      <WiggleTooltip model={model} mouseState={mouseState} />
+      <PointerLayer mouseTracker={mouseTracker}>
+        {mouseState => (
+          <>
+            {mouseState ? (
+              <DisplayCrosshairs
+                model={model}
+                mouseX={mouseState.x}
+                mouseY={mouseState.y}
+              />
+            ) : null}
+            <WiggleTooltip model={model} mouseState={mouseState} />
+          </>
+        )}
+      </PointerLayer>
       <DisplayContextMenu model={model} />
     </>
   )

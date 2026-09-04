@@ -1,7 +1,7 @@
-import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'
@@ -129,20 +129,7 @@ const HicBody = observer(function HicBody({
   mouseTracker: MouseTracker
   width: number
 }) {
-  const mouseState = useMouseState(mouseTracker)
   const { height, yScalar } = model
-  // Derived rather than stored beside the coordinates: one measurement per
-  // frame already gives the guide and the tooltip the same position, so a
-  // second copy of the hit in component state could only disagree with it.
-  // `item` is absent over an empty bin, where the guide still draws (reading a
-  // position off the axes is exactly what you want somewhere with no contact)
-  // but there is nothing to put in a tooltip.
-  // the global family's rule — DISPLAYCHROME.md, the pointer section
-  const item =
-    mouseState && !model.isLoadingOrCanceled
-      ? model.hitTest(mouseState.x, mouseState.y)
-      : undefined
-
   return (
     <>
       <canvas
@@ -156,26 +143,50 @@ const HicBody = observer(function HicBody({
         }}
       />
       <HicOverlayPanel model={model} />
-      {mouseState ? (
-        <>
-          <ContactAxisGuides
-            x={mouseState.x}
-            y={mouseState.y}
-            yScalar={yScalar}
-            width={width}
-            height={height}
-          />
-          {item && model.rpcData ? (
-            <HicTooltip
-              locus1={formatLocus(model.rpcData, item.region1Idx, item.bin1)}
-              locus2={formatLocus(model.rpcData, item.region2Idx, item.bin2)}
-              counts={item.counts}
-              x={mouseState.clientX}
-              y={mouseState.clientY}
-            />
-          ) : null}
-        </>
-      ) : null}
+      <PointerLayer mouseTracker={mouseTracker}>
+        {mouseState => {
+          // Derived rather than stored beside the coordinates: one measurement
+          // per frame already gives the guide and the tooltip the same
+          // position, so a second copy of the hit in component state could only
+          // disagree with it. `item` is absent over an empty bin, where the
+          // guide still draws (reading a position off the axes is exactly what
+          // you want somewhere with no contact) but there is nothing to put in
+          // a tooltip.
+          // the global family's rule — DISPLAYCHROME.md, the pointer section
+          const item =
+            mouseState && !model.isLoadingOrCanceled
+              ? model.hitTest(mouseState.x, mouseState.y)
+              : undefined
+          return mouseState ? (
+            <>
+              <ContactAxisGuides
+                x={mouseState.x}
+                y={mouseState.y}
+                yScalar={yScalar}
+                width={width}
+                height={height}
+              />
+              {item && model.rpcData ? (
+                <HicTooltip
+                  locus1={formatLocus(
+                    model.rpcData,
+                    item.region1Idx,
+                    item.bin1,
+                  )}
+                  locus2={formatLocus(
+                    model.rpcData,
+                    item.region2Idx,
+                    item.bin2,
+                  )}
+                  counts={item.counts}
+                  x={mouseState.clientX}
+                  y={mouseState.clientY}
+                />
+              ) : null}
+            </>
+          ) : null
+        }}
+      </PointerLayer>
     </>
   )
 })

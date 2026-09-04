@@ -1,8 +1,8 @@
 import { useRef } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
@@ -23,7 +23,6 @@ const MultiWayBody = observer(function MultiWayBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   mouseTracker: MouseTracker
 }) {
-  const mouse = useMouseState(mouseTracker)
   const { canvasWidth: width, height, hoverTarget } = model
   return (
     <>
@@ -40,11 +39,15 @@ const MultiWayBody = observer(function MultiWayBody({
       />
       <MultiWayOverlay model={model} />
       <LaneHeaders model={model} />
-      {mouse && hoverTarget ? (
-        <BaseTooltip clientPoint={{ x: mouse.clientX, y: mouse.clientY }}>
-          <div style={{ whiteSpace: 'pre' }}>{hoverTarget.label}</div>
-        </BaseTooltip>
-      ) : null}
+      <PointerLayer mouseTracker={mouseTracker}>
+        {mouse =>
+          mouse && hoverTarget ? (
+            <BaseTooltip clientPoint={{ x: mouse.clientX, y: mouse.clientY }}>
+              <div style={{ whiteSpace: 'pre' }}>{hoverTarget.label}</div>
+            </BaseTooltip>
+          ) : null
+        }
+      </PointerLayer>
     </>
   )
 })

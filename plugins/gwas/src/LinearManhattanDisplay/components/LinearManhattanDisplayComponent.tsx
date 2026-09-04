@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   DisplayContextMenu,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
@@ -114,7 +114,6 @@ const ManhattanBody = observer(function ManhattanBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const mouseState = useMouseState(mouseTracker)
   const {
     ticks,
     hoveredFeature,
@@ -171,7 +170,11 @@ const ManhattanBody = observer(function ManhattanBody({
           offscreen={model.indexSnpOffscreen}
         />
       ) : null}
-      <TooltipComponent model={model} mouseState={mouseState} />
+      <PointerLayer mouseTracker={mouseTracker}>
+        {mouseState => (
+          <TooltipComponent model={model} mouseState={mouseState} />
+        )}
+      </PointerLayer>
       <DisplayContextMenu model={model} />
     </>
   )

@@ -34,6 +34,7 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
+    "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-canvas": "workspace:^",
