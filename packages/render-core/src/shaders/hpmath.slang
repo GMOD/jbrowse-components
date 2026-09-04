@@ -8,6 +8,13 @@
 // must make identically to the GPU — which pixel row a glyph centers on, how a
 // sub-pixel span is widened. `pnpm gen:shaders` transliterates them into
 // hpmath.js.generated.ts; nothing downstream re-derives them by hand.
+//
+// `expandToMinWidthPx` is exported too, but by `coverageBar.slang`, into
+// @jbrowse/alignments-core — the twin's consumer (`fillSpanRect`) lives in a
+// package that cannot import render-core, and this file's own redirect would
+// move every export above with it. adr-051 §"a shader may also export a
+// function it only imports" is the mechanism; grep the name before assuming it
+// is unlifted.
 //! js-export: snapBoxHeightPx, snapBoxTopPx, snapBoxCenterYPx, extendToMinWidthPx
 //! js-skip: hpSplitUint — the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number
 //! js-skip: quadLocal — maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect
@@ -17,7 +24,6 @@
 //! js-skip: pxToClipLen — the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert
 //! js-skip: clipLenToPx — the inverse of pxToClipLen, same reason
 //! js-skip: extendToMinWidthX — clip-space wrapper over the exported extendToMinWidthPx, which is the decision
-//! js-skip: expandToMinWidthPx — the coverage band and the pileup's gap pass DO have a faithful Canvas2D twin of this, alignments-core's fillSpanRect, and lifting it is owed (ideas/canvas2d-painter-generation Owed): it needs an owner that can js-export-out into @jbrowse/alignments-core, which no module can do for a function it does not declare. The two callers that would NOT take the lift are the pileup cell, which floors one-sidedly and adds a seam fudge the shader omits (rendererTypes.ts pileupCellWidth), and the variant matrix, which floors in physical px against a canvas the Canvas2D twin sizes itself
 //! js-skip: expandToMinWidthX — clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX
 //! js-skip: snapToPixelX — clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin
 //! js-skip: snapBoxCenterY — clip-space wrapper over the exported snapBoxCenterYPx

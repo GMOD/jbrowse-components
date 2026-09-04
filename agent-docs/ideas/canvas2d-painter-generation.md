@@ -373,17 +373,41 @@ correct by construction already, in the only way text can be.
   reusable across the band's five passes and its axis, where a struct-parameter
   twin is per-uniform-block. Revisit only for a function whose fields outnumber
   what a caller can plausibly hold, which nothing in the census does.
-- The x half of `covSegQuad`, which this conversion did **not** take.
-  `fillSpanRect` is already a faithful twin of `expandToMinWidthPx(x1, x2, 1)`,
-  so the `//! js-skip` calling that rule "a different rule, not a twin" was stale
-  — it was written against the pileup cell and the variant matrix, which do floor
-  differently, and never looked at the band. Both skips now say so.
-  Lifting it needs an owner that can redirect into
-  `@jbrowse/alignments-core`: `coverageBand.slang` is a module and can only
-  export its own functions, and the rule is hpmath's and shared with the pileup's
-  `expandMinWidthX`, so naming it after the band would misattribute it. An
-  entry-point shader with a `//! js-export-out` is the mechanism; which shader
-  owns it is the open question.
+- **DONE 2026-09-04: the x half too.** `expandToMinWidthPx` is exported by
+  `coverageBar.slang` into `spanMinWidth.generated.ts`, and `fillSpanRect` places
+  its left edge and takes its 1 px floor from it. The owner question resolved to
+  the pass rather than a wrapper: a module can export only functions it declares,
+  but an **entry-point** shader lifts from its own compiled WGSL and may export
+  one it merely imports — which is what adr-051 keeps that mechanism for, and
+  `coverageInterbase.slang` already carries `layout-out` and `js-export-out`
+  together, so the second directive on `coverageBar` was proven rather than
+  speculative. `coverageBar` over `gap.slang` because three of the four
+  `fillSpanRect` callers are band painters and the rule then regenerates in the
+  package that authors it. Gate: `spanMinWidthParity.test.ts`.
+
+  Two things the lift had to keep apart. The seam pad stays outside the twin —
+  `max(trueSpan + pad, expanded)`, not `expanded + pad`, which differ on a span
+  between 0.2 and 1 px — and the `//! js-skip` texts on `expandToMinWidthPx` and
+  `covExpandMinWidthX` were rewritten, the first having claimed the rule "has no
+  Canvas2D counterpart" while `fillSpanRect` was it.
+
+  **It is also the first export to cross this file's no-allocation bar**, and
+  that is the part worth measuring rather than asserting: a `float2` twin comes
+  back as a `[number, number]`, and `fillSpanRect` runs per covered bp.
+  `plugins/alignments/benches/spanMinWidth.bench.ts` is the A/B, written to
+  BENCHMARKING.md's rules. One of its three fixtures resolved on the box
+  available (control 0.97x); the other two came back with controls at 1.19x and
+  1.89x at load 53 on 16 cores, so by that doc's own rule they measured nothing
+  and are owed a quiet re-run.
+
+  The row that resolved says **the ratio is large and the absolute is not**:
+  5.5 -> 23.7 ns/mark, 4.30x, which on a 1200-mark frame is ~22 microseconds,
+  about 0.13% of a 16 ms budget — and the bench substitutes a counter for a
+  rasterizing `fillRect`, so the real share is smaller still. That is not worth
+  a scalar left-edge core in hpmath, which would not be free either:
+  `left + minWidth` is not bit-identical to `mid + minWidth * 0.5`, so the split
+  moves the shader. Quoting the 4.30x without the 22 microseconds beside it would
+  be the misleading half of a true number.
 - The band's other two passes, `interbase` and `indicator`, which do not go
   through `covSegQuad` — `interbaseEdgePx` already covers the first's edges.
 - The `rampIndex` export that would move the four texture passes to B — small,

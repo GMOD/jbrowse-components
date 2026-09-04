@@ -41,6 +41,7 @@ import {
   INSTANCE_STRIDE_BYTES as SNP_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
+import { expandToMinWidthPx } from './spanMinWidth.generated.ts'
 
 import type { SnpBaseColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
@@ -55,9 +56,11 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 /**
  * One sub-pixel-safe bar spanning ordered edges `px`..`px2`, widened to a 1 CSS
- * px minimum about its MIDPOINT — the Canvas2D twin of `expandMinWidthX`
- * (`covExpandMinWidthX` on the band, `expandMinWidthX` on the pileup's gap pass,
- * both a 1 px floor over hpmath's `expandToMinWidthPx`).
+ * px minimum about its MIDPOINT — the shader's own rule, not a twin of it.
+ * `expandToMinWidthPx` is generated from `hpmath.slang` by `pnpm gen:shaders`,
+ * lifted by `coverageBar.slang` because this package cannot import render-core
+ * (adr-051). The band spells it `covExpandMinWidthX` and the pileup's gap pass
+ * `expandMinWidthX`; both are this with a 1 CSS px floor.
  *
  * The pivot and the floor are ONE rule — the floor is what makes a mark
  * sub-pixel and the pivot is where it then goes — and holding them apart is how
@@ -70,17 +73,23 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
  * went 16.71% -> 7.32% on centering these, and the residual is a separate bug
  * (see the inversion-pbsim entry in browser-tests/crossBackendGate.ts).
  *
- * `widthCompensation` widens the DRAWN bar only, never the sub-pixel test: the
- * test is the shader's and the shader tests the TRUE span. That separation is
- * exactly what the coverage bar got wrong.
+ * **`widthCompensation` stays outside the twin.** It widens the DRAWN bar only,
+ * never the sub-pixel test, and it is spent as `max(trueSpan + pad, expanded)`
+ * rather than `expanded + pad`: on a span between 0.2 and 1 px those differ, and
+ * the first is what ships. The seam fudge is a Canvas2D compositing correction
+ * (see COVERAGE_BAR_SEAM_FUDGE_PX) with no GPU twin, so it must not reach the
+ * shader's rule — feeding it in is the bug the coverage bar already had once.
  *
  * The pileup's 1bp CELL layers deliberately do not come through here
  * (`makePileupCellMapper` floors one-sidedly, matching `mismatch.slang`'s
  * snapped left edge — see the `js-skip: expandMinWidthX` note in
  * alignmentsUniforms.slang).
  *
- * Allocates nothing per call, which is the bar for sharing anything out of these
- * loops — they run per covered bp.
+ * This is the one place in the file that allocates per call: a `float2` twin
+ * comes back as a `[number, number]`, and these loops run per covered bp. It
+ * buys the rule by construction instead of by transcription, which is the trade
+ * adr-051 exists to make — but it is the trade, and it is unmeasured on a quiet
+ * machine (ideas/canvas2d-painter-generation §Owed).
  */
 export function fillSpanRect(
   ctx: Ctx,
@@ -90,11 +99,11 @@ export function fillSpanRect(
   height: number,
   widthCompensation = 0,
 ) {
-  const w = px2 - px
+  const [left, right] = expandToMinWidthPx(px, px2, 1)
   ctx.fillRect(
-    w < 1 ? (px + px2) / 2 - 0.5 : px,
+    left,
     top,
-    Math.max(w + widthCompensation, 1),
+    Math.max(px2 - px + widthCompensation, right - left),
     height,
   )
 }

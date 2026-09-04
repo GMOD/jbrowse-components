@@ -4,6 +4,15 @@
 // coverageBand.slang.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/coverageLayout.generated.ts
+// hpmath's midpoint min-width rule, lifted from the pass that draws through it
+// (covSegQuad -> covExpandMinWidthX). It is authored in a module whose own
+// js-export-out redirect is spoken for, and its twin is wanted in
+// @jbrowse/alignments-core, which cannot import render-core — the case adr-051
+// keeps "a shader may export a function it only imports" for. Consumer:
+// `fillSpanRect`, the one Canvas2D spelling the band and the pileup's span
+// marks share.
+//! js-export: expandToMinWidthPx
+//! js-export-out: packages/alignments-core/src/spanMinWidth.generated.ts
 
 import coverageBand;
 import colorPack;

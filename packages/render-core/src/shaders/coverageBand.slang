@@ -24,7 +24,7 @@
 //! js-export: covEffectiveHeightPx, covBottomOffsetPx, normalizeDepthScalar, covBarHeightPx, covSegBottomPx, covSegTopPx
 //! js-export-out: packages/alignments-core/src/coverageBandLayout.generated.ts
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
-//! js-skip: covExpandMinWidthX — the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is a twin of hpmath's expandToMinWidthPx, and rendererUtils.ts's fillSpanRect is that twin by hand — see expandToMinWidthPx's own skip for who owns lifting it
+//! js-skip: covExpandMinWidthX — the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is the px core, and coverageBar.slang exports that (hpmath's expandToMinWidthPx, into alignments-core's spanMinWidth.generated.ts) for fillSpanRect to place its left edge with
 module coverageBand;
 
 import colorPack;

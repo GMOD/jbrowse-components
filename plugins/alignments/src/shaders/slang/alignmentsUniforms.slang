@@ -10,7 +10,7 @@
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
 //! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane
-//! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
+//! js-skip: expandMinWidthX — the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its left edge with
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 //! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it
 module alignmentsUniforms;
