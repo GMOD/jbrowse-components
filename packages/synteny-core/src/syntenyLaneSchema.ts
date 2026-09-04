@@ -237,7 +237,7 @@ export function packSyntenyLanes<Item>(
       out[lane.name] = items.map(read.list[lane.name])
     }
   }
-  return out as SyntenyFeatureLanes
+  return out as unknown as SyntenyFeatureLanes
 }
 
 /**
@@ -255,7 +255,7 @@ export function canonicalizeSyntenyDictLanes<T extends SyntenyFeatureLanes>(
     (name: string) => string
   >,
 ): T {
-  const out: Record<string, unknown> = { ...data }
+  const out: Record<string, unknown> = { ...(data as object) }
   const raw = data as unknown as Record<string, unknown>
   for (const lane of SYNTENY_LANES) {
     if (lane.kind === 'string-dict' && lane.rename !== 'none') {

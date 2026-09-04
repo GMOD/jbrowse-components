@@ -10,8 +10,8 @@
  */
 export interface SyntenyFeatureLanes {
   /**
-   * Alignment strand, +1 or -1: the relative orientation of the two axes, which
-   * is why `followAxes` swaps it for neither direction.
+   * Alignment strand, +1 or -1 — the relative orientation of the two axes, so
+   * `followAxes` swaps it in neither direction.
    */
   strands: Int8Array
   /**
