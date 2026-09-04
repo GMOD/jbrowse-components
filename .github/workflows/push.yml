@@ -401,6 +401,15 @@ jobs:
       - name: Install naga (WGSL validator)
         if: steps.naga.outputs.cache-hit != 'true'
         run: cargo install naga-cli --locked --version "${NAGA_VERSION}"
+      # build-shaders probes for both validators and skips with a warning when
+      # one is absent, which is right for a contributor and wrong here: this job
+      # is the only place any generated WGSL or GLSL is validated at all, so a
+      # cache entry that restored an unrunnable binary would turn the whole
+      # check into a green no-op nobody reads the log of.
+      - name: Check the validators actually run
+        run: |
+          naga --version
+          glslangValidator --version
       - name: Check generated shaders are up to date
         run: |
           pnpm gen:shaders
