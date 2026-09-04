@@ -1,20 +1,22 @@
 import { getContrastText } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
-import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import {
-  SYNTENY_INSTANCE_CACHE,
-  packClickedOutlineInstances,
-} from './instanceInterleave.ts'
 import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
 import * as syntenyEdgeStraightShader from './shaders/syntenyEdgeStraight.generated.ts'
 import * as syntenyFillCurveShader from './shaders/syntenyFillCurve.generated.ts'
 import * as syntenyFillStraightShader from './shaders/syntenyFillStraight.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { makePickCtx, pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import {
+  PASS_EDGE_CURVE,
+  PASS_EDGE_STRAIGHT,
+  PASS_FILL_CURVE,
+  PASS_FILL_STRAIGHT,
+  SyntenyRibbonBuffers,
+} from './syntenyRibbonBuffers.ts'
 import { computeTransform } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -25,11 +27,6 @@ import type {
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
-
-const PASS_FILL_STRAIGHT = 'fillStraight'
-const PASS_FILL_CURVE = 'fillCurve'
-const PASS_EDGE_STRAIGHT = 'edgeStraight'
-const PASS_EDGE_CURVE = 'edgeCurve'
 
 // All four shaders share the same Uniforms layout (defined in
 // syntenyTypes.slang) and the same Instance layout, so any shader's
@@ -62,31 +59,7 @@ export class GpuSyntenyRenderer
   private uniformF32: Float32Array
 
   private cache = new SyntenyGeometryCache()
-  // Which fill pass each region's GPU buffer is currently uploaded against.
-  // Only one of {STRAIGHT, CURVE} lives on the GPU per region at a time;
-  // flipping `drawCurves` re-uploads on the next render (reusing the packed
-  // buffer — see interleaveCache). Trades a one-frame upload stall on toggle
-  // for ~½ steady-state GPU memory.
-  private uploadedPass = new Map<number, string>()
-  // Packed interleaved bytes per region, re-packed only when the geometry
-  // moves: a colorBy/opacity toggle patches the color lane and a drawCurves
-  // toggle reuses the bytes verbatim, instead of re-interleaving all 12 lanes.
-  private interleaveCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
-  // What each region's clicked-outline buffer currently holds. Uploaded under
-  // the EDGE pass id (the fill buffer keeps the fill pass id), so a region can
-  // carry both at once. Every field is part of the invalidation key: the two
-  // array identities catch an RPC refetch and a recolor, `featureId` a new
-  // selection, `passId` a drawCurves toggle.
-  private outlineBuffers = new Map<
-    number,
-    {
-      geomToken: Float32Array
-      colors: Uint32Array
-      featureId: number
-      passId: string
-      count: number
-    }
-  >()
+  private buffers: SyntenyRibbonBuffers
   private pickCtx: PickCanvasLike | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -97,6 +70,7 @@ export class GpuSyntenyRenderer
     super(hal, UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.canvas = canvas
+    this.buffers = new SyntenyRibbonBuffers(this.hal)
   }
 
   resize(width: number, height: number) {
@@ -107,19 +81,12 @@ export class GpuSyntenyRenderer
     this.cache.set(key, data)
     // Defer the GPU upload to render() — at that point we know which mode
     // (straight vs curve) the track is in and upload only to that pass.
-    const prev = this.uploadedPass.get(key)
-    if (prev !== undefined) {
-      this.hal.deleteBuffer(key, prev)
-      this.uploadedPass.delete(key)
-    }
-    this.dropOutlineBuffer(key)
+    this.buffers.invalidate(key)
   }
 
   release(key: number) {
     this.cache.delete(key)
-    this.uploadedPass.delete(key)
-    this.interleaveCache.delete(key)
-    this.outlineBuffers.delete(key)
+    this.buffers.release(key)
     this.hal.deleteRegion(key)
   }
 
@@ -139,8 +106,7 @@ export class GpuSyntenyRenderer
       if (!data || data.instanceCount === 0) {
         continue
       }
-      const fillPass = params.drawCurves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
-      this.ensureUploaded(key, fillPass, data)
+      const fillPass = this.buffers.ensureFill(key, params.drawCurves, data)
       this.writeUniforms(params, state.overdrawPx, data, groundColor)
       this.hal.drawPass(fillPass, key)
       if (params.clickedFeatureId > 0) {
@@ -148,100 +114,18 @@ export class GpuSyntenyRenderer
         // re-draws the active fill pass's own polygon from the same packed
         // instance record, so the outline traces the fill exactly. Drawn after
         // the fill so it layers above it.
-        const edgePass = params.drawCurves
-          ? PASS_EDGE_CURVE
-          : PASS_EDGE_STRAIGHT
-        if (
-          this.ensureOutlineUploaded(
-            key,
-            edgePass,
-            data,
-            params.clickedFeatureId,
-          )
-        ) {
+        const edgePass = this.buffers.ensureOutline(
+          key,
+          params.drawCurves,
+          data,
+          params.clickedFeatureId,
+        )
+        if (edgePass) {
           this.hal.drawPass(edgePass, key)
         }
       }
     }
     this.hal.endFrame()
-  }
-
-  private ensureUploaded(
-    key: number,
-    passId: string,
-    data: SyntenyInstanceData,
-  ) {
-    const prev = this.uploadedPass.get(key)
-    if (prev === passId) {
-      return
-    }
-    if (prev !== undefined) {
-      this.hal.deleteBuffer(key, prev)
-    }
-    this.hal.uploadBuffer(
-      key,
-      passId,
-      this.interleaveCache.get(key, data),
-      data.instanceCount,
-    )
-    this.uploadedPass.set(key, passId)
-  }
-
-  // Put the clicked feature's outline instances on the GPU under `passId`,
-  // reusing what is already there when nothing in the key moved. Answers
-  // whether there is anything to draw: a clicked feature whose instances all
-  // live in another region packs to zero here, and the HAL leaves no buffer
-  // behind for an empty upload.
-  //
-  // Uploaded from render() rather than the upload callback because the clicked
-  // id is a RENDER parameter — nothing knows which feature to pack until the
-  // frame that draws it. It reads the same packed bytes `ensureUploaded` just
-  // put on the GPU, through the same `interleaveCache` memo, so the outline and
-  // the fill are copies of one record and cannot describe different geometry.
-  private ensureOutlineUploaded(
-    key: number,
-    passId: string,
-    data: SyntenyInstanceData,
-    featureId: number,
-  ) {
-    const prev = this.outlineBuffers.get(key)
-    if (
-      prev &&
-      prev.geomToken === data.bp1 &&
-      prev.colors === data.colors &&
-      prev.featureId === featureId &&
-      prev.passId === passId
-    ) {
-      return prev.count > 0
-    }
-    // A drawCurves toggle moves the outline to the other edge pass; the old
-    // pass's buffer would otherwise sit on the GPU unreferenced. Same-pass
-    // re-uploads need no delete — both HALs replace in place.
-    if (prev && prev.passId !== passId) {
-      this.hal.deleteBuffer(key, prev.passId)
-    }
-    const { buf, count } = packClickedOutlineInstances(
-      data,
-      featureId,
-      this.interleaveCache.get(key, data),
-    )
-    this.hal.uploadBuffer(key, passId, buf, count)
-    this.outlineBuffers.set(key, {
-      geomToken: data.bp1,
-      colors: data.colors,
-      featureId,
-      passId,
-      count,
-    })
-    return count > 0
-  }
-
-  private dropOutlineBuffer(key: number) {
-    const prev = this.outlineBuffers.get(key)
-    if (prev) {
-      this.hal.deleteBuffer(key, prev.passId)
-      this.outlineBuffers.delete(key)
-    }
   }
 
   pick(x: number, y: number, state: SyntenyRenderState) {
@@ -264,8 +148,7 @@ export class GpuSyntenyRenderer
 
   override dispose() {
     this.cache.clear()
-    this.interleaveCache.clear()
-    this.outlineBuffers.clear()
+    this.buffers.clear()
     super.dispose()
   }
 

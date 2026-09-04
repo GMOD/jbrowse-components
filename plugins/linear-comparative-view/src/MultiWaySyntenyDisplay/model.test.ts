@@ -184,6 +184,37 @@ test('re-anchoring offers an undo that puts the view back where it was', async (
   expect(windowOf()).toEqual(before)
 })
 
+// The clicked ribbon keeps an outline the way the pairwise view's does: the
+// click records the hover's target, the passes compare it per instance, and
+// only an empty-canvas click or a refetch lets it go.
+test('a ribbon click keeps its outline id until empty canvas or a refetch', () => {
+  const display = createDisplay()
+  const feature = new SimpleFeature({
+    uniqueId: 'f1',
+    refName: 'ctgA',
+    start: 100,
+    end: 300,
+  })
+  display.setHoverTarget({ label: 'link', feature, targetIdx: 3 })
+  display.selectHovered()
+  expect(display.clickedFeatureId).toBe(4)
+  expect(display.renderState.clickedFeatureId).toBe(4)
+
+  // the pointer leaving does not release it
+  display.setHoverTarget(undefined)
+  expect(display.clickedFeatureId).toBe(4)
+
+  // a stationary click on empty canvas does
+  display.selectHovered()
+  expect(display.clickedFeatureId).toBe(0)
+
+  // and so does a refetch, whose targets the index no longer addresses
+  display.setHoverTarget({ label: 'link', feature, targetIdx: 3 })
+  display.selectHovered()
+  display.setFeatures([])
+  expect(display.clickedFeatureId).toBe(0)
+})
+
 // `session.selection` is global, so before the `ownFeatureIds` gate a
 // selection in ANY track recomputed `laneGlyphCells` — the jexl color per
 // glyph, every lane repacked, every cell re-uploaded — for a highlight this

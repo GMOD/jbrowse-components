@@ -16,7 +16,6 @@ import {
 } from '@jbrowse/plugin-canvas'
 import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
-import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
@@ -25,7 +24,7 @@ import {
   SYNTENY_UNIFORM_BYTE_SIZE,
   writeSyntenyUniforms,
 } from '../LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
-import { SYNTENY_INSTANCE_CACHE } from '../LinearSyntenyDisplay/instanceInterleave.ts'
+import { SyntenyRibbonBuffers } from '../LinearSyntenyDisplay/syntenyRibbonBuffers.ts'
 import { RibbonPickCells } from './Canvas2DMultiWayRenderer.ts'
 import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
 
@@ -39,9 +38,6 @@ import type {
 } from './multiwayRenderTypes.ts'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
-
-const PASS_FILL_STRAIGHT = 'fillStraight'
-const PASS_FILL_CURVE = 'fillCurve'
 
 const RECT_INSTANCES: InstancePass<LaneGlyphData> = {
   ...RectPass,
@@ -114,16 +110,13 @@ export class GpuMultiWayRenderer
   private uniformF32: Float32Array
   private cells = new Map<string, MultiWayCell>()
   private ribbons = new RibbonPickCells()
-  // Which fill pass each ribbon cell is uploaded against: only the mode a
-  // layer draws in lives on the GPU, and a drawCurves toggle re-uploads on the
-  // next frame from the packed bytes the interleave cache still holds.
-  private uploadedPass = new Map<number, string>()
-  private interleaveCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
+  private buffers: SyntenyRibbonBuffers
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
     super(hal, MULTIWAY_UNIFORM_BYTE_SIZE)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.canvas = canvas
+    this.buffers = new SyntenyRibbonBuffers(this.hal)
   }
 
   resize(width: number, height: number) {
@@ -133,8 +126,8 @@ export class GpuMultiWayRenderer
   upload(key: string, cell: MultiWayCell) {
     const id = this.ribbons.idOf(key)
     this.cells.set(key, cell)
+    this.buffers.invalidate(id)
     this.hal.deleteRegion(id)
-    this.uploadedPass.delete(id)
     if (cell.kind === 'ribbons') {
       this.ribbons.set(key, cell.data)
     } else {
@@ -148,8 +141,7 @@ export class GpuMultiWayRenderer
     const id = this.ribbons.idOf(key)
     this.cells.delete(key)
     this.ribbons.delete(key)
-    this.uploadedPass.delete(id)
-    this.interleaveCache.delete(id)
+    this.buffers.release(id)
     this.hal.deleteRegion(id)
   }
 
@@ -177,24 +169,12 @@ export class GpuMultiWayRenderer
     if (!data || data.instanceCount === 0) {
       return
     }
-    const pass = layer.curves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
-    const prev = this.uploadedPass.get(id)
-    if (prev !== pass) {
-      if (prev !== undefined) {
-        this.hal.deleteBuffer(id, prev)
-      }
-      this.hal.uploadBuffer(
-        id,
-        pass,
-        this.interleaveCache.get(id, data),
-        data.instanceCount,
-      )
-      this.uploadedPass.set(id, pass)
-    }
+    const params = ribbonParams(layer, state)
+    const pass = this.buffers.ensureFill(id, layer.curves, data)
     const dpr = getDpr()
     writeSyntenyUniforms(
       this.uniformF32,
-      ribbonParams(layer, state),
+      params,
       0,
       data,
       { width: state.width, height: state.height, dpr },
@@ -202,6 +182,19 @@ export class GpuMultiWayRenderer
     )
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(pass, id)
+    if (params.clickedFeatureId > 0) {
+      // the pairwise display's clicked outline: the edge pass re-draws the
+      // clicked ribbon's polygon from the same packed record, above the fill
+      const edgePass = this.buffers.ensureOutline(
+        id,
+        layer.curves,
+        data,
+        params.clickedFeatureId,
+      )
+      if (edgePass) {
+        this.hal.drawPass(edgePass, id)
+      }
+    }
   }
 
   private drawGlyphs(
@@ -237,7 +230,7 @@ export class GpuMultiWayRenderer
   override dispose() {
     this.cells.clear()
     this.ribbons.clear()
-    this.interleaveCache.clear()
+    this.buffers.clear()
     super.dispose()
   }
 }

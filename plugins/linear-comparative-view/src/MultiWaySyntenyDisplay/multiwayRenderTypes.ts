@@ -57,6 +57,7 @@ export interface MultiWayRenderState {
   height: number
   dragOffsetPx: number
   hoveredFeatureId: number
+  clickedFeatureId: number
   /**
    * The stack's ground, which the ribbon gutters share with the linear band:
    * `drawSyntenyTrack` blends an indel wedge against it and the shaders bake it
@@ -96,7 +97,7 @@ export function ribbonParams(
     fadeThinAlignments: false,
     minAlignmentLength: 0,
     hoveredFeatureId: state.hoveredFeatureId,
-    clickedFeatureId: 0,
+    clickedFeatureId: state.clickedFeatureId,
     offsetPx0: -state.dragOffsetPx,
     offsetPx1: -state.dragOffsetPx,
     bpPerPx0: 1,

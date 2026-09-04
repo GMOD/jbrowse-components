@@ -206,6 +206,15 @@ export function stateModelFactory(
       hoverTarget: undefined as HoverTarget | undefined,
       /**
        * #volatile
+       * clicked twin of the hover: the group or direct-link ribbon whose
+       * outline stays after the pointer leaves it, cleared by a click on
+       * empty canvas or a refetch
+       */
+      clickedTarget: undefined as
+        | { groupKey?: string; targetIdx?: number }
+        | undefined,
+      /**
+       * #volatile
        * what the last settle decided per mate lane — contig, orientation,
        * rung and where the lane is pinned to the anchor. Made once per
        * settled block set by the installer in afterAttach, holding each
@@ -236,6 +245,8 @@ export function stateModelFactory(
        */
       setFeatures(f: Feature[]) {
         self.features = f
+        // a direct-link targetIdx addresses the outgoing targets array
+        self.clickedTarget = undefined
       },
       /**
        * #action
@@ -251,6 +262,7 @@ export function stateModelFactory(
       setLaneLinks(links: Map<string, Feature[]>, key: string) {
         self.laneLinks = links
         self.laneLinksKey = key
+        self.clickedTarget = undefined
       },
       /**
        * #action
@@ -947,6 +959,19 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the clicked twin, resolved the same way — a group key survives a
+       * relayout, a direct-link index only its own fetch
+       */
+      get clickedFeatureId() {
+        const { clickedTarget } = self
+        const idx =
+          clickedTarget?.groupKey !== undefined
+            ? self.ribbonGeometry.groupTarget.get(clickedTarget.groupKey)
+            : clickedTarget?.targetIdx
+        return idx === undefined ? 0 : idx + 1
+      },
+      /**
+       * #getter
        * the hovered group's placement in every lane that places it
        */
       get hoveredGroupOutlines(): { lane: Lane; span: Span }[] {
@@ -973,6 +998,7 @@ export function stateModelFactory(
           height: self.height,
           dragOffsetPx: self.dragOffsetPx,
           hoveredFeatureId: self.hoveredFeatureId,
+          clickedFeatureId: self.clickedFeatureId,
           groundColor: bandGroundColor(self),
           layers: self.renderLayers,
         }
@@ -1203,8 +1229,15 @@ export function stateModelFactory(
        * #action
        */
       selectHovered() {
-        if (self.hoverTarget) {
-          self.selectFeature(self.hoverTarget.feature)
+        const { hoverTarget } = self
+        // clicked-state twin of the hover: the clicked group's ribbon keeps
+        // an outline, and a click on empty canvas clears it
+        self.clickedTarget = hoverTarget && {
+          groupKey: hoverTarget.groupKey,
+          targetIdx: hoverTarget.targetIdx,
+        }
+        if (hoverTarget) {
+          self.selectFeature(hoverTarget.feature)
         }
       },
     }))
