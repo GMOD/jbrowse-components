@@ -29,6 +29,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./renderBlock",
   "./renderingBackendBase",
   "./shaders/antialias",
+  "./shaders/capsule",
   "./shaders/capsuleConsts",
   "./shaders/colorRampLutConsts",
   "./shaders/coverageBar",
