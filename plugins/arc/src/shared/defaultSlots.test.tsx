@@ -5,7 +5,6 @@ import { render } from '@testing-library/react'
 
 import { configSchemaFactory as arcConfigSchemaFactory } from '../LinearArcDisplay/configSchema.ts'
 import { configSchemaFactory as pairedArcConfigSchemaFactory } from '../LinearPairedArcDisplay/configSchema.ts'
-
 import Arcs, { ArcsSvg } from './Arcs.tsx'
 import {
   createPairedTestEnvironment,
