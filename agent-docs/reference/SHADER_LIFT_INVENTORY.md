@@ -111,7 +111,6 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts` |
 | `aaPx` | nothing |
 | `aaRamp` | nothing |
-| `capsuleDistPx` | nothing |
 | `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
