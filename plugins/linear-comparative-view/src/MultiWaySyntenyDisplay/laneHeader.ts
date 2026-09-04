@@ -1,5 +1,7 @@
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
+import { frameStartBp } from './layoutMultiWay.ts'
+
 import type { Lane } from './laneStack.ts'
 
 // Where the header text sits above its lane's glyph row.
@@ -72,7 +74,7 @@ export function laneHeaderRows(
     const where = lane.isAnchor
       ? anchorWhere
       : lane.frame &&
-        `${lane.canon(lane.frame.refName)}:${toLocale(Math.round(lane.frame.min))}${lane.frame.flipped ? ' [rev]' : ''}`
+        `${lane.canon(lane.frame.refName)}:${toLocale(frameStartBp(lane.frame))}${lane.frame.flipped ? ' [rev]' : ''}`
     // the contigs the lane is NOT showing, named so the reader knows a second
     // copy exists and can pin the lane onto it from its menu
     const alsoOn = lane.frame?.alsoOn.length

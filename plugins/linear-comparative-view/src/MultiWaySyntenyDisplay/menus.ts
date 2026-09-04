@@ -2,6 +2,8 @@ import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 
+import { frameStartBp } from './layoutMultiWay.ts'
+
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './multiwayGeometry.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -119,7 +121,7 @@ export function laneLocString(lane: HeaderLane) {
   if (!frame) {
     return undefined
   }
-  const min = Math.max(0, Math.round(frame.min))
+  const min = frameStartBp(frame)
   const max = Math.max(min + 1, Math.round(frame.max))
   return `${lane.canon(frame.refName)}:${toLocale(min)}-${toLocale(max)}`
 }

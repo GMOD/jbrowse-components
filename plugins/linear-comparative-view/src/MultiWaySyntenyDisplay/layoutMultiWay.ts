@@ -56,6 +56,15 @@ export interface RowFrame {
   alsoOn: string[]
 }
 
+/**
+ * A frame's left edge as a coordinate a reader can use. The settle-time fit
+ * clamps at the contig start, but a live pan derives `min` from the pivot
+ * unclamped, so content near a contig's start can put it below zero.
+ */
+export function frameStartBp(frame: { min: number }) {
+  return Math.max(0, Math.round(frame.min))
+}
+
 interface FeatureMate extends MultiWayPlacement {
   assemblyName: string
 }

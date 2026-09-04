@@ -27,9 +27,10 @@ import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 export interface DerivativeVsRefSpec {
   // A feature per segment, in derivative coordinates, named for the reference
   // interval it came from. Session-scoped like the temporary assembly it is
-  // drawn against: the caller registers it with `addTrackConf` and then shows it
-  // on the derivative panel, rather than it being named in `viewSpec`. See
-  // `segmentsDisplay` for why it is mounted rather than declared.
+  // drawn against: the caller hands it to `launchTrack` as an inline conf, so
+  // the config travels on the track rather than into any session list, and it
+  // is not named in `viewSpec`. See `segmentsDisplay` for why it is mounted
+  // rather than declared.
   segmentsTrack: {
     type: 'FeatureTrack'
     trackId: string

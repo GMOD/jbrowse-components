@@ -349,7 +349,7 @@ A lane carries one refName, so the maize lane shows one of the two copies.
 
 <Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows the better-kept of maize's two duplicated copies." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
-Both maize copies at once is the stacked view's job. **Launch stacked synteny
+Both maize copies at once is the stacked view's job. **Launch → Linear synteny
 view (visible region)** in the lane track's menu offers a full row per grass
 over the visible window.
 

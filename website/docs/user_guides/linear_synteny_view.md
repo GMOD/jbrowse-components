@@ -200,8 +200,8 @@ carries a **Show color legend** toggle:
 - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
   diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
   purifying selection, red above it positive selection, clamped at 2. It needs
-  an [ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-  carrying `dn` and `ds` per link
+  an [ortholog table](/docs/tutorials/homoeolog_synteny) carrying `dn` and `ds`
+  per link
 
 A mode whose number a track does not carry leaves every ribbon the default
 color.

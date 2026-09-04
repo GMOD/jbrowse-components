@@ -630,7 +630,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         displayInitialSnapshot: DisplayInitialSnapshot = {},
         inlineConf?: Record<string, unknown>,
       ) {
-        self.levels[level]?.showTrack(
+        return self.levels[level]?.showTrack(
           trackId,
           initialSnapshot,
           displayInitialSnapshot,
