@@ -66,6 +66,14 @@ function needsRebuild({
     : true
 }
 
+// Enumerated rather than listed, so a new demo directory is validated by
+// existing rather than by an edit here.
+const demoConfigs = readdirSync(join(root, 'demos'), { withFileTypes: true })
+  .filter(d => d.isDirectory())
+  .map(d => join('demos', d.name, 'config.json'))
+  .filter(p => existsSync(join(root, p)))
+  .sort()
+
 const web = (script: string, ...args: string[]) => [
   'node',
   `website/scripts/${script}`,
@@ -279,6 +287,19 @@ const VALIDATORS: Validator[] = [
     // frontmatter that it is internal.
     name: 'no new uncited reference docs',
     argv: web('check-reference-citations.ts'),
+  },
+  {
+    // The configs `scripts/deploy-demo.sh` pushes to jbrowse.org, which the
+    // release's own gallery links open. Schema only: their data sits beside the
+    // deployed config in S3, so every relative uri here is legitimately absent.
+    name: 'demo configs validate against the schemas',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      'scripts/validate-built-config.ts',
+      '--schema-only',
+      ...demoConfigs,
+    ],
   },
   {
     name: 'tutorial build scripts are valid',
