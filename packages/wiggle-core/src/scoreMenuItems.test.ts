@@ -12,14 +12,14 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // A minimal ScoreScaleModel. `getSession` is only reached from an onClick, and
 // nothing here clicks, so the node-ness the interface asks for never gets used.
 // `hasManualScoreBounds` is derived rather than overridable so the double cannot
-// claim a manual bound the raw slots do not hold — which is the state the real
-// mixin never produces and the state this file used to test against.
+// claim a manual bound the pinned pair does not hold — which is the state the
+// real mixin never produces and the state this file used to test against.
 function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   const self = {
     scaleType: 'linear',
     autoscaleType: 'local',
-    minScore: Number.MIN_VALUE,
-    maxScore: Number.MAX_VALUE,
+    manualMinScore: undefined,
+    manualMaxScore: undefined,
     minScoreBound: undefined,
     maxScoreBound: undefined,
     setScaleType: () => {},
@@ -31,7 +31,7 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   return {
     ...self,
     hasManualScoreBounds:
-      self.minScore !== Number.MIN_VALUE || self.maxScore !== Number.MAX_VALUE,
+      self.manualMinScore !== undefined || self.manualMaxScore !== undefined,
   } as unknown as ScoreScaleModel
 }
 
@@ -65,7 +65,7 @@ describe('makeScoreSubMenu capability opt-outs', () => {
   it('still offers the clear item when a manual bound is in force', () => {
     expect(
       labels(
-        makeScoreSubMenu(makeSelf({ minScore: 2, minScoreBound: 2 }), {
+        makeScoreSubMenu(makeSelf({ manualMinScore: 2, minScoreBound: 2 }), {
           scaleType: false,
           autoscale: false,
         }),
@@ -118,7 +118,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     expect(labels(makeScoreSubMenu(display))).toEqual([
       'Scale type',
       'Autoscale type',
-      'Set min/max score (0 – 0.75)...',
+      'Set min/max score (auto – 0.75)...',
       'Clear manual min/max',
     ])
 

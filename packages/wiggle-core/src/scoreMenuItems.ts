@@ -14,17 +14,20 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // Canonical "thing that has a score axis" — every wiggle-family display
 // (wiggle, multi-wiggle, manhattan, alignments coverage) exposes this exact
 // shape so the shared Score menu, autoscale/scale submenus, and SetMinMaxDialog
-// consume it without per-display adapters. minScore/maxScore are the raw config
-// values (Number.MIN_VALUE/MAX_VALUE sentinels intact) the dialog expects;
-// minScoreBound/maxScoreBound are the resolved bounds (undefined = autoscale)
-// every implementer already derives; hasManualScoreBounds is whether either raw
-// slot is set at all, which is the only one of the three that survives a
-// `defaultScoreDomain` override. All three come from `ScoreScaleMixin`.
+// consume it without per-display adapters. Two pairs, and which one a consumer
+// wants is which question it is asking: manualMinScore/manualMaxScore is what
+// the config really pins (undefined = nothing pinned), which is what the dialog
+// round-trips and what the menu captions itself with;
+// minScoreBound/maxScoreBound is where each end of the axis resolved to
+// (undefined = autoscale this end), which is what a domain computes from. The
+// raw sentinels are nobody's business out here. hasManualScoreBounds is the
+// third question, and the only one of the three that survives a
+// `defaultScoreDomain` override. All of them come from `ScoreScaleMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   autoscaleType: string
-  minScore: number
-  maxScore: number
+  manualMinScore: number | undefined
+  manualMaxScore: number | undefined
   minScoreBound: number | undefined
   maxScoreBound: number | undefined
   hasManualScoreBounds: boolean
@@ -77,17 +80,17 @@ export function makeAutoscaleTypeSubMenu(
 
 // Showing the range in the label is how the menu says a fixed bound is in force
 // — otherwise an autoscale-type radio still reads as checked while a manual
-// bound silently overrides it. The range shown is the resolved one, since that
-// is the axis the user is looking at, but whether to show it at all is
-// `hasManualScoreBounds`: a display overriding `defaultScoreDomain` resolves
-// both ends to numbers with nothing configured, so asking the resolved pair
-// captioned every GC content track "(0 – 1)" and offered it a Clear row that
-// rewrote the sentinels already there.
+// bound silently overrides it. So it is the PINNED pair that is shown, with
+// `auto` for the end nobody pinned. A display overriding `defaultScoreDomain`
+// resolves both ends to numbers with nothing configured: asking the resolved
+// pair captioned every GC content track "(0 – 1)", and once one end was really
+// set it printed the other end's default beside it, in the one place the user
+// looks to find out what they have pinned.
 export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
-  const { minScoreBound, maxScoreBound } = self
+  const { manualMinScore, manualMaxScore } = self
   return {
     label: self.hasManualScoreBounds
-      ? `Set min/max score (${minScoreBound ?? 'auto'} – ${maxScoreBound ?? 'auto'})...`
+      ? `Set min/max score (${manualMinScore ?? 'auto'} – ${manualMaxScore ?? 'auto'})...`
       : 'Set min/max score...',
     onClick: () => {
       getDialogHost(self).queueDialog(handleClose => [

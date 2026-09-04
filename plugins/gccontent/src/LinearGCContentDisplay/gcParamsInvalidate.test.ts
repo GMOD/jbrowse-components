@@ -174,7 +174,7 @@ test('the pinned domain is not mistaken for a manual score bound', async () => {
 
   display.setMaxScore(0.75)
   expect(scoreMenuLabels(display)).toEqual([
-    'Set min/max score (0 – 0.75)...',
+    'Set min/max score (auto – 0.75)...',
     'Clear manual min/max',
   ])
 

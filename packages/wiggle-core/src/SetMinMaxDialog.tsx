@@ -4,10 +4,14 @@ import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+// The two fields open on what the config really pins, which is the mixin's
+// `manual*` pair rather than the raw slots — the sentinel comparison is one
+// answer per end and lives there. Submitting `undefined` writes the sentinel
+// back, so an emptied field is how autoscale resumes.
 export default observer(function SetMinMaxDialog(props: {
   model: {
-    minScore: number
-    maxScore: number
+    manualMinScore: number | undefined
+    manualMaxScore: number | undefined
     scaleType: string
     setMinScore: (arg?: number) => void
     setMaxScore: (arg?: number) => void
@@ -15,14 +19,10 @@ export default observer(function SetMinMaxDialog(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { minScore, maxScore, scaleType } = model
+  const { manualMinScore, manualMaxScore, scaleType } = model
 
-  const [min, setMin] = useState(
-    minScore === Number.MIN_VALUE ? undefined : minScore,
-  )
-  const [max, setMax] = useState(
-    maxScore === Number.MAX_VALUE ? undefined : maxScore,
-  )
+  const [min, setMin] = useState(manualMinScore)
+  const [max, setMax] = useState(manualMaxScore)
 
   const rangeOk = min === undefined || max === undefined || max > min
   const logOk = !(scaleType === 'log' && min !== undefined && min <= 0)

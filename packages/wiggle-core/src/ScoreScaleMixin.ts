@@ -37,10 +37,13 @@ const confNode = (self: object) => self as ScoreScaleHost
  * — the alignments coverage band shares this axis but none of the rest.
  *
  * `minScore`/`maxScore` are the **raw** slot values with their
- * `Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, because that
- * is what the dialog round-trips; `minScoreBound`/`maxScoreBound` are the
- * resolved bounds, where `undefined` means "autoscale this end". Every consumer
- * that computes a domain reads the `*Bound` pair.
+ * `Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, and nothing
+ * outside this file should want them: `manualMinScore`/`manualMaxScore` are the
+ * same answer with the sentinel resolved to `undefined`, which is what the
+ * dialog round-trips and what the menu captions itself with;
+ * `minScoreBound`/`maxScoreBound` are the resolved bounds, where `undefined`
+ * means "autoscale this end". Every consumer that computes a domain reads the
+ * `*Bound` pair.
  *
  * Whether a bound is *configured* is a third question, and `hasManualScoreBounds`
  * is the only getter that answers it — the resolved pair cannot, since
