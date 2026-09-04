@@ -76,7 +76,10 @@ them. Annotation-based bacterial pangenome tools
 ([Panaroo](https://github.com/gtonkinhill/panaroo),
 [Roary](https://sanger-pathogens.github.io/Roary/),
 [PPanGGOLiN](https://github.com/labgem/PPanGGOLiN)) give a gene table instead; a
-gene cluster no reference carries has no coordinate on the K12 axis.
+gene cluster no reference carries has no coordinate on the K12 axis. The
+[gene-symbol lanes](/docs/tutorials/ecoli_orthologs_synteny) draw that kind of
+table without flattening it — one lane per genome at its own coordinates, and
+these five strains sit among its forty-seven.
 
 Most of what JBrowse draws are the graph's **linear projections**: the graph
 flattened onto one reference genome's coordinates. Every builder emits them:
@@ -1099,6 +1102,7 @@ count, and `odgi untangle` indexes every step of every path.
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/user_guides/maf_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/developer_guides/pif_format)

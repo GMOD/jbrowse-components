@@ -285,6 +285,7 @@ bash build_primate_orthologs.sh
 
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/orthofinder_synteny)
+- [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 
 ## References

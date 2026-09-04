@@ -31,8 +31,12 @@ the lanes draw their own genes and no ribbons, which is where the page ends.
 Forty-seven RefSeq assemblies, each fetched by accession with the `datasets`
 CLI: the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
-The [build script](#reproduce-it-end-to-end) pins every accession; the anchor
-and the four Shigella are:
+The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
+[all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
+under the same accessions — MG1655 is the strain those pages call K12 — so the
+three pages read one set of genomes three ways. The
+[build script](#reproduce-it-end-to-end) pins every accession; the anchor and
+the four Shigella are:
 
 - K-12 MG1655:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
