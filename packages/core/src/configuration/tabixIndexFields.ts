@@ -16,7 +16,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  *   two slots in the opposite order
  * - `PairwiseIndexedPAFAdapter`'s prose said `<file>.pif.gz.tbi` while its
  *   default said `my.paf.gz.tbi`
- * - `PlinkLDTabixAdapter` dropped the `(or .csi)` clause
+ * - `PlinkLDTabixAdapter`'s description dropped a clause the other eight carried
  * - the placeholder extensions disagreed with each other for no reason
  *
  * The description is written for every tabix adapter rather than naming one
@@ -43,6 +43,6 @@ export const tabixIndexFields = {
       locationType: 'UriLocation',
     },
     description:
-      'location of the tabix index. Only needed when it is not named `<file>.tbi` (or `.csi`), which is what the `uri` shorthand assumes.',
+      'location of the tabix index. Only needed when it is not named `<file>.tbi`, which is what the `uri` shorthand assumes — a `.csi` beside the file is reached with `csi: true` rather than by spelling this out.',
   },
 } as const
