@@ -11,8 +11,17 @@ import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
+import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
+
+interface CenterKeepingView {
+  width: number
+  displayedRegions: Region[]
+  pxToBp: (px: number) => PxToBpResult
+  setDisplayedRegions: (regions: Region[]) => void
+  centerAt: (coord: number, refName: string, index?: number) => void
+}
 
 /**
  * The stored viewport of a view showing `totalBp` of displayed regions fitted to
@@ -564,6 +573,37 @@ export function withRegionMoved(regions: Region[], from: number, to: number) {
   const [moved] = out.splice(from, 1)
   out.splice(to, 0, moved!)
   return out
+}
+
+/**
+ * Replace the region list and keep looking at whatever was under the middle of
+ * the viewport, when that region is in the new list.
+ *
+ * `setDisplayedRegions` carries `offsetPx` across and clamps it, which is a
+ * linear position in a coordinate space the write just redefined: dropping the
+ * regions to the left of the one on screen strands the view at the end of what
+ * remains, on blank space. Where the centred region is gone the clamp is still
+ * the only answer, so this falls back to it.
+ */
+export function setDisplayedRegionsKeepingCenter(
+  model: CenterKeepingView,
+  regions: Region[],
+) {
+  const center = model.displayedRegions.length
+    ? model.pxToBp(model.width / 2)
+    : undefined
+  model.setDisplayedRegions(regions)
+  const index = center
+    ? regions.findIndex(
+        r =>
+          r.refName === center.refName &&
+          r.start === center.start &&
+          r.end === center.end,
+      )
+    : -1
+  if (center && index !== -1) {
+    model.centerAt(center.coord0, center.refName, index)
+  }
 }
 
 export function withRegionRemoved(regions: Region[], index: number) {

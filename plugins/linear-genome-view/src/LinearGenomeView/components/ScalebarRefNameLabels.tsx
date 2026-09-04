@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import {
   REF_NAME_LABEL_FONT_SIZE,
   regionMoveActions,
+  setDisplayedRegionsKeepingCenter,
   withRegionMoved,
   withRegionRemoved,
   withRegionReversed,
@@ -241,7 +242,7 @@ const RefNameMenu = observer(function RefNameMenu({
                   ? 'Show only this region'
                   : `Show only ${refName}`,
                 onClick: () => {
-                  model.setDisplayedRegions(labeled)
+                  setDisplayedRegionsKeepingCenter(model, labeled)
                 },
               },
             ]
@@ -291,7 +292,8 @@ const RefNameMenu = observer(function RefNameMenu({
                         {
                           label: 'Remove this region from view',
                           onClick: () => {
-                            model.setDisplayedRegions(
+                            setDisplayedRegionsKeepingCenter(
+                              model,
                               withRegionRemoved(displayedRegions, idx),
                             )
                           },

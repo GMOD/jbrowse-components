@@ -26,6 +26,7 @@ import { autorun } from 'mobx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
+import { setDisplayedRegionsKeepingCenter } from './util.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -3529,6 +3530,58 @@ describe('scalebar refName labels', () => {
   test('no prefix, so no prefix fallback', () => {
     const model = makeView([{ refName: 'ctgA', end: 100000 }])
     expect(model.scalebarRefNameLabels.caption).toBeUndefined()
+  })
+})
+
+// The two label-menu items that shorten the region list write through
+// setDisplayedRegionsKeepingCenter. Plain setDisplayedRegions carries offsetPx
+// across and clamps it, which for a view scrolled past the end of what survives
+// lands on the tail of the kept region plus blank space.
+describe('shortening the region list keeps the viewport', () => {
+  function makeView() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100000 },
+    ])
+    model.zoomTo(10)
+    model.scrollTo(9000)
+    return model
+  }
+
+  const ctgB = {
+    assemblyName: 'volvox',
+    refName: 'ctgB',
+    start: 0,
+    end: 100000,
+  }
+
+  test('the centered base survives dropping the regions before it', () => {
+    const model = makeView()
+    const before = model.pxToBp(model.width / 2)
+    expect(before.refName).toBe('ctgB')
+
+    setDisplayedRegionsKeepingCenter(model, [ctgB])
+
+    const after = model.pxToBp(model.width / 2)
+    expect(after.refName).toBe('ctgB')
+    expect(Math.abs(after.coord0 - before.coord0)).toBeLessThanOrEqual(
+      model.bpPerPx,
+    )
+  })
+
+  // the clamp is still the only answer when the region under the middle is the
+  // one being removed
+  test('a region set without the centered region falls back to the clamp', () => {
+    const model = makeView()
+    setDisplayedRegionsKeepingCenter(model, [
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+    ])
+    expect(model.pxToBp(model.width / 2).refName).toBe('ctgA')
   })
 })
 
