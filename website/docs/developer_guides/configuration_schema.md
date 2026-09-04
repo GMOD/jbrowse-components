@@ -491,7 +491,9 @@ getter kept out of the render loop:
 ```ts
 get arcStyles() {
   // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
-  // returns) a number — both have a default, so the read is never unset.
+  // returns) a number — a jexl default over an attribute the feature
+  // lacks still evaluates to NaN; `layOutArcs` is where it is made
+  // paintable.
   // color/label/caption are string slots read through the typed self.conf.
   const kept =
     self.features && filterByScore(self.features, self.minScore)

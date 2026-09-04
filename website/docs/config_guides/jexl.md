@@ -126,7 +126,7 @@ jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has
 **Slot defaults from plugins**
 
 ```js
-jexl: logThickness(feature, 'score') // log(attribute + 1), the arc display's default thickness
+jexl: logThickness(feature, 'score') // log(attribute + 1) where that is a width, else 1px; the arc display's default thickness
 jexl: defaultPairedArcColor(feature, alt) // a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV)
 jexl: lgvSyntenyTooltip(feature) // both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover
 jexl: defaultOnChordClick(feature, track, pluginManager) // opens a breakpoint split view on the clicked chord

@@ -64,7 +64,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearArcDisplay", .
 | Slot | Description |
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'darkblue'</code> | the color of the arcs<br>_callback args:_ `feature` |
-| <span id="slot-thickness">**thickness**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:logThickness(feature,'score')'</code> | the thickness of the arcs<br>_callback args:_ `feature` |
+| <span id="slot-thickness">**thickness**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:logThickness(feature,'score')'</code> | the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all<br>_callback args:_ `feature` |
 | <span id="slot-label">**label**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'score')'</code> | the label to appear at the apex of the arcs<br>_callback args:_ `feature` |
 | <span id="slot-archeight">**arcHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:log10(get(feature,'end')-get(feature,'start'))*50'</code> | the height of the arcs<br>_callback args:_ `feature` |
 | <span id="slot-caption">**caption**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'name')'</code> | the caption to appear when hovering over any point on the arcs<br>_callback args:_ `feature` |

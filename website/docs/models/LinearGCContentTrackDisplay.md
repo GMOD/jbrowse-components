@@ -175,8 +175,11 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-numstddev) |
 | <span id="getter-minscore">**minScore**</span><br><code>number</code> | <span data-pagefind-ignore>Raw slot value, sentinel intact — see the class comment.</span> | [ScoreScaleMixin](../scorescalemixin#getter-minscore) |
 | <span id="getter-maxscore">**maxScore**</span><br><code>number</code> | <span data-pagefind-ignore>Raw slot value, sentinel intact — see the class comment.</span> | [ScoreScaleMixin](../scorescalemixin#getter-maxscore) |
+| <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The lower bound the config really sets, `undefined` at the sentinel.</span> | [ScoreScaleMixin](../scorescalemixin#getter-manualminscore) |
+| <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The upper bound the config really sets, `undefined` at the sentinel.</span> | [ScoreScaleMixin](../scorescalemixin#getter-manualmaxscore) |
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved lower bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-minscorebound) |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved upper bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-maxscorebound) |
+| <span id="getter-hasmanualscorebounds">**hasManualScoreBounds**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the user has pinned either end, which is a different question from whether either end resolved to a number: `defaultScoreDomain` fills the sentinels in, so a GC content track answers yes to the second with nothing configured. The score menu asks this one — it gates the "Clear manual min/max" row, and a Clear that writes the sentinels already there is a row that does nothing and never goes away.</span> | [ScoreScaleMixin](../scorescalemixin#getter-hasmanualscorebounds) |
 
 ## Methods
 
