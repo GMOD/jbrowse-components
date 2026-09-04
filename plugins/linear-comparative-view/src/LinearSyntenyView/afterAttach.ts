@@ -4,12 +4,11 @@ import {
   resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
+import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   applyInitHighlights,
-  linearGenomeViewPropKeys,
   normalizeTrackInit,
-  partitionLaunchKeys,
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
@@ -78,10 +77,8 @@ async function buildViews(
 ) {
   const session = getSession(self)
   const { assemblyManager } = session
-  // The LGV's declared property names, so a row can carry any of them. Read
-  // from the registered view type rather than a list here: the rows do not
-  // exist yet, and a second list is what went stale last time.
-  const rowPropKeys = linearGenomeViewPropKeys(getEnv(self).pluginManager)
+  const { launchKeys: rowLaunchKeys } =
+    getEnv(self).pluginManager.getViewType('LinearGenomeView')
   const assemblies = await Promise.all(
     init.views.map(async v => {
       const asm = await assemblyManager.waitForAssembly(v.assembly)
@@ -116,11 +113,11 @@ async function buildViews(
             session.notify(message, 'warning')
           },
         ),
-        // Plain persisted LGV props (trackLabels, showAminoAcids, colorByCDS, …)
-        // go straight onto the row's snapshot, where MST restores them natively.
-        // Partitioned rather than listed, so a prop the LGV gains is a prop a
-        // synteny row can set, with no second list to keep in step.
-        ...partitionLaunchKeys(v, rowPropKeys).viewProps,
+        // The row's LGV props (trackLabels, showAminoAcids, colorByCDS, …) go
+        // onto its snapshot, minus the launch keys this file applies itself.
+        // The LGV's own partition then takes every property it declares and
+        // reports a typo, with no list here to keep in step.
+        ...snapshotSettings(v, rowLaunchKeys),
       }
     }),
   )
@@ -197,7 +194,7 @@ async function applyInitViewLocsAndTracks(
         // `highlight` is the one a spec actually reaches for -- marking the
         // same span on two rows is how a synteny figure says "this object,
         // seen twice" -- and it was being dropped in silence, which is the
-        // failure mode `partitionLaunchKeys` exists to end everywhere else.
+        // failure mode the launch partition exists to end everywhere else.
         applyInitHighlights(view, getSession(self), {
           highlight: viewInit.highlight,
           assembly: viewInit.assembly,

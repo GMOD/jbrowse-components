@@ -183,6 +183,26 @@ const IDENTITY = new Set(['id', 'type'])
 
 const LAUNCH = 'launch'
 
+/**
+ * The part of a launch spec that belongs on the snapshot: everything but the
+ * launch keys, and the identity and `launch` keys no spec may set. For a caller
+ * that applies the launch itself and builds the view from a snapshot — a
+ * synteny row, whose parent navigates it and opens its tracks — so what it
+ * hands MST is settings only, and the view's own partition sorts those into
+ * properties and reported typos.
+ */
+export function snapshotSettings(
+  spec: Record<string, unknown>,
+  registration: LaunchKeyRegistration<unknown, string> | undefined,
+) {
+  const keys = registration?.keys ?? {}
+  return Object.fromEntries(
+    Object.entries(spec).filter(
+      ([key]) => !(key in keys) && !IDENTITY.has(key) && key !== LAUNCH,
+    ),
+  )
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object'
 }

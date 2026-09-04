@@ -126,10 +126,10 @@ honors the window and a later measure that does not is two rules for one event.
 - A drag-resize measurably outruns the fetch debounce. The fix is at the
   debounce, not by pinning `bpPerPx` again — that reintroduces the restore bug,
   which is the same bug wearing the resize's clothes.
-- `legacyBpPerPx` and `LEGACY_VIEWPORT_PROPS` (`initKeys.ts`) can go. They are
-  one field and one set and they are the whole migration, so the work is not the
-  question — the question is whether anything still opens a session written
-  before this change, and the answer is a judgement about shared links and
-  published `defaultSession`s rather than anything the tree can be asked. Both
-  are named in the tests that pin them (`pre-window`), and dropping them costs an
-  old link its scale, not its locus.
+- `legacyBpPerPx` and the `bpPerPx`/`offsetPx` pass-through (`launchKeys.ts`)
+  can go. They are one field and one list and they are the whole migration, so
+  the work is not the question — the question is whether anything still opens a
+  session written before this change, and the answer is a judgement about shared
+  links and published `defaultSession`s rather than anything the tree can be
+  asked. Both are named in the tests that pin them (`pre-window`), and dropping
+  them costs an old link its scale, not its locus.

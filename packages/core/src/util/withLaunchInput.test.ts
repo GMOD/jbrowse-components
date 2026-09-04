@@ -4,6 +4,7 @@ import ViewType from '../pluggableElementTypes/ViewType.ts'
 import {
   defineLaunchKeys,
   pendingLaunch,
+  snapshotSettings,
   withLaunchInput,
 } from './withLaunchInput.ts'
 
@@ -374,4 +375,41 @@ test('a ViewType registering no launch keys publishes no set', () => {
     ReactComponent: () => null,
   })
   expect(viewType.acceptedKeys).toBeUndefined()
+})
+
+// A parent that applies a row's launch itself (the synteny view navigates and
+// loads tracks for its LGV rows) hands the row snapshot the rest, and the row's
+// own partition decides property vs typo — so a misspelling stays in, to be
+// reported there, and a pass-through legacy key stays in for the row's remap.
+describe('snapshotSettings', () => {
+  test('drops the launch keys and keeps every other key', () => {
+    expect(
+      snapshotSettings(
+        {
+          assembly: 'volvox',
+          tracks: ['genes'],
+          sameScale: true,
+          showThing: true,
+          showThng: true,
+          legacySpelling: 10,
+        },
+        keys,
+      ),
+    ).toEqual({ showThing: true, showThng: true, legacySpelling: 10 })
+  })
+
+  test('identity keys are not settable even though the model declares them', () => {
+    expect(
+      snapshotSettings(
+        { id: 'hijacked', type: 'OtherView', launch: { assembly: 'volvox' } },
+        keys,
+      ),
+    ).toEqual({})
+  })
+
+  test('a view registering no launch keys has only settings', () => {
+    expect(snapshotSettings({ showThing: true, id: 'x' }, undefined)).toEqual({
+      showThing: true,
+    })
+  })
 })

@@ -95,3 +95,28 @@ test('a row spec sets the LGV view props on its own panel', async () => {
   // the row that asked for nothing keeps the defaults
   expect(view.views[1]!.showAminoAcids).toBe(true)
 })
+
+// The row's launch keys are applied by this view, so they must not reach the
+// row's snapshot: partitioned there they would be a second launch, and the row
+// would navigate itself over the navigation it was just given. Everything
+// else does reach it, so a typo is reported by the row rather than dropped.
+test('a row spec leaves its launch keys with the parent and its typos with the row', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const session = setup()
+  const view = (await session.launchView('LinearSyntenyView', {
+    views: [
+      { assembly: 'volvox', loc: 'ctgA:1000-2000', showAminoAcidz: false },
+      { assembly: 'volvox2' },
+    ],
+  })) as LinearSyntenyViewModel
+  view.setWidth(800)
+
+  await when(() => view.pendingLaunch === undefined)
+  const row = view.views[0]!
+  expect(row.pendingLaunch).toBeUndefined()
+  expect(row.launch).toEqual({ unknown: { showAminoAcidz: false } })
+  expect(warn.mock.calls.flat().join('\n')).toContain(
+    'LinearGenomeView ignored unknown key(s): showAminoAcidz',
+  )
+  warn.mockRestore()
+})
