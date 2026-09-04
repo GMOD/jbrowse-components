@@ -201,6 +201,13 @@ const CODING_TRANSCRIPT: TranscriptCoords = {
   coding: [5, 45],
 }
 
+// The gene the isoform hangs off, named as the display drew it.
+const geneItem = (name: string) => ({
+  ...makeItem('gene1', 0, 100, 0, 20),
+  tooltip: 'gene mouseover',
+  name,
+})
+
 const isoformHit = (over: Partial<HitFeatureResult>) =>
   makeHit({
     subfeature: {
@@ -377,6 +384,34 @@ describe('hgvsHitLabel', () => {
           bpPos: 25,
         }),
       ),
+    ).toBe('BRCA1-201:c.11')
+  })
+
+  // `NM_004006.2(DMD):c.93+1` is the nomenclature's own reference form, and what
+  // ClinVar and LOVD take -- an accession alone leaves the reader to look up
+  // which gene it transcribes.
+  it('parenthesizes the gene the transcript was read off', () => {
+    expect(
+      hgvsHitLabel(isoformHit({ feature: geneItem('BRCA1'), bpPos: 25 })),
+    ).toBe('BRCA1-201(BRCA1):c.11')
+  })
+
+  // The container of a mature-peptide or repeat-subpart hit is not a gene, and
+  // its accession inside those brackets would read as a gene symbol.
+  it('parenthesizes nothing for a container that is not a gene', () => {
+    expect(
+      hgvsHitLabel(
+        isoformHit({
+          feature: { ...geneItem('POLG-201'), type: 'mRNA' },
+          bpPos: 25,
+        }),
+      ),
+    ).toBe('BRCA1-201:c.11')
+  })
+
+  it('parenthesizes nothing when the gene and the transcript share a name', () => {
+    expect(
+      hgvsHitLabel(isoformHit({ feature: geneItem('BRCA1-201'), bpPos: 25 })),
     ).toBe('BRCA1-201:c.11')
   })
 })

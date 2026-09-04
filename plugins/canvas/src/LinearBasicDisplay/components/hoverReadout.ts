@@ -42,12 +42,33 @@ function transcriptReadouts(result: HitFeatureResult) {
   }
 }
 
-// The position as a clinical report writes it — `NM_004006.2:c.93+1` — falling
-// back to the bare coordinate when the transcript is unnamed. The change itself
-// (`…G>T`) needs an allele, which a gene annotation doesn't carry.
+// The gene symbol HGVS parenthesizes after the accession. Only a GENE earns it:
+// the element in those brackets is a gene symbol, and the container of a
+// mature-peptide hit is an mRNA whose accession there would be a different
+// statement. Every gene-ish SO type ends in `gene` (`protein_coding_gene`,
+// `ncRNA_gene`, `pseudogene`), which is what the test is anchored to.
+//
+// The DRAWN name, like the tooltip's own gene row and the details panel's — a
+// symbol the reader cannot see on the track is not the one to hand them for a
+// report.
+function hgvsGeneSymbol(result: HitFeatureResult) {
+  const { subfeature, feature } = result
+  return subfeature?.transcript && /gene$/i.test(feature.type ?? '')
+    ? feature.name
+    : undefined
+}
+
+// The position as a clinical report writes it — `NM_004006.2(DMD):c.93+1`, the
+// reference form ClinVar and LOVD take — falling back to the bare coordinate
+// when the transcript is unnamed. The change itself (`…G>T`) needs an allele,
+// which a gene annotation doesn't carry.
 export function hgvsHitLabel(result: HitFeatureResult) {
   const { hgvs, name } = transcriptReadouts(result)
-  return hgvs && name ? `${name}:${hgvs}` : hgvs
+  const gene = hgvsGeneSymbol(result)
+  // A single-transcript annotation regularly labels both with one name, and
+  // `EDEN(EDEN)` names nothing twice.
+  const accession = gene && gene !== name ? `${name}(${gene})` : name
+  return hgvs && name ? `${accession}:${hgvs}` : hgvs
 }
 
 function tooltipRow(...parts: (string | undefined)[]) {

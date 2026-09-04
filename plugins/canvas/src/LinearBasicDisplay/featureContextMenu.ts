@@ -542,10 +542,10 @@ function copyItems(ctx: MenuContext): MenuItem[] {
         ]
       : []),
     // The clicked base in transcript coordinates, already qualified with the
-    // transcript accession (e.g. `EDEN.1:c.93+1` — see hgvsHitLabel), which is
-    // how a clinical report names it. Absent — rather than disabled — when the
-    // click didn't land on a transcript at base zoom, since there is no honest
-    // position to offer then.
+    // transcript accession and its gene (e.g. `EDEN.1(EDEN):c.93+1` — see
+    // hgvsHitLabel), which is how a clinical report names it. Absent — rather
+    // than disabled — when the click didn't land on a transcript at base zoom,
+    // since there is no honest position to offer then.
     ...(hgvsLabel
       ? [
           copyItem(
