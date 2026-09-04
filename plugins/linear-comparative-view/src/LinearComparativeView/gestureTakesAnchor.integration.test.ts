@@ -42,23 +42,33 @@ const assembly = (name: string) => ({
   },
 })
 
+const NAMES = ['volvox0', 'volvox1', 'volvox2']
+
 // Three rows and no synteny track: what is under test is which row a gesture
 // lands on, which the follow decides before any alignment is read.
-async function openStack() {
+async function launchStack(spec: Record<string, unknown>) {
   const session = createTestSession()
-  const names = ['volvox0', 'volvox1', 'volvox2']
-  for (const name of names) {
+  for (const name of [...NAMES, 'volvox3']) {
     session.addAssemblyConf(assembly(name))
   }
   const view = (await session.launchView('LinearSyntenyView', {
-    views: names.map(name => ({ assembly: name, loc: 'ctgA:1-8000' })),
+    views: NAMES.map(name => ({ assembly: name, loc: 'ctgA:1-8000' })),
+    ...spec,
   })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
-    () => view.views.length === 3 && view.views.every(v => v.initialized),
+    () =>
+      view.views.length === 3 &&
+      view.views.every(v => v.initialized) &&
+      !view.initPending,
   )
-  view.setRowSyncMode('follow')
   openViews.push({ session, view })
+  return view
+}
+
+async function openStack() {
+  const view = await launchStack({})
+  view.setRowSyncMode('follow')
   return view
 }
 
@@ -147,6 +157,43 @@ test('every navigation-shaped action of a row is classified', async () => {
     [...ROW_NAVIGATIONS_HELD].filter(name => !actions.includes(name)),
   ).toEqual([])
 })
+
+// A spec that opens following places its rows through the same navigations a
+// search box would, one root action per row, and the anchor it named ended on
+// whichever row navigated last.
+test('a spec that opens following keeps the anchor it named', async () => {
+  const view = await launchStack({
+    views: [
+      { assembly: 'volvox0', loc: 'ctgA:1-8000' },
+      { assembly: 'volvox1' },
+      { assembly: 'volvox2', displayedRegionNames: ['ctgA'] },
+    ],
+    followSynteny: true,
+    followAnchorIndex: 0,
+  })
+  expect(view.followSynteny).toBe(true)
+  expect(view.followAnchorIndex).toBe(0)
+})
+
+// An appended row's own init navigates it as a root action — `navToLocString`
+// with a `loc`, `showAllRegionsInAssembly` without — and the follow read that
+// as a gesture on the new row, re-placing every existing row off its
+// whole-genome window.
+test.each([{ loc: 'ctgA:100-200' }, {}])(
+  'a row appended while following does not take the anchor (%p)',
+  async extra => {
+    const view = await openStack()
+    view.views[1]!.horizontalScroll(40)
+    expect(view.followAnchorIndex).toBe(1)
+    void view.appendRow({ assembly: 'volvox3', ...extra })
+    await when(() => view.views.length === 4 && view.views[3]!.initialized)
+    await when(() => view.views[3]!.displayedRegions.length > 0)
+    expect(view.followAnchorIndex).toBe(1)
+    // and once it is showing something, a gesture on it counts like any other
+    view.views[3]!.horizontalScroll(40)
+    expect(view.followAnchorIndex).toBe(3)
+  },
+)
 
 test('off, a gesture takes nothing', async () => {
   const view = await openStack()

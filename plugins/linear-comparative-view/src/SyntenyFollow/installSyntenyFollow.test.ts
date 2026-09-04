@@ -166,7 +166,7 @@ const Host = types
     followReport: EMPTY_FOLLOW_REPORT,
     followAnchorIndex: 0,
     followPairs: [] as FollowPair[],
-    views: [] as { assemblyNames: string[] }[],
+    views: [] as { assemblyNames: string[]; displayedRegions: unknown[] }[],
   }))
   .views(self => ({
     get followUnaligned() {
@@ -183,7 +183,9 @@ const Host = types
     setFollowPairs(pairs: FollowPair[]) {
       self.followPairs = pairs
     },
-    setViews(views: { assemblyNames: string[] }[]) {
+    setViews(
+      views: { assemblyNames: string[]; displayedRegions: unknown[] }[],
+    ) {
       self.views = views
     },
     setFollowMatchOrientation(arg: boolean) {
@@ -216,7 +218,9 @@ const Session = types
 
 function hostFor(assemblies = ['a', 'b', 'c']) {
   const session = Session.create({ host: {} })
-  session.host.setViews(assemblies.map(name => ({ assemblyNames: [name] })))
+  session.host.setViews(
+    assemblies.map(name => ({ assemblyNames: [name], displayedRegions: [] })),
+  )
   return session.host
 }
 

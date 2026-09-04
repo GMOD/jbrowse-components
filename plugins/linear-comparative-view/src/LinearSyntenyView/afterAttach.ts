@@ -152,8 +152,32 @@ async function navRowToLoc(
   }
 }
 
+// Where one row opens: its `loc`, or a fit to the regions it displays, or the
+// whole assembly. Fit rather than showAllRegionsInAssembly for a named subset:
+// that re-reads the assembly's whole region list over the subset buildViews
+// just installed, and `showAllRegions` targets maxBpPerPx, which drew a
+// restricted row at 1/SHOW_ALL_REGIONS_FILL of its width beside a row that
+// named a locus.
+function placeRow(
+  self: LinearSyntenyViewModel,
+  view: LinearGenomeViewModel,
+  viewInit: SyntenyLaunch['views'][number],
+) {
+  if (viewInit.loc) {
+    return navRowToLoc(self, view, viewInit.loc, viewInit.assembly)
+  }
+  if (viewInit.displayedRegionNames?.length) {
+    view.fitAllRegions()
+  } else {
+    view.showAllRegionsInAssembly(viewInit.assembly)
+  }
+  return undefined
+}
+
 // Per-row location + track list. Rows are independent, so they navigate
-// concurrently.
+// concurrently. Each placement runs inside `holdFollowAnchor`: a spec that
+// opens following would otherwise read every row's launch navigation as a
+// gesture and leave the anchor on whichever row navigated last.
 async function applyInitViewLocsAndTracks(
   self: LinearSyntenyViewModel,
   init: SyntenyLaunch,
@@ -162,24 +186,7 @@ async function applyInitViewLocsAndTracks(
     init.views.map(async (viewInit, idx) => {
       const view = self.views[idx]
       if (view) {
-        if (viewInit.loc) {
-          await navRowToLoc(self, view, viewInit.loc, viewInit.assembly)
-        } else if (viewInit.displayedRegionNames?.length) {
-          // Fit to what the row DISPLAYS, not to the assembly.
-          // showAllRegionsInAssembly re-reads the assembly's own region list and
-          // writes it over displayedRegions, which would throw away the subset
-          // buildViews just installed — the restriction would apply for one
-          // frame and then silently undo itself.
-          //
-          // And fit rather than showAllRegions, which this said it did and did
-          // not: the latter targets maxBpPerPx, so a restricted row drew at
-          // 1/SHOW_ALL_REGIONS_FILL of its width with the content centered.
-          // Stacked against a row that named a locus, that is a scale
-          // difference between the two halves of the comparison.
-          view.fitAllRegions()
-        } else {
-          view.showAllRegionsInAssembly(viewInit.assembly)
-        }
+        await self.holdFollowAnchor(() => placeRow(self, view, viewInit))
         if (viewInit.tracks) {
           for (const track of viewInit.tracks) {
             const { trackId, trackSnapshot, displaySnapshot } =

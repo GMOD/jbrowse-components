@@ -53,8 +53,9 @@ export interface SyntenyFollowHost extends IStateTreeNode, FollowHost {
   followMatchOrientation: boolean
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
-  // identity only: which row a gesture landed on
-  views: readonly unknown[]
+  // which row a gesture landed on, and whether that row is showing anything
+  // yet — a row's first navigation is its initialization, not a gesture
+  views: readonly { displayedRegions: readonly unknown[] }[]
   // an action, so that every navigation run inside it is a NESTED action and
   // the gesture middleware below, which reads root actions alone, lets it by
   holdFollowAnchor: <T>(fn: () => T) => T
@@ -218,13 +219,21 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       ) {
         // the middleware also sees the follow's own root actions, some
         // dispatched from inside its autoruns, so nothing here may register
-        // as a dependency of the pass that dispatched it
+        // as a dependency of the pass that dispatched it.
+        //
+        // A row showing nothing yet is being initialized — `appendRow` builds
+        // an LGV whose own init navigates it as a root action — and that
+        // navigation places the row rather than the anchor.
         // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller
-        const row = untracked(() =>
-          self.followSynteny ? self.views.indexOf(call.context) : -1,
-        )
-        // eslint-disable-next-line no-restricted-syntax -- as above
-        if (row !== -1 && row !== untracked(() => self.followAnchorIndex)) {
+        const row = untracked(() => {
+          const idx = self.followSynteny ? self.views.indexOf(call.context) : -1
+          return idx !== -1 &&
+            self.views[idx]!.displayedRegions.length > 0 &&
+            idx !== self.followAnchorIndex
+            ? idx
+            : -1
+        })
+        if (row !== -1) {
           self.setFollowAnchorIndex(row)
         }
       }
