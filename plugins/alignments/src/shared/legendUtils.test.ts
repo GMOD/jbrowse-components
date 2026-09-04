@@ -281,8 +281,8 @@ describe('getReadDisplayLegendItems', () => {
 
   // The read body, under the marks painted on top of it. fwd/revStrand is what
   // this used to assert, and no read reaches those under this scheme: the
-  // chain-strand framing is held off the data-fill schemes (the registry's
-  // `dataFill`), so `schemeCategory` decides every read here and it answers
+  // chain-strand framing is held off the data-fill schemes
+  // (`isDataFillScheme`), so `schemeCategory` decides every read here and it answers
   // modFwd/modRev.
   test('modifications view names the read body after the mod-type key', () => {
     const mods = new Map([['m', 'red']])

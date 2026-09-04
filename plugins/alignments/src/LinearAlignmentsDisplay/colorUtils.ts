@@ -26,7 +26,7 @@ import {
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
-import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
+import { COLOR_SCHEMES, isDataFillScheme } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import {
   CHAIN_SPLIT_DELETION,
@@ -147,7 +147,7 @@ export function framesUnpairedChainStrand(
     chainMode &&
     flipStrandLongReadChains &&
     !colorSupplementaryChains &&
-    !COLOR_SCHEMES[colorScheme].dataFill
+    !isDataFillScheme(colorScheme)
   )
 }
 

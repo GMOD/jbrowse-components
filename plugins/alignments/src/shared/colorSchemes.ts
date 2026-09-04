@@ -30,13 +30,6 @@ export interface ColorSchemeDef {
   // hard-code the same membership for its own classification, and no longer
   // classifies at all.
   mateAware?: boolean
-  // The read's fill IS a datum the user asked to see — a MAPQ ramp, a tag
-  // palette slot, a modification hue, a wall of per-base cells — so the
-  // chain-strand framing, which repaints a whole read, is held off it
-  // (`framesUnpairedChainStrand`). Everything unflagged is geometry the framing
-  // refines rather than displaces. Per SCHEME, not per shader path: the two
-  // per-base schemes ride `normal`, which IS framed.
-  dataFill?: boolean
   // Meaningful only for paired-end data, so toggling "view as pairs" auto-
   // switches these on/off (see PAIRING_COLOR_SCHEMES in the model). Broader than
   // mateAware: first-of-pair strand is paired-only but reads only its own flags,
@@ -81,14 +74,12 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'mappingQuality',
     shaderScheme: 'mappingQuality',
     menu: { kind: 'radio', label: 'Mapping quality', group: 'basic' },
-    dataFill: true,
   },
   perBaseQuality: {
     type: 'perBaseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
-    dataFill: true,
     perBase: true,
     workerExtracts: true,
   },
@@ -97,7 +88,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
-    dataFill: true,
     perBase: true,
     workerExtracts: true,
   },
@@ -136,7 +126,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'tag',
     shaderScheme: 'tag',
     menu: { kind: 'special', label: 'Tag' },
-    dataFill: true,
     workerExtracts: true,
   },
   // Chromosome painting: color by the name of whatever this feature aligns TO —
@@ -160,7 +149,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'mateRefName',
     shaderScheme: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
-    dataFill: true,
     workerExtracts: true,
   },
   // methylation/bisulfite reuse the modifications shader path with different
@@ -169,14 +157,12 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'modifications',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
-    dataFill: true,
     workerExtracts: true,
   },
   bisulfite: {
     type: 'bisulfite',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Bisulfite' },
-    dataFill: true,
     workerExtracts: true,
   },
 }
@@ -207,6 +193,23 @@ export function isModificationScheme(type: ColorSchemeType) {
 // registry for the reason `isModificationScheme` is.
 export function isPerBaseScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].perBase === true
+}
+
+const PER_READ_COLOUR_PATHS = new Set<ShaderScheme>([
+  'mappingQuality',
+  'tag',
+  'modifications',
+])
+
+// True when the read's fill IS a datum the user asked to see — a MAPQ ramp, a
+// tag palette slot, a modification hue, a wall of per-base cells — so the
+// chain-strand framing, which repaints a whole read, is held off it
+// (`framesUnpairedChainStrand`). Everything else is geometry the framing refines
+// rather than displaces. Derived from the registry for the reason
+// `isModificationScheme` is.
+export function isDataFillScheme(type: ColorSchemeType) {
+  const { perBase, shaderScheme } = COLOR_SCHEMES[type]
+  return perBase === true || PER_READ_COLOUR_PATHS.has(shaderScheme)
 }
 
 // The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme
