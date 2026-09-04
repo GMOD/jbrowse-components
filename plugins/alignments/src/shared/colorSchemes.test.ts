@@ -69,3 +69,25 @@ describe('isRegisteredColorScheme', () => {
     expect(isRegisteredColorScheme('strand')).toBe(false)
   })
 })
+
+// `dataFill` used to be a set of three shader indices, so a scheme riding one of
+// those paths inherited it — `mateRefName` and `bisulfite` declared nothing and
+// got it free. Per-scheme is the right granularity, and it is what fixed the two
+// per-base schemes that ride `normal`, but it means those two now carry a
+// hand-written flag with nothing checking it: deleting both leaves the whole
+// plugin green, including the test that gates on it, because that test reads the
+// same flag on both sides.
+//
+// So this asserts the half the projection really did guarantee. A scheme on one
+// of these paths resolves one colour per read on the CPU — `shared/types.ts`
+// invites new ones onto `tag` — and without the flag the chain-strand framing
+// repaints its whole body forward-red / reverse-blue on every unpaired split
+// read in chain mode, which is the bug this flag exists to prevent.
+test('a scheme on a per-read-colour shader path declares dataFill', () => {
+  const dataFillPaths = new Set(['mappingQuality', 'tag', 'modifications'])
+  expect(
+    Object.values(COLOR_SCHEMES)
+      .filter(s => dataFillPaths.has(s.shaderScheme) && !s.dataFill)
+      .map(s => s.type),
+  ).toEqual([])
+})
