@@ -1,5 +1,9 @@
-import { getConf } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  getConfigurationSchemaDefinition,
+} from '@jbrowse/core/configuration'
 
+import { configSchemaFactory } from './configSchemaFactory.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // Manhattan declares its own config slots rather than inheriting
@@ -38,6 +42,21 @@ describe('LinearManhattanDisplay config surface', () => {
     // explicitIdentifier had come from the wiggle schema; without it every
     // display would share a config node
     expect(display.configuration.displayId).toBeDefined()
+  })
+
+  it('publishes no slot it never reads', () => {
+    const slots = Object.keys(
+      getConfigurationSchemaDefinition(configSchemaFactory())!,
+    )
+    expect(slots).toContain('height')
+    // baseLinearDisplayConfigSchema's remaining slots. Manhattan never enables
+    // the byte gate and draws no features, so these were documented promises
+    // nothing kept.
+    expect(slots).not.toContain('mouseover')
+    expect(slots).not.toContain('jexlFilters')
+    expect(slots).not.toContain('maxFeatureScreenDensity')
+    expect(slots).not.toContain('fetchSizeLimit')
+    expect(slots).not.toContain('forceLoad')
   })
 
   it('builds its whole track menu without reading a missing slot', () => {

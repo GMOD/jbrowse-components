@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
@@ -43,6 +43,14 @@ export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearArcDisplay',
     {
+      /**
+       * #slot
+       */
+      height: {
+        type: 'number',
+        defaultValue: 100,
+        description: 'default height for the track',
+      },
       /**
        * #slot
        */
@@ -110,13 +118,14 @@ export function configSchemaFactory() {
         description:
           'hide arcs whose feature score is below this; features with no score are always drawn',
       },
+      ...regionTooLargeConfigSchemaFields,
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
       preProcessSnapshot: snap => migrateLegacyArcRendererConfig(snap),
     },
   )

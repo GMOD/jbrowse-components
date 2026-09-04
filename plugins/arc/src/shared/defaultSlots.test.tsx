@@ -1,6 +1,10 @@
+import { getConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 import { set1 } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
+
+import { configSchemaFactory as arcConfigSchemaFactory } from '../LinearArcDisplay/configSchema.ts'
+import { configSchemaFactory as pairedArcConfigSchemaFactory } from '../LinearPairedArcDisplay/configSchema.ts'
 
 import Arcs, { ArcsSvg } from './Arcs.tsx'
 import {
@@ -100,4 +104,33 @@ test('the paired display colors and captions an arc off its ALT by default', () 
   const arc = display.laidOutArcs[0]!
   expect(arc.color).toBe(set1[0])
   expect(arc.caption).toBe('ctgA:101<br/>ctgA:2,000<br/><DEL>')
+})
+
+// Neither arc display extends `baseLinearDisplayConfigSchema` any more: it took
+// `height` and the byte-gate pair from it and ignored the rest, so a config doc
+// advertised three slots (`mouseover`, `jexlFilters`,
+// `maxFeatureScreenDensity`) that nothing here reads.
+describe.each([
+  ['LinearArcDisplay', arcConfigSchemaFactory],
+  ['LinearPairedArcDisplay', pairedArcConfigSchemaFactory],
+])('%s config surface', (_name, factory) => {
+  const slots = () => Object.keys(getConfigurationSchemaDefinition(factory())!)
+
+  test('declares what its mixins read', () => {
+    // TrackHeightMixin, then RegionTooLargeMixin — arc is the one of these
+    // displays that does enable the byte gate
+    expect(slots()).toEqual(
+      expect.arrayContaining(['height', 'fetchSizeLimit', 'forceLoad']),
+    )
+    expect(factory().create({ displayId: 'arc-test' }).displayId).toBe(
+      'arc-test',
+    )
+  })
+
+  test.each(['mouseover', 'jexlFilters', 'maxFeatureScreenDensity'])(
+    'publishes no %s slot, which it never reads',
+    slot => {
+      expect(slots()).not.toContain(slot)
+    },
+  )
 })

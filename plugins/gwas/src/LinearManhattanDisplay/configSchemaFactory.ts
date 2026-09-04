@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   remapRetiredAutoscale,
@@ -18,7 +17,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // only by wiggle code a Manhattan plot never runs. A config doc that advertises
 // a slot is a promise it works; these were promises nothing kept. What Manhattan
 // genuinely shares is the score *axis*, so it takes `scoreAxisConfigSchemaFields`
-// and nothing else.
+// and nothing else. `baseLinearDisplayConfigSchema` went the same way and for
+// the same reason: of its five slots only `height` is read here, so this schema
+// declares that one and drops `mouseover`, `jexlFilters`,
+// `maxFeatureScreenDensity` and the byte-gate pair a display that never enables
+// the gate cannot honour.
 /**
  * #config LinearManhattanDisplay
  * #category display
@@ -72,6 +75,14 @@ export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearManhattanDisplay',
     {
+      /**
+       * #slot
+       */
+      height: {
+        type: 'number',
+        defaultValue: 100,
+        description: 'default height for the track',
+      },
       /**
        * #slot
        */
@@ -169,10 +180,6 @@ export function configSchemaFactory() {
       },
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
       // Carried over from the wiggle schema this used to extend: retired

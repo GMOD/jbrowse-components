@@ -1,4 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  getConfigurationSchemaDefinition,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -41,5 +44,29 @@ describe('colorScheme slot', () => {
     const conf = make()
     conf.setSlot('colorScheme', other)
     expect(getSnapshot(conf)).toHaveProperty('colorScheme', other)
+  })
+})
+
+describe('config surface', () => {
+  const slots = () =>
+    Object.keys(getConfigurationSchemaDefinition(configSchemaFactory())!)
+
+  test('keeps what its mixins read after dropping the base schema', () => {
+    // TrackHeightMixin and LegendMixin, plus the identifier the base schema
+    // used to supply — without it every Hi-C display shares one config node
+    expect(slots()).toEqual(expect.arrayContaining(['height', 'showLegend']))
+    expect(make().displayId).toBe('hic-test')
+  })
+
+  // Hi-C draws a contact matrix, not features, and never enables the byte
+  // gate — every one of these was a documented promise nothing kept.
+  test.each([
+    'mouseover',
+    'jexlFilters',
+    'maxFeatureScreenDensity',
+    'fetchSizeLimit',
+    'forceLoad',
+  ])('publishes no %s slot, which it never reads', slot => {
+    expect(slots()).not.toContain(slot)
   })
 })

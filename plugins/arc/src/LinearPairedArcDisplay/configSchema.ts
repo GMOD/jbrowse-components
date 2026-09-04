@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -43,6 +43,14 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      height: {
+        type: 'number',
+        defaultValue: 100,
+        description: 'default height for the track',
+      },
+      /**
+       * #slot
+       */
       color: {
         type: 'color',
         description: 'the color of the arcs',
@@ -68,13 +76,14 @@ export function configSchemaFactory() {
         description:
           'hide arcs whose feature score is below this; features with no score are always drawn',
       },
+      ...regionTooLargeConfigSchemaFields,
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
     },
   )
 }

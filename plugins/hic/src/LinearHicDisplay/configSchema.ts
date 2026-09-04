@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -136,11 +135,11 @@ const HicTrackConfigFactory = () => {
       },
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
     },
   )
 }
