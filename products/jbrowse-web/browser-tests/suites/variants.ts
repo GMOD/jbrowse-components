@@ -129,7 +129,7 @@ interface LaneDisplay {
     screenStartPx: number
     screenEndPx: number
   }[]
-  hoveredGenotype?: Record<string, unknown>
+  hoveredFeature?: Record<string, unknown>
 }
 
 function laneDisplay() {
@@ -155,7 +155,7 @@ function laneX(page: Page, bp: number) {
 }
 
 function hoveredRecord(page: Page) {
-  return page.evaluate(`(${laneDisplay})().hoveredGenotype`) as Promise<
+  return page.evaluate(`(${laneDisplay})().hoveredFeature`) as Promise<
     Record<string, unknown> | undefined
   >
 }

@@ -47,7 +47,6 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
         id: string
         views?: AnchorableView[]
         assemblyNames?: string[]
-        trackRefs?: Record<string, Element | undefined>
         getHighlightCoords?: (region: {
           assemblyName?: string
           refName: string
@@ -78,7 +77,9 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
       // the track's rendering container when the spec names one (a click has to
       // land in the right track), else the whole tracks area
       const el = trackId
-        ? view.trackRefs?.[trackId]
+        ? document.querySelector(
+            `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(trackId)}"]`,
+          )
         : inView('[data-testid="tracksContainer"]')
       // `band` moves the y only. Every strip in a linear view is laid out over
       // the same x-range as the tracks, so a locus resolved against the tracks
