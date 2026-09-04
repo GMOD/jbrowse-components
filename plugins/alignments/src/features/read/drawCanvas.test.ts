@@ -1,7 +1,7 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
+import { colorSchemeIndexFor } from '../../LinearAlignmentsDisplay/constants.ts'
 import { shouldOutlineReads } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { drawReads, showChevron } from './drawCanvas.ts'
@@ -10,6 +10,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { ColorSchemeType } from '../../shared/types.ts'
 import type { ChevronFrame } from './drawCanvas.ts'
 
 // The three roles these cases actually assert on; every other slot is
@@ -75,18 +76,23 @@ function makeRegion(reads: ReadSpec[], ys?: number[]) {
 // featureHeight 10 at row 0 with no offsets keeps the row at y=0, yMid=5.
 function draw(
   reads: ReadSpec[],
-  state: Partial<RenderState> = {},
+  {
+    colorByType = 'strand',
+    ...state
+  }: Partial<RenderState> & {
+    colorByType?: ColorSchemeType
+  } = {},
   fullBlockWidth = 1000,
 ) {
   const ctx = new SvgCanvas()
   const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
-  const colorScheme = state.colorScheme ?? ColorScheme.strand
+  const colorScheme = colorSchemeIndexFor(colorByType)
   // Categories come from the real classifier, so these assertions exercise
   // classify->paint end to end rather than a hand-written category byte.
   const base = makeRegion(reads)
   const region = {
     ...base,
-    readColorCategories: buildReadColorCategories(base, colorScheme),
+    readColorCategories: buildReadColorCategories(base, colorByType),
   }
   drawReads(ctx, region, block, 100, fullBlockWidth, {
     featureHeight: 10,
@@ -160,14 +166,14 @@ test('strandless read (strand 0) never gets an arrowhead', () => {
 test('direction-moot narrow read (normal scheme) stays a rect', () => {
   // read [10,12] → 20px body, under the 30px dirless gate
   const svg = draw([{ start: 10, end: 12, strand: 1 }], {
-    colorScheme: ColorScheme.normal,
+    colorByType: 'normal',
   })
   expect(svg).toContain('<rect')
   expect(svg).not.toContain('<path')
 })
 
 test('direction-moot wide read (normal scheme) still gets an arrowhead', () => {
-  const svg = draw([wideFwd], { colorScheme: ColorScheme.normal })
+  const svg = draw([wideFwd], { colorByType: 'normal' })
   expect(svg).toContain('<path')
 })
 
@@ -202,7 +208,7 @@ describe('drawReads visible-row-band cull', () => {
   )
   const region = {
     ...base,
-    readColorCategories: buildReadColorCategories(base, ColorScheme.strand),
+    readColorCategories: buildReadColorCategories(base, 'strand'),
   }
   const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
   // rowHeight 10 => 1000 rows span 10000px of content.
@@ -214,7 +220,7 @@ describe('drawReads visible-row-band cull', () => {
       pileupTopOffset: 0,
       scrollTop: 0,
       chainMode: false,
-      colorScheme: ColorScheme.strand,
+      colorScheme: colorSchemeIndexFor('strand'),
       colors: palette,
       showOutline: false,
       canvasHeight: 100,

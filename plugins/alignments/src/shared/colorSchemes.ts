@@ -25,11 +25,18 @@ export interface ColorSchemeDef {
   menu: ColorSchemeMenu
   // Color depends on the read's MATE (insert size / pair orientation), so an
   // unmapped mate (tlen=0) or inter-chromosomal mate needs its own color bucket
-  // rather than a misleading insert/orientation hue. Drives `orientationSchemes`
+  // rather than a misleading insert/orientation hue. Read by `overrideCategory`
   // in colorUtils.ts, and that is now the only reader: read.slang used to
   // hard-code the same membership for its own classification, and no longer
   // classifies at all.
   mateAware?: boolean
+  // The read's fill IS a datum the user asked to see — a MAPQ ramp, a tag
+  // palette slot, a modification hue, a wall of per-base cells — so the
+  // chain-strand framing, which repaints a whole read, is held off it
+  // (`framesUnpairedChainStrand`). Everything unflagged is geometry the framing
+  // refines rather than displaces. Per SCHEME, not per shader path: the two
+  // per-base schemes ride `normal`, which IS framed.
+  dataFill?: boolean
   // Meaningful only for paired-end data, so toggling "view as pairs" auto-
   // switches these on/off (see PAIRING_COLOR_SCHEMES in the model). Broader than
   // mateAware: first-of-pair strand is paired-only but reads only its own flags,
@@ -74,12 +81,14 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'mappingQuality',
     shaderScheme: 'mappingQuality',
     menu: { kind: 'radio', label: 'Mapping quality', group: 'basic' },
+    dataFill: true,
   },
   perBaseQuality: {
     type: 'perBaseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
+    dataFill: true,
     perBase: true,
     workerExtracts: true,
   },
@@ -88,6 +97,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
+    dataFill: true,
     perBase: true,
     workerExtracts: true,
   },
@@ -126,6 +136,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'tag',
     shaderScheme: 'tag',
     menu: { kind: 'special', label: 'Tag' },
+    dataFill: true,
     workerExtracts: true,
   },
   // Chromosome painting: color by the name of whatever this feature aligns TO —
@@ -149,6 +160,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'mateRefName',
     shaderScheme: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
+    dataFill: true,
     workerExtracts: true,
   },
   // methylation/bisulfite reuse the modifications shader path with different
@@ -157,12 +169,14 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'modifications',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
+    dataFill: true,
     workerExtracts: true,
   },
   bisulfite: {
     type: 'bisulfite',
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Bisulfite' },
+    dataFill: true,
     workerExtracts: true,
   },
 }

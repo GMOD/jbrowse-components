@@ -9,8 +9,9 @@ import {
   CS_STRAND,
   CS_TAG,
 } from '../shaders/slang/read.consts.generated.ts'
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 
-import type { ShaderScheme } from '../shared/types.ts'
+import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
 
 export {
   INSERTION_SERIF_MIN_PX_PER_BP,
@@ -44,6 +45,13 @@ export const ColorScheme: Record<ShaderScheme, number> = {
   insertSizeAndOrientation: CS_IS_AND_ORIENT,
   modifications: CS_MODIFICATIONS,
   tag: CS_TAG,
+}
+
+// colorBy.type → the shader's dispatch index, via the registry's shader path.
+// Total over ColorSchemeType, so no call site needs a fallback. Lossy — several
+// schemes share a path — so it feeds the shader uniform and nothing else.
+export function colorSchemeIndexFor(type: ColorSchemeType) {
+  return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
 }
 
 // Linked-reads layout mode. 'off' → ordinary pileup; 'normal' → chain layout

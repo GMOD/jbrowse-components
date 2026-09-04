@@ -37,10 +37,10 @@ import {
   chainSplitKind,
 } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
-import { ColorScheme } from './constants.ts'
 
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
+import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
 
 export const rgb255 = normalizedRgbToCss
 
@@ -127,46 +127,16 @@ function insertSizeCategory(
   return insertClassCategory[classifyInsertSize(insertSize, stats)]
 }
 
-// Schemes whose color depends on pair orientation/insert size, so an unmapped
-// mate (tlen=0) or inter-chromosomal mate needs its own bucket rather than a
-// misleading "short insert"/orientation hue. Derived from the `mateAware` flag
-// in the shared COLOR_SCHEMES registry (single source), mapped to shader
-// indices. Module-level so the per-read classification in readColorCategory (a
-// render + legend hot loop) does not reallocate this each call. The registry is
-// now the only source — read.slang used to mirror this membership as a bitmask
-// for its own classification, and no longer classifies at all.
-const orientationSchemes = new Set(
-  Object.values(COLOR_SCHEMES)
-    .filter(s => s.mateAware)
-    .map(s => ColorScheme[s.shaderScheme]),
-)
-
-// Schemes whose read fill is a per-read DATUM — a MAPQ ramp, a tag palette slot,
-// a modification hue — rather than the alignment's own geometry. They are
-// exactly the categories `categoryColor` resolves per read instead of through
-// `swatchPaletteKeys`, which is the same distinction seen from the painting end.
-//
-// The chain supplementary framing below repaints a whole read, so over one of
-// these it answers a different question than the one the user asked: picking
-// "Tag (HP)" in chain mode painted every long read whose chain has a
-// supplementary segment fwd/rev grey-red instead of its haplotype colour — on
-// exactly the split reads at an SV that the mode exists to show. The paired
-// split markers already state this rule as `splitsUnderOrientationScheme`; this
-// is the unpaired half of it, and everything left out (normal, strand, insert
-// size, orientation) is geometry that the framing refines rather than displaces.
-const dataFillSchemes = new Set([
-  ColorScheme.mappingQuality,
-  ColorScheme.tag,
-  ColorScheme.modifications,
-])
-
 // Whether the unpaired chain-strand framing below is actually going to be read,
 // which is the gate on running `consensusChainStrandFrames` at all — that pass
 // rewrites the very marker the framing reads, so under a scheme or a tickbox
 // that discards the framing it would be work whose result nothing looks at.
 // The `flipStrandLongReadChains` default here mirrors its config slot's (true).
+// Takes the SCHEME, not the shader index it dispatches through: that index puts
+// both per-base schemes on `normal`, and framing them repainted every unpaired
+// split segment fwd-red / rev-blue under the wall of cells the user asked for.
 export function framesUnpairedChainStrand(
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   {
     chainMode = false,
     flipStrandLongReadChains = true,
@@ -177,7 +147,7 @@ export function framesUnpairedChainStrand(
     chainMode &&
     flipStrandLongReadChains &&
     !colorSupplementaryChains &&
-    !dataFillSchemes.has(colorScheme)
+    !COLOR_SCHEMES[colorScheme].dataFill
   )
 }
 
@@ -227,7 +197,7 @@ export const READ_COLOR_CATEGORY_BY_INDEX = Object.entries(
 // read.slang and drifted silently between backends.
 export function buildReadColorCategories(
   data: ReadColorData,
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   opts?: ReadColorOpts,
 ): Uint8Array {
   const n = data.readFlags.length
@@ -253,12 +223,12 @@ export interface ReadColorOpts {
 export function readColorCategory(
   i: number,
   data: ReadColorData,
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   opts: ReadColorOpts = {},
 ): ReadColorCategory {
   return (
     overrideCategory(i, data, colorScheme, opts) ??
-    schemeCategory(i, data, colorScheme)
+    schemeCategory(i, data, COLOR_SCHEMES[colorScheme].shaderScheme)
   )
 }
 
@@ -286,7 +256,7 @@ export function readColorCategory(
 function overrideCategory(
   i: number,
   data: ReadColorData,
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   opts: ReadColorOpts,
 ): ReadColorCategory | undefined {
   const { chainMode: isChain = false, colorSupplementaryChains = false } = opts
@@ -302,8 +272,8 @@ function overrideCategory(
   const splitsUnderOrientationScheme =
     isChain &&
     isPaired &&
-    (colorScheme === ColorScheme.pairOrientation ||
-      colorScheme === ColorScheme.insertSizeAndOrientation)
+    (colorScheme === 'pairOrientation' ||
+      colorScheme === 'insertSizeAndOrientation')
 
   if (isChain && hasSupp && colorSupplementaryChains) {
     return 'supplementary'
@@ -356,12 +326,14 @@ function overrideCategory(
   }
 
   // unmapped mate — its own color for orientation-aware schemes (tlen=0
-  // would miscolor as "short insert"), or normal scheme in linked-read mode.
+  // would miscolor as "short insert"), or the plain BODY in linked-read mode,
+  // which the per-base schemes also paint under their marks.
   const mateUnmapped = (flags & SAM_FLAG_MATE_UNMAPPED) !== 0
-  const isOrientationScheme = orientationSchemes.has(colorScheme)
+  const { mateAware, shaderScheme } = COLOR_SCHEMES[colorScheme]
+  const isOrientationScheme = mateAware === true
   if (
     mateUnmapped &&
-    (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))
+    (isOrientationScheme || (shaderScheme === 'normal' && isChain))
   ) {
     return 'unmappedMate'
   }
@@ -373,40 +345,43 @@ function overrideCategory(
     : undefined
 }
 
-// The scheme's own bucket, for a read no override claimed.
+// The scheme's own bucket, for a read no override claimed. Takes the SHADER
+// path, the granularity a body fill has: chromosome painting is the 'tag' body
+// with another value baked in. Exhaustive with no fallback, so a new path has to
+// say what its body is.
 function schemeCategory(
   i: number,
   data: ReadColorData,
-  colorScheme: number,
+  shaderScheme: ShaderScheme,
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
-  switch (colorScheme) {
-    case ColorScheme.normal:
+  switch (shaderScheme) {
+    case 'normal':
       return 'plain'
 
-    case ColorScheme.strand:
+    case 'strand':
       return strandCategory(strand)
 
     // 255 is the SAM spec's "unavailable", not a score of 255 — and it is what
     // `getMappingQuality` returns for a feature carrying no mapping quality at
     // all (PAF/MashMap blocks without one). Split out so it takes the neutral
     // grey rather than a hue the ramp's legend never names.
-    case ColorScheme.mappingQuality:
+    case 'mappingQuality':
       return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
-    case ColorScheme.insertSize:
+    case 'insertSize':
       return insertSizeCategory(data.readInsertSizes[i]!, data.insertSizeStats)
 
     // Fragment strand inferred from the first mate, through the shared rule
     // `firstOfPairStrandKey` (groupFeatures.ts) also calls — so the color a read
     // paints and the section it groups into agree by construction rather than by
     // two copies of the same arithmetic. The shader doesn't derive this at all.
-    case ColorScheme.firstOfPairStrand:
+    case 'firstOfPairStrand':
       return strandCategory(firstOfPairStrand(strand, flags))
 
-    case ColorScheme.pairOrientation: {
+    case 'pairOrientation': {
       // A split alignment normally shows strand coloring instead, via the
       // chained-supplementary branch above; a read reaching here with no pair
       // orientation is either a non-split read or a split one whose framing the
@@ -416,7 +391,7 @@ function schemeCategory(
 
     // Short-insert pairs always show pink, even with abnormal orientation;
     // otherwise orientation wins, falling back to long-/normal-insert.
-    case ColorScheme.insertSizeAndOrientation: {
+    case 'insertSizeAndOrientation': {
       const insert = insertSizeCategory(
         data.readInsertSizes[i]!,
         data.insertSizeStats,
@@ -432,10 +407,10 @@ function schemeCategory(
     // The read's own strand decides which of the two modification hues it
     // paints; `strand` is already resolved above, so this asks the same field
     // every other branch of this switch does.
-    case ColorScheme.modifications:
+    case 'modifications':
       return strand === -1 ? 'modRev' : 'modFwd'
 
-    case ColorScheme.tag:
+    case 'tag':
       // A read this scheme resolved no color for — the tag is absent, or under
       // chromosome painting the read has no mate — paints the palette fallback
       // (colorPairLR). Its own bucket, so the legend keys that neutral instead
@@ -445,9 +420,6 @@ function schemeCategory(
       return data.readTagColors.length > 0 && data.readTagColors[i] === 0
         ? 'noTagValue'
         : 'tag'
-
-    default:
-      return 'plain'
   }
 }
 
@@ -513,7 +485,7 @@ export function readColorFromCategoryIndex(
 export function getReadColor(
   i: number,
   data: ReadColorData,
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   palette: ColorPalette,
   opts?: ReadColorOpts,
 ) {

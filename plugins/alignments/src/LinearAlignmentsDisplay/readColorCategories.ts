@@ -4,6 +4,7 @@ import type {
   PileupDataResult,
   TagColoredPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { ColorSchemeType } from '../shared/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 
 // Bake one RC_* index per read (see colorUtils `buildReadColorCategories`).
@@ -27,7 +28,7 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // on.
 export function overlayReadColorCategories(
   map: Map<number, TagColoredPileupData>,
-  colorScheme: number,
+  colorScheme: ColorSchemeType,
   opts: ReadColorOpts,
 ): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()

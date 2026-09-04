@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   CHAIN_FRAME_REV,
@@ -13,10 +14,11 @@ import {
   readColorCategory,
   rgb255,
 } from './colorUtils.ts'
-import { ColorScheme } from './constants.ts'
 import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
+import type { ColorSchemeType } from '../shared/types.ts'
+import type { ReadColorOpts } from './colorUtils.ts'
 
 // The `readChainHasSupp` bit combinations these cases build, named for what they
 // mean rather than spelled as the byte. The frame and the split kind are
@@ -75,57 +77,37 @@ const chainOpts = { chainMode: true }
 
 describe('readColorCategory', () => {
   test('strand scheme buckets by read strand', () => {
-    expect(
-      readColorCategory(0, makeData({ strand: 1 }), ColorScheme.strand),
-    ).toBe('fwdStrand')
-    expect(
-      readColorCategory(0, makeData({ strand: -1 }), ColorScheme.strand),
-    ).toBe('revStrand')
-    expect(
-      readColorCategory(0, makeData({ strand: 0 }), ColorScheme.strand),
-    ).toBe('noStrand')
+    expect(readColorCategory(0, makeData({ strand: 1 }), 'strand')).toBe(
+      'fwdStrand',
+    )
+    expect(readColorCategory(0, makeData({ strand: -1 }), 'strand')).toBe(
+      'revStrand',
+    )
+    expect(readColorCategory(0, makeData({ strand: 0 }), 'strand')).toBe(
+      'noStrand',
+    )
   })
 
   test('insertSize scheme buckets against thresholds', () => {
     expect(
-      readColorCategory(
-        0,
-        makeData({ insertSize: 700 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ insertSize: 700 }, stats), 'insertSize'),
     ).toBe('longInsert')
     expect(
-      readColorCategory(
-        0,
-        makeData({ insertSize: 50 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ insertSize: 50 }, stats), 'insertSize'),
     ).toBe('shortInsert')
     expect(
-      readColorCategory(
-        0,
-        makeData({ insertSize: 300 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ insertSize: 300 }, stats), 'insertSize'),
     ).toBe('normalInsert')
     // TLEN 0 = unset (single-end / unpaired read). Even in a mixed dataset where
     // stats is defined, it must not read as "short insert" (would paint pink).
     expect(
-      readColorCategory(
-        0,
-        makeData({ insertSize: 0 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ insertSize: 0 }, stats), 'insertSize'),
     ).toBe('normalInsert')
   })
 
   test('pairOrientation scheme buckets by orientation code', () => {
     const cat = (po: number) =>
-      readColorCategory(
-        0,
-        makeData({ pairOrientation: po }),
-        ColorScheme.pairOrientation,
-      )
+      readColorCategory(0, makeData({ pairOrientation: po }), 'pairOrientation')
     expect(cat(1)).toBe('pairLR')
     expect(cat(2)).toBe('pairRL')
     expect(cat(3)).toBe('pairRR')
@@ -141,14 +123,14 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ pairOrientation: 0, strand: 1 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
       ),
     ).toBe('nonSplit')
     expect(
       readColorCategory(
         0,
         makeData({ pairOrientation: 0, strand: -1 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
       ),
     ).toBe('nonSplit')
   })
@@ -159,7 +141,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ pairOrientation: 2, insertSize: 50 }, stats),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
       ),
     ).toBe('shortInsert')
     // Long insert keeps abnormal orientation
@@ -167,7 +149,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ pairOrientation: 2, insertSize: 700 }, stats),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
       ),
     ).toBe('pairRL')
     // Normal insert + abnormal orientation paints by orientation
@@ -175,7 +157,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ pairOrientation: 2, insertSize: 300 }, stats),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
       ),
     ).toBe('pairRL')
     // po=1 (LR) falls through to the insert-size band
@@ -183,7 +165,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ pairOrientation: 1, insertSize: 700 }, stats),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
       ),
     ).toBe('longInsert')
   })
@@ -195,7 +177,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
         chainOpts,
       ),
     ).toBe('pairRR')
@@ -204,7 +186,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1 }),
-        ColorScheme.strand,
+        'strand',
         chainOpts,
       ),
     ).not.toBe('supplementary')
@@ -217,7 +199,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
         chainOpts,
       ),
     ).toBe('splitInversion')
@@ -228,7 +210,7 @@ describe('readColorCategory', () => {
           { chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 },
           stats,
         ),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
         chainOpts,
       ),
     ).toBe('splitInversion')
@@ -237,7 +219,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_INV, flags: 1, strand: -1 }),
-        ColorScheme.strand,
+        'strand',
         chainOpts,
       ),
     ).toBe('revStrand')
@@ -246,7 +228,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
       ),
     ).toBe('pairLR')
   })
@@ -256,7 +238,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_DEL, flags: 1, pairOrientation: 1 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
         chainOpts,
       ),
     ).toBe('splitDeletion')
@@ -267,7 +249,7 @@ describe('readColorCategory', () => {
           { chainHasSupp: SPLIT_DEL, flags: 1, pairOrientation: 1 },
           stats,
         ),
-        ColorScheme.insertSizeAndOrientation,
+        'insertSizeAndOrientation',
         chainOpts,
       ),
     ).toBe('splitDeletion')
@@ -276,7 +258,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_DEL, flags: 1, strand: -1 }),
-        ColorScheme.strand,
+        'strand',
         chainOpts,
       ),
     ).toBe('revStrand')
@@ -289,7 +271,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
         { ...chainOpts, colorSupplementaryChains: true },
       ),
     ).toBe('supplementary')
@@ -298,7 +280,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        ColorScheme.pairOrientation,
+        'pairOrientation',
         { colorSupplementaryChains: true },
       ),
     ).toBe('pairRR')
@@ -308,11 +290,11 @@ describe('readColorCategory', () => {
   // tickboxes are ordered, not scoped to different data.
   test('the orange opt-in covers unpaired chains and beats the strand framing', () => {
     const longRead = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-    expect(readColorCategory(0, longRead, ColorScheme.normal, chainOpts)).toBe(
+    expect(readColorCategory(0, longRead, 'normal', chainOpts)).toBe(
       'revStrand',
     )
     expect(
-      readColorCategory(0, longRead, ColorScheme.normal, {
+      readColorCategory(0, longRead, 'normal', {
         ...chainOpts,
         colorSupplementaryChains: true,
       }),
@@ -320,7 +302,7 @@ describe('readColorCategory', () => {
     // and it is the one override that a data-carrying scheme does not displace,
     // because the user asked for it by name
     expect(
-      readColorCategory(0, longRead, ColorScheme.tag, {
+      readColorCategory(0, longRead, 'tag', {
         ...chainOpts,
         colorSupplementaryChains: true,
       }),
@@ -334,7 +316,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        ColorScheme.strand,
+        'strand',
         chainOpts,
       ),
     ).toBe('revStrand')
@@ -343,7 +325,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        ColorScheme.strand,
+        'strand',
       ),
     ).toBe('fwdStrand')
     // Turning the framing off falls through to the scheme, which under `strand`
@@ -354,7 +336,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        ColorScheme.strand,
+        'strand',
         { ...chainOpts, flipStrandLongReadChains: false },
       ),
     ).toBe('fwdStrand')
@@ -377,7 +359,7 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_FWD | split, flags: 0, strand: 1 }),
-          ColorScheme.strand,
+          'strand',
           chainOpts,
         ),
       ).toBe('fwdStrand')
@@ -387,7 +369,7 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_REV | split, flags: 0, strand: 1 }),
-          ColorScheme.strand,
+          'strand',
           chainOpts,
         ),
       ).toBe('revStrand')
@@ -404,60 +386,53 @@ describe('readColorCategory', () => {
       strand: 1,
       tagColor: 7,
     })
-    expect(readColorCategory(0, supp, ColorScheme.tag, chainOpts)).toBe('tag')
-    expect(
-      readColorCategory(0, supp, ColorScheme.mappingQuality, chainOpts),
-    ).toBe('mapq')
-    expect(
-      readColorCategory(0, supp, ColorScheme.modifications, chainOpts),
-    ).toBe('modFwd')
+    expect(readColorCategory(0, supp, 'tag', chainOpts)).toBe('tag')
+    expect(readColorCategory(0, supp, 'mappingQuality', chainOpts)).toBe('mapq')
+    expect(readColorCategory(0, supp, 'modifications', chainOpts)).toBe(
+      'modFwd',
+    )
     // the geometry schemes still frame — including the chain-mode default
     expect(
-      readColorCategory(
-        0,
-        supp,
-        ColorScheme.insertSizeAndOrientation,
-        chainOpts,
-      ),
+      readColorCategory(0, supp, 'insertSizeAndOrientation', chainOpts),
     ).toBe('revStrand')
-    expect(readColorCategory(0, supp, ColorScheme.normal, chainOpts)).toBe(
-      'revStrand',
-    )
+    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('revStrand')
   })
+
+  // The same rule for the two whose datum is per-BASE. Their body IS `normal`'s,
+  // so a gate on the shader index framed them — repainting the split reads at an
+  // SV that chain mode exists to show, under the cells the user asked for.
+  test.each(['perBaseQuality', 'perBaseLetter'] as const)(
+    'the long-read framing yields to %s',
+    scheme => {
+      const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
+      expect(readColorCategory(0, supp, scheme, chainOpts)).toBe('plain')
+      expect(getReadColor(0, supp, scheme, palette, chainOpts)).toBe(
+        rgb255(palette.colorPairLR),
+      )
+    },
+  )
 
   // Unticking it is the only escape hatch under a geometry scheme, and it used
   // to leave the reads strand-coloured anyway.
   test('unticking the framing restores the scheme, not the unframed strand', () => {
     const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
     const off = { ...chainOpts, flipStrandLongReadChains: false }
-    expect(readColorCategory(0, supp, ColorScheme.normal, chainOpts)).toBe(
-      'revStrand',
-    )
-    expect(readColorCategory(0, supp, ColorScheme.normal, off)).toBe('plain')
-    expect(readColorCategory(0, supp, ColorScheme.pairOrientation, off)).toBe(
-      'nonSplit',
-    )
+    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('revStrand')
+    expect(readColorCategory(0, supp, 'normal', off)).toBe('plain')
+    expect(readColorCategory(0, supp, 'pairOrientation', off)).toBe('nonSplit')
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {
     expect(
-      readColorCategory(
-        0,
-        makeData({ flags: 8 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ flags: 8 }, stats), 'insertSize'),
     ).toBe('unmappedMate')
     expect(
-      readColorCategory(
-        0,
-        makeData({ interchrom: 1 }, stats),
-        ColorScheme.insertSize,
-      ),
+      readColorCategory(0, makeData({ interchrom: 1 }, stats), 'insertSize'),
     ).toBe('interchrom')
     // ...but not to the plain strand scheme
-    expect(
-      readColorCategory(0, makeData({ interchrom: 1 }), ColorScheme.strand),
-    ).toBe('fwdStrand')
+    expect(readColorCategory(0, makeData({ interchrom: 1 }), 'strand')).toBe(
+      'fwdStrand',
+    )
   })
 
   // The CPU-baked schemes (tag values, chromosome painting) resolve no color
@@ -466,11 +441,9 @@ describe('readColorCategory', () => {
   // neutral instead of leaving it as the one painted color with no entry.
   test('a read with no baked color is its own bucket under the tag scheme', () => {
     expect(
-      readColorCategory(0, makeData({ tagColor: 0xff00ff00 }), ColorScheme.tag),
+      readColorCategory(0, makeData({ tagColor: 0xff00ff00 }), 'tag'),
     ).toBe('tag')
-    expect(readColorCategory(0, makeData({}), ColorScheme.tag)).toBe(
-      'noTagValue',
-    )
+    expect(readColorCategory(0, makeData({}), 'tag')).toBe('noTagValue')
   })
 
   // Before the main thread bakes readTagColors the array is empty, and every
@@ -478,22 +451,22 @@ describe('readColorCategory', () => {
   // unvalued, which would key a "No HP value" swatch over the whole pileup.
   test('an unbaked (empty) color array is not reported as missing values', () => {
     const data = { ...makeData({}), readTagColors: new Uint32Array(0) }
-    expect(readColorCategory(0, data, ColorScheme.tag)).toBe('tag')
+    expect(readColorCategory(0, data, 'tag')).toBe('tag')
   })
 })
 
 describe('getReadColor maps each category to its palette color', () => {
   test('discrete schemes paint the bucket color', () => {
-    expect(
-      getReadColor(0, makeData({ strand: -1 }), ColorScheme.strand, palette),
-    ).toBe(rgb255(palette.colorRevStrand))
+    expect(getReadColor(0, makeData({ strand: -1 }), 'strand', palette)).toBe(
+      rgb255(palette.colorRevStrand),
+    )
     // paired supplementary chain: falls through to the scheme color, not a flat
     // supplementary override
     expect(
       getReadColor(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1, strand: -1 }),
-        ColorScheme.strand,
+        'strand',
         palette,
         chainOpts,
       ),
@@ -502,7 +475,7 @@ describe('getReadColor maps each category to its palette color', () => {
       getReadColor(
         0,
         makeData({ insertSize: 700 }, stats),
-        ColorScheme.insertSize,
+        'insertSize',
         palette,
       ),
     ).toBe(rgb255(palette.colorLongInsert))
@@ -510,12 +483,7 @@ describe('getReadColor maps each category to its palette color', () => {
 
   test('mapping quality uses an hsl ramp keyed on mapq', () => {
     expect(
-      getReadColor(
-        0,
-        makeData({ mapq: 42 }),
-        ColorScheme.mappingQuality,
-        palette,
-      ),
+      getReadColor(0, makeData({ mapq: 42 }), 'mappingQuality', palette),
     ).toBe('hsl(42,50%,50%)')
   })
 
@@ -524,10 +492,8 @@ describe('getReadColor maps each category to its palette color', () => {
   // high score, and named by nothing in the legend.
   test('mapq 255 leaves the ramp for the neutral unavailable swatch', () => {
     const data = makeData({ mapq: 255 })
-    expect(readColorCategory(0, data, ColorScheme.mappingQuality)).toBe(
-      'mapqUnavailable',
-    )
-    expect(getReadColor(0, data, ColorScheme.mappingQuality, palette)).toBe(
+    expect(readColorCategory(0, data, 'mappingQuality')).toBe('mapqUnavailable')
+    expect(getReadColor(0, data, 'mappingQuality', palette)).toBe(
       rgb255(palette.colorNeutralRead),
     )
   })
@@ -566,7 +532,7 @@ describe('firstOfPairStrand: color and grouping agree', () => {
     const category = readColorCategory(
       0,
       makeData({ strand, flags }),
-      ColorScheme.firstOfPairStrand,
+      'firstOfPairStrand',
     )
     const groups = partitionFeatures([feat(strand, flags)], {
       type: 'firstOfPairStrand',
@@ -582,35 +548,46 @@ describe('firstOfPairStrand: color and grouping agree', () => {
 // branch honors it is the consensus silently not running.
 describe('framesUnpairedChainStrand', () => {
   const on = { chainMode: true }
-  test.each([
-    ['chain mode with the defaults', ColorScheme.strand, on, true],
-    ['pileup mode', ColorScheme.strand, {}, false],
+  const cases: [string, ColorSchemeType, ReadColorOpts, boolean][] = [
+    ['chain mode with the defaults', 'strand', on, true],
+    ['pileup mode', 'strand', {}, false],
     [
       'the tickbox off',
-      ColorScheme.strand,
+      'strand',
       { ...on, flipStrandLongReadChains: false },
       false,
     ],
     [
       'the orange override, which outranks the framing',
-      ColorScheme.strand,
+      'strand',
       { ...on, colorSupplementaryChains: true },
       false,
     ],
     // the data-carrying schemes: the framing would displace the datum the user
     // asked to see, so the branch is held off them and so is the pass
-    ['a tag scheme', ColorScheme.tag, on, false],
-    ['a mapq scheme', ColorScheme.mappingQuality, on, false],
-    ['a modifications scheme', ColorScheme.modifications, on, false],
+    ['a tag scheme', 'tag', on, false],
+    ['a mapq scheme', 'mappingQuality', on, false],
+    ['a modifications scheme', 'modifications', on, false],
+    // and the two per-base ones, which share the 'normal' shader path with a
+    // geometry scheme the framing DOES apply to
+    ['per-base quality', 'perBaseQuality', on, false],
+    ['per-base lettering', 'perBaseLetter', on, false],
     // geometry schemes, which the framing refines rather than replaces
-    ['the pair-orientation scheme', ColorScheme.pairOrientation, on, true],
-    ['the insert-size scheme', ColorScheme.insertSize, on, true],
-  ])('%s', (_label, scheme, opts, expected) => {
+    ['the pair-orientation scheme', 'pairOrientation', on, true],
+    ['the insert-size scheme', 'insertSize', on, true],
+    [
+      'the plain scheme, which shares a shader path with the two above',
+      'normal',
+      on,
+      true,
+    ],
+  ]
+  test.each(cases)('%s', (_label, scheme, opts, expected) => {
     expect(framesUnpairedChainStrand(scheme, opts)).toBe(expected)
   })
 
   test('agrees with the branch it gates on every scheme', () => {
-    for (const scheme of Object.values(ColorScheme)) {
+    for (const { type: scheme } of Object.values(COLOR_SCHEMES)) {
       // A REVERSE segment under a REVERSE frame is the probe, because
       // `fwdStrand` is the one category no other branch can produce for it: the
       // strand and first-of-pair schemes would both call it reverse, and every

@@ -220,9 +220,9 @@ function layoutOneGroup(
 // too, so the GPU, the Canvas2D fallback and the legend all read one
 // classification.
 export interface ReadColorContext {
-  colorBy: ColorBy | undefined
-
-  colorScheme: number
+  // The scheme itself, not a shader index off it: that index collapses the two
+  // per-base schemes onto `normal` (`framesUnpairedChainStrand`).
+  colorBy: ColorBy
   readColorOpts: ReadColorOpts
   // Chromosome painting's assembly order — see `RefNamePosition`. Undefined
   // under every other scheme, and before the assembly loads.
@@ -332,7 +332,7 @@ export function applyReadColorsByGroup(
       key,
       overlayReadColorCategories(
         overlayReadTagColors(map, ctx.colorBy, ctx.refNamePosition),
-        ctx.colorScheme,
+        ctx.colorBy.type,
         ctx.readColorOpts,
       ),
     )

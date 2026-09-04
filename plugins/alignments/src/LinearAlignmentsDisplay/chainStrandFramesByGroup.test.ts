@@ -86,6 +86,14 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
     expect(fills(out, 'HP:2', 1)).toEqual([REV, REV])
   })
 
+  // A scheme that discards the framing skips the relaxation rather than paying
+  // for it per frame: unframed, HP:2 keeps the marker reconciliation left it
+  // instead of the sign the other lane's chains argue it into.
+  it('does not solve the consensus when the framing is not read', () => {
+    const unframed = applyChainStrandFrames(byGroup, true, false)
+    expect(fills(unframed, 'HP:2', 1)).toEqual([FWD, FWD])
+  })
+
   it('makes each arm of the foldback one colour across both lanes', () => {
     const framed = (key: string) => {
       const { readChainHasSupp, readStrands } = out.get(key)!.get(0)!

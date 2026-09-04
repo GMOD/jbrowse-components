@@ -3,9 +3,8 @@ import {
   getArcColorType,
 } from '../features/arcs/arcColors.ts'
 import { readColorCategory } from './colorUtils.ts'
-import { ColorScheme } from './constants.ts'
 
-import type { ArcColorByType } from '../shared/types.ts'
+import type { ArcColorByType, ColorSchemeType } from '../shared/types.ts'
 
 // The arc overlay and the read fills classify a pair INDEPENDENTLY —
 // `getArcColorType` on one side, `readColorCategory` on the other — and the
@@ -24,10 +23,10 @@ const ORIENTATIONS = [1, 2, 3, 4]
 // straddles classifyInsertSize's lower/upper against `stats`
 const INSERT_SIZES = [50, 300, 5000]
 
-const ARC_TO_READ_SCHEME: Record<ArcColorByType, number> = {
-  insertSize: ColorScheme.insertSize,
-  orientation: ColorScheme.pairOrientation,
-  insertSizeAndOrientation: ColorScheme.insertSizeAndOrientation,
+const ARC_TO_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
+  insertSize: 'insertSize',
+  orientation: 'pairOrientation',
+  insertSizeAndOrientation: 'insertSizeAndOrientation',
 }
 
 function arcCategory(

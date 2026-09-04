@@ -1,7 +1,6 @@
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getReadColor } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import { ColorScheme } from '../LinearAlignmentsDisplay/constants.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { hueRampLane } from './slang/alignmentsUniforms.js.generated.ts'
 
@@ -33,7 +32,7 @@ function readMapqCss(mapq: number) {
       readChainHasSupp: Uint8Array.of(0),
       readInterchrom: Uint8Array.of(0),
     },
-    ColorScheme.mappingQuality,
+    'mappingQuality',
     palette,
   )
 }

@@ -116,7 +116,7 @@ import {
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { configSlotViews } from './configSlotViews.ts'
-import { ColorScheme } from './constants.ts'
+import { colorSchemeIndexFor } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   applyChainStrandFrames,
@@ -240,14 +240,6 @@ export type { AlignmentLane }
 export interface HoverCoverageBand {
   topOffset: number
   coverageHeight: number
-}
-
-// colorBy.type → shader colorScheme index, resolved through the shared
-// COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
-// path → index map). Total over ColorSchemeType via the registry, so no
-// fallback is needed at the call sites.
-function colorSchemeIndexFor(type: ColorSchemeType) {
-  return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
 }
 
 // Color schemes that only carry meaning for paired-end data. Toggling "view as
@@ -1713,7 +1705,7 @@ export default function stateModelFactory(
          */
         get framesChainStrand() {
           return framesUnpairedChainStrand(
-            colorSchemeIndexFor(this.colorBy.type),
+            this.colorBy.type,
             this.readColorOpts,
           )
         },
@@ -1787,7 +1779,6 @@ export default function stateModelFactory(
         get readColorContext() {
           return {
             colorBy: this.colorBy,
-            colorScheme: colorSchemeIndexFor(this.colorBy.type),
             readColorOpts: this.readColorOpts,
             refNamePosition: this.paintedRefNamePosition,
           }

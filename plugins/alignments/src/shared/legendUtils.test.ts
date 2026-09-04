@@ -1,10 +1,15 @@
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
+import {
+  READ_COLOR_CATEGORY_BY_INDEX,
+  buildReadColorCategories,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
   getAlignmentsLegendSections,
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
+import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
@@ -171,16 +176,35 @@ describe('getReadDisplayLegendItems', () => {
       'Split segment (same strand)',
       'Normal',
     ])
-    expect(labels('perBaseQuality', ['fwdStrand'])).toEqual([
-      'BQ 0',
-      'BQ 10',
-      'BQ 20',
-      'BQ 30',
-      'BQ 40',
-      'Read',
-      'Split segment (same strand)',
-    ])
   })
+
+  // The two per-base schemes must never reach that reframing: a fwd/rev bucket
+  // beside their "Read" row keys colours the marks cover. Classified for real
+  // rather than from a hand-written set, since the classifier is the half that
+  // used to produce them.
+  test.each(['perBaseQuality', 'perBaseLetter'] as const)(
+    'an unpaired split read in chain mode keys no segment swatch under %s',
+    type => {
+      const splitRead = {
+        readStrands: Int8Array.of(1),
+        readFlags: Uint16Array.of(0),
+        readMapqs: Uint8Array.of(60),
+        readInsertSizes: Float32Array.of(0),
+        readPairOrientations: Uint8Array.of(0),
+        readTagColors: Uint32Array.of(0),
+        readChainHasSupp: Uint8Array.of(CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV),
+        readInterchrom: Uint8Array.of(0),
+      }
+      const categories = Array.from(
+        buildReadColorCategories(splitRead, type, { chainMode: true }),
+        idx => READ_COLOR_CATEGORY_BY_INDEX[idx]!,
+      )
+      expect(categories).toEqual(['plain'])
+      expect(legendFor({ type }, categories).map(i => i.label)).toEqual(
+        labels(type, ['plain']),
+      )
+    },
+  )
 
   // The per-base marks sit on the flat 'plain' body, and 'plain' keys no bucket
   // row, so without an explicit row the grey most of the frame shows had no
@@ -257,8 +281,9 @@ describe('getReadDisplayLegendItems', () => {
 
   // The read body, under the marks painted on top of it. fwd/revStrand is what
   // this used to assert, and no read reaches those under this scheme: the
-  // chain-strand framing is held off the data-fill schemes (`dataFillSchemes`),
-  // so `schemeCategory` decides every read here and it answers modFwd/modRev.
+  // chain-strand framing is held off the data-fill schemes (the registry's
+  // `dataFill`), so `schemeCategory` decides every read here and it answers
+  // modFwd/modRev.
   test('modifications view names the read body after the mod-type key', () => {
     const mods = new Map([['m', 'red']])
     expect(labels('modifications', ['modFwd', 'modRev'], mods)).toEqual([
