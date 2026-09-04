@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { autorun } from 'mobx'
 
+import { MIN_LANE_PITCH } from './laneStack.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
@@ -291,6 +292,89 @@ test('a ribbon click keeps its outline id until empty canvas or a refetch', () =
   display.selectHovered()
   display.setFeatures([])
   expect(display.clickedTarget).toEqual({ groupKey: 'g1', targetIdx: 2 })
+})
+
+// A stack past ~8 lanes used to divide whatever height there was and crush;
+// the fixed lane pitch and the scroll viewport are what replaced that. The
+// floor rule itself is laneStack.test.ts's; here is what the display derives
+// from it and what a scroll has to undo.
+describe('the lane stack scrolls once lanes would crush', () => {
+  const MATES = 20
+  function stageManyMates(display: ReturnType<typeof createDisplay>) {
+    display.setFeatures(
+      Array.from(
+        { length: MATES },
+        (_, i) =>
+          new SimpleFeature({
+            uniqueId: `m${i}`,
+            name: 'gene1',
+            refName: 'ctgA',
+            start: 100,
+            end: 300,
+            strand: 1,
+            mate: {
+              assemblyName: `mate${i}`,
+              refName: 'ctgB',
+              start: 100,
+              end: 300,
+            },
+          }),
+      ),
+    )
+  }
+
+  test('scrollableHeight is 0 until the floor engages, then the shortfall', () => {
+    const display = createDisplay()
+    expect(display.scrollableHeight).toBe(0)
+    stageManyMates(display)
+    expect(display.scrollContentHeight).toBe((MATES + 1) * MIN_LANE_PITCH)
+    expect(display.scrollableHeight).toBe(
+      (MATES + 1) * MIN_LANE_PITCH - display.height,
+    )
+  })
+
+  test('setScrollTop clamps into the scrollable range', () => {
+    const display = createDisplay()
+    stageManyMates(display)
+    display.setScrollTop(1e6)
+    expect(display.scrollTop).toBe(display.scrollableHeight)
+    display.setScrollTop(-5)
+    expect(display.scrollTop).toBe(0)
+  })
+
+  test('the render state carries the scroll and hitTest undoes it', () => {
+    const display = createDisplay()
+    stageManyMates(display)
+    display.setLaneFrames(
+      0,
+      new Map([
+        [
+          'mate0',
+          {
+            refName: 'ctgB',
+            flipped: false,
+            rung: 1,
+            pivotAnchor: { refName: 'ctgA', coord: 200 },
+            pivotLaneBp: 200,
+            fitMin: 100,
+            fitMax: 300,
+            alsoOn: [],
+          },
+        ],
+      ]),
+    )
+    const { lanes, glyphHeight } = display.laneStack
+    const lane = lanes.find(l => l.assemblyName === 'mate0')!
+    const [x1, x2] = lane.placements.get('gene1')!.spans[0]!
+    const x = (x1 + x2) / 2
+    const yContent = lane.glyphTop + glyphHeight / 2
+    expect(display.hitTest(x, yContent)?.groupKey).toBe('gene1')
+
+    display.setScrollTop(100)
+    expect(display.renderState.scrollTopPx).toBe(100)
+    expect(display.hitTest(x, yContent - 100)?.groupKey).toBe('gene1')
+    expect(display.hitTest(x, yContent)).toBeUndefined()
+  })
 })
 
 // `session.selection` is global, so before the `ownFeatureIds` gate a

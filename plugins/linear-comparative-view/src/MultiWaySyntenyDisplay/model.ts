@@ -37,7 +37,7 @@ import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
-import { buildLanes, laneGeometry } from './laneStack.ts'
+import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
 import {
   groupFeatures,
   laneFetchRegion,
@@ -567,6 +567,15 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the stack's full drawn height: the track height until a lane would
+       * fall under the minimum pitch, then fixed-pitch and taller than the
+       * viewport — what the scrollbar is sized against
+       */
+      get scrollContentHeight() {
+        return laneContentHeight(self.height, 1 + self.rowAssemblies.length)
+      },
+      /**
+       * #getter
        * per lane, the session's own gene track for that assembly: the
        * best-ranked feature track declared for it alone. The real pipelines
        * this display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
@@ -628,6 +637,14 @@ export function stateModelFactory(
        * where the anchor actually draws" holds by construction rather than by
        * two loops agreeing
        */
+      /**
+       * #getter
+       * `TrackHeightMixin`'s hook: 0 — no scroll, today's divide-the-height
+       * layout — until the lane count pushes the stack past the track height
+       */
+      get scrollableHeight() {
+        return self.scrollContentHeight - self.height
+      },
       get anchorPlacements(): Map<string, AxisPlacement> {
         const view = self.lgv
         const assembly = self.anchorAssembly
@@ -1016,6 +1033,7 @@ export function stateModelFactory(
           width: self.canvasWidth,
           height: self.height,
           dragOffsetPx: self.dragOffsetPx,
+          scrollTopPx: self.scrollTop,
           hoveredFeatureId: self.hoveredFeatureId,
           clickedFeatureId: self.clickedFeatureId,
           groundColor: bandGroundColor(self),
@@ -1032,9 +1050,10 @@ export function stateModelFactory(
        */
       hitTest(x: number, y: number): HoverTarget | undefined {
         const ox = x - self.dragOffsetPx
+        const oy = y + self.scrollTop
         for (const cell of self.laneGlyphCells.values()) {
           if (cell.kind === 'glyphs') {
-            const hit = glyphHitAt(cell.data.hits, ox, y)
+            const hit = glyphHitAt(cell.data.hits, ox, oy)
             if (hit) {
               return {
                 label: hit.label,

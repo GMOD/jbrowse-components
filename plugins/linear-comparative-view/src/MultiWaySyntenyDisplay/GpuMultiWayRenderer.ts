@@ -208,7 +208,7 @@ export class GpuMultiWayRenderer
       bpRangeX: [hi, lo, state.width],
       canvasHeight: state.height,
       canvasWidth: state.width,
-      scrollY: 0,
+      scrollY: state.scrollTopPx,
       bpPerPx: 1,
       zero: 0,
       reversed: 0,

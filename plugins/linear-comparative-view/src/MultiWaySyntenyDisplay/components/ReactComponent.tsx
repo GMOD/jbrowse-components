@@ -1,6 +1,8 @@
-import { useRef } from 'react'
+import { useId, useRef, useState } from 'react'
 
+import { ScrollEdgeShadow, VerticalScrollbar } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
@@ -24,21 +26,54 @@ const MultiWayBody = observer(function MultiWayBody({
   mouseTracker: MouseTracker
 }) {
   const { canvasWidth: width, height, hoverTarget } = model
+  const canvasId = useId()
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
+
+  // The wheel rule and the zoom-on-scroll arbitration are the canvas
+  // display's, shared as usePanelVirtualScroll; the panel wraps the canvas
+  // and every overlay drawn over it so a wheel over a lane header is still
+  // the panel's (see useVirtualScrollWheel). Inert while the stack fits the
+  // track, since scrollableHeight is 0 there.
+  usePanelVirtualScroll(panel, model, {
+    viewportHeight: height,
+    scrollZoom: model.lgv.scrollZoom,
+  })
+
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          width,
-          height,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          cursor: hoverTarget ? 'pointer' : undefined,
-        }}
+      <div
+        ref={setPanel}
+        style={{ position: 'absolute', top: 0, left: 0, width, height }}
+      >
+        <canvas
+          id={canvasId}
+          ref={canvasRef}
+          style={{
+            width,
+            height,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            cursor: hoverTarget ? 'pointer' : undefined,
+          }}
+        />
+        <MultiWayOverlay model={model} />
+        <LaneHeaders model={model} />
+      </div>
+      <ScrollEdgeShadow
+        scrollTop={model.scrollTop}
+        viewportHeight={height}
+        contentHeight={model.scrollContentHeight}
       />
-      <MultiWayOverlay model={model} />
-      <LaneHeaders model={model} />
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
+        viewportHeight={height}
+        contentHeight={model.scrollContentHeight}
+        controlsId={canvasId}
+      />
       <PointerLayer mouseTracker={mouseTracker}>
         {mouse =>
           mouse && hoverTarget ? (

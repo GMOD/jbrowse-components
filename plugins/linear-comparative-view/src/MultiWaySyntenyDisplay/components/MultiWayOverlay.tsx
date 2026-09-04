@@ -20,7 +20,7 @@ const GroupHighlight = observer(function GroupHighlight({
   const palette = usePalette()
   const { glyphHeight } = model.laneStack
   return (
-    <g transform={`translate(${model.dragOffsetPx} 0)`}>
+    <g transform={`translate(${model.dragOffsetPx} ${-model.scrollTop})`}>
       {model.hoveredGroupOutlines.map(({ lane, span }) => (
         <rect
           key={`hover-${lane.assemblyName}-${span[0]}-${span[1]}`}
@@ -74,15 +74,17 @@ const MultiWayOverlay = observer(function MultiWayOverlay({
   return (
     <>
       <GroupHighlight model={model} />
-      <SvgLaneHeaders
-        rows={laneHeaderRows(
-          model.laneStack.lanes,
-          model.visibleBpSpan,
-          view.coarseVisibleLocStrings || view.visibleLocStrings,
-        )}
-        width={model.canvasWidth}
-        palette={palette}
-      />
+      <g transform={`translate(0 ${-model.scrollTop})`}>
+        <SvgLaneHeaders
+          rows={laneHeaderRows(
+            model.laneStack.lanes,
+            model.visibleBpSpan,
+            view.coarseVisibleLocStrings || view.visibleLocStrings,
+          )}
+          width={model.canvasWidth}
+          palette={palette}
+        />
+      </g>
     </>
   )
 })

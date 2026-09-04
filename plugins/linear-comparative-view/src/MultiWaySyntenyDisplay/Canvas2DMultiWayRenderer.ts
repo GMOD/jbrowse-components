@@ -52,7 +52,7 @@ function drawGlyphLayer(
     reversed: false,
   }
   const frame = {
-    scrollY: 0,
+    scrollY: state.scrollTopPx,
     canvasWidth: state.width,
     canvasHeight: state.height,
   }

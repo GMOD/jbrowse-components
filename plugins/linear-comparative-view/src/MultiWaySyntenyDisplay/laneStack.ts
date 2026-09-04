@@ -9,6 +9,24 @@ const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
 const MAX_GLYPH_PX = 18
 
+// A lane pitch below this is an unreadable crush, so the stack stops dividing
+// the track height and lays out at this fixed pitch instead, scrolling inside
+// the viewport. 22 sits under the tightest committed figure
+// (multiway_synteny/ecoli_symbol_*: 47 lanes in 1100 px ≈ 23.4 px/lane), so
+// every existing spec keeps today's divide-the-height layout, and above the
+// crush where headers collide into glyphs.
+export const MIN_LANE_PITCH = 22
+
+/**
+ * The stack's full drawn height: the track `height` while every lane keeps at
+ * least MIN_LANE_PITCH of it, fixed-pitch — and taller than the track — below
+ * that. A FLOOR, not a re-layout: at or above the floor the layout is exactly
+ * the divide-the-height one.
+ */
+export function laneContentHeight(height: number, rowCount: number) {
+  return Math.max(height, rowCount * MIN_LANE_PITCH)
+}
+
 export interface LaneBand {
   glyphTop: number
   bandTop: number
@@ -19,20 +37,24 @@ export interface LaneBand {
 export interface LaneGeometry {
   glyphHeight: number
   bandHeight: number
+  /** `laneContentHeight` — what the rows tile and a scroll can reach */
+  contentHeight: number
   rows: LaneBand[]
 }
 
-// Where each lane's header, glyphs and opaque band sit in a track `height` px
-// tall. The bands TILE — a lane owns half the gutter on each side — so the
-// view's gridlines, true on the anchor lane and a lie on every other one, are
-// covered everywhere below the anchor rather than standing in the gaps.
+// Where each lane's header, glyphs and opaque band sit in a stack
+// `laneContentHeight(height, rowCount)` px tall. The bands TILE — a lane owns
+// half the gutter on each side — so the view's gridlines, true on the anchor
+// lane and a lie on every other one, are covered everywhere below the anchor
+// rather than standing in the gaps.
 export function laneGeometry(height: number, rowCount: number): LaneGeometry {
+  const contentHeight = laneContentHeight(height, rowCount)
   const glyphHeight = clamp(
-    height / rowCount - LABEL_HEIGHT - 6,
+    contentHeight / rowCount - LABEL_HEIGHT - 6,
     MIN_GLYPH_PX,
     MAX_GLYPH_PX,
   )
-  const usable = height - LABEL_HEIGHT - glyphHeight - 4
+  const usable = contentHeight - LABEL_HEIGHT - glyphHeight - 4
   const glyphTop = (row: number) =>
     LABEL_HEIGHT + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
   const bandStart = (row: number) =>
@@ -42,11 +64,12 @@ export function laneGeometry(height: number, rowCount: number): LaneGeometry {
   return {
     glyphHeight,
     bandHeight: LABEL_HEIGHT + glyphHeight,
+    contentHeight,
     rows: Array.from({ length: rowCount }, (_, row) => ({
       glyphTop: glyphTop(row),
       bandTop: glyphTop(row) - LABEL_HEIGHT,
       bandStart: bandStart(row),
-      bandEnd: row + 1 < rowCount ? bandStart(row + 1) : height,
+      bandEnd: row + 1 < rowCount ? bandStart(row + 1) : contentHeight,
     })),
   }
 }

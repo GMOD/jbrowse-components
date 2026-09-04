@@ -108,8 +108,9 @@ One `SyntenyTrack` names all forty-seven assemblies, each of which is a
 `ChromSizesAdapter` over its chromosome's length, since the lanes never read
 sequence. `blockAssemblies` and `bedLocations` are positional against the
 table's columns, in the order the helper printed; the list below is cut to the
-first four for the page. A lane needs its header's height to draw, so the
-display's `height` is set for the whole stack rather than left at the default:
+first four for the page. At the default height the display keeps every lane at a
+readable pitch and scrolls the stack inside the track; the `height` here sizes
+the track to the whole stack, so the figure below shows every lane at once:
 
 ```json addtrack
 {

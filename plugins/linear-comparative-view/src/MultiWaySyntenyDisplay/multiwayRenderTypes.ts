@@ -56,6 +56,12 @@ export interface MultiWayRenderState {
   width: number
   height: number
   dragOffsetPx: number
+  /**
+   * how far the stack is scrolled inside the viewport — the vertical twin of
+   * `dragOffsetPx`, 0 until the lane count pushes the stack past the track
+   * height (`laneContentHeight`). Every layer subtracts it, bands included
+   */
+  scrollTopPx: number
   hoveredFeatureId: number
   clickedFeatureId: number
   /**
@@ -91,7 +97,7 @@ export function ribbonParams(
   state: MultiWayRenderState,
 ): SyntenyTrackRenderParams {
   return {
-    yTop: layer.yTop,
+    yTop: layer.yTop - state.scrollTopPx,
     height: layer.height,
     alpha: 1,
     fadeThinAlignments: false,

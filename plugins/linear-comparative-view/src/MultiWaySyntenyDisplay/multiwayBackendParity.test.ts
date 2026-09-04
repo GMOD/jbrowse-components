@@ -1,3 +1,4 @@
+import { featureGlyphShader } from '@jbrowse/plugin-canvas'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
@@ -73,6 +74,7 @@ const state: MultiWayRenderState = {
   width: WIDTH,
   height: HEIGHT,
   dragOffsetPx: DRAG,
+  scrollTopPx: 0,
   hoveredFeatureId: 0,
   clickedFeatureId: 0,
   groundColor: '#fff',
@@ -105,14 +107,14 @@ function recordingCtx() {
   return ctx
 }
 
-function gpuFrame() {
+function gpuFrame(renderState = state) {
   const hal = new MockHal(MULTIWAY_PASSES)
   const canvas = document.createElement('canvas')
   const renderer = new GpuMultiWayRenderer(hal, canvas)
   for (const [key, cell] of cells) {
     renderer.upload(key, cell)
   }
-  renderer.render(state)
+  renderer.render(renderState)
   return { hal, renderer }
 }
 
@@ -233,6 +235,46 @@ function polygonPickCtx(): PickCanvasLike {
     isPointInPath: inside,
   }
 }
+
+// The lane-stack scroll is the vertical twin of the drag: one number in the
+// render state, subtracted by every layer on both backends — the ribbon
+// through its yTop, the glyphs through the passes' own scrollY — and by the
+// pick, which reads its y bounds off the same shifted params.
+describe('a scrolled stack shifts every layer by the same offset', () => {
+  const SCROLL = 50
+  const scrolled = { ...state, scrollTopPx: SCROLL }
+
+  test('on Canvas2D', () => {
+    const ctx = recordingCtx()
+    drawMultiWay(ctx, cells, scrolled)
+    const fill = ctx.calls.find(c => c.method === 'fillRect')!
+    expect(fill.args[0]).toBe(500 + DRAG)
+    expect(fill.args[1]).toBe(GLYPH_TOP - SCROLL)
+    const move = ctx.calls.find(c => c.method === 'moveTo')!
+    expect(move.args[1]).toBe(30 - SCROLL)
+  })
+
+  test('on the GPU', () => {
+    const { hal } = gpuFrame(scrolled)
+    const rectDraw = hal.draws().find(d => d.passId === 'rect')!
+    expect(
+      hal.uniformsOf(rectDraw)![featureGlyphShader.UNIFORM_OFFSET_F32.scrollY],
+    ).toBe(SCROLL)
+    const fill = hal.draws().find(d => d.passId === 'fillStraight')!
+    expect(hal.uniformsOf(fill)![SYNTENY_U.yTop]).toBe(30 - SCROLL)
+  })
+
+  test('and the pick answers at the shifted y', () => {
+    const cells = new RibbonPickCells(polygonPickCtx)
+    cells.set('ribbons:0', ribbon)
+    expect(cells.pick(250 + DRAG, 70 - SCROLL, scrolled, WIDTH)).toEqual({
+      key: 'ribbons:0',
+      instanceIndex: 0,
+      targetIdx: 7,
+    })
+    expect(cells.pick(250 + DRAG, 70, scrolled, WIDTH)).toBeUndefined()
+  })
+})
 
 test('a pick over the drawn ribbon answers its target through the same transform', () => {
   const cells = new RibbonPickCells(polygonPickCtx)

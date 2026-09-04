@@ -68,7 +68,11 @@ const LaneHeaders = observer(function LaneHeaders({
       anchor: { clientX: event.clientX, clientY: event.clientY },
     })
   }
-  const dropRow = dragY === undefined ? undefined : dropRowAt(lanes, dragY)
+  // pointer ys are viewport-relative and the lanes are laid out in the
+  // stack's own px, so every crossing between the two adds the scroll
+  const { scrollTop } = model
+  const dropRow =
+    dragY === undefined ? undefined : dropRowAt(lanes, dragY + scrollTop)
   // A drop on the ANCHOR's band lands the lane first below it — "above the
   // anchor" cannot be granted — so the bar goes on the first mate lane
   const dropLane =
@@ -89,7 +93,7 @@ const LaneHeaders = observer(function LaneHeaders({
     const up = (e: MouseEvent) => {
       setDrag(undefined)
       setDragY(undefined)
-      const row = dropRowAt(model.laneStack.lanes, yOf(e))
+      const row = dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop)
       if (row !== undefined) {
         model.setRowOrder(
           moveLaneTo(model.rowAssemblies, assemblyName, row - 1),
@@ -133,7 +137,7 @@ const LaneHeaders = observer(function LaneHeaders({
           style={{
             position: 'absolute',
             left: 0,
-            top: dropLane.bandStart,
+            top: dropLane.bandStart - scrollTop,
             width,
             height: dropLane.bandEnd - dropLane.bandStart,
             background: palette.action.hover,
@@ -150,7 +154,7 @@ const LaneHeaders = observer(function LaneHeaders({
             left: 2,
             // `row.y` is a baseline; this converts it to the box top so the
             // two presenters put the text on the same line
-            top: labelBoxTop(row.y),
+            top: labelBoxTop(row.y) - scrollTop,
             width: width - 4,
             display: 'flex',
             alignItems: 'center',

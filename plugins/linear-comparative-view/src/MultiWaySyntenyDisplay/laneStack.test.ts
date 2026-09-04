@@ -1,6 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { buildLanes, laneGeometry } from './laneStack.ts'
+import {
+  MIN_LANE_PITCH,
+  buildLanes,
+  laneContentHeight,
+  laneGeometry,
+} from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
@@ -171,12 +176,60 @@ describe('lane geometry', () => {
     expect(rows.at(-1)!.bandEnd).toBe(240)
   })
 
-  test('every lane fits inside the track height, at any lane count', () => {
+  test('every lane fits inside the stack, at any lane count', () => {
     for (const rowCount of [1, 2, 5, 12]) {
-      const { glyphHeight, rows } = laneGeometry(240, rowCount)
+      const { glyphHeight, contentHeight, rows } = laneGeometry(240, rowCount)
       expect(rows).toHaveLength(rowCount)
       expect(rows[0]!.bandTop).toBeGreaterThanOrEqual(0)
-      expect(rows.at(-1)!.glyphTop + glyphHeight).toBeLessThanOrEqual(240)
+      expect(rows.at(-1)!.glyphTop + glyphHeight).toBeLessThanOrEqual(
+        contentHeight,
+      )
+    }
+  })
+
+  // The floor is a FLOOR, not a re-layout: at or above MIN_LANE_PITCH per lane
+  // the stack is exactly the divide-the-height one and nothing scrolls.
+  test('the pitch floor engages exactly where a lane falls under it', () => {
+    expect(laneGeometry(10 * MIN_LANE_PITCH, 10).contentHeight).toBe(
+      10 * MIN_LANE_PITCH,
+    )
+    expect(laneGeometry(10 * MIN_LANE_PITCH - 1, 10).contentHeight).toBe(
+      10 * MIN_LANE_PITCH,
+    )
+    expect(laneContentHeight(240, 2)).toBe(240)
+    expect(laneContentHeight(240, 20)).toBe(20 * MIN_LANE_PITCH)
+  })
+
+  test('below the floor the rows tile the fixed-pitch stack, not the track', () => {
+    const { rows, contentHeight } = laneGeometry(240, 20)
+    expect(contentHeight).toBe(20 * MIN_LANE_PITCH)
+    expect(rows.at(-1)!.bandEnd).toBe(contentHeight)
+    for (const [row, band] of rows.entries()) {
+      if (row > 0) {
+        expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
+      }
+    }
+  })
+
+  // Every committed multiway figure keeps today's layout byte-identically,
+  // because each sits above the floor. The pairs are the corpus's
+  // (website/scripts/specs/synteny.ts, height / lane count with the anchor):
+  // grape 340/7, HPRC CFH 460/9, E. coli all-vs-all 340/5, grasses 320/5,
+  // nightshades 320/5, flies 320/5, primates 620/8, and the tightest —
+  // E. coli orthologs at 1100/47 ≈ 23.4 px per lane, which MIN_LANE_PITCH
+  // sits just under.
+  test('every figure in the corpus stays above the floor and does not scroll', () => {
+    const corpus: [number, number][] = [
+      [340, 7],
+      [460, 9],
+      [340, 5],
+      [320, 5],
+      [620, 8],
+      [1100, 47],
+    ]
+    for (const [height, laneCount] of corpus) {
+      expect(height / laneCount).toBeGreaterThanOrEqual(MIN_LANE_PITCH)
+      expect(laneContentHeight(height, laneCount)).toBe(height)
     }
   })
 })
