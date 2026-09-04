@@ -95,21 +95,21 @@ block per display type. The slots both share are on
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "showReferenceAlleles": true,
+      "referenceDrawingMode": "draw",
       "minorAlleleFrequencyFilter": 0.05,
       "showRowLabels": true,
       "renderingMode": "alleleCount"
     },
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
-      "showReferenceAlleles": true
+      "type": "LinearMultiSampleVariantMatrixDisplay"
     }
   ]
 }
 ```
 
-- **`showReferenceAlleles`** paints reference alleles too. Off, the row is solid
-  gray with only ALT alleles on top, which keeps overlapping variants readable
+- **`referenceDrawingMode`** is `draw` to paint reference alleles too, or `skip`
+  (the default) to leave the row solid gray with only ALT alleles on top, which
+  keeps overlapping variants readable
 - **`renderingMode`** is `alleleCount` (dosage, darker for homozygous) or
   `phased` (one row per haplotype)
 - **`minorAlleleFrequencyFilter`** and **`maxMissingnessFilter`** hide variants

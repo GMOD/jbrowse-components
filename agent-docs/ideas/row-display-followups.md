@@ -79,9 +79,9 @@ its hit test, cursor style and drag-selection readout. Splitting the crosshair
 + tooltip into a `PointerLayer` there means resolving `resolveMafPointerHit`
 twice or lifting the hit into model state, neither of which is a win.
 
-**Three multi-row items the 2026-09-01 review left as product decisions.**
-Collapsing `showReferenceAlleles` into `referenceDrawingMode` is a
-published-config change, not a fix. A jexl "Filter by..." on the multi-row
-painting (LinearBasicDisplay has it on the same data) and a per-feature "Color
-by..." menu are new UI. Wiggle's `useMouseState` in the body rather than
+**Two multi-row items the 2026-09-01 review left as product decisions.** A jexl
+"Filter by..." on the multi-row painting (LinearBasicDisplay has it on the same
+data) and a per-feature "Color by..." menu are new UI. (The third,
+`showReferenceAlleles` collapsing into `referenceDrawingMode`, landed in the v5
+no-migrations cycle.) Wiggle's `useMouseState` in the body rather than
 `PointerLayer` is the same shape as MAF's pointer layer above and as low.

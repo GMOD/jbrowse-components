@@ -10,22 +10,33 @@ import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
 describe('SharedVariantConfigSchema', () => {
   const configSchema = sharedVariantConfigFactory()
 
-  describe('showReferenceAlleles config slot', () => {
-    it('has default value of false', () => {
+  // `showReferenceAlleles` was a second boolean whose only job was seeding this
+  // one; it is gone, and this slot is the whole setting.
+  describe('referenceDrawingMode config slot', () => {
+    it("defaults to 'skip'", () => {
       const config = configSchema.create({
         type: 'SharedVariantDisplay',
         displayId: 'test-1',
       })
-      expect(readConfObject(config, 'showReferenceAlleles')).toBe(false)
+      expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
     })
 
-    it('can be set to true', () => {
+    it("can be set to 'draw'", () => {
       const config = configSchema.create({
         type: 'SharedVariantDisplay',
         displayId: 'test-2',
+        referenceDrawingMode: 'draw',
+      })
+      expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
+    })
+
+    it('no longer declares showReferenceAlleles', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-2b',
         showReferenceAlleles: true,
       })
-      expect(readConfObject(config, 'showReferenceAlleles')).toBe(true)
+      expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
     })
   })
 

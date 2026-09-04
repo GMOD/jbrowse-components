@@ -1044,6 +1044,20 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         * Whether the "Show reference alleles" row belongs in this display's
+         * menu. True here: the regular display lays variants out at their
+         * genomic positions, so `skip` turns the gaps between them into one
+         * solid grey row and overlapping SVs read against it. The matrix packs
+         * every column with a variant and paints its reference cells in the
+         * same grey the background would be, so the toggle moves nothing there
+         * and overrides this to false.
+         */
+        get showsReferenceToggle(): boolean {
+          return true
+        },
+
+        /**
+         * #getter
          * Distinct sample-metadata attributes (from samplesTsv) the user can
          * color rows by — every key the sources carry except internal plumbing.
          */

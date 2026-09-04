@@ -35,10 +35,11 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
  * whose first column is the sample name and whose other columns are per-sample
  * attributes (e.g. `population`), then `colorBy` one of those attributes to
- * color the sidebar rows on load. `showReferenceAlleles: false` paints the
- * background solid grey and draws only ALT alleles on top, which makes
- * overlapping structural variants easier to see. This is the 1000 Genomes
- * "colored by population" demo config:
+ * color the sidebar rows on load. `referenceDrawingMode: 'skip'` (the default)
+ * paints the background solid grey and draws only ALT alleles on top, which
+ * makes overlapping structural variants easier to see; `'draw'` paints the
+ * reference alleles too. This is the 1000 Genomes "colored by population" demo
+ * config:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -55,7 +56,7 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  *       type: 'LinearMultiSampleVariantDisplay',
  *       height: 800,
  *       colorBy: 'population',
- *       showReferenceAlleles: false,
+ *       referenceDrawingMode: 'skip',
  *     },
  *   ],
  * }

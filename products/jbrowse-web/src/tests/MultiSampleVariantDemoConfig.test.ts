@@ -12,7 +12,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // so it keeps hydrating on this branch: the old `MultiLinearVariantDisplay` type
 // string (renamed to LinearMultiSampleVariantDisplay), the adapter's
 // `samplesTsvLocation` metadata slot, and the display's `colorBy` /
-// `showReferenceAlleles` / `height` slots must all survive.
+// `referenceDrawingMode` / `height` slots must all survive.
 function makePluginManager() {
   return new PluginManager(corePlugins.map(P => new P()))
     .createPluggableElements()
@@ -49,7 +49,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
       {
         // renamed display type; the DisplayType alias remaps it on hydrate
         type: 'MultiLinearVariantDisplay',
-        showReferenceAlleles: true,
+        referenceDrawingMode: 'draw',
         colorBy: 'population',
         height: 800,
       },
@@ -70,8 +70,6 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
 
   expect(readConfObject(display, 'colorBy')).toBe('population')
   expect(readConfObject(display, 'height')).toBe(800)
-  // showReferenceAlleles: true seeds referenceDrawingMode: 'draw'
-  expect(readConfObject(display, 'showReferenceAlleles')).toBe(true)
   expect(readConfObject(display, 'referenceDrawingMode')).toBe('draw')
 })
 

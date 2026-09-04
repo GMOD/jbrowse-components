@@ -16,15 +16,6 @@ export default function sharedVariantConfigFactory() {
     {
       /**
        * #slot
-       */
-      showReferenceAlleles: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'Starting value for drawing reference alleles. When false, the row background is filled solid grey and only ALT alleles are painted on top (makes overlapping variants easier to see); when true, reference alleles are drawn normally. Seeds referenceDrawingMode the first time a config is loaded.',
-      },
-      /**
-       * #slot
        * Height of the zone above the rows holding the lines that tie each
        * matrix column to its genomic position. 0 (the default here) means no
        * zone at all — only the matrix display, which lays columns out by
@@ -142,18 +133,17 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
-       * A 'draw'/'skip' toggle for reference alleles, settable independent of
-       * showReferenceAlleles (the admin-config-only starting default). No
-       * fallback derivation at read time — preProcessSnapshot below seeds this
-       * from showReferenceAlleles once, the first time a config lacking it is
-       * hydrated, so from then on this slot alone is the single source of truth.
+       * Whether to paint reference alleles: 'skip' (the default) fills the row
+       * background solid grey and paints only ALT alleles, which makes
+       * overlapping variants easier to pick out; 'draw' paints reference
+       * alleles like any other genotype.
        */
       referenceDrawingMode: {
         type: 'stringEnum',
         model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
         defaultValue: 'skip',
         description:
-          "'draw' paints reference alleles; 'skip' fills the background solid grey and draws only ALT alleles",
+          "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
       },
     },
     {
@@ -162,27 +152,6 @@ export default function sharedVariantConfigFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: (snap: Record<string, unknown>) => {
-        const migrated = { ...snap }
-        if (
-          migrated.referenceDrawingMode === undefined &&
-          migrated.showReferenceAlleles !== undefined
-        ) {
-          migrated.referenceDrawingMode = migrated.showReferenceAlleles
-            ? 'draw'
-            : 'skip'
-        }
-        // `showSidebarLabels` was this display's spelling of what the other
-        // three sidebar displays call `showRowLabels`; the shared slot set
-        // (`treeSidebarConfigSchemaFields`) is the one name now.
-        if (
-          migrated.showRowLabels === undefined &&
-          migrated.showSidebarLabels !== undefined
-        ) {
-          migrated.showRowLabels = migrated.showSidebarLabels
-        }
-        return migrated
-      },
     },
   )
 }

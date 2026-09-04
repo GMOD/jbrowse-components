@@ -2882,7 +2882,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
-          "showReferenceAlleles": true,
+          "referenceDrawingMode": "draw",
           "colorBy": "population"
         }
       ]

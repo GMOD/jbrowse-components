@@ -2438,7 +2438,7 @@
       "displays": [
         {
           "type": "MultiLinearVariantDisplay",
-          "showReferenceAlleles": true,
+          "referenceDrawingMode": "draw",
           "colorBy": "population"
         }
       ]

@@ -77,18 +77,22 @@ export function variantShowSubmenuItems(
     showRowLabelsMenuItem(self),
     showRowSeparatorsMenuItem(self),
     legendCheckboxItem(self),
-    {
-      label: 'Show reference alleles',
-      helpText:
-        'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
-      type: 'checkbox',
-      checked: self.referenceDrawingMode !== 'skip',
-      onClick: () => {
-        self.setReferenceDrawingMode(
-          self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
-        )
-      },
-    },
+    ...(self.showsReferenceToggle
+      ? [
+          {
+            label: 'Show reference alleles',
+            helpText:
+              'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
+            type: 'checkbox' as const,
+            checked: self.referenceDrawingMode !== 'skip',
+            onClick: () => {
+              self.setReferenceDrawingMode(
+                self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
+              )
+            },
+          },
+        ]
+      : []),
     {
       label: 'Show tooltips',
       helpText:

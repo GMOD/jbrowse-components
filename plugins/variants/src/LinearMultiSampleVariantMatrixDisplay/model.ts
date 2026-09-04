@@ -44,6 +44,18 @@ export default function stateModelFactory(
           ? { ...snap, type: 'LinearMultiSampleVariantMatrixDisplay' }
           : snap,
       )
+      .views(() => ({
+        /**
+         * #getter
+         * The matrix packs every column with a variant and paints its reference
+         * cells in `REFERENCE_COLOR`, which is the grey `skip` would fill the
+         * background with — so the toggle moves no pixel here and the row is
+         * left off the menu.
+         */
+        get showsReferenceToggle() {
+          return false
+        },
+      }))
       .views(self => ({
         /**
          * #getter

@@ -61,7 +61,7 @@ const overflowingPlainVariantSpec = {
 // session stores the pre-rename type on the active display instance; the model's
 // preProcessSnapshot must remap it so the dispatcher-less `displays` union still
 // resolves and the display renders. The demo track carries samplesTsvLocation +
-// colorBy:'population' + showReferenceAlleles, so this also exercises the
+// colorBy:'population' + referenceDrawingMode, so this also exercises the
 // metadata-preloading path end to end. `volvox_test_vcf` has genotypes and
 // resolves through the same shared multi-sample model.
 const oldTypeNameSpec = {
