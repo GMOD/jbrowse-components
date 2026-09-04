@@ -21,8 +21,7 @@ export interface DensityBandPhaseHost
   densityBinsRead: DensityRead | undefined
   densityLoading: boolean
   densityBandActive: boolean
-  viewportWithinLoadedData: boolean
-  dataSuperseded: boolean
+  phaseViewportCurrent: boolean
 }
 
 /**
@@ -78,7 +77,7 @@ export function densityBandDisplayPhase(
       )
     : foundationDisplayPhase(
         self,
-        () => self.viewportWithinLoadedData && !self.dataSuperseded,
+        () => self.phaseViewportCurrent,
         () => self.host.effectiveBodyMounted,
       )
 }

@@ -635,6 +635,8 @@ describe('SettingsInvalidate autorun', () => {
       expect(display.loadedRegions.size).toBe(1)
     })
     expect(display.rpcDataMap.size).toBe(1)
+    display.markCanvasDrawn()
+    expect(display.displayPhase).toBe('ready')
 
     // Trigger settings-driven invalidation. `invalidateSettings` fires but
     // must NOT empty rpcDataMap — labels would flash off otherwise — and
@@ -644,6 +646,7 @@ describe('SettingsInvalidate autorun', () => {
     expect(display.rpcDataMap.size).toBe(1)
     expect(display.loadedRegions.size).toBe(1)
     expect(display.staleSettingsDrawn).toBe(true)
+    expect(display.displayPhase).toBe('loading')
   })
 
   it('triggers refetch when settings change while fetch is in progress (regression)', async () => {

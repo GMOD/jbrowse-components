@@ -7,6 +7,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import {
+  densityBandDisplayPhase,
+  densityBandSvgReady,
+} from './densityBandPhase.ts'
+import {
   densityBinsCover,
   densityZoomBucket,
   isDensityTierMode,
@@ -15,20 +19,28 @@ import {
 } from './densityTier.ts'
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
 
+import type { DensityBandPhaseHost } from './densityBandPhase.ts'
 import type { DensityTierConfigModel } from './densityTierConfigSchemaFields.ts'
 import type { BufferedVisibleRegion, RegionHost } from './regionHost.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 import type { StatusWindow } from '@jbrowse/core/util/progress'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
  * What `DensityTierMixin` reads off its host: the two slots, the gate's verdict
- * and adapter hooks from `RegionTooLargeMixin`, and the fetch skeleton's terms
- * from `FetchMixin` and `BaseDisplay`.
+ * and adapter hooks from `RegionTooLargeMixin`, the fetch skeleton's terms from
+ * `FetchMixin` and `BaseDisplay`, and the phase foundation the band's own
+ * phase post-processes.
  */
-export interface DensityTierHost extends FetchSkeletonHost {
+export interface DensityTierHost
+  extends
+    FetchSkeletonHost,
+    Omit<
+      DensityBandPhaseHost,
+      'densityBinsRead' | 'densityLoading' | 'densityBandActive'
+    > {
   configuration: DensityTierConfigModel
-  regionTooLarge: boolean
   setError: (error?: unknown) => void
   byteGateAdapterPath: string[]
   byteGateAdapterConfig: Record<string, unknown>
@@ -38,6 +50,10 @@ export interface DensityTierHost extends FetchSkeletonHost {
 
 function host(self: object) {
   return self as DensityTierHost
+}
+
+function bandPhaseHost(self: object) {
+  return self as DensityBandPhaseHost
 }
 
 function view(self: object) {
@@ -165,17 +181,31 @@ export default function DensityTierMixin() {
     .views(self => ({
       /**
        * #getter
-       * `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over the
-       * tier's verdict. A display whose band needs somewhere to draw
-       * (alignments, whose coverage band can be hidden) overrides it with that
-       * term.
+       * `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over
+       * `densityBandActive`.
        */
       get fetchSuspended() {
         return resolveFetchSuspended({
-          standsIn: self.densityTierActive,
+          standsIn: self.densityBandActive,
           mode: self.densityTierMode,
           regionTooLarge: host(self).regionTooLarge,
         })
+      },
+      /**
+       * #getter
+       * The foundation's phase with the too-large banner swapped for the band —
+       * see `densityBandDisplayPhase`. Composed after the foundation, so this
+       * getter is the one `types.compose` keeps.
+       */
+      get displayPhase(): DisplayPhase {
+        return densityBandDisplayPhase(bandPhaseHost(self))
+      },
+      /**
+       * #getter
+       * The export gate under the same swap — see `densityBandSvgReady`.
+       */
+      get svgReady(): boolean {
+        return densityBandSvgReady(bandPhaseHost(self))
       },
       /**
        * #getter

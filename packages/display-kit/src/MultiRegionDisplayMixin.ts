@@ -462,6 +462,25 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
+         * The loading scrim's staleness argument: what is drawn answers for
+         * what is on screen. Spatial coverage, `dataSuperseded` and
+         * `staleSettingsDrawn`; NOT `isCacheValid`, which is `dataCurrent`'s
+         * and would scrim every zoom (REJECTED_IDEAS.md "Folding content
+         * staleness into `displayPhase`"). `displayPhase` reads it, and so
+         * does a stand-in phase (`densityBandDisplayPhase`) — one predicate,
+         * so a term added here reaches both.
+         */
+        get phaseViewportCurrent(): boolean {
+          return (
+            self.viewportWithinLoadedData &&
+            !self.dataSuperseded &&
+            !self.staleSettingsDrawn
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * true once an off-screen (SVG) export can safely read this display's
          * data. Policy single-sourced in `computeSvgReady`; this family supplies
          * only the freshness half, which `foundationSvgReady` reads as
@@ -504,23 +523,11 @@ export default function MultiRegionDisplayMixin() {
          * its staleness argument, so a term added to `computeLoadingTerm`
          * reaches all three without being wired three times.
          *
-         * This family's argument is spatial coverage AND `dataSuperseded`: stale
-         * data (viewport past loaded) still on screen through the pre-refetch
-         * debounce, plus data a settled fetch-input change is about to
-         * invalidate, which is being drawn wrong RIGHT NOW rather than merely
-         * about to be. Alignments is the second case — zooming perBaseLetter
-         * from 16 bp/px to 1 keeps the viewport inside the loaded region, so a
-         * spatial-only argument reported `ready` over a wall drawn as a 1 px
-         * stripe every 8 px for the whole debounce-plus-RPC window.
-         *
-         * **It is deliberately NOT `dataCurrent`**, which the export gate takes.
-         * That one also carries `isCacheValid`, and folding a moved
-         * `regionFetchKey` into the phase raises the loading scrim 250 ms into
-         * every ordinary zoom — the trade REJECTED_IDEAS.md "Folding content
-         * staleness into `displayPhase`" turned down, and which
-         * `displayPhaseWiring.test.ts` guards. `dataSuperseded` is the half that
-         * does belong: it is a settled value compare a display opts into, false
-         * on every display that does not.
+         * This family's argument is `phaseViewportCurrent`: spatial coverage
+         * AND `dataSuperseded` (data a settled fetch-input change is drawing
+         * wrong right now — alignments zooming perBaseLetter from 16 bp/px to
+         * 1 stays inside the loaded region and reported `ready` over a wall
+         * drawn as a 1 px stripe every 8 px) AND `staleSettingsDrawn`.
          *
          * A thunk, so a suppressed or already-loading display doesn't subscribe
          * to viewport churn.
@@ -531,10 +538,7 @@ export default function MultiRegionDisplayMixin() {
         get displayPhase(): DisplayPhase {
           return foundationDisplayPhase(
             self,
-            () =>
-              self.viewportWithinLoadedData &&
-              !self.dataSuperseded &&
-              !self.staleSettingsDrawn,
+            () => self.phaseViewportCurrent,
             () => self.host.effectiveBodyMounted,
           )
         },

@@ -37,12 +37,7 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import {
-  densityBandDisplayPhase,
-  densityBandPending,
-  densityBandSvgReady,
-} from '@jbrowse/display-kit/densityBandPhase'
-import { resolveFetchSuspended } from '@jbrowse/display-kit/densityTier'
+import { densityBandPending } from '@jbrowse/display-kit/densityBandPhase'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -222,7 +217,6 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -4241,38 +4235,6 @@ export default function stateModelFactory(
          */
         get densityBandActive() {
           return self.densityStandsIn
-        },
-
-        /**
-         * #getter
-         * `DensityTierMixin`'s hook over this display's own stand-in term: with
-         * the coverage band hidden there is no band, so the reads are fetched
-         * and drawn as they always were.
-         */
-        get fetchSuspended() {
-          return resolveFetchSuspended({
-            standsIn: this.densityBandActive,
-            mode: self.densityTierMode,
-            regionTooLarge: self.regionTooLarge,
-          })
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The phase with the band standing in for the reads — see
-         * `densityBandDisplayPhase`.
-         */
-        get displayPhase(): DisplayPhase {
-          return densityBandDisplayPhase(self)
-        },
-
-        /**
-         * #getter
-         * The export gate under the same swap — see `densityBandSvgReady`.
-         */
-        get svgReady(): boolean {
-          return densityBandSvgReady(self)
         },
       }))
       .views(self => ({

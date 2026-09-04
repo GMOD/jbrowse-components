@@ -1,10 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
-import {
-  densityBandDisplayPhase,
-  densityBandPending,
-  densityBandSvgReady,
-} from '@jbrowse/display-kit/densityBandPhase'
+import { densityBandPending } from '@jbrowse/display-kit/densityBandPhase'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -14,7 +10,6 @@ import {
 } from './densityBandViews.ts'
 
 import type { DensityBandHost, DensityHover } from './densityBandViews.ts'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
  * The view as the band's pointer readout sees it, and nothing more.
@@ -38,9 +33,8 @@ function bandHost(self: object) {
 }
 
 /**
- * The density band: where the cursor is over it, what it draws, what it reads
- * out, and the three foundation getters the band stands in for the too-large
- * banner in.
+ * The density band: where the cursor is over it, what it draws and what it
+ * reads out. The phase and export-gate swap is `DensityTierMixin`'s.
  *
  * Composes `DensityTierMixin` rather than sitting beside it, because the swap
  * it decides is what every getter here keys off — a display taking the band
@@ -48,8 +42,9 @@ function bandHost(self: object) {
  * A display with its own stand-in for the banner takes the tier alone, which is
  * what `LinearAlignmentsDisplay` does.
  *
- * Composed after the fetch foundation, whose `displayPhase` / `svgReady` it
- * post-processes — `types.compose` resolves a collision to the later argument.
+ * Composed after the fetch foundation, whose `displayPhase` / `svgReady` the
+ * tier post-processes — `types.compose` resolves a collision to the later
+ * argument.
  *
  * #stateModel DensityBandMixin
  * #category display
@@ -120,21 +115,6 @@ export default function DensityBandMixin() {
             : self.densityHover
               ? densityBandReadout(self.densityBandLayer, self.densityHover)
               : self.densityPeakReadout
-        },
-        /**
-         * #getter
-         * The foundation's phase with the too-large banner swapped for the band —
-         * see `densityBandDisplayPhase`.
-         */
-        get displayPhase(): DisplayPhase {
-          return densityBandDisplayPhase(bandHost(self))
-        },
-        /**
-         * #getter
-         * The export gate with the same swap — see `densityBandSvgReady`.
-         */
-        get svgReady(): boolean {
-          return densityBandSvgReady(bandHost(self))
         },
       })),
   )
