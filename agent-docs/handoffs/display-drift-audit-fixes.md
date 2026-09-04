@@ -1,3 +1,8 @@
+---
+name: display-drift-audit-fixes
+description: 19 Display Drift audit fixes landed on main — waiting on `pnpm autogen` (the pre-commit gate has been red since b384a4bd88 over ~13 stale generated pages), on two confirmed review findings nobody has started (four arc thickness/hit-test defects, two wiggle score-menu ones), and on a design call for the variants insertion legend: an exact per-frame legend or a stable approximate one
+---
+
 # Handoff: Display Drift audit — fixes landed, and what is left
 
 Source: a read-only audit ("Display Drift", 92 findings across 21 display types).
