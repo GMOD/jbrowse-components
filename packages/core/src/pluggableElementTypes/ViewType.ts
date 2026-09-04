@@ -1,4 +1,4 @@
-import PluggableElementBase from './PluggableElementBase.ts'
+import LazyStateModelElement from './LazyStateModelElement.ts'
 
 import type { LaunchKeyRegistration } from '../util/withLaunchInput.ts'
 import type DisplayType from './DisplayType.ts'
@@ -18,40 +18,10 @@ interface ViewMetadata {
   hiddenFromGUI?: boolean
 }
 
-export default class ViewType extends PluggableElementBase {
+export default class ViewType extends LazyStateModelElement {
+  protected readonly group = 'view'
+
   ReactComponent: ViewComponentType
-
-  private loadedStateModel?: IAnyModelType
-
-  // Throws before the loader resolves, so a plugin composing an unloaded
-  // model fails here rather than as an opaque MST error. Code that can run
-  // before any instance exists checks isStateModelLoaded first.
-  get stateModel(): IAnyModelType {
-    if (!this.loadedStateModel) {
-      throw new Error(
-        `state model for view type ${this.name} is not loaded yet — await getViewType('${this.name}').loadStateModel() first`,
-      )
-    }
-    return this.loadedStateModel
-  }
-
-  set stateModel(stateModel: IAnyModelType) {
-    this.loadedStateModel = stateModel
-  }
-
-  // set by PluginManager.addElementType: runs Core-extendPluggableElement once
-  // the loader resolves, so a callback reading `stateModel` sees a model
-  onStateModelLoaded?: () => void
-
-  // named `stateModel` + `Loader` because pluggableMstType probes
-  // `${fieldName}Loader` generically
-  stateModelLoader?: () => Promise<IAnyModelType>
-
-  private stateModelPromise?: Promise<IAnyModelType>
-
-  private pendingStateModelExtensions: ((
-    stateModel: IAnyModelType,
-  ) => IAnyModelType)[] = []
 
   // What `withLaunchInput` partitioned out of this view's snapshots, published
   // beside the model so an out-of-tree plugin, the doc generator and the
@@ -84,11 +54,6 @@ export default class ViewType extends PluggableElementBase {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.viewMetadata = stuff.viewMetadata ?? {}
-    if (typeof stuff.stateModel === 'function') {
-      this.stateModelLoader = stuff.stateModel
-    } else {
-      this.loadedStateModel = stuff.stateModel
-    }
     this.launchKeys = stuff.launchKeys
     this.extendedName = stuff.extendedName
   }
@@ -106,9 +71,9 @@ export default class ViewType extends PluggableElementBase {
    * a session spec launches straight through `LaunchView-<type>`.
    */
   get acceptedKeys() {
-    const properties = this.loadedStateModel?.properties as
-      | Record<string, unknown>
-      | undefined
+    const properties = this.isStateModelLoaded
+      ? (this.stateModel.properties as Record<string, unknown>)
+      : undefined
     return this.launchKeys && properties
       ? [
           ...Object.keys(properties),
@@ -116,40 +81,6 @@ export default class ViewType extends PluggableElementBase {
           ...this.launchKeys.passThrough,
         ]
       : undefined
-  }
-
-  get isStateModelLoaded() {
-    return this.loadedStateModel !== undefined
-  }
-
-  loadStateModel() {
-    if (this.loadedStateModel !== undefined) {
-      return Promise.resolve(this.loadedStateModel)
-    }
-    if (!this.stateModelLoader) {
-      throw new Error(
-        `view type ${this.name} has neither a state model nor a loader`,
-      )
-    }
-    this.stateModelPromise ??= this.stateModelLoader().then(loaded => {
-      let stateModel = loaded
-      for (const extend of this.pendingStateModelExtensions) {
-        stateModel = extend(stateModel)
-      }
-      this.pendingStateModelExtensions = []
-      this.loadedStateModel = stateModel
-      this.onStateModelLoaded?.()
-      return this.stateModel
-    })
-    return this.stateModelPromise
-  }
-
-  extendStateModel(extend: (stateModel: IAnyModelType) => IAnyModelType) {
-    if (this.loadedStateModel !== undefined) {
-      this.loadedStateModel = extend(this.loadedStateModel)
-    } else {
-      this.pendingStateModelExtensions.push(extend)
-    }
   }
 
   addDisplayType(display: DisplayType) {

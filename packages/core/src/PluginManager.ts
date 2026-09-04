@@ -7,6 +7,7 @@ import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
 } from './configuration/index.ts'
+import LazyStateModelElement from './pluggableElementTypes/LazyStateModelElement.ts'
 import createJexlInstance from './util/jexl.ts'
 import { expandLooseTrackConfig } from './util/tracks.ts'
 
@@ -83,16 +84,10 @@ export const pluggableElementTypeGroups = [
 export type PluggableElementTypeGroup =
   (typeof pluggableElementTypeGroups)[number]
 
-interface LazyStateModelElement {
-  stateModel: IAnyModelType
-  isStateModelLoaded: boolean
-  onStateModelLoaded?: () => void
-}
-
 function isUnloadedLazyElement(
   element: PluggableElementBase,
-): element is PluggableElementBase & LazyStateModelElement {
-  return 'isStateModelLoaded' in element && !element.isStateModelLoaded
+): element is LazyStateModelElement {
+  return element instanceof LazyStateModelElement && !element.isStateModelLoaded
 }
 
 /** internal class that holds the info for a certain element type */
@@ -851,7 +846,7 @@ export default class PluginManager {
             if (extended !== newElement) {
               typeRecord.add(newElement.name, extended)
               if (
-                'isStateModelLoaded' in extended &&
+                extended instanceof LazyStateModelElement &&
                 extended.isStateModelLoaded
               ) {
                 newElement.stateModel = extended.stateModel

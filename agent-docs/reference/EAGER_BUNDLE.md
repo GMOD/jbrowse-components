@@ -502,10 +502,13 @@ Two consequences for callers:
   cannot be an `undefined`.
 - **A snapshot naming a type must be preloaded.** `await
   pluginManager.preloadSessionTypes(snapshot)` before any synchronous
-  `setSession`/`cast`; it walks views, child views, synteny levels and
-  `tracks[].displays[]`, resolving display aliases to their registered type. The
-  setters call `assertSessionTypesLoaded` first, so a missed preload is an
-  actionable error rather than a union mismatch that reads as a corrupt session.
+  `setSession`/`cast`; it loads every registered view or display type any
+  `type` string in the snapshot names — under whatever key, `heldForMissingPlugins`
+  included — resolving display aliases to their registered type. A display
+  *config* in `sessionTracks` counts too, so a snapshot of a live session is not
+  exempt: "Duplicate session" preloads before it sets. The setters call
+  `assertSessionTypesLoaded` first, so a missed preload is an actionable error
+  rather than a union mismatch that reads as a corrupt session.
 
 Measured on jbrowse-web itself with `pnpm measure-web-bundle` (a real headless
 Chrome page load: every script fetched before the app-ready marker and the

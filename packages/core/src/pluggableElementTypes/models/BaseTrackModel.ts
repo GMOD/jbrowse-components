@@ -350,12 +350,7 @@ export function createBaseTrackModel(
         const displayConf = getDisplayConf(displays, newDisplayId)
         // same interception showTrackGeneric makes: a registered-but-unloaded
         // display would otherwise fail as an opaque union mismatch below
-        const displayRecord = pm.resolveDisplayTypeRecord(displayConf.type)
-        if (displayRecord && !displayRecord.isStateModelLoaded) {
-          throw new Error(
-            `state model for display type ${displayConf.type} is not loaded yet — await getDisplayType('${displayConf.type}').loadStateModel() first`,
-          )
-        }
+        pm.resolveDisplayTypeRecord(displayConf.type)?.assertStateModelLoaded()
         self.displays[idx] = {
           ...initialSnapshot,
           type: displayConf.type,

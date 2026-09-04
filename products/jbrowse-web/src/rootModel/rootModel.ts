@@ -478,7 +478,15 @@ export default function RootModel({
                 onClick: () => {
                   if (self.session) {
                     const { id, ...rest } = getSnapshot<Session>(self.session)
-                    self.setSession(rest)
+                    self.pluginManager.preloadSessionTypes(rest).then(
+                      () => {
+                        self.setSession(rest)
+                      },
+                      (e: unknown) => {
+                        console.error(e)
+                        self.session?.notifyError(`${e}`, e)
+                      },
+                    )
                   }
                 },
               },

@@ -246,15 +246,17 @@ describe('connection track persistence', () => {
     expect(snap.connectionTrackConfigs?.connTrack1).toBeTruthy()
   })
 
-  test('captured track resolves after reload without the connection', () => {
+  test('captured track resolves after reload without the connection', async () => {
     const session = makeRootWithConnection().session!
     session.captureConnectionTrack('connTrack1')
     const snap = JSON.parse(JSON.stringify(getSnapshot(session)))
 
-    const root2 = getRootModel().create({
+    const { pluginManager, model } = getRootModelWithPlugins()
+    const root2 = model.create({
       ...mainThreadConfig,
       jbrowse: { ...mainThreadConfig.jbrowse, assemblies: [assembly] },
     })
+    await pluginManager.preloadSessionTypes(snap)
     root2.setSession(snap)
     const session2 = root2.session!
     expect(session2.connectionInstances.length).toBe(0)
