@@ -624,6 +624,14 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * `TrackHeightMixin`'s hook: 0 — no scroll, today's divide-the-height
+       * layout — until the lane count pushes the stack past the track height
+       */
+      get scrollableHeight() {
+        return self.scrollContentHeight - self.height
+      },
+      /**
+       * #getter
        * where the view draws each visible group's anchor interval, in the
        * view's px before the scroll offset and in the anchor's own direction —
        * start end first, so a horizontally flipped view hands the ribbons the
@@ -637,14 +645,6 @@ export function stateModelFactory(
        * where the anchor actually draws" holds by construction rather than by
        * two loops agreeing
        */
-      /**
-       * #getter
-       * `TrackHeightMixin`'s hook: 0 — no scroll, today's divide-the-height
-       * layout — until the lane count pushes the stack past the track height
-       */
-      get scrollableHeight() {
-        return self.scrollContentHeight - self.height
-      },
       get anchorPlacements(): Map<string, AxisPlacement> {
         const view = self.lgv
         const assembly = self.anchorAssembly
