@@ -4,6 +4,22 @@ import { getAssemblyNamesFromConf } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
+ * A region reached a pairwise adapter naming an assembly its `assemblyNames`
+ * does not. The main thread respells every region into the adapter's namespace
+ * before the RPC (`renameRegionsForAdapter`, `regionsInAssemblyNamespace`), so
+ * this is a caller that skipped that step, not a track that is quietly empty.
+ */
+export class AssemblyNotInAdapterError extends Error {
+  override name = 'AssemblyNotInAdapterError'
+
+  constructor(assemblyName: string | undefined, assemblyNames: string[]) {
+    super(
+      `assembly ${assemblyName} is not one this adapter aligns (${assemblyNames.join(', ')})`,
+    )
+  }
+}
+
+/**
  * What a two-genome adapter answers off `assemblyNames` alone.
  *
  * The array is ordered [query, target] (see {@link getAssemblyNamesFromConf}),
@@ -13,12 +29,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * directly, and why `flip` (the query perspective) is side 0.
  *
  * The four pairwise adapters each spelled this out: an `indexOf`, a
- * `-1`-means-warn branch, and `assemblyNames[flip ? 1 : 0]` for the mate. They
- * did not spell it out the same way — BlastTabularAdapter re-derived `flip` by
- * comparing names where its own getRefNames used the index, and only
- * PairwiseIndexedPAFAdapter threw on a missing assembly name where the rest
- * answer `[]`. All four also inherited the `indexOf`, which cannot see that a
- * self-alignment names one assembly on both sides — see {@link facingSides}.
+ * `-1`-means-warn branch, and `assemblyNames[flip ? 1 : 0]` for the mate, and
+ * not the same way — BlastTabularAdapter re-derived `flip` by comparing names
+ * where its own getRefNames used the index. All four also inherited the
+ * `indexOf`, which cannot see that a self-alignment names one assembly on both
+ * sides — see {@link facingSides}.
  */
 export abstract class PairwiseAdapterBase<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
@@ -49,6 +64,20 @@ export abstract class PairwiseAdapterBase<
       if (targetAssemblies.includes(assemblyName)) {
         sides.push(1)
       }
+    }
+    return sides
+  }
+
+  /**
+   * `facingSides` for a feature query, where an assembly this adapter does not
+   * carry is an error rather than an empty answer: the region should have been
+   * respelled before it crossed to the worker, and answering `[]` here drew an
+   * empty band with nothing to say why.
+   */
+  protected queriedSides(assemblyName: string | undefined) {
+    const sides = this.facingSides(assemblyName)
+    if (sides.length === 0) {
+      throw new AssemblyNotInAdapterError(assemblyName, this.getAssemblyNames())
     }
     return sides
   }

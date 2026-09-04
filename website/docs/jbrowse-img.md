@@ -954,11 +954,11 @@ read once, and each band asks the adapter for its own pair of assemblies.
 
 That makes it a `--config` case. `--paf` builds a pairwise `PAFAdapter`, which
 reads the whole file as a single query-vs-target comparison, so repeating the
-same all-vs-all file across the gaps draws an empty view and prints
-`<assembly> not found in this adapter` — the PanSN prefixes that say which
-genome each record belongs to mean nothing to that adapter. The adapter that
-reads them is `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for a
-`make-pif` index), named in a config:
+same all-vs-all file across the gaps fails every band past the first with
+`AssemblyNotInAdapterError` — the PanSN prefixes that say which genome each
+record belongs to mean nothing to that adapter. The adapter that reads them is
+`AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for a `make-pif` index),
+named in a config:
 
 ```json addtrack
 {

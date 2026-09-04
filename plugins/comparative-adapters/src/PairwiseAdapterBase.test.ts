@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { PairwiseAdapterBase } from './PairwiseAdapterBase.ts'
+import {
+  AssemblyNotInAdapterError,
+  PairwiseAdapterBase,
+} from './PairwiseAdapterBase.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -43,6 +46,10 @@ class TestAdapter extends PairwiseAdapterBase {
 
   sides(assemblyName: string | undefined) {
     return this.facingSides(assemblyName)
+  }
+
+  querySides(assemblyName: string | undefined) {
+    return this.queriedSides(assemblyName)
   }
 
   mate(side: 0 | 1) {
@@ -101,6 +108,27 @@ describe('PairwiseAdapterBase', () => {
     it('faces both sides of a self-alignment written with the named slots', () => {
       const self = makeAdapter({ queryAssembly: 'vvx', targetAssembly: 'vvx' })
       expect(self.sides('vvx')).toEqual([0, 1])
+    })
+  })
+
+  // A feature query names an assembly the main thread has already respelled
+  // into this adapter's namespace, so one it does not carry is a caller that
+  // skipped that step — and an empty answer there drew an empty band with
+  // nothing to say why.
+  describe('queriedSides', () => {
+    const adapter = makeAdapter({ assemblyNames: ['query', 'target'] })
+
+    it('answers the facing sides for an assembly this adapter carries', () => {
+      expect(adapter.querySides('target')).toEqual([1])
+    })
+
+    it('refuses an assembly this adapter does not carry, naming both', () => {
+      expect(() => adapter.querySides('mouse')).toThrow(
+        AssemblyNotInAdapterError,
+      )
+      expect(() => adapter.querySides('mouse')).toThrow(
+        'assembly mouse is not one this adapter aligns (query, target)',
+      )
     })
   })
 

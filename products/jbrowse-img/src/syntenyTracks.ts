@@ -20,8 +20,8 @@ function comparesPair(track: Track, a: string, b: string) {
 
 // The comparisons between two assemblies, for the pairwise dotplot. Passing
 // every SyntenyTrack in the config instead opened tracks belonging to another
-// pair, which fetched their (often remote) alignment file only to log
-// "<axis assembly> not found in this adapter" for every block.
+// pair, which fetched their (often remote) alignment file only to refuse every
+// block's assembly.
 export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
   return syntenyTracks(data)
     .filter(track => comparesPair(track, a, b))

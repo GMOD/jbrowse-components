@@ -65,6 +65,10 @@ export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
+export {
+  adapterAssemblyNames,
+  regionsInAssemblyNamespace,
+} from './regionsInAssemblyNamespace.ts'
 export { renameDictLane } from './renameDictLane.ts'
 export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'

@@ -496,10 +496,13 @@ which the adapter matches against its own `assemblyNames[]` — the same "safe
 because it leaves again" as `feat.refName`, and canonicalizing it would break a
 lookup that works today.
 
-That asymmetry is also why a track aliasing its **first** assembly is not this
-bug: `getFeatures` does `assemblyNames.indexOf(region.assemblyName)`, misses, and
-the track draws nothing at all. A blank track is the loud failure; this is the
-quiet one.
+The outbound direction is handled before the RPC: `renameRegionsForAdapter`
+respells every region's `assemblyName` into the adapter's own `assemblyNames`
+through `regionsInAssemblyNamespace` (synteny-core), the same way the
+region-launch mate discovery and `LGVSyntenyDisplay`'s fetch do, so a track
+aliasing its **first** assembly draws. A region that still reaches a pairwise
+adapter's `getFeatures` unrespelled is refused with `AssemblyNotInAdapterError`
+rather than answered with an empty band.
 
 The probe, which is now `volvox_asmalias.paf` in the fixture: a track whose
 second `assemblyNames` entry is `vvx` (volvox's declared assembly alias) with

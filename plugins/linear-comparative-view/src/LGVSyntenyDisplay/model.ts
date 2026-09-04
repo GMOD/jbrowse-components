@@ -25,6 +25,7 @@ import {
   installLodTierInfoFetch,
   lodMenuItems,
   lodTierAt,
+  regionsInAssemblyNamespace,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 
@@ -33,6 +34,7 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type {
   ColorBy,
   DerivativePathEvidence,
@@ -215,11 +217,40 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           return lodTierAt(self, self.host.bpPerPx, self.lodMode)
         },
       }))
-      .actions(self => ({
-        afterAttach() {
-          installLodTierInfoFetch(self)
-        },
-      }))
+      .actions(self => {
+        const { fetchNeeded } = self
+        return {
+          afterAttach() {
+            installLodTierInfoFetch(self)
+          },
+          /**
+           * #action
+           * The inherited fetch, with each region's assembly respelled the way
+           * the track declares it. The view names its assembly canonically and
+           * the adapter answers a region by comparing that text against its own
+           * `assemblyNames` in a worker with no assembly manager — so a track
+           * declaring an alias fetched nothing. The comparative views do the
+           * same through `renameRegionsForAdapter`.
+           */
+          fetchNeeded(needed: IndexedRegion[]) {
+            const { assemblyManager } = getSession(self)
+            const assemblyNames = getConf(
+              self.parentTrack,
+              'assemblyNames',
+            ) as string[]
+            fetchNeeded(
+              needed.map(({ region, displayedRegionIndex }) => ({
+                displayedRegionIndex,
+                region: regionsInAssemblyNamespace(
+                  [region],
+                  assemblyNames,
+                  assemblyManager,
+                )[0]!,
+              })),
+            )
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action

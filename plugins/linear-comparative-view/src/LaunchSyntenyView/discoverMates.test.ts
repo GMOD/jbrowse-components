@@ -91,12 +91,17 @@ test('everything the worker-side reduction needs reaches the RPC', async () => {
 // A view reaches here on an alias routinely: `getSyntenyTracks` resolves
 // aliases to decide the track is launchable at all, so the launch is offered
 // for a track whose declared name the region does not share.
+//
+// The REGION crosses respelled too: the adapter's `facingSides` answers the
+// region's own `assemblyName` against its config text, so the anchor's lane
+// was found and the fetch behind it found nothing.
 test("the anchor crosses to the worker in the track's spelling", async () => {
   const { discover, calls } = setup({
     anchorRegion: { ...region, assemblyName: 'vvx' },
   })
   await discover(createStopToken(), jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('volvox')
+  expect(calls[0]!.args.regions).toEqual([region])
 })
 
 // A self-alignment track — every declared name the anchor's, a genome against

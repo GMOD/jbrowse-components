@@ -271,12 +271,7 @@ export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabula
         start: queryStart,
         end: queryEnd,
       } = query
-      const sides = this.facingSides(queryAssemblyName)
-      if (sides.length === 0) {
-        console.warn(`${queryAssemblyName} not found in this adapter`)
-        observer.complete()
-        return
-      }
+      const sides = this.queriedSides(queryAssemblyName)
       const { records, byRefName } = await this.setup(opts)
       const notYetEmitted = this.createSideDedupe(sides)
 

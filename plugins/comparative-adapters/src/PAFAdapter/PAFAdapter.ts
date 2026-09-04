@@ -53,12 +53,7 @@ export default class PAFAdapter extends PairwiseAdapterBase {
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
-      const sides = this.facingSides(assemblyName)
-      if (sides.length === 0) {
-        console.warn(`${assemblyName} not found in this adapter`)
-        observer.complete()
-        return
-      }
+      const sides = this.queriedSides(assemblyName)
       const { records, byRefName } = await this.setup(opts)
       const notYetEmitted = this.createSideDedupe(sides)
 

@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { AssemblyNotInAdapterError } from '../PairwiseAdapterBase.ts'
 import Adapter from './BlastTabularAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
@@ -82,26 +83,29 @@ test('each perspective labels its mate with the other assembly', async () => {
 // -1 from the shared side rule, which every pairwise adapter turns into an
 // empty answer rather than a throw or a download. getRefNames resolves it
 // before the setup, so an unlisted assembly never fetches the table at all.
-test('an assembly this adapter does not carry gets an empty answer', async () => {
-  const warned = jest.spyOn(console, 'warn').mockImplementation(() => {})
+// `getRefNames` is asked about every assembly a session holds, so an assembly
+// the file does not carry is an ordinary empty answer there. A feature query is
+// not: the main thread respells a region's assembly into the adapter's own
+// namespace before the RPC, so one arriving unrespelled is a defect to report
+// rather than a band to leave quietly empty.
+test('an assembly this adapter does not carry is no refNames and a refused query', async () => {
   const adapter = makeAdapter()
 
   expect(await adapter.getRefNames({ assemblyName: 'mouse' })).toEqual([])
   expect(await adapter.getRefNames({})).toEqual([])
 
-  const features = await firstValueFrom(
-    adapter
-      .getFeatures({
-        refName: 'Pp05',
-        start: 0,
-        end: 200000,
-        assemblyName: 'mouse',
-      })
-      .pipe(toArray()),
-  )
-  expect(features).toEqual([])
-  expect(warned).toHaveBeenCalledWith('mouse not found in this adapter')
-  warned.mockRestore()
+  await expect(
+    firstValueFrom(
+      adapter
+        .getFeatures({
+          refName: 'Pp05',
+          start: 0,
+          end: 200000,
+          assemblyName: 'mouse',
+        })
+        .pipe(toArray()),
+    ),
+  ).rejects.toThrow(AssemblyNotInAdapterError)
 })
 
 // A self-alignment names one assembly on both sides. Picking the side by first

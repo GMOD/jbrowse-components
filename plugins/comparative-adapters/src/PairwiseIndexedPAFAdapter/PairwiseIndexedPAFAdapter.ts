@@ -65,12 +65,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
-      const sides = this.facingSides(assemblyName)
-      if (sides.length === 0) {
-        console.warn(`${assemblyName} not found in this adapter`)
-        observer.complete()
-        return
-      }
+      const sides = this.queriedSides(assemblyName)
 
       const hasCoarseTier = await this.pif.hasCoarseTier(opts)
       const boundedCoarseRows = coarseRowsAreBounded(await this.pif.meta(opts))
