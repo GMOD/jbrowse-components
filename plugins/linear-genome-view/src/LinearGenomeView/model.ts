@@ -531,7 +531,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         launch: types.frozen<LaunchInput<InitState> | undefined>(),
       }),
     )
-    .volatile(self => {
+    .volatile(() => {
       // typed locals so `unknown`/`Record` aren't narrowed to `undefined`/`{}`; inline
       // type assertions here get stripped by no-unnecessary-type-assertion
       const volatileError: unknown = undefined
@@ -577,14 +577,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #volatile
          */
-        // What `bpPerPx` used to hold at creation — the snapshot's value, or
-        // the default of 1 — which cannot be read here now that it is derived
-        // and declared after volatile. It has to be a real scale rather than
-        // the not-yet-measured 0: the canvas displays lay out against
-        // `coarseBpPerPx` rather than the live one, and a zero there is a
-        // degenerate layout for the frame or two before the debounced autorun
-        // first writes it.
-        coarseBpPerPx: self.legacyBpPerPx || 1,
+        // A real scale rather than the not-yet-measured 0, for the canvas
+        // displays that lay out against it; `setWidth` seeds the true one at
+        // the first measure.
+        coarseBpPerPx: 1,
         /**
          * #volatile
          */
@@ -1340,6 +1336,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       setWidth(newWidth: number) {
+        const unmeasured = self.bpPerPx <= 0
         self.volatileWidth = newWidth
         if (newWidth > 0 && self.windowWidthBp <= 0) {
           // First measure, and nothing has established a window yet: a migrated
@@ -1349,6 +1346,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // into it.
           self.windowWidthBp = (self.legacyBpPerPx || 1) * newWidth
           self.legacyBpPerPx = 0
+        }
+        if (unmeasured && self.bpPerPx > 0) {
+          // The debounced coarse autorun is 500ms out; a restored snapshot's
+          // consumers would lay out and fetch at 1 bp/px until then.
+          self.coarseBpPerPx = self.bpPerPx
         }
       },
       /**

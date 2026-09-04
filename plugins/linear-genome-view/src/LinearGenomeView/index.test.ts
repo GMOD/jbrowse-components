@@ -3774,6 +3774,9 @@ describe('resize preserves the genomic window', () => {
     // two ways to share a view disagreed.
     expect(edges(restored)).toEqual(before)
     expect(restored.bpPerPx).toBeCloseTo(20)
+    // and the coarse scale the displays lay out and fetch against is seeded at
+    // the measure, not 500ms later by the debounced autorun
+    expect(restored.coarseBpPerPx).toBe(restored.bpPerPx)
   })
 
   test('a pre-window snapshot keeps its old behavior', () => {
@@ -3798,6 +3801,7 @@ describe('resize preserves the genomic window', () => {
     restored.setWidth(500)
     expect(restored.bpPerPx).toBe(10)
     expect(restored.offsetPx).toBe(1000)
+    expect(restored.coarseBpPerPx).toBe(10)
     // and having adopted it, the view is on the new representation: a further
     // resize preserves the window rather than adopting again
     restored.setWidth(250)
