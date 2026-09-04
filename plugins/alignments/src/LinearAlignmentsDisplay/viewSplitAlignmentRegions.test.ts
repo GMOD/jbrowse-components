@@ -12,6 +12,10 @@ const CONTIGS = [
   { refName: 'chr9', start: 0, end: 50_000 },
 ]
 
+// The BAM's spelling of chr9. An SA record's refName arrives in the file's
+// namespace, so anything the UI says about it has to name the canonical contig.
+const ALIASES = new Map([['9', 'chr9']])
+
 function makeView() {
   const displayed: Region[][] = []
   const notifications: string[] = []
@@ -44,7 +48,8 @@ function makeView() {
       assemblyManager: {
         get: () => ({
           name: 'hg38',
-          getCanonicalRefName2: (refName: string) => refName,
+          getCanonicalRefName2: (refName: string) =>
+            ALIASES.get(refName) ?? refName,
           regions: CONTIGS,
           getRegionForRefName: (r: string) =>
             CONTIGS.find(c => c.refName === r),
@@ -205,6 +210,61 @@ test('names a segment past the end of its contig instead of inverting it', () =>
   expect(regions).toHaveLength(1)
   expect(regions!.every(r => r.end > r.start)).toBe(true)
   expect(notifications).toEqual([
-    'Showing 1 aligned segment of this read — 1 segment past the end of chr9 left out',
+    'Showing 1 aligned segment of this read — left out 1 segment past the end of chr9',
+  ])
+})
+
+// An hs38DH BAM against an assembly listing only the primary contigs. The
+// assembly cannot render the SA record's contig at all, and clampToContig hands
+// an unknown refName straight back — so nothing but this check stops
+// setDisplayedRegions being given a region the view has no bounds for.
+test('does not navigate to a segment on a contig the assembly does not list', () => {
+  const unlisted = makeFeature({
+    refName: 'chr22',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M300S',
+    tags: { SA: 'chrUn_KI270302v1,20001,+,500S300M,60,0;' },
+  })
+  const { regions, notifications } = run(unlisted)
+  expect(regions).toEqual([
+    expect.objectContaining({ refName: 'chr22', start: 9_500, end: 11_000 }),
+  ])
+  expect(notifications).toEqual([
+    'Showing 1 aligned segment of this read — left out 1 segment on chrUn_KI270302v1, which hg38 does not have',
+  ])
+})
+
+test('the two reasons a segment was left out are named separately', () => {
+  const both = makeFeature({
+    refName: 'chr22',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M300S',
+    tags: {
+      SA: 'chr9,80001,+,500S200M,60,0;chrUn_KI270302v1,20001,+,700S100M,60,0;',
+    },
+  })
+  const { regions, notifications } = run(both)
+  expect(regions).toHaveLength(1)
+  expect(notifications).toEqual([
+    'Showing 1 aligned segment of this read — left out 1 segment past the end of chr9 and 1 segment on chrUn_KI270302v1, which hg38 does not have',
+  ])
+})
+
+test('a left-out segment is named by the canonical contig, not the file’s', () => {
+  const aliased = makeFeature({
+    refName: 'chr22',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M300S',
+    tags: { SA: '9,80001,+,500S300M,60,0;' },
+  })
+  const { notifications } = run(aliased)
+  expect(notifications).toEqual([
+    'Showing 1 aligned segment of this read — left out 1 segment past the end of chr9',
   ])
 })

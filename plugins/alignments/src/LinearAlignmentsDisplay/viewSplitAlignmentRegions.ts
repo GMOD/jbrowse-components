@@ -84,15 +84,29 @@ export function viewSplitAlignmentRegionsInCurrentView({
   if (!assembly) {
     return
   }
+  // An SA record names a location nobody requested, in the file's spelling
+  // (REFNAME_NAMESPACES.md), and it can name a contig the assembly config
+  // leaves out — an hs38DH BAM against a primary-contigs-only assembly puts
+  // supplementary alignments on chrUn_*. clampToContig passes an unknown name
+  // through with nothing to clamp against, so the presence check is what keeps
+  // it out of setDisplayedRegions.
   const loci = segments.map(({ refName, start, end }) => {
     const pad = Math.max(end - start, 100)
-    return clampToContig(assembly, {
-      refName,
-      start: start - pad,
-      end: end + pad,
-    })
+    const canonicalRefName = assembly.getCanonicalRefName2(refName)
+    const contig = assembly.getRegionForRefName(canonicalRefName)
+    return {
+      refName: canonicalRefName,
+      onAssembly: contig !== undefined,
+      region: contig
+        ? clampToContig(assembly, {
+            refName: canonicalRefName,
+            start: start - pad,
+            end: end + pad,
+          })
+        : undefined,
+    }
   })
-  const regions = loci.filter(notEmpty)
+  const regions = loci.map(locus => locus.region).filter(notEmpty)
   if (regions.length === 0) {
     session.notify(
       `None of this read's ${segments.length} aligned segments lands inside a contig of ${assembly.name}`,
@@ -100,7 +114,9 @@ export function viewSplitAlignmentRegionsInCurrentView({
     )
     return
   }
-  const dropped = segments.filter((_, i) => loci[i] === undefined)
+  const dropped = loci.filter(locus => locus.region === undefined)
+  const pastEnd = dropped.filter(locus => locus.onAssembly)
+  const unlisted = dropped.filter(locus => !locus.onAssembly)
   const wasLinked = display.linkedReads !== 'off'
   if (!wasLinked) {
     display.setLinkedReads('normal')
@@ -110,11 +126,19 @@ export function viewSplitAlignmentRegionsInCurrentView({
   // announcing the pre-merge number named a region a reader could not find.
   const merged = gatherOverlaps(regions, 0)
   const shown = `Showing ${merged.length} aligned ${pluralize(merged.length, 'segment')} of this read`
+  const leftOut = [
+    pastEnd.length
+      ? `${pastEnd.length} ${pluralize(pastEnd.length, 'segment')} past the end of ${pastEnd.map(l => l.refName).join(', ')}`
+      : undefined,
+    unlisted.length
+      ? `${unlisted.length} ${pluralize(unlisted.length, 'segment')} on ${unlisted.map(l => l.refName).join(', ')}, which ${assembly.name} does not have`
+      : undefined,
+  ].filter(notEmpty)
   showRegionsWithUndo({
     view,
     regions: merged,
-    message: dropped.length
-      ? `${shown} — ${dropped.length} ${pluralize(dropped.length, 'segment')} past the end of ${dropped.map(s => s.refName).join(', ')} left out`
+    message: leftOut.length
+      ? `${shown} — left out ${leftOut.join(' and ')}`
       : shown,
     alsoUndo: wasLinked
       ? undefined

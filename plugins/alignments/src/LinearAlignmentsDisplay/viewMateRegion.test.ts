@@ -9,6 +9,10 @@ const CONTIGS = [
   { refName: 'ctgB', start: 0, end: 50_000 },
 ]
 
+// The BAM's spelling of ctgB. A mate refName arrives in the file's namespace,
+// so anything the UI says about it has to name the canonical contig instead.
+const ALIASES = new Map([['B', 'ctgB']])
+
 // A view that records what it was asked to display, plus the assembly
 // `clampToContig` reads bounds from.
 function makeView() {
@@ -35,7 +39,8 @@ function makeView() {
       assemblyManager: {
         get: () => ({
           name: 'volvox',
-          getCanonicalRefName2: (refName: string) => refName,
+          getCanonicalRefName2: (refName: string) =>
+            ALIASES.get(refName) ?? refName,
           regions: CONTIGS,
           getRegionForRefName: (r: string) =>
             CONTIGS.find(c => c.refName === r),
@@ -152,6 +157,36 @@ test('a mate past the end of its contig is dropped, not inverted', () => {
 // the mate went missing and the message has to.
 test('says so when the mate is the half that was dropped', () => {
   const { notifications } = run(mate({ nextRef: 'ctgB', nextPos: 80_000 }))
+
+  expect(notifications).toEqual([
+    'Showing this read only — its mate lies past the end of ctgB',
+  ])
+})
+
+// An hs38DH BAM against an assembly listing only the primary contigs. The
+// assembly cannot render the mate's contig at all, and clampToContig hands an
+// unknown refName straight back — so nothing but this check stops
+// setDisplayedRegions being given a region the view has no bounds for.
+test('does not navigate to a mate on a contig the assembly does not list', () => {
+  const { regions, notifications } = run(
+    mate({ nextRef: 'chrUn_KI270302v1', nextPos: 1100 }),
+  )
+
+  expect(regions).toHaveLength(1)
+  expect(regions![0]).toMatchObject({ refName: 'ctgA' })
+  expect(notifications).toEqual([
+    'Showing this read only — its mate is on chrUn_KI270302v1, which volvox does not have',
+  ])
+})
+
+test('an aliased mate refName navigates to the canonical contig', () => {
+  const regions = show(mate({ nextRef: 'B', nextPos: 1100 }))
+
+  expect(regions.map(r => r.refName)).toEqual(['ctgA', 'ctgB'])
+})
+
+test('the dropped-mate message names the canonical contig, not the file’s', () => {
+  const { notifications } = run(mate({ nextRef: 'B', nextPos: 80_000 }))
 
   expect(notifications).toEqual([
     'Showing this read only — its mate lies past the end of ctgB',
