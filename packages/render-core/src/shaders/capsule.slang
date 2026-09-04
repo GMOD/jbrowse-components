@@ -15,6 +15,7 @@
 // comes off a clamp and the 2x2 quads straddling the cap/body junction would be
 // differentiating a discontinuity.
 //! export-consts: CAPSULE_MIN_LEN_PX
+//! js-export: capsuleDistPx
 module capsule;
 
 import antialias;
@@ -54,9 +55,16 @@ public float2 capsuleQuadLocal(
   return float2(q.x * (halfLenPx + ext), q.y * ext);
 }
 
-// CSS-px distance from `local` (the segment's frame, center-anchored) to the
-// segment {(-halfLen,0)..(halfLen,0)}. Collapses to distance-from-origin for a
-// degenerate segment — the circular dot of radius halfWidth.
+// CSS-px distance from a point in the segment's frame (center-anchored, x
+// along, y across) to the segment {(-halfLen,0)..(halfLen,0)}. Collapses to
+// distance-from-origin for a degenerate segment — the circular dot of radius
+// halfWidth. Scalar so `//! js-export` can lift it: the dotplot's pick measures
+// the cursor against the same capsule the fragment inks, end caps included.
+public float capsuleDistPx(float alongPx, float acrossPx, float halfLenPx) {
+  float beyond = max(abs(alongPx) - halfLenPx, 0.0);
+  return sqrt(beyond * beyond + acrossPx * acrossPx);
+}
+
 public float capsuleDist(float2 local, float halfLenPx) {
-  return length(float2(max(abs(local.x) - halfLenPx, 0.0), local.y));
+  return capsuleDistPx(local.x, local.y, halfLenPx);
 }

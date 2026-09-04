@@ -1,4 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { capsuleDistPx } from '@jbrowse/render-core/shaders/capsule'
+import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
 
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 
@@ -162,8 +164,12 @@ function getPickIndex(data: DotplotInstanceData) {
   return indexCache.get(data.x1)
 }
 
-// Squared px distance from (px, py) to the segment (ax,ay)-(bx,by).
-function pointSegmentDistSq(
+// Px distance from (px, py) to the segment (ax,ay)-(bx,by): the cursor taken
+// into the segment's own frame (capsule.slang's `capsuleFrame`, with its guard
+// for the zero-length dots a whole-genome plot is mostly made of) and measured
+// by the shader's own capsule distance, so the pick is the ink's end caps
+// included.
+function pointSegmentDistPx(
   px: number,
   py: number,
   ax: number,
@@ -173,16 +179,13 @@ function pointSegmentDistSq(
 ) {
   const dx = bx - ax
   const dy = by - ay
-  const lenSq = dx * dx + dy * dy
-  // A zero-length segment is a dot (the sub-pixel alignments a whole-genome plot
-  // is mostly made of), so fall back to the distance from its one point.
-  const t =
-    lenSq > 0
-      ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq))
-      : 0
-  const cx = ax + t * dx - px
-  const cy = ay + t * dy - py
-  return cx * cx + cy * cy
+  const len = Math.hypot(dx, dy)
+  const degenerate = len <= CAPSULE_MIN_LEN_PX
+  const tx = degenerate ? 1 : dx / len
+  const ty = degenerate ? 0 : dy / len
+  const rx = px - (ax + bx) / 2
+  const ry = py - (ay + by) / 2
+  return capsuleDistPx(rx * tx + ry * ty, ry * tx - rx * ty, len / 2)
 }
 
 /**
@@ -232,9 +235,8 @@ export function pickDotplotFeature({
     cursorBpV + tolV,
   )
   const { x1, y1, x2, y2, instanceFeatureIdx, instanceCount } = data
-  const toleranceSq = tolerancePx * tolerancePx
   let best: DotplotPickHit | undefined
-  let bestDistSq = Infinity
+  let bestDistPx = Infinity
   for (const boxId of candidates) {
     const feature = index.featureIdx[boxId]!
     const [start, end] = featureSegmentRange(
@@ -249,21 +251,17 @@ export function pickDotplotFeature({
       const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
       const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
       const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
-      const distSq = pointSegmentDistSq(x, y, sx1, sy1, sx2, sy2)
+      const distPx = pointSegmentDistPx(x, y, sx1, sy1, sx2, sy2)
       // A tie goes to the later segment, the one drawn on top. `<=` alone would
       // not give that: Flatbush hands candidates back in tree order, so an
       // equidistant earlier segment can arrive last — which a whole-genome plot
       // reaches routinely, where repeats collapse to dots at identical cumBp.
       const better =
-        distSq < bestDistSq ||
-        (distSq === bestDistSq && s > (best?.segmentIdx ?? -1))
-      if (distSq <= toleranceSq && better) {
-        bestDistSq = distSq
-        best = {
-          segmentIdx: s,
-          featureIdx: feature,
-          distancePx: Math.sqrt(distSq),
-        }
+        distPx < bestDistPx ||
+        (distPx === bestDistPx && s > (best?.segmentIdx ?? -1))
+      if (distPx <= tolerancePx && better) {
+        bestDistPx = distPx
+        best = { segmentIdx: s, featureIdx: feature, distancePx: distPx }
       }
     }
   }

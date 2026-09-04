@@ -1,3 +1,5 @@
+import { capsuleDistPx } from '@jbrowse/render-core/shaders/capsule'
+
 import {
   buildDotplotPickIndex,
   featureSegmentRange,
@@ -106,6 +108,21 @@ describe('pickDotplotFeature', () => {
     const dot = makeData([[10, 10, 10, 10, 0]])
     expect(pick(dot, 10, 90)?.featureIdx).toBe(0)
     expect(pick(dot, 15, 90)).toBeUndefined()
+  })
+
+  // The shader strokes a capsule, so past an endpoint the ink is a half-disc
+  // and the pick measures to the endpoint — the distance capsule.slang's own
+  // capsuleDistPx gives in the segment's frame, not a box around the segment.
+  test('the end cap is round, and is the shader’s capsule distance', () => {
+    // cumBp (42,40) is px (42,60); the endpoint (40,40) is px (40,60).
+    const hit = pick(data, 42, 60)
+    expect(hit?.distancePx).toBeCloseTo(2)
+    const halfLen = Math.hypot(30, 30) / 2
+    const along = Math.hypot(2, 0) * Math.cos(Math.PI / 4) + halfLen
+    const across = Math.hypot(2, 0) * Math.sin(Math.PI / 4)
+    expect(hit?.distancePx).toBeCloseTo(capsuleDistPx(along, across, halfLen))
+    // Diagonally off the corner a box would still contain, 3·√2 ≈ 4.2 px away.
+    expect(pick(data, 43, 57)).toBeUndefined()
   })
 
   test('nothing to hit on empty geometry', () => {
