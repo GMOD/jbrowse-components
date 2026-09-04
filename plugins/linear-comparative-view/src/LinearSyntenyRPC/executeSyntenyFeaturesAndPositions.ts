@@ -255,7 +255,7 @@ export async function executeSyntenyFeaturesAndPositions({
           lo,
           hi,
         )
-      } else if (!findRegionEntry(v1FetchedIndex, mate.refName, lo, hi)) {
+      } else if (!findRegionEntry(v1FetchedIndex, mate.refName, lo, hi, true)) {
         const flipped = flipSyntenyFeature(f)
         if (flipped) {
           flippedRibbons.push(flipped)

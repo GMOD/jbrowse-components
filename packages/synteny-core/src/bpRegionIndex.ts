@@ -82,6 +82,11 @@ export function findRegionEntry(
   refName: string,
   lo: number,
   hi: number,
+  // A span merely ABUTTING a region (zero overlap) matches by default, which
+  // is what the clamp callers want — a block at a region's edge still projects
+  // onto it. Pass true where the question is "did that fetch return this
+  // span", which a span only touching the fetch window's edge did not.
+  requireOverlap = false,
 ): RegionIndexEntry | undefined {
   const list = idx.entries.get(refName)
   if (!list) {
@@ -92,7 +97,10 @@ export function findRegionEntry(
   for (const entry of list) {
     const r = entry.region
     const overlap = Math.min(hi, r.end) - Math.max(lo, r.start)
-    if (overlap > bestOverlap || (best === undefined && overlap >= 0)) {
+    if (
+      overlap > bestOverlap ||
+      (!requireOverlap && best === undefined && overlap >= 0)
+    ) {
       bestOverlap = overlap
       best = entry
     }

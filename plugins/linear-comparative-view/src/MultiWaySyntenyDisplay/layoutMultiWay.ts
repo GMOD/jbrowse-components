@@ -320,17 +320,6 @@ export function groupRunSpansOnRow(
   })
 }
 
-export function groupSpansOnRow(
-  group: MultiWayGroup,
-  assemblyName: string,
-  frame: RowFrame,
-  width: number,
-): Span[] {
-  return groupRunSpansOnRow(group, assemblyName, frame, width).map(
-    run => run.span,
-  )
-}
-
 // Every bp position a lane's frame can occupy. The frame always covers
 // [fitMin, fitMax] and its span is fixed by the ladder rung, so the alignment
 // shift can only slide it inside this window — which makes the window itself

@@ -12,13 +12,23 @@ import {
   laneFetchRegion,
   laneFetchWindow,
   groupFeatures,
-  groupSpansOnRow,
+  groupRunSpansOnRow,
   rowAssembliesOf,
   rowFrameX,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
+import type { MultiWayGroup, RowFrame } from './layoutMultiWay.ts'
+
+// the run spans without their orientation, which most placement tests here
+// compare — production reads the oriented form
+const groupSpansOnRow = (
+  group: MultiWayGroup,
+  assemblyName: string,
+  frame: RowFrame,
+  width: number,
+) => groupRunSpansOnRow(group, assemblyName, frame, width).map(r => r.span)
 
 function pairFeature({
   uniqueId,

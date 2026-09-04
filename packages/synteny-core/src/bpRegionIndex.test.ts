@@ -1,4 +1,9 @@
-import { cumBpAtGenomicCoord, cumBpInEntry } from './bpRegionIndex.ts'
+import {
+  buildBpRegionIndex,
+  cumBpAtGenomicCoord,
+  cumBpInEntry,
+  findRegionEntry,
+} from './bpRegionIndex.ts'
 
 import type { RegionIndexEntry } from './bpRegionIndex.ts'
 
@@ -71,4 +76,22 @@ test('a reversed region walks cumBp backwards down the genomic axis', () => {
   expect(cumBpAtGenomicCoord(e, 200)).toBe(1300)
   expect(cumBpAtGenomicCoord(e, 500)).toBe(1000)
   expect(cumBpAtGenomicCoord(e, -1)).toBe(1501)
+})
+
+// The abutting case is the one the two kinds of caller disagree about: a span
+// touching a region's edge still projects onto it (the clamp), and was not
+// returned by a fetch of it (the dedupe). The bidirectional fetch used the
+// default and silently dropped an alignment sitting exactly on the fetch
+// window's boundary.
+test('an abutting span matches by default and not under requireOverlap', () => {
+  const idx = buildBpRegionIndex({
+    displayedRegions: [
+      { refName: 'chr1', start: 1000, end: 2000, assemblyName: 'a' },
+    ],
+    bpPerPx: 1,
+  })
+  expect(findRegionEntry(idx, 'chr1', 2000, 2500)).toBeDefined()
+  expect(findRegionEntry(idx, 'chr1', 2000, 2500, true)).toBeUndefined()
+  // a real overlap satisfies both
+  expect(findRegionEntry(idx, 'chr1', 1999, 2500, true)).toBeDefined()
 })

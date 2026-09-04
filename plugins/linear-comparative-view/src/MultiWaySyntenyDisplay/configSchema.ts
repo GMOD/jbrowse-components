@@ -3,8 +3,6 @@ import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
-
 /**
  * #config MultiWaySyntenyDisplay
  *
@@ -139,5 +137,3 @@ export function configSchemaFactory() {
 export type MultiWaySyntenyDisplayConfigModel = ReturnType<
   typeof configSchemaFactory
 >
-export type MultiWaySyntenyDisplayConfig =
-  Instance<MultiWaySyntenyDisplayConfigModel>

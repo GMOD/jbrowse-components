@@ -476,7 +476,9 @@ restores natively:
   genomic window now, so neither is a declared property, but both are still
   accepted and converted. `loc` reads better and survives an assembly whose
   regions were rebuilt; reach for these two only to reproduce a viewport to the
-  pixel.
+  pixel. The conversion carries the old zoom to the view's first width measure
+  as `legacyBpPerPx`, a declared property that exists for saved sessions — write
+  the window fields above (or `loc`) rather than setting it yourself.
 - `displayedRegions` gives the regions the view lays out as full
   `{refName, start, end, assemblyName}` objects, which is the form for showing
   part of a chromosome; `displayedRegionNames` names whole ones.
