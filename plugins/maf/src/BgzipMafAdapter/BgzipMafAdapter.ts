@@ -1,16 +1,16 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import {
-  makeRefChrFilter,
-  parseTaiIndex,
-} from '../BgzipTaffyAdapter/taiIndex.ts'
+import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import { buildSampleFilter } from '../util/getSamples.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
-import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
+import {
+  readTaiIndex,
+  readTaiSlice,
+  taiRegionByteSize,
+} from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
@@ -36,32 +36,27 @@ import type { Feature, Region } from '@jbrowse/core/util'
 export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfig> {
   private configure = cachedSetup({
     label: 'Downloading index',
-    setup: () => this.readTaiFile(),
+    setup: () =>
+      readTaiIndex(this.getConf('taiLocation'), this.getConf('mafGzLocation')),
   })
 
   private decoder = new TextDecoder()
 
   async getRefNames() {
-    const index = await this.configure()
+    const { index } = await this.configure()
     return [...index.keys()]
-  }
-
-  async readTaiFile() {
-    const text = await openLocation(this.getConf('taiLocation')).readFile(
-      'utf8',
-    )
-    return parseTaiIndex(text)
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const index = await this.configure(opts)
+      const { index, fileSize } = await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
       const onQueriedChr = makeRefChrFilter(query.refName)
 
       const slice = await readTaiSlice({
         index,
+        fileSize,
         refName: query.refName,
         start: query.start,
         end: query.end,

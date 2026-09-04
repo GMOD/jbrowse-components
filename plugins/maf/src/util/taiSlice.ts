@@ -2,10 +2,32 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { queryBlockSpan } from '../BgzipTaffyAdapter/taiIndex.ts'
+import { parseTaiIndex, queryBlockSpan } from '../BgzipTaffyAdapter/taiIndex.ts'
 
 import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
+
+/** A parsed `.tai` plus the size of the bgzf file it indexes. */
+export interface TaiIndex {
+  index: IndexData
+  /**
+   * What bounds a read past the last chromosome's last sparse entry.
+   * Undefined when the handle cannot report one — `RemoteFile.stat` answers 0
+   * when CORS hides `Content-Range` — and that read falls back to one block.
+   */
+  fileSize: number | undefined
+}
+
+export async function readTaiIndex(
+  taiLocation: FileLocation,
+  gzLocation: FileLocation,
+): Promise<TaiIndex> {
+  const [text, { size }] = await Promise.all([
+    openLocation(taiLocation).readFile('utf8'),
+    openLocation(gzLocation).stat(),
+  ])
+  return { index: parseTaiIndex(text), fileSize: size > 0 ? size : undefined }
+}
 
 /**
  * Read the bytes a region occupies in a bgzf file carrying a Taffy `.tai`.
@@ -26,6 +48,7 @@ import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
  */
 export async function readTaiSlice({
   index,
+  fileSize,
   refName,
   start,
   end,
@@ -33,13 +56,14 @@ export async function readTaiSlice({
   statusCallback,
 }: {
   index: IndexData
+  fileSize?: number
   refName: string
   start: number
   end: number
   location: FileLocation
   statusCallback?: StatusCallback
 }) {
-  const span = queryBlockSpan(index, refName, start, end)
+  const span = queryBlockSpan(index, refName, start, end, fileSize)
   if (!span) {
     return undefined
   }
@@ -79,10 +103,19 @@ export async function readTaiSlice({
  * `queryBlockSpan`. No block download. A chromosome absent from the index
  * resolves no span and so costs nothing, which is the only case reporting 0.
  */
-export function taiRegionByteSize(index: IndexData, regions: Region[]) {
+export function taiRegionByteSize(
+  { index, fileSize }: TaiIndex,
+  regions: Region[],
+) {
   let bytes = 0
   for (const region of regions) {
-    const span = queryBlockSpan(index, region.refName, region.start, region.end)
+    const span = queryBlockSpan(
+      index,
+      region.refName,
+      region.start,
+      region.end,
+      fileSize,
+    )
     if (span) {
       bytes += span.readLength
     }

@@ -7,7 +7,11 @@ import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import { buildSampleFilter } from '../util/getSamples.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
-import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
+import {
+  readTaiIndex,
+  readTaiSlice,
+  taiRegionByteSize,
+} from '../util/taiSlice.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
@@ -18,17 +22,16 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { makeRefChrFilter, parseTaiIndex } from './taiIndex.ts'
+import { makeRefChrFilter } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
-import type { IndexData } from './types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-interface SetupData {
-  index: IndexData
+interface SetupData extends TaiIndex {
   runLengthEncodeBases: boolean
 }
 
@@ -154,11 +157,11 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
   }
 
   async doSetup(): Promise<SetupData> {
-    const [index, runLengthEncodeBases] = await Promise.all([
-      this.readTaiFile(),
+    const [tai, runLengthEncodeBases] = await Promise.all([
+      readTaiIndex(this.getConf('taiLocation'), this.getConf('tafGzLocation')),
       this.readHeader(),
     ])
-    return { index, runLengthEncodeBases }
+    return { ...tai, runLengthEncodeBases }
   }
 
   /**
@@ -188,22 +191,17 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     )
   }
 
-  async readTaiFile() {
-    const text = await openLocation(this.getConf('taiLocation')).readFile(
-      'utf8',
-    )
-    return parseTaiIndex(text)
-  }
-
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { index, runLengthEncodeBases } = await this.configure(opts)
+      const { index, fileSize, runLengthEncodeBases } =
+        await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
       const onQueriedChr = makeRefChrFilter(query.refName)
 
       const slice = await readTaiSlice({
         index,
+        fileSize,
         refName: query.refName,
         start: query.start,
         end: query.end,
@@ -255,7 +253,6 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
   }
 
   async getRegionByteSize(regions: Region[]) {
-    const { index } = await this.configure()
-    return taiRegionByteSize(index, regions)
+    return taiRegionByteSize(await this.configure(), regions)
   }
 }

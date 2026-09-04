@@ -800,7 +800,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
   test('adapter fetches the chromosome tail past the last index entry', async () => {
     // chrI's last .tai entry is at chrStart ~15,053,438; a query starting after
     // it and running past the chromosome end exercises the ranPastEnd read path
-    // (bound at the chromosome data end / EOF via chrDataEndOffset + stat).
+    // (bound at the file size).
     const adapter = new BgzipTaffyAdapter(
       configSchema.create({
         tafGzLocation: {
@@ -872,13 +872,15 @@ describe('BgzipTaffyAdapter integration tests', () => {
     ).toBe(0)
 
     // Only an unknown chromosome costs nothing. A query landing inside one
-    // sparse bracket, and one running past the chromosome's last entry, both
-    // resolve to a zero-width block span — but the read is still a whole bgzf
-    // block, and reporting the span alone had the gate treat them as free.
+    // sparse bracket resolves to a zero-width block span — but the read is
+    // still a whole bgzf block, and reporting the span alone had the gate treat
+    // it as free. One running past the last entry reads to the end of the file.
     expect(await adapter.getRegionByteSize([region(3700, 4000)])).toBe(65536)
+    const { index, fileSize } = await adapter.configure()
+    const bracket = index.get('chrI')!.filter(e => e.chrStart <= 15_000_000)
     expect(
       await adapter.getRegionByteSize([region(15_000_000, 15_100_000)]),
-    ).toBe(65536)
+    ).toBe(fileSize! - bracket.at(-1)!.virtualOffset.blockPosition)
   })
 
   test('adapter returns empty array for region with no data', async () => {

@@ -130,9 +130,8 @@ export function lowerBound<T>(
  * `ranPastEnd` is true when there is no real cushion entry past `queryEnd` (the
  * query reaches the last index entry of the chromosome). taffy spaces entries
  * by genomic distance and gives no guarantee the last entry is near the end of
- * the chromosome's data, so the caller must bound the read at the chromosome's
- * data end rather than trusting the fallback entry's offset (see
- * `chrDataEndOffset`).
+ * the chromosome's data, so `queryBlockSpan` bounds the read at the
+ * chromosome's data end rather than trusting the fallback entry's offset.
  */
 export function selectIndexEntries(
   records: ByteRange[],
@@ -222,12 +221,19 @@ const MIN_BLOCK_SIZE = 65536
  * one-block cushion, so both a narrow query inside a single bracket and one
  * running past a chromosome's last sparse entry estimated 0 bytes for a real
  * 64KB download. That is exactly the case the fetch gate exists to catch.
+ *
+ * A query past the last sparse entry has no cushion entry to bound at, and
+ * taffy gives no guarantee that entry is near the chromosome's data end — so
+ * it bounds at the next chromosome's first block, or on the last chromosome at
+ * `fileSize`. Without a file size (CORS hiding `Content-Range`) that read is
+ * one block, which truncates a final bracket larger than 64KB.
  */
 export function queryBlockSpan(
   index: IndexData,
   refName: string,
   queryStart: number,
   queryEnd: number,
+  fileSize?: number,
 ): QueryBlockSpan | undefined {
   const records = index.get(refName)
   const selected = records?.length
@@ -238,25 +244,17 @@ export function queryBlockSpan(
   if (selected !== undefined && firstEntry !== undefined) {
     const { nextEntry, ranPastEnd } = selected
     const startBlock = firstEntry.virtualOffset.blockPosition
-    // With no cushion entry past the query, taffy gives no guarantee the last
-    // index entry is near the chromosome's data end — so bound at the next
-    // chromosome's first block rather than that entry, which would truncate a
-    // final bracket larger than one bgzf block. The last chromosome has no next
-    // block to bound against (and reading the file size needs a CORS-exposed
-    // Content-Range), so it falls back to the caller's one-block cushion.
     const endBlock = ranPastEnd
-      ? (nextChrStartBlock(index, refName) ?? startBlock)
+      ? (nextChrStartBlock(index, refName) ?? fileSize ?? startBlock)
       : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
+    const readEnd = Math.max(endBlock, startBlock) + MIN_BLOCK_SIZE
     span = {
       firstEntry,
       nextEntry,
       ranPastEnd,
       startBlock,
       endBlock,
-      readLength:
-        endBlock > startBlock
-          ? endBlock - startBlock + MIN_BLOCK_SIZE
-          : MIN_BLOCK_SIZE,
+      readLength: Math.min(readEnd, fileSize ?? readEnd) - startBlock,
     }
   }
   return span
