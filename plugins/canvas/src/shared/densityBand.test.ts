@@ -154,33 +154,67 @@ describe('the readout', () => {
     ],
   ])
 
-  test('reads the source interval under the cursor, and nothing in a gap', () => {
-    expect(densityValueAt(bins, { displayedRegionIndex: 0, bp: 1500 })).toBe(
+  test('reads the bar under the cursor, and nothing off the packed span', () => {
+    const { regions } = densityBandLayer(bins, 10)
+    expect(densityValueAt(regions, { displayedRegionIndex: 0, bp: 1500 })).toBe(
       0.5,
     )
-    expect(densityValueAt(bins, { displayedRegionIndex: 0, bp: 3000 })).toBe(
+    expect(densityValueAt(regions, { displayedRegionIndex: 0, bp: 3000 })).toBe(
       undefined,
     )
-    expect(densityValueAt(bins, { displayedRegionIndex: 1, bp: 10 })).toBe(
+    expect(densityValueAt(regions, { displayedRegionIndex: 1, bp: 10 })).toBe(
       undefined,
     )
   })
 
   test('names the peak, and the value while there is a cursor', () => {
     const layer = densityBandLayer(bins, 10)
-    expect(densityBandReadout(layer, bins, undefined)).toBe('density peak 120')
+    expect(densityBandReadout(layer, undefined)).toBe('density peak 120')
+    expect(densityBandReadout(layer, { displayedRegionIndex: 0, bp: 10 })).toBe(
+      '3.0 at cursor, density peak 120',
+    )
+  })
+
+  // Both numbers are the resampled bin, so they stay the same quantity where a
+  // sidecar hands back rows finer than the screen bin — no zoom level fitting
+  // the view is the normal way there. Against the raw intervals the cursor read
+  // 120 while the bar it sat on, and the peak, were the mean over the three.
+  test('reads the same quantity as the peak when the bin spans many rows', () => {
+    const layer = densityBandLayer(bins, 3000)
+    expect(layer.maxDepth).toBeCloseTo((3 + 0.5 + 120) / 3)
     expect(
-      densityBandReadout(layer, bins, { displayedRegionIndex: 0, bp: 10 }),
-    ).toBe('3.0 at cursor, density peak 120')
+      densityValueAt(layer.regions, { displayedRegionIndex: 0, bp: 2500 }),
+    ).toBeCloseTo(layer.maxDepth)
+  })
+
+  // A gap inside the packed span is a bar of zero height, so the readout names
+  // it rather than falling back to the peak alone — off the span there is no
+  // bar to name and it does.
+  test('reads a gap inside the span as the zero bar it draws', () => {
+    const gapped = new Map([
+      [
+        0,
+        {
+          starts: Uint32Array.from([0, 2000]),
+          ends: Uint32Array.from([1000, 3000]),
+          scores: Float32Array.from([3, 120]),
+        },
+      ],
+    ])
+    const layer = densityBandLayer(gapped, 10)
+    expect(
+      densityValueAt(layer.regions, { displayedRegionIndex: 0, bp: 1500 }),
+    ).toBe(0)
+    expect(
+      densityBandReadout(layer, { displayedRegionIndex: 0, bp: 1500 }),
+    ).toBe('0.0 at cursor, density peak 120')
   })
 
   // The band otherwise draws nothing at all, and an empty track cannot be told
   // from a sidecar over the wrong assembly
   test('says so when the layer holds no depth', () => {
     const layer = densityBandLayer(new Map(), 10)
-    expect(densityBandReadout(layer, new Map(), undefined)).toBe(
-      'no density data in view',
-    )
+    expect(densityBandReadout(layer, undefined)).toBe('no density data in view')
   })
 
   test('formats a mean to what a band can show', () => {

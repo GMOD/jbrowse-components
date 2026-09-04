@@ -105,6 +105,33 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.drawsWhenTooLarge).toBe(true)
   })
 
+  // `regionTooLarge` outranks `error` in the shared precedence, so under a
+  // refusal — the state the tier exists for — the base phase is `tooLarge`
+  // however the read went, and reading the failure terminals off it swapped a
+  // failed read for a scrim nothing could lift.
+  it('reports a failed read as an error, not an endless scrim', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    refuseOnBytes(display)
+    expect(display.displayPhase).toBe('loading')
+
+    display.setError(new Error('sidecar 404'))
+    expect(display.displayPhase).toBe('error')
+    // and the export stops waiting on bins that are not coming
+    expect(display.svgReady).toBe(true)
+  })
+
+  // `{ uri }` is the shorthand every location slot accepts, and the display used
+  // to read it as a source while the adapter declined to build one: the band
+  // turned on for a read that answered nothing, and the phase waited forever.
+  it('keeps the banner where the slot holds no adapter config', () => {
+    const { display } = refusableDisplay({ uri: 'genes.density.bw' })
+    refuseOnBytes(display)
+
+    expect(display.hasDensitySource).toBe(false)
+    expect(display.densityTierActive).toBe(false)
+    expect(display.displayPhase).toBe('tooLarge')
+  })
+
   // Not the banner's business: a track told to draw the band always draws it,
   // and one told never to keeps the banner whatever the gate says.
   it('follows the densityTier slot over the verdict', () => {

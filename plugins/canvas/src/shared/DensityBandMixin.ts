@@ -104,11 +104,7 @@ export default function DensityBandMixin() {
          * is what the SVG export writes.
          */
         get densityPeakReadout() {
-          return densityBandReadout(
-            self.densityBandLayer,
-            bandHost(self).densityBins,
-            undefined,
-          )
+          return densityBandReadout(self.densityBandLayer, undefined)
         },
       }))
       .views(self => ({
@@ -122,11 +118,7 @@ export default function DensityBandMixin() {
           return densityBandPending(bandHost(self))
             ? ''
             : self.densityHover
-              ? densityBandReadout(
-                  self.densityBandLayer,
-                  bandHost(self).densityBins,
-                  self.densityHover,
-                )
+              ? densityBandReadout(self.densityBandLayer, self.densityHover)
               : self.densityPeakReadout
         },
         /**
@@ -143,14 +135,6 @@ export default function DensityBandMixin() {
          */
         get svgReady(): boolean {
           return densityBandSvgReady(bandHost(self))
-        },
-        /**
-         * #getter
-         * `renderDisplaySvg`'s hook: the export paints the band in place of the
-         * too-large note, the same swap the chrome makes on screen.
-         */
-        get drawsWhenTooLarge() {
-          return self.densityBandActive
         },
       })),
   )

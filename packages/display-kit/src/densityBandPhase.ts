@@ -1,3 +1,5 @@
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 
@@ -45,26 +47,40 @@ export function densityBandPending(
  * question: not the banner, whose verdict is untouched underneath, and not the
  * feature fetch, which `fetchSuspended` has stopped where the gate was not
  * already stopping it. The band's own read is, so the phase is `loading` until
- * it lands and `ready` after. The two failure terminals pass through, and so
- * does a standing cancel: its Retry chrome is the way back, and the export gate
- * fails on it after the wait.
+ * it lands and `ready` after. A standing cancel passes through: its Retry chrome
+ * is the way back, and the export gate fails on it after the wait.
+ *
+ * The two failure terminals are re-ranked rather than read off `base`, which is
+ * the one thing that cannot work here: `computeDisplayStatusPhase` ranks
+ * `regionTooLarge` above `error`, so under a refusal — the state the tier
+ * exists for — `base` is `tooLarge` whatever the read did, and a band whose
+ * read had failed swapped that for a `loading` nothing would ever lift. Passing
+ * the same terminals back with the verdict dropped is what the band standing in
+ * means: the banner it replaced is not a terminal of its own, and a failed read
+ * is still a failure.
+ *
+ * The foundation is not consulted at all on that path, which is why it is
+ * computed in the other arm rather than above the branch: its loading term
+ * walks `visibleRegions`, an array rebuilt on every frame of every gesture, and
+ * a band that never reads the answer should not be subscribed to it.
  */
 export function densityBandDisplayPhase(
   self: DensityBandPhaseHost,
 ): DisplayPhase {
-  const base = foundationDisplayPhase(
-    self,
-    () => self.viewportWithinLoadedData && !self.dataSuperseded,
-    () => self.host.effectiveBodyMounted,
-  )
-  return self.densityBandActive &&
-    !self.fetchCanceled &&
-    base !== 'error' &&
-    base !== 'renderError'
-    ? densityBandPending(self)
-      ? 'loading'
-      : 'ready'
-    : base
+  return self.densityBandActive && !self.fetchCanceled
+    ? computeDisplayPhase(
+        {
+          renderError: self.renderError,
+          regionTooLarge: false,
+          error: self.error,
+        },
+        () => densityBandPending(self),
+      )
+    : foundationDisplayPhase(
+        self,
+        () => self.viewportWithinLoadedData && !self.dataSuperseded,
+        () => self.host.effectiveBodyMounted,
+      )
 }
 
 /**

@@ -1,4 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { isDensitySourceConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
 import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { installFetch } from '@jbrowse/core/util/installFetch'
@@ -129,8 +130,7 @@ export default function DensityTierMixin() {
        * #getter
        */
       get hasDensitySource() {
-        const conf = self.densitySourceConfig
-        return typeof conf === 'object' && conf !== null
+        return isDensitySourceConfig(self.densitySourceConfig)
       },
     }))
     .views(self => ({
@@ -152,6 +152,19 @@ export default function DensityTierMixin() {
     .views(self => ({
       /**
        * #getter
+       * Overridable hook (default: the tier's verdict) — whether the band is
+       * standing in for the features on screen right now. A display whose band
+       * needs somewhere to draw narrows it: canvas adds the view geometry the
+       * draw is mapped through, alignments the coverage band that can be
+       * hidden.
+       */
+      get densityBandActive(): boolean {
+        return self.densityTierActive
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over the
        * tier's verdict. A display whose band needs somewhere to draw
        * (alignments, whose coverage band can be hidden) overrides it with that
@@ -163,6 +176,17 @@ export default function DensityTierMixin() {
           mode: self.densityTierMode,
           regionTooLarge: host(self).regionTooLarge,
         })
+      },
+      /**
+       * #getter
+       * `renderDisplaySvg`'s hook: the export paints the band in place of the
+       * too-large note, the same swap the chrome makes on screen. Here rather
+       * than beside each display's phase getters, which is where it was and
+       * where alignments forgot it — `awaitSvgReady` waited out the bins and
+       * `SvgChrome` then wrote the note over them.
+       */
+      get drawsWhenTooLarge() {
+        return self.densityBandActive
       },
     }))
     .actions(self => ({

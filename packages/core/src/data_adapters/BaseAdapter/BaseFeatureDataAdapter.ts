@@ -4,6 +4,7 @@ import { toArray } from 'rxjs/operators'
 import { createStatusFanOut } from '../../util/progress.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
+import { isDensitySourceConfig } from './featureDensity.ts'
 import { aggregateQuantitativeStats } from './stats.ts'
 import { isFeatureAdapter } from './util.ts'
 
@@ -13,17 +14,6 @@ import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 import type { FeatureDensity } from './featureDensity.ts'
 import type { BaseOptions } from './types.ts'
 import type { Observable } from 'rxjs'
-
-function isAdapterConfigSnapshot(
-  value: unknown,
-): value is Record<string, unknown> & { type: string } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    typeof value.type === 'string'
-  )
-}
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -215,12 +205,12 @@ export abstract class BaseFeatureDataAdapter<
   ): Promise<FeatureDensity[] | undefined> {
     const sidecar: unknown = this.getConf(['densityAdapter'])
     const resolved =
-      isAdapterConfigSnapshot(sidecar) && this.getSubAdapter
+      isDensitySourceConfig(sidecar) && this.getSubAdapter
         ? (await this.getSubAdapter(sidecar)).dataAdapter
         : undefined
     if (resolved && !isFeatureAdapter(resolved)) {
       throw new Error(
-        `densityAdapter ${isAdapterConfigSnapshot(sidecar) ? sidecar.type : ''} is not a feature adapter`,
+        `densityAdapter ${isDensitySourceConfig(sidecar) ? sidecar.type : ''} is not a feature adapter`,
       )
     }
     return resolved

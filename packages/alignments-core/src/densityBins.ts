@@ -68,6 +68,17 @@ export interface PackedDensityRegion {
   buffer: ArrayBuffer
   maxDepth: number
   binSize: number
+  /**
+   * The resampled bins the buffer was packed from, kept so a readout can name
+   * the bar the cursor is over. The raw intervals cannot: `maxDepth` is a peak
+   * over these means, so a sidecar answering finer rows than the screen bin —
+   * a 1 kb `make-density` file at whole-chromosome, where no zoom level fits —
+   * reads out a raw score against a resampled peak, and the band says "117 at
+   * cursor, density peak 31".
+   */
+  depths: Float32Array
+  /** absolute bp of `depths[0]`'s left edge */
+  startOffset: number
 }
 
 /**
@@ -106,6 +117,8 @@ export function packDensityRegion(
         ),
         maxDepth: bins.maxDepth,
         binSize,
+        depths: bins.depths,
+        startOffset: bins.startOffset,
       }
     : undefined
 }

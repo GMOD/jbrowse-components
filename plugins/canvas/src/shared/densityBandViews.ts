@@ -1,6 +1,7 @@
 import { densityBandLayer, formatDensity } from './densityBand.ts'
 
 import type { DensityBandLayer } from './densityBand.ts'
+import type { PackedDensityRegion } from '@jbrowse/alignments-core'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { DensityBandPhaseHost } from '@jbrowse/display-kit/densityBandPhase'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -47,36 +48,38 @@ export function densityHoverAt(
   return at.oob ? undefined : { displayedRegionIndex: at.index, bp: at.coord0 }
 }
 
-/** The source's value over `bp`, or undefined where no interval covers it. */
+/**
+ * The value of the bar under `bp`, or undefined off the packed span. Read off
+ * the drawn bins rather than the source's intervals, so the number and the bar
+ * under it are the same quantity — see `PackedDensityRegion.depths` — and a
+ * pointer move indexes one array instead of scanning every interval held.
+ */
 export function densityValueAt(
-  bins: ReadonlyMap<number, FeatureDensity>,
+  regions: ReadonlyMap<number, PackedDensityRegion>,
   { displayedRegionIndex, bp }: DensityHover,
 ) {
-  const density = bins.get(displayedRegionIndex)
-  if (density) {
-    const { starts, ends, scores } = density
-    for (let i = 0; i < starts.length; i++) {
-      if (starts[i]! <= bp && bp < ends[i]!) {
-        return scores[i]!
-      }
+  const region = regions.get(displayedRegionIndex)
+  if (region) {
+    const bin = Math.floor((bp - region.startOffset) / region.binSize)
+    if (bin >= 0 && bin < region.depths.length) {
+      return region.depths[bin]!
     }
   }
   return undefined
 }
 
 /**
- * The band's one line of text: the peak it is scaled to, and the source's
- * value under the cursor while there is one. The value is the sidecar's own
+ * The band's one line of text: the peak it is scaled to, and the value under
+ * the cursor while there is one. The value is the sidecar's own quantity
  * (features per bin for a `make-density` file), so no unit is claimed. A layer
  * with no depth says so, since the band otherwise draws nothing at all and an
  * empty track cannot be told from a broken sidecar.
  */
 export function densityBandReadout(
   layer: DensityBandLayer,
-  bins: ReadonlyMap<number, FeatureDensity>,
   hover: DensityHover | undefined,
 ) {
-  const value = hover ? densityValueAt(bins, hover) : undefined
+  const value = hover ? densityValueAt(layer.regions, hover) : undefined
   const peak = `density peak ${formatDensity(layer.maxDepth)}`
   return layer.maxDepth === 0
     ? 'no density data in view'

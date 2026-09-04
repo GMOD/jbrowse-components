@@ -97,6 +97,18 @@ test('the tier is loading until its bins land, then ready', () => {
   expect(display.displayPhase).toBe('ready')
 })
 
+// The export's half of the same swap, and the half this display used to be
+// missing: `awaitSvgReady` waited out the bins and `SvgChrome` then threw the
+// body away and wrote the too-large note over them.
+test('the export paints the band in place of the too-large note', () => {
+  const { display } = refusedDisplay({ withSource: true })
+  expect(display.densityBandActive).toBe(true)
+  expect(display.drawsWhenTooLarge).toBe(true)
+
+  const { display: plain } = refusedDisplay({ withSource: false })
+  expect(plain.drawsWhenTooLarge).toBe(false)
+})
+
 // The verdict itself is untouched — the phase is the banner's, and the fetch
 // gating reads `regionTooLarge` directly.
 test('the swap does not release the fetch gate', () => {

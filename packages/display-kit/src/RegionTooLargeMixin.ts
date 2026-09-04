@@ -1,6 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
+import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
@@ -191,7 +192,7 @@ export default function RegionTooLargeMixin() {
        * Which tier the estimate is about, as a comparable string.
        */
       get byteGateAdapterKey(): string {
-        return JSON.stringify(self.byteGateAdapterConfig)
+        return adapterConfigKey(self.byteGateAdapterConfig)
       },
       /**
        * #getter
