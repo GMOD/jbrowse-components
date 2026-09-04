@@ -241,7 +241,7 @@ export {
   gatherOverlaps,
   mergeIntervals,
 } from './intervals.ts'
-export { clampToContig } from './clampToContig.ts'
+export { clampToContig, clampToListedContig } from './clampToContig.ts'
 export { animationAllowed } from './animationAllowed.ts'
 export { springAnimate } from './springAnimate.ts'
 export {

@@ -23,6 +23,7 @@ export const BARREL_ONLY_NAMES = {
     'assembleLocStrings',
     'canonicalizeViewRefName',
     'clampToContig',
+    'clampToListedContig',
     'containerDisplaysAssembly',
     'downloadPhase',
     'finishAddTrack',

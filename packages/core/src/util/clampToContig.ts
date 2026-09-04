@@ -32,3 +32,26 @@ export function clampToContig(
     ? { ...region, assemblyName: assembly.name, refName, start, end }
     : undefined
 }
+
+/**
+ * `clampToContig` for a refName that may not be on the assembly at all, which
+ * is the shape a location nobody requested arrives in — a BAM's `nextRef`, an
+ * SA record's contig (REFNAME_NAMESPACES.md). `clampToContig` alone passes an
+ * unknown name through with nothing to clamp against, so it cannot tell "past
+ * the end of a contig we have" from "a contig we do not have", and both callers
+ * need that apart to say which happened.
+ */
+export function clampToListedContig(
+  assembly: Assembly,
+  region: { refName: string; start: number; end: number },
+) {
+  const refName = assembly.getCanonicalRefName2(region.refName)
+  const onAssembly = assembly.getRegionForRefName(refName) !== undefined
+  return {
+    refName,
+    onAssembly,
+    region: onAssembly
+      ? clampToContig(assembly, { ...region, refName })
+      : undefined,
+  }
+}

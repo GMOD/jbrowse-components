@@ -1,5 +1,6 @@
 import {
   clampToContig,
+  clampToListedContig,
   gatherOverlaps,
   getSession,
   notEmpty,
@@ -60,21 +61,13 @@ export function viewMateRegionInCurrentView({
     end: end + pad,
   })
   // The read's refName came back from a region this view asked for, so the
-  // assembly has that contig. `nextRef` did not: it is a location nobody
-  // requested, in the file's spelling (REFNAME_NAMESPACES.md), and it can name
-  // a contig the assembly config leaves out — an hs38DH BAM against a
-  // primary-contigs-only assembly puts mates on chrUn_*. clampToContig passes
-  // an unknown name through with nothing to clamp against, so the presence
-  // check is what keeps it out of setDisplayedRegions.
-  const mateRefName = assembly.getCanonicalRefName2(nextRef)
-  const mateContig = assembly.getRegionForRefName(mateRefName)
-  const mateLocus = mateContig
-    ? clampToContig(assembly, {
-        refName: mateRefName,
-        start: nextPos - pad,
-        end: nextPos + (end - start) + pad,
-      })
-    : undefined
+  // assembly has that contig. `nextRef` did not.
+  const mateSpan = clampToListedContig(assembly, {
+    refName: nextRef,
+    start: nextPos - pad,
+    end: nextPos + (end - start) + pad,
+  })
+  const mateLocus = mateSpan.region
   const regions = [readLocus, mateLocus].filter(notEmpty)
   if (regions.length === 0) {
     session.notify(
@@ -92,8 +85,8 @@ export function viewMateRegionInCurrentView({
     // READ locus needs no such line — what is left IS the mate region.
     message: mateLocus
       ? 'Showing mate region'
-      : mateContig
-        ? `Showing this read only — its mate lies past the end of ${mateRefName}`
-        : `Showing this read only — its mate is on ${mateRefName}, which ${assembly.name} does not have`,
+      : mateSpan.onAssembly
+        ? `Showing this read only — its mate lies past the end of ${mateSpan.refName}`
+        : `Showing this read only — its mate is on ${mateSpan.refName}, which ${assembly.name} does not have`,
   })
 }

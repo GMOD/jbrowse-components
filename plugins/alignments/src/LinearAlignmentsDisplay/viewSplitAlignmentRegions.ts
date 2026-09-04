@@ -1,6 +1,6 @@
 import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
 import {
-  clampToContig,
+  clampToListedContig,
   gatherOverlaps,
   getSession,
   notEmpty,
@@ -84,27 +84,13 @@ export function viewSplitAlignmentRegionsInCurrentView({
   if (!assembly) {
     return
   }
-  // An SA record names a location nobody requested, in the file's spelling
-  // (REFNAME_NAMESPACES.md), and it can name a contig the assembly config
-  // leaves out — an hs38DH BAM against a primary-contigs-only assembly puts
-  // supplementary alignments on chrUn_*. clampToContig passes an unknown name
-  // through with nothing to clamp against, so the presence check is what keeps
-  // it out of setDisplayedRegions.
   const loci = segments.map(({ refName, start, end }) => {
     const pad = Math.max(end - start, 100)
-    const canonicalRefName = assembly.getCanonicalRefName2(refName)
-    const contig = assembly.getRegionForRefName(canonicalRefName)
-    return {
-      refName: canonicalRefName,
-      onAssembly: contig !== undefined,
-      region: contig
-        ? clampToContig(assembly, {
-            refName: canonicalRefName,
-            start: start - pad,
-            end: end + pad,
-          })
-        : undefined,
-    }
+    return clampToListedContig(assembly, {
+      refName,
+      start: start - pad,
+      end: end + pad,
+    })
   })
   const regions = loci.map(locus => locus.region).filter(notEmpty)
   if (regions.length === 0) {
@@ -128,10 +114,10 @@ export function viewSplitAlignmentRegionsInCurrentView({
   const shown = `Showing ${merged.length} aligned ${pluralize(merged.length, 'segment')} of this read`
   const leftOut = [
     pastEnd.length
-      ? `${pastEnd.length} ${pluralize(pastEnd.length, 'segment')} past the end of ${pastEnd.map(l => l.refName).join(', ')}`
+      ? `${pastEnd.length} ${pluralize(pastEnd.length, 'segment')} past the end of ${[...new Set(pastEnd.map(l => l.refName))].join(', ')}`
       : undefined,
     unlisted.length
-      ? `${unlisted.length} ${pluralize(unlisted.length, 'segment')} on ${unlisted.map(l => l.refName).join(', ')}, which ${assembly.name} does not have`
+      ? `${unlisted.length} ${pluralize(unlisted.length, 'segment')} on ${[...new Set(unlisted.map(l => l.refName))].join(', ')}, which ${assembly.name} does not have`
       : undefined,
   ].filter(notEmpty)
   showRegionsWithUndo({
