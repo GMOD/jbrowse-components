@@ -13,7 +13,15 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
 }) {
   const phase = display.displayPhase
   return (
-    <g data-display-phase={phase}>
+    <g
+      data-display-id={display.configuration.displayId}
+      // Chords are React SVG, painted in the commit that lands the data, so
+      // paint has no state of its own to publish: the terminals that never
+      // paint are finished rather than pending, as `foundationPaintInert` reads
+      // them for the canvas families.
+      data-display-drawn={phase !== 'loading'}
+      data-display-phase={phase}
+    >
       {phase === 'error' ? (
         <DisplayError
           model={display}
