@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 104 functions
-are inside the emitter's subset, of which **76 are exported**.
+Scanned 43 shaders with entry points. 106 functions
+are inside the emitter's subset, of which **78 are exported**.
 
 ## Candidates
 
@@ -34,6 +34,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | Function | Signature | Why not |
 | --- | --- | --- |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
+| `chevronEdgeDistPx` | `(f32, f32, f32) -> f32` | reached as a private helper inside the generated chevronContains, so the edge geometry is already shared without being public; the shader calls it for its cap vertices, the hit test only ever wants the containment it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |

@@ -8,12 +8,13 @@ import {
   shouldOutlineReads,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
-  CHEVRON_PX,
   READ_OUTLINE_MIN_WIDTH_PX,
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
 } from '../../shaders/slang/read.consts.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
+import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
+import { chevronCapsEdge } from '../../shaders/slang/readChevron.js.generated.ts'
 
 import type {
   DrawBlock,
@@ -45,8 +46,9 @@ interface DrawReadsRegion {
 // (fwd) / trailing (rev) edge once the row is tall enough and zoomed in enough;
 // direction-uninformative reads need extra width before it appears, and paired
 // reads whose mates have collapsed on screen drop it entirely. That whole gate
-// is read.slang's, generated into TS below, and CHEVRON_PX (the geometry) comes
-// from the same shader — so nothing here can drift from what the GPU draws.
+// is read.slang's, generated into TS below, and which edge it caps and how far
+// it reaches are readChevron.slang's — so nothing here can drift from what the
+// GPU draws.
 //
 // Read-edge clipping that the shader's edgeFlags handle is covered here by the
 // per-block scissor clip: drawing the arrowhead at the true genomic edge means
@@ -95,12 +97,12 @@ export function showChevron(
   )
 }
 
-// Screen x of the arrowhead apex. Fwd reads point toward endBp, rev toward
-// startBp; the sign folds in screen orientation so it stays correct on reversed
+// Screen x of the arrowhead apex. `capsEdge` is genomic (+1 the end, -1 the
+// start); the sign folds in screen orientation so it stays correct on reversed
 // blocks (apex lands CHEVRON_PX outside whichever edge is the leading one).
-function chevronApexX(strand: number, xStart: number, xEnd: number) {
-  const tipX = strand > 0 ? xEnd : xStart
-  const otherX = strand > 0 ? xStart : xEnd
+function chevronApexX(capsEdge: number, xStart: number, xEnd: number) {
+  const tipX = capsEdge > 0 ? xEnd : xStart
+  const otherX = capsEdge > 0 ? xStart : xEnd
   const dirSign = Math.sign(tipX - otherX) || 1
   return tipX + dirSign * CHEVRON_PX
 }
@@ -246,18 +248,12 @@ export function drawReads(
       lastFill = fill
     }
 
-    // Chevron rides only the read's leading exon: forward → last segment,
-    // reverse → first segment (edgeFlags bit 1 = isLast, bit 0 = isFirst).
-    // Matches read.slang's edge-flag gate so the arrow sits at the true read
-    // end, never at an internal intron boundary.
-    const edgeFlags = region.segmentEdgeFlags[s]!
-    const strand = region.readStrands[i]!
-    const leadingExon =
-      (strand > 0 && (edgeFlags & 0b10) !== 0) ||
-      (strand < 0 && (edgeFlags & 0b01) !== 0)
+    const capsEdge = chevronCapsEdge(
+      region.readStrands[i]!,
+      region.segmentEdgeFlags[s]!,
+    )
     const hasChev =
-      strand !== 0 &&
-      leadingExon &&
+      capsEdge !== 0 &&
       showChevron(
         chevronFrame,
         region.readFlags[i]!,
@@ -267,7 +263,7 @@ export function drawReads(
       )
 
     if (hasChev) {
-      const apexX = chevronApexX(strand, xStart, xEnd)
+      const apexX = chevronApexX(capsEdge, xStart, xEnd)
       traceReadArrow(ctx, xL, xR, y, fH, apexX)
       ctx.fill()
       if (outline) {

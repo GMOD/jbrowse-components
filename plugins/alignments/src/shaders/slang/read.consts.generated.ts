@@ -67,8 +67,6 @@ export const RC_MOD_REV = 21
 
 export const RC_MAPQ_UNAVAILABLE = 22
 
-export const CHEVRON_PX = 8
-
 export const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
 
 export const PAIR_MIN_SPAN_PX = 10

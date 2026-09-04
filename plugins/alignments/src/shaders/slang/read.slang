@@ -3,11 +3,12 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
 import hpmath;
+import readChevron;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
@@ -71,10 +72,6 @@ static const uint RC_MOD_REV         = 21u;
 // No branch is needed in getReadColor: a flat category resolves straight out of
 // u.readCategoryColor.
 static const uint RC_MAPQ_UNAVAILABLE = 22u;
-
-// Arrowhead size in CSS px (protrusion past the read edge + cap dimensions).
-// Exported so features/read/drawCanvas.ts (Canvas2D) uses the same value.
-static const float CHEVRON_PX = 8.0;
 
 // When a read's direction is uninformative (normal color scheme, mate unmapped,
 // or mate on another chromosome), only draw its strand arrow once the read is at
@@ -265,10 +262,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // as `ef` (which side skips its outline) and the cap verts as their geometry,
   // and a read whose chevron is suppressed must get the same answer from both or
   // the body hides an outline edge no cap covers.
-  bool isFirst = (inst.edgeFlags & 1u) != 0u;
-  bool isLast = (inst.edgeFlags & 2u) != 0u;
-  bool drawFwd = showChev && inst.strand > 0 && isLast;
-  bool drawRev = showChev && inst.strand < 0 && isFirst;
+  int capsEdge = showChev ? chevronCapsEdge(inst.strand, inst.edgeFlags) : 0;
+  bool drawFwd = capsEdge > 0;
+  bool drawRev = capsEdge < 0;
 
   float sx, sy, lx, ly;
   float ef = 0.0;
@@ -283,9 +279,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     else if (drawRev) { ef = -1.0; }
   } else if (drawFwd || drawRev) {
     ef = 2.0;
-    float chevW = CHEVRON_PX;
-    float halfH = u.featHeight * 0.5;
-    float alt = chevW * u.featHeight / sqrt(halfH * halfH + chevW * chevW);
+    // `localPos` on a cap vertex is its distance to each slanted edge: a corner
+    // sits ON one (0) and `alt` from the other, the apex on both.
+    float alt = chevronEdgeDistPx(0.0, -u.featHeight * 0.5, u.featHeight);
     if (drawFwd) {
       if (v == 6u)      { sx = sx2; sy = syTop; lx = 0.0; ly = alt; }
       else if (v == 7u) { sx = sx2; sy = syBot; lx = alt; ly = 0.0; }
