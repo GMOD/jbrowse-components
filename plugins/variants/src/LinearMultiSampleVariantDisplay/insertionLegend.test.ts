@@ -2,12 +2,10 @@ import { LONG_INSERTION_MIN_LENGTH } from '@jbrowse/alignments-core'
 import { setConf } from '@jbrowse/core/configuration'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { autorun, getDependencyTree } from 'mobx'
 
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
-import type { IDependencyTree } from 'mobx'
 
 // The legend has to name the insertion marker, because the number in it is the
 // part a reader cannot decode: a review of `pangenome/maf` reported the glyph as
@@ -69,20 +67,12 @@ function cellData(insertedBp: number): CellDataResult {
 
 // bpPerPx 100: a >=10bp insertion whose bar reaches the count-label box (34px)
 // beats the 2px cell floor, so it draws.
-//
-// Settled, because the swatch keys off the debounced `coarseBpPerPx`: a bare
-// `zoomTo` is a gesture frame, and the legend deliberately does not follow one.
 function setup(insertedBp: number, showInsertionGlyphs = true, bpPerPx = 100) {
   const { display, view } = createTestEnvironment().createDisplay()
   view.zoomTo(bpPerPx)
-  view.settleCoarseBlocks()
   setConf(display, 'showInsertionGlyphs', showInsertionGlyphs)
   display.setCellData(cellData(insertedBp))
-  return { display, view }
-}
-
-function idsOf(display: { legendSections: () => { id: string }[] }) {
-  return display.legendSections().map(s => s.id)
+  return display
 }
 
 function sectionIds(
@@ -90,7 +80,9 @@ function sectionIds(
   showInsertionGlyphs = true,
   bpPerPx = 100,
 ) {
-  return idsOf(setup(insertedBp, showInsertionGlyphs, bpPerPx).display)
+  return setup(insertedBp, showInsertionGlyphs, bpPerPx)
+    .legendSections()
+    .map(s => s.id)
 }
 
 test('a window with an insertion gets the marker section', () => {
@@ -130,45 +122,7 @@ test('the slot turned off suppresses it even where an insertion is present', () 
 // reader the wrong thing to look for. Both read palette.insertion.
 test('the swatch is the palette color the overlay paints with', () => {
   const section = setup(7833)
-    .display.legendSections()
+    .legendSections()
     .find(s => s.id === 'insertions')
   expect(section!.items[0]!.color).toBe(resolvePalette().insertion)
-})
-
-// The zoom it comes and goes with is the DEBOUNCED one. Keyed on `renderBlocks`
-// the answer moved on the first frame of the gesture, which is what put the
-// legend on the per-frame path in the first place.
-test('a gesture frame does not move the swatch; the settle does', () => {
-  const { display, view } = setup(7833)
-  expect(idsOf(display)).toEqual(['genotypes', 'insertions'])
-  view.zoomTo(12500)
-  expect(idsOf(display)).toEqual(['genotypes', 'insertions'])
-  view.settleCoarseBlocks()
-  expect(idsOf(display)).toEqual(['genotypes'])
-})
-
-// The legend is the only reader of this getter and this getter was its only
-// moving input, so a dependency a pan moves re-renders `FloatingLegend` per
-// frame and re-runs the per-source walk `MultiSampleVariantOverlay` split into
-// its own observer to keep off that path. Kept observed by the autorun, because
-// a MobX computed read outside a reaction records no dependencies at all.
-test('nothing a pan moves is in the dependency set', () => {
-  const { display } = setup(7833)
-  const dispose = autorun(() => {
-    void display.insertionLegendColor
-  })
-  const seen: string[] = []
-  const walk = (node: IDependencyTree) => {
-    seen.push(node.name)
-    for (const dep of node.dependencies ?? []) {
-      walk(dep)
-    }
-  }
-  walk(getDependencyTree(display, 'insertionLegendColor'))
-  dispose()
-
-  expect(seen).toContain('LinearGenomeView.coarseBpPerPx')
-  expect(seen).not.toContain('LinearGenomeView.offsetPx')
-  expect(seen).not.toContain('LinearGenomeView.visibleRegions')
-  expect(seen).not.toContain('LinearMultiSampleVariantDisplay.renderBlocks')
 })

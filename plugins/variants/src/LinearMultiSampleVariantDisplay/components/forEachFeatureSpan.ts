@@ -2,7 +2,7 @@ import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 
 import { variantCellSpanPx } from './variantCellSpan.ts'
 
-import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
+import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
 
 /**
  * The two per-feature arrays every pass over records needs: where each record
@@ -38,11 +38,6 @@ export interface FeatureSpan {
  * A callback rather than materialized arrays, because this runs per block per
  * frame and `markersForBlock` wants its results in typed arrays.
  *
- * The block only has to name a bp span and the pixels it maps to
- * (`BpRegionBounds`): nothing here culls, so no `displayedRegionIndex` is
- * needed, which lets the legend ask this question over a whole displayed region
- * rather than over the per-frame render blocks.
- *
  * `drawnHeight` is the band the record is drawn in, because that is what
  * `insertionBarWidth` sizes a marker against.
  *
@@ -61,7 +56,7 @@ export interface FeatureSpan {
  */
 export function forEachFeatureSpan(
   region: FeatureSpanData,
-  block: BpRegionBounds,
+  block: VariantRenderBlock,
   {
     drawnHeight,
     insertionsWiden,
