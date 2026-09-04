@@ -21,7 +21,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `*Bound` / `hasManualScoreBounds` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The score axis every quantitative display shares: which scale, how to
  * autoscale it, and the manual min/max bounds. This is the runtime half of
@@ -41,6 +41,10 @@ const confNode = (self: object) => self as ScoreScaleHost
  * is what the dialog round-trips; `minScoreBound`/`maxScoreBound` are the
  * resolved bounds, where `undefined` means "autoscale this end". Every consumer
  * that computes a domain reads the `*Bound` pair.
+ *
+ * Whether a bound is *configured* is a third question, and `hasManualScoreBounds`
+ * is the only getter that answers it — the resolved pair cannot, since
+ * `defaultScoreDomain` is exactly the hook that turns an unset end into a number.
  */
 export function ScoreScaleMixin() {
   return types
@@ -103,21 +107,45 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * The lower bound the config really sets, `undefined` at the sentinel.
+       */
+      get manualMinScore(): number | undefined {
+        return this.minScore === Number.MIN_VALUE ? undefined : this.minScore
+      },
+      /**
+       * #getter
+       * The upper bound the config really sets, `undefined` at the sentinel.
+       */
+      get manualMaxScore(): number | undefined {
+        return this.maxScore === Number.MAX_VALUE ? undefined : this.maxScore
+      },
+      /**
+       * #getter
        * Resolved lower bound; `undefined` means autoscale this end.
        */
       get minScoreBound(): number | undefined {
-        return this.minScore === Number.MIN_VALUE
-          ? this.defaultScoreDomain[0]
-          : this.minScore
+        return this.manualMinScore ?? this.defaultScoreDomain[0]
       },
       /**
        * #getter
        * Resolved upper bound; `undefined` means autoscale this end.
        */
       get maxScoreBound(): number | undefined {
-        return this.maxScore === Number.MAX_VALUE
-          ? this.defaultScoreDomain[1]
-          : this.maxScore
+        return this.manualMaxScore ?? this.defaultScoreDomain[1]
+      },
+      /**
+       * #getter
+       * Whether the user has pinned either end, which is a different question
+       * from whether either end resolved to a number: `defaultScoreDomain` fills
+       * the sentinels in, so a GC content track answers yes to the second with
+       * nothing configured. The score menu asks this one — it gates the "Clear
+       * manual min/max" row, and a Clear that writes the sentinels already
+       * there is a row that does nothing and never goes away.
+       */
+      get hasManualScoreBounds(): boolean {
+        return (
+          this.manualMinScore !== undefined || this.manualMaxScore !== undefined
+        )
       },
     }))
     .actions(self => ({

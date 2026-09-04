@@ -19,6 +19,7 @@ function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
     maxScore: Number.MAX_VALUE,
     minScoreBound: undefined,
     maxScoreBound: undefined,
+    hasManualScoreBounds: false,
     setScaleType: () => {},
     setAutoscale: () => {},
     setMinScore: () => {},

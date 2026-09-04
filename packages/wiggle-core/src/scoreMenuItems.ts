@@ -17,7 +17,9 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // consume it without per-display adapters. minScore/maxScore are the raw config
 // values (Number.MIN_VALUE/MAX_VALUE sentinels intact) the dialog expects;
 // minScoreBound/maxScoreBound are the resolved bounds (undefined = autoscale)
-// every implementer already derives (WiggleScoreConfigMixin + alignments).
+// every implementer already derives; hasManualScoreBounds is whether either raw
+// slot is set at all, which is the only one of the three that survives a
+// `defaultScoreDomain` override. All three come from `ScoreScaleMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   autoscaleType: string
@@ -25,6 +27,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   maxScore: number
   minScoreBound: number | undefined
   maxScoreBound: number | undefined
+  hasManualScoreBounds: boolean
   setScaleType: (v: string) => void
   setAutoscale: (v?: string) => void
   setMinScore: (n?: number) => void
@@ -72,22 +75,19 @@ export function makeAutoscaleTypeSubMenu(
   }
 }
 
-// The model resolves the Number.MIN_VALUE / MAX_VALUE "unset, fall back to
-// autoscale" sentinel into minScoreBound/maxScoreBound (undefined = autoscale).
-// Surfacing them lets the menu show that a manual range is in force — otherwise
-// an autoscale-type radio still reads as checked while a fixed bound silently
-// overrides it.
-function resolveScoreBounds(self: ScoreScaleModel) {
-  const min = self.minScoreBound
-  const max = self.maxScoreBound
-  return { min, max, hasManual: min !== undefined || max !== undefined }
-}
-
+// Showing the range in the label is how the menu says a fixed bound is in force
+// — otherwise an autoscale-type radio still reads as checked while a manual
+// bound silently overrides it. The range shown is the resolved one, since that
+// is the axis the user is looking at, but whether to show it at all is
+// `hasManualScoreBounds`: a display overriding `defaultScoreDomain` resolves
+// both ends to numbers with nothing configured, so asking the resolved pair
+// captioned every GC content track "(0 – 1)" and offered it a Clear row that
+// rewrote the sentinels already there.
 export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
-  const { min, max, hasManual } = resolveScoreBounds(self)
+  const { minScoreBound, maxScoreBound } = self
   return {
-    label: hasManual
-      ? `Set min/max score (${min ?? 'auto'} – ${max ?? 'auto'})...`
+    label: self.hasManualScoreBounds
+      ? `Set min/max score (${minScoreBound ?? 'auto'} – ${maxScoreBound ?? 'auto'})...`
       : 'Set min/max score...',
     onClick: () => {
       getDialogHost(self).queueDialog(handleClose => [
@@ -170,9 +170,7 @@ export function makeScoreSubMenu(
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
       ...(autoscale ? [makeAutoscaleTypeSubMenu(self, autoscaleOptions)] : []),
       makeSetMinMaxScoreItem(self),
-      ...(resolveScoreBounds(self).hasManual
-        ? [makeClearMinMaxScoreItem(self)]
-        : []),
+      ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
       ...trailingItems,
     ],
   }

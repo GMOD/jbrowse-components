@@ -152,6 +152,38 @@ test('an explicit score bound still beats the pinned default', async () => {
   expect(display.minScoreBound).toBe(0)
 })
 
+// The pinned domain resolves both score bounds to numbers with neither config
+// slot set, so a Score menu asking the resolved bounds whether a manual range is
+// in force captioned every freshly opened GC track "(0 – 1)" and offered it a
+// "Clear manual min/max" row that wrote the sentinels already there — nothing
+// changed on screen and the row stayed.
+function scoreMenuLabels(display: { trackMenuItems: () => unknown[] }) {
+  const walk = (items: unknown[]): string[] =>
+    items.flatMap(item => {
+      const { label, subMenu } = item as { label?: string; subMenu?: unknown[] }
+      return [label ?? '', ...(subMenu ? walk(subMenu) : [])]
+    })
+  return walk(display.trackMenuItems()).filter(label =>
+    label.includes('min/max'),
+  )
+}
+
+test('the pinned domain is not mistaken for a manual score bound', async () => {
+  const { display } = await createDisplay()
+  expect(scoreMenuLabels(display)).toEqual(['Set min/max score...'])
+
+  display.setMaxScore(0.75)
+  expect(scoreMenuLabels(display)).toEqual([
+    'Set min/max score (0 – 0.75)...',
+    'Clear manual min/max',
+  ])
+
+  display.setMinScore(undefined)
+  display.setMaxScore(undefined)
+  expect(display.maxScoreBound).toBe(1)
+  expect(scoreMenuLabels(display)).toEqual(['Set min/max score...'])
+})
+
 test('the GC parameters also reach the adapter config the worker resolves', async () => {
   const { display } = await createDisplay()
   display.setGCMode('skew')
