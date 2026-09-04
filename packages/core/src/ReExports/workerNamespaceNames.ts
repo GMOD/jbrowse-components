@@ -262,6 +262,15 @@ export const CORE_UI_NAMES = [
   'wrapComponent',
 ]
 
+const BASE_FEATURE_DETAIL_NAMES = [
+  'Attributes',
+  'BaseAttributes',
+  'BaseCard',
+  'BaseCoreDetails',
+  'FeatureDetails',
+  'FeatureWash',
+]
+
 export const WORKER_NAMESPACE_NAMES: Record<string, readonly string[]> = {
   'react-dom': REACT_DOM_NAMES,
   'react-dom/client': REACT_DOM_CLIENT_NAMES,
@@ -277,4 +286,11 @@ export const WORKER_NAMESPACE_NAMES: Record<string, readonly string[]> = {
   '@material-ui/lab': MATERIAL_UI_LAB_NAMES,
   '@mui/x-data-grid': DATA_GRID_NAMES,
   '@jbrowse/core/ui': CORE_UI_NAMES,
+  // @mui/icons-material is NOT re-exported, so a plugin that wants an icon
+  // bundles icons-material, which reads `createSvgIcon` off this module. The
+  // main thread serves it (modules.ts) and the worker has to as well, or the
+  // plugin throws at module scope building its icons.
+  '@mui/material/SvgIcon': ['createSvgIcon'],
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail':
+    BASE_FEATURE_DETAIL_NAMES,
 }

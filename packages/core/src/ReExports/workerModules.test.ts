@@ -18,15 +18,55 @@ test('a non-UI entry is the same module in both realms', () => {
 
 test('a single-value UI module is the bare stub', () => {
   expect(workerModules['@mui/material/Button']).toBe(uiStub)
-  expect(workerModules['@mui/material/SvgIcon']).toBe(uiStub)
   expect(workerModules['@jbrowse/core/ui/BaseTooltip']).toBe(uiStub)
+})
+
+// esbuild's `__toESM` copies a module's own keys onto a fresh object, so a name
+// the worker serves behind the bare stub is `undefined` at the import site
+// rather than the stub -- a plugin reading it at module scope throws, and the
+// worker fails to load naming that plugin. Driving this off `modules.ts`
+// instead of off WORKER_NAMESPACE_NAMES' own keys is the point: iterating the
+// hand list cannot see a module that is missing FROM the hand list, which is
+// how `@mui/material/SvgIcon` shipped its `createSvgIcon` to the main thread
+// and a bare stub to the worker.
+const REACT_INTERNAL_KEYS = new Set([
+  '$$typeof',
+  '_debugInfo',
+  '_init',
+  '_payload',
+  'contextTypes',
+  'defaultProps',
+  'displayName',
+  'muiName',
+  'propTypes',
+  'render',
+])
+
+test('every name a served module publishes survives into the worker', () => {
+  for (const [name, mod] of Object.entries(modules)) {
+    if (name in sharedModules) {
+      continue
+    }
+    const published = Object.keys(mod as object).filter(
+      key => !REACT_INTERNAL_KEYS.has(key),
+    )
+    const served = Object.keys(WORKER_NAMESPACE_NAMES[name] ?? []).length
+      ? [...WORKER_NAMESPACE_NAMES[name]!]
+      : []
+    expect({
+      name,
+      missing: published.filter(k => !served.includes(k)),
+    }).toEqual({ name, missing: [] })
+  }
 })
 
 test('a namespace-shaped UI module has the same own keys in both realms', () => {
   for (const name of Object.keys(WORKER_NAMESPACE_NAMES)) {
     const real = Object.keys(modules[name as keyof typeof modules] as object)
-    const stub = Object.keys(workerModules[name] as object)
-    expect(stub.sort()).toEqual(real.sort())
+      .filter(key => !REACT_INTERNAL_KEYS.has(key))
+      .sort()
+    const stub = Object.keys(workerModules[name] as object).sort()
+    expect(stub).toEqual(real)
   }
 })
 
