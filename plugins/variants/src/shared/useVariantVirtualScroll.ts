@@ -1,8 +1,7 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Row-stack wheel wiring for both multi-sample variant displays: plain wheel
 // scrolls the rows, shift+wheel resizes them (a vertical-zoom gesture), and
@@ -15,7 +14,7 @@ export function useVariantVirtualScroll(
   el: HTMLElement | null,
   model: MultiSampleVariantBaseModel,
 ) {
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = containingLgv(model)
   useRowVirtualScroll(el, model, {
     viewportHeight: model.availableHeight,
     scrollZoom: view.scrollZoom,

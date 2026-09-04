@@ -2,11 +2,11 @@ import { lazy } from 'react'
 
 import {
   assembleLocString,
-  getContainingView,
   getDialogHost,
   getSession,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   hasBreakpointSplitView,
   launchBreakpointSplitView,
@@ -45,11 +45,8 @@ import type { LinkedReadsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
-
-type LGV = LinearGenomeViewModel
 
 // What the CIGAR / modification / indicator items need, and no more. Split from
 // the read-level surface below because LGVSyntenyDisplay reuses only these — a
@@ -543,7 +540,7 @@ export function getContextMenuItems(
             label: 'Split current view to show mate',
             onClick: () => {
               viewMateRegionInCurrentView({
-                view: getContainingView(self) as LGV,
+                view: containingLgv(self),
                 mate: mateFields,
               })
             },
@@ -557,7 +554,7 @@ export function getContextMenuItems(
                 {
                   label: 'Open breakpoint split view',
                   onClick: () => {
-                    const view = getContainingView(self) as LGV
+                    const view = containingLgv(self)
                     const assemblyName = view.assemblyNames[0]
                     if (assemblyName) {
                       launchBreakpointSplitView({
@@ -581,7 +578,7 @@ export function getContextMenuItems(
         icon: CallSplitIcon,
         onClick: () => {
           viewSplitAlignmentRegionsInCurrentView({
-            view: getContainingView(self) as LGV,
+            view: containingLgv(self),
             display: self,
             segments,
           })

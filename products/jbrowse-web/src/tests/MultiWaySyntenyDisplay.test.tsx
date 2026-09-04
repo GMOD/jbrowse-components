@@ -315,18 +315,25 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
       /data-testid="multiway-hover-outline"/g,
     )?.length ?? 0
 
+  const hoverGroup = (groupKey: string) => {
+    const { targets, groupTarget } = display.ribbonGeometry
+    const targetIdx = groupTarget.get(groupKey)!
+    display.setHoverTarget({ ...targets[targetIdx]!, targetIdx })
+  }
+
   expect(await outlines()).toBe(0)
-  display.setHoveredGroupKey('g1')
+  hoverGroup('g1')
   expect(await outlines()).toBe(3)
-  display.setHoveredGroupKey('g2')
+  hoverGroup('g2')
   expect(await outlines()).toBe(2)
-  display.setHoveredGroupKey(undefined)
+  display.setHoverTarget(undefined)
   expect(await outlines()).toBe(0)
 
-  // ...and the pointer reaches that state on its own. The assertions above set
-  // the key by hand, which is how the gene case shipped broken: the anchor
-  // lane DRAWS g1 as a gene model, so its box is suppressed, and the hit that
-  // replaced it carried no group. `hitTest` is the whole path a hover takes.
+  // ...and the pointer reaches that state on its own. The assertions above
+  // hover a RIBBON, which carries its group, and that is how the gene case
+  // shipped broken: the anchor lane DRAWS g1 as a gene model, so its box is
+  // suppressed, and the hit that replaced it carried no group. `hitTest` is the
+  // whole path a hover takes.
   const lane = display.laneStack.lanes[0]!
   // The export is the CAPTION half of the headers: the menu affordance, the
   // grab cursors and the interaction testids are controls, and a saved figure

@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { SidebarHintChip } from './SidebarHintChip.tsx'
@@ -10,7 +10,6 @@ import {
 import { treeIsShowing } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Warns that the dendrogram beside it was computed somewhere else.
@@ -47,7 +46,7 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
   top?: number
 }) {
   const { clusterProvenance, treeAreaWidth } = model
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = containingLgv(model)
   // Gate on the *positioned* tree: a tree that isn't drawn has no locus worth
   // captioning, and `StaleTreeHint` is already explaining that case. Through
   // `treeIsShowing`, which is what "positioned" means — spelled out here as

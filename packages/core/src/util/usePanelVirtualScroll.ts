@@ -17,8 +17,10 @@ interface PanelScrollTarget {
  *
  * These panels paint a fixed-size canvas at `-scrollTop` rather than living in a
  * DOM overflow container, so nothing scrolls them without this. The latch (inside
- * `applyScroll`) owns `preventDefault` but never `stopPropagation`, so a diagonal
- * wheel still bubbles its horizontal component to the LGV for panning.
+ * `applyScroll`) owns `preventDefault` but never `stopPropagation`: the event
+ * still reaches the LGV, which reads that flag and declines a gesture this panel
+ * has claimed, so a diagonal wheel scrolls the reads without also panning the
+ * genome sideways.
  *
  * ADR-027 keeps wheel-*intent* dispatch per handler, because the panels do not
  * agree on what a gesture means. This is the second of the two rules that

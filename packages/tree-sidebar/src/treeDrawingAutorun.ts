@@ -1,5 +1,6 @@
-import { getContainingView, getPaletteHost } from '@jbrowse/core/util'
+import { getPaletteHost } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
@@ -13,7 +14,6 @@ import { rowRuns } from './rowRuns.ts'
 import { treeContentHeight } from './treeSidebarGeometry.ts'
 
 import type { TreeDrawingModel } from './types.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // `getPreparedCanvas2D` (render-core) owns the backing-store size + dpr scaling
 // + clear: sizing and drawing happen in the same reaction so a later
@@ -86,7 +86,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = containingLgv(self)
         if (!view.initialized) {
           return
         }

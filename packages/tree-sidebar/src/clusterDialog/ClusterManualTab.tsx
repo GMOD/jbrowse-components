@@ -5,8 +5,8 @@ import {
   ErrorBanner,
   SubmitForm,
 } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   Button,
   FormControlLabel,
@@ -24,7 +24,6 @@ import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
 import { resolveClusterRunArgs } from './clusterRunArgs.ts'
 
 import type { ClusterDialogProps } from './types.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // @gmod/hclust is average-linkage only (equivalent to R's
 // hclust(method="average")), so 'average' is what the "Run clustering" button
@@ -65,7 +64,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
   // The matrix is computed over the visible region at the current resolution, so
   // the key has to track both — otherwise panning or zooming while the dialog is
   // open leaves the script and TSV describing rows that are no longer on screen.
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = containingLgv(model)
   const regionKey = JSON.stringify({
     blocks: view.dynamicBlocks.contentBlocks.map(b => [
       b.refName,

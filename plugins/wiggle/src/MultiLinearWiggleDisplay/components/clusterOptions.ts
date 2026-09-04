@@ -1,11 +1,10 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
 import type { Region } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One sample per pixel. The declarative `runClustering` autorun deliberately
 // clusters at this density rather than reading the persisted preference below:
@@ -44,7 +43,7 @@ export function clusterScoreMatrixArgs(
   samplesPerPixel: string,
   regions: Region[],
 ) {
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = containingLgv(model)
   const density = parseSamplesPerPixel(samplesPerPixel)
   const width = view.width || 1
   const span = regions.reduce((a, r) => a + (r.end - r.start), 0)

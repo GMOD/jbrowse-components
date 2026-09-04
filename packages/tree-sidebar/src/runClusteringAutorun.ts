@@ -1,5 +1,4 @@
 import {
-  getContainingView,
   getNotificationSink,
   getRpcHost,
   getSession,
@@ -9,6 +8,7 @@ import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type {
@@ -103,7 +103,7 @@ export function setupRunClusteringAutorun(
         if (!self.runClustering || applying || !opts.ready()) {
           return
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = containingLgv(self)
         if (!view.initialized) {
           return
         }

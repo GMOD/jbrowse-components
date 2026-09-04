@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
@@ -10,7 +10,6 @@ import { screenDensity } from './regionDensity.ts'
 import type { RegionDensityStats } from './regionDensity.ts'
 import type { BaseLinearDisplayConfigModel } from '@jbrowse/display-kit/configSchema'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /** What this mixin reads off its host: the config and `RegionTooLargeMixin`'s gate terms. */
 export interface GateHost {
@@ -21,10 +20,6 @@ export interface GateHost {
 
 function host(self: object) {
   return self as GateHost
-}
-
-function gateView(self: object) {
-  return getContainingView(self) as LinearGenomeViewModel
 }
 
 /** One region's fetch result plus the region, so the gate does the span arithmetic. */
@@ -79,7 +74,7 @@ export default function CanvasFeatureGateMixin() {
       observedMaxDensity(bpPerPx: number) {
         return Math.max(
           0,
-          ...gateView(self).visibleRegions.map(r => {
+          ...containingLgv(self).visibleRegions.map(r => {
             const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
             return ds ? screenDensity(ds, bpPerPx) : 0
           }),
@@ -93,7 +88,7 @@ export default function CanvasFeatureGateMixin() {
        * layout cadence. Zero before the view is measured.
        */
       get visibleFeatureDensityPerPx() {
-        const view = gateView(self)
+        const view = containingLgv(self)
         if (!view.initialized) {
           return 0
         }

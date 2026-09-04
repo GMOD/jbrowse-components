@@ -1,5 +1,6 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   getAssemblyName,
   hasBreakpointSplitView,
@@ -13,7 +14,6 @@ import { SPLIT_VIEW_MENU_LABEL } from '../LinearVariantDisplay/labels.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // What launching the dialog needs from the display it was invoked on.
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
@@ -66,7 +66,7 @@ export function breakendSplitViewMenuItem(
  * which is easy to forget in a second copy.
  */
 export function launchFromFeature(self: BreakendLaunchSelf, feature: Feature) {
-  const view = getContainingView(self) as LinearGenomeViewModel
+  const view = containingLgv(self)
   const assemblyName = getAssemblyName(view)
   if (assemblyName && isAlive(self)) {
     launchBreakpointSplitView({

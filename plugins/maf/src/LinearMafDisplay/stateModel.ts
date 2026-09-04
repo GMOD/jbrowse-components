@@ -30,6 +30,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -141,7 +142,6 @@ import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSource } from '@jbrowse/tree-sidebar'
 
 /**
@@ -312,7 +312,7 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         get view() {
-          return getContainingView(self) as LinearGenomeViewModel
+          return containingLgv(self)
         },
         /**
          * #getter
@@ -2370,7 +2370,7 @@ export default function stateModelFactory(
               ...mafLaunchMenuItems({
                 session: getSession(self),
                 model: self,
-                view: getContainingView(self) as LinearGenomeViewModel,
+                view: containingLgv(self),
               }),
             ]
           },

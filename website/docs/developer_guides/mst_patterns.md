@@ -422,7 +422,7 @@ the inherited track menu:
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,
-          view: getContainingView(self) as LinearGenomeViewModel,
+          view: containingLgv(self),
         }),
       ]
     },

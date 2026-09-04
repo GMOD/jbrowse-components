@@ -78,7 +78,7 @@ where the display is defined; to add to one belonging to another plugin, use
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,
-          view: getContainingView(self) as LinearGenomeViewModel,
+          view: containingLgv(self),
         }),
       ]
     },

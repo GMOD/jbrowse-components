@@ -176,6 +176,7 @@ interface WheelState {
 /**
  * The one wheel gesture handler for linear views. Its decision matrix:
  *
+ *   - a wheel a nested scroller already consumed  → declined, it owns the gesture
  *   - ctrl/meta+wheel, or (scrollZoom && |dy| >= |dx|)  → zoom about the cursor
  *   - shift+wheel while scrollZoom is on                → declined, we pass
  *   - a horizontal delta, unless one arrives mid-zoom   → pan by dx
@@ -259,7 +260,15 @@ export function createWheelZoomController({
 
   function onWheel(event: WheelEvent) {
     onEvent?.(event)
-    const gated = presence !== undefined && !presence.isOver
+    // A nested vertical scroller preventDefaults exactly what it consumed, and
+    // that flag is still readable on the way up, so the view declines what a
+    // panel is already scrolling: a trackpad emits a small deltaX alongside
+    // every vertical swipe, which used to pan the genome sideways under someone
+    // who was only scrolling reads. No timer of our own — the scroll latch
+    // holds the whole continuous gesture, boundary included, and releasing it
+    // is the pause that ends the gesture.
+    const gated =
+      event.defaultPrevented || (presence !== undefined && !presence.isOver)
     const target = gated ? undefined : resolveTarget(event)
     if (target && !(event.shiftKey && target.scrollZoom)) {
       // a gap longer than the frame-elapsed clamp means this event starts a new

@@ -1,4 +1,3 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
@@ -6,7 +5,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../index.ts'
+import { containingLgv } from '../../LinearGenomeView/containingLgv.ts'
+
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
@@ -29,7 +29,7 @@ export const TrackLabelCloseButton = observer(function TrackLabelCloseButton({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const view = getContainingView(track) as LinearGenomeViewModel
+  const view = containingLgv(track)
   return (
     <IconButton
       onClick={() => view.hideTrack(track.trackId)}

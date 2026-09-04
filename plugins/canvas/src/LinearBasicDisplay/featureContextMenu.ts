@@ -5,12 +5,12 @@ import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
-  getContainingView,
   getDialogHost,
   pluralize,
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -37,7 +37,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ElementType } from 'react'
 
 const FeatureSequenceDialog = lazy(
@@ -210,7 +209,7 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
       label: `Zoom to ${self.featureNoun}`,
       icon: CenterFocusStrongIcon,
       onClick: () => {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = containingLgv(self)
         // `displayedRegions`, not `loadedRegions`: `displayedRegionIndex` is an
         // index into it, and it is the set `navTo` resolves against. Resolved on
         // click, not while building the menu, since either can be swapped out

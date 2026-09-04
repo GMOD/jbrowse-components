@@ -4,7 +4,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView } from '@jbrowse/core/util'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
@@ -19,6 +18,7 @@ import {
 } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
@@ -39,7 +39,6 @@ import type {
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**
@@ -105,7 +104,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     }))
     .views(self => ({
       get view() {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
       },
       /**
        * #getter
@@ -395,18 +394,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The per-frame map from the payload's pre-rotation data space
-       * (origin-relative axis bp / √2) to canvas px, read by the render state,
-       * the hit test and the SVG export so the three cannot disagree. Worker
-       * output is genomic, so this is pure live-view arithmetic — pan and zoom
-       * move it every frame with no refetch — and the one payload-derived term,
-       * `originBp`, folds the axis origin back in here, in double precision,
-       * which is what keeps float32 instance positions small (see
-       * `calcAxisBlocks`). Stale data during a refetch simply draws at its own
-       * genomic position under the live map.
+       * The per-frame map from the payload's pre-rotation data space to canvas
+       * px; `triangleViewTransform` owns the arithmetic and says why.
        */
       get viewTransform() {
-        return triangleViewTransform(self.host, self.rpcData?.originBp ?? 0)
+        return triangleViewTransform(self.host, self.rpcData)
       },
     }))
     .views(self => ({

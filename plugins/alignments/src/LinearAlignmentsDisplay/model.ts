@@ -18,7 +18,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   canonicalizeViewRefName,
   getContainingTrack,
-  getContainingView,
   getNotificationSink,
   getPaletteHost,
   getSession,
@@ -49,6 +48,7 @@ import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
@@ -222,7 +222,6 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
@@ -513,7 +512,7 @@ export default function stateModelFactory(
          * #getter
          */
         get view() {
-          return getContainingView(self) as LinearGenomeViewModel
+          return containingLgv(self)
         },
         /**
          * #getter

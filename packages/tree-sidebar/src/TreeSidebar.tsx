@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -21,7 +21,6 @@ import {
 } from './treeSidebarGeometry.ts'
 
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ReactNode } from 'react'
 
 interface MenuAnchor {
@@ -123,7 +122,7 @@ const TreeSidebar = observer(function TreeSidebar({
   top?: number
 }) {
   const { classes } = useStyles()
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = containingLgv(model)
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
   const {

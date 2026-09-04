@@ -8,7 +8,6 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import {
   canonicalizeViewRefName,
   getContainingTrack,
-  getContainingView,
   getNotificationSink,
   openFeatureWidget,
   SimpleFeature,
@@ -29,6 +28,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
@@ -73,10 +73,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
-import type {
-  LegendSection,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
 // Apply a `colorBy` palette to the sample sources. Returns the colored sources,
 // or undefined when there's nothing to apply (no colorBy attribute, or sources
@@ -526,7 +523,7 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .views(self => ({
         get view() {
-          return getContainingView(self) as LinearGenomeViewModel
+          return containingLgv(self)
         },
         /**
          * #method

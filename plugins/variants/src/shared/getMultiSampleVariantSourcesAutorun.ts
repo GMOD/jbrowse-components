@@ -1,10 +1,10 @@
-import { getContainingView, getNotificationSink } from '@jbrowse/core/util'
+import { getNotificationSink } from '@jbrowse/core/util'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { Source } from './types.ts'
 import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { StatusWindow } from '@jbrowse/core/util/progress'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiSampleVariantSourcesAutorun(
   self: PrerequisiteFetchHost & {
@@ -26,7 +26,7 @@ export function getMultiSampleVariantSourcesAutorun(
     // It reads no view geometry itself, so nothing here throws before init —
     // the gate is what keeps a full-file scan from starting ahead of the
     // display's own first fetch.
-    gate: () => (getContainingView(self) as LinearGenomeViewModel).initialized,
+    gate: () => containingLgv(self).initialized,
     run: (adapterConfig, ctx) =>
       ctx.callRpc('MultiSampleVariantGetSources', { adapterConfig }),
     commit: ({ sources, warnings }) => {

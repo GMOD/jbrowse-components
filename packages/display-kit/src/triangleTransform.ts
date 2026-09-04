@@ -86,12 +86,17 @@ export function triangleScreenToData(
  * positions small. Stale data under a refetch draws at its own genomic position
  * under the live map. HiC and LD both read it into their render state, hit
  * test and SVG export, so the three cannot disagree.
+ *
+ * Takes the payload rather than its `originBp` so the no-payload-yet origin is
+ * decided here too — there is nothing drawn to anchor, and both consumers were
+ * spelling the same 0 at their own call site.
  */
 export function triangleViewTransform(
   host: { bpPerPx: number; offsetPx: number },
-  originBp: number,
+  data: { originBp: number } | null,
 ) {
   const { bpPerPx, offsetPx } = host
+  const originBp = data ? data.originBp : 0
   return {
     viewScale: 1 / bpPerPx,
     viewOffsetX: originBp / bpPerPx - offsetPx,

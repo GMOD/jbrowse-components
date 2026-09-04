@@ -4,7 +4,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView } from '@jbrowse/core/util'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import {
   activeJexlFilters,
@@ -24,6 +23,7 @@ import {
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { ldValueComputed } from '@jbrowse/ld-core'
 import { cast, types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
@@ -51,7 +51,6 @@ import type {
 import type { LDRpcProps } from './ldFetchPhases.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
@@ -166,7 +165,7 @@ export default function sharedModelFactory(
     }))
     .views(self => ({
       get view() {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
       },
       /**
        * #getter
@@ -530,15 +529,11 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * The per-frame map from the payload's pre-rotation data space
-       * (origin-relative bp / √2) to canvas px, shared by the render state, the
-       * hit test, the overlays and the SVG export so none of them can disagree.
-       * Pure live-view arithmetic; the one payload-derived term, `originBp`,
-       * folds the payload's own axis anchor back in — in double precision — so
-       * a stale triangle draws at its genomic position while a refetch runs.
+       * The per-frame map from the payload's pre-rotation data space to canvas
+       * px; `triangleViewTransform` owns the arithmetic and says why.
        */
       get viewTransform() {
-        return triangleViewTransform(self.host, self.rpcData?.originBp ?? 0)
+        return triangleViewTransform(self.host, self.rpcData)
       },
       /**
        * #getter

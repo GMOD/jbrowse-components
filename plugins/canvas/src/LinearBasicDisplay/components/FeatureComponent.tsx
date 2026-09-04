@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useId, useState } from 'react'
 import { ScrollEdgeShadow, VerticalScrollbar } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
@@ -14,7 +14,10 @@ import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import {
+  containingLgv,
+  FloatingLegend,
+} from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -35,9 +38,6 @@ import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 // The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
 // display registers this component from index.ts, so nothing imports it back into
@@ -189,7 +189,7 @@ const FeatureBody = observer(function FeatureBody({
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
-  const view = getContainingView(model) as LGV
+  const view = containingLgv(model)
 
   // `canvasWidthPx` off the model, gated on `initialized` because it reaches
   // `view.width`, which throws before the view is measured. Never a second

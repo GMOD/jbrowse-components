@@ -8,7 +8,6 @@ import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import {
   addAndShowTrack,
   getContainingTrack,
-  getContainingView,
   getPaletteHost,
   getSession,
   getDialogHost,
@@ -22,7 +21,10 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
-import { GetSequenceDialog } from '@jbrowse/plugin-linear-genome-view'
+import {
+  containingLgv,
+  GetSequenceDialog,
+} from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
@@ -45,7 +47,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ZOOMED_OUT_BP_PER_PX = 10
 const ROW_HEIGHT_PX = 15
@@ -119,7 +120,7 @@ export function modelFactory(
        * #getter
        */
       get view() {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
       },
     }))
     .views(self => ({
@@ -483,9 +484,7 @@ export function modelFactory(
                 {
                   label: 'Get sequence (visible region)',
                   onClick: () => {
-                    const view = getContainingView(
-                      self,
-                    ) as LinearGenomeViewModel
+                    const view = containingLgv(self)
                     // Whole-base: a fractional span reaches `fetchSequence` and
                     // comes back the wrong length, which the dialog reports as
                     // "returned N bases, but should have returned M".

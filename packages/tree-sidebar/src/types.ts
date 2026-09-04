@@ -58,7 +58,7 @@ export type TreeSource = Pick<RowSource, 'name' | 'color'>
  */
 export type RowLabelSource = Pick<RowSource, 'name' | 'label' | 'labelColor'>
 
-export interface TreeSidebarModel {
+export interface TreeSidebarModel extends IStateTreeNode {
   totalHeight?: number
   hierarchy?: ClusterHierarchyNode
   // The parsed (and subtree-filtered) tree, from TreeSidebarMixin. `hierarchy`

@@ -362,6 +362,34 @@ describe('createWheelZoomController', () => {
     expect(globalThis.requestAnimationFrame).not.toHaveBeenCalled()
   })
 
+  test('declines a wheel a nested panel already consumed', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false })
+    // a display's virtual scroll: it preventDefaults the vertical delta it took,
+    // and the diagonal's horizontal component must not also pan the view
+    const panel = document.createElement('div')
+    element.append(panel)
+    panel.addEventListener('wheel', e => {
+      e.preventDefault()
+    })
+    wheel({ deltaX: 12, deltaY: 80 }, panel)
+    runFrame(1000)
+
+    expect(view.horizontalScroll).not.toHaveBeenCalled()
+    expect(view.zoomTo).not.toHaveBeenCalled()
+  })
+
+  test('pans a wheel a nested panel left alone', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false })
+    const panel = document.createElement('div')
+    element.append(panel)
+    wheel({ deltaX: 40 }, panel)
+    runFrame(1000)
+
+    expect(view.horizontalScroll).toHaveBeenCalledWith(40)
+  })
+
   test('follows a latched gesture off the element by default', () => {
     const view = makeView()
     setup({ views: [view], scrollZoom: true })

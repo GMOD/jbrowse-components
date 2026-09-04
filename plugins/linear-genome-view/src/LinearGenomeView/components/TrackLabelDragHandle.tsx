@@ -1,9 +1,9 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DragIcon from '@mui/icons-material/DragIndicator'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../index.ts'
+import { containingLgv } from '../../LinearGenomeView/containingLgv.ts'
+
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
@@ -23,7 +23,7 @@ const TrackLabelDragHandle = observer(function TrackLabelDragHandle({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const view = getContainingView(track) as LinearGenomeViewModel
+  const view = containingLgv(track)
   const trackId = track.trackId
   return (
     <span

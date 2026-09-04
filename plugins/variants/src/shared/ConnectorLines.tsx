@@ -1,8 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, getStrokeProps } from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -10,7 +10,8 @@ import { pointToSegmentDist, svgMousePoint } from '../util.ts'
 import { BandSeamHandle } from './BandSeamHandle.tsx'
 import { connectorLineAlpha } from './connectorLineAlpha.ts'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+/* eslint-disable react-refresh/only-export-components */
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // One connector, in viewport pixels (0 = the view's left edge): `mx` is the
 // matrix-column center at the bottom of the zone, `gx` the genomic position on
@@ -27,7 +28,7 @@ export interface ConnectorCoord {
 
 // Everything the overlay needs off a display, so the SVG-export paths can
 // declare it too rather than restating the fields.
-export interface ConnectorLinesModel {
+export interface ConnectorLinesModel extends IStateTreeNode {
   height: number
   lineZoneHeight: number
   connectorLineCoords: ConnectorCoord[]
@@ -233,7 +234,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   children?: React.ReactNode
 }) {
   const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
-  const { width } = getContainingView(model) as LinearGenomeViewModel
+  const { width } = containingLgv(model)
   const [hovered, setHovered] = useState<ConnectorCoord>()
   // The coords are rebuilt whenever the view moves, so a hovered entry missing
   // from the current list is one left over from a zoom or a refetch that never

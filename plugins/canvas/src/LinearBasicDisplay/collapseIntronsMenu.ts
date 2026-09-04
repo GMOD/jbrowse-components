@@ -6,11 +6,11 @@ import {
   getSession,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
-import { getView } from './baseModel.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -93,7 +93,7 @@ export function collapseIntronsMenuItem(
           session.notify('No introns found in this feature', 'info')
           return
         }
-        const view = getView(self)
+        const view = containingLgv(self)
         const assemblyName = view.assemblyNames[0]
         const assembly = assemblyName
           ? session.assemblyManager.get(assemblyName)

@@ -6,17 +6,13 @@ import {
   addViewMenuItems,
 } from '@jbrowse/core/pluggableElementTypes'
 import { LAUNCH_LABEL, launchTargetsMenuItem } from '@jbrowse/core/ui'
-import {
-  getContainingTrack,
-  getContainingView,
-  getDialogHost,
-} from '@jbrowse/core/util'
+import { getContainingTrack, getDialogHost } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import NotesIcon from '@mui/icons-material/Notes'
 
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // plugin install() runs at startup, so a static import would put the dialog
 // (and the MUI Slider it uses) in the first-paint bundle
@@ -111,7 +107,7 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
       label: VISIBLE_LABEL,
       icon: NotesIcon,
       onClick: () => {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = containingLgv(self)
         // Whole-base, as the rubberband entry passes: the dialog seeds its
         // Region field by way of `assembleLocString`, and a fractional
         // coordinate does not survive the parse back — the field opens red and

@@ -7,9 +7,10 @@ import {
   SubmitDialog,
   TagTextField,
 } from '@jbrowse/core/ui'
-import { getContainingView, statusProgressLabel } from '@jbrowse/core/util'
+import { statusProgressLabel } from '@jbrowse/core/util'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -19,7 +20,6 @@ import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
 // radio-building fields (GroupByMenuModel in ../menus/sortGroup.ts) and hands the
@@ -120,8 +120,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       getUniqueTags({
         self: model,
         tag: debouncedTag,
-        blocks: (getContainingView(model) as LinearGenomeViewModel)
-          .staticBlocks,
+        blocks: containingLgv(model).staticBlocks,
         opts: { stopToken, statusCallback },
       }),
   )

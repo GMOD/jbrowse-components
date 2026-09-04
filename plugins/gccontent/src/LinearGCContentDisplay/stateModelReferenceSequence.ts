@@ -1,19 +1,18 @@
 import { getConf } from '@jbrowse/core/configuration'
 import {
   addAndShowTrack,
-  getContainingView,
   getSession,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import { makeGCContentTrackConf } from '../makeGCContentTrackConf.ts'
 import SharedModelF from './shared.tsx'
 
 import type { LinearGCContentDisplayConfigSchema } from './index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearGCContentDisplay
@@ -65,7 +64,7 @@ export default function stateModelF(
        * `showTrack`, which the duck-typed `host` does not carry.
        */
       get view() {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
       },
     }))
     .actions(self => ({

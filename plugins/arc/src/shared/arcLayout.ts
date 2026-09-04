@@ -1,11 +1,11 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import { arcApexY } from './arcShape.ts'
 
 import type { ArcShape } from './arcShape.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One arc, placed — screen px with `view.offsetPx` already subtracted. Both
 // displays resolve their features into this and everything downstream of it is
@@ -134,7 +134,7 @@ export function layOutArcs<S>(
     place: (refName: string, coord: number) => ArcPoint | undefined,
   ) => ArcParts | undefined,
 ) {
-  const view = getContainingView(self) as LinearGenomeViewModel
+  const view = containingLgv(self)
   const [assemblyName] = view.assemblyNames
   const assembly = assemblyName
     ? getSession(self).assemblyManager.get(assemblyName)

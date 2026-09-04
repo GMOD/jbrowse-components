@@ -11,7 +11,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
-  getContainingView,
   getDialogHost,
   getPaletteHost,
   getSession,
@@ -37,6 +36,7 @@ import {
 } from '@jbrowse/display-kit/displayAutoruns'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -127,13 +127,8 @@ import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LegendItem,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 const EMPTY_LAID_OUT_DATA: ReadonlyMap<number, FeatureDataResult> = new Map()
 
@@ -149,10 +144,6 @@ type LoadedFeatureData = FeatureDataResult & {
   // resolved to its uniqueId *before* layout (see highlightedFeatureIdSet)
   refName: string
   reversed: boolean
-}
-
-export function getView(self: IAnyStateTreeNode): LGV {
-  return getContainingView(self) as LGV
 }
 
 // The two pieces of optional chrome a canvas-family subclass can contribute to
@@ -410,7 +401,7 @@ export default function baseStateModelFactory(
         get layoutReady() {
           return (
             !self.regionTooLarge &&
-            getView(self).initialized &&
+            containingLgv(self).initialized &&
             self.rpcDataMap.size > 0
           )
         },
@@ -435,7 +426,7 @@ export default function baseStateModelFactory(
           if (!self.layoutReady) {
             return undefined
           }
-          const blocks = getView(self).coarseDynamicBlocks
+          const blocks = containingLgv(self).coarseDynamicBlocks
           return blocks.length === 0
             ? undefined
             : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
@@ -459,7 +450,7 @@ export default function baseStateModelFactory(
             return self.visibleFeatureDensityPerPx
           }
           let widthPx = 0
-          for (const block of getView(self).coarseDynamicBlocks) {
+          for (const block of containingLgv(self).coarseDynamicBlocks) {
             widthPx += block.widthPx
           }
           return widthPx > 0
@@ -670,7 +661,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get colorByCDS() {
-          const view = getView(self)
+          const view = containingLgv(self)
           return view.colorByCDS
         },
 
@@ -678,7 +669,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showAminoAcids() {
-          const view = getView(self)
+          const view = containingLgv(self)
           return view.showAminoAcids
         },
 
@@ -861,7 +852,7 @@ export default function baseStateModelFactory(
          * is what the layout groups by (see `LayoutRegionData`).
          */
         get layoutInputs() {
-          const view = getView(self)
+          const view = containingLgv(self)
           return {
             bpPerPx: view.coarseBpPerPx,
             reversedRegions: self.reversedRegions,
@@ -1361,7 +1352,7 @@ export default function baseStateModelFactory(
         // not.
         get featureItemMap(): Map<string, FeatureItemEntry> {
           const map = new Map<string, FeatureItemEntry>()
-          const visibleRegions = getView(self).visibleRegions
+          const visibleRegions = containingLgv(self).visibleRegions
           for (const vr of visibleRegions) {
             const data = self.laidOutDataMap.get(vr.displayedRegionIndex)
             if (!data) {
@@ -1396,7 +1387,7 @@ export default function baseStateModelFactory(
         // — so this both matches the geometry the rows were packed at and keeps a
         // smooth zoom from rebuilding every index each frame.
         get flatbushIndexes() {
-          const bpPerPx = getView(self).coarseBpPerPx
+          const bpPerPx = containingLgv(self).coarseBpPerPx
           const labels = {
             showLabels: self.renderedShowLabels,
             showDescriptions: self.renderedShowDescriptions,
@@ -1817,7 +1808,7 @@ export default function baseStateModelFactory(
         get zoomFetchKey(): string {
           const peptides =
             self.showAminoAcids &&
-            shouldRenderPeptideBackground(getView(self).bpPerPx)
+            shouldRenderPeptideBackground(containingLgv(self).bpPerPx)
           return `${peptides}|${self.effectiveGeneGlyphMode}`
         },
         /**
@@ -1888,7 +1879,7 @@ export default function baseStateModelFactory(
            */
           reload() {
             superReload()
-            const view = getView(self)
+            const view = containingLgv(self)
             if (view.initialized) {
               self.fetchNeeded(view.bufferedVisibleRegions)
             }
@@ -1898,11 +1889,12 @@ export default function baseStateModelFactory(
            * #action
            */
           fetchNeeded(needed: IndexedRegion[]) {
-            const view = getView(self)
+            const view = containingLgv(self)
             const bpPerPx = view.bpPerPx
             // Not in `rpcProps()` — see the note there for why it must not be a
             // cache key.
             const maxFeatureDensity = self.maxFeatureDensity
+            const args = rpcArgs(self)
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -1921,7 +1913,6 @@ export default function baseStateModelFactory(
                 const assembly = getSession(self).assemblyManager.get(
                   region.assemblyName,
                 )
-                const args = rpcArgs(self)
                 return ctx.callRpc('RenderFeatureData', {
                   ...args,
                   displayConfig: {

@@ -24,7 +24,8 @@ event therefore hits **two** bubble-phase listeners in order:
 
 `preventDefault()` doesn't stop propagation, so both run; the panel handler
 suppresses the browser default and the view handler keys off `scrollZoom` to
-decide zoom-vs-pan. The composition is coherent — e.g. with `scrollZoom` ON, a
+decide zoom-vs-pan — and off `defaultPrevented`, which is how it knows the panel
+already took this one. The composition is coherent — e.g. with `scrollZoom` ON, a
 plain wheel over a pileup is skipped by the panel (so it falls through to the
 view and zooms), while `shift`+wheel scrolls the pileup and the view bails via
 its `shift && scrollZoom` escape hatch. The *complexity the user feels is real*:
@@ -35,7 +36,7 @@ gesture.
 
 | Handler | Concern | Wheel rule |
 | --- | --- | --- |
-| `useWheelScroll.ts` (LGV) | zoom + horizontal genome pan | `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`. |
+| `useWheelScroll.ts` (LGV) | zoom + horizontal genome pan | `defaultPrevented` → bail (a panel below consumed it). `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`. |
 | `usePanelVirtualScroll.ts` (pileup, canvas basic) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched). → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
 | `useRowVirtualScroll.ts` (both variant displays, MAF) | rows vertical scroll + row height | skip if `ctrl || meta`. `shift` → **change row height**. else if `!scrollZoom` → scroll inner (latched). |
 
@@ -77,6 +78,15 @@ One consequence worth stating, since it is not obvious from the rules table: a
 panel handler owns `preventDefault` but never `stopPropagation`, so an overlay
 that wants a wheel entirely to itself has to stop propagation on its own — which
 is what the scrollbar does, and why wheeling it never also zooms the view.
+
+`preventDefault` is nonetheless what the view reads to stay out of a panel's
+gesture. A trackpad's vertical swipe carries a small `deltaX` on every event, and
+the view used to pan the genome sideways on it while the reads scrolled — two
+axes moving for a one-axis gesture. The view now declines any wheel that arrives
+already defaulted, which needs no new channel between the two handlers and no
+timer: `createScrollLatch` keeps preventing for the whole continuous gesture,
+over-scroll at the boundary included, and the pause that releases the latch is
+exactly where the view should have the wheel back.
 
 The canvas basic display used to be a third rule of its own (`useScrollSync.ts`:
 a native overflow container, `shift` the only thing that scrolled it). It moved

@@ -8,7 +8,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import {
   doesIntersect2,
-  getContainingView,
   getPaletteHost,
   getSession,
   isFeature,
@@ -23,6 +22,7 @@ import {
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { bandGroundColor } from '@jbrowse/synteny-core'
 
@@ -76,7 +76,6 @@ import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -200,12 +199,6 @@ export function stateModelFactory(
       laneLinksKey: undefined as string | undefined,
       /**
        * #volatile
-       * the ortholog group under the pointer; every ribbon of that group
-       * highlights, so one hover reads the group across all lanes
-       */
-      hoveredGroupKey: undefined as string | undefined,
-      /**
-       * #volatile
        * the glyph, box or ribbon under the pointer — what a click opens and
        * the tooltip names
        */
@@ -257,12 +250,6 @@ export function stateModelFactory(
       setLaneLinks(links: Map<string, Feature[]>, key: string) {
         self.laneLinks = links
         self.laneLinksKey = key
-      },
-      /**
-       * #action
-       */
-      setHoveredGroupKey(key: string | undefined) {
-        self.hoveredGroupKey = key
       },
       /**
        * #action
@@ -342,7 +329,15 @@ export function stateModelFactory(
        * geometry names it itself, the way the arc displays do
        */
       get lgv() {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
+      },
+      /**
+       * #getter
+       * the ortholog group under the pointer; every ribbon of that group
+       * highlights, so one hover reads the group across all lanes
+       */
+      get hoveredGroupKey() {
+        return self.hoverTarget?.groupKey
       },
     }))
     .views(self => ({
@@ -1140,18 +1135,6 @@ export function stateModelFactory(
        */
       setHoverTarget(target: HoverTarget | undefined) {
         self.hoverTarget = target
-        self.hoveredGroupKey = target?.groupKey
-      },
-      /**
-       * #action
-       * `BaseDisplay`'s hook. Two clears call it, because two different things
-       * move the lanes under a stationary cursor: the foundation's
-       * viewport-change reaction, and this display's own relayout reaction (see
-       * afterAttach)
-       */
-      clearHoveredFeature() {
-        self.hoverTarget = undefined
-        self.hoveredGroupKey = undefined
       },
       /**
        * #action
@@ -1179,6 +1162,16 @@ export function stateModelFactory(
             ? self.hitTest(state.x, state.y)
             : undefined,
         )
+      },
+      /**
+       * #action
+       * `BaseDisplay`'s hook. Two clears call it, because two different things
+       * move the lanes under a stationary cursor: the foundation's
+       * viewport-change reaction, and this display's own relayout reaction (see
+       * afterAttach)
+       */
+      clearHoveredFeature() {
+        self.setHoverTarget(undefined)
       },
       /**
        * #action

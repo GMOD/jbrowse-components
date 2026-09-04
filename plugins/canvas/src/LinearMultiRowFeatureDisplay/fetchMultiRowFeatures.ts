@@ -23,7 +23,7 @@ export function fetchMultiRowFeatures(
   self: FetchSelf,
   needed: IndexedRegion[],
 ) {
-  const props = self.rpcProps()
+  const args = rpcArgs(self)
   // An empty slot means "resolve it from the data", which the worker does off a
   // sample of the region it packs — so a region loaded later can pick a
   // different attribute than the ones on screen. Once a region with features in
@@ -35,13 +35,13 @@ export function fetchMultiRowFeatures(
   // something other than the pin reads as holding nothing and is refetched with
   // the field spelled out.
   const partitionField =
-    props.partitionField === AUTO_PARTITION_FIELD
+    args.partitionField === AUTO_PARTITION_FIELD
       ? self.pinnedPartitionField
-      : props.partitionField
+      : args.partitionField
   return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
       ctx.callRpc('MultiRowGetFeatures', {
-        ...rpcArgs(self),
+        ...args,
         region,
         partitionField,
       }),
