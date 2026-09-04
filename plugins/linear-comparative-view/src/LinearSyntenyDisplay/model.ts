@@ -22,8 +22,8 @@ import {
   featureAttributes,
   getCoarseBpPerPxThreshold,
   fetchWindowSignature,
+  lodTierAt,
   regionSignature,
-  resolveLodTier,
   swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
@@ -771,14 +771,11 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         // Nothing fetches before both views are ready; 'fine' is the neutral
         // answer there, and also what a non-tiered adapter resolves to.
         return connected
-          ? resolveLodTier({
-              bpPerPx: Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx),
-              coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(
-                self.parentTrack,
-              ),
-              lodMode: this.view.lodMode,
-              tierInfo: self.lodTierInfo,
-            })
+          ? lodTierAt(
+              self,
+              Math.min(connected.v0.bpPerPx, connected.v1.bpPerPx),
+              this.view.lodMode,
+            )
           : 'fine'
       },
       /**

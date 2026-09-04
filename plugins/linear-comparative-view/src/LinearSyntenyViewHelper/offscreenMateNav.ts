@@ -4,6 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { runInAction } from 'mobx'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
@@ -120,6 +121,28 @@ export function takeFollowAnchor(
           host.setFollowAnchorIndex(previous)
         }
       }
+    },
+  }
+}
+
+/**
+ * The Undo a stack-moving click's snackbar offers: put the captured viewports
+ * back and give the anchor back, in ONE transaction, so the follow sees the
+ * settled pre-click state rather than a half-restored one. The two halves come
+ * from `captureStackViewports` and `takeFollowAnchor` above, and the ordering
+ * subtlety is why the settlement lives beside them rather than at each caller.
+ */
+export function undoStackMoveAction(
+  restore: () => void,
+  anchor: { release: () => void },
+) {
+  return {
+    name: 'Undo',
+    onClick: () => {
+      runInAction(() => {
+        restore()
+        anchor.release()
+      })
     },
   }
 }

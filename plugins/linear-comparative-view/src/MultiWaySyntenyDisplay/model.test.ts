@@ -28,29 +28,31 @@ test('the lane fetch is part of loading only until it first lands', () => {
   expect(display.laneGenesFetchSpecs.specs.length).toBeGreaterThan(0)
   expect(display.displayPhase).toBe('loading')
 
-  display.setLaneGenes(new Map(), display.laneGenesFetchSpecs.key)
+  display.setLaneGenes(new Map(), display.laneGenesFetchSpecs.key, false)
   expect(display.displayPhase).toBe('ready')
 
   // the pan's refetch: the lanes are already drawn, and the phase says so
-  display.setLaneGenes(new Map(), 'a-later-window')
+  display.setLaneGenes(new Map(), 'a-later-window', false)
   expect(display.displayPhase).toBe('ready')
 })
 
 // The anchor's gene spec exists before the ortholog fetch has framed a single
 // mate, so the first commit can be the anchor alone; a phase reading `ready`
 // off that one shot the primate amylase figure as placement boxes with every
-// mate lane still downloading. The commit that counts is the first naming a
-// mate, which the key says by joining more than one spec.
+// mate lane still downloading. The commit that counts is the first covering a
+// mate lane, which the fetch states off its own spec list.
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
-  display.setLaneGenes(new Map(), 'volvox:ctgA:0-1000')
+  display.setLaneGenes(new Map(), 'volvox:ctgA:0-1000', false)
   expect(display.laneGenesCoverMates).toBe(false)
   display.setLaneGenes(
     new Map(),
     'volvox:ctgA:0-1000;volvox_random:ctgB:0-2048',
+    true,
   )
   expect(display.laneGenesCoverMates).toBe(true)
-  display.setLaneGenes(new Map(), 'volvox:ctgA:500-1500')
+  // covered once is covered: a later anchor-only refetch does not lower it
+  display.setLaneGenes(new Map(), 'volvox:ctgA:500-1500', false)
   expect(display.laneGenesCoverMates).toBe(true)
 })
 

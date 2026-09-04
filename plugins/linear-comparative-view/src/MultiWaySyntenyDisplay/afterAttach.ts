@@ -143,7 +143,10 @@ function installLaneFetch<Spec, Result>(
       ctx: FetchContext,
     ) => Promise<readonly [string, Result]>
     loadedKey: () => string | undefined
-    commit: (byLane: Map<string, Result>, key: string) => void
+    commit: (
+      byLane: Map<string, Result>,
+      prepared: { key: string; specs: Spec[] },
+    ) => void
   },
 ) {
   installFetch(self, {
@@ -160,8 +163,8 @@ function installLaneFetch<Spec, Result>(
     // reads the same key the gate compares
     loadedKey,
     run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
-    commit: (byLane, { key }) => {
-      commit(byLane, key)
+    commit: (byLane, prepared) => {
+      commit(byLane, prepared)
     },
     setError: () => {},
   })
@@ -256,8 +259,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [spec.assemblyName, laneGeneFeatures(features)] as const
     },
-    commit: (genes, key) => {
-      self.setLaneGenes(genes, key)
+    commit: (genes, { key, specs }) => {
+      // the anchor's spec exists as soon as the view does, so a commit covers
+      // a mate lane only once the ortholog fetch has framed one
+      self.setLaneGenes(genes, key, specs.length > 1)
     },
   })
 
@@ -278,7 +283,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
     },
-    commit: (links, key) => {
+    commit: (links, { key }) => {
       self.setLaneLinks(links, key)
     },
   })

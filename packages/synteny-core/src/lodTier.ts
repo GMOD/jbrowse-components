@@ -131,6 +131,27 @@ export function resolveLodTier({
 }
 
 /**
+ * {@link resolveLodTier} over a display's own track threshold and fetched tier
+ * info — the spelling the three tiered displays share, so which `bpPerPx` and
+ * `lodMode` each feeds it stays the only per-display decision.
+ */
+export function lodTierAt(
+  host: {
+    parentTrack: { configuration: AnyConfigurationModel }
+    lodTierInfo: LodTierInfo | undefined
+  },
+  bpPerPx: number,
+  lodMode: LodMode,
+) {
+  return resolveLodTier({
+    bpPerPx,
+    coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(host.parentTrack),
+    lodMode,
+    tierInfo: host.lodTierInfo,
+  })
+}
+
+/**
  * Whether a walk through the served coarse tier's fold is off by more than a
  * pixel: a run stays within `--coarse` bp of the alignment's real path, which
  * is sub-pixel at any zoom at or past the bound and visible below it. Only a

@@ -22,10 +22,9 @@ import {
 import linearAlignmentsDisplayStateModelFactory from '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'
 import {
   LodTierInfoMixin,
-  getCoarseBpPerPxThreshold,
   installLodTierInfoFetch,
   lodMenuItems,
-  resolveLodTier,
+  lodTierAt,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 
@@ -206,22 +205,14 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * to the file's `--coarse` bound.
          */
         get lodTier() {
-          return this.tierAt(self.host.coarseBpPerPx)
+          return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
         },
         /**
          * #getter
          * The same tier off the live zoom, for the base's `dataSuperseded`.
          */
         get liveLodTier() {
-          return this.tierAt(self.host.bpPerPx)
-        },
-        tierAt(bpPerPx: number) {
-          return resolveLodTier({
-            bpPerPx,
-            coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
-            lodMode: self.lodMode,
-            tierInfo: self.lodTierInfo,
-          })
+          return lodTierAt(self, self.host.bpPerPx, self.lodMode)
         },
       }))
       .actions(self => ({

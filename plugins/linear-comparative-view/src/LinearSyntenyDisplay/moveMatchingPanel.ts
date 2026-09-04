@@ -6,11 +6,11 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
-import { runInAction } from 'mobx'
 
 import {
   captureStackViewports,
   takeFollowAnchor,
+  undoStackMoveAction,
 } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 
 import type {
@@ -163,17 +163,7 @@ export async function movePanelsToSpan({
       session.notify(
         anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
         'info',
-        {
-          name: 'Undo',
-          onClick: () => {
-            // one transaction, so the follow sees the settled pre-click state
-            // rather than a half-restored one
-            runInAction(() => {
-              restore()
-              anchor.release()
-            })
-          },
-        },
+        undoStackMoveAction(restore, anchor),
       )
     }
   } else {

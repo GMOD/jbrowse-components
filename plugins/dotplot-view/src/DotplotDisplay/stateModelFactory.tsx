@@ -9,8 +9,7 @@ import {
   ComparativeFetchMixin,
   LodTierInfoMixin,
   comparativeDisplayPhase,
-  getCoarseBpPerPxThreshold,
-  resolveLodTier,
+  lodTierAt,
   swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
@@ -399,12 +398,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        */
       get lodTier(): LodTier {
         const { view } = this
-        return resolveLodTier({
-          bpPerPx: Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
-          coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
-          lodMode: view.lodMode,
-          tierInfo: self.lodTierInfo,
-        })
+        return lodTierAt(
+          self,
+          Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
+          view.lodMode,
+        )
       },
       /**
        * #getter

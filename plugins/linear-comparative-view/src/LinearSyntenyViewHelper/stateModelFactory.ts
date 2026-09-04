@@ -17,13 +17,13 @@ import {
   comparativeSurfaceSettled,
   installClearHoverOnSurfaceMove,
 } from '@jbrowse/synteny-core'
-import { runInAction } from 'mobx'
 
 import {
   captureStackViewports,
   mateFlightAllowed,
   mateNavDestination,
   takeFollowAnchor,
+  undoStackMoveAction,
 } from './offscreenMateNav.ts'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -453,17 +453,7 @@ export function linearSyntenyViewHelperModelFactory(
             ? `Showing ${dest.loc}, and following this row`
             : `Showing ${dest.loc}`,
           'info',
-          {
-            name: 'Undo',
-            onClick: () => {
-              // one transaction, so the follow sees the settled pre-click state
-              // rather than a half-restored one
-              runInAction(() => {
-                restoreStack()
-                anchor.release()
-              })
-            },
-          },
+          undoStackMoveAction(restoreStack, anchor),
         )
       },
       /**

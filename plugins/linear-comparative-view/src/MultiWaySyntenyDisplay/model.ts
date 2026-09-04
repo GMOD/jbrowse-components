@@ -251,10 +251,14 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLaneGenes(genes: Map<string, LaneGene[]>, key: string) {
+      setLaneGenes(
+        genes: Map<string, LaneGene[]>,
+        key: string,
+        coversMate: boolean,
+      ) {
         self.laneGenes = genes
         self.laneGenesKey = key
-        self.laneGenesCoverMates ||= key.split(';').length > 1
+        self.laneGenesCoverMates ||= coversMate
       },
       /**
        * #action

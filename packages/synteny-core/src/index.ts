@@ -33,6 +33,7 @@ export {
   effectiveCoarseThreshold,
   getCoarseBpPerPxThreshold,
   lodMenuItems,
+  lodTierAt,
   readLodTierInfo,
   resolveLodTier,
   trackHasLodTiers,
