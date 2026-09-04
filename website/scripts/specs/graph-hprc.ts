@@ -2558,8 +2558,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the graph's own fetch is ~7 s at this window (see hprc_chm13_allele)
     settleMs: 14000,
     viewportWidth: 1100,
-    // off the run's own blank-below-the-content report at 1250
-    viewportHeight: 1070,
+    // off the run's own reports: 1070 was right while the launch handed back two
+    // bare rulers, and the panels carry the graph's own segments lane now
+    viewportHeight: 1270,
     hideTooltip: true,
     actions: [
       {

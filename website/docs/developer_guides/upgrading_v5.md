@@ -422,6 +422,59 @@ remembering to hand their items back.
 
 See [](/docs/developer_guides/extension_points) for the current API.
 
+## A state model is a lazy loader, so extending one is asynchronous
+
+View and display state models are registered as loaders now, fetched when a
+session first names the type rather than at plugin install. The model is
+therefore **not there yet** when your extension runs, and the `stateModel`
+getter on a `ViewType` or `DisplayType` reads `undefined` until the loader
+resolves. The v4 idiom breaks on it:
+
+```js
+// v4 — throws, or silently extends nothing, depending on the element
+pluggableElement.stateModel = pluggableElement.stateModel.extend(self => ({
+  views: {
+    menuItems() {
+      /* ... */
+    },
+  },
+}))
+```
+
+Call `extendStateModel` instead. It applies your function inline when the model
+is already loaded and queues it for the loader otherwise, so one call is correct
+either way:
+
+```js
+// v5
+pluggableElement.extendStateModel(stateModel =>
+  stateModel.extend(self => ({
+    views: {
+      menuItems() {
+        /* ... */
+      },
+    },
+  })),
+)
+```
+
+This is the quietest breakage in this guide. Not every type is lazy — a plugin
+extending an eagerly registered one keeps working — so a bundle can pass its own
+tests and lose only the menu items it contributes to a lazy display, with no
+error anywhere. `extendViewType` / `extendDisplayType` do this for you, and are
+the better road if you are touching the code anyway.
+
+## The `Launch view` menu is now `Launch`
+
+The submenu that `pushLaunchViewMenuItem` collects contributions under is
+labelled `Launch`, because half of what it opens is no longer a view. The
+function keeps its name — it is pinned by the re-export ABI, so a published
+bundle reads it off the host at module scope — and contributions still land in
+one place, so this matters only where you spelled the label yourself. That is
+usually a test walking a menu, where the failure reads as "my item was never
+added" rather than "the submenu is called something else". Import `LAUNCH_LABEL`
+from `@jbrowse/core/ui` rather than repeating the string.
+
 ## Removals with no replacement
 
 **dockview is gone from the workspace.** `useDockviewController`,
@@ -458,10 +511,12 @@ per-feature id from the byte offset on its own record. Plugin code reading
 
 ## What to check in your own plugin
 
-Three surfaces fail quietly rather than loudly — the re-export ABI, the session,
-and the accumulating extension points. A plugin that hits any of them keeps
-loading and just stops doing part of its job, so run your bundle against a v5
-build rather than trusting that it still loads.
+Four surfaces fail quietly rather than loudly — the re-export ABI, the session,
+the accumulating extension points, and a lazily loaded state model you extended
+the v4 way. A plugin that hits any of them keeps loading and just stops doing
+part of its job, so run your bundle against a v5 build rather than trusting that
+it still loads, and click the menus you contribute to rather than only the ones
+your own tests build.
 
 A few things were built during development and removed before release, worth
 knowing about if you saw them in branch history: an in-tree pangenome/GFA
