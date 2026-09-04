@@ -1,16 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import { expandMafShorthand, taiIndexSlot } from '../util/mafShorthand.ts'
 
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        mafGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
-        taiLocation: { uri: `${snap.uri}.tai`, baseUri: snap.baseUri },
-      }
-    : snap
-}
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BgzipMafAdapter
@@ -27,7 +19,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * `MafTabixAdapter` for a `maf2bed` BED, and `BigMafAdapter` for bigMaf.
  *
  * #example
- * The `uri` shorthand auto-resolves the sibling `.tai` index:
+ * The `uri` shorthand auto-resolves the sibling `.tai` index; `nhUri` names the
+ * Newick tree:
  * ```js
  * {
  *   type: 'BgzipMafAdapter',
@@ -123,7 +116,8 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    preProcessSnapshot: normalizeSnapshot,
+    preProcessSnapshot: snap =>
+      expandMafShorthand(snap, 'mafGzLocation', taiIndexSlot),
   },
 )
 

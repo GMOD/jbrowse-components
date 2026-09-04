@@ -1,8 +1,9 @@
 import {
   ConfigurationSchema,
   tabixIndexFields,
-  tabixIndexSnapshot,
 } from '@jbrowse/core/configuration'
+
+import { expandMafShorthand, tabixIndexSlot } from '../util/mafShorthand.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -115,19 +116,8 @@ const configSchema = ConfigurationSchema(
      * }
      * ```
      */
-    // The one tabix shorthand with a second file in it, so it composes
-    // `tabixIndexSnapshot` rather than taking `expandTabixShorthand` whole.
     preProcessSnapshot: snap =>
-      snap.uri
-        ? {
-            ...snap,
-            ...(snap.nhUri
-              ? { nhLocation: { uri: snap.nhUri, baseUri: snap.baseUri } }
-              : {}),
-            bedGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
-            index: tabixIndexSnapshot(snap),
-          }
-        : snap,
+      expandMafShorthand(snap, 'bedGzLocation', tabixIndexSlot),
   },
 )
 

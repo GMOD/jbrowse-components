@@ -19,6 +19,7 @@
 // that depends on it. esbuild's stdin+resolveDir gives us both without writing a
 // scratch entry file into someone else's package (this is a shared worktree).
 import {
+  existsSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -427,9 +428,9 @@ console.log(JSON.stringify({
 // example) was missing, so `jbrowse validate` called it an unknown slot.
 //
 // Scoped to adapter config schemas on two counts, because both matter:
-//   - `configSchema*.ts` only. A `snap.x` elsewhere is some other kind of
-//     snapshot processing, and the file glob is complete — every adapter
-//     normalizer in the repo lives in one of these (the sole exception,
+//   - `configSchema*.ts` only, plus what one imports by relative path — the
+//     maf adapters share their normalizer from `util/`. A `snap.x` elsewhere is
+//     some other kind of snapshot processing (the sole exception,
 //     AdapterType.ts, is the base class that calls them).
 //   - `#config <Name>Adapter` only. Track and display schemas run normalizers
 //     too, for legacy-key migrations (`color`, `labels`, `renderer`, …), and
@@ -465,8 +466,14 @@ function collectShorthandProbes() {
     if (!/^\s*\*\s*#config\s+\w*Adapter\b/m.test(text)) {
       continue
     }
-    for (const m of text.matchAll(/\bsnap\.([a-zA-Z][a-zA-Z0-9]*)/g)) {
-      keys.add(m[1]!)
+    const imported = [...text.matchAll(/from '(\.[^']+\.ts)'/g)]
+      .map(m => path.resolve(path.dirname(file), m[1]!))
+      .filter(f => existsSync(f))
+      .map(f => readFileSync(f, 'utf8'))
+    for (const source of [text, ...imported]) {
+      for (const m of source.matchAll(/\bsnap\.([a-zA-Z][a-zA-Z0-9]*)/g)) {
+        keys.add(m[1]!)
+      }
     }
   }
   // `type` is on every snapshot and is what the probe holds constant, so it is

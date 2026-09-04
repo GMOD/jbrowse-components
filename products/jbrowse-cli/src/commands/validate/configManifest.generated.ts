@@ -1071,7 +1071,8 @@ export const configManifest: ConfigManifest = {
       ],
       "shorthandKeys": [
         "uri",
-        "baseUri"
+        "baseUri",
+        "nhUri"
       ]
     },
     "BgzipTaffyAdapter": {
@@ -1107,7 +1108,8 @@ export const configManifest: ConfigManifest = {
       ],
       "shorthandKeys": [
         "uri",
-        "baseUri"
+        "baseUri",
+        "nhUri"
       ]
     },
     "BigMafAdapter": {
