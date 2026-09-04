@@ -260,6 +260,20 @@ describe('nextByteEstimate', () => {
     ).toBe(true)
   })
 
+  // A batch that stopped at its first refusal measured whichever regions won
+  // the race, so its bytes are not a reading of the same thing as the previous
+  // ones: a partial measurement leaves the flag where it was.
+  it('takes no zoom evidence from a partial measurement', () => {
+    const first = {
+      bytes: 1000,
+      measuredSpanBp: 100_000,
+      zoomIneffective: false,
+    }
+    const halved = { bytes: 990, viewport: vp(50_000) }
+    expect(nextByteEstimate(first, halved, true).zoomIneffective).toBe(false)
+    expect(nextByteEstimate(first, halved, false).zoomIneffective).toBe(true)
+  })
+
   // ...but a zoom-in that DOES shrink the fetch takes the advice back, so a
   // track that crosses out of one big block starts offering zoom again.
   it('clears the flag when a later zoom-in does move the bytes', () => {
