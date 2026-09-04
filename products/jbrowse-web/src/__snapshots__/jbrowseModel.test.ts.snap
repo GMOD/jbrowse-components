@@ -30,10 +30,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
-      "metaFilePath": {
-        "locationType": "UriLocation",
-        "uri": "trix/volvox_meta.json",
-      },
       "textSearchAdapterId": "volvox-index",
       "type": "TrixTextSearchAdapter",
     },
@@ -48,10 +44,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "ixxFilePath": {
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ixx",
-      },
-      "metaFilePath": {
-        "locationType": "UriLocation",
-        "uri": "trix/volvox-rev-del_meta.json",
       },
       "textSearchAdapterId": "volvox-rev-del-index",
       "type": "TrixTextSearchAdapter",
@@ -3648,7 +3640,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "colorBy": "population",
           "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
-          "showReferenceAlleles": true,
+          "referenceDrawingMode": "draw",
           "type": "LinearMultiSampleVariantDisplay",
         },
       ],
