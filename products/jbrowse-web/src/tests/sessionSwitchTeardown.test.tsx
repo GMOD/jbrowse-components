@@ -1,12 +1,14 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
+import { getObserverTree } from 'mobx'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
+import type { IObserverTree } from 'mobx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -48,7 +50,10 @@ test('switching sessions does not read the session it replaced', async () => {
   )
   await findByText('Help', {}, delay)
   const rootModel = window.JBrowseRootModel as WebRootModel
-  const oldSession = rootModel.session
+  const oldSession = rootModel.session!
+  // the read ranking search hits makes: outside any reaction, and the one that
+  // subscribed a `keepAlive` index for good. The last assertion needs it made.
+  expect(oldSession.getTrackById('gff3tabix_genes')).toBeDefined()
 
   const deadReads: string[] = []
   const origWarn = console.warn
@@ -101,4 +106,17 @@ test('switching sessions does not read the session it replaced', async () => {
   await waitFor(() => {
     expect(isAlive(oldSession)).toBe(false)
   }, delay)
+
+  // and destroying it let go of the root. The session's track index reads
+  // `jbrowse.tracks` on the root, which outlives every session; a `keepAlive`
+  // computed there never unsubscribed, so the root kept each superseded
+  // session reachable for the tab's life. The index is held by a disposer the
+  // session owns now, and this is the check that the disposer ran.
+  expect(observerNames(getObserverTree(oldSession, 'tracks'))).not.toContain(
+    'tracksByIdRecord',
+  )
 }, 60000)
+
+function observerNames(tree: IObserverTree): string[] {
+  return [tree.name, ...(tree.observers ?? []).flatMap(observerNames)]
+}

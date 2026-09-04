@@ -82,3 +82,16 @@ test('re-adding under a known trackId neither duplicates nor silently keeps the 
     }),
   ).toThrow(/already in this session with a different configuration/)
 })
+
+test('the deprecated addTrackConf alias dedupes the same way', () => {
+  const session = createSession()
+  session.addSessionTrackConf(CONF)
+  expect(session.addTrackConf(CONF)).toBe(
+    session.getTrackById('derivative-segments-1'),
+  )
+  expect(
+    session.tracks.filter(
+      (t: { trackId: string }) => t.trackId === 'derivative-segments-1',
+    ),
+  ).toHaveLength(1)
+})
