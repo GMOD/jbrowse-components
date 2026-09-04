@@ -24,6 +24,12 @@ export async function run(args?: string[]) {
       short: 'p',
       description: 'Specified port to start the server on (default: 9090)',
     },
+    host: {
+      type: 'string',
+      description:
+        'Interface to bind to (default: 127.0.0.1). Use 0.0.0.0 to accept ' +
+        'connections from other machines',
+    },
     root: {
       type: 'string',
       description: 'Path to the root of the JB2 installation',
@@ -53,14 +59,17 @@ export async function run(args?: string[]) {
     '',
     '# raise the body size limit for very large config updates',
     '$ jbrowse admin-server --bodySizeLimit 100mb',
+    '',
+    '# accept connections from other machines on the network',
+    '$ jbrowse admin-server --host 0.0.0.0',
   ]
 
   const notes =
     'The admin-server lets a browser session write changes back to ' +
     'config.json on disk, authorized by a one-time key printed in the ' +
-    'startup URL. It is meant for local configuration only: run it on a ' +
-    'trusted machine and do not expose the port to untrusted networks or the ' +
-    'public internet.'
+    'startup URL. It binds to 127.0.0.1 so only this machine can reach it. ' +
+    'The key gates the config routes, but the rest of the JBrowse directory ' +
+    'is served unauthenticated, so widen --host only on a trusted network.'
 
   if (flags.help) {
     printHelp({
@@ -73,7 +82,7 @@ export async function run(args?: string[]) {
     return
   }
 
-  const { root, bodySizeLimit = '25mb' } = flags
+  const { root, host, bodySizeLimit = '25mb' } = flags
 
   const { outFile, baseDir } = await setupConfigFile({ root })
   const port = parsePort({ portStr: flags.port })
@@ -95,5 +104,5 @@ export async function run(args?: string[]) {
     }),
   )
 
-  startServer({ server, port, key, outFile, serverRef })
+  startServer({ server, port, host, key, outFile, serverRef })
 }

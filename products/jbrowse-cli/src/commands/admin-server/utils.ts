@@ -18,6 +18,10 @@ interface ServerRef {
   current: http.Server | null
 }
 
+// Loopback, so the unauthenticated static handler below does not serve the
+// data directory to every host on the network. `--host` opts out.
+export const DEFAULT_HOST = '127.0.0.1'
+
 export function parsePort({
   portStr,
   defaultPort = 9090,
@@ -187,9 +191,8 @@ function sendText(res: http.ServerResponse, status: number, body: string) {
   res.end(body)
 }
 
-// What `cors()` sent. The server binds to localhost for a browser tab on the
-// same machine to talk to, and the admin key is what authorizes a write — the
-// origin never was.
+// What `cors()` sent. The admin key is what authorizes a write; the origin
+// never was.
 function applyCorsHeaders(res: http.ServerResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS')
@@ -386,19 +389,21 @@ export function createRequestHandler({
 export function startServer({
   server,
   port,
+  host = DEFAULT_HOST,
   key,
   outFile,
   serverRef,
 }: {
   server: http.Server
   port: number
+  host?: string
   key: string
   outFile: string
   serverRef: ServerRef
 }): void {
-  server.listen(port, () => {
+  server.listen(port, host, () => {
     console.log(
-      `Admin server started on port ${port}\n\n` +
+      `Admin server started on ${host}:${port}\n\n` +
         `To access the admin interface, open your browser to:\n` +
         `http://localhost:${port}?adminKey=${key}\n\n` +
         `Admin key: ${key}\n` +
