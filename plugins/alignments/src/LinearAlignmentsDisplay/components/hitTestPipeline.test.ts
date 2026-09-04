@@ -49,6 +49,13 @@ function makeRpcData(
     readPositions: new Uint32Array(),
     readYs: new Uint16Array(),
     readKeys: [],
+    readStrands: new Int8Array(),
+    readFlags: new Uint16Array(),
+    readInterchrom: new Uint8Array(),
+    readInsertSizes: new Float32Array(),
+    segmentPositions: new Uint32Array(),
+    segmentReadIndices: new Uint32Array(),
+    segmentEdgeFlags: new Uint8Array(),
     interbaseYs: new Uint16Array(),
     interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
@@ -113,6 +120,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   filterMismatchesByFrequency: true,
   showMismatches: true,
   pileupVisible: true,
+  colorScheme: 0,
 }
 
 test('SNP_HIT_MAX_BP_PER_PX is 25', () => {
@@ -1008,5 +1016,52 @@ describe('clips stay hittable when zoomed out, as they stay drawn', () => {
   it('but a noise-floor clip still declines', () => {
     const resolved = clipAtCursor(INTERBASE_SOFTCLIP, 0)
     expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('none')
+  })
+})
+
+// The arrowhead is asked in bp, so a reversed region is not its own case: a
+// reverse-strand read's head sits before its START, which on a reversed block
+// is screen-RIGHT of the body. Chain mode keeps the head drawn at this zoom.
+describe('the strand arrowhead answers a hover on a reversed block', () => {
+  const ARROW_OPTS: HitTestOptions = {
+    ...ZOOMED_OUT_OPTS,
+    isChainMode: true,
+    colorScheme: 1,
+  }
+  // Reversed: x=0 is bp 20000, so bp 9000 (the read's start) is x=110 and the
+  // head runs to x=118.
+  function reversedBlock(): ResolvedBlock {
+    return {
+      ...makeResolved({
+        readKeys: ['rev'],
+        readPositions: new Uint32Array([9000, 11000]),
+        readYs: new Uint16Array([0]),
+        readStrands: new Int8Array([-1]),
+        readFlags: new Uint16Array([0]),
+        readInterchrom: new Uint8Array([0]),
+        readInsertSizes: new Float32Array([0]),
+        segmentPositions: new Uint32Array([9000, 11000]),
+        segmentReadIndices: new Uint32Array([0]),
+        segmentEdgeFlags: new Uint8Array([0b11]),
+      }),
+      reversed: true,
+    }
+  }
+
+  it('hits the head 4px screen-right of the body', () => {
+    const result = performHitTest(114, 55, reversedBlock(), ARROW_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'rev', index: 0 })
+    }
+  })
+
+  it('misses past the apex, and on the body-less side', () => {
+    expect(performHitTest(119, 55, reversedBlock(), ARROW_OPTS).type).toBe(
+      'none',
+    )
+    expect(performHitTest(86, 55, reversedBlock(), ARROW_OPTS).type).toBe(
+      'none',
+    )
   })
 })

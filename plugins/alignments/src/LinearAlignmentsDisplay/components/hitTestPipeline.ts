@@ -20,6 +20,7 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CoverageHitResult } from '../../features/coverage/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
+import type { ChevronFrame } from '../../features/read/drawCanvas.ts'
 import type {
   CigarCoords,
   CigarHitResult,
@@ -231,6 +232,7 @@ export interface HitTestOptions {
   // so the per-read/cigar/modification tests must be skipped to avoid resolving
   // a hover over the empty band. Coverage/indicator tests still run.
   pileupVisible: boolean
+  colorScheme: number
 }
 
 // A deletion/skip under the cursor, dropped when it is narrower than
@@ -369,6 +371,7 @@ export function performHitTest(
     scrollTop,
     isChainMode,
     pileupVisible,
+    colorScheme,
   } = options
 
   // Coverage/indicator strip tests are relative to this section's coverage top
@@ -433,6 +436,12 @@ export function performHitTest(
   // internally, the zoomed-out branch inline); the tests that are exported and
   // unit-tested on their own — hitTestFeature, hitTestModification,
   // hitTestSoftclipBase — keep their own guard.
+  const chevrons: ChevronFrame = {
+    pxPerBp: 1 / bpPerPx,
+    chainMode: isChainMode,
+    colorScheme,
+    featureHeight,
+  }
   const inReadBand = isWithinReadBand(coords, featureHeight)
 
   if (inReadBand) {
@@ -459,7 +468,7 @@ export function performHitTest(
       return {
         type: 'modification',
         hit: modificationHit,
-        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        featureHit: hitTestFeature(resolved, coords, chevrons),
         cigarHit,
         resolved,
       }
@@ -468,7 +477,7 @@ export function performHitTest(
       return {
         type: 'cigar',
         hit: cigarHit,
-        featureHit: hitTestFeature(resolved, coords, featureHeight),
+        featureHit: hitTestFeature(resolved, coords, chevrons),
         resolved,
       }
     }
@@ -481,7 +490,7 @@ export function performHitTest(
   // of its reads, so the chain highlight/selection is unaffected by which read
   // answers.
   const hit =
-    hitTestFeature(resolved, coords, featureHeight) ??
+    hitTestFeature(resolved, coords, chevrons) ??
     hitTestSoftclipBase(resolved, coords, featureHeight) ??
     (isChainMode
       ? hitTestChain(coords, resolved.rpcData, featureHeight)

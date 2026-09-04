@@ -154,6 +154,7 @@ it('names option gates that HitTestOptions actually carries', () => {
     filterMismatchesByFrequency: true,
     showMismatches: true,
     pileupVisible: true,
+    colorScheme: true,
   }
   for (const gate of Object.values(HIT_GATES)) {
     if (gate.kind === 'option') {

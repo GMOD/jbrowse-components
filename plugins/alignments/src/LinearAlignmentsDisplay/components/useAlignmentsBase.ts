@@ -117,6 +117,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             filterMismatchesByFrequency: model.filterMismatchesByFrequency,
             showMismatches: model.showMismatches,
             pileupVisible: picked.section.pileupHeight > 0,
+            colorScheme: model.colorSchemeIndex,
           })
         : { type: 'none' })
     return { resolved, picked, result }

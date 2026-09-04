@@ -60,6 +60,13 @@ function makeRpcData(overrides: Partial<PileupDataResult>): PileupDataResult {
     softclipBaseReadIndices: new Uint32Array(),
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
+    readStrands: new Int8Array(2),
+    readFlags: new Uint16Array(2),
+    readInterchrom: new Uint8Array(2),
+    readInsertSizes: new Float32Array(2),
+    segmentPositions: new Uint32Array(),
+    segmentReadIndices: new Uint32Array(),
+    segmentEdgeFlags: new Uint8Array(),
     ...TWO_OVERLAPPING_READS,
     ...overrides,
   } as PileupDataResult
@@ -107,6 +114,7 @@ const OPTS: HitTestOptions = {
   filterMismatchesByFrequency: false,
   showMismatches: true,
   pileupVisible: true,
+  colorScheme: 0,
 }
 
 function hover(resolved: ResolvedBlock) {
