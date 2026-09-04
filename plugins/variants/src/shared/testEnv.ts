@@ -16,16 +16,28 @@ export function createDisplayTestEnvironment<T>({
   displayName,
   configSchema,
   stateModel,
+  extraDisplays = [],
 }: {
   displayName: string
   configSchema: AnyConfigurationSchemaType
   stateModel: IAnyModelType
+  /** Further display types on the track, for a display-type-switch test. */
+  extraDisplays?: {
+    displayName: string
+    configSchema: AnyConfigurationSchemaType
+    stateModel: IAnyModelType
+  }[]
 }) {
   return createSharedEnvironment<T>({
     trackType: 'VariantTrack',
     displayName,
     configSchema: () => configSchema,
     stateModel: () => stateModel,
+    extraDisplays: extraDisplays.map(d => ({
+      displayName: d.displayName,
+      configSchema: () => d.configSchema,
+      stateModel: () => d.stateModel,
+    })),
     viewModel: linearGenomeViewStateModelFactory,
     assemblyEnd: 10_000_000,
   })

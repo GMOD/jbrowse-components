@@ -72,6 +72,21 @@ export interface DisplayTestEnvironmentOptions {
     pluginManager: PluginManager,
     configSchema: AnyConfigurationSchemaType,
   ) => IAnyModelType
+  /**
+   * Further display types on the same track, for a test about switching
+   * between them. `baseTrackConfig` injects one stub `displays` entry per
+   * REGISTERED display type, so with a single one registered the track config
+   * has exactly one display node — and a port that names it as its target is
+   * copying every slot onto its own source.
+   */
+  extraDisplays?: {
+    displayName: string
+    configSchema: (pluginManager: PluginManager) => AnyConfigurationSchemaType
+    stateModel: (
+      pluginManager: PluginManager,
+      configSchema: AnyConfigurationSchemaType,
+    ) => IAnyModelType
+  }[]
   /** `linearGenomeViewStateModelFactory(pluginManager)`, from the caller. */
   viewModel: (pluginManager: PluginManager) => IAnyModelType
   /** Extra keys on the track config, merged over the defaults. */
@@ -138,6 +153,7 @@ export function createDisplayTestEnvironment<T>({
   displayName,
   configSchema,
   stateModel,
+  extraDisplays = [],
   viewModel,
   trackConfig: extraTrackConfig,
   displayConfig,
@@ -205,6 +221,20 @@ export function createDisplayTestEnvironment<T>({
         ReactComponent: () => null,
       }),
   )
+  for (const extra of extraDisplays) {
+    const extraSchema = extra.configSchema(pluginManager)
+    pluginManager.addDisplayType(
+      () =>
+        new DisplayType({
+          name: extra.displayName,
+          configSchema: extraSchema,
+          stateModel: extra.stateModel(pluginManager, extraSchema),
+          trackType,
+          viewType: 'LinearGenomeView',
+          ReactComponent: () => null,
+        }),
+    )
+  }
 
   pluginManager.createPluggableElements()
   pluginManager.configure()
