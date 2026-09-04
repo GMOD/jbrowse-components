@@ -285,7 +285,7 @@ export default function sharedModelFactory(
        */
       // reads the slot rather than the sibling `showLDTriangle` getter: that one
       // lives in this same `.views()` block, where `self` isn't yet typed with
-      // it (see BaseLinearDisplay/CLAUDE.md on block-local `self` typing)
+      // it (see packages/display-kit/CLAUDE.md on block-local `self` typing)
       get fetchInert(): boolean {
         return !getConf(self, 'showLDTriangle')
       },

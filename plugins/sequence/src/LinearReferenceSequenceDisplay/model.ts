@@ -374,7 +374,7 @@ export function modelFactory(
         // `zoomedOut`, deliberately *not* the wider `rendersCanvas`: a
         // `fetchNeeded` that declines has to be woken by something the
         // FetchVisibleRegions autorun already tracks (see
-        // BaseLinearDisplay/CLAUDE.md). Zooming back in moves
+        // packages/display-kit/CLAUDE.md). Zooming back in moves
         // `view.visibleRegions`, which it does track; re-ticking a strand row
         // moves nothing it watches, so skipping on no-rows would wedge the
         // display until the user happened to pan. Fetching sequence nobody

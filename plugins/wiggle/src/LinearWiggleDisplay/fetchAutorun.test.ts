@@ -44,8 +44,7 @@ afterEach(() => {
 //                      the GPU buffer (no RPC roundtrip)
 //   renderState-only changes → render autorun re-runs (no upload, no fetch)
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
-// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
-// "`isCacheValid` is a view, not an action").
+// them untracked and callers keep a stale answer.
 test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)

@@ -32,8 +32,7 @@ test('the display opts into the byte gate', () => {
 })
 
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
-// them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
-// "`isCacheValid` is a view, not an action").
+// them untracked and callers keep a stale answer.
 test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
