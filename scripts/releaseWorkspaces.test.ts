@@ -21,12 +21,13 @@ test('workspaceManifests finds one level under each workspace, and no deeper', (
     'packages/core': { version: '4.3.0' },
     'plugins/alignments': { version: '4.3.0' },
     'products/jbrowse-web': { version: '4.3.0' },
+    'example-plugins/score-example': { version: '4.3.0' },
     // pnpm-workspace.yaml carries these too; the release does not version them
     'products/jbrowse-web/examples-site': { version: '0.0.0' },
-    'example-plugins/score-example': { version: '4.3.0' },
     website: { version: '0.0.0' },
   })
   expect(workspaceManifests(root).sort()).toEqual([
+    'example-plugins/score-example/package.json',
     'packages/core/package.json',
     'plugins/alignments/package.json',
     'products/jbrowse-web/package.json',

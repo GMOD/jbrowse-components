@@ -7,9 +7,16 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 // Deliberately not pnpm-workspace.yaml's list. That one also carries
-// products/*/examples-site, example-plugins/* and website, all private, none
-// of them versioned with the release.
-export const WORKSPACES = ['packages', 'products', 'plugins']
+// products/*/examples-site and website, neither of which is versioned with the
+// release. example-plugins/* is: it is private and never published, but its
+// manifest is an example a plugin author copies, and left out of the bump it
+// sat at 4.3.0 through a major.
+export const WORKSPACES = [
+  'packages',
+  'products',
+  'plugins',
+  'example-plugins',
+]
 
 export function workspaceManifests(root: string) {
   return WORKSPACES.filter(ws => fs.existsSync(path.join(root, ws))).flatMap(
