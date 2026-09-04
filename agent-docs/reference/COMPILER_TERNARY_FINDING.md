@@ -112,10 +112,18 @@ mutating the observable.
 
 `pnpm test` and every app bundle compile. The **published packages do not** —
 `build:esm` is plain tsc, so an npm consumer of `@jbrowse/plugin-*` executes code
-no compiler ever saw. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, scoped to
-`plugins packages`, its own `--cacheDirectory` because jest keys entries on file
-content and transformer config and an env var is neither) is the only run that
-exercises that artifact, and CI runs it as "Test (no React Compiler)".
+no compiler ever saw. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, its own
+`--cacheDirectory` because jest keys entries on file content and transformer
+config and an env var is neither) is the only run that exercises that artifact,
+and CI runs it as "Test (no React Compiler)".
+
+Its scope is every workspace whose published `main` is `build:esm` output:
+`plugins packages`, and also `products/jbrowse-react-` — the three embedding
+components (`@jbrowse/react-app2`,
+`@jbrowse/react-linear-genome-view2`, `@jbrowse/react-circular-genome-view2`)
+set `publishConfig.main` to `esm/index.js` exactly like a plugin does. The rest
+of `products` ships bundled and compiled, so the uncompiled path is not an
+artifact they have.
 
 The gap it closes is the opposite of the staleness above: the compiler memoizes
 far more than the source's explicit `memo`/`useMemo`, so it **stands in for one

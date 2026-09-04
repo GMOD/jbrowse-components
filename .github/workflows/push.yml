@@ -114,8 +114,11 @@ jobs:
   # one and a sabotage check stays green — which is how a load-bearing `memo` in
   # `useViewSvgFigure` came to be unverifiable by any run in the repo.
   #
-  # Scoped to `plugins packages`, which is what gets published; `products` ship
-  # bundled and compiled, so the uncompiled path is not an artifact they have.
+  # Scoped to what ships as plain tsc output: `plugins packages`, plus the three
+  # `products/jbrowse-react-*` embedding components, whose `publishConfig.main`
+  # is `esm/index.js` from `build:esm` like any plugin's. The rest of `products`
+  # ships bundled and compiled, so the uncompiled path is not an artifact they
+  # have.
   test-no-react-compiler:
     name: Test (no React Compiler)
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}

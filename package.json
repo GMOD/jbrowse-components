@@ -42,7 +42,7 @@
     "typecheck:web": "node --experimental-strip-types scripts/typecheck.ts web",
     "typecheck:node": "node --experimental-strip-types scripts/typecheck.ts node",
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
-    "test-ci-no-react-compiler": "NO_RC=1 NODE_OPTIONS='--max-old-space-size=7000' jest --ci --cacheDirectory node_modules/.cache/jest-no-rc plugins packages",
+    "test-ci-no-react-compiler": "NO_RC=1 NODE_OPTIONS='--max-old-space-size=7000' jest --ci --cacheDirectory node_modules/.cache/jest-no-rc plugins packages products/jbrowse-react-",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
     "test-related": "node --experimental-strip-types scripts/test-related.ts",
