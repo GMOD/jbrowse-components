@@ -1,4 +1,4 @@
-import { RAMP_LUT_ENTRIES } from '@jbrowse/render-core/shaders/colorRampLutConsts'
+import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   SCALE_TYPE_LINEAR,
@@ -100,7 +100,7 @@ function gpuLutChannels(
     normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant),
     normalizeScore(origin, domainMin, domainMax, scaleType, symlogConstant),
   )
-  const u = Math.min(Math.max(t, 0), 1) * (RAMP_LUT_ENTRIES - 1)
+  const u = Math.min(Math.max(t, 0), 1) * (COLOR_RAMP_LUT_ENTRIES - 1)
   const i0 = Math.floor(u)
   const frac = u - i0
   const lo = Math.min(Math.max(i0, 0), 255) * 4
@@ -412,7 +412,7 @@ describe('the emitted ramp sample lands entry i on its own texel', () => {
     ['GLSL', GLSL_FRAGMENT],
   ])('%s remaps t into texel space', (_lang, src) => {
     const body = sampleBody(src)
-    expect(body).toContain(`${RAMP_LUT_ENTRIES - 1}.0`)
-    expect(body).toContain(`/ ${RAMP_LUT_ENTRIES}.0`)
+    expect(body).toContain(`${COLOR_RAMP_LUT_ENTRIES - 1}.0`)
+    expect(body).toContain(`/ ${COLOR_RAMP_LUT_ENTRIES}.0`)
   })
 })
