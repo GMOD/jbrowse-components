@@ -181,6 +181,14 @@ TRUE aligned extent, so `hitTestFeature` misses what `drawSoftclipBases` paints
 past the alignment end — and a miss clears the selection and falls through to
 the **browser's** context menu.
 
+**The geometry comes from the shader, like the painters'.** A hit test is a
+third consumer of `//! js-export`ed scalars, not a third description of the
+mark: the strand arrowhead picks through `readChevron.slang`'s `chevronContains`
+under the same generated `showChevron` the two painters draw it by. Hover slack
+is a named tolerance against the shader's distance, never a second shape traced
+around the first. A predicate no draw path reaches has to live in a `module`
+shader, or slangc drops it before the emitter runs.
+
 **Neither index-backed test may take `hits[0]`** — `Flatbush.search` returns
 Hilbert order. `hitTestModification` picks by **distance**; `hitTestChain` boxes
 whole extents so everything is at distance 0 and it picks the highest chain

@@ -16,6 +16,33 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **LUT-indexed colour for the coverage band and the pileup: pack a
+  `uint categoryIndex` per instance and sample `colorRampLut` instead of a packed
+  ABGR** — declined 2026-09-04, at the owner's call, from the GPU
+  architecture review. It would make a recolour a small texture
+  write rather than a per-instance lane patch, which is the real payoff. But
+  recolours are not frequent enough here for that to be a clear win, and
+  `createInstanceCache` already patches the colour lane without a full repack. It
+  would also move every colour decision behind a texture sample, which is the one
+  thing that makes a pass un-liftable to Canvas2D
+  (`ideas/canvas2d-painter-generation.md` counts four passes stuck there today).
+
+- **Compute-driven instance packing (a WebGPU compute pass writing the instance
+  buffers)** — declined 2026-09-04, same review. Three reasons, the second
+  decisive. Parsing is the bottleneck, not packing: BAM/CRAM decode is branchy
+  variable-length bit-twiddling and a poor GPU fit, and pileup row assignment is
+  greedy and sequential-ish, so moving the pack step accelerates the cheap half.
+  It forks the logic, which is what the SSBO decline exists to prevent — a
+  compute packer is WebGPU-only, so Canvas2D and WebGL2 need a TS packer emitting
+  identical bytes, the same logic in two languages with no codegen joining them,
+  where `packInstances()` exists precisely so a worker that cannot import the
+  shader cannot drift. And the genuine win is narrow — re-deriving from data
+  already resident on the GPU without a roundtrip (recolour, re-filter,
+  re-threshold) — which `createInstanceCache` covers more cheaply. The LD kernels
+  pass the "compute where a CPU fallback must exist anyway" principle
+  (GPU_RENDERING.md) cleanly and instance packing fails it, because Canvas2D is a
+  mandatory floor and the CPU packer has to exist either way.
+
 - **Have `getTrackYOffset` return `undefined` when offset labels are showing,
   so a caller cannot silently take a short answer** — declined 2026-09-03. The
   signature was already `number | undefined` and the one consumer read

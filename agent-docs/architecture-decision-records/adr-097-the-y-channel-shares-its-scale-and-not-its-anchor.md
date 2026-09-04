@@ -38,7 +38,7 @@ they spell:
 | `wiggle.slang` xyplot | a per-instance scalar **and** a per-frame origin through a shared scale, as the two cuts of a bar | `float score : ATTR1` and `u.origin`, each through `scoreToY` (`:117`, `:118`); `min`/`max` pick the cuts, `+ rowTop` places the row |
 | `wiggle.slang` scatter | a per-instance scalar through a shared scale, as a glyph centre in a row | `scoreToY(...) + rowTop` (`:90`), then `pointGlyph` |
 | `wiggleLine.slang` line / linecenter | two or three scalars at once through the same scale — a neighbour's y is this instance's geometry | `rowScoreToClipY` (`:66`), `scoreToY` ×2 (`:137`, `:139`) |
-| `coverageBand.slang`'s five passes | a per-instance scalar through the same shared scale, as a fraction of a bar measured **up from a band baseline** | `covNormalizeDepth` → `normalizeDepthScalar` → `normalizeScore` (`:204`), then `covBarScale` and `covSegQuad`'s `(yOffset, segHeight)` stack |
+| `coverageBand.slang`'s five passes | a per-instance scalar through the same shared scale, as a fraction of a bar measured **up from a band baseline** | `covNormalizeDepth` → `normalizeDepthScalar` → `normalizeScore` (`:205`), then `covBarHeightPx` (`:229`) and `covSegQuad`'s `(yOffset, segHeight)` stack |
 | `manhattan.slang` | a per-instance scalar through its **own linear-only** scale, as a glyph centre on the whole canvas | `scoreToYPx` (`:56`) — `clamp((s − min) / max(range, 1e-6))`, then `(1 − norm) · h` |
 | `alignmentsUniforms.slang`'s arc band | a per-instance **bp** scalar through its own log-or-linear scale, as an offset from a band anchor | `arcYFraction` (`:513`) → `arcYOffsetPx` (`:524`) = `min(availH, f · availH)` |
 

@@ -1,16 +1,24 @@
 ---
 name: canvas2d-painter-generation
-description: The census item 1 of handoffs/gpu-architecture-review asked for — every pass on all 13 GPU renderers classified against the Canvas2D painter that draws the same mark. 45 distinct passes, 57 registrations. By the handoff's own rules 38 are interpretable (Tier B), 2 are transliterable-only, 5 never; the eight-pass threshold is cleared six times over, so the mechanism is worth building — but read the honesty section first, because a third of the B rows carry a deliberate Canvas2D-only divergence a generated painter would erase, the alignments pileup already derives its painter from a mark declaration that B would compete with, and every piece of text on every display lives outside both backends and is untouched by any of this.
+description: Every pass on all 13 GPU renderers classified against the Canvas2D painter that draws the same mark, and the live remainder of the 2026-09-04 GPU architecture review. 45 distinct passes, 57 registrations: 38 are interpretable (Tier B), 2 transliterable-only, 5 never, so the mechanism is worth building — and the first conversion, the coverage band, landed 2026-09-04 and settled the struct-parameter question in favour of scalar cores. Read the honesty section first, because a third of the B rows carry a deliberate Canvas2D-only divergence a generated painter would erase, the alignments pileup already derives its painter from a mark declaration that B would compete with, and every piece of text on every display lives outside both backends and is untouched by any of this.
 ---
 
 # Generating the Canvas2D painters: the census
 
-Item 1 of
-[handoffs/gpu-architecture-review](../handoffs/gpu-architecture-review.md),
-answered 2026-09-04 by reading, not running: the 13 `Gpu*Renderer.ts` pass
+Answered 2026-09-04 by reading, not running: the 13 `Gpu*Renderer.ts` pass
 lists, every `.slang` they draw with, and the Canvas2D painter each pass lands
-on. The handoff's threshold was "if eight passes qualify, build it; if two do,
-do not". The count is below, the recommendation at the end.
+on. The threshold the GPU architecture review set was "if eight passes qualify,
+build it; if two do, do not". The count is below, the recommendation at the end.
+
+**This file is that review's live remainder.** Its other findings landed in
+[reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"What this
+architecture deliberately does not have" (indirect drawing, storage buffers,
+depth/early-Z, draw-call merging, persistent staging, buffer pooling, GPU
+picking, runtime shader generation, nested render scopes) and §"Keeping the two
+backends in parity" (a hit test is a consumer of shader scalars too), in
+`measurements/buffer-churn-pan.json`, and in
+[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) (LUT-indexed
+colour, compute-driven packing). The handoff itself is closed.
 
 Vocabulary is the handoff's. **A** — transliterable functions only; the painter
 calls `//! js-export`ed scalars and hand-writes the drawing. **B** —
@@ -66,9 +74,9 @@ the Canvas2D calls the painter actually issues.
 | alignments | `clip` · clip | hpmath, colorPack | default | arrays | fillRect (1 px) | B | fixed 1 CSS px full-row bar on a bp edge, two uniform colours by `kind` |
 | alignments | `softclipBases` · mismatch | hpmath, colorPack | default | arrays | fillRect (+seam fudge) | B | mismatch shader with fades neutralised at pack time |
 | alignments | `perBaseLetter` · mismatch | hpmath, colorPack | default | arrays | fillRect (+seam fudge) | B | despite the name, neither backend draws a glyph here; the letters are the labels overlay |
-| alignments | `coverage` · coverageBar | coverageBand, colorPack, hpmath (scoreScale) | default | **buffer** (`coverageLayout.generated`) | fillSpanRect → fillRect (+0.8 px seam fudge) | B | bar from `covBottom` up by `covBarScale`; uniform colour. Painter already reads the worker-packed buffer through the generated layout — half of B is done |
-| alignments | `snpCov` · coverageSnp | coverageBand, hpmath | default | **buffer** | fillSpanRect → fillRect | B | depth-bar slice; colour a `switch` over uniform base slots (`covSnpColor` → `float3`) |
-| alignments | `modCov` · coverageMod | coverageBand, colorPack, hpmath | default | **buffer** | fillSpanRect → fillRect | B | as `snpCov` with per-instance packed colour |
+| alignments | `coverage` · coverageBar | coverageBand, colorPack, hpmath (scoreScale) | default | **buffer** (`coverageLayout.generated`) | fillSpanRect → fillRect (+0.8 px seam fudge) | B | bar from the band baseline up by `covBarHeightPx`; uniform colour. Painter already reads the worker-packed buffer through the generated layout — **converted 2026-09-04**, and the row named `covBottom`/`covBarScale` before it |
+| alignments | `snpCov` · coverageSnp | coverageBand, hpmath | default | **buffer** | fillSpanRect → fillRect | B | depth-bar slice; colour a `switch` over uniform base slots (`covSnpColor` → `float3`). Placement converted with the depth bar, 2026-09-04 |
+| alignments | `modCov` · coverageMod | coverageBand, colorPack, hpmath | default | **buffer** | fillSpanRect → fillRect | B | as `snpCov` with per-instance packed colour; converted with it |
 | alignments | `interbase` · coverageInterbase | coverageBand, hpmath | default | **buffer** | fillRect (1 px) | B | 1 px bar hanging from `covAreaTop`, edges from exported `interbaseEdgePx` |
 | alignments | `indicator` · coverageIndicator | coverageBand, hpmath | default | **buffer** | triangle path + fill | B | 7×4.5 px triangle; barycentric `smoothstep` edge fade only |
 | alignments | `arcLine` · arcLine | antialias, hpmath | default | arrays | moveTo/lineTo/stroke | B | full-band vertical tick, analytic edge AA only, palette slot |
@@ -154,7 +162,8 @@ already read the buffer (the coverage band, on both renderers, and `hic`),
 which the handoff did not know, and they are the ones where B is nearly done —
 `drawCoverageBins` is an interpreter of `coverageLayout.generated.ts` already,
 missing only `covBarScale`/`covBottom`/`covSegQuad` as generated twins instead
-of `coverageLayout()` re-deriving the box.
+of `coverageLayout()` re-deriving the box. **That conversion landed 2026-09-04**
+— see §Recommendation and §Owed for what it decided.
 
 **The colour is the blocker for C, everywhere.** Not one B pass has its colour
 as an exported scalar. The shader colour path is one of: `unpackRGBA(uint)`
@@ -173,11 +182,12 @@ to name.
 
 **The rect is the smaller problem than it looks, because of the `Uniforms`
 parameter.** Every vertex-side px decision a B interpreter needs —
-`pileupCellX`, `pileupY`, `pileupRowTopPx`, `bpToClipX`, `covBarScale`,
-`covBottom`, `covAreaTop`, `covBpToClipX`, `arcBandX`, `arcBandY`,
+`pileupCellX`, `pileupY`, `pileupRowTopPx`, `bpToClipX`, `covBaselinePx`,
+`covEffHeight`, `covAreaTop`, `covBpToClipX`, `arcBandX`, `arcBandY`,
 `arcStrokeHalfPx` — takes the whole uniform struct, and slangc emits that as
 `ptr<function, Uniforms>`, which is the transliterator's largest refusal class
-(19 functions). The two ways out are the ADR-051 factoring (a scalar core
+(18 functions; it was 19 with `covBarScale` and `covBottom` in it, and the
+coverage-band conversion below is what took them out). The two ways out are the ADR-051 factoring (a scalar core
 taking the two or three fields it reads, wrapped for the shader) or teaching the
 emitter a struct parameter as a typed object off the generated `Uniforms`
 interface. The second is a real extension but a bounded one: member access on a
@@ -267,7 +277,7 @@ handoff (hit geometry from the containment SDFs) can share the list.
 
 | Gap | Functions that hit it | Which side |
 | --- | --- | --- |
-| struct parameter (`ptr<function, Uniforms>`) | `pileupCellX`, `pileupY`, `pileupRowTopPx`, `pileupRowCenterPx`, `bpToClipX` (alignments, canvas, wiggle), `flippedQuadPos`, `covBarScale`, `covBottom`, `covAreaTop`, `covBpToClipX`, `covSegQuad`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcYDir`/`arcsPointDown`, `covSnpColor`, `covClipKindColor`, `arcColorByIndex` | B rect + colour. Either factor scalar cores (ADR-051's `snapBoxCenterY` move) or admit a struct parameter with member reads only |
+| struct parameter (`ptr<function, Uniforms>`) | `pileupCellX`, `pileupY`, `pileupRowTopPx`, `pileupRowCenterPx`, `bpToClipX` (alignments, canvas, wiggle), `flippedQuadPos`, `covBaselinePx`, `covEffHeight`, `covAreaTop`, `covBpToClipX`, `covSegQuad`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcYDir`/`arcsPointDown`, `covSnpColor`, `covClipKindColor`, `arcColorByIndex` | B rect + colour. **Decided on the coverage band, 2026-09-04: factor scalar cores** (ADR-051's `snapBoxCenterY` move), do not admit a struct parameter — see §Owed |
 | `vec2` parameter / locals / swizzle | `capsuleDist(float2 local, float halfLenPx)`, `capsuleFrame`, `discCoverage(float2)`, `crispSquareCornerPx(float2, …)`, `sdEllipse(float2 p, float2 radii)`, `distToWideCircle(float2, float)`, `triSdfRight`, `serifPos`, `expandToMinWidthPx` (float2 return, js-skipped) | Item 2 above all: `capsuleDist` is the hit test for dotplot, wiggle `lineCenter` and `linkedReadLine`; `sdEllipse` for arcs; `triSdfRight` for the variant triangle. The scalar-core split works for `capsuleDist` (`(dx, dy, halfLen)`) and `distToWideCircle` (already done as `distToWideCirclePx`); `sdEllipse` is genuinely 2-D |
 | `vec3`/`vec4` return (colour) | `unpackRGBA`, `baseColor`, `covSnpColor`, `covClipKindColor`, `arcColorByIndex`, `hueRampHalfSat`, `shadeFill`, `categoryPaletteColor`, density `lerp(white, rgb, t)` | C's second argument. Do not add vectors: author `*Slot(...) -> uint` twins as `arcColorSlot` did, and leave `unpackRGBA` to the painter's `abgrToCssRgba` |
 | uniform array indexing | `readCategoryColor[colorCategory]`, `linkedReadColor[slot]`, `arcColor[slot]`, `getWord` | Same answer: the slot is the export, the table is the painter's |
@@ -295,19 +305,46 @@ few interpreters that look identical enough to want a generator — that is the
 bar applied to codegen, and it is the right bar.
 
 **First pass: `coverage` (`coverageBar.slang`), then the other four band
-passes.** The painter reads the packed buffer already, through the generated
-layout; it is shared by two renderers so the payoff lands twice; the colour is
-one uniform slot (`u.colorCoverage`) so the colour problem is trivially solved;
-the only missing twins are `covBarScale`, `covBottom` and `covSegQuad`'s px
-half, and `normalizeDepthScalar`/`covEffectiveHeightPx`/`covBottomOffsetPx`
-beside them are exported already — so the whole conversion is the
-struct-parameter question in miniature, on three functions, which is the
-cheapest place to decide between factoring and admitting a struct parameter.
-`coverageParity.test.ts` is the oracle and exists. And it carries the seam pad,
-so the per-pass overdraw parameter gets designed on the row that needs it
-rather than bolted on later. The gate to retire the hand-written box
-(`coverageLayout` in `coverageBandBox.ts`) is a differential sweep, the
-`hpmathParity.test.ts` pattern.
+passes — DONE 2026-09-04, and it took `snpCov` and `modCov` with it.** The
+painter reads the packed buffer already, through the generated layout; it is
+shared by two renderers so the payoff lands twice; the colour is one uniform slot
+(`u.colorCoverage`) so the colour problem is trivially solved. What landed is
+`covBarHeightPx`, `covSegBottomPx` and `covSegTopPx` — `covSegQuad`'s whole
+vertical half, exported into `coverageBandLayout.generated.ts` beside
+`normalizeDepthScalar`/`covEffectiveHeightPx`/`covBottomOffsetPx` — with
+`covSegQuad` itself rewritten to call them and convert once, so the three
+Canvas2D painters and the vertex stage now run the same three functions.
+`covBarScale` and `covBottom` are gone: the clip-space wrappers had no caller
+left once the decision moved into px. Gate:
+`coverageBandLayoutParity.test.ts`, carrying the retired composition verbatim
+and sweeping it (the `hpmathParity.test.ts` pattern);
+`coverageParity.test.ts` now reads a recorded `fillRect` against
+`covSegTopPx` where it had a formula restated on both sides of an `expect`.
+
+Three things the conversion says that the plan did not:
+
+- **`coverageLayout` does not retire, and should not.** It was already generated-
+  backed (`covEffectiveHeightPx` / `covBottomOffsetPx`, with its own retirement
+  gate), and the coverage axis and MAF's conservation band read the same box. The
+  hand-written thing was never the box; it was the *composition* on top of it,
+  stated three times in `rendererUtils.ts`.
+- **The seam pad needed no parameter.** It is a width, applied by `fillSpanRect`
+  after the placement, and the placement is what got lifted — so the per-pass
+  overdraw the plan wanted to design here has nothing to attach to yet. It will
+  when the x half lands, because `fillSpanRect` is where the two meet.
+- **A `float2` return was the wrong shape, on this row.** Two scalar edges, not
+  one pair: the tuple convention emits `[number, number]`, and these loops run
+  per covered bp under a documented no-allocation bar. `rectSpanPx`'s pair is
+  fine because it runs per feature. The precedent to copy is per-loop, not
+  per-tree.
+- **The two segment painters are now the same loop three differences apart.**
+  `drawSnpSegments` and `drawModCovSegments` differ in which generated offset map
+  they index, an allele-fraction gate, and where the colour comes from — nothing
+  else. That is the evidence for the interpreter this file argues toward, and
+  also the reason not to write it on a hunch: these loops index inline against a
+  measured bar (`instanceAccessors.bench.ts`, 0.56-0.62x through the generated
+  getters), and a parameterised loop reading its offsets off a passed-in object
+  gives that up. Merge them behind a measurement, not before one.
 
 **Second: `modification` / `perBaseQuality` (`packedColorQuad`), because they
 are the pure `fillRect` + packed-colour case** and would settle whether
@@ -323,11 +360,41 @@ correct by construction already, in the only way text can be.
 
 ## Owed
 
+- **DECIDED 2026-09-04: the tree keeps factoring scalar cores; the emitter does
+  not learn a struct parameter.** Not on emitter cost — member access on a
+  parameter is a bounded change — but because *the consumer has no struct to
+  pass*. `CoverageBandUniforms` is 25 fields the GPU renderer assembles at draw
+  time: an hp-split bp range, `canvasW`/`canvasH`, the `hpZero` sentinel, packed
+  ABGR colours. The Canvas2D painter holds a band height, a `normalizeDepth`
+  closure and a `bpToX` closure, and a twin taking `Uniforms` would make it build
+  a UBO it never uploads — importing clip space and the HP split into a path that
+  has neither — to read two fields out the other side. The factoring cost three
+  lines of `.slang` and no emitter change at all; the scalar cores are also
+  reusable across the band's five passes and its axis, where a struct-parameter
+  twin is per-uniform-block. Revisit only for a function whose fields outnumber
+  what a caller can plausibly hold, which nothing in the census does.
+- The x half of `covSegQuad`, which this conversion did **not** take.
+  `fillSpanRect` is already a faithful twin of `expandToMinWidthPx(x1, x2, 1)`,
+  so the `//! js-skip` calling that rule "a different rule, not a twin" was stale
+  — it was written against the pileup cell and the variant matrix, which do floor
+  differently, and never looked at the band. Both skips now say so.
+  Lifting it needs an owner that can redirect into
+  `@jbrowse/alignments-core`: `coverageBand.slang` is a module and can only
+  export its own functions, and the rule is hpmath's and shared with the pileup's
+  `expandMinWidthX`, so naming it after the band would misattribute it. An
+  entry-point shader with a `//! js-export-out` is the mechanism; which shader
+  owns it is the open question.
+- The band's other two passes, `interbase` and `indicator`, which do not go
+  through `covSegQuad` — `interbaseEdgePx` already covers the first's edges.
 - The `rampIndex` export that would move the four texture passes to B — small,
   and it decides whether Hi-C and LD join the set.
-- A decision on whether the emitter admits a struct parameter with member reads
-  or the tree keeps factoring scalar cores. The coverage band conversion is
-  where it gets made.
-- Nothing here was run. Pass counts, blend modes and painter calls were read off
-  the sources named in the table; the `.iface.generated.ts` files were trusted
-  to match their `.slang`, which `pnpm gen:shaders` enforces.
+- Nothing in the census itself was run. Pass counts, blend modes and painter
+  calls were read off the sources named in the table; the `.iface.generated.ts`
+  files were trusted to match their `.slang`, which `pnpm gen:shaders` enforces.
+  The conversion above was run: `pnpm gen:shaders`, `pnpm test-related` (428
+  suites), and a sabotage of the generated `covSegTopPx` to prove the new gate
+  fails. No browser check.
+- The same review's shader-derived hit tests (`chevronContains` for the pileup
+  read's strand arrowhead, `capsuleDistPx` for the dotplot pick) have unit and
+  oracle coverage only — `hitTest.test.ts`, `dotplotPickEngine.test.ts` — and
+  nobody has hovered either one in a browser.

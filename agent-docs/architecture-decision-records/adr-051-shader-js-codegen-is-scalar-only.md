@@ -490,8 +490,9 @@ implementations have to be *meant* to agree:
   `hueRampHalfSat` shape from the table above: the dispatch is shared and
   trivial, the payload is per-backend, and a wrapper would be a hand-written
   twin again.
-- **`effHeight` / `covBottom` (coverage band)** — **now exported**, as
-  `covEffectiveHeightPx` / `covBottomOffsetPx`. The blocker was destination, not
+- **The coverage band's drawable height and baseline** (`effHeight` /
+  `covBottom` as `alignmentsUniforms.slang` spelled them; neither name survives)
+  — **now exported**, as `covEffectiveHeightPx` / `covBottomOffsetPx`. The blocker was destination, not
   shape: `alignmentsUniforms.slang`'s twin lands in plugin-alignments, which
   `@jbrowse/alignments-core` cannot import. Letting `coverage.slang` export a
   function it imports solved that without a new module, and is the general fix
