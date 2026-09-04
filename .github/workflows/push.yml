@@ -218,6 +218,13 @@ jobs:
       # stops mid-run having printed something that looks like it finished.
       - name: Check no `| head` under `set -o pipefail`
         run: pnpm check-shell-pipefail
+      # Also source-only, and no other job can see it: `pnpm typecheck` is
+      # `--noEmit`, so two files whose names differ only by case emit nothing to
+      # collide, and only `build:esm` on a case-insensitive checkout notices.
+      # Three pairs were live at once on 2026-08-20 and main stayed red for
+      # days; until now this ran from `pnpm verify` and nowhere else.
+      - name: Check no two modules differ only by case
+        run: pnpm check-case-collisions
       # Also source-only. TypeScript 7's package entry is a stub, so a bump of
       # the ambient `typescript` past 6.x takes out typescript-eslint, both
       # doc generators and oxlint's type-aware pass at once — and the six
