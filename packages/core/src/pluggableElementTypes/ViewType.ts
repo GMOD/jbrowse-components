@@ -23,12 +23,16 @@ export default class ViewType extends PluggableElementBase {
 
   private loadedStateModel?: IAnyModelType
 
-  // Non-optional because nearly every reader holds a view instance, which
-  // implies the model is loaded; code that can run before any instance exists
-  // (session preloading, pruning, union membership) must check
-  // isStateModelLoaded first.
+  // Throws before the loader resolves, so a plugin composing an unloaded
+  // model fails here rather than as an opaque MST error. Code that can run
+  // before any instance exists checks isStateModelLoaded first.
   get stateModel(): IAnyModelType {
-    return this.loadedStateModel!
+    if (!this.loadedStateModel) {
+      throw new Error(
+        `state model for view type ${this.name} is not loaded yet — await getViewType('${this.name}').loadStateModel() first`,
+      )
+    }
+    return this.loadedStateModel
   }
 
   set stateModel(stateModel: IAnyModelType) {
@@ -39,8 +43,8 @@ export default class ViewType extends PluggableElementBase {
   // the loader resolves, so a callback reading `stateModel` sees a model
   onStateModelLoaded?: () => void
 
-  // named `stateModel` + `Loader` because pluggableMstType and
-  // pruneUnbuildableNodes probe `${fieldName}Loader` generically
+  // named `stateModel` + `Loader` because pluggableMstType probes
+  // `${fieldName}Loader` generically
   stateModelLoader?: () => Promise<IAnyModelType>
 
   private stateModelPromise?: Promise<IAnyModelType>

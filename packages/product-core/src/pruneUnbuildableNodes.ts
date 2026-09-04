@@ -119,8 +119,14 @@ export interface HeldNode {
 // widen the plugin ABI for nothing.
 function buildableElements(pluginManager: PluginManager, group: Group) {
   return pluginManager.getElementTypesInGroup(group).filter(t => {
-    const { stateModel } = t as unknown as { stateModel?: unknown }
-    return isType(stateModel) && isModelType(stateModel)
+    const element = t as unknown as {
+      stateModel?: unknown
+      isStateModelLoaded?: boolean
+    }
+    if (element.isStateModelLoaded === false) {
+      return false
+    }
+    return isType(element.stateModel) && isModelType(element.stateModel)
   }) as unknown as { name: string; aliases?: string[]; stateModel: IAnyType }[]
 }
 

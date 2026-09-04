@@ -90,8 +90,8 @@ interface LazyStateModelElement {
 }
 
 function isUnloadedLazyElement(
-  element: PluggableElementType,
-): element is PluggableElementType & LazyStateModelElement {
+  element: PluggableElementBase,
+): element is PluggableElementBase & LazyStateModelElement {
   return 'isStateModelLoaded' in element && !element.isStateModelLoaded
 }
 
@@ -850,7 +850,10 @@ export default class PluginManager {
             const extended = extend()
             if (extended !== newElement) {
               typeRecord.add(newElement.name, extended)
-              if ('isStateModelLoaded' in extended) {
+              if (
+                'isStateModelLoaded' in extended &&
+                extended.isStateModelLoaded
+              ) {
                 newElement.stateModel = extended.stateModel
               }
             }
@@ -914,12 +917,17 @@ export default class PluginManager {
     fallback: IAnyType = types.maybe(types.null),
   ) {
     const record = this.getElementTypeRecord(groupName)
+    const fieldOf = (t: PluggableElementBase) =>
+      isUnloadedLazyElement(t)
+        ? undefined
+        : (t as unknown as Record<string, unknown>)[fieldName]
     const anyMember = record.all().some(t => {
-      const element = t as unknown as Record<string, unknown>
-      const field = element[fieldName]
+      const field = fieldOf(t)
       return (
         (isType(field) && isModelType(field)) ||
-        typeof element[`${fieldName}Loader`] === 'function'
+        typeof (t as unknown as Record<string, unknown>)[
+          `${fieldName}Loader`
+        ] === 'function'
       )
     })
     if (!anyMember) {
@@ -928,7 +936,7 @@ export default class PluginManager {
     const modelsOf = () =>
       record
         .all()
-        .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+        .map(t => fieldOf(t))
         .filter(t => isType(t) && isModelType(t)) as IAnyType[]
     let members = modelsOf()
     return types.union({
@@ -1061,72 +1069,36 @@ export default class PluginManager {
     return this.viewTypes.get(typeName)
   }
 
-  private sessionTypeNames(sessionSnapshot: unknown) {
-    const viewNames = new Set<string>()
-    const displayNames = new Set<string>()
-    const collectTracks = (tracks: unknown) => {
-      if (Array.isArray(tracks)) {
-        for (const track of tracks) {
-          const { displays } =
-            track && typeof track === 'object'
-              ? (track as { displays?: unknown })
-              : {}
-          if (Array.isArray(displays)) {
-            for (const display of displays) {
-              const type =
-                display && typeof display === 'object'
-                  ? (display as { type?: unknown }).type
-                  : undefined
-              if (typeof type === 'string') {
-                displayNames.add(type)
-              }
-            }
+  /**
+   * The registered view and display types a snapshot names, from every `type`
+   * string anywhere in it — `heldForMissingPlugins` included. Over-collection
+   * is harmless: a name that resolves to neither is dropped here.
+   */
+  private sessionElementTypes(sessionSnapshot: unknown) {
+    const names = new Set<string>()
+    const walk = (node: unknown) => {
+      if (Array.isArray(node)) {
+        for (const item of node) {
+          walk(item)
+        }
+      } else if (node && typeof node === 'object') {
+        for (const [key, value] of Object.entries(node)) {
+          if (key === 'type' && typeof value === 'string') {
+            names.add(value)
+          } else {
+            walk(value)
           }
         }
       }
     }
-    const collectViews = (views: unknown) => {
-      if (Array.isArray(views)) {
-        for (const view of views) {
-          if (view && typeof view === 'object') {
-            const {
-              type,
-              views: children,
-              tracks,
-              levels,
-            } = view as {
-              type?: unknown
-              views?: unknown
-              tracks?: unknown
-              levels?: unknown
-            }
-            if (typeof type === 'string') {
-              viewNames.add(type)
-            }
-            collectViews(children)
-            collectTracks(tracks)
-            if (Array.isArray(levels)) {
-              for (const level of levels) {
-                collectTracks(
-                  level && typeof level === 'object'
-                    ? (level as { tracks?: unknown }).tracks
-                    : undefined,
-                )
-              }
-            }
-          }
-        }
-      }
-    }
-    if (sessionSnapshot && typeof sessionSnapshot === 'object') {
-      const { view, views } = sessionSnapshot as {
-        view?: unknown
-        views?: unknown
-      }
-      collectViews(views)
-      collectViews(view ? [view] : undefined)
-    }
-    return { viewNames, displayNames }
+    walk(sessionSnapshot)
+    return [...names].flatMap(name => {
+      const display = this.resolveDisplayTypeRecord(name)
+      return [
+        ...(this.viewTypes.has(name) ? [this.getViewType(name)] : []),
+        ...(display ? [display] : []),
+      ]
+    })
   }
 
   /**
@@ -1134,30 +1106,15 @@ export default class PluginManager {
    * instantiation (`setSession`, `cast`) must await this first.
    */
   async preloadSessionTypes(sessionSnapshot: unknown) {
-    const { viewNames, displayNames } = this.sessionTypeNames(sessionSnapshot)
-    await Promise.all([
-      ...[...viewNames]
-        .filter(name => this.viewTypes.has(name))
-        .map(name => this.getViewType(name).loadStateModel()),
-      ...[...displayNames]
-        .map(name => this.resolveDisplayTypeRecord(name))
-        .flatMap(display => (display ? [display.loadStateModel()] : [])),
-    ])
+    await Promise.all(
+      this.sessionElementTypes(sessionSnapshot).map(t => t.loadStateModel()),
+    )
   }
 
   unloadedSessionTypes(sessionSnapshot: unknown) {
-    const { viewNames, displayNames } = this.sessionTypeNames(sessionSnapshot)
-    return [
-      ...[...viewNames].filter(
-        name =>
-          this.viewTypes.has(name) &&
-          !this.getViewType(name).isStateModelLoaded,
-      ),
-      ...[...displayNames].filter(name => {
-        const display = this.resolveDisplayTypeRecord(name)
-        return display !== undefined && !display.isStateModelLoaded
-      }),
-    ]
+    return this.sessionElementTypes(sessionSnapshot)
+      .filter(t => !t.isStateModelLoaded)
+      .map(t => t.name)
   }
 
   /**

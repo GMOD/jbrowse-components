@@ -781,3 +781,45 @@ test('keeps a held node whose container is itself held', () => {
   const again = prune(held, gwasNoLgv).snapshot
   expect(again.heldForMissingPlugins).toEqual(held.heldForMissingPlugins)
 })
+
+test('holds a display whose lazy state model is not loaded, without reading it', () => {
+  const lazy = fakeBuild({
+    view: ['LinearGenomeView'],
+    track: ['FeatureTrack'],
+    display: ['LinearBasicDisplay'],
+  })
+  const registered = lazy.pluginManager.getElementTypesInGroup
+  const unloaded = {
+    name: 'LinearGwasDisplay',
+    isStateModelLoaded: false,
+    get stateModel(): IAnyType {
+      throw new Error('not loaded')
+    },
+  }
+  lazy.pluginManager.getElementTypesInGroup = (group =>
+    group === 'display'
+      ? [...registered(group), unloaded]
+      : registered(group)) as typeof registered
+  const { dropped } = prune(
+    {
+      views: [
+        {
+          id: 'v',
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              id: 't',
+              type: 'FeatureTrack',
+              displays: [{ id: 'd', type: 'LinearGwasDisplay' }],
+            },
+          ],
+        },
+      ],
+    },
+    lazy,
+  )
+  expect(dropped).toEqual([
+    { group: 'display', type: 'LinearGwasDisplay' },
+    { group: 'track', type: 'FeatureTrack', cascade: true },
+  ])
+})

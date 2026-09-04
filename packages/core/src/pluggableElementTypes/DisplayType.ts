@@ -9,7 +9,12 @@ export default class DisplayType extends PluggableElementBase {
 
   // same contract as ViewType.stateModel
   get stateModel(): IAnyModelType {
-    return this.loadedStateModel!
+    if (!this.loadedStateModel) {
+      throw new Error(
+        `state model for display type ${this.name} is not loaded yet — await getDisplayType('${this.name}').loadStateModel() first`,
+      )
+    }
+    return this.loadedStateModel
   }
 
   set stateModel(stateModel: IAnyModelType) {

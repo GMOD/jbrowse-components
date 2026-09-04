@@ -1,7 +1,9 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { getUnionSubtypes, types } from '@jbrowse/mobx-state-tree'
 
 import Plugin from './Plugin.ts'
 import PluginManager from './PluginManager.ts'
+import { ConfigurationSchema } from './configuration/index.ts'
+import DisplayType from './pluggableElementTypes/DisplayType.ts'
 import ViewType from './pluggableElementTypes/ViewType.ts'
 
 // Two separately-built copies of one plugin: what a product that bundles a
@@ -149,6 +151,20 @@ function lazyViewPlugin(onExtend: (pm: PluginManager) => void) {
             ReactComponent: () => null,
           }),
       )
+      pm.addDisplayType(
+        () =>
+          new DisplayType({
+            name: 'LazyDisplay',
+            stateModel: () =>
+              Promise.resolve(
+                types.model('LazyDisplay', { type: 'LazyDisplay' }),
+              ),
+            configSchema: ConfigurationSchema('LazyDisplay', {}),
+            trackType: 'FakeTrack',
+            viewType: 'LazyView',
+            ReactComponent: () => null,
+          }),
+      )
       onExtend(pm)
     }
   }
@@ -221,5 +237,77 @@ describe('Core-extendPluggableElement on a lazily registered state model', () =>
     expect(loaded.name).toBe('Replaced')
     expect(pm.getViewType('LazyView')).not.toBe(original)
     expect(pm.getViewType('LazyView').stateModel).toBe(loaded)
+  })
+})
+
+describe('preloadSessionTypes', () => {
+  test('finds a display under a view-typed prop the key set never named', async () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    const snapshot = {
+      views: [
+        {
+          type: 'EagerView',
+          circularView: {
+            type: 'LazyView',
+            tracks: [
+              { type: 'FakeTrack', displays: [{ type: 'LazyDisplay' }] },
+            ],
+          },
+        },
+      ],
+    }
+    expect(pm.unloadedSessionTypes(snapshot).sort()).toEqual([
+      'LazyDisplay',
+      'LazyView',
+    ])
+    await pm.preloadSessionTypes(snapshot)
+    expect(pm.unloadedSessionTypes(snapshot)).toEqual([])
+  })
+
+  test('finds the types a held node names', async () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    const snapshot = {
+      views: [],
+      heldForMissingPlugins: [
+        {
+          group: 'display',
+          parent: 't1',
+          index: 0,
+          snapshot: { type: 'LazyDisplay', configuration: 'c1' },
+        },
+      ],
+    }
+    expect(pm.unloadedSessionTypes(snapshot)).toEqual(['LazyDisplay'])
+    await pm.preloadSessionTypes(snapshot)
+    expect(pm.getDisplayType('LazyDisplay').isStateModelLoaded).toBe(true)
+  })
+})
+
+describe('an unloaded lazy state model', () => {
+  test('reading stateModel says what to await', () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    expect(() => pm.getViewType('LazyView').stateModel).toThrow(
+      /await getViewType\('LazyView'\).loadStateModel\(\)/,
+    )
+    expect(() => pm.getDisplayType('LazyDisplay').stateModel).toThrow(
+      /await getDisplayType\('LazyDisplay'\).loadStateModel\(\)/,
+    )
+  })
+
+  test('is left out of the pluggable union until it loads', async () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    const union = pm.pluggableMstType('view', 'stateModel')
+    const members = () => getUnionSubtypes(union).map(t => t.name)
+    expect(members()).toEqual(['EagerView'])
+    await pm.getViewType('LazyView').loadStateModel()
+    expect(members()).toEqual(['EagerView', 'LazyView'])
   })
 })
