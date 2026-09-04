@@ -1,9 +1,9 @@
 import {
+  canonicalizeSyntenyDictLanes,
   getCanonicalRefNameFn,
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
   installLodTierInfoFetch,
-  renameDictLane,
 } from '@jbrowse/synteny-core'
 import { untracked } from 'mobx'
 
@@ -134,6 +134,8 @@ export function doAfterAttach(
       // ONE RESOLVER PER AXIS, not one shared, so two contigs spelled alike on
       // the two assemblies cannot collide. Both assemblies are loaded by now —
       // `rename` above needed them — so neither await goes to the network.
+      // Which lane takes which resolver (and which lane deliberately takes
+      // none) is the lane table's `rename` column, in `syntenyLaneSchema.ts`.
       const [queryCanonical, targetCanonical] = await Promise.all([
         getCanonicalRefNameFn({
           assemblyManager,
@@ -144,46 +146,14 @@ export function doAfterAttach(
           assemblyName: targetAssemblyName,
         }),
       ])
-      const query = renameDictLane({
-        dict: result.refNameDict,
-        ids: result.refNameIds,
-        canonical: queryCanonical,
-      })
-      const target = renameDictLane({
-        dict: result.mateRefNameDict,
-        ids: result.mateRefNameIds,
-        canonical: targetCanonical,
-      })
-      // A THIRD LANE, same class, different namespace: `mateAssemblyNameDict`
-      // holds the adapter's `assemblyNames[]` verbatim, which is config text,
-      // and `pickFollowFeature` / `followWindowMapping` / `centerOnFeature`
-      // compare it against a view's `assemblyNames[0]`, which is canonical
-      // because it comes off the assembly's own regions. A track declaring its
-      // SECOND assembly by an alias is offered on the level anyway —
-      // `syntenyTrackRows` resolves it through `canonicalAssemblyNames` — so the
-      // ribbons draw, the id lookup misses, `mateAssemblyId` is -1, and the
-      // filter drops every candidate rather than skipping. The follow then
-      // reports the whole window unaligned.
-      //
-      // Only the MATE lane. `assemblyNameDict` goes back OUT — `feat.assemblyName`
-      // is the `regions[]` assembly of `SyntenyResolveMatchingRegion`, which the
-      // adapter matches against its own `assemblyNames[]` — so canonicalizing it
-      // would break the lookup that currently works.
-      const mateAssembly = renameDictLane({
-        dict: result.mateAssemblyNameDict,
-        ids: result.mateAssemblyNameIds,
-        canonical: name =>
-          assemblyManager.getCanonicalAssemblyName(name) ?? name,
-      })
       return {
-        ...result,
-        refNameDict: query.dict,
-        refNameIds: query.ids,
-        mateRefNameDict: target.dict,
-        mateRefNameIds: target.ids,
-        mateAssemblyNameDict: mateAssembly.dict,
-        mateAssemblyNameIds: mateAssembly.ids,
-        // THE MATE LANES OF THE OTHER TWO DICTIONARIES, and they take OPPOSITE
+        ...canonicalizeSyntenyDictLanes(result, {
+          query: queryCanonical,
+          target: targetCanonical,
+          assembly: name =>
+            assemblyManager.getCanonicalAssemblyName(name) ?? name,
+        }),
+        // THE MATE LANES OF THE REFNAME DICTIONARIES, and they take OPPOSITE
         // resolvers: an off-screen mate names a contig on the far side of the
         // band from the axis its mark is placed on, so the query-axis strip's
         // names belong to the target assembly and the target-axis strip's to

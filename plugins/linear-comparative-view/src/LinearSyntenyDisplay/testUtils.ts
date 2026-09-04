@@ -1,4 +1,4 @@
-import { UNNAMED, makeStringDict } from '@jbrowse/synteny-core'
+import { packSyntenyLanes } from '@jbrowse/synteny-core'
 
 import type { SyntenyFeatureData } from './model.ts'
 import type { PickCanvasLike } from './syntenyPickEngine.ts'
@@ -139,11 +139,14 @@ function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
  * Pack blocks the way the RPC hands them over: parallel typed arrays and
  * dictionary-encoded string lanes, not objects.
  *
- * Shared because four suites had a `data(blocks: Block[])` of their own, each
- * spelling out all fourteen fields of the payload with a slightly different
- * `Block` — so the string lanes going dictionary-encoded was a four-file edit
- * that said nothing about any of the four suites. Mate coordinates default to
- * the feature's own, which is enough for a test exercising one axis.
+ * The lanes come from `packSyntenyLanes` walking the lane table, so a lane
+ * added there fails this file's typecheck until a reader is written — the
+ * harness once drifted to `name ?? id` against production's `name ?? UNNAMED`
+ * (the table's sentinel supplies that fallback now, and an id fallback made
+ * every id-carrying fixture read as NAMED to the contig votes' evidence rule).
+ * What stays here are the harness-only defaults: refName `chr1`, one
+ * hg002mat/hg002pat assembly pair, and mate coordinates falling back to the
+ * feature's own, which is enough for a test exercising one axis.
  */
 export function packSyntenyFeatureData(
   blocks: FeatureBlock[],
@@ -161,40 +164,30 @@ export function packSyntenyFeatureData(
     targetOffscreenMates?: SyntenyFeatureData['offscreenMates']
   } = {},
 ): SyntenyFeatureData {
-  const lane = (values: string[]) => {
-    const d = makeStringDict()
-    return { dict: d.dict, ids: Uint32Array.from(values, v => d.idFor(v)) }
-  }
-  // the packers' own sentinel — an id fallback here made every id-carrying
-  // fixture read as a NAMED record to the contig votes' evidence rule
-  const names = lane(blocks.map(b => b.name ?? UNNAMED))
-  const refNames = lane(blocks.map(b => b.refName ?? 'chr1'))
-  const assemblies = lane(blocks.map(b => b.assembly ?? 'hg002mat'))
-  const mateRefNames = lane(
-    blocks.map(b => b.mateRefName ?? b.refName ?? 'chr1'),
-  )
-  const mateAssemblies = lane(blocks.map(b => b.mateAssembly ?? 'hg002pat'))
   return {
-    offscreenMates,
-    targetOffscreenMates,
-    strands: Int8Array.from(blocks, b => b.strand ?? 1),
-    starts: Uint32Array.from(blocks, b => b.start),
-    ends: Uint32Array.from(blocks, b => b.end),
+    ...packSyntenyLanes(blocks, {
+      numeric: {
+        strands: b => b.strand ?? 1,
+        starts: b => b.start,
+        ends: b => b.end,
+        mateStarts: b => b.mateStart ?? b.start,
+        mateEnds: b => b.mateEnd ?? b.end,
+      },
+      dict: {
+        name: b => b.name,
+        refName: b => b.refName ?? 'chr1',
+        assemblyName: b => b.assembly ?? 'hg002mat',
+        mateRefName: b => b.mateRefName ?? b.refName ?? 'chr1',
+        mateAssemblyName: b => b.mateAssembly ?? 'hg002pat',
+      },
+      list: {
+        featureIds: (b, i) => b.id ?? `f${i}`,
+      },
+    }),
     attributes: {},
     attributeRanges: {},
-    featureIds: blocks.map((b, i) => b.id ?? `f${i}`),
-    nameDict: names.dict,
-    nameIds: names.ids,
-    refNameDict: refNames.dict,
-    refNameIds: refNames.ids,
-    assemblyNameDict: assemblies.dict,
-    assemblyNameIds: assemblies.ids,
-    mateStarts: Uint32Array.from(blocks, b => b.mateStart ?? b.start),
-    mateEnds: Uint32Array.from(blocks, b => b.mateEnd ?? b.end),
-    mateRefNameDict: mateRefNames.dict,
-    mateRefNameIds: mateRefNames.ids,
-    mateAssemblyNameDict: mateAssemblies.dict,
-    mateAssemblyNameIds: mateAssemblies.ids,
+    offscreenMates,
+    targetOffscreenMates,
     hasCigar,
   }
 }

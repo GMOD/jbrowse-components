@@ -70,6 +70,20 @@ export {
   regionsInAssemblyNamespace,
 } from './regionsInAssemblyNamespace.ts'
 export { renameDictLane } from './renameDictLane.ts'
+export {
+  SYNTENY_LANES,
+  canonicalizeSyntenyDictLanes,
+  packSyntenyLanes,
+  syntenyLaneFields,
+} from './syntenyLaneSchema.ts'
+export type {
+  SyntenyDictLaneName,
+  SyntenyLane,
+  SyntenyLaneSpec,
+  SyntenyListLaneName,
+  SyntenyNumericLaneName,
+} from './syntenyLaneSchema.ts'
+export type { SyntenyFeatureLanes } from './syntenyFeatureLanes.generated.ts'
 export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'

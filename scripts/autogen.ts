@@ -219,6 +219,13 @@ const GENERATORS: Generator[] = [
     independent: true,
   },
   {
+    // packages/synteny-core/src/syntenyFeatureLanes.generated.ts, from the
+    // synteny RPC payload's lane table in syntenyLaneSchema.ts.
+    name: 'synteny lane types',
+    argv: rootScript('generateSyntenyLanes.ts'),
+    independent: true,
+  },
+  {
     // The config-slot manifest `jbrowse validate` checks against, read out of
     // the live ConfigurationSchema objects, plus the jbrowse-authoring skill's
     // config-types.md index. It bundles the live source tree, add-track-core's

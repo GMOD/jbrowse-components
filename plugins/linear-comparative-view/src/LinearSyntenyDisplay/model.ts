@@ -47,12 +47,13 @@ import type {
   CigarOpMask,
   LodTier,
   SyntenyColorBy,
+  SyntenyFeatureLanes,
 } from '@jbrowse/synteny-core'
 
-export interface SyntenyFeatureData {
-  strands: Int8Array
-  starts: Uint32Array
-  ends: Uint32Array
+// The lane fields live on the generated `SyntenyFeatureLanes` — the table in
+// synteny-core's `syntenyLaneSchema.ts` is where a lane is added, documented
+// and marked for renaming. Only the irregular fields are declared here.
+export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // Every numeric channel a continuous color-by mode can paint, keyed by
   // attribute name. Holds the four presets — `identity`, `meanIdentity`,
   // `mappingQual`, and the derived `dnds` — plus whatever columns the track
@@ -63,30 +64,6 @@ export interface SyntenyFeatureData {
   // `attribute:<name>` mode scales to, and the numbers its legend is labelled
   // with; the presets have fixed domains and ignore this.
   attributeRanges: Record<string, AttributeRange>
-  // Genuinely distinct per feature, so this one stays a `string[]`: a dictionary
-  // of 500k distinct strings costs the same clone plus an index array. See
-  // `makeStringDict`, which is also where the measurement lives.
-  featureIds: string[]
-  // The five per-feature string lanes that ARE worth dictionary-encoding, each
-  // bounded by something other than the feature count — a gene symbol or nothing
-  // (a PAF names no features), a scaffold count, and twice over the single
-  // assembly this level draws. `getFeatureAtIndex` is the one place that reads
-  // them, so the encoding stops there rather than spreading.
-  nameDict: string[]
-  nameIds: Uint32Array
-  refNameDict: string[]
-  refNameIds: Uint32Array
-  assemblyNameDict: string[]
-  assemblyNameIds: Uint32Array
-  // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
-  // and match the bp coord convention used elsewhere in the codebase.
-  // mate.name was always undefined (no adapter sets it) so it's dropped.
-  mateStarts: Uint32Array
-  mateEnds: Uint32Array
-  mateRefNameDict: string[]
-  mateRefNameIds: Uint32Array
-  mateAssemblyNameDict: string[]
-  mateAssemblyNameIds: Uint32Array
   // True when at least one feature in this RPC response carried an alignment
   // string to walk — a CIGAR, or the coarse tier's fold of one. Used to gate
   // the walks and their menu items so they don't appear when nothing in the
