@@ -41,12 +41,12 @@ function attrs(model: ChordDisplayModel) {
       <ChordVariantDisplay display={model} />
     </svg>,
   )
-  const g = container.querySelector('[data-display-phase]')
+  const g = container.querySelector<SVGElement>('[data-display-phase]')
   return {
-    testid: g?.getAttribute('data-testid'),
-    id: g?.getAttribute('data-display-id'),
-    drawn: g?.getAttribute('data-display-drawn'),
-    phase: g?.getAttribute('data-display-phase'),
+    testid: g?.dataset.testid,
+    id: g?.dataset.displayId,
+    drawn: g?.dataset.displayDrawn,
+    phase: g?.dataset.displayPhase,
   }
 }
 
