@@ -116,7 +116,6 @@ import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRe
 import type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
-  VisibleRegion,
 } from './components/hitTesting.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
@@ -1362,7 +1361,7 @@ export default function baseStateModelFactory(
         // not.
         get featureItemMap(): Map<string, FeatureItemEntry> {
           const map = new Map<string, FeatureItemEntry>()
-          const visibleRegions = getView(self).visibleRegions as VisibleRegion[]
+          const visibleRegions = getView(self).visibleRegions
           for (const vr of visibleRegions) {
             const data = self.laidOutDataMap.get(vr.displayedRegionIndex)
             if (!data) {

@@ -408,7 +408,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const viewInitialized = view.initialized
   const width = viewInitialized ? model.canvasWidthPx : undefined
   const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions as VisibleRegion[]
+  const visibleRegions = view.visibleRegions
 
   const peptides = (
     <PeptideCanvas
@@ -652,7 +652,7 @@ export const HighlightLayer = observer(function HighlightLayer({
   const viewInitialized = view.initialized
   const width = viewInitialized ? model.canvasWidthPx : undefined
   const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions as VisibleRegion[]
+  const visibleRegions = view.visibleRegions
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
