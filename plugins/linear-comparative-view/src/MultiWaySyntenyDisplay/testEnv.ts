@@ -37,6 +37,8 @@ export function createDisplay() {
 }
 
 /** the same display, with the harness session it lives in for its snackbars */
+const HELD_ASSEMBLIES = new Set(['volvox', 'volvox_random', 'volvox_ins'])
+
 export function createDisplayWithSession() {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
@@ -142,6 +144,9 @@ export function createDisplayWithSession() {
         // fail on a TypeError a lane's own error handling then swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: () => undefined,
+        // an all-vs-all file's other samples are lanes the session cannot
+        // navigate or fetch against
+        has: (name: string) => HELD_ASSEMBLIES.has(name),
         // a re-anchor is `navToLocString` on the hosting view, which asks
         // this to tell a refName from a locstring; always-true reads every
         // locstring as ambiguous

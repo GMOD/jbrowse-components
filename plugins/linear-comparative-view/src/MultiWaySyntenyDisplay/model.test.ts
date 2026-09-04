@@ -56,6 +56,75 @@ test('the first landing that counts is the one covering a mate lane', () => {
   expect(display.laneGenesCoverMates).toBe(true)
 })
 
+// An all-vs-all file carries samples the config never declared, and those draw
+// as lanes off the anchor fetch. The per-pair link fetch renames its region
+// through the assembly manager, which refuses an assembly the session does not
+// hold — so a spec naming one failed per pan and its ribbons never drew.
+test('lane links are asked for only between lanes the session holds', () => {
+  const display = createDisplay()
+  const nameless = (id: string, mateAssembly: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: {
+        assemblyName: mateAssembly,
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    })
+  display.setFeatures([
+    nameless('f1', 'volvox_random'),
+    nameless('f2', 'sample#1#undeclared'),
+    nameless('f3', 'volvox_random'),
+  ])
+  expect(display.featuresAreNameless).toBe(true)
+  expect(display.rowAssemblies).toEqual([
+    'volvox_random',
+    'sample#1#undeclared',
+  ])
+  const decision = {
+    refName: 'ctgB',
+    flipped: false,
+    rung: 1,
+    pivotAnchor: { refName: 'ctgA', coord: 200 },
+    pivotLaneBp: 200,
+    fitMin: 100,
+    fitMax: 300,
+    alsoOn: [],
+  }
+  display.setLaneFrames(
+    0,
+    new Map([
+      ['volvox_random', decision],
+      ['sample#1#undeclared', decision],
+    ]),
+  )
+  expect([...display.rowFrames.values()].every(Boolean)).toBe(true)
+  expect(display.laneLinksFetchSpecs.specs).toEqual([])
+
+  display.setFeatures([
+    nameless('f1', 'volvox_random'),
+    nameless('f2', 'volvox_ins'),
+  ])
+  display.setLaneFrames(
+    0,
+    new Map([
+      ['volvox_random', decision],
+      ['volvox_ins', decision],
+    ]),
+  )
+  expect(
+    display.laneLinksFetchSpecs.specs.map(s => [
+      s.upperAssembly,
+      s.lowerAssembly,
+    ]),
+  ).toEqual([['volvox_random', 'volvox_ins']])
+})
+
 // This display's `trackMenuItems` REPLACED the inherited list rather than
 // appending to it. Nothing is lost by that today — `BaseDisplay` returns `[]`
 // and neither mixin in the chain contributes a row — so this pins the item

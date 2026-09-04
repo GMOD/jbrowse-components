@@ -748,7 +748,7 @@ export function stateModelFactory(
           }
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
-            if (adapter && frame) {
+            if (adapter && frame && self.holdsAssembly(assemblyName)) {
               specs.push({
                 assemblyName,
                 adapterConfig: adapter,
@@ -773,7 +773,11 @@ export function stateModelFactory(
        * one spec per ADJACENT mate-lane pair when the source is an all-vs-all
        * alignment file: the upper lane's window queried against the lower
        * lane's assembly, which an all-vs-all adapter answers with the direct
-       * records it holds for that pair
+       * records it holds for that pair. Only pairs the session holds both
+       * assemblies of: the fetch renames its region through the assembly
+       * manager, which refuses a PanSN sample the config never declared, and
+       * an all-vs-all file routinely carries more of those than the config
+       * names
        */
       get laneLinksFetchSpecs() {
         const specs: LaneLinksFetchSpec[] = []
@@ -784,7 +788,12 @@ export function stateModelFactory(
             const lowerAssembly = rows[i + 1]!
             const upper = self.rowFrames.get(upperAssembly)
             const lower = self.rowFrames.get(lowerAssembly)
-            if (upper && lower) {
+            if (
+              upper &&
+              lower &&
+              self.holdsAssembly(upperAssembly) &&
+              self.holdsAssembly(lowerAssembly)
+            ) {
               specs.push({
                 upperAssembly,
                 lowerAssembly,
