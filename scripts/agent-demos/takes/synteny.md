@@ -62,7 +62,7 @@ by five; 2R and X are the arms with the answer.
 
 `jbrowse make-pif sim_vs_mau.paf --out sim_vs_mau.pif.gz` takes 5 s and writes
 the `.tbi` beside it. The merged config below passes
-`products/jbrowse-cli/bin/run validate` (the installed `jbrowse` 4.1.15 has no
+`node products/jbrowse-cli/dist/bin.js validate` (the installed `jbrowse` 4.1.15 has no
 `validate`; the in-repo CLI does).
 
 ## What a good take does

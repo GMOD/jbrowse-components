@@ -158,7 +158,6 @@
     "products/examples-site-shared/**/*.astro",
     "website/scripts/api-docs",
     "component_tests",
-    "embedded_demos",
-    "products/jbrowse-cli/bundle"
+    "embedded_demos"
   ]
 }

@@ -692,7 +692,7 @@ async function openVolvoxWithRetry(
 // set-default-session is what gives it a view to open on: without one the app
 // lands on the empty "Select a view to launch" chooser.
 function buildCliConfig(): string {
-  const cliEntry = resolve(REPO_ROOT, 'products/jbrowse-cli/dist/index.js')
+  const cliEntry = resolve(REPO_ROOT, 'products/jbrowse-cli/dist/bin.js')
   if (!existsSync(cliEntry)) {
     throw new Error(
       `@jbrowse/cli is not built (${cliEntry} missing). Run: pnpm --filter @jbrowse/cli build`,
@@ -706,12 +706,7 @@ function buildCliConfig(): string {
   const cli = (...args: string[]) => {
     execFileSync(
       'node',
-      [
-        resolve(REPO_ROOT, 'products/jbrowse-cli/bin/run'),
-        ...args,
-        '--out',
-        out,
-      ],
+      [cliEntry, ...args, '--out', out],
       { stdio: 'pipe' },
     )
   }
