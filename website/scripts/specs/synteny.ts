@@ -581,6 +581,43 @@ const GRASSES_RICE_LANES = sessionSpec(
   },
 )
 
+// The gene-level lane stack two figures share: the zoom still, and the
+// clicked frame taken in the same window so the two are the same view
+const LGV_TRACK_ZOOM_SESSION = sessionSpec(
+  encodeURIComponent('https://jbrowse.org/demos/grape_peach_cacao/config.json'),
+  {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'grape',
+        loc: '11:828,000-866,000',
+        tracks: [
+          {
+            trackId: 'grape_genes',
+            type: 'LinearBasicDisplay',
+            showOnlyGenes: true,
+            displayMode: 'compact',
+            showLabels: 'auto',
+          },
+          {
+            trackId: 'grape_peach_cacao_blocks',
+            type: 'MultiWaySyntenyDisplay',
+            rowOrder: [
+              'peach',
+              'cacao',
+              'poplar',
+              'citrus',
+              'arabidopsis',
+              'tomato',
+            ],
+            height: 340,
+          },
+        ],
+      },
+    ],
+  },
+)
+
 // The three frames of the "launch a synteny view from a selection" flow, all
 // starting from the same one-vs-all lane session and the same rubberband drag
 // over ~chr:800,000-808,000 of its 20 kb window. Each frame carries the actions
@@ -1296,45 +1333,39 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'multiway_synteny/lgv_track_zoom',
     settleMs: 25000,
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'grape',
-            loc: '11:828,000-866,000',
-            tracks: [
-              {
-                trackId: 'grape_genes',
-                type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
-                displayMode: 'compact',
-                showLabels: 'auto',
-              },
-              {
-                trackId: 'grape_peach_cacao_blocks',
-                type: 'MultiWaySyntenyDisplay',
-                rowOrder: [
-                  'peach',
-                  'cacao',
-                  'poplar',
-                  'citrus',
-                  'arabidopsis',
-                  'tomato',
-                ],
-                height: 340,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: LGV_TRACK_ZOOM_SESSION,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 680,
+  },
+
+  // The click half of the interaction the zoom figure's prose names: clicking
+  // a ribbon keeps its ortholog group outlined down the stack — the pairwise
+  // view's own edge pass — and opens the pair's details. The click lands in
+  // the grape-peach gutter at a gene the whole stack chains through, and the
+  // outline outlives the resize-and-refetch the opening widget causes, which
+  // is what lets one frame show both.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/lgv_track_clicked',
+    settleMs: 12000,
+    url: LGV_TRACK_ZOOM_SESSION,
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    viewportHeight: 680,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        anchor: {
+          locus: '11:836,500',
+          track: 'grape_peach_cacao_blocks',
+          fracY: 0.15,
+        },
+      },
+      { type: 'waitForAppSettled' },
+      { type: 'delay', ms: 2000 },
+    ],
   },
 
   // The human pangenome case of the same track: the CFH cluster over hg38 with
