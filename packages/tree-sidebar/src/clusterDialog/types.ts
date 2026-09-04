@@ -1,7 +1,7 @@
 import type { ClusterMatrix } from '../clusterMatrix.ts'
 import type { Region, RpcCaller, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DialogProps } from '@mui/material'
 
 /**
@@ -34,7 +34,7 @@ export interface ClusterDialogProps {
   // read for isAlive (a run whose display went away has no dialog to report
   // into), for getContainingView (the region/zoom the exported matrix is keyed
   // on, and the blocks a run covers) and for the RPC host
-  model: IAnyStateTreeNode
+  model: IStateTreeNode
   handleClose: () => void
   title: string
   /** intro line above the auto/manual radios */

@@ -1,8 +1,9 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
-export interface ReducedModel {
+export interface ReducedModel extends IStateTreeNode {
   layout: Source[]
   // The rows the display is showing: layout-ordered and subtree-filtered, and
   // already haplotype-expanded once a phased clustering has written `layout`.
