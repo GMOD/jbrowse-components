@@ -865,10 +865,11 @@ jobs:
 
   windows_electron_e2e:
     name: Windows Electron E2E Tests
-    # Gated on the jobs that would make an Electron run meaningless, not on the
-    # whole board — a stale doc index or an unformatted file used to hold the
-    # only Windows coverage main gets.
-    needs: [test, typecheck]
+    # Typecheck only. A jsdom snapshot mismatch in some unrelated plugin does
+    # not make a packaged Electron run meaningless, and gating on Test held the
+    # only Windows coverage main gets behind it — the same reason a stale doc
+    # index or an unformatted file was never allowed to.
+    needs: [typecheck]
     if:
       ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
       github.ref == 'refs/heads/main' }}
@@ -908,7 +909,9 @@ jobs:
     # under deliberate CPU contention. If it does turn out to flake on a runner,
     # the fallback is the Windows job's `github.ref == 'refs/heads/main'` gate,
     # which keeps the Linux coverage without blocking anyone's PR.
-    needs: [test, typecheck]
+    #
+    # Typecheck only, for the reason on the Windows job.
+    needs: [typecheck]
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
