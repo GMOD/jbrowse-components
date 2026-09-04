@@ -6,6 +6,11 @@ guide_category: Advanced topics
 sidebar_label: PIF format
 ---
 
+**TL;DR:** PIF stores each PAF alignment twice, once indexed on each genome, so
+a tabix region query on either genome's coordinates fetches only the alignments
+that overlap it instead of loading the whole file. Convert with
+`jbrowse make-pif` and use it over plain PAF at whole-genome scale.
+
 PIF is a tabix-indexed transformation of
 [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md). Plain PAF must be
 loaded entirely into memory. PIF stores each alignment twice, once indexed on
@@ -284,6 +289,20 @@ Use `"indexType": "CSI"` for an index created with `--csi`.
 
 PAFAdapter is fine for small alignments. PIF is strongly preferred for
 whole-genome comparisons.
+
+## Comparison with pairix
+
+[Pairix](https://github.com/4dn-dcic/pairix) indexes Hi-C pairs files, whose
+records also name two sequences. Both tools fold the second dimension into the
+tabix sequence key and let ordinary tabix binning do the rest. Pairix folds the
+mate chromosome into the key (`chr1|chr2`), bins on the first position and
+filters the second position line by line, with autoflip querying the swapped
+pair when a file stores each pair once. That needs a modified index format and
+its own reader. PIF folds only a perspective letter into the key and writes each
+record twice, so stock tabix and every existing reader work unchanged, at the
+cost of a larger file. PIF records are also strand-aware intervals with an
+alignment string rather than point pairs, which is what the CIGAR reorientation
+and the coarse tier exist for.
 
 ## See also
 
