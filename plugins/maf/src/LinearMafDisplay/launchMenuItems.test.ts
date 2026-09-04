@@ -12,6 +12,7 @@ const WIDTH = 80
 const widgets: Record<string, unknown>[] = []
 const session = {
   rpcManager: {},
+  assemblyManager: { getCanonicalAssemblyName: () => undefined },
   configuration: {},
   widgets: new Map(),
   addWidget: (_type: string, _id: string, args: Record<string, unknown>) => {

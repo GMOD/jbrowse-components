@@ -1,4 +1,4 @@
-import { openMateLabel } from '@jbrowse/core/util/tracks'
+import { isSameAssemblyName, openMateLabel } from '@jbrowse/core/util/tracks'
 
 import { launchMafRowSynteny } from '../launchMafRowSynteny.ts'
 import {
@@ -22,6 +22,12 @@ import type {
   NotificationSink,
   TrackCatalog,
 } from '@jbrowse/core/util'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+
+/** What screening the reference's own rows out needs of the session. */
+export interface RowTargetHost {
+  assemblyManager: AssemblyNameResolver
+}
 
 /**
  * The display slice these items read — the hit-test geometry plus the row
@@ -55,11 +61,12 @@ const MAX_INLINE_ITEMS = 6
  * name the same bases.
  */
 export function selectedRowTargets(
+  session: RowTargetHost,
   model: SampleNavigationModel,
   contextCoord: ContextCoord,
 ) {
   const { startX, endX, startY, endY } = contextCoord
-  return rowTargetsBetween(model, {
+  return rowTargetsBetween(session, model, {
     leftPx: Math.min(startX, endX),
     rightPx: Math.max(startX, endX),
     leftY: startY,
@@ -77,12 +84,13 @@ export type RowTargets = ReturnType<typeof selectedRowTargets>
  * by navigating to it.
  */
 export function visibleRowTargets(
+  session: RowTargetHost,
   model: SampleNavigationModel & {
     sources: unknown[]
     view: { width: number }
   },
 ) {
-  return rowTargetsBetween(model, {
+  return rowTargetsBetween(session, model, {
     leftPx: 0,
     rightPx: model.view.width - 1,
     startRow: 0,
@@ -92,6 +100,7 @@ export function visibleRowTargets(
 
 /** What both of the above are: a bp span from two pixels, over a row range. */
 function rowTargetsBetween(
+  { assemblyManager }: RowTargetHost,
   model: SampleNavigationModel,
   {
     leftPx,
@@ -124,10 +133,16 @@ function rowTargetsBetween(
   } = selectionRegion(left.pos, right.pos)
   // The reference's own row leads nowhere this view is not already: a pangenome
   // MAF carries the reference as a sample, and with its assembly loaded under
-  // that name the row resolves like any other.
+  // that name the row resolves like any other. Compared through the assembly
+  // manager, since the view and the sample can spell one assembly two ways.
   const targets = model
     .rowNavigationTargets(left.pos.index, startBp, endBp, startRow, endRow)
-    .filter(t => !model.view.assemblyNames.includes(t.assemblyName))
+    .filter(
+      t =>
+        !model.view.assemblyNames.some(a =>
+          isSameAssemblyName(a, t.assemblyName, assemblyManager),
+        ),
+    )
   return {
     regionIndex: left.pos.index,
     refName,

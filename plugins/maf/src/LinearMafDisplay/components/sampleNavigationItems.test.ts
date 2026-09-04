@@ -48,9 +48,14 @@ function model(
 }
 
 const views: { id: string; init?: unknown }[] = []
+// `GRCh38` is an alias of the view's `hg38`.
 const session = {
   views,
   tracks: [],
+  assemblyManager: {
+    getCanonicalAssemblyName: (name: string) =>
+      name === 'GRCh38' ? 'hg38' : undefined,
+  },
   addView: (_type: string, snap: { id: string }) => {
     views.push(snap)
   },
@@ -81,8 +86,23 @@ function itemsFor(
   m: SampleNavigationModel,
   c: typeof coord = coord,
 ): ReturnType<typeof sampleNavigationItems> {
-  return sampleNavigationItems(session, m, selectedRowTargets(m, c))
+  return sampleNavigationItems(session, m, selectedRowTargets(session, m, c))
 }
+
+// A pangenome MAF carries the reference as a sample; the row leads nowhere the
+// view is not already, however the config spells the assembly.
+test('the reference row is screened out through its aliases', () => {
+  const items = itemsFor(
+    model({
+      0: { ...target('hg38', 1000), assemblyName: 'hg38' },
+      1: { ...target('GRCh38', 1000), assemblyName: 'GRCh38' },
+      2: target('SPRET_EiJ', 2000),
+    }),
+  )
+  expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
+    'Open SPRET_EiJ at the matching region',
+  ])
+})
 
 test('one entry per navigable row in the selection', () => {
   const items = itemsFor(
@@ -152,6 +172,7 @@ function twoRegionModel(): SampleNavigationModel {
 
 test('a span crossing a region boundary clips to the region it began in', () => {
   const { refName, startBp, endBp } = selectedRowTargets(
+    session,
     twoRegionModel(),
     coord,
   )

@@ -54,7 +54,7 @@ export function mafLaunchMenuItems({
   view: LinearGenomeViewModel
 }): MenuItem[] {
   const subMenu = (): MenuItem[] => {
-    const targets = visibleRowTargets(model)
+    const targets = visibleRowTargets(session, model)
     return [
       {
         label: 'View subsequences (visible region)',

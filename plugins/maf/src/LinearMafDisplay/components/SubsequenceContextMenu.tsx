@@ -11,7 +11,6 @@ import {
 } from './sampleNavigationItems.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { RowTargets } from './sampleNavigationItems.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 
 /**
@@ -24,8 +23,12 @@ import type { ContextCoord } from './useDragSelection.ts'
 // The two lists the selection's rows lead to, built from one pass over them
 // rather than one each: the same pair the track menu offers over the visible
 // region.
-function rowTargetItems(model: LinearMafDisplayModel, targets: RowTargets) {
+function rowTargetItems(
+  model: LinearMafDisplayModel,
+  contextCoord: ContextCoord,
+) {
   const session = getSession(model)
+  const targets = selectedRowTargets(session, model, contextCoord)
   return [
     ...sampleNavigationItems(session, model, targets),
     ...mafSyntenyLaunchItems(session, model, targets),
@@ -76,9 +79,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
             openRows(samples.slice(startRow, endRow))
           },
         },
-        ...(contextCoord
-          ? rowTargetItems(model, selectedRowTargets(model, contextCoord))
-          : []),
+        ...(contextCoord ? rowTargetItems(model, contextCoord) : []),
       ]}
     />
   )
