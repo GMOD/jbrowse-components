@@ -124,6 +124,13 @@ const GENERATORS: Generator[] = [
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   { name: 'diagram usage table', argv: web('gen-diagram-usage.ts') },
+  {
+    // The v5 ABI-removal tables in upgrading_v5.md and PLUGIN_ABI_STABILITY.md,
+    // from the two ABI baselines, core's published `exports` map and
+    // publishedPluginBreaks.json.
+    name: 'ABI removal tables',
+    argv: web('generate-abi-removals.ts'),
+  },
   { name: 'doc indexes', argv: web('generate-doc-indexes.ts') },
   { name: 'backlog index', argv: web('generate-todo-index.ts') },
   {

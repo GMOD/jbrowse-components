@@ -27,8 +27,10 @@
 //
 //   `<module>#<name>` -- a name the host stopped serving. Nobody is going to
 //   rebuild the bundle that reads it, so this one is ours by default, and the
-//   fix is usually to put the name back (see ReExports/documentOnlyNames.ts for
-//   the case where it can only go back on the main thread).
+//   fix is usually to put the name back. Not always: `renderToStaticMarkup`
+//   went back and was reverted in 76cb54165d, because serving it on the main
+//   thread alone would have made `@jbrowse/core/util` the one ABI module that
+//   is neither wholly shared nor wholly UI, permanently, for one name.
 //
 //   `worker eval: ...` -- the bundle threw evaluating against the worker's
 //   realm. If the message is a missing global (`document`, `window`), the plugin
@@ -64,7 +66,7 @@
 // The served ABI is read from list.ts (the module paths) and abiBaseline.json
 // (the names in each), not from modules.ts: that module's graph reaches .tsx,
 // which --experimental-strip-types will not load. The two are kept in sync with
-// modules.ts by a load-time throw and by abi.test.ts respectively.
+// modules.ts by modules.test.ts and abi.test.ts respectively.
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'

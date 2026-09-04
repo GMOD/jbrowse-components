@@ -63,7 +63,11 @@ export default function DotplotViewF(pluginManager: PluginManager) {
 - **`name`** — what a session snapshot and a URL spec store.
 - **`displayName`** — what the view launcher's dropdown shows.
 - **`stateModel`** — a [mobx-state-tree](https://mobx-state-tree.js.org/) model,
-  see [](/docs/developer_guides/mst_patterns).
+  see [](/docs/developer_guides/mst_patterns). Pass a function returning a
+  promise for one, as the snippet does, and it is fetched when a session first
+  names the type instead of at install — which is what keeps the model out of
+  the initial bundle, and what makes `launchView` rather than `addView` the call
+  that opens the view.
 - **`ReactComponent`** — receives `{ model }` as a prop. Wrap it in `React.lazy`
   as every built-in view does, so the view's whole component tree stays out of
   the initial bundle until a session opens one.
@@ -80,11 +84,13 @@ export default function DotplotViewF(pluginManager: PluginManager) {
   connection, or another view's action.
 
 The registry entry the snippet annotates against also types the call that opens
-the view. `session.addView('DotplotView', { ... })` checks the snapshot against
-your state model, so a misspelled key is a compile error at the call site rather
-than a key MST drops on attach; `replaceView` and `addOrReplaceView` read the
-same type. A name the registry does not carry still takes anything, which is
-what a view keeps until it augments
+the view. `await session.launchView('DotplotView', { ... })` checks the snapshot
+against your state model, so a misspelled key is a compile error at the call
+site rather than a key MST drops on attach; `addView`, `replaceView` and
+`addOrReplaceView` read the same type. `addView` is the synchronous one and
+throws for a lazily registered type, so it is only for a view whose `stateModel`
+is the model itself. A name the registry does not carry still takes anything,
+which is what a view keeps until it augments
 [`ViewTypeRegistry`](/docs/developer_guides/extension_points#typescript-types-for-extension-points).
 
 ## Making the view launchable from a session spec

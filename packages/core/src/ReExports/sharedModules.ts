@@ -58,5 +58,12 @@ export const sharedModules = {
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
+  // `adapterCache` is module-level state, so a plugin that bundles its own copy
+  // of this file gets a second cache in the RPC worker — and
+  // `freeAdapterResources`, which CoreFreeResources calls on the host's copy
+  // when the last track using an adapter config closes, never sees it. The
+  // cache is the only strong reference to an adapter, so those adapters and
+  // everything they hold live as long as the worker. Serving the module is what
+  // makes an external RPC method share the host's cache.
   '@jbrowse/core/data_adapters/dataAdapterCache': dataAdapterCache,
 }

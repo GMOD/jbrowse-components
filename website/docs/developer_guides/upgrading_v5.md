@@ -5,10 +5,9 @@ guide_category: Plugins
 ---
 
 **TL;DR:** Sessions and configs from v4 migrate automatically. Plugins do not:
-the renderer registry is gone, 46 names left the `@jbrowse/core/*` re-export
-ABI, config models were flattened, display types collapsed, and the extension
-point APIs changed shape. Run your bundle against a v5 build before your users
-do.
+the renderer registry is gone, names left the `@jbrowse/core/*` re-export ABI,
+config models were flattened, display types collapsed, and the extension point
+APIs changed shape. Run your bundle against a v5 build before your users do.
 
 ## For everyone
 
@@ -89,42 +88,50 @@ build does register — which is also the answer to "which plugin is missing".
 
 Names left the `@jbrowse/core/*` re-export ABI — the modules an external plugin
 resolves through `jbrequire`. A removed name is `undefined` inside a bundle
-nobody is going to rebuild, which is the quietest failure on this page. They
-fall into groups:
+nobody is going to rebuild, which is the quietest failure on this page. The
+table is what the 4.3.0 package served and this build does not:
 
-- the renderer registry (`RendererType`, `FeatureRendererType`,
-  `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`,
-  `GlyphType`, `getParentRenderProps`)
-- layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`,
-  `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout`)
-- `AbortSignal` cancellation, which became stop tokens (`abortBreakPoint`,
-  `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction`)
-- the renderer era's RPC retry and progress reporting (`RetryError`,
-  `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId`)
-- desktop file handles, which the desktop package now owns
-  (`getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`,
-  `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`,
-  `clearPendingFileHandleIds`, `restorePendingFileHandles`)
-- renames with a survivor — `contrastingTextColor` is `makeContrasting`,
-  `checkStopToken2` is `checkStopToken`, `assembleLocStringFast` is
-  `assembleLocString`, `findLast`/`findLastIndex` are the `Array.prototype`
-  methods
-- `BaseTooltip`, which moved to its own `@jbrowse/core/ui/BaseTooltip` module to
-  keep @floating-ui off the startup path
-- names with no caller left in core, which the last callers inlined or folded
-  away (`forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`,
-  `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`,
-  `getUriLink`, `defaultStops`, `useDebouncedCallback`)
-- `isConfigurationSlotType`, with the config models that were flattened
+<!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
 
-That is 48 names over 55 entries, since 7 of them were served from two modules
-each.
+48 names over 55 entries, since 7 of them were served from two modules each.
+
+<!-- prettier-ignore -->
+| What went | Names |
+| --- | --- |
+| the renderer registry | `RendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`, `GlyphType`, `getParentRenderProps` |
+| layout, which moved onto the GPU packing path | `PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout` |
+| `AbortSignal` cancellation, which became stop tokens | `abortBreakPoint`, `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction` |
+| the renderer era's RPC retry and progress reporting | `RetryError`, `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId` |
+| desktop file handles, which the desktop package now owns | `getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`, `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`, `clearPendingFileHandleIds`, `restorePendingFileHandles` |
+| renames with a survivor | `contrastingTextColor` → `makeContrasting`, `checkStopToken2` → `checkStopToken`, `assembleLocStringFast` → `assembleLocString`, `findLast` → `Array.prototype.findLast`, `findLastIndex` → `Array.prototype.findLastIndex` |
+| react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, so published `jbrowse-plugin-msaview` 3.4.0 and `-tview` 2.2.1 break until they ship a build carrying it | `renderToStaticMarkup` |
+| names with no caller left in core, which the last callers inlined or folded away | `forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback` |
+| the config models that were flattened | `isConfigurationSlotType` |
+
+<!-- END GENERATED ABI_REMOVED_NAMES -->
 
 `scripts/check-published-plugins.ts` reads every bundle in the plugin store and
-reports the names each one actually takes. One of the fourteen breaks against
-this build: Apollo, on `BaseTooltip`, `isContainedWithin` and
-`getParentRenderProps`. It declares `jbrowseRange: "*"`, so the store still
-offers it to a v5 user as compatible.
+reports what each one actually takes off the host; `abi-watch.yml` refreshes
+that answer weekly. A store entry declaring `jbrowseRange: "*"` is offered to a
+v5 user as compatible whatever its state here.
+
+<!-- BEGIN GENERATED ABI_PLUGIN_BREAKS -->
+
+4 of the 14 plugins in the store break against this build.
+
+<!-- prettier-ignore -->
+| Plugin | What breaks |
+| --- | --- |
+| Apollo | `@jbrowse/core/util#isContainedWithin`<br />`@jbrowse/core/util/tracks#getParentRenderProps`<br />`worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')` |
+| Ideogram | `worker eval: ReferenceError: window is not defined` |
+| MsaView | `@jbrowse/core/util#renderToStaticMarkup` |
+| TView | `@jbrowse/core/util#renderToStaticMarkup` |
+
+<!-- END GENERATED ABI_PLUGIN_BREAKS -->
+
+A `worker eval:` line is a different failure from the rest of this page, and not
+one an ABI change can reach: the bundle threw while the RPC worker evaluated it,
+reading the DOM at module scope. Only the plugin can fix that.
 
 ## Subpaths removed from `@jbrowse/core`
 
@@ -134,53 +141,36 @@ subpath that map no longer serves fails to resolve at your next build. A bundle
 you already published inlined the module and keeps working. Where the code
 merely moved, the entry says which import to use instead.
 
-- the renderer registry, whose modules went with the server-side render path:
-  - `@jbrowse/core/pluggableElementTypes/GlyphType` — glyphs are drawn by the
-    GPU displays, not registered
-  - `@jbrowse/core/pluggableElementTypes/renderers/RendererType` — renderer
-    registry removed; displays compose RenderLifecycleMixin + DisplayChrome
-  - `@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType` —
-    renderer registry removed
-  - `@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType` — renderer
-    registry removed
-  - `@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType` —
-    renderer registry removed
-  - `@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType` —
-    renderer registry removed, core no longer renders on the server
-  - `@jbrowse/core/pluggableElementTypes/renderers/LayoutSession` — the block
-    layout cache the box renderer kept; layout moved onto the GPU packing path
-  - `@jbrowse/core/pluggableElementTypes/renderers/util` — helpers for the
-    classes above, deleted with them
-- modules deleted outright, along with the code that reached them:
-  - `@jbrowse/core/data_adapters/BaseAdapter/BaseOptions` — the adapter options
-    bag, folded into `data_adapters/BaseAdapter` itself, which still exports
-    `BaseOptions` and is still a published subpath
-  - `@jbrowse/core/rpc/methods/util` — renderer-era RPC helpers, removed with
-    `CoreRender`
-  - `@jbrowse/core/util/offscreenCanvasUtils` — the server-side canvas helpers
-    behind `renderToAbstractCanvas`
-  - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the
-    tree
-  - `@jbrowse/core/util/layouts/BaseLayout` — the interface `GranularRectLayout`
-    implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with
-    them, along with the serialization types (`SerializedLayout`, `RectTuple`)
-    that only the worker-to-main layout handoff used
-- modules that still exist, un-published because the last in-repo deep import
-  went:
-  - `@jbrowse/core/rpc/coreRpcMethods` —
-    `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports
-    it relatively; nothing imports it by subpath any more
-  - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still
-    exports it as `ErrorMessage` — import it from the barrel
-  - `@jbrowse/core/util/mst-reflection` — alive, and still served over
-    `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import
-    path went
+<!-- BEGIN GENERATED ABI_REMOVED_SUBPATHS -->
 
-That is 16 subpaths the published `exports` map no longer serves. The map is
-generated from in-repo import sites
+16 subpaths the published `exports` map no longer serves, against what 4.3.0
+published.
+
+<!-- prettier-ignore -->
+| Subpath | What happened |
+| --- | --- |
+| `@jbrowse/core/data_adapters/BaseAdapter/BaseOptions` | the adapter options bag, folded into `data_adapters/BaseAdapter` itself, which still exports `BaseOptions` and is still a published subpath |
+| `@jbrowse/core/pluggableElementTypes/GlyphType` | glyphs are drawn by the GPU displays, not registered |
+| `@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType` | renderer registry removed |
+| `@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType` | renderer registry removed |
+| `@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType` | renderer registry removed |
+| `@jbrowse/core/pluggableElementTypes/renderers/LayoutSession` | the block layout cache the box renderer kept; layout moved onto the GPU packing path |
+| `@jbrowse/core/pluggableElementTypes/renderers/RendererType` | renderer registry removed; displays compose RenderLifecycleMixin + DisplayChrome |
+| `@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType` | renderer registry removed, core no longer renders on the server |
+| `@jbrowse/core/pluggableElementTypes/renderers/util` | helpers for the classes above, deleted with them |
+| `@jbrowse/core/rpc/coreRpcMethods` | alive — `CorePlugin` imports `packages/core/src/rpc/coreRpcMethods.ts` relatively, so nothing publishes the subpath any more |
+| `@jbrowse/core/rpc/methods/util` | renderer-era RPC helpers, removed with `CoreRender` |
+| `@jbrowse/core/ui/ErrorMessage` | alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel |
+| `@jbrowse/core/util/QuickLRU` | alive, a vendored copy of the npm package of the same name that core reaches relatively — depend on `quick-lru` yourself |
+| `@jbrowse/core/util/compositeMap` | dead, with no caller in or out of the tree |
+| `@jbrowse/core/util/layouts/BaseLayout` | the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used |
+| `@jbrowse/core/util/offscreenCanvasUtils` | the server-side canvas helpers behind `renderToAbstractCanvas` |
+
+<!-- END GENERATED ABI_REMOVED_SUBPATHS -->
+
+The map is generated from in-repo import sites
 (`packages/core/scripts/generateExports.mjs`), so a subpath leaves it whenever
-its last in-repo importer does — this list is a one-time record of the ones that
-already left, not a live check.
+its last in-repo importer does, with nobody deciding to drop it.
 
 ## Names removed from the session and from a plugin's `exports`
 
@@ -207,6 +197,12 @@ and calling it throws inside the reaching plugin's own `install`.
     every comparison misses and the answer is `[]`. Nothing throws: the caller
     concludes no view refers to the track and closes it out from under whatever
     was showing it
+  - `addTrackConf` — **still there, writing somewhere else.** It wrote the
+    jbrowse config in v4; it is a deprecated alias of `addSessionTrackConf` now,
+    so the track lives for the session rather than landing in the `config.json`
+    every visitor is served. Say which you mean: `addSessionTrackConf` for a
+    track your plugin stands up on the user's behalf, `publishTrackConf` for an
+    Add-track workflow where an admin means to add it for the whole site
 - **`@jbrowse/product-core`'s `Session` barrel**, which is a named allowlist now
   rather than `export *` over nine modules — so a name the allowlist omits is
   gone from the package even where its own module still declares it:
@@ -463,6 +459,28 @@ extending an eagerly registered one keeps working — so a bundle can pass its o
 tests and lose only the menu items it contributes to a lazy display, with no
 error anywhere. `extendViewType` / `extendDisplayType` do this for you, and are
 the better road if you are touching the code anyway.
+
+`Core-extendPluggableElement` fires when the loader resolves rather than at
+install, so a callback that only extends a state model still sees a loaded one.
+A callback that changes something the host reads before any model loads — a
+display's `configSchema` — runs too late for a lazy element.
+
+### Opening a view or a track is asynchronous too
+
+The same loader sits under the session's own API. Each v4 call still exists, and
+what it does when the model is not loaded is the second column:
+
+<!-- prettier-ignore -->
+| The v4 call | Without a loaded model | The v5 call |
+| --- | --- | --- |
+| `session.addView('DotplotView', snap)` | throws, naming the type | `await session.launchView('DotplotView', snap)` |
+| `view.showTrack(trackId)` | starts the load and returns `undefined`, so the track lands a tick later and a synchronous caller gets nothing back | `await view.launchTrack(trackId)` |
+| `view.toggleTrack(trackId)` | same | `await view.launchToggleTrack(trackId)` |
+| `pluginManager.getViewType(name).stateModel` | `undefined` | `await pluginManager.getViewType(name).loadStateModel()` |
+| `pluginManager.getDisplayType(name).stateModel` | `undefined` | `await pluginManager.getDisplayType(name).loadStateModel()` |
+
+`isStateModelLoaded` is the question to ask when you cannot await: it is what
+`addView` checks before throwing.
 
 ## The `Launch view` menu is now `Launch`
 

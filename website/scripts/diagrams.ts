@@ -190,7 +190,7 @@ function render() {
   )
 }
 
-function check() {
+function check(): string[] {
   const sources = listSources()
   const lock = readLock()
   const figures = readManifest()
@@ -236,14 +236,7 @@ function check() {
     }
   }
 
-  if (problems.length) {
-    console.error(`${problems.length} problem(s):`)
-    for (const p of problems) {
-      console.error(`  ${p}`)
-    }
-    process.exit(1)
-  }
-  console.log(`${sources.length} diagram(s) match their sources`)
+  return problems
 }
 
 // ## The other corpus: agent-docs
@@ -372,17 +365,20 @@ function agentDiagramFigures(dir = AGENT_DOCS): string[] {
 }
 
 if (process.argv.includes('--check')) {
-  check()
-  const problems = [...checkAgentDiagrams(), ...checkOrphanedFigures()]
+  const problems = [
+    ...check(),
+    ...checkAgentDiagrams(),
+    ...checkOrphanedFigures(),
+  ]
   if (problems.length) {
-    console.error(`${problems.length} agent-docs diagram problem(s):`)
+    console.error(`${problems.length} diagram problem(s):`)
     for (const p of problems) {
       console.error(`  ${p}`)
     }
     process.exit(1)
   }
   console.log(
-    `${agentSources().length} agent-docs diagram(s) match their sources`,
+    `${listSources().length} website and ${agentSources().length} agent-docs diagram(s) match their sources`,
   )
 } else {
   render()
