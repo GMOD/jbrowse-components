@@ -51,6 +51,7 @@ import { join } from 'node:path'
 const PACKAGES = [
   'packages/display-kit',
   'packages/render-core',
+  'packages/text-indexing',
   'packages/wiggle-core',
 ]
 

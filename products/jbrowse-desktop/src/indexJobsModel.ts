@@ -13,7 +13,7 @@ import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
   createTextSearchConf,
   findTrackConfigsToIndex,
-} from '@jbrowse/text-indexing'
+} from '@jbrowse/text-indexing/util'
 import { autorun, observable, toJS } from 'mobx'
 
 import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
@@ -26,8 +26,8 @@ import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
-import type { indexType } from '@jbrowse/text-indexing'
 import type { Track } from '@jbrowse/text-indexing-core'
+import type { indexType } from '@jbrowse/text-indexing/util'
 
 // The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
 // model; this is the slice it reaches for. One typed contract in place of the

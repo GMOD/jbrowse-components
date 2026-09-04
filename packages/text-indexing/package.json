@@ -20,6 +20,10 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./util": "./src/util.ts"
+  },
   "files": [
     "esm"
   ],
@@ -45,7 +49,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./util": "./esm/util.js"
     }
   },
   "sideEffects": false

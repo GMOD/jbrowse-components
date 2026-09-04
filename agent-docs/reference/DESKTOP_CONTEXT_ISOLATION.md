@@ -171,16 +171,16 @@ boot.
 | `src/indexJobsModel.ts` itself | 2973 | `fs`, `path` |
 | `src/util.tsx` (`fetchCJS`, blocker 4) | via `pluginManagers.tsx` | `fs/promises`, `os`, `path` |
 
-**`indexJobsModel.ts` is a barrel leak, not a channel and not a worker move.**
-It imports exactly two *values* from `@jbrowse/text-indexing` —
-`createTextSearchConf` and `findTrackConfigsToIndex`, both pure config helpers
-from that package's `util.ts`. But its barrel also re-exports `indexTracks` from
+**`indexJobsModel.ts` was a barrel leak, not a channel and not a worker move —
+and it is fixed.** It imports exactly two *values* from `@jbrowse/text-indexing`
+— `createTextSearchConf` and `findTrackConfigsToIndex`, both pure config helpers
+from that package's `util.ts`. The barrel also re-exports `indexTracks` from
 `TextIndexing.ts`, which imports `ixixx` at module scope, which spawns `sort` as
-a subprocess. So the page thread drags a subprocess library in to call two
-config functions. Give that package an `exports` map (ADR-030; it has none
-today, only `main`) so the helpers have a path that does not reach
-`TextIndexing.ts`, and the whole `child_process` graph leaves the renderer for
-free. Its own `mkdirSync` is separate and genuinely small.
+a subprocess, so the page thread was dragging a subprocess library in to call
+two config functions. That package now has an `exports` map (ADR-030) with a
+`./util` subpath, and the import goes through it, so the whole `child_process`
+graph is out of the renderer. The row above is the pre-fix measurement.
+`indexJobsModel.ts`'s own `mkdirSync` is separate and genuinely small.
 
 **The `LocalFile` fix is not "make the import dynamic".**
 `generic-filehandle2`'s index — `dist/index.js` and `esm/index.js` alike —
