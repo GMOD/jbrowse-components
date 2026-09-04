@@ -290,9 +290,12 @@ export default function baseStateModelFactory(
            * track-wide setting, so the reader can open the one gene they are
            * reading without turning every other gene on screen into a stack.
            *
-           * The collapse is the worker's decision, so this is an RPC cache key
-           * (see rpcProps) and a click refetches the visible regions — the same
-           * contract solo/hidden already have, and for the same reason.
+           * The worker reads it only under `longestCoding`, the one collapse
+           * it still owns, so it is a `zoomFetchKey` term in that mode and a
+           * call-site RPC argument rather than an `rpcProps` cache key: a
+           * click there refetches the visible regions scrim-free, and a click
+           * under `all` — where the main-thread trim already exempts the gene
+           * — refetches nothing.
            *
            * Persistent and by uniqueId, on the same basis as
            * solo/hidden/pinnedFeatureIds; stripDefault so a display with nothing
@@ -793,13 +796,6 @@ export default function baseStateModelFactory(
             hiddenFeatureIds:
               self.hiddenFeatureIds.length > 0
                 ? toJS(self.hiddenFeatureIds)
-                : undefined,
-            // The per-gene isoform expansions. A cache key, so opening or
-            // closing a gene refetches — the collapse happens in
-            // `layoutSubfeatures`, which only the worker runs.
-            expandedGeneIds:
-              self.expandedGeneIds.length > 0
-                ? toJS(self.expandedGeneIds)
                 : undefined,
           }
         },
@@ -1813,12 +1809,21 @@ export default function baseStateModelFactory(
         // settled zoom. Every other zoom change reuses the cached features, and
         // a track with the overlay off and a fixed mode never refetches on zoom.
         //
+        // The opened genes ride here too, and only under `longestCoding`: that
+        // is the one mode whose collapse the worker runs, so under `all` the
+        // payload cannot change and a click refetches nothing.
+        //
         // A getter, not an action: an action would untrack the view.bpPerPx read.
         get zoomFetchKey(): string {
           const peptides =
             self.showAminoAcids &&
             shouldRenderPeptideBackground(containingLgv(self).bpPerPx)
-          return `${peptides}|${self.effectiveGeneGlyphMode}`
+          const mode = self.effectiveGeneGlyphMode
+          const expanded =
+            mode === 'longestCoding' && self.expandedGeneIds.length > 0
+              ? `|${self.expandedGeneIds.join(',')}`
+              : ''
+          return `${peptides}|${mode}${expanded}`
         },
         /**
          * #method
@@ -1940,6 +1945,10 @@ export default function baseStateModelFactory(
                     ...args.displayConfig,
                     geneGlyphMode: self.effectiveGeneGlyphMode,
                   },
+                  expandedGeneIds:
+                    self.expandedGeneIds.length > 0
+                      ? toJS(self.expandedGeneIds)
+                      : undefined,
                   geneticCodeId: assembly?.getGeneticCodeId(region.refName),
                   region,
                   bpPerPx,

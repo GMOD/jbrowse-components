@@ -621,23 +621,6 @@ describe('the badge in the label layer', () => {
   })
 })
 
-// `longestCoding` is still the worker's, and an expanded gene has to escape it
-// — so the set reaches the worker as an RPC argument, and a click invalidates
-// the cache the same way hiding or soloing a feature does. The fit ladder's own
-// trim needs no fetch (ADR-092); this is what is left.
-test('an expanded gene reaches the worker as a fetch input', () => {
-  const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay()
-
-  expect(display.rpcProps().expandedGeneIds).toBeUndefined()
-
-  display.toggleExpandedGene('gene1')
-  expect(display.rpcProps().expandedGeneIds).toEqual(['gene1'])
-
-  display.toggleExpandedGene('gene1')
-  expect(display.rpcProps().expandedGeneIds).toBeUndefined()
-})
-
 // Each badge re-collapses its own gene, which is no way back for a reader who
 // opened six across a locus and has panned away from four of them.
 test('the track menu offers the way back from a run of expansions', () => {

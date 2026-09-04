@@ -485,6 +485,45 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.zoomFetchKey).toBe('false|all')
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
+
+    // The worker consults the opened genes only under `longestCoding`, the
+    // collapse it still owns, so a click there refetches the regions on
+    // screen — on the zoom axis, so the held features draw unscrimmed until
+    // the opened payload lands — and a click under `all`, where the main
+    // thread's trim already exempts the gene, produces a byte-identical
+    // payload and refetches nothing.
+    it('an opened gene refetches under longestCoding, scrim-free', async () => {
+      const { display, mockRpcCall } = await loadedCollapsed()
+      const settingsKey = display.settingsFetchKey
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      display.toggleExpandedGene('gene1')
+      expect(display.rpcProps()).not.toHaveProperty('expandedGeneIds')
+      expect(display.zoomFetchKey).toBe('false|longestCoding|gene1')
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      await waitFor(() => {
+        expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+      })
+      expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
+        expandedGeneIds: ['gene1'],
+      })
+      expect(display.settingsFetchKey).toBe(settingsKey)
+      expect(display.staleSettingsDrawn).toBe(false)
+    })
+
+    it('an opened gene refetches nothing under all', async () => {
+      const { display, mockRpcCall } = await loadedCollapsed('all')
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      display.toggleExpandedGene('gene1')
+      expect(display.zoomFetchKey).toBe('false|all')
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    })
   })
 
   it('re-fetches a region pruned off-screen when it scrolls back into view', async () => {
