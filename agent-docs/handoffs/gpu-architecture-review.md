@@ -1,6 +1,6 @@
 ---
 name: gpu-architecture-review
-description: An outside read of the GPU stack against GenomeSpy's — the census landed 2026-09-04 (38 of 45 passes interpretable, build Tier B on the coverage band first) and the doc now waits on that first conversion and on the shader-derived hit test. The "deliberately does not have" list edits and the buffer-pool measurement landed 2026-09-04 (buffer-churn-pan, declined). Also records two things examined and declined (storage buffers in the render path, compute-driven packing) and the reasoning behind the choices that should not change
+description: An outside read of the GPU stack against GenomeSpy's — the census landed 2026-09-04 (38 of 45 passes interpretable, build Tier B on the coverage band first) and the shader-derived hit test landed the same day (read arrowhead, dotplot capsule). The doc now waits on one thing: the coverage-band Tier B conversion the census recommends first. The "deliberately does not have" list edits and the buffer-pool measurement landed 2026-09-04 (buffer-churn-pan, declined). Also records two things examined and declined (storage buffers in the render path, compute-driven packing) and the reasoning behind the choices that should not change
 ---
 
 # GPU architecture review
@@ -258,9 +258,19 @@ have.
 
 ## Owed
 
-- The coverage-band Tier B conversion the census recommends first, and the
-  struct-parameter decision it forces.
-- Items 1 and 2 were not run, profiled, or opened in a browser; item 4 was
+- **Next step: the coverage-band Tier B conversion** (`coverageBar.slang`), per
+  ideas/canvas2d-painter-generation §"Recommendation": `//! js-export` twins for
+  `covBarScale`, `covBottom` and `covSegQuad`'s px half, `drawCoverageBins`
+  calling them, `coverageLayout` retired behind a differential gate, the seam
+  pad kept as an explicit parameter. It forces the struct-parameter decision
+  (ADR-051 scalar cores vs teaching wgslToJs a `Uniforms` member read); decide
+  it there and record it in the census doc's Owed. Then `modification`/
+  `perBaseQuality`; stop if it fights `PileupMark`.
+- Two one-bullet doc notes from item 2: GPU_RENDERING.md §"Keeping the two
+  backends in parity" and plugins/alignments/…/CLAUDE.md §"Hit-testing" — a hit
+  test is a consumer of shader scalars too, hover slack is a named constant.
+- Item 1 was read, not run; item 2 has unit and oracle coverage but no browser
+  hover check; item 4 was
   (`buffer-churn-pan`). The field counts in "Storage buffers" came from reading
   the `.slang` structs, and the vertex-attribute limits are the WebGPU/WebGL2
   spec defaults rather than a device's — `reference/GPU_PORTABILITY.md` carries
