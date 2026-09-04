@@ -625,6 +625,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   first. Numbers, mechanism and the recipe to re-take it in one gate run:
   [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"The per-base wall".
 
+- **Making a user's Cancel durable across a settings change on the per-region
+  displays** — declined 2026-09-04 by the maintainer, from the v5 release audit.
+  `MultiRegionDisplayMixin.invalidateSettings` calls the internal `cancelFetch`,
+  which clears `fetchCanceled`, so a cancelled per-region display refetches when
+  any setting changes; the global-fetch family keeps the cancel until Retry. The
+  two families disagree and that is acceptable: a settings change is a gesture
+  on the display, and nobody has asked for the cancel to outlive it. Not a bug
+  to file again.
 
 ## Config and MST
 
@@ -951,6 +959,16 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   reads the reference is fetched across two assemblies. Making the conflict
   loud instead was costed and declined with it: it would throw on the
   comparative path, which is doing nothing wrong.
+
+- **Having the RPC worker skip a plugin that fails to load, the way the apps
+  do with `loadSettled`** — declined 2026-09-04 by the maintainer, from the v5
+  release audit. The worker keeps `PluginLoader.load`, all-or-nothing, and a
+  plugin that throws at worker module scope (the baseline shows Apollo 1.1.1
+  and Ideogram 2.0.0 doing so) gives the session a dead worker, reported through
+  the boot error `rpcWorker.ts` posts. That is rare enough not to carry a
+  skip-and-log path: a half-loaded plugin set would fail renders with a worse
+  message than the boot error, and a plugin broken at module scope is a plugin
+  to fix or unlist, not to route around.
 
 ## Performance and measurement
 
