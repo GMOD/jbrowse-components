@@ -10,6 +10,12 @@ import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 import { Builder, By, Key, WebDriver, logging, until } from 'selenium-webdriver'
 import handler from 'serve-handler'
 
+import {
+  APP_NAME,
+  DIST,
+  PRODUCT_NAME,
+} from '../scripts/packaging/config.ts'
+
 const require = createRequire(import.meta.url)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -19,12 +25,33 @@ export const isWindows = process.platform === 'win32'
 export const isHeadless =
   process.argv.includes('--headless') || process.env.HEADLESS === 'true'
 
-export const APP_BINARY = resolve(
-  __dirname,
-  isWindows
-    ? '../dist/unpacked/jbrowse-desktop-win32-x64/jbrowse-desktop.exe'
-    : '../dist/unpacked/jbrowse-desktop-linux-x64/jbrowse-desktop',
-)
+// @electron/packager writes <name>-<platform>-<arch> under dist/unpacked, with
+// `name` PRODUCT_NAME on darwin and APP_NAME elsewhere. The arch is fixed by
+// the packaging entry points: mac.ts universal, linux.ts and windows.ts x64.
+function appBinaryPath() {
+  const unpacked = join(DIST, 'unpacked')
+  switch (process.platform) {
+    case 'darwin':
+      return join(
+        unpacked,
+        `${PRODUCT_NAME}-darwin-universal`,
+        `${PRODUCT_NAME}.app`,
+        'Contents',
+        'MacOS',
+        PRODUCT_NAME,
+      )
+    case 'linux':
+      return join(unpacked, `${APP_NAME}-linux-x64`, APP_NAME)
+    case 'win32':
+      return join(unpacked, `${APP_NAME}-win32-x64`, `${APP_NAME}.exe`)
+    default:
+      throw new Error(
+        `jbrowse-desktop is packaged for darwin, linux and win32; this is ${process.platform}`,
+      )
+  }
+}
+
+export const APP_BINARY = appBinaryPath()
 
 const CHROMEDRIVER_PORT = 9515
 const electronChromedriverDir = dirname(
