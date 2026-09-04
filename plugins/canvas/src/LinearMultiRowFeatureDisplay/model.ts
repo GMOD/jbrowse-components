@@ -160,10 +160,18 @@ export default function stateModelFactory(
     .volatile(() => ({
       // #region volatile
       rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
-      prefersOffset: true,
       // #endregion
     }))
     .views(self => ({
+      /**
+       * #getter
+       * This display always draws its label above the plot, like its six
+       * siblings that spell this as a getter. A volatile would let anything
+       * write it, and the hook is read-only.
+       */
+      get prefersOffset() {
+        return true
+      },
       /**
        * #getter
        * What the painters, the hit test, the sidebar's rows and the export read:

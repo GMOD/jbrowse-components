@@ -440,7 +440,6 @@ should reset. The multi-row display's block, in full:
 
 ```ts
 rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
-prefersOffset: true,
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot

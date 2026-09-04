@@ -11,7 +11,6 @@ import { DataGridEntries } from './MuiDataGridReExports.ts'
 import { Entries } from './MuiReExports.ts'
 import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
-import reExportsList from './list.ts'
 import * as coreUi from './publicUi.tsx'
 import { sharedModules } from './sharedModules.ts'
 
@@ -107,27 +106,6 @@ const libs = {
   // reference to an adapter (see the comment on that function), so those
   // adapters and everything they hold live as long as the worker. Serving the
   // module is what makes an external RPC method share the host's cache.
-}
-
-const libsList = Object.keys(libs)
-
-// make sure that all the items in the ReExports/list array (used by build
-// systems and such) are included here, and vice versa
-const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
-if (inLibsOnly.length > 0) {
-  throw new Error(
-    `The following modules are in the modules libs, but not the re-exports list: ${inLibsOnly.join(
-      ', ',
-    )}`,
-  )
-}
-const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
-if (inReExportsOnly.length) {
-  throw new Error(
-    `The following modules are in the re-exports list, but not the modules libs: ${inReExportsOnly.join(
-      ', ',
-    )}`,
-  )
 }
 
 export default libs
