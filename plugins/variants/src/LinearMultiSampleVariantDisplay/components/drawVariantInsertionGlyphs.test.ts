@@ -2,7 +2,11 @@ import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import { getInsertionColorForDosage } from '../../shared/constants.ts'
-import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
+import {
+  anyMarkerPossibleForBlock,
+  drawVariantInsertionGlyphs,
+  markersForBlock,
+} from './drawVariantInsertionGlyphs.ts'
 
 import type { VariantInsertionGlyphData } from './drawVariantInsertionGlyphs.ts'
 import type {
@@ -240,4 +244,40 @@ test('skips a cell already wider than the bar', () => {
 
 test('culls cells scrolled out of view', () => {
   expect(draw(data(), { scrollTop: 500 }).calls).toEqual([])
+})
+
+// The legend asks whether a marker draws at ANY sub-pixel pan position, so that
+// a swatch does not blink mid-drag and a single-frame export is right without
+// settling. This is the shape where the painter's own answer does flip: a long
+// REF whose span lands between two integer cell widths, with a longer ALT.
+describe('anyMarkerPossibleForBlock is pan-stable where the painter is not', () => {
+  // 100 bp/px, so a 3350bp reference span is 33.5px -- the cell snaps to 33 or
+  // 34 depending where the grid lands, and the marker is 34.
+  const panBlock = (phase: number): VariantRenderBlock => ({
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 100000,
+    screenStartPx: phase,
+    screenEndPx: 1000 + phase,
+    reversed: false,
+  })
+  const region = data({
+    featurePositions: Uint32Array.from([0, 3350]),
+    featureInsertedBp: Int32Array.from([7833]),
+  })
+  const phases = Array.from({ length: 24 }, (_, i) => i * 0.5)
+
+  test('the painter flips across sub-pixel pan', () => {
+    const painter = phases.map(
+      p => markersForBlock(region, panBlock(p), 20, 1000).anyMarker,
+    )
+    expect(new Set(painter).size).toBe(2)
+  })
+
+  test('the legend does not', () => {
+    const legend = phases.map(p =>
+      anyMarkerPossibleForBlock(region, panBlock(p), 20),
+    )
+    expect(new Set(legend)).toEqual(new Set([true]))
+  })
 })

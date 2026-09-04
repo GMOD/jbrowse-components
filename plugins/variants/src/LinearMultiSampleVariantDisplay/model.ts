@@ -34,7 +34,7 @@ import {
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
 } from '../shared/variantTopBands.ts'
-import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
+import { anyMarkerPossibleForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
@@ -385,36 +385,44 @@ export function stateModelFactory(
          * SVG export paints with the *export* theme's palette instead, and
          * passes it to `legendSections` so the swatch follows it too.
          *
-         * The condition is `markersForBlock` — the painter's own test, on the
-         * painter's own blocks — because both cheaper approximations are wrong
-         * on real figures. "The window holds an insertion" puts a swatch on a
-         * callset of short indels, which can never draw a marker at any zoom.
-         * "The window holds a *long* insertion" puts one on any view zoomed out
-         * far enough that even a long bar falls under the 2px cell floor; that
-         * was three of the fourteen committed figures carrying this display,
-         * each gaining exactly one 576px swatch and no glyph.
+         * The condition is `anyMarkerPossibleForBlock`, on the painter's own
+         * blocks, because the two cheaper approximations are wrong on real
+         * figures. "The window holds an insertion" puts a swatch on a callset of
+         * short indels, which can never draw a marker at any zoom. "The window
+         * holds a *long* insertion" puts one on any view zoomed out far enough
+         * that even a long bar falls under the 2px cell floor; that was three of
+         * the fourteen committed figures carrying this display, each gaining
+         * exactly one 576px swatch and no glyph.
          *
-         * So the entry does come and go with zoom, unlike `hasSecondaryAlt` /
-         * `hasNoCall`. That is the honest behavior for a glyph whose visibility
-         * is itself a function of zoom, and it is why this reads the view: the
-         * components that call `legendSections` are the same ones that already
-         * read `renderState`.
+         * It asks whether a marker is drawn at ANY sub-pixel pan position, not
+         * at the one on screen. The painter's own answer flips on the snap phase
+         * — a cell of a given span measures `floor(spanPx)` or one more — so an
+         * exactly-painter-faithful swatch blinks on and off mid-drag on the
+         * long-REF-plus-longer-ALT shape, and a single-frame export would have
+         * to settle to be right. Neither is worth per-frame exactness here: the
+         * only divergence is a swatch shown while the glyph is under the cell
+         * floor at this particular phase, which is strictly narrower than either
+         * approximation above.
+         *
+         * So the entry still comes and goes with zoom, unlike `hasSecondaryAlt`
+         * / `hasNoCall` — that is honest for a glyph whose visibility is a
+         * function of zoom — but no longer with a half-pixel pan.
          */
         get insertionLegendColor(): string | undefined {
           if (!self.showInsertionGlyphs) {
             return undefined
           }
-          // The two geometry terms read directly, never through `renderState`:
+          // `effectiveRowHeight` read directly, never through `renderState`:
           // that object also carries `scrollTop`, so depending on it walked
-          // every feature again per wheel-scroll frame.
+          // every feature again per wheel-scroll frame. `canvasWidthPx` is not
+          // read at all — it enters the painter's answer only through the snap
+          // phase, which is exactly what this getter declines to depend on.
           const drawnRowHeight = drawnCellHeightPx(self.effectiveRowHeight)
-          const canvasWidth = self.canvasWidthPx
           for (const block of self.renderBlocks) {
             const region = self.perRegionCellMap.get(block.displayedRegionIndex)
             if (
               region?.numCells &&
-              markersForBlock(region, block, drawnRowHeight, canvasWidth)
-                .anyMarker
+              anyMarkerPossibleForBlock(region, block, drawnRowHeight)
             ) {
               return getPaletteHost(self).palette.insertion
             }

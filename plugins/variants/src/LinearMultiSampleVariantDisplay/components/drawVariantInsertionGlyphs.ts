@@ -3,11 +3,15 @@ import {
   drawInsertionMarker,
   getInsertionType,
 } from '@jbrowse/alignments-core'
-import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  forEachClippedBlock,
+  pxPerBpOf,
+} from '@jbrowse/render-core/canvas2dUtils'
 
 import { getInsertionColorForDosage } from '../../shared/constants.ts'
 import { forEachFeatureSpan } from './forEachFeatureSpan.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
+import { cellCanDrawMarker } from './variantCellSpan.ts'
 
 import type {
   VariantRenderBlock,
@@ -87,6 +91,38 @@ export function markersForBlock(
     },
   )
   return { drawsMarker, markerXCenter, anyMarker, pxPerBp }
+}
+
+/**
+ * Whether any record in this block can draw an insertion marker, at any
+ * sub-pixel pan position. The legend's question, and deliberately not the
+ * painter's: see `cellCanDrawMarker`.
+ *
+ * Bails on the first hit and allocates nothing, where `markersForBlock` fills
+ * two typed arrays per block because its caller needs every marker's position.
+ */
+export function anyMarkerPossibleForBlock(
+  region: VariantInsertionGlyphData,
+  block: VariantRenderBlock,
+  drawnRowHeight: number,
+) {
+  const pxPerBp = pxPerBpOf(block)
+  const numFeatures = region.featureInsertedBp.length
+  for (let f = 0; f < numFeatures; f++) {
+    const spanBp =
+      region.featurePositions[f * 2 + 1]! - region.featurePositions[f * 2]!
+    if (
+      cellCanDrawMarker({
+        spanPx: spanBp * pxPerBp,
+        insertedBp: region.featureInsertedBp[f]!,
+        pxPerBp,
+        drawnRowHeight,
+      })
+    ) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
