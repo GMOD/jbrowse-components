@@ -9,9 +9,10 @@ import { AUTO_FORCE_LOAD_BP } from './regionTooLargeUtils.ts'
 import type { ByteEstimate } from './regionTooLargeUtils.ts'
 
 // Exhaustive enumeration of the gate's composition. `regionTooLargeUtils.test`
-// covers the comparison half and `RegionTooLargeMixin.test` covers named
-// interactions; this covers the cross-product, so a corner nobody thought to
-// name is still pinned.
+// covers the comparison half and named interactions live in
+// `plugins/linear-genome-view/src/displayKitTests/RegionTooLargeMixin.test.ts`;
+// this covers the cross-product, so a corner nobody thought to name is still
+// pinned.
 //
 // It is a cross-product of STATES and cannot see an order, which is the other
 // half of the gate: which of two measurements wins, what a clear leaves behind,

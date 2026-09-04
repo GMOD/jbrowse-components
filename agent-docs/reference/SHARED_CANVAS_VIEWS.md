@@ -1,6 +1,6 @@
 ---
 name: shared-canvas-views
-description: The comparative views (synteny, dotplot) — why they own their fetch instead of composing FetchMixin, how one canvas owned by a container model is shared by several displays, why the key must be sharedBackendKey and the empty frame must still paint, and how readiness is published as a required prop rather than a selector list. Read before touching a synteny or dotplot fetch, a shared backend's keyed upload, or a container that lays out a canvas for its children.
+description: The comparative views (synteny, dotplot) — how their fetch composes KeyedFetchMixin rather than either LGV foundation, how one canvas owned by a container model is shared by several displays, why the key must be sharedBackendKey and the empty frame must still paint, and how readiness is published as a required prop rather than a selector list. Read before touching a synteny or dotplot fetch, a shared backend's keyed upload, or a container that lays out a canvas for its children.
 ---
 
 # Shared-canvas comparative views
@@ -8,9 +8,10 @@ description: The comparative views (synteny, dotplot) — why they own their fet
 Synteny and dotplot are a third display shape, alongside the two LGV fetch
 foundations in
 [ARCHITECTURE.md § Display stacks](../ARCHITECTURE.md#display-stacks). Two things
-make them different, and they are independent: they own their fetch rather than
-composing `FetchMixin`, and their canvas belongs to a container model rather than
-to a display. Everything below follows from one or the other.
+make them different, and they are independent: their fetch composes
+`KeyedFetchMixin` rather than either LGV foundation, and their canvas belongs to
+a container model rather than to a display. Everything below follows from one or
+the other.
 
 The rules here generalize past these two views. Any container that owns a canvas
 several children draw on — a future stacked view, a multi-track overlay — hits

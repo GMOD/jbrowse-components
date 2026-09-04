@@ -24,6 +24,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
 import {
+  COMPACT_AXIS_FONT_SIZE,
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
   insertSizeAxisBoxLeft,
@@ -260,7 +261,7 @@ export function CoverageScaleBars({
             key={sectionKey(section.groupKey)}
             x={rightAxisLabelX(canvasWidth)}
             y={section.coverageTop + 10}
-            fontSize={9}
+            fontSize={COMPACT_AXIS_FONT_SIZE}
             fontFamily="sans-serif"
             textAnchor="end"
           >

@@ -22,7 +22,7 @@ track.
 
 Tests: `regionTooLargeUtils.test.ts` and `nextGateState.test.ts` for the pure
 parts, `gateTruthTable.test.ts` for every getter against boundary values
-(67,200 rows collapse to 7 banner-facing states, listed at the top of its golden
+(16,800 rows collapse to 7 banner-facing states, listed at the top of its golden
 file), a `derivedRegionTooLarge.test.ts` per gated display bar arc, whose
 equivalent is `fetchArcFeatures.test.ts`, and the fetch runners' own files for
 the commit and the refusal skip. History, and the bugs each rule closed:
@@ -131,7 +131,9 @@ density probe on canvas. Skipping unconditionally freezes the estimate;
 never skipping spins on the `fetchGeneration` bump.
 
 A force-loaded fetch carries no budget, measures nothing, and stamps no
-viewport; density stats still commit, so zooming back out re-gates.
+viewport; density stats still commit. The approval itself is track-wide and
+nothing clears it, so zooming back out does not re-gate — that is ADR-074's
+intent, not an oversight.
 
 ## The density probe samples toward the verdict, not toward precision
 

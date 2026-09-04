@@ -161,7 +161,7 @@ and position and a strand-flipped segment computes a different one. The arcs rea
 that same array — so in **chain** mode they got the corrected value and in
 **pileup** mode they did not, the same reads at the same locus taking a different
 arc colour from a layout setting. `mateLinkArc` now sources orientation and TLEN
-from a primary endpoint itself (`pairFieldSource`), which is a no-op when both
+from a primary endpoint itself (`pairFieldEntry`), which is a no-op when both
 primaries are loaded since the two primaries of a pair always agree.
 
 A related inconsistency is **open and deliberate**: `readInsertSizes` is not

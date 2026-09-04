@@ -55,8 +55,11 @@ estimate is what stops the banner flickering on an ordinary clear.
 
 `isBlockCovered` compares the block against the loaded bounds, and those are
 buffered wider than the viewport, so a small pan finds them still covering and
-fetches nothing. `isCacheValid` is the override hook beside it, for a display
-whose data goes stale for reasons the bounds can't see.
+fetches nothing. `isCacheValid` beside it asks whether the data held for a
+region still answers the current view, and it is not a hook you fill: it
+compares the whole fetch key. A display whose data goes stale for reasons the
+bounds can't see states that as `zoomFetchKey` (the zoom term of what a fetch
+now would produce) or `regionHasData` (did the last one store anything).
 
 ## Implementing fetchNeeded
 

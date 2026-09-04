@@ -1909,7 +1909,8 @@ reference doc, and is the right place to look when nothing below matches:
   in depth: the mixin, the upload/render autoruns, per-plugin backends, the three
   upload patterns, the HAL, Slang shaders, and the new-display checklist.
 - [reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md) — the
-  comparative views (synteny, dotplot): why they own their fetch, how one canvas
+  comparative views (synteny, dotplot): how their fetch composes
+  `KeyedFetchMixin`, how one canvas
   is shared by several displays, and the keying / empty-frame / readiness rules
   that follow. Read before touching either, or before building any container that
   owns a canvas its children draw on.

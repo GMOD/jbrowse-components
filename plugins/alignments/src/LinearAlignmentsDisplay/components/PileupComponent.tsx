@@ -20,6 +20,7 @@ import {
 } from '../../shared/legendUtils.ts'
 import {
   AXIS_SVG_WIDTH,
+  COMPACT_AXIS_FONT_SIZE,
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
   leftAxisSpineX,
@@ -59,7 +60,7 @@ const useStyles = makeStyles()(theme => ({
   compactAxisLabel: {
     position: 'absolute' as const,
     right: VERTICAL_SCROLLBAR_CLEARANCE,
-    fontSize: 9,
+    fontSize: COMPACT_AXIS_FONT_SIZE,
     lineHeight: '11px',
     fontFamily: 'sans-serif',
     color: theme.palette.text.secondary,

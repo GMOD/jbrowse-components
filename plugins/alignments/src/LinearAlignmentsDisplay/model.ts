@@ -370,7 +370,7 @@ export default function stateModelFactory(
         LegendMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
         // Track-menu settings are config slots (read via getConf, written via
-        // configuration.setSlot) so an edit survives hide/retick and a config
+        // setConf) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
         // remaining toggles. Each setting also has a refetch/relayout/render
         // blast radius documented in CLAUDE.md §"Which getter decides what a

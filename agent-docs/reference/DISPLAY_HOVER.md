@@ -35,7 +35,8 @@ overrides one action and a display that derives one does nothing. Six displays
 used to pass their own closure to the installer, which is six chances to omit
 the call, and omitting it is invisible until someone pans.
 
-**Only that foundation installs it, so a storer outside it owes its own.** Three
+**`installGlobalFetchAutorun` installs it too, and nothing else does, so a
+storer outside both foundations owes its own.** Three
 views store a hover over a surface of their own and each had to answer this
 separately, which is what makes it a rule rather than one mixin's habit. The
 answer is `installClearHoverOnSurfaceMove` (`@jbrowse/core/util`): a `reaction`
