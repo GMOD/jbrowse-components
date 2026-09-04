@@ -4,8 +4,10 @@ import {
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
 import type { GridBookmarkModel } from './model.ts'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -37,6 +39,18 @@ export function colWidth(header: string, values: string[], maxWidth = 200) {
   )
 }
 
+// the grids list only what a view currently shows, and a view holds whatever
+// name the session opened it on -- an alias of the name a bookmark stored
+export function isAssemblyInViews(
+  assembliesInViews: Set<string>,
+  assemblyName: string,
+  assemblyManager: AssemblyNameResolver,
+) {
+  return [...assembliesInViews].some(n =>
+    isSameAssemblyName(n, assemblyName, assemblyManager),
+  )
+}
+
 export async function navToBookmark(
   locString: string,
   assembly: string,
@@ -49,7 +63,12 @@ export async function navToBookmark(
     // first such LGV. the type guard matters: a non-LGV (dotplot, circular) on
     // this assembly has no navToLocString, so navigating to it would throw
     const isTarget = (v: AbstractViewModel) =>
-      v.type === 'LinearGenomeView' && v.assemblyNames?.[0] === assembly
+      v.type === 'LinearGenomeView' &&
+      isSameAssemblyName(
+        v.assemblyNames?.[0],
+        assembly,
+        session.assemblyManager,
+      )
     const view = (views.find(
       v => v.id === session.focusedViewId && isTarget(v),
     ) ?? views.find(isTarget)) as MaybeLGV

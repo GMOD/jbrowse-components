@@ -14,6 +14,7 @@ import {
 } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import { isAssemblyInViews, navToBookmark } from '../utils.ts'
 import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
@@ -57,6 +58,7 @@ const HighlightGrid = observer(function HighlightGrid({
   const apiRef = useGridApiRef()
   const theme = useTheme()
   const session = getSession(model)
+  const { assemblyManager } = session
   const [selectedIds, setSelectedIds] = useState(() => new Set<GridRowId>())
   const { assembliesInViews } = model
   const rows = session.views
@@ -82,7 +84,11 @@ const HighlightGrid = observer(function HighlightGrid({
     // only show highlights whose assembly is open in a view. highlights
     // without an assemblyName (pre-init session JSON) always pass through so
     // they're not hidden by the filter
-    .filter(r => !r.assemblyName || assembliesInViews.has(r.assemblyName))
+    .filter(
+      r =>
+        !r.assemblyName ||
+        isAssemblyInViews(assembliesInViews, r.assemblyName, assemblyManager),
+    )
 
   return (
     <DataGridFlexContainer>
@@ -119,16 +125,11 @@ const HighlightGrid = observer(function HighlightGrid({
         columns={[
           { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
           locationColumn<HighlightRow>(classes.cell, 'Location', row => {
-            row.view.navTo(
-              {
-                refName: row.highlight.refName,
-                start: row.highlight.start,
-                end: row.highlight.end,
-                assemblyName: row.highlight.assemblyName,
-              },
-              // slightly zoom out so the highlighted region has context on
-              // either side
-              0.2,
+            void navToBookmark(
+              row.locString,
+              row.assemblyName || row.view.assemblyNames[0]!,
+              [row.view],
+              model,
             )
           }),
           labelColumn<HighlightRow>(classes.cell),

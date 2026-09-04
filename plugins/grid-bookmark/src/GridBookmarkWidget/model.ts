@@ -9,7 +9,7 @@ import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { bookmarkKey } from './utils.ts'
+import { bookmarkKey, isAssemblyInViews } from './utils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
@@ -144,8 +144,13 @@ export default function f(_pluginManager: PluginManager) {
        * bookmarks belonging to an assembly currently open in a view
        */
       get visibleBookmarks() {
+        const { assemblyManager } = getSession(self)
         return self.bookmarks.filter(e =>
-          self.assembliesInViews.has(e.assemblyName),
+          isAssemblyInViews(
+            self.assembliesInViews,
+            e.assemblyName,
+            assemblyManager,
+          ),
         )
       },
     }))

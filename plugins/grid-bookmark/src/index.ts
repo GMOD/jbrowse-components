@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
+  assembleLocString,
   getNotificationSink,
   getSession,
   isAbstractMenuManager,
@@ -11,6 +12,7 @@ import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
+import { navToBookmark } from './GridBookmarkWidget/utils.ts'
 import {
   activateBookmarkWidget,
   ensureBookmarkWidget,
@@ -44,8 +46,15 @@ export default class GridBookmarkPlugin extends Plugin {
           navigateNewestBookmark() {
             const session = getSession(self)
             const bookmarkWidget = self.activateBookmarkWidget()
-            if (bookmarkWidget.bookmarks.length) {
-              self.navTo(bookmarkWidget.bookmarks.at(-1)!)
+            const newest = bookmarkWidget.bookmarks.at(-1)
+            if (newest) {
+              const { assemblyName, ...rest } = newest
+              void navToBookmark(
+                assembleLocString(rest),
+                assemblyName,
+                session.views,
+                bookmarkWidget,
+              )
             } else {
               session.notify(
                 'There are no recent bookmarks to navigate to.',
