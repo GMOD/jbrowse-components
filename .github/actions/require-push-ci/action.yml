@@ -1,0 +1,63 @@
+name: Require Push CI
+description:
+  Block until the Push workflow's run for this tag concludes, and fail on
+  anything but success
+
+inputs:
+  token:
+    description: Token with actions:read, for `gh run list`
+    required: true
+  timeout-minutes:
+    description: How long to wait before giving up and failing
+    default: '90'
+
+# Publish and Release both trigger on the same `v*` tag as Push, so all three
+# start at once and nothing stops npm from receiving a build whose tests were
+# still running — or had already gone red. check-tag-version.ts was the only
+# gate, and it only checks that the tag names the tree's version.
+#
+# A `workflow_run` trigger is the GitHub-native shape for "after Push", and it
+# cannot be used here: in a workflow_run run GITHUB_REF and GITHUB_SHA are the
+# DEFAULT BRANCH, not the tag. `github.ref_name` is what picks the npm dist-tag
+# and what check-tag-version.ts reads, and the tag ref is what `--provenance`
+# attests as the source the artifact was built from. All three would quietly
+# become 'main'. So the tag trigger stays and the wait happens here.
+#
+# Fails closed. A release blocked by a plumbing failure is a re-run; a publish
+# that raced its own CI is unpublishable after 72 hours.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ github.ref_name }}
+        SHA: ${{ github.sha }}
+        TIMEOUT_MINUTES: ${{ inputs.timeout-minutes }}
+      run: |
+        set -euo pipefail
+        deadline=$(( $(date +%s) + TIMEOUT_MINUTES * 60 ))
+        while :; do
+          # --commit alone would also match the run main got for this same sha
+          # before the tag existed; headBranch is the tag on a tag run.
+          info=$(gh run list --workflow push.yml --commit "$SHA" \
+            --json status,conclusion,headBranch \
+            --jq '[.[] | select(.headBranch == env.TAG)][0] // {}
+                  | "\(.status // "not-started") \(.conclusion // "none")"')
+          read -r status conclusion <<<"$info"
+          if [ "$status" = completed ]; then
+            if [ "$conclusion" = success ]; then
+              echo "Push CI succeeded for $TAG."
+              exit 0
+            fi
+            echo "::error::Push CI concluded '$conclusion' for $TAG ($SHA). Not releasing."
+            exit 1
+          fi
+          if [ "$(date +%s)" -ge "$deadline" ]; then
+            echo "::error::Waited ${TIMEOUT_MINUTES}m for Push CI on $TAG ($SHA); it is still '$status'. Not releasing."
+            exit 1
+          fi
+          echo "Push CI is '$status' for $TAG; waiting."
+          sleep 30
+        done

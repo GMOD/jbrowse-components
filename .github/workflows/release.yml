@@ -15,8 +15,27 @@ env:
   CLOUDFRONT_DISTRIBUTION_ID: E13LGELJOT4GQO
 
 jobs:
+  # Push runs on this tag too, and used to run alongside this workflow rather
+  # than before it. See .github/actions/require-push-ci. Everything below hangs
+  # off createrelease, so gating that gates the desktop builds and the latest/
+  # deploy with it.
+  gate:
+    name: Wait for Push CI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/require-push-ci
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   createrelease:
     name: Create release tag and JBrowse web release artifacts
+    needs: gate
     runs-on: ubuntu-latest
     permissions:
       contents: write
