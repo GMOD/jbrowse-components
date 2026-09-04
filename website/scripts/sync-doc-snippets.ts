@@ -148,7 +148,14 @@ const stale: string[] = []
 // 40 -> 35 on 2026-09-02: the quickstarts and config_guides passes cut every
 // guide to what the generated config/model pages and the cookbook don't
 // already carry, dropping fences those pages restated.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '35')
+//
+// 35 -> 37 on 2026-09-04: `upgrading_v5.md` gained the lazy-stateModel breakage
+// (0ea3f65617), which is a before/after pair. The "before" is the v4 idiom, code
+// this tree no longer contains and so has nothing to point at; the "after" is
+// the shape a plugin author writes, not a region we ship. A migration guide's
+// pair is the case this baseline's own instruction calls "genuinely can't be" —
+// but it is still debt, and it is the only kind that should raise this number.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '37')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
