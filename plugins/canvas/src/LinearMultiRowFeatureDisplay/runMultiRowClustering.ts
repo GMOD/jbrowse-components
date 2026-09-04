@@ -1,5 +1,5 @@
 import {
-  clusteredCladeLayout,
+  applyClusterRun,
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
@@ -8,7 +8,7 @@ import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
-  ClusterProvenance,
+  ClusterRunModel,
   RpcMethodCaller,
   TreeLayoutModel,
 } from '@jbrowse/tree-sidebar'
@@ -17,22 +17,15 @@ type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
 // The subset of the display model this run reads/writes. Kept structural so the
 // menu trigger and the declarative autorun call one shared implementation.
-export interface MultiRowClusterModel {
+export interface MultiRowClusterModel extends ClusterRunModel<MultiRowSource> {
   // The rows a run clusters — the focused clade, undecorated. See the model's
   // `clusterableSources`, and `clusteredCladeLayout` for why not `sources`.
   clusterableSources: MultiRowSource[]
-  editableSources: MultiRowSource[]
-  layout: readonly MultiRowSource[]
   adapterConfig: Record<string, unknown>
   // the resolved one, never the raw slot — the matrix has to bucket each
   // feature into the row the painting drew it in
   effectivePartitionField: string
   colorConfig: string | undefined
-  setLayoutAndClusterTree: (
-    layout: MultiRowSource[],
-    tree?: string,
-    provenance?: ClusterProvenance,
-  ) => void
 }
 
 /**
@@ -94,33 +87,32 @@ export async function runMultiRowClustering({
   stopToken: StopToken
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { clusterableSources } = model
-  const ret = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
-    regions,
-    sources: clusterableSources.map(s => s.name),
-    adapterConfig: model.adapterConfig,
-    partitionField: model.effectivePartitionField,
-    colorConfig: model.colorConfig,
-    stopToken,
-    statusCallback,
-  })
-  model.setLayoutAndClusterTree(
-    clusteredCladeLayout({
-      rows: clusterableSources,
-      editableSources: model.editableSources,
-      layout: model.layout,
-      order: ret.order,
-    }),
-    ret.tree,
+  const {
+    clusterableSources,
+    adapterConfig,
+    effectivePartitionField,
+    colorConfig,
+  } = model
+  await applyClusterRun({
+    model,
+    rows: clusterableSources,
     // This display clusters on the *rendered color* of each bin, so the color
     // scheme is not a display preference here — it is the matrix. Change "Color
     // by…" and the same rows over the same locus give a different tree, which
     // is only defensible if the caption says which coloring produced this one.
-    clusterProvenanceFromRegions(regions, [
-      { name: 'rows', value: model.effectivePartitionField },
-      ...(model.colorConfig
-        ? [{ name: 'color', value: model.colorConfig }]
-        : []),
+    provenance: clusterProvenanceFromRegions(regions, [
+      { name: 'rows', value: effectivePartitionField },
+      ...(colorConfig ? [{ name: 'color', value: colorConfig }] : []),
     ]),
-  )
+    matrix: () =>
+      rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
+        regions,
+        sources: clusterableSources.map(s => s.name),
+        adapterConfig,
+        partitionField: effectivePartitionField,
+        colorConfig,
+        stopToken,
+        statusCallback,
+      }),
+  })
 }

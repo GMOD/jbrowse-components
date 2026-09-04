@@ -66,6 +66,8 @@ export {
   treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
+export { applyClusterRun } from './applyClusterRun.ts'
+export type { ClusterRunModel } from './applyClusterRun.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'
 export { MIN_CLUSTER_ROWS, clusterMatrix } from './clusterMatrix.ts'

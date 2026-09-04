@@ -1,5 +1,5 @@
 import {
-  clusteredCladeLayout,
+  applyClusterRun,
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
@@ -7,7 +7,7 @@ import type { MafSource } from './stateModel.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ClusterProvenance, RpcMethodCaller } from '@jbrowse/tree-sidebar'
+import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
 export type ClusterIdentityMatrixCaller =
   RpcMethodCaller<'LinearMafClusterIdentityMatrix'>
@@ -18,17 +18,11 @@ export type ClusterIdentityMatrixCaller =
  * a circular-reference trap (ADR-055). `IStateTreeNode` rather than
  * `IAnyStateTreeNode`, which is `any` and would check nothing.
  */
-export interface MafClusterSelf extends IStateTreeNode {
+export interface MafClusterSelf
+  extends IStateTreeNode, ClusterRunModel<MafSource> {
   sources: MafSource[]
-  editableSources: MafSource[]
-  layout: readonly MafSource[]
   adapterConfig: Record<string, unknown>
   setLayout: (layout: MafSource[]) => void
-  setLayoutAndClusterTree: (
-    layout: MafSource[],
-    tree?: string,
-    provenance?: ClusterProvenance,
-  ) => void
 }
 
 /**
@@ -53,29 +47,21 @@ export async function runMafClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sources, adapterConfig } = model
-  const ret = await rpcManager.call(
-    sessionId,
-    'LinearMafClusterIdentityMatrix',
-    {
-      regions,
-      sources: sources.map(s => s.name),
-      adapterConfig,
-      stopToken,
-      statusCallback,
-    },
-  )
-  model.setLayoutAndClusterTree(
-    clusteredCladeLayout({
-      rows: sources,
-      editableSources: model.editableSources,
-      layout: model.layout,
-      order: ret.order,
-    }),
-    ret.tree,
+  await applyClusterRun({
+    model,
+    rows: sources,
     // The locus is the whole provenance here. Nothing else changes which
     // columns entered the matrix -- the bin count is fixed and every row of the
     // window is scored -- where the genotype path has filters and a rendering
     // mode that do.
-    clusterProvenanceFromRegions(regions),
-  )
+    provenance: clusterProvenanceFromRegions(regions),
+    matrix: () =>
+      rpcManager.call(sessionId, 'LinearMafClusterIdentityMatrix', {
+        regions,
+        sources: sources.map(s => s.name),
+        adapterConfig,
+        stopToken,
+        statusCallback,
+      }),
+  })
 }

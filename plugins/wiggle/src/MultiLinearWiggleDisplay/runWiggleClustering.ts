@@ -1,5 +1,5 @@
 import {
-  clusteredCladeLayout,
+  applyClusterRun,
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
@@ -37,34 +37,26 @@ export async function runWiggleClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const args = clusterScoreMatrixArgs(model, samplesPerPixel, regions)
-  const ret = await rpcManager.call(
-    sessionId,
-    'MultiWiggleClusterScoreMatrix',
-    {
-      ...args,
-      stopToken,
-      statusCallback,
-    },
-  )
-  model.setLayoutAndClusterTree(
-    clusteredCladeLayout({
-      rows: model.clusterableSources,
-      editableSources: model.editableSources,
-      layout: model.layout,
-      order: ret.order,
-    }),
-    ret.tree,
+  await applyClusterRun({
+    model,
+    rows: args.sources,
     // Sampling density belongs in the caption because it changes the matrix:
     // the columns are pixel bins, so the same locus at a different density is
     // a different set of measurements. The parsed value, not the raw field
     // text: `samplesPerPixel` is free text and the matrix was binned at what
     // `parseSamplesPerPixel` clamped or defaulted it to, so recording the
     // text would caption the matrix with a density it was never built at.
-    clusterProvenanceFromRegions(args.regions, [
+    provenance: clusterProvenanceFromRegions(args.regions, [
       {
         name: 'samples/px',
         value: String(parseSamplesPerPixel(samplesPerPixel)),
       },
     ]),
-  )
+    matrix: () =>
+      rpcManager.call(sessionId, 'MultiWiggleClusterScoreMatrix', {
+        ...args,
+        stopToken,
+        statusCallback,
+      }),
+  })
 }
