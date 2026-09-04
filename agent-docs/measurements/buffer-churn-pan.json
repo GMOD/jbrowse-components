@@ -1,0 +1,143 @@
+{
+  "id": "buffer-churn-pan",
+  "measured": "2026-09-04",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build, then in products/jbrowse-web: node browser-tests/probe-buffer-churn.ts [--backend=webgl] [--tracks=volvox_alignments] [--tracks=volvox_microarray]",
+    "notes": "Headless Chrome with --use-gl=angle on a MacBook Pro (AMD RDNA-1 under WebGPU; the same part under ANGLE for the WebGL2 rung), 1600x900 viewport, a 1588 px LinearGenomeView on volvox ctgA:1-6000 (3.78 bp/px, 2 static blocks). Every GPUDevice.createBuffer / GPUBuffer.destroy and gl.bufferData / gl.deleteBuffer in the page is wrapped, so the uniform ring and UBO are counted too. 'pan' is 60 frames of horizontalScroll(40) — 2400 px, a screen and a half, so the view leaves its loaded blocks and new regions fetch and upload while pruned ones release; 'pan back' is the same distance reversed over ground just left, then settled; '1 px pan' is 60 frames of horizontalScroll(1), a pure redraw inside the loaded blocks. allocs and KB are buffers created and bytes asked for over the whole gesture including the settle; alloc ms is the summed wall time inside the create+write calls, which on WebGPU is the JS call only since the device allocates asynchronously. draws/frame is the median count of instanced draw calls per animation frame that drew anything; the max is the frame an upload landed in."
+  },
+  "columns": [
+    { "key": "scenario", "label": "scenario" },
+    { "key": "backend", "label": "rung" },
+    { "key": "allocs", "label": "buffers created", "format": "int", "align": "right" },
+    { "key": "kb", "label": "bytes", "format": "KB", "align": "right" },
+    { "key": "frees", "label": "buffers freed", "format": "int", "align": "right" },
+    { "key": "allocMs", "label": "time in create", "format": "ms", "precision": 2, "align": "right" },
+    { "key": "panMs", "label": "gesture wall", "format": "ms", "align": "right" },
+    { "key": "allocShare", "label": "create share", "format": "percent", "precision": 3, "derived": "allocMs / panMs * 100", "align": "right" },
+    { "key": "drawsMed", "label": "draws/frame", "format": "int", "align": "right" },
+    { "key": "drawsMax", "label": "draws/frame max", "format": "int", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "two alignments tracks, pan",
+        "backend": "WebGPU",
+        "allocs": 24,
+        "kb": 1468,
+        "frees": 20,
+        "allocMs": 0.4,
+        "panMs": 10784,
+        "drawsMed": 10,
+        "drawsMax": 48
+      },
+      "emphasize": ["allocs", "allocMs"]
+    },
+    {
+      "values": {
+        "scenario": "two alignments tracks, pan back",
+        "backend": "WebGPU",
+        "allocs": 24,
+        "kb": 1387,
+        "frees": 28,
+        "allocMs": 0.2,
+        "panMs": 6614,
+        "drawsMed": 14,
+        "drawsMax": 62
+      }
+    },
+    {
+      "values": {
+        "scenario": "two alignments tracks, 1 px pan",
+        "backend": "WebGPU",
+        "allocs": 0,
+        "kb": 0,
+        "frees": 0,
+        "allocMs": 0,
+        "panMs": 7930,
+        "drawsMed": 10,
+        "drawsMax": 20
+      }
+    },
+    {
+      "values": {
+        "scenario": "two alignments tracks, pan",
+        "backend": "WebGL2",
+        "allocs": 26,
+        "kb": 1459,
+        "frees": 20,
+        "allocMs": 0.9,
+        "panMs": 23991,
+        "drawsMed": 16,
+        "drawsMax": 50
+      },
+      "emphasize": ["allocs", "allocMs"]
+    },
+    {
+      "values": {
+        "scenario": "two alignments tracks, pan back",
+        "backend": "WebGL2",
+        "allocs": 10,
+        "kb": 674,
+        "frees": 16,
+        "allocMs": 0.1,
+        "panMs": 5117,
+        "drawsMed": 16,
+        "drawsMax": 52
+      }
+    },
+    {
+      "values": {
+        "scenario": "two alignments tracks, 1 px pan",
+        "backend": "WebGL2",
+        "allocs": 0,
+        "kb": 0,
+        "frees": 0,
+        "allocMs": 0,
+        "panMs": 4998,
+        "drawsMed": 10,
+        "drawsMax": 20
+      }
+    },
+    {
+      "values": {
+        "scenario": "one alignments track, pan",
+        "backend": "WebGPU",
+        "allocs": 12,
+        "kb": 733,
+        "frees": 10,
+        "allocMs": 0.1,
+        "panMs": 6126,
+        "drawsMed": 5,
+        "drawsMax": 24
+      }
+    },
+    {
+      "values": {
+        "scenario": "one alignments track, pan back",
+        "backend": "WebGPU",
+        "allocs": 12,
+        "kb": 632,
+        "frees": 14,
+        "allocMs": 0,
+        "panMs": 4018,
+        "drawsMed": 7,
+        "drawsMax": 28
+      }
+    },
+    {
+      "values": {
+        "scenario": "one wiggle track, pan",
+        "backend": "WebGPU",
+        "allocs": 2,
+        "kb": 5,
+        "frees": 2,
+        "allocMs": 0,
+        "panMs": 3457,
+        "drawsMed": 1,
+        "drawsMax": 3
+      }
+    }
+  ]
+}

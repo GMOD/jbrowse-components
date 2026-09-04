@@ -1661,7 +1661,12 @@ survives.
 roundtrip when the GPU decides how much to draw. Nothing here generates geometry
 on the GPU, and the instance count is already the packed buffer's own
 `byteLength / instanceStride` (`uploadPass`), which the CPU computes as it packs.
-There is no roundtrip to remove.
+There is no roundtrip to remove. **The condition, not just the conclusion:**
+this holds exactly as long as every instance buffer is packed CPU-side — by a
+worker or by the main-thread packers `packInstances()` generates. The day a
+pass's instances are produced by a compute kernel, its count lives on the GPU
+and this entry is the one to reopen for that pass. Nothing is on that path (see
+"Compute where a CPU fallback must exist anyway" below).
 
 **GPU-driven culling.** Culling is CPU-side and stays there. Measured and
 declined twice: for dotplot (quads are a few px, so the rasterizer discards them
@@ -1672,12 +1677,72 @@ with their numbers.
 
 **Storage buffers (SSBO) in the render path.** Every render pass feeds
 per-instance data through a **vertex buffer** with `stepMode: 'instance'`, never
-a storage binding, because Slang cross-compiles to GLSL ES 3.0, which has no
-SSBOs. Adopting them would fork every shader into two variants — precisely what
-the single-source Slang design exists to prevent. Storage buffers *are* used
-where there is no GLSL target: the LD compute kernels
+a storage binding. Two reasons, and the second stands on its own if WebGL2 is
+ever dropped:
+
+- Slang cross-compiles to GLSL ES 3.0, which has no SSBOs. Adopting them would
+  fork every shader into two variants — precisely what the single-source Slang
+  design exists to prevent.
+- **The access pattern is vertex fetch, and vertex fetch is what serves it.**
+  What a storage buffer buys over `stepMode: 'instance'` is random access (an
+  instance reading elements other than its own), variable-length indirection,
+  deduplication of shared columns, escape from the vertex-attribute limit, and
+  write access for compute. Every render pass here is one instance reading its
+  own fixed struct, sequentially — the case dedicated attribute-fetch hardware
+  exists for. Nor does the attribute limit bind: the largest instance struct
+  in tree is `read.slang` at 11 attributes and almost everything else is 4–5,
+  against a default `maxVertexAttributes` of 16 on WebGPU and the same floor on
+  WebGL2 ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)). GenomeSpy's generic `rect`
+  mark declares ~28 channels and physically cannot be vertex attributes, so its
+  storage buffers are a consequence of generic marks, not a performance choice
+  — our marks are specific, so the constraint never binds.
+
+Storage buffers *are* used where there is no GLSL target and the access pattern
+is the one they serve: the LD compute kernels
 (`plugins/variants/src/VariantRPC/getLDMatrixGPU.ts`) bind `read-only-storage`
 input and `storage` output, and are WebGPU-only by construction.
+
+**Depth buffer / early-Z.** No pass declares a depth-stencil state and no
+attachment carries one; overdraw is not depth-tested away. Every pass blends:
+`//! blend: premultiplied` (source-over) on most, `blendState: { op: 'max' }` on
+the wiggle center line, and nothing passes `blend: false`. Blending only
+composes correctly in draw order, back to front. A
+depth test rejects a fragment by its Z, which is exactly the fragment a
+translucent mark behind it was meant to show through; it would break the
+painter's-algorithm compositing the z-ordered pass lists (`PILEUP_LAYERS`,
+`COVERAGE_LAYERS`) exist to define. What early-Z would save is the overdraw of
+fully opaque marks, and there the rasterizer already discards a quad only a few
+pixels wide about as cheaply (see "GPU-driven culling"). Order is the
+correctness mechanism here; a depth buffer trades it for a saving nothing has
+measured a need for.
+
+**Persistent staging / mapped buffers.** Uploads go through
+`queue.writeBuffer` (`createVertexBuffer`) and `gl.bufferData`, never a
+`mapAsync` ring or `mappedAtCreation`. `writeBuffer` IS the browser's staging
+ring: the implementation copies into its own upload heap and schedules the
+transfer, which is what a hand-rolled staging buffer would do, minus the
+`mapAsync` round trip a mapped path adds to a main-thread upload. The uniform
+ring (`uniformRingBuffer`, one `writeBuffer` per frame from `uniformStaging`) is
+the one place a persistent host-side staging copy already exists, and it is
+there to turn per-draw uniform writes into one frame-level copy, not to avoid
+allocation. See "Buffer pooling" below for the allocation number this would
+otherwise be reached for.
+
+**Compute where a CPU fallback must exist anyway.** The principle that settles
+every compute proposal in one line: **compute is right when the CPU fallback is
+"the feature does not exist", and wrong when a CPU fallback must exist anyway.**
+The LD kernels pass — O(n²) pairwise over genotypes, embarrassingly parallel,
+large output, and a CPU version too slow to be a real fallback, so "WebGPU-only"
+is an honest answer (`ideas/gpu-sample-distance-matrix.md` applies the same
+criterion to the next candidates). Instance packing fails it: Canvas2D is a
+mandatory floor, so the CPU packer has to exist, and a compute packer would be a
+second packer emitting bytes the first must match — the same logic in two
+languages with no codegen joining them, which is the drift `packInstances()`
+exists to make impossible. It would also accelerate the cheap half: BAM/CRAM
+decode and pileup row assignment are the cost, and both are branchy,
+variable-length and sequential-ish, a poor GPU fit. The narrow real win —
+re-deriving from data already resident on the GPU (recolor, re-filter) — is
+what `createInstanceCache` already does more cheaply by patching one lane.
 
 **Spatial acceleration structures for culling.** We index heavily with Flatbush
 (a packed Hilbert R-tree, vendored at `packages/core/src/util/flatbush/`) — but
@@ -1686,13 +1751,71 @@ octree accelerates culling in a 3D scene with a moving camera; the genome axis
 is 1D, and `view.displayedRegions` is already the spatial partition that
 `regionKey` and the scissor rects are built on.
 
+**Draw-call batching / merging.** One instanced draw per `(pass, region)` with
+data, and nothing coalesces draws. GenomeSpy's coalescing is narrower than the
+name suggests: `coalesceSampleFacetBatches` collapses the repeated sample-facet
+views of one mark — hundreds of cohort rows drawing the same mark — into one
+draw whose per-facet placement is resolved in the vertex shader and computed
+once per layout, not general adjacent-draw merging. Our analogue of a sample
+facet is a row inside one instance buffer, which is already one draw, so the
+case their coalescing exists for does not arise here. What is left is the draw
+count itself, measured 2026-09-04 (`probe-buffer-churn.ts`, table below): one
+alignments track over two static blocks runs a median
+5<!--m:buffer-churn-pan.one-alignments-track-pan.drawsMed--> draws a frame on
+the pan and 7<!--m:buffer-churn-pan.one-alignments-track-pan-back.drawsMed--> on
+the way back, two tracks
+10<!--m:buffer-churn-pan.two-alignments-tracks-pan.drawsMed--> to
+16<!--m:buffer-churn-pan.drawsMed.max-->, a wiggle track
+1<!--m:buffer-churn-pan.one-wiggle-track-pan.drawsMed-->; the frame an upload
+lands in peaks at
+48<!--m:buffer-churn-pan.two-alignments-tracks-pan.drawsMax--> to
+62<!--m:buffer-churn-pan.two-alignments-tracks-pan-back.drawsMax--> because
+several renders fire in it. Those are tens, not the thousands at which a
+draw-call budget starts to bind, and what these frames are bound by is the main
+thread rather than draw submission
+([ideas/zoom-perf.md](../ideas/zoom-perf.md)). Merging would also have to cross
+a region boundary, which is where the scissor rect, the viewport and the
+per-block uniforms all change, so the "compatible" set is one pass in one
+region: exactly what is drawn now.
+
 **Buffer pooling / sub-allocation.** Not present: `uploadBuffer` destroys and
-recreates one `GPUBuffer` per `(regionKey, passId)` per upload. This is the one
-item on this list that is an unclaimed opportunity rather than a settled
-decision — a size-classed pool behind `RegionRegistry` would be invisible to
-every caller. It is unclaimed because it is unmeasured. Measure the allocation
-churn on a pan with alignments open before building it, and file the number
-either way.
+recreates one `GPUBuffer` per `(regionKey, passId)` per upload. This used to be
+filed as the one unmeasured entry on the list. **Measured 2026-09-04, and
+declined**: a screen-and-a-half pan with two alignments tracks open creates
+24<!--m:buffer-churn-pan.two-alignments-tracks-pan.allocs--> buffers on WebGPU
+and 26<!--m:buffer-churn-pan.allocs.max--> on WebGL2 — at most
+1468KB<!--m:buffer-churn-pan.kb.max--> of vertex and uniform data — across the
+whole gesture, and the summed wall time inside the create calls is under a
+millisecond: 0.90ms<!--m:buffer-churn-pan.allocMs.max--> at worst, on WebGL2,
+which is the honest rung to read because its `bufferData` allocates and uploads
+synchronously while WebGPU's `createBuffer` returns before the device allocates.
+Against a gesture measured in seconds that is
+0.004%<!--m:buffer-churn-pan.allocShare.max--> of it at worst. A pan that stays
+inside the loaded blocks allocates
+0<!--m:buffer-churn-pan.two-alignments-tracks-1-px-pan.allocs--> buffers — the
+1 px rows are the control — so the churn is one buffer per pass per newly
+fetched block, arriving at the fetch cadence rather than the frame cadence. A
+pool recycles allocations; there is nothing here worth recycling. What would
+reopen it is a display whose uploads arrive per frame rather than per fetch,
+which no upload pattern in tree does (§"Upload patterns").
+
+<!-- BEGIN GENERATED MEASUREMENT buffer-churn-pan -->
+
+_Generated by `pnpm autogen` — edit the source, not this block._
+
+| scenario                        | rung   | buffers created |   bytes | buffers freed | time in create | gesture wall | create share | draws/frame | draws/frame max |
+| ------------------------------- | ------ | --------------: | ------: | ------------: | -------------: | -----------: | -----------: | ----------: | --------------: |
+| two alignments tracks, pan      | WebGPU |          **24** | 1468 KB |            20 |     **0.40ms** |      10784ms |       0.004% |          10 |              48 |
+| two alignments tracks, pan back | WebGPU |              24 | 1387 KB |            28 |         0.20ms |       6614ms |       0.003% |          14 |              62 |
+| two alignments tracks, 1 px pan | WebGPU |               0 |    0 KB |             0 |         0.00ms |       7930ms |       0.000% |          10 |              20 |
+| two alignments tracks, pan      | WebGL2 |          **26** | 1459 KB |            20 |     **0.90ms** |      23991ms |       0.004% |          16 |              50 |
+| two alignments tracks, pan back | WebGL2 |              10 |  674 KB |            16 |         0.10ms |       5117ms |       0.002% |          16 |              52 |
+| two alignments tracks, 1 px pan | WebGL2 |               0 |    0 KB |             0 |         0.00ms |       4998ms |       0.000% |          10 |              20 |
+| one alignments track, pan       | WebGPU |              12 |  733 KB |            10 |         0.10ms |       6126ms |       0.002% |           5 |              24 |
+| one alignments track, pan back  | WebGPU |              12 |  632 KB |            14 |         0.00ms |       4018ms |       0.000% |           7 |              28 |
+| one wiggle track, pan           | WebGPU |               2 |    5 KB |             2 |         0.00ms |       3457ms |       0.000% |           1 |               3 |
+
+<!-- END GENERATED MEASUREMENT buffer-churn-pan -->
 
 ## Adding a new GPU display type
 
