@@ -5,15 +5,15 @@ import { autorun } from 'mobx'
 
 import { MIN_DISPLAY_HEIGHT } from './const.ts'
 
-import type { BaseLinearDisplayConfigModel } from './configSchema.ts'
+import type { TrackHeightConfigModel } from './trackHeightConfigSchemaFields.ts'
 
-// What this mixin needs a composing display to be: `height` is
-// `baseLinearDisplayConfigSchema`'s slot, so the base schema is the whole
-// contract. Not a `TConf extends { configuration: AnyConfigurationModel }` type
-// parameter — a generic body is checked against the constraint, so however
-// narrow the default is, `getConf(self, 'heigth')` still compiles.
+// What this mixin needs a composing display to be: the one slot it reads and
+// writes, from the table that declares it. Not a
+// `TConf extends { configuration: AnyConfigurationModel }` type parameter — a
+// generic body is checked against the constraint, so however narrow the default
+// is, `getConf(self, 'heigth')` still compiles.
 export interface TrackHeightHost {
-  configuration: BaseLinearDisplayConfigModel
+  configuration: TrackHeightConfigModel
 }
 
 const confNode = (self: object) => self as TrackHeightHost

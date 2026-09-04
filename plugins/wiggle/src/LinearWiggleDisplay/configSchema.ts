@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
@@ -71,14 +72,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },
-    /**
-     * #slot
-     */
-    height: {
-      type: 'number',
-      defaultValue: 100,
-      description: 'Default height of the track',
-    },
+    ...trackHeightConfigSchemaFields(),
     /**
      * #slot
      */

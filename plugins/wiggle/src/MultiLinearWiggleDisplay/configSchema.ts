@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   rowSeparatorsConfigSchemaFields,
@@ -107,14 +108,7 @@ const configSchema = ConfigurationSchema(
   'MultiLinearWiggleDisplay',
   {
     ...wiggleConfigSchemaFields,
-    /**
-     * #slot
-     */
-    height: {
-      type: 'number',
-      defaultValue: 200,
-      description: 'Default height of the track',
-    },
+    ...trackHeightConfigSchemaFields({ defaultHeight: 200 }),
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'avg' }),
     /**
      * #slot

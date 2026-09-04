@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -47,14 +48,10 @@ const HicTrackConfigFactory = () => {
   return ConfigurationSchema(
     'LinearHicDisplay',
     {
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 300,
-        description: 'default height for the Hi-C track',
-      },
+      ...trackHeightConfigSchemaFields({
+        defaultHeight: 300,
+        height: 'default height for the Hi-C track',
+      }),
       /**
        * #slot
        */

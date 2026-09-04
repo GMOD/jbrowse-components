@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   remapRetiredAutoscale,
@@ -75,14 +76,7 @@ export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearManhattanDisplay',
     {
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 100,
-        description: 'default height for the track',
-      },
+      ...trackHeightConfigSchemaFields(),
       /**
        * #slot
        */

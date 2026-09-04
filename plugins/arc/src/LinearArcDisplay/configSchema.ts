@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
@@ -43,14 +44,7 @@ export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearArcDisplay',
     {
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 100,
-        description: 'default height for the track',
-      },
+      ...trackHeightConfigSchemaFields(),
       /**
        * #slot
        */
