@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
+import { autorun } from 'mobx'
 
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
@@ -181,4 +182,49 @@ test('re-anchoring offers an undo that puts the view back where it was', async (
   expect(windowOf()).not.toEqual(before)
   takeSnackbarAction(session, 'Undo')
   expect(windowOf()).toEqual(before)
+})
+
+// `session.selection` is global, so before the `ownFeatureIds` gate a
+// selection in ANY track recomputed `laneGlyphCells` — the jexl color per
+// glyph, every lane repacked, every cell re-uploaded — for a highlight this
+// display would never draw. The gate resolves a foreign selection to the same
+// undefined as no selection, which invalidates nothing downstream.
+test('a selection in another track does not rebuild the lane glyph cells', () => {
+  const { display, session } = createDisplayWithSession()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'own1',
+      name: 'gene1',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+  ])
+  // keep the computed hot: outside a reaction it re-evaluates on every read
+  // and identity says nothing
+  const stop = autorun(() => display.laneGlyphCells)
+  const before = display.laneGlyphCells
+  session.setSelection(
+    new SimpleFeature({
+      uniqueId: 'some-other-tracks-feature',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+    }),
+  )
+  expect(display.selectedFeatureId).toBeUndefined()
+  expect(display.laneGlyphCells).toBe(before)
+
+  // selecting one of its OWN features is the recompute the highlight needs
+  session.setSelection(display.features![0]!)
+  expect(display.selectedFeatureId).toBe('own1')
+  expect(display.laneGlyphCells).not.toBe(before)
+  stop()
 })

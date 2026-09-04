@@ -408,12 +408,37 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * every feature id a lane can draw — the group features and the lane
+       * genes, which is what `laneGlyphCells` colors. Rebuilt per fetch
+       * commit, not per frame
+       */
+      get ownFeatureIds() {
+        const out = new Set<string>()
+        for (const f of self.features ?? []) {
+          out.add(f.id())
+        }
+        for (const genes of self.laneGenes?.values() ?? []) {
+          for (const g of genes) {
+            out.add(g.feature.id())
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the session selection where it names a feature THIS display draws,
+       * else undefined — the gate that keeps a selection in some other track
+       * from recomputing and re-uploading every lane's glyph cells, since an
+       * unchanged undefined invalidates nothing downstream
        */
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
           if (isFeature(selection)) {
-            return selection.id()
+            const id = selection.id()
+            return self.ownFeatureIds.has(id) ? id : undefined
           }
         }
         return undefined
