@@ -993,6 +993,12 @@ export default function stateModelFactory(
          * #getter
          * Height of the conservation (percent identity) band (0 when hidden, and
          * on the summary path, where it has nothing to draw).
+         *
+         * Every painter, axis, handle and export reads this rather than the
+         * `conservationHeight` slot, which `statedBandBounds` only bounds at
+         * read time: a band dragged tall on a tall track keeps its stated height
+         * when the track is then dragged short, and painting that height put the
+         * band over the rows and its resize handle outside the display.
          */
         get conservationDisplayHeight() {
           return self.topBands.reserved.conservation

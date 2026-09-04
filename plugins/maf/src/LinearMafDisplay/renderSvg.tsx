@@ -77,7 +77,7 @@ function MafSvgBody({
     coverageDomain,
     conservationBandActive,
     codonConservationActive,
-    conservationHeight,
+    conservationDisplayHeight,
     rowsCanvas2dMode,
     basesRenderingActive,
     scrollTop,
@@ -125,20 +125,20 @@ function MafSvgBody({
         <g transform={`translate(0, ${topBands.top.conservation})`}>
           <PaintLayer
             width={width}
-            height={conservationHeight}
+            height={conservationDisplayHeight}
             opts={opts}
             paint={ctx => {
               // Same gate as the on-screen band: the codon band only replaces
               // the per-base one where frames actually define codons.
               if (codonConservationActive) {
                 drawCodonConservation(ctx, model.visibleCodonConservation, {
-                  conservationHeight,
+                  conservationHeight: conservationDisplayHeight,
                   canvasWidth: width,
                   theme,
                 })
               } else {
                 drawConservation(ctx, renderBlocks, model.rpcDataMap, {
-                  conservationHeight,
+                  conservationHeight: conservationDisplayHeight,
                   canvasWidth: width,
                   theme,
                 })
@@ -220,7 +220,7 @@ function MafSvgBody({
       {conservationBandActive ? (
         <SvgYScaleGutter
           y={topBands.top.conservation}
-          ticks={conservationTicks(conservationHeight)}
+          ticks={conservationTicks(conservationDisplayHeight)}
         />
       ) : null}
       {/* The same color key the display shows on screen (`MafLegends`), on the

@@ -42,3 +42,37 @@ describe('the top bands are one fold', () => {
     ])
   })
 })
+
+// A stated band height outlives the track height that made it legal: drag the
+// band tall on a tall track, then drag the track short. Nothing re-clamps the
+// slot afterwards, so `statedBandBounds` binds it at read time and the
+// reservation is deliberately smaller than the number the config still holds.
+// Everything that paints, scales or positions the band has to read the
+// reservation rather than the slot, or it draws over the rows and takes its own
+// resize handle off the display with it.
+describe('a band stated taller than the track it sits on', () => {
+  const overStated = () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setShowConservation(true)
+    display.setHeight(1000)
+    display.resizeConservationHeight(+260)
+    expect(display.conservationHeight).toBe(300)
+    display.setHeight(200)
+    return display
+  }
+
+  it('reserves the bound height, not the stated one', () => {
+    const display = overStated()
+    expect(display.conservationHeight).toBe(300)
+    expect(display.conservationDisplayHeight).toBe(180)
+    expect(display.coverageDisplayHeight).toBe(45)
+    expect(display.topBands.top.conservation).toBe(45)
+    expect(display.rowsTopOffset).toBe(225)
+  })
+
+  it('ends exactly where the rows begin', () => {
+    const display = overStated()
+    const { top, reserved } = display.topBands
+    expect(top.conservation + reserved.conservation).toBe(display.rowsTopOffset)
+  })
+})

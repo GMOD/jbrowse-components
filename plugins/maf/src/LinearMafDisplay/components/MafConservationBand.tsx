@@ -35,7 +35,7 @@ function drawBand(
   theme: Theme,
 ) {
   const state = {
-    conservationHeight: model.conservationHeight,
+    conservationHeight: model.conservationDisplayHeight,
     canvasWidth: model.canvasWidthPx,
     theme,
   }
@@ -53,14 +53,14 @@ const MafConservationBand = observer(function MafConservationBand({
   model: LinearMafDisplayModel
   onResizeActiveChange: (active: boolean) => void
 }) {
-  const { conservationBandActive, conservationHeight, topBands } = model
+  const { conservationBandActive, conservationDisplayHeight, topBands } = model
   return (
     <MafBand
       model={model}
       show={conservationBandActive}
       top={topBands.top.conservation}
-      height={conservationHeight}
-      ticks={conservationTicks(conservationHeight)}
+      height={conservationDisplayHeight}
+      ticks={conservationTicks(conservationDisplayHeight)}
       resize={n => {
         model.resizeConservationHeight(n)
       }}
