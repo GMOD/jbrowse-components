@@ -1,4 +1,8 @@
-import { getGpuOverride, isGpuRenderingDisabled } from '../gpuDevice.ts'
+import {
+  getGpuOverride,
+  isGpuRenderingDisabled,
+  setBuiltRenderer,
+} from '../gpuDevice.ts'
 import { getGraphicsCapabilities } from '../graphicsCapabilities.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
@@ -45,7 +49,23 @@ export interface GpuHalOptions {
 // Ladder: WebGPU → WebGL2 → Canvas2D (null). The `?renderer=` URL param pins it
 // to a single rung for debugging — `webgpu`, `webgl`, or `canvas2d`/`canvas` —
 // and a pin never falls through to the next rung. See GPU_OVERRIDES.
+//
+// Records the rung it returned on the page-wide cell, which is how
+// `effectiveRenderer` gets to report what drew rather than what the adapter
+// probe predicted — the two part when `WebGPUHal.create` throws and the ladder
+// lands on WebGL2.
 export async function createGpuHal(
+  canvas: HTMLCanvasElement,
+  options: GpuHalOptions,
+): Promise<GpuHal | null> {
+  const hal = await climbLadder(canvas, options)
+  setBuiltRenderer(
+    hal === null ? 'Canvas2D' : hal instanceof WebGPUHal ? 'WebGPU' : 'WebGL2',
+  )
+  return hal
+}
+
+async function climbLadder(
   canvas: HTMLCanvasElement,
   { passes, uniformByteSize, sampleCount, failures }: GpuHalOptions,
 ): Promise<GpuHal | null> {

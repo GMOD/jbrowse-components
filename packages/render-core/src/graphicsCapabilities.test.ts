@@ -1,8 +1,16 @@
-import { setGpuOverride } from './gpuDevice.ts'
+import { resetGpuDeviceForTests, setGpuOverride } from './gpuDevice.ts'
 import {
   effectiveRenderer,
   isSoftwareRenderer,
 } from './graphicsCapabilities.ts'
+
+// a constructor, not a bare object: createGpuHal names the rung by instanceof
+jest.mock('./hal/webgpuHal.ts', () => {
+  function WebGPUHal() {}
+  WebGPUHal.create = jest.fn()
+  return { WebGPUHal }
+})
+jest.mock('./hal/webgl2Hal.ts', () => ({ WebGL2Hal: jest.fn() }))
 
 const UNMASKED_RENDERER_WEBGL = 0x9246
 
@@ -60,6 +68,7 @@ const mockWebgl2 = (supported: boolean) =>
 afterEach(() => {
   jest.restoreAllMocks()
   setGpuOverride(null)
+  resetGpuDeviceForTests()
   Object.defineProperty(navigator, 'gpu', {
     configurable: true,
     value: undefined,
@@ -284,4 +293,32 @@ test('an unrecognized pin is no pin, so the ladder decides', () => {
   setGpuOverride('WebGL')
   expect(effectiveRenderer({ webgpu: false, webgl2: true })).toBe('WebGL2')
   expect(warnSpy).toHaveBeenCalled()
+})
+
+// The probe asks the adapter, and the adapter saying yes is not a backend: the
+// ladder falls through to WebGL2 when `WebGPUHal.create` throws, and until a
+// backend exists the prediction is all there is to report.
+test('effectiveRenderer reports the rung createGpuHal built once one exists', async () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+  mockGpu({ info: { vendor: 'nvidia', architecture: 'ampere' } })
+  const { getGraphicsCapabilities, effectiveRenderer: fresh } =
+    await loadFreshModule()
+  const caps = await getGraphicsCapabilities()
+  expect(fresh(caps)).toBe('WebGPU')
+
+  // the same registry as `fresh`, so createHal.ts sees these two
+  const { WebGPUHal } = await import('./hal/webgpuHal.ts')
+  const { WebGL2Hal } = await import('./hal/webgl2Hal.ts')
+  jest
+    .mocked(WebGPUHal.create)
+    .mockRejectedValue(new Error('pipeline compile failed'))
+  const { createGpuHal } = await import('./hal/createHal.ts')
+  const hal = await createGpuHal(document.createElement('canvas'), {
+    passes: [],
+    uniformByteSize: 0,
+    sampleCount: 1,
+  })
+
+  expect(hal).toBeInstanceOf(WebGL2Hal)
+  expect(fresh(caps)).toBe('WebGL2')
 })

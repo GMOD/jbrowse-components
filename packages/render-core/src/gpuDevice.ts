@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import type { RendererName } from './graphicsCapabilities.ts'
+
 interface GpuDeviceCell {
   device: GPUDevice | null
   /** Serializes concurrent calls during async init and after recovery. */
@@ -32,6 +34,12 @@ interface GpuDeviceCell {
    * @see setGpuOverride
    */
   gpuOverride: string | null
+  /**
+   * The rung the last `createGpuHal` returned, so `effectiveRenderer` reports
+   * what drew rather than what the probe predicted. Optional because a cell an
+   * older copy built has none, and "nothing built yet" is a real state there.
+   */
+  builtRenderer?: RendererName
 }
 
 declare global {
@@ -63,9 +71,11 @@ declare global {
  * field added later would read `undefined` on a cell built by an older copy.
  * Changing this interface therefore means bumping the `V1` in the global's
  * name, which costs the sharing between the two versions — the point of the
- * suffix is that losing it is a decision rather than a silent misread. Reset in
- * place (see `resetGpuDeviceForTests`); never reassign the cell itself, or
- * copies holding the old object diverge from the new one.
+ * suffix is that losing it is a decision rather than a silent misread. The one
+ * exception is an optional field whose `undefined` is an honest state, as
+ * `builtRenderer`'s is. Reset in place (see `resetGpuDeviceForTests`); never
+ * reassign the cell itself, or copies holding the old object diverge from the
+ * new one.
  */
 const cell = (globalThis.__jbrowseRenderCoreGpuDeviceV1 ??= {
   device: null,
@@ -275,6 +285,14 @@ export function getGpuOverride() {
   return cell.gpuOverride
 }
 
+export function setBuiltRenderer(name: RendererName) {
+  cell.builtRenderer = name
+}
+
+export function getBuiltRenderer() {
+  return cell.builtRenderer
+}
+
 /**
  * Whether the GPU is off for the whole page — either pinned by `?renderer=` at
  * startup or switched off from a display's GPU-error banner after an
@@ -308,6 +326,7 @@ export function resetGpuDeviceForTests() {
   cell.devicePromise = null
   cell.hadDevice = false
   cell.deviceLostListeners.clear()
+  cell.builtRenderer = undefined
 }
 
 export function getGpuDevice() {

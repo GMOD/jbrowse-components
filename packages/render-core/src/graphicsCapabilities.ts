@@ -1,4 +1,8 @@
-import { getGpuOverride, isGpuRenderingDisabled } from './gpuDevice.ts'
+import {
+  getBuiltRenderer,
+  getGpuOverride,
+  isGpuRenderingDisabled,
+} from './gpuDevice.ts'
 
 export interface GraphicsCapabilities {
   webgpu: boolean
@@ -159,22 +163,25 @@ export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
 }
 
 /**
- * Which rung will actually draw — the ladder in `createGpuHal`, read as an
- * answer rather than run. This is the question every consumer asks (the About
- * widget's "Graphics:" line, the stack-trace dialog's environment block, the
- * analytics field), and answering it needs both halves: what the machine can do
- * *and* the page-wide pin from `?renderer=` or the GPU-error banner's "disable
- * GPU" button.
+ * Which rung draws. Once `createGpuHal` has built one on this page, the rung it
+ * returned is the answer — the adapter probe says WebGPU where
+ * `WebGPUHal.create` then throws and the ladder lands on WebGL2. Before any
+ * backend exists it is the ladder read as an answer rather than run, from what
+ * the machine can do *and* the page-wide pin from `?renderer=` or the
+ * GPU-error banner's "disable GPU" button. This is the question every consumer
+ * asks: the About widget's "Graphics:" line, the stack-trace dialog's
+ * environment block, the analytics field.
  *
- * The pin is checked first and wins outright, because **a pin never falls
- * through to the next rung** — `createGpuHal` throws instead, on the reasoning
- * that a pinned renderer which silently substitutes another makes any
- * comparison against it wrong. So the pinned rung *is* the answer, and a pin
- * that cannot be honored surfaces as a `renderError` rather than as a different
- * string here. That is what makes this exact rather than a guess: the one case
- * it cannot resolve from capabilities alone (`?renderer=webgl` on a WebGPU
- * machine, where the WebGL2 probe was skipped) is also the case where the pin
- * decides on its own.
+ * The Canvas2D pin is checked ahead of the record because the banner's
+ * "disable GPU" sets it before the displays rebuild on the new rung. The other
+ * pins win outright in the prediction, because **a pin never falls through to
+ * the next rung** — `createGpuHal` throws instead, on the reasoning that a
+ * pinned renderer which silently substitutes another makes any comparison
+ * against it wrong. So the pinned rung *is* the answer, and a pin that cannot
+ * be honored surfaces as a `renderError` rather than as a different string
+ * here. The one case the prediction cannot resolve from capabilities alone
+ * (`?renderer=webgl` on a WebGPU machine, where the WebGL2 probe was skipped)
+ * is also the case where the pin decides on its own.
  *
  * **`softwareWebgl` skips the WebGL2 rung here because it skips it there**, and
  * only where the ladder skips it — unpinned. Leaving it out is not a rounding
@@ -192,6 +199,10 @@ export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
 export function effectiveRenderer(c: GraphicsCapabilities): RendererName {
   if (isGpuRenderingDisabled()) {
     return 'Canvas2D'
+  }
+  const built = getBuiltRenderer()
+  if (built) {
+    return built
   }
   const override = getGpuOverride()
   if (override === 'webgl') {

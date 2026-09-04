@@ -37,12 +37,11 @@ export default function ErrorMessageStackTraceDialog({
     () => mapStackTrace(stackTrace),
   )
 
-  // The rung actually drawing, not a list of the ones available: it already says
-  // which rungs exist, since Canvas2D means neither and WebGL2 means no WebGPU.
-  // It accounts for a `?renderer=` pin and for the GPU banner's "disable GPU",
-  // which matters most in exactly this dialog — a user reporting a rendering bug
-  // has often already clicked that button, and until this moved to render-core
-  // the report they sent still said WebGL2.
+  // The rung createGpuHal built, not a list of the ones available: it already
+  // says which rungs exist, since Canvas2D means neither and WebGL2 means no
+  // WebGPU. It also honours the GPU banner's "disable GPU", which matters most
+  // in exactly this dialog — a user reporting a rendering bug has often already
+  // clicked it.
   const graphicsInfo = graphicsCapabilities
     ? `Graphics: ${effectiveRenderer(graphicsCapabilities)}`
     : ''

@@ -54,11 +54,10 @@ export async function writeAWSAnalytics(
       track => readConfObject(track, 'assemblyNames').length > 1,
     ).length
 
-    // which rendering backend is actually drawing (WebGPU/WebGL2/Canvas2D) —
-    // capabilities *and* any page-wide pin, so a session that fell back to
-    // Canvas2D is counted as Canvas2D rather than as what the hardware could
-    // have done. Reporting the capability answer here is what made "how many
-    // users end up on Canvas2D" unanswerable.
+    // The rung createGpuHal built where a display has built one by idle time,
+    // else the ladder's prediction with any page-wide pin applied — so a
+    // session that fell back to Canvas2D is counted as Canvas2D rather than as
+    // what the hardware could have done.
     const capabilities = await getGraphicsCapabilities()
     const renderer = effectiveRenderer(capabilities)
     // The coarse bit only. `glRenderer` names the exact driver and stays local
