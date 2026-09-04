@@ -70,8 +70,13 @@ function Harness({ onScroll }: { onScroll: (n: number) => void }) {
   )
 }
 
-function wheel(el: Element, deltaY: number) {
-  const e = new WheelEvent('wheel', { deltaY, cancelable: true, bubbles: true })
+function wheel(el: Element, deltaY: number, deltaX = 0) {
+  const e = new WheelEvent('wheel', {
+    deltaY,
+    deltaX,
+    cancelable: true,
+    bubbles: true,
+  })
   act(() => {
     el.dispatchEvent(e)
   })
@@ -137,6 +142,42 @@ test('at the boundary mid-gesture it latches (preventDefault, page held)', () =>
   // another push at the boundary: no move, but still within the latch window
   const e = wheel(panel, 50)
   expect(e.defaultPrevented).toBe(true)
+})
+
+test('a sideways swipe is left to the view, not consumed as scroll', () => {
+  const onScroll = jest.fn()
+  const { container } = render(<Harness onScroll={onScroll} />)
+  const panel = container.querySelector(
+    '[data-testid="layer"]',
+  )!.firstElementChild!
+
+  // the vertical noise on a horizontal trackpad swipe. Consuming it would
+  // preventDefault, which is how the view knows a panel took the gesture — so
+  // the pan the user asked for would die on a pixel of panel drift.
+  const e = wheel(panel, 2, 40)
+  flushRaf()
+
+  expect(e.defaultPrevented).toBe(false)
+  expect(onScroll).not.toHaveBeenCalled()
+})
+
+test('sideways momentum stays with a panel that has already latched', () => {
+  const onScroll = jest.fn()
+  const { container } = render(<Harness onScroll={onScroll} />)
+  const panel = container.querySelector(
+    '[data-testid="layer"]',
+  )!.firstElementChild!
+
+  wheel(panel, 50)
+  flushRaf()
+  expect(onScroll).toHaveBeenLastCalledWith(50)
+
+  // the tail of that same gesture, where the sideways component briefly wins:
+  // native latching keeps it here rather than cutting the scroll in half
+  const e = wheel(panel, 2, 40)
+  expect(e.defaultPrevented).toBe(true)
+  flushRaf()
+  expect(onScroll).toHaveBeenLastCalledWith(52)
 })
 
 test('once the pointer leaves, a latched wheel releases to the page', () => {

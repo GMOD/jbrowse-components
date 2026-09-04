@@ -100,3 +100,12 @@ test('reset releases a boundary event that would otherwise stay latched', () => 
   expect(latch.scroll(e, 100, 30, 100)).toBe(null)
   expect(e.prevented).toBe(false)
 })
+
+test("holds says whether the gesture is still this panel's", () => {
+  const latch = createScrollLatch(200)
+  expect(latch.holds(wheelEvent(0))).toBe(false)
+  latch.scroll(wheelEvent(0), 0, 60, 100) // consume, so the panel owns it
+  expect(latch.holds(wheelEvent(150))).toBe(true)
+  // past the pause that ends a gesture, whatever comes next is a new one
+  expect(latch.holds(wheelEvent(250))).toBe(false)
+})

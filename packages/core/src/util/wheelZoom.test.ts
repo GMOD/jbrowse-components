@@ -379,6 +379,18 @@ describe('createWheelZoomController', () => {
     expect(view.zoomTo).not.toHaveBeenCalled()
   })
 
+  test('a vertical-dominant wheel does not pan on its deltaX noise', () => {
+    const view = makeView()
+    setup({ views: [view], scrollZoom: false })
+    // what a trackpad emits on a plain vertical swipe: the genome must not
+    // drift sideways, whether or not anything below reported the scroll —
+    // the pinned-tracks block scrolls natively and reports nothing
+    wheel({ deltaX: 3, deltaY: 60 })
+    runFrame(1000)
+
+    expect(view.horizontalScroll).not.toHaveBeenCalled()
+  })
+
   test('pans a wheel a nested panel left alone', () => {
     const view = makeView()
     setup({ views: [view], scrollZoom: false })

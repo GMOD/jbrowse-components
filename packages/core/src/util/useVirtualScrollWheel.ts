@@ -90,7 +90,17 @@ export function useVirtualScrollWheel(
   const runningRef = useRef(0)
   const applyScroll = useCallback<ApplyVirtualScroll>(
     (e, { scrollTop, viewportHeight, scrollableHeight }, commit) => {
-      if (scrollableHeight <= 0) {
+      // Each handler takes the gesture whose dominant axis is its own: a
+      // sideways swipe belongs to the view's pan, and consuming its small
+      // vertical component would both drift the panel and — since consuming
+      // means preventDefault, which is how the view knows to stay out — kill
+      // the pan the user actually asked for. A tie is vertical, matching the
+      // view's own zoom-vs-pan tie-break. Raw deltas, because both axes of one
+      // event share a deltaMode. `holds` is what keeps this from cutting a
+      // gesture in half: once the panel has latched, the sideways momentum
+      // trailing a vertical scroll stays with the panel.
+      const sideways = Math.abs(e.deltaX) > Math.abs(e.deltaY)
+      if (scrollableHeight <= 0 || (sideways && !latch.holds(e))) {
         return
       }
       // A fresh frame (nothing pending) re-syncs to the model's live scrollTop;

@@ -20,7 +20,8 @@ event therefore hits **two** bubble-phase listeners in order:
 
 1. the panel's own canvas listener (pileup, variants matrix, or the canvas basic
    display's overflow container)
-2. the view-level `useWheelScroll.ts` on the LGV container (zoom + horizontal pan)
+2. the view-level `wheelZoom.ts` controller on the LGV container, bound through
+   `usePanZoom.ts` (zoom + horizontal pan)
 
 `preventDefault()` doesn't stop propagation, so both run; the panel handler
 suppresses the browser default and the view handler keys off `scrollZoom` to
@@ -36,9 +37,9 @@ gesture.
 
 | Handler | Concern | Wheel rule |
 | --- | --- | --- |
-| `useWheelScroll.ts` (LGV) | zoom + horizontal genome pan | `defaultPrevented` → bail (a panel below consumed it). `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`. |
-| `usePanelVirtualScroll.ts` (pileup, canvas basic) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched). → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
-| `useRowVirtualScroll.ts` (both variant displays, MAF) | rows vertical scroll + row height | skip if `ctrl || meta`. `shift` → **change row height**. else if `!scrollZoom` → scroll inner (latched). |
+| `wheelZoom.ts` (LGV) | zoom + horizontal genome pan | `defaultPrevented` → bail (a panel below consumed it). `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`, **only when `|dx| > |dy|`**. |
+| `usePanelVirtualScroll.ts` (pileup, canvas basic) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched), **unless `|dx| > |dy|` and the latch is open**. → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
+| `useRowVirtualScroll.ts` (both variant displays, MAF) | rows vertical scroll + row height | skip if `ctrl || meta`. `shift` → **change row height**. else if `!scrollZoom` → scroll inner (latched), under the same `|dx| > |dy|` exception. |
 
 Each of those last two is **one rule across several call sites**, not one rule
 per display, so each is written once in `packages/core/src/util/` and every
@@ -87,6 +88,22 @@ already defaulted, which needs no new channel between the two handlers and no
 timer: `createScrollLatch` keeps preventing for the whole continuous gesture,
 over-scroll at the boundary included, and the pause that releases the latch is
 exactly where the view should have the wheel back.
+
+That alone would have traded the bug for its mirror image, because no panel
+handler looked at which axis a gesture was on: a sideways swipe carrying two
+pixels of vertical noise made the panel scroll two pixels, latch, and
+`preventDefault` — so the pan the user meant died on the drift. **Each handler
+therefore takes only the gesture whose dominant axis is its own**, ties going
+vertical on both sides. The panels ask `latch.holds(e)` first, so a gesture they
+have already latched keeps its sideways momentum instead of being cut in half
+mid-scroll.
+
+The view's half of that rule is not just the panels' mirror: it is what covers
+the vertical scrolling **no handler reports**. The pinned-tracks block is a
+native `overflow: auto` container inside the element the view binds to, so the
+browser scrolls it and nothing is `preventDefault`ed — the axis test is the only
+thing standing between that scroll and a genome drifting sideways under it, and
+it costs no layout read in a handler that is not allowed to take one.
 
 The canvas basic display used to be a third rule of its own (`useScrollSync.ts`:
 a native overflow container, `shift` the only thing that scrolled it). It moved

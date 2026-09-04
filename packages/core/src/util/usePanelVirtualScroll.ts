@@ -14,6 +14,8 @@ interface PanelScrollTarget {
  * the canvas basic display: a plain wheel scrolls it, `shift` keeps scrolling it
  * once `scrollZoom` has claimed the plain wheel for the view, and ctrl/meta is
  * left to the browser and the view's pinch-zoom. Nothing here resizes anything.
+ * A sideways-dominant wheel is the view's pan and is declined
+ * (`useVirtualScrollWheel`, which says what latching does with that).
  *
  * These panels paint a fixed-size canvas at `-scrollTop` rather than living in a
  * DOM overflow container, so nothing scrolls them without this. The latch (inside

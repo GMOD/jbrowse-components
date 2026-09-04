@@ -49,6 +49,14 @@ export function createScrollLatch(timeoutMs = LATCH_TIMEOUT_MS) {
       }
       return null
     },
+    // Whether this panel already owns the gesture `e` belongs to, i.e. it has
+    // scrolled during a run of events this one continues. Callers ask before
+    // declining an event on their own rules: a gesture that has latched keeps
+    // every event it fires, cross-axis momentum included, which is the whole
+    // point of latching.
+    holds(e: WheelEvent) {
+      return latched && e.timeStamp - lastEvent < timeoutMs
+    },
     // Forget the gesture state so the next event is treated as a fresh gesture.
     // Called when the pointer leaves the panel: a gesture the browser has
     // latched to this element must not keep the page suppressed once the cursor

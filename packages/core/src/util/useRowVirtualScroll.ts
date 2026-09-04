@@ -18,7 +18,7 @@ interface RowScrollTarget {
  * Wheel gestures over a **row-stack** panel — the multi-sample variant displays
  * and MAF: `shift`+wheel resizes the rows (a vertical-zoom that keeps the row
  * under the cursor put), a plain wheel scrolls them, and anything the panel
- * can't consume is left to bubble to the view.
+ * can't consume — a sideways swipe included — is left to bubble to the view.
  *
  * These panels paint a fixed-size canvas at `-scrollTop` rather than living in a
  * DOM overflow container, so nothing scrolls them without this.

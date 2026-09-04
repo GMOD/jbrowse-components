@@ -179,7 +179,7 @@ interface WheelState {
  *   - a wheel a nested scroller already consumed  → declined, it owns the gesture
  *   - ctrl/meta+wheel, or (scrollZoom && |dy| >= |dx|)  → zoom about the cursor
  *   - shift+wheel while scrollZoom is on                → declined, we pass
- *   - a horizontal delta, unless one arrives mid-zoom   → pan by dx
+ *   - a sideways delta, unless one arrives mid-zoom     → pan by dx
  *
  * Declining shift is what leaves a nested panel its own scroll
  * (`usePanelVirtualScroll`) — it is not a way back to the page. Browsers turn
@@ -328,7 +328,16 @@ export function createWheelZoomController({
         ) {
           event.preventDefault()
         }
-        s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
+        // Pan on a gesture that is actually sideways. A trackpad puts a small
+        // deltaX on every vertical swipe, and panning on it drifted the genome
+        // under anyone scrolling a track — including where no panel handler
+        // reports the scroll for us to decline, as with the natively-scrolling
+        // pinned-tracks block. Ties go vertical, the same way the zoom test
+        // above resolves them. With scrollZoom on this changes nothing: a
+        // vertical-dominant wheel was already taken as a zoom.
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
+        }
       }
 
       frame.schedule(flush)
