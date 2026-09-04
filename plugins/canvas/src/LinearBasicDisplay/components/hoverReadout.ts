@@ -54,8 +54,13 @@ function tooltipRow(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join(' ')
 }
 
-// The isoform (or the feature's `mouseover` slot) on one row; the exon, HGVS
-// coordinate and hovered residue on a second. Empty rows are dropped.
+// The parent gene's name on one row, the isoform (or the feature's `mouseover`
+// slot) on the next, the exon, HGVS coordinate and hovered residue on a third.
+// Empty rows are dropped.
+//
+// The gene row is the parent's drawn NAME, not its `mouseover` slot: the slot is
+// what the isoform row displaces, and a paragraph of configured HTML above the
+// isoform would bury it.
 //
 // A LIST, never one string joined with `<br/>`: `SanitizedHTML` decides whether
 // a string is markup by looking for a known tag (looksLikeHTML), so a generated
@@ -67,13 +72,19 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
   const title = isoform ?? result.feature.tooltip
+  const { name } = result.feature
+  const gene = isoform && name !== isoform ? name : undefined
   // `(transl_except)` where the letter came from a transl_except override rather
   // than the codon table — the codon rect is highlighted for it, but `U840` on
   // SELENOP is otherwise indistinguishable from a mistranslation.
   const residue = peptide
     ? `${residueLabel(peptide)}${peptide.isTranslExcept ? ' (transl_except)' : ''}`
     : undefined
-  return [tooltipRow(title), tooltipRow(exon, hgvs, residue)].filter(Boolean)
+  return [
+    tooltipRow(gene),
+    tooltipRow(title),
+    tooltipRow(exon, hgvs, residue),
+  ].filter(Boolean)
 }
 
 // The reader's words out of whatever a `mouseover` expression returned. `<br/>`

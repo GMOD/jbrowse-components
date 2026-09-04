@@ -82,6 +82,58 @@ test('hoverTooltipRows prefers the subfeature label over the feature mouseover',
   ).toEqual(['BRCA1-201'])
 })
 
+// A transcript names itself and nothing else — `NM_004006.2` under the cursor
+// says nothing about DMD, whose floating label the fit ladder may have trimmed.
+test('hoverTooltipRows names the parent gene above the isoform', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'x',
+          name: 'BRCA1',
+        },
+        subfeature: { ...sub, displayLabel: 'BRCA1-201' },
+      }),
+    ),
+  ).toEqual(['BRCA1', 'BRCA1-201'])
+})
+
+// A single-transcript annotation regularly labels the child with the gene's own
+// name, and `BRCA1` over `BRCA1` is a row that says nothing.
+test('hoverTooltipRows drops the gene row when the isoform repeats the name', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'x',
+          name: 'BRCA1',
+        },
+        subfeature: { ...sub, displayLabel: 'BRCA1' },
+      }),
+    ),
+  ).toEqual(['BRCA1'])
+})
+
+// Hovering the gene body itself, the mouseover slot already names it; the drawn
+// name has nothing to add above it.
+test('hoverTooltipRows adds no gene row without an isoform under the cursor', () => {
+  expect(
+    hoverTooltipRows(
+      makeHit({
+        feature: {
+          ...makeItem('gene1', 0, 100, 0, 20),
+          tooltip: 'gene mouseover',
+          name: 'BRCA1',
+        },
+      }),
+    ),
+  ).toEqual(['gene mouseover'])
+})
+
 test('hoverTooltipRows puts the residue on its own line under the isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
