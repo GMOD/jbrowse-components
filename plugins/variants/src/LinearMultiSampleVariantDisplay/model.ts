@@ -324,9 +324,6 @@ export function stateModelFactory(
         }
       })
       .views(self => ({
-        get prefersOffset() {
-          return true
-        },
         /**
          * #getter
          * The one walk of `perRegionCellData`, and the point where a fetched
@@ -388,9 +385,9 @@ export function stateModelFactory(
          * SVG export paints with the *export* theme's palette instead, and
          * passes it to `legendSections` so the swatch follows it too.
          *
-         * The condition is `markersForBlock` — the painter's own test, on the
-         * painter's own blocks — because both cheaper approximations are wrong
-         * on real figures. "The window holds an insertion" puts a swatch on a
+         * The condition is `markersForBlock` — the painter's own test — because
+         * both cheaper approximations are wrong on real figures. "The window
+         * holds an insertion" puts a swatch on a
          * callset of short indels, which can never draw a marker at any zoom.
          * "The window holds a *long* insertion" puts one on any view zoomed out
          * far enough that even a long bar falls under the 2px cell floor; that
@@ -399,9 +396,15 @@ export function stateModelFactory(
          *
          * So the entry does come and go with zoom, unlike `hasSecondaryAlt` /
          * `hasNoCall`. That is the honest behavior for a glyph whose visibility
-         * is itself a function of zoom, and it is why this reads the view: the
-         * components that call `legendSections` are the same ones that already
-         * read `renderState`.
+         * is itself a function of zoom.
+         *
+         * `laneFlatbushIndexes`' dependency rule, for its reason: the DEBOUNCED
+         * `coarseBpPerPx` and the pan-stable `displayedRegions`, never
+         * `renderBlocks` — per-frame fresh, so keyed on those this re-walked
+         * every loaded record per pan frame and, being the legend's only moving
+         * input, re-rendered `FloatingLegend` with it. Asking over the whole
+         * displayed region is the same question: `markersForBlock` culls
+         * nothing, so only `pxPerBp` and the snap phase come off the block.
          */
         get insertionLegendColor(): string | undefined {
           if (!self.showInsertionGlyphs) {
@@ -412,14 +415,24 @@ export function stateModelFactory(
           // every feature again per wheel-scroll frame.
           const drawnRowHeight = drawnCellHeightPx(self.effectiveRowHeight)
           const canvasWidth = self.canvasWidthPx
-          for (const block of self.renderBlocks) {
-            const region = self.perRegionCellMap.get(block.displayedRegionIndex)
-            if (
-              region?.numCells &&
-              markersForBlock(region, block, drawnRowHeight, canvasWidth)
-                .anyMarker
-            ) {
-              return getPaletteHost(self).palette.insertion
+          const bpPerPx = self.view.coarseBpPerPx
+          const { displayedRegions } = self.view
+          for (const [displayedRegionIndex, region] of self.perRegionCellMap) {
+            const displayed = displayedRegions[displayedRegionIndex]
+            if (region.numCells && displayed) {
+              const { start, end } = displayed
+              const block = {
+                start,
+                end,
+                screenStartPx: 0,
+                screenEndPx: (end - start) / bpPerPx,
+              }
+              if (
+                markersForBlock(region, block, drawnRowHeight, canvasWidth)
+                  .anyMarker
+              ) {
+                return getPaletteHost(self).palette.insertion
+              }
             }
           }
           return undefined

@@ -66,7 +66,11 @@ function getHoveredMatrixCell(
       feature.genotypeCodes,
       sampleName,
     )
-    if (genotype) {
+    // Against `undefined`, never truthy, as the sibling display's hit test is:
+    // only `undefined` means the codes have nothing filed against this row. An
+    // empty genotype string is a row that HAS one, and skipping it reports a
+    // NEIGHBOURING sample against the cell under the cursor.
+    if (genotype !== undefined) {
       return {
         fields: buildVariantHit({
           info: feature,

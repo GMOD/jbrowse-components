@@ -1,3 +1,7 @@
+import { getSession } from '@jbrowse/core/util'
+
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 // Genomic x of a locus in the connector overlays' frame: bpToPx gives the
 // absolute genome pixel, subtract the raw view.offsetPx for viewport-relative
 // (0 = the view's left edge). The LD and matrix connector lines, ticks, and
@@ -30,4 +34,25 @@ export function genomicViewportX(
     coord,
   })
   return pos === undefined ? undefined : pos.offsetPx - view.offsetPx
+}
+
+interface ConnectorHost extends IStateTreeNode {
+  view: ViewLike & { assemblyNames: string[] }
+}
+
+/**
+ * The above with the view's assembly resolved once, for the callers that map a
+ * whole column list per frame. One `assemblyManager.get` per pass rather than
+ * one per locus: a miss there reaches the unrecognized-assembly extension
+ * point, which is not a per-item cost. Every locus answers undefined while the
+ * assembly is unresolved, which is the same "no line to draw" a per-locus miss
+ * gives.
+ */
+export function locusViewportXFor(self: ConnectorHost) {
+  const { view } = self
+  const assembly = getSession(self).assemblyManager.get(view.assemblyNames[0]!)
+  return (refName: string, coord: number) =>
+    assembly === undefined
+      ? undefined
+      : genomicViewportX(view, assembly, refName, coord)
 }

@@ -1,11 +1,10 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
-import { genomicViewportX } from '../shared/genomicViewportX.ts'
+import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
@@ -46,9 +45,6 @@ export default function stateModelFactory(
           : snap,
       )
       .views(self => ({
-        get prefersOffset() {
-          return true
-        },
         /**
          * #getter
          * The matrix payload with its rows placed at the screen rows the display
@@ -150,19 +146,12 @@ export default function stateModelFactory(
          * here has to invert a mirror.
          */
         get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
-          const view = self.view
-          const { assemblyManager } = getSession(self)
-          const assembly = assemblyManager.get(view.assemblyNames[0]!)
+          const locusX = locusViewportXFor(self)
           const features = self.featuresVolatile
           const { columnWidth, left } = self.columnGeometry
-          return assembly && features
+          return features
             ? features.map((feature, i) => {
-                const gx = genomicViewportX(
-                  view,
-                  assembly,
-                  feature.get('refName'),
-                  feature.get('start'),
-                )
+                const gx = locusX(feature.get('refName'), feature.get('start'))
                 return gx === undefined
                   ? undefined
                   : {

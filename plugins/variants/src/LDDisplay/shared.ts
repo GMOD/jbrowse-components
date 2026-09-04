@@ -4,7 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import {
   activeJexlFilters,
@@ -29,7 +29,7 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
-import { genomicViewportX } from '../shared/genomicViewportX.ts'
+import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
@@ -551,24 +551,15 @@ export default function sharedModelFactory(
       // already in screen order (`RenderLDDataRPC/reversedRegions.ts`), so the
       // index axis and the genomic x agree.
       get connectorLineCoords(): ConnectorCoord[] {
-        const view = self.view
-        const { assemblyManager } = getSession(self)
-        const assembly = assemblyManager.get(view.assemblyNames[0]!)
-        return assembly
-          ? self.snps
-              .map((snp, i) => {
-                const gx = genomicViewportX(
-                  view,
-                  assembly,
-                  snp.refName,
-                  snp.start,
-                )
-                return gx === undefined
-                  ? undefined
-                  : { mx: this.columnX(i + 0.5), gx, label: snp.id }
-              })
-              .filter(coord => coord !== undefined)
-          : []
+        const locusX = locusViewportXFor(self)
+        return self.snps
+          .map((snp, i) => {
+            const gx = locusX(snp.refName, snp.start)
+            return gx === undefined
+              ? undefined
+              : { mx: this.columnX(i + 0.5), gx, label: snp.id }
+          })
+          .filter(coord => coord !== undefined)
       },
       /**
        * #method
@@ -590,7 +581,7 @@ export default function sharedModelFactory(
       },
       /**
        * #method
-       * Viewport x of one locus, through the same `genomicViewportX` the
+       * Viewport x of one locus, through the same `locusViewportXFor` the
        * connector lines use. The crosshair ticks and the view's vertical
        * guides go through this rather than measuring off
        * `contentBlocks[0]`: that block's own left edge is only x=0 while the
@@ -600,13 +591,7 @@ export default function sharedModelFactory(
        * to 0.
        */
       locusViewportX(refName: string, coord: number): number | undefined {
-        const view = self.view
-        const assembly = getSession(self).assemblyManager.get(
-          view.assemblyNames[0]!,
-        )
-        return assembly
-          ? genomicViewportX(view, assembly, refName, coord)
-          : undefined
+        return locusViewportXFor(self)(refName, coord)
       },
       /**
        * #getter

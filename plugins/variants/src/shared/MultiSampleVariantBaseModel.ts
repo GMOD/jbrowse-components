@@ -1667,6 +1667,15 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         * Both displays fill the track with rows, so an overlapping track label
+         * would sit on top of a sample's genotypes.
+         */
+        get prefersOffset() {
+          return true
+        },
+
+        /**
+         * #getter
          * Matrix mode draws columns by feature index across the full width, so
          * the set of features belongs to the visible region at the *current*
          * zoom — zooming in/out changes which features show even when the

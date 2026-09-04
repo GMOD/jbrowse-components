@@ -2,7 +2,7 @@ import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 
 import { variantCellSpanPx } from './variantCellSpan.ts'
 
-import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 /**
  * The two per-feature arrays every pass over records needs: where each record
@@ -30,28 +30,26 @@ export interface FeatureSpan {
 /**
  * Walk every record in one block, handing each its drawn pixel extent.
  *
- * Three passes over this display's payload are "do something per record at its
- * drawn span": the insertion-marker geometry (`markersForBlock`), the variant
- * lane, and — through them — the legend's "does this window draw a marker"
- * question. They must agree to the pixel: a marker sized against a different
- * span than the mark it widens, or a lane mark one pixel off the column beneath
- * it, is not a crash, it is a screenshot that reads as a rendering bug.
+ * The drawn extent and the marker geometry sized against it must agree to the
+ * pixel: a marker sized against a different span than the cell it widens is not
+ * a crash, it is a screenshot that reads as a rendering bug. So the span comes
+ * from `variantCellSpanPx` here, once.
  *
  * A callback rather than materialized arrays, because this runs per block per
- * frame: `markersForBlock` wants its results in typed arrays and the lane wants
- * to paint immediately, and forcing the lane through an allocation it does not
- * need would be paying for the sharing. Both get the same numbers either way,
- * which is the whole point.
+ * frame and `markersForBlock` wants its results in typed arrays.
  *
- * `drawnHeight` is the band the record is drawn in — a genotype row for the
- * cells, the lane's height for the lane — because that is what
+ * The block only has to name a bp span and the pixels it maps to
+ * (`BpRegionBounds`): nothing here culls, so no `displayedRegionIndex` is
+ * needed, which lets the legend ask this question over a whole displayed region
+ * rather than over the per-frame render blocks.
+ *
+ * `drawnHeight` is the band the record is drawn in, because that is what
  * `insertionBarWidth` sizes a marker against.
  *
  * `insertionsWiden` is the display's `showInsertionGlyphs`, passed rather than
  * assumed: see `variantCellSpanPx`. `markersForBlock` passes `true` because a
  * marker *is* the widening, and its two callers are already gated on the
- * setting; the lane passes the setting, because with it off the record below is
- * a 2px cell and a wide mark above it would name a column that is not there.
+ * setting.
  *
  * `canvasWidth` is the snap grid's origin — the shader snaps a cell edge about
  * the canvas centre, so a span computed without it is not the span that was
@@ -63,7 +61,7 @@ export interface FeatureSpan {
  */
 export function forEachFeatureSpan(
   region: FeatureSpanData,
-  block: VariantRenderBlock,
+  block: BpRegionBounds,
   {
     drawnHeight,
     insertionsWiden,
@@ -76,8 +74,8 @@ export function forEachFeatureSpan(
   const numFeatures = region.featureInsertedBp.length
   // One object, rewritten per record rather than allocated per record: this is
   // a per-frame loop over thousands of features and the callback never retains
-  // it (both callers read the fields immediately). Stated because it is the
-  // kind of reuse that is a bug if anyone ever stashes the span.
+  // it. Stated because it is the kind of reuse that is a bug if anyone ever
+  // stashes the span.
   const span: FeatureSpan = { left: 0, width: 0, drawsMarker: false, center: 0 }
   for (let f = 0; f < numFeatures; f++) {
     const x1 = toX(region.featurePositions[f * 2]!)

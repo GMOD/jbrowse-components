@@ -14,6 +14,7 @@ import type {
   VariantRenderState,
 } from './variantRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const FONT = '10px sans-serif'
 
@@ -60,7 +61,7 @@ export interface VariantInsertionGlyphData {
  */
 export function markersForBlock(
   region: VariantInsertionGlyphData,
-  block: VariantRenderBlock,
+  block: BpRegionBounds,
   drawnRowHeight: number,
   canvasWidth: number,
 ) {
