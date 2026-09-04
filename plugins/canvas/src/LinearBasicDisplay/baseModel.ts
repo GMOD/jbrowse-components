@@ -1467,8 +1467,10 @@ export default function baseStateModelFactory(
               self.densityStatsPerRegion.delete(key)
             }
           }
-          // Keep loadedRegions in sync with rpcDataMap so isCacheValid never
-          // sees boundsValid=true with missing rpcData (blank-region on pan-back).
+          // The coverage claim goes with the payload: the scrim reads
+          // `viewportWithinLoadedData` and never `regionHasData`, so a claim
+          // left here draws a pruned region as `ready` and blank through the
+          // debounce before the refetch `isCacheValid` owes goes out.
           for (const key of self.loadedRegions.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
               self.dropLoadedRegion(key)
