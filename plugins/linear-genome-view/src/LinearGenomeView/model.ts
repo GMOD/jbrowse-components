@@ -3256,7 +3256,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return withLaunchInput(model, lgvLaunchKeys, pluginManager)
+  return withLaunchInput(model, lgvLaunchKeys, {
+    registry: pluginManager,
+    materialized: snap => !!snap.displayedRegions?.length,
+  })
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap
@@ -3307,15 +3310,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // launch is transient, never persisted. showCenterLine is
-      // purely a localStorage-backed preference (see setupLocalStorageAutorun
-      // in afterAttach.ts) and is never persisted into session snapshots. The
-      // remaining fields are also localStorage-backed, but still persist when
-      // non-default: their strip baseline is the universal default (hardcoded
-      // here), not the localStorage-derived creation default, so a
-      // localStorage-set value stays portable across browsers.
+      // showCenterLine is purely a localStorage-backed preference (see
+      // setupLocalStorageAutorun in afterAttach.ts) and is never persisted
+      // into session snapshots. The remaining fields are also
+      // localStorage-backed, but still persist when non-default: their strip
+      // baseline is the universal default (hardcoded here), not the
+      // localStorage-derived creation default, so a localStorage-set value
+      // stays portable across browsers.
       const {
-        launch,
         showCenterLine,
         showCytobands,
         trackLabels,
@@ -3327,14 +3329,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return {
         ...rest,
-        // keep the launch state until displayedRegions exist, so a snapshot
-        // taken before the launch autorun navigates (e.g. autosave firing
-        // mid-load) can still rebuild the view instead of dropping to the
-        // import form. displayedRegions is stripDefault, so it's absent (not
-        // []) when empty — the optional chain is runtime-necessary despite the
-        // non-nullish type.
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(launch && !snap.displayedRegions?.length ? { launch } : {}),
         ...(!showCytobands ? { showCytobands } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),

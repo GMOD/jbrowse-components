@@ -46,7 +46,9 @@ function viewModel(name: string) {
   })
 }
 
-const TestView = withLaunchInput(viewModel('TestView'), keys)
+const materialized = (snap: { views?: unknown[] }) => !!snap.views?.length
+
+const TestView = withLaunchInput(viewModel('TestView'), keys, { materialized })
 
 // afterAttach is the report site, so a view has to be attached to something
 function attach(view: IAnyModelType, snap: unknown) {
@@ -277,13 +279,30 @@ describe('what the launch blob persists', () => {
     expect(getSnapshot(view).launch).toBeUndefined()
   })
 
-  // unlike the flag, these name content that was DISCARDED — still true of the
-  // saved snapshot, and the blob is the only record of it
-  test('a discarded key or row list is still saved', () => {
+  // unlike the flag, these ride with the pending launch: a reload mid-load
+  // rebuilds from the blob and reports what it discarded, once more
+  test('a discarded key or row list is saved while the view has yet to materialize', () => {
     const view = open({ type: 'TestView', asembly: 'hg38' })
     expect(getSnapshot(view).launch).toEqual({
       unknown: { asembly: 'hg38' },
     })
+  })
+
+  // and once the view has materialized there is nothing left to rebuild, so a
+  // saved session carries neither the launch nor a typo report about content
+  // it no longer holds
+  test('the whole blob leaves the snapshot once the view has materialized', () => {
+    const view = open({
+      type: 'TestView',
+      assembly: 'hg38',
+      asembly: 'hg38',
+      views: [{ type: 'Row' }],
+    })
+    expect(view.launch).toEqual({
+      assembly: 'hg38',
+      unknown: { asembly: 'hg38' },
+    })
+    expect(getSnapshot(view).launch).toBeUndefined()
   })
 })
 
@@ -299,6 +318,7 @@ test('a union probing one view type against another says nothing', () => {
       types.model({ otherOnly: types.optional(types.string, '') }),
     ),
     keys,
+    { materialized },
   )
   const parent = types
     .model({ view: types.union(TestView, Other) })
@@ -312,10 +332,9 @@ test('a union probing one view type against another says nothing', () => {
 // see what MST finally consumes. Placed the other way round, this captures
 // `legacyThing` — a key the remap converts — and reports it as a typo.
 test('a legacy key its own remap converts is not captured', () => {
-  const withRemap = withLaunchInput(
-    viewModel('TestView'),
-    keys,
-  ).preProcessSnapshot((snap: Record<string, unknown>) => {
+  const withRemap = withLaunchInput(viewModel('TestView'), keys, {
+    materialized,
+  }).preProcessSnapshot((snap: Record<string, unknown>) => {
     const { legacyThing, ...rest } = snap
     return { ...rest, showThing: legacyThing }
   })
@@ -329,9 +348,9 @@ test('a legacy key its own remap converts is not captured', () => {
 // what lets a view keep its own legacy remap after the call. The annotation is
 // the assertion: without the widening `assembly`/`tracks` are excess properties.
 test('the widened snapshot type survives a later processor', () => {
-  const later = withLaunchInput(viewModel('TestView'), keys).preProcessSnapshot(
-    (snap: Record<string, unknown>) => snap,
-  )
+  const later = withLaunchInput(viewModel('TestView'), keys, {
+    materialized,
+  }).preProcessSnapshot((snap: Record<string, unknown>) => snap)
   const snap: SnapshotIn<typeof later> = {
     type: 'TestView',
     assembly: 'hg38',

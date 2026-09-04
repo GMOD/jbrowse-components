@@ -994,20 +994,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .postProcessSnapshot(snap => {
-      // launch is transient: redundant once views materialize, so strip it
-      // then. But while views is still empty (a snapshot taken before the init
-      // autorun runs setViews) it is the only thing that can rebuild the view
-      // -> keep it so a reload/restore resumes instead of dropping to the
-      // import form.
-      if (snap.views.length) {
-        const { launch, ...rest } = snap
-        return rest
-      }
-      return snap
-    })
 
-  return withLaunchInput(model, breakpointSplitLaunchKeys, pluginManager)
+  return withLaunchInput(model, breakpointSplitLaunchKeys, {
+    registry: pluginManager,
+    materialized: snap => !!snap.views?.length,
+  })
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

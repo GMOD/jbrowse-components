@@ -366,7 +366,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         })),
     )
     .postProcessSnapshot(snap => {
-      const { launch, spreadsheet, ...rest } = snap
+      const { spreadsheet, ...rest } = snap
       if (!spreadsheet) {
         return rest
       }
@@ -383,7 +383,10 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
       }
     })
 
-  return withLaunchInput(model, spreadsheetLaunchKeys, pluginManager)
+  return withLaunchInput(model, spreadsheetLaunchKeys, {
+    registry: pluginManager,
+    materialized: () => true,
+  })
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>

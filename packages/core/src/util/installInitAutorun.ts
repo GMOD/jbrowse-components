@@ -34,9 +34,10 @@ interface InitAutorunOptions<T> {
    */
   ready: () => boolean
   /**
-   * Whether the view has materialized — the same line each view's
-   * postProcessSnapshot draws for persistence (dotplot: assemblyNames set;
-   * synteny: rows built). Decides the failure policy, see below.
+   * Whether the view has materialized — the line `withLaunchInput`'s
+   * `materialized` draws for persistence, read from the live node (dotplot:
+   * assemblyNames set; synteny: rows built). Decides the failure policy, see
+   * below.
    */
   materialized: () => boolean
   /** Apply one init blob. Owns the ordered steps; never clears `init`. */
@@ -112,8 +113,8 @@ async function drainInit<T>(
  * the readiness gate, the serialized drain, the identity-checked clear, the
  * isAlive guards, and one failure policy.
  *
- * The failure policy keys off `materialized`, the same line each view's
- * postProcessSnapshot already draws for persistence:
+ * The failure policy keys off `materialized`, the same line `withLaunchInput`
+ * draws for persistence:
  *
  * - Not materialized — nothing is on screen and `launch` is still persisted, so
  *   keep it for a reload retry and `setError`. That flips the view onto its

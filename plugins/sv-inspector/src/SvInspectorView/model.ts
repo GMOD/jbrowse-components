@@ -520,7 +520,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       // which the circular view means to keep across a reload, and dropping the
       // whole node used to reset the circle on every session load.
       // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { launch, circularView, ...rest } = snap
+      const { circularView, ...rest } = snap
       const { tracks, ...circular } = circularView
       const generatedId = `sv-inspector-variant-track-${snap.id}`
       const kept = tracks.filter(
@@ -533,7 +533,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       }
     })
 
-  return withLaunchInput(model, svInspectorLaunchKeys, pluginManager)
+  return withLaunchInput(model, svInspectorLaunchKeys, {
+    registry: pluginManager,
+    materialized: () => true,
+  })
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>

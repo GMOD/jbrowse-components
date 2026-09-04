@@ -105,7 +105,10 @@ test('a row spec leaves its launch keys with the parent and its typos with the r
   const session = setup()
   const view = (await session.launchView('LinearSyntenyView', {
     views: [
-      { assembly: 'volvox', loc: 'ctgA:1000-2000', showAminoAcidz: false },
+      // the typo the spec type refuses is the point, so it goes in past it
+      { assembly: 'volvox', loc: 'ctgA:1000-2000', showAminoAcidz: false } as {
+        assembly: string
+      },
       { assembly: 'volvox2' },
     ],
   })) as LinearSyntenyViewModel

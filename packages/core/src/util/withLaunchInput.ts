@@ -14,6 +14,7 @@ import type {
   IModelType,
   IStateTreeNode,
   SnapshotIn,
+  SnapshotOut,
 } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -28,6 +29,21 @@ export interface ViewTypeLookup {
     isStateModelLoaded: boolean
     stateModel: IAnyModelType
   }
+}
+
+export interface LaunchInputOptions<M extends IAnyModelType> {
+  /** the PluginManager; without it the partition sees only the wrapped model */
+  registry?: ViewTypeLookup
+  /**
+   * Whether a snapshot shows the launch applied — rows built, regions set. The
+   * blob persists only until then: a snapshot taken mid-load (an autosave
+   * firing before the launch autorun navigates) has to rebuild the view rather
+   * than drop it to the import form, and a materialized view has nothing left
+   * to rebuild. `installInitAutorun` keys its failure policy off the same line,
+   * read from the live node. `Partial` because a `stripDefault` property is
+   * absent from the snapshot when empty, whatever its declared type says.
+   */
+  materialized: (snap: Partial<SnapshotOut<M>>) => boolean
 }
 
 /**
@@ -349,7 +365,8 @@ function legacyInitSnapshot(
  *
  * `registry` is the PluginManager. With it the partition classifies against
  * the view type as registered, `extendViewType`'s added properties included;
- * without it, against the model as wrapped here.
+ * without it, against the model as wrapped here. `materialized` draws the line
+ * past which the blob is no longer persisted; see `LaunchInputOptions`.
  *
  * ORDER: MST runs preprocessors in the reverse of the order they were added, so
  * this belongs on the chain BEFORE a view's own legacy-key preprocessor, where
@@ -374,7 +391,7 @@ export function withLaunchInput<
 >(
   model: M,
   registration: LaunchKeyRegistration<Commands, PassThrough>,
-  registry?: ViewTypeLookup,
+  { registry, materialized }: LaunchInputOptions<M>,
 ): LaunchInputModel<M, Commands, PassThrough> {
   const knownProps = knownPropsResolver(model, registry)
   const partitioned = model
@@ -434,20 +451,22 @@ export function withLaunchInput<
         reportMalformedRows(self, Object.keys(launch?.malformed ?? {}))
       },
     }))
-    // `legacyInit` names the SPELLING of the snapshot this view was opened from,
-    // and a saved one does not use it — so persisting the flag makes every later
-    // restore report nesting the snapshot it is reading does not contain,
-    // forever, since nothing clears it (`pendingLaunch` excludes the report
-    // keys, so the launch autorun never runs). `unknown` and `malformed` stay:
-    // those name content that was DISCARDED, which is still true of the saved
-    // snapshot, and the blob is the only record of it.
+    // Whole while the view has yet to materialize, since the pending launch is
+    // then the only thing a reload can rebuild the view from, and gone once it
+    // has — the report keys with it, so a saved session never carries a
+    // typo report about content it no longer holds. `legacyInit` goes either
+    // way: it names the SPELLING of the snapshot this view was opened from,
+    // and the saved one does not use it, so persisting it would report nesting
+    // on every restore forever (`pendingLaunch` excludes the report keys, so
+    // no launch run ever clears it).
     .postProcessSnapshot((snap: Record<string, unknown>) => {
       const launch = snap[LAUNCH]
-      if (!isObject(launch) || !launch.legacyInit) {
+      if (!isObject(launch)) {
         return snap
       }
       const { legacyInit, ...kept } = launch
-      return Object.keys(kept).length
+      return Object.keys(kept).length &&
+        !materialized(snap as Partial<SnapshotOut<M>>)
         ? { ...snap, [LAUNCH]: kept }
         : Object.fromEntries(
             Object.entries(snap).filter(([key]) => key !== LAUNCH),

@@ -35,8 +35,10 @@ displayed regions, `tracks` is trackIds that have to become open tracks,
 property behind it, so none can be restored — hence a blob applied once and
 cleared. A declared property is the other case and needs no per-setting code at
 all: the partition leaves it on the snapshot for MST to restore against the
-model's own property list, so **declaring a property is declaring it
-authorable**, mixins included. The hand-written
+registered view type's property list — read at snapshot time from the
+`PluginManager` the view passes as `registry`, so a property `extendViewType`
+composes on later counts — and **declaring a property is declaring it
+authorable**, mixins and extensions included. The hand-written
 `if (init.x !== undefined) self.setX(init.x)` arm per property is what that
 replaced — while it existed, `drawLocationMarkers` shipped unauthorable and four
 DotplotView properties never had an arm.
@@ -278,8 +280,8 @@ which owns:
 - the serialized drain, so an input set mid-apply is applied rather than
   stranded, and the identity-checked clear (`self.pendingLaunch === launch`), so
   that pending input isn't silently dropped by a blind `setLaunch(undefined)`.
-- one failure policy, keyed off `materialized` — the same line each view's
-  `postProcessSnapshot` draws for persistence:
+- one failure policy, keyed off `materialized` — the same line each view hands
+  `withLaunchInput` for persistence, read from the live node:
 
 | | launch state | report |
 | --- | --- | --- |
@@ -387,9 +389,11 @@ launch → `hasSomethingToShow` is true immediately → spinner until the assemb
 loads.
 
 The blob is transient: applied once on attach, then cleared, so a saved session
-never carries it. `postProcessSnapshot` keeps it only while `displayedRegions`
-is still empty, so an autosave firing before the autorun has navigated does not
-save a view that reloads onto its import form.
+never carries it. `withLaunchInput`'s `postProcessSnapshot` keeps it — the
+`unknown`/`malformed` report keys included — only while the view's
+`materialized` predicate says no (LGV: `displayedRegions` still empty), so an
+autosave firing before the autorun has navigated does not save a view that
+reloads onto its import form.
 
 ## A nested view's `bodyMounted` reads true while it is out of the DOM
 

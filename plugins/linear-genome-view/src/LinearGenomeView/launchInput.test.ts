@@ -126,8 +126,7 @@ test('a plain view prop stays on the snapshot', () => {
 // the model's own remap (`withLaunchInput` is added first, and MST runs
 // preprocessors in reverse — the rule itself is pinned in
 // packages/core/src/util/withLaunchInput.test.ts), and `passThrough` names the
-// pair besides, which is also what the v4 partition a synteny row still goes
-// through reads.
+// pair besides.
 test('a legacy viewport snapshot converts rather than reporting typos', () => {
   const view = open({ type: 'LinearGenomeView', bpPerPx: 10, offsetPx: 1000 })
   expect(warnings()).toEqual([])

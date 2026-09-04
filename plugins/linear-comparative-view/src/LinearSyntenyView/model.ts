@@ -865,7 +865,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return withLaunchInput(model, linearSyntenyLaunchKeys, pluginManager)
+  return withLaunchInput(model, linearSyntenyLaunchKeys, {
+    registry: pluginManager,
+    materialized: snap => !!snap.views?.length,
+  })
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {

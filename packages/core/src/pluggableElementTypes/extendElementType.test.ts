@@ -9,6 +9,7 @@ import { extendViewType } from './extendElementType.ts'
 
 import type { AnyReactComponentType } from '../util/index.ts'
 import type { LaunchInput } from '../util/withLaunchInput.ts'
+import type { IStateTreeNode, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // The point fires for every pluggable element there is, so the thing worth
 // asserting is that a contribution reaches its own element and nothing else.
@@ -121,7 +122,7 @@ test('a property added by extendViewType survives a snapshot round trip', () => 
       launch: types.frozen<LaunchInput<unknown> | undefined>(),
     }),
     launchKeys,
-    pm,
+    { registry: pm, materialized: () => true },
   )
   extendViewType(pm, 'TestViewA', stateModel =>
     types.compose(stateModel, types.model({ myProp: false })),
@@ -137,10 +138,17 @@ test('a property added by extendViewType survives a snapshot round trip', () => 
   )
   pm.createPluggableElements()
 
+  // the registered type is what the session's union holds, so it is the one
+  // to instantiate; a holder stands in for the session to reach afterAttach
   const Holder = types.model({ view: pm.getViewType('TestViewA').stateModel })
-  const { view } = Holder.create({
-    view: { type: 'TestViewA', myProp: true },
-  }) as unknown as { view: { myProp: boolean; launch?: LaunchInput<unknown> } }
+  const snap: unknown = { view: { type: 'TestViewA', myProp: true } }
+  // the registry augmentation above names the base model, so the added
+  // property is invisible to it — which is the situation under test
+  const view = Holder.create(snap as SnapshotIn<typeof Holder>)
+    .view as unknown as IStateTreeNode & {
+    myProp: boolean
+    launch?: LaunchInput<unknown>
+  }
   expect(view.myProp).toBe(true)
   expect(view.launch).toBeUndefined()
   expect(getSnapshot(view)).toMatchObject({ myProp: true })
