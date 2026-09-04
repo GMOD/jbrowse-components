@@ -3,7 +3,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { ClusterRunArgs } from './types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The dialog's half of `ClusterRunArgs`: the RPC host, the session id and the
@@ -12,7 +12,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * button the way it reports an RPC failure.
  */
 export function resolveClusterRunArgs(
-  model: IAnyStateTreeNode,
+  model: IStateTreeNode,
   handles: Pick<ClusterRunArgs, 'stopToken' | 'statusCallback'>,
 ): ClusterRunArgs {
   const view = containingLgv(model)
