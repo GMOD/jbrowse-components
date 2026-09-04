@@ -138,3 +138,66 @@ test('a feature swap washes the panel, and a re-format of the same feature does 
   expect(await findByText('ctgA:201..300')).toBeTruthy()
   expect(queryByTestId('feature-details-wash')).toBeTruthy()
 })
+
+// A transcript clicked inside a gene opens the panel on the transcript alone,
+// and its card is headed `NM_004006.2 - mRNA` -- nothing there says DMD. The
+// display resolves the containing feature at click time (see
+// parentFeatureSummary) and the panel names it above the card.
+test('the panel names the feature it was reached through', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        featureData: {
+          uniqueId: 'mRNA1',
+          refName: 'ctgA',
+          start: 2,
+          end: 102,
+          name: 'NM_004006.2',
+          type: 'mRNA',
+        },
+        parentFeature: { name: 'DMD', type: 'gene' },
+      },
+    },
+    { pluginManager },
+  )
+  const { findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(await findByText('in gene DMD')).toBeTruthy()
+})
+
+// Every other feature in the tree is clicked as itself, and a line above the
+// card is only noise there.
+test('the panel says nothing about a parent it was not given', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        featureData: { uniqueId: 'gene1', refName: 'ctgA', start: 2, end: 102 },
+      },
+    },
+    { pluginManager },
+  )
+  const { queryByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(await findByText('ctgA:3..102')).toBeTruthy()
+  expect(queryByTestId('parent-feature-line')).toBeNull()
+})

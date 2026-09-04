@@ -10,7 +10,11 @@ import { nullReplacer } from './util.tsx'
 import type PluginManager from '../PluginManager.ts'
 import type { SimpleFeatureSerialized } from '../util/index.ts'
 import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
-import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
+import type {
+  Descriptors,
+  MaybeSerializedFeat,
+  ParentFeatureSummary,
+} from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -88,6 +92,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       descriptions: types.optional(
         types.frozen<Descriptors | undefined>(),
+        undefined,
+      ),
+
+      /**
+       * #property
+       * names the feature this one was reached through, when it was reached
+       * through one -- a transcript clicked inside its gene
+       */
+      parentFeature: types.optional(
+        types.frozen<ParentFeatureSummary | undefined>(),
         undefined,
       ),
     })

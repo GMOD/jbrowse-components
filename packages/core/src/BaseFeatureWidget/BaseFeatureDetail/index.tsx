@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { ErrorBanner } from '../../ui/index.ts'
 import FeatureDetails from './FeatureDetails.tsx'
 import FeatureWash from './FeatureWash.tsx'
+import ParentFeatureLine from './ParentFeatureLine.tsx'
 import { isEmpty } from './util.ts'
 
 import type { Descriptors } from '../types.tsx'
@@ -11,7 +12,7 @@ import type { BaseInputProps } from './types.ts'
 const BaseFeatureDetail = observer(function BaseFeatureDetail({
   model,
 }: BaseInputProps) {
-  const { error, featureData } = model
+  const { error, featureData, parentFeature } = model
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions
 
@@ -26,6 +27,9 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
   } else {
     return (
       <FeatureWash uniqueId={featureData.uniqueId}>
+        {parentFeature ? (
+          <ParentFeatureLine parentFeature={parentFeature} />
+        ) : null}
         <FeatureDetails
           model={model}
           feature={featureData}

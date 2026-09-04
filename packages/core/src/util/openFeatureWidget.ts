@@ -25,6 +25,15 @@ const DEFAULT_FEATURE_WIDGET: FeatureWidgetTypeRef = {
   id: 'baseFeature',
 }
 
+// The containing feature named the way the panel's own title names a feature
+// (`generateTitle`), so "gene DMD" above a transcript reads as the card it would
+// open. Nameless parents summarize to nothing: a widget that says "in gene" has
+// told the reader less than saying nothing would.
+export function parentFeatureSummary(parent: Feature | undefined) {
+  const name = parent?.get('name') ?? parent?.get('id')
+  return name ? { name: String(name), type: parent?.get('type') } : undefined
+}
+
 // Open a feature widget for the given featureData and mark it as the
 // session's selected feature. Node is any MST node in the display tree —
 // used to resolve session + containing view + containing track. Returns
@@ -48,11 +57,11 @@ export function openFeatureWidget(
     // metadata, descriptions, etc.
     extra?: Record<string, unknown>
     // The live Feature `featureData` was serialized from, when the caller
-    // still holds it. Only an optimization -- `setSelection` is given this
-    // instead of a rebuilt one, and the two are interchangeable because
-    // `featureData` is this feature's own `toJSON()` (which already bakes in
-    // the parentId and inherited strand that a reconstructed feature would
-    // otherwise lack).
+    // still holds it. `setSelection` is given this instead of a rebuilt one,
+    // and it is also the only thing here that can reach the CONTAINING feature:
+    // a serialized copy keeps its parent's id (`toJSON` bakes that in, with the
+    // inherited strand) but not the handle, so a widget opened without it can
+    // name no parent.
     //
     // Worth threading because `new SimpleFeature` is not shallow: its
     // constructor inflates the whole subfeature tree, so rebuilding one for a
@@ -70,6 +79,7 @@ export function openFeatureWidget(
   const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
   const widget = session.addWidget(type, id, {
     featureData,
+    parentFeature: parentFeatureSummary(opts.feature?.parent?.()),
     view: getContainingView(node),
     track: getContainingTrack(node),
     ...opts.extra,
