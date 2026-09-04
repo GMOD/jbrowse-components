@@ -41,8 +41,20 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       }),
       // the density tier's two slots, which `DensityBandMixin` reads
       ...densityTierConfigSchemaFields,
-      // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema
-      // (default 1) — single source of truth for the density gate
+      // The density axis of the region-too-large gate, which
+      // `CanvasFeatureGateMixin` reads. Not a fallback for the byte axis: an
+      // index size can't tell "a few large features" from "many tiny ones" — a
+      // dense VCF is small on disk and still has more variants than pixels.
+      /**
+       * #slot
+       */
+      maxFeatureScreenDensity: {
+        type: 'number',
+        description:
+          'maximum features per pixel before showing a "too many features" message',
+        defaultValue: 1,
+        advanced: true,
+      },
       /**
        * #slot
        * show the display's color key when it has one (the `legend` slot, or a

@@ -9,29 +9,14 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  *
  * Shared base config for linear displays — its slots (`height`,
- * `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
- * common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config
- * extends it, and third-party plugins extend it too.
+ * `fetchSizeLimit`, `mouseover`, `jexlFilters`) are common to all of them. The
+ * GPU stack's `LinearCanvasBaseDisplay` config extends it, and third-party
+ * plugins extend it too.
  */
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
-    // Not a fallback for the byte gate: the two axes run together on every
-    // canvas fetch, and this is the one that catches what bytes structurally
-    // cannot. An index size can't tell "a few large features" from "many tiny
-    // ones" — a dense VCF is small on disk and still has more variants than
-    // there are pixels to draw them in.
-    /**
-     * #slot
-     */
-    maxFeatureScreenDensity: {
-      type: 'number',
-      description:
-        'maximum features per pixel before showing a "too many features" message',
-      defaultValue: 1,
-      advanced: true,
-    },
     // `fetchSizeLimit` and `forceLoad`, which every display composing
     // `RegionTooLargeMixin` owes it. Here as the mixin's own table rather than
     // written out, so the five displays composing the mixin against a schema

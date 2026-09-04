@@ -7,13 +7,14 @@ import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
 import { screenDensity } from './regionDensity.ts'
 
+import type { LinearCanvasBaseDisplayConfigModel } from '../LinearBasicDisplay/baseConfigSchema.ts'
 import type { RegionDensityStats } from './regionDensity.ts'
-import type { BaseLinearDisplayConfigModel } from '@jbrowse/display-kit/configSchema'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /** What this mixin reads off its host: the config and `RegionTooLargeMixin`'s gate terms. */
 export interface GateHost {
-  configuration: BaseLinearDisplayConfigModel
+  configuration: Instance<LinearCanvasBaseDisplayConfigModel>
   densityGateActive: boolean
   byteGateAdapterKey: string
 }
