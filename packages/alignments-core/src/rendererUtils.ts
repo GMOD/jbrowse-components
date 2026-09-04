@@ -1,4 +1,11 @@
+import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
+import {
+  covBarHeightPx,
+  covSegBottomPx,
+  covSegTopPx,
+} from './coverageBandLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as COVERAGE_F32,
   INSTANCE_OFFSET_U32 as COVERAGE_U32,
@@ -46,50 +53,31 @@ interface InterbaseDrawColors {
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
 
-// Left edge of a mark whose width is about to be clamped to a 1px minimum.
-// Sub-pixel marks are CENTERED on their span, which is what
-// `expandMinWidthX` in alignmentsUniforms.slang does — anchoring at the left
-// edge instead put every canvas2d coverage mark half a pixel right of the GPU's
-// once the view passed 1bp/px, since that is where the clamp starts firing.
-//
-// It measured as the largest cross-backend divergence in the suite:
-// `targeted_inversion-pbsim-coverage` went 16.71% -> 7.32% on centering these,
-// and the residual is a separate bug (see the inversion-pbsim entry in
-// browser-tests/crossBackendGate.ts). `drawInterbaseSegments` below already
-// centered, with a comment saying so — these three call sites were the odd ones
-// out, not the convention.
-//
-// Exported because the pileup's gap pass is a fourth call site in the same
-// position — `gap.slang` widens through `expandMinWidthX` too — and it was left
-// behind by that fix. Every Canvas2D mark whose GPU twin calls
-// `expandMinWidthX` goes through here; the pileup's 1bp CELL layers
-// deliberately do not (`makePileupCellMapper` floors one-sidedly, matching
-// `mismatch.slang`'s snapped left edge — see the `js-skip: expandMinWidthX`
-// note in alignmentsUniforms.slang).
-//
-// `w` is the mark's TRUE span, `px2 - px`, never a seam-fudged or already-
-// clamped one: it is the sub-pixel *test*, and the shader tests the true span.
-// Returns a number rather than a {left,width} pair: these loops run per covered
-// bp, and an object per bin would allocate.
-export function minWidthLeft(px: number, px2: number, w: number) {
-  return w < 1 ? (px + px2) / 2 - 0.5 : px
-}
-
 /**
- * One sub-pixel-safe bar spanning ordered edges `px`..`px2`.
+ * One sub-pixel-safe bar spanning ordered edges `px`..`px2`, widened to a 1 CSS
+ * px minimum about its MIDPOINT — the Canvas2D twin of `expandMinWidthX`
+ * (`covExpandMinWidthX` on the band, `expandMinWidthX` on the pileup's gap pass,
+ * both a 1 px floor over hpmath's `expandToMinWidthPx`).
  *
- * The pivot and the 1px floor are ONE rule — the floor is what makes a mark
- * sub-pixel and the pivot is where it then goes — and holding them apart at each
- * call site is how the rule kept being applied half-right. Both halves have
- * shipped wrong separately: the gap pass took the floor without the centering
- * (ba14fd5669 fixed three sites and missed it), and the coverage bar had both
- * but handed the pivot a seam-fudged width, moving the switch from a 1px span to
- * a 0.2px one. Five call sites, one of them in another package; this is the rule
- * itself rather than a piece of it.
+ * The pivot and the floor are ONE rule — the floor is what makes a mark
+ * sub-pixel and the pivot is where it then goes — and holding them apart is how
+ * the rule kept being applied half-right. Both halves have shipped wrong
+ * separately: the gap pass took the floor without the centering (ba14fd5669
+ * fixed three sites and missed it), and the coverage bar had both but handed the
+ * pivot a seam-fudged width, moving the switch from a 1px span to a 0.2px one.
+ * Anchoring at the left edge instead of the midpoint measured as the largest
+ * cross-backend divergence in the suite — `targeted_inversion-pbsim-coverage`
+ * went 16.71% -> 7.32% on centering these, and the residual is a separate bug
+ * (see the inversion-pbsim entry in browser-tests/crossBackendGate.ts).
  *
  * `widthCompensation` widens the DRAWN bar only, never the sub-pixel test: the
- * test is `expandMinWidthX`'s and the shader tests the true span. That
- * separation is exactly what the coverage bar got wrong.
+ * test is the shader's and the shader tests the TRUE span. That separation is
+ * exactly what the coverage bar got wrong.
+ *
+ * The pileup's 1bp CELL layers deliberately do not come through here
+ * (`makePileupCellMapper` floors one-sidedly, matching `mismatch.slang`'s
+ * snapped left edge — see the `js-skip: expandMinWidthX` note in
+ * alignmentsUniforms.slang).
  *
  * Allocates nothing per call, which is the bar for sharing anything out of these
  * loops — they run per covered bp.
@@ -104,11 +92,24 @@ export function fillSpanRect(
 ) {
   const w = px2 - px
   ctx.fillRect(
-    minWidthLeft(px, px2, w),
+    w < 1 ? (px + px2) / 2 - 0.5 : px,
     top,
     Math.max(w + widthCompensation, 1),
     height,
   )
+}
+
+// colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the
+// insertion colour. Mirrors covClipKindColor() in coverageBand.slang, which both
+// the indicator triangles and the interbase histogram read — they had a copy of
+// the lut and its fallback each, and nothing emits an out-of-range kind today,
+// so the two spellings disagreeing would have been invisible.
+export function clipKindColor(colorType: number, colors: InterbaseDrawColors) {
+  return colorType === 2
+    ? colors.softclip
+    : colorType === 3
+      ? colors.hardclip
+      : colors.insertion
 }
 
 // colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
@@ -165,6 +166,10 @@ export const COVERAGE_BAR_SEAM_FUDGE_PX = 0.8
  * a resolution lost — the cap bins only depth that was already sub-pixel.
  *
  * `binSize` is the bin's width in bp, matching the shader's `binSize` uniform.
+ *
+ * The y placement is the shader's, not a twin of it: `covBarHeightPx` and
+ * `covSegTopPx` are generated from `coverageBand.slang`'s `covSegQuad`, which is
+ * the vertex stage of this bar and of the two segment layers below (adr-051).
  */
 export function drawCoverageBins(
   ctx: Ctx,
@@ -197,8 +202,7 @@ export function drawCoverageBins(
     // Ordering the edges also fixes the cull, which assumed px < px2 and so
     // dropped bins straddling either viewport edge when reversed.
     // The edge resolution stays inline — this loop runs per covered bin, and
-    // returning a {left,right} would allocate per bin. `minWidthLeft` is shared
-    // because it returns a number and so allocates nothing.
+    // returning a {left,right} would allocate per bin.
     const pxA = bpToX(pos)
     const pxB = bpToX(pos + binSize)
     const px = Math.min(pxA, pxB)
@@ -208,18 +212,24 @@ export function drawCoverageBins(
     }
     // The bar runs from the band's baseline to its own height, and the baseline
     // is the baseline — `covSegQuad(…, 0.0, 1.0, …)` puts the GPU's bottom edge
-    // exactly there. The buffer this replaced carried a `bandBottom` field
-    // beside the depth, always written 0 and always run back through
-    // `normalizeDepth`, which is a no-op on every depth domain that reaches here
-    // (they start at 0 and the normalizer clamps below) and NOT one on a symlog
-    // domain with a negative min — the one case where it lifted the Canvas2D
-    // bars off a baseline the shader left them on.
-    const barTop =
-      bottom -
-      normalizeDepth(f32[off + COVERAGE_F32.relDepth]! * regionMaxDepth) *
-        effectiveH
+    // exactly there, so `0, 1` here is the same "the whole bar" the shader
+    // spells. The buffer this replaced carried a `bandBottom` field beside the
+    // depth, always written 0 and always run back through `normalizeDepth`,
+    // which is a no-op on every depth domain that reaches here (they start at 0
+    // and the normalizer clamps below) and NOT one on a symlog domain with a
+    // negative min — the one case where it lifted the Canvas2D bars off a
+    // baseline the shader left them on.
+    const barTop = covSegTopPx(
+      bottom,
+      0,
+      1,
+      covBarHeightPx(
+        normalizeDepth(f32[off + COVERAGE_F32.relDepth]! * regionMaxDepth),
+        effectiveH,
+      ),
+    )
     // The seam fudge widens the bar; it must not also decide whether the bar is
-    // sub-pixel. `minWidthLeft` mirrors `expandMinWidthX`, which centers at a
+    // sub-pixel. `fillSpanRect` mirrors `expandMinWidthX`, which centers at a
     // TRUE span under 1 CSS px — feeding it the fudged width moved that switch
     // to a span under 0.2px, so every bar between 1 and 5 bp/px stayed anchored
     // at its left edge where the GPU had centered it. That is the same
@@ -269,13 +279,17 @@ export function drawSnpSegments(
     // setting needs no conversion, and skipping leaves the segments above it
     // where they were — the grey depth bar underneath is ungated, so a hidden
     // slice reads as reference rather than as a gap.
-    if (f32[off + SNP_F32.segHeight]! < minFrequency) {
+    const segHeight = f32[off + SNP_F32.segHeight]!
+    if (segHeight < minFrequency) {
       continue
     }
-    const barH =
-      normalizeDepth(f32[off + SNP_F32.relDepth]! * regionMaxDepth) * effectiveH
-    const segBottom = bottom - f32[off + SNP_F32.yOffset]! * barH
-    const segTop = segBottom - f32[off + SNP_F32.segHeight]! * barH
+    const yOffset = f32[off + SNP_F32.yOffset]!
+    const barH = covBarHeightPx(
+      normalizeDepth(f32[off + SNP_F32.relDepth]! * regionMaxDepth),
+      effectiveH,
+    )
+    const segBottom = covSegBottomPx(bottom, yOffset, barH)
+    const segTop = covSegTopPx(bottom, yOffset, segHeight, barH)
     ctx.fillStyle = snpColorForType(f32[off + SNP_F32.colorType]!, colors)
     // No seam fudge here, unlike the depth bars above, and that is the right
     // answer rather than the one that was forgotten. The fudge pays for itself
@@ -301,7 +315,6 @@ export function drawIndicators(
 ) {
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
-  const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
   const indicatorCount = buffer.byteLength / INDICATOR_STRIDE_BYTES
   for (let i = 0; i < indicatorCount; i++) {
     const off = i * INDICATOR_STRIDE
@@ -322,8 +335,7 @@ export function drawIndicators(
       px + INDICATOR_TRIANGLE_HW >= 0 &&
       px - INDICATOR_TRIANGLE_HW <= viewWidth
     ) {
-      ctx.fillStyle =
-        colorLut[f32[off + INDICATOR_F32.colorType]! - 1] ?? colorLut[0]!
+      ctx.fillStyle = clipKindColor(f32[off + INDICATOR_F32.colorType]!, colors)
       drawIndicatorTriangle(ctx, px)
     }
   }
@@ -362,7 +374,6 @@ export function drawInterbaseSegments(
   }
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
-  const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
   const segmentCount = buffer.byteLength / SEGMENT_STRIDE_BYTES
 
   for (let i = 0; i < segmentCount; i++) {
@@ -395,7 +406,7 @@ export function drawInterbaseSegments(
     // exact kind that produced the divergence in the first place.
     const segTop = interbaseEdgePx(yOffset, interbaseHeight)
     const segBottom = interbaseEdgePx(yOffset + segH, interbaseHeight)
-    ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
+    ctx.fillStyle = clipKindColor(colorType, colors)
     ctx.fillRect(px - INTERBASE_BAR_HALF_W, segTop, 1, segBottom - segTop)
   }
 }
@@ -427,17 +438,19 @@ export function drawModCovSegments(
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const rgba = u32[off + MOD_COV_U32.packedColor]!
-    const r = rgba & 0xff
-    const g = (rgba >> 8) & 0xff
-    const b = (rgba >> 16) & 0xff
-    const a = ((rgba >> 24) & 0xff) / 255
-    const barH =
-      normalizeDepth(f32[off + MOD_COV_F32.relDepth]! * regionMaxDepth) *
-      effectiveH
-    const segBottom = bottom - f32[off + MOD_COV_F32.yOffset]! * barH
-    const segTop = segBottom - f32[off + MOD_COV_F32.segHeight]! * barH
-    ctx.fillStyle = `rgba(${r},${g},${b},${a})`
+    const barH = covBarHeightPx(
+      normalizeDepth(f32[off + MOD_COV_F32.relDepth]! * regionMaxDepth),
+      effectiveH,
+    )
+    const yOffset = f32[off + MOD_COV_F32.yOffset]!
+    const segBottom = covSegBottomPx(bottom, yOffset, barH)
+    const segTop = covSegTopPx(
+      bottom,
+      yOffset,
+      f32[off + MOD_COV_F32.segHeight]!,
+      barH,
+    )
+    setAbgrFill(ctx, u32[off + MOD_COV_U32.packedColor]!)
     fillSpanRect(ctx, px, px2, segTop, segBottom - segTop)
   }
 }

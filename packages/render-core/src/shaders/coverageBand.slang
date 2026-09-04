@@ -21,10 +21,10 @@
 // have to land on the same pixels (adr-051). They live in
 // @jbrowse/alignments-core because that is where those painters are, and it
 // cannot depend on a plugin — nor, being upstream of it, on this package.
-//! js-export: covEffectiveHeightPx, covBottomOffsetPx, normalizeDepthScalar
+//! js-export: covEffectiveHeightPx, covBottomOffsetPx, normalizeDepthScalar, covBarHeightPx, covSegBottomPx, covSegTopPx
 //! js-export-out: packages/alignments-core/src/coverageBandLayout.generated.ts
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
-//! js-skip: covExpandMinWidthX — a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
+//! js-skip: covExpandMinWidthX — the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is a twin of hpmath's expandToMinWidthPx, and rendererUtils.ts's fillSpanRect is that twin by hand — see expandToMinWidthPx's own skip for who owns lifting it
 module coverageBand;
 
 import colorPack;
@@ -186,9 +186,10 @@ public float covAreaTop(CoverageBandUniforms u) {
   return yPxToClipY(u.covTop, u.canvasH);
 }
 
-public float covBottom(CoverageBandUniforms u) {
-  return covAreaTop(u)
-    - (covBottomOffsetPx(u.covHeight, u.covYOffset) / u.canvasH) * 2.0;
+// Screen-px Y of the bars' baseline: covBottomOffsetPx below wherever covTop
+// put the band's top edge.
+public float covBaselinePx(CoverageBandUniforms u) {
+  return u.covTop + covBottomOffsetPx(u.covHeight, u.covYOffset);
 }
 
 // Normalize a raw coverage depth to [0,1] over the domain [min, max], on the
@@ -221,15 +222,32 @@ public float covNormalizeDepth(float relDepth, CoverageBandUniforms u) {
     u.coverageSymlogConstant);
 }
 
-// Bar height scale: maps relDepth to a clip-space height multiplier. Shared by
-// every stacked-segment pass so the formula can't drift between them.
-public float covBarScale(float relDepth, CoverageBandUniforms u) {
-  return covNormalizeDepth(relDepth, u) * covEffHeight(u) / u.canvasH * 2.0;
+// How tall a bar of this normalized depth is drawn, in px — what every stacked
+// fraction in the band is a fraction OF.
+public float covBarHeightPx(float depthFraction, float effectiveHeightPx) {
+  return depthFraction * effectiveHeightPx;
+}
+
+// The two y edges of one stacked segment, in px. `yOffset` and `segHeight` are
+// fractions of THIS position's bar, measured up from the baseline.
+//
+// Two scalars rather than one `float2`, unlike `rectSpanPx` / `arcRadiiPx`: a
+// vec2 twin comes back as a `[number, number]` (adr-051's tuple convention) and
+// these feed loops that run per covered bp under a no-allocation bar.
+public float covSegBottomPx(float baselinePx, float yOffset,
+                            float barHeightPx) {
+  return baselinePx - yOffset * barHeightPx;
+}
+
+public float covSegTopPx(float baselinePx, float yOffset, float segHeight,
+                         float barHeightPx) {
+  return covSegBottomPx(baselinePx, yOffset, barHeightPx)
+    - segHeight * barHeightPx;
 }
 
 // Stacked-segment quad — the geometry of EVERY bar in the band. A `widthBp`-wide
 // rect whose bottom/top are the yOffset / yOffset+segHeight fractions of this
-// position's coverage bar (covBarScale(relDepth)).
+// position's coverage bar.
 //
 // The three passes differ only in what they put in those parameters. The SNP and
 // modification segments are 1bp slices of a bar (widthBp 1, a partial y span);
@@ -238,16 +256,21 @@ public float covBarScale(float relDepth, CoverageBandUniforms u) {
 // so the band could shift under its own segments without anything catching it.
 // Passing `0.0, 1.0` is not a special case here, it is what "the whole bar"
 // spells.
+//
+// The y half is decided in px and converted once, the shape adr-051 asks for —
+// so the three Canvas2D painters of this band call the same two functions.
 public float4 covSegQuad(uint position, uint widthBp, float yOffset,
                          float segHeight, float relDepth, float2 local,
                          CoverageBandUniforms u) {
   float2 xx = covExpandMinWidthX(
     covBpToClipX(position, u), covBpToClipX(position + widthBp, u), u.canvasW);
-  float bottom = covBottom(u);
-  float k = covBarScale(relDepth, u);
-  float segBot = bottom + yOffset * k;
-  float segTop = segBot + segHeight * k;
-  return covFlippedQuad(xx.x, xx.y, segBot, segTop, local, u);
+  float basePx = covBaselinePx(u);
+  float barPx = covBarHeightPx(covNormalizeDepth(relDepth, u), covEffHeight(u));
+  return covFlippedQuad(
+    xx.x, xx.y,
+    yPxToClipY(covSegBottomPx(basePx, yOffset, barPx), u.canvasH),
+    yPxToClipY(covSegTopPx(basePx, yOffset, segHeight, barPx), u.canvasH),
+    local, u);
 }
 
 // SNP segment fill. colorType encodes 1=A 2=C 3=G 4=T 5=N; 5 and any other type

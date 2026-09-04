@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 107 functions
-are inside the emitter's subset, of which **79 are exported**.
+Scanned 43 shaders with entry points. 110 functions
+are inside the emitter's subset, of which **82 are exported**.
 
 ## Candidates
 
@@ -37,12 +37,12 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `chevronEdgeDistPx` | `(f32, f32, f32) -> f32` | reached as a private helper inside the generated chevronContains, so the edge geometry is already shared without being public; the shader calls it for its cap vertices, the hit test only ever wants the containment it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
-| `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
+| `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is a twin of hpmath's expandToMinWidthPx, and rendererUtils.ts's fillSpanRect is that twin by hand — see expandToMinWidthPx's own skip for who owns lifting it |
 | `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32, f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
-| `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the midpoint rule has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth), and the variant matrix floors in physical px against a canvas the Canvas2D twin sizes itself. A different rule, not a twin |
+| `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the coverage band and the pileup's gap pass DO have a faithful Canvas2D twin of this, alignments-core's fillSpanRect, and lifting it is owed (ideas/canvas2d-painter-generation Owed): it needs an owner that can js-export-out into @jbrowse/alignments-core, which no module can do for a function it does not declare. The two callers that would NOT take the lift are the pileup cell, which floors one-sidedly and adds a seam fudge the shader omits (rendererTypes.ts pileupCellWidth), and the variant matrix, which floors in physical px against a canvas the Canvas2D twin sizes itself |
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
@@ -74,7 +74,7 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 25 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
-| type 'ptr' is outside the supported scalar subset | 19 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
+| type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 15 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |

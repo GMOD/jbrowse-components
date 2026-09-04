@@ -7,6 +7,7 @@ import {
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
+  clipKindColor,
   snpColorForType,
 } from './rendererUtils.ts'
 
@@ -78,6 +79,25 @@ describe('snpColorForType', () => {
   it('returns baseN (grey) for N and unknown types', () => {
     expect(snpColorForType(5, colors)).toBe('grey')
     expect(snpColorForType(0, colors)).toBe('grey')
+  })
+})
+
+// The twin of coverageBand.slang's covClipKindColor, read by the indicator
+// triangles and the interbase histogram. The out-of-range arm is the one worth
+// pinning: nothing emits a kind outside 1..3 today, so a disagreement with the
+// shader's fallback would show on no screen anyone looks at.
+describe('clipKindColor', () => {
+  const colors = { insertion: 'purple', softclip: 'blue', hardclip: 'orange' }
+
+  it('maps the three interbase kinds', () => {
+    expect(clipKindColor(1, colors)).toBe('purple')
+    expect(clipKindColor(2, colors)).toBe('blue')
+    expect(clipKindColor(3, colors)).toBe('orange')
+  })
+
+  it('falls back to the insertion color, as the shader does', () => {
+    expect(clipKindColor(0, colors)).toBe('purple')
+    expect(clipKindColor(9, colors)).toBe('purple')
   })
 })
 
@@ -189,7 +209,7 @@ describe('drawCoverageBins', () => {
 
   // The seam fudge is a width, not a vote on whether the bar is sub-pixel.
   // `expandMinWidthX` centers at a TRUE span under 1 CSS px; passing the fudged
-  // width to `minWidthLeft` moved that switch to a span under 0.2px, so every
+  // width to the pivot moved that switch to a span under 0.2px, so every
   // bar between 1 and 5 bp/px stayed left-anchored while the GPU centered it —
   // and while the SNP segment stacked ON that bar (no fudge, so already
   // centered) went the other way. Same bar, same bp, two pivots.

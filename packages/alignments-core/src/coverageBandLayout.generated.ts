@@ -61,3 +61,15 @@ function normalizeScore(score: number, domainMin: number, domainMax: number, sca
 export function normalizeDepthScalar(rawDepth: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
   return normalizeScore(rawDepth, domainMin, domainMax, scaleType, symlogConstant)
 }
+
+export function covBarHeightPx(depthFraction: number, effectiveHeightPx: number): number {
+  return (depthFraction * effectiveHeightPx)
+}
+
+export function covSegBottomPx(baselinePx: number, yOffset: number, barHeightPx: number): number {
+  return (baselinePx - (yOffset * barHeightPx))
+}
+
+export function covSegTopPx(baselinePx: number, yOffset: number, segHeight: number, barHeightPx: number): number {
+  return (covSegBottomPx(baselinePx, yOffset, barHeightPx) - (segHeight * barHeightPx))
+}

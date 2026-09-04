@@ -1,4 +1,6 @@
 import {
+  covBarHeightPx,
+  covSegTopPx,
   coverageLayout,
   packCoverageBinsForGpu,
   packSnpInstances,
@@ -39,9 +41,14 @@ const REGION_START = 10000
 // Absolute genomic position where coverage depths[0] begins.
 const COVERAGE_START_OFFSET = REGION_START + 5
 
+// The band's depths and the peak they are packed against, named so the parity
+// assertions below can place the bars without restating them.
+const COVERAGE_DEPTHS = [10, 30, 50, 20, 40]
+const COVERAGE_MAX_DEPTH = 50
+
 function makeCoverageData(): CoverageUploadData {
-  const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
-  const coverageMaxDepth = 50
+  const coverageDepths = new Float32Array(COVERAGE_DEPTHS)
+  const coverageMaxDepth = COVERAGE_MAX_DEPTH
   return {
     coverageDepths,
     coverageMaxDepth,
@@ -397,7 +404,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       end: REGION_START + 20,
       scrollTop: 0,
       colorScheme: 0,
-      coverageMaxDepth: 50,
+      coverageMaxDepth: COVERAGE_MAX_DEPTH,
     } as unknown as RenderState)
 
     // Coverage bins should produce rectangles
@@ -424,29 +431,34 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // Coverage bins should have the coverage color
     expect(covRects[0]!.fill).toBe('rgb(51,102,204)')
 
+    // And where the shader puts them. `covSegTopPx` / `covBarHeightPx` are
+    // generated from `coverageBand.slang`'s `covSegQuad`, which is the vertex
+    // stage of the GPU pass drawing this same buffer, so this reads the painter
+    // against the other backend's own geometry. There used to be a test here
+    // spelling the formula out on both sides of an `expect` instead.
+    //
+    // `toBeCloseTo` because the painter reads the depth back out of the packed
+    // buffer, where it is `relDepth = depth / regionMaxDepth` in float32: a
+    // depth of 10 over a peak of 50 comes back as 9.99999… and lands the bar
+    // 3e-7 px off the depth written here. That round trip is the GPU's too —
+    // the same buffer feeds both — so it is not a divergence between backends.
+    const { effectiveH, bottom } = coverageLayout(covH)
+    const barRects = covRects.filter(r => r.fill === 'rgb(51,102,204)')
+    expect(barRects.length).toBe(COVERAGE_DEPTHS.length)
+    barRects.forEach((r, i) => {
+      const barH = covBarHeightPx(
+        COVERAGE_DEPTHS[i]! / COVERAGE_MAX_DEPTH,
+        effectiveH,
+      )
+      expect(r.y).toBeCloseTo(covSegTopPx(bottom, 0, 1, barH), 5)
+      expect(r.h).toBeCloseTo(barH, 5)
+    })
+
     // SNP segments should have base colors (A=green, C=blue)
     const snpRects = covRects.filter(r => r.fill !== 'rgb(51,102,204)')
     expect(snpRects.length).toBe(2)
     expect(snpRects[0]!.fill).toBe('rgb(0,255,0)') // baseA
     expect(snpRects[1]!.fill).toBe('rgb(0,0,255)') // baseC
-  })
-
-  it('drawCoverageBins Y mapping matches GPU shader formula', () => {
-    const coverageHeight = 100
-    const normalizedDepth = 0.6 // depth/maxDepth, already in [0,1]
-
-    const { effectiveH, bottom } = coverageLayout(coverageHeight)
-
-    // drawCoverageBins: bandTop = bottom - normalizedDepth * effectiveH
-    const sharedTop = bottom - normalizedDepth * effectiveH
-    const sharedBarH = bottom - sharedTop
-
-    // GPU shader: same formula in clip space, converted to pixels
-    const gpuBarTopPx = bottom - normalizedDepth * effectiveH
-    const gpuBarH = bottom - gpuBarTopPx
-
-    expect(sharedTop).toBeCloseTo(gpuBarTopPx)
-    expect(sharedBarH).toBeCloseTo(gpuBarH)
   })
 })
 
