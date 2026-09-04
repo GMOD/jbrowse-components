@@ -200,6 +200,7 @@ export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearPairedArcDisplay',
     {
+      ...trackHeightConfigSchemaFields(),
       /**
        * #slot
        */
@@ -228,13 +229,14 @@ export function configSchemaFactory() {
         description:
           'hide arcs whose feature score is below this; features with no score are always drawn',
       },
+      ...regionTooLargeConfigSchemaFields,
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
     },
   )
 }

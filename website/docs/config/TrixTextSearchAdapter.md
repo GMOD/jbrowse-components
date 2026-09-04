@@ -9,9 +9,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Example usage
 
 `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
-you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
-`_meta.json` are derived from it, so all three only need spelling out when
-they are named against convention.
+you. The `uri` shorthand points at the `.ix` and the sibling `.ixx` is derived
+from it, so the pair only needs spelling out when they are named against
+convention.
 
 ```js
 {
@@ -47,6 +47,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "TrixTextSear
 | --- | --- |
 | <span id="slot-ixfilepath">**ixFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ix', locationType: 'UriLocation' }</code> | location of the Trix `.ix` index written by `jbrowse text-index`: the sorted term-to-feature table the search box reads. |
 | <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ixx', locationType: 'UriLocation' }</code> | location of the `.ixx` prefix index, which records where in the `.ix` each prefix begins. It is what makes a lookup a couple of range requests instead of a download of the whole index. |
-| <span id="slot-metafilepath">**metaFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'meta.json', locationType: 'UriLocation' }</code> | location of the `_meta.json` written beside the index, recording which tracks and assemblies it covers and the attributes it was built from. |
-| <span id="slot-tracks">**tracks**</span><br>`stringArray` = <code>[]</code> | List of tracks covered by text search adapter |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |

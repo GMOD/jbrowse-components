@@ -3956,10 +3956,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
-          "name": "showReferenceAlleles",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "lineZoneHeight",
           "type": "(JexlString | number)"
         },
@@ -4083,10 +4079,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "jexlFilters",
           "type": "(JexlString | string[])"
-        },
-        {
-          "name": "showReferenceAlleles",
-          "type": "(JexlString | boolean)"
         },
         {
           "name": "lineZoneHeight",
@@ -4468,14 +4460,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4590,14 +4574,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4712,14 +4688,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
         },
         {
           "name": "windowSize",
@@ -4838,14 +4806,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
         },
         {
           "name": "windowSize",
@@ -5007,24 +4967,8 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "colorScheme",
@@ -5076,24 +5020,8 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "color",
@@ -5122,6 +5050,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "minScore",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         }
       ],
       "legacyKeys": [
@@ -5144,24 +5080,8 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "color",
@@ -5174,6 +5094,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "minScore",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -5193,24 +5121,8 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "forceLoad",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "color",
@@ -5313,14 +5225,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "ixxFilePath",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
-        },
-        {
-          "name": "metaFilePath",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
-        },
-        {
-          "name": "tracks",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "assemblyNames",

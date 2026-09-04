@@ -40,11 +40,16 @@ them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
 
 _See the **Config slots** section below for all available configuration fields._
 
+## Overview
+
+### LinearHicDisplay - Identifier
+
+Every LinearHicDisplay has a unique `displayId`, a required top-level field that identifies it (not one of the config slots below).
+
 ## Related links
 
 - **Adapter:** [HicAdapter](../hicadapter)
 - **State model:** [runtime API](../../models/linearhicdisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
 
@@ -53,7 +58,6 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |
 | <span id="slot-colorscheme">**colorScheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (juicebox, fall, viridis) = <code>'juicebox'</code> | color ramp used to render contact intensity |
 | <span id="slot-showlegend">**showLegend**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) = <code>false</code> _promotable_ | show the color scale legend. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |
@@ -62,8 +66,4 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 | <span id="slot-showresolutioncontrols">**showResolutionControls**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the on-figure resolution dropdown in the overlay |
 | <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE). Resolved at runtime against what the `.hic` file actually provides — see the model's `activeNormalization` getter. |
 | <span id="slot-squashtoheight">**squashToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | squash the triangle vertically to fit the display height instead of drawing square bins |
-| <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">4 slots</span> |
-| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` |
-| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
-| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
-| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |

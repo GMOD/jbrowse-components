@@ -20,13 +20,9 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 ## Related links
 
 - **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-- **Extended by:** [LinearArcDisplay](../lineararcdisplay)
 - **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
-- **Extended by:** [LinearHicDisplay](../linearhicdisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
-- **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Extended by:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-- **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Extended by:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 - **Extended by:** [SharedLDDisplay](../sharedlddisplay)
 - **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
