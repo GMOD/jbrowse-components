@@ -35,7 +35,7 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
  */
 export interface DensityTierHost
   extends
-    FetchSkeletonHost,
+    Omit<FetchSkeletonHost, 'fetchCanceled'>,
     Omit<
       DensityBandPhaseHost,
       'densityBinsRead' | 'densityLoading' | 'densityBandActive'

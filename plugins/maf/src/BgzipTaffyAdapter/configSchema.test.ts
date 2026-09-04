@@ -3,6 +3,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import mafConfigSchema from '../BgzipMafAdapter/configSchema.ts'
 import configSchema from './configSchema.ts'
 
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+
 describe('BgzipTaffyAdapter configSchema', () => {
   test('uri shorthand resolves tafGzLocation and the sibling .tai index', () => {
     const conf = configSchema.create({
@@ -33,7 +35,7 @@ describe('BgzipTaffyAdapter configSchema', () => {
 
   // MST drops an undeclared key, so an `nhUri` the shorthand ignored loaded
   // the track with no tree and no message.
-  test.each([
+  test.each<[string, AnyConfigurationSchemaType, string]>([
     ['BgzipTaffyAdapter', configSchema, 'tafGzLocation'],
     ['BgzipMafAdapter', mafConfigSchema, 'mafGzLocation'],
   ])('%s uri shorthand carries nhUri to nhLocation', (type, schema, gzSlot) => {
