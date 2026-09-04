@@ -221,17 +221,14 @@ function assertCovers(kind: string, removed: string[], described: string[]) {
   const duplicated = described.filter((n, i) => described.indexOf(n) !== i)
   if (missing.length + extra.length + duplicated.length > 0) {
     console.error(
-      `abi removals: the ${kind} table disagrees with the baselines it is derived from.\n` +
-        [
-          missing.length > 0 &&
-            `  removed but described nowhere: ${missing.join(', ')}`,
-          extra.length > 0 &&
-            `  described but still served: ${extra.join(', ')}`,
-          duplicated.length > 0 &&
-            `  described twice: ${duplicated.join(', ')}`,
-        ]
-          .filter(Boolean)
-          .join('\n'),
+      `abi removals: the ${kind} table disagrees with the baselines it is derived from.\n${[
+        missing.length > 0 &&
+          `  removed but described nowhere: ${missing.join(', ')}`,
+        extra.length > 0 && `  described but still served: ${extra.join(', ')}`,
+        duplicated.length > 0 && `  described twice: ${duplicated.join(', ')}`,
+      ]
+        .filter(Boolean)
+        .join('\n')}`,
     )
     process.exit(1)
   }
