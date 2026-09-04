@@ -6,7 +6,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Owns one cluster run's lifecycle for a "Run clustering" dialog: start it,
@@ -36,7 +36,7 @@ export function useClusterRun({
 }: {
   // read only for `isAlive`: a run that failed because its display went away
   // has no dialog to report an error into
-  model: IAnyStateTreeNode
+  model: IStateTreeNode
   onSuccess: () => void
   run: (args: {
     stopToken: StopToken

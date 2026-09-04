@@ -86,6 +86,16 @@ export function setupRunClusteringAutorun(
   // Plain closure flag (not observable) guards re-entrant runs while the RPC is
   // in flight, the same trick setupInitAutorun uses for `init`.
   let applying = false
+  // Disposing the reaction says nothing about the RPC a run already has in a
+  // worker, and the token is otherwise reachable only from inside the run that
+  // made it. Untick the track mid-run without this and hclust builds the whole
+  // cohort dendrogram for nobody, then commits it to a dead node — where the
+  // `isAlive` gate in the catch below swallows the throw. `useClusterRun`'s
+  // effect cleanup is the dialog flavor's version of the same abort.
+  let inFlightStopToken: StopToken | undefined
+  addDisposer(self, () => {
+    stopStopToken(inFlightStopToken)
+  })
   addDisposer(
     self,
     autorun(
@@ -99,6 +109,7 @@ export function setupRunClusteringAutorun(
         }
         applying = true
         const stopToken = createStopToken()
+        inFlightStopToken = stopToken
         // narrowed to this run rather than merely to the node being alive, so a
         // status arriving after the run settles can't repaint the chip.
         // Wrapping a callback in a second guarded sink said the same thing and
@@ -126,6 +137,7 @@ export function setupRunClusteringAutorun(
           }
         } finally {
           stopStopToken(stopToken)
+          inFlightStopToken = undefined
           // this run's slot, retired: the display's viewport fetch may be
           // running beside it, and blanking the field outright took its label
           // with it (ADR-081)
