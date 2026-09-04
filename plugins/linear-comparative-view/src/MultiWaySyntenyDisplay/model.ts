@@ -1144,9 +1144,10 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * `BaseDisplay`'s hook, called by the foundation's viewport-change clear:
-       * the lanes relaid out under a stationary cursor, so the stored hit
-       * names a glyph that is no longer there
+       * `BaseDisplay`'s hook. Two clears call it, because two different things
+       * move the lanes under a stationary cursor: the foundation's
+       * viewport-change reaction, and this display's own relayout reaction (see
+       * afterAttach)
        */
       clearHoveredFeature() {
         self.hoverTarget = undefined

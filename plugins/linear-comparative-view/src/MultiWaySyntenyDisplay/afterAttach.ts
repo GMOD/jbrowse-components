@@ -3,6 +3,7 @@ import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { installClearHoverOnSurfaceMove } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
@@ -219,6 +220,18 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
 }
 
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
+  // The viewport clear the fetch foundation installs answers the axes the VIEW
+  // moves on. The lanes also relayout with the view still — a reorder, a hidden
+  // lane, a pinned contig, a dependent commit — and a direct-link ribbon's
+  // `targetIdx` has no groupKey to re-resolve through, so it addresses whatever
+  // the rebuilt array holds at that index.
+  installClearHoverOnSurfaceMove(self, {
+    transform: () => self.ribbonGeometry.targets,
+    clear: () => {
+      self.clearHoveredFeature()
+    },
+    name: 'MultiWayClearHoverOnLaneRelayout',
+  })
   installLaneFrameDecision(self)
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
