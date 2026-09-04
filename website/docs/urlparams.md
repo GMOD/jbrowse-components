@@ -456,7 +456,6 @@ restores natively:
 | [`hideHeaderOverview`](/docs/models/lineargenomeview#property-hideheaderoverview) | keep the header, drop the whole-chromosome overview strip below it |
 | [`hideNoTracksActive`](/docs/models/lineargenomeview#property-hidenotracksactive) | suppress the "No tracks active" placeholder, for an embed that opens with no tracks on purpose |
 | [`labelsVisible`](/docs/models/lineargenomeview#property-labelsvisible) | controls whether highlight/bookmark chip labels are shown inline |
-| [`legacyBpPerPx`](/docs/models/lineargenomeview#property-legacybpperpx) | MIGRATION ONLY, and safe to delete once pre-window sessions are no longer in circulation.<br><br>A snapshot written before the window was stored carries `offsetPx` and `bpPerPx` but not the width they were measured at, so the window they framed cannot be recovered. `windowStartBp` can (it is `offsetPx * bpPerPx`, no width needed); the width in bp cannot. This carries the old `bpPerPx` to the first measure, which adopts it at whatever width arrives — exactly what the old code did — and clears this. So an old link keeps its old behavior rather than being reinterpreted, and everything authored since restores its window. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
 | [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
@@ -472,9 +471,12 @@ restores natively:
 
 <!-- SPEC_KEYS LinearGenomeView END -->
 
-- `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll. `loc` reads
-  better and survives an assembly whose regions were rebuilt; reach for these
-  two only to reproduce a viewport to the pixel.
+- `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll, and they are
+  the exception to the typo rule above: the view stores its viewport as a
+  genomic window now, so neither is a declared property, but both are still
+  accepted and converted. `loc` reads better and survives an assembly whose
+  regions were rebuilt; reach for these two only to reproduce a viewport to the
+  pixel.
 - `displayedRegions` gives the regions the view lays out as full
   `{refName, start, end, assemblyName}` objects, which is the form for showing
   part of a chromosome; `displayedRegionNames` names whole ones.

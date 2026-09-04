@@ -78,6 +78,17 @@ const RESERVED = new Set(['id', 'type', 'init', 'launch', 'session'])
 // subject of the prose around every marker already.
 const STRUCTURAL = new Set(['views', 'tracks'])
 
+// Declared so a snapshot can carry an old value forward, never so anyone writes
+// one: the model's preProcessSnapshot fills it and the first width measure
+// clears it, so a spec naming it sets something that is gone before the view
+// draws. Listing it read as an invitation, under a heading whose whole claim is
+// that the set is exhaustive.
+//
+// A name, because the property is on the model like any other and nothing at
+// the declaration site distinguishes it. A `#property`-adjacent tag would be
+// the derived form.
+const MIGRATION_ONLY = new Set(['legacyBpPerPx'])
+
 export interface SpecKey {
   name: string
   docs: string
@@ -403,6 +414,7 @@ function renderGroup(
       p =>
         !RESERVED.has(p.member.name) &&
         !STRUCTURAL.has(p.member.name) &&
+        !MIGRATION_ONLY.has(p.member.name) &&
         !launcherBuilds.has(p.member.name) &&
         !launchNames.has(p.member.name),
     )
