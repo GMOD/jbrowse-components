@@ -77,7 +77,21 @@ by construction for the generated set, since it runs through Canvas2D. The
 remaining diff is signal. And three-way parity (WGSL / GLSL / Canvas2D) shrinks
 to two-way for them, which is the hardest invariant we hold.
 
-### 2. Generate the hit-test geometry from the shaders
+### 2. Generate the hit-test geometry from the shaders — DONE 2026-09-04
+
+Landed: `readChevron.slang` exports `chevronContains`, and the pileup read's
+strand arrowhead — which had no hit geometry at all, not an approximate one —
+now picks through it, gated by the same generated `showChevron` the painters
+use; `capsule.slang` exports `capsuleDistPx` and the dotplot pick measures the
+cursor with it. The premise below was partly wrong: arcs were already derived
+(`arcRadiiPx`, `distToWideCirclePx`; `ellipseDistance` is a documented float64
+copy) and the capsule pick was exact but parallel. No transliterator construct
+was needed. Lesson: a predicate no draw path calls must live in a `module`
+shader or slangc drops it before the emitter sees it. Owed: the one-bullet
+notes in GPU_RENDERING.md §"Keeping the two backends in parity" and
+plugins/alignments/…/CLAUDE.md §"Hit-testing" saying a hit test is a consumer
+of shader scalars too, with hover slack a named constant, never a second shape.
+
 
 **This keeps CPU picking. It is not a step toward GPU picking** — see "What
 should not change" below, where CPU picking is affirmed. It changes only where
