@@ -621,10 +621,12 @@ function keyPrefixes(measurement: Measurement, row: Row): string[] {
  */
 export function rowKeys(measurement: Measurement, row: Row): string[] {
   const mine = keyPrefixes(measurement, row)
-  const others = measurement.rows
-    .filter(other => other !== row)
-    .flatMap(other => keyPrefixes(measurement, other))
-  const at = mine.findIndex(key => !others.includes(key))
+  const others = new Set(
+    measurement.rows
+      .filter(other => other !== row)
+      .flatMap(other => keyPrefixes(measurement, other)),
+  )
+  const at = mine.findIndex(key => !others.has(key))
   return at === -1 ? mine : mine.slice(0, at + 1)
 }
 
