@@ -72,8 +72,10 @@ export function computeVisibleAnnotations(
   const { view, framesDataMap, rowIndexBySrc, rowHeight } = params
   const markers: FrameMarker[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
-  // Thin CDS strip pinned to the bottom of the row band.
-  const stripH = Math.max(2, Math.round(h * 0.25))
+  // Thin CDS strip pinned to the bottom of the row band, and never taller than
+  // the band: `h` floors at the shader's MIN_DRAWN_ROW_PX, so the 2px minimum
+  // on its own spanned the rows either side on a deep alignment.
+  const stripH = Math.min(h, Math.max(2, Math.round(h * 0.25)))
   const stripOffset = offset + h - stripH
 
   for (const { data: records, bpToPx, bpLo, bpHi } of eachVisibleRegion(

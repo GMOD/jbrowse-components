@@ -60,6 +60,23 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
   ])
 })
 
+// A 447-way alignment in fit mode puts `rowHeight` near 1, where the drawn band
+// floors at MIN_DRAWN_ROW_PX — and the strip's 2px minimum then covered the rows
+// either side, contradicting the "thin band at the bottom of each row" this
+// function documents.
+test('the CDS strip never outgrows the row band it annotates', () => {
+  const markers = computeVisibleAnnotations({
+    view,
+    framesDataMap: { get: () => [rec({ src: 'rn6' })] },
+    rowIndexBySrc,
+    rowHeight: 1.24,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(markers[0]!.h).toBeLessThanOrEqual(1.24)
+})
+
 // `frameColorIndex` mirrors the `−` half of the palette onto the `+` half, so
 // one reading frame is one color whichever strand the gene is on. It used to
 // hand the painter a NEGATIVE index and rely on `Array.at` wrapping it to the
