@@ -7,18 +7,19 @@ import {
   APP_NAME,
   ASSETS,
   BUILD,
-  DIST,
   PRODUCT_NAME,
   ROOT,
   VERSION,
+  packagedApp,
 } from './config.ts'
 import { macSessionDocumentType } from './sessionFileType.ts'
 import { ensureDir, generateAppUpdateYml, log } from './utils.ts'
 
-export async function packageApp(
-  platform: 'darwin' | 'linux' | 'win32',
-  arch: 'x64' | 'arm64' | 'universal',
-) {
+import type { Platform } from './config.ts'
+
+export async function packageApp(target: Platform) {
+  const app = packagedApp(target)
+  const { platform, arch, name, dir } = app
   log(`Packaging for ${platform}-${arch}...`)
 
   const { packager } = await import('@electron/packager')
@@ -38,7 +39,7 @@ export async function packageApp(
   fs.writeFileSync(pkgJsonPath, JSON.stringify(appPkg, null, 2))
   fs.writeFileSync(appUpdateYmlPath, generateAppUpdateYml())
 
-  const outDir = path.join(DIST, 'unpacked')
+  const outDir = path.dirname(dir)
   ensureDir(outDir)
 
   const icon =
@@ -62,8 +63,8 @@ export async function packageApp(
     const appPaths = await packager({
       dir: BUILD,
       out: outDir,
-      name: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
-      executableName: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
+      name,
+      executableName: name,
       platform,
       arch,
       appVersion: VERSION,
@@ -91,7 +92,12 @@ export async function packageApp(
           : undefined,
       osxSign,
     })
-    return appPaths[0]!
+    if (appPaths[0] !== dir) {
+      throw new Error(
+        `@electron/packager wrote ${appPaths[0]}, not the ${dir} the installers and the browser-test harness derive`,
+      )
+    }
+    return app
   } finally {
     fs.rmSync(pkgJsonPath, { force: true })
     fs.rmSync(appUpdateYmlPath, { force: true })

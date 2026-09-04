@@ -27,7 +27,7 @@ import {
 export async function buildLinux({ noInstaller = false } = {}) {
   log('Building Linux package...')
 
-  const electronAppDir = await packageApp('linux', 'x64')
+  const { dir: electronAppDir } = await packageApp('linux')
 
   // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
   if (noInstaller) {

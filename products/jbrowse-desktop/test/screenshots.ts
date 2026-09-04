@@ -704,11 +704,7 @@ function buildCliConfig(): string {
   // Every command takes the same --out, which is the tutorial's whole shape: the
   // first writes myproject/config.json and the rest edit it in place.
   const cli = (...args: string[]) => {
-    execFileSync(
-      'node',
-      [cliEntry, ...args, '--out', out],
-      { stdio: 'pipe' },
-    )
+    execFileSync('node', [cliEntry, ...args, '--out', out], { stdio: 'pipe' })
   }
   const load = ['--load', 'copy']
   cli('add-assembly', join(volvox, 'volvox.fa'), '--name', 'volvox', ...load)

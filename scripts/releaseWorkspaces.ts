@@ -11,12 +11,7 @@ import path from 'node:path'
 // release. example-plugins/* is: it is private and never published, but its
 // manifest is an example a plugin author copies, and left out of the bump it
 // sat at 4.3.0 through a major.
-export const WORKSPACES = [
-  'packages',
-  'products',
-  'plugins',
-  'example-plugins',
-]
+export const WORKSPACES = ['packages', 'products', 'plugins', 'example-plugins']
 
 export function workspaceManifests(root: string) {
   return WORKSPACES.filter(ws => fs.existsSync(path.join(root, ws))).flatMap(

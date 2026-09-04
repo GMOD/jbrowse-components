@@ -2,6 +2,8 @@ import fs from 'fs'
 import { parseArgs } from 'node:util'
 import path from 'path'
 
+import { unpackedApp } from './artifacts.ts'
+
 export type Platform = 'linux' | 'mac' | 'win'
 
 export function parsePackagingArgs() {
@@ -35,3 +37,21 @@ export const APP_NAME = 'jbrowse-desktop'
 export const PRODUCT_NAME = 'JBrowse 2'
 export const APP_ID = 'org.jbrowse2.app'
 export const APPLE_TEAM_ID = '9KR53J86Q2'
+
+/**
+ * Where a packaged target lands on disk. `unpackedApp` owns the naming rule
+ * (and is where its test lives); this joins it onto dist/ with the app's real
+ * names.
+ */
+export function packagedApp(target: Platform) {
+  const app = unpackedApp(target, {
+    appName: APP_NAME,
+    productName: PRODUCT_NAME,
+  })
+  return {
+    ...app,
+    dir: path.join(DIST, app.dir),
+    bundle: path.join(DIST, app.bundle),
+    executable: path.join(DIST, app.executable),
+  }
+}

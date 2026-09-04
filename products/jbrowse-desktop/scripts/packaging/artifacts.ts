@@ -48,6 +48,46 @@ export const winArtifacts = (app: AppRelease) => ({
   manifest: 'latest.yml',
 })
 
+// The unpacked electron tree, which dist/ stages rather than publishes.
+// @electron/packager calls the app `name` and writes
+// `unpacked/<name>-<platform>-<arch>/` holding an executable of the same name —
+// on darwin a `<name>.app` bundle with the binary two levels further in.
+//
+// One derivation because five places used to spell parts of it: the packager's
+// own `name` and `executableName`, the `.app` the mac signing and ditto steps
+// act on, the `.exe` windows.ts signs, and the browser-test harness, which has
+// no build to ask and had a two-way win32/linux ternary that resolved to a
+// linux path on darwin. Paths are relative to dist/; config.ts joins them.
+const TARGETS = {
+  linux: { platform: 'linux', arch: 'x64' },
+  mac: { platform: 'darwin', arch: 'universal' },
+  win: { platform: 'win32', arch: 'x64' },
+} as const satisfies Record<
+  Platform,
+  { platform: NodeJS.Platform; arch: string }
+>
+
+export function unpackedApp(
+  target: Platform,
+  { appName, productName }: { appName: string; productName: string },
+) {
+  const { platform, arch } = TARGETS[target]
+  const name = platform === 'darwin' ? productName : appName
+  const dir = `unpacked/${name}-${platform}-${arch}`
+  const bundle = platform === 'darwin' ? `${dir}/${name}.app` : dir
+  return {
+    platform,
+    arch,
+    name,
+    dir,
+    bundle,
+    executable:
+      platform === 'darwin'
+        ? `${bundle}/Contents/MacOS/${name}`
+        : `${dir}/${name}${platform === 'win32' ? '.exe' : ''}`,
+  }
+}
+
 // Record<Platform, …> rather than a switch or an if-chain: adding a member to
 // `Platform` fails to compile here, instead of yielding a release that quietly
 // ships without that platform.

@@ -104,14 +104,13 @@ async function createWindowsInstaller(electronAppDir: string) {
 export async function buildWindows({ noInstaller = false } = {}) {
   log('Building Windows package...')
 
-  const electronAppDir = await packageApp('win32', 'x64')
+  const { dir: electronAppDir, executable: mainExe } = await packageApp('win')
 
   if (noInstaller) {
     log(`Unpacked app at: ${electronAppDir}`)
     return electronAppDir
   }
 
-  const mainExe = path.join(electronAppDir, `${APP_NAME}.exe`)
   signWindowsFile(mainExe)
 
   const installerPath = await createWindowsInstaller(electronAppDir)

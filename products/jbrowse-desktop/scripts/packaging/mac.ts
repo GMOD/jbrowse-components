@@ -14,9 +14,7 @@ export async function buildMac({ noInstaller = false } = {}) {
     throw new Error('macOS builds require running on macOS')
   }
 
-  const electronAppDir = await packageApp('darwin', 'universal')
-  const appName = `${PRODUCT_NAME}.app`
-  const appPath = path.join(electronAppDir, appName)
+  const { dir: electronAppDir, bundle: appPath } = await packageApp('mac')
 
   verifyMacCodesign(appPath)
 

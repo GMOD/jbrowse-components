@@ -10,11 +10,9 @@ import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 import { Builder, By, Key, WebDriver, logging, until } from 'selenium-webdriver'
 import handler from 'serve-handler'
 
-import {
-  APP_NAME,
-  DIST,
-  PRODUCT_NAME,
-} from '../scripts/packaging/config.ts'
+import { packagedApp } from '../scripts/packaging/config.ts'
+
+import type { Platform } from '../scripts/packaging/config.ts'
 
 const require = createRequire(import.meta.url)
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -25,33 +23,23 @@ export const isWindows = process.platform === 'win32'
 export const isHeadless =
   process.argv.includes('--headless') || process.env.HEADLESS === 'true'
 
-// @electron/packager writes <name>-<platform>-<arch> under dist/unpacked, with
-// `name` PRODUCT_NAME on darwin and APP_NAME elsewhere. The arch is fixed by
-// the packaging entry points: mac.ts universal, linux.ts and windows.ts x64.
-function appBinaryPath() {
-  const unpacked = join(DIST, 'unpacked')
-  switch (process.platform) {
-    case 'darwin':
-      return join(
-        unpacked,
-        `${PRODUCT_NAME}-darwin-universal`,
-        `${PRODUCT_NAME}.app`,
-        'Contents',
-        'MacOS',
-        PRODUCT_NAME,
-      )
-    case 'linux':
-      return join(unpacked, `${APP_NAME}-linux-x64`, APP_NAME)
-    case 'win32':
-      return join(unpacked, `${APP_NAME}-win32-x64`, `${APP_NAME}.exe`)
-    default:
-      throw new Error(
-        `jbrowse-desktop is packaged for darwin, linux and win32; this is ${process.platform}`,
-      )
-  }
+const HOST_TARGET: Partial<Record<NodeJS.Platform, Platform>> = {
+  darwin: 'mac',
+  linux: 'linux',
+  win32: 'win',
 }
 
-export const APP_BINARY = appBinaryPath()
+function appBinary() {
+  const target = HOST_TARGET[process.platform]
+  if (!target) {
+    throw new Error(
+      `jbrowse-desktop is packaged for macOS, Linux and Windows; this is ${process.platform}`,
+    )
+  }
+  return packagedApp(target).executable
+}
+
+export const APP_BINARY = appBinary()
 
 const CHROMEDRIVER_PORT = 9515
 const electronChromedriverDir = dirname(
