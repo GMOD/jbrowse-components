@@ -1,5 +1,6 @@
 import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
-import { getAlignmentOps, getMate } from '../syntenyMate.ts'
+import { voteEvidence } from '../syntenyHysteresis.ts'
+import { getAlignmentOps, getMate, isNamedRecord } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { SyntenyMate } from '../syntenyMate.ts'
@@ -161,11 +162,10 @@ export function resolvePanel(
       ? [{ feature, mate, spans: resolveSpans({ feature, mate, region }) }]
       : []
   })
-  // the same evidence the multi-way lane votes with (`MultiWayGroup.weight`):
-  // an alignment record's anchor bp, and one per gene for a named source, so
-  // a panel launched off a lane opens on the lane's contig
+  // the same evidence the multi-way lane and the follow vote with, so a panel
+  // launched off a lane opens on the lane's contig
   const evidenceOf = ({ feature, spans }: (typeof resolved)[number]) =>
-    feature.get('name') === undefined ? spans.featEnd - spans.featStart : 1
+    voteEvidence(isNamedRecord(feature), spans.featEnd - spans.featStart)
   const byRefName = new Map<string, number>()
   for (const entry of resolved) {
     const { refName } = entry.mate

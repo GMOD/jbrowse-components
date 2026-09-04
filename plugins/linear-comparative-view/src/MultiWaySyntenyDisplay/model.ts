@@ -33,6 +33,7 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
@@ -372,7 +373,7 @@ export function stateModelFactory(
         return (
           self.features !== undefined &&
           self.features.length > 0 &&
-          self.features.every(f => f.get('name') === undefined)
+          !self.features.some(isNamedRecord)
         )
       },
       /**

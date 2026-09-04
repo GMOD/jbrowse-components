@@ -21,6 +21,15 @@ export type SyntenyMate = {
   id?: string
 }
 
+// A named record is a gene-shaped one (an MCScan/ortholog table row); a
+// nameless one is an alignment (PAF, delta, chain). The distinction drives the
+// contig votes' `voteEvidence` and the source-shape checks, and this is its
+// one Feature-side spelling — the packed-lane side is synteny-core's
+// `unnamedNameId`, since the packers turn the missing name into `UNNAMED`.
+export function isNamedRecord(feature: Feature) {
+  return feature.get('name') !== undefined
+}
+
 // `Feature.get` types non-standard keys as `unknown`, so reading `mate` needs a
 // cast somewhere; this is the one place it happens. `undefined` is part of the
 // return type rather than asserted away: a feature with no mate is what a

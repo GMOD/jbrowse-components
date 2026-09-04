@@ -23,6 +23,21 @@ export interface StringDict {
 }
 
 /**
+ * What a record with no name packs into its name lane. A `Feature`'s missing
+ * name is `undefined`, but a dictionary lane holds strings — so the packers
+ * write this sentinel, and everything downstream that asks "is this record
+ * named" (the contig votes' evidence rule, a fixture harness) resolves it
+ * through {@link unnamedNameId} rather than restating the convention.
+ */
+export const UNNAMED = ''
+
+/** the name lane's id for {@link UNNAMED} — -1 where every record is named,
+ * which is not a valid id and so matches no record */
+export function unnamedNameId(nameDict: string[]) {
+  return nameDict.indexOf(UNNAMED)
+}
+
+/**
  * Growable string interner. One per lane — sharing one across lanes only makes
  * the ids less local without shrinking anything, since a dictionary is bounded
  * by its lane's cardinality either way.

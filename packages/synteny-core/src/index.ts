@@ -19,7 +19,7 @@ export {
 } from './syntenyTypes.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
-export { makeStringDict } from './stringDict.ts'
+export { UNNAMED, makeStringDict, unnamedNameId } from './stringDict.ts'
 export type { StringDict } from './stringDict.ts'
 export {
   PAN_BUFFER_PX,

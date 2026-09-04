@@ -13,6 +13,7 @@ import {
   clampBlockToRegions,
   createAttributeChannels,
   cumBpAtGenomicCoord,
+  UNNAMED,
   cumBpInEntry,
   declaredAttributes,
   dnDsRatio,
@@ -634,7 +635,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEndsArray[validCount] = mate.end
 
     featureIds.push(id)
-    nameIds[validCount] = nameDict.idFor(f.get('name') ?? '')
+    nameIds[validCount] = nameDict.idFor(f.get('name') ?? UNNAMED)
     refNameIds[validCount] = refNameDict.idFor(refName)
     assemblyNameIds[validCount] = assemblyNameDict.idFor(
       (f.get('assemblyName') as string | undefined) ?? '',

@@ -1,3 +1,6 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import {
   followWindowMapping,
@@ -182,6 +185,78 @@ describe('several windows at once', () => {
     expect(
       followWindowsMapping({ data: genome, windows, toMate: true }),
     ).toEqual(windows.map(w => map(genome, w)))
+  })
+})
+
+// A GENE TABLE weighs one vote per gene, not anchor bp — the rule the
+// multi-way lane and the launch already vote with. Weighed by bp, one 1.5 Mb
+// gene outvoted fifteen orthologs totalling a tenth of that, and the followed
+// row went to a contig the lane and the launched panel both avoid.
+describe('the target vote on a named source', () => {
+  // one huge gene against many small ones, mates on different contigs, so the
+  // bp axis and the gene-count axis disagree
+  const genes = [
+    {
+      name: 'DPP10',
+      start: 1_000_000,
+      end: 2_500_000,
+      mateRefName: 'Pp2B',
+      mateStart: 1_000_000,
+      mateEnd: 2_500_000,
+    },
+    ...Array.from({ length: 15 }, (_, i) => ({
+      name: `og${i}`,
+      start: 3_000_000 + i * 30_000,
+      end: 3_020_000 + i * 30_000,
+      mateRefName: 'Pp2A',
+      mateStart: 3_000_000 + i * 30_000,
+      mateEnd: 3_020_000 + i * 30_000,
+    })),
+  ]
+
+  test('many small orthologs outvote one long gene', () => {
+    expect(map(data(genes), win(500_000, 4_000_000))).toMatchObject({
+      refName: 'Pp2A',
+    })
+  })
+
+  test('the follow, the lane and the launch land on one contig', () => {
+    // the launch's twin of the vote above, over the same records spelled as
+    // features — the parity `layoutMultiWay.test.ts` pins lane-to-launch,
+    // pinned here for the third voter
+    const features = genes.map(
+      g =>
+        new SimpleFeature({
+          uniqueId: g.name,
+          refName: 'chr1',
+          start: g.start,
+          end: g.end,
+          strand: 1,
+          name: g.name,
+          assemblyName: 'grape',
+          mate: {
+            assemblyName: 'peach',
+            refName: g.mateRefName,
+            start: g.mateStart,
+            end: g.mateEnd,
+            name: g.name,
+          },
+        }),
+    )
+    expect(resolvePanel(features, undefined)!.refName).toBe(
+      map(data(genes), win(500_000, 4_000_000))!.refName,
+    )
+  })
+
+  test('a nameless source still weighs anchor bp', () => {
+    // the same shape with no names is an alignment record set, where the long
+    // block IS the evidence and must win over the repeat-sized hits
+    expect(
+      map(
+        data(genes.map(({ name, ...rest }) => rest)),
+        win(500_000, 4_000_000),
+      ),
+    ).toMatchObject({ refName: 'Pp2B' })
   })
 })
 

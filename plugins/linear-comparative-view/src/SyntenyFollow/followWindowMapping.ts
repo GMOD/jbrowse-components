@@ -1,4 +1,6 @@
-import { preferIncumbent } from '../syntenyHysteresis.ts'
+import { unnamedNameId } from '@jbrowse/synteny-core'
+
+import { preferIncumbent, voteEvidence } from '../syntenyHysteresis.ts'
 import { followAxes } from './followAxes.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -169,6 +171,9 @@ export function followWindowsMapping({
   // per window that a block actually reaches: an anchor showing 200 contigs
   // against a dictionary of 200 would otherwise allocate 40,000 slots to fill a
   // few hundred.
+  // resolved to a dictionary id once, like the filters in `followAxes`, so the
+  // named test below is an integer compare per block
+  const unnamedId = unnamedNameId(data.nameDict)
   const windowOfRefNameId = new Int32Array(windowRefNameDictLength).fill(-1)
   for (const [w, id] of windowRefNameIds.entries()) {
     if (id >= 0) {
@@ -212,13 +217,16 @@ export function followWindowsMapping({
     const target = targets[slot - 1]!
     const aLo = starts[i]!
     const aHi = ends[i]!
-    // ONE TARGET CONTIG PER WINDOW, by summed overlap: a genome-scale window
-    // reaches several of the other assembly's, and an answer spanning them is
-    // not a place. One only reached by blocks off the window's ends totals zero
-    // and so never wins, which is what stops a neighbour from being picked.
+    // ONE TARGET CONTIG PER WINDOW, by summed evidence — `voteEvidence`, the
+    // same rule the multi-way lane and the launch vote with, so a followed row
+    // lands on the contig those two pick from the same data. A genome-scale
+    // window reaches several of the other assembly's contigs, and an answer
+    // spanning them is not a place. One only reached by blocks off the
+    // window's ends totals zero and so never wins, which is what stops a
+    // neighbour from being picked.
     const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
     if (overlap > 0) {
-      target.overlap += overlap
+      target.overlap += voteEvidence(data.nameIds[i]! !== unnamedId, overlap)
     }
     // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
     // edges map to, so a reverse-strand block simply reports them swapped and

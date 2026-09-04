@@ -1,5 +1,8 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
+import { voteEvidence } from '../syntenyHysteresis.ts'
+import { isNamedRecord } from '../syntenyMate.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -90,8 +93,7 @@ export function groupFeatures(features: Feature[]) {
         anchor: { refName: feature.get('refName'), start, end },
         mates: new Map(),
         feature,
-        weight:
-          feature.get('name') === undefined ? Math.max(end - start, 1) : 1,
+        weight: voteEvidence(isNamedRecord(feature), Math.max(end - start, 1)),
       }
       byKey.set(key, group)
     }

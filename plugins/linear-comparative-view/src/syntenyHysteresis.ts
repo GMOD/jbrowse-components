@@ -23,3 +23,15 @@ export function preferIncumbent<T extends { overlap: number }>(
     ? incumbent
     : best
 }
+
+/**
+ * The evidence one record adds to a contig vote: one per gene for a named
+ * record, anchor bp for a nameless alignment. On a gene table a single long
+ * gene must not outvote a dozen orthologs, while on an alignment source a 2 Mb
+ * block still has to outweigh twenty repeat hits. The multi-way lane, the
+ * launched panel and the followed row all vote with this, so the three land on
+ * one contig from one dataset.
+ */
+export function voteEvidence(named: boolean, anchorBp: number) {
+  return named ? 1 : anchorBp
+}

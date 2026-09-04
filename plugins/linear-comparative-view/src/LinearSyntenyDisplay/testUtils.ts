@@ -1,4 +1,4 @@
-import { makeStringDict } from '@jbrowse/synteny-core'
+import { UNNAMED, makeStringDict } from '@jbrowse/synteny-core'
 
 import type { SyntenyFeatureData } from './model.ts'
 import type { PickCanvasLike } from './syntenyPickEngine.ts'
@@ -165,7 +165,9 @@ export function packSyntenyFeatureData(
     const d = makeStringDict()
     return { dict: d.dict, ids: Uint32Array.from(values, v => d.idFor(v)) }
   }
-  const names = lane(blocks.map(b => b.name ?? b.id ?? ''))
+  // the packers' own sentinel — an id fallback here made every id-carrying
+  // fixture read as a NAMED record to the contig votes' evidence rule
+  const names = lane(blocks.map(b => b.name ?? UNNAMED))
   const refNames = lane(blocks.map(b => b.refName ?? 'chr1'))
   const assemblies = lane(blocks.map(b => b.assembly ?? 'hg002mat'))
   const mateRefNames = lane(
