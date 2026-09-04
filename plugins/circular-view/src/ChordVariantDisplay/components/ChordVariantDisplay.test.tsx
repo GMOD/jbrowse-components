@@ -43,6 +43,7 @@ function attrs(model: ChordDisplayModel) {
   )
   const g = container.querySelector('[data-display-phase]')
   return {
+    testid: g?.getAttribute('data-testid'),
     id: g?.getAttribute('data-display-id'),
     drawn: g?.getAttribute('data-display-drawn'),
     phase: g?.getAttribute('data-display-phase'),
@@ -56,6 +57,7 @@ function attrs(model: ChordDisplayModel) {
 // target.
 test('an unpainted chord track is pending, not absent', () => {
   expect(attrs(chordModel('loading'))).toEqual({
+    testid: 'circular-chord-display',
     id: 'sv-ChordVariantDisplay',
     drawn: 'false',
     phase: 'loading',
@@ -64,6 +66,7 @@ test('an unpainted chord track is pending, not absent', () => {
 
 test('a painted chord track publishes drawn beside its phase', () => {
   expect(attrs(chordModel('ready'))).toEqual({
+    testid: 'circular-chord-display',
     id: 'sv-ChordVariantDisplay',
     drawn: 'true',
     phase: 'ready',
@@ -77,6 +80,7 @@ test('the error terminal is finished rather than pending', () => {
   expect(
     attrs(chordModel('error', { error: new Error('adapter fell over') })),
   ).toEqual({
+    testid: 'circular-chord-display',
     id: 'sv-ChordVariantDisplay',
     drawn: 'true',
     phase: 'error',

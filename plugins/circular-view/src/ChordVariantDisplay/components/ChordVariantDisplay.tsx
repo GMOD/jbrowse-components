@@ -14,6 +14,12 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   const phase = display.displayPhase
   return (
     <g
+      // The fourth attribute the chrome publishes, not three: `displayPainted`
+      // and `displaySettled` are conjunctions of a testid AND a display
+      // attribute on ONE element, and the pending-display census names an entry
+      // by it. `structuralVariantChordRenderer` cannot serve — it is on the
+      // inner group, which the loading branch does not render.
+      data-testid="circular-chord-display"
       data-display-id={display.configuration.displayId}
       // Chords are React SVG, painted in the commit that lands the data, so
       // paint has no state of its own to publish: the terminals that never
