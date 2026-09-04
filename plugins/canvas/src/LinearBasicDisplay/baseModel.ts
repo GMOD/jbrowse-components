@@ -123,7 +123,12 @@ import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
-import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
+import type {
+  Feature,
+  ParentFeatureSummary,
+  Region,
+  StatusCallback,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -1519,10 +1524,14 @@ export default function baseStateModelFactory(
            * #action
            * Open the feature-details widget on what `fetch` resolves to, with
            * the adapter's header metadata beside it; a lookup that resolves to
-           * nothing is reported as a miss.
+           * nothing is reported as a miss. `parentFeature` names the feature the
+           * click was made THROUGH, where it was made through one.
            */
-          openFeatureDetails(fetch: () => Promise<Feature | undefined>) {
-            void openDetails(fetch)
+          openFeatureDetails(
+            fetch: () => Promise<Feature | undefined>,
+            parentFeature?: ParentFeatureSummary,
+          ) {
+            void openDetails(fetch, parentFeature)
           },
 
           /**
@@ -1848,16 +1857,28 @@ export default function baseStateModelFactory(
           subfeatureInfo: SubfeatureInfo | undefined,
           displayedRegionIndex: number,
         ) {
-          self.openFeatureDetails(async () => {
-            const parentFeature = await self.fetchFullFeature(
-              featureId,
-              displayedRegionIndex,
-            )
-            return parentFeature && subfeatureInfo
-              ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
-                  parentFeature)
-              : parentFeature
-          })
+          // What the containing feature is CALLED comes off the item the
+          // display drew, not off the fetched record: which field names a
+          // feature on screen is the track's `labels.name` expression, and the
+          // hover's own gene row reads the same `name` (see hoverTooltipRows).
+          const drawn = subfeatureInfo
+            ? self.featureIdIndex.get(featureId)
+            : undefined
+          self.openFeatureDetails(
+            async () => {
+              const parentFeature = await self.fetchFullFeature(
+                featureId,
+                displayedRegionIndex,
+              )
+              return parentFeature && subfeatureInfo
+                ? (findSubfeatureById(
+                    parentFeature,
+                    subfeatureInfo.featureId,
+                  ) ?? parentFeature)
+                : parentFeature
+            },
+            drawn?.name ? { name: drawn.name, type: drawn.type } : undefined,
+          )
         },
       }))
       .actions(self => {

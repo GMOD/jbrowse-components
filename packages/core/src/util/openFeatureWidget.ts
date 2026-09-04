@@ -20,18 +20,19 @@ export interface FeatureWidgetTypeRef {
   id: string
 }
 
+// The feature a details panel was reached THROUGH, when it was reached through
+// one: a transcript clicked inside its gene, whose name is then the one thing
+// the panel cannot show. A summary and never the parent's own record -- a
+// RefSeq gene carries every sibling isoform and all their exons, and this is
+// persisted in the session snapshot.
+export interface ParentFeatureSummary {
+  name: string
+  type?: string
+}
+
 const DEFAULT_FEATURE_WIDGET: FeatureWidgetTypeRef = {
   type: 'BaseFeatureWidget',
   id: 'baseFeature',
-}
-
-// The containing feature named the way the panel's own title names a feature
-// (`generateTitle`), so "gene DMD" above a transcript reads as the card it would
-// open. Nameless parents summarize to nothing: a widget that says "in gene" has
-// told the reader less than saying nothing would.
-export function parentFeatureSummary(parent: Feature | undefined) {
-  const name = parent?.get('name') ?? parent?.get('id')
-  return name ? { name: String(name), type: parent?.get('type') } : undefined
 }
 
 // Open a feature widget for the given featureData and mark it as the
@@ -57,11 +58,11 @@ export function openFeatureWidget(
     // metadata, descriptions, etc.
     extra?: Record<string, unknown>
     // The live Feature `featureData` was serialized from, when the caller
-    // still holds it. `setSelection` is given this instead of a rebuilt one,
-    // and it is also the only thing here that can reach the CONTAINING feature:
-    // a serialized copy keeps its parent's id (`toJSON` bakes that in, with the
-    // inherited strand) but not the handle, so a widget opened without it can
-    // name no parent.
+    // still holds it. Only an optimization -- `setSelection` is given this
+    // instead of a rebuilt one, and the two are interchangeable because
+    // `featureData` is this feature's own `toJSON()` (which already bakes in
+    // the parentId and inherited strand that a reconstructed feature would
+    // otherwise lack).
     //
     // Worth threading because `new SimpleFeature` is not shallow: its
     // constructor inflates the whole subfeature tree, so rebuilding one for a
@@ -69,6 +70,14 @@ export function openFeatureWidget(
     // every transcript -- ~16k of them for a RefSeq BRCA1 -- purely to hand
     // the session a feature it was already given.
     feature?: Feature
+    // The feature this one was reached THROUGH, when it was reached through
+    // one -- a transcript clicked inside its gene. **Named as the display DREW
+    // it**: which of an annotation's fields names a feature on screen is the
+    // track's own `labels.name` expression, so the display is the only side
+    // that can answer, and a panel that answered it differently would disagree
+    // with the label and the hover for the same gene. Nothing is derived here
+    // from the feature's parent handle for that reason.
+    parentFeature?: ParentFeatureSummary
   } = {},
 ): Widget | undefined {
   const session = getSession(node)
@@ -79,7 +88,7 @@ export function openFeatureWidget(
   const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
   const widget = session.addWidget(type, id, {
     featureData,
-    parentFeature: parentFeatureSummary(opts.feature?.parent?.()),
+    parentFeature: opts.parentFeature,
     view: getContainingView(node),
     track: getContainingTrack(node),
     ...opts.extra,

@@ -8,13 +8,12 @@ import { applyFormatDetails, formatDetailsNumber } from './formatDetails.ts'
 import { nullReplacer } from './util.tsx'
 
 import type PluginManager from '../PluginManager.ts'
-import type { SimpleFeatureSerialized } from '../util/index.ts'
-import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
 import type {
-  Descriptors,
-  MaybeSerializedFeat,
   ParentFeatureSummary,
-} from './types.tsx'
+  SimpleFeatureSerialized,
+} from '../util/index.ts'
+import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
+import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

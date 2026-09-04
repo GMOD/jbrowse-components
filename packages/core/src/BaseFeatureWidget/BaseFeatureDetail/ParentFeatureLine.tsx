@@ -2,7 +2,7 @@ import { Typography } from '@mui/material'
 
 import { makeStyles } from '../../util/tss-react/index.ts'
 
-import type { ParentFeatureSummary } from '../types.tsx'
+import type { ParentFeatureSummary } from '../../util/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   line: {

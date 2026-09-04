@@ -304,6 +304,7 @@ export {
 } from './crypto.ts'
 export {
   type FeatureWidgetTypeRef,
+  type ParentFeatureSummary,
   notifyFeatureDetailsMiss,
   openFeatureWidget,
 } from './openFeatureWidget.ts'

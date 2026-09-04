@@ -30,6 +30,27 @@ const eden1: SubfeatureInfo = {
   displayLabel: 'EDEN.1',
 }
 
+// The gene as GetCanvasFeatureDetails answers it: the top-level record with the
+// clicked isoform under it, which `selectFeatureById` descends into.
+const edenRecord = {
+  uniqueId: 'EDEN',
+  refName: 'ctgA',
+  start: 1050,
+  end: 9000,
+  type: 'gene',
+  name: 'EDEN',
+  subfeatures: [
+    {
+      uniqueId: 'EDEN.1',
+      refName: 'ctgA',
+      start: 1050,
+      end: 9000,
+      type: 'mRNA',
+      name: 'EDEN.1',
+    },
+  ],
+}
+
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, mockRpcCall } = createDisplay()
@@ -84,5 +105,52 @@ describe('selectFeatureById fetch target', () => {
     await waitFor(() => {
       expect(fetchedIds(mockRpcCall)).toEqual(['EDEN'])
     })
+  })
+})
+
+// The panel opens on the exact isoform clicked, whose card is headed `EDEN.1 -
+// mRNA` -- so the gene is the one thing it cannot show, and the hover that
+// preceded the click named it. The name comes off the DRAWN item rather than
+// the fetched record because which field names a feature on screen is the
+// track's `labels.name` expression: reading `name` off the record instead would
+// make the panel and the hover disagree on any track that configures one.
+describe('the containing feature the panel is told about', () => {
+  function setupOpening() {
+    const { createDisplay } = createTestEnvironment()
+    const { display, mockRpcCall, session } = createDisplay()
+    mockRpcCall.mockImplementation(
+      async (_sessionId: string, method: string) =>
+        method === 'GetCanvasFeatureDetails'
+          ? { feature: edenRecord }
+          : undefined,
+    )
+    display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
+    display.setLoadedRegion(0, ctgA)
+    return { display, session }
+  }
+
+  async function openedWidget(session: { openedWidgets: unknown[] }) {
+    await waitFor(() => {
+      expect(session.openedWidgets).toHaveLength(1)
+    })
+    return session.openedWidgets[0] as Record<string, unknown>
+  }
+
+  it('names the gene an isoform click was made through', async () => {
+    const { display, session } = setupOpening()
+    display.selectFeatureById('EDEN', eden1, 0)
+
+    const widget = await openedWidget(session)
+    expect(widget.parentFeature).toEqual({ name: 'EDEN', type: 'gene' })
+    expect(widget.featureData).toMatchObject({ uniqueId: 'EDEN.1' })
+  })
+
+  it('names nothing when the gene itself was clicked', async () => {
+    const { display, session } = setupOpening()
+    display.selectFeatureById('EDEN', undefined, 0)
+
+    const widget = await openedWidget(session)
+    expect(widget.parentFeature).toBeUndefined()
+    expect(widget.featureData).toMatchObject({ uniqueId: 'EDEN' })
   })
 })

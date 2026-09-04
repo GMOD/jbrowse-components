@@ -1,7 +1,11 @@
 import { openFeatureWidget, withFeatureDetails } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 
-import type { Feature, FeatureWidgetTypeRef } from '@jbrowse/core/util'
+import type {
+  Feature,
+  FeatureWidgetTypeRef,
+  ParentFeatureSummary,
+} from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface FeatureDetailsHost extends IStateTreeNode {
@@ -23,7 +27,10 @@ export interface FeatureDetailsHost extends IStateTreeNode {
  */
 export function createCanvasFeatureDetailsOpener(self: FeatureDetailsHost) {
   const fetchMetadata = createAdapterMetadataFetch(self)
-  return (fetch: () => Promise<Feature | undefined>) => {
+  return (
+    fetch: () => Promise<Feature | undefined>,
+    parentFeature?: ParentFeatureSummary,
+  ) => {
     let descriptions: unknown
     return withFeatureDetails(
       self,
@@ -39,6 +46,7 @@ export function createCanvasFeatureDetailsOpener(self: FeatureDetailsHost) {
           widget: self.featureWidgetType,
           extra: { descriptions },
           feature,
+          parentFeature,
         })
       },
     )

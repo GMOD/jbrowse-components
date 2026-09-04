@@ -70,6 +70,17 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
         level?: string
         actions: SnackAction[]
       }[],
+      // Present so `isSessionModelWithWidgets` holds -- a display whose click
+      // opens the feature-details widget takes the no-widgets branch otherwise,
+      // and the hand-off below is never made at all.
+      widgets: new Map<string, unknown>(),
+      // What a display asked the drawer to open, in order: each widget's whole
+      // initial state, verbatim. The click's hand-off is the assertable part --
+      // which feature it opened on, and which containing feature it says that
+      // one was reached through -- and it is a plain record here for the same
+      // reason `notifications` is: a real widget tree would answer these
+      // questions through a second model's rendering.
+      openedWidgets: [] as Record<string, unknown>[],
     }))
     .views(self => ({
       getTrackById,
@@ -102,6 +113,16 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       setSelection(thing: unknown) {
         self.selection = thing
       },
+      addWidget(
+        type: string,
+        id: string,
+        initialState?: Record<string, unknown>,
+      ) {
+        const widget = { ...initialState, type, id }
+        self.openedWidgets.push(widget)
+        return widget
+      },
+      showWidget(_widget: unknown) {},
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         const forType = { ...self.displayTypeDefaults[displayType] }
         if (value === undefined) {
