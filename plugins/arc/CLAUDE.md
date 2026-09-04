@@ -41,6 +41,23 @@ leaving an empty canvas that still reports `data-display-drawn`.
 SHIPPED slot defaults rather than literals; `testEnv.ts` registers the plugin's
 jexl functions so a test can.
 
+The three derived fields are spelled `selected?: never` etc. on `ArcParts`, and
+that is the whole enforcement: TypeScript does **not** excess-property-check an
+object literal returned from a callback, so under a plain `Omit` a `toArc`
+returning its own `selected` compiled clean and lost it to spread order.
+`arcLayout.test.ts` pins it with a `@ts-expect-error` — widen `ArcParts` and the
+build fails on the directive going unused.
+
+**Everything in the list paints, so a hidden arc leaves the list.** It is the
+hit test's input as well as the painter's, so an entry that strokes nothing
+answers a hover and a click over ink nobody can see. Two ways an arc gets there:
+a thickness of 0 or less, which is a user expression (`jexl:...>5?3:0`) asking
+for it to be hidden and not something to substitute a hairline for; and a shape
+with no ink, which is what a zero-length feature flattens to. A NON-finite
+thickness is a different answer — a broken expression, not an instruction — and
+takes `FALLBACK_STROKE_PX`, as does `logThickness` for a score it cannot take a
+log of. That is why the shipped default can never hide an arc.
+
 **The export stays vector, and is the one thing SVG still does here.** It emits
 `<path>` per arc off the same list because a figure wants vector and that path
 runs once, not sixty times a second. See `agent-docs/reference/SVG_EXPORT.md`.

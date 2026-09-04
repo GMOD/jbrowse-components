@@ -73,15 +73,28 @@ export interface ArcPoint {
   region: Region | undefined
 }
 
-export type ArcParts = Omit<LaidOutArc, 'selected' | 'xMin' | 'xMax'>
+/**
+ * What a display supplies for one arc. The three fields `layOutArcs` derives are
+ * spelled `never` rather than dropped, because TypeScript does not
+ * excess-property-check a literal returned from a callback: under a plain
+ * `Omit` a `toArc` could hand back a `selected` of its own, typecheck clean and
+ * lose it to spread order — and hardcoding that field `false` is what left
+ * paired arcs un-highlighted by their own click.
+ */
+export type ArcParts = Omit<LaidOutArc, 'selected' | 'xMin' | 'xMax'> & {
+  selected?: never
+  xMin?: never
+  xMax?: never
+}
 
 interface ArcLayoutHost extends IStateTreeNode {
   selectedFeatureId: string | undefined
 }
 
-// What Canvas2D's `lineWidth` and SVG's `stroke-width` both default to, so an
-// unusable thickness draws what an absent one would.
-const FALLBACK_STROKE_PX = 1
+// What Canvas2D's `lineWidth` and SVG's `stroke-width` both default to, so a
+// thickness that is no width at all draws what an absent one would. Shared with
+// `logThickness`, which answers it for the same reason.
+export const FALLBACK_STROKE_PX = 1
 
 // A style slot is a jexl expression over the feature, so `arcHeight`'s default
 // is `-Infinity` for a zero-length feature. The extent cannot see a bezier's
@@ -93,6 +106,15 @@ function finiteShape(shape: ArcShape): ArcShape {
     : shape
 }
 
+// Whether there is anything to stroke, asked after the flattening above and
+// answered for the ticks too. A zero-length feature puts both feet on one pixel
+// and takes `arcHeight`'s `-Infinity`, so flattened it is a point: no ink, but
+// `arcDistancePx` measures 0 from it, and this list is the hit test's input as
+// well as the painter's — a tooltip and a click target over nothing drawn.
+function hasInk(shape: ArcShape, ticks: readonly ArcTick[] | undefined) {
+  return shape.left !== shape.right || arcApexY(shape) !== 0 || !!ticks?.length
+}
+
 /**
  * Both displays' `laidOutArcs`: the view and assembly lookup, the ends placed
  * in screen px, and the three fields every arc derives the same way — the
@@ -100,6 +122,9 @@ function finiteShape(shape: ArcShape): ArcShape {
  * lacks is NaN, which culls the arc off a canvas still reporting itself drawn)
  * and the extent. `toArc` supplies only what the two displays disagree about,
  * and `undefined` for an arc with nowhere to go.
+ *
+ * Everything it returns paints: an arc asked for no stroke, or laid out with no
+ * ink to stroke, is not in the list at all.
  */
 export function layOutArcs<S>(
   self: ArcLayoutHost,
@@ -134,17 +159,22 @@ export function layOutArcs<S>(
     const parts = toArc(style, place)
     if (parts) {
       const shape = finiteShape(parts.shape)
-      const strokeWidth =
-        Number.isFinite(parts.strokeWidth) && parts.strokeWidth > 0
-          ? parts.strokeWidth
-          : FALLBACK_STROKE_PX
-      out.push({
-        ...parts,
-        shape,
-        strokeWidth,
-        selected: parts.feature.id() === self.selectedFeatureId,
-        ...arcExtent(shape, strokeWidth, parts.ticks),
-      })
+      // A non-finite thickness is a broken expression and takes the default
+      // width; a zero or negative one is `jexl:score>5?3:0` asking for this arc
+      // to be hidden, and hiding it means leaving the list rather than being
+      // painted at 1px.
+      const strokeWidth = Number.isFinite(parts.strokeWidth)
+        ? parts.strokeWidth
+        : FALLBACK_STROKE_PX
+      if (strokeWidth > 0 && hasInk(shape, parts.ticks)) {
+        out.push({
+          ...parts,
+          shape,
+          strokeWidth,
+          selected: parts.feature.id() === self.selectedFeatureId,
+          ...arcExtent(shape, strokeWidth, parts.ticks),
+        })
+      }
     }
   }
   return out

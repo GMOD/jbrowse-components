@@ -4,6 +4,7 @@ import { set1 } from '@jbrowse/core/ui/colors'
 import ArcGetFeaturesRPCMethodsF from './ArcGetFeaturesRPC/index.ts'
 import LinearArcDisplayF from './LinearArcDisplay/index.ts'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay/index.ts'
+import { FALLBACK_STROKE_PX } from './shared/arcLayout.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -21,15 +22,17 @@ const svTypeColors: [string, string][] = [
 // can only test slot values written by hand, which is how a default expression
 // that blanked the display shipped.
 export function addArcJexlFunctions(pluginManager: PluginManager) {
-  /** #jexlFunction Slot defaults from plugins | logThickness(feature, 'score') | log(attribute + 1), the arc display's default thickness */
+  /** #jexlFunction Slot defaults from plugins | logThickness(feature, 'score') | log(attribute + 1) where that is a width, else 1px; the arc display's default thickness */
   pluginManager.jexl.addFunction(
     'logThickness',
     (feature: Feature, attributeName: string) => {
-      // 0, not NaN, when the feature carries no such attribute: the display
-      // reads no thickness signal as its fallback stroke, where NaN spread
-      // through the arc's extent and culled it off screen
+      // Always a width the display can paint. This is what `thickness` defaults
+      // to, so it runs over every feature of a BED3/BED4 track, and an absent,
+      // non-numeric or negative attribute must not answer something that hides
+      // the arc — `layOutArcs` reads a thickness of 0 as an instruction to hide
+      // it, which belongs to an expression the user wrote, not to this one.
       const thickness = Math.log(Number(feature.get(attributeName)) + 1)
-      return Number.isFinite(thickness) ? thickness : 0
+      return thickness > 0 ? thickness : FALLBACK_STROKE_PX
     },
   )
   /** #jexlFunction Slot defaults from plugins | defaultPairedArcColor(feature, alt) | a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV) */

@@ -59,7 +59,8 @@ export function configSchemaFactory() {
        */
       thickness: {
         type: 'number',
-        description: 'the thickness of the arcs',
+        description:
+          'the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all',
         defaultValue: `jexl:logThickness(feature,'score')`,
         contextVariable: ['feature'],
       },

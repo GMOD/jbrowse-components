@@ -3,7 +3,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
 import Arcs, { ArcsSvg } from './Arcs.tsx'
-import { arcDistancePx } from './arcShape.ts'
 import {
   createPairedTestEnvironment,
   createTestEnvironment,
@@ -65,8 +64,10 @@ test('the export of a scoreless feature carries a real stroke width', () => {
 
 // `log10(end-start)*50` is -Infinity here, and `arcExtent` never sees a bezier's
 // height: the arc counted as on screen while its curve was a Canvas2D no-op and
-// its hit distance was Infinity. Flat is what a 1bp feature already gets.
-test('a zero-length feature gets a flat arc rather than an infinite one', () => {
+// its hit distance was Infinity. Flattened, both feet and the apex land on one
+// pixel — nothing to stroke, and `arcDistancePx` measures 0 from a point, so an
+// arc left in the list answered a hover and a click over ink nobody can see.
+test('a zero-length feature lays out no arc at all', () => {
   const { display } = createDisplay()
   display.setFeatures([
     new SimpleFeature({
@@ -77,14 +78,7 @@ test('a zero-length feature gets a flat arc rather than an infinite one', () => 
       score: 10,
     }),
   ])
-  const arc = display.laidOutArcs[0]!
-  expect(arc.shape).toEqual({
-    kind: 'bezier',
-    left: 500,
-    right: 500,
-    height: 0,
-  })
-  expect(arcDistancePx(arc.shape, 500, 5)).toBeLessThan(50)
+  expect(display.laidOutArcs).toEqual([])
 })
 
 // The paired display's own default slot, unreachable for the same reason. The
