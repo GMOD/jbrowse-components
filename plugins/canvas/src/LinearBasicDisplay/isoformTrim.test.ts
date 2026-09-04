@@ -109,6 +109,28 @@ describe('maxIsoformCount', () => {
       maxIsoformCount(regions, undefined, new Set(['wide', 'narrow'])),
     ).toBe(0)
   })
+
+  // A `longestCoding` gene ships one child and counts all of its isoforms, so
+  // its count is the badge's, not the bracket's: no count takes anything from
+  // a gene already drawing one.
+  it('counts a worker-collapsed gene by what it shipped', () => {
+    const collapsed = [
+      {
+        flatbushItems: [
+          makeFlatbushItem({
+            featureId: 'wide',
+            isoformStack: {
+              ...STACK,
+              isoformCount: 9,
+              collapsedIsoformCount: 1,
+              children: [STACK.children[2]!],
+            },
+          }),
+        ],
+      },
+    ]
+    expect(maxIsoformCount(collapsed, undefined, undefined)).toBe(1)
+  })
 })
 
 const REGIONS: ReadonlyMap<number, LayoutRegionData> = new Map([

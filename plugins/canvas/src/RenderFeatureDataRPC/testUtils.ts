@@ -151,6 +151,9 @@ export interface StackedGeneSpec {
   // A gene the user expanded ships every isoform and this count as the only
   // record of what it was opened FROM — see `IsoformStack`.
   collapsedIsoformCount?: number
+  // isoforms the worker shipped, when fewer than the gene has: 1 for a gene
+  // collapsed under `longestCoding`. Defaults to `isoforms`.
+  drawn?: number
   // rank per isoform, drawn order; defaults to the drawn order itself
   ranks?: number[]
   // bp span per isoform, defaults to the gene's own
@@ -169,7 +172,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
     const heightPx = spec.heightPx ?? 10
     const gapPx = heightPx * TRANSCRIPT_PADDING_RATIO
     const childHeights = Array.from(
-      { length: spec.isoforms },
+      { length: spec.drawn ?? spec.isoforms },
       (_, i) => spec.childHeightsPx?.[i] ?? heightPx,
     )
     const children = childHeights.map((childHeightPx, i) => {
@@ -205,7 +208,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
     }
     const totalPx =
       childHeights.reduce((total, height) => total + height, 0) +
-      Math.max(0, spec.isoforms - 1) * gapPx
+      Math.max(0, childHeights.length - 1) * gapPx
     flatbushItems.push(
       makeFlatbushItem({
         featureId: spec.featureId,

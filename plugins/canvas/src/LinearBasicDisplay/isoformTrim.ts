@@ -108,11 +108,6 @@ export interface IsoformTrimPlan {
   badges: ReadonlyMap<string, IsoformBadge>
 }
 
-export const NO_ISOFORM_TRIM: IsoformTrimPlan = {
-  trims: new Map(),
-  badges: new Map(),
-}
-
 /**
  * Narrowest drawn extent a gene can carry the badge on. Below it the badge is
  * an aside on a name pinned to a glyph a few pixels wide, repeated once per gene
@@ -161,9 +156,10 @@ export function planIsoformTrims(
 }
 
 // The most isoforms any gene on screen has that a count can still take from —
-// the top of the fit ladder's bisection. An expanded gene is skipped because
-// `planIsoformTrims` never trims it: counted, it puts a bracket over a stack no
-// count changes, and the solve floors to 1 over a gene drawing everything.
+// the top of the fit ladder's bisection. A gene the worker already collapsed
+// counts what it shipped, not what it has, and an expanded gene is skipped:
+// `planIsoformTrims` trims neither, so counted they put a bracket over a stack
+// no count changes, and the solve floors to 1 over a picture it cannot shorten.
 export function maxIsoformCount(
   regions: Iterable<Pick<FeatureDataResult, 'flatbushItems'>>,
   measureIds: ReadonlySet<string> | undefined,
@@ -172,7 +168,13 @@ export function maxIsoformCount(
   let max = 0
   for (const data of regions) {
     for (const item of data.flatbushItems) {
-      const count = item.isoformStack?.isoformCount ?? 0
+      const stack = item.isoformStack
+      const count = stack
+        ? Math.min(
+            stack.isoformCount,
+            stack.collapsedIsoformCount ?? Number.POSITIVE_INFINITY,
+          )
+        : 0
       if (
         count > max &&
         (!measureIds || measureIds.has(item.featureId)) &&

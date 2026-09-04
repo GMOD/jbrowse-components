@@ -1960,6 +1960,37 @@ describe('the isoform rung across the three height modes', () => {
     expect(drawnOrdinals(display, 'gene2').size).toBe(1)
   })
 
+  // What the worker ships under `longestCoding`: one child per gene and the
+  // count of all of them. The count is the badge's, not the bracket's — no
+  // isoform count shortens a stack of genes already drawing one — so a pile of
+  // them that overflows anyway falls through to the rungs below with the cap
+  // unset, rather than committing to a 1 that trims nothing and lights the chip.
+  it('does not commit to a count over genes the worker collapsed', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.setRpcData(
+      0,
+      packStackedGenes(
+        Array.from({ length: 12 }, (_, i) => ({
+          featureId: `gene${i}`,
+          name: `GENE${i}`,
+          startBp: 100,
+          endBp: 900,
+          isoforms: 10,
+          drawn: 1,
+          collapsedIsoformCount: 1,
+        })),
+      ),
+      ctgA,
+    )
+
+    expect(display.fitStage.level).not.toBe('full')
+    expect(display.fitStage.maxIsoforms).toBeUndefined()
+    expect(display.geneGlyphIsoformCap).toBeUndefined()
+    expect(drawnOrdinals(display, 'gene0').size).toBe(1)
+  })
+
   // Grow's height IS its content's, so a trim solved against it would shrink
   // the track it was measured against. It draws every transcript and grows.
   it('grow never trims', () => {
