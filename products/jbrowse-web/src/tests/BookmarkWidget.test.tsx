@@ -151,8 +151,9 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     }),
   )
 
+  // the hotkey goes through navToBookmark, so it lands where the grid link does
   await waitFor(() => {
-    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+    expect(view.visibleLocStrings).toBe('ctgA:193..248')
   })
 }, 40000)
 
