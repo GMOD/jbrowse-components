@@ -5,9 +5,11 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { paintedBpRange } from './paintedBpRange.ts'
+import { makeCellPxRange } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { CodonConservationBar } from './computeVisibleCodons.ts'
+import type { CellPxRange } from './visibleRegionGeometry.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
@@ -41,24 +43,18 @@ export function conservationTicks(conservationHeight: number): YScaleTicks {
 
 /**
  * Splat one block's per-bp `identityScores` into per-pixel `sum`/`count`
- * accumulators: each reference base paints every pixel its `[bpToX(bp),
- * bpToX(bp+1)]` span covers (≥1 pixel), so the resulting `sum[x]/count[x]` is
- * the mean identity of the bases under pixel `x`. Zoomed in, one base covers
+ * accumulators through its `makeCellPxRange`, so the resulting `sum[x]/count[x]`
+ * is the mean identity of the bases under pixel `x`. Zoomed in, one base covers
  * many pixels (solid); zoomed out, many bases share one pixel (averaged — the
  * sliding window). `NaN` (unclassifiable) positions are skipped. Pure +
- * accumulator-mutating so it's unit-testable with a plain `bpToX`.
- *
- * `[xLo, xHi)` is the block's own pixel span (`clip.scissorX` ..
- * `+scissorW`), NOT the whole canvas: the fetched region is the *buffered*
- * one, so its out-of-block bp map past the block's screen edges and would
- * otherwise paint over the neighboring region — see `drawConservation`.
+ * accumulator-mutating so it's unit-testable with a plain mapper.
  *
  * `[bpLo, bpHi)` skips the scores that lie outside the block entirely. It is a
  * pure fast-path bound and only has to be *conservative*: the per-position
- * `lo`/`hi` clamp above stays the authority on what actually paints, so slack
- * costs a little work and never changes the result. Worth having because the
- * buffered region is twice the visible span, so about half of the array was
- * being mapped and then discarded — once per render block, every frame.
+ * clamp stays the authority on what actually paints, so slack costs a little
+ * work and never changes the result. Worth having because the buffered region
+ * is twice the visible span, so about half of the array was being mapped and
+ * then discarded — once per render block, every frame.
  *
  * Which is why the two ends round outward — `floor` the low, `ceil` the high.
  * `bpLo` is routinely fractional: it comes off `paintedBpRange`, whose block is
@@ -73,9 +69,7 @@ export function accumulateConservation(
   count: Uint32Array,
   identityScores: Float32Array,
   coverageStartPos: number,
-  bpToX: (bp: number) => number,
-  xLo: number,
-  xHi: number,
+  cellPx: CellPxRange,
   bpLo = -Infinity,
   bpHi = Infinity,
 ) {
@@ -84,15 +78,7 @@ export function accumulateConservation(
   for (let i = from; i < to; i++) {
     const v = identityScores[i]!
     if (!Number.isNaN(v)) {
-      const bp = coverageStartPos + i
-      const xa = bpToX(bp)
-      const xb = bpToX(bp + 1)
-      const cellLeft = Math.floor(Math.min(xa, xb))
-      const lo = Math.max(xLo, cellLeft)
-      const hi = Math.min(
-        xHi,
-        Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
-      )
+      const { lo, hi } = cellPx(coverageStartPos + i)
       for (let px = lo; px < hi; px++) {
         sum[px]! += v
         count[px]! += 1
@@ -140,9 +126,11 @@ export function drawConservation(
         count,
         coverage.identityScores,
         coverage.coverageStartPos,
-        makeBpMapper(block),
-        clip.scissorX,
-        clip.scissorX + clip.scissorW,
+        makeCellPxRange(
+          makeBpMapper(block),
+          clip.scissorX,
+          clip.scissorX + clip.scissorW,
+        ),
         bpLo,
         bpHi,
       )
@@ -186,8 +174,7 @@ export function drawCodonConservation(
   for (const bar of bars) {
     if (!Number.isNaN(bar.fraction)) {
       const h = bar.fraction * effectiveH
-      // ≥1px wide so a single-base exon-boundary codon piece still paints.
-      ctx.fillRect(bar.xLeft, bottom - h, Math.max(1, bar.width), h)
+      ctx.fillRect(bar.xLeft, bottom - h, bar.width, h)
     }
   }
 }

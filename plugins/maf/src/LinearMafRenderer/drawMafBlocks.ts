@@ -88,12 +88,11 @@ export function drawMafBlocks(
       // Blocks the render block can't paint are skipped whole, rather than
       // indexed and walked column by column for the scissor to discard. The
       // fetched region is the buffered one, so on a typical view that is about
-      // half of them — the same bound the identity, conservation and
-      // source-chromosome painters already apply.
-      const { bpLo, bpHi } = paintedBpRange(renderBlock, clip)
+      // half of them.
+      const { overlaps } = paintedBpRange(renderBlock, clip)
       for (let i = 0; i < regionData.blocks.length; i++) {
         const mafBlock = regionData.blocks[i]!
-        if (mafBlock.endBp <= bpLo || mafBlock.startBp >= bpHi) {
+        if (!overlaps(mafBlock.startBp, mafBlock.endBp)) {
           continue
         }
         const { refSeqBytes, startBp: blockStartBp } = mafBlock

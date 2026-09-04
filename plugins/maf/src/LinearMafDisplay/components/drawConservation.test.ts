@@ -1,4 +1,5 @@
 import { accumulateConservation } from './drawConservation.ts'
+import { makeCellPxRange } from './visibleRegionGeometry.ts'
 
 test('zoomed out: many bases average into one pixel', () => {
   const sum = new Float32Array(1)
@@ -9,9 +10,7 @@ test('zoomed out: many bases average into one pixel', () => {
     count,
     new Float32Array([1, 0, 1, 0]),
     0,
-    bp => bp / 4,
-    0,
-    1,
+    makeCellPxRange(bp => bp / 4, 0, 1),
   )
   expect(count[0]).toBe(4)
   expect(sum[0]! / count[0]!).toBe(0.5)
@@ -25,9 +24,7 @@ test('zoomed in: one base fills every pixel of its span', () => {
     count,
     new Float32Array([1]),
     0,
-    bp => bp * 10,
-    0,
-    10,
+    makeCellPxRange(bp => bp * 10, 0, 10),
   )
   for (let x = 0; x < 10; x++) {
     expect(count[x]).toBe(1)
@@ -43,9 +40,7 @@ test('NaN positions are skipped', () => {
     count,
     new Float32Array([Number.NaN, 1]),
     0,
-    bp => bp,
-    0,
-    2,
+    makeCellPxRange(bp => bp, 0, 2),
   )
   expect(count[0]).toBe(0)
   expect(count[1]).toBe(1)
@@ -61,9 +56,7 @@ test('pixels outside the bound are clamped away', () => {
     count,
     new Float32Array(10).fill(1),
     0,
-    bp => bp - 5,
-    0,
-    3,
+    makeCellPxRange(bp => bp - 5, 0, 3),
   )
   expect(Array.from(count)).toEqual([1, 1, 1])
 })
@@ -80,9 +73,7 @@ test('bases outside the block scissor span do not bleed into neighbors', () => {
     count,
     new Float32Array(6).fill(1),
     0,
-    bp => bp,
-    2,
-    4,
+    makeCellPxRange(bp => bp, 2, 4),
   )
   expect(Array.from(count)).toEqual([0, 0, 1, 1, 0, 0])
 })
@@ -96,9 +87,7 @@ test('scores outside the bp bound are skipped', () => {
     count,
     new Float32Array(6).fill(1),
     0,
-    bp => bp,
-    0,
-    6,
+    makeCellPxRange(bp => bp, 0, 6),
     2,
     4,
   )
@@ -115,9 +104,7 @@ test('a bp bound wider than the data is a no-op', () => {
     count,
     new Float32Array(3).fill(1),
     0,
-    bp => bp,
-    0,
-    3,
+    makeCellPxRange(bp => bp, 0, 3),
     -100,
     100,
   )
@@ -133,9 +120,7 @@ test('the bp bound is genomic, offset by coverageStartPos', () => {
     count,
     new Float32Array(4).fill(1),
     100,
-    bp => bp - 100,
-    0,
-    4,
+    makeCellPxRange(bp => bp - 100, 0, 4),
     101,
     103,
   )

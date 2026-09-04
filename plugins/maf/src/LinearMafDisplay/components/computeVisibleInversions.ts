@@ -109,7 +109,7 @@ export function computeVisibleInversions(
   const markers: InversionMarker[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
 
-  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
@@ -117,7 +117,7 @@ export function computeVisibleInversions(
     const { blocks } = regionData
     for (let b = 0; b < blocks.length; b++) {
       const block = blocks[b]!
-      if (block.endBp <= bpLo || block.startBp >= bpHi) {
+      if (!overlaps(block.startBp, block.endBp)) {
         continue
       }
       const { from, to } = events.ensure(b)

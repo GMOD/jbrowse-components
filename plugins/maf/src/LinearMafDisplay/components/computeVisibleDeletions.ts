@@ -71,7 +71,7 @@ export function computeVisibleDeletions(
   const minLabelBp = MIN_LABEL_WIDTH * view.bpPerPx
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
-    for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+    for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
       view,
       rpcDataMap,
     )) {
@@ -87,8 +87,7 @@ export function computeVisibleDeletions(
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]!
         if (
-          block.endBp <= bpLo ||
-          block.startBp >= bpHi ||
+          !overlaps(block.startBp, block.endBp) ||
           block.endBp - block.startBp < minLabelBp
         ) {
           continue

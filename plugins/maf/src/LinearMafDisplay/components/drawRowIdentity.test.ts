@@ -4,6 +4,7 @@ import {
   identityColor,
   identityRgb,
 } from './drawRowIdentity.ts'
+import { makeCellPxRange } from './visibleRegionGeometry.ts'
 
 import type { MafBlock } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -30,7 +31,7 @@ function accumulateRowIdentity(
   xHi: number,
 ) {
   const columns = new IdentityColumns()
-  columns.build(refBytes, startBp, bpToX, xLo, xHi)
+  columns.build(refBytes, startBp, makeCellPxRange(bpToX, xLo, xHi))
   columns.accumulate(matchSum, classCount, rowBase, alignmentBytes)
 }
 
@@ -188,8 +189,9 @@ test('rowBase confines a row to its slice of the shared accumulators', () => {
 // pass), so a shorter block must not read the previous block's tail.
 test('rebuilding for a shorter block does not leak the previous block', () => {
   const columns = new IdentityColumns()
-  columns.build(bytes('ACGTAC'), 0, identityMapper, 0, 6)
-  columns.build(bytes('AC'), 0, identityMapper, 0, 6)
+  const cellPx = makeCellPxRange(identityMapper, 0, 6)
+  columns.build(bytes('ACGTAC'), 0, cellPx)
+  columns.build(bytes('AC'), 0, cellPx)
   const match = new Float32Array(6)
   const cls = new Float32Array(6)
   columns.accumulate(match, cls, 0, bytes('AC'))

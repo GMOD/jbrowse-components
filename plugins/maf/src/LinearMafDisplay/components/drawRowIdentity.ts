@@ -5,10 +5,15 @@ import {
 
 import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../../util/asciiBytes.ts'
 import { paintedBpRange } from './paintedBpRange.ts'
-import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
+import {
+  makeCellPxRange,
+  rowBandGeometry,
+  visibleRowRange,
+} from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
+import type { CellPxRange } from './visibleRegionGeometry.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -129,17 +134,7 @@ export class IdentityColumns {
   private his = new Int32Array(0)
   private count = 0
 
-  /**
-   * `[xLo, xHi)` is the block's own pixel span (`clip.scissorX` ..
-   * `+scissorW`), NOT the whole canvas — see `accumulateConservation` for why.
-   */
-  build(
-    refBytes: Uint8Array,
-    startBp: number,
-    bpToX: (bp: number) => number,
-    xLo: number,
-    xHi: number,
-  ) {
+  build(refBytes: Uint8Array, startBp: number, cellPx: CellPxRange) {
     const n = refBytes.length
     if (this.cols.length < n) {
       this.cols = new Uint32Array(n)
@@ -154,14 +149,7 @@ export class IdentityColumns {
       if (refByte !== DASH) {
         const refUpper = refByte & ~LOWER_BIT
         if (refUpper !== N_UPPER) {
-          const xa = bpToX(refPos)
-          const xb = bpToX(refPos + 1)
-          const cellLeft = Math.floor(Math.min(xa, xb))
-          const lo = Math.max(xLo, cellLeft)
-          const hi = Math.min(
-            xHi,
-            Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
-          )
+          const { lo, hi } = cellPx(refPos)
           if (hi > lo) {
             this.cols[count] = col
             this.refUppers[count] = refUpper
@@ -281,22 +269,20 @@ export function drawRowIdentity(
     const region = regions.get(block.displayedRegionIndex)
     const clip = region ? clipBlockForCanvas(block, canvasWidth) : null
     if (region && clip) {
-      const bpToX = makeBpMapper(block)
+      const cellPx = makeCellPxRange(
+        makeBpMapper(block),
+        clip.scissorX,
+        clip.scissorX + clip.scissorW,
+      )
       // Blocks the render block can't paint are skipped whole, rather than
       // walked column by column and then discarded by the clamp in `build`.
       // The fetched region is the buffered one, so on a typical view that is
       // about half of them — measured 2x on the ce11 26-way shape, and after
       // it every column the walk visits survives.
-      const { bpLo, bpHi } = paintedBpRange(block, clip)
+      const { overlaps } = paintedBpRange(block, clip)
       for (const mafBlock of region.blocks) {
-        if (mafBlock.endBp > bpLo && mafBlock.startBp < bpHi) {
-          columns.build(
-            mafBlock.refSeqBytes,
-            mafBlock.startBp,
-            bpToX,
-            clip.scissorX,
-            clip.scissorX + clip.scissorW,
-          )
+        if (overlaps(mafBlock.startBp, mafBlock.endBp)) {
+          columns.build(mafBlock.refSeqBytes, mafBlock.startBp, cellPx)
           for (const row of mafBlock.rows) {
             if (row.rowIndex >= firstRow && row.rowIndex < lastRow) {
               columns.accumulate(

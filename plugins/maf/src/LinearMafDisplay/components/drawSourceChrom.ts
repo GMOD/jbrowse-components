@@ -187,7 +187,7 @@ export function drawSourceChrom(
       const bpToX = makeBpMapper(block)
       // The buffered region's off-screen blocks would emit a fill per row that
       // the clip then throws away — about half of them at a typical view.
-      const { bpLo, bpHi } = paintedBpRange(block, clip)
+      const { overlaps } = paintedBpRange(block, clip)
       // Assigning `fillStyle` re-parses the CSS color string every time, and
       // this loop is blocks × visible rows — over a million iterations per
       // frame on the ce11 26-way shape. The palette has five entries and the
@@ -196,13 +196,11 @@ export function drawSourceChrom(
       // `fillRect`. Same reasoning as the run-length fill in `drawRowIdentity`,
       // and lossless for the same reason: the pixels painted are identical.
       let lastFill: string | undefined
-      for (const mafBlock of region.blocks) {
-        if (mafBlock.endBp > bpLo && mafBlock.startBp < bpHi) {
-          const span = bpSpanPx(bpToX, mafBlock.startBp, mafBlock.endBp)
-          const xLeft = span.xLeft
+      for (const { startBp, endBp, rows } of region.blocks) {
+        if (overlaps(startBp, endBp)) {
           // >=1px so a block narrower than a pixel still reads as present
-          const w = Math.max(1, span.width)
-          for (const row of mafBlock.rows) {
+          const { xLeft, width } = bpSpanPx(bpToX, startBp, endBp, 1)
+          for (const row of rows) {
             if (row.rowIndex >= firstRow && row.rowIndex < lastRow && row.chr) {
               const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0
               const fill = sourceChromRankColor(rank)
@@ -210,12 +208,8 @@ export function drawSourceChrom(
                 ctx.fillStyle = fill
                 lastFill = fill
               }
-              ctx.fillRect(
-                xLeft,
-                bandOffset + rowHeight * row.rowIndex,
-                w,
-                bandH,
-              )
+              const y = bandOffset + rowHeight * row.rowIndex
+              ctx.fillRect(xLeft, y, width, bandH)
             }
           }
         }

@@ -67,7 +67,7 @@ export function computeVisibleInsertions(
   const lastPx = new Int32Array(rowSlots)
   const lastMarker = new Int32Array(rowSlots).fill(-1)
 
-  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
@@ -75,7 +75,7 @@ export function computeVisibleInsertions(
     const { blocks } = regionData
     for (let b = 0; b < blocks.length; b++) {
       const block = blocks[b]!
-      if (block.endBp <= bpLo || block.startBp >= bpHi) {
+      if (!overlaps(block.startBp, block.endBp)) {
         continue
       }
       const { from, to } = events.ensure(b)

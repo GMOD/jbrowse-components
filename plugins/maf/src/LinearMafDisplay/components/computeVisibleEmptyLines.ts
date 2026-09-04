@@ -30,16 +30,12 @@ export function computeVisibleEmptyLines(
 
   // Not `eachVisibleRow`: e-lines are `block.empties`, a species with no
   // aligning sequence here, so there is no aligned row to hang them off.
-  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
     for (const block of regionData.blocks) {
-      if (
-        block.empties.length > 0 &&
-        block.endBp > bpLo &&
-        block.startBp < bpHi
-      ) {
+      if (block.empties.length > 0 && overlaps(block.startBp, block.endBp)) {
         const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
         for (const e of block.empties) {
           if (e.rowIndex >= firstRow && e.rowIndex < endRow) {

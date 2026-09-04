@@ -64,26 +64,25 @@ export function computeVisibleSummaryBars(
   const bars: SummaryBar[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
 
-  for (const { data: records, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+  for (const { data: records, bpToPx, overlaps } of eachVisibleRegion(
     view,
     summaryDataMap,
   )) {
     for (const r of records) {
-      // The bp test first, and before the `src` lookup: the records are the
-      // *buffered* region's — one per block per species, so the deepest
-      // alignments produce the most of them at exactly the zoom this path
-      // exists for — and two comparisons are cheaper than the map hit they
-      // skip. Same `[bpLo, bpHi)` cull as the block overlays.
-      if (r.end <= bpLo || r.start >= bpHi) {
+      // Culled before the `src` lookup: the records are the *buffered*
+      // region's — one per block per species, so the deepest alignments produce
+      // the most of them at exactly the zoom this path exists for — and two
+      // comparisons are cheaper than the map hit they skip.
+      if (!overlaps(r.start, r.end)) {
         continue
       }
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
-        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
+        // >=1px so a block narrower than a pixel still reads as present
+        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end, 1)
         bars.push({
           x: xLeft,
-          // >=1px so a block narrower than a pixel still reads as present
-          width: Math.max(1, width),
+          width,
           rowTop: offset + rowHeight * rowIndex,
           h,
           score: r.score,

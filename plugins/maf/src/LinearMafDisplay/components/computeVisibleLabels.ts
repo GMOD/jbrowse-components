@@ -35,12 +35,12 @@ export function computeVisibleLabels(
 
   const hp2 = h / 2
 
-  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
+  for (const { data, bpToPx, bpLo, bpHi, overlaps } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
-    for (const block of regionData.blocks) {
-      if (block.endBp <= bpLo || block.startBp >= bpHi) {
+    for (const block of data.blocks) {
+      if (!overlaps(block.startBp, block.endBp)) {
         continue
       }
       const refSeqBytes = block.refSeqBytes
@@ -63,13 +63,12 @@ export function computeVisibleLabels(
           const refCode = refSeqBytes[i]!
           if (refCode !== DASH) {
             const bp = block.startBp + genomicOffset
-            // The same `[bpLo, bpHi)` cull the sibling overlays apply per
-            // block, applied per column here because a block is not a screenful:
-            // one TAF/bigMaf stanza can span the whole buffered region, which is
-            // three times the canvas, so most of its columns emit a label the
-            // overlay then draws off the edge of a canvas exactly
-            // `canvasWidthPx` wide. `bp` only ever increases, so the right edge
-            // ends the row's walk rather than filtering the rest of it.
+            // The block cull applied per column, because a block is not a
+            // screenful: one TAF/bigMaf stanza can span the whole buffered
+            // region, three times the canvas, so most of its columns emit a
+            // label the overlay then draws off the edge. `bp` only ever
+            // increases, so the right edge ends the row's walk rather than
+            // filtering the rest of it.
             if (bp >= bpHi) {
               break
             }

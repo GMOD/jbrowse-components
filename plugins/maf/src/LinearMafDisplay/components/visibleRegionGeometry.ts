@@ -6,6 +6,7 @@
  */
 
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+import { spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -158,31 +159,34 @@ export type BpToPx = (bp: number) => number
 const CULL_SLACK_PX = 16
 
 /**
+ * A `[bpLo, bpHi)` culling range and the single test against it. Every MAF walk
+ * sees the **buffered** region — half a screen of extra data each side — so it
+ * skips a block before walking its columns, roughly halving the per-frame work.
+ * Shared because ten walks spelled the test between them in two De Morgan
+ * spellings, and a cull kept in two spellings is one edit from dropping marks.
+ */
+export function bpCull(bpLo: number, bpHi: number) {
+  return {
+    bpLo,
+    bpHi,
+    overlaps: (startBp: number, endBp: number) =>
+      endBp > bpLo && startBp < bpHi,
+  }
+}
+
+/**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
  * data alongside its `bpToPx` mapper, `displayedRegionIndex` (which lets a
  * caller correlate a second per-region map — e.g. codon translation reads both
- * the alignment and the frames map), and the genomic bounds worth walking.
- *
- * `[bpLo, bpHi)` is the region's *visible* span, padded by `CULL_SLACK_PX`. It
- * matters because the per-region data is the **buffered** region — half a
- * screen of extra blocks each side — while `visibleRegions` covers only what is
- * on screen. A helper that walks a whole region therefore does roughly twice
- * the work it can show, once per frame. Testing `block.endBp > bpLo &&
- * block.startBp < bpHi` first skips those blocks before their columns are
- * walked. This is the marker-side twin of `paintedBpRange`, which does the same
- * job for the Canvas2D painters (they bound against a render block's clip
- * rather than a visible region).
+ * the alignment and the frames map), and its `bpCull` over the region's
+ * *visible* span padded by `CULL_SLACK_PX`. This is the marker-side twin of
+ * `paintedBpRange`, which culls the Canvas2D painters against a render block's
+ * clip rather than a visible region.
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
   dataMap: { get(idx: number): T | undefined },
-): Generator<{
-  data: T
-  bpToPx: BpToPx
-  displayedRegionIndex: number
-  bpLo: number
-  bpHi: number
-}> {
+) {
   const scale = 1 / view.bpPerPx
   const slack = CULL_SLACK_PX * view.bpPerPx + 1
   for (const vr of view.visibleRegions) {
@@ -196,11 +200,38 @@ export function* eachVisibleRegion<T>(
       data,
       bpToPx,
       displayedRegionIndex: vr.displayedRegionIndex,
-      bpLo: vr.start - slack,
-      bpHi: vr.end + slack,
+      ...bpCull(vr.start - slack, vr.end + slack),
     }
   }
 }
+
+/**
+ * A bp → `[lo, hi)` pixel-column mapper for one render block, clamped to that
+ * block's own `[xLo, xHi)` scissor span (`clip.scissorX` .. `+scissorW`, NOT
+ * the whole canvas: the fetched region is the buffered one, so its out-of-block
+ * bases map past the block's edges and would paint over the neighboring
+ * region). A cell is a column wide before clamping, so a sub-pixel base still
+ * lands somewhere; `hi <= lo` means it lands outside the block.
+ *
+ * One `range` per block, overwritten per call — both callers read it straight
+ * back, and this runs once per reference column per block per frame.
+ */
+export function makeCellPxRange(bpToX: BpToPx, xLo: number, xHi: number) {
+  const range = { lo: 0, hi: 0 }
+  return (bp: number) => {
+    const xa = bpToX(bp)
+    const xb = bpToX(bp + 1)
+    const cellLeft = Math.floor(Math.min(xa, xb))
+    range.lo = Math.max(xLo, cellLeft)
+    range.hi = Math.min(
+      xHi,
+      Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
+    )
+    return range
+  }
+}
+
+export type CellPxRange = ReturnType<typeof makeCellPxRange>
 
 /** A genomic interval's screen-px extent. */
 export interface PxSpan {
@@ -209,21 +240,25 @@ export interface PxSpan {
 }
 
 /**
- * Screen-px extent of the genomic interval `[startBp, endBp)`. The single place
- * the reversed-region case is handled: `bpToPx` counts down from the region end
- * there, so the interval's start maps to its *right* edge and a caller
- * subtracting the two the obvious way gets a negative width. Every overlay that
- * spans an interval — blocks, deletion runs, summary bars, CDS strips, codon
- * cells — goes through this rather than each repeating the min/abs pair.
+ * Screen-px extent of the genomic interval `[startBp, endBp)`, widened to
+ * `minWidth` so a sub-pixel interval still reads. The single place the
+ * reversed-region case is handled: `bpToPx` counts down from the region end
+ * there, so the interval's start maps to its *right* edge and the widening has
+ * to grow away from it — hence `spanLeft`, whose JSDoc owns that rule. Widening
+ * off `Math.min` anchors the interval's *end* when reversed and slides the mark
+ * by up to `minWidth`, invisibly on every forward region; the summary bars, the
+ * CDS strips, the source-chromosome fills and the codon band each had that.
  */
 export function bpSpanPx(
   bpToPx: BpToPx,
   startBp: number,
   endBp: number,
+  minWidth = 0,
 ): PxSpan {
   const xa = bpToPx(startBp)
   const xb = bpToPx(endBp)
-  return { xLeft: Math.min(xa, xb), width: Math.abs(xb - xa) }
+  const width = Math.max(minWidth, Math.abs(xb - xa))
+  return { xLeft: spanLeft(xa, xb, width), width }
 }
 
 // NOTE: an `eachVisibleRow(params)` generator yielding one `{block, row, rowTop,
