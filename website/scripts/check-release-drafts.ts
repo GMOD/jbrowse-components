@@ -17,8 +17,10 @@ import { join } from 'node:path'
 
 import {
   CHANGELOG_HEADING,
+  CHANGELOG_STALE_AT,
   DRAFTS_DIR,
   RELEASE_STAT_NAMES,
+  changelogThrough,
   prepareDraftNotes,
 } from '../../scripts/releaseBlog.ts'
 import { reportProblems } from './check-utils.ts'
@@ -176,7 +178,24 @@ function unresolvedNames(source: string, notes: string) {
     .sort()
 }
 
+// Commits landed since `commit`, or undefined when this checkout cannot answer
+// — a shallow CI clone has neither the commit nor the range.
+function commitsSince(commit: string) {
+  try {
+    return Number(
+      execFileSync('git', ['rev-list', '--count', `${commit}..HEAD`], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim(),
+    )
+  } catch {
+    return undefined
+  }
+}
+
 const problems: string[] = []
+const notes: string[] = []
 const drafts = existsSync(DRAFTS)
   ? readdirSync(DRAFTS)
       .filter(f => f.endsWith('.md'))
@@ -202,6 +221,23 @@ for (const file of drafts) {
     const tag = file.replace(/\.changelog\.md$/, '')
     if (!existsSync(join(DRAFTS, `${tag}.md`))) {
       flag(`has no matching ${tag}.md, so no release will ever consume it`)
+    }
+    const through = changelogThrough(body)
+    const behind = through === undefined ? undefined : commitsSince(through)
+    if (through === undefined) {
+      notes.push(
+        `  ${file} records no \`<!-- changelog-through: <commit> -->\`, so nothing can tell how far behind it is. Add one naming the newest commit it covers`,
+      )
+    } else if (behind === undefined) {
+      notes.push(
+        `  ${file}: ${through} is not in this checkout, so its staleness went unchecked`,
+      )
+    } else if (behind > CHANGELOG_STALE_AT) {
+      notes.push(
+        `  ${file} is ${behind} commits behind, having last been written at ${through}. Run \`git log --oneline ${through}..HEAD\` to see what it is missing, add the user-visible ones, and move the marker to the tip`,
+      )
+    } else {
+      console.log(`${file} covers up to ${through}, ${behind} commit(s) back`)
     }
     continue
   }
@@ -274,6 +310,10 @@ for (const file of drafts) {
       )
     }
   }
+}
+
+if (notes.length > 0) {
+  console.warn(['A release draft is going stale:', ...notes, ''].join('\n'))
 }
 
 reportProblems(

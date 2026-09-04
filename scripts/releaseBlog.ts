@@ -49,6 +49,26 @@ export const releaseDraftPaths = (tag: string) => ({
 // that omits it silently drops the whole section from the GitHub release body.
 export const CHANGELOG_HEADING = /^#+\s+Changes since\b/
 
+// The newest commit a hand-written changelog covers, which nothing else in the
+// draft records: it names no PRs and no hashes, so how far behind main it has
+// fallen is unanswerable from the file. Written as an HTML comment, which
+// prepareDraftNotes strips, so the marker never reaches the published post.
+//
+// The failure it exists for is silent and has already happened: the v5.0.0
+// changelog sat at one commit for 604 more, every one of them a change it
+// claims to list.
+export const CHANGELOG_THROUGH =
+  /<!--\s*changelog-through:\s*([0-9a-f]{7,40})\s*-->/
+
+export function changelogThrough(md: string) {
+  return CHANGELOG_THROUGH.exec(md)?.[1]
+}
+
+// How many commits past the marker is worth saying something about. A warning
+// rather than a failure: a draft goes stale by the tree moving, so failing on
+// it would redden every branch that touched nothing.
+export const CHANGELOG_STALE_AT = 100
+
 // Where the site serves website/static/img once deployed.
 const SITE_IMG = 'https://jbrowse.org/jb2/img/'
 
