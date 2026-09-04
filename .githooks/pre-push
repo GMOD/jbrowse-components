@@ -150,7 +150,7 @@ eval "$(node -e '
     }
     console.log(`cmd_${name.replace(/\W/g, "_")}=${JSON.stringify(chain.join(" && "))}`)
   }
-' figures:check autogen check-docs lint lint:eslint format build:esm)"
+' figures:check autogen check-docs diagrams:check lint lint:eslint format build:esm)"
 
 # stdin is one `<local ref> <local sha> <remote ref> <remote sha>` line per ref.
 # A zero local sha is a branch deletion (nothing to check); a zero remote sha is
@@ -423,6 +423,18 @@ if [ "$dstatus" != 0 ]; then
   echo "pre-push: pnpm check-docs failed" >&2
   cat "$tmp/docs.log" >&2
   status=$dstatus
+fi
+
+# The diagram lock is the one generated artifact autogen does not own (its
+# rewrite half needs graphviz), and CI runs this check first in the generated
+# job, so a stale lock hides every autogen answer behind it. Reads two files.
+gstatus=0
+eval "$cmd_diagrams_check" >"$tmp/diagrams.log" 2>&1 || gstatus=$?
+if [ "$gstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm diagrams:check failed" >&2
+  cat "$tmp/diagrams.log" >&2
+  status=$gstatus
 fi
 
 # `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
