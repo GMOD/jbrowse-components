@@ -114,6 +114,35 @@ test('mirrors x for reversed regions', () => {
   expect(bars[0]).toMatchObject({ x: 90, width: 10 })
 })
 
+// Reversed AND sub-pixel, which is the only combination that can tell the two
+// anchors apart: `bpSpanPx` grows the widening away from the record's START
+// edge, which is its RIGHT edge here, so the bar ends at px10. Widening off the
+// leftmost edge instead puts it at 9.9 and slides the mark a pixel — the two
+// tests above miss it, one being 10px wide and the other forward.
+test('widens a sub-pixel bar away from its start edge on a reversed region', () => {
+  const bars = computeVisibleSummaryBars({
+    view: {
+      bpPerPx: 10,
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 100,
+          end: 200,
+          screenStartPx: 0,
+          reversed: true,
+        },
+      ],
+    },
+    summaryDataMap: { get: () => [rec({ start: 100, end: 101 })] },
+    rowIndexBySrc,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(bars[0]).toMatchObject({ x: 9, width: 1 })
+})
+
 test('emits nothing when a region has no fetched summary', () => {
   const bars = computeVisibleSummaryBars({
     view,

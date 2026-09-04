@@ -141,6 +141,34 @@ test('mirrors x for reversed regions', () => {
   expect(markers[0]).toMatchObject({ xLeft: 90, width: 10 })
 })
 
+// Reversed AND sub-pixel, the only combination that tells the two anchors
+// apart: the widening grows away from the record's START edge, its RIGHT edge
+// here, so the strip ends at px10. Anchoring the leftmost edge instead puts it
+// at 9.9 and slides the strip a pixel off the exon it marks.
+test('widens a sub-pixel strip away from its start edge on a reversed region', () => {
+  const markers = computeVisibleAnnotations({
+    view: {
+      bpPerPx: 10,
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 100,
+          end: 200,
+          screenStartPx: 0,
+          reversed: true,
+        },
+      ],
+    },
+    framesDataMap: { get: () => [rec({ start: 100, end: 101 })] },
+    rowIndexBySrc,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(markers[0]).toMatchObject({ xLeft: 9, width: 1 })
+})
+
 test('emits nothing when a region has no fetched frames', () => {
   const markers = computeVisibleAnnotations({
     view,

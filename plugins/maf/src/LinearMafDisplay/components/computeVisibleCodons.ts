@@ -554,8 +554,14 @@ function consecutiveRuns(positions: readonly number[]): [number, number][] {
  * Pixel cells for a codon: one per run of consecutive reference positions. A
  * contiguous codon is a single 3-base cell; a stitched codon is two cells (its
  * two exon pieces). Orientation-aware via `bpToPx`, and >=1px so a sub-pixel
- * piece still reads in the conservation band — the codon *overlay* only runs at
- * base level (`activeRowRendering`), where every cell already clears a pixel.
+ * piece still reads — the conservation band carries no zoom term of its own.
+ *
+ * The codon *overlay* sees sub-pixel cells too, though its gate reads as though
+ * it could not: `activeRowRendering` is base level off the DEBOUNCED
+ * `coarseBpPerPx`, while `bpToPx` takes the live one, so mid-zoom the floor
+ * fires there as well. It cannot move a glyph — `drawMafCodons` wants
+ * `CHAR_SIZE_WIDTH` before it draws one, and `Math.max` is monotone, so
+ * `widestCell` can tie but never reorder.
  */
 function codonCells(
   positions: readonly number[],
