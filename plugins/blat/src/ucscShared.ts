@@ -4,6 +4,7 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
 import { assemblyToUcscDb } from './ucscDbMap.ts'
 
@@ -89,7 +90,11 @@ export function featureLocString(feature: SimpleFeatureSerialized) {
 
 function findNavigableView(session: UcscHost, assembly: string) {
   const view = session.views.find(
-    v => v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
+    v =>
+      v.type === 'LinearGenomeView' &&
+      !!v.assemblyNames?.some(n =>
+        isSameAssemblyName(n, assembly, session.assemblyManager),
+      ),
   )
   return view && isNavigableView(view) ? view : undefined
 }

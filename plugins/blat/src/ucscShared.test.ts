@@ -1,4 +1,4 @@
-import { addResultTrack, featureLocString } from './ucscShared.ts'
+import { addResultTrack, featureLocString, navToFeature } from './ucscShared.ts'
 
 import type {
   AbstractSessionModel,
@@ -28,7 +28,10 @@ const features: SimpleFeatureSerialized[] = [
 // isSessionModelWithWidgets, isNavigableView) are duck typed, so a plain object
 // with the right keys is a real session as far as they are concerned. One cast
 // stands in for the whole MST model rather than building one for four calls.
-function fakeSession() {
+// hg19 answers to GRCh37 the way an assembly config's aliases make it
+const ALIASES: Record<string, string> = { hg19: 'hg19', GRCh37: 'hg19' }
+
+function fakeSession(viewAssembly = 'hg19') {
   const calls = {
     addedTracks: [] as Record<string, unknown>[],
     shownTracks: [] as string[],
@@ -40,10 +43,13 @@ function fakeSession() {
     rpcManager: {},
     configuration: {},
     widgets: new Map(),
+    assemblyManager: {
+      getCanonicalAssemblyName: (name: string) => ALIASES[name],
+    },
     views: [
       {
         type: 'LinearGenomeView',
-        assemblyNames: ['hg19'],
+        assemblyNames: [viewAssembly],
         launchTrack: async (trackId: string) => calls.shownTracks.push(trackId),
         navToLocString: (loc: string) => {
           calls.navigated.push(loc)
@@ -154,4 +160,22 @@ test('reports a missing view instead of throwing', async () => {
   expect(calls.shownTracks).toEqual([])
   expect(calls.notifications).toHaveLength(1)
   expect(calls.notifications[0]).toContain('mm10')
+})
+
+// a view opened on an alias used to take the track and neither move nor light
+// up its per-hit links, because the view lookup compared the two names raw
+test('a view opened on an alias of the queried assembly is still the target', async () => {
+  const { session, calls } = fakeSession('GRCh37')
+  await addResultTrack({
+    session,
+    assembly: 'hg19',
+    features,
+    trackIdPrefix: 'blat',
+    trackName: 'BLAT test',
+  })
+  expect(calls.shownTracks).toHaveLength(1)
+  expect(calls.notifications).toEqual([])
+
+  await navToFeature(session, 'hg19', features[0]!)
+  expect(calls.navigated).toEqual(['chr17:7579839-7579985'])
 })
