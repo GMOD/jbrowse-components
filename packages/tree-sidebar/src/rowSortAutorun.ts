@@ -58,13 +58,24 @@ export function setupRowSortAutorun(
     autorun(
       () => {
         const spec = self.sortRowsBy
-        // The slot is `frozen` on both displays that hold one, so the typed
-        // shape is a description of what a session author is meant to write and
-        // not a check on what they did. A spec naming a position and no refName
-        // names no column to sort at, and reaches `canonicalizeViewRefName`,
-        // which lower-cases what it is handed — so the missing half threw a
-        // TypeError out of the autorun rather than declining to sort.
-        if (!spec || typeof spec.refName !== 'string') {
+        if (!spec) {
+          return
+        }
+        // The slot is `frozen`, so the typed shape describes what a session
+        // author is meant to write, not what they did. A missing refName threw
+        // out of `canonicalizeViewRefName`; a missing or string `pos` failed
+        // the gate below forever, so the sort never ran and the flag never
+        // cleared, silently.
+        const badField =
+          typeof spec.refName !== 'string'
+            ? 'refName'
+            : Number.isFinite(spec.pos)
+              ? undefined
+              : 'pos'
+        if (badField) {
+          console.warn(
+            `${opts.name}: sortRowsBy.${badField} is ${JSON.stringify(spec[badField])}, not sorting`,
+          )
           return
         }
         // Normalize before both the gate and the dispatch. The right-click
