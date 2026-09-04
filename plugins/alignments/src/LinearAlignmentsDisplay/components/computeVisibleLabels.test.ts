@@ -1,3 +1,4 @@
+import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 import {
@@ -36,7 +37,7 @@ function makeRpcData(
 }
 
 // bpPerPx 0.1 → 10px/bp, so text renders (pxPerBp >= 6.5). bpToPx(bp) = bp*10.
-function run(rpcData: PileupDataResult, bpPerPx = 0.1) {
+function run(rpcData: PileupDataResult, bpPerPx = 0.1, showMismatches = true) {
   return computeVisibleLabels({
     view: {
       visibleRegions: [
@@ -54,7 +55,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1) {
     height: 1000,
     featureHeight: 10,
     featureSpacing: 2,
-    showMismatches: true,
+    showMismatches,
     mismatchAlpha: false,
     scrollTop: 0,
   })
@@ -374,6 +375,50 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
   expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
     '(S5)',
   ])
+})
+
+// `showMismatches` gated the whole pass, and only three of the five layers it
+// labels answer to it: `clip` is unconditional in PILEUP_LAYERS and
+// `softclipBases` is gated on `showSoftClipping`. So the bars and the
+// base-coloured cells went on drawing with mismatches off while their text
+// disappeared.
+describe('mismatches off leaves the layers that do not share that gate', () => {
+  const softclipInterbase = {
+    interbasePositions: new Uint32Array([30]),
+    interbaseYs: new Uint16Array([2]),
+    interbaseLengths: new Uint32Array([5]),
+    interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+  }
+
+  it('keeps the clip summary its bar is drawn with', () => {
+    expect(
+      run(makeRpcData(softclipInterbase), 0.1, false)
+        .filter(l => l.type === 'softclip')
+        .map(l => l.text),
+    ).toEqual(['(S5)'])
+  })
+
+  it('keeps the letters over the soft-clipped bases', () => {
+    expect(
+      run(makeRpcData(softclipBasesAt30), 0.1, false).map(l => l.text),
+    ).toEqual(['T', 'G'])
+  })
+
+  it('drops the three layers that do share it', () => {
+    const rpcData = makeRpcData({
+      ...largeInsertionAt10,
+      ...threeMismatches,
+      gapPositions: new Uint32Array([100, 300]),
+      gapYs: new Uint16Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
+    })
+    expect(
+      run(rpcData)
+        .map(l => l.type)
+        .sort(),
+    ).toEqual(['deletion', 'insertion', 'mismatch', 'mismatch'])
+    expect(run(rpcData, 0.1, false)).toEqual([])
+  })
 })
 
 // Zoomed out, this function used to walk every gap and every interbase entry to

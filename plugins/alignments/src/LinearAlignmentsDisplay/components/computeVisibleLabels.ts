@@ -69,6 +69,10 @@ interface ComputeVisibleLabelsParams {
   height: number
   featureHeight: number
   featureSpacing: number
+  // Gates the three label groups whose LAYERS answer to it — deletion,
+  // insertion, mismatch — and no more. `clip` is unconditional in
+  // PILEUP_LAYERS and `softclipBases` is gated on `showSoftClipping`, so
+  // gating the whole pass left those two drawn and unlabelled.
   showMismatches: boolean
   // "Fade low quality mismatches". The SNP letter has to honor it as well as the
   // box under it, or the setting does nothing at the one zoom it applies at.
@@ -144,11 +148,6 @@ export function computeVisibleLabels(
   } = params
 
   const labels: VisibleLabel[] = []
-
-  if (!showMismatches) {
-    return labels
-  }
-
   const rowHeight = featureHeight + featureSpacing
   // One font for the pass, measured and drawn through the same object. Every
   // label carries `font.css` rather than a size the draw would have to rebuild a
@@ -229,7 +228,11 @@ export function computeVisibleLabels(
       // Process deletions (gaps)
       const { gapPositions, gapYs, gapTypes } = rpcData
       const numGaps = gapPositions.length / 2
-      if (tallEnoughForText && maxLen.deletion >= minDeletionBp) {
+      if (
+        showMismatches &&
+        tallEnoughForText &&
+        maxLen.deletion >= minDeletionBp
+      ) {
         for (let i = 0; i < numGaps; i++) {
           if (gapTypes[i] !== GAP_DELETION) {
             continue
@@ -307,7 +310,9 @@ export function computeVisibleLabels(
       // whole walk is dead and its shadows have no reader.
       const numInterbases =
         canRenderText ||
-        (tallEnoughForText && maxLen.interbase >= minLargeInsertionBp)
+        (showMismatches &&
+          tallEnoughForText &&
+          maxLen.interbase >= minLargeInsertionBp)
           ? interbasePositions.length
           : 0
 
@@ -327,43 +332,46 @@ export function computeVisibleLabels(
         const xPx = bpToPx(pos)
 
         if (type === INTERBASE_INSERTION) {
-          const insertionType = getInsertionType(length, pxPerBp)
-          if (insertionType === 'large') {
-            const halfW = insertionBarWidth(length, pxPerBp, featureHeight) / 2
-            insertionShadows.push({
-              row: interbaseYs[i]!,
-              x0: xPx - halfW,
-              x1: xPx + halfW,
-            })
-            // The count arrives with its box, opaque. 'large' IS
-            // insertion.slang's `isLarge`, the test that widens the marker into
-            // a box sized for exactly these digits, so the room for the text is
-            // never in question and there is nothing to fade against. The fade
-            // this replaces ran on `length * pxPerBp`, which measures how big
-            // the insertion is rather than whether it is legible — an insertion
-            // consumes no reference bases, so that span is notional and the
-            // digits never go there. It also cleared 5% two px of span AFTER
-            // the box widened, so the box drew empty and then filled with 5%
-            // digits.
-            if (tallEnoughForText) {
+          if (showMismatches) {
+            const insertionType = getInsertionType(length, pxPerBp)
+            if (insertionType === 'large') {
+              const halfW =
+                insertionBarWidth(length, pxPerBp, featureHeight) / 2
+              insertionShadows.push({
+                row: interbaseYs[i]!,
+                x0: xPx - halfW,
+                x1: xPx + halfW,
+              })
+              // The count arrives with its box, opaque. 'large' IS
+              // insertion.slang's `isLarge`, the test that widens the marker into
+              // a box sized for exactly these digits, so the room for the text is
+              // never in question and there is nothing to fade against. The fade
+              // this replaces ran on `length * pxPerBp`, which measures how big
+              // the insertion is rather than whether it is legible — an insertion
+              // consumes no reference bases, so that span is notional and the
+              // digits never go there. It also cleared 5% two px of span AFTER
+              // the box widened, so the box drew empty and then filled with 5%
+              // digits.
+              if (tallEnoughForText) {
+                labels.push({
+                  type: 'insertion',
+                  x: xPx,
+                  y: yPx,
+                  text: String(length),
+                  font: font.css,
+                  opacity: 1,
+                })
+              }
+            } else if (insertionType === 'small' && canRenderText) {
               labels.push({
                 type: 'insertion',
-                x: xPx,
+                x: xPx + 3,
                 y: yPx,
-                text: String(length),
+                text: `(${length})`,
                 font: font.css,
                 opacity: 1,
               })
             }
-          } else if (insertionType === 'small' && canRenderText) {
-            labels.push({
-              type: 'insertion',
-              x: xPx + 3,
-              y: yPx,
-              text: `(${length})`,
-              font: font.css,
-              opacity: 1,
-            })
           }
         } else if (canRenderText) {
           const prefix = clipPrefix[type]
@@ -386,7 +394,7 @@ export function computeVisibleLabels(
       const { mismatchPositions, mismatchYs, mismatchBases, mismatchQuals } =
         rpcData
       const numMismatches = mismatchPositions.length
-      if (canRenderText) {
+      if (showMismatches && canRenderText) {
         for (let i = 0; i < numMismatches; i++) {
           const pos = mismatchPositions[i]!
 
