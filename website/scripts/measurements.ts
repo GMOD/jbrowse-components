@@ -513,7 +513,10 @@ function aggregate(
       // `check-quoted-figures` reads — `1.34-1.46x`, not `1.34x-1.46x`.
       const hi = one(max)
       const lo = one(min)
-      const unit = hi.slice(hi.search(/[^\d,.]/))
+      // A unitless column — `int`, `ratio` — has no unit to share, and reading
+      // one off `search`'s -1 took the last DIGIT of the maximum instead: an
+      // `int` column running 1 to 16 rendered `-16`.
+      const unit = /[^\d,.].*/.exec(hi)?.[0] ?? ''
       return `${lo.slice(0, lo.length - unit.length)}-${hi}`
     }
   }
@@ -524,7 +527,7 @@ function aggregate(
  *
  * Two shapes, told apart by whether the last segment names an aggregate:
  * `<id>.<column>.<min|max|span|range|first|last>` over a whole column, and
- * `<id>.<row>.<column>` for one cell.
+ * `<id>.<row>.<column>` for one cell, where `<row>` is one of `rowKeys`.
  */
 export function resolveReference(
   records: Map<string, Measurement>,
@@ -553,14 +556,24 @@ export function resolveReference(
       `"${ref}": ${id} has no column "${third}" (and "${third}" is not one of ${[...AGGREGATES].join(', ')})`,
     )
   }
-  const row = measurement.rows.find(r => rowKey(measurement, r) === second)
-  if (!row) {
+  const matches = measurement.rows.filter(r =>
+    rowKeys(measurement, r).includes(second),
+  )
+  if (matches.length === 0) {
     throw new Error(
       `"${ref}": ${id} has no row "${second}" — its rows are ${measurement.rows
-        .map(r => rowKey(measurement, r))
+        .map(r => rowKeys(measurement, r).at(-1))
         .join(', ')}`,
     )
   }
+  if (matches.length > 1) {
+    throw new Error(
+      `"${ref}": ${matches.length} rows of ${id} are keyed "${second}" — quote one of ${matches
+        .map(r => rowKeys(measurement, r).at(-1))
+        .join(', ')}`,
+    )
+  }
+  const row = matches[0]!
   const value = resolveRow(measurement, row)[column.key]
   if (value === null || value === undefined) {
     throw new Error(`"${ref}" is an absent cell — there is no figure to quote`)
@@ -574,14 +587,45 @@ function oneToken(text: string) {
   return text.replaceAll(' ', '')
 }
 
-/** The row addressed by `key`: its first column's value, slugified. */
-export function rowKey(measurement: Measurement, row: Row): string {
-  const first = measurement.columns[0]!
-  const raw = row.values[first.key]
-  return String(raw ?? '')
+const slugify = (raw: number | string | null | undefined) =>
+  String(raw ?? '')
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/g, '-')
     .replaceAll(/^-|-$/g, '')
+
+/** Each column's value joined onto the one before it, slugified. */
+function keyPrefixes(measurement: Measurement, row: Row): string[] {
+  const out: string[] = []
+  for (const column of measurement.columns) {
+    const part = slugify(row.values[column.key])
+    if (part !== '') {
+      const previous = out.at(-1)
+      out.push(previous === undefined ? part : `${previous}-${part}`)
+    }
+  }
+  return out
+}
+
+/**
+ * The keys `<id>.<row>.<column>` can address a row by, shortest first.
+ *
+ * The first column's value slugified, and then — only where another row shares
+ * that — the next column's value joined onto it, until the key names one row:
+ * `buffer-churn-pan` measures each scenario on both rungs, so its cells are
+ * `two-alignments-tracks-pan-webgpu` rather than `two-alignments-tracks-pan`.
+ *
+ * A key several rows share stays in all of their lists, so a reference using it
+ * fails instead of resolving to whichever row was written first. Truncating at
+ * the shortest naming key is what keeps a measured value out of a key: the
+ * deeper prefixes exist only for a row a parameter column tells apart.
+ */
+export function rowKeys(measurement: Measurement, row: Row): string[] {
+  const mine = keyPrefixes(measurement, row)
+  const others = measurement.rows
+    .filter(other => other !== row)
+    .flatMap(other => keyPrefixes(measurement, other))
+  const at = mine.findIndex(key => !others.includes(key))
+  return at === -1 ? mine : mine.slice(0, at + 1)
 }
 
 /** The markdown table for a measurement, ready to splice into a doc. */

@@ -1764,12 +1764,12 @@ alignments track over two static blocks runs a median
 5<!--m:buffer-churn-pan.one-alignments-track-pan.drawsMed--> draws a frame on
 the pan and 7<!--m:buffer-churn-pan.one-alignments-track-pan-back.drawsMed--> on
 the way back, two tracks
-10<!--m:buffer-churn-pan.two-alignments-tracks-pan.drawsMed--> to
+10<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.drawsMed--> to
 16<!--m:buffer-churn-pan.drawsMed.max-->, a wiggle track
 1<!--m:buffer-churn-pan.one-wiggle-track-pan.drawsMed-->; the frame an upload
 lands in peaks at
-48<!--m:buffer-churn-pan.two-alignments-tracks-pan.drawsMax--> to
-62<!--m:buffer-churn-pan.two-alignments-tracks-pan-back.drawsMax--> because
+48<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.drawsMax--> to
+62<!--m:buffer-churn-pan.two-alignments-tracks-pan-back-webgpu.drawsMax--> because
 several renders fire in it. Those are tens, not the thousands at which a
 draw-call budget starts to bind, and what these frames are bound by is the main
 thread rather than draw submission
@@ -1782,7 +1782,7 @@ region: exactly what is drawn now.
 recreates one `GPUBuffer` per `(regionKey, passId)` per upload. This used to be
 filed as the one unmeasured entry on the list. **Measured 2026-09-04, and
 declined**: a screen-and-a-half pan with two alignments tracks open creates
-24<!--m:buffer-churn-pan.two-alignments-tracks-pan.allocs--> buffers on WebGPU
+24<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.allocs--> buffers on WebGPU
 and 26<!--m:buffer-churn-pan.allocs.max--> on WebGL2 — at most
 1468KB<!--m:buffer-churn-pan.kb.max--> of vertex and uniform data — across the
 whole gesture, and the summed wall time inside the create calls is under a
@@ -1792,7 +1792,7 @@ synchronously while WebGPU's `createBuffer` returns before the device allocates.
 Against a gesture measured in seconds that is
 0.004%<!--m:buffer-churn-pan.allocShare.max--> of it at worst. A pan that stays
 inside the loaded blocks allocates
-0<!--m:buffer-churn-pan.two-alignments-tracks-1-px-pan.allocs--> buffers — the
+0<!--m:buffer-churn-pan.two-alignments-tracks-1-px-pan-webgpu.allocs--> buffers — the
 1 px rows are the control — so the churn is one buffer per pass per newly
 fetched block, arriving at the fetch cadence rather than the frame cadence. A
 pool recycles allocations; there is nothing here worth recycling. What would

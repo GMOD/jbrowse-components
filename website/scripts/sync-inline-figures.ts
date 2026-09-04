@@ -39,6 +39,13 @@
 //   <id>.<row>.<column>                              one cell
 //   <id>.<column>.<min|max|span|range|first|last>    over the column
 //
+// `<row>` is the row's first column slugified — `1-10k`,
+// `two-alignments-tracks-pan`. Where another row shares that, the next column
+// joins it: `buffer-churn-pan` measures every scenario on both rungs, so a cell
+// of one is `two-alignments-tracks-pan-webgpu`. A `<row>` several rows answer to
+// is an error rather than the first of them, since a marker that quietly quotes
+// a row nobody chose is exactly the unverified figure this exists to catch.
+//
 // Run `pnpm inline-figures`, or `--check` in CI (`pnpm autogen`), AFTER the two
 // table generators — it reads the same records they do, so the order only
 // matters for the report reading sensibly.
@@ -46,19 +53,9 @@ import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { check, checkOrWriteAll, docFiles } from './check-utils.ts'
-import { loadMeasurements, resolveReference } from './measurements.ts'
+import { spliceInlineFigures } from './inlineFigures.ts'
+import { loadMeasurements } from './measurements.ts'
 import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
-
-// The value is the figure-shaped token immediately before the marker: a digit
-// and then anything that is not a space or a `<`. Deliberately narrower than
-// `\S+`, which would swallow an opening bracket or quote sitting against the
-// figure and then delete it on the next regeneration.
-const INLINE = /(\d[^\s<]*)<!--m:([\w.-]+)-->/g
-
-// A marker with no figure in front of it — a reference written by hand, or one
-// whose value somebody deleted. It resolves to nothing and reads like a comment
-// that is doing something.
-const ORPHAN = /(^|[\s<])<!--m:([\w.-]+)-->/gm
 
 const records = loadMeasurements()
 const problems: string[] = []
@@ -80,20 +77,13 @@ const generated = trees
       return undefined
     }
     const rel = relative(repoRoot, path)
-    for (const orphan of text.matchAll(ORPHAN)) {
-      problems.push(
-        `${rel}: <!--m:${orphan[2]}--> has no figure in front of it — write the value, then the marker, with no space between`,
-      )
-    }
-    const content = text.replaceAll(INLINE, (whole, _value, ref: string) => {
-      try {
-        spliced++
-        return `${resolveReference(records, ref)}<!--m:${ref}-->`
-      } catch (e) {
-        problems.push(`${rel}: ${(e as Error).message}`)
-        return whole
-      }
-    })
+    const {
+      text: content,
+      problems: found,
+      count,
+    } = spliceInlineFigures(text, records)
+    problems.push(...found.map(p => `${rel}: ${p}`))
+    spliced += count
     // Deliberately NOT formatted. `formatMarkdown` rewraps the paragraph a
     // reference sits in, so a value one character wider would reflow lines the
     // author wrote and put this generator's output all over the diff.

@@ -74,7 +74,10 @@ the markers; edit the record.
 restating a figure from the table above it is the one staleness no checker can
 see — the old value is still in the doc it was copied from, so
 `check-quoted-figures` passes. All three conversions were live, and the range
-above already disagreed with its own column.
+above already disagreed with its own column. **`<row>` is the row's first
+column slugified**, with the next column joined on where another row shares it
+(`two-alignments-tracks-pan-webgpu`); a key several rows answer to is an error
+rather than the first of them.
 
 **The marker goes after the value with no space in the pair**, which is why an
 inline figure reads `203KB` and the table reads `203 KB`. A markdown line that

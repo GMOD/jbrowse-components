@@ -350,6 +350,68 @@ describe('quoting one value from prose', () => {
     expect(ref('demo.speedup.range')).toBe('1.50-2.00x')
   })
 
+  // A column with no unit has none to share, and taking one off the maximum
+  // anyway took its last DIGIT: an `int` column running 1 to 16 rendered `-16`.
+  describe('a column with no unit to share', () => {
+    const unitless = new Map([
+      [
+        'demo',
+        parse({
+          columns: [
+            { key: 'case', label: 'case' },
+            { key: 'draws', label: 'draws', format: 'int' },
+            { key: 'wall', label: 'wall', format: 'ms' },
+            { key: 'pure', label: 'pure', format: 'ratio' },
+          ],
+          rows: [
+            { values: { case: 'a', draws: 1, wall: 4998, pure: 0.14 } },
+            { values: { case: 'b', draws: 16, wall: 23991, pure: 16.4 } },
+          ],
+        }),
+      ],
+    ])
+    const one = (r: string) => resolveReference(unitless, r)
+
+    it.each([
+      ['demo.draws.range', '1-16'],
+      ['demo.draws.min', '1'],
+      ['demo.draws.max', '16'],
+      ['demo.draws.first', '1'],
+      ['demo.draws.last', '16'],
+      ['demo.draws.span', '15'],
+      ['demo.wall.range', '4998-23991ms'],
+      ['demo.wall.min', '4998ms'],
+      ['demo.wall.last', '23991ms'],
+      ['demo.pure.range', '0.14-16.40'],
+      ['demo.pure.first', '0.14'],
+      ['demo.pure.max', '16.40'],
+    ])('aggregates %s', (r, want) => {
+      expect(one(r)).toBe(want)
+    })
+
+    // The thousands separator is part of the number, not a unit.
+    it('ranges over grouped integers', () => {
+      const grouped = new Map([
+        [
+          'demo',
+          parse({
+            columns: [
+              { key: 'case', label: 'case' },
+              { key: 'nodes', label: 'nodes', format: 'int' },
+            ],
+            rows: [
+              { values: { case: 'a', nodes: 1000 } },
+              { values: { case: 'b', nodes: 149307 } },
+            ],
+          }),
+        ],
+      ])
+      expect(resolveReference(grouped, 'demo.nodes.range')).toBe(
+        '1,000-149,307',
+      )
+    })
+  })
+
   // The marker follows the value with no space between, so the pair is one
   // token. A space would let a rewrap put `<!--` at the start of a line, where
   // markdown reads it as an HTML block and ends the paragraph.
@@ -386,6 +448,76 @@ describe('quoting one value from prose', () => {
     ])
     expect(() => resolveReference(withGap, 'demo.a.before')).toThrow(
       /absent cell/,
+    )
+  })
+})
+
+describe('addressing a row two rows are named alike', () => {
+  const records = new Map([
+    [
+      'demo',
+      parse({
+        columns: [
+          { key: 'scenario', label: 'scenario' },
+          { key: 'backend', label: 'rung' },
+          { key: 'draws', label: 'draws', format: 'int' },
+        ],
+        rows: [
+          {
+            values: {
+              scenario: 'two tracks, pan',
+              backend: 'WebGPU',
+              draws: 10,
+            },
+          },
+          {
+            values: {
+              scenario: 'two tracks, pan',
+              backend: 'WebGL2',
+              draws: 16,
+            },
+          },
+          {
+            values: {
+              scenario: 'one wiggle track',
+              backend: 'WebGPU',
+              draws: 1,
+            },
+          },
+        ],
+      }),
+    ],
+  ])
+  const ref = (r: string) => resolveReference(records, r)
+
+  // It used to quote the first matching row, which publishes a figure whose
+  // rung the reader cannot tell and no checker can either.
+  it('refuses a shared key rather than taking the first row', () => {
+    expect(() => ref('demo.two-tracks-pan.draws')).toThrow(
+      /2 rows of demo are keyed "two-tracks-pan" — quote one of two-tracks-pan-webgpu, two-tracks-pan-webgl2/,
+    )
+  })
+
+  it('resolves the key the next column tells apart', () => {
+    expect(ref('demo.two-tracks-pan-webgpu.draws')).toBe('10')
+    expect(ref('demo.two-tracks-pan-webgl2.draws')).toBe('16')
+  })
+
+  it('leaves a row nothing shares a name with keyed by one column', () => {
+    expect(ref('demo.one-wiggle-track.draws')).toBe('1')
+  })
+
+  // The keys stop at the shortest one that names a row, so a re-measurement
+  // cannot move a key out from under a reference.
+  it('admits no key carrying a measured value', () => {
+    expect(() => ref('demo.two-tracks-pan-webgpu-10.draws')).toThrow(
+      /has no row/,
+    )
+  })
+
+  it('lists the keys that do name one row', () => {
+    expect(() => ref('demo.nope.draws')).toThrow(
+      /its rows are two-tracks-pan-webgpu, two-tracks-pan-webgl2, one-wiggle-track/,
     )
   })
 })
