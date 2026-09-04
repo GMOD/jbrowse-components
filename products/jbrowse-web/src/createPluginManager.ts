@@ -1,5 +1,5 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import {
   pluginDefinitionMetadata,
   pluginDescriptionString,
@@ -70,7 +70,7 @@ export async function createPluginManager(
   ) => void,
 ) {
   const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+    ...corePluginRecords(corePlugins),
     ...(model.runtimePlugins ?? []).map(asPluginRecord),
     ...(model.sessionPlugins ?? []).map(asPluginRecord),
   ]).createPluggableElements()

@@ -1,4 +1,3 @@
-const originalLog = console.log
 const originalError = console.error
 const originalWarn = console.warn
 
@@ -36,11 +35,6 @@ const contract = (globalThis.__jbrowseContract ??= {
   gated: false,
 })
 
-console.log = (...args) => {
-  const r = String(args)
-  originalLog.call(console, ...args)
-}
-
 console.error = (...args) => {
   const message = args.map(a => `${a}`).join(' ')
   if (CONTRACT_PREFIX.test(message) || message.includes(MOBX_REACTION_ERROR)) {
@@ -52,14 +46,13 @@ console.error = (...args) => {
       return undefined
     }
   }
-  const r = String(args)
   if (
-    r.includes('popupState') ||
-    r.includes('Unterminated') ||
-    r.includes('Cannot update a component') ||
-    r.includes('was not wrapped in act') ||
-    r.includes('Only HTTP(S) protocols are supported') ||
-    r.includes(
+    message.includes('popupState') ||
+    message.includes('Unterminated') ||
+    message.includes('Cannot update a component') ||
+    message.includes('was not wrapped in act') ||
+    message.includes('Only HTTP(S) protocols are supported') ||
+    message.includes(
       'You are trying to `require` a file outside of the scope of the test code',
     )
   ) {

@@ -2,7 +2,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
@@ -59,7 +59,7 @@ export async function getPluginManager(
   adminMode = true,
 ) {
   const pluginManager = new PluginManager(
-    corePlugins.map(P => new P()),
+    corePluginRecords(corePlugins),
   ).createPluggableElements()
 
   const config = initialState ?? configSnapshot

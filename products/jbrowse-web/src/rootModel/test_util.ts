@@ -1,4 +1,4 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 
 import corePlugins from '../corePlugins.ts'
@@ -29,7 +29,7 @@ function buildTestRoot(args?: CreateTestSessionArgs) {
     runtimePlugins = [],
   } = args ?? {}
   const pluginManager = new PluginManager([
-    ...corePlugins.map(P => new P()),
+    ...corePluginRecords(corePlugins),
     ...runtimePlugins.map(({ plugin, definition }) => ({
       plugin,
       definition,

@@ -1,4 +1,4 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -26,10 +26,7 @@ export default function createModel(
   makeWorkerInstance?: () => Worker,
 ) {
   const pluginManager = new PluginManager([
-    // `isCore` is what tells the plugin store these came with the bundle:
-    // InstalledPluginsList filters them out, and without it every bundled
-    // plugin is listed as one the user installed, with an uninstall button
-    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+    ...corePluginRecords(corePlugins),
     // keeps each runtime plugin's `definition`, which is what the RPC worker
     // boots from — see toPluginLoadRecord
     ...runtimePlugins.map(toPluginLoadRecord),

@@ -1,5 +1,5 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import {
   dedupePlugins,
   desktopVendoredPluginNames,
@@ -76,12 +76,7 @@ function pluginRecords(
   isGlobal: (definition: PluginDefinition) => boolean,
 ) {
   return [
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: {
-        isCore: true,
-      },
-    })),
+    ...corePluginRecords(corePlugins),
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,

@@ -1,4 +1,4 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { toPluginLoadRecord } from '@jbrowse/product-core'
 
 import corePlugins from './corePlugins.ts'
@@ -17,7 +17,7 @@ export default function createModel({
   makeWorkerInstance?: () => Worker
 }) {
   const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+    ...corePluginRecords(corePlugins),
     // keeps each runtime plugin's `definition`, which is what the RPC worker
     // boots from — see toPluginLoadRecord
     ...runtimePlugins.map(toPluginLoadRecord),

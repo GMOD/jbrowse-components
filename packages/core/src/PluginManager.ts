@@ -12,6 +12,7 @@ import createJexlInstance from './util/jexl.ts'
 import { expandLooseTrackConfig } from './util/tracks.ts'
 
 import type Plugin from './Plugin.ts'
+import type { PluginConstructor } from './Plugin.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
 import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
@@ -530,6 +531,20 @@ export interface PluginMetadata {
 export interface PluginLoadRecord {
   metadata?: PluginMetadata
   plugin: Plugin
+}
+
+/**
+ * Instantiate an application's bundled plugin list as `isCore` load records —
+ * what tells the plugin store these came with the bundle rather than being
+ * installed by the user, so `InstalledPluginsList` filters them out and the
+ * About widget lists them. Every product and every test harness builds its
+ * manager from one of these lists, and a harness that passed bare instances
+ * silently disagreed with the app it was testing.
+ */
+export function corePluginRecords(
+  plugins: PluginConstructor[],
+): PluginLoadRecord[] {
+  return plugins.map(P => ({ plugin: new P(), metadata: { isCore: true } }))
 }
 export interface RuntimePluginLoadRecord extends PluginLoadRecord {
   definition: PluginDefinition
