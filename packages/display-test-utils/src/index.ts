@@ -4,6 +4,11 @@ export {
   takeSnackbarAction,
 } from './displayTestSessionModel.ts'
 export { stageByteEstimate } from './stageByteEstimate.ts'
+export {
+  captureTeardownNoise,
+  measureTeardownNoise,
+  suppressTeardownNoise,
+} from './teardownNoise.ts'
 export { testAssembly, testAssemblyManager } from './testAssembly.ts'
 
 export type {

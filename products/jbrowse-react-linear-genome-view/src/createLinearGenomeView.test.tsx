@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -54,6 +55,8 @@ const assemblyNamesOf = (
   trackId: string,
 ) =>
   (session.getTrackById(trackId) as { assemblyNames: string[] }).assemblyNames
+
+suppressTeardownNoise()
 
 test('a full-config track seeds the catalog, not sessionTracks (no shadow copy)', async () => {
   const el = document.createElement('div')

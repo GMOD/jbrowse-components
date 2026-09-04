@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -47,6 +48,8 @@ const regionNames = (view: { displayedRegions: { refName: string }[] }) =>
 // The circular view draws its whole figure from displayedRegions, and only the
 // view's `init` blob can build them — an empty displayedRegions is the import
 // form. So a controller that seeded nothing would mount to an empty ring.
+suppressTeardownNoise()
+
 test('the whole assembly is on the ring when no regions are named', async () => {
   const el = document.createElement('div')
   const controller = createCircularGenomeView(el, { assembly })

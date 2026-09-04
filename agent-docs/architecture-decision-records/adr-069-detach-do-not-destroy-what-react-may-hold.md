@@ -184,6 +184,16 @@ the root of everything a plugin builds. The distinction is the whole content of
 this entry, and it is not visible from the call site — both are "the outgoing
 tree" there.
 
+**`scheduleDetachedDestroy` for an embedded product's `destroyViewState`.** The
+call looks like every other one this ADR fixes, and is not the same shape: the
+engine is the ROOT, so there is nothing to detach it from, and the destroy
+already runs outside any action of the session's. Measured on
+`createCircularGenomeView.test.ts`, deferring it takes the dead reads from 5 to
+4 — the "Defer the destroy" result again — while breaking the synchronous
+contract three products' hosts and their tests rely on, that the engine is dead
+when `destroy()` returns. The noise there is the design cost this ADR's
+Consequences names, so the suites hold `suppressTeardownNoise` instead.
+
 **A longer deferral, to get the destroy without the noise.** Measured on the
 reload, in a production browser: 48 dead reads destroying on a 0ms task, 49 on a
 5s one. It is not a race with React finishing its unmount, so no delay is the
@@ -350,7 +360,10 @@ Each fails without its fix and is scoped to what is deterministic:
   undoing a track open is no worse than closing the track. That one fails if
   either path starts throwing, which is what a well-meant detach below a view
   would do.
-  `teardownNoise.ts` is the shared capture, and it scans every console argument:
+  `@jbrowse/display-test-utils`'s `teardownNoise.ts` is the shared capture — it
+  lives there rather than in jbrowse-web's tests so the embedded products'
+  `createApp`/`createLinearGenomeView`/`createCircularGenomeView` destroy suites
+  can hold the same watch. It scans every console argument:
   MobX reports an uncaught error in a reaction as `console.error(message, error)`,
   so a first-argument-only filter buckets the throw as ordinary noise.
 - `products/jbrowse-web/src/components/workerPoolTeardown.test.ts` — a spy on

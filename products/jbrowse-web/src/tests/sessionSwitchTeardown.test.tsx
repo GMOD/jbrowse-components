@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
@@ -5,7 +6,6 @@ import { getObserverTree } from 'mobx'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
-import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 import type { IObserverTree } from 'mobx'

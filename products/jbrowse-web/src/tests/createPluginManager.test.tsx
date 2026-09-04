@@ -1,10 +1,10 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
-import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 

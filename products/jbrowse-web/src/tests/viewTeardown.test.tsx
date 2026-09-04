@@ -3,6 +3,10 @@ import '@testing-library/jest-dom'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  measureTeardownNoise,
+  suppressTeardownNoise,
+} from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   act,
@@ -13,7 +17,6 @@ import {
 } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
-import { measure, suppressTeardownNoise } from './teardownNoise.ts'
 import {
   createView,
   doBeforeEach,
@@ -85,7 +88,7 @@ async function viewWithTrack() {
 test('removeView does not read the view it took out', async () => {
   const { view, session } = await viewWithTrack()
 
-  const log = measure(() => {
+  const log = measureTeardownNoise(() => {
     session.removeView(view)
   })
 
@@ -104,7 +107,7 @@ test('removeView does not read the view it took out', async () => {
 test('replaceView does not read the view it swapped out', async () => {
   const { view, session } = await viewWithTrack()
 
-  const log = measure(() => {
+  const log = measureTeardownNoise(() => {
     session.replaceView(view, 'LinearGenomeView')
   })
 

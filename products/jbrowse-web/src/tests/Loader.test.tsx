@@ -1,10 +1,10 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 
 import { handleRequest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
-import { suppressTeardownNoise } from './teardownNoise.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { createApp } from './createApp.ts'
@@ -31,6 +32,8 @@ function mount() {
   document.body.append(el)
   return el
 }
+
+suppressTeardownNoise()
 
 test('createApp opens the declarative views', async () => {
   const controller = await createApp(mount(), {

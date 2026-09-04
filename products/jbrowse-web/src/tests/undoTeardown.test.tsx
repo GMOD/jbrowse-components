@@ -1,11 +1,14 @@
 import '../components/enableReactRenderLogging.ts'
 import '@testing-library/jest-dom'
 
+import {
+  measureTeardownNoise,
+  suppressTeardownNoise,
+} from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 
 import { renderLoggedComponents } from '../components/renderLogRecord.ts'
-import { measure, suppressTeardownNoise } from './teardownNoise.ts'
 import {
   createView,
   doBeforeEach,
@@ -89,7 +92,7 @@ test('undo and redo across a closed view do not read the view they took out', as
   })
   await recorded(history, s => s.views.length === 0)
 
-  const undoLog = measure(() => {
+  const undoLog = measureTeardownNoise(() => {
     history.undo()
   })
   expect(session.views).toHaveLength(1)
@@ -105,7 +108,7 @@ test('undo and redo across a closed view do not read the view they took out', as
   // restored view's repaint is volatile state and patches nothing — which is
   // also what makes the redo reachable for a real user.
   expect(history.canRedo).toBe(true)
-  const redoLog = measure(() => {
+  const redoLog = measureTeardownNoise(() => {
     history.redo()
   })
   expect(session.views).toHaveLength(0)
@@ -141,7 +144,7 @@ test('undoing a track open is no worse than closing the track', async () => {
   const { view, history } = await sessionWithTrack()
   await recorded(history, s => s.views[0]?.tracks.length === 1)
 
-  const viaHideTrack = measure(() => {
+  const viaHideTrack = measureTeardownNoise(() => {
     view.hideTrack('volvox_test_vcf')
   })
   await recorded(history, s => s.views[0]?.tracks.length === 0)
@@ -153,7 +156,7 @@ test('undoing a track open is no worse than closing the track', async () => {
   await findAnyDisplayPainted(delay)
 
   expect(history.canRedo).toBe(true)
-  const viaSnapshot = measure(() => {
+  const viaSnapshot = measureTeardownNoise(() => {
     history.redo()
   })
   expect(view.tracks).toHaveLength(0)

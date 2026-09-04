@@ -78,7 +78,7 @@ export function captureTeardownNoise() {
  * The synchronous `act` is what draws the line — it flushes React and MobX but
  * not the `setTimeout(0)`.
  */
-export function measure(fn: () => void) {
+export function measureTeardownNoise(fn: () => void) {
   const log = captureTeardownNoise()
   try {
     act(fn)

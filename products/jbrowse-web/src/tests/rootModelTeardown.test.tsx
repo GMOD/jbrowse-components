@@ -1,5 +1,6 @@
 import '../components/enableReactRenderLogging.ts'
 
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
@@ -8,7 +9,6 @@ import { Image, createCanvas } from 'canvas'
 import { Loader } from '../components/Loader.tsx'
 import { renderLoggedComponents } from '../components/renderLogRecord.ts'
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
-import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 

@@ -3,7 +3,7 @@
   "version": "5.0.0-beta.2",
   "private": true,
   "type": "module",
-  "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session and the stub assembly manager",
+  "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session, the stub assembly manager, and the ADR-069 teardown-noise watch the products' destroy suites hold",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "exports": {
@@ -12,5 +12,8 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3"
   }
 }

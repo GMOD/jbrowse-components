@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
@@ -7,6 +8,8 @@ const assembly = {
   name: 'volvox',
   uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
 }
+
+suppressTeardownNoise()
 
 test('tears the engine down, and stays a no-op once torn down', () => {
   const state = createViewState({ assembly })

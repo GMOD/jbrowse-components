@@ -503,6 +503,10 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+    devDependencies:
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
 
   packages/display-ui:
     dependencies:
@@ -2475,6 +2479,10 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
 
   products/jbrowse-react-app/examples-site:
     dependencies:
@@ -2578,6 +2586,10 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
 
   products/jbrowse-react-circular-genome-view/examples-site:
     dependencies:
@@ -2720,6 +2732,10 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
 
   products/jbrowse-react-linear-genome-view/examples-site:
     dependencies:
@@ -2923,6 +2939,9 @@ importers:
       '@jbrowse/cli':
         specifier: workspace:*
         version: link:../jbrowse-cli
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
       generic-filehandle2:
         specifier: ^2.4.0
         version: 2.4.0

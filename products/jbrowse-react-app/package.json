@@ -81,6 +81,9 @@
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2"
   },
+  "devDependencies": {
+    "@jbrowse/display-test-utils": "workspace:^"
+  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"

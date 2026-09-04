@@ -1,3 +1,4 @@
+import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
@@ -8,7 +9,6 @@ import {
   lifecycleProbe,
 } from './apolloShapedPlugin.ts'
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
-import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 import type * as ApolloShapedFixture from './apolloShapedPlugin.ts'
