@@ -88,7 +88,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="volatile-volatileerror">**volatileError**</span><br><code>volatileError</code> |  | LinearGenomeView |
 | <span id="volatile-coarsedynamicblocks">**coarseDynamicBlocks**</span><br><code>coarseDynamicBlocks: [] as ContentBlock[]</code> |  | LinearGenomeView |
 | <span id="volatile-coarsetotalbp">**coarseTotalBp**</span><br><code>coarseTotalBp: 0</code> |  | LinearGenomeView |
-| <span id="volatile-coarsebpperpx">**coarseBpPerPx**</span><br><code>coarseBpPerPx: self.legacyBpPerPx &#124;&#124; 1</code> |  | LinearGenomeView |
+| <span id="volatile-coarsebpperpx">**coarseBpPerPx**</span><br><code>coarseBpPerPx: 1</code> |  | LinearGenomeView |
 | <span id="volatile-leftoffset">**leftOffset**</span><br><code>leftOffset: undefined as undefined &#124; BpOffset</code> |  | LinearGenomeView |
 | <span id="volatile-rightoffset">**rightOffset**</span><br><code>rightOffset: undefined as undefined &#124; BpOffset</code> |  | LinearGenomeView |
 | <span id="volatile-isscalebarrefnamemenuopen">**isScalebarRefNameMenuOpen**</span><br><code>isScalebarRefNameMenuOpen: false</code> |  | LinearGenomeView |
