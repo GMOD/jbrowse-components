@@ -749,15 +749,14 @@ across. The node in the figure below is 142 kb of chr17 that GRCh38 does not
 carry, near the end of the chromosome, and RepeatMasker tiles it with long L1
 elements.
 
-The hs1 pane holding that node is barely wider than the node itself, so the
-allele has only its own surroundings to be dense against. The panel beside it is
-the same measurement at a scale that can say whether the L1 density means
-anything. Open the LINE row alone over the last 3 Mb of the chromosome and set
-the track's **Resolution** low, so each drawn value averages about 100 kb. At
-the file's own 5 kb bins the allele is invisible inside the spikes; averaged to
-something near its own size it is a block.
+Read that lane for what the sequence is made of rather than for how much repeat
+is in it. The elements are old L1 subfamilies, long past copying themselves, and
+the CHM13 sequence either side of the node is made of the same thing. A
+subtelomere built out of decayed L1 is the kind of sequence a BAC-and-Sanger
+reference had no way to place, which is the answer to why GRCh38 ends where it
+does here.
 
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph late, after most of the other haplotypes, so little is
 credited to it: `tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns a
@@ -880,12 +879,12 @@ chromosome with, since sequence one of them lacks has no lifted-over interval.
 repeat content, so a single density lane would show no difference. What moved is
 the composition, in opposite directions: more L1, less Alu.
 
-Whether that is a lot depends on the scale it is asked at, which is what the
-last part of [the donor-node figure](#the-one-donor-worth-loading) draws. The
-same script ranks the allele against every window of its own size in CHM13, and
-it comes out near the top of its own neighbourhood and unremarkable against the
-genome. The enrichment is local: this sequence is L1-dense for this end of
-chr17.
+That comparison is between two whole chromosome ends, which is why it holds. A
+single interval is harder. Rank the insertion allele from
+[the donor-node figure](#the-one-donor-worth-loading) against windows of its own
+size and where it lands moves with the windows you rank it against, which is why
+`build_repeat_density.sh` reports several scopes rather than one. Read these
+lanes for which class changed, not for how much of it there is.
 
 ## The bubble track
 

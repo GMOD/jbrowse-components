@@ -221,19 +221,19 @@ const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
 const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
 // The node's own span padded to a round window, and it STAYS this tight
 // (review: "ideally we would zoom out the lineargenomeview even more to show
-// how these L1 transposons are more frequent here than elsewhere"). Not because
-// there is nothing to see wider -- there is, and `hprc_l1_density_context` is
-// it -- but because THIS lane cannot draw it. The RepeatMasker bigBed carries a
-// long `description` per record, so past ~400 kb the lane hits its byte budget
-// and comes back empty under a FORCE LOAD prompt; and per element over 627 kb
-// the allele's 48 LINEs are indistinguishable from the flanks' scatter, since
-// the enrichment is a level rather than a shape (0.07-0.42 inside per 20 kb
-// against 0.00-0.40 outside). The wider question is answered by the density
-// bigWig at ~100 kb smoothing over 3 Mb, which has neither limit.
+// how these L1 transposons are more frequent here than elsewhere"). Widening it
+// draws nothing, and that is a fact about the SEQUENCE rather than about the
+// lane: the flank is the same material as the allele. Counted off
+// chm13v2.0_rmsk.bb over matched 142 kb windows, the allele carries 44 L1
+// records at 24.0% bp-weighted divergence and the left flank 41 at 23.9%, both
+// 95% L1M*. There is no boundary for a wider window to put in frame.
 //
-// (An earlier pass concluded "no local contrast, the allele sits in a
-// subtelomere that is repeat-dense end to end". That was the joined-span bug in
-// build_repeat_density.sh; every number in it is roughly double.)
+// (Two earlier passes each concluded something wider WAS there -- first "no
+// local contrast", then a 5.3 Mb density lane in which the allele was the
+// tallest bin. The first was the joined-span bug in build_repeat_density.sh,
+// every number in it roughly double. The second was real but window-dependent:
+// binned to 100 kb, 130 of chr17's 843 bins carry more LINE than this allele,
+// so the lane was measuring the box it was drawn in.)
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
 // The amylase locus, framed on the inversion-flagged bubble the scan over
@@ -402,63 +402,35 @@ const HS1_RMSK_TRACK = {
   },
 }
 
-// The same annotation as a DENSITY, which is the only form that can answer "is
-// that a lot" at megabase scale. One class, not the multi-class lane the
-// tutorial configures: the claim is about L1, and a second colour would invite
-// a composition reading the window is too wide to support.
+// A repeat lane read for WHAT THE SEQUENCE IS MADE OF, never for how much of it
+// there is (review: "the repeatmasker track is not very interesting
+// unfortunately and looks sort of glitchy even, just being collapsed layout.
+// its also too zoomed in to tell if this amount of repeat is significant
+// compared to background"). The second half of that is right and unfixable, and
+// three rounds were spent trying to fix it anyway -- a wider element window, a
+// 3 Mb density lane, a 5.3 Mb one -- before the annotation itself said why.
 //
-// Already hosted and already documented — `scripts/build_repeat_density.sh`
-// writes it, the tutorial's repeat-density section is the config for it, and
-// its genome mean (0.2045) is the LINE fraction of CHM13, which is the check
-// that it is the corrected build rather than the joined-span one.
-const HS1_LINE_DENSITY_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'hs1_line_density',
-  name: 'LINE density (RepeatMasker, 5 kb bins)',
-  assemblyNames: ['hs1'],
-  adapter: {
-    type: 'BigWigAdapter',
-    bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw',
-      locationType: 'UriLocation',
-    },
-  },
-}
-
-// A repeat lane as a LIST OF ELEMENTS, not as a density strip (review: "the
-// repeatmasker track is not very interesting unfortunately and looks sort of
-// glitchy even, just being collapsed layout. its also too zoomed in to tell if
-// this amount of repeat is significant compared to background"). Both halves of
-// that are right, and the second one is what decides the first.
+// THE L1 HERE IS DEAD, and the composition rules out the reading a density lane
+// kept being built to support (review: "i just wanted to show that it seems like
+// the loop in the graph is an 'l1 invasion' or cluster"). Over the allele's
+// 142 kb, chm13v2.0_rmsk.bb carries 44 L1 records at 24.0% bp-weighted
+// divergence, 95% of them L1M* -- the mammalian-wide subfamilies, not primate
+// ones. There is no L1HS and nothing under 6% divergence. An invasion is L1PA2
+// through L1HS under 5%, so whatever built this interval finished before the
+// primates. The left flank is 41 records at 23.9%, also 95% L1M*: the same
+// material, which is why nothing separates the two at any window.
 //
-// A collapsed strip is a density read, and a density read is the one thing this
-// annotation cannot support AT THIS WINDOW. scripts/build_repeat_density.sh
-// puts the allele at 23.70% LINE against 14.18% and 14.47% in the CHM13
-// sequence either side of it: real, and 1.7x, but only as a mean over the whole
-// 142 kb. Per 20 kb the allele runs 0.07-0.42 and its flanks run 0.00-0.40, so
-// over 180 kb there is no block for a strip to draw.
+// What the lane CAN say is per-element and true: this interval is built out of
+// old L1 fossils, which is the sequence a BAC-and-Sanger reference had no way to
+// place, and that is the mechanism the lane was added for. Labels stay off: 171
+// repeat names over 180 kb is a wall of small print, and the class is the one
+// thing the colour already carries.
 //
-// A density read at the ALLELE'S OWN SCALE is a different matter, and it is
-// `hprc_l1_density_context`: 3 Mb of the same chromosome with each drawn value
-// a ~100 kb mean, where the allele is the tallest sustained level in the frame.
-// Two things had to be true for that and are not true here -- the source has to
-// be the density bigWig rather than this bigBed (which stops loading past ~400
-// kb), and the smoothing has to be at the allele's size rather than at 5 or
-// 20 kb. Earlier rounds concluded "not a picture" from inside those two limits.
-//
-// (An earlier pass concluded something stronger still, that there is no
-// contrast at all because the allele is 84.6% repeat against flanks at 79.0%
-// and 70.4%. Those were the joined-span bug in that script; every one of them
-// is roughly double.)
-//
-// What the annotation CAN say without a density read is what the sequence is
-// made of, and that is a per-element statement: 48 LINE elements in the allele's
-// 142 kb, the longest a 13.6 kb L1MD. In normal layout those are individual long
-// bars stacked in rows, which is the picture of a subtelomere built out of L1 —
-// and it is the mechanism the lane was added for, since that is the sequence a
-// BAC-and-Sanger reference had no way to place. Labels stay off: 171 repeat
-// names over 180 kb is a wall of small print, and the classes are the caption's
-// business.
+// (`bigRmskBed` JOINS the fragments of one insertion across intervening
+// sequence, so a record's span is not an element length -- an earlier version of
+// this comment read a 13.6 kb span off it and called it an L1MD element. Aligned
+// bases top out near 7.9 kb, and joined records overlap enough that summing them
+// passes 100% of the window. Coverage comes from the merged bigWig instead.)
 function repeatLane(trackId: string) {
   return {
     trackId,
@@ -1935,13 +1907,13 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // add that"). There is no gene, and there is no assembly gap either -- UCSC's
   // hg38 `gap` track has one record past 82.5 Mb on chr17 and it is the terminal
   // 10 kb telomere, so this is a real insertion allele rather than a hole GRCh38
-  // never closed. What the lane shows is the mechanism: the inserted 142 kb
-  // carries 48 LINE elements, 23.70% of it against 14.18% and 14.47% in the
-  // CHM13 sequence either side, and the longest is a 13.6 kb L1MD -- a stack of
-  // L1, which is the sequence a BAC-and-Sanger reference had no way to place.
+  // never closed. What the lane shows is the mechanism: the inserted 142 kb is
+  // built out of ancient L1, which is the sequence a BAC-and-Sanger reference had
+  // no way to place.
   //
-  // ONE lane, where there were two, and not a collapsed density strip: see
-  // repeatLane for the measurement that decided both.
+  // ONE lane, where there were two, and the claim is COMPOSITION rather than
+  // amount: see repeatLane for the divergence and subfamily counts that decided
+  // both, and for the density part that used to sit beside this one.
   //
   // The bottom pane's gene lane is GONE with it, for the reason the top pane
   // never had one: `jbrowse.org/ucsc/hs1/hs1.gff.gz` has nothing in this window,
@@ -1961,7 +1933,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // too.
   {
     mode: 'url',
-    name: 'pangenome/hprc_chm13_allele_panes',
+    name: 'pangenome/hprc_chm13_allele',
     url: sessionSpec(HPRC_CONFIG, {
       sessionTracks: [HS1_RMSK_TRACK],
       views: [
@@ -2057,11 +2029,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // view's nodePositions, so a shorter settle can capture before there are any
     settleMs: 14000,
     viewportWidth: 1000,
-    // 1078, off the run's own blank-below-the-content report, after three
-    // height cuts asked for by the same review note: the graph pane 420 -> 320,
-    // the repeat lane to one collapsed row, and the bubble lane to the one row
-    // its filter leaves.
-    viewportHeight: 1078,
+    // 1112, off the run's own reports, after three height cuts asked for by the
+    // same review note: the graph pane 420 -> 320, the repeat lane to one
+    // collapsed row, and the bubble lane to the one row its filter leaves. It
+    // was 1078, which the CLIPPED BELOW THE FOLD report then put 33 px over.
+    viewportHeight: 1112,
     hideTooltip: true,
     annotations: [
       {
@@ -2069,18 +2041,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         anchor: { view: 1, graphNode: CHM13_NODE },
         strokeWidth: 3,
       },
-      // THE LOOP CARRIES THE BADGE TOO (review: "presumably the loop should
-      // also be labeled with '1'"). It is the same object as the bar in the
-      // pane below and the shaded column in the part beside this one, and it
-      // was the only one of the three drawn without the number. A graph-node
-      // anchor resolves to a point ON the node's polyline rather than to its
-      // bounding box, so the badge lands on the arc itself -- which is what
-      // makes it a label on the loop and not on the box around it.
-      {
-        type: 'circle',
-        text: '1',
-        anchor: { view: 1, graphNode: CHM13_NODE },
-      },
+      // The badge that sat on the arc is GONE with the rest of the ① pairing
+      // (review: "presumably the loop should also be labeled with '1'"). It
+      // numbered this node against the bar below it and a shaded column in a
+      // part that no longer exists; with two panes to pair rather than three,
+      // the box is the landmark and a number on it counts to one.
       // WHICH PANE IS WHICH, OVER THE APP AS WELL AS IN IT (review: "the in-app
       // texts are too small to see. we need to add them"). Each pane already
       // carries a `displayName`, which is what an earlier round asked for, and
@@ -2138,228 +2103,19 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       },
       // The pane's colour-key pill is GONE, into the track's own name (see
-      // HS1_RMSK_TRACK). It used to carry three things -- which assembly, what
-      // red means, and 23.7% against 14% either side -- and two of them had to
-      // go for different reasons. The percentages are a measurement a reader
-      // cannot check against the picture, which is what the density part beside
-      // this one is for and what website/CLAUDE.md now says about callouts. The
-      // rest is a label, and a label belongs on the track.
-      // HALF OF THE PAIR ①, whose other half is on the density part. The two
-      // parts are side by side and this is the one landmark they share: the
-      // sequence this pane draws per repeat element is the sliver shaded over
-      // there. See the density part for why a badge and not an arrow.
+      // HS1_RMSK_TRACK). It used to carry which assembly, what red means, and a
+      // percentage against the flanks; the percentage is a measurement a reader
+      // cannot check against the picture, and the rest is a label, which belongs
+      // on the track.
       //
-      // On the SEGMENTS lane rather than the RepeatMasker one above it, because
-      // the segments lane draws the allele as a single feature -- the badge sits
-      // on one bar that is exactly the thing being identified, where on the
-      // repeat lane it would land in the middle of eight rows of elements.
-      // In the 20 kb of flank LEFT of the bar rather than on it, with an arrow
-      // to where the bar starts (review: "make arrow pointing from the badges").
-      // On the bar the badge was a disc on a black rectangle that runs most of
-      // the pane, so it identified the lane rather than the allele; beside it,
-      // with the arrow landing on the allele's own left edge, it identifies the
-      // feature. Both ends are locus anchors on the same track, so neither is a
-      // measured pixel.
-      {
-        type: 'circle',
-        text: '1',
-        anchor: {
-          view: 2,
-          track: SEGMENTS_TRACK,
-          locus: 'chr17:83,886,000',
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          view: 2,
-          track: SEGMENTS_TRACK,
-          locus: 'chr17:83,886,000',
-          dx: 20,
-        },
-        anchor: {
-          view: 2,
-          track: SEGMENTS_TRACK,
-          locus: 'chr17:83,899,576',
-        },
-      },
+      // This was ① of a numbered pair and the density part it paired with is
+      // gone, so NOTHING replaces it (review: "i just wanted to show that it
+      // seems like the loop in the graph is an 'l1 invasion' or cluster"). A
+      // label naming the allele here would be naming the largest thing in the
+      // frame: the bottom pane is 180 kb and the allele is 142 kb of it, so the
+      // bar runs nearly the pane's width. The pane's own displayName pairs with
+      // the top one's, and the app draws the allele's `highlight` under it.
     ],
-  },
-  // PART TWO: IS THAT A LOT? (review, on the part above: "we keep relitigated
-  // this but im trying to understand, what would convince user this is like an
-  // abnormal number of L1 compared to an even larger e.g. megabase scale
-  // region"). Nothing in that part can answer it: its widest lane is 180 kb, so
-  // the allele has only itself and two slivers of flank to be dense against,
-  // and the pill's "23.7% vs 14%" is a pair of numbers a reader has to take on
-  // trust. This is the same measurement drawn at the scale the question is
-  // asked at, and it is a PART rather than a figure of its own so that the
-  // claim and its check cannot be read apart.
-  //
-  // Three earlier rounds concluded there was no picture here, and each was
-  // looking at the wrong two things: the ELEMENT lane, which cannot go past
-  // ~400 kb before the RepeatMasker bigBed hits its byte budget, and 20 kb
-  // bins, at which the allele runs 0.07-0.42 and its flanks 0.00-0.40 and
-  // nothing separates. The density bigWig has neither limit, and at the
-  // ALLELE'S OWN SCALE the separation is not subtle: `build_repeat_density.sh`
-  // ranks it against every 142 kb window of CHM13 and finds 2 of the 262 within
-  // 5 Mb carry more LINE, against a local median of 0.084.
-  //
-  // AND IT IS SCOPED, which is the honest half of the answer: genome-wide the
-  // same 23.7% is ordinary, with 35% of 142 kb windows above it. So the figure
-  // is 3 Mb of chr17 rather than a chromosome or a genome, and the caption says
-  // which claim is being made.
-  //
-  // `resolution` is what does the smoothing, and it is the whole trick: the
-  // display asks the bigWig for values of `bpPerPx / resolution` bp, so 0.03
-  // over this window lands on a ~100 kb zoom level instead of the ~3 kb one the
-  // default would draw. At 3 kb the allele is invisible inside the spikes -- 5
-  // kb bins reach 0.73 inside it and 0.47 just outside.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_chm13_allele_density',
-    url: sessionSpec(HPRC_CONFIG, {
-      sessionTracks: [HS1_LINE_DENSITY_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          displayName: 'T2T-CHM13v2.0 (hs1) chr17, the last 3 Mb',
-          assembly: 'hs1',
-          // to the end of the chromosome: the allele sits 235 kb from the
-          // telomere, so a window centred on it would be half off the contig
-          loc: 'chr17:81,300,000-84,276,897',
-          // the allele's own span, drawn by the app from its coordinates
-          highlight: [{ ...CHM13_ALLELE, color: 'rgba(200,60,45,0.16)' }],
-          tracks: [
-            {
-              trackId: HS1_LINE_DENSITY_TRACK.trackId,
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
-              useBicolor: false,
-              resolution: 0.03,
-              // 'avg' EXPLICITLY. A zoom level stores min/mean/max per bin and
-              // the default draws all three as whiskers, so the first render
-              // was a pale max band filling the lane to 0.5 everywhere with the
-              // mean buried under it -- the opposite of the point. The mean is
-              // the density; the max of a 100 kb bin is whatever single 5 kb
-              // bin inside it happened to be an L1.
-              summaryScoreMode: 'avg',
-              // fixed, not autoscaled: an axis that ends at whatever this
-              // window happens to reach cannot be read against another window,
-              // and 0.5 keeps the plateau at half height rather than pinned to
-              // the top of the lane
-              minScore: 0,
-              maxScore: 0.3,
-              displayCrossHatches: true,
-              // Sized to the column it sits beside rather than to the lane's own
-              // needs: the compose is horizontal, so this part's height is the
-              // panes part's 1,331 and the only question is what fills it. 220
-              // was right when this was stacked UNDER 2,662 px of panes and every
-              // pixel was one the reader had to scroll past; beside them, a short
-              // lane just leaves white. The axis is fixed at 0-0.3 either way, so
-              // the extra height is resolution on the one comparison the part
-              // exists to make -- the shaded plateau against the 3 Mb around it --
-              // and the crosshatches keep it readable rather than a wall of bars.
-              //
-              // 828 now, following the panes column down (review: "the right
-              // side does not need to be that turbo tall"). This lane never
-              // wanted the height on its own account -- it is one bar chart on a
-              // fixed 0-0.3 axis -- so every pixel the left column gives back is
-              // one this one gives back too.
-              height: 828,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: displayPainted('wiggle-display'),
-    readyTimeout: 90000,
-    settleMs: 6000,
-    viewportWidth: 1000,
-    // the panes part's viewportHeight exactly. `+append` pads the shorter part
-    // to the taller one and top-aligns it, so any mismatch here is white down
-    // the bottom of this column rather than an error.
-    viewportHeight: 1078,
-    hideTooltip: true,
-    annotations: [
-      {
-        type: 'text',
-        text: 'the 142 kb insertion allele',
-        fontSize: 17,
-        anchor: {
-          track: HS1_LINE_DENSITY_TRACK.trackId,
-          locus: 'chr17:83,899,576',
-          fracY: 0.06,
-          alignX: 'left',
-          dx: -14,
-        },
-        textAlign: 'end',
-      },
-      // AND IT POINTS (review: "make arrow pointing from the badges"). The pill
-      // sat beside the shaded column naming it, which at 3 Mb across 1000 px is
-      // a label a few pixels from two other bars just as tall. Tail at the
-      // pill's own locus, head on the allele's midpoint further down the lane,
-      // both resolved through the track rather than measured.
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: HS1_LINE_DENSITY_TRACK.trackId,
-          locus: 'chr17:83,899,576',
-          fracY: 0.1,
-          dx: -24,
-        },
-        anchor: {
-          track: HS1_LINE_DENSITY_TRACK.trackId,
-          locus: 'chr17:83,970,690',
-          fracY: 0.28,
-        },
-      },
-      // HALF OF THE PAIR ①. The other half is on the panes part's bottom pane,
-      // and together they say that the shaded sliver here is the sequence drawn
-      // per repeat element over there. It has to be a badge rather than the
-      // arrow the pairing wants: compose parts are separate captures `+append`ed
-      // afterwards, so nothing can be drawn across the seam (see ComposeSpec).
-      //
-      // Anchored to the allele's own span on the track, so it stays on the
-      // sliver as the lane's height changes; `fracY: 0.5` puts it at the lane's
-      // middle, below the label above and clear of the plateau's own bars.
-      {
-        type: 'circle',
-        text: '1',
-        anchor: {
-          track: HS1_LINE_DENSITY_TRACK.trackId,
-          locus: 'chr17:83,899,576-84,041,803',
-          fracY: 0.5,
-        },
-      },
-    ],
-  },
-  // The two as one figure. The name is the one the doc and the review log
-  // already carry, so what moves is which spec renders it, and a reader cannot
-  // reach the claim without the check under it.
-  //
-  // SIDE BY SIDE, not stacked (review: "this may want to be a side-by-side
-  // figure, with an arrow pointing from the first to the second figure, in the
-  // relevant region"). Stacked it was 2,000x3,602 -- the three panes' 2,662 plus
-  // the density's 940 -- and the second half read as the next step down the
-  // page rather than as the check on the first, which is what it is.
-  //
-  // The arrow the review asks for is the half that is NOT available: parts are
-  // separate captures `+append`ed afterwards, so nothing can be drawn across the
-  // seam. The pairing is a numbered badge on each half instead (① on both), the
-  // substitute ComposeSpec documents, and each half also carries the allele's
-  // own `highlight` in the app so the badge lands on something already marked.
-  //
-  // Horizontal makes HEIGHT the shared dimension rather than width, so the
-  // density part is 1,331 to match the panes part rather than the 470 it wanted
-  // on its own -- see its `height` for what fills that.
-  {
-    mode: 'compose',
-    name: 'pangenome/hprc_chm13_allele',
-    parts: [
-      'pangenome/hprc_chm13_allele_panes',
-      'pangenome/hprc_chm13_allele_density',
-    ],
-    direction: 'horizontal',
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
   // i really understand this figure. consider deleting. just not actually

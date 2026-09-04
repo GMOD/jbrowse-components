@@ -212,11 +212,14 @@ report rmsk_hs1.bed chr17 83599576 83899576 "CHM13 left flank"
 report rmsk_hs1.bed chr17 83899576 84041803 "CHM13 allele"
 report rmsk_hs1.bed chr17 84041803 "$hs1_end" "CHM13 right flank"
 
-# IS THAT A LOT? The flank comparison above cannot answer it, and the answer
-# depends entirely on the scale it is asked at (review: "what would convince
-# user this is like an abnormal number of L1 compared to an even larger e.g.
-# megabase scale region"). So rank the allele against every window of its own
-# size in CHM13, at three scopes: genome-wide, chr17, and the 10 Mb around it.
+# IS THAT A LOT? The flank comparison above cannot answer it, and the three
+# scopes below are here to show that nothing else can either (review: "what
+# would convince user this is like an abnormal number of L1 compared to an even
+# larger e.g. megabase scale region"). Rank the allele against every window of
+# its own size in CHM13 and the answer moves with the scope: near the top within
+# 5 Mb, mid-pack across chr17, ordinary genome-wide. A figure drawn at any one
+# of them is measuring its own window, which is why the tutorial reads these
+# lanes for composition and not for amount.
 #
 # 20 kb step rather than tiling, so the ranking does not depend on where a tile
 # boundary happens to fall relative to the allele.
