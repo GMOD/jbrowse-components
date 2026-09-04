@@ -50,7 +50,7 @@ function resolveFile(base: string) {
 // Value imports only — `import type` is erased, and the overlay contract is
 // built out of type-only imports precisely so it costs nothing at runtime.
 // `export … from` counts as much as `import … from`: a barrel is made of them.
-function valueImports(file: string) {
+export function valueImports(file: string) {
   const source = readFileSync(file, 'utf8')
   const statics = [
     ...source.matchAll(

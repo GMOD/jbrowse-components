@@ -42,6 +42,7 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
+    "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/modifications-utils": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

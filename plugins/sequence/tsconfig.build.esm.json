@@ -3,6 +3,7 @@
   "references": [
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
+    { "path": "../../packages/display-ui/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../linear-genome-view/tsconfig.build.esm.json" }
   ]

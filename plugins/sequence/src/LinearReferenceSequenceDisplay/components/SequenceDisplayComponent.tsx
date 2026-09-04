@@ -1,7 +1,7 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { PointerLayer } from '@jbrowse/display-kit/PointerLayer'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 

@@ -809,6 +809,9 @@ importers:
       '@jbrowse/display-kit':
         specifier: workspace:^
         version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
@@ -1719,6 +1722,9 @@ importers:
       '@jbrowse/display-kit':
         specifier: workspace:^
         version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)

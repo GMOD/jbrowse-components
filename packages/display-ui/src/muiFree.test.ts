@@ -1,6 +1,7 @@
+import { readdirSync } from 'node:fs'
 import path from 'node:path'
 
-import { moduleReach } from './importGraph.node.ts'
+import { moduleReach, valueImports } from './importGraph.node.ts'
 
 // This package's whole claim is a *module graph*, and until it existed every
 // check on that claim watched the DOM instead.
@@ -79,3 +80,31 @@ test.each(Object.entries(weightPath))(
     expect(muiReach(file)).toEqual([])
   },
 )
+
+// The list above is hand-written, so it covers the files someone remembered.
+// `display-kit` grew a second `PointerLayer` naming the `@jbrowse/core/ui`
+// barrel for a `useMouseState` the deep subpath serves, and no entry saw it.
+// That component lives in this package now, where the whole-package walk at the
+// top of the file covers it — and the barrel, the one edge every entry above
+// exists to keep out, is checked over `display-kit` as a directory rather than
+// per remembered file, so a leaf added there is guarded by default.
+//
+// The three left are Material by design, and each names a barrel export with no
+// deep subpath published: core's `exports` map is generated from in-repo import
+// sites, so deep-importing them is a change to that map and belongs with one.
+const barrelUsers = new Set([
+  'DisplayContextMenu.tsx',
+  'LegendMixin.ts',
+  'trackControl/MuiTrackControl.tsx',
+])
+
+test('no display-kit module names the @jbrowse/core/ui barrel', () => {
+  const named = readdirSync(displayKit, { recursive: true, encoding: 'utf8' })
+    .filter(name => /\.tsx?$/.test(name) && !name.includes('.test.'))
+    .filter(name => !barrelUsers.has(name))
+    .filter(name => {
+      const { statics, dynamics } = valueImports(path.join(displayKit, name))
+      return [...statics, ...dynamics].includes('@jbrowse/core/ui')
+    })
+  expect(named).toEqual([])
+})
