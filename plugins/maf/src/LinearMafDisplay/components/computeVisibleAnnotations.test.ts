@@ -60,22 +60,28 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
   ])
 })
 
-// A 447-way alignment in fit mode puts `rowHeight` near 1, where the drawn band
-// floors at MIN_DRAWN_ROW_PX — and the strip's 2px minimum then covered the rows
-// either side, contradicting the "thin band at the bottom of each row" this
-// function documents.
-test('the CDS strip never outgrows the row band it annotates', () => {
-  const markers = computeVisibleAnnotations({
-    view,
-    framesDataMap: { get: () => [rec({ src: 'rn6' })] },
-    rowIndexBySrc,
-    rowHeight: 1.24,
-    rowProportion: 0.8,
-    scrollTop: 0,
-    viewportHeight: 1000,
-  })
-  expect(markers[0]!.h).toBeLessThanOrEqual(1.24)
-})
+// A 447-way alignment in fit mode puts `rowHeight` near 1, and `resolveRowHeight`
+// deliberately does not floor it — 2000 species in 600px is ~0.3. The drawn band
+// floors at MIN_DRAWN_ROW_PX and overhangs its row there, exactly as the shader
+// paints it, so the strip cannot be bounded by the row; what it must stay inside
+// is the band, leaving the base/SNP colouring this function's docstring promises
+// still visible underneath.
+test.each([15, 4, 2.5, 1.24, 1, 0.5, 0.06])(
+  'the CDS strip is a band on the row at rowHeight %p, not instead of it',
+  rowHeight => {
+    const markers = computeVisibleAnnotations({
+      view,
+      framesDataMap: { get: () => [rec({ src: 'rn6' })] },
+      rowIndexBySrc,
+      rowHeight,
+      rowProportion: 0.8,
+      scrollTop: 0,
+      viewportHeight: 1000,
+    })
+    const drawnBand = Math.max(rowHeight * 0.8, 1)
+    expect(markers[0]!.h).toBeLessThanOrEqual(drawnBand / 2)
+  },
+)
 
 // `frameColorIndex` mirrors the `−` half of the palette onto the `+` half, so
 // one reading frame is one color whichever strand the gene is on. It used to
