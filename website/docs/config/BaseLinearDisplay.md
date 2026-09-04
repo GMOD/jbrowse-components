@@ -9,9 +9,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Overview
 
 Shared base config for linear displays — its slots (`height`,
-`maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
-common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config
-extends it, and third-party plugins extend it too.
+`fetchSizeLimit`, `mouseover`, `jexlFilters`) are common to all of them. The
+GPU stack's `LinearCanvasBaseDisplay` config extends it, and third-party
+plugins extend it too.
 
 ### BaseLinearDisplay - Identifier
 
@@ -38,7 +38,6 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` |
 | <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |

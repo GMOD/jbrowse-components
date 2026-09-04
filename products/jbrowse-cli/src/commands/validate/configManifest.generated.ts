@@ -2811,10 +2811,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -2848,6 +2844,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityTierBpPerPx",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
           "type": "(JexlString | number)"
         },
         {
@@ -2989,10 +2989,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -3105,10 +3101,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
         },
         {
           "name": "fetchSizeLimit",
@@ -3429,10 +3421,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -3671,10 +3659,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -3783,10 +3767,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -3820,6 +3800,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityTierBpPerPx",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
           "type": "(JexlString | number)"
         },
         {
@@ -3948,10 +3932,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
         },
         {
           "name": "fetchSizeLimit",
@@ -4083,10 +4063,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -4200,10 +4176,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -4304,10 +4276,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
         },
         {
           "name": "fetchSizeLimit",
@@ -4908,10 +4876,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -5041,10 +5005,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -5112,10 +5072,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
         },
         {
           "name": "fetchSizeLimit",
@@ -5186,10 +5142,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
         },
@@ -5237,10 +5189,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
         },
         {
           "name": "fetchSizeLimit",

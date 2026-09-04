@@ -34,7 +34,9 @@ after `RegionTooLargeMixin`; the display decides how the bins are drawn.
 | <span id="getter-hasdensitysource">**hasDensitySource**</span><br><code>boolean</code> |  |
 | <span id="getter-densitytieractive">**densityTierActive**</span><br><code>boolean</code> | Whether the band stands in for features right now. |
 | <span id="getter-densitybandactive">**densityBandActive**</span><br><code>boolean</code> | Overridable hook (default: the tier's verdict) — whether the band is standing in for the features on screen right now. A display whose band needs somewhere to draw narrows it: canvas adds the view geometry the draw is mapped through, alignments the coverage band that can be hidden. |
-| <span id="getter-fetchsuspended">**fetchSuspended**</span><br><code>boolean</code> | `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over the tier's verdict. A display whose band needs somewhere to draw (alignments, whose coverage band can be hidden) overrides it with that term. |
+| <span id="getter-fetchsuspended">**fetchSuspended**</span><br><code>boolean</code> | `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over `densityBandActive`. |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | The foundation's phase with the too-large banner swapped for the band — see `densityBandDisplayPhase`. Composed after the foundation, so this getter is the one `types.compose` keeps. |
+| <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | The export gate under the same swap — see `densityBandSvgReady`. |
 | <span id="getter-drawswhentoolarge">**drawsWhenTooLarge**</span><br><code>boolean</code> | `renderDisplaySvg`'s hook: the export paints the band in place of the too-large note, the same swap the chrome makes on screen. Here rather than beside each display's phase getters, which is where it was and where alignments forgot it — `awaitSvgReady` waited out the bins and `SvgChrome` then wrote the note over them. |
 
 ## Actions
