@@ -105,6 +105,37 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.drawsWhenTooLarge).toBe(true)
   })
 
+  // A wheel zoom under a stationary cursor fires no mousemove, so the readout
+  // has to follow the bp now under the same px rather than hold the bp it was
+  // set at.
+  it('reads the value under the cursor at the current zoom', () => {
+    const { display, view } = refusableDisplay(DENSITY_ADAPTER)
+    refuseOnBytes(display)
+    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+      regions: [],
+      bucket: 0,
+      adapterKey: 'k',
+    })
+    const px = 400
+    const under = view.pxToBp(px).coord0
+    expect(under).toBeLessThan(12_700)
+
+    display.setDensityHoverPx(px)
+    expect(display.densityHover).toEqual({ displayedRegionIndex: 0, bp: under })
+    expect(display.densityReadout).toMatch(/^3000 at cursor/)
+
+    view.zoomTo(view.bpPerPx / 4)
+    const zoomed = view.pxToBp(px).coord0
+    expect(zoomed).not.toBe(under)
+    expect(display.densityHover).toEqual({
+      displayedRegionIndex: 0,
+      bp: zoomed,
+    })
+
+    display.setDensityHoverPx(undefined)
+    expect(display.densityHover).toBeUndefined()
+  })
+
   // `regionTooLarge` outranks `error` in the shared precedence, so under a
   // refusal — the state the tier exists for — the base phase is `tooLarge`
   // however the read went, and reading the failure terminals off it swapped a

@@ -58,9 +58,11 @@ export default function DensityBandMixin() {
       .volatile(() => ({
         /**
          * #volatile
-         * Where the cursor is over the density band, for its readout.
+         * The cursor's view px over the density band, for its readout. The px
+         * rather than the bp under it: a wheel zoom under a stationary cursor
+         * fires no mousemove, and the px is what stays true through it.
          */
-        densityHover: undefined as DensityHover | undefined,
+        densityHoverPx: undefined as number | undefined,
       }))
       .views(self => ({
         /**
@@ -80,6 +82,18 @@ export default function DensityBandMixin() {
           return displayDensityBandLayer(bandHost(self))
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Where the cursor is over the band, in the read's own coordinates,
+         * derived from the view geometry now.
+         */
+        get densityHover(): DensityHover | undefined {
+          return self.densityBandActive
+            ? densityHoverAt(bandView(self), self.densityHoverPx)
+            : undefined
+        },
+      }))
       .actions(self => ({
         /**
          * #action
@@ -87,9 +101,7 @@ export default function DensityBandMixin() {
          * band is up, so a pointer over features writes nothing here.
          */
         setDensityHoverPx(px?: number) {
-          self.densityHover = self.densityBandActive
-            ? densityHoverAt(bandView(self), px)
-            : undefined
+          self.densityHoverPx = self.densityBandActive ? px : undefined
         },
       }))
       .views(self => ({
