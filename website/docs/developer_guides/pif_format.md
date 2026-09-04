@@ -6,244 +6,214 @@ guide_category: Advanced topics
 sidebar_label: PIF format
 ---
 
-**TL;DR:** run `jbrowse make-pif input.paf` and load the resulting `.pif.gz`;
-`jbrowse add-track` picks the `PairwiseIndexedPAFAdapter` from the extension.
-Use PIF over plain PAF for anything whole-genome scale.
+PIF is a tabix-indexed transformation of
+[PAF](https://github.com/lh3/miniasm/blob/master/PAF.md). Plain PAF must be
+loaded entirely into memory. PIF stores each alignment twice, once indexed on
+each genome, so a region query fetches only the overlapping alignments and works
+from either genome's coordinates.
 
-PIF (Pairwise Indexed Format) is a tabix-indexed variant of
-[PAF](https://github.com/lh3/minimap2/blob/master/minimap2.1). Plain PAF must be
-loaded entirely into memory; PIF splits each alignment into two indexed records
-(one per genome), so JBrowse fetches only the alignments overlapping the
-viewport and can query from either assembly's perspective.
-
-## File format
-
-Each PAF alignment line produces **two PIF lines**: a `t`-prefixed line indexed
-by target coordinates, and a `q`-prefixed line indexed by query coordinates.
-
-PAF columns:
-
-```
-qname  qlen  qstart  qend  strand  tname  tlen  tstart  tend  nmatch  blen  mapq  [optional fields...]
+```bash
+jbrowse make-pif input.paf   # writes input.pif.gz and input.pif.gz.tbi
 ```
 
-**t-line** (indexed by target coordinates):
+`jbrowse add-track` picks [](/docs/config/pairwiseindexedpafadapter) from the
+`.pif.gz` extension. Use PIF over plain PAF at whole-genome scale.
 
+## Lines
+
+Each PAF line becomes two PIF lines, one per indexed perspective. Both keep
+PAF's 12 mandatory columns and its optional tags, in PAF's order. Column 1
+carries a one-letter prefix naming the perspective.
+
+| Line | Column 1      | Columns 2-4 | Columns 6-9 | `cg:Z:`           |
+| ---- | ------------- | ----------- | ----------- | ----------------- |
+| `t`  | `t` + `tname` | target      | query       | PAF's, unchanged  |
+| `q`  | `q` + `qname` | query       | target      | reoriented, below |
+
+A [coarse tier](#coarse-tier) repeats both lines under `T`/`Q`. The prefix is
+always the first character of column 1.
+
+Sorted under `LC_ALL=C`, bgzipped, and indexed with:
+
+```bash
+tabix -s1 -b3 -e4 -0
 ```
-t{tname}  tlen  tstart  tend  strand  qname  qlen  qstart  qend  nmatch  blen  mapq  [optional fields...]
-```
 
-**q-line** (indexed by query coordinates, CIGAR adjusted):
+## CIGAR reorientation
 
-```
-q{qname}  qlen  qstart  qend  strand  tname  tlen  tstart  tend  nmatch  blen  mapq  [optional fields...]
-```
+A PAF CIGAR is written from the target's perspective, following SAM: `D`
+consumes the target, `I` consumes the query. A PIF line is walked against
+columns 1-4, so:
 
-The `t`/`q` prefix lets tabix return the right set of lines for any chromosome
-in either assembly with a single region query.
+- the `t` line's own axis is already the target, and carries the CIGAR unchanged
+- the `q` line on the plus strand swaps every `I` and `D`
+- the `q` line on the minus strand reverses the op order and swaps `I` and `D`
 
-### CIGAR adjustment on q-lines
+Each line has exactly one thing rewritten: `t` swaps the columns, `q` swaps the
+CIGAR.
 
-PAF CIGARs are from the query's perspective. The q-line adjusts them so `I`/`D`
-operations are consistent with the q-line's column order (query is primary):
+## Alignment strings
 
-- On the plus strand, swap all `I` and `D` operations
-- On the minus strand, reverse the CIGAR string and swap `I` and `D` operations
+A row carries exactly one, `cg:Z:`.
 
-The t-line carries the original PAF CIGAR unchanged.
+- a `cs:Z:` is converted to a CIGAR (`=` for matches, `X` for substitutions) and
+  replaces any `cg:Z:` the row also had, since `cs` spells out mismatches that
+  minimap2's own `cg` folds into `M`. The substituted bases are dropped, their
+  positions survive as `X`
+- `cs` is never emitted. Reorienting one means reversing op order _and_
+  reverse-complementing its spelled-out bases
+- an incoming `cr:Z:` is stripped from both tiers
 
-A PIF row carries exactly one alignment string, `cg:Z:`. A minimap2 `cs:Z:`
-difference string is folded into it (`=` for matches, `X` for substitutions),
-and a row carrying both — what `minimap2 -c --cs` emits — keeps the one folded
-from the `cs`, since that spells out mismatches where minimap2's own `cg` says
-`M`. The substituted base letters are what the fold drops; mismatch positions
-survive as `X`. Reorienting a `cs` for the q-line would mean reversing its op
-order and reverse-complementing those bases, so only the folded CIGAR is
-carried.
+Run minimap2 with `--eqx` so the CIGAR distinguishes `=` from `X`.
 
-### Identity
+## Identity
 
-Fine-tier rows pass the aligner's tags through untouched. The renderer derives
-per-alignment identity from the first of these that a row carries:
+The renderer reads the first of these that a row carries:
 
-- `de:f:` (minimap2's gap-compressed per-base divergence), read as
-  `identity = 1 - de`
-- `id:f:` (odgi untangle writes this, as a fraction or a percentage)
-- the standard `num_matches` / `block_len` columns
+- `de:f:`, minimap2's gap-compressed per-base divergence, as `1 - de`
+- `id:f:`, written by odgi untangle, as a fraction or a percentage
+- the `num_matches` / `block_len` columns
 
-This matches [rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf`
-writes the same `perID_by_all` quantity) and
-[SVbyEye](https://github.com/daewoooo/SVbyEye).
+This is the same quantity as rustybam's `rb stats --paf` `perID_by_all` and
+[SVbyEye](https://github.com/daewoooo/SVbyEye). It is never recomputed from the
+CIGAR, where a plain `M` folds mismatches into matches and would report a
+divergent alignment as identical. A coarse row carries its fine row's counts and
+tags, so identity coloring does not jump at a tier switch.
 
-A coarse-tier row carries the same count columns and tags as its fine row, so
-the renderer lands on the same rung of that chain with the same value and
-identity coloring does not jump at the zoom where the view switches tiers.
-Identity is never recomputed from the CIGAR: a plain `M` CIGAR folds mismatches
-into matches, so a recompute would report a divergent alignment as 100%
-identical.
+## Header
 
-For the most accurate identity, run minimap2 with `--eqx` so the CIGAR
-distinguishes matches (`=`) from mismatches (`X`).
-
-### Header line
-
-`make-pif` writes one meta line, which the C-locale sort puts first and tabix
-keeps as a header (`tabix -H file.pif.gz` prints it):
+One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 ```
 #pif	version:i:1	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
 ```
 
-- `version`: the format generation
-- `tiers`: `fine` or `fine,coarse`, so a reader need not scan the contig list to
-  know whether the coarse tier exists
-- `coarse`: the coarse tier's accuracy bound in bp, the `--coarse` it was built
-  with; absent when there is no coarse tier
-- `cigars`: whether every input row carried a CIGAR (`all`), none did (`none`),
-  or some (`some`)
+| Field     | Meaning                                                      |
+| --------- | ------------------------------------------------------------ |
+| `version` | format generation                                            |
+| `tiers`   | `fine` or `fine,coarse`                                      |
+| `coarse`  | the coarse tier's bound in bp, absent when there is no tier  |
+| `cigars`  | whether every input row had a CIGAR: `all`, `some` or `none` |
 
-Files built before the header existed have none, and readers treat every field
-as optional.
+Every field is optional, and files built before the header have none.
 
-### Tabix index parameters
+## Coarse tier
 
-The file is sorted, bgzipped, and indexed with:
+`make-pif` writes a second tier of the same alignments under `T`/`Q` by default.
+Low zooms serve it, drawing the same ribbons without parsing megabyte-scale
+CIGARs. The "Level of detail" control defaults to `auto` (settings menu on both
+comparative views, track menu on the LGV synteny track).
 
-```
-tabix -s1 -b3 -e4 -0
-```
+A coarse row is its fine row with the coordinate columns and every non-alignment
+tag verbatim. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag:
 
-Column 1 is the sequence name (with `t`/`q` prefix), columns 3–4 are the 0-based
-start and end coordinates.
-
-## Creating PIF files
-
-`jbrowse make-pif` requires `bgzip` and `tabix` to be installed:
-
-```bash
-# writes input.pif.gz and input.pif.gz.tbi
-jbrowse make-pif input.paf
-
-# specify output path
-jbrowse make-pif input.paf --out output.pif.gz
-
-# CSI index instead of TBI (for chromosomes > 512 Mb)
-jbrowse make-pif input.paf --csi
-```
-
-Full workflow from two genome assemblies:
-
-```bash
-# --eqx makes minimap2 emit =/X in the CIGAR so mismatches draw at base zoom
-minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
-jbrowse make-pif alignment.paf
-jbrowse add-assembly reference.fa --out $OUT --load copy
-jbrowse add-assembly query.fa --out $OUT --load copy
-jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
-```
-
-`jbrowse add-track` detects the `.pif.gz` extension and automatically configures
-the `PairwiseIndexedPAFAdapter`.
-
-### Level-of-detail coarse tier
-
-By default `make-pif` also writes a "coarse" tier of the same alignments (rows
-prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view serves this tier
-automatically, drawing the same ribbons without parsing megabyte-scale CIGAR
-strings; zooming in switches back to the fine `t`/`q` tier. The "Level of
-detail" control defaults to `auto`, and `fine`/`coarse` pin a tier. It is a
-submenu of the settings menu on both comparative views, and of the track menu on
-the LGV synteny track.
-
-A coarse row is the same alignment as its fine row: one row, with the PAF
-columns and every non-alignment tag verbatim. What changes is the alignment
-string. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag, the CIGAR
-folded at the `--coarse` length:
-
-- every insertion or deletion longer than half of `--coarse` is kept as its own
-  `I`/`D`/`N` op, exactly as in the CIGAR
-- everything between two kept indels collapses to one match run. A run whose two
-  sides consumed different lengths, because it absorbed small indels, is written
-  `<own>:<mate>M` with the row's own side first; a square run stays `<n>M`
-- a run is also closed before the small indels it absorbs would skew it by more
-  than half of `--coarse`, so the straight line between a run's two corners is
-  never more than `--coarse` bp off the alignment's real path. That bound is
-  what `--coarse` means
+- an indel longer than half of `--coarse` keeps its `I`/`D`/`N` op and length
+- everything between two kept indels folds into one match run, written
+  `<own>:<mate>M` when the two sides consumed different lengths and `<n>M` when
+  square, the row's own side first
+- a run also closes before the small indels it absorbs would skew it past half
+  of `--coarse`, so the straight line between a run's corners is never more than
+  `--coarse` off the alignment's real path. That bound is what `--coarse` means
+- the alphabet is `M I D N` plus the run form, lengths are non-negative, and a
+  run never has a zero side. A reader takes `=`/`X` as `M` and ignores `S`, `H`
+  and `P`, which the writer never emits
+- the `Q` row is reoriented the way the fine tier's `cg` is
 
 ```
 cg:Z:31198M4800I18803M   fine row
-cr:Z:31198M4800I18803M   coarse T row built with --coarse 1000: the insertion is kept
-cr:Z:31198M4800D18803M   the same alignment's coarse Q row (I<->D from the query's side)
+cr:Z:31198M4800I18803M   coarse T row at --coarse 1000, the insertion is kept
+cr:Z:31198M4800D18803M   the same alignment's coarse Q row
 ```
 
-Built with the default `--coarse 10000` the 4.8 kb insertion is under half the
-gap and folds into the run, and since the fold is then a single run the tag is
-omitted altogether: the coordinate columns already say everything it would. The
-Q row's coarse CIGAR is re-oriented the way the fine tier's `cg` is, `I`/`D`
-swapped and the run lengths traded, and reversed on the minus strand.
+At the default `--coarse 10000` that insertion is under half the bound and folds
+into the run, leaving a single run, so the tag is omitted altogether.
+
+`cr:Z:` is omitted when:
+
+- the row has no CIGAR
+- the fold is a single run, which the coordinate columns already describe
+- the CIGAR does not close on the row's own columns (clipping ops, a
+  hand-written `cg`, a `cs` whose spans do not add up)
+
+In a file whose header states a bound and `cigars:Z:all`, a tagless coarse row
+is therefore exactly one run, and readers walk it as `<own>:<mate>M` over its
+columns.
 
 The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
-run is one ribbon segment between its corners and each kept gap is a colored
-indel wedge. An insertion or deletion large enough to see at whole-genome zoom
-therefore looks the same in both tiers, and the tier switch changes nothing on
-screen. The row's coordinates, `num_matches` and `block_len` are the fine row's,
-so the feature detail panel shows the same alignment either way. Navigation
-walks it as well: "Move other panel to the matching region", the follow mode and
-the launch dialog's clip-to-region all map through the coarse CIGAR, and the
-answer is within `--coarse` bp of the CIGAR's, which is under a pixel at any
-zoom the tier is served automatically.
-
-The tag is also omitted when the row has no CIGAR, and when the CIGAR does not
-close on the row's own coordinate columns (clipping ops, a hand-written `cg`, a
-`cs` whose spans don't add up): the columns are what the fine tier draws, so the
-coarse row must not say anything the walk reconstructed. In a file whose header
-states a bound and `cigars:Z:all`, a coarse row without the tag is therefore
-exactly one run, and readers treat it as `<own>:<mate>M` over its columns, so it
-walks, flips and clips like any fold.
-
-The grammar, precisely: the alphabet is `M`, `I`, `D` and `N` plus the run form,
-lengths are non-negative integers, and a run never has a zero side (the writer
-spells such a run as the `I` or `D` it is). A reader also accepts `=` and `X` as
-`M` and ignores `S`, `H` and `P`, which the writer never emits. On the Q row `N`
-keeps the row's own axis, as it does in the fine tier's `cg`. `--coarse` must be
-a positive number of bp: a coarse tier without a bound would be
-indistinguishable from one whose rows all folded to a single run.
+run is a ribbon segment between its corners, each kept gap a colored indel
+wedge. An indel large enough to see at whole-genome zoom looks the same in both
+tiers. Navigation walks it too, so "Move other panel to the matching region",
+follow mode and the launch dialog's clip-to-region answer within `--coarse` bp
+of the CIGAR's answer.
 
 ```bash
-# coarse tier is on by default: runs within 10kb of the alignment, indels over 5kb kept
-jbrowse make-pif input.paf
-
-# a tighter coarse tier: runs within 1kb, indels over 500bp kept
-jbrowse make-pif input.paf --coarse 1000
-
-
-
-# disable the coarse tier (fine t/q tier only)
-jbrowse make-pif input.paf --no-coarse
+jbrowse make-pif input.paf                 # default, runs within 10kb
+jbrowse make-pif input.paf --coarse 1000   # runs within 1kb
+jbrowse make-pif input.paf --no-coarse     # fine t/q tier only
+jbrowse make-pif input.paf --csi           # CSI index, for chromosomes > 512Mb
+jbrowse make-pif input.paf --out out.pif.gz
 ```
 
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
 is the zoom at which `auto` switches, and the header keeps it honest: a value
-below the `--coarse` the file was built with is raised to it, since below that
-the coarse tier would be served at zooms where the indels it folded away are
-wide enough to see. A file built with `--no-coarse` serves the fine tier at
-every zoom whatever the setting says, and the "Alignment blocks only" pin has
-nothing to switch to.
+below the `--coarse` the file was built with is raised to it. A `--no-coarse`
+file serves the fine tier at every zoom whatever the setting says.
 
-PIF files built before the coarse CIGAR existed still load. Their coarse rows
-were instead split into pieces at large indels and carry no alignment string,
-and they have no header, so they draw as plain ribbons and nothing walks them;
-rebuild with `make-pif` to get the wedges. The other way round, a JBrowse older
-than the coarse CIGAR reads a new file too: it shows `cr` as a plain attribute
-and draws every coarse row as one straight ribbon, so a site that must serve
-such clients should build with `--no-coarse`.
+Both directions of compatibility work. A PIF built before `cr:Z:` existed has
+coarse rows split at large indels with no alignment string, and draws as plain
+ribbons. A JBrowse older than `cr:Z:` reads a new file and draws every coarse
+row as one straight ribbon, so build with `--no-coarse` to serve such clients.
 
-### Optional preprocessing with rustybam
+## All-vs-all
 
-For large or messy PAFs (millions of short alignments, soft-clipped overhangs,
-inconsistent strand orientation),
-[rustybam](https://github.com/mrvollger/rustybam) can clean the alignments
-before `make-pif`:
+An all-vs-all PAF takes the same format and the same command. What carries the
+extra genomes is the sequence names, following the
+[PanSN](https://github.com/pangenome/PanSN-spec) convention
+`sample#haplotype#contig`:
+
+```
+qgrape#1#chr1	1000	100	200	+	peach#1#G1	1000	300	400	90	100	60
+tpeach#1#G1	1000	300	400	+	grape#1#chr1	1000	100	200	90	100	60
+```
+
+Column 1 is the prefix letter followed by the whole PanSN name. The mate in
+columns 6-9 is the PanSN name alone, with no letter. Load such a file with
+[](/docs/config/allvsallindexedpafadapter).
+
+**The letter is a perspective, not an assembly.** In a pairwise file `q` is
+`assemblyNames[0]` and `t` is `assemblyNames[1]` in every row, so one query per
+contig is complete. An all-vs-all aligner writes each pair in whichever order it
+reached it, so a sample is the PAF query in some records and the target in
+others. Above, `peach#1#G1` is the target, and wherever peach was the query its
+rows are filed under `qpeach#1#G1`. Both letters are read and unioned.
+
+**Assembly identity comes from the name.** Each entry in the adapter's
+[`assemblyNames`](/docs/config/allvsallindexedpafadapter/#slot-assemblynames)
+must resolve to a PanSN prefix present in the file, either a sample (`grape`,
+covering all of its haplotypes) or one haplotype (`grape#1`) for a
+haplotype-resolved pangenome that loads each haplotype separately. Where the
+JBrowse assembly name and the PanSN prefix differ, map them with
+[`assemblyNameToPanSN`](/docs/config/allvsallindexedpafadapter/#slot-assemblynametopansn).
+An assembly matching no prefix raises an error listing the prefixes the file
+does hold.
+
+Mates need not be listed. A plain linear genome view draws the track's assembly
+against every other sample in the file, labelling an unlisted mate by its PanSN
+prefix. A synteny view naming a target assembly narrows the same track to that
+pair.
+
+**Reciprocal restatements are deduplicated.** Such a file usually states each
+pair from both ends, so A against B and B against A are both present, and both
+are anchored on A when A is the row being drawn. Drawn as they arrive the same
+ribbon gets two coats. The adapter keeps one, testing agreement on both spans
+and on the same diagonal rather than direction, since the two passes need not
+chain a homology into the same blocks. A file holding one direction per pair
+(`minimap2 -X`, a curated PAF) has nothing to drop.
+
+## Preprocessing with rustybam
+
+Optional, for large or messy PAFs (millions of short alignments, soft-clipped
+overhangs, inconsistent strand orientation):
 
 ```bash
 minimap2 -cx asm5 --eqx reference.fa query.fa \
@@ -254,17 +224,13 @@ minimap2 -cx asm5 --eqx reference.fa query.fa \
   | jbrowse make-pif /dev/stdin --out alignment.pif.gz
 ```
 
-The rustybam tags pass through to both tiers, but `make-pif` alone is
-sufficient. The [SafFire](https://github.com/mrvollger/SafFire) viewer documents
-the rationale for each rustybam step.
+Tags pass through to both tiers, and `make-pif` alone is sufficient.
+[SafFire](https://github.com/mrvollger/SafFire) documents the rationale for each
+step. `rb break-paf --max-size N` splits the alignments themselves, so both
+tiers inherit the same pieces, where `--coarse` keeps a large indel inside one
+row as a wedge in both.
 
-`rb break-paf --max-size N` splits the input alignments themselves at large
-indels, so **both** tiers inherit the same pieces. `--coarse` keeps a large
-indel inside one row in both tiers, as a CIGAR op in the fine tier and a coarse
-CIGAR op in the coarse tier, drawn as a colored wedge either way. Break the PAF
-upstream to see those indels as genuine breaks between separate alignments.
-
-## JBrowse configuration
+## Configuration
 
 ```json addtrack
 {
@@ -284,7 +250,27 @@ upstream to see those indels as genuine breaks between separate alignments.
 }
 ```
 
-Use `"indexType": "CSI"` if you created the index with `--csi`.
+An all-vs-all file, where `assemblyNames` are PanSN prefixes:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "my_pangenome",
+  "name": "All vs all",
+  "assemblyNames": ["grape", "peach", "cacao"],
+  "adapter": {
+    "type": "AllVsAllIndexedPAFAdapter",
+    "assemblyNames": ["grape", "peach", "cacao"],
+    "pifGzLocation": { "uri": "all_vs_all.pif.gz" },
+    "index": {
+      "indexType": "TBI",
+      "location": { "uri": "all_vs_all.pif.gz.tbi" }
+    }
+  }
+}
+```
+
+Use `"indexType": "CSI"` for an index created with `--csi`.
 
 ## Comparison with PAFAdapter
 
@@ -296,12 +282,22 @@ Use `"indexType": "CSI"` if you created the index with `--csi`.
 | Large genomes       | Slow / memory-heavy | Efficient                 |
 | Bidirectional query | No                  | Yes                       |
 
-PAFAdapter is simpler to set up and fine for small alignments. For large
-whole-genome comparisons PIF is strongly preferred.
+PAFAdapter is fine for small alignments. PIF is strongly preferred for
+whole-genome comparisons.
 
 ## See also
 
-- Adapter config reference: [](/docs/config/pairwiseindexedpafadapter) and
-  [](/docs/config/pafadapter)
-- [](/docs/developer_guides/creating_view)
+- Adapter config: [](/docs/config/pairwiseindexedpafadapter),
+  [](/docs/config/allvsallindexedpafadapter), [](/docs/config/pafadapter)
 - [Config guide: synteny track](/docs/config_guides/synteny_track)
+
+Tutorials that build or load a PIF:
+
+- [](/docs/tutorials/synteny_visualization) builds the pairwise case from two
+  assemblies with minimap2
+- [](/docs/tutorials/allvsall_synteny) is the smallest all-vs-all file, and
+  shows where PanSN names come from when the aligner does not write them
+- [](/docs/tutorials/pangenome_ecoli) and [](/docs/tutorials/pangenome_cactus)
+  take the PAF out of a pggb and a Minigraph-Cactus graph
+- [](/docs/tutorials/pangenome_hprc) loads hosted human PIF files rather than
+  building one
