@@ -9,7 +9,6 @@ export type indexType = 'aggregate' | 'perTrack'
 
 export function createTextSearchConf(
   name: string,
-  trackIds: string[],
   assemblyNames: string[],
   locationPath: string,
 ) {
@@ -25,11 +24,6 @@ export function createTextSearchConf(
       localPath: paths.ixx,
       locationType: 'LocalPathLocation' as const,
     },
-    metaFilePath: {
-      localPath: paths.meta,
-      locationType: 'LocalPathLocation' as const,
-    },
-    tracks: trackIds,
     assemblyNames,
   }
 }

@@ -34,9 +34,6 @@ const tracks = [
         ixxFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
         },
-        metaFilePath: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
-        },
         assemblyNames: ['GRCh38'],
       },
     },

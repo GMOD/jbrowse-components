@@ -77,9 +77,6 @@ const trixIndex = {
   ixxFilePath: {
     uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
   },
-  metaFilePath: {
-    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
-  },
 }
 
 // What the buttons put in the box. Five inputs, five paths, and the pair in the

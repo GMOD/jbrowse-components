@@ -227,10 +227,6 @@
         "uri": "trix_main_thread/volvox.ixx",
         "locationType": "UriLocation"
       },
-      "metaFilePath": {
-        "uri": "trix_main_thread/volvox_meta.json",
-        "locationType": "UriLocation"
-      },
       "assemblyNames": ["volvox"]
     }
   ]

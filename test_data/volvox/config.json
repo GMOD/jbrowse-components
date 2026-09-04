@@ -2993,10 +2993,6 @@
         "uri": "trix/volvox.ixx",
         "locationType": "UriLocation"
       },
-      "metaFilePath": {
-        "uri": "trix/volvox_meta.json",
-        "locationType": "UriLocation"
-      },
       "assemblyNames": ["volvox"]
     },
     {
@@ -3008,10 +3004,6 @@
       },
       "ixxFilePath": {
         "uri": "trix/volvox-rev-del.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/volvox-rev-del_meta.json",
         "locationType": "UriLocation"
       },
       "assemblyNames": ["volvox-rev-del"]

@@ -8,14 +8,18 @@ import Adapter, { snippetAround } from './TrixTextSearchAdapter.ts'
 import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 describe('normalizeSnapshot uri shorthand', () => {
-  it('derives ixx and _meta.json siblings from the .ix uri', () => {
-    expect(
-      normalizeSnapshot({ type: 'TrixTextSearchAdapter', uri: 'x.ix' }),
-    ).toMatchObject({
+  it('derives the ixx sibling from the .ix uri', () => {
+    const snap = normalizeSnapshot({
+      type: 'TrixTextSearchAdapter',
+      uri: 'x.ix',
+    })
+    expect(snap).toMatchObject({
       ixFilePath: { uri: 'x.ix' },
       ixxFilePath: { uri: 'x.ixx' },
-      metaFilePath: { uri: 'x_meta.json' },
     })
+    // the indexer still writes `_meta.json` beside the index; nothing in
+    // JBrowse reads it, so no slot points at it
+    expect(snap).not.toHaveProperty('metaFilePath')
   })
 
   it('leaves explicit file paths untouched when no uri given', () => {
@@ -63,10 +67,6 @@ describe('TrixTextSearchAdapter', () => {
       },
       ixxFilePath: {
         localPath: path.resolve(__dirname, 'test_data/volvox.ixx'),
-        locationType: 'LocalPathLocation',
-      },
-      metaFilePath: {
-        localPath: path.resolve(__dirname, 'test_data/volvox_meta.json'),
         locationType: 'LocalPathLocation',
       },
     }),

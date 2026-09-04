@@ -544,12 +544,13 @@ test('a trackId with a slash indexes to the path its adapter names', async () =>
     const conf = readJSON(path.join(ctx.dir, 'config.json'))
     const adapter = conf.tracks[0].textSearching.textSearchAdapter
     expect(adapter.ixFilePath.uri).toBe('trix/test_a_b-1234.ix')
-    for (const uri of [
-      adapter.ixFilePath.uri,
-      adapter.ixxFilePath.uri,
-      adapter.metaFilePath.uri,
-    ]) {
+    for (const uri of [adapter.ixFilePath.uri, adapter.ixxFilePath.uri]) {
       expect(fs.existsSync(path.join(ctx.dir, uri))).toBe(true)
     }
+    // the `_meta.json` is written beside them under the same sanitized name,
+    // and no config slot points at it
+    expect(
+      fs.existsSync(path.join(ctx.dir, 'trix', 'test_a_b-1234_meta.json')),
+    ).toBe(true)
   })
 })

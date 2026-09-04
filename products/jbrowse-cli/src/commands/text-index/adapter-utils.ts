@@ -19,10 +19,6 @@ export function createTrixAdapter(
       uri: uris.ixx,
       locationType: 'UriLocation',
     },
-    metaFilePath: {
-      uri: uris.meta,
-      locationType: 'UriLocation',
-    },
     assemblyNames,
   }
 }

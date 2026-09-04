@@ -773,10 +773,6 @@
         "uri": "trix/R64.ixx",
         "locationType": "UriLocation"
       },
-      "metaFilePath": {
-        "uri": "trix/R64_meta.json",
-        "locationType": "UriLocation"
-      },
       "assemblyNames": ["R64"]
     },
     {
@@ -788,10 +784,6 @@
       },
       "ixxFilePath": {
         "uri": "trix/YJM1447.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/YJM1447_meta.json",
         "locationType": "UriLocation"
       },
       "assemblyNames": ["YJM1447"]

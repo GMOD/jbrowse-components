@@ -68,12 +68,13 @@ differ from GFF3:
 
 ## TrixTextSearchAdapter config
 
-`text-index` writes three files, and the `uri` shorthand names the first and
-derives the other two: `ixFilePath` (the `.ix` the search box reads),
-`ixxFilePath` (`uri` plus an `x`, the prefix index) and `metaFilePath` (`uri`
-with `.ix` replaced by `_meta.json`, recording what the index was built from).
-Set the three [slots](/docs/config/trixtextsearchadapter) individually when the
-files do not sit together under those names.
+`text-index` writes three files, and the adapter reads two of them: the `uri`
+shorthand names `ixFilePath` (the `.ix` the search box reads) and derives
+`ixxFilePath` (`uri` plus an `x`, the prefix index). Set the two
+[slots](/docs/config/trixtextsearchadapter) individually when the files do not
+sit together under those names. The third file, `<name>_meta.json`, records what
+the index was built from for whoever built it; nothing in JBrowse reads it, so
+no slot points at it.
 
 A names index from JBrowse 1's `generate-names.pl` still works through
 [`JBrowse1TextSearchAdapter`](/docs/config/jbrowse1textsearchadapter), with

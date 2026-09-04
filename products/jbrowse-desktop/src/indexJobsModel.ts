@@ -103,7 +103,6 @@ function addTrackTextSearchConf(
     track.textSearching = {
       textSearchAdapter: createTextSearchConf(
         `${trackId}-index`,
-        [trackId],
         assemblies,
         outLocation,
       ),
@@ -115,19 +114,10 @@ function addTrackTextSearchConf(
 
 function addAggregateTextSearchConf(
   adapters: { textSearchAdapterId: string }[],
-  {
-    trackIds,
-    assemblyName,
-    outLocation,
-  }: { trackIds: string[]; assemblyName: string; outLocation: string },
+  { assemblyName, outLocation }: { assemblyName: string; outLocation: string },
 ) {
   const id = `${assemblyName}-index`
-  const trixConf = createTextSearchConf(
-    id,
-    trackIds,
-    [assemblyName],
-    outLocation,
-  )
+  const trixConf = createTextSearchConf(id, [assemblyName], outLocation)
   const foundIdx = adapters.findIndex(x => x.textSearchAdapterId === id)
   if (foundIdx === -1) {
     adapters.push(trixConf)
@@ -362,11 +352,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             }
           } else {
             for (const assemblyName of assemblies) {
-              const indexedTrackIds = trackConfigs
-                .filter(track => track.assemblyNames.includes(assemblyName))
-                .map(trackConf => trackConf.trackId)
               addAggregateTextSearchConf(self.aggregateTextSearchAdapters, {
-                trackIds: indexedTrackIds,
                 assemblyName,
                 outLocation,
               })

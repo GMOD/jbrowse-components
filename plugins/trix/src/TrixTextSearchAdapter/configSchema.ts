@@ -4,18 +4,14 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
   return typeof snap.uri === 'string'
     ? {
         ...snap,
-        // `uri` points at the `.ix` file; `.ixx` and `_meta.json` sit beside it
-        // (the `jbrowse text-index` naming convention), so derive all three
+        // `uri` points at the `.ix` file and the `.ixx` sits beside it (the
+        // `jbrowse text-index` naming convention), so derive the pair
         ixFilePath: {
           uri: snap.uri,
           baseUri: snap.baseUri,
         },
         ixxFilePath: {
           uri: `${snap.uri}x`,
-          baseUri: snap.baseUri,
-        },
-        metaFilePath: {
-          uri: `${snap.uri.replace(/\.ix$/, '')}_meta.json`,
           baseUri: snap.baseUri,
         },
       }
@@ -29,9 +25,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  *
  * #example
  * `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
- * you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
- * `_meta.json` are derived from it, so all three only need spelling out when
- * they are named against convention.
+ * you. The `uri` shorthand points at the `.ix` and the sibling `.ixx` is derived
+ * from it, so the pair only needs spelling out when they are named against
+ * convention.
  * ```js
  * {
  *   type: 'TrixTextSearchAdapter',
@@ -71,26 +67,6 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * location of the `_meta.json` written beside the index, recording which
-     * tracks and assemblies it covers and the attributes it was built from.
-     */
-    metaFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'meta.json',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    tracks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of tracks covered by text search adapter',
-    },
-    /**
-     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -111,8 +87,8 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      *
      *
      * preprocessor to allow minimal config: `uri` points at the `.ix` file and
-     * the sibling `.ixx` and `_meta.json` are derived from it (the
-     * `jbrowse text-index` naming convention):
+     * the sibling `.ixx` is derived from it (the `jbrowse text-index` naming
+     * convention):
      * ```json
      * {
      *   "type": "TrixTextSearchAdapter",

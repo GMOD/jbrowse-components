@@ -71,7 +71,6 @@ export interface TrixTextSearchAdapter {
   textSearchAdapterId: string
   ixFilePath: UriLocation | LocalPathLocation
   ixxFilePath: UriLocation | LocalPathLocation
-  metaFilePath: UriLocation | LocalPathLocation
   assemblyNames: string[]
 }
 

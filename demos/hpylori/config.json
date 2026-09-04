@@ -206,10 +206,6 @@
         "uri": "trix/hpylori_26695.ixx",
         "locationType": "UriLocation"
       },
-      "metaFilePath": {
-        "uri": "trix/hpylori_26695_meta.json",
-        "locationType": "UriLocation"
-      },
       "assemblyNames": ["hpylori_26695"]
     },
     {
@@ -223,10 +219,6 @@
         "uri": "trix/hpylori_j99.ixx",
         "locationType": "UriLocation"
       },
-      "metaFilePath": {
-        "uri": "trix/hpylori_j99_meta.json",
-        "locationType": "UriLocation"
-      },
       "assemblyNames": ["hpylori_j99"]
     },
     {
@@ -238,10 +230,6 @@
       },
       "ixxFilePath": {
         "uri": "trix/hpylori_chc155.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/hpylori_chc155_meta.json",
         "locationType": "UriLocation"
       },
       "assemblyNames": ["hpylori_chc155"]
