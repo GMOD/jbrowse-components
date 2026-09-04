@@ -69,6 +69,7 @@ async function syntenyDisplay(adapter: Record<string, unknown>) {
   // displays[0] is `any`, so annotate to keep phantom getters from typechecking
   const display = session.views[0].tracks[0].displays[0] as {
     rpcProps: () => Record<string, unknown>
+    lodTier: 'fine' | 'coarse'
     hasLodCapableAdapter: boolean
     setLodMode: (arg: 'auto' | 'fine' | 'coarse') => void
     trackMenuItems: () => { label?: string }[]
@@ -124,17 +125,17 @@ test('the override still carries the inherited alignments fields', async () => {
 
 // the regression that made the whole feature a no-op: the threshold slot carries
 // a schema default (10000), and reading it from a source that omits defaults
-// left it undefined, which resolves to no lodMode at all
+// left it undefined, which resolves to no tier at all
 test('a threshold left at its schema default still yields a tier', async () => {
   const { view, display } = await syntenyDisplay(tiered())
   expect(view.bpPerPx).toBe(1)
-  expect(display.rpcProps().lodMode).toBe('fine')
+  expect(display.lodTier).toBe('fine')
 })
 
 test('a threshold below the current bpPerPx asks for the coarse tier', async () => {
   const { view, display } = await syntenyDisplay(tiered(0.5))
   expect(view.bpPerPx).toBe(1)
-  expect(display.rpcProps().lodMode).toBe('coarse')
+  expect(display.lodTier).toBe('coarse')
 })
 
 // An untiered adapter has only the fine tier to serve, so that is the honest
@@ -142,7 +143,7 @@ test('a threshold below the current bpPerPx asks for the coarse tier', async () 
 // "Level of detail" menu stays hidden for it
 test('an adapter with no coarse tier asks for the fine tier and offers no menu', async () => {
   const { display } = await syntenyDisplay(UNTIERED)
-  expect(display.rpcProps().lodMode).toBe('fine')
+  expect(display.lodTier).toBe('fine')
   expect(display.hasLodCapableAdapter).toBe(false)
 })
 
@@ -155,10 +156,11 @@ test('a tiered adapter offers the level-of-detail menu', async () => {
 })
 
 // The bug this whole resolution point exists for: pinning a tier must move the
-// value that goes into rpcProps, which is the refetch cache key
+// value the fetch asks for, which is `lodTier` — a `zoomFetchKey` term and an
+// RPC call-site argument since `0e17f6f305`, not an `rpcProps` field
 test('pinning a tier overrides the zoom-based answer', async () => {
   const { display } = await syntenyDisplay(tiered(0.5))
-  expect(display.rpcProps().lodMode).toBe('coarse')
+  expect(display.lodTier).toBe('coarse')
   display.setLodMode('fine')
-  expect(display.rpcProps().lodMode).toBe('fine')
+  expect(display.lodTier).toBe('fine')
 })
