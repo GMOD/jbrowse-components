@@ -473,6 +473,7 @@ export {
 // through `fetchContext.ts`, which imports this barrel, so exporting it makes
 // the barrel initialize itself. Import it from `@jbrowse/core/util/installFetch`.
 export { createSharedSetup } from './cachedSetup.ts'
+export { scheduleDetachedDestroy } from './scheduleDetachedDestroy.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
 export {
   handleFetchError,

@@ -256,6 +256,7 @@ export {
   reverseComplementIupac,
   revlist,
   saveAs,
+  scheduleDetachedDestroy,
   saveSvgAsImage,
   selectNamedRegions,
   setBlobMap,

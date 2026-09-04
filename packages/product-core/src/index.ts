@@ -1,6 +1,6 @@
 export type { AssertExtends, AssertNotAny } from './assertExtends.ts'
 export { asRoot, asSession } from './siblingCast.ts'
-export { scheduleDetachedDestroy } from './scheduleDetachedDestroy.ts'
+export { scheduleDetachedDestroy } from '@jbrowse/core/util'
 
 export {
   BaseRootModelFactory,

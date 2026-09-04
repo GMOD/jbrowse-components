@@ -1,6 +1,7 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import {
   cast,
   detach,
@@ -13,7 +14,6 @@ import {
   describeUnbuildableNodes,
   pruneUnbuildableNodes,
 } from '../pruneUnbuildableNodes.ts'
-import { scheduleDetachedDestroy } from '../scheduleDetachedDestroy.ts'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
 

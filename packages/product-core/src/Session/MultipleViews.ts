@@ -3,6 +3,7 @@ import {
   localStorageGetBoolean,
   localStorageSetBoolean,
   reorderWithin,
+  scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import {
   addDisposer,
@@ -18,7 +19,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { scheduleDetachedDestroy } from '../scheduleDetachedDestroy.ts'
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 

@@ -398,6 +398,7 @@
     "revlist",
     "saveAs",
     "saveSvgAsImage",
+    "scheduleDetachedDestroy",
     "selectNamedRegions",
     "setBlobMap",
     "setFileInCache",

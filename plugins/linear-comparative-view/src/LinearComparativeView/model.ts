@@ -6,9 +6,10 @@ import {
   getDialogHost,
   getSession,
   isSessionModelWithWidgets,
+  scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import {
   collectTrackWarnings,
@@ -42,6 +43,17 @@ const ReturnToImportFormDialog = lazy(
 // fields: the shape is `ComparativeWarning`, and a local copy meant a field
 // added there simply never reached this view's report.
 export type SyntenyWarning = ComparativeWarning
+
+// A genome row leaves the stack the way a view leaves the session: detached
+// inside the action and destroyed on a later task, so a display still mounted
+// over it never reads a dead node (ADR-069). The levels are destroyed in place,
+// which is the ADR's rule rather than an omission — a level is not a view, so a
+// display under a detached level would throw out of `getContainingView` where
+// one under a destroyed level only warns.
+function takeOutRow(row: LinearGenomeViewModel) {
+  detach(row)
+  scheduleDetachedDestroy(row)
+}
 
 /**
  * #stateModel LinearComparativeView
@@ -394,6 +406,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       */
+      takeOutRows() {
+        for (const row of [...self.views]) {
+          takeOutRow(row)
+        }
+      },
+      /**
+       * #action
        * Reconcile the levels array to the views array: exactly one synteny
        * level per gap between adjacent views (N views -> N-1 levels). Grows or
        * shrinks from the end, preserving existing levels and their tracks. The
@@ -528,6 +548,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
+        self.takeOutRows()
         self.views = cast(views)
         self.levels = cast([])
         self.reconcileLevels()
@@ -554,8 +575,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Growth and shrinkage both happen at the end of the chain.
        */
       removeLastRow() {
-        if (self.views.length > 0) {
-          self.views.pop()
+        const row = self.views.at(-1)
+        if (row) {
+          takeOutRow(row)
           self.reconcileLevels()
         }
       },
@@ -746,7 +768,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       clearView() {
-        self.views = cast([])
+        self.takeOutRows()
         self.levels = cast([])
         self.volatileError = undefined
       },
