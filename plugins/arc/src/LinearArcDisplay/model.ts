@@ -6,22 +6,16 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
-import {
-  getContainingView,
-  getSession,
-  isFeature,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
-import { arcExtent } from '../shared/arcLayout.ts'
+import { layOutArcs } from '../shared/arcLayout.ts'
 import { filterByScore } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
 import type { LaidOutArc } from '../shared/arcLayout.ts'
-import type { ArcShape } from '../shared/arcShape.ts'
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -29,7 +23,6 @@ import type {
 import type { ArcDisplayMode } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearArcDisplay
@@ -115,7 +108,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       // #region contextVariableRead
       get arcStyles() {
         // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
-        // returns) a number — both have a default, so the read is never unset.
+        // returns) a number — a jexl default over an attribute the feature
+        // lacks still evaluates to NaN; `layOutArcs` is where it is made
+        // paintable.
         // color/label/caption are string slots read through the typed self.conf.
         const kept =
           self.features && filterByScore(self.features, self.minScore)
@@ -132,64 +127,36 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
         }))
       },
       // #endregion
-      /**
-       * #getter
-       * returns the id of the globally-selected feature, used to highlight it
-       */
-      get selectedFeatureId() {
-        if (isAlive(self)) {
-          const { selection } = getSession(self)
-          if (isFeature(selection)) {
-            return selection.id()
-          }
-        }
-        return undefined
-      },
     }))
     .views(self => ({
       /**
        * #getter
-       * every arc placed in screen px, `view.offsetPx` already subtracted — the
-       * only place this display reads `bpToPx`. A computed rather than a
-       * component body, so MobX caches it against the viewport and a hover
-       * redraws without re-placing anything.
+       * every arc placed in screen px by `layOutArcs`, which both displays
+       * share. A computed rather than a component body, so MobX caches it
+       * against the viewport and a hover redraws without re-placing anything.
        */
       get laidOutArcs(): LaidOutArc[] {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        const assembly = getSession(self).assemblyManager.get(
-          view.assemblyNames[0]!,
-        )
-        if (!assembly || !view.initialized) {
-          return []
-        }
         const semicircle = self.displayMode === 'semicircles'
-        const out: LaidOutArc[] = []
-        for (const style of self.arcStyles ?? []) {
+        return layOutArcs(self, self.arcStyles, (style, place) => {
           const { feature, color, thickness, label, caption, arcHeight } = style
-          const ra = assembly.getCanonicalRefName2(feature.get('refName'))
-          const l = view.bpToPx({ refName: ra, coord: feature.get('start') })
-          const r = view.bpToPx({ refName: ra, coord: feature.get('end') })
-          if (l === undefined || r === undefined) {
-            continue
-          }
-          const left = l.offsetPx - view.offsetPx
-          const right = r.offsetPx - view.offsetPx
-          const shape: ArcShape = semicircle
-            ? { kind: 'semicircle', left, right }
-            : { kind: 'bezier', left, right, height: arcHeight }
-          out.push({
-            feature,
-            key: feature.id(),
-            shape,
-            color,
-            strokeWidth: thickness,
-            selected: self.selectedFeatureId === feature.id(),
-            label,
-            caption,
-            ...arcExtent(shape, thickness),
-          })
-        }
-        return out
+          const refName = feature.get('refName')
+          const l = place(refName, feature.get('start'))
+          const r = place(refName, feature.get('end'))
+          return (
+            l &&
+            r && {
+              feature,
+              key: feature.id(),
+              shape: semicircle
+                ? { kind: 'semicircle', left: l.x, right: r.x }
+                : { kind: 'bezier', left: l.x, right: r.x, height: arcHeight },
+              color,
+              strokeWidth: thickness,
+              label,
+              caption,
+            }
+          )
+        })
       },
     }))
     .actions(self => ({

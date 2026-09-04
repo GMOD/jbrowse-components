@@ -5,31 +5,24 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  dedupe,
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import { breakendTickPx } from '@jbrowse/sv-core'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
-import { arcExtent } from '../shared/arcLayout.ts'
+import { layOutArcs } from '../shared/arcLayout.ts'
 import { filterByScore } from '../shared/scoreFilter.ts'
 import { makeFeaturePair, makeSummary, pairKey } from './components/util.ts'
 import { makeLineWidthMenuItem } from './lineWidthMenu.tsx'
 
-import type { ArcTick, LaidOutArc } from '../shared/arcLayout.ts'
-import type { ArcShape } from '../shared/arcShape.ts'
+import type { ArcPoint, ArcTick, LaidOutArc } from '../shared/arcLayout.ts'
 import type {
   LinearPairedArcDisplayConfig,
   LinearPairedArcDisplayConfigModel,
 } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // mate-direction ticks extend 20px past each endpoint
 const TICK_PX = 20
@@ -38,16 +31,14 @@ const TICK_Y = 1.5
 
 // One breakend's direction tick, or nothing when the record states no
 // direction. A list so the two feet spread into one array with no branch.
-function mateTick(
-  x: number,
-  keepsDir: number | undefined,
-  region?: { reversed?: boolean },
-): ArcTick[] {
+// `mateDirection` is genomic and the two ends may sit in differently-oriented
+// displayed regions, so each is mirrored by the region its own foot landed in.
+function mateTick(p: ArcPoint, keepsDir: number | undefined): ArcTick[] {
   return keepsDir
     ? [
         {
-          x1: x,
-          x2: breakendTickPx(x, keepsDir, !!region?.reversed, TICK_PX),
+          x1: p.x,
+          x2: breakendTickPx(p.x, keepsDir, !!p.region?.reversed, TICK_PX),
           y: TICK_Y,
         },
       ]
@@ -139,22 +130,26 @@ export function stateModelFactory(
        * same arc otherwise draws twice whenever both endpoints are in the
        * fetched regions.
        *
-       * `caption` is here rather than resolved at hover time because
-       * `makeSummary` re-runs `parseSvAlt`, and the component used to call it
-       * for every arc on every render.
+       * `caption` is here rather than resolved at hover time because the
+       * component used to call `makeSummary` for every arc on every render. It
+       * is handed the pair rather than rebuilding one, so `parseSvAlt` runs
+       * once per arc.
        */
       get arcStyles() {
         const kept =
           self.features && filterByScore(self.features, self.minScore)
         const styles = kept?.flatMap(feature => {
           const alts = feature.get('ALT') as string[] | undefined
-          const make = (alt: string | undefined) => ({
-            feature,
-            alt,
-            color: readConfObject(self.conf, 'color', { feature, alt }),
-            caption: makeSummary(feature, alt),
-            ...makeFeaturePair(feature, alt),
-          })
+          const make = (alt: string | undefined) => {
+            const pair = makeFeaturePair(feature, alt)
+            return {
+              feature,
+              alt,
+              color: readConfObject(self.conf, 'color', { feature, alt }),
+              caption: makeSummary(feature, alt, pair),
+              ...pair,
+            }
+          }
           return alts?.length ? alts.map(alt => make(alt)) : [make(undefined)]
         })
         return styles && dedupe(styles, s => pairKey(s.k1, s.k2))
@@ -163,74 +158,37 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * every arc placed in screen px, `view.offsetPx` already subtracted — see
-       * the twin on `LinearArcDisplay`.
-       *
-       * The two ends resolve through their OWN displayed region: a session may
-       * reverse one and not the other, and `mateDirection` is genomic, so each
-       * tick is mirrored by the region its foot landed in rather than by the
-       * view.
+       * every arc placed in screen px by `layOutArcs` — see the twin on
+       * `LinearArcDisplay`. The two ends resolve through their OWN displayed
+       * region, which `ArcPoint` carries for `mateTick`.
        */
       get laidOutArcs(): LaidOutArc[] {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        const assembly = getSession(self).assemblyManager.get(
-          view.assemblyNames[0]!,
-        )
-        if (!assembly || !view.initialized) {
-          return []
-        }
         const { lineWidth, height } = self
-        const out: LaidOutArc[] = []
-        for (const style of self.arcStyles ?? []) {
+        return layOutArcs(self, self.arcStyles, (style, place) => {
           const { feature, alt, color, caption, k1, k2 } = style
-          const p1 = view.bpToPx({
-            refName: assembly.getCanonicalRefName2(k1.refName),
-            coord: k1.start,
-          })
-          const p2 = view.bpToPx({
-            refName: assembly.getCanonicalRefName2(k2.refName),
-            coord: k2.start,
-          })
-          if (p1 === undefined || p2 === undefined) {
-            continue
-          }
-          const left = p1.offsetPx - view.offsetPx
-          const right = p2.offsetPx - view.offsetPx
-          const absrad = Math.abs((right - left) / 2)
-          if (absrad <= 1) {
-            continue
-          }
-          const shape: ArcShape = {
-            kind: 'bezier',
-            left,
-            right,
-            height: Math.min(height, absrad),
-          }
-          const ticks = [
-            ...mateTick(
-              left,
-              k1.mateDirection,
-              view.displayedRegions[p1.index],
-            ),
-            ...mateTick(
-              right,
-              k2.mateDirection,
-              view.displayedRegions[p2.index],
-            ),
-          ]
-          out.push({
-            feature,
-            key: `${feature.id()}-${alt ?? ''}`,
-            shape,
-            color,
-            strokeWidth: lineWidth,
-            selected: false,
-            ticks: ticks.length > 0 ? ticks : undefined,
-            caption,
-            ...arcExtent(shape, lineWidth, ticks),
-          })
-        }
-        return out
+          const p1 = place(k1.refName, k1.start)
+          const p2 = place(k2.refName, k2.start)
+          const absrad = p1 && p2 ? Math.abs((p2.x - p1.x) / 2) : 0
+          return p1 && p2 && absrad > 1
+            ? {
+                feature,
+                key: `${feature.id()}-${alt ?? ''}`,
+                shape: {
+                  kind: 'bezier',
+                  left: p1.x,
+                  right: p2.x,
+                  height: Math.min(height, absrad),
+                },
+                color,
+                strokeWidth: lineWidth,
+                ticks: [
+                  ...mateTick(p1, k1.mateDirection),
+                  ...mateTick(p2, k2.mateDirection),
+                ],
+                caption,
+              }
+            : undefined
+        })
       },
     }))
     .actions(self => ({

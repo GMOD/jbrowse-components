@@ -42,6 +42,8 @@ interface Endpoint {
   end: number
 }
 
+export type FeaturePair = ReturnType<typeof makeFeaturePair>
+
 // Canonical, orientation-independent key for an arc: a paired feature is
 // emitted from both endpoints' interval trees (flip r1/r2), and reciprocal VCF
 // BNDs are two records pointing at each other, so the same physical connection
@@ -55,8 +57,13 @@ export function pairKey(k1: Endpoint, k2: Endpoint) {
   return [a, b].sort().join('|')
 }
 
-export function makeSummary(feature: Feature, alt?: string) {
-  const { k1, k2 } = makeFeaturePair(feature, alt)
+// Takes the pair the caller already built: `makeFeaturePair` runs `parseSvAlt`,
+// and computing it here ran that a second time for every arc.
+export function makeSummary(
+  feature: Feature,
+  alt: string | undefined,
+  { k1, k2 }: FeaturePair,
+) {
   return [
     feature.get('name'),
     feature.get('id'),

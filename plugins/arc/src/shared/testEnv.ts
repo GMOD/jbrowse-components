@@ -5,6 +5,7 @@ import { configSchemaFactory } from '../LinearArcDisplay/configSchema.ts'
 import { stateModelFactory } from '../LinearArcDisplay/model.ts'
 import { configSchemaFactory as pairedConfigSchemaFactory } from '../LinearPairedArcDisplay/configSchema.ts'
 import { stateModelFactory as pairedStateModelFactory } from '../LinearPairedArcDisplay/model.ts'
+import { addArcJexlFunctions } from '../index.ts'
 
 import type { LinearArcDisplayModel } from '../LinearArcDisplay/model.ts'
 import type { LinearPairedArcDisplayModel } from '../LinearPairedArcDisplay/model.ts'
@@ -13,12 +14,14 @@ import type { LinearPairedArcDisplayModel } from '../LinearPairedArcDisplay/mode
 // display class with no rendering backend — it paints a Canvas2D of its own —
 // so what these tests exercise is its fetch model and display phase, both of
 // which need a real attach.
-// `displayConfig` for the style slots: their defaults are jexl calls into
-// functions the plugin's `install` registers, and the harness builds a bare
-// PluginManager, so a test that renders arcs (rather than driving the fetch
-// model) has to supply plain values.
+//
+// `addArcJexlFunctions` is what lets a test omit `displayConfig` and get the
+// shipped slot defaults. Without it the bare PluginManager knows none of the
+// plugin's functions, so every suite here passed a literal `thickness: 2` and
+// the default `jexl:logThickness(feature,'score')` — NaN on a feature with no
+// score, which culls every arc off screen — was never once evaluated.
 export function createTestEnvironment(displayConfig?: Record<string, unknown>) {
-  return createDisplayTestEnvironment<LinearArcDisplayModel>({
+  const env = createDisplayTestEnvironment<LinearArcDisplayModel>({
     trackType: 'FeatureTrack',
     displayName: 'LinearArcDisplay',
     displayConfig,
@@ -31,6 +34,8 @@ export function createTestEnvironment(displayConfig?: Record<string, unknown>) {
     rpcCall: (_sessionId, method) =>
       method === 'ArcGetFeatures' ? { features: [], bytes: 100 } : [],
   })
+  addArcJexlFunctions(env.pluginManager)
+  return env
 }
 
 // The same harness for the paired display, whose arcs connect a feature to its
@@ -38,7 +43,7 @@ export function createTestEnvironment(displayConfig?: Record<string, unknown>) {
 export function createPairedTestEnvironment(
   displayConfig?: Record<string, unknown>,
 ) {
-  return createDisplayTestEnvironment<LinearPairedArcDisplayModel>({
+  const env = createDisplayTestEnvironment<LinearPairedArcDisplayModel>({
     trackType: 'VariantTrack',
     displayName: 'LinearPairedArcDisplay',
     displayConfig,
@@ -49,4 +54,6 @@ export function createPairedTestEnvironment(
     rpcCall: (_sessionId, method) =>
       method === 'ArcGetFeatures' ? { features: [], bytes: 100 } : [],
   })
+  addArcJexlFunctions(env.pluginManager)
+  return env
 }

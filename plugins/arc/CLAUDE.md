@@ -28,6 +28,19 @@ the `d`, the apex and the distance from ONE derivation. Don't write a second;
 `arcShape.test.ts` pins every point of the exported path as measuring zero
 distance, which is the check that keeps the hover on the ink.
 
+**`layOutArcs` builds every `LaidOutArc`, and neither display may build one
+itself.** It owns the view/assembly lookup, the placement of both ends, and the
+three fields nothing may spell twice: the extent, the selection flag (hardcoding
+it `false` is what left paired arcs un-highlighted by their own click), and a
+paintable stroke. That last one matters because every style slot is a jexl
+expression over the feature: `thickness` defaults to `Math.log(undefined+1)` on
+a BED3 feature and `arcHeight` to `-Infinity` on a zero-length one, and a NaN
+stroke folds into the extent, fails `arcOnScreen` and culls the whole set —
+leaving an empty canvas that still reports `data-display-drawn`.
+`shared/defaultSlots.test.tsx` is the check, and the only suite that reads the
+SHIPPED slot defaults rather than literals; `testEnv.ts` registers the plugin's
+jexl functions so a test can.
+
 **The export stays vector, and is the one thing SVG still does here.** It emits
 `<path>` per arc off the same list because a figure wants vector and that path
 runs once, not sixty times a second. See `agent-docs/reference/SVG_EXPORT.md`.

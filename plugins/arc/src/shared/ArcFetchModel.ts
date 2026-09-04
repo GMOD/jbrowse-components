@@ -1,8 +1,9 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getSession, isFeature } from '@jbrowse/core/util'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import { foundationDisplayStatusPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { arcFetchPhases } from './fetchArcFeatures.ts'
 import { featureScoreRange, makeScoreFilterMenuItem } from './scoreFilter.ts'
@@ -129,6 +130,19 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          */
         get minScore(): number {
           return getConf(host(self), 'minScore')
+        },
+        /**
+         * #getter
+         * the globally-selected feature's id, which both displays paint their
+         * matching arcs red for. Here rather than on one display because either
+         * display's own click is what sets that selection, through
+         * `openFeatureWidget`.
+         */
+        get selectedFeatureId() {
+          const selection = isAlive(self)
+            ? getSession(self).selection
+            : undefined
+          return isFeature(selection) ? selection.id() : undefined
         },
         /**
          * #getter

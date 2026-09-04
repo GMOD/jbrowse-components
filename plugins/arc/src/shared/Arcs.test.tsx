@@ -18,16 +18,15 @@ import {
 // On screen the arcs are ink on one canvas — the change this file was rewritten
 // for. In the export they are one `<path>` apiece, because a figure wants
 // vector, and both take their geometry from the same `laidOutArcs`.
+// Plain slot values, so the geometry below is a number the test wrote rather
+// than one a jexl default computed; the shipped defaults are
+// `defaultSlots.test.tsx`'s.
 const { createDisplay } = createTestEnvironment({
   thickness: 2,
   label: 'lbl',
   caption: 'cap',
 })
-// a plain value for `color`, whose default is a jexl call into a function the
-// plugin's `install` registers and the bare harness does not
-const { createDisplay: createPairedDisplay } = createPairedTestEnvironment({
-  color: 'green',
-})
+const { createDisplay: createPairedDisplay } = createPairedTestEnvironment()
 
 // The `<svg>` the export shell opens (renderDisplaySvg → SvgChrome →
 // renderArcSvg's SvgClipRect). Bare `<path>`s outside one render, but React

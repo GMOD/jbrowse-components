@@ -1,7 +1,11 @@
+import { getContainingView, getSession } from '@jbrowse/core/util'
+
 import { arcApexY } from './arcShape.ts'
 
 import type { ArcShape } from './arcShape.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One arc, placed — screen px with `view.offsetPx` already subtracted. Both
 // displays resolve their features into this and everything downstream of it is
@@ -20,6 +24,7 @@ export interface LaidOutArc {
   shape: ArcShape
   /** The resting stroke; hover and selection are resolved by the painter. */
   color: string
+  /** Finite and positive; `layOutArcs` is what makes that true. */
   strokeWidth: number
   /**
    * The arc's whole horizontal ink extent, ticks and stroke width included —
@@ -60,6 +65,89 @@ export function arcExtent(
  */
 export function arcOnScreen(arc: LaidOutArc, viewWidth: number) {
   return arc.xMax >= 0 && arc.xMin <= viewWidth
+}
+
+/** One genomic point placed on screen, with the region it landed in. */
+export interface ArcPoint {
+  x: number
+  region: Region | undefined
+}
+
+export type ArcParts = Omit<LaidOutArc, 'selected' | 'xMin' | 'xMax'>
+
+interface ArcLayoutHost extends IStateTreeNode {
+  selectedFeatureId: string | undefined
+}
+
+// What Canvas2D's `lineWidth` and SVG's `stroke-width` both default to, so an
+// unusable thickness draws what an absent one would.
+const FALLBACK_STROKE_PX = 1
+
+// A style slot is a jexl expression over the feature, so `arcHeight`'s default
+// is `-Infinity` for a zero-length feature. The extent cannot see a bezier's
+// height, so the arc counted as on screen while its curve was a Canvas2D no-op
+// and its hit distance `Infinity`. Flat is what a 1bp feature already gets.
+function finiteShape(shape: ArcShape): ArcShape {
+  return shape.kind === 'bezier' && !Number.isFinite(shape.height)
+    ? { ...shape, height: 0 }
+    : shape
+}
+
+/**
+ * Both displays' `laidOutArcs`: the view and assembly lookup, the ends placed
+ * in screen px, and the three fields every arc derives the same way — the
+ * selection flag, a paintable stroke (`thickness` over an attribute the feature
+ * lacks is NaN, which culls the arc off a canvas still reporting itself drawn)
+ * and the extent. `toArc` supplies only what the two displays disagree about,
+ * and `undefined` for an arc with nowhere to go.
+ */
+export function layOutArcs<S>(
+  self: ArcLayoutHost,
+  styles: readonly S[] | undefined,
+  toArc: (
+    style: S,
+    place: (refName: string, coord: number) => ArcPoint | undefined,
+  ) => ArcParts | undefined,
+) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  const [assemblyName] = view.assemblyNames
+  const assembly = assemblyName
+    ? getSession(self).assemblyManager.get(assemblyName)
+    : undefined
+  if (!assembly || !view.initialized) {
+    return []
+  }
+  const place = (refName: string, coord: number) => {
+    const p = view.bpToPx({
+      refName: assembly.getCanonicalRefName2(refName),
+      coord,
+    })
+    return (
+      p && {
+        x: p.offsetPx - view.offsetPx,
+        region: view.displayedRegions[p.index],
+      }
+    )
+  }
+  const out: LaidOutArc[] = []
+  for (const style of styles ?? []) {
+    const parts = toArc(style, place)
+    if (parts) {
+      const shape = finiteShape(parts.shape)
+      const strokeWidth =
+        Number.isFinite(parts.strokeWidth) && parts.strokeWidth > 0
+          ? parts.strokeWidth
+          : FALLBACK_STROKE_PX
+      out.push({
+        ...parts,
+        shape,
+        strokeWidth,
+        selected: parts.feature.id() === self.selectedFeatureId,
+        ...arcExtent(shape, strokeWidth, parts.ticks),
+      })
+    }
+  }
+  return out
 }
 
 const LABEL_BASELINE_OFFSET_PX = 3

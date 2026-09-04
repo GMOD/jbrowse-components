@@ -3,7 +3,10 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import Arcs from './Arcs.tsx'
 import { arcMidX } from './arcShape.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import {
+  createPairedTestEnvironment,
+  createTestEnvironment,
+} from './testEnv.ts'
 
 // The three gestures the SVG `<path>`s used to answer natively, now that the
 // arcs are ink on a canvas and a hit test stands in for `pointer-events:
@@ -14,6 +17,7 @@ const { createDisplay } = createTestEnvironment({
   label: 'arc',
   caption: 'the caption',
 })
+const { createDisplay: createPairedDisplay } = createPairedTestEnvironment()
 
 // `useMouseTracking` coalesces to one measurement per animation frame, so
 // nothing is hit-tested until a frame runs. Run it inline rather than waiting on
@@ -114,5 +118,28 @@ test('a selected arc is drawn red, and stays red under the cursor', () => {
   // the precedence itself is `drawArcs.test.ts`'; what this adds is that the
   // flag survives a hover, which is where the SVG version had its ternary
   pointAt(box, apex)
+  expect(display.laidOutArcs[0]!.selected).toBe(true)
+})
+
+// The paired display's twin, which used to hardcode `selected: false` while its
+// own click still ran `session.setSelection` through `openFeatureWidget` — so
+// clicking a paired arc selected the variant for the rest of the app and left
+// the arc its own color, on screen and in the export.
+test('a selected paired arc is drawn red too', () => {
+  const { display, view, session } = createPairedDisplay()
+  view.setNewView(1, 0)
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'sv1',
+      refName: 'ctgA',
+      start: 100,
+      end: 101,
+      ALT: ['N[ctgA:2000['],
+    }),
+  ])
+  expect(display.laidOutArcs[0]!.selected).toBe(false)
+
+  session.setSelection(display.features![0]!)
+  expect(display.selectedFeatureId).toBe('sv1')
   expect(display.laidOutArcs[0]!.selected).toBe(true)
 })
