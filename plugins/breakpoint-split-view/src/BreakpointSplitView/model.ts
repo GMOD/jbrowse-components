@@ -1007,7 +1007,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return snap
     })
 
-  return withLaunchInput(model, breakpointSplitLaunchKeys)
+  return withLaunchInput(model, breakpointSplitLaunchKeys, pluginManager)
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

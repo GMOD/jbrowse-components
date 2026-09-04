@@ -17,6 +17,20 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 
 /**
+ * The slice of a PluginManager the partition reads: which view type a
+ * snapshot's `type` names, and that type's state model as REGISTERED — the
+ * one `extendViewType` may have composed more properties onto after the
+ * factory wrapped its own.
+ */
+export interface ViewTypeLookup {
+  viewTypes: { has: (name: string) => boolean }
+  getViewType: (name: string) => {
+    isStateModelLoaded: boolean
+    stateModel: IAnyModelType
+  }
+}
+
+/**
  * How a launch key's value is told apart from the state property of the same
  * name. A key whose name collides with nothing is `launch`; the rest name the
  * discriminator that splits one authored array into the recipe entries the
@@ -220,6 +234,33 @@ interface Partitioned {
   malformed: Record<string, unknown>
 }
 
+// The properties a snapshot's keys are classified against are the REGISTERED
+// view type's, read at preprocess time: `extendViewType` composes onto the
+// model after `withLaunchInput` wrapped it, and a set frozen at wrap time sent
+// every added property to `unknown` — restored at its default, with a warning
+// naming it a typo. The wrapped model's own properties are the answer when no
+// registry is given, or the snapshot names a type it does not hold, which is
+// how a factory-built model in a test behaves.
+function knownPropsResolver(model: IAnyModelType, registry?: ViewTypeLookup) {
+  let cachedProps: object | undefined
+  let cachedKeys: ReadonlySet<string> = new Set()
+  return (snap: Record<string, unknown>): ReadonlySet<string> => {
+    const name = snap.type
+    const registered =
+      registry && typeof name === 'string' && registry.viewTypes.has(name)
+        ? registry.getViewType(name)
+        : undefined
+    const props: object = registered?.isStateModelLoaded
+      ? registered.stateModel.properties
+      : model.properties
+    if (props !== cachedProps) {
+      cachedProps = props
+      cachedKeys = new Set(Object.keys(props))
+    }
+    return cachedKeys
+  }
+}
+
 function classify(
   snap: Record<string, unknown>,
   { keys, passThrough }: LaunchKeyRegistration<unknown, string>,
@@ -286,6 +327,10 @@ function legacyInitSnapshot(
  * are about to be rejected. `afterAttach` — reached only by a snapshot that won
  * — reports what the partition captured.
  *
+ * `registry` is the PluginManager. With it the partition classifies against
+ * the view type as registered, `extendViewType`'s added properties included;
+ * without it, against the model as wrapped here.
+ *
  * ORDER: MST runs preprocessors in the reverse of the order they were added, so
  * this belongs on the chain BEFORE a view's own legacy-key preprocessor, where
  * it partitions the snapshot MST finally consumes rather than a key that remap
@@ -309,13 +354,15 @@ export function withLaunchInput<
 >(
   model: M,
   registration: LaunchKeyRegistration<Commands, PassThrough>,
+  registry?: ViewTypeLookup,
 ): LaunchInputModel<M, Commands, PassThrough> {
-  const known: ReadonlySet<string> = new Set(Object.keys(model.properties))
+  const knownProps = knownPropsResolver(model, registry)
   const partitioned = model
     .preProcessSnapshot((snap: unknown) => {
       if (!isObject(snap)) {
         return snap
       }
+      const known = knownProps(snap)
       const { init, ...rest } = snap
       const out: Partitioned = {
         state: {},

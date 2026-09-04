@@ -3256,7 +3256,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return withLaunchInput(model, lgvLaunchKeys)
+  return withLaunchInput(model, lgvLaunchKeys, pluginManager)
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap

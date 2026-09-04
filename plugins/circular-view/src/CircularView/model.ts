@@ -1151,7 +1151,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       return snap
     })
 
-  return withLaunchInput(model, circularLaunchKeys)
+  return withLaunchInput(model, circularLaunchKeys, pluginManager)
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

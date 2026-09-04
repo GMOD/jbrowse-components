@@ -15,6 +15,7 @@ import { rowsExceedSnapshotBudget } from './snapshotBudget.ts'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { SpreadsheetViewCommands } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -40,7 +41,7 @@ const defaultHeight = 440
  * ```
  */
 
-export default function stateModelFactory() {
+export default function stateModelFactory(pluginManager?: PluginManager) {
   const ImportWizardModel = ImportWizard()
   const model = types
     .compose(
@@ -382,7 +383,7 @@ export default function stateModelFactory() {
       }
     })
 
-  return withLaunchInput(model, spreadsheetLaunchKeys)
+  return withLaunchInput(model, spreadsheetLaunchKeys, pluginManager)
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>

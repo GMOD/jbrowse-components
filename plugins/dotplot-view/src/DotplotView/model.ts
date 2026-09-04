@@ -1790,6 +1790,7 @@ export default function stateModelFactory(pm: PluginManager) {
         return snap
       }),
     dotplotLaunchKeys,
+    pm,
   )
 }
 

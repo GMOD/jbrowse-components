@@ -533,7 +533,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       }
     })
 
-  return withLaunchInput(model, svInspectorLaunchKeys)
+  return withLaunchInput(model, svInspectorLaunchKeys, pluginManager)
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>

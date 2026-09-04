@@ -13,7 +13,7 @@ export default function SpreadsheetViewF(pluginManager: PluginManager) {
     // makes a hand-written augmentation earn what `getViewType` promises
     // its callers — see `ViewTypeRegistry`
     const stateModel = (): Promise<ViewTypeRegistry['SpreadsheetView']> =>
-      import('./SpreadsheetViewModel.ts').then(f => f.default())
+      import('./SpreadsheetViewModel.ts').then(f => f.default(pluginManager))
     return new ViewType({
       name: 'SpreadsheetView',
       displayName: 'Spreadsheet view',
