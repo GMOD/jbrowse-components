@@ -479,12 +479,14 @@ departs across the junction, which together is what BreakpointSplitView's
 `buildBreakpointPath` draws as a tick into its breakend and a line out of it.
 Neither should be "fixed" to match the other.
 
-A foot is `ARC_FOOT_PX` from its anchor unconditionally, so two feet closer than
-that merge into one bar — which is the mark working, since they overlap precisely
-because both ends keep the same stretch. What is NOT handled is a foot crossing
-its region's seam, and the obvious bound (by the other foot) clamps the merge
-case instead:
-[ideas/bound-a-breakend-foot-by-its-displayed-region.md](../ideas/bound-a-breakend-foot-by-its-displayed-region.md).
+A foot is at most `ARC_FOOT_PX` from its anchor, clipped to its own region's
+screen extent, so a foot near a seam stops at the seam instead of drawing over a
+contig its junction says nothing about. Two feet closer than `ARC_FOOT_PX` still
+merge into one bar — which is the mark working, since they overlap precisely
+because both ends keep the same stretch — and a foot is deliberately never
+bounded by the OTHER foot's anchor, which would clamp that merge case instead.
+`crossRegionFeetBound.test.ts` holds the seam clip, `arcFeetPath.test.ts` the
+overrun.
 
 ## The gesture guard
 

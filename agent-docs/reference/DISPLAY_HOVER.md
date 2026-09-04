@@ -91,10 +91,11 @@ One MST constraint shapes the fill: **a volatile cannot instantiate over a base
 computed**, so a display that *stores* its hit stores it under another name and
 answers the hook with a getter over it. `StoredHoverMixin<T>` (display-kit) is
 that trio — the volatile, the getter, `setHoveredFeature`, `clearHoveredFeature`
-— composed after `BaseDisplay` by the wiggle, Manhattan and multi-sample variant
-displays. `LinearMultiRowFeatureDisplay` spells the same trio by hand
-(`hoveredMultiRowFeature`) because its `types.compose` call is already at the
-ten-argument ceiling.
+— composed after `BaseDisplay` by the wiggle, Manhattan, multi-sample variant
+and multi-row feature displays. The last of those sat past the ten-argument
+`types.compose` ceiling and reached the mixin by nesting a second
+`types.compose` inside the outer one, which is the shape to reach for when
+another chain hits the same limit.
 
 ## Two correct answers and one wrong one
 
