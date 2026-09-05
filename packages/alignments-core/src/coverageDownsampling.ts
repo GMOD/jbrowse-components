@@ -736,6 +736,51 @@ function countInterbaseAtPosition(
   return interbase
 }
 
+/**
+ * The coverage bin under a cursor, as the position its tooltip reports — the
+ * base under the cursor, or zoomed out past 1 bp/px the most significant SNP
+ * in the pixel it covers. Undefined off the end of the depth array.
+ *
+ * `basePos` is the integer base painted under the cursor, and `reversed` says
+ * which side of it the pixel's other bp lie on: a forward block's pixel runs
+ * right from that base, a reversed block's runs left. Widening rightward either
+ * way searched the neighbouring pixel's bp on a flipped view and named a SNP
+ * the cursor was not over.
+ *
+ * `snpMinFrequency` is the band's own allele floor, applied per allele the way
+ * the SNP pass applies it, so the snap cannot name a segment neither backend
+ * drew. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates dominance in the pixel.
+ */
+export function coverageBinAt(
+  arrays: CoverageArrays & MismatchArrays,
+  basePos: number,
+  bpPerPx: number,
+  reversed: boolean,
+  snpMinFrequency = 0,
+) {
+  const { coverageDepths, coverageStartPos } = arrays
+  const binIndex = basePos - coverageStartPos
+  if (binIndex < 0 || binIndex >= coverageDepths.length) {
+    return undefined
+  }
+  if (bpPerPx <= 1) {
+    return basePos
+  }
+  const width = Math.ceil(bpPerPx)
+  const from = reversed ? basePos - width + 1 : basePos
+  return (
+    findSignificantInBin(
+      arrays.mismatchPositions,
+      coverageDepths,
+      coverageStartPos,
+      from,
+      from + width,
+      SNP_TOOLTIP_SNAP_FLOOR,
+      { bases: arrays.mismatchBases, minFrequency: snpMinFrequency },
+    ) ?? basePos
+  )
+}
+
 export function buildCoverageTooltipBin(
   position: number,
   coverage: CoverageArrays,

@@ -92,8 +92,25 @@ export {
   coverageInterbaseShape,
   coverageModShape,
   coverageSnpShape,
+  hitCoverageBand,
 } from './coverageBandMarks.ts'
-export type { CoverageBandParams } from './coverageBandMarks.ts'
+export type {
+  CoverageBandHit,
+  CoverageBandParams,
+  CoverageBandRegion,
+  CoverageBandState,
+} from './coverageBandMarks.ts'
+export {
+  CoverageTooltipTable,
+  InterbaseTooltipTable,
+  countOfTotal,
+  coverageRows,
+  formatBandLocation,
+  formatLenRange,
+  pct,
+  useTooltipTableStyles,
+} from './coverageBandTooltip.tsx'
+export type { CoverageRow, CoverageRowsBin } from './coverageBandTooltip.tsx'
 export {
   densityBinSize,
   densityToUniformBins,
@@ -106,9 +123,9 @@ export {
 } from './interbaseCoverage.ts'
 export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
 export {
-  nearestRecordIndex,
   readIndicators,
   readInterbaseSegments,
+  recordsWithin,
 } from './interbaseSegments.ts'
 export type {
   IndicatorReader,
@@ -137,6 +154,7 @@ export {
   countSnpsAtPosition,
   downsampleDenseMax,
   downsampleStatsBins,
+  coverageBinAt,
   findSignificantInBin,
   interbaseDepthAt,
 } from './coverageDownsampling.ts'

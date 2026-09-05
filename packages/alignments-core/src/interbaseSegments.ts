@@ -22,6 +22,8 @@ import {
 export interface InterbaseSegmentReader {
   count: number
   position: (i: number) => number
+  /** Top of segment i as a fraction of the full-scale bar (its yOffset). */
+  stackStart: (i: number) => number
   /** Bottom of segment i as a fraction of the full-scale bar (yOffset + height). */
   stackEnd: (i: number) => number
   /** 1=insertion 2=softclip 3=hardclip. */
@@ -36,6 +38,7 @@ export function readInterbaseSegments(
   return {
     count: buffer.byteLength / SEGMENT_STRIDE_BYTES,
     position: i => getSegmentPosition(u32, i),
+    stackStart: i => getSegmentYOffset(f32, i),
     stackEnd: i => getSegmentYOffset(f32, i) + getSegmentHeight(f32, i),
     colorType: i => getSegmentColorType(f32, i),
   }
@@ -64,65 +67,37 @@ interface PositionedRecords {
 }
 
 /**
- * FIRST index of the run of records at the position nearest `genomicPos`, or -1
- * when that position is further away than `toleranceBp`. An interbase stack is
- * up to three records at one position, so "first of the run" is the useful
- * answer — the caller walks forward from it.
- *
- * A binary search, which is what `computeInterbaseCoverage` emitting in
- * ascending position order buys. This ran as two linear scans of every segment
- * in the region, per track, on every mousemove, to resolve a hover that lands
- * on one position.
+ * The index range `[start, end)` of the records whose position lies within
+ * `toleranceBp` of `genomicPos` — the candidate set a band shape's `hitNearest`
+ * measures. A binary search, which is what `computeInterbaseCoverage` emitting
+ * in ascending position order buys: this ran as a linear scan of every segment
+ * in the region, per track, on every mousemove.
  *
  * Same lower-bound idea as `positionIndex.ts`'s `lowerBound`, and deliberately
- * not shared with it: that one probes a plain sorted `Uint32Array` built for
- * the per-event arrays, which arrive in read order and need an index built
- * beside them. These positions are INTERLEAVED in the instance buffer at the
- * shader's stride and are already sorted, so there is nothing to build and no
- * flat array to probe.
+ * not shared with it: that one probes a plain sorted `Uint32Array`, and these
+ * positions are INTERLEAVED in the instance buffer at the shader's stride.
  */
-export function nearestRecordIndex(
+export function recordsWithin(
   reader: PositionedRecords,
   genomicPos: number,
   toleranceBp: number,
-) {
-  const { count, position } = reader
-  // Lower bound: the first index whose position is >= genomicPos. The nearest
-  // record is that one or the one before it, and nothing else can be closer.
+): [number, number] {
+  return [
+    lowerBoundRecord(reader, genomicPos - toleranceBp),
+    lowerBoundRecord(reader, genomicPos + toleranceBp),
+  ]
+}
+
+function lowerBoundRecord({ count, position }: PositionedRecords, bp: number) {
   let lo = 0
   let hi = count
   while (lo < hi) {
     const mid = (lo + hi) >>> 1
-    if (position(mid) < genomicPos) {
+    if (position(mid) < bp) {
       lo = mid + 1
     } else {
       hi = mid
     }
   }
-  let best = -1
-  let bestDist = toleranceBp
-  if (lo > 0) {
-    const dist = genomicPos - position(lo - 1)
-    if (dist < bestDist) {
-      bestDist = dist
-      best = runStart(reader, lo - 1)
-    }
-  }
-  // Strict, so an exact tie stays with the run on the left. `lo` needs no
-  // runStart: position(lo - 1) < genomicPos <= position(lo), so it already
-  // begins its own run.
-  if (lo < count && position(lo) - genomicPos < bestDist) {
-    best = lo
-  }
-  return best
-}
-
-/** First index of the run of records sharing `i`'s position. */
-function runStart(reader: PositionedRecords, i: number) {
-  const pos = reader.position(i)
-  let start = i
-  while (start > 0 && reader.position(start - 1) === pos) {
-    start--
-  }
-  return start
+  return lo
 }

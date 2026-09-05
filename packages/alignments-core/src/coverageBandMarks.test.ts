@@ -13,7 +13,10 @@ import { packInstances as packInterbaseInstances } from './interbaseHistogramLay
 import { packInstances as packModCovInstances } from './modCoverageLayout.generated.ts'
 import { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 
-import type { CoverageBandParams } from './coverageBandMarks.ts'
+import type {
+  CoverageBandRegion,
+  CoverageBandState,
+} from './coverageBandMarks.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
@@ -26,28 +29,21 @@ const START = 10_000
 const DOMAIN_MAX = 50
 const HEIGHT = 100
 
-interface Region {
-  coveragePackedBuffer: ArrayBuffer
-  snpPackedBuffer: ArrayBuffer
+interface Region extends CoverageBandRegion {
   modCovPackedBuffer: ArrayBuffer
-  interbasePackedBuffer: ArrayBuffer
-  indicatorPackedBuffer: ArrayBuffer
-  maxDepth: number
-  interbaseMaxCount: number
 }
 
 interface State {
   canvasWidth: number
   canvasHeight: number
-  top: number
-  domainMax: number | undefined
-  showInterbase: boolean
+  band: CoverageBandState
 }
 
 // One mark in every feed, so each layer has exactly one thing to paint.
 function region(): Region {
   return {
-    maxDepth: DOMAIN_MAX,
+    coverageMaxDepth: DOMAIN_MAX,
+    coverageBinSize: 1,
     interbaseMaxCount: 4,
     coveragePackedBuffer: packCoverageBinsForGpu(
       new Float32Array([30]),
@@ -91,46 +87,42 @@ function region(): Region {
   }
 }
 
-const state = (over: Partial<State> = {}): State => ({
+const state = (over: Partial<CoverageBandState> = {}): State => ({
   canvasWidth: 200,
   canvasHeight: 300,
-  top: 0,
-  domainMax: DOMAIN_MAX,
-  showInterbase: true,
-  ...over,
-})
-
-const params = (s: State, r: Region): CoverageBandParams => ({
-  height: HEIGHT,
-  top: s.top,
-  domainMin: 0,
-  domainMax: s.domainMax,
-  scaleType: SCALE_TYPE_LINEAR,
-  symlogConstant: 1,
-  regionMaxDepth: r.maxDepth,
-  binSize: 1,
-  interbaseMaxCount: r.interbaseMaxCount,
-  snpMinFrequency: 0,
-  showInterbase: s.showInterbase,
-  colors: {
-    coverage: 1,
-    baseA: 2,
-    baseC: 3,
-    baseG: 4,
-    baseT: 5,
-    baseN: 6,
-    insertionIndicator: 7,
-    softclipIndicator: 8,
-    hardclipIndicator: 9,
+  band: {
+    height: HEIGHT,
+    top: 0,
+    domainMin: 0,
+    domainMax: DOMAIN_MAX,
+    scaleType: SCALE_TYPE_LINEAR,
+    symlogConstant: 1,
+    snpMinFrequency: 0,
+    showInterbase: true,
+    colors: {
+      coverage: 1,
+      baseA: 2,
+      baseC: 3,
+      baseG: 4,
+      baseT: 5,
+      baseN: 6,
+      insertionIndicator: 7,
+      softclipIndicator: 8,
+      hardclipIndicator: 9,
+    },
+    ...over,
   },
 })
 
 const FIVE = coverageBandMarks({
   channels: (r: Region) => r,
-  params,
+  state: (s: State) => s.band,
   modCov: true,
 })
-const FOUR = coverageBandMarks({ channels: (r: Region) => r, params })
+const FOUR = coverageBandMarks({
+  channels: (r: Region) => r,
+  state: (s: State) => s.band,
+})
 
 const block = {
   displayedRegionIndex: 0,
