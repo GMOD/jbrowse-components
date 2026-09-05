@@ -243,3 +243,95 @@ export function makeBlockFeatures(
   }
   return out
 }
+
+// A mate placement as a grouped feature lists it: the pairwise mate's fields
+// less the BED score, plus the pair's own orientation, which the pairwise
+// feature carried as its top-level `strand`.
+export interface GroupedMate {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  strand: number
+  orientation: number
+  name: string
+}
+
+// One anchor gene's rows folded together: where the anchor sits, which column
+// and row first named it, and every mate placement its pairs reach.
+export interface GroupedRow {
+  anchor: BareFeature
+  anchorCol: number
+  rowNum: number
+  attrs: Record<string, number> | undefined
+  mates: GroupedMate[]
+}
+
+// The links `makeBlockFeatures` would emit for this pair over `region`, folded
+// into `groups` by anchor gene name rather than emitted one per link. Walks
+// the same indexed rows, so the join and the per-pair dedupe are the pairwise
+// path's; what differs is the object count on the way out. A caller runs it
+// once per column pair into one map, then `makeGroupedFeatures` emits.
+export function collectGroupedRows(
+  assemblyNames: string[],
+  columns: [number, number],
+  index: BlockRowIndex,
+  region: Region,
+  groups: Map<string, GroupedRow>,
+) {
+  for (const side of facingSides(assemblyNames, region.assemblyName)) {
+    const rows = index.bySide(side).get(region.refName)
+    if (rows !== undefined) {
+      const first = side === 0
+      const mateAssemblyName = assemblyNames[first ? 1 : 0]!
+      for (const { a, b, rowNum, strand, attrs } of rows) {
+        const anchor = first ? a : b
+        if (
+          doesIntersect2(region.start, region.end, anchor.start, anchor.end)
+        ) {
+          let group = groups.get(anchor.name)
+          if (group === undefined) {
+            group = {
+              anchor,
+              anchorCol: columns[first ? 0 : 1],
+              rowNum,
+              attrs,
+              mates: [],
+            }
+            groups.set(anchor.name, group)
+          }
+          const mate = first ? b : a
+          group.mates.push({
+            assemblyName: mateAssemblyName,
+            refName: mate.refName,
+            start: mate.start,
+            end: mate.end,
+            strand: mate.strand,
+            orientation: strand,
+            name: mate.name,
+          })
+        }
+      }
+    }
+  }
+}
+
+// The grouped answer: one feature per anchor gene, `strand` the gene's own BED
+// strand (each mate carries the pairwise orientation instead), id keyed on the
+// column and row that first named the gene so it stays put across fetches.
+export function makeGroupedFeatures(
+  assemblyName: string,
+  groups: Map<string, GroupedRow>,
+) {
+  return [...groups.values()].map(
+    ({ anchor, anchorCol, rowNum, attrs, mates }) =>
+      new SimpleFeature({
+        ...attrs,
+        ...anchor,
+        uniqueId: `${anchorCol}-${rowNum}`,
+        syntenyId: rowNum,
+        assemblyName,
+        mates,
+      }),
+  )
+}

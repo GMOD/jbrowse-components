@@ -1,8 +1,9 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
 import { voteEvidence } from '../syntenyHysteresis.ts'
-import { isNamedRecord } from '../syntenyMate.ts'
+import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 
+import type { SyntenyGroupedMate } from '../syntenyMate.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -15,11 +16,13 @@ export interface MultiWayPlacement {
 
 /**
  * A mate placement plus how it runs against the anchor. `orientation` is the
- * pairwise FEATURE's own strand — the alignment strand for PAF, the product of
- * the two BED strands for an MCScan row — and never the `strand` inside the
- * `mate` object, which PAF does not set and the MCScan blocks adapter fills
- * with the mate gene's transcription strand. -1 means the two ends of the pair
- * correspond crosswise, which is what makes an inversion's ribbon twist.
+ * PAIR's strand — the alignment strand for PAF, the product of the two BED
+ * strands for an MCScan row — which a pairwise feature carries as its own
+ * `strand` and a grouped feature carries per entry of `mates`. Never the
+ * `strand` inside a mate object, which PAF does not set and the MCScan blocks
+ * adapter fills with the mate gene's transcription strand. -1 means the two
+ * ends of the pair correspond crosswise, which is what makes an inversion's
+ * ribbon twist.
  */
 export interface MatePlacement extends MultiWayPlacement {
   orientation: number
@@ -65,12 +68,16 @@ export function frameStartBp(frame: { min: number }) {
   return Math.max(0, Math.round(frame.min))
 }
 
-interface FeatureMate extends MultiWayPlacement {
-  assemblyName: string
-}
-
-function mateOf(feature: Feature) {
-  return feature.get('mate') as FeatureMate
+// Both fetch shapes as one list: a grouped feature's `mates` carry their own
+// orientation, a pairwise feature's one `mate` takes the feature's `strand`.
+function matesOf(feature: Feature): SyntenyGroupedMate[] {
+  const mates = getMates(feature)
+  const mate = getMate(feature)
+  return mates !== undefined
+    ? mates
+    : mate === undefined
+      ? []
+      : [{ ...mate, orientation: feature.get('strand') === -1 ? -1 : 1 }]
 }
 
 // Name before syntenyId: an MCScan blocks adapter keeps the FIRST row naming a
@@ -86,7 +93,8 @@ function groupKeyOf(feature: Feature) {
 }
 
 // One group per anchor gene: the anchor placement plus every mate placement the
-// pairwise features name for it. A reference-anchored table repeats a mate
+// features name for it, whether one feature carries them all (`mates`) or one
+// feature carries each (`mate`). A reference-anchored table repeats a mate
 // through each row that reaches it, so placements dedupe on coordinates.
 export function groupFeatures(features: Feature[]) {
   const byKey = new Map<string, MultiWayGroup>()
@@ -106,21 +114,22 @@ export function groupFeatures(features: Feature[]) {
       }
       byKey.set(key, group)
     }
-    const mate = mateOf(feature)
-    const seenKey = `${key}|${mate.assemblyName}|${mate.refName}|${mate.start}|${mate.end}`
-    if (!seen.has(seenKey)) {
-      seen.add(seenKey)
-      let placements = group.mates.get(mate.assemblyName)
-      if (!placements) {
-        placements = []
-        group.mates.set(mate.assemblyName, placements)
+    for (const mate of matesOf(feature)) {
+      const seenKey = `${key}|${mate.assemblyName}|${mate.refName}|${mate.start}|${mate.end}`
+      if (!seen.has(seenKey)) {
+        seen.add(seenKey)
+        let placements = group.mates.get(mate.assemblyName)
+        if (!placements) {
+          placements = []
+          group.mates.set(mate.assemblyName, placements)
+        }
+        placements.push({
+          refName: mate.refName,
+          start: mate.start,
+          end: mate.end,
+          orientation: mate.orientation < 0 ? -1 : 1,
+        })
       }
-      placements.push({
-        refName: mate.refName,
-        start: mate.start,
-        end: mate.end,
-        orientation: feature.get('strand') === -1 ? -1 : 1,
-      })
     }
   }
   return [...byKey.values()].sort(

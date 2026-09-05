@@ -40,6 +40,21 @@ export function getMate(feature: Feature) {
   return feature.get('mate') as SyntenyMate | undefined
 }
 
+// One entry of a grouped feature's `mates`: a mate placement plus the
+// orientation of ITS pair with the anchor, which a pairwise feature carries as
+// its own top-level `strand` and so has nowhere else to go once several mates
+// share one feature.
+export type SyntenyGroupedMate = SyntenyMate & {
+  orientation: number
+}
+
+// The `mates` of a feature fetched with `mateShape: 'grouped'`; undefined on
+// the pairwise shape every other adapter and fetch produces.
+export function getMates(feature: Feature) {
+  const mates = feature.get('mates')
+  return Array.isArray(mates) ? (mates as SyntenyGroupedMate[]) : undefined
+}
+
 // The block's CIGAR, when the source carries one. `undefined` is the ordinary
 // case, not an error: a PAF from minimap2 without `-c` has no `cg` tag, and
 // neither do MashMap, MCScan or a PIF's coarse tier (which carries the fold

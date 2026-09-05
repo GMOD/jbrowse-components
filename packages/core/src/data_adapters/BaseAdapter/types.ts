@@ -29,6 +29,11 @@ export interface BaseOptions {
   // pair a band draws — `assemblyName` alone can't, since one file backs every
   // pair. Pairwise adapters (which already know their pair) ignore it.
   targetAssemblyName?: string
+  // A multi-genome adapter answering a no-target query folds the pairs
+  // anchored on one query feature into one feature carrying `mates: [...]`,
+  // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
+  // feature per pair.
+  mateShape?: 'grouped'
   // Which level-of-detail tier to read, for adapters that expose more than one
   // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
   // fine tier is served; adapters without tiering ignore it entirely.

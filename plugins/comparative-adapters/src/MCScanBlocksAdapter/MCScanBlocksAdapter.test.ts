@@ -619,3 +619,238 @@ test('an assembly in no column is answered without reading the files', async () 
     [],
   )
 })
+
+// The grouped shape a multi-way display opts into: one feature per anchor gene
+// carrying every mate, rather than one feature per (anchor gene, mate). Same
+// join, same per-pair dedupe, so the mates it lists have to be exactly the
+// union of what the pairwise fan-out says — checked as that equivalence, over
+// every table shape the pairwise tests above exercise.
+describe('mateShape: grouped', () => {
+  interface MateRecord {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+    name: string
+    strand: number
+  }
+  interface GroupedMateRecord extends MateRecord {
+    orientation: number
+  }
+  const link = (
+    anchor: string | undefined,
+    m: MateRecord,
+    orientation: number,
+  ) =>
+    `${anchor}\t${m.assemblyName}\t${m.refName}:${m.start}-${m.end}\t${m.name}\t${m.strand}\t${orientation}`
+
+  async function bothShapes(adapter: Adapter, region: Record<string, unknown>) {
+    const fetch = (opts: Record<string, unknown>) =>
+      firstValueFrom(adapter.getFeatures(region as never, opts).pipe(toArray()))
+    const pairwise = await fetch({})
+    const grouped = await fetch({ mateShape: 'grouped' })
+    const pairwiseLinks = pairwise
+      .map(f =>
+        link(f.get('name'), f.get('mate') as MateRecord, f.get('strand')!),
+      )
+      .sort()
+    const groupedLinks = grouped
+      .flatMap(f =>
+        (f.get('mates') as GroupedMateRecord[]).map(m =>
+          link(f.get('name'), m, m.orientation),
+        ),
+      )
+      .sort()
+    return { pairwise, grouped, pairwiseLinks, groupedLinks }
+  }
+
+  function expectEquivalent({
+    pairwise,
+    grouped,
+    pairwiseLinks,
+    groupedLinks,
+  }: Awaited<ReturnType<typeof bothShapes>>) {
+    expect(groupedLinks).toEqual(pairwiseLinks)
+    expect(grouped.map(f => f.get('name')).sort()).toEqual(
+      [...new Set(pairwise.map(f => f.get('name')))].sort(),
+    )
+    expect(new Set(grouped.map(f => f.id())).size).toBe(grouped.length)
+    for (const f of grouped) {
+      expect(f.get('mate')).toBeUndefined()
+      expect(typeof f.get('syntenyId')).toBe('number')
+      const twin = pairwise.find(p => p.get('name') === f.get('name'))!
+      expect(f.get('assemblyName')).toBe(twin.get('assemblyName'))
+      expect(f.get('refName')).toBe(twin.get('refName'))
+      expect(f.get('start')).toBe(twin.get('start'))
+      expect(f.get('end')).toBe(twin.get('end'))
+    }
+  }
+
+  const grapeRegion = {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  }
+
+  test('a full-list track lists every pair of every anchor gene', async () => {
+    const shapes = await bothShapes(
+      makeAdapter(['grape', 'peach', 'cacao']),
+      grapeRegion,
+    )
+    expectEquivalent(shapes)
+    // g1 and g4 reach both genomes, g2 only peach, g3 only cacao
+    expect(
+      shapes.grouped.map(f => [
+        f.get('name'),
+        (f.get('mates') as MateRecord[]).map(m => m.assemblyName).sort(),
+      ]),
+    ).toEqual([
+      ['g1', ['cacao', 'peach']],
+      ['g2', ['peach']],
+      ['g4', ['cacao', 'peach']],
+      ['g3', ['cacao']],
+    ])
+  })
+
+  test('a pair-pinned legacy track groups its one mate per gene', async () => {
+    const shapes = await bothShapes(
+      makeAdapter(['grape', 'peach']),
+      grapeRegion,
+    )
+    expectEquivalent(shapes)
+    expect(shapes.grouped.length).toBe(3)
+    expect(
+      shapes.grouped.every(f => (f.get('mates') as unknown[]).length === 1),
+    ).toBe(true)
+  })
+
+  test('the transitive pair reads the same grouped', async () => {
+    expectEquivalent(
+      await bothShapes(makeAdapter(['peach', 'cacao']), {
+        refName: 'Pp1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'peach',
+      }),
+    )
+  })
+
+  // the group's strand is the anchor gene's own; each mate carries the pair's
+  test('strand is the anchor BED strand, orientation the pair product', async () => {
+    const { grouped } = await bothShapes(
+      makeAdapter(['grape', 'peach', 'cacao']),
+      grapeRegion,
+    )
+    for (const f of grouped) {
+      for (const m of f.get('mates') as GroupedMateRecord[]) {
+        expect(m.orientation).toBe(f.get('strand')! * m.strand)
+      }
+    }
+  })
+
+  test('the id is the column and row that first named the gene', async () => {
+    const { grouped } = await bothShapes(
+      makeAdapter(['grape', 'peach', 'cacao']),
+      grapeRegion,
+    )
+    expect(grouped.map(f => [f.id(), f.get('syntenyId')])).toEqual([
+      ['0-0', 0],
+      ['0-1', 1],
+      ['0-3', 3],
+      ['0-2', 2],
+    ])
+  })
+
+  test('a target given alongside keeps the pairwise shape', async () => {
+    const fa = await firstValueFrom(
+      makeAdapter(['grape', 'peach', 'cacao'])
+        .getFeatures(grapeRegion as never, {
+          mateShape: 'grouped',
+          targetAssemblyName: 'peach',
+        })
+        .pipe(toArray()),
+    )
+    expect(fa.length).toBe(3)
+    expect(fa.every(f => f.get('mates') === undefined)).toBe(true)
+  })
+
+  test('a duplicated gene expanded across rows folds into one feature', async () => {
+    const adapter = new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: bed('orthogroups_expand.blocks'),
+        blockAssemblies: ['grape', 'peach', 'cacao'],
+        bedLocations: [bed('grape.bed'), bed('peach.bed'), bed('cacao.bed')],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+    )
+    const shapes = await bothShapes(adapter, grapeRegion)
+    expectEquivalent(shapes)
+    const g1 = shapes.grouped.find(f => f.get('name') === 'g1')!
+    expect((g1.get('mates') as MateRecord[]).map(m => m.name).sort()).toEqual([
+      'c1',
+      'p1',
+      'p2',
+    ])
+  })
+
+  test('copy columns contribute a mate entry per column', async () => {
+    const adapter = new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: bed('grape_peach_iter2.blocks'),
+        blockAssemblies: ['grape', 'peach', 'peach'],
+        bedLocations: [bed('grape.bed'), bed('peach.bed'), bed('peach.bed')],
+        assemblyNames: ['grape', 'peach'],
+      }),
+    )
+    expectEquivalent(await bothShapes(adapter, grapeRegion))
+    expectEquivalent(
+      await bothShapes(adapter, {
+        refName: 'Pp1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'peach',
+      }),
+    )
+  })
+
+  test('a self-comparison groups from both sides of its one pair', async () => {
+    const adapter = new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: bed('grape_self.blocks'),
+        blockAssemblies: ['grape', 'grape'],
+        bedLocations: [bed('grape.bed'), bed('grape.bed')],
+        assemblyNames: ['grape', 'grape'],
+      }),
+    )
+    expectEquivalent(await bothShapes(adapter, grapeRegion))
+  })
+
+  test('the real grape/peach/cacao chr1 table agrees across shapes', async () => {
+    const realLoc = (f: string) => ({
+      localPath: require.resolve(`./test_data/real/${f}`),
+      locationType: 'LocalPathLocation' as const,
+    })
+    const adapter = new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: realLoc('grape.blocks.gz'),
+        blockAssemblies: ['grape', 'peach', 'cacao'],
+        bedLocations: [
+          realLoc('grape.bed.gz'),
+          realLoc('peach.bed.gz'),
+          realLoc('cacao.bed.gz'),
+        ],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+    )
+    const shapes = await bothShapes(adapter, {
+      refName: '1',
+      start: 0,
+      end: 100_000_000,
+      assemblyName: 'grape',
+    })
+    expectEquivalent(shapes)
+    expect(shapes.pairwise.length).toBe(1183 + 1045)
+    expect(shapes.grouped.length).toBeLessThan(shapes.pairwise.length)
+  })
+})

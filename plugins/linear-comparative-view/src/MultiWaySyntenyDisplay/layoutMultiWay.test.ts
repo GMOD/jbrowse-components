@@ -1231,3 +1231,118 @@ test('a lane whose shared order votes both ways keeps the anchor-order flip', ()
     )!.flipped,
   ).toBe(true)
 })
+
+// The grouped fetch shape (`mates: [...]`, one feature per anchor gene) has to
+// group exactly as its pairwise expansion does: the same placements per lane,
+// each with the orientation its own pair carried, the same dedupe of a
+// placement two rows repeat, the same weight, the same sort.
+describe('a grouped feature groups as its pairwise expansion', () => {
+  const groupedMates = [
+    {
+      assemblyName: 'peach',
+      refName: 'Pp1',
+      start: 1000,
+      end: 1100,
+      strand: 1,
+      orientation: 1,
+      name: 'p1',
+    },
+    {
+      assemblyName: 'cacao',
+      refName: 'Cc1',
+      start: 9000,
+      end: 9100,
+      strand: -1,
+      orientation: -1,
+      name: 'c1',
+    },
+    {
+      assemblyName: 'peach',
+      refName: 'Pp1',
+      start: 1000,
+      end: 1100,
+      strand: 1,
+      orientation: 1,
+      name: 'p1',
+    },
+    {
+      assemblyName: 'peach',
+      refName: 'Pp2',
+      start: 5000,
+      end: 5100,
+      strand: 1,
+      orientation: -1,
+      name: 'p1b',
+    },
+  ]
+  const groupedFeature = new SimpleFeature({
+    uniqueId: '0-0',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    strand: -1,
+    name: 'g1',
+    assemblyName: 'anchor',
+    mates: groupedMates,
+  })
+  const expansion = groupedMates.map(({ orientation, ...mate }, i) =>
+    pairFeature({
+      uniqueId: `0-${i}-0-0`,
+      name: 'g1',
+      start: 100,
+      end: 200,
+      strand: orientation,
+      mate,
+    }),
+  )
+  const other = pairFeature({
+    uniqueId: '9',
+    name: 'g0',
+    start: 10,
+    end: 20,
+    mate: { assemblyName: 'peach', refName: 'Pp1', start: 900, end: 950 },
+  })
+  const comparable = (groups: MultiWayGroup[]) =>
+    groups.map(({ key, anchor, mates, weight }) => ({
+      key,
+      anchor,
+      mates: [...mates],
+      weight,
+    }))
+
+  test('same groups, same placements, orientation per mate', () => {
+    const fromGrouped = groupFeatures([groupedFeature, other])
+    const fromPairwise = groupFeatures([...expansion, other])
+    expect(comparable(fromGrouped)).toEqual(comparable(fromPairwise))
+    expect(fromGrouped.map(g => g.key)).toEqual(['g0', 'g1'])
+    const g1 = fromGrouped[1]!
+    expect(g1.mates.get('peach')).toEqual([
+      { refName: 'Pp1', start: 1000, end: 1100, orientation: 1 },
+      { refName: 'Pp2', start: 5000, end: 5100, orientation: -1 },
+    ])
+    expect(g1.mates.get('cacao')).toEqual([
+      { refName: 'Cc1', start: 9000, end: 9100, orientation: -1 },
+    ])
+  })
+
+  // the group's own strand is the anchor gene's transcription strand on the
+  // grouped shape, and must not leak into any mate's orientation
+  test('the group strand does not stand in for a mate orientation', () => {
+    const [g1] = groupFeatures([groupedFeature])
+    expect(g1!.feature.get('strand')).toBe(-1)
+    expect(g1!.mates.get('peach')![0]!.orientation).toBe(1)
+  })
+
+  test('the group keeps the grouped feature, whose json lists every mate', () => {
+    const [g1] = groupFeatures([groupedFeature])
+    expect(g1!.feature).toBe(groupedFeature)
+    expect(g1!.feature.toJSON().mates).toHaveLength(4)
+  })
+
+  test('the two shapes mixed in one fetch still fold per anchor', () => {
+    const groups = groupFeatures([expansion[0]!, groupedFeature])
+    expect(comparable(groups)).toEqual(
+      comparable(groupFeatures([groupedFeature])),
+    )
+  })
+})

@@ -4,13 +4,20 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import {
+  collectGroupedRows,
   indexBlockRows,
   joinBedPair,
   makeBlockFeatures,
+  makeGroupedFeatures,
 } from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
-import type { BareFeature, BlockRow, BlockRowIndex } from '../mcscanUtil.ts'
+import type {
+  BareFeature,
+  BlockRow,
+  BlockRowIndex,
+  GroupedRow,
+} from '../mcscanUtil.ts'
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
@@ -392,6 +399,10 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
           `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain ${queryAssembly}, and assemblyNames must name another assembly to draw it against`,
         )
       }
+      const grouped =
+        opts.mateShape === 'grouped' && opts.targetAssemblyName === undefined
+          ? new Map<string, GroupedRow>()
+          : undefined
       for (const mateAssembly of mateAssemblies) {
         const pairs = columnPairs(blockAssemblies, queryAssembly, mateAssembly)
         if (!pairs.length) {
@@ -401,17 +412,32 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
         }
         for (const [qcol, mcol] of pairs) {
           const rows = this.pairRows(qcol, mcol, setup)
-          // the columns key the ids apart, so the same source row joined to two
-          // different genomes — or to two copy columns of one genome — stays two
-          // features
-          for (const feat of makeBlockFeatures(
-            [queryAssembly, mateAssembly],
-            rows,
-            region,
-            `${qcol}-${mcol}-`,
-          )) {
-            observer.next(feat)
+          if (grouped) {
+            collectGroupedRows(
+              [queryAssembly, mateAssembly],
+              [qcol, mcol],
+              rows,
+              region,
+              grouped,
+            )
+          } else {
+            // the columns key the ids apart, so the same source row joined to
+            // two different genomes — or to two copy columns of one genome —
+            // stays two features
+            for (const feat of makeBlockFeatures(
+              [queryAssembly, mateAssembly],
+              rows,
+              region,
+              `${qcol}-${mcol}-`,
+            )) {
+              observer.next(feat)
+            }
           }
+        }
+      }
+      if (grouped) {
+        for (const feat of makeGroupedFeatures(queryAssembly, grouped)) {
+          observer.next(feat)
         }
       }
       observer.complete()

@@ -41,6 +41,22 @@ peach and cacao and no grape. `scripts/orthogroups_to_blocks.py` converts it and
 tutorial now explains the MCScan/OrthoFinder split under "One reference, or all
 against all".
 
+**Two answer shapes, one join.** A query with no `targetAssemblyName` fans out
+to every pair anchored on the queried assembly, one `mate`-carrying feature per
+(anchor gene × mate assembly) — and that is what the LGVSyntenyDisplay, the
+region launch and the dotplot get. `MultiWaySyntenyDisplay` regroups those per
+anchor on the main thread, so it passes `mateShape: 'grouped'` (a
+`BaseOptions` field, opt-in) and gets one feature per anchor gene carrying
+`mates: [{assemblyName, refName, start, end, strand, orientation, name}, …]`
+instead; `groupFeatures` reads either shape, and every other consumer keeps the
+pairwise one. Same `pairRows` cache and dedupe, so the join is unchanged and the
+saving is objects and bytes. Measured on a synthetic E. coli-shaped table (47
+columns, 4,400 anchor genes, whole chromosome `chr:0-4,600,000`): pairwise is
+172,207 features, 170-350 ms to build, 165-250 ms to serialize, 46.6 MB of
+JSON; grouped is 4,400 features, 27-50 ms, ~100 ms, 21.0 MB. The remaining bytes
+are the per-mate placement records themselves (~120 B each, 172k of them),
+which every shape has to carry.
+
 ## All-vs-all formats worth considering
 
 Ranked by what they would add that the two above do not:

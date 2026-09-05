@@ -31,12 +31,15 @@ function fetchPhases(
     },
     // no targetAssemblyName: a multi-genome adapter queried with no target
     // answers with every pair anchored on the queried assembly, which is
-    // exactly the row set this display draws
+    // exactly the row set this display draws. `mateShape: 'grouped'` asks an
+    // adapter that can to fold those pairs per anchor before they cross the
+    // RPC; `groupFeatures` reads either shape, so one that cannot is unaffected
     run: async ({ regions }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
           adapterConfig: self.adapterConfig,
+          opts: { mateShape: 'grouped' },
         }),
         r => r.id(),
       ),
