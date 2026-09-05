@@ -7,8 +7,9 @@ import {
   makeFlatbushItem,
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { computeLaidOutData, packedContentHeight } from './layout.ts'
+import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
+import { packedContentHeight } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 import { rowGeometrySignature } from './yMorph.ts'
 

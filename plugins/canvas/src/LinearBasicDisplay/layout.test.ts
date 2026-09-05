@@ -10,9 +10,9 @@ import {
   computeLaidOutData,
   createContentHeightProbe,
   createIncrementalLayout,
-  packedContentHeight,
 } from './layout.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
+import { packedContentHeight } from './layoutTestUtils.ts'
 
 import type {
   FeatureDataResult,

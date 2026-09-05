@@ -70,7 +70,7 @@ function layoutRefGroups(
     )
     // Clone only now that the packing is decided: cloneMutableFields dominates
     // this function's cost (~4/5 of it at 4k features), so the height probes the
-    // fit solve runs skip it entirely (see packedContentHeight) and only the
+    // fit solve runs skip it entirely (see createPackProbe) and only the
     // committed layout pays it.
     for (const [n, raw] of regions) {
       const cloned = cloneMutableFields(raw)
@@ -124,7 +124,6 @@ function layoutRefGroups(
 function createPackProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
-  prevYByFeatureId: ReadonlyMap<string, number> | undefined,
   // Features the height is measured over (see `maxBottom`). It narrows only the
   // measurement, never the pack: every feature still claims its row, so the
   // rows the solve's knob is chosen against are the rows that will render.
@@ -148,7 +147,6 @@ function createPackProbe(
           trims,
           { ...trimmedInputs, labelRoomFactor },
           metrics,
-          prevYByFeatureId,
         )
         max = Math.max(
           max,
@@ -163,13 +161,11 @@ function createPackProbe(
 export function createContentHeightProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
-  prevYByFeatureId?: ReadonlyMap<string, number>,
   measureIds?: ReadonlySet<string>,
 ) {
   return createPackProbe(
     rpcDataMap,
     inputs,
-    prevYByFeatureId,
     measureIds,
   )(inputs.maxIsoformsPerGene)
 }
@@ -182,29 +178,9 @@ export function createIsoformCountProbe(
   inputs: IsoformCountFreeInputs,
   measureIds?: ReadonlySet<string>,
 ) {
-  const trimAt = createPackProbe(rpcDataMap, inputs, undefined, measureIds)
+  const trimAt = createPackProbe(rpcDataMap, inputs, measureIds)
   return (maxIsoformsPerGene: number) =>
     trimAt(maxIsoformsPerGene)(inputs.labelRoomFactor)
-}
-
-// One-shot height for fully-formed inputs — `createContentHeightProbe` for a
-// single factor. Same pack, so the same guarantee.
-//
-// The test oracle, not a production path: the fit solve holds one probe across
-// its ~9 candidate factors and nothing else asks for a single height. Its value
-// is exactly that it goes through the same `packPreparedRef`, so a test can
-// assert the committed layout's height without a second implementation to
-// disagree with.
-export function packedContentHeight(
-  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
-  inputs: LayoutInputs,
-  prevYByFeatureId?: ReadonlyMap<string, number>,
-) {
-  return createContentHeightProbe(
-    rpcDataMap,
-    inputs,
-    prevYByFeatureId,
-  )(inputs.labelRoomFactor ?? 1)
 }
 
 // Group the non-empty raw regions by `assembly:refName`, the unit `packPreparedRef` lays

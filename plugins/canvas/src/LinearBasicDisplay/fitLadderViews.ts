@@ -202,7 +202,6 @@ export function fitLadderViews(self: FitLadderHost) {
       return createContentHeightProbe(
         self.rpcDataMap,
         this.decimatedBaseInputs,
-        undefined,
         self.fitMeasureFeatureIds,
       )
     },
