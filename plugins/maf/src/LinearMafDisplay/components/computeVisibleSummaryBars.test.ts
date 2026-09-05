@@ -115,7 +115,7 @@ test('mirrors x for reversed regions', () => {
 })
 
 // Reversed AND sub-pixel, which is the only combination that can tell the two
-// anchors apart: `bpSpanPx` grows the widening away from the record's START
+// anchors apart: `spanRect` grows the widening away from the record's START
 // edge, which is its RIGHT edge here, so the bar ends at px10. Widening off the
 // leftmost edge instead puts it at 9.9 and slides the mark a pixel — the two
 // tests above miss it, one being 10px wide and the other forward.

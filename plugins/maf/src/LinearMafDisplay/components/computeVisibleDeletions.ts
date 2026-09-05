@@ -1,14 +1,11 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 import { LABEL_FONT } from '../../LinearMafRenderer/rendering/types.ts'
 import { regionDeletionRunBounds } from './mafRowEvents.ts'
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -117,7 +114,11 @@ export function computeVisibleDeletions(
                 longest = length
               }
               if (drawn) {
-                const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
+                const { left: xLeft, width } = spanRect(
+                  bpToPx,
+                  start,
+                  start + length,
+                )
                 if (width >= MIN_LABEL_WIDTH) {
                   markers.push({ xLeft, width, rowTop, h, length })
                 }

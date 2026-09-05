@@ -469,6 +469,10 @@ export function spanLeft(x1: number, x2: number, width: number) {
  * the pivot and the floor were being restated separately. The multi-row painter
  * and the hover box it has to line up with each spelled out both.
  * `fillBpSpan` is the same span when a `fillRect` is the only consumer.
+ *
+ * Not for a per-instance paint loop: this allocates a result per call, so the
+ * span mark's painter and wiggle's two bar loops take `spanLeft` and the two
+ * numbers inline, and stay the last hand-written copies of this arithmetic.
  */
 export function spanRect(
   toX: (bp: number) => number,

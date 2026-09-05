@@ -2,13 +2,10 @@ import {
   forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { paintedBpRange } from './paintedBpRange.ts'
-import {
-  bpSpanPx,
-  rowBandGeometry,
-  visibleRowRange,
-} from './visibleRegionGeometry.ts'
+import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
@@ -199,7 +196,7 @@ export function drawSourceChrom(
       for (const { startBp, endBp, rows } of region.blocks) {
         if (overlaps(startBp, endBp)) {
           // >=1px so a block narrower than a pixel still reads as present
-          const { xLeft, width } = bpSpanPx(bpToX, startBp, endBp, 1)
+          const { left: xLeft, width } = spanRect(bpToX, startBp, endBp, 1)
           for (const row of rows) {
             if (row.rowIndex >= firstRow && row.rowIndex < lastRow && row.chr) {
               const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0

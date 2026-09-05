@@ -1,8 +1,6 @@
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
+
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafStatus } from '../../types.ts'
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -36,7 +34,11 @@ export function computeVisibleEmptyLines(
   )) {
     for (const block of regionData.blocks) {
       if (block.empties.length > 0 && overlaps(block.startBp, block.endBp)) {
-        const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
+        const { left: xLeft, width } = spanRect(
+          bpToPx,
+          block.startBp,
+          block.endBp,
+        )
         for (const e of block.empties) {
           if (e.rowIndex >= firstRow && e.rowIndex < endRow) {
             segments.push({

@@ -1,13 +1,10 @@
 import { codonTable, complementTable } from '@jbrowse/core/util'
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { buildColumnForGenomicOffset } from '../../LinearMafRenderer/binning.ts'
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { LOWER_BIT, isNoBaseByte } from '../../util/asciiBytes.ts'
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { GenomicColumns } from '../../LinearMafRenderer/binning.ts'
 import type {
@@ -567,10 +564,10 @@ function codonCells(
   positions: readonly number[],
   bpToPx: (bp: number) => number,
 ): CodonCell[] {
-  return consecutiveRuns(positions).map(([startBp, endBp]) => ({
-    ...bpSpanPx(bpToPx, startBp, endBp, 1),
-    x: bpToPx((startBp + endBp) / 2),
-  }))
+  return consecutiveRuns(positions).map(([startBp, endBp]) => {
+    const { left, width } = spanRect(bpToPx, startBp, endBp, 1)
+    return { xLeft: left, width, x: bpToPx((startBp + endBp) / 2) }
+  })
 }
 
 // Index of the widest cell — where the single amino-acid glyph is drawn.

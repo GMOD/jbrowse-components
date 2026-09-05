@@ -1,12 +1,10 @@
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
+
 import { regionInversionEvents } from './mafRowEvents.ts'
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafOverlayParams, PxSpan } from './visibleRegionGeometry.ts'
+import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
 export interface InversionMarker {
   xLeft: number
@@ -124,13 +122,13 @@ export function computeVisibleInversions(
       const { positionBp, rowIndex, length } = events
       // Resolved once per block, not per inverted row: every row of a block
       // spans the same reference extent.
-      let span: PxSpan | undefined
+      let span: ReturnType<typeof spanRect> | undefined
       for (let e = from; e < to; e++) {
         const row = rowIndex[e]!
         if (row >= firstRow && row < endRow) {
-          span ??= bpSpanPx(bpToPx, positionBp[e]!, positionBp[e]! + length[e]!)
+          span ??= spanRect(bpToPx, positionBp[e]!, positionBp[e]! + length[e]!)
           markers.push({
-            xLeft: span.xLeft,
+            xLeft: span.left,
             width: span.width,
             rowTop: offset + rowHeight * row,
             h,

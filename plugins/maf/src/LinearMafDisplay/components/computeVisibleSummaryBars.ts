@@ -1,8 +1,6 @@
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
+
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
 import type {
@@ -79,7 +77,7 @@ export function computeVisibleSummaryBars(
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         // >=1px so a block narrower than a pixel still reads as present
-        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end, 1)
+        const { left: xLeft, width } = spanRect(bpToPx, r.start, r.end, 1)
         bars.push({
           x: xLeft,
           width,

@@ -6,7 +6,6 @@
  */
 
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
-import { spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -233,34 +232,6 @@ export function makeCellPxRange(bpToX: BpToPx, xLo: number, xHi: number) {
 
 export type CellPxRange = ReturnType<typeof makeCellPxRange>
 
-/** A genomic interval's screen-px extent. */
-export interface PxSpan {
-  xLeft: number
-  width: number
-}
-
-/**
- * Screen-px extent of the genomic interval `[startBp, endBp)`, widened to
- * `minWidth` so a sub-pixel interval still reads. The single place the
- * reversed-region case is handled: `bpToPx` counts down from the region end
- * there, so the interval's start maps to its *right* edge and the widening has
- * to grow away from it — hence `spanLeft`, whose JSDoc owns that rule. Widening
- * off `Math.min` anchors the interval's *end* when reversed and slides the mark
- * by up to `minWidth`, invisibly on every forward region; the summary bars, the
- * CDS strips, the source-chromosome fills and the codon band each had that.
- */
-export function bpSpanPx(
-  bpToPx: BpToPx,
-  startBp: number,
-  endBp: number,
-  minWidth = 0,
-): PxSpan {
-  const xa = bpToPx(startBp)
-  const xb = bpToPx(endBp)
-  const width = Math.max(minWidth, Math.abs(xb - xa))
-  return { xLeft: spanLeft(xa, xb, width), width }
-}
-
 // NOTE: an `eachVisibleRow(params)` generator yielding one `{block, row, rowTop,
 // h, bpToPx}` per aligned row reads much better than the region -> block -> row
 // loop the four per-row overlays each spell out, and was tried. It is 4.7x
@@ -268,5 +239,5 @@ export function bpSpanPx(
 // 26ms inlined vs 120ms), because that is ~1.2M generator steps and ~1.2M
 // short-lived objects per overlay per frame. `eachVisibleRegion` above is fine
 // at the same job because it yields once per *region*, a handful per frame.
-// Keep the loops inline; share the arithmetic (`rowBandGeometry`, `bpSpanPx`)
+// Keep the loops inline; share the arithmetic (`rowBandGeometry`, `spanRect`)
 // instead, which costs one call per emitted marker rather than per row.

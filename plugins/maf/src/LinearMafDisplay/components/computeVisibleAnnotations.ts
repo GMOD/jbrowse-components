@@ -1,9 +1,7 @@
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
+
 import { frameColorIndex } from '../../LinearMafRenderer/util.ts'
-import {
-  bpSpanPx,
-  eachVisibleRegion,
-  rowViewport,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
 import type {
@@ -95,7 +93,7 @@ export function computeVisibleAnnotations(
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         // >=1px so a single-base CDS segment still reads
-        const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end, 1)
+        const { left: xLeft, width } = spanRect(bpToPx, r.start, r.end, 1)
         markers.push({
           xLeft,
           width,
