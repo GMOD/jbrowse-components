@@ -11,7 +11,7 @@ import { hasVisibleText, isUTR } from '../util.ts'
 import {
   TRANSL_EXCEPT_HIGHLIGHT,
   boxColor,
-  packClassedColor,
+  packColor,
   strokeColor,
 } from './glyphColors.ts'
 
@@ -77,39 +77,32 @@ export function emitIntronLines(
   // direction drives chevron rendering; 0 means draw a plain connecting line
   const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
 
+  const pushLine = (lineStart: number, lineEnd: number) => {
+    lines.push({
+      start: lineStart,
+      end: lineEnd,
+      y: lineY,
+      height: lineHeight,
+      ...stroke,
+      direction,
+      flatbushIdx,
+      labelRowsAbove,
+    })
+  }
+
   let prevEnd = start
   for (const child of transcript.children) {
     const childStart = child.feature.get('start')
     const childEnd = child.feature.get('end')
     if (childStart > prevEnd) {
-      lines.push({
-        start: prevEnd,
-        end: childStart,
-        y: lineY,
-        height: lineHeight,
-        color: stroke.color,
-        colorClass: stroke.colorClass,
-        direction,
-        flatbushIdx,
-        labelRowsAbove,
-      })
+      pushLine(prevEnd, childStart)
     }
     if (childEnd > prevEnd) {
       prevEnd = childEnd
     }
   }
   if (prevEnd < end) {
-    lines.push({
-      start: prevEnd,
-      end,
-      y: lineY,
-      height: lineHeight,
-      color: stroke.color,
-      colorClass: stroke.colorClass,
-      direction,
-      flatbushIdx,
-      labelRowsAbove,
-    })
+    pushLine(prevEnd, end)
   }
 }
 
@@ -147,6 +140,7 @@ export function emitCodonRects(
   // stripe phase continuous across exon boundaries and paints both halves of a
   // codon that straddles a boundary the same color.
   for (const aa of aminoAcids) {
+    const odd = aa.proteinIndex % 2 === 1
     rects.push({
       start: aa.startBp,
       end: aa.endBp,
@@ -154,15 +148,12 @@ export function emitCodonRects(
       height,
       color: aa.isTranslExcept
         ? TRANSL_EXCEPT_HIGHLIGHT
-        : aa.proteinIndex % 2 === 1
+        : odd
           ? color2
           : color1,
-      colorClass: aa.isTranslExcept
-        ? LITERAL
-        : aa.proteinIndex % 2 === 1
-          ? class2
-          : class1,
+      colorClass: aa.isTranslExcept ? LITERAL : odd ? class2 : class1,
       strand,
+
       flatbushIdx,
       labelRowsAbove,
     })
@@ -207,14 +198,16 @@ export function pushBoxRect(
   } = args
   const { rects } = collector
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
-  const box = colorOverride === undefined ? boxColor(feature, ctx) : undefined
+  const fill: PackedColor =
+    colorOverride === undefined
+      ? packColor(boxColor(feature, ctx))
+      : { color: colorOverride, colorClass: LITERAL }
   rects.push({
     start: feature.get('start'),
     end: feature.get('end'),
     y,
     height,
-    color: box === undefined ? colorOverride! : packClassedColor(box.color),
-    colorClass: box?.colorClass ?? LITERAL,
+    ...fill,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,
     labelRowsAbove,

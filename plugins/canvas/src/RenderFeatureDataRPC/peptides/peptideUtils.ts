@@ -90,24 +90,17 @@ async function fetchCodingSequenceBuffer(
       }),
     })),
   )
-  const parts: { start: number; seq: string }[] = []
+  const pieces: string[] = []
+  let cursor = bufferStart
   for (const { start, seq } of fetched) {
-    if (seq !== undefined) {
-      parts.push({ start, seq })
+    if (seq === undefined) {
+      return undefined
     }
+    pieces.push('N'.repeat(Math.max(0, start - cursor)), seq)
+    cursor = Math.max(cursor, start + seq.length)
   }
-  let buffer: string | undefined
-  if (parts.length === ranges.length) {
-    const pieces: string[] = []
-    let cursor = bufferStart
-    for (const { start, seq } of parts) {
-      pieces.push('N'.repeat(Math.max(0, start - cursor)), seq)
-      cursor = Math.max(cursor, start + seq.length)
-    }
-    pieces.push('N'.repeat(Math.max(0, bufferEnd - cursor)))
-    buffer = pieces.join('')
-  }
-  return buffer
+  pieces.push('N'.repeat(Math.max(0, bufferEnd - cursor)))
+  return pieces.join('')
 }
 
 async function fetchSequence(

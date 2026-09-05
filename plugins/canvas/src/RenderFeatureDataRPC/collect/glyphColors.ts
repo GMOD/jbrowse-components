@@ -5,6 +5,7 @@ import { getFeatureName } from '../labelUtils.ts'
 import { THEME_DERIVED_COLOR, readConfigValueSafe } from '../renderConfig.ts'
 import { getBoxColor, getStrokeColor } from '../util.ts'
 
+import type { ClassedColor } from '../util.ts'
 import type { RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -111,12 +112,9 @@ export function boxColor(feature: Feature, ctx: RenderContext) {
  * overwrites before anything draws from it.
  */
 export function strokeColor(feature: Feature, ctx: RenderContext): PackedColor {
-  const { color, colorClass } = getStrokeColor({
-    feature,
-    config: ctx.config,
-    jexl: ctx.jexl,
-  })
-  return { color: packClassedColor(color), colorClass }
+  return packColor(
+    getStrokeColor({ feature, config: ctx.config, jexl: ctx.jexl }),
+  )
 }
 
 /** A primitive's color as it is packed into a lane, beside its theme class. */
@@ -125,8 +123,11 @@ export interface PackedColor {
   colorClass: number
 }
 
-export function packClassedColor(color: string | undefined) {
-  return color === undefined ? 0 : colorToUint32(color)
+export function packColor({ color, colorClass }: ClassedColor): PackedColor {
+  return {
+    color: color === undefined ? 0 : colorToUint32(color),
+    colorClass,
+  }
 }
 
 // Hover tooltip = the display's `mouseover` config slot evaluated against the

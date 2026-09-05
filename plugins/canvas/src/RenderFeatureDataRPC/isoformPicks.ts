@@ -29,21 +29,30 @@ function tagRule(tag: string) {
   return tag.replaceAll('_', ' ')
 }
 
-export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
-  const byTag: Record<string, number> = {}
-  let byLength = 0
-  for (const { isoformsCollapsed, canonicalTag } of layouts) {
-    if (!isoformsCollapsed) {
-      continue
-    }
+// Count each pick under the rule that made it, into `picks`.
+function tallyPicks(
+  picks: Pick<IsoformPicks, 'byTag' | 'byLength'>,
+  picked: Iterable<{ canonicalTag?: string }>,
+) {
+  for (const { canonicalTag } of picked) {
     if (canonicalTag === undefined) {
-      byLength++
+      picks.byLength++
     } else {
       const rule = tagRule(canonicalTag)
-      byTag[rule] = (byTag[rule] ?? 0) + 1
+      picks.byTag[rule] = (picks.byTag[rule] ?? 0) + 1
     }
   }
-  return { byTag, byLength, byCap: 0 }
+  return picks
+}
+
+export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
+  return {
+    ...tallyPicks(
+      { byTag: {}, byLength: 0 },
+      layouts.filter(layout => layout.isoformsCollapsed),
+    ),
+    byCap: 0,
+  }
 }
 
 // The worker's picks plus the genes the main-thread trim took isoforms off:
@@ -61,17 +70,13 @@ export function addTrimmedIsoformPicks(
   if (trimmed.length === 0) {
     return picks
   }
-  const byTag = { ...picks.byTag }
-  let byLength = picks.byLength
-  for (const { canonicalTag } of trimmed) {
-    if (canonicalTag === undefined) {
-      byLength++
-    } else {
-      const rule = tagRule(canonicalTag)
-      byTag[rule] = (byTag[rule] ?? 0) + 1
-    }
+  return {
+    ...tallyPicks(
+      { byTag: { ...picks.byTag }, byLength: picks.byLength },
+      trimmed,
+    ),
+    byCap: picks.byCap + trimmed.length,
   }
-  return { byTag, byLength, byCap: picks.byCap + trimmed.length }
 }
 
 // One summary over every loaded region, since the chip speaks for the whole

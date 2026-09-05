@@ -3,64 +3,40 @@ import { ROOT_CHILD_ORDINAL } from './rpcTypes.ts'
 
 import type { PackedPrimitives } from './rpcTypes.ts'
 
-export interface RectData {
-  // `below` label rows above this primitive inside its gene; the main thread
-  // spends them at the display mode's label font size (see GlyphPlacement)
+// What every emitted primitive carries besides its geometry: the hit-test entry
+// it belongs to, its packed color, and the two main-thread inputs — the `below`
+// label rows above it (spent at the display mode's label font size, see
+// GlyphPlacement) and the root child it belongs to (stamped by
+// `emitSubfeaturesGlyph`; absent on a feature that stacks nothing, which reads
+// as `ROOT_CHILD_ORDINAL`). `colorClass` is `LITERAL` when `color` is the
+// color, else the theme class the main-thread encode resolves (colorClasses.ts).
+interface PrimitiveBase {
   labelRowsAbove: number
-  // Which of the root feature's direct children this belongs to, stamped by
-  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
-  // primitive of a feature that stacks nothing, which reads as
-  // `ROOT_CHILD_ORDINAL`.
   childOrdinal?: number
-  // `LITERAL` when `color` above is the color; otherwise the theme class the
-  // main-thread encode resolves it from (see colorClasses.ts)
   colorClass: number
-  start: number
-  end: number
-  y: number
-  height: number
   color: number
-  strand: number
+  y: number
   flatbushIdx: number
 }
 
-export interface LineData {
-  // `below` label rows above this primitive inside its gene; the main thread
-  // spends them at the display mode's label font size (see GlyphPlacement)
-  labelRowsAbove: number
-  // Which of the root feature's direct children this belongs to, stamped by
-  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
-  // primitive of a feature that stacks nothing, which reads as
-  // `ROOT_CHILD_ORDINAL`.
-  childOrdinal?: number
-  // `LITERAL` when `color` above is the color; otherwise the theme class the
-  // main-thread encode resolves it from (see colorClasses.ts)
-  colorClass: number
+export interface RectData extends PrimitiveBase {
   start: number
   end: number
-  y: number
+  height: number
+  strand: number
+}
+
+export interface LineData extends PrimitiveBase {
+  start: number
+  end: number
   // Height of the box this intron line rides on, so the renderer can snap the
   // line onto the box's drawn center row (see snapBoxCenterY).
   height: number
-  color: number
   direction: number
-  flatbushIdx: number
 }
 
-export interface ArrowData {
-  // `below` label rows above this primitive inside its gene; the main thread
-  // spends them at the display mode's label font size (see GlyphPlacement)
-  labelRowsAbove: number
-  // Which of the root feature's direct children this belongs to, stamped by
-  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
-  // primitive of a feature that stacks nothing, which reads as
-  // `ROOT_CHILD_ORDINAL`.
-  childOrdinal?: number
-  // `LITERAL` when `color` above is the color; otherwise the theme class the
-  // main-thread encode resolves it from (see colorClasses.ts)
-  colorClass: number
+export interface ArrowData extends PrimitiveBase {
   x: number
-  y: number
   // Height of the box this arrow sits on, so the renderer can snap it onto the
   // box's drawn center row (see snapBoxCenterY).
   height: number
@@ -69,8 +45,6 @@ export interface ArrowData {
   // worker can't make that call itself since it never sees bpPerPx.
   widthBp: number
   direction: number
-  color: number
-  flatbushIdx: number
 }
 
 // Whether a [start,end] span is in the visible window. Half-open for a real

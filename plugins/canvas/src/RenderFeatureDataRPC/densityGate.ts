@@ -66,12 +66,14 @@ export function densityTooLargeResult(
   const featureCount = Math.round(
     featureDensityPerBp * (region.end - region.start),
   )
-  return Number.isFinite(featureCount) &&
-    overDensityBudget(
-      featuresPerPx(featureCount, region, bpPerPx),
-      maxFeatureDensity,
-    )
-    ? tooManyFeaturesResult(featureCount, bytes)
+  return Number.isFinite(featureCount)
+    ? exactDensityTooLargeResult(
+        featureCount,
+        region,
+        bpPerPx,
+        maxFeatureDensity,
+        bytes,
+      )
     : undefined
 }
 
