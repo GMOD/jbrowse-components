@@ -1,22 +1,15 @@
 import type { FitStage } from './fitLadder.ts'
 
-// What the fit ladder took away from the labels the settings asked for, and
-// how far it squeezed the boxes. `names`/`descriptions` are relative to what was
-// RESERVED — a rung dropping descriptions nobody turned on drops nothing — so a
-// track outside fit mode, or one that fits at `full`, reads as no drops at all.
+// `names`/`descriptions` are relative to what was reserved, so a rung
+// dropping descriptions nobody turned on drops nothing.
 export interface FitDrops {
   names: 'none' | 'some' | 'all'
   descriptions: boolean
-  // the reserved `below` subfeature-label rows are dropped (the `bare` rung)
   subfeatureLabels: boolean
-  // every label kind the settings reserved is gone
   everyLabel: boolean
-  // the squeeze as a whole percentage under 100, or undefined when not squeezing
   squeezePct: number | undefined
 }
 
-// The stage says what the kept rung reserved; the two settings say what was
-// asked for, and a drop is the difference.
 export function fitDrops(
   stage: Pick<
     FitStage,
@@ -24,12 +17,9 @@ export function fitDrops(
   >,
   showLabels: boolean,
   showDescriptions: boolean,
-  // the whitespace factor the `decimated` rung committed at. Factor 0 drops no
-  // name at all — `keepFeatureLabel` asks for `room >= width * 0` and no
-  // overhang room is negative — and the rung reaches 0 legitimately, because
-  // the unseeded pack can fit where the seeded `labels` pack did not (see
-  // `solveLabelRoomFactor`). Any factor above 0 means fits(0) failed, so at
-  // least one name went.
+  // Factor 0 drops no name and the rung reaches it legitimately, since the
+  // unseeded pack can fit where the seeded `labels` pack did not; any factor
+  // above 0 means at least one name went.
   decimatedFactor: number | undefined,
 ): FitDrops {
   const names = !showLabels
@@ -62,10 +52,7 @@ function hiddenKinds({ names, descriptions, subfeatureLabels }: FitDrops) {
     .join(' + ')
 }
 
-// The track-sizing control's account of the ladder, or undefined when it gave
-// nothing up. Names the lever as well as the loss: the user chose fit mode (or
-// inherited it), and "hidden" alone reads as the track having no labels. No
-// " — " inside: that is the tooltip's own segment separator.
+// No " — " inside: that is the tooltip's own segment separator.
 export function fitLadderNote(drops: FitDrops) {
   const hidden = hiddenKinds(drops)
   const parts = [
@@ -79,11 +66,8 @@ export function fitLadderNote(drops: FitDrops) {
     : undefined
 }
 
-// The note on the selected "Labels" radio: the row names a setting the ladder
-// is not honouring. "hidden to fit" when nothing the row reserved survives,
-// else which part went — same shape as the collapsed-mode note beside it.
 // Subfeature labels are their own radio, so their drop is excluded here and
-// surfaced only in the track-sizing note above.
+// surfaced only in the track-sizing note.
 export function labelsFitHint(drops: FitDrops) {
   if (drops.everyLabel) {
     return 'hidden to fit'

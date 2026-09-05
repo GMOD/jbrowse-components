@@ -2,24 +2,13 @@ import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-// The whitespace factor `keepFeatureLabel` demands is searched in [0, MAX],
-// where 0 keeps every name and MAX keeps only the most isolated (plus pinned).
-// Past ~8x almost nothing but pinned survives, so that caps the search; ITERS
-// bisections land the stack within one label row of the track height.
+// Past ~8x almost nothing but pinned survives, which caps the search.
 const FIT_MAX_ROOM_FACTOR = 8
 const FIT_SOLVE_ITERS = 8
 
-/**
- * The smallest x in `(lo, hi]` with `fits(x)`, by bisection.
- *
- * Two preconditions, and they are why this is a function rather than four lines
- * inline: `fits` must be monotone, and the caller must have ALREADY measured
- * `fits(hi) === true` and `fits(lo) === false`. Given those, the loop only
- * narrows a bracket whose ends are both known, so returning `hi` returns a value
- * something measured — where a loop handed an unmeasured `hi` returns a bound
- * that may not fit at all. That is the bug that once hid every label on a track
- * a fitting decimation existed for, so don't simplify the two probes away.
- */
+// `fits` must be monotone and the caller must already have measured
+// `fits(hi)` true and `fits(lo)` false, so the returned `hi` is a value
+// something measured; an unmeasured `hi` once hid every label on a track.
 export function bisectSmallestFitting(
   fits: (x: number) => boolean,
   lo: number,
@@ -37,17 +26,8 @@ export function bisectSmallestFitting(
   return hi
 }
 
-/**
- * The largest integer x in `[lo, hi]` with `fits(x)`, by bisection.
- *
- * The integer twin of `bisectSmallestFitting`, and it owes the same two
- * preconditions for the same reason: `fits` must be monotone (fewer isoforms
- * cannot make a stack taller) and the caller must have ALREADY measured
- * `fits(lo) === true` and `fits(hi) === false`, so the loop only ever narrows a
- * bracket whose ends are both known and `lo` is a value something measured.
- *
- * No iteration count: the bracket is integers, so it closes on its own.
- */
+// Same two preconditions as `bisectSmallestFitting`: monotone `fits`, with
+// `fits(lo)` true and `fits(hi)` false already measured.
 export function bisectLargestFitting(
   fits: (x: number) => boolean,
   lo: number,
@@ -64,24 +44,9 @@ export function bisectLargestFitting(
   return lo
 }
 
-/**
- * The most isoforms per gene whose names-kept stack fits `trackHeight`, or
- * undefined when trimming buys nothing — either no gene on screen has more than
- * one, or the whole stack already fits.
- *
- * `floorWhenNothingFits` is the answer when even one isoform per gene overflows,
- * and it belongs to the caller because the two ladders want opposite things
- * there. Fit passes 1: "names before isoforms" means every isoform goes before
- * any name does, so the `decimated` and `bodies` rungs below run at that 1
- * rather than back at the full stack. Fixed passes undefined, because it has no
- * rung below — trimming to 1 there costs the reader every transcript AND still
- * scrolls, so it draws the stack whole and scrolls, which is its contract.
- *
- * Takes the probe rather than building one, like `solveLabelRoomFactor`: its
- * preparation depends on the data and the layout inputs but not on the track
- * height, so a caller re-solving as the height moves holds one probe across
- * every solve.
- */
+// `floorWhenNothingFits` belongs to the caller: fit passes 1 so the rungs
+// below run at one isoform per gene, fixed passes undefined because trimming
+// to 1 there still scrolls.
 export function solveIsoformCount(
   heightAt: (maxIsoforms: number) => number,
   trackHeight: number,
@@ -101,24 +66,9 @@ export function solveIsoformCount(
   return bisectLargestFitting(fits, 1, maxIsoformsOnScreen)
 }
 
-/**
- * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
- * undefined when even the most aggressive decimation overflows. Smallest = most
- * names kept, and the kept set shrinks monotonically as the factor rises, so the
- * bisection is valid.
- *
- * Both ends are probed rather than assumed, which is what makes them the
- * measurements `bisectSmallestFitting` requires. Factor 0 in particular is not
- * known to overflow: the `labels` rung that sent the ladder here is packed
- * through the incremental memo, whose prior-row seeding can make it taller than
- * an unseeded pack of the same label set. The cap is the mirror image — probing
- * it is what lets the loop return `hi` directly, and skips the bisection
- * entirely when nothing fits, which is the common case here.
- *
- * Takes the probe rather than building one: its preparation depends on the data
- * and the layout inputs but NOT on the track height, so a caller re-solving as
- * the height moves holds one probe across every solve.
- */
+// Both ends are probed rather than assumed: factor 0 is not known to
+// overflow, since the `labels` rung's seeded pack can be taller than an
+// unseeded pack of the same label set.
 export function solveLabelRoomFactor(
   heightAt: (labelRoomFactor: number) => number,
   trackHeight: number,
@@ -134,72 +84,42 @@ export function solveLabelRoomFactor(
   return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
 }
 
-// The fit ladder's reservation levels, least to most reduced: `full` reserves
-// names + descriptions, `labels` drops descriptions, `isoforms` trims each
-// gene's transcript stack to the count that fits WITH its names, `decimated`
-// keeps names only on features wide enough to host them (plus
-// pinned/highlighted), `bodies` drops all names and packs boxes edge-to-edge,
-// `bare` also drops the `below` subfeature-label rows.
-//
 // `isoforms` sits above `decimated` because the policy is names before
-// isoforms: a gene drawn with 5 of its 10 transcripts and its name on it is the
-// picture the reader can use, and one drawn with all 10 and no name is not.
-//
-// `bare` sits below `bodies` because subfeature labels are a config choice, not
-// a fit concession — they survive every rung that has another reduction to
-// offer, and are given up only where the alternative is squeezing bodies under
-// rows whose text the squeeze would hide anyway. The rung exists only on a
-// display whose settings reserve those rows.
+// isoforms. `bare` sits below `bodies` because subfeature labels are a config
+// choice, given up only where the alternative squeezes bodies under rows the
+// squeeze would hide anyway.
 type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies' | 'bare'
 
-// The label room a rung's pack was called with. The rung carries it and the
-// stage reports it, so a renderer never re-derives from the level what the
-// packer reserved — a rung that hands back another rung's stack by reference
-// declares that stack's reservation.
+// A rung that hands back another rung's stack by reference declares that
+// stack's reservation, so a renderer never re-derives it from the level.
 export interface LabelReservation {
   showLabels: boolean
   showDescriptions: boolean
   dropBelowLabelRows: boolean
 }
 
-// One rung. Lazy so a rung tighter than the one that fits is never laid out — in
-// the common non-overflowing case only `full` is materialized.
+// Lazy, so a rung tighter than the one that fits is never laid out.
 export interface FitRung {
   level: FitLevel
   reserved: LabelReservation
   layout: () => Map<number, FeatureDataResult>
-  // isoforms per gene this rung packs at, undefined for every one the worker
-  // sent. Carried on the rung rather than derived from the level, because the
-  // two rungs BELOW `isoforms` inherit the count it failed at (see fitStage).
-  // A thunk like `layout`, and for the same reason: the count is a solve that
-  // packs, and a stack that fits at `full` never asks for it.
+  // Carried on the rung rather than derived from the level, because the two
+  // rungs below `isoforms` inherit the count it failed at.
   maxIsoforms?: () => number | undefined
 }
 
-// The resolved outcome, bundled so its parts can't disagree. `scale` is
-// two-directional: > 1 grows a stack that fits with room to spare (capped at
-// `maxScale`), < 1 squeezes the last rung (floored at `minScale`), 1 when it
-// lands exactly. `contentHeight` is the kept rung's unscaled `maxBottom`, so a
-// caller derives the fitted height as `contentHeight * scale` without re-walking
-// the scaled map. The reservation is the kept rung's.
+// `contentHeight` is the kept rung's unscaled `maxBottom`, so the fitted
+// height is `contentHeight * scale`.
 export interface FitStage extends LabelReservation {
   level: FitLevel
   layout: Map<number, FeatureDataResult>
   scale: number
   contentHeight: number
-  // isoforms per gene the kept rung packs at, undefined when nothing was
-  // trimmed. The chip, the tooltip and `isoformPicks.byCap` read the solve from
-  // here rather than from a worker flag.
   maxIsoforms: number | undefined
 }
 
-// Uniform vertical scale making a `contentHeight` stack fill `trackHeight`,
-// clamped to [minScale, maxScale].
-//
-// An empty stack answers 1: it has nothing to fill the track with, and the
-// division would hand back Infinity and so `maxScale` — a stack of nothing,
-// "grown". The guard lives here, next to the division, so a second caller can't
-// forget it.
+// An empty stack answers 1: the division would hand back Infinity and so
+// `maxScale`, a stack of nothing grown.
 export function fitScaleToFill(
   contentHeight: number,
   trackHeight: number,
@@ -211,38 +131,20 @@ export function fitScaleToFill(
     : 1
 }
 
-// Smallest feature-body height (px) a squeeze may leave. Once bodies would pack
-// tighter than this the squeeze stops and the surplus scrolls, rather than
-// shrinking boxes to invisibility.
-//
-// Here rather than in the display that reads it, because it is the promise
-// `squeezeFloorScale` below makes and every caller of that owes the same one — a
-// band fitting a stack into 40px is squeezing the same boxes a track squeezing
-// into 400px is.
 export const MIN_FIT_BOX_PX = 2
 
-// Floor for the squeeze, as a scale in (0, 1]: the deepest reduction leaving the
-// shortest body `minBoxPx` tall. Below that the surplus scrolls rather than
-// shrinking boxes to invisibility.
-//
-// Both degenerate inputs answer 1 — "no squeeze available" — through the same
-// comparison rather than separate guards: a stack already at or under the
-// minimum has nothing left to give, and one with no body at all has nothing to
-// measure. That is what lets the caller pass a raw `minDrawnBoxHeight` straight
-// in, with no zero check and no `Math.min(1, …)` of its own.
+// Both degenerate inputs answer 1 through the same comparison, so a caller
+// passes a raw `minDrawnBoxHeight` with no zero check.
 export function squeezeFloorScale(shortestBodyPx: number, minBoxPx: number) {
   return shortestBodyPx > minBoxPx ? minBoxPx / shortestBodyPx : 1
 }
 
-// Float-epsilon allowance, not a layout tolerance — well under one row.
+// Float-epsilon allowance, not a layout tolerance.
 const FIT_SNAP_EPSILON_PX = 1
 
-// The content height fit mode reports, snapping away a float-epsilon overflow.
-// Scaling a rung by `height / contentHeight` should land exactly on
-// `trackHeight`, but the multiply-then-measure round trip lands a hair above it
-// in ~5% of cases — enough to mark the track as overflowing and open a sub-pixel
-// scrollbar. A larger overflow is the min-box floor stopping a squeeze short of
-// fitting: real, and kept so it scrolls.
+// The multiply-then-measure round trip lands a hair above `trackHeight` in
+// ~5% of cases, enough to open a sub-pixel scrollbar; a larger overflow is
+// the min-box floor and stays.
 export function snapFittedContentHeight(
   rawContentHeight: number,
   trackHeight: number,
@@ -253,20 +155,12 @@ export function snapFittedContentHeight(
     : rawContentHeight
 }
 
-// Measures a rung's stack height, reusing the previous answer when handed the
-// very same map object again. That happens constantly rather than rarely: a rung
-// whose reduction is already in effect returns the PREVIOUS rung's map by
-// reference (names off makes `labels`, `decimated` and `bodies` literally one
-// stack), so without this the ladder walks the same map up to four times.
-//
-// The reuse is sound for the narrowest possible reason — same object, therefore
-// same height — and specifically NOT because a rung reported its height. That
-// distinction is why this takes layouts and not numbers: the `decimated` rung
-// arrives from a bisection assuming stack height is monotone in its factor, and
-// greedy first-fit plus pitchY quantization do not guarantee it. Measuring every
-// kept rung off the stack it is about to return makes a non-monotone solve
-// self-correcting — an overflowing `decimated` stack simply descends to
-// `bodies`.
+// Same object, therefore same height: a rung whose reduction is already in
+// effect returns the previous rung's map by reference, so the ladder would
+// otherwise walk one map four times. Takes layouts rather than reported
+// heights, because the `decimated` bisection assumes a monotonicity greedy
+// first-fit does not guarantee; measuring the stack a rung returns makes an
+// overflowing solve descend to `bodies`.
 function rungHeightMeasurer(measureIds?: ReadonlySet<string>) {
   let lastLayout: Map<number, FeatureDataResult> | undefined
   let lastHeight = 0
@@ -279,21 +173,14 @@ function rungHeightMeasurer(measureIds?: ReadonlySet<string>) {
   }
 }
 
-// Keep the least-reduced rung whose unscaled stack fits `trackHeight`, then
-// scale it to fill. A fitting rung grows (capped at `maxScale`) so bodies fill
-// the track instead of leaving whitespace; a rung that overflows descends; the
-// last rung has no next, so it is squeezed (floored at `minScale`) and scrolls
-// if even that overflows. Rungs are laid out lazily in order.
 export function resolveFitLadder(
-  // Non-empty by construction — the walk always keeps the last rung. The tuple
-  // type rejects `[]` at compile time rather than crashing on `rungs[0]`.
   rungs: [FitRung, ...FitRung[]],
   trackHeight: number,
   minScale: number,
   maxScale: number,
-  // Features every rung's height is measured over: fit mode passes the
-  // on-screen ones, so a stack the fetch buffer made tall off screen neither
-  // strips labels nor squeezes the boxes the user is looking at.
+  // Fit mode passes the on-screen ids, so a stack the fetch buffer made tall
+  // off screen neither strips labels nor squeezes the boxes the user is
+  // looking at.
   measureIds?: ReadonlySet<string>,
 ): FitStage {
   const heightOf = rungHeightMeasurer(measureIds)
@@ -312,7 +199,6 @@ export function resolveFitLadder(
       }
     }
   }
-  // Unreachable: the tuple type guarantees a rung and the last one always
-  // returns. Present so the function is total without a non-null assertion.
+  // Unreachable: the last rung always returns.
   throw new Error('resolveFitLadder called with no rungs')
 }

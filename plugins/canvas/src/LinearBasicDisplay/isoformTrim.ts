@@ -7,35 +7,24 @@ import type {
   IsoformStack,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-// What one gene keeps at a given isoform count, and how far the kept parts
-// move. Shifts are SUBTRACTED from the worker's own values: a kept child rises
-// by everything dropped above it, in worker px for geometry and in whole rows
-// for `below` labels — the two units the boundary carries, each undone in the
-// unit it was counted in.
+// Shifts are subtracted from the worker's values, in worker px for geometry
+// and whole rows for `below` labels, each undone in the unit it was counted
+// in.
 export interface IsoformTrim {
   keptOrdinals: ReadonlySet<number>
   shiftPxByOrdinal: ReadonlyMap<number, number>
   shiftLabelRowsByOrdinal: ReadonlyMap<number, number>
-  // the gene's extent after the drop, in `IsoformStack`'s own units
   heightPx: number
   labelRows: number
   startBp: number
   endBp: number
-  // isoforms the gene HAS and does not draw — what the badge counts
   hidden: number
   canonicalTag?: string
 }
 
-/**
- * What one gene keeps at `maxIsoforms` isoforms.
- *
- * Best by RANK, not first by drawn order: the stack sorts by (canonical,
- * coding) while the ranking also weighs protein length, so keeping a prefix of
- * the drawn order would keep a different set than `longestCoding` keeps at
- * k = 1. Decorations — an NCBI source record, a `biological_region` — are not
- * isoforms and are always kept, which is also why the height cannot be counted
- * in rows: they take real ones.
- */
+// Best by rank, not first by drawn order, so k = 1 keeps what `longestCoding`
+// keeps; decorations are not isoforms and are always kept, which is why the
+// height cannot be counted in rows.
 export function trimIsoformStack(
   stack: IsoformStack,
   maxIsoforms: number,
@@ -86,37 +75,22 @@ export function trimIsoformStack(
   }
 }
 
-// The "+N more" / "show fewer" control one gene's name label carries.
 export interface IsoformBadge {
   hidden: number
-  // the gene is open, so the badge offers the way back rather than more
   expanded: boolean
 }
 
-/**
- * Every trim one isoform count puts in force, and every badge the picture owes
- * a reader — which are not the same set of genes.
- *
- * A gene the count leaves whole gets no `trims` entry, so a rung that trims
- * nothing does no work downstream — which is what keeps the `full` rung's
- * arrays the worker's own. `badges` is independent of that: it is a
- * presentation rule about what is drawn, so a gene the WORKER collapsed and a
- * gene the user opened are in it too (ADR-093).
- */
+// A gene the count leaves whole gets no `trims` entry, so a rung that trims
+// nothing does no work downstream; `badges` also covers genes the worker
+// collapsed or the user opened.
 export interface IsoformTrimPlan {
   trims: ReadonlyMap<string, IsoformTrim>
   badges: ReadonlyMap<string, IsoformBadge>
 }
 
-/**
- * Narrowest drawn extent a gene can carry the badge on. Below it the badge is
- * an aside on a name pinned to a glyph a few pixels wide, repeated once per gene
- * — which is the zoomed-out crowd `longestCoding` exists to keep readable.
- *
- * A presentation gate, so it is priced and drawn off the SAME decision: the
- * plan applies it, `decideLabelReservations` reserves the width the plan
- * reports, and `applyIsoformTrim` writes what the plan reports.
- */
+// A presentation gate priced and drawn off the same decision: the plan
+// applies it, `decideLabelReservations` reserves what it reports,
+// `applyIsoformTrim` writes what it reports.
 export const MIN_ISOFORM_BADGE_GENE_PX = 100
 
 export function planIsoformTrims(
@@ -128,10 +102,8 @@ export function planIsoformTrims(
   const trims = new Map<string, IsoformTrim>()
   const badges = new Map<string, IsoformBadge>()
   for (const [featureId, stack] of stacks) {
-    // The tighter of the ladder's count and the worker's own collapse. The
-    // second bites geometrically only on a gene the user EXPANDED — every other
-    // gene under `longestCoding` already arrives with one child — but it is
-    // what makes both of them COUNT their missing isoforms the same way.
+    // The tighter of the ladder's count and the worker's own collapse, so
+    // both count their missing isoforms the same way.
     const count = Math.min(
       maxIsoforms ?? Number.POSITIVE_INFINITY,
       stack.collapsedIsoformCount ?? Number.POSITIVE_INFINITY,
@@ -155,11 +127,9 @@ export function planIsoformTrims(
   return { trims, badges }
 }
 
-// The most isoforms any gene on screen has that a count can still take from —
-// the top of the fit ladder's bisection. A gene the worker already collapsed
-// counts what it shipped, not what it has, and an expanded gene is skipped:
-// `planIsoformTrims` trims neither, so counted they put a bracket over a stack
-// no count changes, and the solve floors to 1 over a picture it cannot shorten.
+// A worker-collapsed gene counts what it shipped and an expanded gene is
+// skipped: `planIsoformTrims` trims neither, and counted they put a bracket
+// over a stack no count changes.
 export function maxIsoformCount(
   regions: Iterable<Pick<FeatureDataResult, 'flatbushItems'>>,
   measureIds: ReadonlySet<string> | undefined,
@@ -187,9 +157,6 @@ export function maxIsoformCount(
   return max
 }
 
-// The kept elements of one typed array, in a new array of the same kind. Built
-// through the source's own constructor rather than a per-kind branch, so a
-// primitive array added later is filtered by being passed here.
 function pick<T extends { length: number; [i: number]: number }>(
   arr: T,
   kept: readonly number[],
@@ -209,16 +176,8 @@ function pick<T extends { length: number; [i: number]: number }>(
   return out
 }
 
-// Which primitives of one kind survive, given the trims in force, and whether
-// any survivor has moved — dropping none does NOT mean this kind is untouched,
-// because a kept isoform rises by everything dropped above it whatever kind
-// drew that. A single-exon isoform dropped above a multi-exon one that stays
-// leaves the region's only intron line kept, and 23px below the exons it joins.
-//
-// Three ways a region holds something no trim has a say over, answered here so
-// each caller does not repeat them: the ordinal lane is length-zero (this
-// region stacks no gene), the primitive is the root feature's own, or its owner
-// is not being trimmed.
+// Dropping none does not mean the kind is untouched: a kept isoform rises by
+// everything dropped above it, whatever kind drew that.
 function keptPrimitiveIndices(
   ordinals: Uint16Array,
   featureIndices: Uint32Array,
@@ -242,9 +201,7 @@ function keptPrimitiveIndices(
   return { kept, shifted }
 }
 
-// Filter and shift one primitive kind's parallel arrays. Every array of the
-// kind goes through the same kept-index list, so they cannot come out of step;
-// the Y and label-row lanes are rewritten into the NEW arrays rather than in
+// The Y and label-row lanes are rewritten into new arrays rather than in
 // place, because `cloneMutableFields` shares the rest with the worker's own.
 function trimPrimitiveKind(
   kind: 'rect' | 'line' | 'arrow',
@@ -298,14 +255,6 @@ function trimPrimitiveKind(
   }
 }
 
-/**
- * The trim's verdict on one isoform of one gene: `'untouched'` where no trim
- * applies (no plan entry for the gene, or the gene's own root record), the
- * px/label-row shift that closes the gaps above a kept isoform, or undefined
- * where the trim dropped it. The primitive arrays, the subfeature hit boxes,
- * the peptide overlay and the floating labels all rule on the same three
- * outcomes, so they all ask here.
- */
 function trimShift(
   trims: ReadonlyMap<string, IsoformTrim>,
   geneId: string,
@@ -324,20 +273,10 @@ function trimShift(
     : undefined
 }
 
-/**
- * Drop the isoforms one plan leaves out of ONE region's cloned arrays, and
- * close the gaps the drop leaves.
- *
- * Runs BEFORE `applyHeightScale`, so every shift is spent in the unit the
- * worker counted it in: px for geometry, whole rows for `below` labels, which
- * only become px once the display mode's label font is applied. After the
- * scale the two are mixed into one number and the shift could not be undone.
- *
- * Mutates the clone `cloneMutableFields` produced, and returns without touching
- * a byte when the plan is empty. A plan carrying badges and no trims — every
- * gene on screen collapsed by the WORKER — reaches only the floating labels,
- * which is why the geometry below is gated on `trims` rather than on the plan.
- */
+// Before `applyHeightScale`, so each shift is spent in the unit the worker
+// counted it in; after the scale px and label rows are one number and the
+// shift cannot be undone. Geometry is gated on `trims`, not the plan: a plan
+// carrying only badges reaches only the floating labels.
 export function applyIsoformTrim(
   data: FeatureDataResult,
   plan: IsoformTrimPlan,
@@ -409,17 +348,16 @@ export function applyIsoformTrim(
       continue
     }
     const trim = trims.get(geneId)
-    // The gene's own entry. Re-anchored to what actually drew, the way
-    // `processFeatureRecord` re-anchors a `longestCoding` collapse — otherwise
-    // the name floats left of the visible glyph over empty track.
+    // Re-anchored to what drew, or the name floats left of the visible glyph
+    // over empty track.
     if (trim) {
       labelData.featureHeight = trim.heightPx
       labelData.labelRows = trim.labelRows
       labelData.minX = trim.startBp
       labelData.maxX = trim.endBp
     }
-    // Off `badges`, not off `trim`: a worker-collapsed gene has no trim entry
-    // (nothing was dropped here) and still shows fewer isoforms than it has.
+    // Off `badges`, not `trim`: a worker-collapsed gene has no trim entry and
+    // still shows fewer isoforms than it has.
     const badge = badges.get(geneId)
     if (badge && labelData.nameLabel) {
       labelData.moreIsoformsLabel = createMoreIsoformsLabel(

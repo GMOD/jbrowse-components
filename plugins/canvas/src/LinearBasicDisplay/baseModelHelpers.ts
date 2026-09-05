@@ -1,13 +1,3 @@
-// Pure data helpers for the LinearBasicDisplay model chain — no menus, no
-// session, nothing another display composes.
-//
-// That last part is what the file is now for. It used to also hold
-// `screenDensity` and `fetchCanvasFeatureDetails`, which are used by BOTH canvas
-// displays and by `CanvasFeatureGateMixin` — so `shared/` imported out of a
-// single display's directory, and the multi-row display reached into
-// LinearBasicDisplay for a fetch helper. Both now live in `shared/`, where a
-// thing two displays need belongs.
-
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -30,9 +20,8 @@ export function findSubfeatureById(
   return undefined
 }
 
-// First-wins index from per-region arrays. Spanning features can appear in
-// multiple regions; we keep the first occurrence so consumers (hover lookup,
-// selection, label resolution) get a single, stable item per featureId.
+// First wins: a spanning feature appears in several regions and every
+// consumer needs one stable item per id.
 export function indexById<T extends { featureId: string }>(
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
   pick: (data: FeatureDataResult) => readonly T[],

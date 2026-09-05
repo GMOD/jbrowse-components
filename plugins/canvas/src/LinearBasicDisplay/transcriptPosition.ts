@@ -1,39 +1,27 @@
 import type { TranscriptCoords } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-// Where a genomic position falls on a transcript, in the two numbers HGVS needs:
-// which transcribed base it is (or is nearest to) and how far into the flanking
-// intron it sits.
 interface ExonicPosition {
-  // 0-based count of transcribed bases before this one, in transcription order
   index: number
-  // 0 when the position is exonic; otherwise the signed intron offset, positive
-  // measuring forward from the end of exon `index` and negative measuring back
-  // from the start of exon `index`
+  // 0 when exonic; otherwise the signed intron offset, positive from the end
+  // of exon `index`, negative back from its start.
   offset: number
-  // 1-based exon this position is in, or is measured from when intronic
   exonNumber: number
   exonCount: number
 }
 
-// A located position and the HGVS coordinate naming it. One record rather than
-// two calls because the hover wants both off one walk — it names the exon and,
-// at base zoom, the c./n. coordinate of the same base — and because a coordinate
-// paired with an exon number resolved separately is a pair that can disagree.
+// One record so the exon number and the coordinate come from one walk and
+// cannot disagree.
 interface TranscriptPosition extends ExonicPosition {
-  // `c.` when the transcript codes, `n.` when it doesn't, and absent when it
-  // codes but can't be numbered; see hgvsCoordinate
   hgvs?: string
 }
 
-// One exon on the transcription axis, as an inclusive [first, last] pair.
 interface AxisExon {
   first: number
   last: number
 }
 
-// Exons in transcription order on a monotonically increasing transcription axis.
-// Negating the genomic coordinate on the - strand makes that axis 5'→3' for both
-// strands, so every walk below is written once instead of twice.
+// Negating the genomic coordinate on the - strand makes the axis 5'→3' for
+// both strands, so every walk is written once.
 function transcriptionAxis({ exons, strand }: TranscriptCoords) {
   const reverse = strand === -1
   const out: AxisExon[] = []
@@ -53,11 +41,8 @@ function toAxis(coords: TranscriptCoords, bpPos: number) {
   return coords.strand === -1 ? -bpPos : bpPos
 }
 
-// Locate an already-projected position on the transcript. Exonic positions get
-// offset 0. An intronic position is measured from the NEARER flanking exon,
-// which is what makes `c.87+1` the first base of an intron and `c.88-1` the
-// last; a tie (the middle base of an odd-length intron) goes to the 5' exon, per
-// HGVS. Undefined when the position falls outside the transcript entirely.
+// An intronic position is measured from the nearer flanking exon, a tie going
+// to the 5' exon, per HGVS.
 function locateOnAxis(axis: AxisExon[], pos: number) {
   const exonCount = axis.length
   let transcribedBefore = 0
@@ -94,14 +79,8 @@ function locateOnAxis(axis: AxisExon[], pos: number) {
   return undefined
 }
 
-// The transcribed-base indices of the first and last coding bases. On the -
-// strand the coding extent's high end is the start codon, so the two genomic
-// bounds swap roles. Undefined when the coding bounds don't land in an exon:
-// c.1 is the A of a start codon, and a start codon that isn't transcribed can't
-// have positions counted off it. Malformed annotation only.
-//
-// Takes the axis the caller already built: this walks it twice more, and
-// rebuilding it each time is what made naming one base cost three axes.
+// Undefined when the coding bounds do not land in an exon: c.1 is the A of a
+// start codon, and an untranscribed start codon cannot anchor a count.
 function codingIndexRange(
   coords: TranscriptCoords,
   axis: AxisExon[],
@@ -119,20 +98,9 @@ function offsetSuffix(offset: number) {
   return offset === 0 ? '' : offset > 0 ? `+${offset}` : `${offset}`
 }
 
-// The HGVS coordinate of a located position: `c.` numbered from the A of the
-// start codon when the transcript codes, `n.` numbered from its first
-// transcribed base when it doesn't.
-//
-// Positions before the start codon are negative (`c.-24`) and those after the
-// stop codon carry `*` (`c.*17`); intronic positions add an offset from the
-// nearer exon boundary (`c.87+1`, `c.88-1`), including in the UTRs (`c.-24+1`).
-//
-// Nothing at all for a transcript that codes but whose coding extent can't be
-// placed on it. `n.` is not the fallback: the two prefixes are a claim about
-// which kind of transcript this is, so numbering an mRNA `n.151` states that it
-// is non-coding in the exact syntax a variant is reported in — and reads as an
-// answer rather than as the absence of one. The exon readout beside it is
-// measured independently and survives.
+// Nothing for a transcript that codes but whose coding extent cannot be
+// placed: `n.` is a claim that the transcript is non-coding, in the exact
+// syntax variants are reported in.
 function hgvsCoordinate(
   coords: TranscriptCoords,
   axis: AxisExon[],
@@ -155,17 +123,8 @@ function hgvsCoordinate(
       : `c.${index - firstCoding + 1}${suffix}`
 }
 
-// Where a genomic position sits on a transcript, and what HGVS calls it.
-// Undefined when the position is outside the transcript.
-//
-// The single entry point, so the exon a readout names and the coordinate beside
-// it come from one walk of one axis — this runs on every mousemove, and the two
-// used to be separate calls that rebuilt the axis three times between them.
-//
-// This is the position half of an HGVS name. A complete variant name also needs
-// a reference accession and the change itself (`NM_004006.2:c.93+1G>T`); the
-// accession is whatever the annotation calls the transcript, which the caller
-// has.
+// The single entry point, so the exon a readout names and the coordinate
+// beside it come from one walk; this runs on every mousemove.
 export function transcriptPosition(
   coords: TranscriptCoords,
   bpPos: number,
