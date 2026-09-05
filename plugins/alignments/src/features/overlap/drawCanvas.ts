@@ -1,7 +1,9 @@
-import { normalizedRgbToCssRgba } from '@jbrowse/core/util/colorBits'
-
+import {
+  rgb255,
+  rgbaPrefix255,
+} from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { shouldDrawOverlaps } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { paintMarks } from '../mark.ts'
+import { Paint, paintMarks } from '../mark.ts'
 import { OVERLAP_MARK } from './mark.ts'
 
 import type {
@@ -41,7 +43,12 @@ export function drawOverlaps(
       region,
       { block, bpLength, fullBlockWidth },
       state,
-      alpha => normalizedRgbToCssRgba(tint, alpha),
+      {
+        rule: Paint.palette,
+        keys: undefined,
+        opaqueCss: [rgb255(tint)],
+        fadedCss: [rgbaPrefix255(tint)],
+      },
     )
   }
 }

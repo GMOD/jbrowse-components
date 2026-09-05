@@ -13,6 +13,8 @@ import {
   getReadColor,
   readColorCategory,
   rgb255,
+  rgba255,
+  rgbaPrefix255,
 } from './colorUtils.ts'
 import { makeTestPalette } from './testUtils.ts'
 
@@ -601,6 +603,30 @@ describe('framesUnpairedChainStrand', () => {
           on,
         ) === 'fwdStrand'
       expect(framesUnpairedChainStrand(scheme, on)).toBe(framed)
+    }
+  })
+})
+
+// `rgbaPrefix255` is `rgba255` split at the alpha so a painter resolving one per
+// instance converts one number instead of four. The two spellings have to agree
+// byte for byte, and nothing else makes them: the sweep covers the rounding
+// boundaries and the alphas a fade actually produces.
+describe('rgbaPrefix255 rejoins into rgba255', () => {
+  const COLORS: [number, number, number][] = [
+    [0, 0, 0],
+    [1, 1, 1],
+    [0.5, 0.5, 0.5],
+    // 0.4980... rounds to 127 and 0.502 to 128, which is where a floor instead
+    // of a round would show
+    [0.498, 0.502, 0.2],
+    [0.2, 0.6039215686274509, 0.8],
+  ]
+  const ALPHAS = [0, 0.004, 0.25, 0.4000000059604645, 0.5, 0.999, 1]
+  test.each(COLORS)('%p through every alpha', (r, g, b) => {
+    for (const alpha of ALPHAS) {
+      expect(rgbaPrefix255([r, g, b]) + alpha + ')').toBe(
+        rgba255([r, g, b], alpha),
+      )
     }
   })
 })

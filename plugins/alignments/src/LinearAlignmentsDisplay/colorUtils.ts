@@ -562,3 +562,12 @@ export function categorySwatchColor(
 }
 
 export { normalizedRgbToCssRgba as rgba255 } from '@jbrowse/core/util/colorBits'
+
+// `rgba255`'s output up to the alpha, for a painter that resolves an alpha per
+// instance: rejoined as `prefix + alpha + ')'` it is that string byte for byte,
+// and it converts one number per instance where `rgba255` converts four. Worth
+// 42 ms of a 100K-instance gap layer, which is most of what the layer costs.
+// `colorUtils.test.ts` pins the two spellings together.
+export function rgbaPrefix255(c: readonly [number, number, number]) {
+  return `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},`
+}

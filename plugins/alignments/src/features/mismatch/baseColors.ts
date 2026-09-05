@@ -1,4 +1,7 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import {
+  rgb255,
+  rgbaPrefix255,
+} from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
@@ -67,6 +70,7 @@ let tableMemo:
       showModifications: boolean
       css: string[]
       tuples: RGBColor[]
+      faded: string[]
     }
   | undefined
 
@@ -80,6 +84,7 @@ function baseTables(state: BaseColorState) {
       showModifications: state.showModifications,
       css: baseTable(state, rgb255),
       tuples: baseTable(state, c => c),
+      faded: baseTable(state, rgbaPrefix255),
     }
   }
   return tableMemo
@@ -119,6 +124,13 @@ export function buildBaseCssMap(state: BaseColorState): string[] {
 // that needed both.
 export function buildBaseTupleMap(state: BaseColorState): RGBColor[] {
   return baseTables(state).tuples
+}
+
+// The same table again as `rgba255` prefixes, for the one draw that applies a
+// per-mark alpha (`drawMismatches`). Rejoining a prefix with the alpha is what
+// keeps a faded cell to one number conversion instead of four.
+export function buildBaseFadeCssMap(state: BaseColorState): string[] {
+  return baseTables(state).faded
 }
 
 // The palette for Canvas2D SNP-coverage segment draws.

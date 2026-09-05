@@ -1,4 +1,4 @@
-import { paintMarks } from '../mark.ts'
+import { Paint, paintMarks } from '../mark.ts'
 import { qualityCssColors } from './colors.ts'
 import { PER_BASE_QUALITY_MARK } from './mark.ts'
 
@@ -23,8 +23,14 @@ export function drawPerBaseQuality(
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    // Prebuilt per score, not formatted per base: this is one cell per aligned
-    // base of every read on screen.
-    (_alpha, data, i) => qualityCssColors[data.perBaseQualScores[i]!]!,
+    {
+      rule: Paint.palette,
+      // Prebuilt per score, never formatted per base: this is one cell per
+      // aligned base of every read on screen, and the layer is opaque, so the
+      // faded table is unreachable.
+      keys: region.perBaseQualScores,
+      opaqueCss: qualityCssColors,
+      fadedCss: [],
+    },
   )
 }

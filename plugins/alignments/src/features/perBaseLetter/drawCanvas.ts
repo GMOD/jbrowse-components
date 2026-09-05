@@ -1,4 +1,4 @@
-import { paintMarks } from '../mark.ts'
+import { Paint, paintMarks } from '../mark.ts'
 import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 import { PER_BASE_LETTER_MARK } from './mark.ts'
 
@@ -20,14 +20,19 @@ export function drawPerBaseLetter(
   // Same per-base palette as the mismatch and softclip-base draws, so the
   // Canvas2D and GPU paths render identical colors (and both mute under
   // modifications). The CSS table bakes in the non-ACGTN fallback, so the byte
-  // indexes it directly — one entry per visible base per read runs through this.
-  const baseCss = buildBaseCssMap(state)
+  // indexes it directly — one entry per visible base per read runs through this,
+  // and the layer is opaque, so the faded table is unreachable.
   paintMarks(
     ctx,
     PER_BASE_LETTER_MARK,
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    (_alpha, data, i) => baseCss[data.perBaseLetterBases[i]!]!,
+    {
+      rule: Paint.palette,
+      keys: region.perBaseLetterBases,
+      opaqueCss: buildBaseCssMap(state),
+      fadedCss: [],
+    },
   )
 }

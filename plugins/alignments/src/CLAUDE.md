@@ -18,27 +18,38 @@ abbreviations of theirs (`connLine`, `linkedReadLine`, `mod`, `perBaseQual`),
 the mapping is written down.
 
 **`mark.ts` is the seventh, and where a converted pass keeps its geometry.** The
-arrays, the selection predicate, the drawn-alpha and click-significance gates
-and the span — or, for a mark on a bp edge, the drawn width and hit tolerance
-that stand in for one — are declared once (`features/mark.ts`, `PileupMark`);
-the packer, the painter and the hit test derive from it, and `paintMarks` /
-`findMarkAt` own the projection and the row scan. Nine passes are converted:
-`gap`, `mismatch`, `perBaseQuality`, `perBaseLetter`, `softclipBases`,
-`insertion`, `clip`, `overlap` and `modification` — the last two have no
-`findMarkAt` hit test, and `modification`'s stays a Flatbush query because the
-INDEX is the part a row scan cannot supply. `arcs` has its own, for a band-local
-path rather than a pileup span. A pass with all three consumers and no `mark.ts`
-states its geometry three times —
-`agent-docs/ideas/one-mark-declaration-per-feature.md` says which of the rest
+arrays, the selection, the drawn-alpha and click-significance gates and the span
+— or, for a mark on a bp edge, the drawn width and hit tolerance that stand in
+for one — are declared once (`features/mark.ts`, `PileupMark`); the packer, the
+painter and the hit test derive from it, and `paintMarks` / `findMarkAt` own the
+projection and the row scan. Nine passes are converted: `gap`, `mismatch`,
+`perBaseQuality`, `perBaseLetter`, `softclipBases`, `insertion`, `clip`,
+`overlap` and `modification` — the last two have no `findMarkAt` hit test, and
+`modification`'s stays a Flatbush query because the INDEX is the part a row scan
+cannot supply. `arcs` has its own, for a band-local path rather than a pileup
+span.
+
+**A mark is DATA: channels plus rule codes, and no member takes an index.** The
+arrays come back from one `channels(data)` per region, in one field order for
+every mark; the alpha, the click gate, the row band, the point width and the
+fill colour are small integers the walkers switch on. The members used to be
+callbacks, and with ten marks over one walker every call in the loop was
+megamorphic — 94 ms of gap paint against 45, 59 of mismatch against 19, at 100K
+instances. So a new rule is a `Fade`/`Hit`/`Band`/`Paint` code and a case in the
+walker, never a function on the mark.
+
+A pass with all three consumers and no `mark.ts` states its geometry three times
+— `agent-docs/ideas/one-mark-declaration-per-feature.md` says which of the rest
 fit the shape and which deliberately do not, including why `connectingLines`
 needs a decision about `paintMarks`'s 1px span floor before it can take one.
+That doc predates the data form and still describes the members as callbacks.
 
-**A mark that shares an array declares its own slice of it**
-(`rangeStart`/`rangeEnd`). The three interbase marks are the case: the worker
-lays that array out as (insertions, softclips, hardclips), so the bound is what
-keeps one hover from scanning the whole thing three times to reject most of it
-on a type byte the layout already guarantees. `Canvas2DRegionData` therefore
-carries the merged array the worker ships rather than pre-sliced views of it.
+**A mark that shares an array declares its own slice of it** (`channels`'
+`start`/`end`). The three interbase marks are the case: the worker lays that
+array out as (insertions, softclips, hardclips), so the bound is what keeps one
+hover from scanning the whole thing three times to reject most of it on a type
+byte the layout already guarantees. `Canvas2DRegionData` therefore carries the
+merged array the worker ships rather than pre-sliced views of it.
 
 Two directories are **not** passes and say so by having no `packGpu.ts` —
 `sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which

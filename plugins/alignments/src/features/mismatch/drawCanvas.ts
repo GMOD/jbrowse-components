@@ -1,6 +1,5 @@
-import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { paintMarks } from '../mark.ts'
-import { buildBaseCssMap, buildBaseTupleMap } from './baseColors.ts'
+import { Paint, paintMarks } from '../mark.ts'
+import { buildBaseCssMap, buildBaseFadeCssMap } from './baseColors.ts'
 import { MISMATCH_MARK } from './mark.ts'
 
 import type {
@@ -19,21 +18,21 @@ export function drawMismatches(
   state: RenderState,
 ) {
   // N has a palette entry; any other non-A/C/G/T byte takes the fallback,
-  // matching the GPU shader (mismatch.slang baseColor catch-all). Opaque
-  // mismatches — the common case once zoomed to base level, where both fades
-  // resolve to 1 — read a prebuilt CSS string instead of formatting one per
-  // mismatch; only a genuinely faded one pays `rgba255`.
-  const baseCss = buildBaseCssMap(state)
-  const baseTuples = buildBaseTupleMap(state)
+  // matching the GPU shader (mismatch.slang baseColor catch-all). Both tables
+  // are indexed by the base byte itself, so the opaque case — every mismatch
+  // once zoomed to base level, where both fades resolve to 1 — reads a prebuilt
+  // string and only a genuinely faded one is formatted.
   paintMarks(
     ctx,
     MISMATCH_MARK,
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    (alpha, data, i) => {
-      const base = data.mismatchBases[i]!
-      return alpha >= 1 ? baseCss[base]! : rgba255(baseTuples[base]!, alpha)
+    {
+      rule: Paint.palette,
+      keys: region.mismatchBases,
+      opaqueCss: buildBaseCssMap(state),
+      fadedCss: buildBaseFadeCssMap(state),
     },
   )
 }

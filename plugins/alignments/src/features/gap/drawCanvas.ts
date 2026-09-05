@@ -1,6 +1,9 @@
-import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { intronAlpha } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { paintMarks } from '../mark.ts'
+import {
+  rgb255,
+  rgba255,
+  rgbaPrefix255,
+} from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { Paint, paintMarks } from '../mark.ts'
 import { DELETION_MARK, SKIP_MARK } from './mark.ts'
 
 import type {
@@ -19,17 +22,18 @@ export function drawDeletions(
   state: RenderState,
 ) {
   const color = state.colors.colorDeletion
-  // Opaque is the common case — every deletion once zoomed in — and formatting
-  // per gap was the only per-item string work in this pass; an ONT read carries
-  // hundreds of them.
-  const opaqueCss = rgb255(color)
   paintMarks(
     ctx,
     DELETION_MARK,
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    alpha => (alpha >= 1 ? opaqueCss : rgba255(color, alpha)),
+    {
+      rule: Paint.palette,
+      keys: undefined,
+      opaqueCss: [rgb255(color)],
+      fadedCss: [rgbaPrefix255(color)],
+    },
   )
 }
 
@@ -41,16 +45,20 @@ export function drawSkips(
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  // Constant across the pass: an intron's alpha is a function of row height
-  // alone, so the mark resolves the same number for every instance and the
-  // string is built once.
-  const css = rgba255(state.colors.colorSkip, intronAlpha(state.featureHeight))
+  const color = state.colors.colorSkip
   paintMarks(
     ctx,
     SKIP_MARK,
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    () => css,
+    {
+      rule: Paint.palette,
+      keys: undefined,
+      // An intron's alpha is a function of row height alone, so `paintMarks`
+      // resolves one string for the whole pass out of these two.
+      opaqueCss: [rgba255(color, 1)],
+      fadedCss: [rgbaPrefix255(color)],
+    },
   )
 }

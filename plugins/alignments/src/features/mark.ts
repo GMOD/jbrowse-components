@@ -1,27 +1,25 @@
-// What one pileup mark COVERS, declared once as DATA. THE derivation — the GPU
-// packer, the Canvas2D painter (and through it the SVG export) and the hit test
-// all take their arrays, their selection, their gates and their span from here.
+// What one pileup mark COVERS, declared once as DATA — arrays, selection, the
+// two gates and the span. The GPU packer, the Canvas2D painter (and through it
+// the SVG export) and the hit test all derive from that declaration.
 //
-// They used to each state them. `features/gap` was the smallest complete
-// example: three files walking `(gapPositions, gapYs, gapTypes, gapFrequencies)`
-// under three spellings of `gapTypes[i] === kind`, three spellings of
-// `gapPositions[i * 2]`, and two independently-written gates — one of which had
-// to be ADDED to the hit test after the fact, because without it a deletion the
-// worker had zeroed went on intercepting every click across its span while the
-// shader faded it to four of 255 alpha.
+// They used to each state it. `features/gap` was the smallest complete example:
+// three files walking `(gapPositions, gapYs, gapTypes, gapFrequencies)` under
+// three spellings of `gapTypes[i] === kind` and two independently-written gates
+// — one of which had to be ADDED to the hit test after the fact, because without
+// it a deletion the worker had zeroed went on intercepting every click across
+// its span while the shader faded it to four of 255 alpha.
 //
-// A mark states channels and rule codes rather than callbacks, so `paintMarks`
-// and `findMarkAt` walk one struct shape whatever the feature: inside their
-// loops there are typed-array reads and calls to the module-level rules below,
-// and nothing polymorphic. Ten marks over one shared walker used to mean seven
-// megamorphic calls per instance, which cost ~2x the paint.
+// Channels and rule codes rather than callbacks, because the members used to BE
+// callbacks and one shared walker over ten marks made every one of them
+// megamorphic: a gap layer's paint fell from 94 ms to 45 at 100K instances, a
+// mismatch layer's from 59 to 19, for no change in what either draws.
 //
-// What this deliberately does NOT do: it is not a transpiled draw stage.
-// adr-051 stands — the `.slang` stays hand-written, and the scalar decisions the
-// two backends share come across through `//! js-export`. The rules below READ
-// those twins (`intronAlpha`, `sizeAlpha`, `frequencyFadeGate`, `qualityFade`,
-// `overlapFade`); they do not replace them.
+// It is still not a transpiled draw stage. adr-051 stands — the `.slang` stays
+// hand-written, and the scalar decisions the two backends share come across
+// through `//! js-export`. The rules here READ those twins (`intronAlpha`,
+// `sizeAlpha`, `frequencyFadeGate`, `qualityFade`, `overlapFade`).
 import { fillSpanRect, insertionSizeAlpha } from '@jbrowse/alignments-core'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import {
   LONG_INSERTION_MIN_LENGTH,
@@ -193,6 +191,32 @@ export interface PointRules {
   slot: (typeof InsertionSlot)[keyof typeof InsertionSlot]
 }
 
+// Where a mark's colour comes from. `palette` indexes the two tables by a byte
+// the feature already holds; `packedAbgr` formats the worker's own u32 per RUN,
+// since that palette is a per-read choice rather than a small table.
+export const Paint = { palette: 0, packedAbgr: 1 } as const
+export type PaintRule = (typeof Paint)[keyof typeof Paint]
+
+/**
+ * The colours ONE draw call paints with, resolved per frame. Colour is data for
+ * the same reason the fades are: a closure here is a call per instance in the
+ * hot loop, and it measured as most of the paint — 54 ms of a mismatch layer's
+ * 66, on 100K instances.
+ *
+ * Two tables because the opaque case is the common one once zoomed in and wants
+ * a whole string the caller built once, where a genuinely faded mark is
+ * `rgbaPrefix255`'s head rejoined with its own alpha — one number converted per
+ * instance instead of four, which was 42 ms of a 100K-instance gap layer.
+ * `keys` indexes both, and is undefined for a layer that draws one colour;
+ * under `Paint.packedAbgr` it IS the colour.
+ */
+export interface MarkPaint {
+  rule: PaintRule
+  keys: ArrayLike<number> | undefined
+  opaqueCss: readonly string[]
+  fadedCss: readonly string[]
+}
+
 // One feature's mark, as its three consumers need it.
 export interface PileupMark<Data> {
   shape: MarkShape
@@ -207,57 +231,6 @@ export interface PileupMark<Data> {
   // it is stated here and not in a `.slang`. Sparse marks never abut.
   contiguous: boolean
   point?: PointRules
-}
-
-/**
- * A mark's drawn opacity, and the one place each fade curve is spelled.
- *
- * `alpha: Fade.opaque` is a CLAIM each backend has to meet, not a default:
- * writing it down is what found `perBaseLetter` packing a Phred 0 into a shader
- * that fades on quality, so the GPU drew nothing where Canvas2D drew every base.
- */
-export function fadeAlpha(
-  fade: FadeRule,
-  channels: MarkChannels,
-  index: number,
-  state: RenderState,
-  widthPx: number,
-  pxPerBp: number,
-): number {
-  switch (fade) {
-    case Fade.opaque: {
-      return 1
-    }
-    case Fade.spanFrequencySize: {
-      return (
-        frequencyFade(state, widthPx * widthPx, channels.freqs![index]!) *
-        sizeAlpha(widthPx)
-      )
-    }
-    case Fade.cellFrequencyQuality: {
-      return (
-        frequencyFade(state, widthPx, channels.freqs![index]!) *
-        qualityFade(channels.quals![index]!, state.mismatchAlpha)
-      )
-    }
-    case Fade.intron: {
-      return intronAlpha(state.featureHeight)
-    }
-    case Fade.overlap: {
-      return state.chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
-    }
-    case Fade.insertion: {
-      const length = channels.lengths![index]!
-      const frequency =
-        length >= LONG_INSERTION_MIN_LENGTH
-          ? 1
-          : frequencyFade(state, pxPerBp * pxPerBp, channels.freqs![index]!)
-      return frequency * insertionSizeAlpha(length, pxPerBp)
-    }
-    case Fade.pointFrequency: {
-      return frequencyFade(state, pxPerBp, channels.freqs![index]!)
-    }
-  }
 }
 
 function hitPasses(
@@ -351,8 +324,12 @@ function pointToleranceBp(
 // Whether entry `index` belongs to this mark. One spelling for the two walkers
 // and every packer, so a feature whose kinds are separate layers cannot have one
 // consumer disagree about which entries it owns.
-export function markSelects(channels: MarkChannels, index: number) {
-  return channels.kinds === undefined || channels.kinds[index] === channels.kind
+export function markSelects(
+  kinds: ArrayLike<number> | undefined,
+  kind: number,
+  index: number,
+) {
+  return kinds === undefined || kinds[index] === kind
 }
 
 // How many instances a mark owns — what a packer allocates for. Counted rather
@@ -365,7 +342,7 @@ export function countMarks<Data>(mark: PileupMark<Data>, data: Data) {
   }
   let count = 0
   for (let i = start; i < end; i++) {
-    if (kinds[i] === kind) {
+    if (markSelects(kinds, kind, i)) {
       count++
     }
   }
@@ -381,9 +358,9 @@ export function countMarks<Data>(mark: PileupMark<Data>, data: Data) {
  * what `expandMinWidthX` does on the GPU, and getting that pivot half-right at
  * one call site out of five is a bug this repo has shipped twice.
  *
- * `style` receives the resolved alpha, because the opaque case — every mark once
- * zoomed in — wants a CSS string the caller hoisted out of the loop rather than
- * one formatted per instance.
+ * The loop holds no callback: `paint` states where the fill comes from and the
+ * mark states its fade, so the only calls per instance are to the module-level
+ * rules and the generated scalar twins.
  *
  * `decorate` is the point glyph's second half. The shape library's point IS the
  * centred bar, drawn here from the mark's width rule so one expression serves
@@ -396,7 +373,7 @@ export function paintMarks<Data>(
   data: Data,
   frame: MarkFrame,
   state: RenderState,
-  style: (alpha: number, data: Data, index: number) => string,
+  paint: MarkPaint,
   decorate?: (
     ctx: Ctx2D,
     xCenter: number,
@@ -410,12 +387,36 @@ export function paintMarks<Data>(
   const { block, bpLength, fullBlockWidth } = frame
   const { shape, fade, point } = mark
   const channels = mark.channels(data)
-  const { positions, stride, rows, end } = channels
+  const { positions, stride, rows, kinds, kind, freqs, quals, lengths, end } =
+    channels
+  const { rule: paintRule, keys, opaqueCss, fadedCss } = paint
   const featureHeight = state.featureHeight
+  const mismatchAlpha = state.mismatchAlpha
+  const chainMode = state.chainMode
+  // The two rules with no per-instance input, resolved once for the walk.
+  const constantAlpha = fade === Fade.intron ? intronAlpha(featureHeight) : 1
   const pxPerBp = fullBlockWidth / bpLength
   const centerline = mark.band === Band.centerline
   const bandOffset = centerline ? featureHeight / 2 - 0.5 : 0
   const bandHeight = centerline ? 1 : featureHeight
+  // A layer whose fade has no per-instance input and whose palette has no key
+  // draws one colour for the whole walk, so the string is built once and the
+  // assignment leaves the loop: an intron centerline and a deletion bar are the
+  // two, and formatting per gap was this pass's only per-item string work.
+  const constantCss =
+    keys === undefined && (fade === Fade.opaque || fade === Fade.intron)
+      ? constantAlpha >= 1
+        ? opaqueCss[0]!
+        : fadedCss[0]! + constantAlpha + ')'
+      : undefined
+  if (constantCss !== undefined) {
+    ctx.fillStyle = constantCss
+  }
+  // The densest array the display produces draws from a handful of colours in
+  // per-read runs, so `abgrToCssRgba` runs once per run rather than per mark.
+  // The comparison is on the u32, not the string.
+  let lastKey = -1
+  let lastCss = ''
   // One mapper per draw call rather than per instance — `makeCellLeftMapper`
   // owns the reversed-block pivot every one of the five cell painters had wrong
   // at once.
@@ -424,7 +425,7 @@ export function paintMarks<Data>(
       ? makePileupCellMapper(block, bpLength, fullBlockWidth, mark.contiguous)
       : undefined
   for (let i = channels.start; i < end; i++) {
-    if (markSelects(channels, i)) {
+    if (markSelects(kinds, kind, i)) {
       const rowY = pileupRowY(rows[i]!, state)
       if (!pileupRowOffCanvas(rowY, state)) {
         const offset = i * stride
@@ -439,9 +440,56 @@ export function paintMarks<Data>(
                 startBp) *
               pxPerBp
             : pointWidthPx(point, channels, i, pxPerBp)
-        const alpha = fadeAlpha(fade, channels, i, state, widthPx, pxPerBp)
+        let alpha = constantAlpha
+        switch (fade) {
+          case Fade.opaque:
+          case Fade.intron: {
+            break
+          }
+          case Fade.spanFrequencySize: {
+            alpha =
+              frequencyFade(state, widthPx * widthPx, freqs![i]!) *
+              sizeAlpha(widthPx)
+            break
+          }
+          case Fade.cellFrequencyQuality: {
+            alpha =
+              frequencyFade(state, widthPx, freqs![i]!) *
+              qualityFade(quals![i]!, mismatchAlpha)
+            break
+          }
+          case Fade.overlap: {
+            alpha = chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
+            break
+          }
+          case Fade.insertion: {
+            const length = lengths![i]!
+            alpha =
+              (length >= LONG_INSERTION_MIN_LENGTH
+                ? 1
+                : frequencyFade(state, pxPerBp * pxPerBp, freqs![i]!)) *
+              insertionSizeAlpha(length, pxPerBp)
+            break
+          }
+          case Fade.pointFrequency: {
+            alpha = frequencyFade(state, pxPerBp, freqs![i]!)
+            break
+          }
+        }
         if (alpha > 0) {
-          ctx.fillStyle = style(alpha, data, i)
+          if (constantCss === undefined) {
+            const key = keys === undefined ? 0 : keys[i]!
+            if (paintRule === Paint.packedAbgr) {
+              if (key !== lastKey) {
+                lastKey = key
+                lastCss = abgrToCssRgba(key)
+              }
+              ctx.fillStyle = lastCss
+            } else {
+              ctx.fillStyle =
+                alpha >= 1 ? opaqueCss[key]! : fadedCss[key]! + alpha + ')'
+            }
+          }
           const top = rowY + bandOffset
           if (point !== undefined) {
             // Centred on the bp edge, which is where the mark IS: there are no
@@ -461,13 +509,9 @@ export function paintMarks<Data>(
             )
             // A reversed (flipped) region maps startBp to the larger screen x,
             // so the edges are ordered here rather than by each consumer.
-            fillSpanRect(
-              ctx,
-              Math.min(x1, x2),
-              Math.max(x1, x2),
-              top,
-              bandHeight,
-            )
+            const lo = x1 < x2 ? x1 : x2
+            const hi = x1 < x2 ? x2 : x1
+            fillSpanRect(ctx, lo, hi, top, bandHeight)
           }
         }
       }
@@ -496,11 +540,11 @@ export function findMarkAt<Data>(
 ) {
   const { shape, hit, point } = mark
   const channels = mark.channels(data)
-  const { positions, stride, rows, start } = channels
+  const { positions, stride, rows, kinds, kind, start } = channels
   const { basePos, genomicPos, bpPerPx, row } = coords
   const isCell = shape === 'cell'
   for (let i = channels.end - 1; i >= start; i--) {
-    if (rows[i] === row && markSelects(channels, i)) {
+    if (rows[i] === row && markSelects(kinds, kind, i)) {
       const offset = i * stride
       const startBp = positions[offset]!
       const contains =

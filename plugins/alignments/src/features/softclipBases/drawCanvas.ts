@@ -1,4 +1,4 @@
-import { paintMarks } from '../mark.ts'
+import { Paint, paintMarks } from '../mark.ts'
 import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 import { SOFTCLIP_BASES_MARK } from './mark.ts'
 
@@ -21,13 +21,17 @@ export function drawSoftclipBases(
   // pre-filled fallback, matching the GPU shader (mismatch.slang baseColor
   // catch-all, shared with the softclip-bases overlay) and the mismatch draw —
   // including its mute under showModifications.
-  const baseCss = buildBaseCssMap(state)
   paintMarks(
     ctx,
     SOFTCLIP_BASES_MARK,
     region,
     { block, bpLength, fullBlockWidth },
     state,
-    (_alpha, data, i) => baseCss[data.softclipBaseBases[i]!]!,
+    {
+      rule: Paint.palette,
+      keys: region.softclipBaseBases,
+      opaqueCss: buildBaseCssMap(state),
+      fadedCss: [],
+    },
   )
 }

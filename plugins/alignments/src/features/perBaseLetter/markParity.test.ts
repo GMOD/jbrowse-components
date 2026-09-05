@@ -1,11 +1,10 @@
 import { frequencyFadeGate } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
-import { fadeAlpha } from '../mark.ts'
+import { Fade } from '../mark.ts'
 import { PER_BASE_LETTER_MARK } from './mark.ts'
 import { packPerBaseLetter } from './packGpu.ts'
 
-import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { PerBaseLetterUploadData } from './types.ts'
 
 // Pack against draw, on the layer where the two could actually disagree:
@@ -65,9 +64,9 @@ function shaderAlpha(
   )
 }
 
-const state = (mismatchAlpha: boolean) =>
-  ({ mismatchAlpha }) as unknown as RenderState
-
+// The mark declares one number for every instance whatever the settings, so
+// what the shader has to reproduce is that number — under both advanced fades,
+// which is the combination the packer's zero default failed.
 test.each([
   ['both fades off', false, false],
   ['frequency filtering on', false, true],
@@ -76,19 +75,9 @@ test.each([
 ])(
   'the shader resolves the mark alpha with %s',
   (_name, mismatchAlpha, filterByFrequency) => {
-    for (const [i, instance] of instances().entries()) {
-      expect(shaderAlpha(instance, mismatchAlpha, filterByFrequency)).toBe(
-        // A cell is one base wide, so its on-screen width and the zoom are the
-        // same number here — `paintMarks` passes both.
-        fadeAlpha(
-          PER_BASE_LETTER_MARK.fade,
-          CHANNELS,
-          i,
-          state(mismatchAlpha),
-          PX_PER_BP,
-          PX_PER_BP,
-        ),
-      )
+    expect(PER_BASE_LETTER_MARK.fade).toBe(Fade.opaque)
+    for (const instance of instances()) {
+      expect(shaderAlpha(instance, mismatchAlpha, filterByFrequency)).toBe(1)
     }
   },
 )

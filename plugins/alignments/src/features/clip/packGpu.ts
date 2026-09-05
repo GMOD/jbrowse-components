@@ -36,7 +36,7 @@ export function packClips(data: InterbaseUploadData): ArrayBuffer {
 
 function packClipKind(
   mark: PileupMark<InterbaseUploadData>,
-  kind: number,
+  clipKind: number,
   data: InterbaseUploadData,
   u32: Uint32Array,
   f32: Float32Array,
@@ -46,14 +46,14 @@ function packClipKind(
   const F_U32 = clipShader.INSTANCE_OFFSET_U32
   const s32 = clipShader.INSTANCE_STRIDE_WORDS
   const channels = mark.channels(data)
-  const { positions, rows, end } = channels
+  const { positions, rows, kinds, kind, end } = channels
   let o = offset
   for (let i = channels.start; i < end; i++) {
-    if (markSelects(channels, i)) {
+    if (markSelects(kinds, kind, i)) {
       u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       f32[o + F_F32.frequency] = data.interbaseFrequencies[i]! / 255
-      u32[o + F_U32.kind] = kind
+      u32[o + F_U32.kind] = clipKind
       o += s32
     }
   }

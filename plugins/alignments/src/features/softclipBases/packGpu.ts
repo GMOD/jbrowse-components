@@ -20,7 +20,7 @@ export const SOFTCLIP_BASES_PASS = {
 export function packSoftclipBases(data: SoftclipBasesUploadData): ArrayBuffer {
   const mark = SOFTCLIP_BASES_MARK
   const channels = mark.channels(data)
-  const { positions, rows, end } = channels
+  const { positions, rows, kinds, kind, end } = channels
   const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
@@ -31,7 +31,7 @@ export function packSoftclipBases(data: SoftclipBasesUploadData): ArrayBuffer {
   const f32 = new Float32Array(buf)
   let o = 0
   for (let i = channels.start; i < end; i++) {
-    if (markSelects(channels, i)) {
+    if (markSelects(kinds, kind, i)) {
       u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       u32[o + F_U32.base] = data.softclipBaseBases[i]!

@@ -20,7 +20,7 @@ export function packPerBaseQuality(
 ): ArrayBuffer {
   const mark = PER_BASE_QUALITY_MARK
   const channels = mark.channels(data)
-  const { positions, rows, end } = channels
+  const { positions, rows, kinds, kind, end } = channels
   const F_U32 = perBaseQualityShader.INSTANCE_OFFSET_U32
   const s32 = perBaseQualityShader.INSTANCE_STRIDE_WORDS
   const buf = new ArrayBuffer(
@@ -29,7 +29,7 @@ export function packPerBaseQuality(
   const u32 = new Uint32Array(buf)
   let o = 0
   for (let i = channels.start; i < end; i++) {
-    if (markSelects(channels, i)) {
+    if (markSelects(kinds, kind, i)) {
       u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       // The ramp `qualityCssColors` is built from, so the fill and the vertex
