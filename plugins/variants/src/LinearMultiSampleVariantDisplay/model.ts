@@ -701,17 +701,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Which label kinds the lane actually paints. The mode asked for them;
-         * the rung that survived decides — a box must never reserve width for a
-         * description the band had no room to draw.
+         * Which label kinds the lane actually paints: what the kept rung
+         * reserved, so a box never reserves width for a description the band
+         * had no room to draw.
          */
         get laneRenderedLabels() {
-          const { level } = self.laneFitStage
-          return {
-            showLabels: self.topBands.wantsName && level !== 'bodies',
-            showDescriptions:
-              self.topBands.wantsDescription && level === 'full',
-          }
+          const { showLabels, showDescriptions } = self.laneFitStage
+          return { showLabels, showDescriptions }
         },
       }))
       .views(self => ({
