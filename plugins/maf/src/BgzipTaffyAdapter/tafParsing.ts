@@ -3,6 +3,7 @@ import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { TaiBlockFeature } from '../util/taiBlockFeatures.ts'
 import type { RowInstruction } from './rowInstructions.ts'
 
 // Represents a row in the alignment (like Alignment_Row in C)
@@ -21,20 +22,11 @@ export interface AlignmentBlock {
   columnNumber: number
 }
 
-export interface TafFeature {
-  uniqueId: string
-  /**
-   * The reference row's unresolved sequence name (`hg38.chr1`). Carried so the
-   * adapter can drop a block belonging to another chromosome — the read reaches
-   * past the queried contig's end by design, see `makeRefChrFilter`.
-   */
-  refSrc: string
-  start: number
-  end: number
-  strand: number
-  alignments: Record<string, AlignmentRecord>
-  seq: string
-}
+/**
+ * A parsed TAF block, which is the shared `.tai` block shape exactly — TAF has
+ * no `e` line, so it never carries `empties`.
+ */
+export type TafFeature = TaiBlockFeature
 
 /**
  * Decode RLE-encoded bases ("A 3 T 2" → "AAATT") or pass through plain bases.

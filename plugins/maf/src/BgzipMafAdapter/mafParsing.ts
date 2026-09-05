@@ -3,21 +3,11 @@ import { applyMafLine } from '../util/mafLines.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { TaiBlockFeature } from '../util/taiBlockFeatures.ts'
 
-export interface MafBlockFeature {
-  uniqueId: string
-  /**
-   * The reference row's unresolved source token (`hg38.chr1`). Carried so the
-   * adapter can drop a block belonging to another chromosome — the read reaches
-   * past the queried contig's end by design, see `makeRefChrFilter`.
-   */
-  refSrc: string
-  start: number
-  end: number
-  strand: number
-  alignments: Record<string, AlignmentRecord>
+/** A parsed MAF block: the shared `.tai` block shape, plus MAF's `e` lines. */
+export interface MafBlockFeature extends TaiBlockFeature {
   empties: Record<string, EmptyRecord>
-  seq: string
 }
 
 /**
