@@ -301,6 +301,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.48, 1],
     xband: [0.56, 0.9],
   },
+  tp53_structures: {
+    // The canvas with the two crystal fragments on the model, the one frame on
+    // the page that says "three structures" without reading a panel.
+    src: 'protein/tp53_three_structures.png',
+    band: [0.48, 1],
+    xband: [0.56, 0.9],
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',

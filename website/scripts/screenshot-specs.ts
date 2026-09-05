@@ -45,6 +45,7 @@ import { msaSpecs } from './specs/msa.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
 import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
+import { proteinStructuresSpecs } from './specs/protein_structures.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { scatacSpecs } from './specs/scatac.ts'
@@ -67,6 +68,7 @@ export const specs: ScreenshotSpec[] = [
   ...bigwigSpecs,
   ...genomesBasicsSpecs,
   ...featuresSpecs,
+  ...proteinStructuresSpecs,
   ...uiSpecs,
   ...methylationSpecs,
   ...ldSpecs,
