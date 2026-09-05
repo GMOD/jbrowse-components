@@ -43,6 +43,8 @@ export function clipMark(kind: ClipKind): PileupMark<InterbaseUploadData> {
     hit: Hit.frequency,
     band: Band.row,
     contiguous: false,
+    // A clip bar's width and its tolerance are both constants, so `clipBar`
+    // reads neither of the other two fields.
     point: { rule: Point.clipBar, barHeight: 0, slot: InsertionSlot.all },
   }
 }
