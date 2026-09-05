@@ -212,14 +212,14 @@ the class of bug the helpers exist to make unavailable.
 
 ## rpcProps: the cache key
 
-`SettingsInvalidate` watches `rpcPropsCacheKey`, the **serialized return value**
-of `rpcProps()`. When that string changes, every loaded region's fetch-key stamp
-is stale, and the autorun calls `invalidateSettings()` — the in-flight fetch is
-superseded, a blocking error is cleared, and the display drops any data it
-cannot honestly draw under the new setting (`clearSettingsBakedData`) — so the
-fetch cycle restarts while the held data stays on screen under the loading
-scrim. This is how config changes (color scheme, filter settings, etc.) trigger
-a full refetch.
+`SettingsInvalidate` watches the settings tier of `fetchInputs`: the **return
+value** of `rpcProps()` plus the adapter config, held in a structural computed.
+When that value changes, every loaded region's `fetchInputs` stamp is stale, and
+the autorun calls `invalidateSettings()` — the in-flight fetch is superseded, a
+blocking error is cleared, and the display drops any data it cannot honestly
+draw under the new setting (`clearSettingsBakedData`) — so the fetch cycle
+restarts while the held data stays on screen under the loading scrim. This is
+how config changes (color scheme, filter settings, etc.) trigger a full refetch.
 
 What is watched is the method's return value: building the payload usually reads
 far more observables than it returns — a whole config snapshot, or a value that
@@ -228,10 +228,11 @@ Two consequences to design around:
 
 - Only fields that reach the **return** are cache keys. A value merely consulted
   while building the payload invalidates nothing.
-- `JSON.stringify` is the comparison, so a field whose distinct states serialize
-  the same way is a dead cache axis that fails silently. An `undefined` drops
-  its key entirely, and a class instance without a `toJSON` flattens to `{}`.
-  Prefer primitives and plain arrays.
+- The compare is structural, so an `undefined` field and a class instance with
+  no own fields are both real states. Global-family displays
+  (`GlobalFetchMixin`) still serialize the payload to a string
+  (`rpcPropsCacheKey`), where those two shapes collapse; prefer primitives and
+  plain arrays there.
 
 It goes in a `.views()` block, and holds only the settings the worker reads:
 

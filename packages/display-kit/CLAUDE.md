@@ -199,7 +199,7 @@ drawing wrong. It is NOT `dataCurrent` — the export gate takes that one, and i
 display-local getter means re-remembering the cancel term — one edit from the
 dead-Retry bug.
 
-## `dataSuperseded` covers what `regionFetchKey` cannot state
+## `dataSuperseded` covers what `fetchInputs` cannot state
 
 The per-region family answers `dataCurrent` with spatial coverage AND
 `isCacheValid` per visible block, so the foundation owns one staleness compare

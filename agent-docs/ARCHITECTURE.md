@@ -1122,7 +1122,7 @@ live precedent.
 
 | Method | Consumer | Invalidation route |
 | --- | --- | --- |
-| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The **serialized** payload, in both families — per-region: every held region's `regionFetchKey` stamp goes stale and `SettingsInvalidate` → `invalidateSettings` supersedes the fetch → refetch under the `staleSettingsDrawn` scrim; global `installGlobalFetchAutorun` reads the same getter in its trigger list → refetch. See "the cache key is the return value" below |
+| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The payload as a **value**, never the call — per-region: the settings tier of `fetchInputs` moves (a structural compare), every held region's stamp goes stale and `SettingsInvalidate` → `invalidateSettings` supersedes the fetch → refetch under the `staleSettingsDrawn` scrim; global: `installGlobalFetchAutorun` reads the serialized `rpcPropsCacheKey` in its trigger list → refetch. See "the cache key is the return value" below |
 | `gpuProps()` | `buildSourceRenderData(data, self.gpuProps())` — encoder input | Upload callback reads it — MobX re-uploads without an RPC roundtrip |
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap` | Upload autorun reads it — MobX re-uploads without an RPC roundtrip |
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — re-fires when deps shift |
@@ -1134,7 +1134,7 @@ thing — they differ by two orders of magnitude in what a change costs:
 
 | tier | a change does | cost |
 | --- | --- | --- |
-| `rpcProps()` | `rpcPropsCacheKey` moves -> every loaded region's `regionFetchKey` stamp is stale, and `SettingsInvalidate` -> `invalidateSettings()` | refetch every region, drawn stale under the scrim meanwhile |
+| `rpcProps()` | `settingsFetchInputs` moves -> every loaded region's `fetchInputs` stamp is stale, and `SettingsInvalidate` -> `invalidateSettings()` | refetch every region, drawn stale under the scrim meanwhile |
 | `gpuProps()` | the identity `installUpload` compares moves (`p !== lastProps` clears `encodedFrom`, `installUpload.ts:195-198`) | **re-encode every cached region, main thread, no RPC** |
 | `renderState` | the render callback re-fires | repaint |
 
@@ -1201,8 +1201,8 @@ site does anymore.
 `getConf(this.parentTrack, 'adapter')`) — a **structural** arg, so it is not in
 `rpcProps()`, and its own axis of every fetch key: `FetchMixin.adapterConfigKey`
 (`adapterConfigKey` from `@jbrowse/core/util`, the one spelling every fetch
-family uses) rides beside `rpcPropsCacheKey` in `currentFetchKey` and in
-`SettingsInvalidate`'s trigger list, so a track re-pointed in the config editor
+family uses) rides beside `rpcPropsCacheKey` in the global family's
+`currentFetchKey`, and inside the per-region family's `settingsFetchInputs`, so a track re-pointed in the config editor
 refetches. Until 2026-09 only the comparative displays and the prerequisite
 reads keyed on it, and an LGV display kept the old file's data until something
 else moved. GC content folds `gcMode` / `windowSize` / `windowDelta` into the
@@ -1258,10 +1258,12 @@ per-region display with no settings-driven refetch (e.g.
 
 ### The cache key is the return value, not the reads
 
-Both families invalidate on the **serialized** payload — never on the raw call —
-and `serializeRpcProps` is the one implementation of that, reached through one
-getter, `FetchMixin.rpcPropsCacheKey` — watched by `SettingsInvalidate`
-per-region and read in `installGlobalFetchAutorun`'s trigger list globally.
+Both families invalidate on the payload's **value** — never on the raw call.
+The global family serializes it (`serializeRpcProps`, through one getter,
+`FetchMixin.rpcPropsCacheKey`, read in `installGlobalFetchAutorun`'s trigger
+list); the per-region family holds it in a structural computed
+(`settingsFetchInputs`, `display-kit/fetchInputs.ts`) that `SettingsInvalidate`
+watches.
 
 The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
@@ -1277,7 +1279,8 @@ Serializing collapses both: only a change in what's returned invalidates. And it
 has to be a string rather than a `.rpcProps()` comparison, because a fresh object
 never compares equal.
 
-The inverse hazard, since `JSON.stringify` *is* the comparison: a field whose
+The inverse hazard, in the global family where `JSON.stringify` *is* the
+comparison: a field whose
 distinct states serialize identically is a **silently dead cache axis** — changing
 it refetches nothing and raises no error. A class instance needs a `toJSON` or it
 flattens to `{}` (`SerializableFilterChain` has one, which is what makes the
@@ -1285,7 +1288,10 @@ variant displays' `filters` field a real key), and an `undefined` value drops it
 key entirely, so it can't be distinguished from a sibling state that also drops.
 Prefer primitives and plain arrays. Regression-tested in
 `installGlobalFetchAutorun.test.ts` ("ignores an observable rpcProps() reads but
-does not return"), which fails if the trigger goes back to the raw call.
+does not return"), which fails if the trigger goes back to the raw call. The
+per-region family's structural compare has neither blind spot — an `undefined`
+field and a fieldless class instance are both distinct states there — pinned in
+`fetchInputs.test.ts`.
 
 ### Pick the payload out of the snapshot; never subtract from it
 
@@ -1438,10 +1444,11 @@ All worker position output is **absolute genomic uint32**, so data stays valid
 under zoom. The exceptions are for zoom-dependent *content*, not coords.
 
 No display writes the cache predicate. `MultiRegionDisplayMixin` computes
-`isCacheValid(idx)` from two terms: `regionHasData(idx)`, and whether the fetch
-key stamped on that region still equals `regionFetchKey` — the mixin's
-`settingsFetchKey | zoomFetchKey` — the settings and adapter axes, then the
-zoom — the same three axes the global family's `currentFetchKey` carries, so a
+`isCacheValid(idx)` from two terms: `regionHasData(idx)`, and whether the
+`fetchInputs` stamped on that region still equal the current ones — the
+settings tier (`rpcProps()` and the adapter config) and the zoom tier
+(`zoomFetchArgs()`, or the `zoomFetchKey` string on a display not yet stating
+its zoom inputs as an object) — the same three axes the global family's `currentFetchKey` carries, so a
 settings change reads as stale through this compare and `SettingsInvalidate`
 keeps the coverage map: the scrim comes from `staleSettingsDrawn`, which
 compares the settings half alone and so stays down on a zoom.
@@ -1466,7 +1473,7 @@ arrived would be the `rpcProps()` loop in different clothes.
 
 **`isCacheValid` is also a term of `dataCurrent`, which is the export gate and
 not the scrim.** Spatial coverage answers "is the data here", never "is it what
-a fetch now would bring back", so a zoom moving `regionFetchKey` leaves every
+a fetch now would bring back", so a zoom moving `fetchInputs` leaves every
 held region covered and stale at once — and an export sampling `svgReady` across
 the 600ms `FetchVisibleRegions` debounce plus the RPC painted wiggle's bins, the
 variant matrix's columns and canvas's amino-acid wall as the previous zoom
@@ -1581,7 +1588,7 @@ viewport moving off it:
   write, so the load that produced the top hit is the load it invalidates.
 - **Alignments**: the per-base bin, as one value compare —
   `perBaseBinBp !== livePerBaseBinBp`. Once the settled bin moves, the stamp
-  stops matching `regionFetchKey` and the foundation's `isCacheValid` term
+  stops matching `fetchInputs` and the foundation's `isCacheValid` term
   covers it; this display carried that compare privately until the foundation
   took it. What no key can state is the 500ms `coarseBpPerPx` debounce ahead of
   it, where the settled bin has not moved yet, the clear is inevitable but not
@@ -1716,10 +1723,11 @@ wanted.
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
   into the payload, and `AssertNoCallLevelFields` fails a registry entry that
   declares it. See [the pattern](#rpcprops--gpuprops-pattern).
-- Don't ship a `rpcProps()` field whose distinct states serialize identically.
-  `JSON.stringify` *is* the comparison, so a class without `toJSON` flattens to
-  `{}` and an `undefined` drops its key — a silently dead cache axis that raises
-  no error. See [the cache key](#the-cache-key-is-the-return-value-not-the-reads).
+- Don't ship a `rpcProps()` field whose distinct states serialize identically
+  on a **global-family** display, where `JSON.stringify` *is* the comparison: a
+  class without `toJSON` flattens to `{}` and an `undefined` drops its key — a
+  silently dead cache axis that raises no error. The per-region family compares
+  structurally and has neither blind spot. See [the cache key](#the-cache-key-is-the-return-value-not-the-reads).
 - Don't build a config payload by subtracting from a whole-config snapshot. Pick
   the slots the worker reads, off a key list the compiler checks exhaustive
   against the interface it reads them through; a name nobody thought to exclude
@@ -1739,7 +1747,7 @@ wanted.
   real work — but the order is a permutation the main thread applies for free,
   and sent unsorted it re-enters the cache key anyway. See [row
   order](#row-order-is-not-a-fetch-input).
-- Don't write a `zoomFetchKey` that reads no observable. The hook is a getter,
+- Don't write a `zoomFetchKey` or `zoomFetchArgs` that reads no observable. The hook is a getter,
   so MST makes it a computed, and a key over non-observable state is memoized
   for the display's life — the first fetch is cached forever and nothing
   refetches it. See [per-region zoom-staleness](#per-region-zoom-staleness).
