@@ -10,6 +10,7 @@ import {
 import type { GCContentAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { RawFeatureArrays } from '@jbrowse/plugin-wiggle'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
   // #region subAdapter
@@ -24,10 +25,15 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     return adapter.getRefNames(opts)
   }
 
-  private async calculateGCContent(
+  /**
+   * The scored bins as the typed arrays the wiggle displays consume, written
+   * straight out of the sliding window. `getFeatures` boxes these on demand;
+   * the render path never asks it to.
+   */
+  public async getFeatureArrays(
     query: Region,
     opts?: BaseOptions,
-  ): Promise<Feature[]> {
+  ): Promise<RawFeatureArrays> {
     const { statusCallback, stopToken } = opts ?? {}
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
@@ -63,7 +69,14 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       )) ?? ''
 
     return updateStatus('Calculating GC', statusCallback, () => {
-      const features: Feature[] = []
+      const count = Math.max(
+        0,
+        Math.floor((residues.length - leftHalf - rightHalf) / windowDelta) + 1,
+      )
+      const starts = new Int32Array(count)
+      const ends = new Int32Array(count)
+      const scores = new Float32Array(count)
+      let n = 0
       const stopTokenCheck = createStopTokenChecker(stopToken)
 
       // Monotonic two-pointer sliding window: lo/hi only advance, so each base
@@ -127,25 +140,40 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         // half a step can reach past the start of the first window.
         const pos = qs + i
         const binStart = Math.max(0, pos - Math.floor(windowDelta / 2))
-        features.push(
-          new SimpleFeature({
-            uniqueId: `${this.id}_${pos}`,
-            refName: query.refName,
-            start: binStart,
-            end: binStart + windowDelta,
-            score,
-          }),
-        )
+        starts[n] = binStart
+        ends[n] = binStart + windowDelta
+        scores[n] = score
+        n++
       }
 
-      return features
+      return {
+        starts,
+        ends,
+        scores,
+        minScores: undefined,
+        maxScores: undefined,
+        count: n,
+      }
     })
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
-      for (const feature of await this.calculateGCContent(query, opts)) {
-        observer.next(feature)
+      const { starts, ends, scores, count } = await this.getFeatureArrays(
+        query,
+        opts,
+      )
+      for (let i = 0; i < count; i++) {
+        const start = starts[i]!
+        observer.next(
+          new SimpleFeature({
+            uniqueId: `${this.id}_${start}`,
+            refName: query.refName,
+            start,
+            end: ends[i]!,
+            score: scores[i]!,
+          }),
+        )
       }
       observer.complete()
     })

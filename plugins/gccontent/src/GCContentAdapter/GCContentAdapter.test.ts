@@ -227,3 +227,28 @@ test('windowSize 1 scores every base including the first and last', async () => 
     [3, 1],
   ])
 })
+
+// The wiggle displays read `getFeatureArrays`, and the arrays are sized ahead
+// of the walk. A size formula that over-allocates leaves zero-filled bins at
+// position 0 that no feature ever reported, so every configuration's count has
+// to land exactly on the buffers' length.
+test.each([
+  ['defaults', 'A'.repeat(1000), 100, 100, 0, 1000],
+  ['delta does not divide window', 'A'.repeat(300), 10, 3, 40, 200],
+  ['single-base window', 'GATC', 1, 1, 0, 4],
+  ['query past the sequence', 'A'.repeat(50), 100, 100, 200, 300],
+])(
+  'the arrays hold exactly the bins the walk wrote: %s',
+  async (_label, seq, windowSize, windowDelta, start, end) => {
+    const adapter = makeAdapter(seq, 'content', windowSize, windowDelta)
+    const arrays = await adapter.getFeatureArrays({
+      refName: 'ctgA',
+      start,
+      end,
+      assemblyName: 'a',
+    })
+    expect(arrays.count).toBe(arrays.starts.length)
+    const features = await getFeatures(adapter, start, end)
+    expect(features.length).toBe(arrays.count)
+  },
+)
