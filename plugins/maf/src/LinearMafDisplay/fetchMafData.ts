@@ -20,6 +20,7 @@ import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
+import type { CoarseTierResult } from '@jbrowse/display-kit/coarseTier'
 import type { FetchEachRegionModel } from '@jbrowse/display-kit/fetchEachRegion'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
@@ -36,10 +37,8 @@ interface MafFetchSelf extends FetchEachRegionModel {
   // measures nothing
   resolvedByteLimit: () => number | undefined
   setRpcData: (regionIndex: number, data: MafWireRegionData) => void
-  setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
   setFramesGateBlocked: (blocked: boolean) => void
-  clearAlignmentData: () => void
   setSamples: (arg: SampleSet) => void
 }
 
@@ -137,22 +136,20 @@ function landed<R>(
   )
 }
 
+interface MafBatch<R> {
+  results: { displayedRegionIndex: number; result: R }[]
+  bytes?: number
+}
+
 /**
- * Shared per-region fetch skeleton for both the detail and summary paths: call
- * one RPC per buffered region, bail on staleness, push the (config-derived)
- * `samples` + tree once, then hand the per-region results to `commit`.
- *
- * `fetchRegionsBatched` rather than `fetchEachRegion` because `setSamples` is a
- * cross-region decision over the whole result set, so the batch is what the
- * staleness guard has to wrap: a partial commit would publish a sample set
- * derived from a superseded viewport. Every region is marked loaded together,
- * and **one refused region refuses the batch** for the same reason: the sample
- * union is a decision over all of them, so a set derived from the regions that
- * happened to fit is not the set this viewport has. The first refusal also
- * aborts the siblings still in flight (`refusalScope`), since their payloads
- * would only be discarded. The largest measurement among the regions that
- * landed still goes back to the gate, which is what puts a size in the banner
- * and releases it once the user zooms.
+ * The per-region call shared by both tiers: one RPC per buffered region, the
+ * CDS-frame overlay beside it, and one answer for the batch. **One refused
+ * region refuses the batch**, because the sample union is a decision over all
+ * of them: a set derived from the regions that happened to fit is not the set
+ * this viewport has. The first refusal also aborts the siblings still in flight
+ * (`refusalScope`), since their payloads would only be discarded. The largest
+ * measurement among the regions that landed still goes back to the gate, which
+ * is what puts a size in the banner and releases it once the user zooms.
  *
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
@@ -162,79 +159,68 @@ function landed<R>(
  * the fetch's fan-out, so the parallel per-region calls aggregate into one
  * progress bar instead of clobbering each other.
  */
-async function fetchMafRegions<R extends SampleSet>(
+async function callMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
-  needed: IndexedRegion[],
+  regions: IndexedRegion[],
+  ctx: FetchContext,
   call: (
     region: Region,
     ctx: FetchContext,
     displayedRegionIndex: number,
   ) => Promise<R | RegionTooLargeResult>,
-  commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
-) {
+): Promise<MafBatch<R> | RegionTooLargeResult> {
   // #region rawFetchRegions
-  type MafBatch = {
-    results: { displayedRegionIndex: number; result: R }[]
-    bytes?: number
+  // The CDS-frame annotation overlay (when configured) fetches in the same
+  // stop-token-guarded pass as the main data so the two share staleness
+  // book-keeping; the two RPCs run concurrently.
+  //
+  // Concurrently, and each is itself a per-region fan-out, so they get a
+  // slot apiece rather than the shared callback: two fan-outs writing one
+  // status field directly is last-writer-wins between them, and the
+  // annotation branch's rows are a small fraction of the alignment's.
+  const slot = createStatusFanOut(ctx.statusCallback)
+  const scope = refusalScope(ctx)
+  const results = await Promise.all([
+    callEachRegion(
+      regions,
+      { ...scope.ctx, statusCallback: slot() },
+      (region, regionCtx, displayedRegionIndex) =>
+        scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
+    ),
+    fetchAnnotationData(self, regions, {
+      ...scope.ctx,
+      statusCallback: slot(),
+    }),
+  ])
+    .then(([answered]) => landed(answered))
+    .finally(() => {
+      scope.dispose()
+    })
+  // The batch's own byte number, whichever way it goes: the budget is what
+  // one region may cost, so the largest is what was judged and what the
+  // banner quotes.
+  const perRegionBytes = results.map(r => measuredBytes(r.result))
+  const bytes = largestRegionBytes(perRegionBytes)
+  const kept: { displayedRegionIndex: number; result: R }[] = []
+  let refused = false
+  for (const { displayedRegionIndex, result } of results) {
+    if (isRegionRefused(result)) {
+      refused = true
+    } else {
+      kept.push({ displayedRegionIndex, result })
+    }
   }
-  await fetchRegionsBatched(self, needed, {
-    // Annotated, because the two arms are what tells `fetchRegionsBatched`
-    // which half is the payload: inferred, the marker's absent fields would
-    // widen the payload's own.
-    call: async (regions, ctx): Promise<MafBatch | RegionTooLargeResult> => {
-      // The CDS-frame annotation overlay (when configured) fetches in the same
-      // stop-token-guarded pass as the main data so the two share staleness +
-      // loadedRegions book-keeping; the two RPCs run concurrently.
-      //
-      // Concurrently, and each is itself a per-region fan-out, so they get a
-      // slot apiece rather than the shared callback: two fan-outs writing one
-      // status field directly is last-writer-wins between them, and the
-      // annotation branch's rows are a small fraction of the alignment's.
-      const slot = createStatusFanOut(ctx.statusCallback)
-      const scope = refusalScope(ctx)
-      const results = await Promise.all([
-        callEachRegion(
-          regions,
-          { ...scope.ctx, statusCallback: slot() },
-          (region, regionCtx, displayedRegionIndex) =>
-            scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
-        ),
-        fetchAnnotationData(self, regions, {
-          ...scope.ctx,
-          statusCallback: slot(),
-        }),
-      ])
-        .then(([answered]) => landed(answered))
-        .finally(() => {
-          scope.dispose()
-        })
-      // The batch's own byte number, whichever way it goes: the budget is what
-      // one region may cost, so the largest is what was judged and what the
-      // banner quotes.
-      const perRegionBytes = results.map(r => measuredBytes(r.result))
-      const bytes = largestRegionBytes(perRegionBytes)
-      const kept: { displayedRegionIndex: number; result: R }[] = []
-      let refused = false
-      for (const { displayedRegionIndex, result } of results) {
-        if (isRegionRefused(result)) {
-          refused = true
-        } else {
-          kept.push({ displayedRegionIndex, result })
-        }
-      }
-      return refused
-        ? { regionTooLarge: true as const, bytes }
-        : { results: kept, bytes }
-    },
-    commit: ({ results }) => {
-      const sampleSet = unionSampleSets(results)
-      if (sampleSet) {
-        self.setSamples(sampleSet)
-      }
-      commit(results)
-    },
-  })
+  return refused
+    ? { regionTooLarge: true as const, bytes }
+    : { results: kept, bytes }
   // #endregion
+}
+
+function publishSampleSet(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
+  const sampleSet = unionSampleSets(batch.results)
+  if (sampleSet) {
+    self.setSamples(sampleSet)
+  }
 }
 
 /**
@@ -313,60 +299,75 @@ async function fetchAnnotationData(
   }
 }
 
+/**
+ * The detail tier, through `fetchRegionsBatched` because `setSamples` is a
+ * cross-region decision over the whole result set, so the batch is what the
+ * staleness guard has to wrap: a partial commit would publish a sample set
+ * derived from a superseded viewport. Every region is marked loaded together.
+ */
 export function fetchMafAlignmentData(
   self: MafFetchSelf,
   needed: IndexedRegion[],
 ) {
-  return fetchMafRegions(
-    self,
-    needed,
-    (region, ctx) =>
-      ctx.callRpc('LinearMafGetAlignmentData', {
-        adapterConfig: self.adapterConfig,
-        regions: [region],
-        byteLimit: self.resolvedByteLimit(),
-        // Row set, not row order: the worker ships only these genomes and
-        // scores coverage over them. Placement is the client's (see
-        // `placeMafRegionData`), so nothing order-dependent is sent.
-        subtreeFilter: self.subtreeFilterSet,
-      }),
-    results => {
-      for (const { displayedRegionIndex, result } of results) {
+  return fetchRegionsBatched(self, needed, {
+    call: (regions, ctx) =>
+      callMafRegions(self, regions, ctx, (region, regionCtx) =>
+        regionCtx.callRpc('LinearMafGetAlignmentData', {
+          adapterConfig: self.adapterConfig,
+          regions: [region],
+          byteLimit: self.resolvedByteLimit(),
+          // Row set, not row order: the worker ships only these genomes and
+          // scores coverage over them. Placement is the client's (see
+          // `placeMafRegionData`), so nothing order-dependent is sent.
+          subtreeFilter: self.subtreeFilterSet,
+        }),
+      ),
+    commit: batch => {
+      publishSampleSet(self, batch)
+      for (const { displayedRegionIndex, result } of batch.results) {
         self.setRpcData(displayedRegionIndex, result.regionData)
       }
     },
-  )
+  })
 }
 
 /**
- * Zoom-out counterpart: pulls cheap per-species `bigMafSummary` rows instead of
- * full alignment sequence. Drops the alignment `rpcDataMap` so the GPU sequence
- * canvas paints nothing while the summary overlay draws the bars.
+ * The summary tier, as `CoarseTierMixin`'s read: cheap per-species
+ * `bigMafSummary` rows instead of full alignment sequence, one payload per
+ * region for the tier's own store. The sample set is the same cross-region
+ * decision the detail path makes, published under the same staleness guard —
+ * the skeleton's `isStale`, read here because the skeleton commits only the
+ * payloads.
  */
-export function fetchMafSummaryData(
+export async function fetchMafSummaryData(
   self: MafFetchSelf,
-  needed: IndexedRegion[],
-) {
-  return fetchMafRegions(
-    self,
-    needed,
-    (region, ctx) =>
-      ctx.callRpc('LinearMafGetSummaryData', {
-        adapterConfig: self.adapterConfig,
-        regions: [region],
-        byteLimit: self.resolvedByteLimit(),
-        // Same row set as the detail path. It has to be sent even though the
-        // records are small: `subtreeFilter` is an `rpcProps()` cache key, so
-        // narrowing the clade already discards every loaded region — a summary
-        // fetch that ignored the filter would re-download byte-identical rows
-        // and then drop the same ones client-side.
-        subtreeFilter: self.subtreeFilterSet,
-      }),
-    results => {
-      self.clearAlignmentData()
-      for (const { displayedRegionIndex, result } of results) {
-        self.setSummaryData(displayedRegionIndex, result.records)
-      }
-    },
+  regions: IndexedRegion[],
+  ctx: FetchContext,
+): Promise<CoarseTierResult<MafSummaryRecord[]>> {
+  const batch = await callMafRegions(self, regions, ctx, (region, regionCtx) =>
+    regionCtx.callRpc('LinearMafGetSummaryData', {
+      adapterConfig: self.adapterConfig,
+      regions: [region],
+      byteLimit: self.resolvedByteLimit(),
+      // Same row set as the detail path. It has to be sent even though the
+      // records are small: `subtreeFilter` is in the read key, so narrowing
+      // the clade already re-reads — a summary fetch that ignored the filter
+      // would re-download byte-identical rows and then drop the same ones
+      // client-side.
+      subtreeFilter: self.subtreeFilterSet,
+    }),
   )
+  if (isRegionRefused(batch)) {
+    return batch
+  }
+  if (!ctx.isStale()) {
+    publishSampleSet(self, batch)
+  }
+  return {
+    entries: batch.results.map(({ displayedRegionIndex, result }) => ({
+      displayedRegionIndex,
+      payload: result.records,
+    })),
+    bytes: batch.bytes,
+  }
 }

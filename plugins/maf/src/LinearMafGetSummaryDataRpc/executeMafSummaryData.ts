@@ -75,7 +75,7 @@ export async function executeMafSummaryData({
   // not the alignment. Measuring the alignment here would quote a download
   // nobody is doing, which at genome scale blocks the cheap tier on the
   // expensive one's cost. It is the same file `byteGateAdapterPath` names while
-  // `showSummary` holds, so the banner and the worker agree by construction.
+  // `coarseTierActive` holds, so the banner and the worker agree by construction.
   const summaryAdapter =
     byteLimit === undefined ? undefined : await adapter.summaryAdapter()
   const { bytes, tooLarge } = summaryAdapter

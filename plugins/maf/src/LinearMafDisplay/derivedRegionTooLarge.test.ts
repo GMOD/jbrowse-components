@@ -31,17 +31,17 @@ test('the reactive method hooks are views, not actions', () => {
 })
 
 // The summary swap and the gate ask the same "how zoomed out am I" question, so
-// `showSummary` reads the gate's own `aboveForceLoadFloor` rather than restating
+// `coarseTierActive` reads the gate's own `aboveForceLoadFloor` rather than restating
 // the threshold. These pin both directions of that read. `aboveForceLoadFloor`
 // excludes every opt-in term, which is what keeps the read acyclic — the gate
-// getters that read `showSummary` (`byteGateAdapterConfig`) sit downstream of it.
+// getters that read `coarseTierActive` (`byteGateAdapterConfig`) sit downstream of it.
 describe('MAF summary swap vs the force-load floor', () => {
   it('never summarizes without a summary adapter, however wide the view', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.aboveForceLoadFloor).toBe(true)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     // so the detail path is what gates
     expect(display.gateEnabled).toBe(true)
   })
@@ -65,7 +65,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     }).createDisplay()
 
     view.zoomTo(100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     // The summary tier is gated too — it is a whole-feature read, not a
     // zoom-reduced one — but against its own file, so a small summary read is
     // nowhere near the cap and never sees a banner.
@@ -76,7 +76,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     view.zoomTo(20)
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.aboveForceLoadFloor).toBe(false)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.gateEnabled).toBe(true)
   })
 
@@ -85,7 +85,7 @@ describe('MAF summary swap vs the force-load floor', () => {
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay(/* unmeasured */ { skipWidth: true })
     expect(display.aboveForceLoadFloor).toBe(false)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
   })
 })
 
@@ -214,12 +214,12 @@ describe('MAF gating below the force-load floor', () => {
     // where the cheap tier draws a better picture is a rendering question and
     // did not move with the byte gate.
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.gateActive).toBe(true)
 
     // and the swap still happens at 20kb, independently of the gate
     view.zoomTo(100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
   })
 
   it('force-load still clears it below the floor', () => {
@@ -246,7 +246,7 @@ describe('MAF gating below the force-load floor', () => {
 // Both MAF tiers are gated, each against the file it actually reads
 // (`byteGateAdapterConfig`). The summary tier used to be exempt on the grounds
 // that it is the cheap one — but a `BigBedAdapter` read is a whole-feature
-// download and `showSummary` covers every zoom from 20kb to the whole genome, so
+// download and `coarseTierActive` covers every zoom from 20kb to the whole genome, so
 // the exemption was the one path that could pull an unbounded number of records
 // with no size quoted. These pin that the gate follows the swap.
 describe('MAF measures the tier it is about to fetch', () => {
@@ -256,7 +256,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     }).createDisplay()
 
     view.zoomTo(100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     // not the MAF adapter: quoting the alignment's cost for a fetch nobody is
     // doing would block the cheap tier on the expensive one's number
     expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
@@ -268,7 +268,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     }).createDisplay()
 
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.byteGateAdapterConfig).toMatchObject({
       type: 'MafTabixAdapter',
     })
@@ -298,7 +298,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
     view.zoomTo(400)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.byteGateAdapterConfig).toMatchObject({
       type: 'MafTabixAdapter',
     })
@@ -312,7 +312,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     // genome-scale: one record per species per aligned run adds up, and this is
     // the read that used to be exempt from the gate entirely
     view.zoomTo(2000)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     stageByteEstimate(display, 20_000_000)
     expect(display.regionTooLarge).toBe(true)
     expect(display.regionTooLargeReason).toBe('Requested too much data (20 Mb)')
@@ -330,14 +330,14 @@ describe('MAF measures the tier it is about to fetch', () => {
     }).createDisplay()
 
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     // a 470-way over a gene-sized window, captured against the MAF adapter
     stageByteEstimate(display, over(display))
     expect(display.regionTooLarge).toBe(true)
 
     // zoom out past the swap: the fetch about to happen is now the summary one
     view.zoomTo(200)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.byteEstimate).toBeUndefined()
     // ...so the banner is gone and the pre-flight can measure the tier we're
     // actually about to read, rather than quoting ~29 Mb of alignment for it
@@ -350,11 +350,11 @@ describe('MAF measures the tier it is about to fetch', () => {
     }).createDisplay()
 
     view.zoomTo(200)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     stageByteEstimate(display, 60_000)
 
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.byteEstimate).toBeUndefined()
   })
 
@@ -371,13 +371,13 @@ describe('MAF measures the tier it is about to fetch', () => {
     }).createDisplay()
 
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     const issued = display.gateFetchState()
     const bytes = over(display)
 
     // the zoom lands while the measurement RPC is out
     view.zoomTo(200)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     display.commitFetchBytes([bytes], issued)
     expect(display.byteEstimate).toBeUndefined()
@@ -400,7 +400,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     stageByteEstimate(display, over(display))
 
     view.zoomTo(200)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.byteEstimate).toBeDefined()
     expect(display.regionTooLarge).toBe(true)
   })
@@ -562,11 +562,11 @@ describe('the byte gate commit', () => {
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     view.zoomTo(20)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     const issued = display.gateFetchState()
 
     view.zoomTo(100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     display.commitFetchBytes([over(display)], issued)
 
     expect(display.byteEstimate).toBeUndefined()

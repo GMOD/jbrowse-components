@@ -30,7 +30,7 @@ export type MafLaunchModel = SampleNavigationModel &
   SubsequenceHost & {
     samples: Sample[]
     sources: unknown[]
-    showSummary: boolean
+    coarseTierActive: boolean
     view: { width: number }
   }
 
@@ -62,7 +62,7 @@ export function mafLaunchMenuItems({
     // the one thing the summary tier exists not to download — the display's own
     // detail fetch has already refused it there. Same wording the two band
     // toggles use for the same override.
-    const zoomHint = model.showSummary ? ZOOM_IN_FOR_BAND : undefined
+    const zoomHint = model.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
     return [
       zoomGatedItem(
         {

@@ -66,7 +66,7 @@ describe('the band toggles say when the summary tier has overridden them', () =>
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     view.zoomTo(100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     const items = display.trackMenuItems()
     for (const label of BAND_ROWS) {
@@ -79,7 +79,7 @@ describe('the band toggles say when the summary tier has overridden them', () =>
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     view.zoomTo(1)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
 
     const items = display.trackMenuItems()
     for (const label of BAND_ROWS) {
@@ -118,20 +118,20 @@ describe('the right-click sort says when the summary tier has its data', () => {
     })
     return {
       items: display.contextMenuItems(),
-      showSummary: display.showSummary,
+      coarseTierActive: display.coarseTierActive,
     }
   }
 
   it('hints and disables past the floor', () => {
-    const { items, showSummary } = contextItems(100)
-    expect(showSummary).toBe(true)
+    const { items, coarseTierActive } = contextItems(100)
+    expect(coarseTierActive).toBe(true)
     expect(hintOn(items, SORT)).toBe(HINT)
     expect(disabledHintOn(items, SORT)).toBe(HINT)
   })
 
   it('leaves the row alone below it, where the sort has blocks to read', () => {
-    const { items, showSummary } = contextItems(1)
-    expect(showSummary).toBe(false)
+    const { items, coarseTierActive } = contextItems(1)
+    expect(coarseTierActive).toBe(false)
     expect(hintOn(items, SORT)).toBeUndefined()
     expect(disabledHintOn(items, SORT)).toBe('Needs at least two rows to sort')
   })

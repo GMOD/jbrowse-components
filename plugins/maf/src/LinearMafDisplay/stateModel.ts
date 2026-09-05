@@ -20,6 +20,7 @@ import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -140,6 +141,11 @@ import type { MafHover } from './util.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { FetchContext } from '@jbrowse/core/util/fetchContext'
+import type {
+  CoarseTierRead,
+  CoarseTierResult,
+} from '@jbrowse/display-kit/coarseTier'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -234,6 +240,7 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        CoarseTierMixin<MafSummaryRecord[]>(),
         LegendMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
@@ -267,18 +274,10 @@ export default function stateModelFactory(
         rpcDataMap: regionDataMap<MafRegionData>('rpcDataMap'),
         /**
          * #volatile
-         * Per-region `bigMafSummary` rows for the zoom-out path, populated by
-         * `fetchMafSummaryData` only while `showSummary` is active. Kept separate
-         * from `rpcDataMap` so the GPU sequence canvas and the summary overlay
-         * never read each other's data.
-         */
-        summaryDataMap: regionDataMap<MafSummaryRecord[]>('summaryDataMap'),
-        /**
-         * #volatile
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
          * populated by the frames RPC in parallel with the main fetch. Kept
-         * separate from the alignment/summary maps so the overlay survives the
-         * summary↔detail data swap.
+         * separate from the alignment map and the summary tier so the overlay
+         * survives the summary↔detail swap.
          */
         framesDataMap: regionDataMap<MafFrameRecord[]>('framesDataMap'),
         /**
@@ -316,14 +315,14 @@ export default function stateModelFactory(
          * whose sequence the row carries — held here rather than read back out
          * of `rpcDataMap`, which is where it arrives.
          *
-         * Because that map is emptied under the display: `clearAlignmentData`
-         * drops it on every zoom out to the summary tier, and
-         * `clearDisplaySpecificData` on chromosome navigation and on a settings
-         * change. Read from the map, the answer would revert to
-         * `view.assemblyNames[0]` each time — and that is a different string
-         * exactly when a MAF names its reference differently, which is the case
-         * `refAssemblyName` exists for. `sources` hides this row, so it would
-         * come back for the whole time the view sat on the summary tier.
+         * Because that map is emptied under the display —
+         * `clearDisplaySpecificData` on chromosome navigation — and holds
+         * nothing until the first detail region lands. Read from the map, the
+         * answer would revert to `view.assemblyNames[0]` each time, and that is
+         * a different string exactly when a MAF names its reference
+         * differently, which is the case `refAssemblyName` exists for.
+         * `sources` hides this row, so it would come back for the whole time
+         * the view sat on the summary tier.
          *
          * Last write wins rather than a latch. The reference is a property of
          * the track, but the track can be re-pointed at another adapter or have
@@ -722,22 +721,6 @@ export default function stateModelFactory(
             undefined
           )
         },
-        /**
-         * #getter
-         * The configured `bigMafSummary` sub-adapter snapshot, or undefined when
-         * unset. Same journey as `annotationAdapterConfig`.
-         *
-         * Declared here, beside its sibling, so `showSummary` has one place to
-         * ask whether the tier exists. The gate reaches the same slot through
-         * `byteGateAdapterPath` rather than through this getter, since it needs
-         * the path anyway to read the tier's own budget.
-         */
-        get summaryAdapterConfig(): Record<string, unknown> | undefined {
-          return (
-            getConf(self.parentTrack, ['adapter', 'summaryAdapter']) ??
-            undefined
-          )
-        },
       }))
       .views(self => ({
         /**
@@ -853,37 +836,49 @@ export default function stateModelFactory(
           return filter?.length ? [...filter].sort() : undefined
         },
       }))
+      // The summary tier, as `CoarseTierMixin`'s hooks. Declared this early in
+      // the chain because the band layout below reads the verdict:
+      // `coverageBandActive` is what zeroes the band's height, and
+      // `rowsTopOffset` (and the whole height cascade under it) is resolved
+      // long before here.
       .views(self => ({
         /**
          * #getter
-         * Use the cheap summary path when a `bigMafSummary` sub-adapter is
-         * configured and the view is zoomed out past the force-load threshold,
-         * which is where the detail fetch stops being affordable at all. Tracks
-         * without a summary never enter this path.
-         *
-         * `aboveForceLoadFloor` is the gate's own comparison against that
-         * threshold (`RegionTooLargeMixin`), read rather than restated so the swap
-         * and the gate can't end up disagreeing about where the floor is. It
-         * deliberately excludes the opt-in terms, which is what keeps this from
-         * being a cycle — everything below that reads this getter
-         * (`byteGateAdapterPath`) sits downstream of the floor, never upstream.
-         *
-         * The swap point is 20kb and stays there even though the byte gate has no
-         * floor at all any more: where the summary tier starts being the better
-         * *picture* is a rendering question, and where the detail fetch gets too
-         * expensive is a bytes question. They coincided before only because the
-         * gate had nothing to say below 20kb. `aboveForceLoadFloor` survives for
-         * this and for the density axis; nothing else compares against 20kb.
-         *
-         * Declared this early in the chain — well before the fetch and rendering
-         * getters that are its obvious neighbours — because the band layout
-         * below needs it: `coverageBandActive` is what zeroes the band's height,
-         * and `rowsTopOffset` (and the whole height cascade under it) is
-         * resolved long before here. Both its inputs come off the compose, so
-         * there is nothing to order it after.
          */
-        get showSummary() {
-          return !!self.summaryAdapterConfig && self.aboveForceLoadFloor
+        get coarseAdapterSlot() {
+          return 'summaryAdapter'
+        },
+        /**
+         * #getter
+         * The summary read is a whole-feature download (`BigBedAdapter`) over
+         * every zoom from 20kb to the whole genome, so the byte gate measures
+         * it against its own file — the alignment's cost would block the cheap
+         * tier on the expensive one's number.
+         */
+        get coarseTierGated() {
+          return true
+        },
+        /**
+         * #getter
+         * Swap where the view is zoomed out past the force-load floor — the
+         * gate's own comparison (`RegionTooLargeMixin`), read rather than
+         * restated so the swap and the gate agree about where the floor is.
+         * The point is 20kb and stays there even though the byte gate has no
+         * floor of its own any more: where the summary tier starts being the
+         * better *picture* is a rendering question, and where the detail fetch
+         * gets too expensive is a bytes question.
+         */
+        get coarseTierPastThreshold() {
+          return self.aboveForceLoadFloor
+        },
+        /**
+         * #getter
+         * The summary read carries the same settings the detail fetch does
+         * (`subtreeFilter`, and the frames read beside it), so a settings
+         * change re-reads it.
+         */
+        get coarseReadKey() {
+          return self.rpcPropsCacheKey
         },
       }))
       .views(self => ({
@@ -893,8 +888,8 @@ export default function stateModelFactory(
          *
          * `showCoverage` is the user's setting — the menu ticks it, a config
          * sets it — but the band's depths come from `coverage.coverageDepths` on
-         * the alignment blocks, and the summary path clears `rpcDataMap` on
-         * purpose. Reading the setting as if it answered both questions left the
+         * the alignment blocks, and the summary tier carries none. Reading the
+         * setting as if it answered both questions left the
          * band reserving `coverageHeight` px above the rows and painting nothing
          * whatsoever into them: no bars, no axis, no label — ~45px of dead
          * chrome on every track with a `summaryAdapter` zoomed out past the
@@ -908,7 +903,7 @@ export default function stateModelFactory(
          * for the same reason.
          */
         get coverageBandActive() {
-          return self.showCoverage && !self.showSummary
+          return self.showCoverage && !self.coarseTierActive
         },
         /**
          * #getter
@@ -918,8 +913,8 @@ export default function stateModelFactory(
          *
          * Percent identity is computed from the alignment: the per-base mode
          * reads `coverage.identityScores` off the blocks and the codon mode
-         * translates them, so both come out of `rpcDataMap`, which the summary
-         * path clears. `showConservation` alone therefore left 40px of band, a
+         * translates them, so both come off the alignment blocks the summary
+         * tier does not carry. `showConservation` alone therefore left 40px of band, a
          * fixed 0–100% axis and a resize handle drawn over nothing at every zoom
          * past the floor. Unlike coverage it is off by default, which is the
          * only reason it went unnoticed for longer.
@@ -937,7 +932,7 @@ export default function stateModelFactory(
          * alignment costs the tier swap twice over.
          */
         get conservationBandActive() {
-          return self.showConservation && !self.showSummary
+          return self.showConservation && !self.coarseTierActive
         },
       }))
       .views(self => ({
@@ -1355,10 +1350,10 @@ export default function stateModelFactory(
          */
         contextMenuItems(): MenuItem[] {
           const info = self.contextMenuInfo
-          // The sort reads `rpcDataMap`, which the summary fetch clears on
-          // purpose, so on that tier the row was enabled and did nothing. Same
+          // The sort reads the alignment blocks, which the summary tier does
+          // not draw, so on that tier the row was enabled and did nothing. Same
           // wording the two band toggles use for the same override.
-          const zoomHint = self.showSummary ? ZOOM_IN_FOR_BAND : undefined
+          const zoomHint = self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
           const insertion =
             info?.hover?.kind === 'insertion' ? info.hover : undefined
           return info
@@ -1965,7 +1960,7 @@ export default function stateModelFactory(
           | 'codon'
           | 'sourceChrom'
           | RowIdentityMode {
-          if (self.showSummary) {
+          if (self.coarseTierActive) {
             return 'bases'
           }
           const selected = self.selectedRowRendering
@@ -1997,9 +1992,8 @@ export default function stateModelFactory(
          * **Not simply `activeRowRendering === 'bases'`.** That getter answers
          * which of the *selectable* renderings wins, and summary mode resolves
          * to `bases` there because none of the alternatives can draw from
-         * summary rows. But the base canvas can't draw from them either:
-         * `fetchMafSummaryData` clears `rpcDataMap` on purpose, and the rows the
-         * user sees are the summary overlay's. So the two questions genuinely
+         * summary rows. But the base canvas can't draw from them either: the
+         * rows the user sees are the summary overlay's. So the two questions genuinely
          * differ here, and answering this one with that one pinned the display
          * in `loading` forever — the render callback took the paint-from-
          * `rpcDataMap` branch, `renderBlocks` returned `painted: false` over an
@@ -2008,7 +2002,7 @@ export default function stateModelFactory(
          * under a track that was fully loaded and visibly drawn.
          */
         get basesRenderingActive() {
-          return self.activeRowRendering === 'bases' && !self.showSummary
+          return self.activeRowRendering === 'bases' && !self.coarseTierActive
         },
         /**
          * #getter
@@ -2117,19 +2111,19 @@ export default function stateModelFactory(
          *
          * Suppressed per region rather than in one decision, because the tiers
          * arrive per region: the one under the cursor can be showing bases while
-         * its neighbour is still bars. `showSummary` short-circuits it because
-         * the two maps *can* both hold a region — zooming back out reuses the
-         * summary cache and never calls `clearAlignmentData`, and the bars are
-         * what is on screen there.
+         * its neighbour is still bars. `coarseTierActive` short-circuits it
+         * because the two maps hold a region side by side — the detail store
+         * keeps its rows under the tier — and the bars are what is on screen
+         * there.
          */
         get visibleSummaryBars() {
-          if (!self.rowsVisible || self.summaryDataMap.size === 0) {
+          if (!self.rowsVisible || self.coarseTier.size === 0) {
             return []
           }
-          const summary = self.summaryDataMap
+          const summary = self.coarseTier
           return computeVisibleSummaryBars({
             view: self.host,
-            summaryDataMap: self.showSummary
+            summaryDataMap: self.coarseTierActive
               ? summary
               : {
                   get: (i: number) =>
@@ -2505,12 +2499,6 @@ export default function stateModelFactory(
         /**
          * #action
          */
-        setSummaryData(regionIndex: number, records: MafSummaryRecord[]) {
-          self.summaryDataMap.set(regionIndex, records)
-        },
-        /**
-         * #action
-         */
         setFramesData(regionIndex: number, records: MafFrameRecord[]) {
           self.framesDataMap.set(regionIndex, records)
         },
@@ -2525,44 +2513,16 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Drop alignment blocks when entering summary mode so the GPU sequence
-         * canvas paints nothing under the summary overlay.
-         *
-         * Deliberately one-directional: there is no twin on the alignment path.
-         * `summaryDataMap` is what `regionHasData` tests in summary mode, so
-         * keeping it through a zoom-in is exactly what lets the zoom back out
-         * reuse the cache instead of re-reading the summary adapter. It doesn't
-         * accumulate either — it only ever holds the buffered regions of the
-         * current chromosome, since `clearDisplaySpecificData` empties it on
-         * chromosome nav and on any settings invalidation.
-         */
-        clearAlignmentData() {
-          self.wireDataMap.clear()
-          self.rpcDataMap.clear()
-        },
-        /**
-         * #action
          */
         clearDisplaySpecificData() {
           self.wireDataMap.clear()
           self.rpcDataMap.clear()
-          self.summaryDataMap.clear()
           self.framesDataMap.clear()
           // The verdict describes a read of the viewport that was just thrown
           // away, so it goes with the data rather than outliving it — otherwise
           // chromosome nav carries "too much data" onto a region nobody has
           // measured yet.
           self.framesGateBlocked = false
-        },
-        /**
-         * #action
-         * Two tiers under one stamp: a settings refetch restamps a region for
-         * the tier it fetched, and the other tier's map would then read as
-         * cache-valid on the next zoom across the threshold while holding the
-         * old setting's rows. So every map goes, as it does on chromosome nav.
-         */
-        clearSettingsBakedData() {
-          self.clearDisplaySpecificData()
         },
         // reload() not overridden — MultiRegionDisplayMixin's base default
         // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
@@ -2576,7 +2536,10 @@ export default function stateModelFactory(
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources
               // over a loaded region is NOT this state — see renderState.
-              const hasFetched = self.sourcesKnown || self.hasRegionData
+              const hasFetched =
+                self.sourcesKnown ||
+                self.hasRegionData ||
+                self.coarseTierRead !== undefined
               // One call whatever the rows are doing, because this canvas now
               // carries the coverage band too. Out of `bases` mode the rows are
               // owned by a sibling canvas (the identity plot, the codon view,
@@ -2587,9 +2550,9 @@ export default function stateModelFactory(
               // `canvasDrawn`: returning false instead is what left summary mode
               // scrimmed forever; see `basesRenderingActive`.
               // The `|| !basesRenderingActive` is the sibling-canvas case: past
-              // the summary threshold `rpcDataMap` is cleared on purpose, so
-              // this backend draws nothing and reports nothing painted while
-              // the rows the user sees are on a sibling canvas.
+              // the summary threshold this backend draws nothing and reports
+              // nothing painted while the rows the user sees are on a sibling
+              // canvas.
               return hasFetched
                 ? b.renderBlocks(
                     self.renderBlocks,
@@ -2604,33 +2567,23 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * The detail fetch. The summary tier's is `fetchCoarseTier` below, and
+         * `CoarseTierMixin` suspends this one while the tier is up.
          */
         fetchNeeded(needed: IndexedRegion[]) {
-          // Zoom-out with a configured summary → cheap per-species summary rows;
-          // otherwise the full alignment fetch (subject to the byte gate below).
-          return self.showSummary
-            ? fetchMafSummaryData(self, needed)
-            : fetchMafAlignmentData(self, needed)
+          return fetchMafAlignmentData(self, needed)
+        },
+        /**
+         * #action
+         */
+        fetchCoarseTier(
+          read: CoarseTierRead,
+          ctx: FetchContext,
+        ): Promise<CoarseTierResult<MafSummaryRecord[]>> {
+          return fetchMafSummaryData(self, read.regions, ctx)
         },
       }))
-      .views(self => ({
-        /**
-         * #method
-         * Whether the tier the current zoom needs holds this region: crossing
-         * the summary↔detail threshold inside an already-loaded region wouldn't
-         * trip the bounds-based coverage check, so the answer is which map has
-         * it.
-         *
-         * The presence hook rather than `zoomFetchKey`, which stays empty,
-         * because the two tiers cache side by side: the detail fetch keeps the
-         * summary records (`clearAlignmentData` runs one way only), and a
-         * summary/detail key would refetch the summary on every zoom back out.
-         */
-        regionHasData(displayedRegionIndex: number) {
-          return self.showSummary
-            ? self.summaryDataMap.has(displayedRegionIndex)
-            : self.rpcDataMap.has(displayedRegionIndex)
-        },
+      .views(() => ({
         /**
          * #getter
          * Enable byte-estimate gating: a MAF-aware byte estimate (per-species
@@ -2638,42 +2591,20 @@ export default function stateModelFactory(
          * own RPC, blocking the fetch with a force-load prompt rather than
          * downloading hundreds of species' bases at genome scale.
          *
-         * On for **both** tiers, and `byteGateAdapterPath` below is what makes
-         * that safe: each RPC measures the file it actually reads — the
-         * alignment index on the detail path, the `summaryAdapter` sub-adapter
-         * on the summary one. This used to be `!showSummary`, exempting the
-         * summary tier on the grounds
-         * that it is the cheap one. It is cheap *per base* — no sequence — but it
-         * is still a whole-feature download (`BigBedAdapter.getFeatures`), and
-         * `showSummary` covers every zoom from 20kb to the whole genome. So the
-         * one path that existed to escape the gate was also the one that could
-         * pull an unbounded number of per-species records with nothing quoting
-         * the size. A genuinely small summary read is nowhere near
-         * `fetchSizeLimit` and never sees a banner; that is the estimate's job to
-         * decide, not this getter's.
+         * On for **both** tiers: each RPC measures the file it actually reads —
+         * the alignment index on the detail path, the `summaryAdapter`
+         * sub-adapter on the summary one (`coarseTierGated`). The summary tier
+         * used to be exempt on the grounds that it is the cheap one. It is cheap
+         * *per base* — no sequence — but it is still a whole-feature download
+         * (`BigBedAdapter.getFeatures`) over every zoom from 20kb to the whole
+         * genome, so the one path that existed to escape the gate was also the
+         * one that could pull an unbounded number of per-species records with
+         * nothing quoting the size. A genuinely small summary read is nowhere
+         * near `fetchSizeLimit` and never sees a banner; that is the estimate's
+         * job to decide, not this getter's.
          */
         get gateEnabled() {
           return true
-        },
-        /**
-         * #getter
-         * Measure whichever tier is about to be fetched: the `summaryAdapter`
-         * sub-adapter while `showSummary`, otherwise the MAF adapter itself.
-         * Without this the summary tier would be gated against the *alignment's*
-         * estimate — a number describing a download that isn't happening, which
-         * at genome scale would block the cheap tier on the expensive one's cost.
-         *
-         * The only hook the swap needs: `byteGateAdapterConfig` is the config at
-         * this path and `adapterFetchSizeLimit` is that config's own
-         * `fetchSizeLimit` slot, so the measurement and the budget describe one
-         * file by construction rather than by two overrides agreeing.
-         *
-         * Reading `showSummary` here is not a cycle: it resolves through
-         * `aboveForceLoadFloor`, which deliberately excludes every opt-in term
-         * (`RegionTooLargeMixin`), so nothing in the gate is upstream of it.
-         */
-        get byteGateAdapterPath(): string[] {
-          return self.showSummary ? ['adapter', 'summaryAdapter'] : ['adapter']
         },
       }))
       .actions(self => ({

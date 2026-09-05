@@ -45,11 +45,11 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
-  const { samples, showSummary } = model
+  const { samples, coarseTierActive } = model
   // Both entries reach the per-base alignment the summary tier exists not to
   // download, so both are off past its floor — the same override the track
   // menu's own subsequence entry and the two band toggles carry.
-  const zoomHint = showSummary ? ZOOM_IN_FOR_BAND : undefined
+  const zoomHint = coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
   const openRows = (rows: typeof samples) => {
     if (contextCoord) {
       openSubsequenceWidget(

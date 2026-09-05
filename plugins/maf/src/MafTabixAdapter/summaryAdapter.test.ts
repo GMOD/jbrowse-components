@@ -221,7 +221,7 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
   })
 })
 
-// `showSummary` is `!!readConfObject(self.adapterConfig, 'summaryAdapter') &&
+// `coarseTierActive` is `!!readConfObject(self.adapterConfig, 'summaryAdapter') &&
 // aboveForceLoadFloor`. A schema with no such slot reads `undefined` there — no
 // error, no warning, just a track that never summarizes.
 //

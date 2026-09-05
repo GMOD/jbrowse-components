@@ -88,7 +88,7 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   // correct and inert anyway. Read only to say so: the summary tier (both band
   // toggles), base-level zoom (the codon row coloring), and a frames read the
   // byte pre-flight declined (the CDS strip).
-  showSummary: boolean
+  coarseTierActive: boolean
   zoomedToBaseLevel: boolean
   framesGateBlocked: boolean
   conservationMode: ConservationMode
@@ -253,7 +253,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     toggleItem(
       withHint(
         'Show coverage',
-        self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
+        self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showCoverage,
       self.setShowCoverage,
@@ -270,7 +270,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     toggleItem(
       withHint(
         'Show conservation (% identity)',
-        self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
+        self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showConservation,
       self.setShowConservation,

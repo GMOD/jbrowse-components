@@ -134,7 +134,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     for (const rendering of ['sourceChrom', 'heatmap', 'xyplot'] as const) {
       display.setRowRendering(rendering)
@@ -156,7 +156,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     expect(display.activeRowRendering).toBe('bases')
     expect(display.basesRenderingActive).toBe(false)
@@ -175,7 +175,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 0.5)
-    expect(display.showSummary).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.basesRenderingActive).toBe(true)
   })
 
@@ -188,7 +188,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     expect(display.coverageBandActive).toBe(false)
     expect(display.coverageDisplayHeight).toBe(0)
@@ -227,7 +227,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     }).createDisplay()
     display.setShowConservation(true)
     zoomAndSettle(view, 100)
-    expect(display.showSummary).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     expect(display.conservationBandActive).toBe(false)
     expect(display.conservationDisplayHeight).toBe(0)

@@ -71,17 +71,16 @@ test('hiding the reference drops its row and leaves the others in order', () => 
 })
 
 // `rpcDataMap` is where the worker's answer arrives and it is emptied under the
-// display — `clearAlignmentData` on every zoom out to the summary tier,
-// `clearDisplaySpecificData` on chromosome navigation. Read back out of that
-// map, the reference id would revert to the view's assembly name, which is a
-// different string exactly here — and the row the user hid would reappear for
-// as long as the view sat zoomed out.
+// display — `clearDisplaySpecificData` on chromosome navigation. Read back out
+// of that map, the reference id would revert to the view's assembly name, which
+// is a different string exactly here — and the row the user hid would reappear
+// until the next region landed.
 test('the hidden row stays hidden once the alignment data is dropped', () => {
   const display = makeDisplay([REF, 'panTro4', 'mm10'])
   landRegion(display)
   display.setShowReferenceRow(false)
 
-  display.clearAlignmentData()
+  display.clearDisplaySpecificData()
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
 })
 

@@ -91,14 +91,12 @@ function makeSelf() {
   // nothing is marked loaded.
   const loadedIndices: number[] = []
   const committedBytes: (number | undefined)[][] = []
-  const cleared: string[] = []
   const framesFetched: number[] = []
   const framesBlocked: boolean[] = []
   return {
     reported,
     loadedIndices,
     committedBytes,
-    cleared,
     framesFetched,
     framesBlocked,
     self: {
@@ -120,40 +118,53 @@ function makeSelf() {
         _needed: unknown,
         work: (ctx: RegionFetchContext) => unknown,
       ) =>
-        Promise.resolve(
-          work({
-            stopToken: 'tok',
-            isStale: () => false,
-            statusCallback: (s: RpcStatus) => reported.push(s),
-            // the real envelope, over this file's mocked rpcManager, so the
-            // converted fetch sites exercise the same injection production does
-            callRpc(method, args) {
-              return mockRpcCall('session-1', method, {
-                ...args,
-                stopToken: this.stopToken,
-                statusCallback: this.statusCallback,
-              })
-            },
-            commitRegion: (idx: number) => {
-              loadedIndices.push(idx)
-            },
-          }),
-        ).then(() => {}),
+        Promise.resolve(work(makeCtx(reported, loadedIndices))).then(() => {}),
       setRpcData: () => {},
-      setSummaryData: () => {},
       setFramesData: (i: number) => {
         framesFetched.push(i)
       },
       setFramesGateBlocked: (blocked: boolean) => {
         framesBlocked.push(blocked)
       },
-      clearAlignmentData: () => {
-        cleared.push('alignment')
-      },
       setSamples: () => {},
     },
   }
 }
+
+// The context either tier's read runs under: the per-region path's from
+// `fetchRegions`, the summary tier's from `CoarseTierMixin`'s skeleton.
+function makeCtx(
+  reported: RpcStatus[],
+  loadedIndices: number[],
+): RegionFetchContext {
+  return {
+    stopToken: 'tok',
+    isStale: () => false,
+    statusCallback: (s: RpcStatus) => reported.push(s),
+    // the real envelope, over this file's mocked rpcManager, so the
+    // converted fetch sites exercise the same injection production does
+    callRpc(method, args) {
+      return mockRpcCall('session-1', method, {
+        ...args,
+        stopToken: this.stopToken,
+        statusCallback: this.statusCallback,
+      })
+    },
+    commitRegion: (idx: number) => {
+      loadedIndices.push(idx)
+    },
+  }
+}
+
+// One shape for both tiers, so a table can run either.
+const fetchAlignment = (self: ReturnType<typeof makeSelf>) =>
+  fetchMafAlignmentData(self.self as any, NEEDED)
+const fetchSummary = (self: ReturnType<typeof makeSelf>) =>
+  fetchMafSummaryData(
+    self.self as any,
+    NEEDED,
+    makeCtx(self.reported, self.loadedIndices),
+  )
 
 beforeEach(() => {
   mockRpcCall.mockReset()
@@ -173,11 +184,12 @@ beforeEach(() => {
 // place that was missing.
 describe('MAF fetch progress reporting', () => {
   test.each([
-    ['alignment', fetchMafAlignmentData],
-    ['summary', fetchMafSummaryData],
+    ['alignment', fetchAlignment],
+    ['summary', fetchSummary],
   ])('%s fetch passes a per-region statusCallback', async (_name, fetchFn) => {
-    const { self, reported } = makeSelf()
-    await fetchFn(self as any, NEEDED)
+    const made = makeSelf()
+    const { reported } = made
+    await fetchFn(made)
 
     expect(mockRpcCall).toHaveBeenCalledTimes(2)
     const sent = mockRpcCall.mock.calls.map(c => c[2].statusCallback)
@@ -203,11 +215,10 @@ describe('MAF fetch progress reporting', () => {
 // quotes always describes the download that was refused.
 describe('the byte gate rides in the tier fetch', () => {
   test.each([
-    ['alignment', fetchMafAlignmentData],
-    ['summary', fetchMafSummaryData],
+    ['alignment', fetchAlignment],
+    ['summary', fetchSummary],
   ])('%s fetch sends the resolved byte budget', async (_name, fetchFn) => {
-    const { self } = makeSelf()
-    await fetchFn(self as any, NEEDED)
+    await fetchFn(makeSelf())
 
     for (const call of mockRpcCall.mock.calls) {
       expect(call[2].byteLimit).toBe(1_000_000)
@@ -280,22 +291,55 @@ describe('the byte gate rides in the tier fetch', () => {
   })
 })
 
-// The swap is one-directional on purpose. Entering summary mode drops the
-// alignment blocks so the GPU sequence canvas paints nothing under the summary
-// overlay; zooming back in keeps the summary records, because `regionHasData`
-// tests `summaryDataMap` in summary mode and that retention is what lets the
-// zoom back out reuse the cache rather than re-read the summary adapter.
-describe('summary/detail data swap', () => {
-  test('the summary fetch drops alignment blocks', async () => {
-    const { self, cleared } = makeSelf()
-    await fetchMafSummaryData(self as any, NEEDED)
-    expect(cleared).toEqual(['alignment'])
+// The summary tier's read answers the tier's own store, one payload per
+// region, and marks nothing loaded in the detail store: the two tiers hold
+// their own spans.
+describe('the summary read', () => {
+  test('answers one payload per region and stamps no detail region', async () => {
+    const made = makeSelf()
+    mockRpcCall.mockImplementation((_s: string, method: string) =>
+      Promise.resolve(
+        method === 'LinearMafGetSummaryData'
+          ? {
+              samples: [],
+              treeNewick: undefined,
+              samplesCanonical: false,
+              records: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+              bytes: 10,
+            }
+          : { records: [] },
+      ),
+    )
+    const result = await fetchSummary(made)
+    expect(result).toEqual({
+      entries: [
+        {
+          displayedRegionIndex: 0,
+          payload: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+        },
+        {
+          displayedRegionIndex: 3,
+          payload: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+        },
+      ],
+      bytes: 10,
+    })
+    expect(made.loadedIndices).toEqual([])
   })
 
-  test('the alignment fetch keeps summary records', async () => {
-    const { self, cleared } = makeSelf()
-    await fetchMafAlignmentData(self as any, NEEDED)
-    expect(cleared).toEqual([])
+  test('hands a refusal back with its bytes, for the gate', async () => {
+    const made = makeSelf()
+    mockRpcCall.mockImplementation((_s: string, method: string) =>
+      Promise.resolve(
+        method === 'LinearMafGetSummaryData'
+          ? { regionTooLarge: true, bytes: 9e9 }
+          : { records: [] },
+      ),
+    )
+    expect(await fetchSummary(made)).toEqual({
+      regionTooLarge: true,
+      bytes: 9e9,
+    })
   })
 })
 
@@ -423,9 +467,10 @@ describe('the CDS-frame read is measured against its own file', () => {
   // The summary tier is where the span gets large enough for this to matter, so
   // it has to be gated on that path too — not only on the alignment's.
   test('applies on the summary tier as well', async () => {
-    const { self, framesFetched, framesBlocked } = framesSelf()
+    const made = framesSelf()
+    const { framesFetched, framesBlocked } = made
     respondWith(true)
-    await fetchMafSummaryData(self as any, NEEDED)
+    await fetchSummary(made)
     expect(framesFetched).toEqual([])
     expect(framesBlocked).toEqual([true])
   })

@@ -35,14 +35,14 @@ function target(sampleLabel: string) {
 
 function model(
   asked: [number, number, number, number][] = [],
-  showSummary = false,
+  coarseTierActive = false,
 ) {
   return {
     id: 'display1',
     samples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
     sources: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
     adapterConfig: { type: 'MafTabixAdapter' },
-    showSummary,
+    coarseTierActive,
     resolvedByteLimit: () => 1_000_000,
     scrollTop: 0,
     rowsTopOffset: 0,
