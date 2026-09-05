@@ -4,8 +4,6 @@ import {
 } from '@jbrowse/render-core/shaders/rowRect'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
-import { featureSpanEndBp } from '../../shared/featureSpanBp.ts'
-
 export { MULTI_ROW_MIN_CELL_PX }
 
 // Higher than the multi-wiggle's xyplot rows, which sit on paper: blocks here
@@ -22,23 +20,4 @@ export function rowBand(rowHeight: number, rowProportion: number) {
     height: drawnRowHeightPx(rowHeight, rowProportion),
     offset: rowBandOffsetPx(rowHeight, rowProportion),
   }
-}
-
-/**
- * Whether a genomic base falls on a feature's PAINTED block, which is its own
- * span or the `MULTI_ROW_MIN_CELL_PX` floor, whichever reaches further. Both
- * painters widen from the START edge, so the block runs forward from `start`
- * however the region is oriented.
- */
-export function paintedSpanContainsBp(
-  start: number,
-  end: number,
-  bp: number,
-  bpPerPx: number,
-) {
-  const paintedEnd = Math.max(
-    featureSpanEndBp(start, end),
-    start + MULTI_ROW_MIN_CELL_PX * bpPerPx,
-  )
-  return start <= bp && bp < paintedEnd
 }

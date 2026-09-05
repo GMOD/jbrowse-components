@@ -8,7 +8,7 @@ import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 
-import type { MarkShape } from './types.ts'
+import type { MarkHit, MarkShape } from './types.ts'
 
 /**
  * The `span` shape's channels: a coloured rectangle from `x` to `x2` on the
@@ -98,5 +98,34 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
         h,
       )
     }
+  },
+
+  hitNearest(channels, block, _frame, params, xPx, yPx, candidates, maxDistSq) {
+    const { x, x2, row } = channels
+    const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
+    const h = drawnRowHeightPx(rowHeight, rowProportion)
+    const offset = rowBandOffsetPx(rowHeight, rowProportion)
+    const bpToPx = makeBpMapper(block)
+    let best: MarkHit | undefined
+    let bestDistSq = maxDistSq
+    for (const i of candidates) {
+      const xa = bpToPx(x[i]!)
+      const xb = bpToPx(x2[i]!)
+      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      const left = spanLeft(xa, xb, width)
+      const top = offset + rowHeight * row[i]! - scrollTop
+      // the rect `paintBlock` fills, less `seamPx`, which is painter-only
+      // overdraw; distance 0 inside it, else to its nearest edge
+      const nx = Math.min(Math.max(xPx, left), left + width)
+      const ny = Math.min(Math.max(yPx, top), top + h)
+      const dx = xPx - nx
+      const dy = yPx - ny
+      const distSq = dx * dx + dy * dy
+      if (distSq < bestDistSq) {
+        bestDistSq = distSq
+        best = { index: i, x: nx, y: ny, distSq }
+      }
+    }
+    return best
   },
 }

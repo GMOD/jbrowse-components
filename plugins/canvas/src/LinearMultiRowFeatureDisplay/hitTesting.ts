@@ -1,13 +1,20 @@
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
+import {
+  contentYAt,
+  rowsUnderPointer,
+} from '@jbrowse/core/util/rowStackGeometry'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import { regionWithDeltas } from './rendering/featurePainting.ts'
-import { paintedSpanContainsBp, rowBand } from './rendering/rowBand.ts'
+import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
+import { rowBand } from './rendering/rowBand.ts'
 
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
-import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
+import type {
+  MultiRowRegionData,
+  MultiRowRenderState,
+} from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -36,7 +43,6 @@ export interface MultiRowContextMenuInfo extends ContextMenuAnchor {
 }
 
 interface HitTestView {
-  bpPerPx: number
   pxToBp: (px: number) => {
     refName: string
     start: number
@@ -62,12 +68,16 @@ export interface MultiRowHitTestSlice {
   effectiveRowHeight: number
   rowProportion: number
   renderBlocks: RenderBlock[]
+  renderState: MultiRowRenderState
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   view: HitTestView
 }
 
 type PointerBase = ReturnType<HitTestView['pxToBp']>
+
+// Containment, not proximity: the bound admits distance 0 and nothing else.
+const INSIDE_ONLY = Number.MIN_VALUE
 
 /**
  * The view's answer for a display-relative pixel, undefined over the tree
@@ -84,59 +94,80 @@ function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
 }
 
 /**
+ * The channel indices drawn on rows `nearest` down to `lowest`, each row's
+ * bucket back to front: both render paths paint in array order, so a later
+ * channel sits on top, and the mark keeps the first zero-distance candidate.
+ */
+function* channelsOnRows(
+  { rowStart, rowIndices }: MultiRowEncoded,
+  nearest: number,
+  lowest: number,
+) {
+  for (let r = nearest; r >= lowest; r--) {
+    const lo = rowStart[r]
+    const hi = rowStart[r + 1]
+    if (lo !== undefined && hi !== undefined) {
+      for (let k = hi - 1; k >= lo; k--) {
+        yield rowIndices[k]!
+      }
+    }
+  }
+}
+
+/**
  * `rowsUnderPointer` asks at the pixel's centre, the scanline that decided the
  * color under the cursor — at the 0.32 px rows a cohort painting fits into, the
  * top edge names a row one and a half off. Several sub-pixel rows share one
  * drawn pixel, so the walk from `nearest` to `lowest` finds whichever of them
- * actually put a block there. Each row's bucket is walked back to front, since
- * both render paths paint in array order and a later channel sits on top.
+ * actually put a block there. The mark then answers which of those rows'
+ * blocks the pixel's centre is on.
  */
 function featureAtBase(
   self: MultiRowHitTestSlice,
   p: PointerBase,
+  mouseX: number,
   mouseY: number,
 ): MultiRowHit | undefined {
-  const { view } = self
   const region = self.drawnRegionData.get(p.index)
   const encoded = self.encodedChannels.get(p.index)
-  if (!region || !encoded) {
+  const block = self.renderBlocks.find(b => b.displayedRegionIndex === p.index)
+  if (!region || !encoded || !block) {
     return undefined
   }
-  // coord0 names the base to the right of the cursor when reversed.
-  const bp = basePaintedAt(p, p.offset)
-  const { featureStarts, featureEnds, featureNames, featureIds } = region
-  const { x, x2, rowStart, rowIndices, featureIndex } = encoded
-  const deltas = regionWithDeltas(region)?.featureDeltas
   const rowHeight = self.effectiveRowHeight
+  const stack = { rowHeight }
   const { nearest, lowest } = rowsUnderPointer(
     mouseY,
-    { rowHeight },
+    stack,
     rowBand(rowHeight, self.rowProportion).height,
   )
-  for (let targetRow = nearest; targetRow >= lowest; targetRow--) {
-    const row = self.sources[targetRow]
-    const lo = rowStart[targetRow]
-    const hi = rowStart[targetRow + 1]
-    if (row && lo !== undefined && hi !== undefined) {
-      for (let k = hi - 1; k >= lo; k--) {
-        const c = rowIndices[k]!
-        if (paintedSpanContainsBp(x[c]!, x2[c]!, bp, view.bpPerPx)) {
-          const i = featureIndex[c]!
-          return {
-            id: featureIds[i]!,
-            regionIndex: p.index,
-            rowName: row.name,
-            name: featureNames[i]!,
-            refName: p.refName,
-            start: featureStarts[i]!,
-            end: featureEnds[i]!,
-            delta: deltas?.[i],
-          }
-        }
-      }
-    }
+  const hit = MULTI_ROW_MARK.hitNearest?.(
+    encoded,
+    block,
+    self.renderState,
+    Math.floor(mouseX) + 0.5,
+    contentYAt(mouseY, stack),
+    channelsOnRows(encoded, nearest, lowest),
+    INSIDE_ONLY,
+  )
+  if (!hit) {
+    return undefined
   }
-  return undefined
+  const row = self.sources[encoded.row[hit.index]!]
+  if (!row) {
+    return undefined
+  }
+  const i = encoded.featureIndex[hit.index]!
+  return {
+    id: region.featureIds[i]!,
+    regionIndex: p.index,
+    rowName: row.name,
+    name: region.featureNames[i]!,
+    refName: p.refName,
+    start: region.featureStarts[i]!,
+    end: region.featureEnds[i]!,
+    delta: regionWithDeltas(region)?.featureDeltas[i],
+  }
 }
 
 /** The feature under a display-relative pixel, or undefined where none is. */
@@ -146,7 +177,7 @@ export function featureAtPixel(
   mouseY: number,
 ): MultiRowHit | undefined {
   const p = pointerBase(self, mouseX)
-  return p && featureAtBase(self, p, mouseY)
+  return p && featureAtBase(self, p, mouseX, mouseY)
 }
 
 /**
@@ -165,7 +196,7 @@ export function contextTargetAtPixel(
       // The base drawn at the clicked column; coord0 is off by one when
       // reversed.
       pos: basePaintedAt(p, p.offset),
-      hit: featureAtBase(self, p, mouseY),
+      hit: featureAtBase(self, p, mouseX, mouseY),
     }
   )
 }
@@ -193,6 +224,7 @@ export function hitBlockRect(
     : undefined
 }
 
+/** The row a hit sits on, off the live order — resolved the way the box is. */
 export function hitRow(
   self: Pick<MultiRowHitTestSlice, 'rowIndexByValue' | 'sources'>,
   hit: MultiRowHit | undefined,

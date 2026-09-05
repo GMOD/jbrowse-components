@@ -1,39 +1,10 @@
 import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
 import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba } from './colorFill.ts'
+import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import { spanMark } from './spanMark.ts'
 
 import type { SpanChannels, SpanParams } from './spanMark.ts'
-import type { MarkContext2D } from './types.ts'
-
-interface FillRectCall {
-  x: number
-  y: number
-  w: number
-  h: number
-  fillStyle: string
-}
-
-function mockCtx() {
-  const calls: FillRectCall[] = []
-  const ctx = {
-    fillStyle: '',
-    save() {},
-    restore() {},
-    beginPath() {},
-    rect() {},
-    clip() {},
-    moveTo() {},
-    lineTo() {},
-    arc() {},
-    closePath() {},
-    fill() {},
-    fillRect(x: number, y: number, w: number, h: number) {
-      calls.push({ x, y, w, h, fillStyle: this.fillStyle })
-    },
-  }
-  return { ctx: ctx as unknown as MarkContext2D, calls }
-}
 
 const RED = 0xff0000ff
 const BLUE = 0xffff0000
@@ -164,4 +135,56 @@ test('packs x/x2/row/color into the struct lanes of the same name', () => {
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.x2]).toBe(2000)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.row]).toBe(3)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(BLUE)
+})
+
+describe('hitNearest', () => {
+  const all = (c: SpanChannels) =>
+    Array.from({ length: c.count }, (_, i) => c.count - 1 - i)
+  const hit = (
+    c: SpanChannels,
+    x: number,
+    y: number,
+    b = block,
+    p = params,
+    maxDistSq = Number.MIN_VALUE,
+  ) => spanMark.hitNearest!(c, b, frame, p, x, y, all(c), maxDistSq)
+
+  test('distance 0 on the painted rect, edges included, and nothing past it', () => {
+    const c = channels([10, 50], [20, 60], [0, 1], [RED, BLUE])
+    expect(hit(c, 150, 10)).toMatchObject({ index: 0, distSq: 0 })
+    expect(hit(c, 100, 0)).toMatchObject({ index: 0, distSq: 0 })
+    expect(hit(c, 200, 20)).toMatchObject({ index: 0, distSq: 0 })
+    expect(hit(c, 200.5, 10)).toBeUndefined()
+    expect(hit(c, 150, 20.5)).toBeUndefined()
+    expect(hit(c, 550, 30)).toMatchObject({ index: 1, distSq: 0 })
+  })
+
+  test('outside, the squared distance to the nearest edge', () => {
+    const c = channels([10], [20], [0], [RED])
+    expect(hit(c, 203, 24, block, params, Infinity)).toMatchObject({
+      index: 0,
+      x: 200,
+      y: 20,
+      distSq: 25,
+    })
+  })
+
+  test('the first zero-distance candidate wins, so back to front is on top', () => {
+    const c = channels([10, 12], [20, 18], [0, 0], [RED, BLUE])
+    expect(hit(c, 150, 10)?.index).toBe(1)
+    expect(hit(c, 110, 10)?.index).toBe(0)
+  })
+
+  test('a sub-pixel span widens from its start edge on a reversed block', () => {
+    const narrow = channels([50], [51], [0], [RED])
+    const b = { ...block, screenEndPx: 50, reversed: true }
+    expect(hit(narrow, 25 - MULTI_ROW_MIN_CELL_PX, 10, b)?.index).toBe(0)
+    expect(hit(narrow, 25.5, 10, b)).toBeUndefined()
+  })
+
+  test('the seam pad is painter-only and not hittable', () => {
+    const c = channels([10], [20], [0], [RED])
+    const seamed = { ...params, minWidthPx: 0, seamPx: 0.4 }
+    expect(hit(c, 200.3, 10, block, seamed)).toBeUndefined()
+  })
 })

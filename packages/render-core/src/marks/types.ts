@@ -78,10 +78,16 @@ export interface MarkShape<TChannels, TParams> {
    * index answered, and one without hands in every instance. What the shape
    * owns is where its ink actually is — the half that drifts from the painter.
    *
+   * Distance 0 means the point is on the ink `paintBlock` fills, edges
+   * included, and a caller wanting containment alone passes a bound that
+   * admits nothing else (`Number.MIN_VALUE`). Only a strictly nearer candidate
+   * replaces the best, so on a tie the first candidate wins — a caller that
+   * iterates back to front gets the last-painted mark, which is the one on
+   * top. `drawAgainstHit.ts` is the sweep that holds a shape to this.
+   *
    * Optional, because a shape earns it from a consumer like any other member.
-   * `span`'s two displays both answer a hit from data the channels do not carry
-   * — multi-row from a feature index, MAF from row/column arithmetic over the
-   * alignment — so `span` declares none.
+   * MAF answers a hit from row/column arithmetic over the alignment rather than
+   * from `span`'s channels, so it reads none.
    */
   hitNearest?(
     channels: TChannels,

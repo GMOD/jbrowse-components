@@ -138,8 +138,8 @@ re-render like that gets seen at all; INTERACTION_PERF.md has the rest.
 
 Where the value has to stay an array — a row list rebuilt from `rpcDataMap` on
 every region arrival — `stableIdentityComputed` is what keeps its identity, for
-the `!==` caches downstream (render-core `installUpload`'s encode cache). Both
-multi-row families hold their `sourcesWithoutLayout` through it.
+the `!==` caches downstream (render-core's `createEncodeMemo`). Both multi-row
+families hold their `sourcesWithoutLayout` through it.
 
 ## A hit test's index needs an observer, or it is not memoized
 
