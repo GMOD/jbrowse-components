@@ -26,7 +26,6 @@ import {
   GetSequenceDialog,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import {
   buildColorPalette,
@@ -112,8 +111,15 @@ export function modelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      sequenceData: regionDataMap<SequenceRegionData>('sequenceData'),
+    .views(self => ({
+      /**
+       * #getter
+       * The fetched sequence, keyed by displayedRegionIndex — the foundation's
+       * per-region store, narrowed.
+       */
+      get sequenceData(): ReadonlyMap<number, SequenceRegionData> {
+        return self.regionPayloads as ReadonlyMap<number, SequenceRegionData>
+      },
     }))
     .views(self => ({
       /**
@@ -294,12 +300,6 @@ export function modelFactory(
       },
     }))
     .actions(self => ({
-      setSequenceRegion(idx: number, data: SequenceRegionData) {
-        self.sequenceData.set(idx, data)
-      },
-      clearDisplaySpecificData() {
-        self.sequenceData.clear()
-      },
       /**
        * #action
        */
@@ -396,7 +396,7 @@ export function modelFactory(
                 ?.getGeneticCodeId(region.refName) ?? 1
             return { features, geneticCodeId }
           },
-          onResult: (idx, { features, geneticCodeId }) => {
+          onResult: (_idx, { features, geneticCodeId }, region) => {
             // every sequence adapter answers a region with a single feature
             // carrying the whole string; take the first that has one rather
             // than looping and overwriting the same key, which kept whichever
@@ -404,14 +404,21 @@ export function modelFactory(
             for (const f of features) {
               const seq = f.get('seq') as string | undefined
               if (seq) {
-                self.setSequenceRegion(idx, {
+                return {
                   seq,
                   start: f.get('start'),
                   geneticCodeId,
-                })
-                break
+                } satisfies SequenceRegionData
               }
             }
+            // A region an adapter has no sequence for is answered, not
+            // missing: commit the empty record so `regionHasData` reads true
+            // and the plan stops re-issuing it forever.
+            return {
+              seq: '',
+              start: region.start,
+              geneticCodeId,
+            } satisfies SequenceRegionData
           },
         })
       },
