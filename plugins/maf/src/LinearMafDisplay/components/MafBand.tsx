@@ -1,7 +1,7 @@
+import { YScaleGutter } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import MafBandResizeHandle from './MafBandResizeHandle.tsx'
-import MafYScaleGutter from './MafYScaleGutter.tsx'
 import TrackBandCanvas from './TrackBandCanvas.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -52,7 +52,7 @@ const MafBand = observer(function MafBand({
         draw={draw}
       />
       {show && ticks ? (
-        <MafYScaleGutter top={top} height={height} ticks={ticks} />
+        <YScaleGutter top={top} height={height} ticks={ticks} />
       ) : null}
       <MafBandResizeHandle
         model={model}

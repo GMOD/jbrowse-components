@@ -1,15 +1,14 @@
 import { getFillProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { YSCALE_AXIS_WIDTH } from './MafYScaleGutter.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { Theme } from '@mui/material'
 
 // Just clear of the Y-axis gutter the two bands share.
-const LABEL_X = YSCALE_AXIS_WIDTH + 2
+const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
 const FONT_SIZE = 9
 // The on-screen label is a block with 1px of padding above it, so its text sits
 // about a font-size below the band's top edge. SVG `<text>` is placed by that
@@ -32,8 +31,9 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The band titles for the SVG export. Same shape as `MafYScaleGutter`'s
- * `SvgYScaleGutter`: the on-screen and exported halves of one piece of chrome,
+ * The band titles for the SVG export. Same shape as wiggle-core's
+ * `YScaleGutter` / `SvgYScaleGutter`: the on-screen and exported halves of one
+ * piece of chrome,
  * side by side, so the x and the font can't be spelled two ways.
  *
  * What is titled, and when, is `model.bandLabels` — the export used to draw no

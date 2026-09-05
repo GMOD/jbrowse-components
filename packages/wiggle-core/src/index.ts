@@ -73,6 +73,7 @@ export {
 export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
+export { SvgYScaleGutter, default as YScaleGutter } from './YScaleGutter.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export {

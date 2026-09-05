@@ -1,6 +1,6 @@
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YScaleBar, leftAxisSpineX } from '@jbrowse/wiggle-core'
 
-import { AXIS_SVG_WIDTH, leftAxisSpineX } from '../coverageAxisStyle.ts'
+import { AXIS_SVG_WIDTH } from '../coverageAxisStyle.ts'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
 import { sectionKey } from './sectionScreen.ts'
 

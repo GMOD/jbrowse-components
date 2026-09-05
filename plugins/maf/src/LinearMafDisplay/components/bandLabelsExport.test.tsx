@@ -1,10 +1,10 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { ThemeProvider } from '@mui/material/styles'
 import { render } from '@testing-library/react'
 
 import { createMafTestEnvironment } from '../testEnv.ts'
 import MafBandLabels, { SvgBandLabels } from './MafBandLabels.tsx'
-import { YSCALE_AXIS_WIDTH } from './MafYScaleGutter.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -62,7 +62,7 @@ describe('band titles reach the SVG export', () => {
   it('clears the Y-axis gutter the bands share', () => {
     for (const t of draw(BOTH_BANDS)) {
       expect(Number(t.getAttribute('x'))).toBeGreaterThanOrEqual(
-        YSCALE_AXIS_WIDTH,
+        AXIS_GUTTER_WIDTH_PX,
       )
     }
   })

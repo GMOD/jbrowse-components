@@ -13,6 +13,7 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
+import { SvgYScaleGutter } from '@jbrowse/wiggle-core'
 
 import { getMafCoverageColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { drawMafCoverage } from '../LinearMafRenderer/drawMafCoverage.ts'
@@ -33,7 +34,6 @@ import {
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 import { SvgBandLabels } from './components/MafBandLabels.tsx'
-import { SvgYScaleGutter } from './components/MafYScaleGutter.tsx'
 import {
   conservationTicks,
   drawCodonConservation,

@@ -27,13 +27,10 @@ export function compactAxisLabel(ticks: { items: { value: number }[] }) {
   return `[${Math.round(min)}, ${Math.round(max)}]`
 }
 
-// Width reserved for a full y-axis, and where inside it the spine goes. Both
-// come from wiggle-core, beside the `YScaleBar` whose label geometry is what
-// makes them the right numbers — this file and MAF's band gutter had each
-// arrived at the same 50/45 pair on their own. Re-exported under the local name
-// every caller already uses.
+// Width reserved for a full y-axis, from wiggle-core beside the `YScaleBar`
+// whose label geometry makes it the right number, under the local name every
+// caller already uses.
 export const AXIS_SVG_WIDTH = AXIS_GUTTER_WIDTH_PX
-export { leftAxisSpineX } from '@jbrowse/wiggle-core'
 
 // Left edge of the box the read-cloud insert-size (TLEN) axis lays itself out
 // in — down mode on the left of the canvas, up mode on the right, both flush

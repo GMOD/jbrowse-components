@@ -1,7 +1,7 @@
+import { YScaleGutter } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import MafBandResizeHandle from './MafBandResizeHandle.tsx'
-import MafYScaleGutter from './MafYScaleGutter.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -28,7 +28,7 @@ const MafCoverageBand = observer(function MafCoverageBand({
   return (
     <>
       {coverageBandActive && coverageTicks ? (
-        <MafYScaleGutter
+        <YScaleGutter
           top={topBands.top.coverage}
           height={topBands.reserved.coverage}
           ticks={coverageTicks}

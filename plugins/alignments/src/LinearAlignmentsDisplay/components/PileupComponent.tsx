@@ -10,7 +10,7 @@ import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YScaleBar, YScaleGutter } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
@@ -23,7 +23,6 @@ import {
   COMPACT_AXIS_FONT_SIZE,
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
-  leftAxisSpineX,
 } from '../coverageAxisStyle.ts'
 import { groupSectionLabel } from '../groupLabelStyle.ts'
 import { stackedBandGain } from '../sectionLayout.ts'
@@ -538,21 +537,12 @@ const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
     return <CompactCoverageLabel top={1} ticks={coverageTicks} />
   }
   return (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: scalebarOverlapLeft,
-        pointerEvents: 'none',
-        height: section.coverageHeight,
-        width: AXIS_SVG_WIDTH,
-      }}
-    >
-      {/* the same spine placement the export uses, so the two can't drift */}
-      <g transform={`translate(${leftAxisSpineX(0)}, 0)`}>
-        <YScaleBar ticks={coverageTicks} orientation="left" />
-      </g>
-    </svg>
+    <YScaleGutter
+      top={0}
+      left={scalebarOverlapLeft}
+      height={section.coverageHeight}
+      ticks={coverageTicks}
+    />
   )
 })
 

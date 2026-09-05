@@ -11,7 +11,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { SvgYScaleGutter, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
@@ -28,7 +28,6 @@ import {
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
   insertSizeAxisBoxLeft,
-  leftAxisSpineX,
   rightAxisLabelX,
   rightAxisSpineX,
 } from './coverageAxisStyle.ts'
@@ -267,20 +266,20 @@ export function CoverageScaleBars({
           >
             {compactAxisLabel(ticks)}
           </text>
-        ) : (
+        ) : hasGroupLabels ? (
           <g
             key={sectionKey(section.groupKey)}
-            transform={`translate(${
-              hasGroupLabels
-                ? rightAxisSpineX(canvasWidth)
-                : leftAxisSpineX(left)
-            }, ${section.coverageTop})`}
+            transform={`translate(${rightAxisSpineX(canvasWidth)}, ${section.coverageTop})`}
           >
-            <YScaleBar
-              ticks={ticks}
-              orientation={hasGroupLabels ? 'right' : 'left'}
-            />
+            <YScaleBar ticks={ticks} orientation="right" />
           </g>
+        ) : (
+          <SvgYScaleGutter
+            key={sectionKey(section.groupKey)}
+            left={left}
+            y={section.coverageTop}
+            ticks={ticks}
+          />
         ),
       )}
     </>
