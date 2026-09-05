@@ -56,8 +56,8 @@ describe('the density tier stands in for the too-large banner', () => {
     const { display } = refusedDisplay()
 
     expect(display.regionTooLarge).toBe(true)
-    expect(display.hasDensitySource).toBe(false)
-    expect(display.densityTierActive).toBe(false)
+    expect(display.hasCoarseSource).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
   })
 
@@ -65,7 +65,7 @@ describe('the density tier stands in for the too-large banner', () => {
     const { display } = refusedDisplay(DENSITY_ADAPTER)
 
     expect(display.regionTooLarge).toBe(true)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.displayPhase).not.toBe('tooLarge')
   })
 
@@ -73,13 +73,12 @@ describe('the density tier stands in for the too-large banner', () => {
     const { display } = refusedDisplay(DENSITY_ADAPTER)
     expect(display.displayPhase).toBe('loading')
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
     expect(display.displayPhase).toBe('ready')
-    expect(display.densityBandActive).toBe(true)
+    expect(display.coarseTierStandsIn).toBe(true)
     expect(display.densityBandLayer.maxDepth).toBeGreaterThan(0)
     expect(display.drawsWhenTooLarge).toBe(true)
   })
@@ -91,21 +90,21 @@ describe('the density tier stands in for the too-large banner', () => {
     display.forceLoad()
 
     expect(display.regionTooLarge).toBe(false)
-    expect(display.densityTierActive).toBe(false)
-    expect(display.densityBandActive).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
+    expect(display.coarseTierStandsIn).toBe(false)
   })
 
   it('follows the densityTier slot over the verdict', () => {
     const { display } = refusedDisplay(DENSITY_ADAPTER)
 
     setConf(display, 'densityTier', 'features')
-    expect(display.densityTierActive).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
 
     display.forceLoad()
     setConf(display, 'densityTier', 'density')
     expect(display.regionTooLarge).toBe(false)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
   })
 })
 
@@ -123,10 +122,9 @@ describe('the band stands alone, and fetches nothing', () => {
     expect(display.displayPhase).toBe('loading')
     expect(display.svgReady).toBe(false)
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
     expect(display.displayPhase).toBe('ready')
     expect(display.svgReady).toBe(true)
@@ -134,7 +132,7 @@ describe('the band stands alone, and fetches nothing', () => {
 
   it('keeps the measurement pass where the gate is blocking', () => {
     const { display } = refusedDisplay(DENSITY_ADAPTER)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.fetchSuspended).toBe(false)
   })
 })

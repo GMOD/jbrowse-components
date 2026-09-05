@@ -81,13 +81,12 @@ describe('the color key waits for a painting to key', () => {
     expect(display.colorLegend).toHaveLength(2)
 
     setConf(display, 'densityTier', 'density')
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
 
-    expect(display.densityBandActive).toBe(true)
+    expect(display.coarseTierStandsIn).toBe(true)
     expect(display.colorLegend).toHaveLength(0)
     expect(display.hasLegendEntries).toBe(false)
   })

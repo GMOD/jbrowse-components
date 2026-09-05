@@ -38,7 +38,7 @@ export interface RenderSvgModel extends SvgExportable {
   // The density band draws in the too-large state, so the too-large note must
   // not replace this body.
   drawsWhenTooLarge: boolean
-  densityBandActive: boolean
+  coarseTierStandsIn: boolean
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
@@ -103,7 +103,7 @@ function CanvasFeaturesSvgBody({
       width={canvasWidth}
       height={height}
     >
-      {model.densityBandActive ? (
+      {model.coarseTierStandsIn ? (
         <PaintLayer
           width={canvasWidth}
           height={height}

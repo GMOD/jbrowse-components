@@ -3,19 +3,19 @@ import { densityBandLayer, formatDensity } from './densityBand.ts'
 import type { DensityBandLayer } from './densityBand.ts'
 import type { PackedDensityRegion } from '@jbrowse/alignments-core'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { DensityBandPhaseHost } from '@jbrowse/display-kit/densityBandPhase'
+import type { CoarseTierPhaseHost } from '@jbrowse/display-kit/coarseTierPhase'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 
-export interface DensityBandHost extends DensityBandPhaseHost {
+export interface DensityBandHost extends CoarseTierPhaseHost {
   host: RegionHost
-  densityTierActive: boolean
-  densityBins: ReadonlyMap<number, FeatureDensity>
+  coarseTierActive: boolean
+  coarseTier: ReadonlyMap<number, FeatureDensity>
 }
 
 export function displayDensityBandLayer(
   self: DensityBandHost,
 ): DensityBandLayer {
-  return densityBandLayer(self.densityBins, self.host.coarseBpPerPx)
+  return densityBandLayer(self.coarseTier, self.host.coarseBpPerPx)
 }
 
 export interface DensityHover {

@@ -39,7 +39,7 @@ export const densityAdapterConfigSchemaFields = {
  * (`{ uri }`) turned the band on for a read that answered `undefined`, which
  * commits nothing, and the phase then waited on bins no read would ever bring.
  */
-export function isDensitySourceConfig(
+export function isSubAdapterConfig(
   value: unknown,
 ): value is Record<string, unknown> & { type: string } {
   return (

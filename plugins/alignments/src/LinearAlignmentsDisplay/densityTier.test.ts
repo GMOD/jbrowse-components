@@ -69,8 +69,8 @@ function bins(starts: number[], ends: number[], scores: number[]) {
 test('a refused region with a density source swaps to the band', () => {
   const { display } = refusedDisplay({ withSource: true })
   expect(display.regionTooLarge).toBe(true)
-  expect(display.hasDensitySource).toBe(true)
-  expect(display.densityTierActive).toBe(true)
+  expect(display.hasCoarseSource).toBe(true)
+  expect(display.coarseTierActive).toBe(true)
   // the banner replaces the whole subtree, so the phase is what decides whether
   // there is a canvas to draw the band on at all
   expect(display.displayPhase).not.toBe('tooLarge')
@@ -79,8 +79,8 @@ test('a refused region with a density source swaps to the band', () => {
 test('a refused region with no density source keeps the banner', () => {
   const { display } = refusedDisplay({ withSource: false })
   expect(display.regionTooLarge).toBe(true)
-  expect(display.hasDensitySource).toBe(false)
-  expect(display.densityTierActive).toBe(false)
+  expect(display.hasCoarseSource).toBe(false)
+  expect(display.coarseTierActive).toBe(false)
   expect(display.displayPhase).toBe('tooLarge')
 })
 
@@ -89,9 +89,9 @@ test('the tier is loading until its bins land, then ready', () => {
   expect(display.densityCoverageRegions.size).toBe(0)
   expect(display.displayPhase).toBe('loading')
 
-  display.setDensityBins(
-    [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    { regions: [], bucket: 0, adapterKey: 'test-key' },
+  display.setCoarseTier(
+    [{ displayedRegionIndex: 0, payload: bins([0], [100_000], [4000]) }],
+    { regions: [], key: 'test-key' },
   )
   expect(display.densityCoverageRegions.size).toBe(1)
   expect(display.displayPhase).toBe('ready')
@@ -102,7 +102,7 @@ test('the tier is loading until its bins land, then ready', () => {
 // body away and wrote the too-large note over them.
 test('the export paints the band in place of the too-large note', () => {
   const { display } = refusedDisplay({ withSource: true })
-  expect(display.densityBandActive).toBe(true)
+  expect(display.coarseTierStandsIn).toBe(true)
   expect(display.drawsWhenTooLarge).toBe(true)
 
   const { display: plain } = refusedDisplay({ withSource: false })
@@ -113,9 +113,9 @@ test('the export paints the band in place of the too-large note', () => {
 // gating reads `regionTooLarge` directly.
 test('the swap does not release the fetch gate', () => {
   const { display } = refusedDisplay({ withSource: true })
-  display.setDensityBins(
-    [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    { regions: [], bucket: 0, adapterKey: 'test-key' },
+  display.setCoarseTier(
+    [{ displayedRegionIndex: 0, payload: bins([0], [100_000], [4000]) }],
+    { regions: [], key: 'test-key' },
   )
   expect(display.regionTooLarge).toBe(true)
   expect(display.gateActive).toBe(true)
@@ -123,14 +123,14 @@ test('the swap does not release the fetch gate', () => {
 
 test('the band draws off the bins and the pileup uploads nothing', () => {
   const { display } = refusedDisplay({ withSource: true })
-  display.setDensityBins(
+  display.setCoarseTier(
     [
       {
         displayedRegionIndex: 0,
-        bins: bins([0, 50_000], [50_000, 100_000], [1000, 4000]),
+        payload: bins([0, 50_000], [50_000, 100_000], [1000, 4000]),
       },
     ],
-    { regions: [], bucket: 0, adapterKey: 'test-key' },
+    { regions: [], key: 'test-key' },
   )
   const region = display.densityCoverageRegions.get(0)!
   expect(region.coveragePackedBuffer.byteLength).toBeGreaterThan(0)
@@ -150,7 +150,7 @@ test('"features only" keeps the banner even with a source', () => {
   const { display } = refusedDisplay({ withSource: true })
   setConf(display, 'densityTier', 'features')
   expect(display.densityTierMode).toBe('features')
-  expect(display.densityTierActive).toBe(false)
+  expect(display.coarseTierActive).toBe(false)
   expect(display.displayPhase).toBe('tooLarge')
 })
 
@@ -191,7 +191,7 @@ test('a forced density tier stands in with no refusal at all', () => {
   const { display } = densityDisplay({ withSource: true, refused: false })
   setConf(display, 'densityTier', 'density')
   expect(display.regionTooLarge).toBe(false)
-  expect(display.densityTierActive).toBe(true)
+  expect(display.coarseTierActive).toBe(true)
   // no lane, so every overlay that walks `renderSections` is empty too and the
   // one section the layout synthesizes uploads nothing
   expect(display.lanes).toEqual([])
@@ -199,9 +199,9 @@ test('a forced density tier stands in with no refusal at all', () => {
   expect(display.sourceSections[0]!.laidOutPileupMap.size).toBe(0)
   expect(display.svgReady).toBe(false)
 
-  display.setDensityBins(
-    [{ displayedRegionIndex: 0, bins: bins([0], [100_000], [4000]) }],
-    { regions: [], bucket: 0, adapterKey: 'test-key' },
+  display.setCoarseTier(
+    [{ displayedRegionIndex: 0, payload: bins([0], [100_000], [4000]) }],
+    { regions: [], key: 'test-key' },
   )
   expect(display.svgReady).toBe(true)
   expect(display.densityCoverageRegions.size).toBe(1)
@@ -222,7 +222,7 @@ describe('the band fetches nothing where the gate is not blocking', () => {
   it('keeps the measurement pass a refused auto owes', () => {
     const { display } = densityDisplay({ withSource: true, refused: false })
     setConf(display, 'densityTierBpPerPx', 1)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.fetchSuspended).toBe(true)
 
     stageByteEstimate(display, 1_500_000)
@@ -235,7 +235,7 @@ describe('the band fetches nothing where the gate is not blocking', () => {
     expect(display.fetchSuspended).toBe(true)
 
     display.setShowCoverage(false)
-    expect(display.densityBandActive).toBe(false)
+    expect(display.coarseTierStandsIn).toBe(false)
     expect(display.fetchSuspended).toBe(false)
   })
 })

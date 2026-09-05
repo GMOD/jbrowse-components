@@ -4,7 +4,7 @@ import { toArray } from 'rxjs/operators'
 import { createStatusFanOut } from '../../util/progress.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
-import { isDensitySourceConfig } from './featureDensity.ts'
+import { isSubAdapterConfig } from './featureDensity.ts'
 import { aggregateQuantitativeStats } from './stats.ts'
 import { isFeatureAdapter } from './util.ts'
 
@@ -205,12 +205,12 @@ export abstract class BaseFeatureDataAdapter<
   ): Promise<FeatureDensity[] | undefined> {
     const sidecar: unknown = this.getConf(['densityAdapter'])
     const resolved =
-      isDensitySourceConfig(sidecar) && this.getSubAdapter
+      isSubAdapterConfig(sidecar) && this.getSubAdapter
         ? (await this.getSubAdapter(sidecar)).dataAdapter
         : undefined
     if (resolved && !isFeatureAdapter(resolved)) {
       throw new Error(
-        `densityAdapter ${isDensitySourceConfig(sidecar) ? sidecar.type : ''} is not a feature adapter`,
+        `densityAdapter ${isSubAdapterConfig(sidecar) ? sidecar.type : ''} is not a feature adapter`,
       )
     }
     return resolved

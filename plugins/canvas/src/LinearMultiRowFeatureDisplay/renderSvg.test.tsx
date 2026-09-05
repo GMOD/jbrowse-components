@@ -110,7 +110,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     error: undefined,
     regionTooLarge: false,
     drawsWhenTooLarge: false,
-    densityBandActive: false,
+    coarseTierStandsIn: false,
     densityBandLayer: { regions: new Map(), maxDepth: 0 },
     densityPeakReadout: '',
     svgReady: true,

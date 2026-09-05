@@ -23,7 +23,7 @@ export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 export {
   type FeatureDensity,
   densityAdapterConfigSchemaFields,
-  isDensitySourceConfig,
+  isSubAdapterConfig,
 } from './featureDensity.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 export type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'

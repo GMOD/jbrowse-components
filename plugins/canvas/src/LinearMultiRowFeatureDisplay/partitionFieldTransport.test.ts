@@ -189,7 +189,7 @@ describe('the pin survives the density band standing in', () => {
     view.zoomTo(100)
     display.setRpcData(0, regionData('repClass'), ctgA)
     setConf(display, 'densityTier', 'density')
-    expect(display.densityBandActive).toBe(true)
+    expect(display.coarseTierStandsIn).toBe(true)
     return display
   }
 

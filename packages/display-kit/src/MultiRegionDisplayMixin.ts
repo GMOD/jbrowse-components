@@ -572,7 +572,7 @@ export default function MultiRegionDisplayMixin() {
          * `staleSettingsDrawn`; NOT `isCacheValid`, which is `dataCurrent`'s
          * and would scrim every zoom (REJECTED_IDEAS.md "Folding content
          * staleness into `displayPhase`"). `displayPhase` reads it, and so
-         * does a stand-in phase (`densityBandDisplayPhase`) — one predicate,
+         * does a stand-in phase (`coarseTierDisplayPhase`) — one predicate,
          * so a term added here reaches both.
          */
         get phaseViewportCurrent(): boolean {

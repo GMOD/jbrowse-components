@@ -8,7 +8,7 @@ import type { DensityBandLayer } from './densityBand.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface DensityBandDisplay {
-  densityBandActive: boolean
+  coarseTierStandsIn: boolean
   densityBandLayer: DensityBandLayer
   densityReadout: string
   renderBlocks: RenderBlock[]
@@ -20,14 +20,14 @@ export interface DensityBandDisplay {
 /**
  * The geometry reads live in `DensityBandCanvas` rather than here, because
  * `canvasWidthPx` and `renderBlocks` reach view geometry that throws before the
- * view is measured, and `densityBandActive` is what says it has been.
+ * view is measured, and `coarseTierStandsIn` is what says it has been.
  */
 const DensityBandOverlay = observer(function DensityBandOverlay({
   model,
 }: {
   model: DensityBandDisplay
 }) {
-  return model.densityBandActive ? <DensityBandCanvas model={model} /> : null
+  return model.coarseTierStandsIn ? <DensityBandCanvas model={model} /> : null
 })
 
 const DensityBandCanvas = observer(function DensityBandCanvas({

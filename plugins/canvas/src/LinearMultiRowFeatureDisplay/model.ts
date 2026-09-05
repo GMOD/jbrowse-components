@@ -166,7 +166,7 @@ export default function stateModelFactory(
        * them, so a track forced to `density` draws the band alone.
        */
       get drawnRegionData(): ReadonlyMap<number, MultiRowRegionData> {
-        return self.densityBandActive ? EMPTY_REGION_DATA : self.rpcDataMap
+        return self.coarseTierStandsIn ? EMPTY_REGION_DATA : self.rpcDataMap
       },
     }))
     .views(self => ({

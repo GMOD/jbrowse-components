@@ -1,5 +1,5 @@
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
-import { densityBandPending } from '@jbrowse/display-kit/densityBandPhase'
+import { coarseTierPending } from '@jbrowse/display-kit/coarseTierPhase'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
@@ -42,9 +42,9 @@ export default function DensityBandMixin() {
         /**
          * #getter
          */
-        get densityBandActive() {
+        get coarseTierStandsIn() {
           return (
-            bandHost(self).densityTierActive && bandHost(self).host.initialized
+            bandHost(self).coarseTierActive && bandHost(self).host.initialized
           )
         },
         /**
@@ -59,7 +59,7 @@ export default function DensityBandMixin() {
          * #getter
          */
         get densityHover(): DensityHover | undefined {
-          return self.densityBandActive
+          return self.coarseTierStandsIn
             ? densityHoverAt(containingLgv(self), self.densityHoverPx)
             : undefined
         },
@@ -71,7 +71,7 @@ export default function DensityBandMixin() {
          * nothing here.
          */
         setDensityHoverPx(px?: number) {
-          self.densityHoverPx = self.densityBandActive ? px : undefined
+          self.densityHoverPx = self.coarseTierStandsIn ? px : undefined
         },
       }))
       .views(self => ({
@@ -91,7 +91,7 @@ export default function DensityBandMixin() {
          * density data" for a read still in flight.
          */
         get densityReadout() {
-          return densityBandPending(bandHost(self))
+          return coarseTierPending(bandHost(self))
             ? ''
             : self.densityHover
               ? densityBandReadout(self.densityBandLayer, self.densityHover)

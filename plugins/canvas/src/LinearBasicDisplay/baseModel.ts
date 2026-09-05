@@ -638,7 +638,7 @@ export default function baseStateModelFactory(
          */
         get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
-          return self.densityBandActive
+          return self.coarseTierStandsIn
             ? EMPTY_LAID_OUT_DATA
             : scale === 1
               ? layout

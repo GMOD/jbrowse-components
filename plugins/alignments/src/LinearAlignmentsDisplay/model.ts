@@ -35,7 +35,7 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { densityBandPending } from '@jbrowse/display-kit/densityBandPhase'
+import { coarseTierPending } from '@jbrowse/display-kit/coarseTierPhase'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -925,7 +925,7 @@ export default function stateModelFactory(
          * so the band and the reads never both go missing.
          */
         get densityStandsIn() {
-          return self.densityTierActive && self.showCoverage
+          return self.coarseTierActive && self.showCoverage
         },
 
         /**
@@ -935,7 +935,7 @@ export default function stateModelFactory(
          * Both backends and the SVG export read this one map, so the band that
          * draws read depth draws features per bin with no second renderer.
          *
-         * Its dependencies are `densityBins` and the DEBOUNCED zoom, and both
+         * Its dependencies are `coarseTier` and the DEBOUNCED zoom, and both
          * halves are deliberate: the bins are cached by zoom bucket, and the
          * repack is a per-region allocation, so it must not land on anything
          * that moves per frame of a pan.
@@ -948,7 +948,7 @@ export default function stateModelFactory(
           const { view } = self
           if (this.densityStandsIn && view.initialized) {
             const binSize = densityBinSize(view.coarseBpPerPx)
-            for (const [displayedRegionIndex, bins] of self.densityBins) {
+            for (const [displayedRegionIndex, bins] of self.coarseTier) {
               regions.set(
                 displayedRegionIndex,
                 densityCoverageFields(bins, binSize),
@@ -3895,7 +3895,7 @@ export default function stateModelFactory(
             render: b =>
               (
                 self.densityStandsIn
-                  ? densityBandPending(self)
+                  ? coarseTierPending(self)
                   : !self.hasRegionData
               )
                 ? false
@@ -4061,7 +4061,7 @@ export default function stateModelFactory(
          * `densityStandsIn`, the one term the pileup, the axis and the fetch
          * all read.
          */
-        get densityBandActive() {
+        get coarseTierStandsIn() {
           return self.densityStandsIn
         },
       }))

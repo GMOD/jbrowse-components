@@ -48,8 +48,8 @@ describe('the density tier stands in for the too-large banner', () => {
     refuseOnBytes(display)
 
     expect(display.regionTooLarge).toBe(true)
-    expect(display.hasDensitySource).toBe(false)
-    expect(display.densityTierActive).toBe(false)
+    expect(display.hasCoarseSource).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
   })
 
@@ -58,7 +58,7 @@ describe('the density tier stands in for the too-large banner', () => {
     refuseOnBytes(display)
 
     expect(display.regionTooLarge).toBe(true)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.displayPhase).not.toBe('tooLarge')
   })
 
@@ -77,7 +77,7 @@ describe('the density tier stands in for the too-large banner', () => {
 
     expect(display.densityTooLarge).toBe(true)
     expect(display.regionTooLarge).toBe(true)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.displayPhase).not.toBe('tooLarge')
   })
 
@@ -86,13 +86,12 @@ describe('the density tier stands in for the too-large banner', () => {
     refuseOnBytes(display)
     expect(display.displayPhase).toBe('loading')
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
     expect(display.displayPhase).toBe('ready')
-    expect(display.densityBandActive).toBe(true)
+    expect(display.coarseTierStandsIn).toBe(true)
     expect(display.densityBandLayer.maxDepth).toBeGreaterThan(0)
     expect(display.drawsWhenTooLarge).toBe(true)
   })
@@ -100,10 +99,9 @@ describe('the density tier stands in for the too-large banner', () => {
   it('reads the value under the cursor at the current zoom', () => {
     const { display, view } = refusableDisplay(DENSITY_ADAPTER)
     refuseOnBytes(display)
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
     const px = 400
     const under = view.pxToBp(px).coord0
@@ -139,8 +137,8 @@ describe('the density tier stands in for the too-large banner', () => {
     const { display } = refusableDisplay({ uri: 'genes.density.bw' })
     refuseOnBytes(display)
 
-    expect(display.hasDensitySource).toBe(false)
-    expect(display.densityTierActive).toBe(false)
+    expect(display.hasCoarseSource).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
   })
 
@@ -148,14 +146,14 @@ describe('the density tier stands in for the too-large banner', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
 
     expect(display.regionTooLarge).toBe(false)
-    expect(display.densityTierActive).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
 
     setConf(display, 'densityTier', 'density')
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
 
     refuseOnBytes(display)
     setConf(display, 'densityTier', 'features')
-    expect(display.densityTierActive).toBe(false)
+    expect(display.coarseTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
   })
 })
@@ -218,7 +216,7 @@ describe('the band stands alone, and fetches nothing', () => {
   it('keeps the measurement pass a refused auto owes', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
     setConf(display, 'densityTierBpPerPx', 1)
-    expect(display.densityTierActive).toBe(true)
+    expect(display.coarseTierActive).toBe(true)
     expect(display.fetchSuspended).toBe(true)
 
     refuseOnBytes(display)
@@ -232,10 +230,9 @@ describe('the band stands alone, and fetches nothing', () => {
     expect(display.displayPhase).toBe('loading')
     expect(display.svgReady).toBe(false)
 
-    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], {
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
       regions: [],
-      bucket: 0,
-      adapterKey: 'k',
+      key: 'k',
     })
     expect(display.displayPhase).toBe('ready')
     expect(display.svgReady).toBe(true)
@@ -282,5 +279,5 @@ test("the band carries the banner's force-load while it stands in for a refusal"
     load.onClick({})
   }
   expect(display.regionTooLarge).toBe(false)
-  expect(display.densityTierActive).toBe(false)
+  expect(display.coarseTierActive).toBe(false)
 })

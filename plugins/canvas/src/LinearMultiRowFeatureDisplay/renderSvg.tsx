@@ -36,7 +36,7 @@ export interface RenderSvgModel extends SvgExportable {
   // The band is drawn in the too-large terminal, so the note that would replace
   // this whole body must not.
   drawsWhenTooLarge: boolean
-  densityBandActive: boolean
+  coarseTierStandsIn: boolean
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
@@ -99,7 +99,7 @@ function MultiRowSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            if (self.densityBandActive) {
+            if (self.coarseTierStandsIn) {
               drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
                 canvasWidth,
                 bandHeight: height,

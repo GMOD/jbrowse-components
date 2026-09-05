@@ -19,7 +19,7 @@ const DENSITY_TIER_OPTIONS: RadioOption<DensityTierMode>[] =
 
 export interface DensityTierMenuHost {
   configuration: DensityTierConfigModel
-  hasDensitySource: boolean
+  hasCoarseSource: boolean
   densityTierMode: DensityTierMode
   regionTooLarge: boolean
   forceLoad: () => void
@@ -47,7 +47,7 @@ export function densityTierMenuItems(
           },
         ]
       : []
-  return self.hasDensitySource
+  return self.hasCoarseSource
     ? [
         {
           label: 'Density band',
