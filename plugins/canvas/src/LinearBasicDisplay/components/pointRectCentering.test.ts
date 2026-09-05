@@ -1,15 +1,8 @@
-// A rect whose start equals its end is an interbase POINT, not a box. Both the
-// CRISPR guide glyph and the restriction-motif glyph synthesize one per cut
-// (`glyphEmitters.ts`), because a blunt cut sits BETWEEN two bases — which is
-// exactly what a zero-length interval means in the interbase coordinates the
-// adapters emit (`guideUtils.ts`). Neither the guide nor the motif FEATURE is
-// zero-length; only these derived marks are.
-//
-// The min-width clamp has to treat the two cases differently, and the split has
-// to key on the genomic coords rather than on the snapped pixel width — pixel
-// snapping collapses plenty of real sub-pixel spans onto one pixel, and
-// centering those would slide every one of them off its start edge. That
-// regression is what the second test guards.
+// A rect whose start equals its end is an interbase point, not a box: a blunt cut
+// sits between two bases. The min-width clamp keys the two cases on the genomic
+// coords rather than the snapped pixel width, since snapping collapses plenty of
+// real sub-pixel spans onto one pixel and centering those would slide every one
+// off its start edge.
 import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
 import { MIN_RECT_WIDTH_PX } from './sharedRendererConstants.ts'
 
@@ -38,8 +31,7 @@ const EMPTY = {
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
 
-// The only fillRect this region produces is the rect itself: no arrows, lines,
-// or continuation markers are populated.
+// The only fillRect this region produces is the rect itself.
 function drawnRect(startBp: number, endBp: number, reversed = false) {
   let box: { x: number; w: number } | undefined
   const ctx = {
@@ -62,7 +54,7 @@ function drawnRect(startBp: number, endBp: number, reversed = false) {
     lineWidth: 1,
   } as unknown as Ctx2D
 
-  // 800px showing bp 0..800, so 1 bp/px and bp N lands on x=N forward.
+  // 800px showing bp 0..800, so bp N lands on x=N forward.
   const block: FeatureRenderBlock = {
     displayedRegionIndex: 0,
     start: 0,
@@ -98,18 +90,16 @@ test('a cut-site point straddles its coordinate', () => {
   expect(x + w / 2).toBe(400)
 })
 
-// Centering must not depend on the render axis: a point has no start edge to
-// anchor, so reversing the block moves the mark's coordinate but not its
-// relationship to it.
+// A point has no start edge to anchor, so reversing the block moves the mark's
+// coordinate but not its relationship to it.
 test('a cut-site point stays centered on a reversed block', () => {
   const { x, w } = drawnRect(400, 400, true)
   expect(w).toBe(MIN_RECT_WIDTH_PX)
   expect(x + w / 2).toBe(800 - 400)
 })
 
-// The regression the genomic-coords keying exists to prevent. 1bp at 1 bp/px is
-// under the 2px floor and snaps to a single pixel, so a width-derived test would
-// mistake it for a point and shift it left.
+// 1bp at 1 bp/px is under the 2px floor and snaps to a single pixel, so a
+// width-derived test would mistake it for a point and shift it left.
 test('a sub-pixel real span still anchors on its start edge', () => {
   const { x, w } = drawnRect(400, 401)
   expect(w).toBe(MIN_RECT_WIDTH_PX)

@@ -1,16 +1,7 @@
-// Every directional glyph the feature renderer draws — intron chevrons, strand
-// arrows, continuation markers — is placed from a strand the worker packed, and
-// the worker cannot know a block is reversed. So each one owes its direction a
-// flip on the render side.
-//
-// Worth pinning here rather than leaving to the Canvas2D-vs-GPU parity gate:
-// both backends read the same genomic field, so a missing flip is normally
-// missing IDENTICALLY in both, and a differential gate sees two agreeing wrong
-// answers. rectStrands shipped that way — a + gene's continuation markers
-// pointed opposite the strand arrows on the same glyph, on flipped regions only.
-//
-// Each test populates exactly one glyph family so the recorded paths are
-// unambiguous, and asserts the forward and reversed cases point opposite ways.
+// Every directional glyph is placed from a strand the worker packed, and the
+// worker cannot know a block is reversed, so each owes its direction a flip on
+// the render side. A parity gate cannot see a missing one: both backends read the
+// same genomic field, so they are wrong together.
 import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -22,8 +13,7 @@ interface Pt {
   y: number
 }
 
-// Records paths, split on beginPath. Point counts identify the shape: 2 = intron
-// line, 3 = a chevron or an arrowhead.
+// Point counts identify the shape: 2 is an intron line, 3 a chevron or arrowhead.
 function recordingCtx() {
   const paths: Pt[][] = []
   let current: Pt[] = []
@@ -77,8 +67,8 @@ const EMPTY: RegionRenderData = {
   arrowColors: new Uint32Array(),
 }
 
-// A 100px-wide canvas showing bp 50..150. Forward maps bp→(bp-50), reversed maps
-// bp→(150-bp), so the same feature runs the opposite way on screen.
+// Forward maps bp→(bp-50), reversed bp→(150-bp), so the same feature runs the
+// opposite way on screen.
 function draw(region: RegionRenderData, reversed: boolean) {
   const { ctx, triangles } = recordingCtx()
   const block: FeatureRenderBlock = {
@@ -97,9 +87,8 @@ function draw(region: RegionRenderData, reversed: boolean) {
   return triangles()
 }
 
-// Chevron: moveTo(base) → lineTo(apex) → lineTo(base), so the apex is the middle
-// point and the two base corners share an x. Returns apex-minus-base per chevron
-// — positive points right, negative left.
+// The apex is the middle point and the two base corners share an x, so
+// apex-minus-base is positive pointing right and negative pointing left.
 function chevronApexOffsets(region: RegionRenderData, reversed: boolean) {
   return draw(region, reversed).map(([base, apex, back]) => {
     expect(base!.x).toBeCloseTo(back!.x)
@@ -135,14 +124,12 @@ test('strand arrowheads follow the screen axis', () => {
     arrowXs: new Uint32Array([100]),
     arrowYs: new Float32Array([20]),
     arrowHeights: new Float32Array([10]),
-    // bp 60..100, i.e. 40px at this block's 1 bp/px — comfortably past the
-    // narrow-feature gate, which the next test covers.
+    // 40px at this block's 1 bp/px, past the narrow-feature gate.
     arrowWidthsBp: new Uint32Array([40]),
     arrowDirections: new Int8Array([1]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   }
-  // The head is moveTo(stemEnd, top) → lineTo(stemEnd, bottom) → lineTo(tip), so
-  // its first two points share an x and the third is the tip.
+  // The head's first two points share an x and the third is the tip.
   const tipOffset = (reversed: boolean) => {
     const [head] = draw(region, reversed)
     const [back, backAgain, tip] = head!
@@ -154,8 +141,8 @@ test('strand arrowheads follow the screen axis', () => {
 })
 
 test('continuation markers follow the screen axis', () => {
-  // Spans bp 20..100: forward it runs off the left edge, reversed off the right,
-  // in both cases by more than CONT_MIN_OVERHANG_PX while staying in view.
+  // Forward it runs off the left edge, reversed off the right, both by more than
+  // CONT_MIN_OVERHANG_PX while staying in view.
   const region: RegionRenderData = {
     ...EMPTY,
     rectPositions: new Uint32Array([20, 100]),
@@ -165,7 +152,6 @@ test('continuation markers follow the screen axis', () => {
     rectStrands: new Float32Array([1]),
     rectDensityFade: new Uint32Array([0]),
   }
-  // Two chevrons make the "»", both pointing the same way.
   const forward = chevronApexOffsets(region, false)
   expect(forward.length).toBe(2)
   for (const d of forward) {
@@ -179,9 +165,7 @@ test('continuation markers follow the screen axis', () => {
 })
 
 // A strand-less feature has no direction to flip, so its markers point outward
-// from whichever edge they sit on, both ways round. flipX(0) is 0 — which is
-// exactly why the reversed-region SVG export snapshot, whose features are
-// strand-less, could not see the bug.
+// from whichever edge they sit on, both ways round.
 test('strand-less continuation markers point outward regardless of orientation', () => {
   const region: RegionRenderData = {
     ...EMPTY,
@@ -192,8 +176,7 @@ test('strand-less continuation markers point outward regardless of orientation',
     rectStrands: new Float32Array([0]),
     rectDensityFade: new Uint32Array([0]),
   }
-  // Forward the feature leaves by the left edge, reversed by the right, so
-  // "outward" is left then right.
+  // Forward the feature leaves by the left edge, reversed by the right.
   for (const d of chevronApexOffsets(region, false)) {
     expect(d).toBeLessThan(0)
   }

@@ -12,10 +12,6 @@ import {
 import type { TranscriptCoords } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
 
-// What a hit SAYS, with no Flatbush in sight: every case here builds a
-// HitFeatureResult by hand and asserts on a string, which is the whole reason
-// these live apart from hitTesting.test.ts (how a hit is FOUND).
-
 const makeItem = (
   featureId: string,
   startBp: number,
@@ -62,7 +58,7 @@ function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
     subfeature: undefined,
     peptide: undefined,
     bpPos: 0,
-    // base zoom, so the HGVS readout is in play unless a test says otherwise
+    // Base zoom, so the HGVS readout is in play unless a test says otherwise.
     bpPerPx: 0.1,
     displayedRegionIndex: 0,
     ...over,
@@ -82,8 +78,6 @@ test('hoverTooltipRows prefers the subfeature label over the feature mouseover',
   ).toEqual(['BRCA1-201'])
 })
 
-// A transcript names itself and nothing else — `NM_004006.2` under the cursor
-// says nothing about DMD, whose floating label the fit ladder may have trimmed.
 test('hoverTooltipRows names the parent gene above the isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
@@ -101,7 +95,7 @@ test('hoverTooltipRows names the parent gene above the isoform', () => {
 })
 
 // A single-transcript annotation regularly labels the child with the gene's own
-// name, and `BRCA1` over `BRCA1` is a row that says nothing.
+// name.
 test('hoverTooltipRows drops the gene row when the isoform repeats the name', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
@@ -118,8 +112,6 @@ test('hoverTooltipRows drops the gene row when the isoform repeats the name', ()
   ).toEqual(['BRCA1'])
 })
 
-// Hovering the gene body itself, the mouseover slot already names it; the drawn
-// name has nothing to add above it.
 test('hoverTooltipRows adds no gene row without an isoform under the cursor', () => {
   expect(
     hoverTooltipRows(
@@ -146,19 +138,14 @@ test('hoverTooltipRows puts the residue on its own line under the isoform', () =
   ).toEqual(['BRCA1-201', 'K124'])
 })
 
-// A hovered letter narrows what the second row says; it doesn't change what
-// names the thing under the cursor. With no isoform to name, the feature's own
-// mouseover still heads the tooltip — dropping it would leave a bare residue
-// with no clue which feature it belongs to.
 test('hoverTooltipRows keeps the feature mouseover above a residue when there is no isoform', () => {
   expect(
     hoverTooltipRows(makeHit({ peptide: makeAa('K', 0, 3, 123) })),
   ).toEqual(['gene mouseover', 'K124'])
 })
 
-// The rect is already painted in TRANSL_EXCEPT_HIGHLIGHT, but a color says
-// nothing about what it means: `U840` on SELENOP has to read as a deliberate
-// selenocysteine rather than as a mistranslated stop.
+// `U840` on SELENOP has to read as a deliberate selenocysteine rather than a
+// mistranslated stop.
 test('hoverTooltipRows marks a residue that came from a transl_except override', () => {
   expect(
     hoverTooltipRows(
@@ -180,9 +167,6 @@ test('hoverTooltipRows leaves only the residue for a feature with no tooltip tex
   ).toEqual(['K124'])
 })
 
-// A hover on a floating label arrives as a hit with no subfeature and no
-// peptide (see labelHit). A feature whose mouseover slot is empty then has
-// nothing to say, and says nothing — not an empty row.
 test('hoverTooltipRows drops the empty title row of a label-shaped hit', () => {
   expect(
     hoverTooltipRows(
@@ -201,7 +185,6 @@ const CODING_TRANSCRIPT: TranscriptCoords = {
   coding: [5, 45],
 }
 
-// The gene the isoform hangs off, named as the display drew it.
 const geneItem = (name: string) => ({
   ...makeItem('gene1', 0, 100, 0, 20),
   tooltip: 'gene mouseover',
@@ -223,9 +206,7 @@ test('hoverTooltipRows names the exon under the cursor, on a line under the isof
   expect(at(5)).toEqual(['BRCA1-201', 'exon 1/3 c.1'])
   expect(at(25)).toEqual(['BRCA1-201', 'exon 2/3 c.11'])
   expect(at(45)).toEqual(['BRCA1-201', 'exon 3/3 c.*1'])
-  // an intron names no exon -- the c. offset already says which boundary it is
-  // past, and "exon 2" would read as though the cursor were inside one. The
-  // offset is measured from whichever exon is nearer, so the 10bp intron at
+  // The offset is measured from whichever exon is nearer, so the 10bp intron at
   // 10..19 reads +n in its first half and -n in its second.
   expect(at(11)).toEqual(['BRCA1-201', 'c.5+2'])
   expect(at(18)).toEqual(['BRCA1-201', 'c.6-2'])
@@ -254,8 +235,8 @@ test('hoverTooltipRows keeps exon and HGVS alongside a hovered residue, on the s
   ).toEqual(['BRCA1-201', 'exon 2/3 c.11 K124'])
 })
 
-// Zoomed out, the cursor covers many bases at once, so a position reported to
-// the base would be silently wrong. The exon is still safe to name.
+// Zoomed out the cursor covers many bases, so a position reported to the base
+// would be silently wrong; the exon is still safe to name.
 test('hoverTooltipRows drops the HGVS position below base zoom', () => {
   expect(hoverTooltipRows(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toEqual([
     'BRCA1-201',
@@ -275,9 +256,6 @@ test('hoverTooltipText joins the rows on a real newline', () => {
   ).toBe('BRCA1-201\nK124')
 })
 
-// The mouseover config expression can return HTML (SanitizedHTML renders it
-// on-screen) — the clipboard copy should carry the reader's words, not the
-// markup around them.
 test('hoverTooltipText strips markup from the feature mouseover slot', () => {
   expect(
     hoverTooltipText(
@@ -291,9 +269,8 @@ test('hoverTooltipText strips markup from the feature mouseover slot', () => {
   ).toBe('gene mouseover')
 })
 
-// `<DEL>`, `<INS>` and friends are VCF alleles, not markup — SanitizedHTML
-// escapes them and shows them whole, so the clipboard has to carry them whole
-// too. Parsing every row as HTML copied this one as `ALT `.
+// `<DEL>` and friends are VCF alleles, not markup, so the clipboard has to carry
+// them whole.
 test('hoverTooltipText keeps angle-bracket text that is not markup', () => {
   expect(
     hoverTooltipText(
@@ -307,8 +284,8 @@ test('hoverTooltipText keeps angle-bracket text that is not markup', () => {
   ).toBe('ALT <DEL>')
 })
 
-// Joining fields with <br/> is the standard mouseover idiom; textContent alone
-// would collapse them into one run-on line on the clipboard.
+// Joining fields with <br/> is the standard mouseover idiom, and textContent
+// alone would collapse them into one run-on line.
 test('hoverTooltipText turns <br/> inside the mouseover slot into newlines', () => {
   expect(
     hoverTooltipText(
@@ -334,7 +311,6 @@ test('hoverTooltipRows says nothing extra for a single-exon transcript', () => {
         bpPos: 25,
       }),
     ),
-    // "exon 1/1" is noise; the coordinate still carries
   ).toEqual(['SOX2-201', 'c.21'])
 })
 
@@ -362,12 +338,9 @@ describe('hgvsHitLabel', () => {
     expect(hgvsHitLabel(makeHit({ bpPos: 25 }))).toBeUndefined()
   })
 
-  // A subfeature registered by a non-transcript glyph (mature-peptide product,
-  // repeat subpart, a bare exon row stacked beside a gene's transcripts) has a
-  // displayLabel but no transcript of its own, so the coordinate falls back to
-  // the parent's. Taking the name off the subfeature anyway produced
-  // `exon5:n.123` — one thing's label on another thing's coordinate system, in
-  // the syntax a clinical variant is reported in.
+  // A subfeature from a non-transcript glyph has a displayLabel but no transcript
+  // of its own, so the coordinate falls back to the parent's; taking the name off
+  // the subfeature anyway names one thing on another's coordinate system.
   it('names the transcript the coordinate was measured on, not an unrelated subfeature', () => {
     expect(
       hgvsHitLabel(
@@ -387,17 +360,14 @@ describe('hgvsHitLabel', () => {
     ).toBe('BRCA1-201:c.11')
   })
 
-  // `NM_004006.2(DMD):c.93+1` is the nomenclature's own reference form, and what
-  // ClinVar and LOVD take -- an accession alone leaves the reader to look up
-  // which gene it transcribes.
   it('parenthesizes the gene the transcript was read off', () => {
     expect(
       hgvsHitLabel(isoformHit({ feature: geneItem('BRCA1'), bpPos: 25 })),
     ).toBe('BRCA1-201(BRCA1):c.11')
   })
 
-  // The container of a mature-peptide or repeat-subpart hit is not a gene, and
-  // its accession inside those brackets would read as a gene symbol.
+  // The container of a mature-peptide hit is not a gene, and its accession inside
+  // those brackets would read as a gene symbol.
   it('parenthesizes nothing for a container that is not a gene', () => {
     expect(
       hgvsHitLabel(

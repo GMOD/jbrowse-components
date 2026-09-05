@@ -78,33 +78,14 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type BpToScreen = (bp: number) => number
 
-// `snapBoxHeightPx` (the pixel height a box is drawn at, nudging a THIN box with
-// an even height up to the next odd one so it has a true center row for the 1px
-// glyphs riding on it), `snapBoxTopPx` (which row that box starts on, snapped
-// about its center so the nudge doesn't all land on the bottom edge) and
-// `snapBoxCenterYPx` (the crisp x.5 screen-y of the center row) are generated
-// from hpmath.slang by `pnpm gen:shaders` — this file runs the shader's own math
-// rather than a hand-written twin of it. All were hand-ported here until
-// adr-051; `hpmathParity.test.ts` pins the generated set against the
-// implementations they replaced.
-
-// The furthest a glyph reaches outside the box it rides on: chevrons half of
-// CHEVRON_H_PX around the center row, arrowheads at most HEAD_HALF_H_PX, continuation
-// triangles `markerHalfHeight`, plus the ≤1px snapBoxCenterYPx snap. 8 clears
-// every one of them, and being generous costs nothing — the test below is only
-// ever decisive for primitives already well off-screen.
+// The furthest a glyph reaches outside the box it rides on: a chevron arm, an
+// arrowhead, a continuation triangle, plus the ≤1px center-row snap.
 const GLYPH_Y_SLACK_PX = 8
 
-// Whether a primitive occupying `[topY, topY + heightPx]` in absolute track
-// coordinates can put ink on the canvas.
-//
-// It cannot change a pixel: `forEachClippedBlock` clips every block to
-// `[0, canvasHeight]`, so anything this rejects was already invisible. It is
-// worth asking because a fixed-height display scrolls over content many times
-// its own height — on screen that is thousands of no-op `fillRect`s a frame,
-// and on the SVG export path each one is an element serialized into the file
-// and then clipped away. `drawLines`' on-screen chevron window is the same
-// argument on the other axis.
+// Changes no pixel — the block scissor already hides what this rejects. It pays
+// for itself because a fixed-height display scrolls over content many times its
+// height: thousands of no-op `fillRect`s a frame, and on the export path an
+// element serialized into the file and then clipped away.
 function rowVisible(state: RenderState, topY: number, heightPx: number) {
   const y = topY - state.scrollY
   return (
@@ -113,9 +94,8 @@ function rowVisible(state: RenderState, topY: number, heightPx: number) {
   )
 }
 
-// `lineYs` and `arrowYs` are the box's CENTER (that is what `snapBoxCenterYPx`
-// takes), while `rectYs` is its top — so the two families measure their extent
-// differently and only this pair of helpers has to know which is which.
+// `lineYs` and `arrowYs` are the box's center while `rectYs` is its top, and
+// only this pair of helpers has to know which is which.
 function centeredRowVisible(
   state: RenderState,
   centerY: number,
@@ -124,9 +104,8 @@ function centeredRowVisible(
   return rowVisible(state, centerY - heightPx * 0.5, heightPx)
 }
 
-// The lines' and arrows' half of the rects' same-colour-run cache below: one
-// CSS string per packed colour per region, and a style assignment only when the
-// run changes, since a gene track's intron lines arrive thousands to a frame.
+// One CSS string per packed color per region: a gene track's intron lines arrive
+// thousands to a frame.
 function cssRgbaStyle(styles: Map<number, string>, c: number) {
   let style = styles.get(c)
   if (style === undefined) {
@@ -170,31 +149,20 @@ function drawLines(
     ctx.lineTo(x2, y)
     ctx.stroke()
 
-    // On reversed blocks the render axis flips, so strand-direction glyphs
-    // (chevrons, arrows) flip too — matches the GPU shader's
-    // `lerp(dir, -dir, u.reversed)`.
+    // A reversed block flips the render axis, so strand-direction glyphs flip
+    // with it.
     const rawDir = region.lineDirections[i]!
     const dir = block.reversed ? -rawDir : rawDir
     if (dir !== 0) {
       ctx.lineWidth = CHEVRON_THICKNESS_PX
       const lineWidthPx = Math.abs(x2 - x1)
-      // How many chevrons a line gets and where each one sits are
-      // chevron.slang's decisions, generated into TS (adr-051) — this loop used
-      // to restate both, including the N-chevrons-in-N+1-gaps rule that decides
-      // whether the marks look evenly spaced or crowd one end.
       if (showChevrons(lineWidthPx)) {
         const totalChevrons = chevronCount(lineWidthPx)
         const spacing = chevronOffset(lineWidthPx, totalChevrons, 0)
         const minX = Math.min(x1, x2)
-        // Only iterate chevrons that put ink on screen. A long intron zoomed in
-        // spans millions of px with almost all chevrons off-screen; without this
-        // window the loop issues thousands of clipped-away strokes.
-        //
-        // The shader's own window (adr-051), which is why the viewport is
-        // expressed the way it is: `chevronFirstVisible` measures from the LINE'S
-        // start, and the canvas here starts at `-minX` from it. Unit-agnostic
-        // like `chevronOffset` above — bp on the GPU, px here — so `reach` is the
-        // arm half-width in px.
+        // A long intron zoomed in spans millions of px with almost every chevron
+        // off-screen. The window measures from the LINE'S start, which is why the
+        // canvas enters it as `-minX`.
         const firstC = chevronFirstVisible(-minX, spacing, CHEVRON_HALF_W)
         const lastC = chevronLastVisible(
           canvasWidth - minX,
@@ -204,9 +172,6 @@ function drawLines(
         )
         for (let c = firstC; c <= lastC; c++) {
           const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
-          // Three-segment "<" or ">" centred on (cx, y). The two outer
-          // points share an x offset on the side opposite to `dir`, so
-          // flipping dir flips the chevron's apex.
           ctx.beginPath()
           ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
           ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
@@ -218,12 +183,10 @@ function drawLines(
   }
 }
 
-// Dense pileups paint thousands of rects from a handful of distinct colors, so
-// the per-rect `rgba(...)` is built once per color and reused. The bigger win is
-// the `!==` guard on the assignment itself: setting fillStyle re-parses the CSS
-// string every time, and a pileup's rects mostly arrive in same-color runs, so
-// the parse collapses to roughly once per run instead of once per rect. Keyed by
-// color and fade together, since the fade scales the color's alpha.
+// Setting fillStyle re-parses the CSS string, and a pileup's rects arrive in
+// same-color runs, so this cache and the `!==` guard beside it collapse the parse
+// to once per run. Keyed by color and fade together, since the fade scales the
+// color's alpha.
 function rectFillStyle(
   styles: Map<number, string>,
   c: number,
@@ -232,14 +195,8 @@ function rectFillStyle(
   const key = fade ? c + 0x1_0000_0000 : c
   let style = styles.get(key)
   if (style === undefined) {
-    // Where collapsed row-0 marks pile PILEUP_FADE_DEPTH deep, boxes draw
-    // semi-transparent so src-over accumulation makes the pileup read as a density
-    // texture instead of a flat block (mirrors rect.slang's densityAlpha); gene
-    // subfeature rects, stacked boxes, and marks with room around them stay
-    // fully opaque.
-    // rectDensityFade is that decision, so it alone gates the fade. Fold the
-    // factor into the fill color's alpha so it also applies on the SVG-export
-    // path (SvgCanvas has no globalAlpha).
+    // The fade folds into the color's alpha rather than globalAlpha, which
+    // SvgCanvas does not have, so the export path fades too.
     const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
     style = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
     styles.set(key, style)
@@ -247,20 +204,8 @@ function rectFillStyle(
   return style
 }
 
-// The horizontal extent a rect actually paints: its left edge and width, both in
-// whole pixels.
-//
-// Both edges come from `rectSpanPx`, generated from rect.slang's own vertex
-// stage (adr-051) — the point-vs-span rule, the pixel snap and the min-width
-// widening are all the shader's, and were hand-written here until
-// `rectSpanParity.test.ts` retired them. That test also pins the part that is
-// easy to lose on a later edit: the point branch does not widen, and does not
-// need to.
-//
-// What stays this side is the conversion from the shader's signed edge pair to
-// a fill-x, because that is the pivot Canvas2D needs and the GPU does not: the
-// vertex stage lerps between the two edges, so it never has to know which one
-// is leftmost. `spanLeft` owns it.
+// `rectSpanPx` returns the shader's signed edge pair, which the GPU lerps between
+// and never has to order; Canvas2D needs the leftmost, so `spanLeft` picks it.
 function paintedRectSpan(
   startBp: number,
   endBp: number,
@@ -281,8 +226,8 @@ function drawRects(
   const { scrollY } = state
   const styles = new Map<number, string>()
   let lastStyle: string | undefined
-  // outlineColor is per-region, so the stroke state is hoisted out of the loop
-  // rather than re-assigned (and re-parsed) on every outlined rect.
+  // outlineColor is per-region, so the stroke state hoists out of the loop
+  // instead of being re-parsed on every outlined rect.
   const outlineStyle = region.outlineColor
     ? abgrToCssRgba(region.outlineColor)
     : undefined
@@ -313,9 +258,6 @@ function drawRects(
     }
     ctx.fillRect(xLeft, y, w, h)
     if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
-      // This file had the inset spelling open-coded and was the only painter
-      // that did; the rule is `strokeRectInside` now, so the alignments read
-      // painter gets it too rather than rediscovering the `+0.5`.
       strokeRectInside(ctx, xLeft, y, w, h)
     }
   }
@@ -339,17 +281,15 @@ function drawArrows(
     }
     const xBp = region.arrowXs[i]!
     const rawDir = region.arrowDirections[i]!
-    // `xBp` is whichever end the arrow points off of, so the feature's other end
-    // is a widthBp step back along its strand. Measured through `toX` like
-    // drawLines' chevron gate rather than off a bpPerPx of our own.
+    // `xBp` is whichever end the arrow points off, so the feature's other end is
+    // a widthBp step back along its strand.
     const otherEndBp =
       rawDir === 1
         ? xBp - region.arrowWidthsBp[i]!
         : xBp + region.arrowWidthsBp[i]!
     const cx = toX(xBp)
-    // arrow.slang's own gate: a feature too narrow to be worth a direction
-    // marker gets none, so a dense repeat run doesn't drown in overlapping
-    // arrowheads. Same predicate `strandArrowPadding` reserves packing room by.
+    // A feature too narrow to be worth a direction marker gets none, so a dense
+    // repeat run does not drown in overlapping arrowheads.
     if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
       continue
     }
@@ -384,9 +324,8 @@ function drawArrows(
   }
 }
 
-// One open chevron (">"/"<") pointing toward `dir` (+1 right, -1 left), apex at
-// apexX. Two base corners join at the apex with no back edge, so it reads as a
-// ">" not a filled triangle.
+// Two base corners join at the apex with no back edge, so it reads as a ">"
+// rather than a filled triangle.
 function strokeChevron(
   ctx: Ctx2D,
   apexX: number,
@@ -402,22 +341,14 @@ function strokeChevron(
   ctx.stroke()
 }
 
-// The "»"/"«" pinned just inside ONE canvas edge for a rect that runs past it.
-//
-// `edgeSide` (+1 = right edge, -1 = left) is the only thing that differs between
-// the two edges: every direction below is expressed as `edgeSide × …`, so the
-// pair is one piece of arithmetic instead of two hand-mirrored copies whose signs
-// have to be kept in agreement by eye. The two decisions that arithmetic turns
-// on — which way the marker points, and whether that is out of this edge — are
-// continuation.slang's own, generated into TS (adr-051), so the shader and this
-// are not two such copies either.
+// `edgeSide` (+1 right, -1 left) is the only difference between the two edges:
+// every direction below reads `edgeSide × …`, so the pair is one piece of
+// arithmetic rather than two hand-mirrored copies to keep in sign agreement.
 function drawEdgeMarker(
   ctx: Ctx2D,
   args: {
-    // scissor edge the markers are pinned inside
     edgeX: number
     edgeSide: 1 | -1
-    // screen-axis strand of the rect (already flipped for a reversed block)
     strand: number
     cy: number
     halfH: number
@@ -425,9 +356,9 @@ function drawEdgeMarker(
 ) {
   const { edgeX, edgeSide, strand, cy, halfH } = args
   const dir = markerDirection(strand, edgeSide)
-  // A chevron pointing OUT of this edge sits with its apex on the anchor. One
-  // pointing back inward is shifted a triangle-width inward, so its apex rather
-  // than its base lands there and the whole glyph stays inside the scissor.
+  // A chevron pointing out of this edge puts its apex on the anchor; one pointing
+  // inward shifts a triangle-width so its apex lands there instead of its base
+  // and the whole glyph stays inside the scissor.
   const apexInset = CONT_TRI_W_PX * (1 - strandMatchesEdge(strand, edgeSide))
   for (let p = 0; p < 2; p++) {
     const anchorX =
@@ -436,8 +367,6 @@ function drawEdgeMarker(
   }
 }
 
-// "Feature keeps going" double-chevron (»/«) pinned at a screen edge for any rect
-// that runs past the visible block region. Mirrors continuation.slang.
 function drawContinuation(
   ctx: Ctx2D,
   region: RegionRenderData,
@@ -450,17 +379,13 @@ function drawContinuation(
   const { scissorX, scissorW } = clip
   const scissorLeft = scissorX
   const scissorRight = scissorX + scissorW
-  // Only the true canvas edges get markers, never an internal seam between two
-  // on-screen displayedRegions.
   const { leftIsCanvasEdge, rightIsCanvasEdge } = canvasEdgeFlags(
     scissorX,
     scissorW,
     canvasWidth,
   )
-  // An interior block in a multi-region view touches neither canvas edge, so no
-  // rect of it can qualify — skip the per-rect scan entirely rather than testing
-  // thousands of rects against two flags that are already false. (The GPU pays
-  // this per instance; here it's one branch.)
+  // An interior block touches neither canvas edge, so no rect of it can qualify
+  // and the whole per-rect scan is skippable.
   if (!leftIsCanvasEdge && !rightIsCanvasEdge) {
     return
   }
@@ -472,11 +397,8 @@ function drawContinuation(
     const x2 = toX(region.rectPositions[i * 2 + 1]!)
     const left = Math.min(x1, x2)
     const right = Math.max(x1, x2)
-    // Only mark once a meaningful amount of the feature is hidden (overhang past
-    // the edge > threshold); a few px clipped off a short repeat stays unmarked.
-    // `runsOffEdge` is the shader's own three comparisons, in px here and in clip
-    // there; the canvas-edge flags stay outside it, being a per-block fact each
-    // backend holds under its own name.
+    // Only mark once a meaningful amount of the feature is hidden; a few px
+    // clipped off a short repeat stays unmarked.
     const offLeft =
       leftIsCanvasEdge &&
       runsOffEdge(left, right, scissorLeft, -1, CONT_MIN_OVERHANG_PX)
@@ -485,8 +407,6 @@ function drawContinuation(
       runsOffEdge(right, left, scissorRight, 1, CONT_MIN_OVERHANG_PX)
     if (offLeft || offRight) {
       const c = region.rectColors[i]!
-      // 0..1 channels, which is the unit `markerIsDark` weighs them in — the
-      // unpack is this backend's half of the split (see the shader).
       ctx.strokeStyle = markerIsDark(
         abgrRed(c) / 255,
         abgrGreen(c) / 255,
@@ -501,9 +421,6 @@ function drawContinuation(
         scrollY,
       )
       const halfH = markerHalfHeight(region.rectHeights[i]!)
-      // Genomic strand → screen direction, so a reversed block's markers point
-      // the way its glyphs run — same flip drawLines/drawArrows apply, and
-      // continuation.slang's `flipX(inst.strand, u)`.
       const rawStrand = region.rectStrands[i]!
       const strand = block.reversed ? -rawStrand : rawStrand
       if (offRight) {
@@ -537,19 +454,8 @@ type GlyphDrawFn = (
   clip: BlockClip,
 ) => void
 
-// Each glyph layer's Canvas2D painter. The set and the paint order live in the
-// shared `GLYPH_LAYERS` list (also driving the GPU renderer); this map resolves
-// each id to the call that paints it, and is typed `Record<GlyphLayerId, …>` so
-// a glyph can't be added to that list without being painted here — or on the SVG
-// export path, which reaches these same painters through `drawFeatureBlocks`.
-//
-// Every painter takes `GlyphDrawFn` whole and ignores what it doesn't need, so
-// the entries are bare references and this reads as the table it is. Wrappers
-// that only reorder arguments would put a second, silent statement of which
-// painter each id means between the id and its painter.
-//
-// Chevrons have no entry: `drawLines` paints them per line, where the GPU draws
-// them as a separate pass off the line buffer. Same marks, same slot.
+// Chevrons have no entry of their own: `drawLines` paints them per line, where
+// the GPU draws them as a separate pass off the line buffer.
 export const CANVAS_GLYPH_DRAW: Record<GlyphLayerId, GlyphDrawFn> = {
   line: drawLines,
   rect: drawRects,
@@ -558,11 +464,8 @@ export const CANVAS_GLYPH_DRAW: Record<GlyphLayerId, GlyphDrawFn> = {
 }
 
 /**
- * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
- * feature data into any 2D-canvas-like context. Per-block scissor clips so
- * partial blocks don't bleed across boundaries. No `this`, no DOM, no DPR
- * scaling — the on-screen `Canvas2DFeatureRenderer` wraps this with
- * `prepareCanvas`; SVG export calls it directly with an `SvgCanvas`.
+ * No `this`, no DOM, no DPR scaling: the on-screen renderer wraps this with
+ * `prepareCanvas`, and the SVG export calls it with an `SvgCanvas`.
  */
 export function drawFeatureBlocks(
   ctx: Ctx2D,
@@ -589,8 +492,6 @@ export function drawFeatureBlocks(
 interface HighlightLabelContext {
   showLabels: boolean
   showDescriptions: boolean
-  // resolved label size for the display mode, so the reserved label width matches
-  // the text the export actually paints (baked widths are at the base size)
   fontSize: number
 }
 
@@ -604,20 +505,10 @@ function drawHighlightBox(
   labelData: FeatureLabelData | undefined,
   labelContext: HighlightLabelContext,
 ) {
-  // Region-clamped rect, same helper the on-screen overlay uses
-  // (overlayElements/addOverlay). Clamping matters even though the block
-  // scissor is up: a feature that merely TOUCHES this region's edge (the normal
-  // shape at a displayed-region boundary, drawn entirely in the neighbour)
-  // clamps to nothing here, and the reserved label width below would otherwise
-  // inflate it into a phantom stripe inside the scissor.
   const rect = overlayItemRect(item, block)
   if (rect) {
-    // Reserve the floating-label width for a top-level feature so the box wraps
-    // the glyph AND its label, exactly as the on-screen searchHighlightBox does
-    // (overlayElements addFeatureBox/computeExtraWidth). Measured off the
-    // feature's full width, not the clamped rect, matching computeExtraWidth.
-    // Subfeatures pass no labelData and get 0, mirroring on-screen where
-    // kind !== 'feature' reserves nothing.
+    // The box wraps the glyph and its label, measured off the feature's full
+    // width rather than the clamped rect.
     const extraWidth = labelData
       ? computeLabelExtraWidth(
           labelData,
@@ -627,10 +518,8 @@ function drawHighlightBox(
           labelContext.fontSize,
         )
       : 0
-    // Mirror the on-screen overlay box (overlayElements/computeOverlayRect):
-    // 2px outset, top clamped into the content edge; then apply the scroll
-    // offset the on-screen ScrollLockedOverlay applies via its -scrollTop
-    // transform.
+    // The scroll offset below is what ScrollLockedOverlay applies on screen
+    // through its -scrollTop transform.
     const box = computeOverlayRect(rect, extraWidth, 2, 2)
     const top = box.top - scrollY
     ctx.fillStyle = colors.fill
@@ -641,19 +530,11 @@ function drawHighlightBox(
   }
 }
 
-// Vector post-pass for SVG export: box the resolved highlighted features the way
-// the on-screen DOM overlay does (the app canvas doesn't paint these). The
-// resolved id set already picks a top-level feature OR its subfeature, so
-// scanning both arrays and filtering by membership can't double-box.
-//
-// Deliberately the ONLY one of the four on-screen overlay kinds
-// (HighlightLayer) that exports. Hover, the in-progress solo collection,
-// and the selection box are all live-session UI: a figure should show the data,
-// not what the user last moused over or clicked, and a feature left selected
-// from opening its details widget would otherwise border every export until the
-// user thought to click empty space. The search highlight is the exception
-// because it is a declarative "point at this feature" request. Don't add the
-// others back without that being an explicit product decision.
+// The search highlight is the only on-screen overlay kind the export draws:
+// hover, the in-progress solo collection and the selection box are live-session
+// UI, and a feature left selected from a details widget would border every
+// export. The resolved id set holds a top-level feature or its subfeature, never
+// both, so scanning both arrays cannot double-box.
 export function drawHighlightBoxes(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, FeatureDataResult>,
@@ -689,7 +570,6 @@ export function drawHighlightBoxes(
           )
         }
       }
-      // Subfeatures deliberately pass no labelData — see drawHighlightBox.
       for (const item of region.subfeatureInfos) {
         if (highlightedIds.has(item.featureId)) {
           drawHighlightBox(

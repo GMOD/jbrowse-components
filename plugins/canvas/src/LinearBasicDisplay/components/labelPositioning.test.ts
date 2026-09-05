@@ -92,11 +92,9 @@ function collect(
   return out
 }
 
-// A region whose baked `labelKinds` rules out every kind the display flags hold
-// must not be walked at all. Proved by a container that throws if iterated,
-// because the observable behaviour of the slow path and the fast path is
-// identical — both emit nothing — and it is the walk itself that costs 20% of a
-// dense frame.
+// The slow path and the fast path both emit nothing, so a container that throws
+// when iterated is the only way to tell them apart — and the walk itself is what
+// costs 20% of a dense frame.
 describe('the label walk is skipped outright when no kind can render', () => {
   const trapData = (labelKinds: FeatureDataResult['labelKinds']) => {
     const floatingLabelsData = new Map([['f1', makeLabelData('f1')]])
@@ -174,8 +172,7 @@ describe('forEachRenderedLabel', () => {
       showDescriptions: true,
     })
     expect(emitted!.labels.map(l => l.kind)).toEqual(['name', 'desc'])
-    // description sits one label-line (the context font size) below the name,
-    // regardless of the worker-supplied relativeY
+    // One label-line below the name, whatever relativeY the worker supplied.
     expect(emitted!.labels[1]!.label.relativeY).toBe(LABEL_FONT)
   })
 
@@ -226,9 +223,8 @@ describe('forEachRenderedLabel', () => {
     expect(resolved.label.isOverlay).toBe(true)
   })
 
-  // A subfeature label outlives both feature-label flags — it is a worker-baked
-  // config choice, not a fit rung — but not the fit squeeze, which scales the row
-  // it was reserved in while the text keeps its font size.
+  // A subfeature label outlives both feature-label flags but not the fit squeeze,
+  // which scales the row it was reserved in while the text keeps its font size.
   test('drops the subfeature label when the fit squeeze has hidden it', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
@@ -281,8 +277,8 @@ describe('forEachRenderedLabel', () => {
     expect(emitted!.labels[0]!.labelX).toBeGreaterThanOrEqual(50)
   })
 
-  // A gene wider than the window: the clamp is the only thing deciding where
-  // its name goes, and at 0 it lands on the panel border.
+  // For a gene wider than the window the clamp alone decides where its name goes,
+  // and at 0 it lands on the panel border.
   test('a feature running off the left holds its label inside the edge', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
@@ -298,9 +294,8 @@ describe('forEachRenderedLabel', () => {
     expect(emitted!.labels[0]!.labelX).toBe(LABEL_EDGE_GUTTER_PX)
   })
 
-  // and the gutter never outranks the right-edge clamp: a feature whose right
-  // edge is within a label's width of the screen left keeps its label on that
-  // right edge, off screen and all
+  // A feature whose right edge is within a label's width of the screen left keeps
+  // its label on that right edge, off screen and all.
   test('the right-edge clamp still wins over the gutter', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
@@ -364,7 +359,7 @@ describe('labelCullBand', () => {
     const viewportHeight = 700
     const bucket = 3
     const band = labelCullBand(bucket, viewportHeight)
-    // extremes of scrollTop that still map to this bucket
+    // The extremes of scrollTop that still map to this bucket.
     const minScroll = bucket * LABEL_CULL_BUCKET_PX
     const maxScroll = (bucket + 1) * LABEL_CULL_BUCKET_PX
     expect(band.top).toBeLessThanOrEqual(minScroll)
@@ -378,8 +373,7 @@ describe('forEachDisplayLabel', () => {
   }
 
   test('emits a feature label once when it spans back-to-back regions', () => {
-    // A collapsed-intron feature is laid out into both regions' data; its
-    // label must be emitted a single time (the SVG-export duplication bug).
+    // A collapsed-intron feature is laid out into both regions' data.
     const spanning = { f1: makeLabelData('f1', { nameLabel: makeLabel() }) }
     const laidOutDataMap = new Map([
       [0, makeData(spanning)],
@@ -426,8 +420,6 @@ describe('forEachDisplayLabel', () => {
     expect(emitted.sort()).toEqual(['f1', 'f2'])
   })
 
-  // Fit's `bodies` level hides labels upstream (model.renderedShowLabels /
-  // renderedShowDescriptions both false), so the walker simply emits nothing.
   test('emits nothing when the caller has hidden every label kind', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
@@ -525,12 +517,9 @@ describe('computeLabelExtraWidth', () => {
   })
 })
 
-// The invariant `renderedLabelSet` exists to hold: the horizontal room reserved
-// for a feature's labels and the labels actually emitted are the same decision.
-//
-// Drift between them is silent and costs either a strip of reserved whitespace
-// with no text in it, or a label overhanging the box the packer, the hit test
-// and the SVG export all sized for it.
+// Drift between the room reserved for a feature's labels and the labels emitted
+// is silent, and costs either a strip of reserved whitespace with no text in it
+// or a label overhanging the box the packer sized for it.
 describe('the reservation and the ink agree', () => {
   const NAME = 'a-name-of-some-length'
   const DESC = 'a-description-that-is-much-longer-than-the-name'
@@ -540,8 +529,8 @@ describe('the reservation and the ink agree', () => {
     ...makeLabel({ text, textWidth: measureText(text, LABEL_FONT) }),
   })
 
-  // Every subset of the three labels a feature can carry, so the subfeature
-  // label's ungated-ness is exercised against both gates being off.
+  // Every subset of the three labels a feature can carry, so the ungated
+  // subfeature label meets both gates being off.
   const present = [
     { name: false, desc: false, sub: false },
     { name: true, desc: false, sub: false },
@@ -573,8 +562,8 @@ describe('the reservation and the ink agree', () => {
           visibility,
         )
         const labels = emitted[0]?.labels ?? []
-        // Measured against a zero-width feature, so the reservation IS the
-        // widest rendered label rather than its overhang past a box.
+        // Against a zero-width feature the reservation is the widest rendered
+        // label itself rather than its overhang past a box.
         const reserved = computeLabelExtraWidth(
           labelData,
           0,
@@ -583,10 +572,7 @@ describe('the reservation and the ink agree', () => {
           LABEL_FONT,
         )
 
-        // Nothing emitted <=> nothing reserved.
         expect(reserved > 0).toBe(labels.length > 0)
-        // ...and when something is emitted, the reservation is exactly the
-        // widest of the labels that were.
         if (labels.length > 0) {
           expect(reserved).toBeCloseTo(
             Math.max(...labels.map(l => l.label.textWidth)),

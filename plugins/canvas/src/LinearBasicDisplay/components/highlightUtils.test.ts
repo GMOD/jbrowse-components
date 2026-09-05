@@ -1,7 +1,7 @@
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 
-// 1000bp of region across 1000px of screen — 1bp per px, so bp and px read the
-// same and the clamping is what the assertions are about.
+// 1bp per px, so bp and px read the same and the clamping is what the assertions
+// are about.
 const REGION = { start: 0, end: 1000, screenStartPx: 0, screenEndPx: 1000 }
 const ROW = { topPx: 10, bottomPx: 20 }
 
@@ -19,9 +19,9 @@ describe('overlayItemRect', () => {
   })
 
   test('drops a feature that only touches the region start', () => {
-    // the shape at every displayed-region boundary: this feature is drawn (and
-    // boxed) entirely in the PREVIOUS region, so a zero-width rect here becomes
-    // a phantom stripe once computeOverlayRect adds padding + label overhang
+    // The shape at every displayed-region boundary: the previous region draws and
+    // boxes this feature, so a zero-width rect here becomes a phantom stripe once
+    // computeOverlayRect adds padding and label overhang.
     expect(
       overlayItemRect({ startBp: -500, endBp: 0, ...ROW }, REGION),
     ).toBeUndefined()
@@ -49,8 +49,8 @@ describe('overlayItemRect', () => {
   })
 
   test('drops a zero-length feature scrolled outside the region', () => {
-    // a selected insertion panned out of view: both edges clamp to the same
-    // region bound from the wrong side, so an unguarded rect has negative width
+    // A selected insertion panned out of view clamps both edges to the same region
+    // bound from the wrong side, giving an unguarded rect negative width.
     expect(
       overlayItemRect({ startBp: -500, endBp: -500, ...ROW }, REGION),
     ).toBeUndefined()
@@ -82,8 +82,8 @@ describe('computeOverlayRect', () => {
   })
 
   test('top-row feature: clamps top to 0 so the outset top border stays in view', () => {
-    // topPx≈0 outset by 2 would place the top border at y=-2, clipped by
-    // ScrollLockedOverlay's y=0 edge — clamp keeps it at 0
+    // Outset by 2, a top-row feature would put its top border at y=-2, which
+    // ScrollLockedOverlay clips away.
     const box = computeOverlayRect({ ...rect, topPx: 0 }, 0, 2, 2)
     expect(box.top).toBe(0)
   })
@@ -91,8 +91,6 @@ describe('computeOverlayRect', () => {
   test('top-row clamp keeps the bottom edge fixed', () => {
     const unclamped = computeOverlayRect(rect, 0, 2, 2)
     const topRow = computeOverlayRect({ ...rect, topPx: 0 }, 0, 2, 2)
-    // bottom = top + height is (topPx - yPadding) + heightPx + 2*yPadding =
-    // topPx + heightPx + yPadding; independent of the clamp
     expect(unclamped.top + unclamped.height).toBe(50 + 10 + 2)
     expect(topRow.top + topRow.height).toBe(0 + 10 + 2)
   })

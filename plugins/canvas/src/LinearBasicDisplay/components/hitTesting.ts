@@ -10,8 +10,8 @@ import type {
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
-// Extra pixels added to each side of every feature's hit box so small
-// zoomed-out features (including un-stranded ones) remain hoverable.
+// Every hit box grows by this on each side so a zoomed-out feature a pixel wide
+// stays hoverable.
 export const HIT_PAD_PX = 4
 
 export interface VisibleRegion {
@@ -25,9 +25,8 @@ export interface VisibleRegion {
   screenEndPx: number
 }
 
-// Per-feature entry built by indexing flatbushItems/subfeatureInfos across
-// every visible region. Feature entries carry their region's render data so
-// overlay code can look up label widths without re-walking the data map.
+// A feature entry carries its region's render data so overlay code reads label
+// widths without re-walking the data map.
 export type FeatureItemEntry =
   | {
       kind: 'feature'
@@ -37,10 +36,8 @@ export type FeatureItemEntry =
     }
   | { kind: 'subfeature'; item: SubfeatureInfo; vr: VisibleRegion }
 
-// The zoom this region is drawn at, always positive: LGV emits start < end and
-// carries the flip in `reversed` (see calculateDynamicBlocks), so a signed span
-// can't reach here and make `isBaseResolved` read a negative bpPerPx as "zoomed
-// all the way in".
+// Always positive: LGV emits start < end and carries the flip in `reversed`, so
+// no signed span reaches here to read as "zoomed all the way in".
 export function regionBpPerPx(vr: VisibleRegion) {
   return (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
 }
@@ -48,8 +45,6 @@ export function regionBpPerPx(vr: VisibleRegion) {
 export interface LabelVisibility {
   showLabels: boolean
   showDescriptions: boolean
-  // the display mode's resolved label font size, so the label-overhang part of a
-  // hit box matches the width the label actually draws at
   fontSize: number
 }
 
@@ -61,20 +56,14 @@ export interface FlatbushRegionIndexes {
 export interface HitFeatureResult {
   feature: FlatbushItem
   subfeature: SubfeatureInfo | undefined
-  // amino-acid codon under the cursor, when hovering peptide-level CDS
   peptide: AminoAcidOverlayItem | undefined
-  // integer genomic position under the cursor, which the transcript readouts
-  // are measured from, and the zoom it was read at, which decides how precise
-  // a readout is honest
   bpPos: number
   bpPerPx: number
   displayedRegionIndex: number
 }
 
-// The hit a hover on a feature's floating label stands for: the label names its
-// feature and nothing finer, and the base under the cursor is read through the
-// label's own region so the transcript readouts match what the glyph beside it
-// would say.
+// A floating label names its feature and nothing finer, so the hit it stands for
+// carries no subfeature.
 export function labelHit(
   feature: FlatbushItem,
   vr: VisibleRegion,
@@ -144,21 +133,10 @@ export function buildSubfeatureFlatbushIndex(
   return index
 }
 
-// "Whatever is drawn on top of the cursor wins", the one rule both picks below
-// resolve by.
-//
-// Flatbush returns overlap matches in tree (Hilbert) order, unrelated to
-// insertion order. Both `flatbushItems` and `subfeatureInfos` are populated in
-// PAINT order and the index preserves it, so the largest matching index is the
-// one painted last, i.e. the one on top. Overlaps are routine on both axes: the
-// repeat_region case paints LTRs/TSDs over the internal retrotransposon body
-// (see processRepeatRegionLayout), and collapsed display mode packs every
-// feature onto row 0 (see packPreparedRef's singleRow).
-//
-// `eligible` narrows the candidates BEFORE the topmost is chosen, never after —
-// picking first and filtering second answers "is the top one eligible?", which
-// is a different (and wrong) question: the top match is regularly a neighbour's,
-// and rejecting it there discards an eligible match sitting just under it.
+// Flatbush returns matches in tree order, but the indexed arrays are populated
+// in paint order, so the largest matching index is the one on top. `eligible`
+// narrows the candidates before the topmost is chosen: filtering afterwards
+// would discard an eligible match sitting under a neighbour's.
 function topmostMatch(
   indices: number[],
   eligible: (index: number) => boolean = () => true,
@@ -172,15 +150,9 @@ function topmostMatch(
   return top
 }
 
-// Codons aren't in a Flatbush index (they only exist when zoomed into
-// peptide-level CDS, so the array is bounded by what's on screen); a linear
-// scan mirrors the per-render scan in forEachRenderedPeptide. Returns the codon
-// whose genomic span contains bpPos at the row under yPos, gated to codons
-// belonging to the feature the hit resolved to (aminoAcidOverlay items carry
-// their owning feature's flatbushItems index) — the same gate resolveSubfeature
-// applies, and for the same reason: the feature boxes are widened by pad and
-// label overhang, so a cursor inside one feature's padding can sit over a
-// neighbour's codons, which would then be tooltipped as this feature's residue.
+// Gated to codons the hit feature owns: pad and label overhang widen a feature's
+// box, so a cursor inside one feature's padding can sit over a neighbour's
+// codons.
 function findPeptideAt(
   data: FeatureDataResult,
   bpPos: number,
@@ -204,11 +176,9 @@ function findPeptideAt(
   return undefined
 }
 
-// The topmost subfeature under the cursor that belongs to `feature`. Gating on
-// parentFeatureId (the top-level feature id, see glyphEmitters) prevents a
-// subfeature of an overlapping neighbor from being paired with `feature` — it
-// rides in as topmostMatch's eligibility test, so the gate applies to every
-// candidate rather than only to the one that happened to be on top.
+// The parentFeatureId gate rides in as topmostMatch's eligibility test, so it
+// rejects an overlapping neighbour's subfeature among every candidate rather
+// than only the one that happened to be on top.
 function resolveSubfeature(
   data: FeatureDataResult,
   indexes: FlatbushRegionIndexes,
@@ -238,23 +208,12 @@ export function performMultiRegionHitDetection(
     const data = laidOutDataMap.get(vr.displayedRegionIndex)
     const indexes = flatbushIndexes.get(vr.displayedRegionIndex)
     if (data && indexes?.feature) {
-      // The base the cursor is over. bpAtPx owns the reversed pivot: flooring
-      // the raw inverse names the neighbouring base on each base's leftmost
-      // pixel column of a flipped region.
       const bpPos = bpAtPx(mouseXPx, vr)
-      // Features' hit boxes are padded by label width and can overlap a
-      // neighbor's box, so pick the topmost (last-painted = largest index)
-      // rather than whatever Flatbush yields first.
       const idx = topmostMatch(indexes.feature.search(bpPos, yPos, bpPos, yPos))
       if (idx !== undefined) {
         const feature = data.flatbushItems[idx]!
         return {
           feature,
-          // The topmost subfeature by the same rule, restricted to ones this
-          // feature owns. The two indexes search independently and the feature
-          // boxes are widened by pad/label overhang while the subfeature index
-          // is not, so an ungated subfeature could pair with the neighbouring
-          // feature — showing its isoform tooltip while select acts on this one.
           subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
           peptide: findPeptideAt(data, bpPos, yPos, idx),
           bpPos,

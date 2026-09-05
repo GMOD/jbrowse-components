@@ -1,14 +1,6 @@
-// The strand arrow is drawn OUTSIDE the box it annotates, from the feature
-// boundary outward, at a fixed 7px. On a repeat track zoomed out far enough that
-// each repeat is a few px wide, every arrow is therefore wider than its own
-// feature and lands on the neighbor — hundreds of them turning a row of boxes
-// into a solid mess of overlapping arrowheads. So a feature too narrow to be
-// worth a direction marker gets none.
-//
-// Pinned on the Canvas2D path (which SVG export also uses); the GPU path applies
-// the same threshold in arrow.slang's vertex shader, off the same
-// ARROW_MIN_FEATURE_WIDTH_PX the shader codegen exports here, so the two can't
-// drift on the number.
+// The strand arrow draws outside the box it annotates, at a fixed 7px, so on a
+// zoomed-out repeat track every arrow is wider than its feature and lands on the
+// neighbour. A feature too narrow to be worth a direction marker gets none.
 import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
 import { ARROW_MIN_FEATURE_WIDTH_PX } from './sharedRendererConstants.ts'
 
@@ -37,8 +29,8 @@ const EMPTY = {
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
 
-// Counts arrowheads: the head is the only filled 3-point path this region
-// produces, since no rects or lines are populated.
+// The head is the only filled 3-point path this region produces, no rects or
+// lines being populated.
 function countArrowheads(region: RegionRenderData, reversed: boolean) {
   let heads = 0
   let points = 0
@@ -69,7 +61,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
     lineWidth: 1,
   } as unknown as Ctx2D
 
-  // 100px showing bp 50..150, so 1 bp/px and a feature's bp length is its width.
+  // 100px showing bp 50..150, so a feature's bp length is its px width.
   const block: FeatureRenderBlock = {
     displayedRegionIndex: 0,
     start: 50,
@@ -86,7 +78,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
   return heads
 }
 
-// `x` is the arrow's anchor — the feature's end on +, its start on -.
+// `x` is the arrow's anchor: the feature's end on +, its start on -.
 function arrowRegion(x: number, widthBp: number, strand: 1 | -1) {
   return {
     ...EMPTY,
@@ -111,10 +103,8 @@ test('a feature narrower than the threshold draws no strand arrow', () => {
   expect(countArrowheads(region, true)).toBe(0)
 })
 
-// The gate measures the feature, so it must reach the same verdict whichever end
-// the arrow is anchored to. On - strand `x` is the feature's start and the span
-// runs the other way; measuring off the wrong side would size the feature from
-// the block edge instead and keep arrows the + case drops.
+// On - strand `x` is the feature's start and the span runs the other way, so
+// measuring off the wrong side sizes the feature from the block edge instead.
 test('the gate measures the same feature on either strand', () => {
   const narrow = ARROW_MIN_FEATURE_WIDTH_PX - 1
   const wide = ARROW_MIN_FEATURE_WIDTH_PX + 1

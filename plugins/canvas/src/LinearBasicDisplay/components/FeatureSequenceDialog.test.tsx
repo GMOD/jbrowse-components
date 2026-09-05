@@ -78,9 +78,6 @@ describe('the feature sequence dialog', () => {
     expect(session.notifications).toEqual([])
   })
 
-  // The painting ships slim arrays, so the transcript is looked up by id inside
-  // the re-fetched gene. When that lookup misses, the panel used to show the
-  // gene under a title the reader had no reason to doubt.
   it('says so when it falls back to the parent feature', async () => {
     const { session } = renderDialog('EDEN.9')
     await screen.findByText('Feature sequence - EDEN')

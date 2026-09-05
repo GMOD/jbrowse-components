@@ -1,11 +1,7 @@
-// A transcript's exon boxes and the intron line joining them have to agree on
-// where the middle of the row is. The line is 1px, so it can only sit on a whole
-// pixel row — which a box spanning an EVEN number of rows doesn't have, its
-// center falling on the seam between two. At the 2px bodies fit mode squeezes
-// down to, that half-pixel is half the box: the exons visibly float above the
-// line. `snapBoxHeightPx` (hpmath.slang, twinned in Canvas2DFeatureRenderer)
-// draws thin boxes at an odd height so the center row exists, and these tests
-// pin the resulting symmetry — equal exon ink above and below the intron line.
+// A 1px intron line can only sit on a whole pixel row, which a box spanning an
+// even number of rows does not have. At the 2px bodies fit mode squeezes down to
+// that half-pixel is half the box, so thin boxes draw at an odd height and these
+// pin the symmetry it buys.
 import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -33,10 +29,8 @@ const EMPTY = {
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
 
-// One exon box (bp 100-200) and the intron line running off its right edge (bp
-// 200-400), both at row top `topY` with the same body height — exactly what
-// `emitIntronLines`/`emitExonRects` produce for one transcript, the line's y
-// being the box's real center.
+// One exon box and the intron line running off its right edge, at the same row
+// top and body height, the line's y being the box's real center.
 function drawTranscript(heightPx: number, topY: number) {
   let box: { y: number; h: number } | undefined
   let lineY: number | undefined
@@ -82,7 +76,7 @@ function drawTranscript(heightPx: number, topY: number) {
     lineYs: new Float32Array([topY + heightPx / 2]),
     lineHeights: new Float32Array([heightPx]),
     lineColors: new Uint32Array([0xff_00_00_00]),
-    // No chevrons, so moveTo fires once: for the line itself.
+    // No chevrons, so moveTo fires once, for the line itself.
     lineDirections: new Int8Array([0]),
   }
   drawFeatureBlocks(ctx, new Map([[0, region]]), [block], {
@@ -93,8 +87,7 @@ function drawTranscript(heightPx: number, topY: number) {
   if (!box || lineY === undefined) {
     throw new Error('expected a box and a line')
   }
-  // The stroke covers the pixel row below its y (lineWidth 1 at a x.5 y), so
-  // that row's top is lineY - 0.5. Report the box rows on either side of it.
+  // The stroke covers the pixel row below its y, so that row's top is lineY-0.5.
   const lineTop = lineY - 0.5
   return {
     boxHeight: box.h,
@@ -103,8 +96,7 @@ function drawTranscript(heightPx: number, topY: number) {
   }
 }
 
-// 2px is what a fit-mode squeeze floors at (MIN_FIT_BOX_PX), and the height the
-// misalignment was reported at.
+// 2px is what a fit-mode squeeze floors at.
 test.each([2, 3, 4, 5])(
   'a %ipx transcript body centers its intron line',
   heightPx => {
@@ -124,8 +116,8 @@ test('odd and full-size bodies keep the height they were laid out at', () => {
   expect(drawTranscript(10, 20).boxHeight).toBe(10)
 })
 
-// The nudge is about the box's own rows, so it can't depend on where the row
-// landed: a fit scale puts row tops on fractional pixels.
+// The nudge is about the box's own rows, and a fit scale puts row tops on
+// fractional pixels.
 test('centering holds at a fractional row top', () => {
   const { above, below } = drawTranscript(2, 20.4)
   expect(above).toBe(below)

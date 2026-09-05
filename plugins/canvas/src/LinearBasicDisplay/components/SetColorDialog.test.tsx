@@ -4,9 +4,6 @@ import { fireEvent, render } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog.tsx'
 
-// The dialog's "Restore default" button (SubmitForm's onReset) is the only way
-// to clear these slots back to their config defaults, so what it touches has to
-// match what the dialog is showing.
 function setup(showUtrColor: boolean) {
   const setFeatureColor = jest.fn()
   const setUtrColor = jest.fn()
@@ -35,9 +32,6 @@ describe('SetColorDialog reset', () => {
     expect(setUtrColor).toHaveBeenCalledWith(undefined)
   })
 
-  // Variants opens this with showUtrColor=false (no UTRs to color). Resetting a
-  // slot whose control isn't on screen silently drops a config-authored value
-  // through an affordance the user can't see the effect of.
   it('leaves utrColor alone when its picker is hidden', () => {
     const { setFeatureColor, setUtrColor } = setup(false)
     expect(setFeatureColor).toHaveBeenCalledWith(undefined)

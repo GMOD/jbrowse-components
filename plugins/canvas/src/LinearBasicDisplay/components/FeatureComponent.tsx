@@ -39,11 +39,6 @@ import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
 
-// The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
-// display registers this component from index.ts, so nothing imports it back into
-// the model and there's no cycle to work around. It used to be a hand-mirrored
-// 92-field structural interface plus a separate compile-time contract file
-// guarding it.
 export interface LinearBasicDisplayComponentProps {
   model: LinearCanvasBaseDisplayModel
 }
@@ -52,20 +47,15 @@ const useStyles = makeStyles()({
   root: {
     position: 'relative',
     width: '100%',
-    // inherited from `DisplayContainer` until it was deleted; kept verbatim so
-    // the label overlays below still lay out the same way
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    // no text cursor / drag-selection over the canvas and its label overlays —
-    // selectable text there shows an I-beam and a drag hijacks the mouseover
+    // Selectable text over the canvas shows an I-beam, and a drag there hijacks
+    // the mouseover.
     userSelect: 'none',
   },
-  // The scrolled panel: the canvas plus the label / highlight overlays pinned to
-  // the same scrollTop. It exists so the wheel gesture has ONE element covering
-  // all of them — a clickable floating label is a sibling of the canvas, so a
-  // wheel over it never reaches a listener bound to the canvas. See
-  // `useVirtualScrollWheel`. The chrome's own overlays (scrollbar, edge shadow,
-  // legend, corner chips) stay outside it, keeping the gestures they already own.
+  // One element covering the canvas and its overlays, so the wheel gesture has
+  // something to bind to: a clickable floating label is the canvas's sibling, and
+  // a wheel over it never reaches a listener on the canvas.
   panel: {
     position: 'absolute',
     top: 0,
@@ -73,11 +63,9 @@ const useStyles = makeStyles()({
     width: '100%',
     height: '100%',
   },
-  // Fixed viewport canvas: the GPU paints the visible window at
-  // `inst.y - scrollY` (scrollY = model.scrollTop). Scroll is virtual (a
-  // VerticalScrollbar overlay + wheel handler drive model.scrollTop), so the
-  // canvas never moves and the overlays derive their Y from the same scrollTop
-  // — no native overflow container, no compositor/main-thread scroll tearing.
+  // Scroll is virtual — a scrollbar overlay and a wheel handler drive
+  // model.scrollTop — so the canvas never moves and the overlays take their Y
+  // from the same value, with no compositor scroll to tear against.
   canvas: {
     display: 'block',
     position: 'absolute',
@@ -86,9 +74,8 @@ const useStyles = makeStyles()({
   },
 })
 
-// The isoform-collapse chip, driven by the `geneGlyphNotice` hook. Its own
-// observer so the hook's reads (which include the loaded data's
-// hasMultiIsoformGenes) re-render just this chip rather than the whole body.
+// Its own observer, so the notice hook's reads re-render this chip rather than
+// the whole body.
 const GeneGlyphIndicator = observer(function GeneGlyphIndicator({
   model,
 }: LinearBasicDisplayComponentProps) {
@@ -110,11 +97,8 @@ const GeneGlyphIndicator = observer(function GeneGlyphIndicator({
   ) : null
 })
 
-// Wraps the overlays in the shared ScrollLockedOverlay so labels/highlights
-// track the GPU canvas's model.scrollTop rather than the native compositor
-// scroll (see ScrollLockedOverlay for why). Its own observer so only this thin
-// wrapper re-renders per scroll frame; the layer children are passed as stable
-// elements and don't re-run.
+// Its own observer, so a scroll frame re-renders this wrapper alone; the layer
+// children arrive as stable elements and do not re-run.
 const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model,
   children,
@@ -133,15 +117,9 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
   )
 })
 
-// The canvas body shared by every canvas-family display (features, variants).
-// Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
-// hit-testing, and the canvas itself; FloatingLabelsLayer and HighlightLayer
-// (separate observers) own the label / peptide and hover / selection layers.
-//
-// Chrome that belongs to one subclass arrives through a model hook, not a prop:
-// the isoform control below reads `model.geneGlyphNotice`, which the canvas base
-// declares as absent by default (the variant display shares this body and has no
-// `geneGlyphMode` slot to answer with).
+// Chrome belonging to one subclass arrives through a model hook rather than a
+// prop: the variant display shares this body and has no `geneGlyphMode` slot to
+// answer with.
 const FeatureComponent = observer(function FeatureComponent({
   model,
 }: LinearBasicDisplayComponentProps) {
@@ -157,14 +135,9 @@ const FeatureComponent = observer(function FeatureComponent({
       {({ canvasRef, mouseTracker }) => (
         <>
           <FeatureBody model={model} canvasRef={canvasRef} />
-          {/* Inside the chrome, which is the `position:relative` box it pins
-              itself to. It used to sit in `DisplayContainer` one level up —
-              also relative, so the geometry is unchanged. */}
           <ColorLegendOverlay model={model} />
-          {/* `mouseoverExtraInformation` decides whether there is a tooltip:
-              the hit test that sets it runs on the canvas's own handlers, from
-              the event's coordinates, because the click and right-click paths
-              share it. Only the position comes from the chrome's tracker. */}
+          {/* `mouseoverExtraInformation` decides whether there is a tooltip at
+              all; only the position comes from the chrome's tracker. */}
           <PointerLayer mouseTracker={mouseTracker}>
             {mouseState => (
               <FeatureTooltip
@@ -191,42 +164,29 @@ const FeatureBody = observer(function FeatureBody({
 
   const view = containingLgv(model)
 
-  // `canvasWidthPx` off the model, gated on `initialized` because it reaches
-  // `view.width`, which throws before the view is measured. Never a second
-  // `view.trackWidthPx` read — see `MultiRegionDisplayMixin.canvasWidthPx`.
+  // Gated on `initialized` because `canvasWidthPx` reaches `view.width`, which
+  // throws before the view is measured.
   const width = view.initialized ? model.canvasWidthPx : undefined
   const height = model.height
 
-  // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startRenderingBackend / stopRenderingBackend / renderNow on the base
-  // canvas display model. scrollTop lives on the model (TrackHeightMixin) and
-  // feeds `renderState.scrollY`. Virtual scroll: the wheel gesture writes
-  // model.scrollTop directly (no native overflow container), so the GPU canvas
-  // and the DOM overlays both key off it. The rule is the pileup's, shared as
-  // `usePanelVirtualScroll`; the whole track height is the viewport, this
-  // display having no sticky band above its features. It binds to the panel
-  // wrapper rather than to `canvas`, so that a wheel over a floating label —
-  // which is clickable, so it answers the pointer itself — is still the panel's.
+  // Bound to the panel wrapper rather than the canvas, so a wheel over a floating
+  // label — clickable, so it answers the pointer itself — is still the panel's.
   usePanelVirtualScroll(panel, model, {
     viewportHeight: model.height,
     scrollZoom: view.scrollZoom,
   })
 
-  // rAF clock for the feature-Y transition. The model decides when to morph
-  // (sets morphFromTops); this advances morphProgress 0->1 over
-  // MORPH_DURATION_MS, which re-derives renderDataMap each frame, then settles.
-  // Kept in the component because the frame loop is inherently a DOM-side effect.
+  // The model decides when to morph; the frame loop that advances it lives here
+  // because it is a DOM-side effect.
   useEffect(() => {
-    // The frame handle doubles as "a frame is already pending" below — rAF
-    // handles are never 0 — so the loop can't schedule itself twice off one
-    // morph.
+    // The frame handle doubles as "a frame is already pending" — rAF handles are
+    // never 0 — so one morph cannot schedule the loop twice.
     let raf = 0
     const tick = () => {
       raf = 0
       if (!isAlive(model) || model.morphFromTops === undefined) {
         return
       }
-      // morphClockMs, the same clock beginYMorph stamped morphStartMs from.
       const t = Math.min(
         1,
         (morphClockMs() - model.morphStartMs) / MORPH_DURATION_MS,
@@ -246,11 +206,9 @@ const FeatureBody = observer(function FeatureBody({
     return () => {
       dispose()
       cancelAnimationFrame(raf)
-      // This clock is the only thing that advances morphProgress, so a morph
-      // left in flight here would never finish: renderDataMap would stay frozen
-      // partway through the interpolation and `maxY` would hold at the taller of
-      // the two layouts for as long as the display lives. Settle it instead —
-      // the destination layout is already correct, only the animation is lost.
+      // This clock alone advances morphProgress, so a morph left in flight would
+      // freeze renderDataMap partway and hold `maxY` at the taller layout for as
+      // long as the display lives.
       if (isAlive(model)) {
         model.endYMorph()
       }
@@ -263,9 +221,8 @@ const FeatureBody = observer(function FeatureBody({
       model.flatbushIndexes,
       view.visibleRegions,
       canvasX,
-      // model.scrollTop, not the live DOM scrollTop: the canvas paints at
-      // model.scrollTop (renderState.scrollY) and the DOM->model sync lags one
-      // frame, so hit-testing the DOM value can miss by a frame mid-scroll
+      // model.scrollTop, not the live DOM scrollTop: the canvas paints at this
+      // value and the DOM-to-model sync lags a frame mid-scroll.
       canvasY + model.scrollTop,
     )
 
@@ -274,14 +231,9 @@ const FeatureBody = observer(function FeatureBody({
     return hitTestAt(x, y)
   }
 
-  // Hover, resolved at most once per frame. `mousemove` outruns the frame, and
-  // every raw event here walked the Flatbush indexes and built a fresh row of
-  // tooltip strings; `setHover` drops the write when the rows match, but the
-  // work ahead of it was paid either way.
-  //
-  // Safe for the same reason it is in the pileup: the two gestures that decide
-  // anything re-hit-test from their own event (see below), so a hover landing a
-  // frame later than the cursor is invisible.
+  // `mousemove` outruns the frame, and every raw event walks the Flatbush indexes
+  // and builds fresh tooltip strings. Coalescing is safe because the two gestures
+  // that decide anything re-hit-test from their own event.
   const hover = useCoalescedPointer(([canvasX, canvasY]: [number, number]) => {
     if (!isAlive(model)) {
       return
@@ -300,23 +252,20 @@ const FeatureBody = observer(function FeatureBody({
   })
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    // read the coordinates now; `currentTarget` is gone by the frame
+    // Read the coordinates now: `currentTarget` is gone by the frame.
     const { x, y } = eventPoint(e)
     hover.queue([x, y])
   }
 
   // Both handlers hit-test at the event coordinates rather than reading
-  // model.hoveredFeature. Opening a context menu drops the hover, and the
-  // menu's backdrop takes the pointer until it closes, so a click/right-click
-  // on a still-stationary cursor right after dismissing a menu would otherwise
-  // find no hover — deselecting, or falling through to the native browser menu
-  // — instead of acting on the feature under the cursor. When hover is current
-  // these resolve to the identical feature.
+  // model.hoveredFeature: opening a context menu drops the hover and its backdrop
+  // holds the pointer, so a click on a stationary cursor right after dismissing
+  // one would find no hover at all.
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
-    // Ctrl/Cmd+click builds the "show only these features" collection instead
-    // of opening the feature details, so several features can be tagged while
-    // they're all still visible, then isolated together via the context menu.
+    // Ctrl/Cmd+click builds the show-only collection instead of opening the
+    // details, so several features can be tagged while all are visible and then
+    // isolated together.
     if ((e.ctrlKey || e.metaKey) && result) {
       model.toggleSoloFeature(result.feature.featureId)
     } else if (result) {
@@ -333,12 +282,9 @@ const FeatureBody = observer(function FeatureBody({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
     if (result) {
-      // The subfeature rides along so the menu can target the exact transcript
-      // under the cursor, not just its gene.
       e.preventDefault()
-      // and a hover frame queued before the click is dropped, or it lands after
-      // openContextMenu's clearHover and rewrites the hover the menu was opened
-      // over — the same cancel the pileup takes on this gesture
+      // A hover frame queued before the click would land after openContextMenu's
+      // clearHover and rewrite the hover the menu was opened over.
       hover.cancel()
       model.openContextMenu({
         item: result.feature,
@@ -346,31 +292,24 @@ const FeatureBody = observer(function FeatureBody({
         clientX: e.clientX,
         clientY: e.clientY,
         subfeature: result.subfeature,
-        // resolved here rather than in the menu: only the hit knows which base
-        // was clicked and at what zoom
+        // Both resolved here rather than in the menu: only the hit knows which
+        // base was clicked and at what zoom.
         hgvsLabel: hgvsHitLabel(result),
-        // same reasoning — the plain-text form of the tooltip this exact hit
-        // would show, for the "Copy tooltip text" menu item
         tooltipText: hoverTooltipText(result),
       })
     }
   }
 
-  // Shared by the canvas and the label layer (see FloatingLabelsLayer): whichever
-  // of the two the cursor was last over, exiting it drops the hover. Stable
-  // identity so a hover tick — which re-renders FeatureBody for the cursor
-  // style — doesn't force the label layer to rebuild every label.
-  //
-  // The cancel comes first: a hover queued just before the pointer left lands
-  // after it has gone and re-lights what this is clearing.
+  // Stable identity, so a hover tick re-rendering FeatureBody for the cursor style
+  // does not make the label layer rebuild every label. The cancel comes first: a
+  // hover queued just before the pointer left would re-light what this clears.
   const handleMouseLeave = useEventCallback(() => {
     hover.cancel()
     model.clearHover()
     model.setDensityHoverPx(undefined)
   })
 
-  // The label's hover is the same readout as the glyph's: the layer hands over
-  // a hit shaped like the canvas path's (see `labelHit`), so crossing from a
+  // The layer hands over a hit shaped like the canvas path's, so crossing from a
   // feature onto its name keeps the isoform, exon and HGVS rows.
   const onLabelMouseOver = useCallback(
     (hit: HitFeatureResult) => {
@@ -401,9 +340,8 @@ const FeatureBody = observer(function FeatureBody({
           }}
         />
 
-        {/* over the feature canvas rather than inside the scrolled panel's
-            overlay layer: the band replaces the features entirely, so there is
-            nothing under it to scroll with */}
+        {/* Outside the scrolled overlay layer: the band replaces the features
+            entirely, so nothing under it scrolls. */}
         <DensityBandOverlay model={model} />
 
         <OverlayScrollLayer model={model}>
@@ -417,12 +355,9 @@ const FeatureBody = observer(function FeatureBody({
         </OverlayScrollLayer>
       </div>
 
-      {/* after the overlay layer, so a label clipped at the bottom edge fades
-          with the features it names; before the scrollbar, whose z-index keeps
-          the thumb crisp over it either way */}
-      {/* both from scrollContentHeight, not contentHeight: they report where a
-          scroll can go, and the drawing height also covers the fetch buffer's
-          rows, which no scroll reaches */}
+      {/* scrollContentHeight, not contentHeight: these report where a scroll can
+          go, and the drawing height also covers fetch-buffer rows no scroll
+          reaches. */}
       <ScrollChrome
         scrollTop={model.scrollTop}
         setScrollTop={n => {

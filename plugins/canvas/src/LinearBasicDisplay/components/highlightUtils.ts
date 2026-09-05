@@ -1,20 +1,10 @@
-// JBrowse's own `alpha`, not Material UI's — same `rgba(r, g, b, a)` output, but
-// this module is reached from the pure Canvas2D painter and the SVG export, and
-// neither should drag @mui/material along. `overlayBoxStyles`, the other half of
-// these colors, already imports it from here.
+// JBrowse's own `alpha`, not Material UI's: the pure Canvas2D painter and the
+// SVG export reach this module and neither should drag @mui/material along.
 import { alpha } from '@jbrowse/core/ui/palette'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
-// The one definition of the highlight box's border/tint, shared by the
-// on-screen DOM overlay (searchHighlightBox) and the SVG export's vector
-// post-pass, which paints the same boxes with a different backend. Both used to
-// carry their own alpha literals kept in step by a comment, so an export could
-// silently stop matching what the user saw.
-//
-// The tint stays translucent because it lies over the feature glyph: it has to
-// read as a highlight without washing out the exon/UTR colors underneath.
 export function highlightBoxColors(highlightMain: string) {
   return {
     border: alpha(highlightMain, 0.9),
@@ -22,22 +12,10 @@ export function highlightBoxColors(highlightMain: string) {
   }
 }
 
-// The screen rect a laid-out item occupies inside ONE visible region: its bp
-// span mapped to px and clamped to the region, so a box drawn for a feature
-// running past the region edge can't bleed over its neighbour. Callers walk
-// every visible region on the feature's refName, so a feature spanning a
-// displayed-region boundary is boxed piecewise.
-//
-// undefined means "contributes no pixels here". That covers plain no-overlap
-// AND the case a bp test alone misses: a feature whose span merely TOUCHES the
-// edge (endBp === vr.start, the normal shape at a displayed-region boundary)
-// clamps to zero width, and computeOverlayRect would inflate that nothing into a
-// phantom stripe — the padding plus the feature's full label overhang — at the
-// neighbouring region's edge, for a feature drawn entirely in the previous one.
-// A genuinely zero-length feature is kept: zero width is its true extent there
-// rather than the clamp's doing — but only where it lands inside the region.
-// One outside it clamps to a rect whose right edge precedes its left, and a
-// negative width paints a phantom box for an insertion scrolled out of view.
+// undefined means the item contributes no pixels to this region. A feature that
+// merely touches the region edge clamps to zero width, and `computeOverlayRect`
+// would inflate that into a phantom stripe at the neighbour's edge; a genuinely
+// zero-length feature landing inside the region keeps its zero width.
 export function overlayItemRect(
   item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
   vr: BpRegionBounds,
@@ -59,11 +37,8 @@ export function overlayItemRect(
       }
 }
 
-// Position an overlay box outset by (xPadding, yPadding) around a feature rect.
-// The top is clamped into the content edge (y >= 0) because ScrollLockedOverlay
-// clips at content y=0: without this, a box outset above a top-row feature
-// (topPx ≈ 0) has its top border painted at y < 0 and dropped by the clip.
-// Height shrinks by the clamped amount so the bottom edge stays put.
+// ScrollLockedOverlay clips at content y=0, so the outset top clamps there or a
+// top-row feature's box loses its top border.
 export function computeOverlayRect(
   rect: { leftPx: number; topPx: number; width: number; heightPx: number },
   extraWidth: number,

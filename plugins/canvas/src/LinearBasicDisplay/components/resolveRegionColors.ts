@@ -8,17 +8,10 @@ import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * Fill in the colors the worker could not: it has no palette, so a CDS painted
- * by reading frame, a connector taking the unset `connectorColor` default and a
- * theme-derived outline all ship as classes with a zero in their color lane
- * (see colorClasses.ts). This is the `encode` half of the per-region lifecycle,
- * and it is what makes a light/dark toggle re-encode the loaded regions instead
- * of refetching them.
- *
- * Returns the region unchanged — by reference — when nothing in it is themed,
- * which is the common case (no `colorByCDS`, an explicit `connectorColor`, no
- * outline). The upload diff is by reference, so an unthemed track pays nothing
- * for this pass beyond the walk.
+ * The worker has no palette, so it ships themed colors as classes with a zero
+ * color lane and the main thread fills them in — which is what lets a light/dark
+ * toggle re-encode the loaded regions instead of refetching them. An unthemed
+ * region comes back by reference, because the upload diff compares by reference.
  */
 export function resolveRegionColors(
   data: FeatureDataResult,
@@ -51,12 +44,6 @@ export function resolveRegionColors(
     : { ...data, rectColors, lineColors, arrowColors, outlineColor }
 }
 
-/**
- * The same resolution over a whole map, for the two consumers that draw
- * straight from the laid-out data rather than through the upload lifecycle: the
- * SVG export (which resolves the EXPORT theme's palette, so a figure rendered
- * for the other mode comes out in its colors) and `paintFeatureBand`.
- */
 export function resolveMapColors(
   map: ReadonlyMap<number, FeatureDataResult>,
   palette: JBrowsePalette,

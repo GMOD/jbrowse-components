@@ -12,9 +12,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// jexl compile error for the generated expression, or undefined when it parses.
 // An attribute name containing a quote or backslash produces a malformed
-// expression, so this gates Apply rather than committing a broken jexl string.
+// expression, so this gates Apply.
 function jexlError(expression: string, jexl: JexlInstance) {
   try {
     stringToJexlExpression(expression, jexl)

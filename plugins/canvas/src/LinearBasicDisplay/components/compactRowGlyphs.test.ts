@@ -1,18 +1,6 @@
-// What a compacted transcript row has to keep true: everything drawn on the
-// body stays on the body. Both halves of it broke at superCompact's 3px body,
-// where one pixel is a third of the glyph.
-//
-// The UTR is emitted as a box centered inside the row at UTR_HEIGHT_FRACTION of
-// the body (centerShrink), so it has to draw inside the rows the CDS beside it
-// draws on. It did not: the rect raster rounded the shrunken top and the
-// shrunken height independently, and `snapBoxHeightPx`'s odd-height nudge grows
-// a thin box downward only — so the 1.95px UTR came out 3px tall starting a
-// pixel low, hanging below the CDS with the intron line and strand arrow
-// sitting on its top edge.
-//
-// The strand arrowhead is drawn at a fixed half-height, so at 3px it painted a
-// 5px head on a 3px feature, overhanging a pixel each way. It is clamped to the
-// box it comes off now (arrowHeadHalfHeightPx).
+// What a compacted transcript row has to keep true: everything drawn on the body
+// stays on the body. At superCompact's 3px body one pixel is a third of the
+// glyph, which is where both halves of it come apart.
 import {
   UTR_HEIGHT_FRACTION,
   centerShrink,
@@ -45,9 +33,8 @@ const EMPTY = {
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
 
-// One CDS box and one UTR box on the same transcript row, plus the strand arrow
-// off the row's right edge — the three primitives processTranscriptLayout emits
-// for a coding transcript, at the body height `displayMode` scales to.
+// The three primitives a coding transcript emits: a CDS box, a UTR box on the
+// same row, and the strand arrow off the row's right edge.
 function drawTranscriptRow(rowTop: number, bodyHeight: number) {
   const boxes: { y: number; h: number }[] = []
   let stemY: number | undefined
@@ -70,15 +57,13 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     closePath() {},
     stroke() {},
     fill() {
-      // The arrowhead is the only filled path here: three points, no rect or
-      // line primitives in the region.
+      // The arrowhead is the only filled path this region produces.
       if (pathYs.length === 3) {
         head = { top: Math.min(...pathYs), bottom: Math.max(...pathYs) }
       }
     },
     fillRect(_x: number, y: number, _w: number, h: number) {
-      // The arrow paints its stem with fillRect too; it is 1px tall and comes
-      // after both boxes, so it is the last call and never one of them.
+      // The arrow's stem is a fillRect too: 1px tall, after both boxes.
       if (h === 1 && boxes.length === 2) {
         stemY = y
       } else {
@@ -144,8 +129,8 @@ test.each(BODY_HEIGHTS)(
       const below = cds.y + cds.h - (utr.y + utr.h)
       expect(above).toBeGreaterThanOrEqual(0)
       expect(below).toBeGreaterThanOrEqual(0)
-      // Centered, to the pixel the parities allow: an odd box inside an even
-      // row (or the reverse) has to spend its last pixel on one side.
+      // An odd box inside an even row, or the reverse, has to spend its last
+      // pixel on one side.
       expect(Math.abs(above - below)).toBeLessThanOrEqual(1)
     }
   },

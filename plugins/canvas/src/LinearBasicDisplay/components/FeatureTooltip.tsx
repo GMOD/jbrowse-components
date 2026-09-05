@@ -4,10 +4,8 @@ import { observer } from 'mobx-react'
 
 import type { MouseState } from '@jbrowse/core/ui'
 
-// One element per row rather than one `<br/>`-joined string, so each row's
-// markup-or-text call is made about that row's own text — see hoverTooltipRows.
-// Rows are positional (the feature's name, then its exon/HGVS/residue readout),
-// so the index is their identity.
+// One element per row rather than one `<br/>`-joined string, so DOMPurify judges
+// markup-or-text on each row's own text instead of on the join.
 const FeatureTooltip = observer(function FeatureTooltip({
   rows,
   mouseState,

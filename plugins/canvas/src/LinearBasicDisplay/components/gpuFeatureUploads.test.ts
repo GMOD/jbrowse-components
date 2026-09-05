@@ -14,11 +14,9 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 
-// What reaches the GPU per region, and which buffer each pass draws from. Both
-// halves are invisible to every other test in this plugin: the Canvas2D path is
-// what the parity and snapshot tests exercise, so an extra upload or a pass
-// pointed at the wrong buffer costs nothing there and shows up only as garbage
-// glyphs on a GPU machine.
+// The parity and snapshot tests exercise the Canvas2D path, so an extra upload or
+// a pass pointed at the wrong buffer shows up nowhere but as garbage glyphs on a
+// GPU machine.
 
 const REGION = 0
 
@@ -57,9 +55,8 @@ const STATE: RenderState = {
   scrollY: 0,
 }
 
-// A block filling the canvas, so both of its edges are canvas edges and the
-// continuation pass is drawn. `screenStartPx`/`screenEndPx` inside the canvas
-// would make it an interior block, which is the skip case asserted below.
+// Fills the canvas, so both edges are canvas edges and the continuation pass
+// draws; a block inset from them is the interior case asserted below.
 function block(over: Partial<FeatureRenderBlock> = {}): FeatureRenderBlock {
   return {
     displayedRegionIndex: REGION,
@@ -86,8 +83,7 @@ describe('per-region uploads', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(4))
     const uploads = callsTo(hal, 'uploadBuffer')
-    // [regionKey, passId, byteLength, count]. One upload per pass that owns a
-    // buffer — continuation is not among them, it draws from rect's.
+    // One upload per pass that owns a buffer; continuation draws from rect's.
     expect(uploads.map(c => c.args[1])).toStrictEqual(['rect', 'line', 'arrow'])
     expect(uploads[0]!.args[3]).toBe(4)
   })
@@ -96,8 +92,7 @@ describe('per-region uploads', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(3))
     const [upload] = callsTo(hal, 'uploadBuffer')
-    // 3 instances x 28 bytes: startEnd(8) y(4) height(4) color(4)
-    // densityFade(4) strand(4). The strand is what makes one buffer serve both
+    // 3 instances x 28 bytes. The strand is what makes one buffer serve both
     // passes; drop it and the stride falls back to 24.
     expect(upload!.args[2]).toBe(3 * 28)
   })
@@ -105,8 +100,8 @@ describe('per-region uploads', () => {
   it('uploads no instances for an empty region', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(0))
-    // An empty pack is uploaded rather than skipped — that is how a pass whose
-    // data went empty stops drawing its last buffer (see `uploadPass`).
+    // An empty pack uploads rather than being skipped: that is how a pass whose
+    // data went empty stops drawing its last buffer.
     expect(callsTo(hal, 'uploadBuffer').map(c => c.args[3])).toStrictEqual([
       0, 0, 0,
     ])
@@ -114,13 +109,9 @@ describe('per-region uploads', () => {
 })
 
 describe('draw passes', () => {
-  // `Record<GlyphLayerId, …>` makes each backend hold an entry for every id in
-  // the union. It does NOT make `GLYPH_LAYERS` contain every id — that is a
-  // plain array, and an id left out of it is wired in both backends, compiles,
-  // and draws nowhere. Same shape as `hitTestGateParity.test.ts`'s check over
-  // `PILEUP_LAYERS`, and both directions: an id missing from the list is an
-  // unreachable layer, one missing from the record is a stale entry a removal
-  // left behind.
+  // `Record<GlyphLayerId, …>` makes each backend hold an entry for every id, but
+  // `GLYPH_LAYERS` is a plain array: an id left out of it is wired in both
+  // backends, compiles, and draws nowhere.
   it('lists every glyph layer both backends carry an entry for', () => {
     const ids = [...GLYPH_LAYERS].sort()
     expect(ids).toStrictEqual(Object.keys(GPU_GLYPH_DRAW).sort())
@@ -131,7 +122,6 @@ describe('draw passes', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(2))
     renderer.renderBlocks([block()], new Map([[REGION, regionData(2)]]), STATE)
-    // [passId, regionKey, bufferPassId]
     expect(
       callsTo(hal, 'drawPass').map(c => [c.args[0], c.args[2]]),
     ).toStrictEqual([
@@ -146,7 +136,7 @@ describe('draw passes', () => {
   it('draws every pass it registers', () => {
     const { hal, renderer } = setup()
     // Every glyph family populated and a block on both canvas edges, so nothing
-    // is absent for want of data or of an edge.
+    // is absent for want of data.
     const data = regionData(2, {
       linePositions: new Uint32Array([100, 200, 300, 400]),
       lineYs: new Float32Array(2),
@@ -163,11 +153,9 @@ describe('draw passes', () => {
     renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
 
-    // `GLYPH_LAYERS` is what the renderer walks, and each id resolves to one or
-    // two `drawPass` calls — so a pass added to `CANVAS_FEATURE_PASSES` and
-    // missed in `GPU_GLYPH_DRAW` registers, compiles and never draws. The
-    // typed records catch a missing LAYER; nothing but this catches a pass with
-    // no layer to carry it.
+    // A pass added to `CANVAS_FEATURE_PASSES` and missed in `GPU_GLYPH_DRAW`
+    // registers, compiles and never draws. The typed records catch a missing
+    // layer; only this catches a pass with no layer to carry it.
     expect(new Set(callsTo(hal, 'drawPass').map(c => c.args[0]))).toStrictEqual(
       new Set(CANVAS_FEATURE_PASSES.map(p => p.id)),
     )
@@ -176,8 +164,6 @@ describe('draw passes', () => {
   it('skips the continuation pass on an interior block', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(2))
-    // Neither edge touches the canvas edge, so no instance could qualify and
-    // shading one per rect would be pure waste.
     renderer.renderBlocks(
       [block({ screenStartPx: 100, screenEndPx: 400 })],
       new Map([[REGION, regionData(2)]]),

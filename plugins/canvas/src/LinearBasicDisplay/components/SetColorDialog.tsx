@@ -3,9 +3,6 @@ import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// Simple solid-color picker for canvas feature displays. The headline "make
-// this track blue" case sets `color`; UTR color is exposed for gene/transcript
-// tracks. Per-feature jexl coloring still lives in the config.
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
@@ -27,10 +24,8 @@ const SetColorDialog = observer(function SetColorDialog({
       submitText="Close"
       onCancel={handleClose}
       onSubmit={handleClose}
-      // Reset only what this dialog is showing. A display that hides the UTR
-      // picker (variants — openSetColorDialog(false)) has no UTRs to color, so
-      // clearing that slot here would silently undo a config-authored value
-      // through a control the user can't see.
+      // Clearing a slot whose picker is hidden would undo a config-authored
+      // value through a control the user cannot see.
       onReset={() => {
         model.setFeatureColor(undefined)
         if (showUtrColor) {

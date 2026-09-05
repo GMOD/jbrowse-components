@@ -88,9 +88,6 @@ function makeRegion(
   }
 }
 
-// Build the per-region Flatbush indexes the model would compute via its
-// `flatbushIndexes` view, so tests can drive `performMultiRegionHitDetection`
-// directly without booting an MST tree.
 function buildIndexes(
   laidOutDataMap: Map<number, FeatureDataResult>,
   regions: VisibleRegion[],
@@ -115,8 +112,8 @@ function buildIndexes(
   return out
 }
 
-// Normal display mode: baked label widths are measured at LABEL_FONT_SIZE, so
-// this is the identity case for the hit box's label-overhang scaling.
+// Baked label widths are measured at LABEL_FONT_SIZE, so this is the identity
+// case for the hit box's label-overhang scaling.
 const DEFAULT_LABELS: LabelVisibility = {
   showLabels: true,
   showDescriptions: false,
@@ -211,11 +208,8 @@ test('hits subfeature when within subfeature bounds', () => {
 })
 
 test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
-  // A repeat_region's internal body and an LTR share one row and overlap; the
-  // body is registered/painted first (lower subfeatureInfos index), the LTR on
-  // top. Flatbush returns both matches in arbitrary tree order, so the hit must
-  // resolve to the LTR (largest index = last painted) rather than whichever the
-  // index happens to yield first.
+  // The body registers first and the LTR paints on top, so the hit has to resolve
+  // to the LTR rather than whichever match Flatbush yields first.
   const parent = makeItem('repeat1', 1000, 5000, 0, 20)
   const body = makeSub('body', 'repeat1', 1000, 5000, 0, 20)
   const ltr = makeSub('ltr', 'repeat1', 1000, 2000, 0, 20)
@@ -230,12 +224,9 @@ test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
 })
 
 test('overlapping features: the hit feature keeps its own topmost subfeature', () => {
-  // Collapsed display mode packs every feature onto row 0, so two genes'
-  // transcripts share the same pixels. The feature index resolves to gene1
-  // (last painted of the two), while the subfeature index's topmost match at
-  // that point is gene2's transcript. gene1's own transcript is under the
-  // cursor and must be the one reported — not dropped because a neighbour's
-  // sat above it.
+  // Collapsed mode packs both genes onto row 0, so the topmost subfeature at this
+  // point is gene2's while the feature resolves to gene1; gene1's own transcript
+  // still has to be the one reported.
   const gene2 = makeItem('gene2', 1500, 6000, 0, 20)
   const gene1 = makeItem('gene1', 1000, 5000, 0, 20)
   const mrna1 = makeSub('mRNA1', 'gene1', 1000, 5000, 0, 20)
@@ -251,12 +242,9 @@ test('overlapping features: the hit feature keeps its own topmost subfeature', (
   expect(result!.subfeature!.featureId).toBe('mRNA1')
 })
 
-// The consumer half of the invariant `emitSubfeaturesGlyph` holds: a subfeature
-// names the RECORD's id, however deep it sits. Named after the intermediate
-// container it hangs off, the gate below drops it — and the symptom is the
-// quietest kind, since it is drawn and labelled exactly as before and simply
-// never resolves. No hover, no highlight scope, no subfeature rows on the
-// right-click menu.
+// A subfeature names the record's id however deep it sits. Named after the
+// intermediate container instead, it draws and labels as before and simply never
+// resolves — no hover, no highlight scope, no subfeature rows on the menu.
 test('pairs a subfeature named after the record, at any nesting depth', () => {
   const record = makeItem('match1', 1000, 5000, 0, 20)
   const nested = makeSub('part1', 'match1', 2000, 3000, 0, 20)
@@ -271,8 +259,8 @@ test('pairs a subfeature named after the record, at any nesting depth', () => {
 
 test('drops a subfeature naming a container instead of the record', () => {
   const record = makeItem('match1', 1000, 5000, 0, 20)
-  // 'inner' is a container between the record and this part; the gate pairs on
-  // the record's id alone, so this resolves to no subfeature at all
+  // 'inner' is a container between the record and this part, and the gate pairs
+  // on the record's id alone.
   const nested = makeSub('part1', 'inner', 2000, 3000, 0, 20)
   const result = hit(
     new Map([[0, makeData([record], [nested])]]),
@@ -337,9 +325,8 @@ test('multi-region selects correct region', () => {
 })
 
 test('adjacent regions: shared boundary pixel goes to the later region', () => {
-  // regionA ends at screen px 400; regionB starts at screen px 400. The mouse
-  // at exactly px 400 must hit regionB, not regionA, otherwise clicks at the
-  // boundary always steal into the earlier region.
+  // regionA ends and regionB starts at screen px 400, and the mouse there must
+  // hit regionB or every boundary click steals into the earlier region.
   const dataA = makeData([makeItem('geneA', 0, 1000, 0, 20)])
   const dataB = makeData([makeItem('geneB', 0, 1000, 0, 20)])
   const laidOutDataMap = new Map([
@@ -360,7 +347,7 @@ test('adjacent regions: shared boundary pixel goes to the later region', () => {
 })
 
 test('multi-region continues to next region when first has no hit', () => {
-  // region 0 is within X range but has no feature at Y=999; region 1 has a feature
+  // Region 0 is within X range but has no feature at Y=999; region 1 has one.
   const data1 = makeData([makeItem('geneA', 100, 400, 0, 20)])
   const data2 = makeData([makeItem('geneB', 100, 400, 0, 20)])
   const laidOutDataMap = new Map([
@@ -437,9 +424,8 @@ test('no peptide when feature hit but no codon under cursor', () => {
 
 test('bpPos is floored to an integer even when the mouse pixel maps to a fractional base', () => {
   const data = makeData([makeItem('gene1', 1000, 5000, 0, 20)])
-  // 81px of an 800px-wide, 10000bp region -> frac 0.10125 -> bpPos 1012.5, a
-  // genuinely fractional base that the old unfloored code returned as-is and
-  // fed straight into the HGVS formatter (`c.93.66`-style tooltip text).
+  // 81px of an 800px-wide, 10000bp region -> bpPos 1012.5, a fractional base the
+  // HGVS formatter would render as `c.93.66`.
   const result = hit(
     new Map([[0, data]]),
     [makeRegion(0, 0, 10000, 0, 800)],
@@ -453,8 +439,7 @@ test('bpPos is floored to an integer even when the mouse pixel maps to a fractio
   }
 })
 
-// The only encoding LGV emits: calculateDynamicBlocks always orders
-// start < end and carries the flip in `reversed`.
+// The only encoding LGV emits: start < end, with the flip in `reversed`.
 test('handles reversed region with explicit flag', () => {
   // Reversed flag set + start<end: mouseX=500 maps to vr.end - 0.625*span = 3750
   const data = makeData([makeItem('gene1', 3000, 4000, 0, 20)])
@@ -463,10 +448,8 @@ test('handles reversed region with explicit flag', () => {
   expect(result!.feature.featureId).toBe('gene1')
 })
 
-// Reversed, base b paints across pixels ((end-b-1)/bpPerPx, (end-b)/bpPerPx],
-// so the coordinate a pixel inverts to lands in (b, b+1] — flooring it named
-// b+1 on each base's leftmost column, and named `end` (outside the region
-// entirely) on the block's first column.
+// Reversed, base b paints across pixels ((end-b-1)/bpPerPx, (end-b)/bpPerPx], so
+// the coordinate a pixel inverts to lands in (b, b+1] and flooring it names b+1.
 test('reversed base zoom resolves each pixel column to the base painted there', () => {
   // 10bp across 100px, flipped: base 1009 is leftmost, 1000 rightmost.
   const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
@@ -561,10 +544,8 @@ test('label hit area extends past feature when showLabels is true', () => {
   expect(result).toBeDefined()
 })
 
-// Reversed, a label still draws to the RIGHT of its feature on screen, which is
-// the low-bp side there: the overhang has to widen the hit box downward in bp.
-// 12.5 bp/px: the 100bp feature paints at x 712..720, the 50px label ends near
-// x 766, and a flipped sign would instead reserve x 666..712.
+// Reversed, a label still draws to the right of its feature on screen, which is
+// the low-bp side there, so the overhang widens the hit box downward in bp.
 test('label hit area extends to the low-bp side in a reversed region', () => {
   const data = makeDataWithLabel([makeItem('gene1', 1000, 1100, 0, 20)], 50)
   const regions = [makeRegion(0, 0, 10000, 0, 800, true)]
@@ -630,8 +611,8 @@ test('subfeature label hit area is reserved when the label is present', () => {
     }
   }
   const regions = [makeRegion(0, 0, 10000, 0, 800)]
-  // 250px is past the 100bp feature but within the reserved subfeature label;
-  // subfeature labels always render when present, so the width is reserved.
+  // 250px is past the 100bp feature but inside the reserved subfeature label,
+  // whose width is reserved whenever one is present.
   const shown = hit(new Map([[0, makeDataWithSubLabel()]]), regions, 250, 10, {
     ...DEFAULT_LABELS,
     showLabels: false,

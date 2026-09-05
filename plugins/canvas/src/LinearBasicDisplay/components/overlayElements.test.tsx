@@ -41,8 +41,6 @@ const MODEL = {
   renderedShowLabels: true,
   renderedShowSubfeatureLabels: true,
   renderedShowDescriptions: false,
-  // matches the view slice's `trackWidthPx` below, since the real getter is
-  // `lgv.trackWidthPx` — the two are one number, read from the model
   canvasWidthPx: 1000,
   labelFontSize: 11,
   height: 100,
@@ -58,8 +56,6 @@ const MODEL = {
   toggleExpandedGene: () => {},
 }
 
-// Only the geometry the layer reads; the layer takes the real LGV type, and the
-// unit test drives it with this slice rather than instantiating a view.
 const VIEW = {
   initialized: true,
   trackWidthPx: 1000,
@@ -84,11 +80,8 @@ function Harness({
   )
 }
 
-// The label layer is the only hover source other than the canvas, and it is
-// stacked above it: entering a label fires the canvas's mouseleave, so once the
-// label owns the hover, only the layer can drop it again. Leaving a label for
-// anywhere that isn't the canvas (off the track edge, an adjacent track, out of
-// the window) previously left the hover shading and tooltip stuck on.
+// Entering a label fires the canvas's mouseleave, so once the label owns the
+// hover only the layer can drop it again.
 test('label layer clears hover when the cursor leaves a label', () => {
   const onLabelMouseOver = jest.fn()
   const onLabelMouseLeave = jest.fn()
@@ -106,17 +99,14 @@ test('label layer clears hover when the cursor leaves a label', () => {
   expect(onLabelMouseOver).toHaveBeenCalledTimes(1)
   expect(onLabelMouseLeave).not.toHaveBeenCalled()
 
-  // What the browser dispatches when the cursor exits the label to something
-  // outside the layer entirely — React synthesizes the layer's onMouseLeave
-  // from this, since the label is the layer's descendant and the new target
-  // is not.
+  // React synthesizes the layer's onMouseLeave from this, the label being its
+  // descendant and the new target not.
   fireEvent.mouseOut(label, { relatedTarget: document.body })
   expect(onLabelMouseLeave).toHaveBeenCalledTimes(1)
 })
 
-// A label sits on top of its own glyph, so the two entry points must read the
-// same gesture the same way — collecting a run of features with ctrl+click used
-// to open a details widget the moment the cursor caught a name.
+// A label sits on top of its own glyph, so both entry points have to read the
+// same gesture the same way.
 test.each([
   ['plain', {}, 'select'],
   ['ctrl', { ctrlKey: true }, 'solo'],
@@ -138,9 +128,8 @@ test.each([
   expect(toggleSoloFeature.mock.calls.length > 0).toBe(expected === 'solo')
 })
 
-// A gene carrying a transcript name under it (`subfeatureLabels: 'below'`), and
-// no name or description of its own — so the only thing the layer can emit is
-// the subfeature label, and its presence in the DOM is the whole assertion.
+// A gene with a transcript name under it and none of its own, so the subfeature
+// label is the only thing the layer can emit.
 const SUBFEATURE_LABEL_DATA = makeFeatureData({
   floatingLabelsData: labelsMap({
     f1: {
@@ -174,13 +163,9 @@ function renderLabels(overrides: Partial<typeof MODEL>) {
   )
 }
 
-// The overlap this pins is the one 1,200 model-level tests could not see: the
-// model decides WHETHER a label shows, and only the layer decides whether one
-// lands in the DOM. A subfeature label is worker-baked, so the fit ladder's two
-// feature-label flags don't touch it — it survives the `bodies` rung, where the
-// packer reserved its row. What it must not survive is the SQUEEZE, which scales
-// that row while the text keeps its font size, painting a gene's transcript names
-// over each other.
+// A subfeature label is worker-baked, so the fit ladder's two feature-label flags
+// leave it alone. What it must not survive is the squeeze, which scales its row
+// while the text keeps its font size.
 test('the label layer keeps a subfeature label past the flags that hide names', () => {
   const { queryByText } = renderLabels({
     renderedShowLabels: false,
@@ -198,7 +183,6 @@ test('the label layer drops a subfeature label the fit squeeze has shrunk', () =
   expect(queryByText('TX1')).toBeNull()
 })
 
-// The slice HighlightLayer reads, with one feature (`f1`) search-highlighted.
 const HIGHLIGHT_MODEL = {
   renderedShowLabels: true,
   renderedShowSubfeatureLabels: true,
@@ -215,14 +199,9 @@ const HIGHLIGHT_MODEL = {
   soloApplied: false,
 }
 
-// A box is drawn once per visible region on the feature's own reference
-// sequence, which is how a feature spanning a displayed-region boundary gets
-// boxed piecewise. "Same sequence" is assembly + refName (the layout's own
-// `regionKey`), so a same-named region of a different assembly is not it.
-//
-// Pins the rule rather than a reachable symptom: JBrowse doesn't display two
-// assemblies on one LGV row today. Here so the overlay's region matching can't
-// quietly drift back to refName alone.
+// A box draws once per visible region on the feature's own reference sequence,
+// which is how a feature spanning a displayed-region boundary gets boxed
+// piecewise. Same sequence means assembly and refName, not refName alone.
 test('highlight boxes are scoped to the reference sequence, not the refName', () => {
   const otherAssembly: VisibleRegion = {
     ...VR,
@@ -242,11 +221,9 @@ test('highlight boxes are scoped to the reference sequence, not the refName', ()
   expect(getAllByTestId('feature-highlight')).toHaveLength(1)
 })
 
-// A box frames a glyph, so it has to travel with one. Its geometry comes from
-// `featureItemMap`, which holds the SETTLED rows so hit targets are the
-// destination — mid Y-morph the glyph itself is drawn `morphOffsetFor` px off
-// that row, and without applying it the box snaps to the destination and waits
-// there for the morph's 300ms while the feature is still on its way.
+// `featureItemMap` holds the settled rows, so hit targets are the destination;
+// mid-morph the glyph is drawn `morphOffsetFor` px off that row, and a box that
+// ignored it would snap ahead and wait there for the feature.
 test('a highlight box follows its feature through a Y morph', () => {
   const at = (morphOffsetFor: () => number) => {
     const { getByTestId, unmount } = render(
@@ -260,9 +237,9 @@ test('a highlight box follows its feature through a Y morph', () => {
     return top
   }
 
-  // the feature is laid out at topPx 0, and the box is outset 2px above it —
-  // clamped to the content edge when it has nowhere to go
+  // The feature is laid out at topPx 0 and the box outset 2px above it, which
+  // clamps to the content edge.
   expect(at(() => 0)).toBe('0px')
-  // eased 25px down from its row: 25 - 2 of outset, no clamping needed
+  // Eased 25px down from its row: 25 less the 2px outset.
   expect(at(() => 25)).toBe('23px')
 })

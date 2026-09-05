@@ -6,16 +6,9 @@ import { residueLabel } from './peptidePositioning.ts'
 
 import type { HitFeatureResult } from './hitTesting.ts'
 
-// What the hover SAYS about the thing under the cursor; hitTesting.ts is how it
-// was found. Pure functions — a hit in, text out — so the tooltip, its clipboard
-// twin and the context menu's HGVS label are testable without an MST tree.
-
-// The transcript the cursor resolved to and the name that transcript goes by,
-// resolved together: an HGVS name pairs the two, so a name off one feature over
-// coordinates off another reads as a right answer and isn't one. A subfeature
-// wins only when it is itself transcript-shaped — a mature-peptide product or a
-// repeat subpart carries a `displayLabel` but no `transcript`, and taking its
-// label beside the parent's coordinates produced names like `exon5:n.123`.
+// An HGVS name pairs a name with coordinates, so a subfeature wins only when it
+// is transcript-shaped: a mature-peptide product carries a `displayLabel` but no
+// `transcript`, and its label beside the parent's coordinates names nothing real.
 function hitTranscriptAndName(result: HitFeatureResult) {
   const { subfeature, feature } = result
   return subfeature?.transcript
@@ -23,12 +16,9 @@ function hitTranscriptAndName(result: HitFeatureResult) {
     : { coords: feature.transcript, name: feature.name }
 }
 
-// The exon the cursor is in, its HGVS coordinate, and the transcript both were
-// measured on. The exon is named only for an exonic position (naming the
-// flanking exon of an intron reads as "you are in exon 5" when you are not) and
-// never for a single-exon transcript. The c./n. coordinate needs the cursor to
-// resolve to one base, so it appears only at base zoom — off by a base it would
-// be worse than absent.
+// Naming the flanking exon of an intronic position would read as "you are in
+// exon 5" when you are not, and the c./n. coordinate is only trustworthy once
+// the cursor resolves to a single base.
 function transcriptReadouts(result: HitFeatureResult) {
   const { coords, name } = hitTranscriptAndName(result)
   const located = coords && transcriptPosition(coords, result.bpPos)
@@ -42,15 +32,9 @@ function transcriptReadouts(result: HitFeatureResult) {
   }
 }
 
-// The gene symbol HGVS parenthesizes after the accession. Only a GENE earns it:
-// the element in those brackets is a gene symbol, and the container of a
-// mature-peptide hit is an mRNA whose accession there would be a different
-// statement. Every gene-ish SO type ends in `gene` (`protein_coding_gene`,
-// `ncRNA_gene`, `pseudogene`), which is what the test is anchored to.
-//
-// The DRAWN name, like the tooltip's own gene row and the details panel's — a
-// symbol the reader cannot see on the track is not the one to hand them for a
-// report.
+// HGVS parenthesizes a gene symbol, so only a gene earns those brackets — an
+// mRNA accession there states something else. Every gene-ish SO type ends in
+// `gene` (`protein_coding_gene`, `ncRNA_gene`, `pseudogene`).
 function hgvsGeneSymbol(result: HitFeatureResult) {
   const { subfeature, feature } = result
   return subfeature?.transcript && /gene$/i.test(feature.type ?? '')
@@ -58,15 +42,11 @@ function hgvsGeneSymbol(result: HitFeatureResult) {
     : undefined
 }
 
-// The position as a clinical report writes it — `NM_004006.2(DMD):c.93+1`, the
-// reference form ClinVar and LOVD take — falling back to the bare coordinate
-// when the transcript is unnamed. The change itself (`…G>T`) needs an allele,
-// which a gene annotation doesn't carry.
 export function hgvsHitLabel(result: HitFeatureResult) {
   const { hgvs, name } = transcriptReadouts(result)
   const gene = hgvsGeneSymbol(result)
-  // A single-transcript annotation regularly labels both with one name, and
-  // `EDEN(EDEN)` names nothing twice.
+  // A single-transcript annotation labels both with one name, and `EDEN(EDEN)`
+  // names nothing twice.
   const accession = gene && gene !== name ? `${name}(${gene})` : name
   return hgvs && name ? `${accession}:${hgvs}` : hgvs
 }
@@ -75,19 +55,9 @@ function tooltipRow(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join(' ')
 }
 
-// The parent gene's name on one row, the isoform (or the feature's `mouseover`
-// slot) on the next, the exon, HGVS coordinate and hovered residue on a third.
-// Empty rows are dropped.
-//
-// The gene row is the parent's drawn NAME, not its `mouseover` slot: the slot is
-// what the isoform row displaces, and a paragraph of configured HTML above the
-// isoform would bury it.
-//
-// A LIST, never one string joined with `<br/>`: `SanitizedHTML` decides whether
-// a string is markup by looking for a known tag (looksLikeHTML), so a generated
-// `<br/>` answers that question on the mouseover slot's behalf and a feature
-// whose mouseover reads `ALT <DEL>` loses the allele to the sanitizer.
-// FeatureTooltip renders one element per row, so each row is judged on its own.
+// A list, never one string joined with `<br/>`: the join would answer
+// `SanitizedHTML`'s markup-or-text question on the mouseover slot's behalf, and a
+// feature whose mouseover reads `ALT <DEL>` loses the allele to the sanitizer.
 export function hoverTooltipRows(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
@@ -95,9 +65,6 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   const title = isoform ?? result.feature.tooltip
   const { name } = result.feature
   const gene = isoform && name !== isoform ? name : undefined
-  // `(transl_except)` where the letter came from a transl_except override rather
-  // than the codon table — the codon rect is highlighted for it, but `U840` on
-  // SELENOP is otherwise indistinguishable from a mistranslation.
   const residue = peptide
     ? `${residueLabel(peptide)}${peptide.isTranslExcept ? ' (transl_except)' : ''}`
     : undefined
@@ -108,11 +75,9 @@ export function hoverTooltipRows(result: HitFeatureResult) {
   ].filter(Boolean)
 }
 
-// The reader's words out of whatever a `mouseover` expression returned. `<br/>`
-// becomes a newline before the tags go, since joining fields with it is the
-// standard mouseover idiom. Text that merely contains angle brackets is returned
-// whole on `looksLikeHTML`'s say-so — the same call SanitizedHTML makes about
-// the same string — because parsing it regardless copied `ALT <DEL>` as `ALT `.
+// Text that merely contains angle brackets comes back whole, on the same
+// `looksLikeHTML` call SanitizedHTML makes: parsing it regardless copies
+// `ALT <DEL>` as `ALT `.
 export function htmlToPlainText(html: string) {
   return looksLikeHTML(html)
     ? new DOMParser().parseFromString(
@@ -122,7 +87,6 @@ export function htmlToPlainText(html: string) {
     : html
 }
 
-// The tooltip's content as plain text for the clipboard.
 export function hoverTooltipText(result: HitFeatureResult) {
   return hoverTooltipRows(result).map(htmlToPlainText).join('\n')
 }

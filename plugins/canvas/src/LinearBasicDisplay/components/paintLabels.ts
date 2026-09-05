@@ -9,26 +9,9 @@ import type { ResolvedLabel } from './labelPositioning.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
- * Paint the labels `forEachDisplayLabel` resolved, onto a canvas.
- *
- * This display renders its labels as DOM overlays on screen, so its own renderer
- * does not draw them and this is the vector post-pass its SVG export runs after
- * `drawFeatureBlocks` has painted the geometry.
- *
- * It is also how a caller that draws this data on a *canvas* letters it, which
- * the multi-sample variant display's lane does: a band 40px tall has no room for
- * a DOM label layer's worth of chrome, and its marks have to read identically to
- * the same records in a `LinearVariantDisplay` — so it pairs this with the same
- * `forEachDisplayLabel` walk the export uses rather than lettering them itself.
- *
- * Owns `ctx.font` rather than taking it set: the isoform badge draws smaller and
- * italic (floatingLabelMore is the DOM half of the same choice), so the pass has
- * two fonts in it and neither caller nor callee can hold just one. Both strings
- * are built once and assigned only when the kind changes — a badge is rare, so a
- * screen of names costs one assignment. Reassigning per label is free on the
- * export's SvgCanvas, which stores the shorthand and parses it at serialize
- * time, and is not on the canvas a band paints to (paintFeatureBand), where
- * every assignment re-resolves the face.
+ * Owns `ctx.font` because the isoform badge draws smaller and italic, and only
+ * assigns it when the kind changes: a real canvas re-resolves the face on every
+ * assignment.
  */
 export function paintLabels(
   ctx: Ctx2D,
@@ -47,9 +30,8 @@ export function paintLabels(
   for (const resolved of labels) {
     const { label, labelX, labelY } = resolved
     if (resolved.kind === 'more') {
-      // "+20 more" is a fact about the picture and belongs in it. Its expanded
-      // form reads "show fewer", an instruction to a control the export does not
-      // carry, over a gene the export has already drawn in full.
+      // An expanded badge reads "show fewer", an instruction to a control no
+      // canvas or export carries.
       if (resolved.label.expanded) {
         continue
       }
@@ -58,9 +40,6 @@ export function paintLabels(
       setFont(nameFont)
       if (resolved.label.isOverlay) {
         ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-        // The baked textWidth is measured at the base font size; scale it to
-        // what this mode draws so the backing rect hugs the text like the
-        // on-screen DOM version (a CSS background on the label div) does.
         ctx.fillRect(
           labelX - 1,
           labelY,
@@ -70,16 +49,10 @@ export function paintLabels(
       }
     }
     ctx.fillStyle = resolved.color
-    // labelY is the label's TOP (the DOM overlay positions the div by it), so
-    // convert to the baseline fillText wants. Alphabetic baseline rather than
-    // ctx.textBaseline = 'top': SvgCanvas maps that to dominant-baseline
-    // "hanging", which downstream SVG consumers (Inkscape, librsvg) place
-    // inconsistently, while an explicit y is portable everywhere. Rounded
-    // because SvgCanvas interpolates coordinates raw — the unrounded product
-    // serializes as y="21.240000000000002" for no visible gain.
-    //
-    // Off the shared line's size rather than each label's own, so the smaller
-    // badge sits on the name's baseline instead of a lower one of its own.
+    // labelY is the label's top, so convert to the baseline fillText wants,
+    // off the shared line's size so a smaller badge sits on the name's baseline.
+    // An explicit y rather than textBaseline='top', which SvgCanvas maps to
+    // dominant-baseline "hanging" and SVG consumers place inconsistently.
     ctx.fillText(
       label.text,
       labelX,

@@ -11,9 +11,8 @@ import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// The core feature sequence panel, wired to a canvas display: the painting
-// ships only slim render arrays, so the full feature (with its subfeatures, on
-// which CDS/protein depend) is re-fetched by id before the panel can render it.
+// The painting ships only slim render arrays, so the dialog re-fetches the full
+// feature by id for the subfeatures that CDS/protein depend on.
 const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   model,
   parentFeatureId,
