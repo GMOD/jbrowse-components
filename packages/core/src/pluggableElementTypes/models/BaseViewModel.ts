@@ -8,11 +8,7 @@ import type {
   AbstractTrackModel,
   AbstractViewModel,
 } from '../../util/types/index.ts'
-import type {
-  IAnyStateTreeNode,
-  IStateTreeNode,
-  Instance,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * The view a view is nested in, if it is nested in one at all — a synteny row
@@ -32,35 +28,6 @@ function containingViewOf(node: IAnyStateTreeNode) {
     }
   }
   return undefined
-}
-
-/**
- * Where a derived view keeps things the base can enumerate: an ordinary view
- * has `tracks`, a container view has `trackContainers` instead (the synteny
- * view's per-band lists) and child views on `views`. All three are the
- * AbstractViewModel contract; this is the ONE place their shapes are walked,
- * so a consumer asks `ownTracks`/`allViews`/`allTracks` and never learns which
- * property a container keeps its children on.
- *
- * An entry answers only if it carries the contract itself: the dotplot keeps
- * its two 1D axis models under `views`, and react-msaview's view keeps its MSA
- * annotation rows under `tracks`. Neither is what the name says — an axis
- * composes no base and an annotation row has no displays — and descending into
- * one put undefined in the census.
- */
-interface ViewTreeSelf extends IStateTreeNode {
-  tracks?: unknown[]
-  trackContainers?: { tracks?: unknown[] }[]
-  views?: { allViews?: AbstractViewModel[] }[]
-}
-
-function isTrack(entry: unknown): entry is AbstractTrackModel {
-  return (
-    typeof entry === 'object' &&
-    entry !== null &&
-    'configuration' in entry &&
-    'displays' in entry
-  )
 }
 
 /**
@@ -144,42 +111,31 @@ const BaseViewModel = types
     },
     /**
      * #getter
-     * Every track open on this view itself: its own `tracks` array plus any
-     * track containers it owns instead (the synteny view keeps one list per
-     * band on `trackContainers` and its own `tracks` empty). Tracks on nested
-     * views are `allTracks`'s, not this getter's.
+     * The tracks this view puts in the census — its own, not a nested view's.
+     *
+     * Empty here, and overridden by the views that have any: the base cannot
+     * read `self.tracks` for them, because what a view keeps under that name
+     * is the view's business. react-msaview's holds its MSA annotation rows —
+     * `{ReactComponent, model}` objects with no configuration and no displays
+     * — and a base that helped itself to them handed them to the readiness
+     * marker as tracks, which error-paged every session holding an MSA view.
      */
     get ownTracks(): AbstractTrackModel[] {
-      const s = self as ViewTreeSelf
-      return [
-        ...(s.tracks ?? []),
-        ...(s.trackContainers ?? []).flatMap(c => c.tracks ?? []),
-      ].filter(isTrack)
+      return []
     },
     /**
      * #getter
-     * This view and every view nested inside it, to any depth — a synteny
-     * stack's genome rows, a breakpoint split view's panels. Each view answers
-     * for its own children, so a consumer never walks the nesting itself:
-     * before this getter, four consumers each carried a copy of the walk and
-     * two of them had drifted (one read `levels`, one read `trackContainers`,
-     * and each was blind to the other's spelling).
+     * The views nested directly inside this one, which the census counts as
+     * views in their own right — a synteny stack's genome rows, a breakpoint
+     * split view's panels.
+     *
+     * Empty here for the same reason, and the dotplot is why it has to be a
+     * declaration rather than a walk of `views`: that prop name holds its two
+     * 1D *axis* models, which are view-shaped and are not views the user
+     * opened. No structural test separates the two — only the view knows.
      */
-    get allViews(): AbstractViewModel[] {
-      const s = self as ViewTreeSelf
-      return [
-        self as unknown as AbstractViewModel,
-        ...(s.views ?? []).flatMap(v => v.allViews ?? []),
-      ]
-    },
-  }))
-  .views(self => ({
-    /**
-     * #getter
-     * Every track open on this view or any view nested inside it.
-     */
-    get allTracks(): AbstractTrackModel[] {
-      return self.allViews.flatMap(v => v.ownTracks)
+    get ownViews(): AbstractViewModel[] {
+      return []
     },
   }))
   .actions(self => ({

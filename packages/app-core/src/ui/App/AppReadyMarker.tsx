@@ -1,3 +1,4 @@
+import { openTracks, openViews } from '@jbrowse/core/util/openViews'
 import { observer } from 'mobx-react'
 
 import type { AppSession } from './types.ts'
@@ -56,9 +57,9 @@ function viewLoading(view: AbstractViewModel) {
  * same way the phase publishes whether it is done, so an outside reader asking
  * "is the track I requested actually open" reads one element instead of
  * walking `window.JBrowseSession` with its own copy of the view nesting. The
- * walk itself is the views' own `allViews`/`ownTracks` contract (BaseViewModel
- * derives it), so this component knows nothing about which property a
- * container view keeps its children on either.
+ * walk itself is `openViews`/`openTracks` over each view's declared
+ * `ownViews`/`ownTracks`, so this component knows nothing about which property
+ * a container view keeps its children on either.
  *
  * Its own component, and `hidden`, for two reasons: an observer here subscribes
  * to every view's phase without re-rendering the app shell around it, and a
@@ -79,8 +80,8 @@ const AppReadyMarker = observer(function AppReadyMarker({
 }: {
   session: AppSession
 }) {
-  const views = session.views.flatMap(v => v.allViews)
-  const tracks = views.flatMap(v => v.ownTracks)
+  const views = openViews(session)
+  const tracks = openTracks(session)
   const loading = views.some(viewLoading) || tracks.some(trackLoading)
   return (
     <span

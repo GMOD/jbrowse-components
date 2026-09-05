@@ -192,6 +192,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * The census entry for this view: its panels are views in their own
+       * right, and it holds no tracks outside them.
+       */
+      get ownViews() {
+        return [...self.views]
+      },
+      /**
+       * #getter
        * scroll-to-zoom is a global, personal preference resolved from the
        * session; toggling it in any view applies everywhere
        */

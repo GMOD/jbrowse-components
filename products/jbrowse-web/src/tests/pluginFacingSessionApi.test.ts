@@ -221,16 +221,17 @@ test('the automation-facing session walk still resolves', async () => {
   // value, which is the same way the script would experience it.
   expect(openTrackIds(view)).toEqual(['volvox-genes'])
 
-  // The census contract the walk is retiring behind: each view answers for
-  // itself (BaseViewModel derives these), AppReadyMarker publishes the
-  // reduction as data-app-* attributes, and capture's gate reads those. Pinned
-  // on a real session-created view because everything downstream — the marker,
-  // jbApi, the published census — assumes a view a session opens carries them.
-  expect(view.allViews).toEqual([view])
+  // The census contract the walk is retiring behind: a view declares what it
+  // holds, `openViews`/`openTracks` reduce over that, AppReadyMarker publishes
+  // the reduction as data-app-* attributes, and capture's gate reads those.
+  // Pinned on a real session-created view because everything downstream — the
+  // marker, jbApi, the published census — assumes a view a session opens
+  // declares them, and the LGV's declaration is one getter that a refactor of
+  // its `tracks` prop could silently drop.
+  expect(view.ownViews).toEqual([])
   expect(
     (view.ownTracks as unknown[]).map(
       t => (t as { configuration: { trackId?: string } }).configuration.trackId,
     ),
   ).toEqual(['volvox-genes'])
-  expect(view.allTracks).toEqual(view.ownTracks)
 })

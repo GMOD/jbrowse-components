@@ -732,6 +732,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * The census entry for this view: the tracks it holds itself. Declared
+       * rather than derived — see `BaseViewModel.ownTracks`.
+       */
+      get ownTracks() {
+        return [...self.tracks]
+      },
+      /**
+       * #getter
        * Assembly-name prefix for the scalebar refName labels, or undefined for
        * none. A container view (e.g. LinearSyntenyView) opts its sub-views in by
        * exposing showAssemblyNameInSubviewScalebar; duck-typed rather than

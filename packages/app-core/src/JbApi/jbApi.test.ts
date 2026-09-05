@@ -107,8 +107,8 @@ describe('waitReady', () => {
       ({ top: 700, bottom: 1100 }) as DOMRect
     const tall = {
       views: [
-        { id: 'v1', allViews: [{ id: 'v1', ownTracks: [] }] },
-        { id: 'v2', allViews: [{ id: 'v2', ownTracks: [] }] },
+        { id: 'v1', ownViews: [], ownTracks: [] },
+        { id: 'v2', ownViews: [], ownTracks: [] },
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel

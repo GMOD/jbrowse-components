@@ -351,6 +351,23 @@ function stateModelFactory(pluginManager: PluginManager) {
         return [...self.levels]
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * The census entry for this view. Its tracks hang off the levels, one
+       * list per band, and its rows are views in their own right — which is
+       * the nesting the four consumers each used to walk for themselves.
+       */
+      get ownTracks() {
+        return self.trackContainers.flatMap(c => c.tracks)
+      },
+      /**
+       * #getter
+       */
+      get ownViews() {
+        return [...self.views]
+      },
+    }))
     .actions(self => ({
       /**
        * #action

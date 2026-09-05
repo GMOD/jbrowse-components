@@ -18,6 +18,7 @@ import {
   parseLocString,
   renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
+import { openTracks, openViews } from '@jbrowse/core/util/openViews'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   allSessionTracks,
@@ -94,7 +95,7 @@ interface ViewSelf {
   height?: number
   initialized?: boolean
   // read only by viewSummary, whose output mirrors the nesting for the reader;
-  // ENUMERATION goes through the census contract (allViews/ownTracks) below
+  // ENUMERATION goes through the census helpers (openViews/openTracks) below
   views?: AbstractViewModel[]
   visibleRegions?: {
     refName: string
@@ -115,20 +116,16 @@ function viewSelf(view: AbstractViewModel) {
   return view as unknown as ViewSelf
 }
 
-// The views' own census contract (BaseViewModel derives `allViews` and
-// `ownTracks`), so this module carries no copy of the view nesting: a synteny
-// stack's rows and per-band containers, a breakpoint split view's panels, and
-// any depth of nesting all arrive through each view answering for itself.
-function allViews(session: AbstractSessionModel): AbstractViewModel[] {
-  return session.views.flatMap(v => v.allViews)
-}
-
+// The census helpers over the views' own `ownViews`/`ownTracks`, so this module
+// carries no copy of the view nesting: a synteny stack's rows and per-band
+// containers, a breakpoint split view's panels, and any depth of nesting all
+// arrive through each view declaring what it holds.
 function viewTracks(view: AbstractViewModel): TrackSelf[] {
   return view.ownTracks as unknown as TrackSelf[]
 }
 
 function allTracks(session: AbstractSessionModel): TrackSelf[] {
-  return allViews(session).flatMap(v => viewTracks(v))
+  return openTracks(session) as unknown as TrackSelf[]
 }
 
 // The drawn display's on-screen state. `displayPhase` is the tree's own
@@ -433,7 +430,7 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
       ...root.querySelectorAll<HTMLElement>('[data-testid^="view-container-"]'),
     ].map(el => [el.dataset.testid!.slice('view-container-'.length), el]),
   )
-  const views = allViews(session).flatMap(view => {
+  const views = openViews(session).flatMap(view => {
     const rect = containers.get(view.id)?.getBoundingClientRect()
     return rect && (rect.top < 0 || rect.bottom > windowHeight)
       ? [
@@ -504,7 +501,7 @@ function pickView(
   },
 ) {
   const viewId = typeof args.viewId === 'string' ? args.viewId : ''
-  const candidates = allViews(session)
+  const candidates = openViews(session)
   if (viewId) {
     const named = candidates.find(v => v.id === viewId)
     if (!named) {
@@ -608,7 +605,7 @@ async function visibleRegionsOf(
   // freshly spec-loaded view stays in that state briefly even after the
   // app-phase marker reads ready, since a view with no width has no display
   // fetching anything.
-  const candidates = allViews(session).filter(
+  const candidates = openViews(session).filter(
     v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
   )
   // among region-bearing views, the one actually showing the track wins — two

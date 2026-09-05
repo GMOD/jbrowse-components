@@ -734,22 +734,19 @@ export interface AbstractViewModel {
    */
   trackContainers?: TrackContainer[]
   /**
-   * every track open on this view itself — its own `tracks` and any containers
-   * it owns instead; tracks on nested views are excluded. Derived by
-   * `BaseViewModel`, so a view composing the base answers correctly without
-   * implementing anything. Required, like `bodyMounted`: a stand-in that
-   * forgets it would silently under-report instead of failing the build.
+   * what this view contributes to the census of what is open: the tracks it
+   * holds itself, and the views nested directly inside it. `BaseViewModel`
+   * answers both with nothing, so a view declares what it owns instead of the
+   * base reading properties whose meaning belongs to the view — see
+   * `util/openViews.ts`, where the recursion over them lives.
+   *
+   * Required, like `bodyMounted`, so a stand-in that means to be enumerated
+   * says so; the empty default means forgetting under-reports rather than
+   * putting something that is not a track in front of the readiness marker.
    */
   ownTracks: AbstractTrackModel[]
-  /**
-   * this view and every view nested inside it, to any depth. The walk over
-   * `tracks` / `trackContainers` / `views` is written once, in `BaseViewModel`;
-   * anything needing "everything on screen" asks this and `ownTracks` rather
-   * than knowing which property a container keeps its children on.
-   */
-  allViews: AbstractViewModel[]
-  /** every track open on this view or any view nested inside it */
-  allTracks: AbstractTrackModel[]
+  /** the views nested directly inside this one — see `ownTracks` */
+  ownViews: AbstractViewModel[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

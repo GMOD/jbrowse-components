@@ -316,6 +316,14 @@ function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * The census entry for this view: the tracks it holds itself. Declared
+       * rather than derived — see `BaseViewModel.ownTracks`.
+       */
+      get ownTracks() {
+        return [...self.tracks]
+      },
+      /**
+       * #getter
        */
       get width() {
         if (self.volatileWidth === undefined) {

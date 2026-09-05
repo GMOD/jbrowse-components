@@ -431,6 +431,14 @@ export default function stateModelFactory(pm: PluginManager) {
       .views(self => ({
         /**
          * #getter
+         * The census entry for this view: the tracks it holds itself. Declared
+         * rather than derived — see `BaseViewModel.ownTracks`.
+         */
+        get ownTracks() {
+          return [...self.tracks]
+        },
+        /**
+         * #getter
          */
         // Unmeasured is `undefined`, which is also what `initialized` tests —
         // a falsy test additionally threw on a measured 0, so a view that

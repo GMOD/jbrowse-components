@@ -2,110 +2,66 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import BaseViewModel from './BaseViewModel.ts'
 
-// The census contract. ownTracks/allViews/allTracks are how everything outside
-// a view — AppReadyMarker, jbApi, and via the marker's published attributes
-// @jbrowse/capture — enumerates what is open without knowing which property a
-// container view keeps its children on. Exercised against real composed models,
-// because the walk itself is what these pin: a stand-in re-implementing it
-// would pass whatever the base does.
+// The census contract: what a view declares it holds. Everything outside a view
+// — AppReadyMarker, jbApi, and via the marker's published attributes
+// @jbrowse/capture — enumerates through `openViews`/`openTracks` over these,
+// which is where the recursion is pinned. What these pin is the other half: the
+// base declares nothing on a view's behalf.
 
-const Track = types.model('Track', {
-  trackId: types.string,
-  configuration: types.optional(types.frozen(), {}),
-  displays: types.optional(types.array(types.frozen()), []),
-})
-
-const PlainView = types.compose(
-  BaseViewModel,
-  types.model({ type: 'Plain', tracks: types.array(Track) }),
-)
-
-// the synteny shape: tracks per band on `levels`, published as
-// `trackContainers`, child views on `views`, its own `tracks` absent
-const ContainerView = types
-  .compose(
-    BaseViewModel,
-    types.model({
-      type: 'Container',
-      levels: types.array(types.model({ tracks: types.array(Track) })),
-      views: types.array(PlainView),
-    }),
-  )
-  .views(self => ({
-    get trackContainers() {
-      return [...self.levels]
-    },
-  }))
+const Track = types.model('Track', { trackId: types.string })
 
 const ids = (tracks: readonly unknown[]) =>
   tracks.map(t => (t as { trackId?: string }).trackId)
 
-test('a plain view owns its own tracks and nothing else', () => {
-  const view = PlainView.create({ tracks: [{ trackId: 'genes' }] })
+test('a view declares what it holds', () => {
+  const View = types
+    .compose(
+      BaseViewModel,
+      types.model({ type: 'Plain', tracks: types.array(Track) }),
+    )
+    .views(self => ({
+      get ownTracks() {
+        return [...self.tracks]
+      },
+    }))
+  const view = View.create({ tracks: [{ trackId: 'genes' }] })
   expect(ids(view.ownTracks)).toEqual(['genes'])
-  expect(view.allViews).toEqual([view])
-  expect(ids(view.allTracks)).toEqual(['genes'])
 })
 
-test('a container view answers for its bands and its rows', () => {
-  const view = ContainerView.create({
-    levels: [{ tracks: [{ trackId: 'mat_vs_pat' }] }],
-    views: [
-      { tracks: [{ trackId: 'top_genes' }] },
-      { tracks: [{ trackId: 'bottom_genes' }] },
-    ],
-  })
-  expect(ids(view.ownTracks)).toEqual(['mat_vs_pat'])
-  expect(view.allViews).toHaveLength(3)
-  expect(ids(view.allTracks)).toEqual([
-    'mat_vs_pat',
-    'top_genes',
-    'bottom_genes',
-  ])
+test('a view that declares nothing holds nothing, rather than undefined', () => {
+  const Bare = types.compose(BaseViewModel, types.model({ type: 'Bare' }))
+  const view = Bare.create({})
+  expect(view.ownTracks).toEqual([])
+  expect(view.ownViews).toEqual([])
 })
 
-// The dotplot keeps its two 1D axis models under a prop also named `views`. An
-// axis is not a view — descending into one put undefined in the census — so
-// only a child carrying the contract itself answers.
-test('a non-view living under `views` is not descended into', () => {
-  const WithAxes = types.compose(
-    BaseViewModel,
-    types.model({
-      type: 'Dotplotish',
-      tracks: types.array(Track),
-      views: types.array(types.model({ bpPerPx: types.maybe(types.number) })),
-    }),
-  )
-  const view = WithAxes.create({
-    tracks: [{ trackId: 'paf' }],
-    views: [{}, {}],
-  })
-  expect(view.allViews).toEqual([view])
-  expect(ids(view.allTracks)).toEqual(['paf'])
-})
-
-// react-msaview's view keeps its MSA annotation rows under `tracks`. A row has
-// no displays and no configuration, and reading either off it as a track
-// crashed the readiness marker for every session holding an MSA view.
-test('a non-track living under `tracks` is not a track', () => {
+// react-msaview's view keeps its MSA annotation rows under `tracks`: no
+// configuration, no displays, not tracks. A base that read the property for it
+// handed those rows to the readiness marker and error-paged every session
+// holding an MSA view. Nothing about the shape said not to — only the view
+// knows, so only the view says.
+test('a `tracks` property is not a declaration', () => {
   const Msaish = types.compose(
     BaseViewModel,
     types.model({
       type: 'Msaish',
-      tracks: types.array(
-        types.model({ id: types.string, name: types.string }),
-      ),
+      tracks: types.array(types.model({ id: types.string })),
     }),
   )
-  const view = Msaish.create({ tracks: [{ id: 'ann', name: 'Annotations' }] })
+  const view = Msaish.create({ tracks: [{ id: 'annotations' }] })
   expect(view.ownTracks).toEqual([])
-  expect(view.allTracks).toEqual([])
 })
 
-test('a view with no track-bearing properties reports empty, not undefined', () => {
-  const Bare = types.compose(BaseViewModel, types.model({ type: 'Bare' }))
-  const view = Bare.create({})
-  expect(view.ownTracks).toEqual([])
-  expect(view.allViews).toEqual([view])
-  expect(view.allTracks).toEqual([])
+// The dotplot's `views` prop holds its two 1D axis models, which carry a width
+// and a bpPerPx and are not views the user opened. The same rule, one level up.
+test('a `views` property is not a declaration either', () => {
+  const Dotplotish = types.compose(
+    BaseViewModel,
+    types.model({
+      type: 'Dotplotish',
+      views: types.array(types.model({ bpPerPx: types.maybe(types.number) })),
+    }),
+  )
+  const view = Dotplotish.create({ views: [{}, {}] })
+  expect(view.ownViews).toEqual([])
 })

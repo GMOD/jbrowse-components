@@ -4,11 +4,11 @@ import AppReadyMarker from './AppReadyMarker.tsx'
 
 import type { AppSession } from './types.ts'
 
-// The marker reads the census CONTRACT — each view's `allViews`/`ownTracks`,
-// which BaseViewModel derives — so what these tests pin is the reduction: the
-// phase over the flags and display phases, and the census attributes. The walk
-// behind the contract has its own tests against real composed models
-// (core/pluggableElementTypes/models/BaseViewModel.test.ts), and
+// The marker reads the census CONTRACT — each view's declared
+// `ownViews`/`ownTracks` — so what these tests pin is the reduction: the phase
+// over the flags and display phases, and the census attributes. The walk over
+// the contract has its own tests against real composed models
+// (core/util/openViews.test.ts), and
 // jbrowse-web's AppReadyMarkerComparative.test.tsx renders the two together.
 interface FakeView {
   showLoading?: boolean
@@ -19,16 +19,14 @@ interface FakeView {
 }
 
 function view(v: FakeView): Record<string, unknown> {
-  const children = (v.views ?? []).map(view)
-  const self: Record<string, unknown> = {
+  return {
     ...v,
     ownTracks: (v.tracks ?? []).map(t => ({
       configuration: { trackId: t.trackId },
       displays: t.displays ?? [],
     })),
+    ownViews: (v.views ?? []).map(view),
   }
-  self.allViews = [self, ...children.flatMap(c => c.allViews as unknown[])]
-  return self
 }
 
 const session = (views: FakeView[]) =>
@@ -99,7 +97,7 @@ test('one loading display among many holds the app loading', () => {
   ).toBe('loading')
 })
 
-// A container view's rows arrive through its `allViews`, so a loading display
+// A container view's rows arrive through its `ownViews`, so a loading display
 // on a nested view holds the app — the marker never walks the nesting itself.
 test('a display on a nested view is reached', () => {
   expect(
