@@ -1532,7 +1532,7 @@ export default function stateModelFactory(
           return self.coverageDomain
             ? computeCoverageTicks(
                 self.coverageDomain,
-                self.topBands.reserved.coverage,
+                self.coverageDisplayHeight,
                 'linear',
               )
             : undefined
@@ -1564,7 +1564,7 @@ export default function stateModelFactory(
           const domainMax = self.coverageDomain?.[1]
           return self.coverageBandActive && domainMax
             ? {
-                height: self.topBands.reserved.coverage,
+                height: self.coverageDisplayHeight,
                 domainMax,
                 ...self.coverageBandColors,
               }
