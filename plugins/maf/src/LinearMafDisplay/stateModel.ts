@@ -2,6 +2,8 @@ import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeVisibleCoverageStats,
+  coverageBinAt,
+  hitCoverageBand,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -46,6 +48,7 @@ import {
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -86,7 +89,6 @@ import {
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
-import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
@@ -102,7 +104,6 @@ import {
 import { getMsaHighlights } from './util.ts'
 
 import type {
-  MafCoverageBandState,
   MafGPURenderState,
   MafGpuProps,
   MafRegionData,
@@ -138,6 +139,7 @@ import type {
 } from './rowIdentityModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
@@ -1597,13 +1599,22 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The coverage band as the marks take it. Height 0 draws no band: the
-         * setting is off, or the summary tier owns the view.
+         * The coverage band as the shared marks and their hit test take it.
+         * Height 0 draws no band: the setting is off, or the summary tier owns
+         * the view. Linear and unbounded, with every mismatch column counted:
+         * sample counts are already bounded and well-distributed, and every
+         * column the alignment carries is a real observation in a real species.
          */
-        get coverageBandState(): MafCoverageBandState {
+        get coverageBandState(): CoverageBandState {
           return {
             height: self.coverageBandActive ? self.coverageDisplayHeight : 0,
+            top: 0,
+            domainMin: 0,
             domainMax: self.coverageDomain?.[1],
+            scaleType: SCALE_TYPE_LINEAR,
+            symlogConstant: 1,
+            snpMinFrequency: 0,
+            showInterbase: true,
             colors: self.coverageBandColors,
           }
         },
@@ -1797,25 +1808,29 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * Build a per-position coverage tooltip bin (depth + SNP base counts) for
-         * the given absolute genomic bp + region index. Delegates the math to
-         * alignments-core's `buildCoverageTooltipBin` — same code path the
-         * alignments display uses. Insertions are reported separately via
-         * `coverageInsertionHit`, so they never mix into the depth/SNP table.
-         * Returns undefined when the region has no fetched data or depth is zero.
-         *
-         * `reversed` is the region's orientation, and the SNP snap below needs it
-         * for the reason alignments' `hitTestCoverage` does: the snap widens
-         * `position` into the bp the CURSOR'S PIXEL covers, and which side of
-         * `position` those bp lie on is what the orientation decides. `position`
-         * itself already comes through `basePaintedAt`, so it is the right base
-         * either way — widening rightward regardless searched the neighbouring
-         * pixel's bp on a flipped region, and reported a SNP the cursor was not
-         * over.
+         * The interbase bar or indicator triangle under a canvas point in the
+         * coverage band, through the shared band's own hit test, or undefined
+         * for the depth area and everywhere else.
+         */
+        coverageBandHit(displayedRegionIndex: number, x: number, y: number) {
+          const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+          const block = self.renderBlocks.find(
+            b => b.displayedRegionIndex === displayedRegionIndex,
+          )
+          return coverage && block
+            ? hitCoverageBand(coverage, self.coverageBandState, block, x, y)
+            : undefined
+        },
+        /**
+         * #method
+         * The depth + SNP tooltip bin at the base painted under the cursor,
+         * snapped zoomed out to the pixel's dominant SNP the way the alignments
+         * band snaps, with the percent identity at that position beside it.
+         * Undefined when the region has no fetched data or depth is zero.
          */
         coverageTooltipBin(
           displayedRegionIndex: number,
-          position: number,
+          basePos: number,
           bpPerPx: number,
           reversed = false,
         ) {
@@ -1823,18 +1838,11 @@ export default function stateModelFactory(
           if (!coverage) {
             return undefined
           }
-          const snpPos = coverageSnpSnap(coverage, position, bpPerPx, reversed)
-          const bin = buildCoverageTooltipBin(
-            snpPos ?? position,
-            {
-              coverageDepths: coverage.coverageDepths,
-              coverageStartPos: coverage.coverageStartPos,
-            },
-            {
-              mismatchPositions: coverage.mismatchPositions,
-              mismatchBases: coverage.mismatchBases,
-            },
-          )
+          const position = coverageBinAt(coverage, basePos, bpPerPx, reversed)
+          const bin =
+            position === undefined
+              ? undefined
+              : buildCoverageTooltipBin(position, coverage, coverage)
           if (!bin) {
             return undefined
           }
@@ -1848,19 +1856,25 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * Hit-test an insertion bar in the coverage band at fractional genomic
-         * `gposFrac`. Returns the interbase summary (count + length range +
-         * interbaseDepth) when the cursor is on the bar, else undefined — drives
-         * the dedicated interbase tooltip, kept separate from the depth/SNP one.
+         * The insertions at a band boundary the hit test named, summarized the
+         * way the alignments band summarizes its interbase events.
          */
-        coverageInsertionHit(
-          displayedRegionIndex: number,
-          gposFrac: number,
-          bpPerPx: number,
-        ) {
+        interbaseTooltipBin(displayedRegionIndex: number, position: number) {
           const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
-          return coverage
-            ? coverageInsertionAt(coverage, gposFrac, bpPerPx)
+          const bin = coverage
+            ? buildCoverageTooltipBin(
+                position,
+                coverage,
+                coverage,
+                {
+                  interbasePositions: coverage.insertionPositions,
+                  interbaseLengths: coverage.insertionLengths,
+                },
+                position,
+              )
+            : undefined
+          return bin?.interbase.insertion
+            ? { interbase: bin.interbase, interbaseDepth: bin.interbaseDepth }
             : undefined
         },
       }))

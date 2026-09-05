@@ -1,6 +1,5 @@
 import { coverageBandMarks } from '@jbrowse/alignments-core'
 import { defineMark, spanMark } from '@jbrowse/render-core/marks'
-import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
@@ -48,27 +47,7 @@ export const MAF_ROW_MARK = defineMark({
  */
 export const MAF_COVERAGE_MARKS = coverageBandMarks({
   channels: (d: { coverage: MafCoverageRegion }) => d.coverage,
-  params: (s: MafGPURenderState, d) => ({
-    height: s.coverage.height,
-    top: 0,
-    // MAF's domain starts at no aligned species and is linear: sample counts
-    // are already bounded and well-distributed, so there is no log/symlog
-    // option to carry and no `minScore` slot to read.
-    domainMin: 0,
-    domainMax: s.coverage.domainMax,
-    scaleType: SCALE_TYPE_LINEAR,
-    symlogConstant: 1,
-    regionMaxDepth: d.coverage.coverageMaxDepth,
-    // Per-bp: the worker packs one record per reference base and never
-    // downsamples (see buildMafCoverageRegion).
-    binSize: 1,
-    interbaseMaxCount: d.coverage.interbaseMaxCount,
-    // Every mismatch column the alignment carries is a real observation in a
-    // real species, not a possible sequencing error, so nothing floors away.
-    snpMinFrequency: 0,
-    showInterbase: true,
-    colors: s.coverage.colors,
-  }),
+  state: (s: MafGPURenderState) => s.coverage,
   band: s => ({ top: 0, height: s.coverage.height }),
 })
 

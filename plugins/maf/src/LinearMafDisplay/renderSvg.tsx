@@ -78,7 +78,6 @@ function MafSvgBody({
     rowsTopOffset,
     coverageTicks,
     coverageBandActive,
-    coverageDomain,
     conservationBandActive,
     codonConservationActive,
     conservationDisplayHeight,
@@ -138,8 +137,8 @@ function MafSvgBody({
                 ...svgState,
                 canvasHeight: topBands.reserved.coverage,
                 coverage: {
+                  ...model.coverageBandState,
                   height: topBands.reserved.coverage,
-                  domainMax: coverageDomain?.[1],
                   // The export-chosen palette, not the live one — the band's
                   // colours follow the same theme as the cells under them.
                   colors: mafCoverageBandColors(palette),

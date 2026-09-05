@@ -1,24 +1,11 @@
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
 import type { MafColorPalette } from './util.ts'
-import type { CoverageBandColors } from '@jbrowse/render-core/coverageBand'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type MafRenderBlock = RenderBlock
-
-/**
- * The coverage strip at the canvas top. Height 0 draws no band: the setting is
- * off, or the summary tier owns the view. An unresolved `domainMax` draws the
- * indicator triangles alone — every other mark in the band is a fraction of
- * it, and a bar without a domain is a bar of arbitrary height.
- */
-export interface MafCoverageBandState {
-  height: number
-  domainMax: number | undefined
-  /** Packed ABGR, memoized off the palette: `cssColorToABGR` parses. */
-  colors: CoverageBandColors
-}
 
 export interface MafGPURenderState {
   canvasWidth: number
@@ -33,7 +20,11 @@ export interface MafGPURenderState {
   rowsTop: number
   /** The rows *viewport*: rows past it are scrolled to, not grown into. */
   rowsHeight: number
-  coverage: MafCoverageBandState
+  /**
+   * The coverage strip at the canvas top. Height 0 draws no band: the setting
+   * is off, or the summary tier owns the view.
+   */
+  coverage: CoverageBandState
   rowHeight: number
   rowProportion: number
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
@@ -236,6 +227,8 @@ export interface MafCoverageRegion {
   coverageDepths: Float32Array
   coverageStartPos: number
   coverageMaxDepth: number
+  /** Per-bp: the worker never downsamples a MAF region's depth records. */
+  coverageBinSize: number
   identityScores: Float32Array
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array

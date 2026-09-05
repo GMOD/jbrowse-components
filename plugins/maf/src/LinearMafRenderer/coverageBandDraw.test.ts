@@ -2,15 +2,16 @@ import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageBar'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
 import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
 import { MAF_MARKS } from './mafMarks.ts'
 
 import type {
-  MafCoverageBandState,
   MafGPURenderState,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
 
 /**
  * The coverage band and the rows are two bands scissored out of ONE canvas —
@@ -37,19 +38,21 @@ const COLORS = {
   hardclipIndicator: 9,
 }
 
-const BAND: MafCoverageBandState = {
+const BAND: CoverageBandState = {
   height: COVERAGE_HEIGHT,
+  top: 0,
+  domainMin: 0,
   domainMax: 20,
+  scaleType: SCALE_TYPE_LINEAR,
+  symlogConstant: 1,
+  snpMinFrequency: 0,
+  showInterbase: true,
   colors: COLORS,
 }
 
-const NO_BAND: MafCoverageBandState = {
-  height: 0,
-  domainMax: undefined,
-  colors: COLORS,
-}
+const NO_BAND: CoverageBandState = { ...BAND, height: 0, domainMax: undefined }
 
-function state(coverage: MafCoverageBandState): MafGPURenderState {
+function state(coverage: CoverageBandState): MafGPURenderState {
   return {
     canvasWidth: CANVAS_WIDTH,
     canvasHeight: coverage.height + ROWS_HEIGHT,
@@ -92,7 +95,7 @@ function payload(): MafUploadPayload {
   }
 }
 
-function render(coverage: MafCoverageBandState) {
+function render(coverage: CoverageBandState) {
   const hal = new MockHal(MAF_MARKS.map(m => m.pass))
   const renderer = new GpuMarkBackend(hal, MAF_MARKS)
   const region = payload()

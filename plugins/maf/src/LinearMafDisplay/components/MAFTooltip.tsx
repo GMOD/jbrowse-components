@@ -1,10 +1,14 @@
+import {
+  CoverageTooltipTable,
+  InterbaseTooltipTable,
+  formatBandLocation,
+  useTooltipTableStyles,
+} from '@jbrowse/alignments-core'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
-import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
-import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
 import { findSummaryBarAt } from './computeVisibleSummaryBars.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -31,47 +35,62 @@ const MAFTooltip = observer(function MAFTooltip({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const { coverageBandActive, coverageDisplayHeight } = model
+  const { classes } = useTooltipTableStyles()
   const clientPoint = { x: mouseState.clientX, y: mouseState.clientY }
-  const mouseY = mouseState.y
   const view = model.view
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
-  const { pos: p2, gposFrac, baseBp, rowIndex, inBands, onRow, hover } = hit
+  const { pos: p2, baseBp, rowIndex, inBands, onRow, hover } = hit
 
   // Over the band area above the rows (coverage and/or conservation). Both show
   // the depth + SNP + identity breakdown via the shared alignments-core tooltip
   // bin (which carries identity). `index` from pxToBp is the displayedRegion
   // index and matches the rpcDataMap key.
   if (inBands) {
-    // Insertions (interbase) get their own tooltip, tested first by pixel
-    // proximity to the thin boundary bar, but only within the coverage band
-    // (that's where the markers draw); otherwise the depth/SNP/identity tooltip
-    // for the containing cell. Kept separate so insertion data never mixes into
-    // the depth table, mirroring plugin-alignments.
-    const insertion =
-      coverageBandActive && mouseY < coverageDisplayHeight && !p2.oob
-        ? model.coverageInsertionHit(p2.index, gposFrac, view.bpPerPx)
-        : undefined
-    if (insertion) {
+    if (p2.oob) {
+      return null
+    }
+    // The band's own hit test first — an insertion bar or its triangle gets
+    // the interbase table, kept apart from the depth table so insertion data
+    // never mixes into it, the way the alignments band does.
+    const bandHit = model.coverageBandHit(p2.index, mouseState.x, mouseState.y)
+    const interbase = bandHit
+      ? model.interbaseTooltipBin(p2.index, bandHit.position)
+      : undefined
+    if (bandHit && interbase) {
       return (
         <BaseTooltip clientPoint={clientPoint}>
-          <MafInterbaseTooltipContents hit={insertion} refName={p2.refName} />
+          <InterbaseTooltipTable
+            interbase={interbase.interbase}
+            total={interbase.interbaseDepth}
+            location={formatBandLocation(p2.refName, bandHit.position)}
+            unit="Samples"
+          />
         </BaseTooltip>
       )
     }
-    const bin = p2.oob
-      ? undefined
-      : // the bin is per-base, so it needs the base drawn under the cursor,
-        // which coord0 is not on a reversed region (see basePaintedAt)
-        model.coverageTooltipBin(
-          p2.index,
-          basePaintedAt(p2, p2.offset),
-          view.bpPerPx,
-          p2.reversed,
-        )
+    // the bin is per-base, so it needs the base drawn under the cursor, which
+    // coord0 is not on a reversed region (see basePaintedAt)
+    const bin = model.coverageTooltipBin(
+      p2.index,
+      basePaintedAt(p2, p2.offset),
+      view.bpPerPx,
+      p2.reversed,
+    )
     return bin ? (
       <BaseTooltip clientPoint={clientPoint}>
-        <MafCoverageTooltipContents bin={bin} refName={p2.refName} />
+        <CoverageTooltipTable
+          bin={bin}
+          location={formatBandLocation(p2.refName, bin.position)}
+          unit="Samples"
+        >
+          {Number.isFinite(bin.identity) ? (
+            // Percent identity excludes the reference row; a sample N/IUPAC
+            // code counts as a mismatch (same policy as the SNP coloring).
+            <div className={classes.td}>
+              Identity: {(bin.identity * 100).toFixed(1)}%
+            </div>
+          ) : null}
+        </CoverageTooltipTable>
       </BaseTooltip>
     ) : null
   }

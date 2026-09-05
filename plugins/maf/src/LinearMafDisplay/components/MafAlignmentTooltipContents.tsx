@@ -1,8 +1,8 @@
+import { useTooltipTableStyles } from '@jbrowse/alignments-core'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import { describeMafStatus } from '../../util/mafStatus.ts'
 import { insertionForwardStart } from './findRowHover.ts'
-import { useTooltipStyles } from './tooltipStyles.ts'
 
 import type { MafStatus } from '../../types.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
@@ -39,7 +39,7 @@ function TableShell({
   caption?: string
   children: ReactNode
 }) {
-  const { classes } = useTooltipStyles()
+  const { classes } = useTooltipTableStyles()
   return (
     <table className={classes.table}>
       {caption ? <caption>{caption}</caption> : null}

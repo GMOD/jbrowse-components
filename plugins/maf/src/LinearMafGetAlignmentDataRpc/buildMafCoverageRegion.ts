@@ -77,15 +77,16 @@ export function buildMafCoverageRegion(
     coverageDepths: mafCov.depths,
     coverageStartPos: mafCov.startPos,
     coverageMaxDepth: mafCov.maxDepth,
+    coverageBinSize: 1,
     identityScores: mafCov.identity,
     mismatchPositions,
     mismatchBases,
     insertionPositions,
     insertionLengths,
     // The GPU layout (relDepth against the region's own peak), which is what
-    // render-core's shared depth-bar pass uploads. Per-bp — `binSize` 1 — since
-    // MAF's region is already bounded by `derivedRegionTooLarge` and never
-    // downsampled the way the pileup's bin cap does.
+    // the shared depth-bar pass uploads. Per-bp, since MAF's region is already
+    // bounded by `derivedRegionTooLarge` and never downsampled the way the
+    // pileup's bin cap does.
     coveragePackedBuffer: packCoverageBinsForGpu(
       mafCov.depths,
       mafCov.maxDepth,
