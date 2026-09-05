@@ -1,11 +1,10 @@
 /**
  * Packed ABGR → `rgba(...)`, and the run-tracking fill a painter wraps it in.
  *
- * A local twin of `@jbrowse/core/util/colorBits`'s `abgrToCssRgba` /
- * `setAbgrFill`, on the `useEventCallback` precedent: render-core does not
- * depend on `@jbrowse/core`, and the direction that genuinely needs it is the
- * other one — resolving a CSS colour to a packed number needs core's parser,
- * which is why a shape takes packed colours and the display resolves them.
+ * `@jbrowse/core/util/colorBits` re-exports `abgrToCssRgba` from here: core
+ * depends on render-core, never the reverse. The direction that genuinely
+ * needs core is resolving a CSS colour to a packed number, which is why a
+ * shape takes packed colours and the display resolves them.
  */
 export function abgrToCssRgba(c: number) {
   const a = ((c >>> 24) & 255) / 255

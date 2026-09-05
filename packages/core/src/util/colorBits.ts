@@ -1,3 +1,5 @@
+import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
+
 import {
   getAlpha,
   getBlue,
@@ -10,6 +12,8 @@ import { namedColorToHex } from './color/cssColorsLevel4.ts'
 
 import type { Color } from './color-bits/index.ts'
 import type { Feature } from './simpleFeature.ts'
+
+export { abgrToCssRgba }
 
 export {
   alpha,
@@ -202,7 +206,6 @@ export function normalizedRgbToCssRgba(
   return `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${alpha})`
 }
 
-// Set fillStyle from an ABGR-packed u32.
 export function setAbgrFill(
   ctx: { fillStyle: string | CanvasGradient | CanvasPattern },
   c: number,
@@ -227,11 +230,6 @@ export function abgrBlue(c: number) {
 }
 export function abgrAlpha(c: number) {
   return (c >>> 24) & 0xff
-}
-
-// Format an ABGR-packed u32 as a CSS rgba() string.
-export function abgrToCssRgba(c: number) {
-  return `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${abgrAlpha(c) / 255})`
 }
 
 export function cssColorToNormalizedRgba(
