@@ -24,6 +24,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./instancePass",
   "./keyedRenderingBackend",
   "./marks",
+  "./marks/glyphPaint",
   "./namedReactions",
   "./perRegionRenderingBackend",
   "./regionDataMap",

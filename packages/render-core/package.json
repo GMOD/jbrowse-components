@@ -114,6 +114,7 @@
       "./instancePass": "./esm/instancePass.js",
       "./keyedRenderingBackend": "./esm/keyedRenderingBackend.js",
       "./marks": "./esm/marks/index.js",
+      "./marks/glyphPaint": "./esm/marks/glyphPaint.js",
       "./namedReactions": "./esm/namedReactions.js",
       "./OverlayCanvas": "./esm/OverlayCanvas.js",
       "./perRegionRenderingBackend": "./esm/perRegionRenderingBackend.js",
