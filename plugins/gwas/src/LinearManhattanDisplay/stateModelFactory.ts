@@ -766,6 +766,20 @@ export function stateModelFactory(
               },
               { name: 'ManhattanAdoptTopSnp' },
             )
+
+            // `flatbushes` is read only by the hit test, which runs in a
+            // pointer handler where nothing is tracked — and MobX discards an
+            // unobserved computed's value as it hands it over, so every
+            // rAF-coalesced mousemove rebuilt the map. Held for the same reason
+            // canvas holds `CanvasHitIndexes`, and safe for the same one: its
+            // dependencies are the store, never per-frame view geometry.
+            namedAutorun(
+              self,
+              () => {
+                void self.flatbushes
+              },
+              { name: 'ManhattanHitIndexes' },
+            )
           },
         }
       })

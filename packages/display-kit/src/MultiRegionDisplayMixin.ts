@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { compareStructural, computed } from 'mobx'
+import { compareStructural } from 'mobx'
 
 import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
@@ -389,34 +389,35 @@ export default function MultiRegionDisplayMixin() {
           },
         }
       })
-      .views(self => {
-        // A projection, memoized by MobX, so its identity moves only when the
-        // store does: `installUpload` diffs it per key by reference and the
-        // hit-test indexes downstream of it keep their caches.
-        const payloads = computed(
-          () =>
-            new Map(
-              [...self.loadedRegions].flatMap(([idx, entry]) =>
-                entry.payload === undefined ||
-                entry.payload === HELD_BY_THE_DISPLAY
-                  ? []
-                  : [[idx, entry.payload]],
-              ),
-            ) as ReadonlyMap<number, unknown>,
-        )
-        return {
-          /**
-           * #getter
-           * The store's payloads, keyed by `displayedRegionIndex`. A converted
-           * display narrows this once — `get rpcDataMap() { return
-           * self.regionPayloads as ReadonlyMap<number, MyResult> }` — and every
-           * reader it already had goes on reading a map.
-           */
-          get regionPayloads(): ReadonlyMap<number, unknown> {
-            return payloads.get()
-          },
-        }
-      })
+      .views(self => ({
+        /**
+         * #getter
+         * The store's payloads, keyed by `displayedRegionIndex`. A converted
+         * display narrows this once — `get rpcDataMap() { return
+         * self.regionPayloads as ReadonlyMap<number, MyResult> }` — and every
+         * reader it already had goes on reading a map.
+         *
+         * MST makes a `.views()` getter a computed, so the Map is built once
+         * per store change and handed back by reference after that — which is
+         * what keeps `installUpload`'s diff a reference compare per key and a
+         * frame that changed no data free of it. **While something observes
+         * it**: MobX suspends an unobserved computed and rebuilds on every
+         * read, so a display whose only reader is a pointer handler needs the
+         * keep-alive canvas and Manhattan both install (display-kit/CLAUDE.md
+         * §"A hit test's index needs an observer"). The render lifecycle's
+         * upload autorun is that reader for every display that draws.
+         */
+        get regionPayloads(): ReadonlyMap<number, unknown> {
+          return new Map(
+            [...self.loadedRegions].flatMap(([idx, entry]) =>
+              entry.payload === undefined ||
+              entry.payload === HELD_BY_THE_DISPLAY
+                ? []
+                : [[idx, entry.payload]],
+            ),
+          ) as ReadonlyMap<number, unknown>
+        },
+      }))
       .views(self => ({
         /**
          * #method
