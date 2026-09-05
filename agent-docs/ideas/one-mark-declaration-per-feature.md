@@ -356,6 +356,38 @@ still stating their geometry more than once — the middle two for the reasons
 above — and `read` is the one that would decide whether the shape holds at the
 top.
 
+### Status, 2026-09-05: the members are data, and the callbacks were the cost
+
+Every member above that took `(data, index)` is gone. A `PileupMark` is
+`{ shape, channels, fade, hit, band, contiguous, point? }`: `channels(data)`
+runs once per region and returns the typed arrays in one field order for every
+mark, and the alpha, the click gate, the row band, the point width and the
+fill colour are small integer codes `paintMarks` and `findMarkAt` switch on
+inside their loops. Nothing in either loop calls a function on the mark.
+
+The reason is measured, not stylistic. Ten marks over one walker made every
+call in the loop megamorphic, and at 100K instances over 500 rows that was
+most of the paint:
+
+| median of 20 | callbacks | data | direct loop, for reference |
+| --- | ---: | ---: | ---: |
+| gap deletion paint | 94–100 ms | 44–48 ms | 52 ms |
+| mismatch paint | 59–66 ms | 18–21 ms | 17 ms |
+| mismatch hit test | 0.19–0.20 ms | 0.21–0.23 ms | 0.18 ms |
+
+Three things the conversion needed that a reading of the callback form would
+not predict. A helper holding the fade `switch` does not inline, so the switch
+sits in the loop. The caller's `style(alpha, data, i)` closure was most of the
+remaining paint, so colour is a `Paint` code and the mark resolves it. And
+`rgba255` converting four numbers per instance cost more than the closure it
+replaced; `rgbaPrefix255` splits the string at the alpha and is pinned
+byte-for-byte. Lines went up, 455 to 583 of code, because the rules moved out
+of nine files into the one place that applies them.
+
+The fold into render-core's shapes was measured the same day and declined:
+the blocker is the shared uniform block thirteen passes read off one write, not
+the geometry. `REJECTED_IDEAS.md` has the entry.
+
 ## Where this sits
 
 **In plugins/alignments, and deliberately not shared wider.** Lifting
