@@ -203,3 +203,26 @@ export function featureIdsTouchingBlocks(
   }
   return ids
 }
+
+// Content height of a set of packed rows, matching `maxBottom` of the layout the
+// same pack would produce. Unplaced rows are excluded through the same
+// `isPlacedRow` test `maxBottom` uses, and `measureIds` restricts the measurement
+// the same way it does there, so a probe and the committed layout answer the same
+// question.
+export function packedRowsHeight(
+  layoutMap: Map<string, number>,
+  layoutHeights: Map<string, number>,
+  measureIds?: ReadonlySet<string>,
+) {
+  let max = 0
+  for (const [id, top] of layoutMap) {
+    if (measureIds && !measureIds.has(id)) {
+      continue
+    }
+    const bottom = top + layoutHeights.get(id)!
+    if (isPlacedRow(top) && bottom > max) {
+      max = bottom
+    }
+  }
+  return max
+}

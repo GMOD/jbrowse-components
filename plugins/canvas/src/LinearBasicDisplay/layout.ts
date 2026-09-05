@@ -7,8 +7,8 @@ import { pileupFadeIds } from './densityCollapse.ts'
 import { applyIsoformGapFloor, planIsoformGapFloor } from './isoformGapFloor.ts'
 import { applyIsoformTrim } from './isoformTrim.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
+import { packedRowsHeight } from './layoutQueries.ts'
 import { packPreparedRef, prepareRefPack, trimPreparedRef } from './packRef.ts'
-import { isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -104,29 +104,6 @@ function layoutRefGroups(
   }
 
   return { out, collapsedIds }
-}
-
-// Content height of a set of packed rows, matching `maxBottom` of the layout the
-// same pack would produce. Unplaced rows are excluded through the same
-// `isPlacedRow` test `maxBottom` uses, and `measureIds` restricts the measurement
-// the same way it does there, so a probe and the committed layout answer the same
-// question.
-function packedRowsHeight(
-  layoutMap: Map<string, number>,
-  layoutHeights: Map<string, number>,
-  measureIds?: ReadonlySet<string>,
-) {
-  let max = 0
-  for (const [id, top] of layoutMap) {
-    if (measureIds && !measureIds.has(id)) {
-      continue
-    }
-    const bottom = top + layoutHeights.get(id)!
-    if (isPlacedRow(top) && bottom > max) {
-      max = bottom
-    }
-  }
-  return max
 }
 
 // Measure the content height of many `labelRoomFactor` candidates against ONE
