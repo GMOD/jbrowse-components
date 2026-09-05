@@ -211,6 +211,28 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The census entry for this view: both halves are views in their own
+       * right, and it holds no tracks outside them. They hang off named
+       * properties rather than a `views` array, so no spelling of the walk this
+       * declaration replaced ever reached them — a still-loading circle inside
+       * an SV inspector read as idle to the readiness marker.
+       *
+       * The circle is gated on `showCircularView` for a stronger reason than
+       * `showLoading` above. A circle that is not rendered is never given a
+       * width, so its `initialized` stays false, and `AppReadyMarker` counts an
+       * uninitialised view as loading: declared ungated, an SV inspector still
+       * sitting on its import form would park `data-app-phase` at `loading` for
+       * the whole session.
+       */
+      get ownViews() {
+        return [
+          self.spreadsheetView,
+          ...(this.showCircularView ? [self.circularView] : []),
+        ]
+      },
+
+      /**
+       * #getter
        */
       get features() {
         return (

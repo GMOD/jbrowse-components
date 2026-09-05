@@ -89,14 +89,22 @@ contract getters on a real session-created view.
   satisfied before `window.JBrowseSession` is even assigned (the marker commits
   with the app tree; the global lands in a parent effect after it), and it
   keeps working if the session global's shape changes.
-- **The declaration found a gap the walk had hidden.** `SvInspectorView` keeps
-  its two children on named props — `spreadsheetView` and `circularView` — not
-  under `views`, so no spelling of the old walk ever reached them and a
-  still-loading circular view inside an SV inspector reads as idle to the
-  readiness marker today. Declaring them is two lines, but it has to be gated
-  on `showCircularView` or an unshown, uninitialised circular view parks
-  `data-app-phase` at `loading` forever, so it is a behaviour change with its
-  own test rather than part of this one. Left as it was; filed here.
+- **The declaration found a gap the walk had hidden**, and closing it needed the
+  gate this ADR predicted. `SvInspectorView` keeps its two children on named
+  props — `spreadsheetView` and `circularView` — not under `views`, so no
+  spelling of the old walk ever reached them: a still-loading circle inside an
+  SV inspector read as idle, and the chord track the view builds from the sheet
+  was in no consumer's answer to "what tracks are open". `ownViews` now declares
+  both, with the circle gated on `showCircularView` exactly as `showLoading`
+  above it is. The gate is not tidiness. A circle that is not rendered is never
+  given a width, so its `initialized` stays false, and the marker counts an
+  uninitialised view as loading — declared ungated, an SV inspector sitting on
+  its import form parks `data-app-phase` at `loading` for the rest of the
+  session. Both directions are pinned, and by construction one test cannot cover
+  them: `SvInspectorView/census.test.ts` holds the shape, and
+  `AppReadyMarkerSvInspector.test.tsx` renders the real marker over a real
+  session because that is the only place the parked phase is observable —
+  removing the gate turns its `ready` back into `loading`.
 
 - The census reports what the views declare, so a view that declares nothing is
   invisible to it — including a plugin view built against a core older than the
