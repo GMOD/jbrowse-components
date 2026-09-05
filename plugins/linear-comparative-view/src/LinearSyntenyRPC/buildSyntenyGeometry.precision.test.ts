@@ -40,13 +40,13 @@ function buildAt(locusCumBp: number, bpPerPx: number, viewWidth: number) {
     viewWidth,
     window0: viewportWindow({
       viewOff: offsetPx,
-      viewWidth: viewWidth,
-      bpPerPx: bpPerPx,
+      viewWidth,
+      bpPerPx,
     }),
     window1: viewportWindow({
       viewOff: offsetPx,
-      viewWidth: viewWidth,
-      bpPerPx: bpPerPx,
+      viewWidth,
+      bpPerPx,
     }),
   })
   return { g, offsetPx }
