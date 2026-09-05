@@ -1,6 +1,6 @@
 ---
 name: mark-system-convergence
-description: The 2026-09-05 render-core mark-system review landed three of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive) plus a cleanup batch; what is left is two decisions Colin has not taken (a positioned-label overlay component, a cell shape for the multi-sample variant display), two recorded prerequisites no consumer has pulled (bufferOf, params(state, region)), and a coordination note for the MAF/alignments store work that should build on createEncodeMemo rather than a third memo
+description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); what is left is two recorded prerequisites no consumer has pulled (bufferOf, params(state, region), now with the variant matrix display as a second would-be puller) and a coordination note for the MAF/alignments store work
 ---
 
 # Mark-system convergence handoff
@@ -13,7 +13,7 @@ never work. The rule is now stated in `packages/render-core/CLAUDE.md`
 §Upload; this file records what landed against it, what was declined, and what
 is still open.
 
-## Landed on main (seven commits, all fast-forwarded)
+## Landed on main (nine commits, all fast-forwarded)
 
 - `a0856226cd`..`42bd8bfb1d` — cleanup batch: `MarkFrame` aliases
   `FrameDimensions`; core's `abgrToCssRgba` re-exports render-core's through
@@ -44,6 +44,25 @@ is still open.
   linkedReadLine, rect. Only LinearSyntenyDisplay and DotplotDisplay flip;
   cross-backend gate scoped to them ran 44 pairs, max 1.28% under the 1.5%
   threshold. Per-shader declare/leave table is in the commit message.
+- `LinearMultiSampleVariantDisplay` draws through a mark (2026-09-05, second
+  session). `components/cellMark.ts` is a `MarkShape` over `variant.slang`
+  (unchanged), `variantMarks.ts` declares `VARIANT_MARKS`, the component
+  builds its backend with `createMarkBackend` and `renderSvg.tsx` paints with
+  `paintMarkBlocks`. `GpuVariantRenderer`, `Canvas2DVariantRenderer`,
+  `variantShaders.ts` and `VariantRenderer.ts` are gone with their two tests;
+  `variantMarks.test.ts` pins the lane mapping, the uniform slots and the
+  painter geometry. The shape stays in the plugin: the shader's generated
+  twins (`snapVariantCellX`, `drawnCellHeightPx`) feed the hit test, the
+  hover box and the insertion overlay, so moving the `.slang` would have
+  spread that picking logic over two packages; `marks/types.ts` now says
+  where a shape lives. The pass id changed from `main` to `cell`; nothing
+  outside the deleted tests named it. The hit test did not move onto
+  `hitNearest`: it is index-driven with insertion widening
+  (`pickVariantCell`), a different question from nearest ink.
+- `scripts/declaredDependencies.test.ts` green on main again: its
+  test-support pattern matched `testutils` but not `test-utils`, so the
+  private `display-test-utils` harness was held at production strictness for
+  its `@testing-library/react` import.
 
 ## Declined during the review, do not re-propose
 
@@ -60,28 +79,33 @@ is still open.
   `INTERACTION_PERF.md` measured that any `fillText` flushes style recalc.
 - "canvas basic display and wiggle become mark candidates once `bufferOf`
   exists" — overstated; see prerequisites below.
-
-## Open: two decisions for Colin, not refactors
-
-1. **Positioned-label overlay component in display-kit.** Eleven ~30-line
-   `OverlayCanvas` wrappers (alignments, MAF, multi-row indels, canvas labels,
-   variants insertions, sequence, offscreen mates, arcs) differ only in painter
-   and colour rule; one component plus one SVG emitter, redrawn on data
-   identity, nets ~200 lines. Placement (`computeVisibleLabels` etc.) stays
-   per display. Needs a decision on the label record shape.
-2. **A `cell` shape for `LinearMultiSampleVariantDisplay`.** Admissible under
-   ADR-090's surviving one-consumer clause (ADR-040's two-consumer bar is for
-   shared `.slang` modules). It is `span` plus a glyph lane and the display's
-   own half-canvas snap grid with a 2 px floor (`variant.slang`), so converting
-   onto `span` would change drawn output. Payoff is one renderer pair
-   (`interleaveVariantInstances` + `drawVariantBlocks`), ~150 lines, lateral.
+- **A positioned-label overlay component in display-kit** (was an open
+  item). Read against the tree on 2026-09-05: the shared half already exists.
+  `OverlayCanvas` is the component (the dpr-prepared, pointer-inert,
+  absolutely positioned canvas) and `Ctx2D` with `SvgCanvas` is the SVG
+  emitter, which is why every painter (`drawAlignmentLabels`, `drawMafLabels`,
+  `drawMafDeletionLabels`) is already called unchanged from the export path.
+  What the eleven ~30-line wrappers hold is a props interface, an empty-list
+  early return and one draw call, and each wrapper is the `observer` memo
+  boundary that keeps a hover re-render from redrawing — inlining the closure
+  into the parent redraws every render without the React Compiler, which
+  `build:esm` ships without. A shared label record (`{x, y, text, font, fill,
+  align, opacity}`) would move colour resolution into placement, making
+  `computeVisibleLabels` palette-dependent, for a ~50-line saving. Nothing
+  left to converge.
 
 ## Recorded prerequisites, unbuilt until a consumer pulls
 
 - `bufferOf` on `defineMark`: a mark registered but never uploaded, drawn off
   another mark's buffer via the HAL's existing `bufferPassId`.
 - `params(state, region)`: `writeUniforms` never sees the region, so a
-  per-region uniform (canvas rect's `outlineColor`) is unsayable.
+  per-region uniform (canvas rect's `outlineColor`) is unsayable. Second
+  would-be puller: `LinearMultiSampleVariantMatrixDisplay`, whose column
+  width is `canvasWidth / data.numFeatures`. It also draws one payload with
+  no bp axis through `GpuGlobalRenderingBackend`, so it needs a global mark
+  backend beside `createMarkBackend` too. Its renderer pair
+  (`GpuVariantMatrixRenderer` + `Canvas2DVariantMatrixRenderer`, ~160 lines)
+  is the last hand-written one in the plugin.
 - Even with both, canvas basic needs a conditional continuation draw off
   `canvasEdgeFlags`, a renderer-chosen chevron cap and a typed layer registry
   (`GpuCanvasFeatureRenderer.ts:168-186`); wiggle needs the pass chosen per
@@ -91,9 +115,10 @@ is still open.
 
 ## Coordination: the MAF/alignments store work
 
-Another session is generalizing `DensityTierMixin` into a shared coarse-tier
-mixin, then moving MAF's detail rows onto the foundation store with the placed
-map as a projection. Told them: rebase onto main; step 2's "per-region memo
+Another session generalized `DensityTierMixin` into `CoarseTierMixin` (step
+1, landed `0dc7cb37cc`..`d8621afe31` on 2026-09-05) and is moving MAF's detail
+rows onto the foundation store with the placed map as a projection (step 2).
+Told them: rebase onto main; step 2's "per-region memo
 keyed on wire identity and row order" IS `createEncodeMemo` (cells = wire map,
 inputs = row order, encode = placement), do not write a third memo; MAF's
 upload memo reads `self.rpcDataMap` as cells and only that getter moves when
@@ -153,6 +178,18 @@ Three implementers, each in its own worktree, landed serially by fast-forward:
   twice; `npx jest --ci <touched dirs>` was the fallback (memory
   `test-related-exits-249-with-no-jest-output`).
 - `pnpm autogen` in a worktree listed `LinearMultiRowFeatureDisplay` three
-  times in `ARCHITECTURE.md` and `creating_display.md`; the foundation-table
-  generator reads beyond its own tree when sibling worktrees exist. The agent
-  reverted those two files; the generator itself was not fixed.
+  times in `ARCHITECTURE.md` and `creating_display.md`. Not reproduced on
+  2026-09-05 from a worktree with six siblings: `autogen` exited 0 with no
+  diff. The census walks `plugins/packages/products` under the worktree's own
+  root and the API corpus comes from `git ls-files`, which `.gitignore`'s
+  `.claude/*` keeps clear of sibling worktrees — so the likely source is a
+  subagent worktree nested inside the parent worktree (memory
+  `subagent-worktrees-nest-under-the-parent-worktree`) at a path the walk
+  does not skip, not a sibling. Unfixed; reproduce with a nested worktree
+  before touching the generator.
+- `pnpm test-related --with-web` on the cell-mark branch: 6 failures in
+  three jbrowse-web synteny suites (`ExportSvgLinearSyntenyView`,
+  `LinearSyntenyFollow`, `LinearSyntenyMoveFollow`), identical at main's tip
+  `d8621afe31` with the branch detached — the synteny audit's, not the mark
+  work's. The export one is a mate-label x moving 520.42 → 519.88; the
+  follow ones time out or find no band feature.

@@ -47,9 +47,12 @@ export interface MarkHit {
  * as uniforms and the painter as arguments; the two must be the same values or
  * the backends diverge, which is what having one object per shape prevents.
  *
- * There is no `MarkShape` constructor. A shape is written out once, in
- * render-core, and admitted by a consumer rather than by completeness — the
- * ADR-040 bar.
+ * There is no `MarkShape` constructor. A shape is written out once and
+ * admitted by a consumer rather than by completeness — the ADR-040 bar. It
+ * lives here when two displays share it (`span`) or its geometry is generic
+ * (`point`); a display whose shader's generated twins feed its own hit test
+ * keeps the shape beside them (variants' `cellMark`) and still declares it
+ * through `defineMark`.
  */
 export interface MarkShape<TChannels, TParams> {
   readonly id: string
