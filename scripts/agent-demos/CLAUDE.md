@@ -30,10 +30,11 @@ the macOS takes.
   open for the whole take. It records to mp4 (GNOME's configured container),
   needs no portal dialog, and captures the real screen at full framerate.
 - **Wayland will not let a client position itself**, and there is no scriptable
-  tiling without an input-injection daemon (no `ydotool`/`wtype` here). So the
-  JBrowse window and the terminal may open stacked — tap Super+Left on the
-  terminal and Super+Right on JBrowse once. `window-state.json` seeds JBrowse's
-  size but not its place.
+  tiling API. `recordDemoLinux.mjs` handles this by tapping Super+Left / Super+
+  Right once by hand. For an AUTOMATED side-by-side, the lead is `ydotool` (now
+  installed) injecting those same keystrokes to trigger GNOME native tiling —
+  the WIP `recordDemoTui.mjs` and
+  `agent-docs/handoffs/agent-demo-video-linux.md` carry that thread.
 - **Under GPU-less Xvfb the electron GPU process fatals**
   (`GPU process isn't usable. Goodbye`) even with `--disable-gpu` and
   swiftshader flags, which is why this films on the real `:0` display rather
@@ -42,6 +43,14 @@ the macOS takes.
 - Isolated `--user-data-dir` under `<outdir>`, so a take never touches a real
   session, the recent list or an autosave. Refuses to start if a JBrowse Desktop
   bridge socket already exists (its bridge is per-user).
+
+**`recordDemoTui.mjs` is the next iteration (WIP)** — the REAL Claude Code TUI
+in a terminal (Sonnet, `--verbose`), driven by `tmux send-keys`, instead of the
+formatted `claude -p` stream `recordDemoLinux.mjs` shows. It opens the built-in
+hg38 (renders on a fresh build; a stale one shows a protein3d/tss-react worker
+error — always rebuild first) and burns in ASS captions. Its one open piece is
+the automated side-by-side layout above. Full state:
+`agent-docs/handoffs/agent-demo-video-linux.md`.
 
 ## macOS: before anything works
 
