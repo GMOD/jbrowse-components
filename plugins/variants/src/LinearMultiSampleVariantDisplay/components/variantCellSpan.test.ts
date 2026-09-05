@@ -221,7 +221,7 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
 })
 
 // The lane's mark, the hover box and the click target all describe a cell that
-// `drawVariantBlocks` painted through `snapVariantCellX`. This function used to
+// `cellMark` painted through `snapVariantCellX`. This function used to
 // take min/max raw and share only the 2px floor, so all three sat up to half a
 // pixel off the cell they were about — and the marks are AT that 2px floor
 // wherever the snap fires, so the offset is a quarter of the mark.

@@ -3,11 +3,12 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
-import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import { drawVariantInsertionGlyphs } from './components/drawVariantInsertionGlyphs.ts'
+import { VARIANT_MARKS } from './components/variantMarks.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
@@ -128,7 +129,13 @@ function VariantSvgBody({
             ctx.fillStyle = REFERENCE_COLOR
             ctx.fillRect(0, 0, canvasWidth, canvasHeight)
           }
-          drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, exportState)
+          paintMarkBlocks(
+            ctx,
+            VARIANT_MARKS,
+            perRegionCellMap,
+            renderBlocks,
+            exportState,
+          )
           // Same layer, after the cells, so the export stacks them the way the
           // on-screen overlay composites over the canvas.
           if (insertionGlyphRegions) {

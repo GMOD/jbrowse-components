@@ -28,11 +28,11 @@ digraph variant_draw {
   fitconf [label="the configured height;\noverflow scrolls"]
   fitauto -> backend  fitconf -> backend
 
-  backend [label="createRenderingBackend"]
+  backend [label="createMarkBackend over VARIANT_MARKS (regular)\ncreateRenderingBackend (matrix)"]
   backend -> gpu [label=" WebGPU, else WebGL2"]
   backend -> c2d [label=" else Canvas2D"]
-  gpu [label="GpuVariantRenderer\nGpuVariantMatrixRenderer"]
-  c2d [label="Canvas2DVariantRenderer\nCanvas2DVariantMatrixRenderer\nalso the SVG export"]
+  gpu [label="cellMark.drawRegion\nGpuVariantMatrixRenderer"]
+  c2d [label="cellMark.paintBlock\nCanvas2DVariantMatrixRenderer\nalso the SVG export"]
 
   overlays [label="overlays, in paint order", shape=oval]
   gpu -> overlays  c2d -> overlays

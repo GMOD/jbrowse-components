@@ -3,6 +3,7 @@ import { useId, useState } from 'react'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -15,9 +16,13 @@ import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
   variantLaneSurface,
 } from './VariantLaneOverlay.tsx'
-import { VariantRenderer } from './VariantRenderer.ts'
+import { VARIANT_MARKS } from './variantMarks.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
+
+function createVariantBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, VARIANT_MARKS)
+}
 
 const VariantDisplayComponent = observer(
   function VariantDisplayComponent(props: {
@@ -35,7 +40,7 @@ const VariantDisplayComponent = observer(
     return (
       <DisplayChrome
         model={model}
-        factory={VariantRenderer}
+        factory={createVariantBackend}
         testid="variant-display"
         style={{ height: model.height }}
         // One pointer source for the whole display: the hover, the tooltip and

@@ -128,7 +128,7 @@ export function anyMarkerPossibleForBlock(
 /**
  * Insertion markers over the genotype cells, sized by each record's inserted bp.
  *
- * `drawVariantBlocks` draws a cell across the reference span its record covers,
+ * `cellMark` draws a cell across the reference span its record covers,
  * floored at 2px. That is correct for a SNP and for a deletion, and it is why the
  * regular (non-matrix) display reads well for structural variants: everything
  * sits at its true genomic position and width. An insertion is the exception,
@@ -136,7 +136,7 @@ export function anyMarkerPossibleForBlock(
  * that all land on the same 2px floor a SNP does. This pass is where that length
  * goes.
  *
- * Mirrors `drawVariantBlocks`' arguments and geometry (`forEachClippedBlock` +
+ * Mirrors `cellMark`'s arguments and geometry (`forEachClippedBlock` +
  * `makeBpMapper`, the same 2px row floor, the same Y-cull) so a marker cannot
  * drift off the cell it widens, and uses `drawInsertionMarker` from
  * `@jbrowse/alignments-core` so the bar geometry stays identical to the pileup's

@@ -50,7 +50,7 @@ export function drawVariantMatrixBlocks(
   const drawHeight = floored ? drawnRowHeight : rowHeight + f2
   // Cells are bucketed ref-then-nonref, so consecutive cells frequently share a
   // color — cache the last fillStyle to skip the abgr→css conversion (mirrors
-  // the regular Canvas2DVariantRenderer).
+  // the regular display's `cellMark`).
   let prevColor = -1
   for (let i = 0; i < data.numCells; i++) {
     const y = data.cellRowIndices[i]! * rowHeight - scrollTop

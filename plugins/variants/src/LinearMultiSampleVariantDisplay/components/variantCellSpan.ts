@@ -14,7 +14,7 @@ export const MAX_INSERTION_MARKER_WIDTH_PX = textWidthForNumber(99999)
  * (either order — reversed blocks hand them back swapped).
  *
  * A cell is normally its reference span with a 2px floor, mirroring the shader
- * (`shaders/variant.slang`) and `Canvas2DVariantRenderer`. An insertion is the
+ * (`shaders/variant.slang`) and `cellMark`. An insertion is the
  * exception: it consumes no reference, so `VariantInsertionGlyphOverlay` widens
  * alt-carrying cells to a marker sized by the inserted bp, centered on the
  * locus. Returning the union here is what keeps the drawn glyph, the hover
