@@ -16,7 +16,7 @@ export function buildSampleFilter(
   return opts?.samples ? new Set(opts.samples.map(s => s.id)) : undefined
 }
 
-interface SampleConfigEntry {
+export interface SampleConfigEntry {
   id: string
   label?: string
   color?: string

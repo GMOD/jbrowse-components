@@ -96,7 +96,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
             nhLoc,
             summaryLoc,
             framesLoc,
-            sampleNames: parseSampleNames(samples),
+            samples: parseSampleNames(samples),
           }),
         },
       })
@@ -152,7 +152,7 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
             />
             <FileSelector
               location={indexLoc}
-              name="Path to MAF tabix index"
+              name="Path to MAF tabix index (optional — the sibling index is assumed)"
               rootModel={rootModel}
               setLocation={arg => {
                 setIndexLoc(arg)
@@ -173,18 +173,13 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           </>
         ) : (
           <>
-            {/* Both remaining formats are bgzip + a taffy `.tai`; they differ
-                only in the text inside. TAF names its index required because
-                the adapter has no shorthand for it, while BgzipMafAdapter's
-                `uri` form already resolves the sibling — so there it is an
-                override, not a requirement. */}
+            {/* Both remaining formats are bgzip + a taffy `.tai`, and both
+                adapters' `uri` shorthands resolve the same sibling — so the
+                picker is an override for an index that is not one, and they
+                differ only in the file name the label quotes. */}
             <FileSelector
               location={indexLoc}
-              name={
-                fileTypeChoice === 'BgzipTaffyAdapter'
-                  ? 'Path to TAF.gz.tai (TAF index)'
-                  : 'Path to MAF.gz.tai (taffy index, optional — the sibling .tai is assumed)'
-              }
+              name={`Path to ${fileTypeChoice === 'BgzipTaffyAdapter' ? 'TAF' : 'MAF'}.gz.tai (taffy index, optional — the sibling .tai is assumed)`}
               rootModel={rootModel}
               setLocation={arg => {
                 setIndexLoc(arg)

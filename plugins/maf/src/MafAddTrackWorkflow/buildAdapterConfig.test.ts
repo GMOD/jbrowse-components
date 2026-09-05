@@ -38,10 +38,40 @@ describe('parseSampleNames', () => {
   test('empty input returns empty array', () => {
     expect(parseSampleNames('')).toEqual([])
   })
+
+  // The placeholder invites "JSON formatted array of samples" and every
+  // adapter's `samples` slot takes these objects, but each one used to go
+  // through `String()` — so the config got the literal text `[object Object]`
+  // as an id, and the track drew that many unnamed rows.
+  test('JSON array of sample objects passes through', () => {
+    expect(
+      parseSampleNames(
+        '[{"id":"hg38","label":"Human","color":"red"},{"id":"mm10","assemblyName":"mm10"}]',
+      ),
+    ).toEqual([
+      { id: 'hg38', label: 'Human', color: 'red' },
+      { id: 'mm10', assemblyName: 'mm10' },
+    ])
+  })
+
+  // `normalizeSamples` types the whole array off its first element, so a mixed
+  // array has to come back homogeneous or the strings after an object are read
+  // as objects with no id.
+  test('a mixed array normalizes to objects', () => {
+    expect(parseSampleNames('["hg38", {"id":"mm10","label":"Mouse"}]')).toEqual(
+      [{ id: 'hg38' }, { id: 'mm10', label: 'Mouse' }],
+    )
+  })
+
+  test('object entries with no id are dropped', () => {
+    expect(parseSampleNames('[{"label":"Human"}, {"id":"mm10"}]')).toEqual([
+      { id: 'mm10' },
+    ])
+  })
 })
 
 describe('buildAdapterConfig', () => {
-  const sampleNames = ['hg38', 'mm10']
+  const samples = ['hg38', 'mm10']
 
   test('BigMafAdapter', () => {
     expect(
@@ -53,12 +83,12 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'BigMafAdapter',
       bigBedLocation: loc,
-      samples: sampleNames,
+      samples,
       nhLocation: nhLoc,
     })
   })
@@ -73,12 +103,12 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'BigMafAdapter',
       bigBedLocation: loc,
-      samples: sampleNames,
+      samples,
       nhLocation: nhLoc,
       summaryAdapter: {
         type: 'BigBedAdapter',
@@ -97,14 +127,58 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'MafTabixAdapter',
       bedGzLocation: loc,
       nhLocation: nhLoc,
       index: { indexType: 'CSI', location: indexLoc },
-      samples: sampleNames,
+      samples,
+    })
+  })
+
+  // The two branches that used to refuse to build without a picker. Both
+  // adapters' own `uri` shorthands resolve exactly these siblings, and the form
+  // already derives the summary BED's `.tbi` two fields down.
+  test('MafTabixAdapter derives the sibling index, following the radio', () => {
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'MafTabixAdapter',
+        indexTypeChoice: 'CSI',
+        loc,
+        indexLoc: undefined,
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc: undefined,
+        samples,
+      }),
+    ).toMatchObject({
+      index: {
+        indexType: 'CSI',
+        location: { uri: 'data.bb.csi', locationType: 'UriLocation' },
+      },
+    })
+  })
+
+  test('BgzipTaffyAdapter derives the sibling .tai', () => {
+    const tafGz: FileLocation = {
+      uri: 'aln.taf.gz',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'BgzipTaffyAdapter',
+        indexTypeChoice: 'TBI',
+        loc: tafGz,
+        indexLoc: undefined,
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc: undefined,
+        samples,
+      }),
+    ).toMatchObject({
+      taiLocation: { uri: 'aln.taf.gz.tai', locationType: 'UriLocation' },
     })
   })
 
@@ -127,14 +201,14 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: summaryBed,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'MafTabixAdapter',
       bedGzLocation: loc,
       nhLocation: nhLoc,
       index: { indexType: 'TBI', location: indexLoc },
-      samples: sampleNames,
+      samples,
       summaryAdapter: {
         type: 'BedTabixAdapter',
         bedGzLocation: summaryBed,
@@ -160,14 +234,14 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'BgzipTaffyAdapter',
       tafGzLocation: loc,
       taiLocation: indexLoc,
       nhLocation: nhLoc,
-      samples: sampleNames,
+      samples,
     })
   })
 
@@ -190,14 +264,14 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: summaryBed,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'BgzipTaffyAdapter',
       tafGzLocation: loc,
       taiLocation: indexLoc,
       nhLocation: nhLoc,
-      samples: sampleNames,
+      samples,
       summaryAdapter: {
         type: 'BedTabixAdapter',
         bedGzLocation: summaryBed,
@@ -229,7 +303,7 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toEqual({
       type: 'BgzipMafAdapter',
@@ -238,7 +312,7 @@ describe('buildAdapterConfig', () => {
       // sibling, so a published pair needs no second picker
       taiLocation: { uri: 'aln.maf.gz.tai', locationType: 'UriLocation' },
       nhLocation: nhLoc,
-      samples: sampleNames,
+      samples,
     })
   })
 
@@ -260,7 +334,7 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toMatchObject({ taiLocation: tai })
   })
@@ -287,7 +361,7 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc,
-        sampleNames,
+        samples,
       }),
     ).toMatchObject({
       annotationAdapter: {
@@ -307,38 +381,8 @@ describe('buildAdapterConfig', () => {
         nhLoc,
         summaryLoc: undefined,
         framesLoc: undefined,
-        sampleNames,
+        samples,
       }),
     ).toThrow(/data file/)
-  })
-
-  test('throws when tabix index missing', () => {
-    expect(() =>
-      buildAdapterConfig({
-        fileTypeChoice: 'MafTabixAdapter',
-        indexTypeChoice: 'TBI',
-        loc,
-        indexLoc: undefined,
-        nhLoc,
-        summaryLoc: undefined,
-        framesLoc: undefined,
-        sampleNames,
-      }),
-    ).toThrow(/index/)
-  })
-
-  test('throws when TAF index missing', () => {
-    expect(() =>
-      buildAdapterConfig({
-        fileTypeChoice: 'BgzipTaffyAdapter',
-        indexTypeChoice: 'TBI',
-        loc,
-        indexLoc: undefined,
-        nhLoc,
-        summaryLoc: undefined,
-        framesLoc: undefined,
-        sampleNames,
-      }),
-    ).toThrow(/index/)
   })
 })

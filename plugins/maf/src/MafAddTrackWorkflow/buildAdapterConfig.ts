@@ -1,5 +1,6 @@
 import { makeIndex } from '@jbrowse/core/util/tracks'
 
+import type { SampleConfig, SampleConfigEntry } from '../util/getSamples.ts'
 import type { FileLocation } from '@jbrowse/core/util'
 
 export type AdapterTypeOptions =
@@ -51,24 +52,59 @@ function framesAnnotation(framesLoc: FileLocation | undefined) {
 }
 
 /**
+ * The alignment file's own sibling index, for the two branches that used to
+ * demand a picker for it. Every one of these adapters' `uri` shorthands already
+ * resolves the same sibling — `taiIndexSlot` for the two `.tai` formats,
+ * `tabixIndexSlot` for the tabix one — and the form derives the *summary* BED's
+ * `.tbi` two fields down, so demanding it here made the required field the odd
+ * one out rather than the safe one. The picker is still offered for an index
+ * that is not a sibling, and wins when filled in.
+ *
+ * The suffix follows the Index-type radio rather than the file name, because
+ * here the radio is the user's answer and there is no name to read it off.
+ */
+function siblingIndex(loc: FileLocation, indexType: IndexTypeOptions) {
+  return makeIndex(loc, indexType === 'CSI' ? '.csi' : '.tbi')
+}
+
+/**
+ * One entry of a JSON `samples` array, kept only when it names an id — the
+ * `samples` slot is frozen, so an `{ label: 'hg38' }` with no id reaches
+ * `normalizeSamples` as an unnamed row and trims `undefined`.
+ */
+function sampleEntry(entry: unknown) {
+  const { id } = entry as { id?: unknown }
+  return typeof id === 'string' && id.trim() ? [entry as SampleConfigEntry] : []
+}
+
+/**
  * Parse the free-form sample-names text box. Accepts a JSON array (which
  * must actually *be* an array — bare strings/numbers parse as valid JSON but
  * aren't sample lists) or one name per line. CRLF/CR/LF all split correctly
  * so pasted Windows/Mac text doesn't leave a trailing \r.
+ *
+ * An array of `{id,label,color,assemblyName,…}` objects — what the box's
+ * placeholder invites and what every adapter's `samples` slot accepts — comes
+ * back as objects. Every entry used to go through `String()`, so each one
+ * landed in the config as the literal text `[object Object]`, and the track
+ * drew one unnamed row per sample. A mixed array normalizes to objects,
+ * because `normalizeSamples` types the whole array off its first element.
  */
-export function parseSampleNames(input: string): string[] {
+export function parseSampleNames(input: string): SampleConfig {
+  let parsed: unknown
   try {
-    const parsed: unknown = JSON.parse(input)
-    if (Array.isArray(parsed)) {
-      return parsed.map(s => String(s).trim()).filter(Boolean)
-    }
+    parsed = JSON.parse(input)
   } catch {
     // fall through to line split
   }
-  return input
-    .split(/\r\n|[\r\n]/)
-    .map(s => s.trim())
-    .filter(Boolean)
+  const entries = Array.isArray(parsed) ? parsed : input.split(/\r\n|[\r\n]/)
+  return entries.some(e => typeof e === 'object' && e !== null)
+    ? entries.flatMap(e =>
+        typeof e === 'object' && e !== null
+          ? sampleEntry(e)
+          : sampleEntry({ id: String(e).trim() }),
+      )
+    : entries.map(e => String(e).trim()).filter(Boolean)
 }
 
 interface BuildArgs {
@@ -79,7 +115,7 @@ interface BuildArgs {
   nhLoc: FileLocation | undefined
   summaryLoc: FileLocation | undefined
   framesLoc: FileLocation | undefined
-  sampleNames: string[]
+  samples: SampleConfig
 }
 
 export function buildAdapterConfig(args: BuildArgs) {
@@ -91,7 +127,7 @@ export function buildAdapterConfig(args: BuildArgs) {
     nhLoc,
     summaryLoc,
     framesLoc,
-    sampleNames,
+    samples,
   } = args
   if (!loc) {
     throw new Error('Please supply a data file')
@@ -101,7 +137,7 @@ export function buildAdapterConfig(args: BuildArgs) {
       return {
         type: fileTypeChoice,
         bigBedLocation: loc,
-        samples: sampleNames,
+        samples,
         nhLocation: nhLoc,
         // Optional UCSC bigMafSummary.bb for cheap zoom-out rendering; no
         // standard suffix to guess, so it's an explicit field left null
@@ -117,31 +153,25 @@ export function buildAdapterConfig(args: BuildArgs) {
         ...framesAnnotation(framesLoc),
       }
     case 'MafTabixAdapter':
-      if (!indexLoc) {
-        throw new Error('Please supply a MAF tabix index file')
-      }
       return {
         type: fileTypeChoice,
         bedGzLocation: loc,
         nhLocation: nhLoc,
         index: {
           indexType: indexTypeChoice,
-          location: indexLoc,
+          location: indexLoc ?? siblingIndex(loc, indexTypeChoice),
         },
-        samples: sampleNames,
+        samples,
         ...bedTabixSummary(summaryLoc),
         ...framesAnnotation(framesLoc),
       }
     case 'BgzipTaffyAdapter':
-      if (!indexLoc) {
-        throw new Error('Please supply a TAF index (.tai) file')
-      }
       return {
         type: fileTypeChoice,
         tafGzLocation: loc,
-        taiLocation: indexLoc,
+        taiLocation: indexLoc ?? makeIndex(loc, '.tai'),
         nhLocation: nhLoc,
-        samples: sampleNames,
+        samples,
         // The .tai keeps a read proportional to the span on screen, not to the
         // alignment — but a deep one still costs span x depth, so the zoom-out
         // tier is worth offering here too.
@@ -154,17 +184,12 @@ export function buildAdapterConfig(args: BuildArgs) {
       // a 53 GB `.maf.gz` + `.tai`). The adapter has been registered all along;
       // it just had no way in from the UI, so an HPRC alignment had to be
       // converted before it could be looked at.
-      //
-      // The index is derived rather than demanded, unlike the TAF branch above:
-      // this adapter's own `uri` shorthand already resolves `${uri}.tai`, so a
-      // published pair needs no second picker. The picker is still offered for
-      // an index that isn't a sibling, and wins when filled in.
       return {
         type: fileTypeChoice,
         mafGzLocation: loc,
         taiLocation: indexLoc ?? makeIndex(loc, '.tai'),
         nhLocation: nhLoc,
-        samples: sampleNames,
+        samples,
         ...bedTabixSummary(summaryLoc),
         ...framesAnnotation(framesLoc),
       }
