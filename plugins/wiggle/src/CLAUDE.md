@@ -86,9 +86,7 @@ mechanism, that matters.
 
 `canvasHeight` is CSS px and the shader mixes axes; device px halves the
 min-width floor at dpr 2, makes the step-line stroke half as wide as it is tall,
-and shears the capsule. `gpuWiggleRenderer.test.ts` pins it. `GpuMafRenderer`
-feeds `pxW` to a same-named uniform in a different shader and says its own floor
-is unresolved — not a precedent.
+and shears the capsule. `gpuWiggleRenderer.test.ts` pins it.
 
 ## Three separate decisions inside "how wide is a bar"
 

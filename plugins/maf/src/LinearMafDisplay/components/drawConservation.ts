@@ -95,7 +95,7 @@ export function accumulateConservation(
  * its span covers, so the bar is the mean identity of the bases under that
  * pixel (the sliding window is one pixel's worth of bp). `NaN` positions
  * (depth 0 / ref `N`) are skipped, so unalignable regions read as empty rather
- * than 0%. Shared by the on-screen canvas and SVG export, like `drawMafCoverage`.
+ * than 0%. Shared by the on-screen canvas and SVG export.
  *
  * Each block accumulates only into its own scissor columns. The alternative —
  * `forEachClippedBlock`'s ctx clip — can't work here: the per-pixel means are

@@ -21,6 +21,7 @@ function recordingCtx() {
     beginPath() {},
     rect() {},
     clip() {},
+    translate() {},
     moveTo() {},
     lineTo() {},
     arc() {},
@@ -35,6 +36,18 @@ function recordingCtx() {
 }
 
 const A = 65
+
+const NO_COLORS = {
+  coverage: 0,
+  baseA: 0,
+  baseC: 0,
+  baseG: 0,
+  baseT: 0,
+  baseN: 0,
+  insertionIndicator: 0,
+  softclipIndicator: 0,
+  hardclipIndicator: 0,
+}
 
 function regionData(n: number, aln?: string) {
   return {
@@ -76,7 +89,7 @@ function state(binBp: number) {
     canvasHeight: 100,
     rowsTop: 0,
     rowsHeight: 100,
-    coverage: undefined,
+    coverage: { height: 0, domainMax: undefined, colors: NO_COLORS },
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,

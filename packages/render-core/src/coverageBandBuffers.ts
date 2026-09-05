@@ -22,19 +22,3 @@ export interface CoverageBandBuffers {
   interbasePackedBuffer: ArrayBuffer
   indicatorPackedBuffer: ArrayBuffer
 }
-
-/**
- * Just the band's four buffers out of a wider per-region payload — the field set
- * stated once, so a display carrying them into its own upload payload cannot
- * spell three of them.
- */
-export function coverageBandBuffers(
-  src: CoverageBandBuffers,
-): CoverageBandBuffers {
-  return {
-    coveragePackedBuffer: src.coveragePackedBuffer,
-    snpPackedBuffer: src.snpPackedBuffer,
-    interbasePackedBuffer: src.interbasePackedBuffer,
-    indicatorPackedBuffer: src.indicatorPackedBuffer,
-  }
-}

@@ -11,9 +11,10 @@ pixel" — the normal case for a multiple alignment at any interesting zoom, not
 an edge one. At `ctgA:1-4000` on volvox (~3.25 bp/px) `subPixelBinBp` is 1, so
 both backends walk every base and a 1-bp cell is 0.31 CSS px.
 
-**Neither backend floors one.** `GpuMafRenderer` writes `minCellPx: 0`, which
-makes `extendToMinWidthX` a no-op and leaves `minCellDenomPx` deciding nothing;
-`drawMafBlocks` draws cells at their natural sub-pixel width. The rasteriser
+**Neither backend floors one.** `MAF_ROW_MARK` declares `minWidthPx: 0`, which
+makes the shader's `extendToMinWidthX` a no-op and leaves `minCellDenomPx`
+deciding nothing; the `span` painter draws cells at their natural sub-pixel
+width. The rasteriser
 blends them, and the blend is the answer.
 
 The multi-row feature painter draws the same `rowRect` module and *does* floor

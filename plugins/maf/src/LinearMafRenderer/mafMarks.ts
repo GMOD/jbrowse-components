@@ -1,27 +1,26 @@
+import { coverageBandMarks } from '@jbrowse/alignments-core'
 import { defineMark, spanMark } from '@jbrowse/render-core/marks'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
 import type {
   MafCellsPayload,
+  MafCoverageRegion,
   MafGPURenderState,
+  MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
+import type { Mark } from '@jbrowse/render-core/marks'
 
 /**
  * The rows band, as a declaration: one `span` mark per run of same-coloured
- * cells, its channels already encoded by `buildMafChannels`.
- *
- * Not the display's whole drawing — the coverage band above the rows is four
- * hand-written passes over its own uniform block, and both backends draw it
- * beside this mark rather than through `createMarkBackend`. A `Mark` is usable
- * on its own for exactly that reason: the shape owns the rows band's geometry
- * on both backends, and MAF keeps the two-band frame scaffold that is its own.
+ * cells, its channels already encoded by `buildMafChannels`, clipped to the
+ * rows viewport under the band stack.
  *
  * `scrollTop` is the shape's scroll offset less `rowsTop`, which places the
  * band inside a canvas that also carries the coverage strip above it: the shape
  * paints row i at `rowHeight*i - scrollTop`, so offsetting the scroll is
- * offsetting the band. On the GPU the scissor keeps a scrolled row out of the
- * strip; on Canvas2D the backend's clip does.
+ * offsetting the band.
  */
 export const MAF_ROW_MARK = defineMark({
   shape: spanMark,
@@ -38,6 +37,43 @@ export const MAF_ROW_MARK = defineMark({
     seamPx: GAP_STROKE_OFFSET,
     scrollTop: s.scrollTop - s.rowsTop,
   }),
+  band: s => ({ top: s.rowsTop, height: s.rowsHeight }),
 })
 
-export const MAF_ROW_MARKS = [MAF_ROW_MARK]
+/**
+ * The coverage strip pinned at the canvas top: the shared band's four layers
+ * (a MAF alignment carries no modification calls) over the worker's own
+ * per-region coverage. Declared over `{ coverage }` rather than the upload
+ * payload so the SVG export paints it straight off `rpcDataMap`.
+ */
+export const MAF_COVERAGE_MARKS = coverageBandMarks({
+  channels: (d: { coverage: MafCoverageRegion }) => d.coverage,
+  params: (s: MafGPURenderState, d) => ({
+    height: s.coverage.height,
+    top: 0,
+    // MAF's domain starts at no aligned species and is linear: sample counts
+    // are already bounded and well-distributed, so there is no log/symlog
+    // option to carry and no `minScore` slot to read.
+    domainMin: 0,
+    domainMax: s.coverage.domainMax,
+    scaleType: SCALE_TYPE_LINEAR,
+    symlogConstant: 1,
+    regionMaxDepth: d.coverage.coverageMaxDepth,
+    // Per-bp: the worker packs one record per reference base and never
+    // downsamples (see buildMafCoverageRegion).
+    binSize: 1,
+    interbaseMaxCount: d.coverage.interbaseMaxCount,
+    // Every mismatch column the alignment carries is a real observation in a
+    // real species, not a possible sequencing error, so nothing floors away.
+    snpMinFrequency: 0,
+    showInterbase: true,
+    colors: s.coverage.colors,
+  }),
+  band: s => ({ top: 0, height: s.coverage.height }),
+})
+
+/** Everything the rows canvas draws, in paint order. */
+export const MAF_MARKS: Mark<MafUploadPayload, MafGPURenderState>[] = [
+  ...MAF_COVERAGE_MARKS,
+  MAF_ROW_MARK,
+]

@@ -8,7 +8,6 @@ import { slangPass } from './slangPass.ts'
 import type { CoverageBandBuffers } from './coverageBandBuffers.ts'
 import type { InstancePass } from './instancePass.ts'
 
-export { coverageBandBuffers } from './coverageBandBuffers.ts'
 export type { CoverageBandBuffers } from './coverageBandBuffers.ts'
 
 export const COVERAGE_BAND_UNIFORMS_SIZE_BYTES =

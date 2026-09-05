@@ -1,9 +1,10 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
+import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageBar'
 
 import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
-import { GpuMafRenderer, MAF_PASSES } from './GpuMafRenderer.ts'
+import { MAF_MARKS } from './mafMarks.ts'
 
 import type {
   MafCoverageBandState,
@@ -24,36 +25,35 @@ const CANVAS_WIDTH = 200
 const COVERAGE_HEIGHT = 60
 const ROWS_HEIGHT = 100
 
+const COLORS = {
+  coverage: 1,
+  baseA: 2,
+  baseC: 3,
+  baseG: 4,
+  baseT: 5,
+  baseN: 6,
+  insertionIndicator: 7,
+  softclipIndicator: 8,
+  hardclipIndicator: 9,
+}
+
 const BAND: MafCoverageBandState = {
   height: COVERAGE_HEIGHT,
   domainMax: 20,
-  colors: {
-    coverage: 'grey',
-    baseA: 'green',
-    baseC: 'blue',
-    baseG: 'orange',
-    baseT: 'red',
-    baseN: 'black',
-    insertion: 'purple',
-  },
-  gpuColors: {
-    coverage: 1,
-    baseA: 2,
-    baseC: 3,
-    baseG: 4,
-    baseT: 5,
-    baseN: 6,
-    insertionIndicator: 7,
-    softclipIndicator: 8,
-    hardclipIndicator: 9,
-  },
+  colors: COLORS,
 }
 
-function state(coverage: MafCoverageBandState | undefined): MafGPURenderState {
+const NO_BAND: MafCoverageBandState = {
+  height: 0,
+  domainMax: undefined,
+  colors: COLORS,
+}
+
+function state(coverage: MafCoverageBandState): MafGPURenderState {
   return {
     canvasWidth: CANVAS_WIDTH,
-    canvasHeight: (coverage ? COVERAGE_HEIGHT : 0) + ROWS_HEIGHT,
-    rowsTop: coverage ? COVERAGE_HEIGHT : 0,
+    canvasHeight: coverage.height + ROWS_HEIGHT,
+    rowsTop: coverage.height,
     rowsHeight: ROWS_HEIGHT,
     coverage,
     rowHeight: 10,
@@ -76,7 +76,6 @@ function state(coverage: MafCoverageBandState | undefined): MafGPURenderState {
 
 // One region with a real depth peak, distinct from the display's domain max.
 function payload(): MafUploadPayload {
-  const coverage = { ...emptyMafCoverage(), coverageMaxDepth: 5 }
   return {
     cells: {
       x: Uint32Array.of(0),
@@ -85,17 +84,17 @@ function payload(): MafUploadPayload {
       color: Uint32Array.of(0xff0000ff),
       count: 1,
     },
-    coverage,
-    coveragePackedBuffer: new ArrayBuffer(8),
-    snpPackedBuffer: coverage.snpPackedBuffer,
-    interbasePackedBuffer: coverage.interbasePackedBuffer,
-    indicatorPackedBuffer: coverage.indicatorPackedBuffer,
+    coverage: {
+      ...emptyMafCoverage(),
+      coverageMaxDepth: 5,
+      coveragePackedBuffer: new ArrayBuffer(8),
+    },
   }
 }
 
-function render(coverage: MafCoverageBandState | undefined) {
-  const hal = new MockHal(MAF_PASSES)
-  const renderer = new GpuMafRenderer(hal)
+function render(coverage: MafCoverageBandState) {
+  const hal = new MockHal(MAF_MARKS.map(m => m.pass))
+  const renderer = new GpuMarkBackend(hal, MAF_MARKS)
   const region = payload()
   renderer.upload(0, region)
   renderer.renderBlocks(
@@ -179,8 +178,8 @@ describe('the MAF coverage band on the rows canvas', () => {
   })
 })
 
-test('no band state draws no band passes, and the rows fill the canvas', () => {
-  const draws = render(undefined).draws()
+test('no band draws no band passes, and the rows fill the canvas', () => {
+  const draws = render(NO_BAND).draws()
   expect(draws.map(d => d.passId)).toEqual(['span'])
   expect(draws[0]!.scissor).toEqual({
     x: 0,

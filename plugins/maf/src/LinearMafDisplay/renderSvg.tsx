@@ -15,10 +15,12 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { SvgYScaleGutter } from '@jbrowse/wiggle-core'
 
-import { getMafCoverageColors } from '../LinearMafRenderer/coverageBandColors.ts'
-import { drawMafCoverage } from '../LinearMafRenderer/drawMafCoverage.ts'
+import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { buildMafChannels } from '../LinearMafRenderer/mafChannels.ts'
-import { MAF_ROW_MARKS } from '../LinearMafRenderer/mafMarks.ts'
+import {
+  MAF_COVERAGE_MARKS,
+  MAF_ROW_MARK,
+} from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
@@ -127,15 +129,23 @@ function MafSvgBody({
           height={topBands.reserved.coverage}
           opts={opts}
           paint={ctx => {
-            drawMafCoverage(ctx, renderBlocks, model.rpcDataMap, {
-              coverageHeight: topBands.reserved.coverage,
-              canvasWidth: width,
-              domainMax: coverageDomain?.[1] ?? 0,
-              // The export-chosen palette, not the live one — the band's colours
-              // come through the render state on screen and have to follow the
-              // same theme here as the cells under them.
-              colors: getMafCoverageColors(palette),
-            })
+            paintMarkBlocks(
+              ctx,
+              MAF_COVERAGE_MARKS,
+              model.rpcDataMap,
+              renderBlocks,
+              {
+                ...svgState,
+                canvasHeight: topBands.reserved.coverage,
+                coverage: {
+                  height: topBands.reserved.coverage,
+                  domainMax: coverageDomain?.[1],
+                  // The export-chosen palette, not the live one — the band's
+                  // colours follow the same theme as the cells under them.
+                  colors: mafCoverageBandColors(palette),
+                },
+              },
+            )
           }}
         />
       ) : null}
@@ -181,7 +191,7 @@ function MafSvgBody({
             } else if (basesRenderingActive) {
               paintMarkBlocks(
                 ctx,
-                MAF_ROW_MARKS,
+                [MAF_ROW_MARK],
                 svgCells,
                 renderBlocks,
                 svgState,

@@ -4,6 +4,7 @@ import { ScrollChrome, useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   DisplayContextMenu,
   DisplayCrosshairs,
@@ -14,7 +15,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
+import { MAF_MARKS } from '../../LinearMafRenderer/mafMarks.ts'
 import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 import AnnotationOverlay from './AnnotationOverlay.tsx'
 import CodonTranslationOverlay from './CodonTranslationOverlay.tsx'
@@ -40,6 +41,10 @@ import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 import type React from 'react'
+
+function createMafBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, MAF_MARKS)
+}
 
 // Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
 // ref to the chrome container (so it can't live in the body). The drag object
@@ -85,7 +90,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   return (
     <DisplayChrome
       model={model}
-      factory={MafRendererFactory}
+      factory={createMafBackend}
       testid="maf-display"
       ref={ref}
       style={{ height: model.height }}

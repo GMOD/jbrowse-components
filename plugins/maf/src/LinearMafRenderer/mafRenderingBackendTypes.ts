@@ -1,10 +1,6 @@
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
-import type { MafCoverageColors } from './coverageBandColors.ts'
 import type { MafColorPalette } from './util.ts'
-import type {
-  CoverageBandBuffers,
-  CoverageBandColors,
-} from '@jbrowse/render-core/coverageBand'
+import type { CoverageBandColors } from '@jbrowse/render-core/coverageBand'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -12,24 +8,16 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export type MafRenderBlock = RenderBlock
 
 /**
- * The coverage band, when it has both a reason and an axis to draw against.
- * Absent means "draw no band": the setting is off, the summary tier owns the
- * view, or the autoscaled domain has not resolved yet — and the last of those is
- * why this is one nullable object rather than a height beside a nullable domain.
- * Every mark in the band is a fraction of `domainMax`, so a band drawn without
- * one is not a shorter band, it is bars of arbitrary height.
+ * The coverage strip at the canvas top. Height 0 draws no band: the setting is
+ * off, or the summary tier owns the view. An unresolved `domainMax` draws the
+ * indicator triangles alone — every other mark in the band is a fraction of
+ * it, and a bar without a domain is a bar of arbitrary height.
  */
 export interface MafCoverageBandState {
   height: number
-  domainMax: number
-  /** CSS strings, for the Canvas2D fallback and the SVG export. */
-  colors: MafCoverageColors
-  /**
-   * The same colours packed ABGR for the GPU passes. Carried rather than packed
-   * in the renderer because `cssColorToABGR` parses, and the renderer would
-   * run it nine times per block per frame — this is memoized off the palette.
-   */
-  gpuColors: CoverageBandColors
+  domainMax: number | undefined
+  /** Packed ABGR, memoized off the palette: `cssColorToABGR` parses. */
+  colors: CoverageBandColors
 }
 
 export interface MafGPURenderState {
@@ -45,8 +33,7 @@ export interface MafGPURenderState {
   rowsTop: number
   /** The rows *viewport*: rows past it are scrolled to, not grown into. */
   rowsHeight: number
-  /** Absent when the band is not drawn — see `MafCoverageBandState`. */
-  coverage: MafCoverageBandState | undefined
+  coverage: MafCoverageBandState
   rowHeight: number
   rowProportion: number
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
@@ -288,8 +275,8 @@ export interface MafGpuProps {
 // Payload the per-region autorun ships to the backend each time `gpuProps`
 // or the underlying `regionData` changes. The rows half is encoded on the
 // main thread because encoding depends on theme + user toggles (`MafGpuProps`);
-// the coverage half is the worker's own packed buffers, carried through by
-// reference so render-core's shared band passes can upload them verbatim.
+// the coverage half is the worker's own region, carried through by reference
+// so the shared band's passes can upload its buffers verbatim.
 /**
  * The rows band as the `span` shape's channels — the single walk both backends
  * draw from. The GPU packs them into the shape's instance buffer, the Canvas2D
@@ -302,12 +289,12 @@ export interface MafCellsPayload {
   cells: SpanChannels
 }
 
-export interface MafUploadPayload extends CoverageBandBuffers, MafCellsPayload {
+export interface MafUploadPayload extends MafCellsPayload {
   /**
-   * The worker's own per-region coverage, carried by reference: the band's GPU
-   * passes read its two maxima for their uniforms and the Canvas2D band painter
-   * reads all of it. It rides on the payload rather than being looked up in
-   * `rpcDataMap` at draw time so the render side has one map to read.
+   * The worker's own per-region coverage, carried by reference: the band's
+   * marks pack its buffers and read its two maxima. It rides on the payload
+   * rather than being looked up in `rpcDataMap` at draw time so the render
+   * side has one map to read.
    */
   coverage: MafCoverageRegion
 }

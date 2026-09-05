@@ -28,7 +28,6 @@ import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
-import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
@@ -50,10 +49,7 @@ import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import {
-  getMafCoverageColors,
-  packMafCoverageColors,
-} from '../LinearMafRenderer/coverageBandColors.ts'
+import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
   EMPTY_MAF_CELLS,
   buildMafChannels,
@@ -1589,36 +1585,27 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The coverage band's colours, in both representations the two backends
-         * need: CSS strings for the Canvas2D painters, packed ABGR for the GPU
-         * passes. Its own getter so the pack — which parses nine CSS colours —
-         * is memoized against the palette rather than re-run inside
-         * `renderState`, which every scroll frame invalidates.
+         * The coverage band's palette slots, packed. Its own getter so the
+         * pack — which parses nine CSS colours — is memoized against the
+         * palette rather than re-run inside `renderState`, which every scroll
+         * frame invalidates.
          */
         get coverageBandColors() {
-          const colors = getMafCoverageColors(getPaletteHost(self).palette)
-          return { colors, gpuColors: packMafCoverageColors(colors) }
+          return mafCoverageBandColors(getPaletteHost(self).palette)
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The coverage band as the renderers take it, or undefined for "draw no
-         * band": the setting is off, the summary tier owns the view, or the
-         * autoscaled domain has not resolved yet. Every mark in the band is a
-         * fraction of the domain max, so the third case is not a shorter band —
-         * it is bars of arbitrary height, which is why one nullable object
-         * carries the height and the domain together.
+         * The coverage band as the marks take it. Height 0 draws no band: the
+         * setting is off, or the summary tier owns the view.
          */
-        get coverageBandState(): MafCoverageBandState | undefined {
-          const domainMax = self.coverageDomain?.[1]
-          return self.coverageBandActive && domainMax
-            ? {
-                height: self.coverageDisplayHeight,
-                domainMax,
-                ...self.coverageBandColors,
-              }
-            : undefined
+        get coverageBandState(): MafCoverageBandState {
+          return {
+            height: self.coverageBandActive ? self.coverageDisplayHeight : 0,
+            domainMax: self.coverageDomain?.[1],
+            colors: self.coverageBandColors,
+          }
         },
       }))
       .views(self => ({
@@ -2493,11 +2480,8 @@ export default function stateModelFactory(
             cells: basesActive
               ? buildMafChannels({ blocks: regionData.blocks, ...gpu })
               : EMPTY_MAF_CELLS,
-            // The coverage band's four buffers are the worker's own, carried
-            // through by reference, and the region's coverage rides along
-            // whole because the band's uniforms and its Canvas2D painter read
-            // it at draw time.
-            ...coverageBandBuffers(regionData.coverage),
+            // The worker's own coverage, carried through by reference: the
+            // band's marks pack its buffers and read its maxima at draw time.
             coverage: regionData.coverage,
           }),
         )

@@ -193,9 +193,7 @@ export class GpuWiggleRenderer
       // Canvas2D floor, is that same generated constant.
       //
       // `clip.scissorW`, therefore, and never `clip.pxW`, which is the same span
-      // in device px. GpuMafRenderer feeds `pxW` into the same-named uniform of
-      // a different shader, deliberately and with its own note; the two are not
-      // interchangeable.
+      // in device px.
       viewportWidth: clip.scissorW,
       scatterPointSize: state.scatterPointSize,
       lineWidth: state.lineWidth,
