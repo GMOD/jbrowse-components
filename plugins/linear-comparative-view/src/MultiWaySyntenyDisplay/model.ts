@@ -1262,15 +1262,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * what sits under a container-relative point: a lane's glyph or box
-       * first, since they draw over the ribbons, then a ribbon through the
-       * backend's pick
+       * what sits under a container-relative point: the glyph or box of the
+       * one lane whose glyph row holds it, boxes before genes since that is
+       * the order they draw, then a ribbon through the backend's pick
        */
       hitTest(x: number, y: number): HoverTarget | undefined {
         const ox = x - self.dragOffsetPx
         const oy = y + self.scrollTop
-        for (const cell of self.laneGlyphCells.values()) {
-          if (cell.kind === 'glyphs') {
+        const { lanes, glyphHeight } = self.laneStack
+        const row = lanes.findIndex(
+          lane => oy >= lane.glyphTop && oy <= lane.glyphTop + glyphHeight,
+        )
+        for (const key of row < 0 ? [] : [boxesKey(row), glyphsKey(row)]) {
+          const cell = self.laneGlyphCells.get(key)
+          if (cell?.kind === 'glyphs') {
             const hit = glyphHitAt(cell.data.hits, ox, oy)
             if (hit) {
               return {
