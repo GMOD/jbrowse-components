@@ -51,6 +51,12 @@ hover from scanning the whole thing three times to reject most of it on a type
 byte the layout already guarantees. `Canvas2DRegionData` therefore carries the
 merged array the worker ships rather than pre-sliced views of it.
 
+**The coverage band's five directories hold no `packGpu.ts` or `drawCanvas.ts`
+either** — `coverage/`, `snpCoverage/`, `modCoverage/`, `interbase/` and
+`indicator/` keep their computes and hit tests, and the band's passes and
+painters are `coverageBandMarks` in `@jbrowse/alignments-core`, shared with MAF
+and declared once in `renderers/coverageMarks.ts`.
+
 Two directories are **not** passes and say so by having no `packGpu.ts` —
 `sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which
 are a separate draw mechanism with no registry. `alignedBaseWalk.ts` is a bare

@@ -133,7 +133,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
       },
     ),
     // Only while the coverage band is drawn. Every interbase mark lives in
-    // that band — `COVERAGE_LAYERS` is drawn under `showCoverage`, and the
+    // that band — the coverage marks draw under `showCoverage`, and the
     // hit test gates on `showCoverage && showInterbaseIndicators` — and this
     // display defaults coverage OFF, unlike the alignments display it borrows
     // the menu shape from. So on a synteny track the toggle spent most of its

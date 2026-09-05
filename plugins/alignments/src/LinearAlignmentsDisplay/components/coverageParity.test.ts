@@ -38,6 +38,8 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
 })
 
 const REGION_START = 10000
+// the packed palette slot as the shared painters spell it back out
+const COVERAGE_FILL = 'rgba(51,102,204,1)'
 // Absolute genomic position where coverage depths[0] begins.
 const COVERAGE_START_OFFSET = REGION_START + 5
 
@@ -231,9 +233,9 @@ function recordingCtx() {
 }
 
 // A "every drawn pass is registered in ALIGNMENTS_PASSES" pair of cases stood
-// here. `ALIGNMENTS_PASSES` is now BUILT from `GPU_PILEUP_PASS` and
-// `COVERAGE_LAYERS` rather than hand-listed alongside them, so a drawn pass is
-// a registered pass by construction and the cases could no longer fail.
+// here. `ALIGNMENTS_PASSES` is now BUILT from `GPU_PILEUP_PASS` and the
+// coverage marks rather than hand-listed alongside them, so a drawn pass is a
+// registered pass by construction and the cases could no longer fail.
 
 describe('coverage packing parity between GPU and Canvas2D', () => {
   it('both backends normalize coverage depth identically', () => {
@@ -429,7 +431,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // applied by drawCoverageBins to close subpixel gaps between bars
     expect(covRects[0]!.w).toBeCloseTo(10.8, 1)
     // Coverage bins should have the coverage color
-    expect(covRects[0]!.fill).toBe('rgb(51,102,204)')
+    expect(covRects[0]!.fill).toBe(COVERAGE_FILL)
 
     // And where the shader puts them. `covSegTopPx` / `covBarHeightPx` are
     // generated from `coverageBand.slang`'s `covSegQuad`, which is the vertex
@@ -443,7 +445,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // 3e-7 px off the depth written here. That round trip is the GPU's too —
     // the same buffer feeds both — so it is not a divergence between backends.
     const { effectiveH, bottom } = coverageLayout(covH)
-    const barRects = covRects.filter(r => r.fill === 'rgb(51,102,204)')
+    const barRects = covRects.filter(r => r.fill === COVERAGE_FILL)
     expect(barRects.length).toBe(COVERAGE_DEPTHS.length)
     barRects.forEach((r, i) => {
       const barH = covBarHeightPx(
@@ -455,10 +457,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     })
 
     // SNP segments should have base colors (A=green, C=blue)
-    const snpRects = covRects.filter(r => r.fill !== 'rgb(51,102,204)')
+    const snpRects = covRects.filter(r => r.fill !== COVERAGE_FILL)
     expect(snpRects.length).toBe(2)
-    expect(snpRects[0]!.fill).toBe('rgb(0,255,0)') // baseA
-    expect(snpRects[1]!.fill).toBe('rgb(0,0,255)') // baseC
+    expect(snpRects[0]!.fill).toBe('rgba(0,255,0,1)') // baseA
+    expect(snpRects[1]!.fill).toBe('rgba(0,0,255,1)') // baseC
   })
 })
 

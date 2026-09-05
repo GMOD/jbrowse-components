@@ -70,7 +70,7 @@ export interface RenderState {
   // because a `minScore` bound moves the baseline the bars draw flat at — for a
   // long time only the max was carried here and the min was silently dropped, so
   // the setting did nothing. `undefined` until the debounced autoscale resolves;
-  // `makeCoverageScale` is the one place they are read, and reads them together.
+  // the coverage marks' params are the one place they are read, together.
   coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
   coverageScaleType: WiggleScaleType

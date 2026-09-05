@@ -5,7 +5,6 @@ import {
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
-import type { SnpBaseColors } from '@jbrowse/alignments-core'
 
 // Every function here reads exactly these two fields, so a caller holding the
 // palette — the coverage tooltip, which is not on a render path and has no
@@ -131,16 +130,4 @@ export function buildBaseTupleMap(state: BaseColorState): RGBColor[] {
 // keeps a faded cell to one number conversion instead of four.
 export function buildBaseFadeCssMap(state: BaseColorState): string[] {
   return baseTables(state).faded
-}
-
-// The palette for Canvas2D SNP-coverage segment draws.
-export function buildSnpBaseColors(state: BaseColorState): SnpBaseColors {
-  const c = effectiveBaseColors(state)
-  return {
-    baseA: rgb255(c.A),
-    baseC: rgb255(c.C),
-    baseG: rgb255(c.G),
-    baseT: rgb255(c.T),
-    baseN: rgb255(c.N),
-  }
 }

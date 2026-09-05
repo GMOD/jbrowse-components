@@ -6,10 +6,10 @@ import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import {
   ALIGNMENTS_PASSES,
   ARC_PASSES,
-  GPU_COVERAGE_PASS,
   GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
+import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -160,7 +160,7 @@ describe('a new layout run still rebuilds the whole region', () => {
     expect(new Set(uploadedPasses(hal))).toEqual(
       new Set([
         ...Object.values(GPU_PILEUP_PASS).map(pass => pass.id),
-        ...Object.values(GPU_COVERAGE_PASS).map(pass => pass.id),
+        ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass.id),
         ...ARC_PASS_IDS,
       ]),
     )

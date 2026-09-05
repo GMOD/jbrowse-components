@@ -11,16 +11,11 @@ import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawHardclips, drawSoftclips } from '../../features/clip/drawCanvas.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
 import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import { makeCoverageScale } from '../../features/coverage/coverageScale.ts'
-import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
 import { drawDeletions, drawSkips } from '../../features/gap/drawCanvas.ts'
-import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
 import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
-import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
 import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
 import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
-import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
 import { drawOverlaps } from '../../features/overlap/drawCanvas.ts'
 import { emptyOverlapsUploadData } from '../../features/overlap/types.ts'
@@ -31,10 +26,9 @@ import {
   emptyReadFields,
 } from '../../features/read/buildRegion.ts'
 import { drawReads } from '../../features/read/drawCanvas.ts'
-import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
-import { COVERAGE_LAYERS } from './coverageLayers.ts'
+import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   bpToScreenX,
@@ -46,7 +40,6 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import type { CoverageScale } from '../../features/coverage/coverageScale.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
@@ -57,7 +50,6 @@ import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
-import type { CoverageLayer } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -69,7 +61,6 @@ import type {
   SectionRender,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
 
 export interface Canvas2DRegionData
   extends
@@ -364,14 +355,6 @@ export function drawAlignmentBlocks(
   // asking them per section per block re-answered one question up to 120 times
   // a frame at MAX_GROUPS.
   const layers = PILEUP_LAYERS.filter(l => l.enabled(state))
-  // The coverage band's three per-frame answers, hoisted for the same reason
-  // and out of the same loop. Every `COVERAGE_LAYERS` gate reads display-wide
-  // state, the depth scale is built from the three domain fields
-  // `sectionRenderState` does not override, and a section state differs from
-  // the display's only in two Y offsets — so all three were re-derived per
-  // block per section to produce the same value.
-  const coverageLayers = COVERAGE_LAYERS.filter(l => l.enabled(state))
-  const coverageScale = makeCoverageScale(state)
   const sectionStates = state.sections.map(sec =>
     sectionRenderState(state, sec),
   )
@@ -421,16 +404,9 @@ export function drawAlignmentBlocks(
             scissorW,
             sec.covClipHeight,
             () => {
-              drawCoverage(
-                ctx,
-                region,
-                block,
-                bpLength,
-                fullBlockWidth,
-                sectionState,
-                coverageLayers,
-                coverageScale,
-              )
+              for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
+                mark.paintBlock(ctx, region, block, sectionState)
+              }
             },
           )
         }
@@ -485,108 +461,6 @@ export function drawAlignmentBlocks(
     },
   )
   return painted
-}
-
-type CoverageDrawFn = (
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  bpToX: (bp: number) => number,
-  viewWidth: number,
-  state: RenderState,
-  scale: CoverageScale | undefined,
-) => void
-
-// Each coverage-band layer's Canvas2D draw. The z-order and gating live in the
-// shared `COVERAGE_LAYERS` list (the GPU renderer iterates the same one); this
-// map resolves each id to its call, and being a `Record<CoverageLayerId, …>` is
-// what makes a layer added to that list a compile error here.
-//
-// The sixth argument is the whole `CoverageScale` rather than the piece each
-// layer wants, because the pieces differ — the depth-scaled layers read
-// `normalize`, the interbase bars read `domainMax` (their height is a ratio of
-// event counts against a half-band reference, so the domain MIN has nothing to
-// say about them), and the indicator triangles are fixed-size and read neither.
-//
-// The `if (scale)` in the first four is a narrowing, not a second gate: their
-// entry in `COVERAGE_LAYERS` is `hasCoverageScale`, which is the same question
-// `makeCoverageScale` answers by returning `undefined`, and TypeScript cannot
-// see that the list already asked it.
-export const CANVAS_COVERAGE_DRAW: Record<CoverageLayerId, CoverageDrawFn> = {
-  coverage: (ctx, region, bpToX, viewWidth, state, scale) => {
-    if (scale) {
-      drawCoverageBars(ctx, region, bpToX, viewWidth, state, scale.normalize)
-    }
-  },
-  snpCov: (ctx, region, bpToX, viewWidth, state, scale) => {
-    if (scale) {
-      drawSnpSegmentsCanvas(
-        ctx,
-        region,
-        bpToX,
-        viewWidth,
-        state,
-        scale.normalize,
-      )
-    }
-  },
-  modCov: (ctx, region, bpToX, viewWidth, state, scale) => {
-    if (scale) {
-      drawModCoverageCanvas(
-        ctx,
-        region,
-        bpToX,
-        viewWidth,
-        state,
-        scale.normalize,
-      )
-    }
-  },
-  interbase: (ctx, region, bpToX, viewWidth, state, scale) => {
-    if (scale) {
-      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, scale.domainMax)
-    }
-  },
-  indicator: (ctx, region, bpToX, viewWidth, state) => {
-    drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
-  },
-}
-
-function drawCoverage(
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-  layers: CoverageLayer[],
-  scale: CoverageScale | undefined,
-) {
-  const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
-  const viewWidth = fullBlockWidth + block.screenStartPx
-  // The coverage draw helpers anchor bars/segments/indicators at the canvas
-  // top (clip-top). Shifting the whole band by coverageTopOffset lets grouped
-  // sections scroll their coverage with the section; it is 0 (no-op) for the
-  // ungrouped sticky-coverage path, mirroring the shader `covTop` uniform.
-  ctx.save()
-  ctx.translate(0, state.coverageTopOffset)
-  try {
-    // One scale for the whole band, built once per FRAME by the caller because
-    // the bars, the SNP segments stacked inside them and the modification
-    // segments are readings of one axis; each building its own normalizer is how
-    // all three came to hardcode a zero floor and ignore `minScore`.
-    for (const layer of layers) {
-      CANVAS_COVERAGE_DRAW[layer.id](
-        ctx,
-        region,
-        bpToX,
-        viewWidth,
-        state,
-        scale,
-      )
-    }
-  } finally {
-    ctx.restore()
-  }
 }
 
 interface OverlayBounds {

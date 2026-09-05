@@ -48,10 +48,10 @@ export interface PileupLayer {
 // registries in tree are not GPU pass lists.
 //
 // This list is the row-instanced feature set (see RenderAlignmentDataRPC/CLAUDE.md
-// "Two feature categories"). The coverage band has a list of its own,
-// `COVERAGE_LAYERS`, built the same way and separate because its marks are
-// position-aggregate — packed in the worker, drawn from a different signature —
-// so one list would have to carry both shapes. The arc band has none: it is four
+// "Two feature categories"). The coverage band is a mark list of its own,
+// `ALIGNMENTS_COVERAGE_MARKS`, separate because its marks are position-aggregate
+// — packed in the worker, drawn through the shared band — so one list would
+// have to carry both shapes. The arc band has none: it is four
 // GPU passes against one `drawArcs`, a split that follows from a GPU buffer per
 // shape rather than from a layer list, and `flatPaintOrder.test.ts` is what pins
 // the Canvas2D path to `ARC_PASSES`' order instead.

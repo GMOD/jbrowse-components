@@ -188,7 +188,7 @@ export interface WorkerPileupData {
   coverageStatsMaxs: Float32Array
   coverageStatsSums: Float64Array
   coverageStatsSumSqs: Float64Array
-  // Pre-packed GPU buffer for COVERAGE_PASS (worker-built). Its depth bars are
+  // Pre-packed GPU buffer for the coverage-bar pass (worker-built). Its depth bars are
   // downsampled to a fixed bin cap so its record count (coverageGpuBinCount)
   // tracks screen pixels, not region width — otherwise it overflows the GPU
   // device limit at whole-chromosome scale. coverageBinSize is each bar's width
@@ -206,12 +206,12 @@ export interface WorkerPileupData {
   // `readIndicators` (alignments-core) are the decode side; the field offsets
   // are Slang codegen, so nothing here restates a record shape.
 
-  // SNP_COVERAGE_PASS. yOffset/segHeight are fractions of THIS position's
+  // The SNP pass. yOffset/segHeight are fractions of THIS position's
   // coverage bar; relDepth = totalDepthAtPos / regionMaxDepth scales it at draw
   // time.
   snpPackedBuffer: ArrayBuffer
 
-  // INTERBASE_PASS: the interbase histogram's stacked insertion/softclip/
+  // The interbase pass: the histogram's stacked insertion/softclip/
   // hardclip bars, hanging from the top of the coverage area, in ascending
   // position order with one position's segments consecutive.
   interbasePackedBuffer: ArrayBuffer
@@ -223,7 +223,7 @@ export interface WorkerPileupData {
   // interbase bars readable against the coverage bars beside them.
   interbaseMaxCount: number
 
-  // INDICATOR_PASS: triangles at the positions where interbase events are a
+  // The indicator pass: triangles at the positions where interbase events are a
   // significant fraction of local depth.
   indicatorPackedBuffer: ArrayBuffer
 
@@ -275,7 +275,7 @@ export interface WorkerPileupData {
   perBaseLetterBases: Uint8Array // uppercase ASCII base code
   perBaseLetterReadIndices: Uint32Array // maps to parent read index
 
-  // MOD_COVERAGE_PASS: the modification band's stacked colored bars. Same
+  // The modification-coverage pass: the band's stacked colored bars. Same
   // per-position fraction contract as snpPackedBuffer above, with an ABGR u32
   // per segment in place of a color type.
   modCovPackedBuffer: ArrayBuffer

@@ -5,7 +5,6 @@ import {
   getNiceDomain,
   makeScoreNormalizer,
   resolveSymlogConstant,
-  scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 
 import {
@@ -14,12 +13,11 @@ import {
   normalizeDepthScalar,
 } from '@jbrowse/alignments-core'
 
-import { makeCoverageScale } from './coverageScale.ts'
-
 // The coverage band's depth scale, checked across the three places it is
 // applied: the GPU (coverageBand.slang's normalizeDepthScalar, imported
-// here as the emitted scalar twin — adr-051), the Canvas2D draws
-// (makeCoverageScale), and the y-axis ticks (computeCoverageTicks).
+// here as the emitted scalar twin — adr-051), the Canvas2D painters (the band
+// marks build `makeScoreNormalizer` from the same four fields), and the y-axis
+// ticks (computeCoverageTicks).
 //
 // They had drifted in two directions at once. The min was dropped by all three,
 // so a `minScore` bound changed nothing on screen while the menu reported it in
@@ -88,87 +86,18 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
       )
     }
   })
-
-  test.each([false, true])(
-    'the Canvas2D scale is that same normalizer (log %s)',
-    isLog => {
-      const scale = makeCoverageScale({
-        coverageMinDepth: min,
-        coverageMaxDepth: max,
-        coverageScaleType: isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-        coverageSymlogConstant: 1,
-      })!
-      const normalize = makeScoreNormalizer(
-        min,
-        max,
-        isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-      )
-      for (const depth of DEPTHS) {
-        expect(scale.normalize(depth)).toBeCloseTo(normalize(depth), 9)
-      }
-      // the raw max the count-ratio layers (interbase) need, carried alongside
-      expect(scale.domainMax).toBe(max)
-    },
-  )
-
-  // symlog is in this sweep because it was the one scale left out of it: the
-  // display passed no constant, `computeCoverageTicks` defaulted the RESOLVED
-  // one to 1, and the axis labelled log(depth + 1) over bars normalized against
-  // a thousandth of the visible max. It now takes the raw slot and resolves it
-  // the way the renderer does, which is what this asserts.
-  test.each(['linear', 'log', 'symlog'])(
-    'every tick lands on its own data (%s)',
-    scaleType => {
-      const height = 150
-      const { items, yBottom } = computeCoverageTicks(
-        [min, max],
-        height,
-        scaleType,
-      )
-      const normalize = makeScoreNormalizer(
-        min,
-        max,
-        scaleTypeFromString(scaleType),
-        resolveSymlogConstant(min, max, 0),
-      )
-      // effectiveH for a 150px band with the 5px label inset at both ends
-      const effectiveH = height - 10
-      expect(items.length).toBeGreaterThan(0)
-      for (const { value, y } of items) {
-        expect(y).toBeCloseTo(yBottom - normalize(value) * effectiveH, 9)
-      }
-    },
-  )
-})
-
-// The gate and the scale are one value, so a layer cannot be drawn against a
-// domain that has not resolved.
-test('there is no scale until the debounced autoscale resolves', () => {
-  expect(
-    makeCoverageScale({
-      coverageMinDepth: undefined,
-      coverageMaxDepth: undefined,
-      coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    }),
-  ).toBeUndefined()
 })
 
 // What the whole change is for: the bound moves the baseline, on the axis and
 // in the pixels, rather than being computed and thrown away.
 describe('a minScore bound', () => {
   test('moves the depth that draws flat', () => {
-    const scale = makeCoverageScale({
-      coverageMinDepth: 10,
-      coverageMaxDepth: 60,
-      coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    })!
-    expect(scale.normalize(10)).toBe(0)
-    expect(scale.normalize(60)).toBe(1)
-    expect(scale.normalize(35)).toBeCloseTo(0.5, 9)
+    const normalize = makeScoreNormalizer(10, 60, SCALE_TYPE_LINEAR, 1)
+    expect(normalize(10)).toBe(0)
+    expect(normalize(60)).toBe(1)
+    expect(normalize(35)).toBeCloseTo(0.5, 9)
     // below the bound clamps to the baseline rather than going negative
-    expect(scale.normalize(0)).toBe(0)
+    expect(normalize(0)).toBe(0)
   })
 
   test('moves the axis with it', () => {
@@ -197,14 +126,14 @@ describe('a minScore bound', () => {
     // and every depth the data actually holds sits at the baseline, on both
     // backends — flat at the BOTTOM, which the old `[200, 60]` pin could not
     // tell apart from flat at the top
-    const scale = makeCoverageScale({
-      coverageMinDepth: domain[0],
-      coverageMaxDepth: domain[1],
-      coverageScaleType: SCALE_TYPE_LINEAR,
-      coverageSymlogConstant: 1,
-    })!
+    const normalize = makeScoreNormalizer(
+      domain[0],
+      domain[1],
+      SCALE_TYPE_LINEAR,
+      1,
+    )
     for (const depth of [0, 1, 10, 30, 60]) {
-      expect(scale.normalize(depth)).toBe(0)
+      expect(normalize(depth)).toBe(0)
       expect(
         normalizeDepthScalar(depth, domain[0], domain[1], SCALE_TYPE_LINEAR, 1),
       ).toBe(0)

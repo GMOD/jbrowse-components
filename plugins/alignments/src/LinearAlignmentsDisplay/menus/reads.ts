@@ -109,8 +109,8 @@ export function getReadsMenuItems(model: ReadsModel) {
     // row below), and a live-looking pin that takes no click is worse than none.
     softClippingItem(model),
     // Every interbase mark — the count bars and the fixed-size triangles alike
-    // — draws inside the coverage band (`COVERAGE_LAYERS`, and the Canvas2D
-    // twin), and the hit test spells the same conjunction, so with the band
+    // — draws inside the coverage band (`ALIGNMENTS_COVERAGE_MARKS`, on both
+    // backends), and the hit test spells the same conjunction, so with the band
     // hidden this toggle changes nothing:
     // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that says so
     // through the real draw path.

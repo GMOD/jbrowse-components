@@ -1,3 +1,8 @@
+import type {
+  CoverageBandBuffers,
+  CoverageBandModBuffer,
+} from '@jbrowse/render-core/coverageBand'
+
 export interface CoverageHitResult {
   type: 'coverage'
   position: number
@@ -16,4 +21,13 @@ export interface CoverageRegionFields {
   coveragePackedBuffer: ArrayBuffer
   coverageMaxDepth: number
   coverageBinSize: number
+}
+
+/**
+ * What the coverage band's marks read off a region on either backend: the
+ * five worker-packed buffers, and the peaks that un-bake their fractions.
+ */
+export interface CoverageBandRegion
+  extends CoverageRegionFields, CoverageBandBuffers, CoverageBandModBuffer {
+  interbaseMaxCount: number
 }

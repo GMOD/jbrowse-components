@@ -13,9 +13,9 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
  * Interbase marks live in the coverage band, so `showInterbaseIndicators` can
- * only change the picture while `showCoverage` is on — the conjunction
- * `COVERAGE_LAYERS` states per layer and `drawAlignmentBlocks` states once, for
- * the band as a whole.
+ * only change the picture while `showCoverage` is on — the conjunction the
+ * band's marks state per layer and `drawAlignmentBlocks` states once, for the
+ * band as a whole.
  *
  * The track menu greys the toggle out on the strength of that (menus/reads.ts),
  * which is a claim about the RENDERER, not about the menu: move the triangles

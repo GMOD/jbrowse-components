@@ -1,17 +1,19 @@
+import {
+  COVERAGE_BAR_PASS,
+  COVERAGE_INDICATOR_PASS,
+  COVERAGE_INTERBASE_PASS,
+  COVERAGE_MOD_PASS,
+  COVERAGE_SNP_PASS,
+} from '@jbrowse/render-core/coverageBand'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
-import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
-import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
-import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
-import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
 import {
   ALIGNMENTS_PASSES,
-  GPU_COVERAGE_PASS,
   GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
+import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 
 import type { AlignmentsSources } from './rendererTypes.ts'
 import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
@@ -104,11 +106,11 @@ function fullyPopulated() {
     numLinkedReadLines: 1,
 
     coverageGpuBinCount: 1,
-    coveragePackedBuffer: oneInstance(COVERAGE_PASS),
-    snpPackedBuffer: oneInstance(SNP_COVERAGE_PASS),
-    interbasePackedBuffer: oneInstance(INTERBASE_PASS),
-    indicatorPackedBuffer: oneInstance(INDICATOR_PASS),
-    modCovPackedBuffer: oneInstance(MOD_COVERAGE_PASS),
+    coveragePackedBuffer: oneInstance(COVERAGE_BAR_PASS),
+    snpPackedBuffer: oneInstance(COVERAGE_SNP_PASS),
+    interbasePackedBuffer: oneInstance(COVERAGE_INTERBASE_PASS),
+    indicatorPackedBuffer: oneInstance(COVERAGE_INDICATOR_PASS),
+    modCovPackedBuffer: oneInstance(COVERAGE_MOD_PASS),
   })
 }
 
@@ -139,8 +141,7 @@ describe('every drawn pass is also uploaded', () => {
     // Guards the guard: if a future field rename empties an array, the
     // assertions below would pass vacuously by uploading nothing at all.
     expect(uploadedPasses().size).toBe(
-      Object.keys(GPU_PILEUP_PASS).length +
-        Object.keys(GPU_COVERAGE_PASS).length,
+      Object.keys(GPU_PILEUP_PASS).length + ALIGNMENTS_COVERAGE_MARKS.length,
     )
   })
 
@@ -154,11 +155,11 @@ describe('every drawn pass is also uploaded', () => {
     }
   })
 
-  it('every coverage-band pass gets a buffer', () => {
+  it('every coverage-band mark gets a buffer', () => {
     const uploaded = uploadedPasses()
-    for (const [layer, pass] of Object.entries(GPU_COVERAGE_PASS)) {
-      expect({ layer, uploaded: uploaded.has(pass.id) }).toEqual({
-        layer,
+    for (const { pass } of ALIGNMENTS_COVERAGE_MARKS) {
+      expect({ layer: pass.id, uploaded: uploaded.has(pass.id) }).toEqual({
+        layer: pass.id,
         uploaded: true,
       })
     }

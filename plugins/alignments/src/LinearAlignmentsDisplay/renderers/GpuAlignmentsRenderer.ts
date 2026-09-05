@@ -1,15 +1,12 @@
-import { interbaseBarHeightPx } from '@jbrowse/alignments-core'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
-import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import {
-  clampBlockScissor,
-  devicePxBand,
-  devicePxSpan,
-  getDpr,
-} from '@jbrowse/render-core/canvas2dUtils'
+  clipBlock,
+  splitPositionWithFrac,
+} from '@jbrowse/render-core/blockClipUtils'
+import { devicePxBand, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
-  writeCoverageBandUniforms,
+  COVERAGE_BAR_PASS,
 } from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
@@ -29,21 +26,16 @@ import {
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
-import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
 import { DELETION_PASS, SKIP_PASS } from '../../features/gap/packGpu.ts'
-import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
 import { INSERTION_PASS } from '../../features/insertion/packGpu.ts'
-import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
 import { LINKED_READ_LINE_PASS } from '../../features/linkedReads/packGpu.ts'
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 import { MISMATCH_PASS } from '../../features/mismatch/packGpu.ts'
-import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
 import { MODIFICATION_PASS } from '../../features/modification/packGpu.ts'
 import { OVERLAP_PASS } from '../../features/overlap/packGpu.ts'
 import { PER_BASE_LETTER_PASS } from '../../features/perBaseLetter/packGpu.ts'
 import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
 import { READ_PASS } from '../../features/read/packGpu.ts'
-import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
 import { SOFTCLIP_BASES_PASS } from '../../features/softclipBases/packGpu.ts'
 import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
@@ -53,7 +45,7 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import { COVERAGE_LAYERS } from './coverageLayers.ts'
+import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   lazyReadIdToIndex,
@@ -65,7 +57,10 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { CoverageRegionFields } from '../../features/coverage/types.ts'
+import type {
+  CoverageBandRegion,
+  CoverageRegionFields,
+} from '../../features/coverage/types.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -74,13 +69,11 @@ import type {
   AlignmentsSources,
   ArcBand,
   ColorPalette,
-  CoverageUploadData,
   RGBColor,
-  ReadUploadData,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
@@ -133,9 +126,8 @@ function fillFrameUniforms(
   f[U.covOffset] = state.pileupTopOffset
   f[U.featHeight] = state.featureHeight
   f[U.featSpacing] = state.featureSpacing
-  // The coverage band's own slots are NOT here: it draws off render-core's
-  // shared `CoverageBandUniforms` (see `fillCoverageBandUniforms`), written into
-  // its own buffer immediately before its passes.
+  // The coverage band's own slots are NOT here: its marks write render-core's
+  // `CoverageBandUniforms` into their own buffer before each of their passes.
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
   i[UI.colorScheme] = state.colorScheme
@@ -158,71 +150,6 @@ function fillFrameUniforms(
 // the pass descriptor itself, so the renderer names passes without knowing what
 // any of them packs.
 // ---------------------------------------------------------------------------
-
-// The coverage band's whole UBO, into its own buffer. A total write through
-// render-core's generated packer rather than offset pokes into `uData`, because
-// the band's uniform struct is not this plugin's: the MAF display writes the
-// same one for the same five passes (see coverageBand.slang), so the fields and
-// the two derived slots live there.
-//
-// Base colours come from `effectiveBaseColors`, not raw palette slots — the
-// modifications-mode mute is decided there for both backends, and the SNP
-// segments are one of the layers it mutes.
-function fillCoverageBandUniforms(
-  buf: ArrayBuffer,
-  state: RenderState,
-  frame: BlockFrame,
-) {
-  const { region } = frame
-  const domainMax = state.coverageMaxDepth
-  const base = effectiveBaseColors(state)
-  const c = state.colors
-  writeCoverageBandUniforms(buf, {
-    bpHi: frame.bpHi,
-    bpLo: frame.bpLo,
-    // POSITIVE for a reversed block, flipped via `reversed` — the same rule
-    // `fillFrameUniforms` states at length.
-    bpLen: frame.clippedBpEnd - frame.clippedBpStart,
-    canvasW: frame.canvasW,
-    canvasH: state.canvasHeight,
-    reversed: frame.reversed,
-    covHeight: state.coverageHeight,
-    covYOffset: state.coverageYOffset,
-    // 0 = sticky (ungrouped); a grouped section passes its scrolled top so the
-    // band scrolls with its section.
-    covTop: state.coverageTopOffset,
-    regionMaxDepth: region.maxDepth,
-    // Both ends of the domain, so `normalizeDepthScalar` can be the twin of
-    // `makeScoreNormalizer` rather than a max-only approximation of it. 0 unless
-    // the track carries a `minScore` bound.
-    domainMin: state.coverageMinDepth ?? 0,
-    domainMax,
-    scaleType: state.coverageScaleType,
-    symlogConstant: state.coverageSymlogConstant,
-    binSize: region.binSize,
-    // The same rule drawInterbaseSegments and hitTestInterbase read — see
-    // `interbaseBarHeightPx`. Its own count against its own domain: the depth
-    // bars' ratio is the interbase bars' only while
-    // `interbaseMaxCount === region.maxDepth`.
-    interbaseHeight: interbaseBarHeightPx(
-      state.coverageHeight,
-      region.interbaseMaxCount,
-      domainMax,
-    ),
-    snpMinFrequency: state.coverageSnpMinFrequency,
-    colors: {
-      coverage: packRgb(c.colorCoverage),
-      baseA: packRgb(base.A),
-      baseC: packRgb(base.C),
-      baseG: packRgb(base.G),
-      baseT: packRgb(base.T),
-      baseN: packRgb(base.N),
-      insertionIndicator: packRgb(c.colorInsertionIndicator),
-      softclipIndicator: packRgb(c.colorSoftclipIndicator),
-      hardclipIndicator: packRgb(c.colorHardclipIndicator),
-    },
-  })
-}
 
 // Arc-pass UBO patch. The arc shaders read the same UBO as the read pass but
 // place Y in absolute canvas px against the arc band, so we overwrite the
@@ -431,11 +358,18 @@ function emptyRegion(): LocalRegion {
     }),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
-    maxDepth: 0,
-    binSize: 1,
+    coveragePackedBuffer: EMPTY_BUFFER,
+    coverageMaxDepth: 0,
+    coverageBinSize: 1,
+    snpPackedBuffer: EMPTY_BUFFER,
+    modCovPackedBuffer: EMPTY_BUFFER,
+    interbasePackedBuffer: EMPTY_BUFFER,
     interbaseMaxCount: 0,
+    indicatorPackedBuffer: EMPTY_BUFFER,
   }
 }
+
+const EMPTY_BUFFER = new ArrayBuffer(0)
 
 // Pure: the per-region metadata `renderBlocks` reads each frame, derived from
 // the same payload the uploads pack. Deliberately separate from the uploads, so
@@ -443,18 +377,23 @@ function emptyRegion(): LocalRegion {
 // while skipping the pack — see `syncRegion`. The conditional mirrors the
 // uploads' own guard: a region with no coverage bars keeps `emptyRegion`'s
 // neutral scaling values rather than a stale peak.
-function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
+function regionMeta(data: PileupDataResult): LocalRegion {
   const hasCoverage = data.coverageGpuBinCount > 0
   return {
     readIdToIndex: lazyReadIdToIndex(data),
     readPositions: data.readPositions,
     readYs: data.readYs,
-    maxDepth: hasCoverage ? data.coverageMaxDepth : 0,
-    binSize: hasCoverage ? data.coverageBinSize : 1,
+    coveragePackedBuffer: data.coveragePackedBuffer,
+    coverageMaxDepth: hasCoverage ? data.coverageMaxDepth : 0,
+    coverageBinSize: hasCoverage ? data.coverageBinSize : 1,
+    snpPackedBuffer: data.snpPackedBuffer,
+    modCovPackedBuffer: data.modCovPackedBuffer,
+    interbasePackedBuffer: data.interbasePackedBuffer,
     // No conditional twin of the two above: `computeInterbaseCoverage` already
     // reports 0 for a region with no interbase events, which is the same "keep
     // the neutral scaling value rather than a stale peak" answer.
     interbaseMaxCount: data.interbaseMaxCount,
+    indicatorPackedBuffer: data.indicatorPackedBuffer,
   }
 }
 
@@ -499,12 +438,10 @@ interface BlockFrame {
 }
 
 // Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
-// `getChainBounds` accepts it directly.
-interface LocalRegion extends ChainBoundsRegion {
-  maxDepth: number
-  binSize: number
-  interbaseMaxCount: number
-}
+// `getChainBounds` accepts it directly, and the band region so the coverage
+// marks' params read the peaks off it; the buffers themselves are references
+// the model already holds.
+interface LocalRegion extends ChainBoundsRegion, CoverageBandRegion {}
 
 const OVERLAY_REGION = 999999
 
@@ -512,61 +449,6 @@ const OVERLAY_REGION = 999999
 // as `devicePxBand` returns it. Named locally because three method signatures
 // below take one.
 type DevBand = ReturnType<typeof devicePxBand>
-
-// Per-block screen geometry shared by every section: the on-screen scissor span
-// (CSS px), the genomic window that span maps to, and the device-px viewport.
-interface BlockGeom {
-  scissorX: number
-  scissorW: number
-  clippedBpStart: number
-  clippedBpEnd: number
-  bpHi: number
-  bpLo: number
-  vpX: number
-  vpW: number
-}
-
-// Pure: clip a block to the canvas and derive the bp window of the visible
-// slice. `reversed` blocks measure the clipped offset from the right edge.
-// Returns null when the block is fully off-screen. Shares `clampBlockScissor`
-// with the standard `clipBlock` path so both clip to the exact same columns.
-function computeBlockGeom(
-  block: RenderBlock,
-  canvasWidth: number,
-  dpr: number,
-): BlockGeom | null {
-  const clamp = clampBlockScissor(
-    block.screenStartPx,
-    block.screenEndPx,
-    canvasWidth,
-  )
-  if (!clamp) {
-    return null
-  }
-  const { scissorX, scissorEnd, scissorW } = clamp
-
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
-  const bpPerPx =
-    fullBlockWidth > 0 ? (block.end - block.start) / fullBlockWidth : 1
-  const pxFromEdge = block.reversed
-    ? block.screenEndPx - scissorEnd
-    : scissorX - block.screenStartPx
-  const clippedBpStart = block.start + pxFromEdge * bpPerPx
-  const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
-  const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
-
-  const { start: vpX, width: vpW } = devicePxSpan(scissorX, scissorEnd, dpr)
-  return {
-    scissorX,
-    scissorW,
-    clippedBpStart,
-    clippedBpEnd,
-    bpHi,
-    bpLo,
-    vpX,
-    vpW,
-  }
-}
 
 // A pass over one region's pileup payload. Each `features/*/packGpu.ts` states
 // its own narrow input (`GapUploadData`); the wide payload is accepted here
@@ -597,18 +479,6 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
   clip: CLIP_PASS,
   softclipBases: SOFTCLIP_BASES_PASS,
   perBaseLetter: PER_BASE_LETTER_PASS,
-}
-
-// Each coverage-band layer's GPU pass, keyed on the shared `CoverageLayerId` for
-// the reason `GPU_PILEUP_PASS` is keyed on `PileupLayerId`: the z-order and the
-// gating live in `COVERAGE_LAYERS`, and a layer added there is a compile error
-// here until it is wired.
-export const GPU_COVERAGE_PASS: Record<CoverageLayerId, PileupPass> = {
-  coverage: COVERAGE_PASS,
-  snpCov: SNP_COVERAGE_PASS,
-  modCov: MOD_COVERAGE_PASS,
-  interbase: INTERBASE_PASS,
-  indicator: INDICATOR_PASS,
 }
 
 // The arc band's passes, in paint order — the interchromosomal ticks FIRST,
@@ -646,7 +516,7 @@ const EMPTY_ARCS = emptyArcsUploadData()
 // nothing and throws nothing.
 export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...Object.values(GPU_PILEUP_PASS),
-  ...Object.values(GPU_COVERAGE_PASS),
+  ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
   ...ARC_PASSES,
   FLAT_QUAD_PASS,
 ]
@@ -897,15 +767,14 @@ export class GpuAlignmentsRenderer
     } else {
       this.hal.deleteRegion(idx)
       if (data) {
-        // Every pileup layer and every coverage-band pass, by construction — the
-        // registries are exhaustive over their key sets and the pass carries its
-        // own packer. Uploads are unconditional: a layer's `enabled` gate belongs
-        // to the DRAW (see COVERAGE_LAYERS).
+        // Every pileup layer and every coverage-band mark, by construction — the
+        // registry is exhaustive over its key set and each pass carries its own
+        // packer. Uploads are unconditional: a layer's gate belongs to the DRAW.
         for (const pass of Object.values(GPU_PILEUP_PASS)) {
           uploadPass(this.hal, idx, pass, data)
         }
-        for (const pass of Object.values(GPU_COVERAGE_PASS)) {
-          uploadPass(this.hal, idx, pass, data)
+        for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
+          uploadPass(this.hal, idx, mark.pass, data)
         }
       }
       // The arc band packs from its own input — a separate RPC result, absent
@@ -934,11 +803,7 @@ export class GpuAlignmentsRenderer
    * pileup either.
    */
   private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
-    this.regions.set(idx, {
-      ...emptyRegion(),
-      maxDepth: coverage.coverageMaxDepth,
-      binSize: coverage.coverageBinSize,
-    })
+    this.regions.set(idx, { ...emptyRegion(), ...coverage })
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: undefined,
@@ -950,7 +815,7 @@ export class GpuAlignmentsRenderer
     })
     if (prev?.density !== coverage.coveragePackedBuffer) {
       this.hal.deleteRegion(idx)
-      uploadPass(this.hal, idx, COVERAGE_PASS, coverage)
+      uploadPass(this.hal, idx, COVERAGE_BAR_PASS, coverage)
     }
   }
 
@@ -1001,13 +866,13 @@ export class GpuAlignmentsRenderer
 
     let hasDrawn = false
     for (const block of blocks) {
-      const geom = computeBlockGeom(block, canvasWidth, scale.x)
-      if (geom) {
+      const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+      if (clip) {
         // Each stacked section sets its own vertical offsets and clip bands.
         // Section 0's region key equals the raw region index, so the ungrouped
         // (single-section) case reproduces the prior draw exactly.
         for (let s = 0; s < state.sections.length; s++) {
-          if (this.drawSection(block, geom, state, s, scale.y, bufH)) {
+          if (this.drawSection(block, clip, state, s, scale.y, bufH)) {
             hasDrawn = true
           }
         }
@@ -1038,7 +903,7 @@ export class GpuAlignmentsRenderer
   // is that rule taken to its end rather than a third exception.
   private drawSection(
     block: RenderBlock,
-    geom: BlockGeom,
+    clip: BlockClipResult,
     state: RenderState,
     sectionIdx: number,
     // The canvas's ACTUAL vertical scale, not `getDpr()` — every band offset
@@ -1054,32 +919,36 @@ export class GpuAlignmentsRenderer
       return false
     }
 
+    const clippedBpStart = clip.bpStartHi + clip.bpStartLo
     const frame: BlockFrame = {
       region,
-      bpHi: geom.bpHi,
-      bpLo: geom.bpLo,
-      clippedBpStart: geom.clippedBpStart,
-      clippedBpEnd: geom.clippedBpEnd,
-      canvasW: geom.scissorW,
+      bpHi: clip.bpStartHi,
+      bpLo: clip.bpStartLo,
+      clippedBpStart,
+      clippedBpEnd: clippedBpStart + clip.clippedLengthBp,
+      canvasW: clip.scissorW,
       reversed: block.reversed,
     }
     const sectionState = sectionRenderState(state, sec)
-    this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
+    this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
 
-    // The coverage band goes FIRST, and that ordering is now load-bearing: it
-    // draws against its own uniform struct, so the pileup's write has to be the
-    // later of the two. `hal.writeUniforms` stages one ring slot and every
+    // The coverage band goes FIRST, and that ordering is load-bearing: each of
+    // its marks writes its own uniform struct, so the pileup's write has to be
+    // the later one. `hal.writeUniforms` stages one ring slot and every
     // `drawPass` after it reads that slot, which is exactly the handoff the arc
     // band below relies on as well.
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
     if (state.coverageHeight > 0 && cov.height > 0) {
-      fillCoverageBandUniforms(this.uCoverage, sectionState, frame)
-      this.hal.writeUniforms(this.uCoverage)
-      this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
-      for (const layer of COVERAGE_LAYERS) {
-        if (layer.enabled(state)) {
-          this.hal.drawPass(GPU_COVERAGE_PASS[layer.id].id, regionKey)
-        }
+      this.hal.setScissor(clip.pxX, cov.top, clip.pxW, cov.height)
+      for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
+        mark.drawRegion(
+          this.hal,
+          this.uCoverage,
+          block,
+          clip,
+          region,
+          sectionState,
+        )
       }
     }
 
@@ -1095,13 +964,13 @@ export class GpuAlignmentsRenderer
       bufH,
     )
     if (pileup.height > 0) {
-      this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
+      this.hal.setScissor(clip.pxX, pileup.top, clip.pxW, pileup.height)
       for (const layer of PILEUP_LAYERS) {
         if (layer.enabled(state)) {
           this.hal.drawPass(GPU_PILEUP_PASS[layer.id].id, regionKey)
         }
       }
-      this.renderFeatureOverlays(block, sectionState, frame, geom, pileup, bufH)
+      this.renderFeatureOverlays(block, sectionState, frame, clip, pileup, bufH)
     }
 
     // Up- and down-mode arcs both draw here, after the pileup, in their own
@@ -1115,7 +984,7 @@ export class GpuAlignmentsRenderer
         block,
         sectionState,
         regionKey,
-        geom,
+        clip,
         sec.arcBand,
         scaleY,
         bufH,
@@ -1129,7 +998,7 @@ export class GpuAlignmentsRenderer
     block: RenderBlock,
     state: RenderState,
     regionKey: number,
-    geom: BlockGeom,
+    clip: BlockClipResult,
     band: ArcBand,
     dpr: number,
     bufH: number,
@@ -1148,8 +1017,8 @@ export class GpuAlignmentsRenderer
       fillArcUniforms(this.uArcF32, {
         block,
         state,
-        scissorX: geom.scissorX,
-        scissorW: geom.scissorW,
+        scissorX: clip.scissorX,
+        scissorW: clip.scissorW,
         arcBandH: band.height,
         dpr,
         // Up mode anchors at the band bottom (band.top + full height); down
@@ -1159,8 +1028,8 @@ export class GpuAlignmentsRenderer
       })
       this.hal.writeUniforms(this.uArc)
 
-      this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
-      this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
+      this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
+      this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
       // In ARC_PASSES order, which is the paint order and says why.
       for (const pass of ARC_PASSES) {
         this.hal.drawPass(pass.id, regionKey)
@@ -1172,7 +1041,7 @@ export class GpuAlignmentsRenderer
     block: RenderBlock,
     state: RenderState,
     frame: BlockFrame,
-    geom: BlockGeom,
+    clip: BlockClipResult,
     pileup: DevBand,
     bufH: number,
   ) {
@@ -1196,13 +1065,13 @@ export class GpuAlignmentsRenderer
           state.canvasHeight,
           block.reversed,
         ),
-        geom.scissorW,
+        clip.scissorW,
         state.canvasHeight,
       )
       this.drawOverlayQuads(
         new Float32Array(quads),
         quads.length / 8,
-        geom,
+        clip,
         pileup,
         bufH,
       )
@@ -1212,7 +1081,7 @@ export class GpuAlignmentsRenderer
   private drawOverlayQuads(
     quads: Float32Array,
     count: number,
-    geom: BlockGeom,
+    clip: BlockClipResult,
     pileup: DevBand,
     bufH: number,
   ) {
@@ -1222,8 +1091,8 @@ export class GpuAlignmentsRenderer
       quads.buffer as ArrayBuffer,
       count,
     )
-    this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
-    this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
+    this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
+    this.hal.setScissor(clip.pxX, pileup.top, clip.pxW, pileup.height)
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 

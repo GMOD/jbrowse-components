@@ -2,9 +2,11 @@ import {
   emptyInterbaseCoverage,
   emptySnpCoverage,
 } from '@jbrowse/alignments-core'
+import {
+  COVERAGE_BAR_PASS,
+  COVERAGE_MOD_PASS,
+} from '@jbrowse/render-core/coverageBand'
 
-import { COVERAGE_PASS } from '../features/coverage/packGpu.ts'
-import { MOD_COVERAGE_PASS } from '../features/modCoverage/packGpu.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
 import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
@@ -67,8 +69,8 @@ describe('the worker packs as many instances as the arrays it packed from', () =
   it('one buffer per pass, each the length of its own parallel array', () => {
     const p = packed()
     expect({
-      coverage: instances(COVERAGE_PASS, p.coveragePackedBuffer),
-      modCov: instances(MOD_COVERAGE_PASS, p.modCovPackedBuffer),
+      coverage: instances(COVERAGE_BAR_PASS, p.coveragePackedBuffer),
+      modCov: instances(COVERAGE_MOD_PASS, p.modCovPackedBuffer),
     }).toEqual({
       coverage: BIN_N,
       modCov: MOD_COV_N,

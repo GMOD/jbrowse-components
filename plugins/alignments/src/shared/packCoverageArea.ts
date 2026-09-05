@@ -11,9 +11,8 @@ import {
   coverageSegmentBuffers,
   downsampleDenseMax,
   packCoverageBinsForGpu,
+  packModCovSegmentsForGpu,
 } from '@jbrowse/alignments-core'
-
-import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
 
 import type { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import type {
