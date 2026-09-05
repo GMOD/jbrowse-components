@@ -34,8 +34,8 @@ derived from the registry rather than re-listed. **Conditional; see the
 precondition below.** A display on render-core's mark list has this for free:
 the list is the order, each mark carries both backends, and `createMarkBackend`
 registers the passes off it (canvas `LinearBasicDisplay` moved there from a
-`GLYPH_LAYERS` registry, and the alignments coverage band from `COVERAGE_LAYERS`
-plus two records to `coverageBandMarks`, whose shapes gate through
+glyph-layer registry, and the alignments coverage band from a five-layer
+registry plus two records to `coverageBandMarks`, whose shapes gate through
 `paintsBlock`).
 
 **4. `HIT_GATES`.** A second exhaustive record over the same ids forcing every

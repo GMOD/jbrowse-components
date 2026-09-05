@@ -153,10 +153,12 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `MultiRowHitIndexes`) so the set is greppable. Where the
-read goes through a structural `self`, **type it with the getters' real types**,
-not `unknown`: a rename otherwise reads `undefined`, establishes no dependency,
-and leaves a keep-alive holding nothing.
+(`CanvasHitIndexes`, `LaneHitIndexes`, `ManhattanHitIndexes`) so the set is
+greppable; multi-row's is `MultiRowEncodedChannels`, its hit index being a
+byproduct of the encode memo the autorun holds. Where the read goes through a
+structural `self`, **type it with the getters' real types**, not `unknown`: a
+rename otherwise reads `undefined`, establishes no dependency, and leaves a
+keep-alive holding nothing.
 
 **Only hold alive a getter whose dependencies exclude per-frame view geometry.**
 This is the whole decision, and it inverts: subscribing moves the rebuild from

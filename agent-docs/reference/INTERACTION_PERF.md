@@ -279,7 +279,8 @@ baseline flipped to 32ms on a third of runs. Main-thread busy moved ~3%: the win
 is frame pacing, not throughput, and the remaining budget is roughly:
 
 - **Instance encoding on the main thread, inside the RPC message handler**:
-  `mafInstanceBuffer` 126ms, wiggle `pack` 110ms, `autoscale` 111ms. These are
+  MAF's instance encode (`buildMafChannels` now) 126ms, wiggle `pack` 110ms,
+  `autoscale` 111ms. These are
   the largest identified block of real compute left.
 - **Stop tokens without cross-origin isolation**: `Blob` + `createObjectURL`
   94ms, plus `notifyStopToken` broadcasting to every worker in the pool, 79ms of

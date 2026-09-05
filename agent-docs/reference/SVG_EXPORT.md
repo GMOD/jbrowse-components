@@ -50,7 +50,8 @@ does **not** instantiate the renderer; it calls the pure functions directly.
 Canonical references: builder-wrapper shape →
 `plugins/alignments/src/LinearAlignmentsDisplay/renderers/Canvas2DAlignmentsRenderer.ts`
 (`buildAlignmentsRegionMap` + `drawAlignmentsToCtx` + `drawAlignmentBlocks`);
-direct shape → `plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
+direct shape → `plugins/maf/src/LinearMafDisplay/renderSvg.tsx`, where
+`paintMarkBlocks` walks `MAF_MARKS` and the `rendering/` painters draw the rest.
 
 ## The renderSvg.tsx shape (every LGV display, identical)
 
