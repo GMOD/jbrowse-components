@@ -187,13 +187,6 @@ export function maxIsoformCount(
   return max
 }
 
-// The badge a gene's name row carries. Its width is part of that row's
-// reservation, so the packer asks for it at the count it is probing and the
-// committed layout writes the same text (see `decideLabelReservations`).
-export function moreIsoformsLabel(hidden: number, expanded: boolean) {
-  return createMoreIsoformsLabel({ overflow: { hidden, expanded } })
-}
-
 // The kept elements of one typed array, in a new array of the same kind. Built
 // through the source's own constructor rather than a per-kind branch, so a
 // primitive array added later is filtered by being passed here.
@@ -429,7 +422,7 @@ export function applyIsoformTrim(
     // (nothing was dropped here) and still shows fewer isoforms than it has.
     const badge = badges.get(geneId)
     if (badge && labelData.nameLabel) {
-      labelData.moreIsoformsLabel = moreIsoformsLabel(
+      labelData.moreIsoformsLabel = createMoreIsoformsLabel(
         badge.hidden,
         badge.expanded,
       )

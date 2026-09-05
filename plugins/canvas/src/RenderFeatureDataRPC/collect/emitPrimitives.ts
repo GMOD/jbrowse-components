@@ -293,11 +293,10 @@ export function emitSubfeatureLabel(
   const { config } = ctx
   const { featureId, displayLabel, featureHeight, minX, maxX, topY } = args
   if (config.subfeatureLabels !== 'none' && hasVisibleText(displayLabel)) {
-    const result = createTranscriptFloatingLabel({
+    const subfeatureLabel = createTranscriptFloatingLabel({
       displayLabel,
       featureHeight,
       subfeatureLabels: config.subfeatureLabels,
-      parentFeatureId: args.parentFeatureId,
     })
     // Merge, don't replace: FeatureLabelData carries name/description and
     // subfeature labels together, so preserve any name/description entry already
@@ -310,8 +309,8 @@ export function emitSubfeatureLabel(
       topY,
       labelRowsAbove: args.labelRowsAbove,
       featureHeight,
-      parentFeatureId: result.parentFeatureId,
-      subfeatureLabel: result.subfeatureLabel,
+      parentFeatureId: args.parentFeatureId,
+      subfeatureLabel,
     })
   }
 }

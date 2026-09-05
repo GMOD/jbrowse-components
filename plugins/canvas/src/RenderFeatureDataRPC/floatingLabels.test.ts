@@ -92,41 +92,35 @@ describe('floatingLabels', () => {
       displayLabel: 'Test Transcript',
       featureHeight: 10,
       subfeatureLabels: 'below',
-      parentFeatureId: 'parent-gene-123',
     }
 
-    it('includes parentFeatureId in the result', () => {
-      const result = createTranscriptFloatingLabel(baseArgs)
-      expect(result.parentFeatureId).toBe('parent-gene-123')
-    })
-
     it('sets isOverlay to false for "below" mode', () => {
-      const result = createTranscriptFloatingLabel({
+      const label = createTranscriptFloatingLabel({
         ...baseArgs,
         subfeatureLabels: 'below',
       })
-      expect(result.subfeatureLabel.isOverlay).toBe(false)
-      expect(result.subfeatureLabel.relativeY).toBe(0)
+      expect(label.isOverlay).toBe(false)
+      expect(label.relativeY).toBe(0)
     })
 
     it('sets isOverlay to true for "overlay" mode', () => {
-      const result = createTranscriptFloatingLabel({
+      const label = createTranscriptFloatingLabel({
         ...baseArgs,
         subfeatureLabels: 'overlay',
         featureHeight: 20,
       })
-      expect(result.subfeatureLabel.isOverlay).toBe(true)
-      expect(result.subfeatureLabel.relativeY).toBe(-20)
+      expect(label.isOverlay).toBe(true)
+      expect(label.relativeY).toBe(-20)
     })
 
     it('truncates long labels', () => {
       const longLabel = 'A'.repeat(100)
-      const result = createTranscriptFloatingLabel({
+      const label = createTranscriptFloatingLabel({
         ...baseArgs,
         displayLabel: longLabel,
       })
-      expect(result.subfeatureLabel.text.length).toBeLessThan(longLabel.length)
-      expect(result.subfeatureLabel.text).toContain('…')
+      expect(label.text.length).toBeLessThan(longLabel.length)
+      expect(label.text).toContain('…')
     })
   })
 })

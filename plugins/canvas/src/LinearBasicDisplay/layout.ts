@@ -4,6 +4,7 @@ import {
   LABEL_PADDING_PX,
   renderedTextWidth,
 } from '../RenderFeatureDataRPC/constants.ts'
+import { createMoreIsoformsLabel } from '../RenderFeatureDataRPC/floatingLabels.ts'
 import {
   HEIGHT_MULTIPLIERS,
   ROW_PADDING,
@@ -23,11 +24,7 @@ import {
   isoformGapSpreadPx,
   planIsoformGapFloor,
 } from './isoformGapFloor.ts'
-import {
-  applyIsoformTrim,
-  moreIsoformsLabel,
-  planIsoformTrims,
-} from './isoformTrim.ts'
+import { applyIsoformTrim, planIsoformTrims } from './isoformTrim.ts'
 import { arrowDraws } from './passes/shaders/arrow.js.generated.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
@@ -422,7 +419,7 @@ function renderedLabelWidths(
 ): LabelWidths {
   return {
     // The name alone. The isoform badge shares this row (see
-    // `moreIsoformsLabel`) but its text depends on the isoform count being
+    // `createMoreIsoformsLabel`) but its text depends on the isoform count being
     // probed, so `trimPreparedRef` adds its width at that count rather than
     // baking one width in here.
     name: showLabels ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) : 0,
@@ -1495,7 +1492,7 @@ function trimPreparedRef(
       badgeWidthPx:
         badge && showLabels && prep.labelInfoByFeatureId.get(id)?.hasName
           ? paddedLabelWidthPx(
-              moreIsoformsLabel(badge.hidden, badge.expanded),
+              createMoreIsoformsLabel(badge.hidden, badge.expanded),
               labelFontPx,
             )
           : 0,

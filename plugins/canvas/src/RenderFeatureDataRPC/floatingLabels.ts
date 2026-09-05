@@ -64,12 +64,11 @@ export function createFeatureFloatingLabels({
 // reserved at a width nothing measured. Through `labelItem` at the size it
 // draws at, which is what keeps the packer's reservation and the drawn text
 // agreeing across the two sizes (see the invariant there).
-export function createMoreIsoformsLabel({
-  overflow,
-}: {
-  overflow: { hidden: number; expanded: boolean }
-}) {
-  const { hidden, expanded } = overflow
+//
+// Its width is part of the gene's name-row reservation, so the packer asks for
+// it at the count it is probing and the committed layout writes the same text
+// (see `decideLabelReservations`).
+export function createMoreIsoformsLabel(hidden: number, expanded: boolean) {
   return {
     ...labelItem(
       expanded ? 'show fewer' : `+${hidden} more`,
@@ -85,32 +84,24 @@ export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,
   subfeatureLabels,
-  parentFeatureId,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
-  parentFeatureId: string
 }) {
-  const truncatedName = truncateLabel(displayLabel)
-
   const isOverlay = subfeatureLabels === 'overlay'
-  const relativeY = isOverlay ? -featureHeight : 0
 
   return {
-    subfeatureLabel: {
-      // Through `labelItem` like every other label, so the "textWidth is always
-      // the measured width of `text` at LABEL_FONT_SIZE" invariant above is one
-      // constructor rather than a claim this one also happened to honor. It was
-      // spelled out here, `measureText` and all — the only thing it adds is
-      // `isOverlay`, which is why it reads as a spread now.
-      //
-      // `isOverlay` is what the main thread colors by: an overlay label sits on
-      // a light backing rect and stays dark, an inline one reads against the
-      // track and follows the theme text color (see labelColors).
-      ...labelItem(truncatedName, relativeY),
-      isOverlay,
-    },
-    parentFeatureId,
+    // Through `labelItem` like every other label, so the "textWidth is always
+    // the measured width of `text` at LABEL_FONT_SIZE" invariant above is one
+    // constructor rather than a claim this one also happened to honor. It was
+    // spelled out here, `measureText` and all — the only thing it adds is
+    // `isOverlay`, which is why it reads as a spread now.
+    //
+    // `isOverlay` is what the main thread colors by: an overlay label sits on
+    // a light backing rect and stays dark, an inline one reads against the
+    // track and follows the theme text color (see labelColors).
+    ...labelItem(truncateLabel(displayLabel), isOverlay ? -featureHeight : 0),
+    isOverlay,
   }
 }
