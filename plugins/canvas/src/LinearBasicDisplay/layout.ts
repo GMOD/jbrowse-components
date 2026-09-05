@@ -325,11 +325,14 @@ function applyHeightScale(
     scaleFloat32(data[`${kind}Heights`], multiplier)
   }
   for (const item of data.flatbushItems) {
-    // A gene's own extent has to cover every label row it contains. The packed
-    // ROW height comes from `bodyHeightPx`, which applies the same term — this
-    // keeps the hit box in step with it.
-    item.featureHeightPx =
-      item.featureHeightPx * multiplier + (item.labelRows ?? 0) * labelFontPx
+    // a gene's own extent has to cover every label row it contains, which is
+    // what keeps the hit box in step with the row the packer gave it
+    item.featureHeightPx = bodyHeightPx(
+      item.featureHeightPx,
+      item.labelRows,
+      multiplier,
+      labelFontPx,
+    )
   }
   for (const info of data.subfeatureInfos) {
     const above = (info.labelRowsAbove ?? 0) * labelFontPx
@@ -358,6 +361,23 @@ function applyHeightScale(
       aa.heightPx *= multiplier
     }
   }
+}
+
+// A feature's row height: its body scaled by the display mode, plus the `below`
+// label rows it contains spent at the mode's label font size rather than scaled
+// with the geometry (see FeatureLayout.labelRowsAbove).
+//
+// Three passes need this exact term and have to agree on it — the pack's
+// geometry, the trim's re-derivation at one isoform count, and the height scale
+// that widens a gene's hit box. Split across them, a fitted track measures a
+// labeled gene shorter than it draws.
+function bodyHeightPx(
+  heightPx: number,
+  labelRows: number | undefined,
+  multiplier: number,
+  labelFontPx: number,
+) {
+  return heightPx * multiplier + (labelRows ?? 0) * labelFontPx
 }
 
 // Everything the packer derives from the display mode. Bundled into one helper so
@@ -1081,15 +1101,12 @@ function gatherFeatureGeometry(
         features.set(item.featureId, {
           startBp: item.startBp,
           endBp: item.endBp,
-          // plus the `below` label rows stacked inside this feature, spent at
-          // the mode's label font size rather than scaled with the geometry (see
-          // FeatureLayout.labelRowsAbove). Here rather than only in
-          // applyHeightScale because this derivation is the one BOTH the fit
-          // probe and the committed pack read — split across the two, a fitted
-          // track would measure a labeled gene shorter than it draws.
-          bodyHeightPx:
-            item.featureHeightPx * metrics.heightMultiplier +
-            (item.labelRows ?? 0) * metrics.labelFontPx,
+          bodyHeightPx: bodyHeightPx(
+            item.featureHeightPx,
+            item.labelRows,
+            metrics.heightMultiplier,
+            metrics.labelFontPx,
+          ),
           stack: item.isoformStack,
           strand: item.strand ?? 0,
           hasReversed: reversed,
@@ -1200,7 +1217,12 @@ function trimPreparedRef(
     bodies.set(id, {
       bodyHeightPx:
         (trim
-          ? trim.heightPx * heightMultiplier + trim.labelRows * labelFontPx
+          ? bodyHeightPx(
+              trim.heightPx,
+              trim.labelRows,
+              heightMultiplier,
+              labelFontPx,
+            )
           : geom.bodyHeightPx) +
         isoformGapSpreadPx(stack, heightMultiplier, trim),
       startBp: trim ? trim.startBp : geom.startBp,
