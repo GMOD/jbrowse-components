@@ -5,14 +5,59 @@ Films a real Claude client driving JBrowse, for the clips
 cannot make, because there is no url to load, no steps to run and no live
 session to hand a reader. The session is one an agent built during the take.
 
-**We record on Linux.** `recordDemoLinux.mjs` records the WHOLE GNOME/Wayland
-screen, so the actual Claude session — in a terminal beside the app — is in
-frame. That is the current path for any new clip. The macOS harness
-(`agentDemo.mjs` and the rest below) is the older one: it filmed only the
-JBrowse WINDOW through a screenshot loop and painted a caption strip with what
-Claude said, and the published `externalClips` came from it — kept for its
-accumulated notes, not because a clip needs a Mac. Neither runs in CI; both are
-run by hand.
+**We record on Linux.** `recordDemoTui.mjs` records the WHOLE GNOME/Wayland
+screen, so the actual Claude session — the real TUI, in a terminal beside the
+app — is in frame. That is the current path for any new clip;
+`recordDemoLinux.mjs` is the same idea one iteration back, filming a formatted
+`claude -p` stream rather than the TUI. The macOS harness (`agentDemo.mjs` and
+the rest below) is the older one: it filmed only the JBrowse WINDOW through a
+screenshot loop and painted a caption strip with what Claude said, and the
+published `externalClips` came from it — kept for its accumulated notes, not
+because a clip needs a Mac. Neither runs in CI; both are run by hand.
+
+## Linux: `recordDemoTui.mjs`
+
+`node scripts/agent-demos/recordDemoTui.mjs <outdir>` writes
+`<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Sonnet,
+`--verbose`) driven by `tmux send-keys` — not the formatted `claude -p` stream
+`recordDemoLinux.mjs` films, which reads as a fake — beside the built-in hg38,
+with the narration burned in as ASS captions. The steps live in `STEPS` at the
+top of the file, each a prompt and the sentence that explains it to a viewer.
+
+- **Side-by-side is automated, and every part of it can fail silently.** The
+  take walks to the last workspace, which dynamic workspaces keep empty, so the
+  windows it opens are the only ones in frame and the only ones focus can land
+  on; then `ydotool` presses Super+Right for JBrowse and Super+Left for the
+  terminal, and GNOME's own tiling does the arranging.
+- **An inactive session eats every injected key and says nothing.** A locked
+  screen, or another VT in front — the GDM greeter counts — and `ydotool` still
+  exits 0, the events still reach `/dev/input`, and the compositor never
+  processes them. The harness refuses to start unless seat0's active session is
+  yours; that check is the difference between a clear error and an hour of
+  chasing the input stack.
+- **Never inject Ctrl+Alt+F<n>.** It is the VT-switch chord, so it drops the
+  session to the greeter — which is one way to arrive at the trap above.
+- **Ubuntu binds the tiling keys through its Tiling Assistant extension**
+  (`org.gnome.shell.extensions.tiling-assistant tile-left-half`), and leaves
+  mutter's own `toggle-tiled-left`/`-right` explicitly empty. Empty mutter keys
+  are not the missing binding they look like. The harness turns that extension's
+  tiling popup off for the take and puts it back afterwards — it would otherwise
+  cover the other half and swallow the next keystroke.
+- **The layout is checked, not assumed.** `tmux display -p '#{client_width}'`
+  follows the attached client, so a pane width that does not move says the
+  tiling key went somewhere else, and the take stops before it films anything.
+  JBrowse's own half can only be measured through `run_javascript`, which needs
+  a session, so that check waits for the first turn to open one.
+- **`app_version` is the only bridge call that answers before a session
+  exists.** Everything else — including the renderer's internal `paint` — is
+  either gated on the session or not in `MCP_TOOLS`, and the bridge refuses what
+  is not declared there.
+- It opens the built-in hg38, which renders on a fresh build; a stale one shows
+  a protein3d/tss-react worker error, so **always rebuild first**.
+- `ydotoold` has to be running and its socket readable by you:
+  `sudo ydotoold --socket-path=/tmp/.ydotool_socket --socket-own=$(id -u):$(id -g)`.
+- The recorder, the isolated `--user-data-dir` and the real-display requirement
+  are `recordDemoLinux.mjs`'s, described below; both harnesses use them.
 
 ## Linux: `recordDemoLinux.mjs`
 
@@ -30,11 +75,8 @@ the macOS takes.
   open for the whole take. It records to mp4 (GNOME's configured container),
   needs no portal dialog, and captures the real screen at full framerate.
 - **Wayland will not let a client position itself**, and there is no scriptable
-  tiling API. `recordDemoLinux.mjs` handles this by tapping Super+Left / Super+
-  Right once by hand. For an AUTOMATED side-by-side, the lead is `ydotool` (now
-  installed) injecting those same keystrokes to trigger GNOME native tiling —
-  the WIP `recordDemoTui.mjs` and
-  `agent-docs/handoffs/agent-demo-video-linux.md` carry that thread.
+  tiling API. This one waits for a hand to tap Super+Left / Super+Right;
+  `recordDemoTui.mjs` automates the same two keystrokes through `ydotool`.
 - **Under GPU-less Xvfb the electron GPU process fatals**
   (`GPU process isn't usable. Goodbye`) even with `--disable-gpu` and
   swiftshader flags, which is why this films on the real `:0` display rather
@@ -43,14 +85,6 @@ the macOS takes.
 - Isolated `--user-data-dir` under `<outdir>`, so a take never touches a real
   session, the recent list or an autosave. Refuses to start if a JBrowse Desktop
   bridge socket already exists (its bridge is per-user).
-
-**`recordDemoTui.mjs` is the next iteration (WIP)** — the REAL Claude Code TUI
-in a terminal (Sonnet, `--verbose`), driven by `tmux send-keys`, instead of the
-formatted `claude -p` stream `recordDemoLinux.mjs` shows. It opens the built-in
-hg38 (renders on a fresh build; a stale one shows a protein3d/tss-react worker
-error — always rebuild first) and burns in ASS captions. Its one open piece is
-the automated side-by-side layout above. Full state:
-`agent-docs/handoffs/agent-demo-video-linux.md`.
 
 ## macOS: before anything works
 
