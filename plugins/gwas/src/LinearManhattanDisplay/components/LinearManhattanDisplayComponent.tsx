@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   CrossHatches,
   ScoreRules,
@@ -16,8 +17,8 @@ import {
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import { ManhattanRenderer } from '../ManhattanRenderer.ts'
 import { findManhattanHit } from '../findManhattanHit.ts'
+import { MANHATTAN_MARKS } from '../manhattanMarks.ts'
 import HoverHighlight from './HoverHighlight.tsx'
 import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
@@ -25,6 +26,10 @@ import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
+
+function createManhattanBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, MANHATTAN_MARKS)
+}
 
 const LinearManhattanDisplayComponent = observer(
   function LinearManhattanDisplayComponent({
@@ -77,7 +82,7 @@ const LinearManhattanDisplayComponent = observer(
     return (
       <DisplayChrome
         model={model}
-        factory={ManhattanRenderer}
+        factory={createManhattanBackend}
         testid="manhattan-display"
         // inherited from `DisplayContainer` until it was deleted; kept verbatim
         style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}

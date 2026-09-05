@@ -2,6 +2,7 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { FloatingSvgOverlay, PointerLayer } from '@jbrowse/display-ui'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   DisplayContextMenu,
   DisplayCrosshairs,
@@ -12,7 +13,7 @@ import {
 import { observer } from 'mobx-react'
 
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
-import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
+import { MULTI_ROW_MARKS } from '../rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
@@ -21,6 +22,10 @@ import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
 import type React from 'react'
+
+function createMultiRowBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, MULTI_ROW_MARKS)
+}
 
 const MultiRowCanvas = observer(function MultiRowCanvas({
   model,
@@ -146,7 +151,7 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     return (
       <DisplayChrome
         model={model}
-        factory={MultiRowRendererFactory}
+        factory={createMultiRowBackend}
         testid="multirow-display"
         // its content is all absolutely positioned, so without a height the
         // container collapses and receives no pointer events at all
