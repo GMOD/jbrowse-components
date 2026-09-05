@@ -31,7 +31,7 @@ export function hitTestMismatch(
     : {
         type: 'mismatch',
         index: i,
-        position: MISMATCH_MARK.startBp(data, i),
+        position: data.mismatchPositions[i]!,
         length: 1,
         base: String.fromCharCode(data.mismatchBases[i]!),
         qual: qual === QUAL_UNAVAILABLE ? undefined : qual,

@@ -7,14 +7,14 @@ import type {
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
-import type { PointMark } from '../mark.ts'
+import type { PileupMark } from '../mark.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 type ColorTuple = RenderState['colors']['colorSoftclip']
 
 function drawClipBars(
   ctx: Ctx2D,
-  mark: PointMark<InterbaseUploadData>,
+  mark: PileupMark<InterbaseUploadData>,
   region: InterbaseUploadData,
   colorTuple: ColorTuple,
   block: DrawBlock,

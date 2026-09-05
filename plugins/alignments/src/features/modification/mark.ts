@@ -1,3 +1,5 @@
+import { Band, Fade, Hit } from '../mark.ts'
+
 import type { PileupMark } from '../mark.ts'
 import type { ModificationUploadData } from './types.ts'
 
@@ -8,29 +10,29 @@ import type { ModificationUploadData } from './types.ts'
 // modification cell widened about its midpoint sat a column left of the mismatch
 // cell on the same base.
 //
-// Its hit test is NOT `findMarkAt`: `hitTestModification` is a Flatbush
-// nearest-neighbour query, which answers out of Hilbert order and picks by
-// distance where every mark scan walks rows backwards. See
-// agent-docs/ideas/one-mark-declaration-per-feature.md.
+// Opaque on both backends: packedColorQuad.slang has no fade of any kind, and
+// the call's confidence is carried in the COLOUR the worker packed. Its hit test
+// is NOT `findMarkAt`: `hitTestModification` is a Flatbush nearest-neighbour
+// query, which answers out of Hilbert order and picks by distance where every
+// mark scan walks rows backwards.
 export const MODIFICATION_MARK: PileupMark<ModificationUploadData> = {
   shape: 'cell',
-  rows: data => data.modificationYs,
-  startBp: (data, i) => data.modificationPositions[i]!,
-  endBp: (data, i) => data.modificationPositions[i]! + 1,
-  selects: () => true,
-  // Opaque, always, on both backends: packedColorQuad.slang has no fade of any
-  // kind. The call's confidence is carried in the COLOUR the worker packed —
-  // `unpackRGBA` reads its alpha byte straight out of the instance — so a mark
-  // this pass draws at all, it draws at whatever that byte says.
-  alpha: () => 1,
-  // Stated rather than omitted: the Flatbush query above is what decides which
-  // call a click lands on, and it has no significance threshold of its own.
-  hittable: () => true,
-  canvas2d: {
-    // Modifications are sparse along a read — one per CpG on a nanopore pileup —
-    // so no seam fudge; the base WALLS are the layers that take it.
-    contiguous: false,
-    bandTop: (_data, _i, rowY) => rowY,
-    bandHeight: (_data, _i, featureHeight) => featureHeight,
-  },
+  channels: data => ({
+    positions: data.modificationPositions,
+    stride: 1,
+    rows: data.modificationYs,
+    start: 0,
+    end: data.modificationYs.length,
+    kinds: undefined,
+    kind: 0,
+    freqs: undefined,
+    quals: undefined,
+    lengths: undefined,
+  }),
+  fade: Fade.opaque,
+  hit: Hit.always,
+  band: Band.row,
+  // Modifications are sparse along a read — one per CpG on a nanopore pileup —
+  // so no seam fudge; the base WALLS are the layers that take it.
+  contiguous: false,
 }

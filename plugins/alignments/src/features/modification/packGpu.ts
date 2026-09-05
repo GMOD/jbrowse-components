@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as modificationShader from '../../shaders/slang/packedColorQuad.generated.ts'
-import { countMarks, markEnd, markStart } from '../mark.ts'
+import { countMarks, markSelects } from '../mark.ts'
 import { MODIFICATION_MARK } from './mark.ts'
 
 import type { ModificationUploadData } from './types.ts'
@@ -18,8 +18,8 @@ export const MODIFICATION_PASS = {
 }
 
 function packModifications(data: ModificationUploadData): ArrayBuffer {
-  const rows = MODIFICATION_MARK.rows(data)
-  const end = markEnd(MODIFICATION_MARK, data, rows)
+  const channels = MODIFICATION_MARK.channels(data)
+  const { positions, rows, end } = channels
   const F_U32 = modificationShader.INSTANCE_OFFSET_U32
   const s32 = modificationShader.INSTANCE_STRIDE_WORDS
   const buf = new ArrayBuffer(
@@ -28,9 +28,9 @@ function packModifications(data: ModificationUploadData): ArrayBuffer {
   )
   const u32 = new Uint32Array(buf)
   let o = 0
-  for (let i = markStart(MODIFICATION_MARK, data); i < end; i++) {
-    if (MODIFICATION_MARK.selects(data, i)) {
-      u32[o + F_U32.position] = MODIFICATION_MARK.startBp(data, i)
+  for (let i = channels.start; i < end; i++) {
+    if (markSelects(channels, i)) {
+      u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       u32[o + F_U32.packedColor] = data.modificationColors[i]!
       o += s32

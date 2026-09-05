@@ -4,7 +4,7 @@ import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot.
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { countMarks, markEnd, markStart } from '../mark.ts'
+import { countMarks, markSelects } from '../mark.ts'
 import { SOFTCLIP_BASES_MARK } from './mark.ts'
 
 import type { SoftclipBasesUploadData } from './types.ts'
@@ -19,20 +19,20 @@ export const SOFTCLIP_BASES_PASS = {
 
 export function packSoftclipBases(data: SoftclipBasesUploadData): ArrayBuffer {
   const mark = SOFTCLIP_BASES_MARK
-  const rows = mark.rows(data)
+  const channels = mark.channels(data)
+  const { positions, rows, end } = channels
   const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
-  const end = markEnd(mark, data, rows)
   const buf = new ArrayBuffer(
     countMarks(mark, data) * mismatchShader.INSTANCE_STRIDE_BYTES,
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let o = 0
-  for (let i = markStart(mark, data); i < end; i++) {
-    if (mark.selects(data, i)) {
-      u32[o + F_U32.position] = mark.startBp(data, i)
+  for (let i = channels.start; i < end; i++) {
+    if (markSelects(channels, i)) {
+      u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       u32[o + F_U32.base] = data.softclipBaseBases[i]!
       // The mark declares this layer opaque, and these two slots are what make

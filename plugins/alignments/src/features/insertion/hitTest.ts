@@ -1,4 +1,4 @@
-import { findMarkAt } from '../mark.ts'
+import { InsertionSlot, findMarkAt } from '../mark.ts'
 import { insertionMark } from './mark.ts'
 
 import type {
@@ -16,19 +16,19 @@ import type { InsertionSizeSlot } from './mark.ts'
 function hitTestInsertion(
   resolved: ResolvedBlock,
   coords: CigarCoords,
-  sizes: InsertionSizeSlot,
+  slot: InsertionSizeSlot,
   featureHeight: number,
   filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const data = resolved.rpcData
-  const mark = insertionMark(featureHeight, sizes)
+  const mark = insertionMark(featureHeight, slot)
   const i = findMarkAt(mark, data, coords, filterMismatchesByFrequency)
   return i === undefined
     ? undefined
     : {
         type: 'insertion',
         index: i,
-        position: mark.startBp(data, i),
+        position: data.interbasePositions[i]!,
         length: data.interbaseLengths[i] ?? 0,
         sequence: data.interbaseSequences[i] || undefined,
       }
@@ -40,7 +40,13 @@ export function hitTestLargeInsertion(
   featureHeight: number,
 ) {
   // Large insertions never frequency-gate, so the flag is inert here.
-  return hitTestInsertion(resolved, coords, 'large', featureHeight, true)
+  return hitTestInsertion(
+    resolved,
+    coords,
+    InsertionSlot.large,
+    featureHeight,
+    true,
+  )
 }
 
 export function hitTestSmallInsertion(
@@ -52,7 +58,7 @@ export function hitTestSmallInsertion(
   return hitTestInsertion(
     resolved,
     coords,
-    'small',
+    InsertionSlot.small,
     featureHeight,
     filterMismatchesByFrequency,
   )

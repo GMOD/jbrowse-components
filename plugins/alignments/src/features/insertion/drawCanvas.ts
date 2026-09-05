@@ -1,7 +1,7 @@
 import { drawInsertionSerifs } from '@jbrowse/alignments-core'
 
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { paintMarks } from '../mark.ts'
+import { InsertionSlot, paintMarks } from '../mark.ts'
 import { insertionMark } from './mark.ts'
 
 import type {
@@ -25,7 +25,7 @@ export function drawInsertions(
   const opaqueCss = rgb255(color)
   paintMarks(
     ctx,
-    insertionMark(state.featureHeight, 'all'),
+    insertionMark(state.featureHeight, InsertionSlot.all),
     region,
     { block, bpLength, fullBlockWidth },
     state,

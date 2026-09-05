@@ -1,11 +1,11 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as clipShader from '../../shaders/slang/clip.generated.ts'
-import { countMarks, markEnd, markStart } from '../mark.ts'
+import { countMarks, markSelects } from '../mark.ts'
 import { HARDCLIP_MARK, SOFTCLIP_MARK } from './mark.ts'
 
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
-import type { PointMark } from '../mark.ts'
+import type { PileupMark } from '../mark.ts'
 
 // Per-instance kind discriminator written into the clip pass — same shader
 // renders both soft and hard clips, branching on `kind` for color.
@@ -35,7 +35,7 @@ export function packClips(data: InterbaseUploadData): ArrayBuffer {
 }
 
 function packClipKind(
-  mark: PointMark<InterbaseUploadData>,
+  mark: PileupMark<InterbaseUploadData>,
   kind: number,
   data: InterbaseUploadData,
   u32: Uint32Array,
@@ -45,12 +45,12 @@ function packClipKind(
   const F_F32 = clipShader.INSTANCE_OFFSET_F32
   const F_U32 = clipShader.INSTANCE_OFFSET_U32
   const s32 = clipShader.INSTANCE_STRIDE_WORDS
-  const rows = mark.rows(data)
-  const end = markEnd(mark, data, rows)
+  const channels = mark.channels(data)
+  const { positions, rows, end } = channels
   let o = offset
-  for (let i = markStart(mark, data); i < end; i++) {
-    if (mark.selects(data, i)) {
-      u32[o + F_U32.position] = mark.startBp(data, i)
+  for (let i = channels.start; i < end; i++) {
+    if (markSelects(channels, i)) {
+      u32[o + F_U32.position] = positions[i]!
       u32[o + F_U32.y] = rows[i]!
       f32[o + F_F32.frequency] = data.interbaseFrequencies[i]! / 255
       u32[o + F_U32.kind] = kind
