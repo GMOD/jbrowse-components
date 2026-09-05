@@ -63,6 +63,11 @@ export interface PerRegionTestControl {
   estimateCalls: number
   /** the display's own density verdict, canvas's second too-large axis */
   densityTooLarge: boolean
+  /**
+   * What the next fetch stores, so a test can tell the payload a refetch
+   * replaced from the one that replaced it.
+   */
+  payloadTag: string
 }
 
 /**
@@ -99,7 +104,6 @@ function makeStateModel(
     .volatile(() => ({
       /** every `fetchNeeded` call, as the region list it was handed */
       fetchLog: [] as IndexedRegion[][],
-      loadedData: new Map<number, string>(),
       /**
        * What `zoomFetchKey` answers. A volatile, not a `control` knob, and
        * that is the point: a real display's key reads view state, so the
@@ -108,7 +112,27 @@ function makeStateModel(
        */
       fetchKey: '',
     }))
+    .views(self => {
+      // chained, not replaced: `staleAnswers` forces a false answer for a
+      // bounded number of calls, and everything else is the foundation's own
+      // store-derived default
+      const superRegionHasData = self.regionHasData
+      return {
+        regionHasData(displayedRegionIndex: number) {
+          control.cacheValidCalls += 1
+          if (control.staleAnswers > 0) {
+            control.staleAnswers -= 1
+            return false
+          }
+          return superRegionHasData.call(self, displayedRegionIndex)
+        },
+      }
+    })
     .views(self => ({
+      /** the fetched payloads, off the foundation's store */
+      get loadedData(): ReadonlyMap<number, string> {
+        return self.regionPayloads as ReadonlyMap<number, string>
+      },
       get gateEnabled() {
         return gate.gateEnabled ?? false
       },
@@ -118,24 +142,10 @@ function makeStateModel(
       get zoomFetchKey() {
         return self.fetchKey
       },
-      regionHasData(_displayedRegionIndex: number) {
-        control.cacheValidCalls += 1
-        if (control.staleAnswers > 0) {
-          control.staleAnswers -= 1
-          return false
-        }
-        return true
-      },
     }))
     .actions(self => ({
       setFetchKey(key: string) {
         self.fetchKey = key
-      },
-      setLoaded(displayedRegionIndex: number, value: string) {
-        self.loadedData.set(displayedRegionIndex, value)
-      },
-      clearDisplaySpecificData() {
-        self.loadedData.clear()
       },
     }))
     .actions(self => ({
@@ -163,17 +173,15 @@ function makeStateModel(
             // budget means no measurement at all, which is why `estimateCalls`
             // stays at zero for an ungated display.
             if (byteLimit === undefined) {
-              return { value: 'data' }
+              return { value: control.payloadTag }
             }
             control.estimateCalls += 1
             const bytes = control.estimateBytes
             return bytes > byteLimit
               ? { regionTooLarge: true as const, bytes }
-              : { value: 'data', bytes }
+              : { value: control.payloadTag, bytes }
           },
-          onResult: (idx, result) => {
-            self.setLoaded(idx, result.value)
-          },
+          onResult: (_idx, result) => result.value,
         })
       },
     }))
@@ -212,6 +220,7 @@ export function createPerRegionTestEnvironment({
     estimateBytes,
     estimateCalls: 0,
     densityTooLarge: false,
+    payloadTag: 'data',
   }
   const optIns: GateOptIns = gate ?? { gateEnabled: measuresBytes }
   const env = createDisplayTestEnvironment<PerRegionTestDisplay>({

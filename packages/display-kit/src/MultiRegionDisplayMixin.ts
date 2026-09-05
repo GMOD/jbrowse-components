@@ -31,7 +31,7 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
  * that a whole-genome view of a chromosome-level assembly never evicts, low
  * enough that a long pan across a fragmented one cannot grow without limit.
  */
-const MAX_STORED_REGIONS = 128
+export const MAX_STORED_REGIONS = 128
 
 /**
  * #stateModel MultiRegionDisplayMixin

@@ -28,7 +28,6 @@ function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, session, mockRpcCall } = createDisplay()
   display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-  display.setLoadedRegion(0, ctgA)
   return { display, session, mockRpcCall }
 }
 

@@ -466,7 +466,6 @@ describe('feature highlight declarative persistence', () => {
         endBp: 2000,
         name: 'BRCA1',
       })
-      display.setLoadedRegion(0, ctgA)
 
       expect(display.highlightedFeatureIdSet.size).toBe(0)
       expect(console.warn).toHaveBeenCalledTimes(1)
@@ -476,7 +475,6 @@ describe('feature highlight declarative persistence', () => {
       const { createDisplay } = createTestEnvironment()
       const { display } = createDisplay()
       loadGeneWithTranscript(display)
-      display.setLoadedRegion(0, ctgA)
       display.addFeatureHighlightForItem(
         {
           startBp: 1000,
@@ -519,7 +517,6 @@ describe('feature highlight declarative persistence', () => {
         }),
         elsewhere,
       )
-      display.setLoadedRegion(0, elsewhere)
 
       expect(display.highlightedFeatureIdSet.size).toBe(0)
       expect(console.warn).not.toHaveBeenCalled()

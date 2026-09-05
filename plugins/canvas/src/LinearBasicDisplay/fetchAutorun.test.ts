@@ -1745,12 +1745,10 @@ describe('geneGlyphMode auto collapse', () => {
 
 describe('region identity is stored with the data it describes', () => {
   // Layout groups regions by `assembly:refName`, and reads that key off the
-  // stored region (see `LayoutRegionData`). It must follow rpcDataMap — the data
-  // actually on screen — rather than loadedRegions, which is cleared on every
-  // settings change while canvas preserves rpcDataMap through the refetch
-  // window. Deriving it from loadedRegions would leave it empty in that window,
-  // collapsing every region into one layout group.
-  it('reports per-region keys while loadedRegions is empty', () => {
+  // stored payload rather than off the region record (see `LayoutRegionData`):
+  // the group key is a canonical assembly:refName pair the display resolved,
+  // not what `Region.refName` happens to carry.
+  it('reports the per-region key off the stored payload', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
@@ -1771,9 +1769,6 @@ describe('region identity is stored with the data it describes', () => {
     display.setRpcData(0, makeFeatureData(), regionA)
     display.setRpcData(1, makeFeatureData(), regionB)
 
-    // No setLoadedRegion was called — this is exactly the post-clear refetch
-    // window where rpcDataMap holds data but loadedRegions is empty.
-    expect(display.loadedRegions.size).toBe(0)
     expect(
       [...display.rpcDataMap.entries()].map(([idx, d]) => [idx, d.regionKey]),
     ).toEqual([

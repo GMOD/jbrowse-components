@@ -42,7 +42,6 @@ function open(display: TestDisplay, hgvsLabel?: string, tooltipText?: string) {
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos: [transcript] }),
     ctgA,
   )
-  display.setLoadedRegion(0, ctgA)
   rightClick(display, gene, transcript, { hgvsLabel, tooltipText })
 }
 

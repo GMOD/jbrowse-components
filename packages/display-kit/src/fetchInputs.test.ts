@@ -93,6 +93,43 @@ describe('fetchInputs', () => {
     dispose()
   })
 
+  // The hazard a value stamp has and the serialized key did not: the stamp
+  // outlives the fetch that wrote it, so a live collection reaching it goes on
+  // changing inside every region's stamp and the staleness compare reads the
+  // current state against itself.
+  it('stamps a live collection by value, so a later mutation does not follow it', () => {
+    const live = observable.array(['a'])
+    const { inputs } = makeFetchInputs(
+      hostOver(
+        () => ({ subtreeFilter: live }),
+        () => ({}),
+      ),
+    )
+    const dispose = autorun(() => {
+      inputs.get()
+    })
+    const stamped = inputs.get()
+    runInAction(() => {
+      live.push('b')
+    })
+    expect(fetchInputsCurrent(stamped, inputs.get())).toBe(false)
+    dispose()
+  })
+
+  // The same fact from the other side: nothing reachable from the stamp can be
+  // written at all, so a display that hands over a container it then mutates in
+  // place fails loudly rather than going stale in silence.
+  it('freezes the containers it rebuilds', () => {
+    const { settings } = makeFetchInputs(
+      hostOver(
+        () => ({ ids: ['a'] }),
+        () => ({}),
+      ),
+    )
+    const stamped = settings.get() as { rpcProps: { ids: string[] } }
+    expect(() => stamped.rpcProps.ids.push('b')).toThrow()
+  })
+
   it('falls back to the zoomFetchKey string for a display that declares no args', () => {
     const key = observable.box('16')
     const host = {

@@ -29,7 +29,6 @@ const [geneA, geneB] = genes
 
 function load(display: TestDisplay) {
   display.setRpcData(0, makeFeatureData({ flatbushItems: genes }), ctgA)
-  display.setLoadedRegion(0, ctgA)
 }
 
 // The one-shot isolate row's label, which is where the "replaces the N

@@ -56,7 +56,6 @@ function setup() {
   const { display, mockRpcCall } = createDisplay()
   mockRpcCall.mockResolvedValue({ feature: undefined })
   display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-  display.setLoadedRegion(0, ctgA)
   return { display, mockRpcCall }
 }
 
@@ -125,7 +124,6 @@ describe('the containing feature the panel is told about', () => {
           : undefined,
     )
     display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-    display.setLoadedRegion(0, ctgA)
     return { display, session }
   }
 

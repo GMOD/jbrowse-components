@@ -31,7 +31,6 @@ const splitRegions = [
 
 function loadGene(display: TestDisplay) {
   display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-  display.setLoadedRegion(0, ctgA)
 }
 
 describe('feature "Zoom to feature" context menu', () => {
@@ -91,7 +90,6 @@ describe('feature "Zoom to feature" context menu', () => {
       endBp: 4000,
     })
     display.setRpcData(0, makeFeatureData({ flatbushItems: [insertion] }), ctgA)
-    display.setLoadedRegion(0, ctgA)
 
     rightClick(display, insertion)
     clickContextMenuItem(display, 'Zoom to feature')

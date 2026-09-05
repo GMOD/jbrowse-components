@@ -100,8 +100,7 @@ describe('a region is marked loaded only when its data lands', () => {
     let loadedBeforeStore = 0
     await display.fetchRegions([region], async ctx => {
       loadedBeforeStore = display.loadedRegions.size
-      display.setLoaded(0, 'data')
-      ctx.commitRegion(0)
+      ctx.commitRegion(0, 'data')
     })
     expect(loadedBeforeStore).toBe(0)
     expect(display.loadedRegions.size).toBe(1)
@@ -149,8 +148,7 @@ describe('a region is marked loaded only when its data lands', () => {
     await afterFirstFetch(display)
 
     await display.fetchRegions([region], async ctx => {
-      display.setLoaded(0, 'data')
-      ctx.commitRegion(0)
+      ctx.commitRegion(0, 'data')
     })
     expect(display.loadedRegions.get(0)).toMatchObject(region.region)
   })

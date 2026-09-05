@@ -113,7 +113,6 @@ function setup(subfeatureInfos: SubfeatureInfo[]) {
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos }),
     ctgA,
   )
-  display.setLoadedRegion(0, ctgA)
   return { display, session }
 }
 
@@ -269,7 +268,6 @@ describe('the collapsed view is titled the way the track labels', () => {
       makeFeatureData({ flatbushItems: [labelled], subfeatureInfos }),
       ctgA,
     )
-    display.setLoadedRegion(0, ctgA)
     return { display, session }
   }
 

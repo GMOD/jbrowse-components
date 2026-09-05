@@ -56,7 +56,6 @@ function renderDialog(featureId: string) {
   const { display, session, mockRpcCall } = createDisplay()
   mockRpcCall.mockResolvedValue({ feature: fullGene })
   display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
-  display.setLoadedRegion(0, ctgA)
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <FeatureSequenceDialog

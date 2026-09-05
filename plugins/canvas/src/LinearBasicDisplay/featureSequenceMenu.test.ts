@@ -41,7 +41,6 @@ function loadGene(display: TestDisplay, subfeatureInfos: SubfeatureInfo[]) {
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos }),
     ctgA,
   )
-  display.setLoadedRegion(0, ctgA)
 }
 
 describe('feature "Get sequence" context menu', () => {
