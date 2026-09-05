@@ -64,7 +64,7 @@ async function settle(
 // Every placed row in the loaded regions as [sampleId, rowIndex], sorted by
 // sample so a test states the placement rather than the worker's emit order.
 function placedRows(display: {
-  rpcDataMap: Map<number, { blocks: { rows: MafAlignedRow[] }[] }>
+  rpcDataMap: ReadonlyMap<number, { blocks: { rows: MafAlignedRow[] }[] }>
 }) {
   return [...display.rpcDataMap.values()]
     .flatMap(d => d.blocks.flatMap(b => b.rows))

@@ -6,6 +6,8 @@ import LinearGenomeViewPlugin, {
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './stateModel.ts'
 
+import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafFrameRecord } from '../types.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -71,5 +73,27 @@ export function createMafTestEnvironment({
         displaySnapshot,
         skipWidth,
       }),
+  }
+}
+
+/**
+ * Stage a landed detail region the way the fetch commit lands one: the wire
+ * rows and any frames under the fetched span — the whole displayed region
+ * unless a narrower one is given — in the foundation's store, and the
+ * reference row the wire names beside the sample set.
+ */
+export function stageDetailRegion(
+  display: LinearMafDisplayModel,
+  displayedRegionIndex: number,
+  data: MafWireRegionData,
+  { frames, region }: { frames?: MafFrameRecord[]; region?: Region } = {},
+) {
+  display.setLoadedRegion(
+    displayedRegionIndex,
+    region ?? display.view.displayedRegions[displayedRegionIndex]!,
+    { data, frames },
+  )
+  if (data.refSampleId !== undefined) {
+    display.setRefSampleId(data.refSampleId)
   }
 }

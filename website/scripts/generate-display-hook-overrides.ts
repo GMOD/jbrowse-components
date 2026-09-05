@@ -178,7 +178,7 @@ const HOOKS: Hook[] = [
     name: 'clearSettingsBakedData',
     owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
-      'a no-op, so a settings change keeps every store: the held data draws under the `staleSettingsDrawn` scrim until the refetch lands, which is honest for a payload the refetch replaces region by region and wrong for one whose shape the setting decides (the variant matrix) or that shares a stamp with a second tier (MAF)',
+      'a no-op, so a settings change keeps every store: the held data draws under the `staleSettingsDrawn` scrim until the refetch lands, which is honest for a payload the refetch replaces region by region and wrong for one whose shape the setting decides (the variant matrix)',
   },
   {
     name: 'hoveredFeature',

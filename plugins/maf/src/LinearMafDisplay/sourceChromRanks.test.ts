@@ -2,24 +2,20 @@ import { autorun } from 'mobx'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
+
+import type { LinearMafDisplayModel } from './stateModel.ts'
 
 // Two blocks on one row, the first from chrA and the second from chrB, so the
 // row has a rank order to report.
-function loadTwoChromBlocks(display: {
-  setSamples: (arg: {
-    samples: { id: string; label: string }[]
-    treeNewick: undefined
-    samplesCanonical: boolean
-  }) => void
-  setRpcData: (i: number, data: ReturnType<typeof testWireRegionData>) => void
-}) {
+function loadTwoChromBlocks(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [{ id: 'sp1', label: 'sp1' }],
     treeNewick: undefined,
     samplesCanonical: true,
   })
-  display.setRpcData(
+  stageDetailRegion(
+    display,
     0,
     testWireRegionData(
       [

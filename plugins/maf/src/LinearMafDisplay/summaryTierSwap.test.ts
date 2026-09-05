@@ -1,7 +1,8 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
+import type { MafFrameRecord } from '../types.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -19,10 +20,13 @@ function seedSources(display: LinearMafDisplayModel) {
   })
 }
 
-const REGION_0 = [
-  { refName: 'ctgA', start: 100, end: 4000, src: 'hg38', score: 0.9 },
-  { refName: 'ctgA', start: 100, end: 4000, src: 'panTro4', score: 0.4 },
-]
+const REGION_0 = {
+  data: [
+    { refName: 'ctgA', start: 100, end: 4000, src: 'hg38', score: 0.9 },
+    { refName: 'ctgA', start: 100, end: 4000, src: 'panTro4', score: 0.4 },
+  ],
+  frames: undefined,
+}
 
 // The summary read over the whole displayed region, stamped with its own span
 // the way the tier's read stamps it.
@@ -30,9 +34,10 @@ function seedSummary(
   display: LinearMafDisplayModel,
   regions: Region[],
   extra: { displayedRegionIndex: number; payload: typeof REGION_0 }[] = [],
+  frames?: MafFrameRecord[],
 ) {
   display.setCoarseTier(
-    [{ displayedRegionIndex: 0, payload: REGION_0 }, ...extra],
+    [{ displayedRegionIndex: 0, payload: { ...REGION_0, frames } }, ...extra],
     {
       regions: regions.map((region, displayedRegionIndex) => ({
         region,
@@ -43,8 +48,13 @@ function seedSummary(
   )
 }
 
-function seedAlignment(display: LinearMafDisplayModel) {
-  display.setRpcData(
+function seedAlignment(
+  display: LinearMafDisplayModel,
+  region?: Region,
+  frames?: MafFrameRecord[],
+) {
+  stageDetailRegion(
+    display,
     0,
     testWireRegionData(
       [
@@ -59,6 +69,7 @@ function seedAlignment(display: LinearMafDisplayModel) {
       ],
       { coverage: emptyMafCoverage(100) },
     ),
+    { region, frames },
   )
 }
 
@@ -113,9 +124,18 @@ describe('the summary bars stand in until the alignment lands', () => {
     seedSummary(display, view.displayedRegions, [
       {
         displayedRegionIndex: 1,
-        payload: [
-          { refName: 'ctgA', start: 5100, end: 6000, src: 'hg38', score: 0.5 },
-        ],
+        payload: {
+          data: [
+            {
+              refName: 'ctgA',
+              start: 5100,
+              end: 6000,
+              src: 'hg38',
+              score: 0.5,
+            },
+          ],
+          frames: undefined,
+        },
       },
     ])
     // both regions on screen at once, and still under the 20kb floor
@@ -162,7 +182,7 @@ describe('the summary bars stand in until the alignment lands', () => {
 // wide one it was issued over. Under one shared entry the detail stamp
 // overwrote the summary's, and zooming back out re-read the byte-gated summary
 // adapter about an octave later — `maf-tiers-share-one-loaded-span` — which
-// the old seeding, one `setLoadedRegion` over the whole region, could not see.
+// the old seeding, one stamp over the whole region, could not see.
 describe('each tier answers for its own span', () => {
   const narrowDetail = (view: { displayedRegions: Region[] }) => ({
     ...view.displayedRegions[0]!,
@@ -177,8 +197,7 @@ describe('each tier answers for its own span', () => {
 
     view.zoomTo(1)
     expect(display.coarseTierActive).toBe(false)
-    display.setLoadedRegion(0, narrowDetail(view), undefined)
-    seedAlignment(display)
+    seedAlignment(display, narrowDetail(view))
 
     view.zoomTo(100)
     expect(display.coarseTierActive).toBe(true)
@@ -196,8 +215,7 @@ describe('each tier answers for its own span', () => {
     seedSources(display)
     seedSummary(display, view.displayedRegions)
     view.zoomTo(1)
-    display.setLoadedRegion(0, narrowDetail(view), undefined)
-    seedAlignment(display)
+    seedAlignment(display, narrowDetail(view))
     expect(display.fetchSuspended).toBe(false)
     expect(display.viewportWithinLoadedData).toBe(false)
 
@@ -219,5 +237,63 @@ describe('each tier answers for its own span', () => {
 
     seedSummary(display, view.displayedRegions)
     expect(display.displayPhase).toBe('ready')
+  })
+})
+
+// The CDS frames ride each tier's payload, and the overlay reads the tier on
+// screen first — its frames were read over the span it is drawing — with the
+// other tier standing in where it holds none. That is what keeps the strip up
+// across the swap while the incoming tier's read is in flight.
+describe('the frames overlay across the swap', () => {
+  const framesEnv = () =>
+    createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+      annotationAdapter: { type: 'BigBedAdapter' },
+    })
+  const frame = (name: string): MafFrameRecord => ({
+    refName: 'ctgA',
+    start: 100,
+    end: 400,
+    src: 'hg38',
+    frame: 0,
+    strand: 1,
+    name,
+  })
+  const names = (display: LinearMafDisplayModel) =>
+    display.framesDataMap.get(0)?.map(f => f.name)
+
+  it('reads the tier on screen first', () => {
+    const { display, view } = framesEnv().createDisplay()
+    seedSources(display)
+    display.setShowAnnotations(true)
+    seedSummary(display, view.displayedRegions, [], [frame('wide')])
+    seedAlignment(display, undefined, [frame('narrow')])
+
+    view.zoomTo(1)
+    expect(display.coarseTierActive).toBe(false)
+    expect(names(display)).toEqual(['narrow'])
+
+    view.zoomTo(100)
+    expect(display.coarseTierActive).toBe(true)
+    expect(names(display)).toEqual(['wide'])
+  })
+
+  it('stands in with the other tier where the tier on screen holds none', () => {
+    const { display, view } = framesEnv().createDisplay()
+    seedSources(display)
+    display.setShowAnnotations(true)
+    seedAlignment(display, undefined, [frame('narrow')])
+
+    view.zoomTo(100)
+    expect(display.coarseTierActive).toBe(true)
+    expect(names(display)).toEqual(['narrow'])
+
+    seedSummary(display, view.displayedRegions, [], [frame('wide')])
+    expect(names(display)).toEqual(['wide'])
+
+    view.zoomTo(1)
+    display.clearAllRpcData()
+    expect(display.coarseTierActive).toBe(false)
+    expect(names(display)).toEqual(['wide'])
   })
 })

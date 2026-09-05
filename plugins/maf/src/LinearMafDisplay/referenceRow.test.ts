@@ -1,6 +1,6 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 // The MAF's own name for its reference, deliberately not the view's assembly
 // (`volvox`) — the case `refAssemblyName` exists for, and the one where the two
@@ -27,7 +27,8 @@ function landRegion(
   display: ReturnType<typeof makeDisplay>,
   refSampleId = REF,
 ) {
-  display.setRpcData(
+  stageDetailRegion(
+    display,
     0,
     testWireRegionData(
       [
@@ -70,9 +71,9 @@ test('hiding the reference drops its row and leaves the others in order', () => 
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
 })
 
-// `rpcDataMap` is where the worker's answer arrives and it is emptied under the
-// display — `clearDisplaySpecificData` on chromosome navigation. Read back out
-// of that map, the reference id would revert to the view's assembly name, which
+// The region store is where the worker's answer arrives and it is emptied under
+// the display — `clearAllRpcData` on chromosome navigation. Read back out of
+// that store, the reference id would revert to the view's assembly name, which
 // is a different string exactly here — and the row the user hid would reappear
 // until the next region landed.
 test('the hidden row stays hidden once the alignment data is dropped', () => {
@@ -80,7 +81,8 @@ test('the hidden row stays hidden once the alignment data is dropped', () => {
   landRegion(display)
   display.setShowReferenceRow(false)
 
-  display.clearDisplaySpecificData()
+  display.clearAllRpcData()
+  expect(display.rpcDataMap.size).toBe(0)
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
 })
 

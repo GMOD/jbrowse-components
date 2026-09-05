@@ -289,10 +289,10 @@ export async function fetchAllRegions<R>(
  * helpers own, at the only granularity that exists here: there is one result, so
  * a viewport that moved drops all of it, and a refusal refuses the set.
  *
- * The batch is what each region stores: one object under every index it
- * covered, since that is what the fetch brought back for each of them. Both
- * displays here read their own per-batch holder, and each answers
- * `regionHasData` itself for the reason its docstring gives.
+ * What each region stores is `payloadFor`'s slice of the batch, and by default
+ * the batch itself: variants reads its own per-batch holder and answers
+ * `regionHasData` itself, while MAF's batch is one result per region and the
+ * store holds each region's own.
  */
 export async function fetchRegionsBatched<R extends RegionPayload>(
   self: FetchEachRegionModel,
@@ -303,9 +303,11 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
       ctx: FetchContext,
     ) => Promise<R | RegionTooLargeResult>
     commit: (result: R) => void
+    payloadFor?: (displayedRegionIndex: number, result: R) => RegionPayload
   },
 ) {
   const issued = self.gateFetchState()
+  const payloadFor = opts.payloadFor ?? ((_, result) => result)
   await self.fetchRegions(regions, async ctx => {
     const result = await opts.call(regions, ctx)
     if (!ctx.isStale()) {
@@ -316,7 +318,10 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
       if (!isRegionRefused(result)) {
         opts.commit(result)
         for (const { displayedRegionIndex } of regions) {
-          ctx.commitRegion(displayedRegionIndex, result)
+          ctx.commitRegion(
+            displayedRegionIndex,
+            payloadFor(displayedRegionIndex, result),
+          )
         }
       }
     }

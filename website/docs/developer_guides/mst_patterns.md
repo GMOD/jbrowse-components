@@ -179,7 +179,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   BaseDisplay,
   TrackHeightMixin(),
   MultiRegionDisplayMixin(),
-  CoarseTierMixin<MafSummaryRecord[]>(),
+  CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),

@@ -30,8 +30,8 @@ export function emptyMafCoverage(coverageStartPos = 0): MafCoverageRegion {
  * Zero-data wire payload, for a test whose fetch has to answer but whose data is
  * not what it is about. `LinearMafGetAlignmentData` always builds one of these,
  * so a mock resolving `{ regionData: undefined }` was answering a shape the RPC
- * cannot produce — and `setRpcData` stored it, leaving every reader of
- * `wireDataMap` reading through it.
+ * cannot produce — and the store took it, leaving every reader of the placed
+ * rows reading through it.
  */
 export function emptyMafWireRegionData(): MafWireRegionData {
   const u32 = () => new Uint32Array(0)

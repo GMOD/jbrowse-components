@@ -33,8 +33,8 @@ export function isCheckedAtTheStore(map: ReadonlyMap<unknown, unknown>) {
  *   observable object graph — the stored value is not the object the worker
  *   produced. A multi-wiggle region is one atom per field per source, so a
  *   thousand-sample track pays ~18k on every pan; MAF pays the whole set again
- *   for every cached region on every row reorder, since `placeFetchedRows`
- *   re-places them all.
+ *   for every cached region on every row reorder, since a reorder re-places
+ *   them all.
  * - **Read.** Each field access goes through `getObservablePropValue_`. Hot
  *   loops that hoist their typed arrays are fine, but the ones that don't were
  *   paying it per iteration.

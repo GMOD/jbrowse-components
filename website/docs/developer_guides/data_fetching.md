@@ -149,39 +149,41 @@ staleness guard around the whole batch rather than per region:
 // annotation branch's rows are a small fraction of the alignment's.
 const slot = createStatusFanOut(ctx.statusCallback)
 const scope = refusalScope(ctx)
-const results = await Promise.all([
+const [results, frames] = await Promise.all([
   callEachRegion(
     regions,
     { ...scope.ctx, statusCallback: slot() },
     (region, regionCtx, displayedRegionIndex) =>
       scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
-  ),
+  ).then(landed),
   fetchAnnotationData(self, regions, {
     ...scope.ctx,
     statusCallback: slot(),
   }),
-])
-  .then(([answered]) => landed(answered))
-  .finally(() => {
-    scope.dispose()
-  })
+]).finally(() => {
+  scope.dispose()
+})
 // The batch's own byte number, whichever way it goes: the budget is what
 // one region may cost, so the largest is what was judged and what the
 // banner quotes.
 const perRegionBytes = results.map(r => measuredBytes(r.result))
 const bytes = largestRegionBytes(perRegionBytes)
-const kept: { displayedRegionIndex: number; result: R }[] = []
+const kept: MafBatch<R>['results'] = []
 let refused = false
 for (const { displayedRegionIndex, result } of results) {
   if (isRegionRefused(result)) {
     refused = true
   } else {
-    kept.push({ displayedRegionIndex, result })
+    kept.push({
+      displayedRegionIndex,
+      result,
+      frames: frames.byIndex.get(displayedRegionIndex),
+    })
   }
 }
 return refused
   ? { regionTooLarge: true as const, bytes }
-  : { results: kept, bytes }
+  : { results: kept, bytes, framesRefused: frames.refused }
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed

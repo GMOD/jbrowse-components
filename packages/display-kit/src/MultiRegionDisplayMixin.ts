@@ -727,10 +727,11 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #action
-         * Overridable hook (no-op base): drop this display's own stores —
-         * `rpcDataMap` and whatever sits beside it. Called by
-         * `clearAllRpcData`, which runs on a displayed-regions change, on a
-         * viewport move past an error or a cancel, and on `reload()`.
+         * Overridable hook (no-op base): drop what this display holds beside
+         * the store — a second store of its own, a verdict about the viewport
+         * that was just dropped. Called by `clearAllRpcData`, which runs on a
+         * displayed-regions change, on a viewport move past an error or a
+         * cancel, and on `reload()`.
          */
         clearDisplaySpecificData() {},
         /**
@@ -744,14 +745,9 @@ export default function MultiRegionDisplayMixin() {
          * way canvas has kept its features since ADR-006 and every display
          * does since 2026-09.
          *
-         * Two displays override it, for two structural reasons. The variant
-         * matrix holds one payload for every visible region and the row set
-         * is a setting, so there is no per-region replacement to wait for.
-         * MAF holds a summary tier and a detail tier under one
-         * `displayedRegionIndex` with one stamp between them: a refetch under
-         * the new setting restamps the region for the tier it fetched, and the
-         * other tier's map — still the old setting's rows — would then read as
-         * cache-valid on the next zoom across the threshold.
+         * The variant matrix overrides it, for a structural reason: it holds
+         * one payload for every visible region and the row set is a setting,
+         * so there is no per-region replacement to wait for.
          */
         clearSettingsBakedData() {},
       }))

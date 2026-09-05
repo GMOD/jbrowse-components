@@ -5,7 +5,8 @@ import {
   getFrameColors,
   getFrameLegendItems,
 } from '../LinearMafRenderer/util.ts'
-import { createMafTestEnvironment } from './testEnv.ts'
+import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
@@ -82,17 +83,19 @@ describe('the CDS strip keys itself', () => {
       samplesCanonical: true,
     })
     display.setShowAnnotations(showStrip)
-    display.setFramesData(0, [
-      {
-        refName: 'ctgA',
-        start: 100,
-        end: 400,
-        src: 'hg38',
-        frame: 0,
-        strand: 1,
-        name: 'GAPDH',
-      },
-    ])
+    stageDetailRegion(display, 0, emptyMafWireRegionData(), {
+      frames: [
+        {
+          refName: 'ctgA',
+          start: 100,
+          end: 400,
+          src: 'hg38',
+          frame: 0,
+          strand: 1,
+          name: 'GAPDH',
+        },
+      ],
+    })
   }
 
   it('keys from the same indexer the painter uses', () => {
@@ -148,7 +151,7 @@ describe('the CDS strip keys itself', () => {
   it('goes away where no CDS is in view', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, true)
-    display.setFramesData(0, [])
+    stageDetailRegion(display, 0, emptyMafWireRegionData(), { frames: [] })
     expect(display.visibleFrames).toEqual([])
     expect(display.legendItems).toEqual([])
   })

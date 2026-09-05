@@ -43,6 +43,7 @@ function selfWith(
   ctx: FetchContext,
   loaded: number[] = [],
   bytes: (number | undefined)[][] = [],
+  stored = new Map<number, unknown>(),
 ) {
   return {
     gateFetchState: () => ISSUED,
@@ -60,8 +61,9 @@ function selfWith(
     ) =>
       work({
         ...ctx,
-        commitRegion: idx => {
+        commitRegion: (idx, payload) => {
           loaded.push(idx)
+          stored.set(idx, payload)
         },
       }),
   }
@@ -97,6 +99,41 @@ test('one call over the whole set, one commit, every region loaded', async () =>
   expect(asked).toEqual([[2, 5]])
   expect(committed).toEqual(['cellData'])
   expect(loaded).toEqual([2, 5])
+})
+
+// The batch is what each region stores unless the caller slices it: MAF's
+// batch is one result per region, and its store holds each region's own so the
+// foundation's `regionPayloads` reads per region the way every other display's
+// does.
+test('payloadFor stores each region its own slice of the batch', async () => {
+  const stored = new Map<number, unknown>()
+  const batch = {
+    byIndex: new Map([
+      [2, 'ctgA rows'],
+      [5, 'ctgB rows'],
+    ]),
+  }
+  await fetchRegionsBatched(selfWith(fresh(), [], [], stored), REGIONS, {
+    call: () => Promise.resolve(batch),
+    commit: () => {},
+    payloadFor: (idx, result) => result.byIndex.get(idx)!,
+  })
+  expect([...stored]).toEqual([
+    [2, 'ctgA rows'],
+    [5, 'ctgB rows'],
+  ])
+})
+
+test('the batch itself is the payload when nothing slices it', async () => {
+  const stored = new Map<number, unknown>()
+  await fetchRegionsBatched(selfWith(fresh(), [], [], stored), REGIONS, {
+    call: () => Promise.resolve('cellData'),
+    commit: () => {},
+  })
+  expect([...stored]).toEqual([
+    [2, 'cellData'],
+    [5, 'cellData'],
+  ])
 })
 
 // One guard, at the only granularity that exists here — there is one result, so

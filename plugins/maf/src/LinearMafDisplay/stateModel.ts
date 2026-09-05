@@ -32,7 +32,6 @@ import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ContextMenuMixin,
   RowHeightMixin,
@@ -116,7 +115,12 @@ import type {
   MafWireRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
-import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
+import type {
+  MafFrameRecord,
+  MafRegionPayload,
+  MafSummaryRecord,
+  Sample,
+} from '../types.ts'
 import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
 import type {
   CodonConservationBar,
@@ -240,7 +244,7 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        CoarseTierMixin<MafSummaryRecord[]>(),
+        CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
@@ -258,28 +262,6 @@ export default function stateModelFactory(
       )
       // #endregion
       .volatile(() => ({
-        /**
-         * #volatile
-         * Rows as the worker sent them: named by species, with no screen
-         * position. `rpcDataMap` is this placed against the current row order,
-         * and this is what a reorder re-places from instead of refetching.
-         */
-        wireDataMap: regionDataMap<MafWireRegionData>('wireDataMap'),
-        /**
-         * #volatile
-         * `wireDataMap` with every row assigned its on-screen `rowIndex` (see
-         * `placeMafRegionData`). Everything that draws, hit-tests or measures
-         * rows reads this one.
-         */
-        rpcDataMap: regionDataMap<MafRegionData>('rpcDataMap'),
-        /**
-         * #volatile
-         * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
-         * populated by the frames RPC in parallel with the main fetch. Kept
-         * separate from the alignment map and the summary tier so the overlay
-         * survives the summary↔detail swap.
-         */
-        framesDataMap: regionDataMap<MafFrameRecord[]>('framesDataMap'),
         /**
          * #volatile
          * The last frames fetch declined to read the `annotationAdapter`
@@ -313,16 +295,15 @@ export default function stateModelFactory(
          * #volatile
          * Which sample row the worker resolved as the reference — off the block
          * whose sequence the row carries — held here rather than read back out
-         * of `rpcDataMap`, which is where it arrives.
+         * of the region store, which is where it arrives.
          *
-         * Because that map is emptied under the display —
-         * `clearDisplaySpecificData` on chromosome navigation — and holds
-         * nothing until the first detail region lands. Read from the map, the
-         * answer would revert to `view.assemblyNames[0]` each time, and that is
-         * a different string exactly when a MAF names its reference
-         * differently, which is the case `refAssemblyName` exists for.
-         * `sources` hides this row, so it would come back for the whole time
-         * the view sat on the summary tier.
+         * Because that store is emptied under the display — `clearAllRpcData`
+         * on chromosome navigation — and holds nothing until the first detail
+         * region lands. Read from the store, the answer would revert to
+         * `view.assemblyNames[0]` each time, and that is a different string
+         * exactly when a MAF names its reference differently, which is the
+         * case `refAssemblyName` exists for. `sources` hides this row, so it
+         * would come back for the whole time the view sat on the summary tier.
          *
          * Last write wins rather than a latch. The reference is a property of
          * the track, but the track can be re-pointed at another adapter or have
@@ -684,7 +665,7 @@ export default function stateModelFactory(
          *
          * Any loaded region answers — a track has one reference species — so
          * `refSampleIdVolatile` holds the last one to name it; see there for why
-         * the answer is kept rather than read back out of `rpcDataMap`.
+         * the answer is kept rather than read back out of the region store.
          *
          * The view's assembly name is still the answer until a detail region
          * lands: the summary tier's records carry no reference, so a track
@@ -980,6 +961,76 @@ export default function stateModelFactory(
           const refSrc = self.referenceSampleId
           const rows = self.sourcesVolatile
           return rows.some(s => s.name === refSrc) ? refSrc : rows[0]?.name
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The detail tier's store, `MultiRegionDisplayMixin`'s per-region
+         * payloads narrowed once: the worker's columnar rows, named by species
+         * with no screen position, beside the CDS frames that rode the same
+         * fetch. A reorder re-places from here instead of refetching.
+         */
+        get detailPayloads(): ReadonlyMap<
+          number,
+          MafRegionPayload<MafWireRegionData>
+        > {
+          return self.regionPayloads as ReadonlyMap<
+            number,
+            MafRegionPayload<MafWireRegionData>
+          >
+        },
+      }))
+      .views(self => {
+        const placed = createEncodeMemo(
+          () => self.detailPayloads,
+          () => self.rowIndexBySrc,
+          (payload, rowIndexBySrc) =>
+            placeMafRegionData(payload.data, rowIndexBySrc),
+        )
+        return {
+          /**
+           * #getter
+           * `detailPayloads` with every row assigned its on-screen `rowIndex`
+           * (see `placeMafRegionData`). Everything that draws, hit-tests or
+           * measures rows reads this one. A region re-places when its payload
+           * lands and every region re-places when the row order moves — a
+           * relabel or a recolor included, which move no row; that costs one
+           * re-encode of the loaded regions for a rare manual edit, cheaper
+           * than carrying a comparison to suppress it. The memo lives in this
+           * closure so it outlives a context-loss recovery, and `afterAttach`
+           * installs the observer it needs to exist at all.
+           */
+          get rpcDataMap(): ReadonlyMap<number, MafRegionData> {
+            return placed()
+          },
+        }
+      })
+      .views(self => ({
+        /**
+         * #getter
+         * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation
+         * overlay, off whichever tier's payload carries them. The tier on
+         * screen answers first — its frames were read over the span it is
+         * drawing — and the other tier's stand in where it holds none, which
+         * is what keeps the overlay up across the summary↔detail swap while
+         * the incoming tier's read is in flight.
+         */
+        get framesDataMap(): ReadonlyMap<number, MafFrameRecord[]> {
+          const detail = self.detailPayloads
+          const summary = self.coarseTier
+          const [first, second] = self.coarseTierActive
+            ? [summary, detail]
+            : [detail, summary]
+          const frames = new Map<number, MafFrameRecord[]>()
+          for (const tier of [second, first]) {
+            for (const [displayedRegionIndex, payload] of tier) {
+              if (payload.frames) {
+                frames.set(displayedRegionIndex, payload.frames)
+              }
+            }
+          }
+          return frames
         },
       }))
       .views(self => ({
@@ -1491,9 +1542,8 @@ export default function stateModelFactory(
          */
         rpcProps() {
           // `annotationDataActive` is a cache key so toggling the CDS-frame strip
-          // *or* the codon view on triggers a refetch that populates
-          // `framesDataMap` for the loaded regions (the frames piggyback on the
-          // same fetch pass).
+          // *or* the codon view on triggers a refetch that brings the frames
+          // for the loaded regions (they ride the same fetch pass).
           return {
             subtreeFilter: self.subtreeFilterSet,
             annotationDataActive: self.annotationDataActive,
@@ -2123,12 +2173,12 @@ export default function stateModelFactory(
           const summary = self.coarseTier
           return computeVisibleSummaryBars({
             view: self.host,
-            summaryDataMap: self.coarseTierActive
-              ? summary
-              : {
-                  get: (i: number) =>
-                    self.rpcDataMap.has(i) ? undefined : summary.get(i),
-                },
+            summaryDataMap: {
+              get: (i: number) =>
+                !self.coarseTierActive && self.rpcDataMap.has(i)
+                  ? undefined
+                  : summary.get(i)?.data,
+            },
             rowIndexBySrc: self.rowIndexBySrc,
             ...self.rowGeometry(),
           })
@@ -2469,38 +2519,12 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * The reference row the last detail batch named — see
+         * `refSampleIdVolatile`. Written beside `setSamples` in the batch
+         * commit, so a stale batch names nothing.
          */
-        setRpcData(regionIndex: number, data: MafWireRegionData) {
-          if (data.refSampleId !== undefined) {
-            self.refSampleIdVolatile = data.refSampleId
-          }
-          self.wireDataMap.set(regionIndex, data)
-          self.rpcDataMap.set(
-            regionIndex,
-            placeMafRegionData(data, self.rowIndexBySrc),
-          )
-        },
-        /**
-         * #action
-         * Re-place every cached region against the row order now on screen.
-         * Driven by the autorun below, so a reorder repaints from data already
-         * in hand — the fetched rows name their species, so nothing about them
-         * is order-specific. Replacing the region objects is what re-runs the
-         * per-region encode.
-         */
-        placeFetchedRows(rowIndexBySrc: Map<string, number>) {
-          for (const [regionIndex, data] of self.wireDataMap) {
-            self.rpcDataMap.set(
-              regionIndex,
-              placeMafRegionData(data, rowIndexBySrc),
-            )
-          }
-        },
-        /**
-         * #action
-         */
-        setFramesData(regionIndex: number, records: MafFrameRecord[]) {
-          self.framesDataMap.set(regionIndex, records)
+        setRefSampleId(id: string | undefined) {
+          self.refSampleIdVolatile = id
         },
         /**
          * #action
@@ -2513,15 +2537,12 @@ export default function stateModelFactory(
         },
         /**
          * #action
+         * The verdict describes a read of the viewport that was just thrown
+         * away, so it goes with the data rather than outliving it — otherwise
+         * chromosome nav carries "too much data" onto a region nobody has
+         * measured yet.
          */
         clearDisplaySpecificData() {
-          self.wireDataMap.clear()
-          self.rpcDataMap.clear()
-          self.framesDataMap.clear()
-          // The verdict describes a read of the viewport that was just thrown
-          // away, so it goes with the data rather than outliving it — otherwise
-          // chromosome nav carries "too much data" onto a region nobody has
-          // measured yet.
           self.framesGateBlocked = false
         },
         // reload() not overridden — MultiRegionDisplayMixin's base default
@@ -2579,7 +2600,7 @@ export default function stateModelFactory(
         fetchCoarseTier(
           read: CoarseTierRead,
           ctx: FetchContext,
-        ): Promise<CoarseTierResult<MafSummaryRecord[]>> {
+        ): Promise<CoarseTierResult<MafRegionPayload<MafSummaryRecord[]>>> {
           return fetchMafSummaryData(self, read.regions, ctx)
         },
       }))
@@ -2620,22 +2641,16 @@ export default function stateModelFactory(
         },
         // #endregion
         afterAttach() {
-          // `rowIndexBySrc` is read in the autorun body rather than inside the
-          // action: an MST action's own reads are untracked, so the placement
-          // would never see the row order change. Reading it here also hands
-          // the action the memoized Map instead of a freshly rebuilt one.
-          //
-          // This re-places on any change to `sources`, including a relabel or a
-          // recolor, which move no row. That costs one re-encode of the loaded
-          // regions — the same work a theme or color-setting change already
-          // does on this path — for a rare manual edit, which is cheaper than
-          // carrying a comparison to suppress it.
+          // What makes `rpcDataMap` a memo at all: its consumers include the
+          // pointer handlers, and MobX discards an unobserved computed's value
+          // as it hands it over. Safe to hold because it keys off the store
+          // and the row order, never live view geometry.
           namedAutorun(
             self,
             () => {
-              self.placeFetchedRows(self.rowIndexBySrc)
+              void self.rpcDataMap
             },
-            { name: 'Maf:placeFetchedRows' },
+            { name: 'Maf:placedRows' },
           )
           setupTreeSidebarAutoruns(self, {
             name: 'Maf',

@@ -90,15 +90,20 @@ function makeSelf() {
   // decision over every region, so one refused region refuses the batch and
   // nothing is marked loaded.
   const loadedIndices: number[] = []
+  // what each region stored: the frames ride the detail payload
+  const stored = new Map<number, { data: unknown; frames: unknown }>()
   const committedBytes: (number | undefined)[][] = []
-  const framesFetched: number[] = []
   const framesBlocked: boolean[] = []
+  const refSampleIds: (string | undefined)[] = []
   return {
     reported,
     loadedIndices,
+    stored,
     committedBytes,
-    framesFetched,
+    framesFetched: () =>
+      [...stored].flatMap(([i, p]) => (p.frames === undefined ? [] : [i])),
     framesBlocked,
+    refSampleIds,
     self: {
       adapterConfig: {},
       // `RegionTooLargeMixin`'s two commit members, which the fan-out helper
@@ -118,15 +123,16 @@ function makeSelf() {
         _needed: unknown,
         work: (ctx: RegionFetchContext) => unknown,
       ) =>
-        Promise.resolve(work(makeCtx(reported, loadedIndices))).then(() => {}),
-      setRpcData: () => {},
-      setFramesData: (i: number) => {
-        framesFetched.push(i)
-      },
+        Promise.resolve(work(makeCtx(reported, loadedIndices, stored))).then(
+          () => {},
+        ),
       setFramesGateBlocked: (blocked: boolean) => {
         framesBlocked.push(blocked)
       },
       setSamples: () => {},
+      setRefSampleId: (id: string | undefined) => {
+        refSampleIds.push(id)
+      },
     },
   }
 }
@@ -136,6 +142,7 @@ function makeSelf() {
 function makeCtx(
   reported: RpcStatus[],
   loadedIndices: number[],
+  stored = new Map<number, { data: unknown; frames: unknown }>(),
 ): RegionFetchContext {
   return {
     stopToken: 'tok',
@@ -150,8 +157,9 @@ function makeCtx(
         statusCallback: this.statusCallback,
       })
     },
-    commitRegion: (idx: number) => {
+    commitRegion: (idx, payload) => {
       loadedIndices.push(idx)
+      stored.set(idx, payload as { data: unknown; frames: unknown })
     },
   }
 }
@@ -315,11 +323,17 @@ describe('the summary read', () => {
       entries: [
         {
           displayedRegionIndex: 0,
-          payload: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+          payload: {
+            data: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+            frames: undefined,
+          },
         },
         {
           displayedRegionIndex: 3,
-          payload: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+          payload: {
+            data: [{ refName: 'ctgA', start: 0, end: 10, src: 'hg38' }],
+            frames: undefined,
+          },
         },
       ],
       bytes: 10,
@@ -340,6 +354,40 @@ describe('the summary read', () => {
       regionTooLarge: true,
       bytes: 9e9,
     })
+  })
+})
+
+// The detail tier stores each region its own wire rows in the foundation's
+// store, the way every other per-region display does, and the batch-wide
+// decisions — the sample union, the reference row — publish once beside them.
+describe('the detail read', () => {
+  test('stores each region its own rows and names the reference once', async () => {
+    const made = makeSelf()
+    mockRpcCall.mockImplementation((_s: string, _m: string, args: any) =>
+      Promise.resolve({
+        samples: [],
+        treeNewick: undefined,
+        samplesCanonical: false,
+        regionData: {
+          blocks: [],
+          refSampleId: `ref-${args.regions[0].refName}`,
+        },
+      }),
+    )
+    await fetchAlignment(made)
+    expect([...made.stored]).toEqual([
+      [0, { data: { blocks: [], refSampleId: 'ref-ctgA' }, frames: undefined }],
+      [3, { data: { blocks: [], refSampleId: 'ref-ctgB' }, frames: undefined }],
+    ])
+    expect(made.refSampleIds).toEqual(['ref-ctgA'])
+  })
+
+  // A worker that resolved no reference row leaves the last answer standing
+  // rather than naming nothing — see `refSampleIdVolatile`.
+  test('leaves the reference alone when no region names one', async () => {
+    const made = makeSelf()
+    await fetchAlignment(made)
+    expect(made.refSampleIds).toEqual([])
   })
 })
 
@@ -401,11 +449,12 @@ describe('the CDS-frame read is measured against its own file', () => {
   })
 
   test('reads the frames when the region is under the limit', async () => {
-    const { self, framesFetched, framesBlocked } = framesSelf()
+    const { self, framesFetched, framesBlocked, stored } = framesSelf()
     respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
 
-    expect(framesFetched).toEqual([0, 3])
+    expect(framesFetched()).toEqual([0, 3])
+    expect(stored.get(0)?.frames).toEqual([])
     expect(framesBlocked).toEqual([false])
   })
 
@@ -417,7 +466,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     respondWith(true)
     await fetchMafAlignmentData(self as any, NEEDED)
 
-    expect(framesFetched).toEqual([])
+    expect(framesFetched()).toEqual([])
     expect(framesBlocked).toEqual([true])
     // the main fetch is untouched
     expect(callsTo('LinearMafGetAlignmentData')).toHaveLength(2)
@@ -438,7 +487,7 @@ describe('the CDS-frame read is measured against its own file', () => {
     expect(
       callsTo('LinearMafGetAnnotationData')[0]![2].byteLimit,
     ).toBeUndefined()
-    expect(framesFetched).toEqual([0, 3])
+    expect(framesFetched()).toEqual([0, 3])
   })
 
   // The strip spans the viewport, so drawing it over only the regions that fit
@@ -460,7 +509,7 @@ describe('the CDS-frame read is measured against its own file', () => {
       ),
     )
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(framesFetched).toEqual([])
+    expect(framesFetched()).toEqual([])
     expect(framesBlocked).toEqual([true])
   })
 
@@ -468,11 +517,28 @@ describe('the CDS-frame read is measured against its own file', () => {
   // it has to be gated on that path too — not only on the alignment's.
   test('applies on the summary tier as well', async () => {
     const made = framesSelf()
-    const { framesFetched, framesBlocked } = made
+    const { framesBlocked } = made
     respondWith(true)
-    await fetchSummary(made)
-    expect(framesFetched).toEqual([])
+    const result = await fetchSummary(made)
+    expect(result).toMatchObject({
+      entries: [
+        { displayedRegionIndex: 0, payload: { frames: undefined } },
+        { displayedRegionIndex: 3, payload: { frames: undefined } },
+      ],
+    })
     expect(framesBlocked).toEqual([true])
+  })
+
+  test('the summary tier carries its frames on its own payload', async () => {
+    const made = framesSelf()
+    respondWith(false)
+    const result = await fetchSummary(made)
+    expect(result).toMatchObject({
+      entries: [
+        { displayedRegionIndex: 0, payload: { frames: [] } },
+        { displayedRegionIndex: 3, payload: { frames: [] } },
+      ],
+    })
   })
 
   // A track with the overlay off pays for none of this.

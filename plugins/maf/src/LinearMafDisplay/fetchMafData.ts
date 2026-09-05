@@ -15,8 +15,12 @@ import {
   fetchRegionsBatched,
 } from '@jbrowse/display-kit/fetchEachRegion'
 
-import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
+import type {
+  MafFrameRecord,
+  MafRegionPayload,
+  MafSummaryRecord,
+  Sample,
+} from '../types.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
@@ -36,10 +40,9 @@ interface MafFetchSelf extends FetchEachRegionModel {
   // number — and undefined is how `gateActive` reaches the worker, which then
   // measures nothing
   resolvedByteLimit: () => number | undefined
-  setRpcData: (regionIndex: number, data: MafWireRegionData) => void
-  setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
   setFramesGateBlocked: (blocked: boolean) => void
   setSamples: (arg: SampleSet) => void
+  setRefSampleId: (id: string | undefined) => void
 }
 
 interface SampleSet {
@@ -137,8 +140,14 @@ function landed<R>(
 }
 
 interface MafBatch<R> {
-  results: { displayedRegionIndex: number; result: R }[]
+  results: {
+    displayedRegionIndex: number
+    result: R
+    frames: MafFrameRecord[] | undefined
+  }[]
   bytes?: number
+  /** the frames read declined a region, so no region carries frames */
+  framesRefused: boolean
 }
 
 /**
@@ -180,55 +189,64 @@ async function callMafRegions<R extends SampleSet>(
   // annotation branch's rows are a small fraction of the alignment's.
   const slot = createStatusFanOut(ctx.statusCallback)
   const scope = refusalScope(ctx)
-  const results = await Promise.all([
+  const [results, frames] = await Promise.all([
     callEachRegion(
       regions,
       { ...scope.ctx, statusCallback: slot() },
       (region, regionCtx, displayedRegionIndex) =>
         scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
-    ),
+    ).then(landed),
     fetchAnnotationData(self, regions, {
       ...scope.ctx,
       statusCallback: slot(),
     }),
-  ])
-    .then(([answered]) => landed(answered))
-    .finally(() => {
-      scope.dispose()
-    })
+  ]).finally(() => {
+    scope.dispose()
+  })
   // The batch's own byte number, whichever way it goes: the budget is what
   // one region may cost, so the largest is what was judged and what the
   // banner quotes.
   const perRegionBytes = results.map(r => measuredBytes(r.result))
   const bytes = largestRegionBytes(perRegionBytes)
-  const kept: { displayedRegionIndex: number; result: R }[] = []
+  const kept: MafBatch<R>['results'] = []
   let refused = false
   for (const { displayedRegionIndex, result } of results) {
     if (isRegionRefused(result)) {
       refused = true
     } else {
-      kept.push({ displayedRegionIndex, result })
+      kept.push({
+        displayedRegionIndex,
+        result,
+        frames: frames.byIndex.get(displayedRegionIndex),
+      })
     }
   }
   return refused
     ? { regionTooLarge: true as const, bytes }
-    : { results: kept, bytes }
+    : { results: kept, bytes, framesRefused: frames.refused }
   // #endregion
 }
 
-function publishSampleSet(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
+/**
+ * The batch-wide decisions a landed batch publishes, under whichever guard the
+ * tier's commit runs: the sample set is a union over every region, and the
+ * frames verdict is one answer for the whole viewport.
+ */
+function publishBatch(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
   const sampleSet = unionSampleSets(batch.results)
   if (sampleSet) {
     self.setSamples(sampleSet)
   }
+  self.setFramesGateBlocked(batch.framesRefused)
 }
 
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
  * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
- * main alignment/summary fetch and under its stop token. No-op when no adapter is
- * configured or neither the frame strip nor the codon view is on, so tracks
- * without frames pay nothing. Stale writes are skipped by `ctx.isStale()`.
+ * main alignment/summary fetch and under its stop token. Empty when no adapter
+ * is configured or neither the frame strip nor the codon view is on, so tracks
+ * without frames pay nothing. The frames ride the tier's own payload, so they
+ * land under the same commit and the same staleness guard as the rows.
  *
  * Gated like both main tiers, by the `byteLimit` the RPC carries: the display's
  * own gate measures exactly one file — the alignment or the summary depending
@@ -239,8 +257,9 @@ function publishSampleSet(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
  * Fails soft: the overlay is auxiliary, so a frames-file error is logged but
  * swallowed rather than rejecting the combined fetch and blanking the alignment.
  * A refusal takes that same soft path — the overlay is the only thing that goes
- * missing — but it is *reported*, through `framesGateBlocked`, so the menu can
- * say why the strip stopped drawing instead of leaving it silently off.
+ * missing — but it is *reported*, as `refused`, which the commit writes to
+ * `framesGateBlocked` so the menu can say why the strip stopped drawing instead
+ * of leaving it silently off.
  *
  * **One refused region refuses the overlay**, as it does for the main batch:
  * the frame strip spans the viewport, so drawing it over the regions that
@@ -250,10 +269,11 @@ async function fetchAnnotationData(
   self: MafFetchSelf,
   needed: IndexedRegion[],
   ctx: FetchContext,
-) {
+): Promise<{ byIndex: Map<number, MafFrameRecord[]>; refused: boolean }> {
+  const byIndex = new Map<number, MafFrameRecord[]>()
   const adapterConfig = self.annotationAdapterConfig
   if (!self.annotationDataActive || !adapterConfig) {
-    return
+    return { byIndex, refused: false }
   }
   const scope = refusalScope(ctx)
   try {
@@ -271,23 +291,11 @@ async function fetchAnnotationData(
         ),
       ),
     )
-    const kept: { displayedRegionIndex: number; records: MafFrameRecord[] }[] =
-      []
-    let refused = false
     for (const { displayedRegionIndex, result } of results) {
       if (isRegionRefused(result)) {
-        refused = true
-      } else {
-        kept.push({ displayedRegionIndex, records: result.records })
+        return { byIndex: new Map(), refused: true }
       }
-    }
-    if (!ctx.isStale()) {
-      self.setFramesGateBlocked(refused)
-      if (!refused) {
-        for (const { displayedRegionIndex, records } of kept) {
-          self.setFramesData(displayedRegionIndex, records)
-        }
-      }
+      byIndex.set(displayedRegionIndex, result.records)
     }
   } catch (e) {
     // an abort here is the main batch's refusal cutting the overlay short
@@ -297,6 +305,7 @@ async function fetchAnnotationData(
   } finally {
     scope.dispose()
   }
+  return { byIndex, refused: false }
 }
 
 /**
@@ -323,12 +332,33 @@ export function fetchMafAlignmentData(
         }),
       ),
     commit: batch => {
-      publishSampleSet(self, batch)
-      for (const { displayedRegionIndex, result } of batch.results) {
-        self.setRpcData(displayedRegionIndex, result.regionData)
+      publishBatch(self, batch)
+      const named = batch.results.find(
+        r => r.result.regionData.refSampleId !== undefined,
+      )
+      if (named) {
+        self.setRefSampleId(named.result.regionData.refSampleId)
       }
     },
+    payloadFor: (displayedRegionIndex, batch) =>
+      payloadOf(batch, displayedRegionIndex, r => r.regionData),
   })
+}
+
+function payloadOf<R, T>(
+  batch: MafBatch<R>,
+  displayedRegionIndex: number,
+  data: (result: R) => T,
+): MafRegionPayload<T> {
+  const entry = batch.results.find(
+    r => r.displayedRegionIndex === displayedRegionIndex,
+  )
+  if (entry === undefined) {
+    throw new Error(
+      `MAF batch landed no result for region ${displayedRegionIndex}`,
+    )
+  }
+  return { data: data(entry.result), frames: entry.frames }
 }
 
 /**
@@ -343,7 +373,7 @@ export async function fetchMafSummaryData(
   self: MafFetchSelf,
   regions: IndexedRegion[],
   ctx: FetchContext,
-): Promise<CoarseTierResult<MafSummaryRecord[]>> {
+): Promise<CoarseTierResult<MafRegionPayload<MafSummaryRecord[]>>> {
   const batch = await callMafRegions(self, regions, ctx, (region, regionCtx) =>
     regionCtx.callRpc('LinearMafGetSummaryData', {
       adapterConfig: self.adapterConfig,
@@ -361,12 +391,12 @@ export async function fetchMafSummaryData(
     return batch
   }
   if (!ctx.isStale()) {
-    publishSampleSet(self, batch)
+    publishBatch(self, batch)
   }
   return {
-    entries: batch.results.map(({ displayedRegionIndex, result }) => ({
+    entries: batch.results.map(({ displayedRegionIndex, result, frames }) => ({
       displayedRegionIndex,
-      payload: result.records,
+      payload: { data: result.records, frames },
     })),
     bytes: batch.bytes,
   }

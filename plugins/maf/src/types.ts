@@ -163,6 +163,17 @@ export interface MafFrameRecord {
 }
 
 /**
+ * What either tier stores for one region: the tier's own record beside the CDS
+ * frames the same fetch pass brought back. `frames` is undefined with no
+ * annotation adapter on, and when the frames read declined the region
+ * (`framesGateBlocked`).
+ */
+export interface MafRegionPayload<T> {
+  data: T
+  frames: MafFrameRecord[] | undefined
+}
+
+/**
  * Sample/organism metadata for display
  */
 export interface Sample {

@@ -1,6 +1,6 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
-import { createMafTestEnvironment } from './testEnv.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
@@ -15,7 +15,8 @@ function seedRegion(display: LinearMafDisplayModel) {
     treeNewick: undefined,
     samplesCanonical: true,
   })
-  display.setRpcData(
+  stageDetailRegion(
+    display,
     0,
     testWireRegionData(
       [
