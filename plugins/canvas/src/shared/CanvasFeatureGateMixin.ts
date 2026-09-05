@@ -12,7 +12,6 @@ import type { RegionDensityStats } from './regionDensity.ts'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-/** What this mixin reads off its host: the config and `RegionTooLargeMixin`'s gate terms. */
 export interface GateHost {
   configuration: Instance<LinearCanvasBaseDisplayConfigModel>
   densityGateActive: boolean
@@ -23,7 +22,6 @@ function host(self: object) {
   return self as GateHost
 }
 
-/** One region's fetch result plus the region, so the gate does the span arithmetic. */
 export interface RegionGateMeasurement {
   displayedRegionIndex: number
   region: { start: number; end: number }
@@ -32,15 +30,8 @@ export interface RegionGateMeasurement {
 
 /**
  * The density axis of the region-too-large gate, composed after
- * `MultiRegionDisplayMixin`: how the features-per-pixel number is measured and
- * the worker budget for it. The byte axis is entirely `RegionTooLargeMixin`'s. A
- * display opts in by composing this and calling `commitGateMeasurements` from
- * its fetch's `onComplete`.
- *
- * One display composes it — `LinearBasicDisplay`'s base model. The multi-row
- * display has no density axis to gate on (see
- * MultiRowGetFeaturesRPC/rpcTypes.ts), so `shared/` here means "the canvas
- * plugin's rather than one display's", not "two displays compose it".
+ * `MultiRegionDisplayMixin`. A display opts in by composing this and calling
+ * `commitGateMeasurements` from its fetch's `onComplete`.
  *
  * #stateModel CanvasFeatureGateMixin
  * #category display
@@ -51,8 +42,8 @@ export default function CanvasFeatureGateMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * Per-region feature counts, keyed by `displayedRegionIndex`, so the
-       * verdict is a live max at the current `bpPerPx`. Cleared on navigation.
+       * Per-region feature counts, so the verdict is a live max at the current
+       * `bpPerPx`.
        */
       densityStatsPerRegion: regionDataMap<RegionDensityStats>(
         'densityStatsPerRegion',
@@ -61,16 +52,14 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The byte-gate opt-in, contributed here. `types.compose` resolves a
-       * collision to the later argument, so this mixin must follow the one that
-       * declares it; `no-restricted-syntax` fails the other order.
+       * `types.compose` resolves a collision to the later argument, so this
+       * mixin must follow the one declaring the byte-gate opt-in.
        */
       get gateEnabled() {
         return true
       },
       /**
        * #method
-       * Highest features-per-pixel across the visible regions at `bpPerPx`.
        */
       observedMaxDensity(bpPerPx: number) {
         return Math.max(
@@ -86,7 +75,7 @@ export default function CanvasFeatureGateMixin() {
       /**
        * #getter
        * Density at the debounced `coarseBpPerPx`, so the verdict shares the
-       * layout cadence. Zero before the view is measured.
+       * layout cadence.
        */
       get visibleFeatureDensityPerPx() {
         const view = containingLgv(self)
@@ -99,7 +88,7 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The worker's density budget; undefined when the axis may not act.
+       * Undefined when the axis may not act.
        */
       get maxFeatureDensity(): number | undefined {
         return host(self).densityGateActive
@@ -110,8 +99,6 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The density axis of the verdict, through the same `overDensityBudget`
-       * the worker's short-circuits use.
        */
       get densityTooLarge() {
         return overDensityBudget(
@@ -137,8 +124,7 @@ export default function CanvasFeatureGateMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commit a batch of per-region fetch results on the density axis, judged
-       * by the tier captured at issue. The byte axis is `commitFetchBytes`.
+       * Judged by the tier captured at issue.
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],

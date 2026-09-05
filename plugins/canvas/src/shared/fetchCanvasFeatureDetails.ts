@@ -6,19 +6,10 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-// The region to ask for one clicked feature: the buffered region the display
-// loaded, narrowed to the feature's own span. The adapter answers with
-// everything overlapping the query, so the unnarrowed one downloaded the whole
-// screen a second time to pick a single row out of.
-//
-// A zero-length feature (an insertion) is STRADDLED, not grown from its start
-// edge — the same move `renderedSpanPx` makes for the same shape. The right
-// edge is `featureSpanEndBp`'s one base; the left one is this query's own,
-// because adapters keep a feature on `doesIntersect2` (`end > queryStart &&
-// start < queryEnd`) and a query of [pos, pos + 1] fails the first half against
-// a feature whose own end IS pos, dropping exactly the feature it was widened
-// for. The whole-region query it replaced always straddled, so this is the one
-// case narrowing can lose.
+// A zero-length feature is straddled rather than grown from its start edge:
+// adapters keep a feature on `end > queryStart && start < queryEnd`, and a
+// query of [pos, pos + 1] fails the first half against a feature whose own end
+// is pos, dropping exactly the feature the widening was for.
 export function featureSpanRegion(
   region: Region,
   startBp: number,
@@ -31,19 +22,9 @@ export function featureSpanRegion(
   }
 }
 
-// Re-fetch one full feature by id for the details widget. Both canvas displays
-// paint from slim render arrays that carry no attributes, so the complete
-// feature is fetched on demand.
-//
-// **Errors are let out, and `undefined` means the adapter found nothing.** This
-// used to catch and notify, answering `undefined` either way — which collapsed
-// the two into one value at the only point that could still tell them apart, so
-// a caller reporting an empty answer reported failures a second time and less
-// usefully. `withFeatureDetails` owns both halves now, the same way the pileup's
-// wrapper does.
-//
-// Structural `session` param (not the MST session type) so this stays a plain
-// function both displays and their tests can call.
+// Errors are let out and `undefined` means the adapter found nothing;
+// `withFeatureDetails` reports both, so collapsing them here would lose the
+// only point that can still tell them apart.
 export async function fetchCanvasFeatureDetails(
   session: { rpcManager: RpcManager },
   sessionId: string,

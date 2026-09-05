@@ -18,11 +18,9 @@ export interface DensityBandDisplay {
 }
 
 /**
- * The features-per-bin band, composited over whichever backend drew the
- * (empty) feature canvas. Its own observer, and the geometry reads live in
- * `DensityBandCanvas` below rather than here, because `canvasWidthPx` and
- * `renderBlocks` both reach view geometry that throws before the view is
- * measured — `densityBandActive` is what says it has been.
+ * The geometry reads live in `DensityBandCanvas` rather than here, because
+ * `canvasWidthPx` and `renderBlocks` reach view geometry that throws before the
+ * view is measured, and `densityBandActive` is what says it has been.
  */
 const DensityBandOverlay = observer(function DensityBandOverlay({
   model,

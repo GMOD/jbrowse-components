@@ -17,15 +17,9 @@ interface GatedFetchModel extends FetchEachRegionModel {
 }
 
 /**
- * `fetchEachRegion` for a display whose feature RPC also measures **density**
- * (`CanvasFeatureGateMixin`). The byte axis needs nothing here — the helper
- * commits it for every display that passes a `byteLimit` — so what is left is
- * collecting each region's feature count, refused or not, and committing the
- * batch once the regions have landed.
- *
+ * `fetchEachRegion` for a display whose feature RPC also measures density.
  * Collected in `call` rather than in `onResult`, because a refusal is exactly
- * the result the density axis wants: a region that short-circuited on the
- * feature count reports one, and `onResult` never sees it.
+ * the result the density axis wants and `onResult` never sees one.
  */
 export function fetchGatedRegions<
   Payload extends RegionGateMeasurement['result'],
@@ -37,7 +31,6 @@ export function fetchGatedRegions<
       region: Region,
       ctx: FetchContext,
     ) => Promise<Payload | RegionTooLargeResult>
-    /** What this region stores — see {@link fetchEachRegion}. */
     onResult: (
       displayedRegionIndex: number,
       result: Payload,

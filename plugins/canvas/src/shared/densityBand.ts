@@ -14,28 +14,20 @@ import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-/**
- * What the band takes off a palette: the bars and readout in the secondary
- * text color, and the page color haloed round the readout where a bar is.
- */
 export interface DensityBandInk {
   text: { secondary: string }
   background: { paper: string }
 }
 
-/** Every region's bars plus the peak they are measured against. */
 export interface DensityBandLayer {
   regions: ReadonlyMap<number, PackedDensityRegion>
   maxDepth: number
 }
 
 /**
- * Every held density read packed at one bin per screen pixel, through the
- * layout the coverage band already draws from (`packCoverageBinsForGpu`), which
- * is what lets the band go through `drawCoverageBins` and its sub-pixel bar
- * widening. The peak is display-wide rather than per-region: two regions on
- * screen are drawn against one axis, so a quiet contig next to a busy one reads
- * as quiet instead of filling the band on its own.
+ * The peak is display-wide rather than per-region: two regions on screen share
+ * one axis, so a quiet contig next to a busy one reads as quiet instead of
+ * filling the band on its own.
  */
 export function densityBandLayer(
   bins: ReadonlyMap<number, FeatureDensity>,
@@ -55,11 +47,9 @@ export function densityBandLayer(
 }
 
 /**
- * Paint the features-per-bin band. Canvas2D on every backend and in the SVG
- * export: it stands in for features the gate refused, so there is no per-region
- * GPU payload to hang it off — `rpcDataMap` is empty by construction wherever
- * this draws — and it composites over whichever backend drew nothing, the way
- * the multi-row indel glyphs do.
+ * Canvas2D on every backend and in the SVG export: the band stands in for
+ * features the gate refused, so `rpcDataMap` is empty by construction wherever
+ * this draws and there is no per-region GPU payload to hang it off.
  */
 export function drawDensityBand(
   ctx: Ctx2D,
@@ -115,7 +105,6 @@ export function drawDensityBand(
 const READOUT_FONT_PX = 11
 const READOUT_PAD_PX = 4
 
-/** Two figures for a mean under 10, whole numbers above: `0.034`, `3.1`, `120`. */
 export function formatDensity(value: number) {
   return value >= 10
     ? String(Math.round(value))

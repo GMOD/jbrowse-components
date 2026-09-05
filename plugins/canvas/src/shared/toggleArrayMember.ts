@@ -1,7 +1,4 @@
-// Add id if absent, remove it if present — the shared body of the pin/solo
-// feature toggles on LinearBasicDisplay and the legend's category toggle on
-// LinearMultiRowFeatureDisplay. Structural param so any observable string array
-// fits.
+// Structural param so any observable string array fits.
 export function toggleArrayMember(
   arr: {
     indexOf: (v: string) => number

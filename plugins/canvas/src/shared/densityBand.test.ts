@@ -20,9 +20,6 @@ function density(
 }
 
 describe('densityBandLayer', () => {
-  // Per-region normalization would draw the quiet contig at the same full-band
-  // height as the busy one; the peak the bars are measured against is the
-  // display's.
   it('reports the peak across every region it holds', () => {
     const layer = densityBandLayer(
       new Map([
@@ -47,8 +44,8 @@ describe('densityBandLayer', () => {
   })
 })
 
-// The same stub shape the multi-row draw tests use: `Ctx2D` is a union with a
-// class in it, so a structural stand-in cannot satisfy it without the cast.
+// `Ctx2D` is a union with a class in it, so a structural stand-in cannot
+// satisfy it without the cast.
 function recordingCtx() {
   const fills: {
     x: number
@@ -117,13 +114,10 @@ describe('drawDensityBand', () => {
 
     expect(fills).toHaveLength(2)
     expect(fills.map(f => f.fillStyle)).toEqual(['grey', 'grey'])
-    // half height and full height, both bottom-anchored
     expect(fills[0]!.y + fills[0]!.h).toBeCloseTo(fills[1]!.y + fills[1]!.h)
     expect(fills[0]!.h / fills[1]!.h).toBeCloseTo(0.5, 1)
   })
 
-  // Without the readout an empty band is an empty rectangle, which reads as
-  // "no features here" rather than "the sidecar answered with nothing"
   it('draws no bars but still its readout when no region holds a depth', () => {
     const { ctx, fills, texts } = recordingCtx()
     drawDensityBand(
@@ -175,10 +169,6 @@ describe('the readout', () => {
     )
   })
 
-  // Both numbers are the resampled bin, so they stay the same quantity where a
-  // sidecar hands back rows finer than the screen bin — no zoom level fitting
-  // the view is the normal way there. Against the raw intervals the cursor read
-  // 120 while the bar it sat on, and the peak, were the mean over the three.
   test('reads the same quantity as the peak when the bin spans many rows', () => {
     const layer = densityBandLayer(bins, 3000)
     expect(layer.maxDepth).toBeCloseTo((3 + 0.5 + 120) / 3)
@@ -187,9 +177,6 @@ describe('the readout', () => {
     ).toBeCloseTo(layer.maxDepth)
   })
 
-  // A gap inside the packed span is a bar of zero height, so the readout names
-  // it rather than falling back to the peak alone — off the span there is no
-  // bar to name and it does.
   test('reads a gap inside the span as the zero bar it draws', () => {
     const gapped = new Map([
       [
@@ -210,8 +197,6 @@ describe('the readout', () => {
     ).toBe('0.0 at cursor, density peak 120')
   })
 
-  // The band otherwise draws nothing at all, and an empty track cannot be told
-  // from a sidecar over the wrong assembly
   test('says so when the layer holds no depth', () => {
     const layer = densityBandLayer(new Map(), 10)
     expect(densityBandReadout(layer, undefined)).toBe('no density data in view')

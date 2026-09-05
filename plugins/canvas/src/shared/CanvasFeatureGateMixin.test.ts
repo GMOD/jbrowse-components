@@ -8,10 +8,9 @@ import type {
 } from './CanvasFeatureGateMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
-// The gate reads one config slot, `maxFeatureScreenDensity`, through a host cast
-// it declares itself. Cast to `AnyConfigurationModel` and that read checks
-// nothing and a typo answers `undefined` forever, which reads as a gate that
-// never fires.
+// The gate reads `maxFeatureScreenDensity` through a host cast it declares
+// itself: cast to `AnyConfigurationModel` instead and a typo answers
+// `undefined` forever, reading as a gate that never fires.
 const gatePin: HostChecksSlotNames<GateHost> = true
 
 test('the host type checks the slot name the gate reads through it', () => {
@@ -23,8 +22,6 @@ test('the host type checks the slot name the gate reads through it', () => {
   expect([gatePin, read]).toHaveLength(2)
 })
 
-// LinearBasicDisplay, because it is the one display composing this mixin —
-// multi-row runs on the byte axis alone and has no counts to store at all.
 function gatedDisplay() {
   const env = createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 })
   const { display, view, track } = env.createDisplay()
@@ -48,8 +45,7 @@ const DENSE: RegionGateMeasurement[] = [
   },
 ]
 
-// A different file behind the same track config, which is all `tierKey` is: a
-// stringified snapshot of the adapter the fetch was issued against.
+// A different file behind the same track config, which is all `tierKey` is.
 function swapAdapterConfig(track: {
   configuration: {
     adapter: { setSlot: (name: string, value: unknown) => void }
@@ -71,12 +67,6 @@ describe('the density commit takes the tier guard', () => {
     expect(display.densityTooLarge).toBe(true)
   })
 
-  // The user-visible half of the 2026-08 tier bug, and the half no budget file
-  // covers. `nextGateState` already dropped the BYTE estimate of a fetch issued
-  // against a config that has since changed; the density half committed
-  // regardless, so the banner said "too many features" over a count from a file
-  // the track no longer points at — and a fresh fetch of the new file cannot
-  // clear it, because the stale numbers are already stored.
   it('drops counts a fetch measured against the previous adapter config', () => {
     const { display, track } = gatedDisplay()
 
@@ -90,8 +80,6 @@ describe('the density commit takes the tier guard', () => {
     expect(display.densityTooLarge).toBe(false)
   })
 
-  // ...and the same batch is taken once it describes the file that is live now,
-  // so the guard is a tier check rather than an off-switch.
   it('takes the same counts from a fetch against the config now live', () => {
     const { display, track } = gatedDisplay()
     swapAdapterConfig(track)
@@ -101,9 +89,9 @@ describe('the density commit takes the tier guard', () => {
     expect(display.densityTooLarge).toBe(true)
   })
 
-  // A display that never gates has no tier to disagree about — the byte half
-  // waives the guard on `tierKey: undefined` and the density half has to waive
-  // it the same way, or an ungated display silently stops measuring.
+  // A display that never gates has no tier to disagree about, so the density
+  // half must waive the guard on `tierKey: undefined` the way the byte half
+  // does, or an ungated display silently stops measuring.
   it('accepts a measurement carrying no tier at all', () => {
     const { display } = gatedDisplay()
 

@@ -21,8 +21,6 @@ export default class CanvasPlugin extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    // When a text-search result is chosen, highlight the specific feature on
-    // its canvas display (not just the navigated region).
     // #region searchResultSelected
     pluginManager.listenToExtensionPoint(
       'LinearGenomeView-searchResultSelected',
@@ -34,64 +32,27 @@ export default class CanvasPlugin extends Plugin {
   }
 }
 
-// The two state model factories are deliberately NOT re-exported here: a value
-// edge from this barrel would keep the display model subgraph eager, which is
-// the point of the lazy registration. They are reachable at
-// '@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel' and
-// '.../baseStateModel' — the latter is what a display outside this plugin
-// composes (LinearVariantDisplay does).
+// The state model factories stay out of this barrel: a value edge from here
+// would keep the display model subgraph eager, defeating the lazy registration.
 export {
   linearBasicDisplayConfigSchemaFactory,
   linearCanvasBaseDisplayConfigSchemaFactory,
 } from './LinearBasicDisplay/index.ts'
-// The exact string `colorByMode` recognizes as "color by strand". Exported so a
-// third party writing the `color` slot can produce the value the display reads
-// back as strand mode rather than as an opaque jexl — @jbrowse/img pins its own
-// copy against this one's literal type, so the two cannot drift.
+// For @jbrowse/img and third parties writing the `color` slot.
 export {
   STRAND_COLOR_JEXL,
   attributeColorJexl,
 } from './RenderFeatureDataRPC/featureColors.ts'
-// Feature-label text and geometry, for a display outside this plugin that draws
-// labels beside features and must draw them the same way.
-//
-// These are the pieces, and a caller reaching for them should first ask whether
-// it wants the whole band instead — see the feature-band exports at the bottom of
-// this file. The multi-sample variant display's lane used to letter its marks
-// with `createFeatureFloatingLabels` and cull collisions itself, having no second
-// row to push a colliding neighbour onto; it now takes this plugin's layout,
-// which HAS rows, so its labels are placed by the packer that reserved room for
-// them and its overlap is resolved by stacking like everywhere else. The pieces
-// stay exported because a caller that genuinely draws one label beside one mark
-// still owes the same text, the same measured width and the same two colors.
-//
-// `createFeatureFloatingLabels` is the whole text half in one call — it is what
-// truncates a name by length and a description by *rendered width*, drops one
-// that is blank or `.`, and measures at LABEL_FONT_SIZE. Re-spelling any part of
-// that outside this plugin is how the same record ends up lettered differently
-// in two displays.
-//
-// Not the COLORS, which are `labelColors` on the main thread: a label's color is
-// a function of its kind and the theme alone, and resolving it here would put
-// the palette in the worker's RPC payload — where every field is a cache key, so
-// a light/dark toggle would refetch (see colorClasses.ts).
-//
-// `LABEL_PADDING_PX` is the horizontal breathing room two labels need whatever
-// resolves their overlap, sized to absorb measureText's disagreement with the
-// rendered font. `LABEL_BASELINE_RATIO` is the vertical counterpart — where a
-// label's baseline sits inside its line box — and any canvas drawing a label into
-// a box owes that conversion, this plugin's own SVG export included.
+// Feature-label text and geometry, for a display outside this plugin that
+// letters marks the same way.
 export {
   LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
   LABEL_PADDING_PX,
 } from './RenderFeatureDataRPC/constants.ts'
 export { createFeatureFloatingLabels } from './RenderFeatureDataRPC/floatingLabels.ts'
-// The label-content vocabulary, so a display outside this plugin offers the
-// same five choices under the same names rather than a second spelling of the
-// same setting. The variant lane admits both kinds under 'auto' and leaves the
-// adapting to the fit ladder, which is what decides how much of each record a
-// band that cannot grow spends its pixels on.
+// The label-content vocabulary, for a display outside this plugin offering the
+// same choices.
 export {
   SHOW_LABELS_MODES,
   modeCanShowDescription,
@@ -107,9 +68,8 @@ export type {
   LinearCanvasBaseDisplayModel,
 } from './LinearBasicDisplay/index.ts'
 
-// Types that appear in the inferred shape of the exported display models. They
-// have to be reachable from this entry or tsc names them by source path in
-// consumers' .d.ts — see scripts/check-declaration-leaks.ts.
+// Types in the inferred shape of the exported display models: unreachable from
+// this entry, tsc names them by source path in consumers' .d.ts.
 export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
 export type { RegionDensityStats } from './shared/regionDensity.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
@@ -153,9 +113,7 @@ export type {
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
 
 // The feature glyph passes and their Canvas2D painters, for a display outside
-// this plugin that draws gene glyphs under its own axis: a rect, line, chevron
-// or arrow instance is positioned in whatever unit the layer's `bpRangeX`
-// uniform is stated in, so a lane laid out in px hands the passes px.
+// this plugin drawing gene glyphs under its own axis.
 export {
   ArrowPass,
   ARROW_PASS,
@@ -173,10 +131,8 @@ export {
 } from './LinearBasicDisplay/passes/index.ts'
 export { CANVAS_GLYPH_DRAW } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
-// The gene glyph's own shape rules, for a display outside this plugin that
-// draws this plugin's glyphs through the passes above. `isCDS`/`isExon` are
-// case-insensitive and `isUTR` knows the three spellings, which is the whole
-// reason to take them rather than to test `type ===` again.
+// The gene glyph's shape rules, for a display outside this plugin drawing these
+// glyphs through the passes above.
 export {
   UTR_HEIGHT_FRACTION,
   centerShrink,
@@ -192,32 +148,9 @@ export { mergeSpans } from './shared/mergeSpans.ts'
 export type { Span as GlyphSpan } from './shared/mergeSpans.ts'
 export type { RenderState as FeatureGlyphRenderState } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 
-// The feature band, as pure functions, so a display outside this plugin can draw
-// this plugin's data instead of growing its own layout, hit test and labels.
-//
-// The multi-sample variant display's lane is that caller. Its band is one strip
-// of a genotype-matrix display, so it cannot host a `LinearVariantDisplay` — a
-// track renders one display, and a second one would parse the same VCF again.
-// What it can do is hold the same payload: its worker has already parsed the
-// records, so it runs `buildFeatureRenderData` over them, packs with
-// `computeLaidOutData`, fits with `resolveFitLadder`, paints with
-// `paintFeatureBand` and picks with `performMultiRegionHitDetection`. Every one of
-// those is the function `LinearBasicDisplay` itself calls, which is the point:
-// overlap packing, paint order, label collision, outlines and the click target
-// are decided once, here, and a lane cannot drift from the display it stands in
-// for.
-//
-// The seam is deliberately the DATA and not the model. Everything below takes
-// plain arrays, plain config and plain numbers — no MST, no React, no adapter —
-// so the caller supplies its own reactivity (the lane's are MobX computeds on its
-// own model) and its own height budget.
-//
-// What is NOT here is the pieces `paintFeatureBand` composes — the block painter,
-// the label walk, the label painter, the cull band. A band consumer wants the
-// composition, in the order and with the shared arguments stated there; a
-// consumer welding its own would be free to letter at a font size the packer
-// never measured, or to cull against a scroll window a band does not have.
-// `agent-docs/mechanisms/feature-band-consumers.md` is the contract.
+// The feature band as pure functions, for the multi-sample variant display's
+// lane and any other consumer drawing this plugin's data. The seam is the data,
+// not the model: plain arrays, plain config, plain numbers.
 export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRenderData.ts'
 export {
   computeLaidOutData,
