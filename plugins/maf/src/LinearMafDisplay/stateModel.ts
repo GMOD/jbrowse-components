@@ -312,16 +312,24 @@ export default function stateModelFactory(
         treeNewickVolatile: undefined as string | undefined,
         /**
          * #volatile
-         * Which sample row the worker resolved as the reference (off the block
-         * whose sequence the row carries), latched from the first region that
-         * names one and never rewritten.
+         * Which sample row the worker resolved as the reference — off the block
+         * whose sequence the row carries — held here rather than read back out
+         * of `rpcDataMap`, which is where it arrives.
          *
-         * A latch because that is what the value is: a track has one reference
-         * species and it does not change with the viewport, so surviving
-         * `clearAlignmentData` and a chromosome navigation is correct rather
-         * than a saving. `sources` reads it — which is also why it cannot go on
-         * being a walk over `rpcDataMap`, the map the row-placement autorun
-         * itself writes.
+         * Because that map is emptied under the display: `clearAlignmentData`
+         * drops it on every zoom out to the summary tier, and
+         * `clearDisplaySpecificData` on chromosome navigation and on a settings
+         * change. Read from the map, the answer would revert to
+         * `view.assemblyNames[0]` each time — and that is a different string
+         * exactly when a MAF names its reference differently, which is the case
+         * `refAssemblyName` exists for. `sources` hides this row, so it would
+         * come back for the whole time the view sat on the summary tier.
+         *
+         * Last write wins rather than a latch. The reference is a property of
+         * the track, but the track can be re-pointed at another adapter or have
+         * its `refAssemblyName` edited in the config editor, and
+         * `invalidateSettings` keeps the display instance across that — a latch
+         * would hide the old row until reload.
          */
         refSampleIdVolatile: undefined as string | undefined,
       }))
@@ -693,8 +701,12 @@ export default function stateModelFactory(
          * the same row.
          *
          * Any loaded region answers — a track has one reference species — so
-         * `refSampleIdVolatile` latches the first that names one; see there for
-         * why this does not walk `rpcDataMap`.
+         * `refSampleIdVolatile` holds the last one to name it; see there for why
+         * the answer is kept rather than read back out of `rpcDataMap`.
+         *
+         * The view's assembly name is still the answer until a detail region
+         * lands: the summary tier's records carry no reference, so a track
+         * opened zoomed out has only that to go on.
          */
         get referenceSampleId(): string | undefined {
           return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
@@ -833,22 +845,6 @@ export default function stateModelFactory(
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
-        },
-
-        /**
-         * #getter
-         * Whether the reference species is one of the rows at all — what says
-         * if "Show reference row" has anything to hide. A MAF can name a
-         * reference that is not in `samples` or in the guide tree, and there
-         * the toggle would be on, correct and inert.
-         *
-         * Read off `editableSources`, the pre-filter list, so focusing a clade
-         * that excludes the reference does not turn the row into "no such
-         * species".
-         */
-        get referenceRowPresent(): boolean {
-          const refSrc = self.referenceSampleId
-          return self.editableSources.some(s => s.name === refSrc)
         },
 
         /**
@@ -1257,12 +1253,12 @@ export default function stateModelFactory(
           // whose leaves are no longer the rows on screen — so narrowing on the
           // row side alone would take the whole dendrogram with it.
           const root =
-            self.showReferenceRow || !self.root
-              ? self.root
-              : applySubtreeFilter(
+            self.root && !self.showReferenceRow
+              ? applySubtreeFilter(
                   self.root,
                   self.sources.map(s => s.name),
                 )
+              : self.root
           return computeClusterHierarchy(
             root,
             self.sources,
@@ -2455,7 +2451,9 @@ export default function stateModelFactory(
       }))
       .actions(self => ({
         setRpcData(regionIndex: number, data: MafWireRegionData) {
-          self.refSampleIdVolatile ??= data.refSampleId
+          if (data.refSampleId !== undefined) {
+            self.refSampleIdVolatile = data.refSampleId
+          }
           self.wireDataMap.set(regionIndex, data)
           self.rpcDataMap.set(
             regionIndex,

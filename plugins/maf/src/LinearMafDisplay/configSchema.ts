@@ -288,6 +288,14 @@ export default function configSchemaF() {
        * worker named as the reference (`refSampleId`) is the one dropped, not
        * the top row and not the view's assembly name, which is a different
        * string whenever the MAF names its reference differently.
+       *
+       * It hides the row everywhere the row set reaches, as a subtree filter
+       * does: the reference is left out of the FASTA "View subsequences"
+       * downloads and out of the per-species navigation menus too. What it does
+       * not touch is what the *other* rows are scored against — the mismatch
+       * coloring, the coverage band and the conservation band all still read
+       * the reference sequence, which the worker sends whether or not a row
+       * draws it.
        */
       showReferenceRow: {
         type: 'boolean',
