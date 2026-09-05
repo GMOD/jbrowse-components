@@ -356,7 +356,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
 ```
 
 For a real, complete example of this shape see
-`plugins/gwas/src/LinearManhattanDisplay/GpuManhattanRenderer.ts`.
+`plugins/variants/src/LDDisplay/components/GpuLDRenderer.ts`.
 
 ## Step 4: Canvas2D renderer (required)
 
