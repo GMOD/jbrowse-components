@@ -216,10 +216,40 @@ one side and _CFHR4_ onward on the other, place in every lane.
 
 <Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing its own CAT gene models on its own contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
-The deletion reads the same way at any zoom the index serves: zoomed out to the
-chromosome the coarse tier draws each lane as its chain blocks, and zoomed in to
-a gene the fine tier draws the per-base CIGAR. The track menu's **Level of
-detail** entry picks the tier by hand.
+The four carriers also sort together at the top of the stack. Lane order is
+densest first over the fetched window, and a lane whose alignment skips the
+cluster places less of it, so the order the display chooses on its own is the
+genotype.
+
+## The whole chromosome
+
+The deletion reads the same way at any zoom the index serves, and the stack is
+meant to be zoomed all the way out. Over the whole of chr1 the coarse tier
+answers the fetch in one pass, every lane is a haplotype's chromosome in its own
+frame, and the picture is the assembly rather than a locus: the centromere
+splits each lane where the graph aligns nothing, and a haplotype whose chr1 was
+assembled as two scaffolds shows one of them, with the other named in its header
+so the reader can pin the lane onto it. The track menu's **Level of detail**
+entry picks the tier by hand.
+
+<Figure caption="All of hg38 chr1 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Each lane is a haplotype's chromosome in its own frame, split at the centromere; three lanes name a second scaffold in their headers because their chr1 was assembled in two pieces." src="/img/multiway_synteny/hprc_chr1_whole.png" />
+
+## Reading the stack
+
+Each lane is one haplotype in its own coordinates, fitted to wherever its
+alignment places the anchor window, so the number at a lane's right edge is the
+span that lane shows and the multiple after it is how much wider than the anchor
+window that is. Ribbons join a lane to the lane directly above it, and since a
+star holds no alignment between two haplotypes, the ribbon between two mate
+lanes is composed through the reference. Hovering a ribbon lights the same
+alignment in every lane it reaches, and dragging a lane's label reorders the
+stack. Each lane's header carries a menu: re-anchor the whole view on that
+haplotype, so it becomes the top lane and hg38 drops into the stack; open the
+haplotype at the matching region in a view of its own, with this track and its
+CAT annotation along; or move and hide the lane, the same controls the track
+menu's **Lanes** entry offers for every lane at once.
+
+<Figure caption="The header menu of one haplotype lane: re-anchor the view on it, open it at the matching region in its own view, or move and hide the lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
 
 ## Reproduce it end to end
 

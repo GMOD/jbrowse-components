@@ -177,20 +177,43 @@ genomes placing the most of the window sit at the top.
 }
 ```
 
-The primate lanes read as the human axis drawn again: one chain block across the
-window, gene models in the same order, ribbons that run straight down. Mouse,
-dog and cow are the other picture. Each of those lanes is several chain blocks
-where the primates have one, the blocks change strand partway along, the header
-carries `[rev]` where the whole lane runs backwards, and the ribbons cross and
-leave gaps where a stretch of the human window lands nowhere in that genome.
-Those lanes are also the ones with the fewest of the window's genes, which is
-why they sort to the bottom.
+Around _TP53_ every lane reads as the human axis drawn again: one chain block
+across the window, the same genes in the same order, ribbons running straight
+down through all eight. The header of each lane says which chromosome that is in
+the genome and how far the lane's frame reaches, and the lanes stack densest
+first, so a genome that placed less of the window would sit lower. Here none
+does; this is a neighbourhood conserved across the mammals, and the picture says
+so by having nothing to point at.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. The primate lanes place the window as one straight block; the mouse, dog and cow lanes break it into blocks, reverse some of them, and leave gaps where the chain reaches nothing." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane places the window as one straight block." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+
+Eight megabases toward the centromere the same stack looks different. The mouse,
+dog and cow chains change orientation partway across the window, so those lanes
+carry `[rev]` in their headers and the ribbons reaching them cross, while the
+primate lanes still run straight. Two of the ape lanes name a second contig in
+their headers, a random or unplaced scaffold that also places part of this
+window: the region is a segmental-duplication hotspot, and the header is how a
+lane says the frame it drew is not the whole story. **Show … in this lane** on
+that lane's header menu pins it onto the other contig.
+
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. The primate lanes run straight through; the mouse, dog and cow lanes reverse partway across, with crossed ribbons and a reversed marker in their headers, and two ape lanes name a second contig that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color ribbons by → Strand** on the track menu paints a ribbon that crosses,
 which is a block running the other way relative to the lane above it, so a
 lane's `[rev]` and the ribbons reaching it agree.
+
+## Reading the stack
+
+Each lane is one genome in its own coordinates, fitted to wherever its alignment
+places the anchor window, so the number at a lane's right edge is the span that
+lane shows and the multiple after it is how much wider than the anchor window
+that is. A lane that has to show twice the anchor's span to cover the same genes
+is telling you the alignment there is stretched or broken. Ribbons join a lane
+to the lane directly above it, and where a source holds no alignment between two
+mates, as this star does not, the ribbon between them is composed through the
+anchor. Hovering a ribbon lights the same alignment in every lane it reaches;
+dragging a lane's label reorders the stack; the header menu on a lane re-anchors
+the view on that genome or opens it in a view of its own.
 
 ## Reproduce it end to end
 

@@ -1926,6 +1926,112 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
+  // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the
+  // mouse, dog and cow alignments all change orientation while the primate
+  // lanes run straight, so the [rev] marker and a crossed ribbon appear for a
+  // reason and the TP53 figure's straight lanes have their negative.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hg38_vertebrates_17p_break',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/hg38_vertebrates/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr17:15,200,000-16,400,000',
+            tracks: [
+              'hg38-ncbiRefSeq',
+              {
+                trackId: 'hg38_liftover_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 1000,
+  },
+
+  // Eukaryote scale in one picture: all of hg38 chr1 over the eight HPRC
+  // haplotypes, which the coarse tier of the graph-derived PIF serves in one
+  // fetch. Every lane is a whole haplotype chromosome in its own frame.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_chr1_whole',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:1-248,956,422',
+            tracks: [
+              {
+                trackId: 'hprc_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 30000,
+    viewportHeight: 820,
+  },
+
+  // The lane header menu on a haplotype lane: re-anchor the view on that
+  // haplotype, open it in a view of its own, or pin the lane to a contig.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_lane_menu',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:196,700,000-197,000,000',
+            tracks: [
+              {
+                trackId: 'hprc_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 820,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        selector: '[data-testid="multiway-lane-menu-HG01109.1"]',
+      },
+      { type: 'waitForText', text: 'Re-anchor on HG01109.1' },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'Re-anchor on HG01109.1' } }],
+  },
+
   // The grasses radiation as lanes: the rice window the
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene
