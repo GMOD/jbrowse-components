@@ -1,21 +1,21 @@
+import {
+  countOfTotal,
+  coverageRows,
+  formatLenRange,
+} from '@jbrowse/alignments-core'
 import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
-import {
-  countOfTotal,
-  coverageRows,
-  formatLenRange,
-  getCoverageBin,
-  getInterbaseBin,
-} from './tooltipUtils.ts'
+import { getCoverageBin, getInterbaseBin } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
-import type { CoverageBin, CoverageRow } from './tooltipUtils.ts'
+import type { CoverageBin } from './tooltipUtils.ts'
+import type { CoverageRow } from '@jbrowse/alignments-core'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

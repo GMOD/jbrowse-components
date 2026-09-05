@@ -1,4 +1,4 @@
-import { countOfTotal, pct } from './tooltipUtils.ts'
+import { countOfTotal, pct } from '@jbrowse/alignments-core'
 
 describe('tooltip deletion ratio', () => {
   it('computes ratio using total coverage (depth + deletions)', () => {

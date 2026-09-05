@@ -1,9 +1,8 @@
+import { coverageBinAt, hitCoverageBand } from '@jbrowse/alignments-core'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
 import { hitTestClip } from '../../features/clip/hitTest.ts'
-import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
-import { hitTestInterbase } from '../../features/indicator/hitTest.ts'
 import {
   hitTestLargeInsertion,
   hitTestSmallInsertion,
@@ -14,6 +13,7 @@ import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestSoftclipBase } from '../../features/softclipBases/hitTest.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
+import { interbaseTypeName } from '../../shared/types.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -383,35 +383,46 @@ export function performHitTest(
   const genomicPos = canvasXToGenomicPos(canvasX, resolved)
   const basePos = canvasXToBasePos(canvasX, resolved)
 
-  // Indicator and coverage tooltips work at all zoom levels.
-  // hitTestInterbase fires over the interbase histogram bars + indicator
-  // triangles, taking priority over coverage so hovering a bar shows interbase.
-  // hitTestCoverage handles zoomed-out bins: returns the bin position and snaps
-  // to any significant SNP within the bin when bpPerPx > 1.
-  const indicatorHit = hitTestInterbase(
-    genomicPos,
-    bpPerPx,
-    coverageY,
+  // The band's own marks first — an interbase bar or indicator triangle
+  // outranks the depth bin under it — then the bin, which zoomed out snaps to
+  // the pixel's dominant SNP. Both work at every zoom.
+  const bandHit = hitCoverageBand(
     resolved.rpcData,
-    showInterbaseIndicators,
-    coverageHeight,
-    coverageMaxDepth,
+    {
+      height: coverageHeight,
+      top: coverageTopOffset,
+      domainMax: coverageMaxDepth,
+      showInterbase: showInterbaseIndicators,
+    },
+    boundsOf(resolved),
+    canvasX,
+    canvasY,
   )
-  if (indicatorHit) {
-    return { type: 'indicator', hit: indicatorHit, resolved }
+  if (bandHit) {
+    return {
+      type: 'indicator',
+      hit: {
+        type: 'indicator',
+        position: bandHit.position,
+        indicatorType: interbaseTypeName(bandHit.type),
+      },
+      resolved,
+    }
   }
 
-  const coverageHit = hitTestCoverage(
-    basePos,
-    bpPerPx,
-    coverageY,
-    resolved.rpcData,
-    coverageHeight,
-    resolved.reversed,
-    coverageSnpMinFrequency,
-  )
-  if (coverageHit) {
-    return { type: 'coverage', hit: coverageHit, resolved }
+  // `coverageHeight` is the band's reserved height: 0 when the band is off,
+  // so an off band answers nothing without a flag to consult beside it.
+  if (coverageHeight > 0 && coverageY >= 0 && coverageY <= coverageHeight) {
+    const position = coverageBinAt(
+      resolved.rpcData,
+      basePos,
+      bpPerPx,
+      resolved.reversed,
+      coverageSnpMinFrequency,
+    )
+    if (position !== undefined) {
+      return { type: 'coverage', hit: { type: 'coverage', position }, resolved }
+    }
   }
 
   // A collapsed pileup band (showPileup off / collapsed group) lays reads out

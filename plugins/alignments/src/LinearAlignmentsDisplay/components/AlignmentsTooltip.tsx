@@ -1,3 +1,8 @@
+import {
+  CoverageTooltipTable,
+  InterbaseTooltipTable,
+  formatBandLocation,
+} from '@jbrowse/alignments-core'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
@@ -9,21 +14,11 @@ import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
-import {
-  countOfTotal,
-  coverageRows,
-  formatLenRange,
-  supportLabel,
-} from './tooltipUtils.ts'
+import { supportLabel } from './tooltipUtils.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type {
-  CoverageBin,
-  InterbaseBin,
-  TooltipPayload,
-} from './tooltipUtils.ts'
+import type { TooltipPayload } from './tooltipUtils.ts'
 import type { MouseState } from '@jbrowse/core/ui'
-import type React from 'react'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -78,160 +73,13 @@ function CoverageHoverBar({
 }
 
 function formatLocation(refName?: string, position?: number) {
-  if (position === undefined) {
-    return refName || ''
-  }
-  const pos = toLocale(position + 1)
-  return refName ? `${refName}:${pos}` : pos
+  return position === undefined
+    ? refName || ''
+    : formatBandLocation(refName, position)
 }
 
 function SimpleTooltipContents({ message }: { message: string }) {
   return message ? <SanitizedHTML html={message} /> : null
-}
-
-function ColorSwatch({ color }: { color: string }) {
-  return <div style={{ width: 10, height: 10, background: color }} />
-}
-
-function InterbaseTooltip({
-  interbaseData,
-  total,
-  location,
-}: {
-  interbaseData: InterbaseBin['interbase']
-  total: number
-  location: string
-}) {
-  const { classes } = useStyles()
-
-  return (
-    <table>
-      <caption>Interbase - {location}</caption>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Reads</th>
-          <th>Size</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Total</td>
-          <td>{total}</td>
-          <td />
-        </tr>
-        {Object.entries(interbaseData).map(([type, data]) => (
-          <tr key={type}>
-            <td>
-              {getCigarTypeLabel(type)}
-              {data.topSeq && data.minLen <= 10
-                ? ` (most frequent ${data.topSeq})`
-                : null}
-            </td>
-            <td className={classes.td}>{countOfTotal(data.count, total)}</td>
-            <td className={classes.td}>
-              {data.minLen > 0 || data.maxLen > 0
-                ? formatLenRange(data.minLen, data.maxLen)
-                : null}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-// Which optional columns the coverage table is showing, derived from the rows
-// themselves so a row can't fall out of column alignment by forgetting a filler
-// <td>.
-interface CoverageColumns {
-  swatches: boolean
-  avgProb: boolean
-  strands: boolean
-}
-
-function CoverageTableRow({
-  columns,
-  swatch,
-  label,
-  reads,
-  avgProb,
-  strands,
-}: {
-  columns: CoverageColumns
-  swatch?: string
-  label: React.ReactNode
-  reads?: React.ReactNode
-  avgProb?: React.ReactNode
-  strands?: React.ReactNode
-}) {
-  const { classes } = useStyles()
-  return (
-    <tr>
-      {columns.swatches ? (
-        <td>{swatch ? <ColorSwatch color={swatch} /> : null}</td>
-      ) : null}
-      <td>{label}</td>
-      <td className={classes.td}>{reads}</td>
-      {columns.avgProb ? <td>{avgProb}</td> : null}
-      {columns.strands ? <td className={classes.td}>{strands}</td> : null}
-    </tr>
-  )
-}
-
-// Exported for its colocated test only — deliberately NOT re-exported from the
-// plugin entry, since nothing outside this file renders it (MAF has its own).
-export function CoverageTooltipContents({
-  bin,
-  refName,
-  baseColors,
-}: {
-  bin: CoverageBin
-  refName?: string
-  // The 256-entry CSS table `buildBaseCssMap` builds for the mismatch draws, so
-  // a row's swatch is the colour of the bar segment above the cursor by
-  // construction rather than by a second spelling of the palette. Indexed by the
-  // raw base byte, which is what carries the non-ACGTN fallback.
-  baseColors: string[]
-}) {
-  const rows = coverageRows(bin)
-  const columns: CoverageColumns = {
-    swatches: rows.some(r => r.color !== undefined || r.base !== undefined),
-    avgProb: rows.some(r => r.avgProb !== undefined),
-    strands: rows.some(r => r.strands !== undefined),
-  }
-
-  return (
-    <table>
-      <caption>Coverage - {formatLocation(refName, bin.position)}</caption>
-      <thead>
-        <tr>
-          {columns.swatches ? <th /> : null}
-          <th>Base</th>
-          <th>Reads</th>
-          {columns.avgProb ? <th>Avg Prob</th> : null}
-          {columns.strands ? <th>Strands</th> : null}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(row => (
-          <CoverageTableRow
-            key={row.key}
-            columns={columns}
-            swatch={
-              row.base === undefined
-                ? row.color
-                : baseColors[row.base.toUpperCase().charCodeAt(0)]
-            }
-            label={row.label}
-            reads={row.reads}
-            avgProb={row.avgProb}
-            strands={row.strands}
-          />
-        ))}
-      </tbody>
-    </table>
-  )
 }
 
 /**
@@ -283,10 +131,11 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         <>
           <BaseTooltip clientPoint={{ x, y }}>
             <div className={classes.tooltipContent}>
-              <InterbaseTooltip
-                interbaseData={bin.interbase}
+              <InterbaseTooltipTable
+                interbase={bin.interbase}
                 total={bin.interbaseDepth}
-                location={formatLocation(refName, bin.position)}
+                location={formatBandLocation(refName, bin.position)}
+                typeLabel={getCigarTypeLabel}
               />
             </div>
           </BaseTooltip>
@@ -294,24 +143,32 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </>
       )
     }
-    case 'coverage':
+    case 'coverage': {
+      // The 256-entry CSS table `buildBaseCssMap` builds for the mismatch
+      // draws, so a row's swatch is the colour of the bar segment above the
+      // cursor by construction rather than by a second spelling of the palette.
+      const baseColors = buildBaseCssMap({
+        colors: colorPalette,
+        showModifications,
+      })
       return (
         <>
           <BaseTooltip clientPoint={{ x, y }}>
             <div className={classes.tooltipContent}>
-              <CoverageTooltipContents
+              <CoverageTooltipTable
                 bin={tooltipData.bin}
-                refName={tooltipData.refName}
-                baseColors={buildBaseCssMap({
-                  colors: colorPalette,
-                  showModifications,
-                })}
+                location={formatBandLocation(
+                  tooltipData.refName,
+                  tooltipData.bin.position,
+                )}
+                swatchFor={base => baseColors[base.toUpperCase().charCodeAt(0)]}
               />
             </div>
           </BaseTooltip>
           <CoverageHoverBar left={mouseState.x} band={hoverCoverageBand} />
         </>
       )
+    }
     case 'sashimi': {
       const { start, end, score, strand, refName, motif } = tooltipData
       return (

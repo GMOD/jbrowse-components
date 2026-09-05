@@ -45,7 +45,10 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
+import {
+  ALIGNMENTS_COVERAGE_MARKS,
+  type AlignmentsCoverageRegion,
+} from './coverageMarks.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   lazyReadIdToIndex,
@@ -57,10 +60,7 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type {
-  CoverageBandRegion,
-  CoverageRegionFields,
-} from '../../features/coverage/types.ts'
+import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -441,7 +441,7 @@ interface BlockFrame {
 // `getChainBounds` accepts it directly, and the band region so the coverage
 // marks' params read the peaks off it; the buffers themselves are references
 // the model already holds.
-interface LocalRegion extends ChainBoundsRegion, CoverageBandRegion {}
+interface LocalRegion extends ChainBoundsRegion, AlignmentsCoverageRegion {}
 
 const OVERLAY_REGION = 999999
 

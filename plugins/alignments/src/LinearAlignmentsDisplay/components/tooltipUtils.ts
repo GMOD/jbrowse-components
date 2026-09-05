@@ -39,7 +39,10 @@ import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { LengthAccumulator } from './lengthStats.ts'
-import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
+import type {
+  CoverageRowsBin,
+  CoverageTooltipBin,
+} from '@jbrowse/alignments-core'
 
 // The interbase slice of a coverage position — what the interbase histogram bars
 // and indicator triangles report. `depth` is carried for the detail widget's
@@ -56,10 +59,7 @@ export interface InterbaseBin {
 // events are deliberately absent — they're reached by hovering the histogram
 // bars directly (InterbaseBin above), so mixing them into the depth table would
 // double-report them.
-export type CoverageBin = Omit<
-  CoverageTooltipBin,
-  'interbase' | 'interbaseDepth'
->
+export type CoverageBin = CoverageRowsBin
 
 export interface IndicatorTooltipPayload {
   type: 'indicator'
@@ -175,26 +175,6 @@ export type TooltipPayload =
   | SashimiTooltipPayload
   | ArcTooltipPayload
   | ArcLineTooltipPayload
-
-export function pct(n: number, total: number) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
-
-// "12/40 (30.0%)" — the count-against-total reading shared by the coverage and
-// interbase tooltips and their detail widgets.
-//
-// A zero total reports the bare count: `interbaseDepthAt` is 0 for an event at
-// the edge of the coverage array (a clip at the region boundary), and a share of
-// nothing isn't a number — that case used to render "3/0 (300.0%)".
-export function countOfTotal(count: number, total: number) {
-  return total > 0 ? `${count}/${total} (${pct(count, total)})` : `${count}`
-}
-
-// "5bp" when the range collapses, "5-8bp" otherwise. Shared by the interbase,
-// coverage, and deletion tooltip rows so they render length spans identically.
-export function formatLenRange(minLen: number, maxLen: number) {
-  return minLen === maxLen ? `${minLen}bp` : `${minLen}-${maxLen}bp`
-}
 
 const PAIR_ORIENTATION_NAMES = ['', 'LR', 'RL', 'RR', 'LL'] as const
 
@@ -605,106 +585,6 @@ export function getCoverageBin(
     deletions,
     modifications,
   }
-}
-
-// "18(+) 22(-)", or nothing when the sweep collected no per-strand tally — a
-// row reporting "0(+) 0(-)" for want of the data says something false.
-function strandCounts(fwd: number, rev: number) {
-  return fwd > 0 || rev > 0 ? `${fwd}(+) ${rev}(-)` : undefined
-}
-
-// One line of the coverage breakdown at a position. `color` is a
-// modification's own; `base` names an allele, whose colour is looked up in the
-// 256-entry CSS map only the tooltip holds.
-export interface CoverageRow {
-  key: string
-  label: string
-  color?: string
-  base?: string
-  reads: string
-  avgProb?: string
-  strands?: string
-}
-
-// The coverage breakdown at one position, in display order, for both the hover
-// table and the click's detail widget.
-export function coverageRows(bin: CoverageBin) {
-  const { depth, fwdDepth, revDepth, snps, deletions, modifications } = bin
-  // Descending by count, tie-broken by base: `Object.entries` is insertion
-  // order, so the same locus listed its alleles differently after a pan.
-  const snpEntries = Object.entries(snps).sort(
-    ([aBase, a], [bBase, b]) => b.count - a.count || aBase.localeCompare(bBase),
-  )
-  const modEntries = modifications
-    ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
-    : []
-  const totalStrands =
-    fwdDepth !== undefined && revDepth !== undefined
-      ? { fwd: fwdDepth, rev: revDepth }
-      : undefined
-  const rows: CoverageRow[] = [
-    {
-      key: 'total',
-      label: 'Total',
-      reads: `${depth}`,
-      strands: totalStrands
-        ? strandCounts(totalStrands.fwd, totalStrands.rev)
-        : undefined,
-    },
-  ]
-  // Modification rows sit alongside the allele rows rather than instead of
-  // them: at a CpG the A/C/G/T breakdown and the methylation calls are exactly
-  // the pair worth disambiguating.
-  for (const mod of modEntries) {
-    rows.push({
-      key: `${mod.name}-${mod.color}`,
-      label: mod.name,
-      color: mod.color,
-      reads: countOfTotal(mod.count, depth),
-      avgProb: `${((mod.count > 0 ? mod.probabilityTotal / mod.count : 0) * 100).toFixed(1)}%`,
-      strands: strandCounts(mod.fwd, mod.rev),
-    })
-  }
-  // Reads carrying the reference allele: `depth` counts every read over the
-  // position and `snps` holds mismatches only, so the difference is the count a
-  // reader at a het site is after. No BASE — `regionSequence` never ships to
-  // the main thread — and no row at all without an alt to weigh it against or a
-  // depth to weigh it in.
-  if (snpEntries.length > 0 && depth > 0) {
-    const altReads = snpEntries.reduce((sum, [, d]) => sum + d.count, 0)
-    const altFwd = snpEntries.reduce((sum, [, d]) => sum + d.fwd, 0)
-    const altRev = snpEntries.reduce((sum, [, d]) => sum + d.rev, 0)
-    rows.push({
-      key: 'ref',
-      label: 'Ref',
-      reads: countOfTotal(Math.max(0, depth - altReads), depth),
-      strands: totalStrands
-        ? strandCounts(
-            Math.max(0, totalStrands.fwd - altFwd),
-            Math.max(0, totalStrands.rev - altRev),
-          )
-        : undefined,
-    })
-  }
-  for (const [base, data] of snpEntries) {
-    rows.push({
-      key: base,
-      label: base.toUpperCase(),
-      base,
-      reads: countOfTotal(data.count, depth),
-      strands: strandCounts(data.fwd, data.rev),
-    })
-  }
-  if (deletions) {
-    rows.push({
-      key: 'deletion',
-      // A deleted base is absent from the read and so out of `depth`, which
-      // makes the share one of depth + deletions.
-      label: `Deletion (${formatLenRange(deletions.minLen, deletions.maxLen)})`,
-      reads: countOfTotal(deletions.count, depth + deletions.count),
-    })
-  }
-  return rows
 }
 
 export function formatIndicatorTooltip(

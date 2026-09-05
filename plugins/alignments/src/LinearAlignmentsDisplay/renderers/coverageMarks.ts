@@ -3,18 +3,28 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 
-import type { CoverageBandRegion } from '../../features/coverage/types.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { RenderState } from './rendererTypes.ts'
-import type { CoverageBandColors } from '@jbrowse/render-core/coverageBand'
+import type {
+  CoverageBandRegion,
+  CoverageBandState,
+} from '@jbrowse/alignments-core'
+import type {
+  CoverageBandColors,
+  CoverageBandModBuffer,
+} from '@jbrowse/render-core/coverageBand'
+
+/** The band's region as this display's worker packs it, modification slices included. */
+export type AlignmentsCoverageRegion = CoverageBandRegion &
+  CoverageBandModBuffer
 
 type BandColorState = Pick<RenderState, 'colors' | 'showModifications'>
 
 const packRgb = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 
 // Memoized on the palette and the modifications mute, the way the base tables
-// are: the band's params run per block per layer, and the nine packs are the
-// same bytes for every one of them.
+// are: the band's state is read per block per layer, and the nine packs are
+// the same bytes for every one of them.
 let colorMemo: (BandColorState & { packed: CoverageBandColors }) | undefined
 
 function bandColors(state: BandColorState): CoverageBandColors {
@@ -44,32 +54,32 @@ function bandColors(state: BandColorState): CoverageBandColors {
 }
 
 /**
- * The coverage band above the pileup, as the shared band's five layers: which
- * of a region's fields are its buffers, and which of the render state's values
- * are the band's. Both renderers walk this list inside the band's own clip;
- * neither declares a `band` on it because a grouped section carries its own.
- *
- * `showInterbaseIndicators` governs the count bars and the triangles alike,
- * and the indicator layer draws before the domain resolves: its triangles are
- * fixed-size, and gating them on data would blank them for the whole fetch.
+ * The coverage band's half of a render state — the one lens from this
+ * display's flat fields onto what the shared band draws and hit-tests by.
+ * `coverageTopOffset` is 0 for the sticky ungrouped band; a grouped section
+ * passes its scrolled top so the band scrolls with its section.
  */
-export const ALIGNMENTS_COVERAGE_MARKS = coverageBandMarks({
-  channels: (r: CoverageBandRegion) => r,
-  params: (s: RenderState, r) => ({
+export function coverageBandState(s: RenderState): CoverageBandState {
+  return {
     height: s.coverageHeight,
-    // 0 = sticky (ungrouped); a grouped section passes its scrolled top so
-    // the band scrolls with its section.
     top: s.coverageTopOffset,
     domainMin: s.coverageMinDepth ?? 0,
     domainMax: s.coverageMaxDepth,
     scaleType: s.coverageScaleType,
     symlogConstant: s.coverageSymlogConstant,
-    regionMaxDepth: r.coverageMaxDepth,
-    binSize: r.coverageBinSize,
-    interbaseMaxCount: r.interbaseMaxCount,
     snpMinFrequency: s.coverageSnpMinFrequency,
     showInterbase: s.showInterbaseIndicators,
     colors: bandColors(s),
-  }),
+  }
+}
+
+/**
+ * The coverage band above the pileup, as the shared band's five layers. Both
+ * renderers walk this list inside the section's own clip; neither declares a
+ * `band` on it because a grouped section carries its own.
+ */
+export const ALIGNMENTS_COVERAGE_MARKS = coverageBandMarks({
+  channels: (r: AlignmentsCoverageRegion) => r,
+  state: coverageBandState,
   modCov: true,
 })

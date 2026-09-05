@@ -1,5 +1,6 @@
+import { coverageRows } from '@jbrowse/alignments-core'
+
 import { coverageWidgetFields } from './detailWidgets.ts'
-import { coverageRows } from './tooltipUtils.ts'
 
 import type { CoverageBin } from './tooltipUtils.ts'
 

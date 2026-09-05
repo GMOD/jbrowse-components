@@ -65,6 +65,9 @@ function makeRpcData(
     softclipBaseReadIndices: new Uint32Array(),
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
+    interbasePackedBuffer: new ArrayBuffer(0),
+    indicatorPackedBuffer: new ArrayBuffer(0),
+    interbaseMaxCount: 0,
     ...overrides,
   } as PileupDataResult
   // The worker publishes the three counts that partition the merged interbase

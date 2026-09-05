@@ -128,6 +128,38 @@ is still open.
   entry left it: the band was already its own uniform block, the pileup's
   thirteen passes are not.
 
+- The band's picking and its tooltip are shared too (2026-09-05, fourth
+  session, at Colin's "aligning wherever possible"). The interbase and
+  indicator shapes implement `hitNearest` over their packed buffers — the bar
+  rectangle through `interbaseEdgePx`, the triangle's box, both clipped to the
+  band — and `hitCoverageBand(region, band, bounds, x, y)` is the entry both
+  displays call, narrowing candidates by binary search (`recordsWithin`) and
+  asking triangles before bars. `coverageBinAt` is the depth bin under the
+  cursor with the zoomed-out SNP snap and the per-allele floor, one function
+  where alignments' `hitTestCoverage` and MAF's `coverageSnpSnap` were two.
+  `CoverageBandState` is the display's half of the band, carried natively on
+  MAF's render state and produced by alignments' `coverageBandState(state)`
+  lens; `coverageBandMarks` takes `{ channels, state, band?, modCov? }` and
+  reads the region's peaks off `CoverageBandRegion` itself.
+  `CoverageTooltipTable` and `InterbaseTooltipTable` in alignments-core
+  (`coverageBandTooltip.tsx`, React, so the package now declares a `react`
+  peer) render both displays' bins with `unit`, `swatchFor`, `typeLabel` and
+  `children` as the seams; `coverageRows`, `countOfTotal`, `formatLenRange`,
+  `pct` and `formatBandLocation` moved there. Gone: alignments'
+  `features/coverage/hitTest.ts`, `features/indicator/hitTest.ts`, its
+  `CoverageTooltipContents`/`InterbaseTooltip` components and
+  `coverageTooltipRows.test.tsx`; MAF's `coverageInsertion.ts`,
+  `MafCoverageTooltipContents`, `MafInterbaseTooltipContents`,
+  `tooltipStyles.ts` and `MafCoverageBandState`; alignments-core's
+  `nearestRecordIndex`. **Behaviour changes:** MAF's insertion hover is the
+  band's 3 px slack around the 1 px bar and the triangle's own half-width,
+  not `insertionBarWidth + 4`; alignments' slack below a bar stack is 3 px
+  rather than 2; MAF's coverage table gains the Ref row and the shared column
+  rules; MAF's `MafCoverageRegion` carries `coverageBinSize: 1`. What still
+  differs is by design: alignments' band axis has scale, bounds and an allele
+  floor and MAF's is fixed linear, and alignments packs its band palette from
+  its shader `ColorPalette` while MAF packs from the theme.
+
 ## Declined during the review, do not re-propose
 
 - A mark-level installer (`installMarks`) on the marks subpath — ADR-088
