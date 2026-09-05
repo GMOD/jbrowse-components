@@ -3148,6 +3148,17 @@ export default function stateModelFactory(
             setConf(self, 'showSashimiArcs', false)
           }
         }
+        function setSortSlot(sortedBy: {
+          type: string
+          pos: number
+          refName: string
+          assemblyName: string
+          tag?: string
+        }) {
+          setConf(self, 'largeFeaturesFirst', false)
+          setConf(self, 'splicedReadsFirst', false)
+          setConf(self, 'sortedBy', sortedBy)
+        }
         return {
           /**
            * #action
@@ -3246,7 +3257,7 @@ export default function stateModelFactory(
             // — strand included. There is no sort this action can reach that
             // lays out sensibly without a center line.
             if (centerLineInfo && !centerLineInfo.oob) {
-              this.setSortSlot({
+              setSortSlot({
                 type,
                 // `offset` counts bp INTO the region; the worker compares this
                 // against absolute `readPositions`, and on a reversed region
@@ -3276,24 +3287,15 @@ export default function stateModelFactory(
            * Commit a sort, the single place the `sortedBy` slot is written. Also
            * drops the layout-order flags: they are peer radios in one group
            * ("Longest reads first" and "Spliced reads first" are flags, a sort
-           * is the slot), so exactly one must hold state. Doing it here rather than at the menu
-           * means a sort that *doesn't* land — no valid center line, a cancelled
-           * tag dialog — leaves the previous ordering intact instead of silently
-           * clearing it and unchecking every radio. `computeMultiRegionLayout`
-           * would tolerate both being set (an explicit sort wins there anyway);
-           * this keeps the menu's checkmarks honest.
+           * is the slot), so exactly one must hold state. Doing it here rather
+           * than at the menu means a sort that *doesn't* land — no valid center
+           * line, a cancelled tag dialog — leaves the previous ordering intact
+           * instead of silently clearing it and unchecking every radio.
+           * `computeMultiRegionLayout` would tolerate both being set (an
+           * explicit sort wins there anyway); this keeps the menu's checkmarks
+           * honest.
            */
-          setSortSlot(sortedBy: {
-            type: string
-            pos: number
-            refName: string
-            assemblyName: string
-            tag?: string
-          }) {
-            setConf(self, 'largeFeaturesFirst', false)
-            setConf(self, 'splicedReadsFirst', false)
-            setConf(self, 'sortedBy', sortedBy)
-          },
+          setSortSlot,
 
           /**
            * #action
@@ -3308,7 +3310,7 @@ export default function stateModelFactory(
             const view = self.view
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
-              this.setSortSlot({ type, pos, refName, assemblyName, tag })
+              setSortSlot({ type, pos, refName, assemblyName, tag })
             } else {
               getNotificationSink(self).notify(
                 'Cannot sort: no assembly loaded in this view.',
