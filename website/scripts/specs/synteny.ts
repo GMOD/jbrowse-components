@@ -1819,7 +1819,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     settleMs: 20000,
-    viewportHeight: 1400,
+    viewportHeight: 1340,
   },
 
   // The join's negative at cohort scale: the O-antigen cluster between galF
@@ -1853,7 +1853,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     settleMs: 20000,
-    viewportHeight: 1400,
+    viewportHeight: 1340,
   },
 
   // The grasses radiation as lanes: the rice window the
