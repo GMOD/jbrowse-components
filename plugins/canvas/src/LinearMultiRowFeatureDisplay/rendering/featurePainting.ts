@@ -23,8 +23,7 @@ export function resolveLocalRowIndices(
 }
 
 /**
- * Resolved once per region so the per-feature answer is array reads. The model
- * memoizes one because the hit test runs per pointer frame.
+ * Resolved once per region so the per-feature answer is array reads.
  */
 interface DrawnFeatureContext {
   rowForLocal: readonly (number | undefined)[]
@@ -88,68 +87,4 @@ export function forEachDrawnFeature(
       )
     }
   }
-}
-
-/**
- * Row `r`'s feature indices are `indices[rowStart[r] .. rowStart[r + 1])`, in
- * paint order. Two flat typed arrays rather than an array of arrays, because a
- * cohort painting is a couple of thousand rows and one sub-array each is a
- * couple of thousand allocations to answer a question about one of them.
- */
-export interface DrawnFeaturesByRow {
-  rowStart: Int32Array
-  indices: Int32Array
-}
-
-export function drawnFeaturesByRow(
-  data: Pick<
-    MultiRowRegionData,
-    'featureStarts' | 'featurePartitionIndex' | 'featureColors'
-  >,
-  ctx: DrawnFeatureContext,
-  rowCount: number,
-): DrawnFeaturesByRow {
-  // both passes go through `forEachDrawnFeature`, so the buckets cannot
-  // diverge from what paints
-  const rowStart = new Int32Array(rowCount + 1)
-  let drawn = 0
-  forEachDrawnFeature(data, ctx, (_i, rowIndex) => {
-    rowStart[rowIndex + 1]!++
-    drawn++
-  })
-  for (let r = 0; r < rowCount; r++) {
-    rowStart[r + 1]! += rowStart[r]!
-  }
-  const indices = new Int32Array(drawn)
-  const cursor = Int32Array.from(rowStart.subarray(0, rowCount))
-  forEachDrawnFeature(data, ctx, (i, rowIndex) => {
-    indices[cursor[rowIndex]!++] = i
-  })
-  return { rowStart, indices }
-}
-
-/**
- * Index of the topmost drawn feature on `rowIndex` matching `match`, or -1.
- * Searched back to front: both render paths paint in array order, so a later
- * feature sits on top of an overlapping earlier one and a forward search would
- * return the buried feature.
- */
-export function findTopDrawnFeatureInRow(
-  byRow: DrawnFeaturesByRow,
-  rowIndex: number,
-  match: (i: number) => boolean,
-) {
-  const { rowStart, indices } = byRow
-  const lo = rowStart[rowIndex]
-  const hi = rowStart[rowIndex + 1]
-  if (lo === undefined || hi === undefined) {
-    return -1
-  }
-  for (let k = hi - 1; k >= lo; k--) {
-    const i = indices[k]!
-    if (match(i)) {
-      return i
-    }
-  }
-  return -1
 }

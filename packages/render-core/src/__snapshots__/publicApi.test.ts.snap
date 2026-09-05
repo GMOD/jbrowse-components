@@ -15,6 +15,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./coverageBandBuffers",
   "./createRenderingBackend",
   "./displayPhase",
+  "./encodeMemo",
   "./globalRenderingBackend",
   "./gpuDevice",
   "./graphicsCapabilities",

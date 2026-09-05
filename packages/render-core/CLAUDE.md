@@ -84,6 +84,12 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   uploads** — four of the seven per-region displays. The helper then keeps no
   mirror maps and hands `render` the display's own map, which is what those four
   were reading anyway while passing `encode: data => data` beside it.
+- **A display that reads its own encoding holds `createEncodeMemo` in a `.views`
+  closure and hands identity cells.** The installer's `encode` path runs on the
+  same factory, so the two shapes upload the same references; what the closure
+  buys is a map the hit test and the SVG export can read (multi-row, MAF). A
+  pointer handler reads it untracked, so an `afterAttach` autorun holds the
+  observer — an unobserved memo re-encodes every region per read.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
 - **A cell is a payload, and absence is absence.** `regionDataMap` checks a

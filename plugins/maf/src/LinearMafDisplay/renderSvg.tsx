@@ -98,10 +98,8 @@ function MafSvgBody({
     palette: getMafColorPalette(palette),
   }
   const contrast = getContrastBaseMap(palette)
-  // Re-encoded here rather than read off the screen's upload: the encoded map
-  // lives in the upload autorun's closure and the export runs headless, with no
-  // backend attached. The export theme is a different palette anyway, so the
-  // screen's channels would carry the wrong colours.
+  // Re-encoded here rather than read off `encodedUpload`: the export theme is a
+  // different palette, so the screen's channels carry the wrong colours.
   const svgCells = new Map(
     (basesRenderingActive ? [...model.rpcDataMap] : []).map(
       ([idx, regionData]) => [

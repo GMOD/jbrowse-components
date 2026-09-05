@@ -21,6 +21,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   ContextMenuMixin,
@@ -51,7 +52,6 @@ import { toggleArrayMember } from '../shared/toggleArrayMember.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
-  createDrawnFeaturesByRowIndex,
   featureAtPixel,
   hitBlockRect,
   hitRow,
@@ -82,7 +82,7 @@ import type {
 } from './configSchema.ts'
 import type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 import type { PartitionRowCount } from './partitionFields.ts'
-import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
+import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowFeaturePaintInputs,
   MultiRowRegionData,
@@ -646,8 +646,9 @@ export default function stateModelFactory(
        * #getter
        * The three inputs to "does this feature paint, and in what color".
        * Split out of `renderState`, whose canvas box and row geometry move on
-       * every frame of a resize drag, so the GPU encode and the hit-test memos
-       * key on something that moves only on a reorder, recolor or refetch.
+       * every frame of a resize drag, so the encode memo behind
+       * `encodedChannels` keys on something that moves only on a reorder,
+       * recolor or refetch.
        */
       get featurePaintInputs(): MultiRowFeaturePaintInputs {
         return {
@@ -695,23 +696,29 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      const index = createDrawnFeaturesByRowIndex()
+      const encoded = createEncodeMemo(
+        () => self.drawnRegionData,
+        // `featurePaintInputs`, never `renderState`: the channels hold
+        // {x,x2,row,color} and no geometry — the row height and canvas box
+        // reach the shape as uniforms, and both move on every frame of a
+        // track-height drag. Declaring the narrow one is what keeps a
+        // reorder / recolor / category toggle re-encoding without an RPC
+        // roundtrip while a resize re-encodes nothing.
+        () => self.featurePaintInputs,
+        buildMultiRowChannels,
+      )
       return {
         /**
          * #getter
-         * Per-region drawn features bucketed by display row, off the same
-         * `featurePaintInputs` the painters use so the hit test cannot answer
-         * "is this feature drawn" differently from the paint that put it there.
-         * `afterAttach` installs the observer the memo needs to exist at all,
-         * since a pointer handler reading a computed nobody watches caches
-         * nothing.
+         * Every loaded region's `span` channels with the per-row buckets the
+         * hit test reads; one encode serves the upload, the hit test and the
+         * SVG export. The memo lives in this closure so it outlives a
+         * context-loss recovery, and `afterAttach` installs the observer it
+         * needs to exist at all, since a pointer handler reading a computed
+         * nobody watches caches nothing.
          */
-        get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
-          return index(
-            self.drawnRegionData,
-            self.featurePaintInputs,
-            self.sources.length,
-          )
+        get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
+          return encoded()
         },
       }
     })
@@ -903,12 +910,7 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: MultiRowRenderingBackend) {
           installUpload(self, backend, {
-            cells: () => self.drawnRegionData,
-            // `featurePaintInputs`, never `renderState`: the channels hold no
-            // geometry, so a resize re-encodes nothing while a reorder,
-            // recolor or category toggle still re-encodes without an RPC.
-            inputs: () => self.featurePaintInputs,
-            encode: buildMultiRowChannels,
+            cells: () => self.encodedChannels,
             render: (b, encoded) =>
               b.renderBlocks(self.renderBlocks, encoded, self.renderState),
           })
@@ -945,16 +947,16 @@ export default function stateModelFactory(
     .actions(self => {
       return {
         afterAttach() {
-          // What makes `drawnFeaturesByRow` a memo at all: its consumers are
+          // What makes `encodedChannels` a memo at all: its consumers are
           // pointer handlers, and MobX discards an unobserved computed's value
           // as it hands it over. Safe to hold because it keys off the data, the
           // rows and the colors, never live view geometry.
           autorunOnReadyView(
             self,
             () => {
-              void self.drawnFeaturesByRow
+              void self.encodedChannels
             },
-            { name: 'MultiRowHitIndexes' },
+            { name: 'MultiRowEncodedChannels' },
           )
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',

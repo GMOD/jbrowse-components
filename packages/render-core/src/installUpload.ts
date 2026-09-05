@@ -1,10 +1,10 @@
 import { getType } from '@jbrowse/mobx-state-tree'
-import { computed } from 'mobx'
 
 import {
   contractReportsOn,
   reportContractViolation,
 } from './contractReports.ts'
+import { createEncodeMemo } from './encodeMemo.ts'
 import { createMapUploadSync } from './mapUploadSync.ts'
 import { isCheckedAtTheStore } from './regionDataMap.ts'
 
@@ -127,7 +127,10 @@ function checkPayloads(
  *
  * **Calling again only swaps the backend.** Displays wire this from
  * `startRenderingBackend`, which fires again on every context-loss recovery;
- * the diff and the encode cache live in the setup thunk and survive it.
+ * the diff and the encode memo live in the setup thunk and survive it.
+ *
+ * `encode` runs through `createEncodeMemo`. A display that needs the encoded
+ * map itself holds that memo in a `.views` closure and hands identity cells.
  *
  * @see installUpload.test.ts for the upload, encode and release counts.
  * @see ADR-078 for why this is one autorun and a diff.
@@ -173,49 +176,17 @@ export function installUpload<
         b.release(key)
       },
     })
-    if (!encode) {
-      const own = cells as unknown as () => ReadonlyMap<K, Encoded>
-      return {
-        upload: b => {
-          const current = own()
-          if (contractReportsOn()) {
-            checkPayloads(self, current)
-          }
-          return sync(b, current)
-        },
-        render: b => render(b, own()),
-      }
-    }
-    const encoded = new Map<K, Encoded>()
-    const encodedFrom = new Map<K, Data>()
-    const props = inputs && computed(inputs)
-    let lastProps: Props | undefined
+    const own = encode
+      ? createEncodeMemo(cells, inputs, encode)
+      : (cells as unknown as () => ReadonlyMap<K, Encoded>)
     return {
       upload: b => {
-        const current = cells()
         if (contractReportsOn()) {
-          checkPayloads(self, current)
+          checkPayloads(self, cells())
         }
-        const p = props ? props.get() : (undefined as Props)
-        if (p !== lastProps) {
-          lastProps = p
-          encodedFrom.clear()
-        }
-        for (const [key, data] of current) {
-          if (encodedFrom.get(key) !== data) {
-            encoded.set(key, encode(data, p, key))
-            encodedFrom.set(key, data)
-          }
-        }
-        for (const key of encoded.keys()) {
-          if (!current.has(key)) {
-            encoded.delete(key)
-            encodedFrom.delete(key)
-          }
-        }
-        return sync(b, encoded)
+        return sync(b, own())
       },
-      render: b => render(b, encoded),
+      render: b => render(b, own()),
     }
   })
 }

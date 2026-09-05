@@ -6,6 +6,7 @@ import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
+import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
@@ -90,6 +91,19 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
   // The sidebar reads `labelSources`, which is `sources` plus a derived label
   // tint, so an override naming only one of them means both here.
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
+  const drawnRegionData = new Map([[0, makeRegionData()]])
+  const renderState = {
+    canvasWidth: 800,
+    canvasHeight: 100,
+    rowHeight: 50,
+    rowProportion: 0.8,
+    rowIndexByValue: new Map([
+      ['a', 0],
+      ['b', 1],
+    ]),
+    hiddenColors: new Set<number>(),
+    rowColorsByIndex: [undefined, undefined],
+  }
   const model = {
     id: 'test',
     height: 100,
@@ -100,19 +114,14 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     densityBandLayer: { regions: new Map(), maxDepth: 0 },
     densityPeakReadout: '',
     svgReady: true,
-    drawnRegionData: new Map([[0, makeRegionData()]]),
-    renderState: {
-      canvasWidth: 800,
-      canvasHeight: 100,
-      rowHeight: 50,
-      rowProportion: 0.8,
-      rowIndexByValue: new Map([
-        ['a', 0],
-        ['b', 1],
+    drawnRegionData,
+    encodedChannels: new Map(
+      [...drawnRegionData].map(([k, d]) => [
+        k,
+        buildMultiRowChannels(d, renderState),
       ]),
-      hiddenColors: new Set<number>(),
-      rowColorsByIndex: [undefined, undefined],
-    },
+    ),
+    renderState,
     sources,
     labelSources: sources,
     effectiveRowHeight: 50,

@@ -28,6 +28,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -110,6 +111,7 @@ import type {
   MafGpuProps,
   MafRegionData,
   MafRenderingBackend,
+  MafUploadPayload,
   MafWireRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
@@ -2426,6 +2428,50 @@ export default function stateModelFactory(
           )
         },
       }))
+      .views(self => {
+        const encoded = createEncodeMemo(
+          () => self.rpcDataMap,
+          // `basesRenderingActive` belongs in here with gpuProps, not read
+          // inside the encode: flipping modes has to re-encode every region,
+          // and only a declared input does that.
+          () => ({
+            basesActive: self.basesRenderingActive,
+            gpu: self.gpuProps(),
+          }),
+          (regionData, { basesActive, gpu }): MafUploadPayload => ({
+            // The rows mark draws nothing unless the rows area is in `bases`
+            // mode — the identity plot, codon view and color-by-chromosome all
+            // paint the rows on sibling canvases. Encoding anyway built and
+            // uploaded a buffer (tens of MB on a wide region) that never
+            // reached a pixel. Empty channels skip the encode *and* release
+            // the GPU buffer (an empty pack deletes the pass's buffer);
+            // flipping back to `bases` re-encodes immediately.
+            cells: basesActive
+              ? buildMafChannels({ blocks: regionData.blocks, ...gpu })
+              : EMPTY_MAF_CELLS,
+            // The coverage band's four buffers are the worker's own, carried
+            // through by reference, and the region's coverage rides along
+            // whole because the band's uniforms and its Canvas2D painter read
+            // it at draw time.
+            ...coverageBandBuffers(regionData.coverage),
+            coverage: regionData.coverage,
+          }),
+        )
+        return {
+          /**
+           * #getter
+           * Every loaded region's upload payload — the rows band's `span`
+           * channels beside the coverage band's buffers — keyed by
+           * displayedRegionIndex. Held here rather than in the upload's setup
+           * thunk so theme / showAllLetters / mismatchRendering changes
+           * re-encode without an RPC roundtrip and the memo outlives a
+           * context-loss recovery.
+           */
+          get encodedUpload(): ReadonlyMap<number, MafUploadPayload> {
+            return encoded()
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action
@@ -2524,44 +2570,8 @@ export default function stateModelFactory(
          * #action
          */
         startRenderingBackend(backend: MafRenderingBackend) {
-          // Per-region streamed upload. The encode callback builds the GPU
-          // instance buffer on the main thread from raw region data + gpuProps,
-          // so theme / showAllLetters / mismatchRendering changes re-encode
-          // without an RPC roundtrip.
           installUpload(self, backend, {
-            cells: () => self.rpcDataMap,
-            // `basesRenderingActive` belongs in here with gpuProps, not read
-            // inside the encode: flipping modes has to re-encode every region,
-            // and only a declared input does that now.
-            inputs: () => ({
-              basesActive: self.basesRenderingActive,
-              gpu: self.gpuProps(),
-            }),
-            encode: (regionData, { basesActive, gpu }) => {
-              // The coverage band's four buffers are the worker's own, carried
-              // through by reference — nothing to encode, and they upload
-              // whatever the rows are doing, since the band is drawn from the
-              // same canvas and gated only by its own setting. The region's
-              // coverage rides along whole, because the band's uniforms and its
-              // Canvas2D painter read it at draw time.
-              const band = {
-                ...coverageBandBuffers(regionData.coverage),
-                coverage: regionData.coverage,
-              }
-              // The rows mark draws nothing unless the rows area is in `bases`
-              // mode — the identity plot, codon view and color-by-chromosome all
-              // paint the rows on sibling canvases. Encoding anyway built and
-              // uploaded a buffer (tens of MB on a wide region) that never
-              // reached a pixel. Empty channels skip the encode *and* release
-              // the GPU buffer (an empty pack deletes the pass's buffer);
-              // flipping back to `bases` re-encodes immediately.
-              return {
-                cells: basesActive
-                  ? buildMafChannels({ blocks: regionData.blocks, ...gpu })
-                  : EMPTY_MAF_CELLS,
-                ...band,
-              }
-            },
+            cells: () => self.encodedUpload,
             render: (b, encoded) => {
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources

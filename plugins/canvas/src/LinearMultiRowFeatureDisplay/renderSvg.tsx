@@ -10,12 +10,12 @@ import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { drawDensityBand } from '../shared/densityBand.ts'
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
-import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
+import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -40,6 +40,9 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
+  // the screen's own channels: `renderState` spreads `featurePaintInputs`, the
+  // encode's only inputs, so what the upload holds is what the export paints
+  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
   // The sidebar's view of the rows, and the only one the tree/labels layer
@@ -104,18 +107,10 @@ function MultiRowSvgBody({
                 palette: exportPalette,
               })
             }
-            // The export encodes the channels itself: the on-screen encode
-            // lives in the upload autorun, whose output the model does not
-            // retain.
             paintMarkBlocks(
               ctx,
               MULTI_ROW_MARKS,
-              new Map(
-                [...self.drawnRegionData].map(([k, d]) => [
-                  k,
-                  buildMultiRowChannels(d, state),
-                ]),
-              ),
+              self.encodedChannels,
               renderBlocks,
               state,
             )

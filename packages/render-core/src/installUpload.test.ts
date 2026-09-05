@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
+import { createEncodeMemo } from './encodeMemo.ts'
 import { installUpload } from './installUpload.ts'
 
 const TestModel = types
@@ -217,6 +218,52 @@ test('a non-payload cell is reported once, in development', () => {
     cells.set(1, { value: 1 })
   })
   expect(console.error).toHaveBeenCalledTimes(1)
+})
+
+test('identity cells over a display-held memo upload what the encode path uploads', () => {
+  const cells = cellMap<Cell>()
+  const marker = observable.box(0)
+  const inputs = () => ({ marker: marker.get() })
+  const encode = ({ value }: Cell, { marker }: { marker: number }) => ({
+    value,
+    marker,
+  })
+
+  const encoding = makeBackend<Encoded>()
+  installUpload(TestModel.create(), encoding.backend, {
+    cells: () => cells,
+    inputs,
+    encode,
+    render: () => true,
+  })
+
+  const memo = createEncodeMemo(() => cells, inputs, encode)
+  const identity = makeBackend<Encoded>()
+  installUpload(TestModel.create(), identity.backend, {
+    cells: memo,
+    render: () => true,
+  })
+
+  const keys = (u: { key: number }[]) => u.map(x => x.key)
+  runInAction(() => {
+    cells.set(0, { value: 1 })
+    cells.set(1, { value: 2 })
+  })
+  runInAction(() => {
+    cells.set(2, { value: 3 })
+  })
+  runInAction(() => {
+    marker.set(4)
+  })
+  runInAction(() => {
+    cells.delete(1)
+  })
+  expect(keys(identity.uploads)).toEqual(keys(encoding.uploads))
+  expect(identity.uploads.map(u => u.payload)).toEqual(
+    encoding.uploads.map(u => u.payload),
+  )
+  expect(identity.releases).toEqual(encoding.releases)
+  expect(identity.uploads).toHaveLength(6)
 })
 
 // Typecheck-only: an unused `@ts-expect-error` fails `pnpm typecheck`.

@@ -48,9 +48,9 @@ describe('featurePaintInputs', () => {
   it('survives the geometry moving under it', () => {
     const display = makeDisplay()
     const paint = countRecomputes(() => display.featurePaintInputs)
-    // The hit test's per-region memo has the same dependency set, and
-    // `featureAt` runs per pointer frame off it.
-    const contexts = countRecomputes(() => display.drawnFeaturesByRow)
+    // the encoded channels have the same dependency set, and `featureAt`
+    // runs per pointer frame off them
+    const contexts = countRecomputes(() => display.encodedChannels)
     const render = countRecomputes(() => display.renderState)
 
     display.setRowHeight(14)
@@ -96,18 +96,18 @@ describe('featurePaintInputs', () => {
     paint.dispose()
   })
 
-  // The hit test reads `drawnFeaturesByRow` out of a React event handler, so
+  // The hit test reads `encodedChannels` out of a React event handler, so
   // nothing there is tracked and MobX drops the value as it hands it over.
   // `afterAttach` holds an observer so the cache survives between pointer
   // frames.
   it('stays memoized for an untracked reader', () => {
     const display = makeDisplay()
 
-    const first = display.drawnFeaturesByRow
-    expect(display.drawnFeaturesByRow).toBe(first)
+    const first = display.encodedChannels
+    expect(display.encodedChannels).toBe(first)
 
     display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
-    expect(display.drawnFeaturesByRow).not.toBe(first)
+    expect(display.encodedChannels).not.toBe(first)
   })
 
   // A plain `sourcesWithoutLayout` getter hands out a fresh array on every write
@@ -141,42 +141,78 @@ describe('featurePaintInputs', () => {
     paint.dispose()
   })
 
-  // Region k's arrival must not re-walk regions 1..k-1: the bucketing is two
-  // full passes over every feature of a region, and a whole-genome load would
-  // pay that once per region that lands.
-  it('reuses the already-loaded regions indexes when another region lands', () => {
+  // Region k's arrival must not re-encode regions 1..k-1: a whole-genome load
+  // would pay that once per region that lands, and `mapUploadSync` diffs on
+  // exactly the reference identity asserted here.
+  it('reuses the already-loaded regions encodings when another region lands', () => {
     const display = makeDisplay()
-    const first = display.drawnFeaturesByRow.get(0)
+    const first = display.encodedChannels.get(0)
 
     display.setRpcData(1, regionData(), ctgB)
 
-    expect(display.drawnFeaturesByRow.get(0)).toBe(first)
-    expect(display.drawnFeaturesByRow.get(1)).toBeDefined()
+    expect(display.encodedChannels.get(0)).toBe(first)
+    expect(display.encodedChannels.get(1)).toBeDefined()
   })
 
-  it('rebuilds the region whose data was replaced', () => {
+  it('re-encodes the region whose data was replaced', () => {
     const display = makeDisplay()
-    const first = display.drawnFeaturesByRow.get(0)
+    const first = display.encodedChannels.get(0)
 
     display.setRpcData(0, regionData(), ctgA)
 
-    expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
+    expect(display.encodedChannels.get(0)).not.toBe(first)
   })
 
   it('drops a region that leaves the map', () => {
     const display = makeDisplay()
-    const first = display.drawnFeaturesByRow.get(0)
+    const first = display.encodedChannels.get(0)
 
     display.dropLoadedRegion(0)
-    expect(display.drawnFeaturesByRow.size).toBe(0)
+    expect(display.encodedChannels.size).toBe(0)
 
     display.setRpcData(0, regionData(), ctgA)
-    expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
+    expect(display.encodedChannels.get(0)).not.toBe(first)
   })
 
-  // `renderState` must keep carrying all three, since the Canvas2D fallback and
-  // the SVG export resolve each feature's row from the raw region data at draw
-  // time.
+  // The upload takes the held map as identity cells, so its counts are the
+  // memo's: a resize moves nothing, a reorder moves every region, a region
+  // landing moves only itself.
+  it('hands the upload the same references the memo holds', () => {
+    const display = makeDisplay()
+    const uploads: number[] = []
+    const releases: number[] = []
+    display.startRenderingBackend({
+      upload(key: number) {
+        uploads.push(key)
+      },
+      release(key: number) {
+        releases.push(key)
+      },
+      setErrorHandler() {},
+      renderBlocks: () => true,
+      dispose() {},
+    })
+    expect(uploads).toEqual([0])
+
+    display.setRowHeight(14)
+    display.setHeight(400)
+    expect(uploads).toEqual([0])
+
+    display.setRpcData(1, regionData(), ctgB)
+    expect(uploads).toEqual([0, 1])
+
+    display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+    expect(uploads.slice(2).sort()).toEqual([0, 1])
+    expect(uploads).toHaveLength(4)
+
+    display.dropLoadedRegion(1)
+    expect(releases).toEqual([1])
+    expect(uploads).toHaveLength(4)
+  })
+
+  // `renderState` must keep carrying all three: the SVG export paints the
+  // screen's own encoding under a `renderState`-derived state, and the two
+  // agree only while the encode's inputs are the paint half of it.
   it('is the paint half of renderState, not a second copy of it', () => {
     const display = makeDisplay()
     // Inside a reaction, where MobX actually memoizes a computed: read bare it

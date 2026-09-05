@@ -1,5 +1,6 @@
 import { buildMultiRowChannels } from './multiRowChannels.ts'
 
+import type { MultiRowEncoded } from './multiRowChannels.ts'
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
@@ -111,4 +112,46 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
   expect(decode(buffer).map(d => d.color)).toEqual([
     0xff123456, 0xff00ff00, 0xff123456,
   ])
+})
+
+// The per-row buckets, built from the same walk as the channels: a hit on the
+// wrong feature is what getting the index arithmetic wrong looks like, and the
+// buckets hold CHANNEL indices, since the encode compacts what it skips.
+function bucketsOf({ rowStart, rowIndices }: MultiRowEncoded) {
+  return [...rowStart.slice(0, -1)].map((lo, r) => [
+    ...rowIndices.subarray(lo, rowStart[r + 1]),
+  ])
+}
+
+test('buckets each channel onto its display row, in paint order', () => {
+  const rowIndexByValue = new Map([
+    ['momHP0', 2],
+    ['dadHP1', 0],
+  ])
+  const encoded = buildMultiRowChannels(region, paintState(rowIndexByValue))
+  expect(bucketsOf(encoded)).toEqual([[1], [], [0, 2]])
+  expect([...encoded.featureIndex.subarray(0, encoded.count)]).toEqual([
+    0, 1, 2,
+  ])
+})
+
+test('a skipped feature leaves no bucket entry and the channel indices stay compact', () => {
+  const rowIndexByValue = new Map([
+    ['momHP0', 0],
+    ['dadHP1', 1],
+  ])
+  const encoded = buildMultiRowChannels(
+    region,
+    paintState(rowIndexByValue, { hiddenColors: new Set([0xff00ff00]) }),
+  )
+  expect(encoded.count).toBe(2)
+  // the buckets run to the last row that drew anything
+  expect(bucketsOf(encoded)).toEqual([[0, 1]])
+  expect([...encoded.featureIndex.subarray(0, encoded.count)]).toEqual([0, 2])
+})
+
+test('a region with nothing drawn has no buckets', () => {
+  const encoded = buildMultiRowChannels(region, paintState(new Map()))
+  expect(encoded.count).toBe(0)
+  expect(bucketsOf(encoded)).toEqual([])
 })

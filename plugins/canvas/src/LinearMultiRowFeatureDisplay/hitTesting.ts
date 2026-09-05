@@ -3,19 +3,11 @@ import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
-import {
-  drawnFeatureContext,
-  drawnFeaturesByRow,
-  findTopDrawnFeatureInRow,
-  regionWithDeltas,
-} from './rendering/featurePainting.ts'
+import { regionWithDeltas } from './rendering/featurePainting.ts'
 import { paintedSpanContainsBp, rowBand } from './rendering/rowBand.ts'
 
-import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
-import type {
-  MultiRowFeaturePaintInputs,
-  MultiRowRegionData,
-} from './rendering/multiRowRenderingBackendTypes.ts'
+import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
+import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -59,7 +51,7 @@ interface HitTestView {
 /**
  * Callers pass `self` straight in so MobX tracks exactly what each function
  * below reads; building an argument object instead would make
- * `highlightedBlockRect` depend on the whole hit index.
+ * `highlightedBlockRect` depend on the whole encoded map.
  */
 export interface MultiRowHitTestSlice {
   showTree: boolean
@@ -71,56 +63,8 @@ export interface MultiRowHitTestSlice {
   rowProportion: number
   renderBlocks: RenderBlock[]
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
-  drawnFeaturesByRow: ReadonlyMap<number, DrawnFeaturesByRow>
+  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   view: HitTestView
-}
-
-/**
- * Per-region drawn features bucketed by display row, held per region rather
- * than as one computed whole, which the Nth region to land would rebuild for
- * all N-1 that already held. Identity compares suffice: a region payload is
- * replaced whole and never mutated, and the row count cannot move without
- * `featurePaintInputs` moving with it. A factory, so each display gets a memo.
- */
-export function createDrawnFeaturesByRowIndex() {
-  const held = new Map<
-    number,
-    { data: MultiRowRegionData; byRow: DrawnFeaturesByRow }
-  >()
-  let heldFor: MultiRowFeaturePaintInputs | undefined
-  return (
-    regions: ReadonlyMap<number, MultiRowRegionData>,
-    state: MultiRowFeaturePaintInputs,
-    rowCount: number,
-  ) => {
-    if (state !== heldFor) {
-      heldFor = state
-      held.clear()
-    }
-    const byRegion = new Map<number, DrawnFeaturesByRow>()
-    for (const [index, data] of regions.entries()) {
-      const prev = held.get(index)
-      const entry =
-        prev?.data === data
-          ? prev
-          : {
-              data,
-              byRow: drawnFeaturesByRow(
-                data,
-                drawnFeatureContext(data, state),
-                rowCount,
-              ),
-            }
-      held.set(index, entry)
-      byRegion.set(index, entry.byRow)
-    }
-    for (const index of held.keys()) {
-      if (!byRegion.has(index)) {
-        held.delete(index)
-      }
-    }
-    return byRegion
-  }
 }
 
 type PointerBase = ReturnType<HitTestView['pxToBp']>
@@ -144,7 +88,8 @@ function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
  * color under the cursor — at the 0.32 px rows a cohort painting fits into, the
  * top edge names a row one and a half off. Several sub-pixel rows share one
  * drawn pixel, so the walk from `nearest` to `lowest` finds whichever of them
- * actually put a block there.
+ * actually put a block there. Each row's bucket is walked back to front, since
+ * both render paths paint in array order and a later channel sits on top.
  */
 function featureAtBase(
   self: MultiRowHitTestSlice,
@@ -153,16 +98,14 @@ function featureAtBase(
 ): MultiRowHit | undefined {
   const { view } = self
   const region = self.drawnRegionData.get(p.index)
-  if (!region) {
-    return undefined
-  }
-  const byRow = self.drawnFeaturesByRow.get(p.index)
-  if (!byRow) {
+  const encoded = self.encodedChannels.get(p.index)
+  if (!region || !encoded) {
     return undefined
   }
   // coord0 names the base to the right of the cursor when reversed.
   const bp = basePaintedAt(p, p.offset)
   const { featureStarts, featureEnds, featureNames, featureIds } = region
+  const { x, x2, rowStart, rowIndices, featureIndex } = encoded
   const deltas = regionWithDeltas(region)?.featureDeltas
   const rowHeight = self.effectiveRowHeight
   const { nearest, lowest } = rowsUnderPointer(
@@ -172,25 +115,23 @@ function featureAtBase(
   )
   for (let targetRow = nearest; targetRow >= lowest; targetRow--) {
     const row = self.sources[targetRow]
-    if (row) {
-      const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
-        paintedSpanContainsBp(
-          featureStarts[i]!,
-          featureEnds[i]!,
-          bp,
-          view.bpPerPx,
-        ),
-      )
-      if (i !== -1) {
-        return {
-          id: featureIds[i]!,
-          regionIndex: p.index,
-          rowName: row.name,
-          name: featureNames[i]!,
-          refName: p.refName,
-          start: featureStarts[i]!,
-          end: featureEnds[i]!,
-          delta: deltas?.[i],
+    const lo = rowStart[targetRow]
+    const hi = rowStart[targetRow + 1]
+    if (row && lo !== undefined && hi !== undefined) {
+      for (let k = hi - 1; k >= lo; k--) {
+        const c = rowIndices[k]!
+        if (paintedSpanContainsBp(x[c]!, x2[c]!, bp, view.bpPerPx)) {
+          const i = featureIndex[c]!
+          return {
+            id: featureIds[i]!,
+            regionIndex: p.index,
+            rowName: row.name,
+            name: featureNames[i]!,
+            refName: p.refName,
+            start: featureStarts[i]!,
+            end: featureEnds[i]!,
+            delta: deltas?.[i],
+          }
         }
       }
     }
