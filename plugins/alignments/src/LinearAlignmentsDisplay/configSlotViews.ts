@@ -5,7 +5,16 @@ import {
   resolveConf,
 } from '@jbrowse/core/configuration'
 
-import type { ArcColorByType } from '../shared/types.ts'
+import { normalizeColorBy } from '../shared/colorSchemes.ts'
+import { normalizeGroupBy } from '../shared/groupFeatures.ts'
+import { normalizeFilterBy } from '../shared/types.ts'
+
+import type {
+  ArcColorByType,
+  ColorBy,
+  FilterBy,
+  GroupBy,
+} from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
   LinkedReadsMode,
@@ -215,6 +224,137 @@ export function configSlotViews(self: ConfigSlotSelf) {
     // the soft-clipping checkbox over every open track of this type (pin)
     get softClippingDisplayTypeDefault() {
       return makeTogglePin(self, 'showSoftClipping')
+    },
+
+    /**
+     * #getter
+     */
+    // colorBy is a sentinel promotable slot: a track following the default (colorBy at
+    // its unset default) follows the session-wide color default
+    // (e.g. "color every alignments track by methylation"), resolving to the
+    // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
+    // scheme — `normal` included — pins this track over that default.
+    // resolveConf walks the cascade and never surfaces `inherit`.
+    get colorBy(): ColorBy {
+      return normalizeColorBy(resolveConf(self, 'colorBy'))
+    },
+    /**
+     * #getter
+     */
+    get filterBy(): FilterBy {
+      return normalizeFilterBy(getConf(self, 'filterBy'))
+    },
+    /**
+     * #getter
+     */
+    // The configured fixed-mode read size, independent of the fit squeeze.
+    // Consumers that EDIT the size (the "Set feature height" dialog) must
+    // start from the configured value, not the fractional fit pitch that
+    // `featureHeight` resolves to in fit mode — otherwise opening the dialog
+    // while compressed would bake the squeezed height.
+    get configuredFeatureHeight(): number {
+      return resolveConf(self, 'featureHeight')
+    },
+    /**
+     * #getter
+     */
+    get maxHeight() {
+      return getConf(self, 'maxHeight')
+    },
+    /**
+     * #getter
+     * Whether to draw the supporting-read count on each sashimi arc.
+     * Resolved through the promotable-slot tiers (resolveConf): an
+     * explicit track value pins labels on or off; otherwise it follows the
+     * session-wide default, falling back to off. A `maybeBoolean` slot, so
+     * (like mismatchAlpha) a session default of "on" can be customized back
+     * off on a single track.
+     */
+    get showSashimiLabels(): boolean {
+      return resolveConf(self, 'showSashimiLabels')
+    },
+    /**
+     * #getter
+     * the sashimi-labels checkbox over every open track of this type (pin)
+     */
+    get showSashimiLabelsDisplayTypeDefault() {
+      return makeTogglePin(self, 'showSashimiLabels')
+    },
+    /**
+     * #getter
+     * Whether junctions with a non-canonical splice motif are dropped from
+     * the sashimi arcs. Promotable like `showSashimiLabels`.
+     */
+    get hideNonCanonicalJunctions(): boolean {
+      return resolveConf(self, 'hideNonCanonicalJunctions')
+    },
+    /**
+     * #getter
+     * the non-canonical-junction checkbox over every open track of this
+     * type (pin)
+     */
+    get hideNonCanonicalJunctionsDisplayTypeDefault() {
+      return makeTogglePin(self, 'hideNonCanonicalJunctions')
+    },
+    /**
+     * #getter
+     */
+    get showLowFreqMismatches() {
+      return !!getConf(self, 'showLowFreqMismatches')
+    },
+    /**
+     * #getter
+     */
+    // Resolved through the promotable-slot tiers (resolveConf): an
+    // explicit track value customizes the fade on or off; otherwise it follows the
+    // session-wide default, falling back to off. A `maybeBoolean` slot, so
+    // (unlike showSoftClipping) a session default of "on" can be customized back
+    // off on a single track.
+    get mismatchAlpha(): boolean {
+      return resolveConf(self, 'mismatchAlpha')
+    },
+    /**
+     * #getter
+     */
+    // the fade-by-quality checkbox over every open track of this type (pin)
+    get mismatchAlphaDisplayTypeDefault() {
+      return makeTogglePin(self, 'mismatchAlpha')
+    },
+    /**
+     * #getter
+     * Lay out the widest features in the lowest pileup rows (main-thread
+     * tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it
+     * on. Ignored while an explicit `sortedBy` position sort is active.
+     */
+    get largeFeaturesFirst(): boolean {
+      return getConf(self, 'largeFeaturesFirst')
+    },
+    /**
+     * #getter
+     * Lay out reads whose CIGAR carries a skip in the lowest pileup rows
+     * (tier-2 relayout). Ignored while an explicit `sortedBy` position
+     * sort is active.
+     */
+    get splicedReadsFirst(): boolean {
+      return getConf(self, 'splicedReadsFirst')
+    },
+    /**
+     * #getter
+     * In-track stacked grouping dimension (undefined = ungrouped). Falls
+     * back to the `groupBy` config slot, so a track can be pre-grouped
+     * declaratively. Sent to the worker via rpcProps; the worker partitions
+     * one fetch into N sections. The slot is `frozen` (unvalidated JSON), so
+     * `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or
+     * a tag grouping with no tag name from reaching the worker.
+     */
+    get groupBy(): GroupBy | undefined {
+      return normalizeGroupBy(getConf(self, 'groupBy'))
+    },
+    /**
+     * #getter
+     */
+    get readConnectionsLineWidth() {
+      return getConf(self, 'readConnectionsLineWidth')
     },
   }
 }

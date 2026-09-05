@@ -10,8 +10,6 @@ import {
   ConfigurationReference,
   getConf,
   makePin,
-  makeTogglePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -77,14 +75,9 @@ import {
   COLOR_SCHEMES,
   isModificationScheme,
   isPerBaseScheme,
-  normalizeColorBy,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import {
-  groupByForMode,
-  groupKeySpaceOf,
-  normalizeGroupBy,
-} from '../shared/groupFeatures.ts'
+import { groupByForMode, groupKeySpaceOf } from '../shared/groupFeatures.ts'
 import {
   arcKeyFoldsIntoReadKey,
   getArcLegendItems,
@@ -93,10 +86,7 @@ import {
   readColorCategoryLabel,
 } from '../shared/legendUtils.ts'
 import { medianReadSpan } from '../shared/readSpans.ts'
-import {
-  DEFAULT_MODIFICATION_THRESHOLD,
-  normalizeFilterBy,
-} from '../shared/types.ts'
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
@@ -660,26 +650,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         */
-        // colorBy is a sentinel promotable slot: a track following the default (colorBy at
-        // its unset default) follows the session-wide color default
-        // (e.g. "color every alignments track by methylation"), resolving to the
-        // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
-        // scheme — `normal` included — pins this track over that default.
-        // resolveConf walks the cascade and never surfaces `inherit`.
-        get colorBy(): ColorBy {
-          return normalizeColorBy(resolveConf(self, 'colorBy'))
-        },
-
-        /**
-         * #getter
-         */
-        get filterBy(): FilterBy {
-          return normalizeFilterBy(getConf(self, 'filterBy'))
-        },
-
-        /**
-         * #getter
          * True when fit-to-display mode is on AND a pitch has been computed
          * (`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The
          * single gate both size getters read, so it's obvious they either both
@@ -703,7 +673,7 @@ export default function stateModelFactory(
         get featureHeight(): number {
           return this.isFitting
             ? self.fittedHeightPx - this.featureSpacing
-            : this.configuredFeatureHeight
+            : self.configuredFeatureHeight
         },
 
         /**
@@ -716,7 +686,7 @@ export default function stateModelFactory(
         // can't disagree.
         get featureSpacing(): number {
           return featureSpacingForHeight(
-            this.isFitting ? self.fittedHeightPx : this.configuredFeatureHeight,
+            this.isFitting ? self.fittedHeightPx : self.configuredFeatureHeight,
           )
         },
 
@@ -730,62 +700,6 @@ export default function stateModelFactory(
         // keeps callers from re-deriving it and conflating pitch with body.
         get rowHeight(): number {
           return this.featureHeight + this.featureSpacing
-        },
-
-        /**
-         * #getter
-         */
-        // The configured fixed-mode read size, independent of the fit squeeze.
-        // Consumers that EDIT the size (the "Set feature height" dialog) must
-        // start from the configured value, not the fractional fit pitch that
-        // `featureHeight` resolves to in fit mode — otherwise opening the dialog
-        // while compressed would bake the squeezed height.
-        get configuredFeatureHeight(): number {
-          return resolveConf(self, 'featureHeight')
-        },
-
-        /**
-         * #getter
-         */
-        get maxHeight() {
-          return getConf(self, 'maxHeight')
-        },
-
-        /**
-         * #getter
-         * Whether to draw the supporting-read count on each sashimi arc.
-         * Resolved through the promotable-slot tiers (resolveConf): an
-         * explicit track value pins labels on or off; otherwise it follows the
-         * session-wide default, falling back to off. A `maybeBoolean` slot, so
-         * (like mismatchAlpha) a session default of "on" can be customized back
-         * off on a single track.
-         */
-        get showSashimiLabels(): boolean {
-          return resolveConf(self, 'showSashimiLabels')
-        },
-        /**
-         * #getter
-         * the sashimi-labels checkbox over every open track of this type (pin)
-         */
-        get showSashimiLabelsDisplayTypeDefault() {
-          return makeTogglePin(self, 'showSashimiLabels')
-        },
-
-        /**
-         * #getter
-         * Whether junctions with a non-canonical splice motif are dropped from
-         * the sashimi arcs. Promotable like `showSashimiLabels`.
-         */
-        get hideNonCanonicalJunctions(): boolean {
-          return resolveConf(self, 'hideNonCanonicalJunctions')
-        },
-        /**
-         * #getter
-         * the non-canonical-junction checkbox over every open track of this
-         * type (pin)
-         */
-        get hideNonCanonicalJunctionsDisplayTypeDefault() {
-          return makeTogglePin(self, 'hideNonCanonicalJunctions')
         },
 
         /**
@@ -808,38 +722,11 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get showLowFreqMismatches() {
-          return !!getConf(self, 'showLowFreqMismatches')
-        },
-
-        /**
-         * #getter
-         */
         // The draw/hit-test sense of showLowFreqMismatches. Both the renderers
         // and the hit-test pipeline take the filter in this polarity, so the
         // negation lives here once rather than at each call site.
         get filterMismatchesByFrequency() {
-          return !this.showLowFreqMismatches
-        },
-
-        /**
-         * #getter
-         */
-        // Resolved through the promotable-slot tiers (resolveConf): an
-        // explicit track value customizes the fade on or off; otherwise it follows the
-        // session-wide default, falling back to off. A `maybeBoolean` slot, so
-        // (unlike showSoftClipping) a session default of "on" can be customized back
-        // off on a single track.
-        get mismatchAlpha(): boolean {
-          return resolveConf(self, 'mismatchAlpha')
-        },
-
-        /**
-         * #getter
-         */
-        // the fade-by-quality checkbox over every open track of this type (pin)
-        get mismatchAlphaDisplayTypeDefault() {
-          return makeTogglePin(self, 'mismatchAlpha')
+          return !self.showLowFreqMismatches
         },
 
         /**
@@ -881,46 +768,13 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Lay out the widest features in the lowest pileup rows (main-thread
-         * tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it
-         * on. Ignored while an explicit `sortedBy` position sort is active.
-         */
-        get largeFeaturesFirst(): boolean {
-          return getConf(self, 'largeFeaturesFirst')
-        },
-
-        /**
-         * #getter
-         * Lay out reads whose CIGAR carries a skip in the lowest pileup rows
-         * (tier-2 relayout). Ignored while an explicit `sortedBy` position
-         * sort is active.
-         */
-        get splicedReadsFirst(): boolean {
-          return getConf(self, 'splicedReadsFirst')
-        },
-
-        /**
-         * #getter
-         * In-track stacked grouping dimension (undefined = ungrouped). Falls
-         * back to the `groupBy` config slot, so a track can be pre-grouped
-         * declaratively. Sent to the worker via rpcProps; the worker partitions
-         * one fetch into N sections. The slot is `frozen` (unvalidated JSON), so
-         * `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or
-         * a tag grouping with no tag name from reaching the worker.
-         */
-        get groupBy(): GroupBy | undefined {
-          return normalizeGroupBy(getConf(self, 'groupBy'))
-        },
-
-        /**
-         * #getter
          * The grouping the fetch will actually partition by, which is what the
          * worker resolves too (`executeRenderAlignmentData`): chain mode
          * degrades a per-read dimension to ungrouped without the slot moving,
          * so the slot alone never says which sections come back.
          */
         get effectiveGroupBy() {
-          return groupByForMode(this.groupBy, self.isChainMode)
+          return groupByForMode(self.groupBy, self.isChainMode)
         },
 
         /**
@@ -1246,7 +1100,7 @@ export default function stateModelFactory(
          * category scan, for the same reason: it is O(reads).
          */
         get presentTagValues(): ReadonlySet<string> | undefined {
-          const { type } = this.colorBy
+          const { type } = self.colorBy
           if (!self.showLegend || (type !== 'tag' && type !== 'mateRefName')) {
             return undefined
           }
@@ -1272,7 +1126,7 @@ export default function stateModelFactory(
          * marks are drawn. Same showLegend gate as the other two scans.
          */
         get presentModifications(): ReadonlySet<string> | undefined {
-          if (!self.showLegend || !isModificationScheme(this.colorBy.type)) {
+          if (!self.showLegend || !isModificationScheme(self.colorBy.type)) {
             return undefined
           }
           return collectAcrossGroups(
@@ -1327,7 +1181,7 @@ export default function stateModelFactory(
         get arcColorsMatchReads() {
           return arcKeyFoldsIntoReadKey({
             arcColorByType: self.arcColorByType,
-            readColorScheme: this.colorBy.type,
+            readColorScheme: self.colorBy.type,
             arcCategories: this.arcLegendCategories,
             readCategories: this.colorLegendCategories,
           })
@@ -1380,7 +1234,7 @@ export default function stateModelFactory(
         legendItems() {
           return getReadDisplayLegendItems({
             overlaps: this.overlapLegendKind,
-            colorBy: this.colorBy,
+            colorBy: self.colorBy,
             presentCategories: this.arcColorsMatchReads
               ? new Set([
                   ...this.colorLegendCategories,
@@ -1471,7 +1325,7 @@ export default function stateModelFactory(
         get sashimiDownKeysByGroup() {
           return buildSashimiDownKeys(self.rpcDataMap, {
             minSashimiScore: self.minSashimiScore,
-            hideNonCanonicalJunctions: this.hideNonCanonicalJunctions,
+            hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
             mode: self.sashimiArcsMode,
             refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
             hidden: self.hiddenGroupKeys,
@@ -1657,7 +1511,7 @@ export default function stateModelFactory(
             ).length,
             rowHeight: this.rowHeight,
             totalOverhead: this.totalBandOverhead,
-            maxHeight: this.maxHeight,
+            maxHeight: self.maxHeight,
           })
         },
 
@@ -1675,7 +1529,7 @@ export default function stateModelFactory(
         get laidOutByGroupUncolored() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
             rowHeight: this.rowHeight,
-            maxHeight: this.maxHeight,
+            maxHeight: self.maxHeight,
             collapsedKeys: self.collapsedGroups,
             // Both caps arrive resolved, and neither the track height nor the
             // band overhead they came from is read here: those move a px per
@@ -1699,7 +1553,7 @@ export default function stateModelFactory(
          */
         get framesChainStrand() {
           return framesUnpairedChainStrand(
-            this.colorBy.type,
+            self.colorBy.type,
             this.readColorOpts,
           )
         },
@@ -1757,8 +1611,8 @@ export default function stateModelFactory(
             isChainMode: self.isChainMode,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
-            largeFeaturesFirst: this.largeFeaturesFirst,
-            splicedReadsFirst: this.splicedReadsFirst,
+            largeFeaturesFirst: self.largeFeaturesFirst,
+            splicedReadsFirst: self.splicedReadsFirst,
             regions: self.loadedRegions,
             showLinkedReadLines: self.showLinkedReadLines,
             collapseGroupRows: this.collapseGroupRows,
@@ -1772,7 +1626,7 @@ export default function stateModelFactory(
          */
         get readColorContext() {
           return {
-            colorBy: this.colorBy,
+            colorBy: self.colorBy,
             readColorOpts: this.readColorOpts,
             refNamePosition: this.paintedRefNamePosition,
           }
@@ -1800,7 +1654,7 @@ export default function stateModelFactory(
          */
         get paintedRefNamePosition() {
           const assembly =
-            this.colorBy.type === 'mateRefName'
+            self.colorBy.type === 'mateRefName'
               ? self.loadedAssembly
               : undefined
           return assembly
@@ -2178,13 +2032,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        /**
-         * #getter
-         */
-        get readConnectionsLineWidth() {
-          return getConf(self, 'readConnectionsLineWidth')
-        },
-
         /**
          * #method
          */
