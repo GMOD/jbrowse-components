@@ -5,13 +5,48 @@ Films a real Claude client driving JBrowse, for the clips
 cannot make, because there is no url to load, no steps to run and no live
 session to hand a reader. The session is one an agent built during the take.
 
-macOS only, and none of it runs in CI. Not a pipeline: these are run by hand
-when a clip is wanted.
+**We record on Linux.** `recordDemoLinux.mjs` records the WHOLE GNOME/Wayland
+screen, so the actual Claude session — in a terminal beside the app — is in
+frame. That is the current path for any new clip. The macOS harness
+(`agentDemo.mjs` and the rest below) is the older one: it filmed only the
+JBrowse WINDOW through a screenshot loop and painted a caption strip with what
+Claude said, and the published `externalClips` came from it — kept for its
+accumulated notes, not because a clip needs a Mac. Neither runs in CI; both are
+run by hand.
 
-## Before anything works
+## Linux: `recordDemoLinux.mjs`
 
-The terminal running these needs **both** grants in System Settings, Privacy &
-Security:
+`node scripts/agent-demos/recordDemoLinux.mjs <outdir> [takes/<name>.mjs]`, on a
+GNOME/Wayland session. It launches JBrowse Desktop on the real display (real
+GPU), runs a real `claude -p` MCP session whose live stream renders in a visible
+"Claude session" terminal, records the whole screen, and writes
+`<outdir>/demo.mp4`. Take modules are the same `TURNS`/`SHELL`/`SYSTEM` shape as
+the macOS takes.
+
+- **The recorder is `recorder.py`, and it must stay alive.** GNOME's
+  `org.gnome.Shell.Screencast` ties the recording to the D-Bus connection that
+  started it, so `gdbus call` — which exits the instant the method returns —
+  aborts it with `Sender has vanished`. The Python process holds one connection
+  open for the whole take. It records to mp4 (GNOME's configured container),
+  needs no portal dialog, and captures the real screen at full framerate.
+- **Wayland will not let a client position itself**, and there is no scriptable
+  tiling without an input-injection daemon (no `ydotool`/`wtype` here). So the
+  JBrowse window and the terminal may open stacked — tap Super+Left on the
+  terminal and Super+Right on JBrowse once. `window-state.json` seeds JBrowse's
+  size but not its place.
+- **Under GPU-less Xvfb the electron GPU process fatals**
+  (`GPU process isn't usable. Goodbye`) even with `--disable-gpu` and
+  swiftshader flags, which is why this films on the real `:0` display rather
+  than a headless one. The terminal half works fine under Xvfb; JBrowse does
+  not.
+- Isolated `--user-data-dir` under `<outdir>`, so a take never touches a real
+  session, the recent list or an autosave. Refuses to start if a JBrowse Desktop
+  bridge socket already exists (its bridge is per-user).
+
+## macOS: before anything works
+
+The rest of this file is the macOS harness. The terminal running it needs
+**both** grants in System Settings, Privacy & Security:
 
 - **Accessibility** — for the synthetic keyboard and mouse.
 - **Screen Recording** — and without it `screencapture` does not fail. It
