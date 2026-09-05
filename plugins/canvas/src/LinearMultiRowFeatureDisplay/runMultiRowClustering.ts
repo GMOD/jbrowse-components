@@ -15,30 +15,15 @@ import type {
 
 type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
-// The subset of the display model this run reads/writes. Kept structural so the
-// menu trigger and the declarative autorun call one shared implementation.
 export interface MultiRowClusterModel extends ClusterRunModel<MultiRowSource> {
-  // The rows a run clusters — the focused clade, undecorated. See the model's
-  // `clusterableSources`, and `clusteredCladeLayout` for why not `sources`.
   clusterableSources: MultiRowSource[]
   adapterConfig: Record<string, unknown>
-  // the resolved one, never the raw slot — the matrix has to bucket each
-  // feature into the row the painting drew it in
+  // The resolved field, never the raw slot: the matrix has to bucket each
+  // feature into the row the painting drew it in.
   effectivePartitionField: string
   colorConfig: string | undefined
 }
 
-/**
- * What the cluster dialog is handed: the run's own contract plus the write that
- * commits a pasted order, and the node the dialog resolves its view and RPC
- * manager off.
- *
- * `setLayout` is `Pick`ed off `TreeLayoutModel` rather than restated, so the
- * one declaration of it in this chain is the one the arrangement dialog and the
- * track menu's `self` already satisfy — the dialog's props used to spell out an
- * intersection of its own, free to drift from the type actually checking the
- * call site.
- */
 export interface MultiRowClusterDialogModel
   extends
     IStateTreeNode,
@@ -46,16 +31,9 @@ export interface MultiRowClusterDialogModel
     Pick<TreeLayoutModel<MultiRowSource>, 'setLayout'> {}
 
 /**
- * The cluster dialog's fetch key for the exported feature matrix: the run
- * arguments that decide what comes back, and nothing else.
- *
- * `useFetch` serializes its key on every render, and the key used to be the MST
- * display node — which stringifies to the whole display snapshot, `layout`
- * included, so a cohort's worth of rows was serialized per render and any
- * unrelated slot write re-keyed the fetch and re-ran the worker. The dialog
- * adds the region and the zoom itself.
- *
- * `null` when no row has been discovered: there is nothing to export yet.
+ * `useFetch` serializes its key on every render, so this names only the run
+ * arguments — handing it the MST display node would serialize a cohort's worth
+ * of rows per render and re-key the fetch on any unrelated slot write.
  */
 export function featureMatrixKey(model: MultiRowClusterModel) {
   const { clusterableSources } = model
@@ -78,9 +56,6 @@ export async function runMultiRowClustering({
   statusCallback,
 }: {
   model: MultiRowClusterModel
-  // The regions the matrix is built over, resolved by the caller: the autorun
-  // hands them down (a `clusterRegion` locus, or the visible blocks) and the
-  // dialog passes the visible blocks, so neither re-resolves them here.
   regions: Region[]
   rpcManager: MultiRowClusterCaller
   sessionId: string
@@ -96,10 +71,9 @@ export async function runMultiRowClustering({
   await applyClusterRun({
     model,
     rows: clusterableSources,
-    // This display clusters on the *rendered color* of each bin, so the color
-    // scheme is not a display preference here — it is the matrix. Change "Color
-    // by…" and the same rows over the same locus give a different tree, which
-    // is only defensible if the caption says which coloring produced this one.
+    // This display clusters on the rendered color of each bin, so the color
+    // scheme is not a display preference here — it is the matrix, and the
+    // caption has to say which coloring produced a given tree.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows', value: effectivePartitionField },
       ...(colorConfig ? [{ name: 'color', value: colorConfig }] : []),

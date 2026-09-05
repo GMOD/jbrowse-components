@@ -131,10 +131,9 @@ describe('applyRowGroups', () => {
     expect(rows.map(r => r.name)).toEqual(['CLUPb', 'CLUPa', 'COLLx', 'COLLy'])
   })
 
-  // What the caller does when a cluster tree already names this order. Tagging
-  // and ordering are separate questions and the model asks for only the first,
-  // because the alternative it used to take was reordering the rows out from
-  // under the dendrogram, which then silently stopped drawing.
+  // What the caller does when a cluster tree already names this order: tagging
+  // without ordering, since reordering the rows out from under the dendrogram
+  // stops it drawing.
   describe('partition: false', () => {
     it('tags every row exactly as it would otherwise', () => {
       const rows = applyRowGroups([{ name: 'CLUPGR000001' }], [WOLF], {

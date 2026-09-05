@@ -5,12 +5,6 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// The interaction surface of this display — the hover tooltip, click-to-open
-// details and the right-click menu all resolve their feature through
-// `featureAt`. Its geometric twin `blockScreenRect` is pinned in
-// blockScreenRect.test.ts; this is the other half, and the two have to agree
-// about which block sits under a pixel.
-
 const RED = cssColorToABGR('red')
 const BLUE = cssColorToABGR('blue')
 
@@ -23,8 +17,6 @@ interface Feat {
   id?: string
 }
 
-// Region payload in the shape the worker ships: rows referenced indirectly
-// through a deduplicated `partitionValues` list.
 function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
   const partitionValues: string[] = []
   const index = new Map<string, number>()
@@ -98,7 +90,7 @@ describe('featureAt', () => {
         { row: 'b', start: 300, end: 400 },
       ]),
     )
-    // row 0's band, same genomic column as the feature on row 1
+    // Row 0's band, same genomic column as the feature on row 1.
     expect(display.featureAt(350, 10)).toBeUndefined()
     expect(display.featureAt(350, 75)).toBeDefined()
   })
@@ -118,12 +110,9 @@ describe('featureAt', () => {
     expect(display.featureAt(200, 10)).toBeUndefined()
   })
 
-  // Both render paths draw a zero-length feature (an insertion): the block is
-  // widened to MULTI_ROW_MIN_CELL_PX from its start edge, by `spanLeft` on
-  // Canvas2D and `extendToMinWidthX` in the shader. `start <= bp && bp < end` is
-  // empty when the two are equal, so the block on screen had no hover, no
-  // tooltip, no click-to-details and no context menu — the same degenerate span
-  // the details narrowing had to widen.
+  // Both render paths widen a zero-length feature to MULTI_ROW_MIN_CELL_PX from
+  // its start edge, so a `start <= bp && bp < end` test leaves the block on
+  // screen with no hover, no details and no context menu.
   it('resolves a zero-length feature at the base it is painted from', () => {
     const { display, view } = twoRowDisplay(
       region([
@@ -133,27 +122,23 @@ describe('featureAt', () => {
     )
     expect(view.bpPerPx).toBe(1)
     expect(display.featureAt(400, 10)?.id).toBe('insertion')
-    // Nothing to the LEFT of the start edge, which is where both painters widen
-    // away from. To the right the claim is deliberately the painted one and no
-    // wider: the block is MULTI_ROW_MIN_CELL_PX across, 2px at this 1bp/px, and
-    // the pixel it covers has to hit or the mark on screen has no tooltip. This
-    // assertion read `undefined` at 401 while that pixel was painted.
+    // Nothing to the left of the start edge, which is where both painters widen
+    // away from; to the right the claim is the painted 2px and no wider.
     expect(display.featureAt(399, 10)).toBeUndefined()
     expect(display.featureAt(401, 10)?.id).toBe('insertion')
     expect(display.featureAt(402, 10)).toBeUndefined()
   })
 
-  // A repeat element on an rmsk painting at chromosome zoom: hundreds of bp
-  // inside one pixel, drawn as the shader's minimum cell and answering for
-  // nothing the cursor could reach.
+  // A repeat element at chromosome zoom: hundreds of bp inside one pixel, drawn
+  // as the shader's minimum cell.
   it('resolves a feature narrower than the cell it is painted as', () => {
     const { display, view } = createTestEnvironment().createDisplay([
       { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
     ])
     view.zoomTo(10_000)
     expect(view.bpPerPx).toBe(10_000)
-    // the 10Mb region is centred in the 800px view at this zoom, so px 500 is
-    // over it and px 300 is off its left edge
+    // The 10Mb region is centred in the 800px view at this zoom, so px 500 is
+    // over it and px 300 is off its left edge.
     const start = view.pxToBp(500).coord0
 
     display.setRpcData(
@@ -165,10 +150,10 @@ describe('featureAt', () => {
       ctgA,
     )
 
-    // 300bp is 0.03px, and the painted block is the 2px floor from px 500
+    // 300bp is 0.03px, and the painted block is the 2px floor from px 500.
     expect(display.featureAt(500, 10)?.id).toBe('alu')
     expect(display.featureAt(501, 10)?.id).toBe('alu')
-    // and no wider than what is painted
+    // ...and no wider than what is painted.
     expect(display.featureAt(502, 10)).toBeUndefined()
     expect(display.featureAt(499, 10)).toBeUndefined()
   })
@@ -177,13 +162,13 @@ describe('featureAt', () => {
     const { display } = twoRowDisplay(
       region([{ row: 'a', start: 100, end: 200 }]),
     )
-    // one row discovered, so the whole 100px display is row 0; 150 is past it
+    // One row discovered, so the whole 100px display is row 0; 150 is past it.
     expect(display.featureAt(150, 150)).toBeUndefined()
   })
 
   it('resolves overlapping features to the one painted on top', () => {
-    // both render paths paint in array order, so the later feature is the one
-    // actually visible and the hit has to name it
+    // Both render paths paint in array order, so the later feature is the one
+    // actually visible.
     const { display } = twoRowDisplay(
       region([
         { row: 'a', start: 100, end: 400, id: 'under' },
@@ -199,7 +184,7 @@ describe('featureAt', () => {
       region([{ row: 'a', start: 100, end: 200 }]),
       [{ refName: 'ctgA', start: 0, end: 200, assemblyName: 'volvox' }],
     )
-    // the view is 800px wide over a 200bp region, so most of it is off the end
+    // The view is 800px wide over a 200bp region, so most of it is off the end.
     expect(display.featureAt(500, 10)).toBeUndefined()
   })
 
@@ -208,10 +193,8 @@ describe('featureAt', () => {
     expect(display.featureAt(150, 10)).toBeUndefined()
   })
 
-  // `pxToBp`'s coord0 floors, which reversed names the base to the *right* of
-  // the one drawn under the cursor — so a 1bp feature would hit one pixel off,
-  // in the direction nobody checks. basePaintedAt is the readout that agrees
-  // with what the painter drew.
+  // `pxToBp`'s coord0 floors, which reversed names the base to the right of the
+  // one drawn under the cursor, so a 1bp feature hits one pixel off.
   it('names the base painted at the pixel on a reversed region', () => {
     const reversed = [
       {
@@ -226,19 +209,15 @@ describe('featureAt', () => {
       region([{ row: 'a', start: 899, end: 900, id: 'onepx' }]),
       reversed,
     )
-    // the pixel paints base 899 while coord0 there reports 900
+    // The pixel paints base 899 while coord0 there reports 900.
     expect(view.pxToBp(100).coord0).toBe(900)
     expect(display.featureAt(100, 10)?.id).toBe('onepx')
   })
 
-  // A cohort painting fits its rows into the display rather than scrolling them,
-  // so 1,000 rows in 320px is 0.32px a row and the two rules
-  // `rowStackGeometry` exists for both bite: the pixel's CENTRE is the scanline
-  // the colour was decided on, and several rows share one drawn pixel because
-  // `rowBand` floors what it paints at MIN_DRAWN_ROW_PX.
+  // At 1,000 rows in 320px the pixel's centre is the scanline the color was
+  // decided on, and several rows share one drawn pixel because `rowBand` floors
+  // what it paints at MIN_DRAWN_ROW_PX.
   describe('sub-pixel rows', () => {
-    // One region carrying 1000 rows and a feature on the named ones, spanning the
-    // whole displayed region so only the row arithmetic decides the hit.
     function cohort(featureRows: number[]) {
       const partitionValues = Array.from(
         { length: 1000 },
@@ -271,16 +250,16 @@ describe('featureAt', () => {
     }
 
     it('asks at the pixel centre, not its top edge', () => {
-      // px 0 spans rows 0, 1 and 2; its centre, 0.5, is on row 1, and row 1 is
-      // also the last of the three the painter drew there
+      // px 0 spans rows 0, 1 and 2; its centre, 0.5, is on row 1, which is also
+      // the last of the three the painter drew there.
       const display = cohortDisplay([1])
 
       expect(display.featureAt(500, 0)?.id).toBe('f1')
     })
 
     it('finds the row that actually painted the pixel', () => {
-      // nearest is row 1 and it drew nothing; row 0 shares the same drawn pixel
-      // and is what the reader sees there
+      // Nearest is row 1 and it drew nothing; row 0 shares the same drawn pixel
+      // and is what the reader sees there.
       const display = cohortDisplay([0])
 
       expect(display.featureAt(500, 0)?.id).toBe('f0')
@@ -289,14 +268,14 @@ describe('featureAt', () => {
     it('does not reach past the pixel the rows are drawn into', () => {
       const display = cohortDisplay([0])
 
-      // px 4 is rows 12-15; row 0 is nowhere near it
+      // px 4 is rows 12-15; row 0 is nowhere near it.
       expect(display.featureAt(500, 4)).toBeUndefined()
     })
   })
 
   describe('hidden legend categories', () => {
-    // usedItemRgb suppresses the per-row palette, which is what leaves the rows
-    // painting their per-feature colors and gives the legend something to key on
+    // usedItemRgb suppresses the per-row palette, leaving the rows painting
+    // their per-feature colors for the legend to key on.
     const painted = () =>
       region(
         [
@@ -328,14 +307,12 @@ describe('featureAt', () => {
       display.toggleCategory('cat1')
 
       expect(display.featureAt(150, 10)).toBeUndefined()
-      // the other category is untouched
       expect(display.featureAt(150, 75)?.id).toBe('b1')
     })
 
     it('keeps a feature on a row painting its own color override', () => {
-      // the row paints the override, which the legend never lists, so a baked
-      // color that happens to match a hidden category must not hide it — the
-      // same rule both render paths follow
+      // The row paints the override, which the legend never lists, so a baked
+      // color matching a hidden category must not hide it.
       const { display } = twoRowDisplay(
         region(
           [
@@ -368,9 +345,7 @@ describe('featureAt', () => {
   })
 
   // A reorder renumbers the rows with no pointer event to re-run the hit test,
-  // so a hit that snapshotted its row INDEX named whoever moved into it — the
-  // tooltip labelled the wrong sample and the highlight box moved to its row.
-  // The hit carries the row's name instead, and both consumers resolve it live.
+  // so the hit carries the row's name and both consumers resolve it live.
   it('a hover survives a row reorder on the row it was taken on', () => {
     const { display } = twoRowDisplay(
       region([
@@ -388,9 +363,8 @@ describe('featureAt', () => {
     expect(display.highlightedBlockRect?.top).toBeLessThan(before!.top)
   })
 
-  // The bound is the sidebar's *interactive* edge (label gutter + resize
-  // handle), not where labels are drawn from: a hit under the handle would
-  // fight the drag. Same bound the crosshair's guide stops at.
+  // The bound is the sidebar's interactive edge, not where labels are drawn
+  // from: a hit under the resize handle would fight the drag.
   it('is undefined over the tree sidebar and its resize handle', () => {
     const { display } = twoRowDisplay(
       region([
@@ -398,7 +372,7 @@ describe('featureAt', () => {
         { row: 'b', start: 0, end: 1000, id: 'wide2' },
       ]),
     )
-    // the gutter is only reserved once a tree is positioned against the rows
+    // The gutter is only reserved once a tree is positioned against the rows.
     display.setLayoutAndClusterTree(
       [{ name: 'a' }, { name: 'b' }],
       '(a:1,b:1);',

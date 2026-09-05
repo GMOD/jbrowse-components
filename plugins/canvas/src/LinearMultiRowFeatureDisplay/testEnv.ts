@@ -17,21 +17,13 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
   assemblyName: 'volvox',
 }))
 
-// The shared display harness wired for the multi-row display. Exercises the
-// byte gate through the real state model without a worker: stage a byte
-// estimate and read the derived regionTooLarge. `createDisplay()` takes
-// the displayed regions, so a test can load one contig out of the two the
-// assembly declares.
 export function createTestEnvironment(opts?: {
   adapterFetchSizeLimit?: number
-  // The sidecar the density tier draws from. Only its presence is read here —
-  // nothing resolves it — so any object stands in for one.
+  // Only its presence is read here — nothing resolves it — so any object
+  // stands in for one.
   densityAdapter?: Record<string, unknown>
-  // Display config slots, which the harness writes into the track config's own
-  // `displays` entry — the long form of the `displayDefaults` shorthand, and the
-  // only way to reach a slot with no setter (`rowGroups`). The shorthand itself
-  // is expanded by a Core-preProcessTrackConfig handler this bare harness
-  // doesn't install, so spell it out.
+  // Spell slots out in long form: the `displayDefaults` shorthand is expanded
+  // by a Core-preProcessTrackConfig handler this bare harness doesn't install.
   displayConfig?: Record<string, unknown>
 }) {
   const densityAdapter = opts?.densityAdapter
@@ -65,7 +57,5 @@ export function createTestEnvironment(opts?: {
   }
 }
 
-// The harness's two contigs, as `setRpcData` takes them when a test stands up
-// an already-loaded display.
 export const ctgA = REGIONS[0]!
 export const ctgB = REGIONS[1]!

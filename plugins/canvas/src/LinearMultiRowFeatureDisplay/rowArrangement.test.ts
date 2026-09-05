@@ -3,9 +3,8 @@ import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
 // The rows this display draws are discovered from the loaded features, not
-// declared: `sourcesWithoutLayout` is the distinct `partitionField` values
-// across `rpcDataMap`. So the row set grows as regions load, with no action to
-// hook an invalidation onto.
+// declared, so the row set grows as regions load with no action to hook an
+// invalidation onto.
 function regionData(
   partitionValues: string[],
   partitionCandidates: string[] = [],
@@ -45,7 +44,7 @@ describe('the dendrogram positions only while it describes the rows', () => {
     expect(display.hierarchy).toBeDefined()
   })
 
-  // No `setLayout` call happens here — the rows move because a later region
+  // No `setLayout` call happens here: the rows move because a later region
   // revealed a partition value the clustering run never saw.
   it('stops positioning when a later region widens the row set', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -63,8 +62,6 @@ describe('the dendrogram positions only while it describes the rows', () => {
   })
 })
 
-// The "Partition by..." menu writes this. Its options are the attribute names
-// the loaded features carry, which the worker samples and ships beside the rows.
 describe('repartitioning', () => {
   it('offers the names the loaded regions carry, unioned and sorted', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -81,8 +78,7 @@ describe('repartitioning', () => {
   })
 
   // The slot is empty by default and the worker picks the column, so the menu's
-  // checked radio names a field nothing in the config does — and until a region
-  // has loaded there is no pick to report, only what auto would fall back to.
+  // checked radio names a field nothing in the config does.
   it('reports the field the worker actually partitioned on', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.partitionField).toBe('')
@@ -98,10 +94,9 @@ describe('repartitioning', () => {
     expect(display.partitionField).toBe('')
   })
 
-  // `layout` names rows by VALUE, so under a new partition its entries name
-  // rows that no longer exist — and `getSources` appends a row a layout omits
-  // rather than dropping it, so the old row set would have come back beside the
-  // new one, empty, each with whatever colour it had been given.
+  // `layout` names rows by value, and `getSources` appends a row a layout omits
+  // rather than dropping it, so under a new partition the old row set comes back
+  // beside the new one, empty, each with whatever color it had.
   it('drops the row state keyed on the old partition', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
@@ -116,10 +111,8 @@ describe('repartitioning', () => {
     expect(display.clusterTree).toBeUndefined()
   })
 
-  // The subtree filter is a set of row NAMES, matched with no tree involved, so
-  // a reorder or a re-cluster leaves it valid and `setLayout` keeps it. A
-  // repartition is the one thing here that renames the rows, and the old names
-  // then match none of the new ones.
+  // The subtree filter is a set of row names, so a reorder or re-cluster leaves
+  // it valid; a repartition is the one thing here that renames the rows.
   it('drops a subtree filter naming rows the new partition cannot have', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(
@@ -133,16 +126,14 @@ describe('repartitioning', () => {
     display.setPartitionField('clade')
     display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']), ctgA)
 
-    // without the clear this is [], i.e. a blank canvas with no row labels
+    // Without the clear this is [], a blank canvas with no row labels.
     expect(display.subtreeFilter).toBeUndefined()
     expect(rowNames(display)).toEqual(['x', 'y'])
   })
 
-  // Against the EFFECTIVE field, not the slot. With the slot at its empty auto
-  // default the menu checks whatever the worker picked, so picking that same
-  // radio arrives here as a name the slot does not hold — and comparing against
-  // the slot would take it for a repartition, dropping a clustered layout to
-  // refetch the painting already on screen.
+  // Against the effective field, not the slot: under auto the menu checks
+  // whatever the worker picked, so picking that same radio arrives as a name the
+  // slot does not hold and would read as a repartition.
   it('leaves everything alone when the partition is already that', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)

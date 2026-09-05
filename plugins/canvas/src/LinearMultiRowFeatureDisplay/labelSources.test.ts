@@ -4,10 +4,8 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// Rows only: `labelSources` is about the sidebar, and the per-row color it reads
-// is resolved on the main thread from the row list rather than from anything the
-// worker painted. Discovered rows come back SORTED (orderPartitionValues), so
-// `dad` is row 0 below wherever these name both.
+// Discovered rows come back sorted, so `dad` is row 0 wherever these name
+// both.
 function rows(names: string[], usedItemRgb = false): MultiRowRegionData {
   return {
     featureStarts: new Uint32Array(0),
@@ -53,8 +51,7 @@ it('tints each label with the color its own row is painted in', () => {
 })
 
 // A `sampleColorMap` row paints in the color the config named, so that is the
-// color the label has to show — the point of the tint is that it says which row
-// is which on the canvas, and a palette color there would name nothing.
+// color the label has to show.
 it('follows the same precedence the blocks follow', () => {
   const display = makeDisplay(rows(['mom', 'dad']), {
     colorRowLabels: true,
@@ -66,10 +63,9 @@ it('follows the same precedence the blocks follow', () => {
   ])
 })
 
-// rowGroups spends the same label box on a grouping the painting does not show.
-// It was asked for by name; this is derived, so it yields. It also pulls `mom`
-// to the front, while the palette still indexes the unpartitioned order — the
-// same rule that keeps a subtree filter from recoloring the rows it leaves.
+// rowGroups spends the same label box and was asked for by name, so this
+// derived tint yields. It also pulls `mom` to the front while the palette still
+// indexes the unpartitioned order.
 it('yields the label box to a rowGroups color', () => {
   const display = makeDisplay(rows(['mom', 'dad']), {
     colorRowLabels: true,
@@ -82,8 +78,7 @@ it('yields the label box to a rowGroups color', () => {
   ])
 })
 
-// An itemRgb painting has no one color per row, so there is nothing honest to
-// put in the label box and the toggle does nothing.
+// An itemRgb painting has no one color per row, so the toggle does nothing.
 it('tints nothing in per-feature color mode', () => {
   const display = makeDisplay(rows(['mom', 'dad'], true), {
     colorRowLabels: true,

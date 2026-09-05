@@ -10,9 +10,6 @@ interface DecodedInstance {
   color: number
 }
 
-// `count` is what was written, never the one-per-feature seed, and both the
-// packer and the painter read it — so reading the channels past it is reading
-// capacity, which is the invariant worth asserting.
 function decode(c: SpanChannels): DecodedInstance[] {
   const out: DecodedInstance[] = []
   for (let i = 0; i < c.count; i++) {
@@ -42,9 +39,6 @@ const region: MultiRowRegionData = {
   resolvedPartitionField: 'name',
 }
 
-// The three inputs to "does this feature paint, and in what color". Always
-// supplied together (see MultiRowRenderState), so the tests build them together
-// too rather than spelling an absent one as a second way of saying "none".
 function paintState(
   rowIndexByValue: Map<string, number>,
   opts?: {
@@ -83,7 +77,6 @@ test('skips features whose color is a hidden category', () => {
     ['momHP0', 0],
     ['dadHP1', 1],
   ])
-  // hide 0xff00ff00 (feature 1, on dadHP1); features 0 and 2 remain
   const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, { hiddenColors: new Set([0xff00ff00]) }),
@@ -96,9 +89,6 @@ test('a hidden category does not drop features on rows with a color override', (
     ['momHP0', 0],
     ['dadHP1', 1],
   ])
-  // row 0 (momHP0) is recolored, so it paints the override, not its baked color.
-  // hiding 0xff0000ff (feature 0's baked color) must NOT drop feature 0 — that
-  // color is not what the row paints and isn't in the legend.
   const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, {
@@ -114,14 +104,11 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
     ['momHP0', 0],
     ['dadHP1', 1],
   ])
-  // override row 0 (momHP0) only; row 1 keeps its baked feature color
   const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, { rowColorsByIndex: [0xff123456, undefined] }),
   )
   expect(decode(buffer).map(d => d.color)).toEqual([
-    0xff123456, // feature 0, row 0 -> overridden
-    0xff00ff00, // feature 1, row 1 -> baked
-    0xff123456, // feature 2, row 0 -> overridden
+    0xff123456, 0xff00ff00, 0xff123456,
   ])
 })

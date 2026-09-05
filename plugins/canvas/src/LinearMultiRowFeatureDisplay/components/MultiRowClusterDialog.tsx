@@ -12,12 +12,6 @@ import {
 
 import type { MultiRowClusterDialogModel } from '../runMultiRowClustering.ts'
 
-// What "cluster rows by similarity" means for the multi-row painting: each row's
-// painted colors, binned over the visible region. The dialog itself is shared
-// with the other row displays, and `run` is the same function the declarative
-// `runClustering` autorun calls — this display used to fire that flag straight
-// from the menu, which left it the one row display with no cancel, no progress
-// and no R-script path.
 const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
   model,
   handleClose,
@@ -48,8 +42,8 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
       }
       applyOrder={(order, matrixRowNames) => {
         // `matrixRowNames` is the rows `fetchMatrix` keyed the matrix by, so a
-        // partition value discovered while the user was in R is caught rather
-        // than shifting every rank below it onto the wrong row
+        // partition value discovered while the user was in R cannot shift every
+        // rank below it onto the wrong row
         model.setLayout(
           clusteredCladeLayout({
             rows: clusterableSources,

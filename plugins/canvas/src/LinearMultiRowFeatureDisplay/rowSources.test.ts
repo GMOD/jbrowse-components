@@ -64,7 +64,8 @@ test('duplicate rowOrder entries are de-duplicated (no blank row)', () => {
 })
 
 test('numeric partition values sort numerically, not lexicographically', () => {
-  // a chromHMM state column: plain string order files 10 and 11 between 1 and 2
+  // A chromHMM state column: plain string order files 10 and 11 between 1 and
+  // 2.
   expect(
     orderPartitionValues(new Set(['10', '2', '1', '20', '11', '3']), []),
   ).toEqual(['1', '2', '3', '10', '11', '20'])

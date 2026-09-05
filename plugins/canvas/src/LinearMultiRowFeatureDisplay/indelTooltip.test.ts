@@ -5,11 +5,9 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// A pangenome path track: each block is one strain's allele over a bubble, and
-// the block's WIDTH is reference span — a 35bp insertion into a 1bp bubble and a
-// reference-length allele draw the same box. The indel glyphs are what carries
-// the magnitude on the canvas, and the tooltip is the only place a reader can
-// get the number when the block is too small to hold a label.
+// A block's width is reference span, so a 35bp insertion into a 1bp bubble and a
+// reference-length allele draw the same box; the tooltip is the only place a
+// reader gets the number when the block is too small to hold a label.
 function region(deltas: number[]): MultiRowRegionData {
   return {
     featureStarts: Uint32Array.from(deltas, (_, i) => 100 + i * 200),
@@ -49,9 +47,9 @@ describe('the hit carries the length change the block cannot show', () => {
     expect(display.featureAt(550, 10)?.delta).toBe(0)
   })
 
-  // `featureDeltas` is EMPTY rather than zero-filled where the `lengthField`
-  // slot is unset, which is the same length agreement the glyph pass makes
-  // before it indexes into it.
+  // `featureDeltas` is empty rather than zero-filled where the `lengthField`
+  // slot is unset, which is the length agreement the glyph pass makes before it
+  // indexes into it.
   it('carries nothing where the slot packed no deltas', () => {
     const display = displayWith({
       ...region([35]),
@@ -69,7 +67,7 @@ describe('indelMagnitude', () => {
     expect(indelMagnitude(9048)).toBe('+9,048 bp')
   })
 
-  // the two cases the glyph pass draws nothing for
+  // The two cases the glyph pass draws nothing for.
   it('says nothing where there is no length change to state', () => {
     expect(indelMagnitude(0)).toBeUndefined()
     expect(indelMagnitude(undefined)).toBeUndefined()

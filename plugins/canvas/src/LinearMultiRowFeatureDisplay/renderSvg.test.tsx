@@ -16,11 +16,9 @@ import type {
 } from '@jbrowse/tree-sidebar'
 
 // renderSvg calls getContainingView(self) to reach the LGV; the model is a plain
-// object in these tests, so intercept it. awaitSvgReady awaits mobx `when`, so
-// resolve that immediately.
-//
-// `visibleRegions` is here rather than on the model because renderDisplaySvg
-// resolves the export's render blocks from the view, once, for every display.
+// object in these tests, so intercept it. `visibleRegions` is here rather than
+// on the model because renderDisplaySvg resolves the export's render blocks from
+// the view.
 const mockView = {
   width: 800,
   visibleRegions: [
@@ -34,8 +32,8 @@ const mockView = {
     },
   ],
 }
-// Stub only what renderSvg + SvgRowLabels reach for; requireActual pulls in the
-// whole core/util barrel and trips a jest module-init cycle.
+// Stub only what renderSvg and SvgRowLabels reach for; requireActual pulls in
+// the whole core/util barrel and trips a jest module-init cycle.
 jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
   measureText: (s: string, fontSize = 10) => s.length * fontSize * 0.6,
@@ -66,8 +64,6 @@ function makeRegionData(): MultiRowGetFeaturesResult {
   }
 }
 
-// A two-leaf dendrogram positioned by the real layout, so SvgTreePath exercises
-// the same path geometry as the on-screen tree.
 function makeHierarchy(): ClusterHierarchyNode {
   const leaf = (name: string): HierarchyNode<NewickNode> => ({
     data: { name },
@@ -91,8 +87,8 @@ function makeHierarchy(): ClusterHierarchyNode {
 }
 
 function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
-  // the sidebar reads `labelSources`, which is `sources` plus a derived label
-  // tint — an override naming only one of them means both here
+  // The sidebar reads `labelSources`, which is `sources` plus a derived label
+  // tint, so an override naming only one of them means both here.
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
   const model = {
     id: 'test',
@@ -133,7 +129,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     ...overrides,
   }
   // Derived rather than defaulted, so a case naming either legend cannot leave
-  // the gate behind disagreeing with it — the model derives it the same way.
+  // the gate behind disagreeing with it.
   return {
     ...model,
     hasLegendEntries:
@@ -154,8 +150,8 @@ function renderResult(result: React.ReactNode) {
 describe('LinearMultiRowFeatureDisplay renderSvg', () => {
   it('paints a feature block at its mapped screen position', async () => {
     const html = renderResult(await renderSvg(makeModel(), {}))
-    // 1100..1200 over [1000,2000]→[0,800] is 0.8px/bp: x=80, width=80. Row 0 with
-    // rowProportion 0.8 insets the 50px row to h=40 at top=(50-40)/2=5.
+    // 1100..1200 over [1000,2000]→[0,800] is 0.8px/bp: x=80, width=80. Row 0
+    // with rowProportion 0.8 insets the 50px row to h=40 at top=(50-40)/2=5.
     expect(html).toContain('<rect x="80"')
     expect(html).toContain('width="80"')
   })
@@ -186,18 +182,16 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     const html = renderResult(
       await renderSvg(makeModel({ showRowSeparators: true }), {}),
     )
-    // two 50px rows: one line, on the boundary between them, half-pixel offset
-    // so the 1px stroke lands on a device pixel
+    // Two 50px rows: one line on the boundary between them, half-pixel offset
+    // so the 1px stroke lands on a device pixel.
     expect(html).toContain('y1="50.5"')
     expect(html.match(/<line /g)?.length).toBe(1)
   })
 
-  // rowHeight is fractional whenever the display auto-fits, and the blocks
-  // either side of a boundary already blend into the single pixel that boundary
-  // falls in. The line has to cover that pixel: at 6.84 the boundaries are
-  // 6.84 / 13.68 / 20.52, so pixels 6 / 13 / 20, where rounding would put the
-  // last two at 14 and 21 -- a pixel below the color change they divide, which
-  // leaves the blend showing as a stripe of the neighbouring row.
+  // rowHeight is fractional whenever the display auto-fits, and the line has to
+  // cover the pixel the boundary falls in: at 6.84 the boundaries are 6.84 /
+  // 13.68 / 20.52, so pixels 6 / 13 / 20, where rounding would put the last two
+  // a pixel below the color change they divide.
   it('puts each separator on the pixel its row boundary falls in', async () => {
     const html = renderResult(
       await renderSvg(
@@ -236,8 +230,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
 
   // The group stripe is the only thing carrying row identity once the rows are
   // too short to write their names, so the key naming its colors has to reach
-  // the exported figure too — the frame is where this class of bug is visible
-  // at all, a getter test can't see a legend that never got rendered.
+  // the exported figure too.
   it('carries the row-group key into the export', async () => {
     const html = renderResult(
       await renderSvg(
@@ -254,7 +247,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html).toContain('>Village dog</text>')
     expect(html).toContain('>Wolf</text>')
     expect(html).toContain('fill="#e41a1c"')
-    // a lone surviving section stays untitled, per legendEntries' shared rule
+    // A lone surviving section stays untitled, per legendEntries' shared rule.
     expect(html).not.toContain('>Row groups</text>')
   })
 
@@ -278,9 +271,9 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html).toContain('>Row groups</text>')
   })
 
-  // not "draws an error box instead of the body": an export is a standalone
-  // figure, so a track whose data wouldn't load fails the whole export rather
-  // than reserving its height for a message nobody downstream will read
+  // An export is a standalone figure, so a track whose data would not load
+  // fails the whole export rather than reserving its height for a message
+  // nobody downstream will read.
   it('fails the export when model.error is set', async () => {
     await expect(
       renderSvg(makeModel({ error: new Error('boom') }), {}),

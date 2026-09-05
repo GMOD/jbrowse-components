@@ -8,8 +8,6 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The menu is one level of submenus deep ("Show..."), and the legend row lives
-// inside it.
 function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
   return display.trackMenuItems().flatMap(function labels(m): string[] {
     return [
@@ -19,8 +17,6 @@ function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
   })
 }
 
-// An admin-declared key for an itemRgb ancestry painting: the categories are
-// encoded in the block colors and nothing else names them.
 const LEGEND = [
   { label: 'EUR', color: 'red' },
   { label: 'AFR', color: 'blue' },
@@ -54,8 +50,7 @@ function painted(): MultiRowRegionData {
 
 // The configured `legend` slot is a claim about colors on the screen, so it has
 // to answer the same "is anything painted" question the derived key answers by
-// reading the data. It did not, and the key drew over the density band, over
-// the too-large banner, and over a track whose first fetch had not landed.
+// reading the data.
 describe('the color key waits for a painting to key', () => {
   it('is empty before anything has loaded', () => {
     const { display } = createTestEnvironment({
@@ -97,10 +92,8 @@ describe('the color key waits for a painting to key', () => {
     expect(display.hasLegendEntries).toBe(false)
   })
 
-  // The draw is what the data gates, never the toggle: the user configured a
-  // key, and a track waiting on its first fetch — or standing behind the
-  // density band — must not lose the menu row that turns it back on, nor the
-  // promotable pin `PromotablePinCoverage` reaches through it.
+  // The data gates the draw, never the toggle: a track waiting on its first
+  // fetch must not lose the menu row that turns the key back on.
   it('keeps the "Show legend" toggle while nothing is painted', () => {
     const { display } = createTestEnvironment({
       displayConfig: { legend: LEGEND },

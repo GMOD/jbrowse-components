@@ -7,18 +7,9 @@ import type {
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 /**
- * Encode one region's features into the `span` shape's channels — one rect per
- * drawn feature, `[startBp, endBp)` on its row in its colour.
- *
- * Runs on the main thread (the per-region encode autorun) rather than in the
- * worker, which is what lets a row reorder, a row recolor, or a legend category
- * being toggled off re-encode with no RPC roundtrip: all three are inputs to
- * `forEachDrawnFeature`, which decides both which features appear here and what
- * colour they carry.
- *
- * `count` is what was actually written — a hidden legend category or a filtered
- * row means fewer instances than features — and both the GPU packer and the
- * painter read it, so neither can draw the trailing capacity.
+ * One region's features as `span` channels, one rect per drawn feature. `count`
+ * is what was actually written, not the one-per-feature capacity — a hidden
+ * category or a filtered row leaves the tail unwritten.
  */
 export function buildMultiRowChannels(
   data: MultiRowRegionData,

@@ -23,15 +23,9 @@ export function fetchMultiRowFeatures(
 ) {
   const args = rpcArgs(self)
   // An empty slot means "resolve it from the data", which the worker does off a
-  // sample of the region it packs — so a region loaded later can pick a
-  // different attribute than the ones on screen. Once a region with features in
-  // it has answered, later ones are told the answer (`pinnedPartitionField`).
-  //
-  // Read once, before a fan-out that is parallel: the regions of the FIRST
-  // batch are all told auto and each resolves on its own, so the pin is not
-  // what keeps them together. `regionHasData` is — a region that answered
-  // something other than the pin reads as holding nothing and is refetched with
-  // the field spelled out.
+  // sample of the region it packs, so regions loaded later could pick a
+  // different attribute; once one region with features has answered,
+  // `pinnedPartitionField` tells the rest what it resolved to.
   const partitionField =
     args.partitionField === AUTO_PARTITION_FIELD
       ? self.pinnedPartitionField

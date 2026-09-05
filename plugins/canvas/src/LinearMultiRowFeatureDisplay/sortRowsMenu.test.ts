@@ -3,21 +3,14 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// "Sort rows by color here" is the interactive twin of the declarative
-// `sortRowsBy` prop, and the two meet the "is the data here?" condition
-// differently: the prop WAITS for the region (setupRowSortAutorun), a click
-// cannot. What made that gap matter is that the empty result is destructive
-// rather than inert — `setLayout` drops the cluster tree whenever the row set
-// changes.
+// "Sort rows by color here" cannot wait for the region the way the declarative
+// `sortRowsBy` does, and the empty result is destructive rather than inert:
+// `setLayout` drops the cluster tree whenever the row set changes.
 
 const SORT = 'Sort rows by color here'
 
-// The rows this display draws are DISCOVERED from the loaded features
-// (`sourcesWithoutLayout` is the distinct partitionField values across
-// rpcDataMap), so they vanish whenever the display has no data loaded.
-//
-// `feats` are `[rowIndexIntoPartitionValues, color]` spanning the whole loaded
-// window — enough for the sort to have something to rank by, and nothing more.
+// The rows this display draws are discovered from the loaded features, so they
+// vanish whenever the display has no data loaded.
 function regionData(
   partitionValues: string[],
   feats: [row: number, color: number][] = [],
@@ -39,9 +32,9 @@ function regionData(
   }
 }
 
-// the `'onClick' in item` narrowing is what drops the label-less and
-// unclickable members of the MenuItem union (dividers, subheaders), so the
-// caller can read the row's own `disabled`/`disabledHelpText`
+// The `'onClick' in item` narrowing drops the label-less and unclickable
+// members of the MenuItem union, so the caller can read the row's own
+// `disabled`/`disabledHelpText`.
 function row(items: MenuItem[], label: string) {
   const item = items.find(i => 'label' in i && i.label === label)
   if (!item || !('onClick' in item)) {
@@ -59,8 +52,8 @@ const LOADED = {
 
 function clustered() {
   const { display } = createTestEnvironment().createDisplay()
-  // LOADED, not the whole contig: the span the sort resolves its column
-  // against, so `50_000` below really is off the end of what was fetched
+  // Loaded, not the whole contig: the span the sort resolves its column
+  // against, so `50_000` below really is off the end of what was fetched.
   display.setRpcData(0, regionData(['a', 'b', 'c']), LOADED)
   display.setLayoutAndClusterTree(
     [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
@@ -84,7 +77,7 @@ describe('"Sort rows by color here"', () => {
 
   it('is disabled, and says why, once the row set is empty', () => {
     const display = clustered()
-    // panned off the track's features, or blanked by the density gate
+    // Panned off the track's features, or blanked by the density gate.
     display.clearAllRpcData()
 
     const item = row(display.contextMenuItems(), SORT)
@@ -92,9 +85,8 @@ describe('"Sort rows by color here"', () => {
     expect(item.disabledHelpText).toBe('Needs at least two rows to sort')
   })
 
-  // The bug: the row was live, the click wrote the empty sort result, and
-  // `setLayout` read the row-set change as a reason to drop the dendrogram. A
-  // slow clustering run was discarded by a menu item that claimed to sort.
+  // With the row live, the click writes the empty sort result and `setLayout`
+  // reads the row-set change as a reason to drop the dendrogram.
   it('leaves the arrangement and the cluster tree alone with no rows', () => {
     const display = clustered()
     display.clearAllRpcData()
@@ -106,7 +98,7 @@ describe('"Sort rows by color here"', () => {
   })
 
   // One surviving row reorders to itself, so the sort is a no-op — but writing
-  // it is still a row-set change, and still took the tree with it.
+  // it is still a row-set change.
   it('leaves them alone when only one row survives', () => {
     const display = clustered()
     display.clearAllRpcData()
@@ -119,12 +111,9 @@ describe('"Sort rows by color here"', () => {
     expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
   })
 
-  // The other half of the same rule, and the one this display used to be
-  // missing: rows aplenty, but the column is off the end of what was fetched,
-  // so there is nothing to rank by. It filtered the regions on refName alone,
-  // so every row came back valueless and the unchanged order was written back
-  // as an explicit `layout`. Same gate `setupRowSortAutorun` and multi-wiggle
-  // already applied.
+  // Rows aplenty, but the column is off the end of what was fetched, so there
+  // is nothing to rank by and the unchanged order must not be written back as
+  // an explicit `layout`.
   it('declines a column no loaded region covers', () => {
     const display = clustered()
 
@@ -140,17 +129,15 @@ describe('"Sort rows by color here"', () => {
 
     display.sortRowsByValueAt('ctgA', 100)
 
-    // no features at that position, so every row sorts to its existing index —
-    // the order is unchanged, which is why the tree still describes it
+    // No features at that position, so every row sorts to its existing index
+    // and the tree still describes the order.
     expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
     expect(display.clusterTree).toBe('((c,a),b);')
   })
 
-  // The path every case above reaches only as a no-op: rows that actually move.
-  // The clustered order is c,a,b; `a` and `b` share a color at the column and
-  // `c` is alone, so the two-row block leads — in ITS incoming order, which is
-  // what keeps a previous sort meaningful inside each block — and the tree
-  // stops describing the rows.
+  // Rows that actually move: the clustered order is c,a,b, `a` and `b` share a
+  // color at the column and `c` is alone, so the two-row block leads in its own
+  // incoming order and the tree stops describing the rows.
   it('pulls the commonest block to the top, and drops the stale tree', () => {
     const display = clustered()
     display.setRpcData(

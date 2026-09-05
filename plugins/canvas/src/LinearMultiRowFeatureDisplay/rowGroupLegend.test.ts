@@ -2,8 +2,6 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// Rows only — the group key is about the sidebar stripe, not about what is
-// painted on the rows.
 function rows(n: number): MultiRowRegionData {
   return {
     featureStarts: new Uint32Array(0),
@@ -22,7 +20,6 @@ function rows(n: number): MultiRowRegionData {
   }
 }
 
-// Three declared groups over the cohort, the shape a `rowGroups` config takes.
 const ROW_GROUPS = [
   { match: '^dog[0-2]?[0-9]$', group: 'Village dog', color: '#e41a1c' },
   { match: '^dog[3-5][0-9]$', group: 'Wolf', color: '#377eb8' },
@@ -40,9 +37,9 @@ function makeDisplay(n: number, height: number, rowGroups = ROW_GROUPS) {
   return display
 }
 
-// The case this exists for: 1,987 canids in 640px is 0.32px a row, where
-// RowLabelsOverlay drops to an unlabelled swatch and the stripe's colors are
-// the only thing left saying which rows are which.
+// 1,987 canids in 640px is 0.32px a row, where RowLabelsOverlay drops to an
+// unlabelled swatch and the stripe's colors are the only thing left saying which
+// rows are which.
 it('keys the group stripe when the rows are too short to name themselves', () => {
   const display = makeDisplay(1987, 640)
   expect(display.effectiveRowHeight).toBeLessThan(6)
@@ -69,15 +66,12 @@ it('draws no key for a single group', () => {
   expect(display.rowGroupLegend).toEqual([])
 })
 
-// No rowGroups at all is the ordinary track: nothing tints the stripe.
 it('draws no key when nothing is grouped', () => {
   expect(makeDisplay(1987, 640, []).rowGroupLegend).toEqual([])
 })
 
 // `showRowLabels` takes the whole of SvgRowLabels with it, swatch runs
-// included -- it is not a text-only toggle. Keying a stripe nobody drew is the
-// inverse of the tall-rows case and comes from the same question being asked
-// about only half of what draws it.
+// included, so nothing draws the stripe a key would name.
 it('draws no key once the row labels the stripe lives in are turned off', () => {
   const display = makeDisplay(1987, 640)
   expect(display.rowGroupLegend).toHaveLength(3)

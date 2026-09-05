@@ -29,10 +29,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   model: LinearMultiRowFeatureDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  // `canvasWidthPx`, not `view.width` or a second `trackWidthPx` read: it is the
-  // width `renderState` carries, so every overlay below is positioned in the box
-  // the painting was actually mapped into. The getter exists to be the one
-  // answer — reading the view directly is how MAF drifted onto `view.width`.
+  // `canvasWidthPx` is the width `renderState` carries, so every overlay below
+  // sits in the box the painting was actually mapped into.
   const {
     canvasWidthPx,
     height,
@@ -58,16 +56,15 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           height,
           position: 'absolute',
           left: 0,
-          // pinned rather than left to the static flow: the pointer handlers
-          // measure the chrome container, so the canvas has to share its origin
+          // the pointer handlers measure the chrome container, so the canvas
+          // has to share its origin
           top: 0,
         }}
       />
       <DensityBandOverlay model={model} />
       <MultiRowIndelGlyphOverlay model={model} />
-      {/* inline rather than portaled through FloatingSvgOverlay: the tree
-          sidebar is a later sibling and its panel is opaque, so drawing the
-          lines here is what stops them from running across the dendrogram */}
+      {/* inline rather than portaled: the tree sidebar is a later sibling with
+          an opaque panel, so the lines stop at the dendrogram */}
       {showRowSeparators ? (
         <svg
           style={{
@@ -88,14 +85,9 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         </svg>
       ) : null}
       <MultiRowHoverHighlight model={model} />
-      {/* Also the display's doneness signal for capture gates: `sources` is
-          derived from fetched features (the partition values), so this subtree
-          cannot exist before data has loaded and been binned into rows --
-          unlike `canvasDrawn`, which flips on an empty first paint. The
-          color legend serves this role for categorical paintings but renders
-          nothing when the palette is continuous (MAX_LEGEND_ENTRIES), so the row
-          labels are the signal that holds in both modes. See
-          agent-docs/reference/FIGURE_CAPTURE.md. */}
+      {/* Capture gates read this subtree as the doneness signal: `sources`
+          derives from fetched features, so it cannot exist before the data has
+          loaded and been binned into rows. */}
       <RowLabelsOverlay
         testId="multirow-row-labels"
         sources={labelSources}
@@ -105,8 +97,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         height={height}
         showLabels={showRowLabels}
       />
-      {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
-          legend isn't buried at multi-region scale */}
+      {/* portaled above the inter-region masks so the legend isn't buried at
+          multi-region scale */}
       {showLegend && hasLegendEntries ? (
         <FloatingSvgOverlay width={canvasWidthPx} height={height}>
           <MultiRowColorLegend
@@ -142,9 +134,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     }
     function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
       const { x, y } = eventPoint(e)
-      // the inter-region gutter and the tree sidebar that overlays this
-      // container resolve to nothing; what counts as either is
-      // `contextTargetAt`'s to say
       const target = model.contextTargetAt(x, y)
       openContextMenuFromEvent(
         model,
@@ -162,9 +151,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         // its content is all absolutely positioned, so without a height the
         // container collapses and receives no pointer events at all
         style={{ height: model.height }}
-        // One pointer source for the whole display: the hit-test, the tooltip
-        // and the guides all come off the chrome's single measurement, in one
-        // frame.
         onPointerPosition={state => {
           model.setHoveredFeature(
             state ? model.featureAt(state.x, state.y) : undefined,

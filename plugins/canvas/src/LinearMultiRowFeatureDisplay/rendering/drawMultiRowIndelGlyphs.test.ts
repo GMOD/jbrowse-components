@@ -21,8 +21,6 @@ interface FillRectCall {
 
 function mockCtx() {
   const calls: FillRectCall[] = []
-  // fillStyle rides along with the text: these labels are drawn ON the painting,
-  // so the color they are drawn in is part of whether they were drawn at all.
   const texts: {
     text: string
     x: number
@@ -80,8 +78,7 @@ const state: MultiRowRenderState = {
 }
 
 // Two 1bp features on two rows: x 100-110 (center 105) and x 500-510 (center
-// 505). 1bp is the pure-insertion shape — a bubble with no reference span,
-// widened to one base — so the bar is wider than the block and draws.
+// 505). 1bp is the pure-insertion shape, so the bar is wider than the block.
 const narrow: MultiRowRegionData = {
   featureStarts: Uint32Array.from([10, 50]),
   featureEnds: Uint32Array.from([11, 51]),
@@ -98,8 +95,8 @@ const narrow: MultiRowRegionData = {
   resolvedPartitionField: 'name',
 }
 
-// The same two features spanning 10bp (100px) each, comfortably wider than any
-// bar this delta earns.
+// the same two features spanning 10bp (100px) each, wider than any bar this
+// delta earns
 const wide: MultiRowRegionData = {
   ...narrow,
   featureEnds: Uint32Array.from([20, 60]),
@@ -107,8 +104,6 @@ const wide: MultiRowRegionData = {
 
 const DELTA = 5000
 const BAR = insertionBarWidth(DELTA, 10, 20)
-// The theme's insertion color, which is also what plugin-alignments' pileup
-// paints -- the point of passing it in rather than hardcoding one here.
 const INSERTION_COLOR = resolvePalette().insertion
 
 function draw(
@@ -129,9 +124,6 @@ function draw(
   return { calls, texts }
 }
 
-// The length-0 array is the "slot unset" signal, and it has to be read as such
-// rather than as an empty region — every existing multi-row painting ships it,
-// so a presence check on the wrong axis would draw glyphs on ancestry tracks.
 test('draws nothing when no deltas were packed', () => {
   expect(draw(narrow).calls).toEqual([])
 })
@@ -141,9 +133,6 @@ test('a zero delta draws nothing, so reference-length alleles stay bare', () => 
   expect(draw(region).calls).toEqual([])
 })
 
-// The whole reason the slot exists: a block's width is the reference span, so
-// the mark's width has to come from the delta instead. Same delta, different
-// reference spans => same bar.
 test('insertion bar width follows the delta, not the reference span', () => {
   const region: MultiRowRegionData = {
     ...narrow,
@@ -153,8 +142,6 @@ test('insertion bar width follows the delta, not the reference span', () => {
   }
   const widths = draw(region).calls.map(c => c.w)
   expect(widths[0]).toBe(widths[1])
-  // pinned against the shared primitive rather than a copy of its formula, so
-  // this test enforces the sharing instead of duplicating it
   expect(widths[0]).toBe(BAR)
 })
 
@@ -165,9 +152,6 @@ test('insertion bar centers on the block it annotates', () => {
   ])
 })
 
-// Where the block is already wider than the bar it *is* the bar — same color,
-// same center — so a second fill is pure overdraw. The magnitude still has to
-// reach the reader, and that is the label's job.
 test('a block wider than the bar gets the label but no redundant bar', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([113174, 0]) }
   const { calls, texts } = draw(region)
@@ -182,9 +166,6 @@ test('a large insertion labels itself with the bp count', () => {
   ])
 })
 
-// The label is the magnitude: a signed one reads as a length that went negative,
-// which is what docs review took "-9048" for on the pangenome path figures. The
-// grey line and the legend already carry the direction.
 test('a deletion draws a line across the reference span it removes', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([0, -3217]) }
   const { calls, texts } = draw(region)
@@ -194,17 +175,10 @@ test('a deletion draws a line across the reference span it removes', () => {
   expect(texts).toEqual([{ text: '3217', x: 550, y: 25, fillStyle: '#fff' }])
 })
 
-// The regression: with no `color` slot every row takes a `tagColorPalette`
-// entry, and every one of those is a pastel. A hardcoded white bp count was
-// therefore invisible on the default configuration of the very track the glyphs
-// were built for -- a pangenome path BED, whose config example sets
-// `lengthField` and nothing else -- in exactly the case above, where the block
-// is wide enough that no purple bar is drawn under the text.
 test('labels read against a pale block rather than staying white on it', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([113174, -3217]) }
   const { texts } = draw(region, {
-    // '#BBCCEE' is tagColorPalette[0]; '#800080' is the theme insertion purple,
-    // so the two rows are the two sides of the contrast decision.
+    // '#BBCCEE' is tagColorPalette[0]; '#800080' is the theme insertion purple
     rowColorsByIndex: [cssColorToABGR('#BBCCEE'), cssColorToABGR('#800080')],
   })
 
@@ -214,9 +188,6 @@ test('labels read against a pale block rather than staying white on it', () => {
   ])
 })
 
-// …and where a bar IS drawn, the label sits on the bar, not on the block, so the
-// block's color is the wrong thing to measure against. Same pale row as above,
-// now on the narrow (pure-insertion) shape that earns a bar.
 test('a label on the insertion bar reads against the bar', () => {
   const region = { ...narrow, featureDeltas: Int32Array.from([113174, 0]) }
   const { texts } = draw(region, {

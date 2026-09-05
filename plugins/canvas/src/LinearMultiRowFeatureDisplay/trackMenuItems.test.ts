@@ -6,9 +6,8 @@ import type { PartitionRowCount } from './partitionFields.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
-// The builder only reads state (the onClick bodies are what reach the model and
-// the session), so a plain object stands in for the display. Structural, like
-// the builder's own `MultiRowMenuSelf`, so a drifted field fails here.
+// The builder only reads state, so a plain object stands in for the display —
+// structural, like `MultiRowMenuSelf`, so a drifted field fails here.
 function makeSelf(
   overrides: Partial<
     Parameters<typeof buildMultiRowTrackMenuItems>[0] & {
@@ -35,8 +34,8 @@ function makeSelf(
     colorLegend: [],
     rowGroupLegend: [],
     hiddenCategories: [],
-    // nothing loaded by default, which is the "Partition by..." item's own
-    // absent condition — a case that wants the submenu supplies candidates
+    // Nothing loaded by default, which is the "Partition by..." item's own
+    // absent condition.
     effectivePartitionField: 'name',
     partitionCandidates: [] as string[],
     partitionRowCounts: new Map<string, PartitionRowCount>(),
@@ -66,8 +65,7 @@ function makeSelf(
     ...overrides,
   }
   // Derived rather than defaulted, so a case overriding `hiddenCategories` or
-  // either legend can't leave the derivation behind disagreeing with it — the
-  // model derives both the same way.
+  // either legend cannot leave the derivation behind disagreeing with it.
   return {
     ...self,
     hiddenCategorySet: new Set(self.hiddenCategories),
@@ -88,7 +86,7 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
-// every label in the menu tree, submenus included
+// Every label in the menu tree, submenus included.
 function allLabels(items: MenuItem[]): string[] {
   return items.flatMap(i =>
     'subMenu' in i
@@ -123,9 +121,8 @@ describe('multi-row track menu', () => {
     ])
   })
 
-  // the toggle stays clickable when rows are too thin to draw a separator on
-  // (taller rows make it appear), so the row height is the only thing that says
-  // why nothing happened
+  // The toggle stays clickable when rows are too thin to draw a separator on,
+  // so the row height is the only thing that says why nothing happened.
   it('explains the row separator toggle when rows are below the draw threshold', () => {
     const sub = (rowHeight: number) =>
       subMenuOf(
@@ -151,7 +148,7 @@ describe('multi-row track menu', () => {
       makeSelf({ treeHasBranchLengths: true }),
     )
 
-    // both tree toggles live in "Show..." and Clustering emits neither
+    // Both tree toggles live in "Show..." and Clustering emits neither.
     expect(allLabels(items).filter(l => l === 'Tree branch lengths')).toEqual([
       'Tree branch lengths',
     ])
@@ -178,7 +175,7 @@ describe('multi-row track menu', () => {
     ]
 
     expect(toggles.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
-    // the dialog opener is the one row that still dismisses
+    // The dialog opener is the one row that still dismisses.
     const custom = subMenuOf(items, 'Row height').find(
       i => 'label' in i && i.label === 'Custom...',
     )
@@ -214,10 +211,8 @@ describe('multi-row track menu', () => {
 
   // The row-group key is drawn under the same `showLegend` slot but is not a
   // category vocabulary, so it contributes no "Categories" submenu — and its
-  // ordinary track has an EMPTY colorLegend, because every row carrying a
-  // per-row color is exactly what makes buildColorLegend return nothing. Gating
-  // "Show legend" on colorLegend alone therefore left the legend's own "x"
-  // (which writes showLegend) as a one-way door.
+  // ordinary track has an empty colorLegend, so gating "Show legend" on
+  // colorLegend alone makes the legend's own "x" a one-way door.
   it('offers "Show legend" for the row-group key with no color key at all', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
@@ -248,11 +243,10 @@ describe('multi-row track menu', () => {
   })
 
   it('keeps a way back when the legend itself has gone away', () => {
-    // buildColorLegend gives up entirely past MAX_LEGEND_ENTRIES distinct
-    // colors, so a region loading in can take the color key — and every toggle
-    // with it — away from a user who has already hidden something. The hidden
-    // set stays in the session and re-applies later, so without this the state
-    // is both invisible and permanent.
+    // buildColorLegend gives up past MAX_LEGEND_ENTRIES distinct colors, so a
+    // region loading in can take the color key and every toggle with it away
+    // from a user who has already hidden something — and the hidden set stays
+    // in the session and re-applies later.
     const items = buildMultiRowTrackMenuItems(
       makeSelf({ colorLegend: [], hiddenCategories: ['quiescent'] }),
     )
@@ -288,9 +282,8 @@ describe('multi-row track menu', () => {
     })
   })
 
-  // "Partition by..." is the only way into the setting the whole display is
-  // built on. Its options are discovered from the loaded features, so an
-  // unloaded track offers no submenu rather than a stale list.
+  // The options are discovered from the loaded features, so an unloaded track
+  // offers no submenu rather than a stale list.
   describe('partition', () => {
     it('offers nothing until the data says what the columns are', () => {
       expect(labels(buildMultiRowTrackMenuItems(makeSelf()))).not.toContain(
@@ -315,8 +308,7 @@ describe('multi-row track menu', () => {
     })
 
     // The one fact a reader needs at the point of choice: whether a name is
-    // twenty rows or one row per feature. Said on the radio, since the counts
-    // are already in hand and the refetch is the thing being avoided.
+    // twenty rows or one row per feature.
     it('says how many rows each name would draw', () => {
       const items = subMenuOf(
         buildMultiRowTrackMenuItems(
@@ -358,8 +350,7 @@ describe('multi-row track menu', () => {
       expect(picked).toEqual(['repFamily'])
     })
 
-    // A jexl partition is the recipe for a file carrying its category inside
-    // another column. It matches no radio, and saying nothing would leave the
+    // A jexl partition matches no radio, and saying nothing would leave the
     // submenu looking like the partition was unset.
     it('names a jexl partition rather than leaving it unrepresented', () => {
       const items = subMenuOf(

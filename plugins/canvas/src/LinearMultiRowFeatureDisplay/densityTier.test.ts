@@ -81,13 +81,11 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.displayPhase).toBe('ready')
     expect(display.densityBandActive).toBe(true)
     expect(display.densityBandLayer.maxDepth).toBeGreaterThan(0)
-    // and the export paints its own body rather than the too-large note
     expect(display.drawsWhenTooLarge).toBe(true)
   })
 
-  // Force-load clears the verdict, and the tier reads the verdict — so the
-  // features the user asked for come back rather than the band standing over
-  // them.
+  // Force-load clears the verdict and the tier reads the verdict, so the
+  // features come back rather than the band standing over them.
   it('gives the features back when the gate releases', () => {
     const { display } = refusedDisplay(DENSITY_ADAPTER)
     display.forceLoad()

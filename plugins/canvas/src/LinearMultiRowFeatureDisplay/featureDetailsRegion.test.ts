@@ -6,10 +6,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// A click used to ask the adapter for the whole buffered region — every feature
-// on screen re-downloaded to pick one row out of. The packed arrays already say
-// where the clicked feature is, so the query is its own span.
-
 const ctgA = {
   assemblyName: 'volvox',
   refName: 'ctgA',
@@ -70,14 +66,10 @@ test('the details fetch asks for the clicked feature span, not the region', asyn
   })
 })
 
-// Narrowing is only allowed to be cheaper, never to answer differently — so the
-// property is parity with the region query it replaced, run through the
-// predicate every adapter actually keeps features on. Asserting the argument
-// SHAPE instead is what let a narrowing that DROPPED a zero-length feature look
-// correct: the mock answers whatever it is asked.
-//
-// A zero-length feature at position 0 fails `end > queryStart` against any query
-// starting at 0, so neither form returns it and parity is what says so.
+// Narrowing may only be cheaper, never answer differently, so the property is
+// parity with the region query it replaced, run through the predicate adapters
+// actually keep features on — asserting the argument shape instead lets a
+// narrowing that drops a zero-length feature look correct.
 test.each([
   ['a span', 100, 200],
   ['a zero-length insertion', 4000, 4000],

@@ -30,15 +30,11 @@ import type {
   ClusterHierarchyNode,
 } from '@jbrowse/tree-sidebar'
 
-// Duck-typed slice of the display the export reads, mirroring
-// LinearBasicDisplay's RenderSvgModel: it decouples renderSvg from the full MST
-// model (so it's unit-testable with a plain object) and makes the export's data
-// dependencies explicit.
 export interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
-  // `renderDisplaySvg`'s hook: the band is drawn in the too-large terminal, so
-  // the note that would replace this whole body must not
+  // The band is drawn in the too-large terminal, so the note that would replace
+  // this whole body must not.
   drawsWhenTooLarge: boolean
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
@@ -46,16 +42,14 @@ export interface RenderSvgModel extends SvgExportable {
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
-  // `sources` with the per-row painted color folded into `labelColor` when the
-  // display asks for it — the sidebar's view of the rows, and the only one the
-  // tree/labels layer should read
+  // The sidebar's view of the rows, and the only one the tree/labels layer
+  // should read.
   labelSources: MultiRowSource[]
   effectiveRowHeight: number
   treeAreaWidth: number
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
-  // Captioned above the exported tree — for this display it also records the
-  // color scheme, which IS the clustering matrix here.
+  // Records the color scheme, which is the clustering matrix here.
   clusterProvenance?: ClusterProvenance
   showLegend: boolean
   hasLegendEntries: boolean
@@ -83,13 +77,12 @@ function MultiRowSvgBody({
   const state = {
     ...self.renderState,
     // canvasWidth is the block scissor bound, so it has to be the width this
-    // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
+    // layer is actually painted at.
     canvasWidth,
     canvasHeight: height,
   }
   // From the user-selected export theme rather than the live on-screen palette,
-  // so a light export of a dark session stays light — plugin-maf's rule for the
-  // same glyph.
+  // so a light export of a dark session stays light.
   const exportPalette = resolvePalette({ configTheme: opts?.theme })
   return (
     <>
@@ -138,8 +131,7 @@ function MultiRowSvgBody({
           }}
         />
       </SvgClipRect>
-      {/* before the sidebar, matching the live display's stacking: the tree
-          panel paints over the lines rather than the lines over the tree */}
+      {/* Before the sidebar, so the tree panel paints over the lines */}
       {self.showRowSeparators ? (
         <RowSeparatorLines
           numRows={self.sources.length}

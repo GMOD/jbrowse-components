@@ -12,23 +12,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearMultiRowFeatureDisplay
  * #category display
- * Paints interval features as colored blocks on stacked rows ("chromosome /
- * ancestry painting"). Rows are partitioned by a feature attribute
- * (`partitionField`). Block color comes from `sampleColorMap` (keyed by the
- * partition value) when set, else a customized per-feature `color` slot, else an
- * automatically-assigned per-row color from a categorical palette. A row color
- * picked interactively in the "Edit colors/arrangement..." track-menu dialog
- * overrides all of these for that row (applied at render time, no refetch).
- *
- * These are display-level slots. This is not a `FeatureTrack`'s default display,
- * so configure it with an explicit `displays` entry (rather than the
- * `displayDefaults` shorthand, whose `color` would also reach the default
- * `LinearBasicDisplay`).
+ * Paints interval features as colored blocks on stacked rows partitioned by a
+ * feature attribute ("chromosome / ancestry painting").
  *
  * #example
- * The data is a custom BED with a column naming each row (`partitionField`).
- * Name the columns with a `#`-prefixed header line so the adapter picks them up
- * (tab-separated, shown space-aligned):
+ * A custom BED with a column naming each row, its columns named by a
+ * `#`-prefixed header line (tab-separated, shown space-aligned):
  * ```
  * #chrom  start    end      name  sample
  * chr1    0        2000000  seg1  HG00096
@@ -67,27 +56,8 @@ export default function configSchemaF() {
     {
       /**
        * #slot
-       * Feature attribute whose value assigns each feature to a row (e.g. a BED
-       * column name). Features sharing a value stack into the same row.
-       *
-       * Nothing declares the rows: they are discovered from the values present
-       * in the loaded regions, so a file that gains a category needs no config
-       * change. `rowOrder` and `sampleColorMap` are how a row's position and
-       * color are held fixed while that set changes underfoot.
-       *
-       * **Empty (the default) picks the attribute off the data**: a file
-       * carrying `repClass` is partitioned by repeat class, and anything else
-       * falls back to `name`. RepeatMasker is why — `name` there is the repeat
-       * instance, so the display used to open as tens of thousands of
-       * single-feature rows and the twenty-row view the track is actually read
-       * for was one unadvertised track-menu click away. Set this explicitly to
-       * pin a column and opt out.
-       *
-       * A `jexl:` expression works here too, for a file that carries the
-       * category without carrying a column for it. UCSC's `bigRmskBed` is the
-       * case this was added for: the repeat class is a suffix on the name
-       * (`L1HS#LINE/L1`), so the attribute form can only partition on the full
-       * repeat name, which is thousands of rows instead of twenty.
+       * Feature attribute whose value assigns each feature to a row; empty (the
+       * default) picks one off the data, and a `jexl:` expression derives one.
        *
        * #example
        * ```js
@@ -99,38 +69,20 @@ export default function configSchemaF() {
         defaultValue: '',
         description:
           'feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name)',
-        // What makes the config editor offer this slot's value/callback toggle
-        // at all (SlotEditor gates that switch on a non-empty contextVariable),
-        // and what names `feature` in the callback editor's help. Without it the
-        // jexl form documented above was reachable only by hand-writing the
-        // `jexl:` string into JSON.
-        //
-        // Editor affordance only. Nothing in the read path consults it — the
-        // reader decides whether to evaluate a callback from whether the read
-        // supplied any context, deliberately not from this declaration, so that
-        // a slot forgetting it (as this one did) is a missing toggle in the UI
-        // and not a silently wrong value.
+        // Editor affordance only: SlotEditor gates its value/callback toggle
+        // on a non-empty contextVariable, and nothing in the read path consults
+        // it.
         contextVariable: ['feature'],
       },
       /**
        * #slot
-       * Feature attribute holding a **signed bp length change** against the
-       * reference, which turns on alignment-style indel glyphs over the blocks:
-       * a positive value draws the insertion marker `plugins/alignments` and
-       * `plugins/maf` draw (a bar whose width follows the length, with the bp
-       * count when the row is tall enough), a negative one draws a deletion line
-       * across the block, and 0 draws nothing.
-       *
-       * This exists because a block's own width can only ever show how much
-       * *reference* a feature covers. An insertion covers almost none of it, so
-       * a 113 kb allele and a 1 bp one draw identically without this — the
-       * length has to come from a separate attribute.
-       *
-       * Empty (the default) leaves the display a plain block painter.
+       * Feature attribute holding a signed bp length change against the
+       * reference, which turns on indel glyphs over the blocks; empty (the
+       * default) leaves the display a plain block painter.
        *
        * #example
        * A pangenome-graph path BED, where `delta` is each haplotype's bp gained
-       * or lost at that bubble (`scripts/build_minigraph_paths.sh`):
+       * or lost at that bubble:
        * ```js
        * { partitionField: 'strain', lengthField: 'delta' }
        * ```
@@ -144,14 +96,10 @@ export default function configSchemaF() {
       /**
        * #slot
        * Per-block fill: a CSS color, or a `jexl:` expression for per-feature
-       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Unset,
-       * a feature's own `itemRgb` is used if it has one, and otherwise each row
-       * gets a distinct color from a categorical palette.
+       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``).
        */
-      // `maybeColor` so unset stays distinct from every real color: unset is
-      // what lets a feature's own itemRgb, or the per-row palette, paint. With a
-      // concrete default that behavior would swallow anyone writing that exact
-      // color. See maybeColor in configurationSlot.ts.
+      // `maybeColor` so unset stays distinct from every real color — unset is
+      // what lets a feature's own itemRgb, or the per-row palette, paint.
       color: {
         type: 'maybeColor',
         description:
@@ -161,9 +109,7 @@ export default function configSchemaF() {
       /**
        * #slot
        * Optional map of `partitionField` value to color, e.g.
-       * `{ HG00096: '#4e79a7' }`. When a feature's partition value has an entry
-       * here it overrides the `color` slot, so whole rows can be colored without
-       * a per-feature color column.
+       * `{ HG00096: '#4e79a7' }`, overriding the `color` slot where it matches.
        */
       sampleColorMap: {
         type: 'frozen',
@@ -173,18 +119,14 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Optional explicit row order. Rows listed here come first in this order;
-       * any remaining partition values are appended in sorted order. Empty =
-       * fully auto (sorted).
+       * Optional explicit row order; rows listed here come first, remaining
+       * partition values are appended sorted.
        */
       rowOrder: {
         type: 'stringArray',
         defaultValue: [],
         description: 'optional explicit row order (by partition value)',
       },
-      // This display grows to its content instead of scrolling, so the shared
-      // sentence about scrolling to the rows that don't fit is wrong here:
-      // adding rows shrinks them, and every one of them stays on screen.
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',
@@ -201,23 +143,12 @@ export default function configSchemaF() {
         advanced: true,
       },
       ...rowSeparatorsConfigSchemaFields(),
-      // the density tier's two slots, which `DensityBandMixin` reads
       ...densityTierConfigSchemaFields,
       /**
        * #slot
        * Tint each sidebar label box with the color that row's blocks are painted
-       * in, so a row can be found by color at a glance instead of by reading
-       * down a column of similar names.
-       *
-       * Off by default, and a toggle rather than a rule, because the label box is
-       * a scarce surface: `rowGroups` already spends it on a grouping the
-       * painting does not show, and a color set in the "Edit colors/arrangement"
-       * dialog spends it too. Both of those win over this, being asked for by
-       * name where this is derived.
-       *
-       * Nothing happens in per-feature color mode (an `itemRgb` painting, or a
-       * `jexl:` `color` slot): there is no one color the row is painted in, so
-       * there is nothing honest to tint the label with.
+       * in; `rowGroups` and a dialog-set color both win over it, and per-feature
+       * color mode leaves no one row color to tint with.
        */
       colorRowLabels: {
         type: 'boolean',
@@ -227,29 +158,20 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Show the categorical color key (swatch + label per distinct per-feature
-       * color). Only appears in per-feature color mode; in per-row palette /
-       * sampleColorMap mode the sidebar labels are already the key, so nothing
-       * shows regardless. The entries come from `legend` when set, else are
-       * auto-derived from named, categorical features (e.g. chromHMM states).
+       * Show the categorical color key, which appears only in per-feature color
+       * mode — elsewhere the sidebar labels are already the key.
        */
       showLegend: {
         type: 'maybeBoolean',
         description:
           'show the categorical color key for per-feature coloring. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
-        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
-        // (true) is what it resolves to when nothing is promoted. Read through
-        // the resolved `showLegend` getter (resolveConf), never raw.
+        // Promotable: read through the resolved `showLegend` getter, never raw.
         promotedBase: true,
       },
       /**
        * #slot
-       * Explicit color key: an array of `{ label, color }`. Use this when the
-       * category is encoded only in the block color (e.g. an `itemRgb` ancestry
-       * painting) so there's no feature attribute to auto-derive a legend from —
-       * the mapping is a semantic the data doesn't carry, so the config declares
-       * it. `color` is any CSS color and should match what `color` paints.
-       * Overrides the auto-derived legend when non-empty.
+       * Explicit color key, for a category encoded only in the block color and
+       * so unavailable to the auto-derived legend this overrides.
        *
        * #example
        * ```js
@@ -268,45 +190,10 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Group and mark rows: an array of `{ match, group, color }` where
-       * `match` is a regex tested against the row name (the partition value).
-       * The first matching entry wins, its `color` becomes that row's sidebar
-       * swatch, and matched rows are pulled into contiguous blocks in the order
-       * the entries are declared, ahead of everything unmatched.
-       *
-       * It groups as well as marks because marking alone does not survive a
-       * large cohort: rows spread through a couple of thousand sorted neighbours
-       * land as a few specks that read as noise, where the same rows in one
-       * block read as a group whose colors can be compared against the rest.
-       * Within a block the incoming order is kept, so a `sortRowsBy` still
-       * orders each block by the value it sorted on.
-       *
-       * **Except under a cluster tree, where it marks without grouping.**
-       * Clustering already owns the row order, so partitioning on top of it used
-       * to trade the dendrogram away silently (the tree stops describing the
-       * rows, and `StaleTreeHint` replaces it). That is also the case where a
-       * stripe is worth most: the groups are an axis the clustering never saw,
-       * so reading them down the blocks it did find is what says whether the two
-       * agree. Both together now means both.
-       *
-       * Use this when the row identity encodes a grouping the painting does not
-       * — cohort IDs whose prefix names a population, say — and the cohort is
-       * far too large to enumerate in `layout`. The color tints the swatch only,
-       * never the blocks, so it composes with an `itemRgb` painting instead of
-       * overwriting it.
-       *
-       * **Below a pixel a row, mark the small group and not the big one.** The
-       * swatch is floored to a whole pixel so it survives at all, which makes
-       * every mark taller than the row it points at, so the stripe is a marker
-       * rather than a proportional encoding: 307 of 1,987 rows (15%) came out as
-       * 48% of the stripe's ink, which reads as a majority, where 63 wolves out
-       * of the same 1,987 cost 10% and read correctly as sparse ticks.
-       *
-       * The floor is the whole of that caveat, so it stops applying once a row
-       * clears a pixel. 127 Roadmap epigenomes in 480px is 3.7px a row, and
-       * there every one of the 19 published tissue groups can be declared and
-       * the stripe stays proportional. Check the row height before deciding how
-       * much to mark.
+       * An array of `{ match, group, color }` tagging rows by a regex on their
+       * name, pulling matched rows into contiguous blocks (except under a
+       * cluster tree, which already owns the row order) and tinting their
+       * sidebar swatch — never their blocks.
        *
        * #example
        * ```js
@@ -322,27 +209,14 @@ export default function configSchemaF() {
         description:
           'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only',
       },
-      // Turn the labels off when they would cover the data they name: on a
-      // whole-chromosome view of a track with long row names, a feature that
-      // starts at the chromosome's beginning reads as absent rather than as
-      // covered. Pairing a labelled view with an unlabelled one of the same rows
-      // is the other way out, and is what a compose figure does.
       ...treeSidebarConfigSchemaFields({
         tree: 'show the cluster tree sidebar',
         rowLabels: 'draw the row name over the left of each row',
       }),
       /**
        * #slot
-       * The same 5 Mb `LinearBasicDisplay` uses, raised from the base display's
-       * conservative 1 Mb, and for the reason that slot gives: this display
-       * reads the same BED/BigBed/tabix files, none of whose adapters declare a
-       * limit of their own, and the index estimate is block-granular — a single
-       * region still pulls whole BGZF blocks, so a tighter gate banners a view
-       * that is not actually large.
-       *
-       * It matters more here than there. The byte axis is the *only* gate this
-       * display has: multi-row paints into fixed lanes, so it composes no
-       * density axis and has no second backstop to fall through to.
+       * The byte axis is the only gate this display has: it paints into fixed
+       * lanes, so it composes no density axis to fall through to.
        */
       fetchSizeLimit: {
         type: 'number',

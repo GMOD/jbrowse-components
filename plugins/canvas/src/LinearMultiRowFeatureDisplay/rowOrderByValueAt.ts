@@ -7,10 +7,6 @@ import type {
   MultiRowRegionData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 
-// Just the arrays the sort reads, off the region the caller already resolved as
-// the one covering the column (`loadedRegionIndexAt`). A `Pick` rather than a
-// re-declaration, so a rename on the wire shape reaches this instead of leaving
-// a structurally-compatible copy behind.
 export type RowValueRegion = Pick<
   MultiRowRegionData,
   | 'featureStarts'
@@ -20,11 +16,9 @@ export type RowValueRegion = Pick<
   | 'featurePartitionIndex'
 >
 
-// `drawnRowAt`'s rule, asked by row name rather than by drawn row index: a
-// feature in a legend category the user toggled off paints nothing, unless its
-// row carries a per-row color override — that row paints the override, which
-// the legend never lists, so a baked color coinciding with a hidden category
-// must not hide it.
+// A feature in a legend category the user toggled off paints nothing, unless
+// its row carries a per-row color override — the legend never lists that
+// color, so a baked color coinciding with a hidden category must not hide it.
 function paintsAt(
   name: string,
   color: number,
@@ -38,9 +32,7 @@ function paintsAt(
   )
 }
 
-// The ABGR color painted at `pos` on each row, for the rows that have one. The
-// last covering feature that actually paints wins, matching paint order — the
-// same rule the hit test follows for overlapping features.
+// Where features overlap the last one that paints wins, matching paint order.
 function colorsPaintedAt(
   region: RowValueRegion,
   pos: number,
@@ -65,25 +57,10 @@ function colorsPaintedAt(
   return byRow
 }
 
-// Order rows by the value each carries at one genomic column — the analogue of
-// alignments "sort by base/tag at position". The value is the ABGR color of the
-// feature covering pos on that row (the same categorical signal the row paints,
-// e.g. B vs D ancestry), so equal-value rows group contiguously: a coat-color
-// QTL painting sorted at its peak resolves into one block per allele.
-//
-// **Blocks are ordered largest first**, not by their color's numeric value.
-// Grouping is what the sort is for and either ordering delivers it, but the
-// packed ABGR integer is an artifact of how a color is stored — so the same
-// rows over the same locus rearranged whenever the track was recolored, and no
-// caption could say why one allele was on top. Commonest first is a statement a
-// reader can check. Equal-sized blocks fall back to the color value purely so
-// the result is deterministic.
-//
-// Sinking the rows with no feature at pos, and staying stable otherwise, is
-// `orderRowsByValueAt`'s — shared with multi-wiggle's `sortSourcesByScoreAt`,
-// which asks the same question of a score. A row whose only feature at pos is
-// in a hidden legend category sinks with them: it paints nothing there, so it
-// carries no value there either.
+// Order rows by the ABGR color each paints at one genomic column, grouping
+// equal-valued rows contiguously. Blocks come largest first rather than by
+// color value, so recoloring the track does not rearrange the same rows over
+// the same locus; equal-sized blocks fall back to the color for determinism.
 export function rowOrderByValueAt<T extends { name: string }>(
   sources: T[],
   region: RowValueRegion,
@@ -91,14 +68,10 @@ export function rowOrderByValueAt<T extends { name: string }>(
   paint: MultiRowFeaturePaintInputs,
 ): T[] {
   const colorByRow = colorsPaintedAt(region, pos, paint)
-  // Counted over the rows ON SCREEN rather than over the list being ordered:
-  // `sortRowsAtColumn` hands `sources` the unfiltered `editableSources`, so
-  // that a hidden row keeps its place and its overrides, and sizing the blocks
-  // off it would rank them by rows the reader cannot see. `rowIndexByValue` is
-  // built from the drawn `sources`, so the screen set is already here.
-  //
-  // Seeded at zero for every color the column carries, so a block whose rows
-  // are all filtered away still compares as a number.
+  // Sized over the rows on screen, not over `sources`, which arrives unfiltered
+  // so that hidden rows keep their place and overrides. Every color the column
+  // carries is seeded at zero, so a block whose rows are all filtered away
+  // still compares as a number.
   const blockSize = new Map<number, number>(
     [...colorByRow.values()].map(color => [color, 0]),
   )

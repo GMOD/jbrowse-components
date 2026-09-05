@@ -2,11 +2,6 @@ import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-// The twin of the canvas base display's test of the same name. This display
-// clicks through a different path — it resolves the region itself before
-// fetching — so it has one extra way to end up with nothing to open, and that
-// way used to be a bare `if (region)` with no else.
-
 const ctgA = {
   assemblyName: 'volvox',
   refName: 'ctgA',
@@ -28,9 +23,8 @@ function misses(session: { notifications: { message: string }[] }) {
 }
 
 // Answer only the details method: a blanket `mockResolvedValue` answers the
-// per-region FETCH too, and the display stores that reply as region data, where
-// the getters reading it throw inside an autorun. Unstubbed methods keep the
-// harness default, which never settles.
+// per-region fetch too, and the display stores that reply as region data, where
+// the getters reading it throw inside an autorun.
 function onlyDetails(mock: jest.Mock, reply: () => unknown) {
   mock.mockImplementation((_sessionId: string, method: string) => {
     if (method === 'GetCanvasFeatureDetails') {

@@ -5,18 +5,14 @@ import { MULTI_ROW_MIN_CELL_PX, rowBand } from './rowBand.ts'
 import type { MultiRowHit } from '../model.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Minimum on-screen width of the hover box. One px wider than the block's own
-// floor (the `span` mark's painter) so the border reads around a sub-pixel block rather
-// than replacing it — derived from that floor rather than restated, since the
-// two only mean anything relative to each other.
+// One px wider than the block's own floor, so the border reads around a
+// sub-pixel block rather than replacing it.
 const MIN_WIDTH_PX = MULTI_ROW_MIN_CELL_PX + 1
 
 /**
- * Screen box of one block, in the geometry the painter gives it: the same
- * `spanRect` off the row band, so a sub-pixel block widens away from its start
- * edge on a reversed region exactly as the `span` mark's painter widens it.
- * Clamped to the region, so a block running past the edge can't stripe its
- * neighbour, and undefined where it contributes no pixels.
+ * Screen box of one block, off the same `spanRect` and row band the painter
+ * uses, so a sub-pixel block widens away from its start edge on a reversed
+ * region exactly as the painting does.
  */
 export function blockScreenRect({
   hit,
@@ -26,8 +22,6 @@ export function blockScreenRect({
   rowProportion,
 }: {
   hit: Pick<MultiRowHit, 'regionIndex' | 'start' | 'end'>
-  // resolved by the caller off the live row order, never carried on the hit —
-  // see `MultiRowHit.rowName`
   rowIndex: number
   blocks: RenderBlock[]
   rowHeight: number

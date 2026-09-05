@@ -26,10 +26,6 @@ function slice(...regions: MultiRowRegionData[]) {
   return { rpcDataMap: new Map(regions.map((r, i) => [i, r])) }
 }
 
-// Two regions of one file each hold their own subset of the same classes, so
-// the row count of the union is what a pick would actually draw.
-// Two regions of one file each hold their own subset of the same classes, so
-// the row count of the union is what a pick would actually draw.
 test('unions the values across loaded regions', () => {
   const counts = partitionRowCounts(
     slice(

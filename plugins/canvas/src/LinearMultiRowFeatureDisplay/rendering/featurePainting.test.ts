@@ -6,10 +6,6 @@ import {
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
-// `featureAt.test.ts` pins the behaviour this backs through the real model. This
-// is the bucketing itself: the compressed-row layout is index arithmetic, and
-// getting it wrong shows up as a hit on the wrong feature rather than as a
-// throw.
 function data(
   rowOf: number[],
   colors = rowOf.map(() => 0xff0000ff),
@@ -65,8 +61,6 @@ test('a row with nothing on it is an empty bucket, not a missing one', () => {
   expect(rowsOf(bucket([0, 0], 3))).toEqual([[0, 1], [], []])
 })
 
-// Same rule `forEachDrawnFeature` applies, and it has to be the same rule: a
-// feature the painters skip must not be findable under the cursor.
 test('leaves out features the paint pass drops', () => {
   const d = data([0, 1, 0], [0xff0000ff, 0xff00ff00, 0xff00ff00])
   const state = context(2, new Set([0xff00ff00]))
@@ -88,9 +82,6 @@ describe('findTopDrawnFeatureInRow', () => {
     expect(findTopDrawnFeatureInRow(byRow, 9, () => true)).toBe(-1)
   })
 
-  // The point of the bucketing: the search visits the row under the cursor, not
-  // the region. Inline over `featureStarts` this was 300 predicate calls for a
-  // row holding 100 features, on every rAF-coalesced mouse move.
   test('tests only the features on the row it was asked about', () => {
     const rowOf = Array.from({ length: 300 }, (_, i) => i % 3)
     const byRow = bucket(rowOf, 3)

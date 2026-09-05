@@ -4,9 +4,9 @@ import type { RpcStatus } from '@jbrowse/core/util'
 
 const mockRpcCall = jest.fn()
 
-// the real barrel apart from the two session lookups: `fetchEachRegion` builds
+// The real barrel apart from the two session lookups: `fetchEachRegion` builds
 // each region's status slot out of `createStatusFanOut` from here, and a stub
-// would be testing the stub
+// would be testing the stub.
 jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual('@jbrowse/core/util'),
   getSession: () => ({ rpcManager: { call: mockRpcCall } }),
@@ -29,12 +29,11 @@ const NEEDED = [
 
 function makeSelf() {
   const reported: RpcStatus[] = []
-  // what `fetchEachRegion` marked loaded: a region the worker refused is
-  // deliberately absent, so `loadedRegions` never claims a span nothing stored
+  // What `fetchEachRegion` marked loaded: a region the worker refused is
+  // absent, so `loadedRegions` never claims a span nothing stored.
   const loadedIndices: number[] = []
-  // the first refusal ends the batch, and `cancelFetch` is how: the real one
-  // closes the rotation's guard, so every later `isStale()` in the same batch
-  // answers true
+  // The first refusal ends the batch through `cancelFetch`, which closes the
+  // rotation's guard so every later `isStale()` in the batch answers true.
   let canceled = false
   return {
     reported,
@@ -44,25 +43,23 @@ function makeSelf() {
         canceled = true
       },
       adapterConfig: {},
-      // the whole settings payload, exactly as the model hands it over — the
-      // fetch spreads this rather than re-reading the slots, so the bytes sent
-      // and the cache key they are stored under stay one expression
+      // The fetch spreads this rather than re-reading the slots, so the bytes
+      // sent and the cache key they are stored under stay one expression.
       rpcProps: () => ({
         partitionField: 'name',
         lengthField: '',
         colorConfig: undefined,
       }),
       resolvedByteLimit: () => 1000,
-      // stand-in for MultiRegionDisplayMixin's wrapper; staleness/stop-token
-      // rotation is covered by that mixin's own tests
+      // Stand-in for MultiRegionDisplayMixin's wrapper.
       fetchRegions: (_needed: unknown, work: (ctx: unknown) => unknown) =>
         Promise.resolve(
           work({
             stopToken: 'tok',
             isStale: () => canceled,
             statusCallback: (s: RpcStatus) => reported.push(s),
-            // the real envelope, over this file's mocked rpcManager, so the
-            // fetch under test exercises the same injection production does
+            // The real envelope over this file's mocked rpcManager, so the
+            // fetch exercises the same injection production does.
             callRpc(
               this: { stopToken: string; statusCallback: unknown },
               method: string,
@@ -79,13 +76,13 @@ function makeSelf() {
             },
           }),
         ).then(() => {}),
-      // the snapshot the mixin takes at issue; this stub stands in for a
-      // measured view under an active gate
+      // The snapshot the mixin takes at issue, standing in for a measured view
+      // under an active gate.
       gateFetchState: () => ({
         viewport: { spanBp: 10_000, key: 'k' },
         gated: true,
       }),
-      // the byte axis, which the fan-out helper commits for every display
+      // The byte axis, which the fan-out helper commits for every display.
       commitFetchBytes: () => {},
     },
   }
@@ -97,10 +94,6 @@ beforeEach(() => {
 })
 
 describe('fetchMultiRowFeatures', () => {
-  // Regression: MultiRowGetFeatures accepts statusCallback and threads it
-  // through getRegionByteSize / getFeaturesArray / the packing progress
-  // reporter, but the client call site omitted it — so the multi-row track's
-  // loading overlay showed no download progress.
   test('passes a per-region statusCallback', async () => {
     const { self, reported } = makeSelf()
     await fetchMultiRowFeatures(self as any, NEEDED)
@@ -110,8 +103,8 @@ describe('fetchMultiRowFeatures', () => {
     for (const cb of sent) {
       expect(typeof cb).toBe('function')
     }
-    // a slot each, not the fetch's one callback twice, so concurrent per-region
-    // fetches aggregate into one bar rather than clobbering each other
+    // A slot each, not the fetch's one callback twice, so concurrent per-region
+    // fetches aggregate into one bar rather than clobbering each other.
     expect(sent[0]).not.toBe(sent[1])
     sent[0]({ message: 'Downloading', current: 30, total: 100 })
     sent[1]({ message: 'Downloading', current: 10, total: 100 })
@@ -122,11 +115,10 @@ describe('fetchMultiRowFeatures', () => {
     })
   })
 
-  // The payload's user settings come from `rpcProps()` — the same expression
-  // `SettingsInvalidate` serializes into the cache key. Re-reading the slots
-  // here instead let the two drift: a field added to only one side either never
-  // invalidates or refetches for nothing. ARCHITECTURE.md, "the cache key is
-  // the return value, not the reads".
+  // The payload's user settings come from `rpcProps()`, the same expression
+  // `SettingsInvalidate` serializes into the cache key: re-reading the slots
+  // here lets a field added to one side only never invalidate, or refetch for
+  // nothing.
   test('sends the rpcProps payload rather than re-reading the slots', async () => {
     const { self } = makeSelf()
     await fetchMultiRowFeatures(self as any, NEEDED)
@@ -137,14 +129,11 @@ describe('fetchMultiRowFeatures', () => {
   })
 
   // A refused region stores nothing, so it must not be marked loaded: with the
-  // span claimed anyway, `isBlockCovered` reads the viewport as covered against
-  // data nobody received, the plan answers `covered` forever, and the ordinary
-  // fetch that IS the gate's re-measure never runs again. Invisible on a region
-  // fetched for the first time, permanent on one the reader already had data
-  // for. See `RegionFetchContext`.
-  //
-  // The refusal is the second region, so this also covers the half the batch's
-  // short circuit must leave alone: a region that landed first keeps its commit.
+  // span claimed anyway `isBlockCovered` reads the viewport as covered against
+  // data nobody received, and the fetch that is the gate's re-measure never runs
+  // again. The refusal is the second region, so this also covers the half the
+  // batch's short circuit must leave alone: a region that landed first keeps its
+  // commit.
   test('marks the regions that stored data, and only those', async () => {
     const { self, loadedIndices } = makeSelf()
     mockRpcCall.mockImplementation((_s, _m, args: any) =>
