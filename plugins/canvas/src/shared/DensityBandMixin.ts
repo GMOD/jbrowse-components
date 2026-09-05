@@ -1,7 +1,7 @@
-import { getContainingView } from '@jbrowse/core/util'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import { densityBandPending } from '@jbrowse/display-kit/densityBandPhase'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   densityBandReadout,
@@ -11,40 +11,14 @@ import {
 
 import type { DensityBandHost, DensityHover } from './densityBandViews.ts'
 
-/**
- * The view as the band's pointer readout sees it, and nothing more.
- *
- * Named structurally rather than as `LinearGenomeViewModel`, which both copies
- * of this block cast to: `densityBandViews` duck-types its host all the way
- * down so the band sits below the view plugin, and a mixin casting to the
- * whole view model would put the import back.
- */
-interface DensityBandPointerView {
-  initialized: boolean
-  pxToBp: (px: number) => { index: number; coord0: number; oob: boolean }
-}
-
-function bandView(self: object) {
-  return getContainingView(self) as unknown as DensityBandPointerView
-}
-
 function bandHost(self: object) {
   return self as DensityBandHost
 }
 
 /**
  * The density band: where the cursor is over it, what it draws and what it
- * reads out. The phase and export-gate swap is `DensityTierMixin`'s.
- *
- * Composes `DensityTierMixin` rather than sitting beside it, because the swap
- * it decides is what every getter here keys off — a display taking the band
- * takes the tier, in that order, and cannot compose them the wrong way round.
- * A display with its own stand-in for the banner takes the tier alone, which is
- * what `LinearAlignmentsDisplay` does.
- *
- * Composed after the fetch foundation, whose `displayPhase` / `svgReady` the
- * tier post-processes — `types.compose` resolves a collision to the later
- * argument.
+ * reads out. Composing `DensityTierMixin` rather than sitting beside it forces
+ * the order, since every getter here keys off the swap the tier decides.
  *
  * #stateModel DensityBandMixin
  * #category display
@@ -58,17 +32,15 @@ export default function DensityBandMixin() {
       .volatile(() => ({
         /**
          * #volatile
-         * The cursor's view px over the density band, for its readout. The px
-         * rather than the bp under it: a wheel zoom under a stationary cursor
-         * fires no mousemove, and the px is what stays true through it.
+         * The cursor's view px, not the bp under it: a wheel zoom under a
+         * stationary cursor fires no mousemove, and the px stays true through
+         * it.
          */
         densityHoverPx: undefined as number | undefined,
       }))
       .views(self => ({
         /**
          * #getter
-         * Whether the band stands in for the features here — the tier's own
-         * decision, plus the view geometry the draw is mapped through.
          */
         get densityBandActive() {
           return (
@@ -85,20 +57,18 @@ export default function DensityBandMixin() {
       .views(self => ({
         /**
          * #getter
-         * Where the cursor is over the band, in the read's own coordinates,
-         * derived from the view geometry now.
          */
         get densityHover(): DensityHover | undefined {
           return self.densityBandActive
-            ? densityHoverAt(bandView(self), self.densityHoverPx)
+            ? densityHoverAt(containingLgv(self), self.densityHoverPx)
             : undefined
         },
       }))
       .actions(self => ({
         /**
          * #action
-         * The cursor's view px, or nothing when it leaves. Kept only while the
-         * band is up, so a pointer over features writes nothing here.
+         * Kept only while the band is up, so a pointer over features writes
+         * nothing here.
          */
         setDensityHoverPx(px?: number) {
           self.densityHoverPx = self.densityBandActive ? px : undefined
@@ -107,8 +77,8 @@ export default function DensityBandMixin() {
       .views(self => ({
         /**
          * #getter
-         * The band's line of text with no cursor over it: its peak alone, which
-         * is what the SVG export writes.
+         * The band's line of text with no cursor over it, which is what the SVG
+         * export writes.
          */
         get densityPeakReadout() {
           return densityBandReadout(self.densityBandLayer, undefined)
@@ -117,9 +87,8 @@ export default function DensityBandMixin() {
       .views(self => ({
         /**
          * #getter
-         * The band's line of text: its peak, and the source's value under the
-         * cursor while there is one. Blank until the first read lands, so the
-         * scrim is not captioned "no density data" for a read still in flight.
+         * Blank until the first read lands, so the scrim is not captioned "no
+         * density data" for a read still in flight.
          */
         get densityReadout() {
           return densityBandPending(bandHost(self))
