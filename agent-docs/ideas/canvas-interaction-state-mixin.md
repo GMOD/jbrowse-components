@@ -1,6 +1,6 @@
 ---
 name: canvas-interaction-state-mixin
-description: Hover, clicked and selection state as one mixin for the canvas-rendered displays, instead of channels each display hand-wires — the multiway display shipped with the clicked channel pinned to 0 and the selection channel ungated because its author wired the two it remembered. What the mixin owns (the ids, the ownFeatureIds selection gate, the render-state fields, the keys-not-indices lifecycle), the three existing implementations it would be extracted from, and why the pick side stays per-display.
+description: Hover, clicked and selection state as one mixin for the canvas-rendered displays, instead of channels each display hand-wires — the multiway display shipped with the clicked channel pinned to 0 and the selection channel ungated because its author wired the two it remembered (both since fixed; it is now the fullest of the three implementations, and the pairwise display is the one still without a selection gate). What the mixin owns (the ids, the ownFeatureIds selection gate, the render-state fields, the keys-not-indices lifecycle), the three existing implementations it would be extracted from, and why the pick side stays per-display.
 ---
 
 # A canvas interaction-state mixin
@@ -11,7 +11,9 @@ pinned to 0 while the edge pipelines that draw the outline sat compiled and
 unused, and with its selection highlight reading the raw session selection so a
 click in any other track repacked every lane. Neither was a design decision —
 hover was wired, click and the selection gate were not, because each channel is
-hand-wired per display and an author wires the ones they remember.
+hand-wired per display and an author wires the ones they remember. Both are
+fixed, and the multiway display is now the fullest of the three; the pairwise
+`LinearSyntenyDisplay` is the one still reading the raw session selection.
 
 ## What the mixin owns
 

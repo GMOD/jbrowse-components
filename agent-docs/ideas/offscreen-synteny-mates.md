@@ -502,11 +502,14 @@ is the promise the class was built on.
 **The drop path gives up the append-only cumBp invariant, deliberately.** A
 region removed from the middle of the list shifts the cumulative bp of every
 region after it, and ribbons, marks and fetch-time cumBp lanes on screen are
-keyed to the old numbering until the debounced refetch lands — which is why the
-add class appends and never inserts in order. The drop only fires where the old
-code THREW with the region list already rewritten, so it trades a throw for
-about half a second of ribbons drawn against a stale lane on the row the reader
-just moved. Nothing else in the list is touched.
+keyed to the old numbering until the refetch lands — which is why the add class
+appends and never inserts in order. The drop only fires where the old code
+THREW with the region list already rewritten. Since 2026-09-05 the display
+blanks its band on any `regionSignature` change (`SyntenyBlankOnRegionChange`
+in `LinearSyntenyDisplay/afterAttach.ts`), so what the reader sees for the one
+round trip is an empty band rather than ribbons drawn against a stale lane;
+the same reaction covers a flip and the follow's locstring fallback, which
+rewrite the whole list. Nothing else in the list is touched.
 
 The reachability test compares refNames with `===` on purpose, and the drop
 filter canonicalizes. They are two different questions: `navTo`, `bpToPx` and

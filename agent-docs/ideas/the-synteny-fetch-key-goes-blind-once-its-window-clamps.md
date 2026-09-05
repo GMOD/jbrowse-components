@@ -57,8 +57,12 @@ hot path, and choosing wants a measurement:
 - **Emit the whole fetch window** instead of viewport ± buffer. Correct by
   construction — the two windows become one — and bounded, since the fetch
   window is at most viewport + 4 buffers. Costs up to ~2x the emitted geometry
-  everywhere, including whole-genome zoom where instance count is already the
-  problem.
+  zoomed in, where the feature count is smallest; at whole-genome zoom the
+  fetch window is already the on-screen region, so the extra geometry there is
+  zero. It also makes the worker's whole-feature cull a no-op on the query axis
+  and so deletable, which is the coherent answer to whether that cull is needed
+  at all: it exists only because the emit and clip windows are narrower than
+  the fetch.
 - **Signature off the UNCLAMPED snapped bounds**, request still clamped. Small
   and local to `syntenyFetchRegions`/`fetchWindowSignature`, no worker change,
   cannot regress rendering. Costs refetches in the clamped regime that are free
