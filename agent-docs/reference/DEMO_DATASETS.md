@@ -299,6 +299,87 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   anchor genes, the next lane 12). Past about 500 kb the stack is unreadable
   and no figure should try: the display has no coarse tier, and at 44 lanes
   the bridged ribbons of any sparse lane sweep the whole track.
+- **`demos/hprc_multiway` is the CFH panel's eight haplotypes taken
+  whole-genome, unpacked from the graph** (`build_hprc_multiway_synteny.sh`):
+  the same `HG01109.1 … HG00133.1` that `demos/hprc` slices to one window,
+  read out of the minigraph-cactus graph's own alignment (the v2.0
+  `hprc-v2.0-mc-grch38.full.taf.gz`, hal2maf of the run that produced the
+  graph) one chromosome at a time through `taffy view -m` and
+  `maf_to_pairwise_paf.py`, then indexed by `make-pif` into a single two-tier
+  PIF (`#pif … tiers:Z:fine,coarse coarse:i:10000 cigars:Z:all`, 127 MB,
+  4,332 PAF rows, 477–606 per haplotype, 361 coarse seqids). It is the
+  whole-genome, eukaryote-scale PIF that [HOSTING.md](HOSTING.md) says the
+  coarse tier needs to be demonstrated on, and the first hosted
+  `AllVsAllIndexedPAFAdapter` file whose names are PanSN haplotypes
+  (`HG01109#1#JAHEPA020000055.1`), so the track maps `assemblyNameToPanSN`
+  (`hg38` → `GRCh38#0`, `HG01109.1` → `HG01109#1`). The build, the converter's
+  chaining, the taffy index bug that refuses chr1/chr2 at full length, and the
+  measured agreement with HPRC's separately published impg PAF are in
+  [HPRC_RELEASE2.md](HPRC_RELEASE2.md) §"Unpacking pairwise alignments from
+  the graph"; what the demo itself settled:
+  - **The graph's records are alignment-sized once block boundaries are
+    bridged.** hal2maf's projection drops an insertion that falls between two
+    blocks, so exact chaining leaves ~10 kb pieces; `--max-gap 10000` (the
+    coarse bound) gives a median record of 362 kb and a maximum of 99.5 Mb, a
+    chromosome arm in one row, whose CIGAR is still only ~250 KB of text at
+    9 bytes per aligned kb. 147 of 378 chr1 coarse rows carry a `cr:Z:` fold,
+    against 27 of 26,337 for impg's pre-split rows.
+  - **It is a star, and `make-pif` says so** ("9 samples but states only 8 of
+    their 36 pairs"). That is the intended shape here — every lane hangs off
+    hg38 — and the reason the default session is a plain LGV on hg38 rather
+    than a synteny view between two haplotypes.
+  - **The CFHR3/CFHR1 deletion reads off the raw rows at
+    `chr1:196,700,000-197,000,000`**: the four carriers (HG01109, HG01123,
+    HG01960, HG02055) each break at 196,753,096 and resume at 196,837,771 —
+    the same coordinates for all four, since they traverse one bubble — while
+    HG00097, HG00099, HG00128 and HG00133 run through in one row each. impg's
+    rows say the same with breakpoints scattered over ~10 kb and HG00133 in six
+    overlapping rows.
+
+  The impg-derived build (`hprc_multiway.pif.gz`, 197 MB, 147,879 rows, grep on
+  the line start at over a GB/s where awk ran at 17 MB/s) stays hosted beside
+  it under its original names; the graph files are `hprc_multiway_graph.pif.gz`,
+  `<sample>.<hap>.graph.chrom.sizes` and `README_graph.txt`, since each
+  haplotype's graph `chrom.sizes` lists only contigs aligned to a primary
+  chromosome (34–54, a strict subset of impg's 60–114) and could not replace
+  the impg one in place. Each haplotype's CAT GFF3 is the whole assembly
+  (114-127 MB bgzipped, 80-83k genes) with `intron`/`start_codon`/`stop_codon`
+  rows dropped and any gene over 5 Mb removed with its children on `gene_id=`:
+  21 across the eight, six of them on HG01960.1, the haplotype whose 61 Mb
+  lncRNA the CFH slice first hit. No real human gene passes 2.5 Mb. BSD awk is
+  the wall there — two passes over a 1.2 GB GFF3 is ~10 min per haplotype, so
+  `CAT_JOBS` runs them concurrently. `README.txt` beside the data carries
+  provenance and the row counts.
+- **`demos/hg38_vertebrates` builds nothing** (`build_hg38_liftover_multiway.sh`
+  writes only the config): eight UCSC genomes under hg38 through the liftOver
+  PIFs already at `ucsc/hg38/liftOver/hg38To<Genome>.over.pif.gz`, one
+  `PairwiseIndexedPAFAdapter` each under a `MultiPairwiseSyntenyAdapter`,
+  with every assembly entry and `<g>-ncbiRefSeq` track lifted verbatim from
+  `ucsc/<g>/config.json`. **A hub config's paths are relative to its own
+  directory and not all of them sit under a `uri` key**: `TwoBitAdapter`'s
+  `chromSizes` shorthand is a bare string, so an absolutizer that only rewrites
+  `uri` leaves nine `<g>.chrom.sizes` pointing at the demo's own folder.
+  Whether a liftOver PIF carries a coarse tier depends on when it was rebuilt
+  (`tabix -H` for the header, `tabix -l | grep -c '^[TQ]'` for the tier),
+  measured 2026-09-05:
+
+  | PIF | size | coarse seqids | `#pif` header |
+  | --- | ---: | ---: | --- |
+  | hg38ToPanTro6 | 23 MB | 0 | no |
+  | hg38ToGorGor6 | 27 MB | 0 | no |
+  | hg38ToPonAbe3 | 42 MB | 0 | no |
+  | hg38ToRheMac10 | 68 MB | 0 | no |
+  | hg38ToCalJac4 | 125 MB | 614 | yes, `coarse:i:10000 cigars:Z:all` |
+  | hg38ToMm39 | 126 MB | 0 | no |
+  | hg38ToCanFam6 | 170 MB | 397 | yes |
+  | hg38ToBosTau9 | 160 MB | 541 | yes |
+
+  `MultiPairwiseSyntenyAdapter` offers the coarse tier only when every child
+  carries one, so with five of eight lacking it this track serves the fine tier
+  at every zoom; rebuilding those five PIFs is what would turn it on, and the
+  [HOSTING.md](HOSTING.md) table's "no" for PanTro6 still holds. Locus
+  `chr17:7,400,000-7,700,000` (TP53), the same window `demos/primate_orthologs`
+  was picked on.
 
 ## Other demos
 

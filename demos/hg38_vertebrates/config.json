@@ -1,0 +1,825 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "metadata": {
+          "description": "Dec. 2013 (GRCh38/hg38)",
+          "nibPath": "/gbdb/hg38",
+          "organism": "Human",
+          "defaultPos": "chr7:155799529-155812871",
+          "active": 1,
+          "orderKey": 50,
+          "genome": "Human",
+          "scientificName": "Homo sapiens",
+          "htmlPath": "/gbdb/hg38/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)",
+          "taxId": 9606,
+          "id": "hg38",
+          "name": "hg38",
+          "accession": "hg38",
+          "commonName": "Human",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/hg38/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/hg38/minimal.json",
+          "blatDb": "hg38"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "panTro6",
+      "displayName": "Chimp (panTro6)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "panTro6-refseq",
+        "metadata": {
+          "description": "Jan. 2018 (Clint_PTRv2/panTro6)",
+          "nibPath": "/gbdb/panTro6",
+          "organism": "Chimp",
+          "defaultPos": "chr7:111311998-111585728",
+          "active": 1,
+          "orderKey": 3325,
+          "genome": "Chimp",
+          "scientificName": "Pan troglodytes",
+          "htmlPath": "/gbdb/panTro6/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "University of Washington",
+          "taxId": 9598,
+          "id": "panTro6",
+          "name": "panTro6",
+          "accession": "panTro6",
+          "commonName": "Chimp",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/panTro6/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/panTro6/minimal.json",
+          "blatDb": "panTro6"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/panTro6/bigZips/panTro6.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/panTro6/panTro6.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/panTro6/panTro6.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/panTro6/panTro6.cytoBandIdeo.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "gorGor6",
+      "displayName": "Gorilla (gorGor6)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "gorGor6-refseq",
+        "metadata": {
+          "description": "Aug. 2019 (Kamilah_GGO_v0/gorGor6)",
+          "nibPath": "/gbdb/gorGor6",
+          "organism": "Gorilla",
+          "defaultPos": "chr8:98674056-98712420",
+          "active": 1,
+          "orderKey": 7680,
+          "genome": "Gorilla",
+          "scientificName": "Gorilla gorilla gorilla",
+          "htmlPath": "/gbdb/gorGor6/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "University of Washington",
+          "taxId": 9595,
+          "id": "gorGor6",
+          "name": "gorGor6",
+          "accession": "gorGor6",
+          "commonName": "Gorilla",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/gorGor6/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/gorGor6/minimal.json",
+          "blatDb": "gorGor6"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/gorGor6/bigZips/gorGor6.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/gorGor6/gorGor6.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/gorGor6/gorGor6.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "ponAbe3",
+      "displayName": "Orangutan (ponAbe3)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ponAbe3-refseq",
+        "metadata": {
+          "description": "Jan. 2018 (Susie_PABv2/ponAbe3)",
+          "nibPath": "/gbdb/ponAbe3",
+          "organism": "Orangutan",
+          "defaultPos": "chrX:43955314-44095683",
+          "active": 1,
+          "orderKey": 15764,
+          "genome": "Orangutan",
+          "scientificName": "Pongo pygmaeus abelii",
+          "htmlPath": "/gbdb/ponAbe3/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "University of Washington",
+          "taxId": 9601,
+          "id": "ponAbe3",
+          "name": "ponAbe3",
+          "accession": "ponAbe3",
+          "commonName": "Orangutan",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/ponAbe3/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/ponAbe3/minimal.json",
+          "blatDb": "ponAbe3"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ponAbe3/bigZips/ponAbe3.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/ponAbe3/ponAbe3.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/ponAbe3/ponAbe3.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "rheMac10",
+      "displayName": "Rhesus (rheMac10)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "rheMac10-refseq",
+        "metadata": {
+          "description": "Feb. 2019 (Mmul_10/rheMac10)",
+          "nibPath": "/gbdb/rheMac10",
+          "organism": "Rhesus",
+          "defaultPos": "chr3:70672926-70708108",
+          "active": 1,
+          "orderKey": 18410,
+          "genome": "Rhesus",
+          "scientificName": "Macaca mulatta",
+          "htmlPath": "/gbdb/rheMac10/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "The Genome Institute at Washington University School of Medicine",
+          "taxId": 9544,
+          "id": "rheMac10",
+          "name": "rheMac10",
+          "accession": "rheMac10",
+          "commonName": "Rhesus",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/rheMac10/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/rheMac10/minimal.json",
+          "blatDb": "rheMac10"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/rheMac10/bigZips/rheMac10.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/rheMac10/rheMac10.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/rheMac10/rheMac10.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/rheMac10/rheMac10.cytoBandIdeo.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "calJac4",
+      "displayName": "Marmoset (calJac4)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "calJac4-refseq",
+        "metadata": {
+          "description": "May 2020 (Callithrix_jacchus_cj1700_1.1/calJac4)",
+          "nibPath": "/gbdb/calJac4",
+          "organism": "Marmoset",
+          "defaultPos": "chr2:73906565-73911532",
+          "active": 1,
+          "orderKey": 13083,
+          "genome": "Marmoset",
+          "scientificName": "Callithrix jacchus",
+          "htmlPath": "/gbdb/calJac4/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "McDonnell Genome Institute at Washington University",
+          "taxId": 9483,
+          "id": "calJac4",
+          "name": "calJac4",
+          "accession": "calJac4",
+          "commonName": "Marmoset",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/calJac4/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/calJac4/minimal.json",
+          "blatDb": "calJac4"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/calJac4/bigZips/calJac4.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/calJac4/calJac4.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/calJac4/calJac4.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/calJac4/calJac4.cytoBandIdeo.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "mm39",
+      "displayName": "Mouse (mm39)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-refseq",
+        "metadata": {
+          "description": "Jun. 2020 (GRCm39/mm39)",
+          "nibPath": "/gbdb/mm39",
+          "organism": "Mouse",
+          "defaultPos": "chr12:56741761-56761390",
+          "active": 1,
+          "orderKey": 269,
+          "genome": "Mouse",
+          "scientificName": "Mus musculus",
+          "htmlPath": "/gbdb/mm39/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "Genome Reference Consortium Mouse Build 39 (GCA_000001635.9)",
+          "taxId": 10090,
+          "id": "mm39",
+          "name": "mm39",
+          "accession": "mm39",
+          "commonName": "Mouse",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/mm39/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/mm39/minimal.json",
+          "blatDb": "mm39"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/mm39/mm39.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/mm39/mm39.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/mm39/mm39.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "canFam6",
+      "displayName": "Dog (canFam6)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "canFam6-refseq",
+        "metadata": {
+          "description": "Oct. 2020 (Dog10K_Boxer_Tasha/canFam6)",
+          "nibPath": "/gbdb/canFam6",
+          "organism": "Dog",
+          "defaultPos": "chr14:7802540-7807848",
+          "active": 1,
+          "orderKey": 4660,
+          "genome": "Dog",
+          "scientificName": "Canis lupus familiaris",
+          "htmlPath": "/gbdb/canFam6/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "Dog Genome Sequencing Consortium",
+          "taxId": 9615,
+          "id": "canFam6",
+          "name": "canFam6",
+          "accession": "canFam6",
+          "commonName": "Dog",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/canFam6/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/canFam6/minimal.json",
+          "blatDb": "canFam6"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/canFam6/canFam6.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/canFam6/canFam6.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "bosTau9",
+      "displayName": "Cow (bosTau9)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "bosTau9-refseq",
+        "metadata": {
+          "description": "Apr. 2018 (ARS-UCD1.2/bosTau9)",
+          "nibPath": "/gbdb/bosTau9",
+          "organism": "Cow",
+          "defaultPos": "chr6:85405597-85664387",
+          "active": 1,
+          "orderKey": 3626,
+          "genome": "Cow",
+          "scientificName": "Bos taurus",
+          "htmlPath": "/gbdb/bosTau9/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "USDA ARS",
+          "taxId": 9913,
+          "id": "bosTau9",
+          "name": "bosTau9",
+          "accession": "bosTau9",
+          "commonName": "Cow",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/bosTau9/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/bosTau9/minimal.json",
+          "blatDb": "bosTau9"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/bosTau9/bigZips/bosTau9.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite off",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "panTro6-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["panTro6"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gorGor6-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["gorGor6"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/gorGor6/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/gorGor6/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ponAbe3-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["ponAbe3"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/ponAbe3/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/ponAbe3/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "rheMac10-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["rheMac10"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/rheMac10/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/rheMac10/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "calJac4-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["calJac4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mm39-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite off",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "canFam6-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["canFam6"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/canFam6/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/canFam6/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bosTau9-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38_liftover_multiway",
+      "name": "hg38 vs 8 UCSC genomes (liftOver chains)",
+      "assemblyNames": [
+        "hg38",
+        "panTro6",
+        "gorGor6",
+        "ponAbe3",
+        "rheMac10",
+        "calJac4",
+        "mm39",
+        "canFam6",
+        "bosTau9"
+      ],
+      "adapter": {
+        "type": "MultiPairwiseSyntenyAdapter",
+        "adapters": [
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["panTro6", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToGorGor6.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["gorGor6", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPonAbe3.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["ponAbe3", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToRheMac10.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["rheMac10", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["calJac4", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["mm39", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCanFam6.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["canFam6", "hg38"]
+          },
+          {
+            "type": "PairwiseIndexedPAFAdapter",
+            "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz",
+            "csi": true,
+            "assemblyNames": ["bosTau9", "hg38"]
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hg38_liftover_multiway-MultiWaySyntenyDisplay",
+          "height": 200
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "hg38 vs UCSC genomes",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr17:7,400,000-7,700,000",
+        "tracks": ["hg38-ncbiRefSeq", "hg38_liftover_multiway"]
+      }
+    ]
+  }
+}

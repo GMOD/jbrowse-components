@@ -1856,6 +1856,76 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1340,
   },
 
+  // Whole-genome alignment as lanes, eukaryote scale: hg38 over eight UCSC
+  // genomes from the hosted liftOver PIFs, one MultiPairwiseSyntenyAdapter
+  // track over eight pairwise files, at the TP53 neighbourhood. Ribbons
+  // between adjacent mate lanes are composed through hg38, since a star of
+  // pairwise alignments holds no mate-vs-mate rows.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hg38_vertebrates_tp53',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/hg38_vertebrates/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr17:7,400,000-7,700,000',
+            tracks: [
+              'hg38-ncbiRefSeq',
+              {
+                trackId: 'hg38_liftover_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 1000,
+  },
+
+  // The human pangenome as lanes: eight HPRC haplotypes under hg38 at the
+  // CFH/CFHR cluster, their whole-genome alignments unpacked from the
+  // minigraph-cactus graph's own projection onto GRCh38, each lane carrying
+  // its CAT gene models. The CFHR3/CFHR1 deletion carriers' alignment stops
+  // and resumes past CFHR1 while the non-carriers' runs straight through.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_cfh_haplotypes',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:196,700,000-197,000,000',
+            tracks: [
+              'hg38_ncbiRefSeq_ucsc',
+              {
+                trackId: 'hprc_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    settleMs: 20000,
+    viewportHeight: 1000,
+  },
+
   // The grasses radiation as lanes: the rice window the
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene
