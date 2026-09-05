@@ -333,6 +333,9 @@ export default function stateModelFactory(
         refSampleIdVolatile: undefined as string | undefined,
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get view() {
           return containingLgv(self)
         },
@@ -1303,6 +1306,9 @@ export default function stateModelFactory(
         // at `-scrollTop`, not a DOM overflow container.
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get spatialIndex() {
           return buildSpatialIndex(self.hierarchy)
         },
@@ -2424,6 +2430,9 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         setRpcData(regionIndex: number, data: MafWireRegionData) {
           if (data.refSampleId !== undefined) {
             self.refSampleIdVolatile = data.refSampleId
@@ -2450,9 +2459,15 @@ export default function stateModelFactory(
             )
           }
         },
+        /**
+         * #action
+         */
         setSummaryData(regionIndex: number, records: MafSummaryRecord[]) {
           self.summaryDataMap.set(regionIndex, records)
         },
+        /**
+         * #action
+         */
         setFramesData(regionIndex: number, records: MafFrameRecord[]) {
           self.framesDataMap.set(regionIndex, records)
         },
@@ -2465,20 +2480,26 @@ export default function stateModelFactory(
         setFramesGateBlocked(blocked: boolean) {
           self.framesGateBlocked = blocked
         },
-        // Drop alignment blocks when entering summary mode so the GPU sequence
-        // canvas paints nothing under the summary overlay.
-        //
-        // Deliberately one-directional: there is no twin on the alignment path.
-        // `summaryDataMap` is what `regionHasData` tests in summary mode, so
-        // keeping it through a zoom-in is exactly what lets the zoom back out
-        // reuse the cache instead of re-reading the summary adapter. It doesn't
-        // accumulate either — it only ever holds the buffered regions of the
-        // current chromosome, since `clearDisplaySpecificData` empties it on
-        // chromosome nav and on any settings invalidation.
+        /**
+         * #action
+         * Drop alignment blocks when entering summary mode so the GPU sequence
+         * canvas paints nothing under the summary overlay.
+         *
+         * Deliberately one-directional: there is no twin on the alignment path.
+         * `summaryDataMap` is what `regionHasData` tests in summary mode, so
+         * keeping it through a zoom-in is exactly what lets the zoom back out
+         * reuse the cache instead of re-reading the summary adapter. It doesn't
+         * accumulate either — it only ever holds the buffered regions of the
+         * current chromosome, since `clearDisplaySpecificData` empties it on
+         * chromosome nav and on any settings invalidation.
+         */
         clearAlignmentData() {
           self.wireDataMap.clear()
           self.rpcDataMap.clear()
         },
+        /**
+         * #action
+         */
         clearDisplaySpecificData() {
           self.wireDataMap.clear()
           self.rpcDataMap.clear()
@@ -2490,15 +2511,21 @@ export default function stateModelFactory(
           // measured yet.
           self.framesGateBlocked = false
         },
-        // Two tiers under one stamp: a settings refetch restamps a region for
-        // the tier it fetched, and the other tier's map would then read as
-        // cache-valid on the next zoom across the threshold while holding the
-        // old setting's rows. So every map goes, as it does on chromosome nav.
+        /**
+         * #action
+         * Two tiers under one stamp: a settings refetch restamps a region for
+         * the tier it fetched, and the other tier's map would then read as
+         * cache-valid on the next zoom across the threshold while holding the
+         * old setting's rows. So every map goes, as it does on chromosome nav.
+         */
         clearSettingsBakedData() {
           self.clearDisplaySpecificData()
         },
         // reload() not overridden — MultiRegionDisplayMixin's base default
         // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
+        /**
+         * #action
+         */
         startRenderingBackend(backend: MafRenderingBackend) {
           // Per-region streamed upload. The encode callback builds the GPU
           // instance buffer on the main thread from raw region data + gpuProps,
@@ -2569,6 +2596,9 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         fetchNeeded(needed: IndexedRegion[]) {
           // Zoom-out with a configured summary → cheap per-species summary rows;
           // otherwise the full alignment fetch (subject to the byte gate below).
