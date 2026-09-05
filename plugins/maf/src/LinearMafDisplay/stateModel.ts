@@ -24,7 +24,6 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
-import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -1422,18 +1421,16 @@ export default function stateModelFactory(
         // #endregion
         /**
          * #getter
-         * Genomic bp the GPU encoder collapses into one cell — `subPixelBinBp`
-         * off the *debounced* `coarseBpPerPx` (the same input
-         * `zoomedToBaseLevel` uses), which the encode autorun tracks. Zoomed in
-         * this is `1` (encode every base). Once a base falls below half a CSS
-         * pixel the per-base quads are individually invisible — a 500kb region
-         * across 10 species emits 1.7M of them into a 28MB buffer, all but ~15k
-         * of which lose the sub-pixel race for their pixel — so the encoder
-         * decimates to one sample per bin instead.
+         * Genomic bp the GPU encoder collapses into one cell — the
+         * foundation's `settledSubPixelBinBp`, which the encode autorun tracks.
+         * Zoomed in this is `1` (encode every base). Once a base falls below
+         * half a CSS pixel the per-base quads are individually invisible — a
+         * 500kb region across 10 species emits 1.7M of them into a 28MB buffer,
+         * all but ~15k of which lose the sub-pixel race for their pixel — so the
+         * encoder decimates to one sample per bin instead.
          */
         get encodeBinBp() {
-          const view = self.view
-          return view.initialized ? subPixelBinBp(view.coarseBpPerPx) : 1
+          return self.settledSubPixelBinBp
         },
       }))
       .views(self => ({

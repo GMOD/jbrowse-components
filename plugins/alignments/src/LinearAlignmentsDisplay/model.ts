@@ -2967,9 +2967,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Genomic bp one per-base cell stands for in the worker's extract:
-         * `subPixelBinBp` off the debounced zoom, and `1` in every color mode
-         * that does not paint a wall of them.
+         * Genomic bp one per-base cell stands for in the worker's extract: the
+         * foundation's `settledSubPixelBinBp`, and `1` in every color mode that
+         * does not paint a wall of them.
          *
          * Per-base quality and per-base lettering emit one entry per aligned
          * base of EVERY read, so their extract grows with bases x depth where
@@ -2986,9 +2986,8 @@ export default function stateModelFactory(
          * below for what invalidates on it instead.
          */
         get perBaseBinBp() {
-          const view = self.view
-          return isPerBaseScheme(self.colorBy.type) && view.initialized
-            ? subPixelBinBp(view.coarseBpPerPx)
+          return isPerBaseScheme(self.colorBy.type)
+            ? self.settledSubPixelBinBp
             : 1
         },
 

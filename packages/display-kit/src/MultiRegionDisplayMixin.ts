@@ -15,6 +15,7 @@ import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
+import { subPixelBinBp } from './subPixelBinBp.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { FetchInputs } from './fetchInputs.ts'
@@ -119,6 +120,18 @@ export default function MultiRegionDisplayMixin() {
          */
         get canvasWidthPx(): number {
           return this.host.trackWidthPx
+        },
+
+        /**
+         * #getter
+         * Genomic bp one cell of a per-base pass stands for at the settled
+         * zoom: `subPixelBinBp` off the host's debounced `coarseBpPerPx`, and 1
+         * until the view initializes. A per-base encode or fetch reads this
+         * rather than the live zoom so a wheel tick does not redo every region.
+         */
+        get settledSubPixelBinBp(): number {
+          const view = this.host
+          return view.initialized ? subPixelBinBp(view.coarseBpPerPx) : 1
         },
 
         /**
