@@ -12,16 +12,12 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 //
 // Same locus, heights and split layout as protein/connected, so the three pages
 // that show this session show the same frame.
-const TP53_CONNECTED_VIEW = {
-  assembly: 'hg38',
-  loc: 'chr17:7,671,000-7,684,500',
-  tracks: [
-    { trackId: 'hg38-ncbiRefSeq', height: 150 },
-    { trackId: 'clinvar_ncbi_hg38', height: 560 },
-  ],
-}
+// Three alignment panels stack above the canvas, so the protein column is
+// about 1500 css px tall; the genome column beside it is filled by letting
+// ClinVar's rows scroll inside a band that reaches the same depth.
+const GENE_WIDE = 'chr17:7,671,000-7,684,500'
 
-function tp53Session(structures: object[]) {
+function tp53Session(structures: object[], loc = GENE_WIDE) {
   return sessionSpec(PROTEIN3D_CONFIG, {
     views: [
       {
@@ -33,7 +29,14 @@ function tp53Session(structures: object[]) {
         // a click on a residue should band the codon on the gene-wide view,
         // not zoom the genome to it
         zoomToBaseLevel: false,
-        connectedView: TP53_CONNECTED_VIEW,
+        connectedView: {
+          assembly: 'hg38',
+          loc,
+          tracks: [
+            { trackId: 'hg38-ncbiRefSeq', height: 150 },
+            { trackId: 'clinvar_ncbi_hg38', height: 1040 },
+          ],
+        },
       },
     ],
   })
@@ -51,7 +54,13 @@ const READY = {
   readySelector: '[data-testid="protein-view-ready"]',
   readyTimeout: 120000,
   settleMs: 6000,
-  viewportHeight: 990,
+  // molstar's background-task toast ("Creating or updating UnitsVisual") sat
+  // at the bottom of the canvas through a 15 s settle: three structures keep
+  // its visual builders busy well after the model reports ready, so the toast
+  // is stripped rather than waited out
+  hideSelectors: ['.msp-background-tasks'],
+  // measured: 990 clipped 515 css px, the whole molstar canvas
+  viewportHeight: 1520,
 } as const
 
 export const proteinStructuresSpecs: ScreenshotSpec[] = [
@@ -68,14 +77,20 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     // initialSelection: 0-based structure residue 154 is UniProt 248, since the
     // chain starts at UniProt 94. The selection lights the residue in 3D, the
     // column in 1TUP's alignment, and the codon on both genome tracks, where the
-    // ClinVar rows under the band are the R248 substitutions.
+    // ClinVar rows under the band are the R248 substitutions. The genome view
+    // opens on exon 7 rather than the gene: at gene-wide zoom a codon's band is
+    // a hairline, and the ClinVar rows at it are indistinguishable from their
+    // neighbours.
     mode: 'url',
     name: 'protein/tp53_hotspot',
-    url: tp53Session([
-      { uniprotId: 'P04637' },
-      { pdbId: '1TUP', initialSelection: { start: 154, end: 155 } },
-      { pdbId: '1YCR' },
-    ]),
+    url: tp53Session(
+      [
+        { uniprotId: 'P04637' },
+        { pdbId: '1TUP', initialSelection: { start: 154, end: 155 } },
+        { pdbId: '1YCR' },
+      ],
+      'chr17:7,674,100-7,674,350',
+    ),
     ...READY,
   },
   {
