@@ -19,6 +19,9 @@ import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 import type { GateFetchState } from './regionTooLargeUtils.ts'
 
+// what a mock stores for a region: the helpers require a payload back
+const STORED = 'stored'
+
 const NEEDED = [
   {
     region: { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
@@ -160,6 +163,7 @@ test('a region that arrived before the move still commits; a later one does not'
       onResult: (idx, result) => {
         committed.push([idx, result])
         stale = true
+        return result
       },
       onComplete: () => {
         completed++
@@ -304,7 +308,7 @@ test('a batch where several regions refuse commits and cancels exactly once', as
     {
       call: () =>
         Promise.resolve({ regionTooLarge: true as const, bytes: 9e9 }),
-      onResult: () => {},
+      onResult: () => STORED,
       onComplete: () => {
         completed++
       },
@@ -332,7 +336,7 @@ test('the gate state handed to onComplete is the one captured at issue', async (
     NEEDED,
     {
       call: region => Promise.resolve(region.refName),
-      onResult: () => {},
+      onResult: () => STORED,
       onComplete: issued => {
         seen.push(issued)
       },
@@ -366,7 +370,7 @@ test('call receives the region, its own ctx and the displayed region index', asy
       ])
       return Promise.resolve(region.refName)
     },
-    onResult: () => {},
+    onResult: () => STORED,
   })
   expect(seen).toEqual([
     ['ctgA', true, false, 2],
@@ -408,7 +412,7 @@ test('commits once even if cancelFetch leaves the batch running', async () => {
   }
   await fetchEachRegion(self, NEEDED, {
     call: () => Promise.resolve({ regionTooLarge: true as const, bytes: 9e9 }),
-    onResult: () => {},
+    onResult: () => STORED,
     onComplete: () => {
       completed++
     },
@@ -451,7 +455,7 @@ test('a refusal is only partial when a region never reported', async () => {
               ? { regionTooLarge: true as const, bytes: 9e9 }
               : { bytes: 10, value: region.refName },
           ),
-        onResult: () => {},
+        onResult: () => STORED,
       },
     )
     return partials

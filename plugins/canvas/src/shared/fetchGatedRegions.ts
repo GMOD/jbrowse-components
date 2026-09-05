@@ -6,6 +6,7 @@ import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 import type { FetchEachRegionModel } from '@jbrowse/display-kit/fetchEachRegion'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
+import type { RegionPayload } from '@jbrowse/display-kit/regionCommit'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 interface GatedFetchModel extends FetchEachRegionModel {
@@ -36,12 +37,12 @@ export function fetchGatedRegions<
       region: Region,
       ctx: FetchContext,
     ) => Promise<Payload | RegionTooLargeResult>
-    /** Stores the payload and returns it — see {@link fetchEachRegion}. */
+    /** What this region stores — see {@link fetchEachRegion}. */
     onResult: (
       displayedRegionIndex: number,
       result: Payload,
       region: Region,
-    ) => unknown
+    ) => RegionPayload
   },
 ) {
   const results = new Map<number, Payload | RegionTooLargeResult>()

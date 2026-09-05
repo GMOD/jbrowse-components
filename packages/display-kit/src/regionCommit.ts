@@ -42,21 +42,18 @@ export interface LoadedRegion extends Region {
    * region identity it needed out of the payload. One record instead of two,
    * for the reason this interface fused the span and the stamp one level up.
    *
-   * `undefined` for a display still holding its own map: `commitRegion` takes
-   * the payload as an optional argument while both paths coexist.
+   * Optional only for the raw `setLoadedRegion` write a test stages a claim
+   * with; `commitRegion` requires it.
    */
-  payload?: unknown
+  payload?: RegionPayload
 }
 
 /**
- * What `commitRegion` stores for a display that still holds its payloads in a
- * map of its own. Presence, not the payload — which is all `regionHasData` ever
- * asked, and asking it of the store is what makes "marked loaded with nothing
- * behind it" unreachable through the fetch path instead of checkable from the
- * reader's side. It goes when the last display moves its payload here and the
- * argument becomes required.
+ * What a fetch stores for a region: anything but `undefined`, so a commit
+ * cannot claim a region and store nothing. A batched fetch stores the batch
+ * under each region it covered.
  */
-export const HELD_BY_THE_DISPLAY = Symbol('heldByTheDisplay')
+export type RegionPayload = NonNullable<unknown>
 
 /**
  * A {@link FetchContext} plus the one thing a per-region fetch can do that a
@@ -116,7 +113,7 @@ export interface RegionFetchContext extends FetchContext {
    * The payload is the argument, so storing it and claiming it are one call
    * and a display cannot do either alone.
    */
-  commitRegion: (displayedRegionIndex: number, payload?: unknown) => void
+  commitRegion: (displayedRegionIndex: number, payload: RegionPayload) => void
 }
 
 /**

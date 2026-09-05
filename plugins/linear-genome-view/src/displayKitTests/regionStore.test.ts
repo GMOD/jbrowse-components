@@ -169,7 +169,7 @@ describe('a claim with no payload behind it', () => {
     expect(display.isCacheValid(0)).toBe(false)
   })
 
-  it('is not what a display holding its own payloads looks like', async () => {
+  it('is not what the fetch path writes', async () => {
     const { display } = setup()
     await quiet(display)
 

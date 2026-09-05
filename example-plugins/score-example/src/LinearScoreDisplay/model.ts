@@ -8,7 +8,6 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 // #endregion
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
@@ -63,14 +62,13 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex; the render lifecycle
-      // uploads/draws one region at a time from this map. `regionDataMap`, not
-      // a bare `observable.map`: an entry is replaced, never mutated, so the
-      // shallow map is the right one
-      rpcDataMap: regionDataMap<ScoreRegionData>('rpcDataMap'),
-    }))
     .views(self => ({
+      // fetched data keyed by displayedRegionIndex: the foundation's per-region
+      // store, narrowed to this display's payload. The render lifecycle
+      // uploads/draws one region at a time from it
+      get rpcDataMap(): ReadonlyMap<number, ScoreRegionData> {
+        return self.regionPayloads as ReadonlyMap<number, ScoreRegionData>
+      },
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
@@ -90,14 +88,6 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           canvasHeight: self.height,
           color: getConf(self, 'color'),
         }
-      },
-    }))
-    .actions(self => ({
-      setRpcData(idx: number, data: ScoreRegionData) {
-        self.rpcDataMap.set(idx, data)
-      },
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
       },
     }))
     .actions(self => ({
@@ -123,9 +113,9 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
               region,
               ...self.rpcProps(),
             }),
-          onResult: (idx, result) => {
-            self.setRpcData(idx, result)
-          },
+          // what a region stores; the foundation commits it with the region's
+          // span and fetch inputs as one record
+          onResult: (_idx, result) => result,
         })
       },
       // #endregion

@@ -27,6 +27,9 @@ import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 import type { GateFetchState } from './regionTooLargeUtils.ts'
 
+// what a mock stores for a region: the helpers require a payload back
+const STORED = 'stored'
+
 const NEEDED = [
   {
     region: { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
@@ -128,7 +131,7 @@ test('passes the fetch ctx straight through to call', async () => {
       seen.push(callCtx)
       return Promise.resolve(regions.map(() => null))
     },
-    onResult: () => {},
+    onResult: () => STORED,
   })
   expect(seen).toHaveLength(1)
   expect(seen[0]!.stopToken).toBe(ctx.stopToken)
@@ -187,7 +190,7 @@ describe('a region the worker refused', () => {
     const loaded: number[] = []
     await fetchAllRegions(selfWith(fresh(), loaded), NEEDED, {
       call: () => Promise.resolve(['data:ctgA', refused]),
-      onResult: () => {},
+      onResult: () => STORED,
     })
     expect(loaded).toEqual([2])
   })
@@ -203,7 +206,7 @@ describe('a region the worker refused', () => {
           { regionTooLarge: true, featureCount: 4e6, bytes: 1 },
           { regionTooLarge: true },
         ]),
-      onResult: () => {},
+      onResult: () => STORED,
     })
     expect(loaded).toEqual([])
   })

@@ -14,12 +14,16 @@ import { foundationSvgReady } from './foundationSvgReady.ts'
 import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
-import { HELD_BY_THE_DISPLAY, makeCommitChecks } from './regionCommit.ts'
+import { makeCommitChecks } from './regionCommit.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { FetchInputs } from './fetchInputs.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
-import type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
+import type {
+  LoadedRegion,
+  RegionFetchContext,
+  RegionPayload,
+} from './regionCommit.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -68,12 +72,11 @@ export default function MultiRegionDisplayMixin() {
          * what it brought back (`payload`), written as one record by
          * `ctx.commitRegion`.
          *
-         * A display's own `rpcDataMap` is the payload column of this map held
-         * separately, and every hook that exists to keep the two in step —
-         * `clearDisplaySpecificData`, a `regionHasData` that answers
-         * `rpcDataMap.has(idx)`, a hand-rolled prune — is that separation's
-         * cost. A converted display leaves the payload here and reads it back
-         * through `regionPayloads`.
+         * A display's own `rpcDataMap` was the payload column of this map held
+         * separately, and every hook that existed to keep the two in step —
+         * `clearDisplaySpecificData`, a `regionHasData` that answered
+         * `rpcDataMap.has(idx)`, a hand-rolled prune — was that separation's
+         * cost. A display reads the payload back through `regionPayloads`.
          */
         loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
       }))
@@ -260,11 +263,10 @@ export default function MultiRegionDisplayMixin() {
          * region is marked loaded over.
          *
          * The default answers off the store — an entry a fetch committed
-         * carries what it stored, or the {@link HELD_BY_THE_DISPLAY} stand-in
-         * for a display still holding its own map — so "marked loaded with
-         * nothing behind it" is a state only a hand-written `setLoadedRegion`
-         * reaches. It used to be `true`, and the base canvas display overrode
-         * it with `rpcDataMap.has(idx)` to get this answer back.
+         * carries what it stored — so "marked loaded with nothing behind it"
+         * is a state only a hand-written `setLoadedRegion` reaches. It used to
+         * be `true`, and the base canvas display overrode it with
+         * `rpcDataMap.has(idx)` to get this answer back.
          *
          * What survives an override is the question the store cannot answer:
          * **which of several held payloads answers**. MAF caches a summary tier
@@ -281,7 +283,7 @@ export default function MultiRegionDisplayMixin() {
          * way. The case that mattered is sequence's legitimately-empty region,
          * which stamped without storing and which a store-derived default would
          * have refetched forever — and a commit is a payload now, the empty
-         * record or the stand-in, so it stays terminal.
+         * record, so it stays terminal.
          *
          * A view, not an action, for the reason `zoomFetchKey` is a getter.
          */
@@ -392,8 +394,8 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
-         * The store's payloads, keyed by `displayedRegionIndex`. A converted
-         * display narrows this once — `get rpcDataMap() { return
+         * The store's payloads, keyed by `displayedRegionIndex`. A display
+         * narrows this once — `get rpcDataMap() { return
          * self.regionPayloads as ReadonlyMap<number, MyResult> }` — and every
          * reader it already had goes on reading a map.
          *
@@ -410,10 +412,7 @@ export default function MultiRegionDisplayMixin() {
         get regionPayloads(): ReadonlyMap<number, unknown> {
           return new Map(
             [...self.loadedRegions].flatMap(([idx, entry]) =>
-              entry.payload === undefined ||
-              entry.payload === HELD_BY_THE_DISPLAY
-                ? []
-                : [[idx, entry.payload]],
+              entry.payload === undefined ? [] : [[idx, entry.payload]],
             ),
           ) as ReadonlyMap<number, unknown>
         },
@@ -647,7 +646,7 @@ export default function MultiRegionDisplayMixin() {
           // default's type lands as `any` and the published signature stopped
           // constraining the one field `isCacheValid` compares
           fetchInputs: FetchInputs = self.fetchInputs,
-          payload?: unknown,
+          payload?: RegionPayload,
         ) {
           self.loadedRegions.set(displayedRegionIndex, {
             ...region,
@@ -848,7 +847,7 @@ export default function MultiRegionDisplayMixin() {
                       displayedRegionIndex,
                       region,
                       fetchInputs,
-                      payload ?? HELD_BY_THE_DISPLAY,
+                      payload,
                     )
                   }
                 },

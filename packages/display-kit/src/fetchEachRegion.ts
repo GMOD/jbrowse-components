@@ -3,7 +3,7 @@ import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
-import type { RegionFetchContext } from './regionCommit.ts'
+import type { RegionFetchContext, RegionPayload } from './regionCommit.ts'
 import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -169,16 +169,15 @@ export async function fetchEachRegion<R>(
       displayedRegionIndex: number,
     ) => Promise<R | RegionTooLargeResult>
     /**
-     * Store this region's payload, and **return it**: the return is what the
-     * helper commits into the per-region store, so a display that has moved
-     * its payload there writes only this function and holds no map. A display
-     * still holding its own map stores into it and returns nothing.
+     * What this region stores: the return is what the helper commits into
+     * the per-region store, beside the span and the fetch inputs. A display
+     * shapes its payload here and holds no map of its own.
      */
     onResult: (
       displayedRegionIndex: number,
       result: R,
       region: Region,
-    ) => unknown
+    ) => RegionPayload
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
@@ -239,7 +238,7 @@ export async function fetchAllRegions<R>(
       ctx: FetchContext,
     ) => Promise<(R | RegionTooLargeResult)[]>
     /** Stores the payload and returns it — see {@link fetchEachRegion}. */
-    onResult: (displayedRegionIndex: number, result: R) => unknown
+    onResult: (displayedRegionIndex: number, result: R) => RegionPayload
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
@@ -289,8 +288,13 @@ export async function fetchAllRegions<R>(
  * The single `ctx.isStale()` guard is the same correctness primitive the other
  * helpers own, at the only granularity that exists here: there is one result, so
  * a viewport that moved drops all of it, and a refusal refuses the set.
+ *
+ * The batch is what each region stores: one object under every index it
+ * covered, since that is what the fetch brought back for each of them. Both
+ * displays here read their own per-batch holder, and each answers
+ * `regionHasData` itself for the reason its docstring gives.
  */
-export async function fetchRegionsBatched<R>(
+export async function fetchRegionsBatched<R extends RegionPayload>(
   self: FetchEachRegionModel,
   regions: IndexedRegion[],
   opts: {
@@ -312,7 +316,7 @@ export async function fetchRegionsBatched<R>(
       if (!isRegionRefused(result)) {
         opts.commit(result)
         for (const { displayedRegionIndex } of regions) {
-          ctx.commitRegion(displayedRegionIndex)
+          ctx.commitRegion(displayedRegionIndex, result)
         }
       }
     }

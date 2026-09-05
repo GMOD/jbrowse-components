@@ -161,7 +161,7 @@ describe('a region is marked loaded only when its data lands', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     await display.fetchRegions([region], async ctx => {
-      ctx.commitRegion(7)
+      ctx.commitRegion(7, 'data')
     })
     expect(display.loadedRegions.size).toBe(0)
     expect(spy).toHaveBeenCalledWith(expect.stringContaining('commitRegion(7)'))
@@ -198,7 +198,7 @@ describe('a region is marked loaded only when its data lands', () => {
     await display.fetchRegions([region], async () => {})
     await display.fetchRegions([region], async () => {})
     await display.fetchRegions([region], async ctx => {
-      ctx.commitRegion(0)
+      ctx.commitRegion(0, 'data')
     })
     await display.fetchRegions([region], async () => {})
 
@@ -216,7 +216,7 @@ describe('a region is marked loaded only when its data lands', () => {
       // trusted to a caller's own guard
       display.cancelFetch()
       expect(ctx.isStale()).toBe(true)
-      ctx.commitRegion(0)
+      ctx.commitRegion(0, 'data')
     })
     expect(display.loadedRegions.size).toBe(0)
   })

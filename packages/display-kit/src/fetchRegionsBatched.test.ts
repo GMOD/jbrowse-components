@@ -128,7 +128,7 @@ test('passes the fetch ctx straight through to call', async () => {
   await fetchRegionsBatched(selfWith(ctx), REGIONS, {
     call: (_regions, callCtx) => {
       seen.push(callCtx)
-      return Promise.resolve(undefined)
+      return Promise.resolve('stored')
     },
     commit: () => {},
   })
