@@ -1,10 +1,6 @@
 import { Fragment, useId, useState } from 'react'
 
-import {
-  ResizeHandle,
-  ScrollEdgeShadow,
-  VerticalScrollbar,
-} from '@jbrowse/core/ui'
+import { ResizeHandle, ScrollChrome } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -163,14 +159,7 @@ const PileupBody = observer(function PileupBody({
 
       {/* the pileup's own viewport, so in ungrouped mode it starts below the
           pinned coverage band rather than fading the band itself */}
-      <ScrollEdgeShadow
-        scrollTop={model.scrollTop}
-        viewportHeight={model.pileupViewportHeight}
-        contentHeight={model.pileupContentHeight}
-        top={stickyBandHeight}
-      />
-
-      <VerticalScrollbar
+      <ScrollChrome
         scrollTop={model.scrollTop}
         setScrollTop={n => {
           model.setScrollTop(n)

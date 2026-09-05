@@ -187,6 +187,7 @@ export const CORE_UI_NAMES = [
   'ResetToDefaultButton',
   'ResizeHandle',
   'SanitizedHTML',
+  'ScrollChrome',
   'ScrollEdgeShadow',
   'SettingsChangesTable',
   'ShareLinkField',

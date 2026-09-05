@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
-import { ScrollEdgeShadow, VerticalScrollbar } from '@jbrowse/core/ui'
+import { ScrollChrome } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst } from '@jbrowse/core/util'
@@ -423,13 +423,7 @@ const FeatureBody = observer(function FeatureBody({
       {/* both from scrollContentHeight, not contentHeight: they report where a
           scroll can go, and the drawing height also covers the fetch buffer's
           rows, which no scroll reaches */}
-      <ScrollEdgeShadow
-        scrollTop={model.scrollTop}
-        viewportHeight={model.height}
-        contentHeight={model.scrollContentHeight}
-      />
-
-      <VerticalScrollbar
+      <ScrollChrome
         scrollTop={model.scrollTop}
         setScrollTop={n => {
           model.setScrollTop(n)

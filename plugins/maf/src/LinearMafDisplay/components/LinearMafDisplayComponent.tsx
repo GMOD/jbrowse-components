@@ -1,10 +1,6 @@
 import { useId, useRef, useState } from 'react'
 
-import {
-  ScrollEdgeShadow,
-  VerticalScrollbar,
-  useMouseState,
-} from '@jbrowse/core/ui'
+import { ScrollChrome, useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
@@ -307,14 +303,8 @@ const MafBody = observer(function MafBody({
         <TreeSidebar model={model} top={rowsTopOffset} />
       </div>
       {/* Offset below the stacked bands, which are pinned: only the rows
-          scroll. Both render nothing while the rows fit. */}
-      <ScrollEdgeShadow
-        scrollTop={scrollTop}
-        viewportHeight={rowsHeight}
-        contentHeight={rowsContentHeight}
-        top={rowsTopOffset}
-      />
-      <VerticalScrollbar
+          scroll. */}
+      <ScrollChrome
         scrollTop={scrollTop}
         setScrollTop={n => {
           model.setScrollTop(n)

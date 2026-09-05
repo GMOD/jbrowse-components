@@ -93,6 +93,7 @@ export {
   ResetToDefaultButton,
   ResizeHandle,
   SanitizedHTML,
+  ScrollChrome,
   ScrollEdgeShadow,
   SettingsChangesTable,
   ShareLinkField,

@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 
-import { ScrollEdgeShadow, VerticalScrollbar } from '@jbrowse/core/ui'
+import { ScrollChrome } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
@@ -60,12 +60,7 @@ const MultiWayBody = observer(function MultiWayBody({
         <MultiWayOverlay model={model} />
         <LaneHeaders model={model} />
       </div>
-      <ScrollEdgeShadow
-        scrollTop={model.scrollTop}
-        viewportHeight={height}
-        contentHeight={model.scrollContentHeight}
-      />
-      <VerticalScrollbar
+      <ScrollChrome
         scrollTop={model.scrollTop}
         setScrollTop={n => {
           model.setScrollTop(n)
