@@ -2,7 +2,6 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
   LABEL_EDGE_GUTTER_PX,
-  LABEL_FONT_SIZE,
   LABEL_PADDING_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
@@ -236,10 +235,7 @@ export function computeLabelPosition(
   label: LabelMetrics,
   padding: number,
   bounds: FeatureBoundsPx,
-  // the display mode's resolved label size; the baked textWidth is measured at
-  // the base size, and computeLabelLeftPx's fits-in-feature test and right-edge
-  // clamp both need the width the text will actually occupy
-  fontSize = LABEL_FONT_SIZE,
+  fontSize: number,
 ) {
   return {
     labelX: computeLabelLeftPx(
