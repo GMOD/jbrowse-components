@@ -2520,6 +2520,9 @@ export default function stateModelFactory(
           return hit ? this.readIdsSharingChain(hit.rpcData, hit.idx) : []
         },
 
+        /**
+         * #method
+         */
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
           const region = hit && self.loadedRegions.get(hit.displayedRegionIndex)
@@ -3134,14 +3137,6 @@ export default function stateModelFactory(
             setConf(self, 'showCoverage', true)
           }
         }
-        /**
-         * #action
-         * The other half of the sashimi/coverage tie. Without it, hiding coverage
-         * left "Show sashimi arcs" ticked over a display drawing none — and the
-         * worker skips the junction scan entirely when the band is off
-         * (`runCoveragePipeline`), so the arcs the checkbox advertised had no
-         * data behind them either.
-         */
         function setShowCoverage(show: boolean) {
           setConf(self, 'showCoverage', show)
           if (!show) {
@@ -3546,6 +3541,14 @@ export default function stateModelFactory(
            */
           setShowSashimiArcs,
 
+          /**
+           * #action
+           * The other half of the sashimi/coverage tie. Without it, hiding
+           * coverage left "Show sashimi arcs" ticked over a display drawing none
+           * — and the worker skips the junction scan entirely when the band is
+           * off (`runCoveragePipeline`), so the arcs the checkbox advertised had
+           * no data behind them either.
+           */
           setShowCoverage,
 
           /**
