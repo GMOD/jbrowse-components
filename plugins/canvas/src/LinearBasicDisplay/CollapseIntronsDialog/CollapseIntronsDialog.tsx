@@ -37,7 +37,7 @@ const DEFAULT_WINDOW_SIZE = 100
 const ALL_TRANSCRIPTS = '__all_transcripts__'
 
 const useStyles = makeStyles()({
-  // display:flex (over the FormControl root's inline-flex) so the two fields
+  // display:flex over the FormControl root's inline-flex, so the two fields
   // stack instead of sharing a line in the md-width dialog
   field: {
     display: 'flex',
@@ -46,18 +46,6 @@ const useStyles = makeStyles()({
   },
 })
 
-/**
- * What the window size actually buys, in one line, before either button is
- * clicked.
- *
- * Worth saying because the menu item is gated on the gene having introns at
- * UNPADDED exon gaps: a gene whose introns are all shorter than twice the window
- * size arrives here, collapses to a single region, and reported "Introns
- * collapsed" having collapsed nothing. And the ways there is nothing to collapse
- * at all used to be exceptions thrown out of a button handler into a snackbar,
- * after this dialog had closed — so they are said here instead, while the reader
- * can still change the window size or the scope.
- */
 export function collapseSummary(result: CollapseResult, spannedBp: number) {
   if ('error' in result) {
     return result.error
@@ -67,10 +55,6 @@ export function collapseSummary(result: CollapseResult, spannedBp: number) {
   return `Collapses to ${regions.length} ${pluralize(regions.length, 'region')} — ${toLocale(shown)}bp shown of the ${toLocale(spannedBp)}bp this feature spans`
 }
 
-// "EDEN.1 (5 exons, 5,585 bp)" — enough to tell isoforms apart in the dropdown.
-// A transcript with no exon rows at all is described by its CDS count, since
-// that is then what the collapse actually uses. Unnamed transcripts fall back to
-// their position in the list.
 function transcriptLabel(transcript: Feature, idx: number) {
   const parts = getExonsAndCDS([transcript])
   const exons = parts.filter(isExon).length
@@ -99,38 +83,24 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   trackId: string
 }) {
   const { classes } = useStyles()
-  // ALL_TRANSCRIPTS = the union of every transcript's exons; otherwise a single
-  // isoform's id. The context menu already narrows to a clicked transcript, so
-  // this is the way to reach an isoform that isn't drawn (gene-glyph mode
-  // 'longestCoding').
   const [selectedId, setSelectedId] = useState(ALL_TRANSCRIPTS)
-  // default to flipping for a minus-strand gene so it reads 5'->3'
   const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)
-  // default on: isolate the resulting view's track to this gene so it isn't
-  // cluttered by other features overlapping the same locus
   const [soloOnly, setSoloOnly] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
-  // Gates "Open in new view": the embedded react-LGV session has addView too,
-  // but it replaces its single view — see the guard for what tells them apart.
   const canLaunchView = isSessionWithMultipleViews(getSession(view))
   // Always the originally-clicked feature id, even for a specific transcript
-  // row: solo is an exact uniqueId match (featureAdmission), and a gene-shaped
-  // feature draws from its top-level id, so isolating to a transcript's id
-  // would admit nothing and blank the track.
+  // row: solo is an exact uniqueId match against the id a gene-shaped feature
+  // draws from, so a transcript's id would admit nothing and blank the track.
   const soloFeatureId = soloOnly ? featureId : undefined
   const selectedTranscript = transcripts.find(t => t.id() === selectedId)
   const activeTranscripts = selectedTranscript
     ? [selectedTranscript]
     : transcripts
-  // names the resulting view: the isoform when one is picked, else the gene
   const label = selectedTranscript
     ? (getFeatureName(selectedTranscript) ?? featureName)
     : featureName
-  // The regions both buttons act on, built here rather than inside each action:
-  // one build, and the dialog can say what it produced BEFORE anything is
-  // clicked. Undefined while the window-size field is invalid.
   const result =
     windowSize === undefined
       ? undefined
@@ -148,9 +118,6 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
     soloFeatureId,
     label,
   }
-  // What collapsing is measured against: the genomic extent of the scope in play,
-  // which for the union of several transcripts is the outermost pair rather than
-  // the longest one of them.
   const spannedBp =
     Math.max(...activeTranscripts.map(t => t.get('end'))) -
     Math.min(...activeTranscripts.map(t => t.get('start')))
@@ -202,10 +169,9 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           className={classes.field}
         />
         {/*
-          A non-breaking space while the field is mid-edit, not an unmounted row:
-          the summary sits above two checkboxes and the buttons, and a row that
-          comes and goes moves a button between a mousedown and its mouseup, which
-          dispatches no click at all.
+          Renders a space while the field is mid-edit rather than unmounting the
+          row: a row that comes and goes moves a button between a mousedown and
+          its mouseup, which dispatches no click at all.
         */}
         <Typography
           variant="body2"

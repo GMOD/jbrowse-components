@@ -72,8 +72,6 @@ function sessionBase() {
   }
 }
 
-// The shape jbrowse-web, desktop and react-app share: views are a list, and
-// addView appends to it.
 function multiViewSession() {
   const { pluginManager, LinearGenomeView, base } = sessionBase()
   const Session = types
@@ -99,8 +97,6 @@ function multiViewSession() {
   return { session, view }
 }
 
-// The shape of the embedded react-LGV session: one view, `views` a fresh plain
-// array wrapping it, and an addView that overwrites it.
 function singleViewSession() {
   const { pluginManager, LinearGenomeView, base } = sessionBase()
   const Session = base
@@ -210,7 +206,6 @@ describe('the launched view', () => {
     fireEvent.click(screen.getByText('Open in new view'))
 
     expect(session.views[1]!.displayName).toBe('EDEN.2 (introns collapsed)')
-    // one transcript with two exons collapses to two regions
     expect(
       session.views[1]!.displayedRegions.map(r => [r.start, r.end]),
     ).toEqual([

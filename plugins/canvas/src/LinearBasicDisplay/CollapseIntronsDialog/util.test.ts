@@ -26,8 +26,8 @@ function feat(fields: FeatFields = {}): Feature {
   } as unknown as Feature
 }
 
-// contigs at their real lengths, since clampToContig is what reads them: ctgA is
-// 50kb and ctgB is short enough for a padded exon to run off the end of it
+// ctgB is short enough for a padded exon to run off the end of it, which is
+// what the clamping tests need.
 const CONTIGS = [
   { refName: 'ctgA', start: 0, end: 50_000 },
   { refName: 'ctgB', start: 0, end: 120 },
@@ -40,9 +40,6 @@ const assembly = {
   getRegionForRefName: (r: string) => CONTIGS.find(c => c.refName === r),
 } as unknown as Assembly
 
-// The regions a collapse produces, unwrapped — a test naming regions has already
-// said it expects some, so the error arm is a test failure rather than a branch
-// every caller repeats.
 function collapsedRegionsOf(opts: {
   transcripts: Feature[]
   flip: boolean
@@ -55,8 +52,6 @@ function collapsedRegionsOf(opts: {
   return result.regions
 }
 
-// The two intron actions take the regions the dialog built, so a test driving one
-// builds them the same way.
 function intronArgs(opts: {
   transcripts: Feature[]
   flip: boolean
@@ -136,8 +131,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('drops gene subfeatures that carry no exon/CDS of their own', () => {
-      // a childless tRNA alongside a real transcript: keeping it would offer a
-      // table row whose collapse yields an empty region set
       const transcript = feat({ subfeatures: [feat({ type: 'exon' })] })
       const childless = feat({ type: 'tRNA' })
       expect(
@@ -147,7 +140,6 @@ describe('CollapseIntrons utilities', () => {
   })
 
   describe('buildCollapsedRegions', () => {
-    // on the 50kb ctgA, so nothing clamps unless a test means it to
     const args = { refName: 'ctgA', assembly }
 
     it('pads each exon by the window size', () => {
@@ -162,7 +154,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('collapses a wide intron into separate regions', () => {
-      // gap = 800, well beyond any padding window -> stays collapsed (2 regions)
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 0, end: 100 },
@@ -175,8 +166,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('merges exons whose padded windows overlap (intron < 2*padding)', () => {
-      // gap = 150, 2*padding = 200, so 150 < 200 -> windows overlap, merge.
-      // The padded low end (0 - 100 = -100) is floored at the contig start.
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 0, end: 100 },
@@ -190,7 +179,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('keeps introns between 2*padding and 4*padding collapsed (regression: no double-padding)', () => {
-      // gap = 300 sits in the old broken window (>2p, <4p). Must stay 2 regions.
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 0, end: 100 },
@@ -203,9 +191,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('drops an exon the contig does not reach, rather than inverting it', () => {
-      // A GFF3 annotated against a longer assembly than the FASTA in use. The
-      // clamp puts this region's end below its start, and every consumer sums
-      // region lengths, so keeping it subtracts from the view's total bp.
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 10, end: 90 },
@@ -221,8 +206,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('clamps padded regions to the chromosome bounds', () => {
-      // exon near coordinate 0 + padding would go negative; end would run past
-      // the contig length without clamping
       const regions = buildCollapsedRegions({
         intervals: [{ start: 10, end: 90 }],
         padding: 50,
@@ -235,14 +218,7 @@ describe('CollapseIntrons utilities', () => {
     })
   })
 
-  // The view persists its viewport as a genomic window, so that is what the
-  // snapshot has to name. A `bpPerPx`/`offsetPx` pair alongside an inherited
-  // `windowWidthBp` is dropped by the view's own snapshot migration, which is
-  // how the launch came to open at the source view's zoom instead of this one.
   describe('the framing the snapshot carries', () => {
-    // exons 0..100 and 5000..5100 padded by 20 -> 0..120 (the low pad is clamped
-    // at the contig start) and 4980..5120, so 260bp collapsed — against a source
-    // view showing 10,000bp at 800px (see testEnv)
     const transcripts = [
       feat({
         refName: 'ctgA',
@@ -258,9 +234,6 @@ describe('CollapseIntrons utilities', () => {
         intronArgs({ transcripts, flip: false }),
       )
 
-      // the regions edge to edge, which is the framing "Replace current view"
-      // gets from fitAllRegions. The source view's own 10,000bp window is what
-      // this used to inherit.
       expect(snap.windowWidthBp).toBe(260)
       expect(snap.windowStartBp).toBe(0)
     })
@@ -274,10 +247,6 @@ describe('CollapseIntrons utilities', () => {
       expect(snap.offsetPx).toBeUndefined()
     })
 
-    // The dialog's two buttons produce the same view by two different routes —
-    // one navigates the live view, one seeds a snapshot — and nothing pinned them
-    // to the same framing. They disagreed by more than the 11% a mismatched fill
-    // costs: the snapshot's half was dropped entirely.
     it('frames the same as the in-place button, which takes the other route', () => {
       const { view } = createTestEnvironment().createDisplay()
       replaceIntrons({ ...intronArgs({ transcripts, flip: false }), view })
@@ -290,9 +259,8 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('floors the window at the zoom-in limit for a tiny region set, and centers it', () => {
-      // 10bp of exon at window size 0 is past the 1/50 bp-per-px floor the view's
-      // own zoom controls clamp to anyway, so the fit can't be exact and the
-      // content is centered in what it doesn't fill
+      // 10bp is past the view's 1/50 bp-per-px zoom floor, so the fit cannot be
+      // exact and the content is centered in what it does not fill.
       const snap = buildCollapsedViewSnapshot(
         intronArgs({
           transcripts: [
@@ -311,11 +279,6 @@ describe('CollapseIntrons utilities', () => {
     })
   })
 
-  // Every downstream consumer assumes at least one region: the in-place path
-  // would blank the view back to the import form, and the new-view path would
-  // divide by a zero-length span. So these come back as errors the dialog can
-  // show before either button is clicked, rather than as exceptions out of the
-  // click — which is where they used to surface, after it had closed.
   describe('no collapsible intervals', () => {
     const errorFor = (transcripts: Feature[]) =>
       collapsedRegionsFor({ transcripts, assembly, padding: 20, flip: false })
@@ -333,8 +296,6 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('names the contig when every exon was past the end of it', () => {
-      // ctgA runs to 50,000. A reader looking at exons is not helped by being
-      // told there are none.
       expect(
         errorFor([
           feat({
@@ -349,9 +310,6 @@ describe('CollapseIntrons utilities', () => {
     })
   })
 
-  // The flip option has to move two things together: the region order and the
-  // per-region `reversed` flag. Order without the flag draws each exon's own
-  // bases backwards; the flag without the order leaves the gene reading 3'->5'.
   describe('flip', () => {
     const transcripts = [
       feat({
