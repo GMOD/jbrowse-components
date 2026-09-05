@@ -16,7 +16,6 @@ function mockFeature(opts: {
   end: number
   strand?: number
   subfeatures?: ReturnType<typeof mockFeature>[]
-  // extra attributes, e.g. the `tag` an NCBI GFF3 carries RefSeq Select in
   attributes?: Record<string, unknown>
 }): Feature {
   const {
@@ -73,9 +72,8 @@ function makeGeneWithTranscripts(transcriptNames: string[]) {
   })
 }
 
-// One isoform of a gene: a transcript-shaped child with a single subpart, so it
-// resolves the same glyph and draws the same label a real one does. `child`
-// picks coding (CDS) or non-coding (exon).
+// A transcript-shaped child with a single subpart, so it resolves the same glyph
+// and draws the same label a real isoform does.
 function isoform(type: string, name: string, i: number, child: string) {
   return mockFeature({
     type,
@@ -92,12 +90,9 @@ const TRANSCRIPT_PADDING = 2
 
 describe('layoutSubfeatures layout', () => {
   describe('subfeatureLabels = "below"', () => {
-    // The label ROW is counted here, never added to a Y or a height: its height
-    // is the display mode's label font size and the worker is mode-agnostic, so
-    // the main thread spends it (see reservesBelowLabelRow). What this asserts is
-    // that the worker's own geometry stays label-free and purely proportional to
-    // the feature height — the property that makes the main thread's uniform
-    // compact scale exact.
+    // A label row's height is the display mode's label font size and the worker
+    // is mode-agnostic, so the worker's geometry stays label-free and purely
+    // proportional to the feature height.
     it('counts a label row per transcript and leaves the geometry label-free', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
       const config = mockDisplayConfig({
@@ -113,8 +108,6 @@ describe('layoutSubfeatures layout', () => {
 
       expect(layout.children).toHaveLength(2)
       expect(layout.children[0]!.y).toBe(0)
-      // stacked on body + padding alone; the first transcript's label row is a
-      // count the second one carries, not px in its offset
       expect(layout.children[1]!.y).toBe(featureHeight + TRANSCRIPT_PADDING)
       expect(layout.children[0]!.labelRowsAbove).toBe(0)
       expect(layout.children[1]!.labelRowsAbove).toBe(1)
@@ -138,9 +131,8 @@ describe('layoutSubfeatures layout', () => {
     })
 
     // The emitter labels every child it registers and never consults
-    // `transcriptTypes`, so reserving by type left a `lnc_RNA` isoform's label
-    // drawn over the row beneath it — the same overlap the reservation exists
-    // to prevent, reached through the type gate rather than the multiplier.
+    // `transcriptTypes`, so reserving by type draws a `lnc_RNA` isoform's label
+    // over the row beneath it.
     it('counts a row for every child that draws its own label', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -218,9 +210,8 @@ describe('layoutSubfeatures layout', () => {
     })
 
     it('does not report collapsed when only one isoform exists', () => {
-      // one real transcript alongside a non-transcript subfeature: no isoform
-      // choice was actually collapsed, so the "Isoforms collapsed" notice must
-      // stay off even though subfeatures.length > 1
+      // One real transcript beside a non-transcript subfeature: no isoform
+      // choice collapsed, though subfeatures.length > 1.
       const mrna = mockFeature({
         type: 'mRNA',
         name: 'mRNA-1',
@@ -245,17 +236,12 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({ feature: gene, config })
       expect(layout.isoformsCollapsed).toBe(false)
-      // and the stray stays drawn: collapsing isoforms is not a licence to drop
-      // the decorations beside them, which replacing the child list with the
-      // isoform list outright used to do
       expect(layout.children.map(c => c.feature.get('name'))).toEqual([
         'mRNA-1',
         'stray',
       ])
     })
 
-    // The main-thread trim leaves them alone and this is that trim at one, so
-    // it does too.
     it('keeps the decorations beside the isoform it collapses to', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -281,10 +267,6 @@ describe('layoutSubfeatures layout', () => {
       ])
     })
 
-    // A gene with one mRNA and one lnc_RNA used to collapse to the mRNA while
-    // reporting nothing collapsed and no isoform choice to make — so the
-    // lnc_RNA vanished with no control offering it back, and the gene's label
-    // still anchored to the span of what was no longer drawn.
     it('reports collapsed when the second isoform is a non-coding one', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -305,9 +287,7 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  // Every isoform ships, with the ranking the fit ladder's trim keeps the best
-  // by. The trim itself is main-thread (isoformTrim.test.ts); what is pinned
-  // here is the table it reads.
+  // The trim itself is main-thread; what is pinned here is the table it reads.
   describe('isoform stack', () => {
     const trimmedNames = (names: string[], maxIsoforms: number) => {
       const layout = layoutSubfeatures({
@@ -332,9 +312,8 @@ describe('layoutSubfeatures layout', () => {
       expect(layout.isoformStack!.children).toHaveLength(5)
     })
 
-    // The box each gap is a fraction of, in the gene's own px, so the trim
-    // closes the hole a dropped isoform leaves with the same number the layout
-    // opened it with.
+    // The trim closes the hole a dropped isoform leaves with the same number the
+    // layout opened it with.
     it('carries the box the inter-transcript gap is spent from', () => {
       const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(['a', 'b']),
@@ -347,8 +326,8 @@ describe('layoutSubfeatures layout', () => {
       )
     })
 
-    // every isoform here has the same 100bp CDS, so this exercises the
-    // later-wins tiebreak the ranking and the collapse share
+    // Every isoform here has the same 100bp CDS, so the later-wins tiebreak is
+    // what decides.
     it('ranks so a trim to one agrees with the longestCoding collapse', () => {
       const names = ['a', 'b', 'c']
       const longest = layoutSubfeatures({
@@ -401,10 +380,8 @@ describe('layoutSubfeatures layout', () => {
       expect(trimmedNames(['a', 'b', 'c'], 3)).toEqual(['a', 'b', 'c'])
     })
 
-    // `transcriptTypes` names seven types and none of the non-coding ones NCBI
-    // hangs off a gene beside its mRNAs, so a stack that counted only its
-    // members left every `lnc_RNA`/`misc_RNA` isoform out of the ranking: a
-    // gene trimmed to 2 drew 7.
+    // `transcriptTypes` names none of the non-coding types NCBI hangs off a gene
+    // beside its mRNAs.
     it('counts isoforms transcriptTypes does not name', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -425,7 +402,6 @@ describe('layoutSubfeatures layout', () => {
       const stack = layout.isoformStack!
       expect(stack.isoformCount).toBe(5)
       const kept = trimIsoformStack(stack, 2).keptOrdinals
-      // coding still ranks above non-coding, so the two mRNAs are the survivors
       expect(
         stack.children
           .filter(c => kept.has(c.ordinal))
@@ -433,8 +409,8 @@ describe('layoutSubfeatures layout', () => {
       ).toEqual(['mRNA', 'mRNA'])
     })
 
-    // Under `longestCoding` the gene ships one child and still counts them
-    // all, so the badge reads the same way from either source.
+    // The gene ships one child and still counts them all, so the badge reads the
+    // same way from either source.
     it('counts every isoform under longestCoding too', () => {
       const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(['a', 'b', 'c']),
@@ -445,11 +421,6 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  // NCBI's GFF3 marks the gene's representative isoform with `tag=RefSeq
-  // Select` (Ensembl/GENCODE with MANE_Select / Ensembl_canonical), which is a
-  // curator's answer to the question both collapses are asking. It outranks
-  // protein length, so the same tag decides what `longestCoding` shows and what
-  // the trim keeps first.
   describe('canonical transcript tag', () => {
     // 'short' is tagged and 'long' has three times the CDS, so every assertion
     // below is the tag beating the measurement. `tagLast` puts the tagged one
@@ -500,7 +471,7 @@ describe('layoutSubfeatures layout', () => {
     })
 
     it('matches one member of a multi-valued attribute', () => {
-      // gff-nostream hands a comma list back as an array
+      // gff-nostream hands a comma list back as an array.
       expect(names({ tag: ['MANE Select', 'RefSeq Select'] })).toEqual([
         'short',
       ])
@@ -523,13 +494,11 @@ describe('layoutSubfeatures layout', () => {
           { canonicalTranscriptField: 'transcript_support' },
         ),
       ).toEqual(['short'])
-      // and not the default one, so the field is a real gate
       expect(names({ transcript_support: 'RefSeq Select' })).toEqual(['long'])
     })
 
-    // The tags a real LinearBasicDisplay ships with. mockDisplayConfig carries a
-    // two-entry stand-in, so a test asserting on the shipped list has to read the
-    // slot; asserting through the stand-in stays green whatever the default says.
+    // mockDisplayConfig carries a two-entry stand-in, so a test asserting on the
+    // shipped list has to read the slot to mean anything.
     const pm = new PluginManager([])
     pm.createPluggableElements()
     pm.configure()
@@ -541,7 +510,7 @@ describe('layoutSubfeatures layout', () => {
       'canonicalTranscriptTags',
     )
 
-    // Two tagged isoforms, the longer protein on the second, so only the list's
+    // Two tagged isoforms with the longer protein second, so only the list's
     // priority order can bring the first one to the front.
     function geneWithTwoTags(shortTag: string, longTag: string) {
       const tagged = (name: string, cdsEnd: number, tag: string) =>
@@ -581,22 +550,17 @@ describe('layoutSubfeatures layout', () => {
         }),
       }).children.map(c => c.feature.get('name'))
 
-    // One gene carries two of the shipped tags at once: MANE Plus Clinical marks
-    // an ADDITIONAL transcript beside the MANE Select one and is often the
-    // longer. Flattened to a boolean "tagged", the coding-length tiebreak picked
-    // between them by a coin flip; the list is a priority order, so the earlier
-    // tag wins outright.
+    // MANE Plus Clinical marks an ADDITIONAL transcript beside the MANE Select
+    // one and is often the longer, so one gene carries both tags at once.
     it('prefers the earlier tag in the list over a longer protein', () => {
       expect(
         shippedNames(geneWithTwoTags('MANE Select', 'MANE Plus Clinical')),
       ).toEqual(['short'])
     })
 
-    // GENCODE spells the MANE tags with underscores where NCBI's GFF3 spells
-    // them with spaces, and canonicalRank compares list members whole, so every
-    // tag both sources emit needs both spellings in the default. MANE Select had
-    // its pair and MANE Plus Clinical did not, which left GENCODE's
-    // MANE_Plus_Clinical transcripts ranking as untagged.
+    // GENCODE spells the MANE tags with underscores where NCBI's GFF3 uses
+    // spaces, and canonicalRank compares list members whole, so the default needs
+    // both spellings of every tag.
     describe("GENCODE's underscore spelling", () => {
       it('is recognised for MANE_Plus_Clinical', () => {
         expect(
@@ -628,9 +592,8 @@ describe('layoutSubfeatures layout', () => {
       ).toEqual(['short'])
     })
 
-    // The isoform a trimmed gene keeps first should also be the one it draws
-    // first, so the gene reads top-down. Both isoforms here are coding, so the
-    // coding-first stack sort is a no-op and only the tag can reorder them.
+    // Both isoforms here are coding, so the coding-first stack sort is a no-op
+    // and only the tag can reorder them.
     it('stacks on top of the untagged isoforms', () => {
       const layout = layoutSubfeatures({
         feature: geneWithTag({ tag: 'RefSeq Select' }, true),
@@ -654,9 +617,8 @@ describe('layoutSubfeatures layout', () => {
       ])
     })
 
-    // The on-canvas chip names this tag rather than the count of what is
-    // hidden, so a collapsed gene has to report which rule kept the transcript
-    // it kept — see isoformPicks.ts, which counts these across a region.
+    // The on-canvas chip names the tag rather than the count of what is hidden,
+    // so a collapsed gene has to report which rule kept the transcript it kept.
     describe('the tag reported to the chip', () => {
       const tagOf = (
         attributes: Record<string, unknown>,
@@ -670,8 +632,8 @@ describe('layoutSubfeatures layout', () => {
           }),
         }).canonicalTag
 
-      // the config's spelling, not the file's, so two spellings of one tag are
-      // counted as one rule rather than splitting the chip's majority
+      // Two spellings of one tag count as one rule rather than splitting the
+      // chip's majority.
       it('is the config spelling of the tag that won', () => {
         expect(tagOf({ tag: 'refseq select' })).toBe('RefSeq Select')
         expect(tagOf({ tag: ['MANE Select', 'RefSeq Select'] })).toBe(
@@ -684,9 +646,8 @@ describe('layoutSubfeatures layout', () => {
         expect(tagOf({ tag: 'basic' })).toBeUndefined()
       })
 
-      // The stack carries it too, because the trim that reads the stack is the
-      // one hiding transcripts under `all` and the chip credits the same rule
-      // either way.
+      // The trim that reads the stack is the one hiding transcripts under `all`,
+      // and the chip credits the same rule either way.
       it('rides on the isoform stack for the main-thread trim', () => {
         expect(
           layoutSubfeatures({
@@ -705,8 +666,6 @@ describe('layoutSubfeatures layout', () => {
 
   describe('hasMultipleIsoforms flag (drives the gene-glyph control)', () => {
     it('is true for a multi-isoform gene even when nothing is collapsed', () => {
-      // 'all' mode renders every isoform, so isoformsCollapsed is false, but the
-      // gene-glyph control must still appear since a choice among isoforms exists
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
       const layout = layoutSubfeatures({
         feature: gene,
@@ -741,8 +700,6 @@ describe('layoutSubfeatures layout', () => {
         config: mockDisplayConfig({ subfeatureLabels: 'none' }),
       })
 
-      // Same worker geometry either way — the difference is the counted rows,
-      // which the main thread turns into px at the mode's label font size.
       expect(belowLayout.height).toBe(noneLayout.height)
       expect(belowLayout.labelRows).toBe(3)
       expect(noneLayout.labelRows).toBe(0)
@@ -773,8 +730,7 @@ describe('layoutSubfeatures layout', () => {
 
     it('picks the transcript with the longest protein, not the widest span', () => {
       // A: two CDS totalling 500 bp of protein. B: a single 450 bp CDS listed
-      // twice (a real GFF3 quirk — dedupedSortedCDS handles it). Without deduping
-      // in codingLength, B counts as 900 bp and wrongly wins.
+      // twice, which counts as 900 bp and wrongly wins without the dedup.
       const a = mrnaWithCds('A', [
         [1000, 1300],
         [1400, 1600],
@@ -798,11 +754,8 @@ describe('layoutSubfeatures layout', () => {
 
   describe('case-insensitive transcript-type matching', () => {
     it('recognizes a lowercase "mrna" as the sole isoform beside a stray sibling', () => {
-      // isCDS/isExon and the featureAdmission gate all compare case-insensitively;
-      // isoform detection must agree. Case-sensitive matching would fail to match
-      // 'mrna', fall back to counting ALL subfeatures (the mrna + the stray CDS),
-      // and wrongly report two isoforms. With case-insensitive matching the mrna
-      // is the one recognized isoform, so the gene-glyph control stays hidden.
+      // A case-sensitive match would miss 'mrna', fall back to counting ALL
+      // subfeatures, and report two isoforms.
       const gene = mockFeature({
         type: 'gene',
         name: 'g',
@@ -832,16 +785,14 @@ describe('layoutSubfeatures layout', () => {
 
   // NCBI RefSeq annotates a viral genome as gene → CDS → mature_protein_region,
   // so the CDS is the isoform AND the coding feature: nothing under it is
-  // another CDS. test_data/enterovirus_d and SARS-CoV-2 ORF1ab are both this
-  // shape.
+  // another CDS.
   describe('polyprotein CDS isoform', () => {
     const PRODUCTS = 16
     const PRODUCT_WIDTH = 400
     const POLYPROTEIN_START = 700
 
     // `precursor` adds the uncleaved product RefSeq annotates beside the two it
-    // cleaves into (enterovirus VP0 next to capsid proteins 1A and 1B), which
-    // is what makes the products cover 800bp of the CDS twice
+    // cleaves into, which makes the products cover 800bp of the CDS twice.
     function polyprotein({ precursor = false } = {}) {
       const products = Array.from({ length: PRODUCTS }, (_, i) =>
         mockFeature({
@@ -870,7 +821,6 @@ describe('layoutSubfeatures layout', () => {
       })
     }
 
-    // a plain transcript whose protein is a fraction of the polyprotein's 6400bp
     function plainTranscript(name: string, cdsLength: number) {
       return mockFeature({
         type: 'mRNA',
@@ -888,8 +838,8 @@ describe('layoutSubfeatures layout', () => {
       })
     }
 
-    // the polyprotein first, so a ranking that reads it as non-coding has to
-    // move it for the stack order to change
+    // The polyprotein comes first, so a ranking that reads it as non-coding has
+    // to move it for the stack order to change.
     function viralGene() {
       return mockFeature({
         type: 'gene',
@@ -916,9 +866,8 @@ describe('layoutSubfeatures layout', () => {
       expect(names(layout)).toEqual(['polyprotein'])
     })
 
-    // A 16-product polyprotein is one isoform and 16 rows tall, which is why
-    // the trim prices a gene in px off the stack rather than counting rows: the
-    // stack carries its real height, so the ladder charges it what it costs.
+    // A 16-product polyprotein is one isoform and 16 rows tall, which is why the
+    // trim prices a gene in px off the stack rather than counting rows.
     it('carries its real height on the isoform stack', () => {
       const layout = layoutSubfeatures({
         feature: viralGene(),
@@ -951,12 +900,9 @@ describe('layoutSubfeatures layout', () => {
       expect(names(layout)).toEqual(['polyprotein', 'tx1', 'tx2', 'tx3'])
     })
 
-    // A polyprotein ranks by its CDS span, which is the protein the translator
-    // reads out of it (dedupedSortedCDS falls back to exactly this span). The
-    // cleavage products are a different quantity and would overstate it: RefSeq
-    // annotates enterovirus VP0 alongside the 1A and 1B it cleaves into, so the
-    // products can cover the same bases twice. Here they sum to 7200 against a
-    // 6400bp CDS, and a longer 6800bp protein still has to win.
+    // A polyprotein ranks by its CDS span, the protein the translator reads out
+    // of it. Its cleavage products can cover the same bases twice — here they sum
+    // to 7200 against a 6400bp CDS, and a longer 6800bp protein still has to win.
     it('loses to a genuinely longer protein', () => {
       const gene = mockFeature({
         type: 'gene',

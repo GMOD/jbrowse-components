@@ -37,7 +37,6 @@ function exonsOf(feature: Feature, over?: Partial<typeof config>) {
   return coordsOf(feature, over)?.exons
 }
 
-// exon rows present: the authoritative source, used as-is
 function exonTranscript(strand: number) {
   return mockFeature({
     type: 'mRNA',
@@ -62,9 +61,8 @@ describe('transcriptCoords', () => {
     expect(exonsOf(exonTranscript(-1))).toEqual([400, 500, 200, 300, 0, 100])
   })
 
-  // The default subParts renders CDS + UTR rows, not exons. The coding and
-  // untranslated halves of one exon abut, so merging reconstructs the exon —
-  // three exons here, not the five boxes actually drawn.
+  // The coding and untranslated halves of one exon abut, so merging them
+  // reconstructs three exons out of the five boxes actually drawn.
   it('merges abutting CDS/UTR rows back into whole exons', () => {
     const transcript = mockFeature({
       type: 'mRNA',
@@ -81,9 +79,8 @@ describe('transcriptCoords', () => {
     expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
   })
 
-  // Reported even though "exon 1/1" is worth nothing to show: the c. coordinate
-  // is built from the same walk and is perfectly meaningful here, so the display
-  // decides what to say, not the data.
+  // Reported even though "exon 1/1" is worth nothing to show, because the c.
+  // coordinate comes off the same walk and is meaningful here.
   it('reports the single exon of an unspliced transcript', () => {
     const transcript = mockFeature({
       type: 'mRNA',
@@ -95,9 +92,7 @@ describe('transcriptCoords', () => {
   })
 
   // A CDS-only transcript's untranslated overhang is evidenced only by its own
-  // bounds, so those cap the outermost exons — the same reconstruction the
-  // renderer's implied UTRs make, but derived here from the feature rather than
-  // borrowed from what got drawn.
+  // bounds, so those cap the outermost exons.
   it('stretches a CDS-only transcript to its own bounds', () => {
     const transcript = mockFeature({
       type: 'mRNA',
@@ -112,11 +107,8 @@ describe('transcriptCoords', () => {
     expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
   })
 
-  // A GFF3 that annotates one UTR row and not the other used to lose the
-  // untranslated overhang on BOTH sides — the reconstruction was all-or-nothing
-  // on "are there any UTR rows at all". So a transcript whose 3' UTR is only
-  // evidenced by its own bounds ended at the stop codon, and every `c.*n`
-  // position on it read as off the transcript entirely.
+  // A GFF3 annotates one UTR row and not the other often enough that the
+  // reconstruction has to run per side.
   it('stretches to its own bounds on whichever side no row covers', () => {
     const transcript = mockFeature({
       type: 'mRNA',
@@ -132,9 +124,8 @@ describe('transcriptCoords', () => {
     expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
   })
 
-  // The other half of that rule: a UTR row spliced across an intron is the only
-  // evidence of where the untranslated part actually runs, so the bounds must
-  // NOT be used to bridge it.
+  // A UTR row spliced across an intron is the only evidence of where the
+  // untranslated part runs, so the bounds must NOT bridge it.
   it('leaves a spliced UTR alone rather than bridging it from the bounds', () => {
     const transcript = mockFeature({
       type: 'mRNA',
@@ -153,10 +144,8 @@ describe('transcriptCoords', () => {
   })
 
   // The exons a coordinate is counted on come from the FEATURE, never from what
-  // the glyph drew. `subParts` and `impliedUTRs` decide which rows are rendered;
-  // routing coordinates through that list made an HGVS position change when
-  // someone edited a rendering slot — `subParts: 'CDS'` alone silently dropped
-  // every UTR position off transcripts annotated without exon rows.
+  // the glyph drew — `subParts` and `impliedUTRs` decide the latter, and an
+  // HGVS position must not move when someone edits a rendering slot.
   it('ignores the display slots that decide which subparts are drawn', () => {
     const cdsUtr = mockFeature({
       type: 'mRNA',
@@ -197,8 +186,8 @@ describe('transcriptCoords', () => {
     expect(coordsOf(lncRNA)?.coding).toBeUndefined()
   })
 
-  // A match → match_part chain has blocks, not exons; numbering them would be a
-  // lie, so the Segments glyph only reports bounds when real exon rows exist.
+  // A match → match_part chain has blocks, not exons, and numbering them would
+  // be a lie.
   it('reports nothing for a non-transcript segmented feature', () => {
     const match = mockFeature({
       type: 'match',

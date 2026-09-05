@@ -33,9 +33,8 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      // The name→description gap is applied at render time from the display
-      // mode's font size (labelPositioning.resolveFeatureLabels), so the worker
-      // bakes no vertical offset.
+      // The name→description gap comes from the display mode's font size at
+      // render time, so the worker bakes no vertical offset.
       expect(result.nameLabel!.relativeY).toBe(0)
       expect(result.descriptionLabel!.relativeY).toBe(0)
     })
@@ -59,8 +58,8 @@ describe('floatingLabels', () => {
       const label = result.descriptionLabel!
       expect(label.text).toContain('…')
       expect(label.text.length).toBeLessThan(longDescription.length)
-      // The stored textWidth equals the drawn text width and is bounded by
-      // the budget, so layout reservations match what is rendered.
+      // The stored textWidth is bounded by the budget, so layout reservations
+      // match what is rendered.
       expect(label.textWidth).toBe(measureText(label.text, LABEL_FONT_SIZE))
       expect(label.textWidth).toBeLessThanOrEqual(
         MAX_DESCRIPTION_LABEL_WIDTH_PX,

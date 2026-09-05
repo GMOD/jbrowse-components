@@ -55,9 +55,7 @@ function transcript(type: string, cdsType = 'CDS') {
   })
 }
 
-// The slot is a comma list a human types, and one written with a space after
-// the comma — or a stray leading one — used to lose whichever type carried the
-// whitespace: every CDS box vanished and the transcript drew as UTR alone.
+// The slot is a comma list a human types, so an entry can arrive padded.
 describe('getSubparts subParts whitespace', () => {
   it('keeps a type whose entry is padded', () => {
     for (const subParts of [' CDS,UTR', 'CDS , UTR', 'CDS,UTR ', '\tCDS,UTR']) {
@@ -117,10 +115,8 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('implies UTRs structurally regardless of feature type', () => {
-    // getSubparts only runs for features findGlyph routes to the processed-
-    // transcript glyph (a direct CDS child), so UTR synthesis is structural, not
-    // type-gated: even a bare `gene` with direct exon+CDS children
-    // (prokaryote-style) gets implied UTRs.
+    // UTR synthesis is structural rather than type-gated, so even a bare `gene`
+    // with direct exon+CDS children gets implied UTRs.
     expect(typesOf(getSubparts(transcript('gene'), config))).toEqual([
       'CDS',
       'five_prime_UTR',
@@ -163,10 +159,9 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('does not invent parent-bounds UTRs when exons exist but do not overhang the CDS', () => {
-    // Exon exactly equals the CDS, but the mRNA bounds are wider (malformed but
-    // real GFF). Exons are the authority: the sole exon shows no UTR, so none is
-    // synthesized — the parent overhang must NOT become a UTR over untranscribed
-    // sequence.
+    // Exon exactly equals the CDS while the mRNA bounds are wider — malformed but
+    // real GFF. Exons are the authority, so the parent overhang must not become
+    // a UTR over untranscribed sequence.
     const tightExon = mockFeature({
       type: 'mRNA',
       start: 100,
@@ -194,9 +189,8 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('does not duplicate explicit UTRs even when impliedUTRs is forced on', () => {
-    // impliedUTRs config previously bypassed the !hasUTRs guard, so a transcript
-    // with explicit UTRs but no exon subfeatures got a second, parent-derived
-    // set of UTRs pushed on top of the real ones.
+    // Without the !hasUTRs guard a transcript with explicit UTRs and no exon
+    // subfeatures gets a second, parent-derived set on top of the real ones.
     const forced = mockDisplayConfig({
       transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
       impliedUTRs: true,

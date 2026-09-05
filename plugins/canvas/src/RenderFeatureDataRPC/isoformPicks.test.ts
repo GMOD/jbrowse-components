@@ -8,9 +8,7 @@ import {
 
 import type { FeatureLayout } from './types.ts'
 
-// Only the fields the summary reads. Its input is a whole region's top-level
-// layouts, which carry a Feature apiece and are not worth building here —
-// subfeatures.test.ts is where the fields themselves are pinned.
+// Only the fields the summary reads: a real input carries a Feature apiece.
 const gene = (
   isoformsCollapsed: boolean,
   canonicalTag?: string,
@@ -36,9 +34,8 @@ describe('summarizeIsoformPicks', () => {
     })
   })
 
-  // NCBI's GFF3 writes `tag=MANE Select`, GENCODE's writes `tag=MANE_Select`,
-  // and canonicalTranscriptTags lists both so either file ranks — but they are
-  // one curated decision, and split apart they split the chip's majority.
+  // NCBI's GFF3 writes `tag=MANE Select`, GENCODE's `tag=MANE_Select`, and
+  // split apart they split the chip's majority.
   it('counts the two spellings of a tag as one rule', () => {
     expect(
       summarizeIsoformPicks([
@@ -53,16 +50,15 @@ describe('summarizeIsoformPicks', () => {
     })
   })
 
-  // A gene keeping every isoform has no pick to report — `longestCoding`
-  // leaves a single-isoform gene alone, so a region holds both kinds at once.
+  // `longestCoding` leaves a single-isoform gene alone, so a region holds both
+  // kinds at once.
   it('ignores the genes that kept every isoform', () => {
     expect(
       summarizeIsoformPicks([gene(false, 'MANE Select'), gene(false)]),
     ).toEqual({ byTag: {}, byLength: 0, byCap: 0 })
   })
 
-  // The worker no longer trims by height, so it never reports a trim. `byCap`
-  // is the main thread's to fill in — see addTrimmedIsoformPicks below.
+  // `byCap` is the main thread's to fill in.
   it('reports no trim of its own', () => {
     expect(
       summarizeIsoformPicks([gene(true, 'MANE Select'), gene(true)]).byCap,
@@ -71,8 +67,7 @@ describe('summarizeIsoformPicks', () => {
 })
 
 // The trim ranks its survivors by the same tag `longestCoding` does, so the tag
-// count alone cannot say which rule hid a gene's transcripts. The trim's count
-// is its own, on top of the rule's.
+// count alone cannot say which rule hid a gene's transcripts.
 describe('addTrimmedIsoformPicks', () => {
   it('counts each trimmed gene under its rule and under byCap', () => {
     expect(

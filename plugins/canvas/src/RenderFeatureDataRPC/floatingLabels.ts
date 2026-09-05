@@ -9,13 +9,9 @@ import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
 
-// Single constructor for a LabelItem so textWidth is always the measured width
-// of `text` at the base size this label DRAWS at — the invariant the
-// layout/hit-test reservations rely on (see maxRenderedLabelWidth), since every
-// one converts with `renderedTextWidth`, which scales from LABEL_FONT_SIZE.
-// `fontSize` is that base size, and only the isoform badge passes anything but
-// the default (see MORE_ISOFORMS_FONT_SCALE). relativeY defaults to 0; the main
-// thread (labelPositioning) sets the final name→description gap.
+// Single constructor for a LabelItem, so textWidth is always the measured width
+// of `text` at the base size the label DRAWS at — the invariant every layout
+// and hit-test reservation converts from.
 function labelItem(
   text: string,
   relativeY = 0,
@@ -46,8 +42,7 @@ export function createFeatureFloatingLabels({
   const shouldShowDescription = hasVisibleText(description)
 
   // The name→description gap depends on the display mode's label font size,
-  // which only the main thread knows, so relativeY stays 0 here and is set in
-  // labelPositioning.resolveFeatureLabels.
+  // which only the main thread knows, so relativeY stays 0 here.
   const nameLabel = shouldShowLabel ? labelItem(name) : undefined
   const descriptionLabel = shouldShowDescription
     ? labelItem(description)
@@ -56,18 +51,9 @@ export function createFeatureFloatingLabels({
   return { nameLabel, descriptionLabel }
 }
 
-// The isoform badge that rides after a collapsed gene's name: what is missing
-// from THIS gene, rather than a track-wide count of what is shown.
-//
-// Plain ASCII — `measureText`'s width table is Helvetica indexed by char code
-// and falls back to an average outside it, so a typographic minus would be
-// reserved at a width nothing measured. Through `labelItem` at the size it
-// draws at, which is what keeps the packer's reservation and the drawn text
-// agreeing across the two sizes (see the invariant there).
-//
-// Its width is part of the gene's name-row reservation, so the packer asks for
-// it at the count it is probing and the committed layout writes the same text
-// (see `decideLabelReservations`).
+// Plain ASCII text: `measureText`'s width table is Helvetica indexed by char
+// code and falls back to an average outside it, so a typographic minus would be
+// reserved at a width nothing measured.
 export function createMoreIsoformsLabel(hidden: number, expanded: boolean) {
   return {
     ...labelItem(
@@ -92,15 +78,9 @@ export function createTranscriptFloatingLabel({
   const isOverlay = subfeatureLabels === 'overlay'
 
   return {
-    // Through `labelItem` like every other label, so the "textWidth is always
-    // the measured width of `text` at LABEL_FONT_SIZE" invariant above is one
-    // constructor rather than a claim this one also happened to honor. It was
-    // spelled out here, `measureText` and all — the only thing it adds is
-    // `isOverlay`, which is why it reads as a spread now.
-    //
     // `isOverlay` is what the main thread colors by: an overlay label sits on
-    // a light backing rect and stays dark, an inline one reads against the
-    // track and follows the theme text color (see labelColors).
+    // a light backing rect and stays dark, an inline one follows the theme text
+    // color.
     ...labelItem(truncateLabel(displayLabel), isOverlay ? -featureHeight : 0),
     isOverlay,
   }

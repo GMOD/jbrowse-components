@@ -27,8 +27,6 @@ import type { Feature } from '@jbrowse/core/util'
 
 export const UTR_HEIGHT_FRACTION = 0.65
 
-// Shrink a rect to `fraction` of its row height, keeping it vertically centered.
-// Shared by UTRs and retrotransposon bodies so the geometry can't drift.
 export function centerShrink(
   topPx: number,
   height: number,
@@ -37,7 +35,6 @@ export function centerShrink(
   return [topPx + ((1 - fraction) / 2) * height, height * fraction]
 }
 
-// UTRs render thinner and vertically centered within the feature row.
 function applyUTRSizing(
   topPx: number,
   height: number,
@@ -48,12 +45,6 @@ function applyUTRSizing(
     : [topPx, height]
 }
 
-// Every emitter below takes its geometry as one object and the whole
-// `Collector` rather than the single array it pushes into. The object is not
-// style: each of these carried three or four adjacent `number` parameters
-// (topPx, height, a packed color, flatbushIdx), so any two could be swapped at a
-// call site and still typecheck — and the failure is a primitive drawn at the
-// wrong row, or attributed to the wrong hit-test entry, which nothing throws on.
 export function emitIntronLines(
   args: {
     transcript: FeatureLayout
@@ -73,7 +64,6 @@ export function emitIntronLines(
   const end = feature.get('end')
   const lineHeight = transcript.height
   const lineY = topPx + lineHeight / 2
-  // direction drives chevron rendering; 0 means draw a plain connecting line
   const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
 
   const pushLine = (lineStart: number, lineEnd: number) => {
@@ -108,9 +98,8 @@ export function emitIntronLines(
 export function emitCodonRects(
   args: {
     aminoAcids: AggregatedAminoAcid[]
-    // The CDS box's own fill, which the stripes are two tints of. Themed when
-    // `colorByCDS` painted the box by reading frame, in which case there is no
-    // string to lighten and the tint rides as a class of its own.
+    // `color` is undefined when `colorByCDS` painted the box by reading frame,
+    // leaving no string to lighten — the tint then rides as a class of its own.
     baseColor: ClassedColor
     topPx: number
     height: number
@@ -134,10 +123,9 @@ export function emitCodonRects(
   const class1 = codonStripeClass(baseColor.colorClass, false)
   const class2 = codonStripeClass(baseColor.colorClass, true)
 
-  // emitCodonRects is called once per CDS segment, so alternate by the global
-  // residue index (proteinIndex), not the per-call loop index — this keeps the
-  // stripe phase continuous across exon boundaries and paints both halves of a
-  // codon that straddles a boundary the same color.
+  // One call per CDS segment, so the stripe phase alternates by the global
+  // residue index rather than the loop index and stays continuous across exon
+  // boundaries.
   for (const aa of aminoAcids) {
     const odd = aa.proteinIndex % 2 === 1
     rects.push({
@@ -178,10 +166,8 @@ export function pushBoxRect(
     height: number
     flatbushIdx: number
     labelRowsAbove: number
-    // packed RGBA32 override (mature-protein palette, repeat subpart fills); 0
-    // is a valid color so the guard is `=== undefined`, not a falsy/`??` check.
-    // Always a literal — every override in tree is a fixed palette this plugin
-    // owns, not the page theme.
+    // 0 is a valid packed color, so callers guard on `=== undefined` rather
+    // than falsiness.
     colorOverride?: number
   },
   ctx: RenderContext,
@@ -245,11 +231,9 @@ export function emitStrandArrow(
   }
 }
 
-// A glyph whose feature has no parent in the data tree gets a strand arrow so it
-// shows direction; a feature nested under a parent (a gene's CDS/leaf child)
-// does not — its container carries the direction. Keys off the feature's own
-// parent linkage, not layout position, so a top-level layout whose feature still
-// links to a parent is correctly treated as nested.
+// Keys off the feature's own parent linkage, not layout position, so a
+// top-level layout whose feature still links to a parent counts as nested and
+// lets its container carry the direction.
 export function emitTopLevelStrandArrow(
   layout: FeatureLayout,
   place: GlyphPlacement,
@@ -272,9 +256,6 @@ export function emitTopLevelStrandArrow(
   }
 }
 
-// Emit a floating subfeature label (transcript or mature-protein region) when
-// `subfeatureLabels` is enabled and the label has visible text. Shared by the
-// transcript and mature-protein layout paths so the two can't drift.
 export function emitSubfeatureLabel(
   args: {
     featureId: string
@@ -297,9 +278,9 @@ export function emitSubfeatureLabel(
       featureHeight,
       subfeatureLabels: config.subfeatureLabels,
     })
-    // Merge, don't replace: FeatureLabelData carries name/description and
-    // subfeature labels together, so preserve any name/description entry already
-    // recorded for this id rather than clobbering it.
+    // Merge rather than replace: one FeatureLabelData carries name/description
+    // alongside the subfeature label, so a set here must preserve any entry
+    // already recorded under this id.
     collector.floatingLabelsData.set(featureId, {
       ...collector.floatingLabelsData.get(featureId),
       featureId,

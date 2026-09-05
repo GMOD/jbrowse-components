@@ -43,10 +43,8 @@ function arrow(x: number): ArrowData {
   }
 }
 
-// Spans (rect/line) use a half-open overlap test against [regionStart, regionEnd);
-// arrows are points, so both ends are inclusive. An arrow sitting exactly on
-// regionEnd is the end cap of a feature whose box was kept, so dropping it left
-// that feature stranded without its strand marker.
+// Spans use a half-open overlap test; arrows are points, so both ends are
+// inclusive. An arrow on regionEnd caps a feature whose box was kept.
 test('rect/line use half-open spans; arrows keep both endpoints', () => {
   const regionStart = 100
   const regionEnd = 200
@@ -82,11 +80,8 @@ test('rect/line use half-open spans; arrows keep both endpoints', () => {
   expect(Array.from(packed.arrowXs)).toEqual([100, 150, 199, 200])
 })
 
-// A zero-width rect is a point, not a span: a CRISPR cut site or a motif cut
-// tick, which the rect shader widens to MIN_RECT_WIDTH_PX. Under the half-open
-// span test one landing exactly on a boundary satisfied neither `end > start` nor
-// `start < end`, so a cut sitting on a displayed-region seam silently never
-// packed — the same failure the arrow window above already accounts for.
+// A zero-width rect is a point: a CRISPR cut site or motif tick. The half-open
+// span test satisfies neither bound for one landing on a seam.
 test('zero-width rects keep both endpoints, like arrows', () => {
   const packed = packRenderArrays(
     [

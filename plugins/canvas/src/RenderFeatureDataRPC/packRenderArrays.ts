@@ -3,13 +3,9 @@ import { ROOT_CHILD_ORDINAL } from './rpcTypes.ts'
 
 import type { PackedPrimitives } from './rpcTypes.ts'
 
-// What every emitted primitive carries besides its geometry: the hit-test entry
-// it belongs to, its packed color, and the two main-thread inputs — the `below`
-// label rows above it (spent at the display mode's label font size, see
-// GlyphPlacement) and the root child it belongs to (stamped by
-// `emitSubfeaturesGlyph`; absent on a feature that stacks nothing, which reads
-// as `ROOT_CHILD_ORDINAL`). `colorClass` is `LITERAL` when `color` is the
-// color, else the theme class the main-thread encode resolves (colorClasses.ts).
+// `childOrdinal` is absent on a feature that stacks nothing, which reads as
+// `ROOT_CHILD_ORDINAL`. `colorClass` is `LITERAL` when `color` is the color,
+// else the theme class the main-thread encode resolves.
 interface PrimitiveBase {
   labelRowsAbove: number
   childOrdinal?: number
@@ -30,7 +26,7 @@ export interface LineData extends PrimitiveBase {
   start: number
   end: number
   // Height of the box this intron line rides on, so the renderer can snap the
-  // line onto the box's drawn center row (see snapBoxCenterY).
+  // line onto the box's drawn center row.
   height: number
   direction: number
 }
@@ -38,22 +34,17 @@ export interface LineData extends PrimitiveBase {
 export interface ArrowData extends PrimitiveBase {
   x: number
   // Height of the box this arrow sits on, so the renderer can snap it onto the
-  // box's drawn center row (see snapBoxCenterY).
+  // box's drawn center row.
   height: number
-  // Length of the feature this arrow marks, in bp. The renderers drop the arrow
-  // when this comes out narrower than ARROW_MIN_FEATURE_WIDTH_PX on screen; the
-  // worker can't make that call itself since it never sees bpPerPx.
+  // In bp, because the worker never sees bpPerPx: the renderers drop the arrow
+  // when this comes out narrower than ARROW_MIN_FEATURE_WIDTH_PX on screen.
   widthBp: number
   direction: number
 }
 
-// Whether a [start,end] span is in the visible window. Half-open for a real
-// span, but CLOSED at both ends for a degenerate one (start === end): those are
-// points, not spans — a CRISPR cut site or a motif cut tick, which the rect
-// shader widens to MIN_RECT_WIDTH_PX — and the half-open test rejects a point
-// sitting exactly on either boundary, so a cut landing on a displayed-region seam
-// silently never packed. Same reasoning as the arrow window below, which is a
-// point test for the same reason.
+// Half-open for a real span, but CLOSED at both ends for a degenerate one: a
+// CRISPR cut site or motif tick is a point, and a half-open test drops one
+// sitting exactly on a displayed-region seam.
 function spanInWindow(
   start: number,
   end: number,
@@ -65,15 +56,9 @@ function spanInWindow(
     : end > regionStart && start < regionEnd
 }
 
-// The per-primitive `below`-label-row counts, or a length-zero array when no
-// primitive in this region carries one — which is the ordinary case, since
-// `subfeatureLabels` defaults to `none` and only a multi-transcript gene in
-// `below` mode produces a nonzero count at all. Length-zero is how the main
-// thread knows the pass is off without a parallel boolean that could disagree
-// with the array it gates (the same idiom as `featureDeltas` in the multi-row
-// pack). Uint8 because the count is transcripts-within-one-gene; a gene with
-// more than 255 labeled isoforms would clamp, which costs alignment on rows
-// nothing can legibly label anyway.
+// Length zero tells the main thread the pass is off, without a parallel boolean
+// that could disagree with the array it gates. Uint8 because the count is
+// transcripts within one gene.
 function labelRowArray(items: { labelRowsAbove: number }[]) {
   if (!items.some(i => i.labelRowsAbove > 0)) {
     return new Uint8Array(0)
@@ -85,9 +70,8 @@ function labelRowArray(items: { labelRowsAbove: number }[]) {
   return out
 }
 
-// Which stack child each primitive belongs to, or LENGTH ZERO when this region
-// stacks no gene — the same idiom as `labelRowArray` above. `ROOT_CHILD_ORDINAL`
-// for the root feature's own primitives, which no trim may drop.
+// LENGTH ZERO when this region stacks no gene. `ROOT_CHILD_ORDINAL` marks the
+// root feature's own primitives, which no trim may drop.
 function childOrdinalArray(items: { childOrdinal?: number }[]) {
   if (!items.some(i => i.childOrdinal !== undefined)) {
     return new Uint16Array(0)
@@ -99,12 +83,9 @@ function childOrdinalArray(items: { childOrdinal?: number }[]) {
   return out
 }
 
-// Theme classes for one primitive kind, or LENGTH ZERO when every primitive in
-// it resolved to a literal color — the same length-zero idiom as
-// `labelRowArray` above, and the common case: only a CDS painted by reading
-// frame and a connector taking the unset `connectorColor` default are themed.
-// The main-thread encode reads the empty array as "nothing to resolve here" and
-// hands the worker's color lane back untouched (see resolveColorLane).
+// LENGTH ZERO when every primitive resolved to a literal color, which the
+// main-thread encode reads as "nothing to resolve here" and hands the worker's
+// color lane back untouched.
 function colorClassArray(items: { colorClass: number }[]) {
   if (!items.some(i => i.colorClass !== LITERAL)) {
     return new Uint8Array(0)
@@ -116,10 +97,8 @@ function colorClassArray(items: { colorClass: number }[]) {
   return out
 }
 
-// Filters a per-feature accumulator down to the visible bp window and packs
-// into the parallel typed arrays the GPU/Canvas2D renderers consume. Color
-// is already a packed RGBA32 u32 on the producer side — copied straight to
-// the vertex buffer, shader unpacks.
+// Filters a per-feature accumulator down to the visible bp window and packs the
+// parallel typed arrays the GPU/Canvas2D renderers consume.
 export function packRenderArrays(
   rects: RectData[],
   lines: LineData[],
@@ -133,9 +112,9 @@ export function packRenderArrays(
   const visibleLines = lines.filter(l =>
     spanInWindow(l.start, l.end, regionStart, regionEnd),
   )
-  // Arrows are points, so the window test is closed at both ends to match the
-  // rects' half-open overlap test. An exclusive upper bound dropped the arrow of
-  // a forward-strand feature ending exactly at regionEnd while keeping its box.
+  // Arrows are points, so this window test is closed at both ends: an exclusive
+  // upper bound drops the arrow of a feature ending exactly at regionEnd while
+  // keeping its box.
   const visibleArrows = arrows.filter(
     a => a.x >= regionStart && a.x <= regionEnd,
   )
@@ -146,8 +125,7 @@ export function packRenderArrays(
   const rectColors = new Uint32Array(visibleRects.length)
   const rectStrands = new Float32Array(visibleRects.length)
   // Allocated here but valued by the main-thread layout, which decides the
-  // dense-pileup regime per FEATURE (see applyLayoutToRegion). The worker has no
-  // say, so it doesn't pretend to by writing a per-rect eligibility flag.
+  // dense-pileup regime per FEATURE.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectColorClasses = colorClassArray(visibleRects)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)

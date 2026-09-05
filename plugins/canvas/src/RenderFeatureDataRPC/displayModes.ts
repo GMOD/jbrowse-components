@@ -1,20 +1,11 @@
 /**
- * The size presets a canvas display draws at, and the subfeature-label modes,
- * each as a `[value, menu label]` table.
+ * The size presets a canvas display draws at. `compact` halves the row height,
+ * `superCompact` quarters it, and `collapsed` packs every feature onto one row
+ * with all labels suppressed.
  *
- * `compact` halves the row height, `superCompact` quarters it, `collapsed`
- * packs every feature onto a single row and suppresses all labels (name,
- * description, and subfeature) for a dense one-line overview.
- *
- * One source per enum: the config schema's `types.enumeration` spreads the
- * value list, the resolved `DisplayConfig` field types read off it, and the
- * track menu builds its radios from the same table. The unset inherit state is
- * not a member of either — both slots are promotable `maybeStringEnum`s.
- *
- * Here rather than beside the menus that render them because the website's
- * figure recipes name these labels in a click path, and the node script that
- * builds them cannot load a module importing React, MUI or a lazy `.tsx`. A
- * leaf module makes the recipe import the label instead of retyping it.
+ * A leaf module rather than one beside the menus, because the website's figure
+ * recipes import these labels and the node script that builds them cannot load
+ * a module importing React, MUI or a lazy `.tsx`.
  */
 export const DISPLAY_MODE_OPTIONS = [
   { value: 'normal', label: 'Normal' },

@@ -14,9 +14,8 @@ function mockFeature(data: Record<string, unknown> = {}) {
   } as any
 }
 
-// These tests probe the reader's value resolution (presence, jexl eval, nested
-// keys), not the shape of DisplayConfig, so they pass deliberately-partial
-// fixtures.
+// These probe the reader's value resolution, not the shape of DisplayConfig, so
+// the fixtures are deliberately partial.
 const cfg = (o: Record<string, unknown>) => o as unknown as DisplayConfig
 
 const anyFeature = mockFeature()

@@ -31,9 +31,8 @@ function mockFeature(opts: {
   return f as unknown as Feature
 }
 
-// An EDTA-style intact LTR retrotransposon: a repeat_region parent whose parts
-// overlap (the internal element spans the whole thing, the two LTRs sit at the
-// ends, the two TSDs flank it).
+// The parts overlap: the internal element spans the whole thing, the two LTRs
+// sit at the ends, and the two TSDs flank it.
 function intactLtrRetrotransposon() {
   return mockFeature({
     type: 'repeat_region',
@@ -99,7 +98,6 @@ describe('layoutRepeatRegion', () => {
 
     expect(layout.glyphType).toBe('RepeatRegion')
     expect(layout.children).toHaveLength(5)
-    // single row: every subpart shares y=0 and the parent stays one row tall
     expect(layout.children.every(c => c.y === 0)).toBe(true)
     expect(layout.height).toBe(mockDisplayConfig().featureHeight)
   })

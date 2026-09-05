@@ -46,9 +46,6 @@ describe('findGlyph structural dispatch', () => {
   })
 
   it('routes a coding type absent from transcriptTypes to ProcessedTranscript', () => {
-    // the whole point of structural dispatch: V_gene_segment / org-specific
-    // coding transcripts are no longer enumerated in config yet still get the
-    // transcript glyph rather than falling through to Segments
     for (const type of ['V_gene_segment', 'some_org_specific_transcript']) {
       const feature = mockFeature({
         type,
@@ -112,9 +109,6 @@ describe('findGlyph structural dispatch', () => {
     expect(findGlyph(feature, config)).toBe(layoutCrisprGuide)
   })
 
-  // Every other type test (isCDS, isExon, isUTR, the mature-protein set) is
-  // case-insensitive; these were not, so a converted annotation writing
-  // `Repeat_region` silently fell through to Segments.
   it('matches the semantic types case-insensitively', () => {
     expect(findGlyph(mockFeature({ type: 'Motif' }), config)).toBe(layoutMotif)
     expect(
@@ -137,12 +131,9 @@ describe('findGlyph structural dispatch', () => {
     ).toBe(layoutRepeatRegion)
   })
 
-  // `containerTypes` was the last case-SENSITIVE type test here, and it is the
-  // one slot two places read: `featureAdmission` lowercases it into the
-  // gene-like set `showOnlyGenes` admits by, so a `Proteoform_ORF` was admitted
-  // and then refused a stacked glyph — drawn as one flat Segments row with its
-  // parts on top of each other. Leaf children, so `hasContainerChildren` cannot
-  // rescue it and the slot is the only thing deciding.
+  // `featureAdmission` lowercases the same slot into the gene-like set
+  // `showOnlyGenes` admits by. The fixture's children are leaves, so
+  // `hasContainerChildren` cannot rescue it and the slot alone decides.
   it('matches containerTypes case-insensitively too', () => {
     const orf = (type: string) =>
       mockFeature({

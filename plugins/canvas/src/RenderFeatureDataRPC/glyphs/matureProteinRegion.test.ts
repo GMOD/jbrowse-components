@@ -51,8 +51,8 @@ function mockFeature(opts: {
   return f as unknown as Feature
 }
 
-// A viral polyprotein: one big CDS whose mature_protein_region children are the
-// cleavage products tiled along the ORF.
+// One big CDS whose mature_protein_region children tile the ORF as its cleavage
+// products.
 function viralPolyprotein(matureTypes: string[]) {
   const matures = matureTypes.map((type, i) =>
     mockFeature({ type, start: 100 + i * 100, end: 200 + i * 100 }),
@@ -137,9 +137,8 @@ describe('findGlyph routing for CDS', () => {
     )
   })
 
-  // A GenBank flatfile → GFF3 conversion inserts an mRNA between the gene and
-  // the polyprotein CDS. Dispatch only recurses through Subfeatures, so a
-  // top-level-only container test dropped every cleavage product to a flat box.
+  // A GenBank flatfile conversion inserts an mRNA between the gene and the
+  // polyprotein CDS, and dispatch recurses only through Subfeatures.
   it('reaches a polyprotein CDS nested under an mRNA', () => {
     const cds = viralPolyprotein([
       'mature_protein_region_of_CDS',
@@ -203,19 +202,15 @@ describe('layoutMatureProteinRegion', () => {
       feature,
       config: mockDisplayConfig({ subfeatureLabels: 'none' }),
     })
-    // rowHeight = featureHeight(10), padding 1 -> boxHeight 8
     expect(layout.height).toBe(20)
     expect(layout.children[0]!.y).toBe(1)
     expect(layout.children[0]!.height).toBe(8)
     expect(layout.children[1]!.y).toBe(11)
   })
 
-  // The label row is COUNTED, not carved out of the row height. It used to
-  // double the row and give the label half of it, which put the label's share in
-  // geometry units — the main thread scales those by HEIGHT_MULTIPLIERS while the
-  // label draws on the gentler LABEL_FONT_MULTIPLIERS, so the reserved half came
-  // out smaller than the text in every mode, normal included. See
-  // FeatureLayout.labelRowsAbove.
+  // The label row is COUNTED, not carved out of the row height: the main thread
+  // scales geometry by HEIGHT_MULTIPLIERS while a label draws on the gentler
+  // LABEL_FONT_MULTIPLIERS.
   it('counts a label row per cleavage product and leaves the rows body-sized', () => {
     const feature = viralPolyprotein([
       'mature_protein_region',
@@ -225,12 +220,10 @@ describe('layoutMatureProteinRegion', () => {
       feature,
       config: mockDisplayConfig({ subfeatureLabels: 'below' }),
     })
-    // identical worker geometry to the 'none' case above — one body row each
     expect(layout.height).toBe(20)
     expect(layout.children[0]!.y).toBe(1)
     expect(layout.children[0]!.height).toBe(8)
     expect(layout.children[1]!.y).toBe(11)
-    // what `below` adds is the counts the main thread spends
     expect(layout.labelRows).toBe(2)
     expect(layout.children.map(c => c.labelRowsAbove)).toEqual([0, 1])
     expect(layout.children.every(c => c.ownsLabelRow)).toBe(true)
@@ -261,8 +254,6 @@ describe('layoutMatureProteinRegion', () => {
 })
 
 describe('collectRenderData for mature protein regions', () => {
-  // every case walks one polyprotein layout with peptides off; only the config
-  // and (once) the region end vary
   const collect = (
     layout: FeatureLayout,
     config: DisplayConfig,
@@ -289,16 +280,11 @@ describe('collectRenderData for mature protein regions', () => {
 
     const result = collect(layout, config)
 
-    // one rect per mature region
     expect(result.rectPositions).toHaveLength(3 * 2)
-    // single strand arrow at the CDS end (strand +1)
     expect(result.arrowXs).toHaveLength(1)
     expect(result.arrowXs[0]).toBe(feature.get('end'))
     expect(result.arrowDirections[0]).toBe(1)
-    // each region gets a distinct palette color
     expect(new Set(result.rectColors).size).toBe(3)
-    // each region is individually hoverable/selectable via subfeature hit info,
-    // parented to the top-level CDS
     expect(result.subfeatureInfos).toHaveLength(3)
     expect(
       result.subfeatureInfos.every(s => s.parentFeatureId === feature.id()),
@@ -326,7 +312,6 @@ describe('collectRenderData for mature protein regions', () => {
       end: 300,
       subfeatures: matures,
     })
-    // mirrors the test_data configs: prefer the GFF `product` attribute
     const config = mockDisplayConfig({
       labels: {
         name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
@@ -342,10 +327,9 @@ describe('collectRenderData for mature protein regions', () => {
     ])
   })
 
-  // Real SARS-CoV-2 shape: one gene (GU280_gp01) with two polyprotein CDS
-  // children (ORF1a and ORF1ab) that share nsp cleavage products at identical
-  // coordinates. Only here — a gene with >1 polyprotein CDS — is the peptide
-  // ambiguous, so the owning-CDS product is appended to keep the rows distinct.
+  // The SARS-CoV-2 shape: one gene with two polyprotein CDS children that share
+  // nsp cleavage products at identical coordinates, which is the only case where
+  // a peptide is ambiguous.
   it('disambiguates a mature region shared by two polyprotein CDS under one gene (ORF1a/ORF1ab)', () => {
     const config = mockDisplayConfig({
       labels: {
@@ -396,9 +380,6 @@ describe('collectRenderData for mature protein regions', () => {
     ])
   })
 
-  // Enterovirus shape: a gene with a single polyprotein CDS. The peptides are
-  // unambiguous, so their labels stay clean — the owning-CDS product ("genome
-  // polyprotein") is NOT appended to every one of them.
   it('does not clutter labels with the CDS name for a single-polyprotein gene', () => {
     const config = mockDisplayConfig({
       labels: {
@@ -472,8 +453,8 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(feature, config)({ feature, config })
 
     const result = collect(layout, config)
-    // the top-level CDS emits its own (name) label; keep only the per-mature
-    // subfeature labels, which is what was previously missing entirely
+    // The top-level CDS emits its own name label; only the per-mature
+    // subfeature labels are under test.
     const labels = [...result.floatingLabelsData.values()].filter(
       l => 'subfeatureLabel' in l,
     )
@@ -516,11 +497,9 @@ describe('collectRenderData for mature protein regions', () => {
     expect(subfeatureLabels).toHaveLength(0)
   })
 
-  // The polyprotein CDS shows its own strand arrow even when nested under a
-  // gene: the enclosing gene renders as a Subfeatures container that draws no
-  // arrow, so gating on top-level (as leaf glyphs do) would leave a gene → CDS →
-  // mature-peptide polyprotein (enterovirus, SARS-CoV-2 ORF1ab) with no
-  // direction at all, unlike a gene → mRNA whose transcript always shows one.
+  // The enclosing gene renders as a Subfeatures container that draws no arrow,
+  // so gating on top-level as leaf glyphs do would leave the polyprotein with no
+  // direction at all.
   it('draws the strand arrow even when the CDS is nested under a gene', () => {
     const parent = mockFeature({ type: 'gene', start: 100, end: 400 })
     const matures = [
@@ -544,11 +523,8 @@ describe('collectRenderData for mature protein regions', () => {
     expect(result.arrowDirections[0]).toBe(1)
   })
 
-  // Real NCBI SARS-CoV-2 shape (test_data/sars-cov2/ncbi_original.gff3):
-  // gene → CDS (no mRNA layer) → mature_protein_region_of_CDS. The gene routes
-  // to Subfeatures and the CDS child to MatureProteinRegion; the cleavage
-  // products must still be emitted as individual rows rather than collapsed to
-  // a single flat box.
+  // NCBI's SARS-CoV-2 shape has no mRNA layer: gene → CDS →
+  // mature_protein_region_of_CDS.
   it('renders mature regions of a CDS nested directly under a gene', () => {
     const matures = [
       mockFeature({
@@ -584,16 +560,12 @@ describe('collectRenderData for mature protein regions', () => {
     expect(layout.glyphType).toBe('Subfeatures')
 
     const result = collect(layout, config, 100_000)
-    // one rect per mature region, not a single collapsed box
     expect(result.rectPositions).toHaveLength(3 * 2)
     expect([...result.rectPositions]).toEqual([266, 805, 805, 2719, 2719, 8554])
-    // rows are stacked, not all at the same y
     expect(new Set(result.rectYs).size).toBe(3)
-    // distinct palette colors per region
     expect(new Set(result.rectColors).size).toBe(3)
-    // each region is hoverable as a subfeature, parented to the top-level gene
-    // (the id GetCanvasFeatureDetails can resolve) so findSubfeatureById can
-    // recurse gene → CDS → region
+    // Parented to the top-level gene, the id GetCanvasFeatureDetails resolves,
+    // so findSubfeatureById can recurse gene → CDS → region.
     expect(result.subfeatureInfos).toHaveLength(3)
     expect(
       result.subfeatureInfos.every(s => s.parentFeatureId === gene.id()),

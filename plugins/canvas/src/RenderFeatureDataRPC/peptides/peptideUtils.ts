@@ -34,9 +34,9 @@ interface PeptideFetchProps {
 // request for the exon on the far side.
 const MERGE_GAP_BP = 5000
 
-// Round-trip ceiling per region, so a 79-exon gene with megabase introns can't
-// become 79 requests. Merging always closes the smallest gap first, making the
-// bases the cap costs the cheapest ones on offer.
+// A round-trip ceiling per region, so a 79-exon gene with megabase introns
+// cannot become 79 requests. Merging closes the smallest gap first, so the bases
+// the cap costs are the cheapest ones on offer.
 const MAX_SEQUENCE_RANGES = 12
 
 interface BpRange {
@@ -68,11 +68,10 @@ function mergeSequenceRanges(ranges: BpRange[]) {
   return merged
 }
 
-// A single buffer spanning [bufferStart, bufferEnd) carrying real bases inside
-// the fetched ranges and N everywhere else. The N never reaches a codon: the
-// ranges are the same dedupedSortedCDS segments the translation reads, and
-// nothing downstream looks at an intron or a UTR. Undefined when any range
-// failed, so a partial buffer can never translate into wrong residues.
+// One buffer spanning [bufferStart, bufferEnd) with real bases inside the
+// fetched ranges and N everywhere else. The N never reaches a codon, since the
+// ranges are the same segments the translation reads. Undefined when any range
+// failed, so a partial buffer cannot translate into wrong residues.
 async function fetchCodingSequenceBuffer(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
@@ -132,41 +131,23 @@ async function fetchSequence(
   }
 }
 
-// Coding-transcript detection is structural, mirroring findGlyph: a feature with
-// a direct CDS child is a coding transcript, so any type — mRNA, V_gene_segment,
-// a prokaryotic gene → CDS, an org-specific type — is picked up without
-// configuration. A feature whose children are coding transcripts (gene → mRNA →
-// CDS) is descended into to reach them instead.
-//
-// The descent needs no container test of its own. It used to be guarded by
-// hasContainerChildren, which cannot ever change the answer: a child that
-// carries a CDS grandchild has subfeatures, which is what makes its parent a
-// container. Asking directly for the coding children is the same question with
-// one branch, and it leaves ONE place that decides a feature is itself the
-// transcript instead of two identical ones.
+// Detection is structural, mirroring findGlyph: a feature with a direct CDS
+// child is a coding transcript whatever its type, so mRNA, V_gene_segment and an
+// org-specific type are all picked up without configuration.
 export function findTranscriptsWithCDS(
   features: Map<string, Feature>,
 ): Feature[] {
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
-    // Standalone polyprotein CDS (no gene/mRNA wrapper, e.g. a bare
-    // CDS → mature_protein_region GFF): the CDS is itself the coding unit that
-    // findGlyph routes to MatureProteinRegion, so it must translate as its own
-    // single-segment transcript — dedupedSortedCDS returns its own span. Checked
-    // first since its cleavage-product children satisfy none of the CDS-child
-    // heuristics below.
+    // A standalone polyprotein CDS is itself the coding unit, and its
+    // cleavage-product children satisfy none of the CDS-child heuristics below.
     if (isCDS(feature) && hasMatureProteinChildren(feature)) {
       transcripts.push(feature)
       continue
     }
-    // A wrapped polyprotein translates per CDS, not at the wrapper. A polyprotein
-    // CDS satisfies neither hasCDSSubfeature (its children are cleavage products,
-    // not CDS) nor the container descent, so the old fallback keyed the whole
-    // gene — and dedupedSortedCDS then stitched every CDS child into one ORF. For
-    // SARS-CoV-2, whose ORF1ab gene carries both pp1ab and the overlapping pp1a,
-    // that produced an 11502-aa concatenation in place of the real 7096-aa
-    // protein, and every mature region in the shared span drew residues from both.
+    // A wrapped polyprotein translates per CDS, not at the wrapper: keying the
+    // gene stitches its overlapping CDS children into one impossible ORF.
     const polyproteins = collectPolyproteinCDS(feature)
     if (polyproteins.length > 0) {
       transcripts.push(...polyproteins)
@@ -183,10 +164,8 @@ export function findTranscriptsWithCDS(
   return transcripts
 }
 
-// Feature-relative CDS segments for translation. dedupedSortedCDS supplies the
-// absolute, ascending, frameshift-guarded segments (shared with the amino-acid
-// overlay); we only subtract featureStart to make them relative to the sequence
-// slice handed to the codon translator.
+// Relative to the sequence slice the codon translator is handed, which is what
+// the subtraction is for.
 function extractCDSRegions(feature: Feature) {
   const featureStart = feature.get('start')
   return dedupedSortedCDS(feature).map(({ start, end, phase }) => ({
@@ -196,12 +175,9 @@ function extractCDSRegions(feature: Feature) {
   }))
 }
 
-// NCBI translation table for a transcript: `transl_table` is carried on the CDS
-// (e.g. mitochondrial = 2), occasionally on the transcript itself. When the
-// features carry no transl_table (e.g. UCSC genePred-derived GFFs), fall back to
-// the assembly-configured code for the contig (assemblyGeneticCodeId). Undefined
-// falls back to the standard code, preserving prior behavior for unannotated
-// data.
+// `transl_table` rides on the CDS, occasionally on the transcript itself; a file
+// carrying neither falls back to the assembly's configured code, and undefined
+// to the standard one.
 export function transcriptGeneticCodeId(
   transcript: Feature,
   assemblyGeneticCodeId: number | undefined,
@@ -214,9 +190,9 @@ export function transcriptGeneticCodeId(
   )
 }
 
-// transl_except entries are carried on the CDS (NCBI convention), occasionally
-// the transcript. Relativized to the strand-corrected CDS coordinate system so a
-// selenocysteine reads as U etc., matching the feature-detail protein view.
+// transl_except entries ride on the CDS by NCBI convention, occasionally the
+// transcript. Relativized to the strand-corrected CDS frame so a selenocysteine
+// reads as U.
 function transcriptTranslExcept(transcript: Feature) {
   const cds = getSubfeatures(transcript).find(isCDS)
   const raw = transcript.get('transl_except') ?? cds?.get('transl_except')
@@ -282,16 +258,10 @@ export async function fetchPeptideData(
     return peptideDataMap
   }
 
-  // RenderFeatureData runs per-region, so props.regions is single-element and
-  // every transcript here was fetched from that region — they all share its
-  // refName. The transcripts therefore share one coordinate frame, and one
-  // buffer spanning all of them (rather than one fetch per transcript) avoids N
-  // round trips.
-  //
-  // Only CDS bases are ever translated, so the buffer is filled from the coding
-  // stretches rather than the whole span: DMD spans 2.2Mb around 11kb of CDS,
-  // and fetching the span downloaded and decompressed every intron to read none
-  // of it.
+  // Every transcript came from the single region this RPC call runs over, so
+  // they share one coordinate frame and one buffer spanning all of them replaces
+  // N round trips. Only CDS bases translate, so the buffer is filled from the
+  // coding stretches — DMD spans 2.2Mb around 11kb of CDS.
   const bulkStart = Math.max(
     0,
     Math.min(...transcripts.map(t => t.get('start'))),

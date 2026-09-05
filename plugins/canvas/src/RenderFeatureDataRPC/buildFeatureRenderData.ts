@@ -9,23 +9,13 @@ import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 /**
- * Features in, render data out — the whole of this RPC method that is not
- * fetching, gating or progress reporting.
+ * Features in, render data out. Takes an iterable rather than an adapter
+ * because the fetch is not the only way to come by features: the multi-sample
+ * variant display's lane arrives holding records it has already parsed, and
+ * builds its band through this rather than re-reading the same VCF.
  *
- * Pure, and takes an iterable of features rather than an adapter, because the
- * fetch is not the only way to come by features. The multi-sample variant
- * display's lane arrives here holding records it has *already* parsed (its own
- * worker read every genotype off them), so it builds its band's render data
- * through this instead of asking the adapter for the same VCF a second time. It
- * is the same reason the two halves of this file are split at all: everything
- * after `features` is arithmetic over plain data.
- *
- * `report` is called once per feature so a caller that shows determinate
- * progress can; the RPC passes its `withProgress` reporter, the lane passes
- * nothing.
- *
- * The peptide overlay is the one input a non-RPC caller has no way to supply
- * (it needs a sequence adapter), and it is optional for that reason.
+ * The peptide overlay needs a sequence adapter, which a non-RPC caller has no
+ * way to supply, so it is optional.
  */
 export function buildFeatureRenderData({
   features,
@@ -40,9 +30,7 @@ export function buildFeatureRenderData({
   report,
 }: {
   features: Iterable<Feature>
-  // Stated rather than counted off `features`, which is only an iterable — and
-  // the RPC's count is its deduped map's size, the same number its density gate
-  // decided on.
+  // Stated rather than counted off `features`, which is only an iterable.
   featureCount: number
   config: DisplayConfig
   jexl: JexlInstance
@@ -63,7 +51,6 @@ export function buildFeatureRenderData({
       )({
         feature,
         config,
-        // for the one layout-time per-feature callback slot, `featureHeight`
         jexl,
         expandedGeneIds,
       }),

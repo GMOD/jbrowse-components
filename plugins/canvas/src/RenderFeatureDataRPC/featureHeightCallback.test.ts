@@ -7,13 +7,10 @@ import { mockDisplayConfig } from './testUtils.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// `featureHeight` is declared with `contextVariable: ['feature']`, so it can hold
-// a `jexl:` expression like the color slots beside it. Layout used to read it as
-// a bare number, which flowed the expression STRING into every height: the
-// Float32Array pack turned each box into NaN (nothing painted) and
-// `flatbushItems[].bottomPx` carried the expression text into the row packer.
-// These pin the resolution and the degradation, since "renders nothing" is the
-// one outcome a per-feature height must never have.
+// `featureHeight` is declared with `contextVariable: ['feature']`, so it can
+// hold a `jexl:` expression like the color slots beside it. Read as a bare
+// number, the expression string flows into the Float32Array pack and every box
+// comes out NaN.
 
 const jexl = createJexlInstance()
 
@@ -67,8 +64,6 @@ describe('featureHeight as a per-feature callback', () => {
     })
     const item = render(gene, config).flatbushItems[0]!
 
-    // both were the raw expression string before, which the packer then compared
-    // and scaled as if it were a number
     expect(item.featureHeightPx).toBe(20)
     expect(item.bottomPx).toBe(20)
   })
@@ -81,12 +76,11 @@ describe('featureHeight as a per-feature callback', () => {
     expect([...render(gene, config).rectHeights]).toEqual([10])
   })
 
-  // The subtlest way this breaks again: `layoutSubfeatures` lays each transcript
-  // out through `findGlyph(child)({...args, feature: child})`, so the jexl only
-  // reaches a gene's transcripts by riding along in that spread. Rebuild those
-  // args by hand and the expression stops resolving — but every height silently
-  // becomes the fallback 10 and the track still DRAWS, so nothing else here
-  // notices. Assert against the expression's own values, not the fallback.
+  // `layoutSubfeatures` lays each transcript out through
+  // `findGlyph(child)({...args, feature: child})`, so the jexl reaches a gene's
+  // transcripts only by riding along in that spread. Lose it and every height
+  // silently becomes the fallback 10 while the track still draws, so assert
+  // against the expression's own values.
   it('resolves the expression for nested transcripts, not just top-level', () => {
     const config = mockDisplayConfig({
       featureHeight: `jexl:get(feature,'type')=='mRNA'?24:6`,
@@ -116,8 +110,8 @@ describe('featureHeight as a per-feature callback', () => {
   })
 
   it('leaves a plain numeric slot on the fast path', () => {
-    // no jexl passed at all: the number never reaches the callback reader, which
-    // is what keeps the common config free of a per-feature evaluation
+    // no jexl at all: the number never reaches the callback reader, which keeps
+    // the common config free of a per-feature evaluation
     const config = mockDisplayConfig({ featureHeight: 14 })
     const layout = findGlyph(gene, config)({ feature: gene, config })
 

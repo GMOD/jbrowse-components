@@ -8,25 +8,11 @@ import {
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * A color the worker cannot resolve because it comes from the active theme.
- *
- * The worker bakes every other color it emits — a config `color` slot, a jexl
- * callback, a BED `itemRgb`, a fixed per-type fill — because only it has the
- * feature to evaluate them against. Theme colors are the opposite: they depend
- * on nothing the worker has and change without the data changing. So a
- * theme-derived primitive ships a CLASS here and a zero in its color lane, and
- * the main-thread encode fills the lane in from `themedColorTable`. That is
- * what keeps a light/dark toggle a re-encode instead of a refetch of every
- * visible region.
- *
- * `LITERAL` is 0, so an all-zero class lane means "nothing in this region is
- * themed" and the encode hands the worker's own array straight back.
- *
- * The frames are in `Frame` order (`getFrame`: +1..+3 forward, -1..-3
- * reverse), and each carries the two codon tints beside it because
- * `emitCodonRects` alternates `lighten(base, 0.5)` / `lighten(base, 0.35)` down
- * a CDS — a derivation of the frame color, so it has to be a class of its own
- * rather than a literal computed from a color the worker no longer holds.
+ * A color the worker cannot resolve because it comes from the active theme: the
+ * primitive ships a CLASS here and a zero color lane, and the main-thread
+ * encode fills the lane in, so a light/dark toggle is a re-encode rather than a
+ * refetch. `LITERAL` is 0, so an all-zero class lane means nothing here is
+ * themed.
  */
 export const LITERAL = 0
 export const STROKE = 1
@@ -34,15 +20,14 @@ export const OUTLINE = 2
 const FIRST_FRAME = 3
 const FRAMES = [1, 2, 3, -1, -2, -3]
 // The two tint blocks sit one whole frame set apart, so a tint is the solid
-// class plus a fixed stride — see `codonStripeClass`.
+// class plus a fixed stride.
 const LIGHT_TINT = FRAMES.length
 const MID_TINT = FRAMES.length * 2
 export const COLOR_CLASS_COUNT = FIRST_FRAME + FRAMES.length * 3
 
 /**
- * The class for a CDS box painted by reading frame, or `LITERAL` for a frame
- * outside `getFrame`'s range — which is where the box keeps whatever color the
- * config resolved for it.
+ * `LITERAL` for a frame outside `getFrame`'s range, where the box keeps
+ * whatever color the config resolved for it.
  */
 export function cdsFrameClass(frame: number) {
   const i = FRAMES.indexOf(frame)
@@ -54,9 +39,8 @@ function isCdsFrameClass(colorClass: number) {
 }
 
 /**
- * The class for one codon stripe over a box of class `boxClass`. A literal box
- * color stays literal — the emitter lightens the color it holds — and only a
- * frame-colored box needs a tint class, because its base is the theme's.
+ * Only a frame-colored box needs a tint class, because its base is the theme's;
+ * over a literal box the emitter lightens the color it already holds.
  */
 export function codonStripeClass(boxClass: number, odd: boolean) {
   return isCdsFrameClass(boxClass)
@@ -65,18 +49,16 @@ export function codonStripeClass(boxClass: number, odd: boolean) {
 }
 
 /**
- * Feature-box outline when the `outlineColor` slot holds THEME_DERIVED_COLOR:
- * the theme's text color at low alpha, so the outline stays visible on a dark
- * track too (a fixed black outline vanishes there). In light mode this is the
- * old black-0.3.
+ * The theme's text color at low alpha, so the outline stays visible on a dark
+ * track, where a fixed black outline vanishes.
  */
 function faintOutline(palette: JBrowsePalette) {
   return alpha(palette.text.primary, 0.3)
 }
 
 /**
- * Every themed color, packed, indexed by class. Built once per palette on the
- * main thread and read by the encode; `LITERAL`'s entry is never read.
+ * Every themed color, packed, indexed by class. `LITERAL`'s entry is never
+ * read.
  */
 export function themedColorTable(palette: JBrowsePalette) {
   const table = new Uint32Array(COLOR_CLASS_COUNT)
@@ -93,9 +75,8 @@ export function themedColorTable(palette: JBrowsePalette) {
 }
 
 /**
- * One primitive lane resolved against the table. Returns the worker's own array
- * when nothing in it is themed, so an unthemed region re-encodes to the
- * identical reference and the upload diff skips it.
+ * Returns the worker's own array when nothing in it is themed, so an unthemed
+ * region re-encodes to the identical reference and the upload diff skips it.
  */
 export function resolveColorLane(
   colors: Uint32Array,

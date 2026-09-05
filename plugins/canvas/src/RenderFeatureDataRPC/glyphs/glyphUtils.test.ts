@@ -74,11 +74,8 @@ describe('sortByPosition', () => {
   })
 })
 
-// What makes a feature coding is that a CDS is there — as the feature itself or
-// anywhere below it — and never what hangs off that CDS. Keying off the
-// polyprotein shape (a CDS with mature-protein children) instead would answer
-// this for the viral genomes and still leave a bare CDS isoform, which codes
-// for a protein like any other, ranked as coding for nothing.
+// A feature is coding because a CDS is there — itself, or anywhere below it —
+// never because of what hangs off that CDS.
 describe('isCodingFeature', () => {
   const cds = (start: number, end: number) =>
     mockFeature({ type: 'CDS', start, end })
@@ -205,13 +202,11 @@ describe('findGlyph', () => {
       ],
     })
     const config = mockDisplayConfig()
-    // feature with parent → non-top-level → Segments, not Subfeatures
     expect(
       findGlyph(nested, config)({ feature: nested, config }).glyphType,
     ).toBe('Segments')
   })
 
-  // containerTypes explicit override
   it('containerTypes wins: top-level type in containerTypes → Subfeatures even without container children', () => {
     const feature = mockFeature({
       type: 'supercontig',
@@ -240,7 +235,6 @@ describe('findGlyph', () => {
     )
   })
 
-  // ProcessedTranscript routing
   it('mRNA with CDS → ProcessedTranscript', () => {
     const feature = mockFeature({
       type: 'mRNA',
@@ -280,7 +274,6 @@ describe('findGlyph', () => {
     )
   })
 
-  // hasContainerChildren structural heuristic
   it('returns Subfeatures for top-level with nested children (gene→mRNA→CDS)', () => {
     const feature = mockFeature({
       type: 'gene',
@@ -325,7 +318,6 @@ describe('findGlyph', () => {
     )
   })
 
-  // Segments fallthrough
   it('top-level with only leaf children → Segments', () => {
     const feature = mockFeature({
       type: 'match',

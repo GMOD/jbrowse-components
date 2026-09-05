@@ -22,8 +22,8 @@ function createMockFeature(opts: {
   } as unknown as Feature
 }
 
-// A BED12 gene as the glyph actually sees it: itemRgb rides on the mRNA parent
-// and the drawn box is a child that carries none of it.
+// itemRgb rides on the mRNA parent, and the box the glyph draws is a child that
+// carries none of it.
 function bed12Child(childType: string, parentItemRgb?: string): Feature {
   const parent = createMockFeature({
     type: 'mRNA',
@@ -38,7 +38,6 @@ function fill(feature: Feature, config: DisplayConfig = mockDisplayConfig()) {
 
 describe('boxColor (BED itemRgb)', () => {
   it('inherits itemRgb from the parent for a drawn exon', () => {
-    // the box the glyph draws is the child, which carries no itemRgb of its own
     expect(fill(bed12Child('exon', '227,26,28'))).toBe('227,26,28')
   })
 
@@ -51,14 +50,6 @@ describe('boxColor (BED itemRgb)', () => {
     expect(fill(bed12Child('exon', '227,26,28'), config)).toBe('red')
   })
 
-  // A `color` expression describes the FEATURE, not the coding part of it, so
-  // it has to reach the UTR when nothing else claims the UTR. Without this,
-  // "the config beats the file" holds for the exon and not for the UTR of the
-  // same transcript, and a per-feature color has to be written out twice —
-  // which is exactly what the hosted DTU demo does, carrying the same
-  // 300-character jexl in `color` and `utrColor` (review, on
-  // dtu/atp5f1c_isoform_switch: "are there any other simplifications,
-  // refactorings, bugfixes, or improvements you'd make to this").
   it('a set `color` reaches the UTR when `utrColor` is unset', () => {
     const config = mockDisplayConfig({ color: 'red' })
     expect(fill(bed12Child('five_prime_UTR', '227,26,28'), config)).toBe('red')
@@ -68,13 +59,12 @@ describe('boxColor (BED itemRgb)', () => {
   it('an explicit utrColor restores the contrasting-UTR look', () => {
     const config = mockDisplayConfig({ utrColor: 'cyan' })
     expect(fill(bed12Child('five_prime_UTR', '227,26,28'), config)).toBe('cyan')
-    // the exon still takes itemRgb — the slots are independent
     expect(fill(bed12Child('exon', '227,26,28'), config)).toBe('227,26,28')
   })
 
   it('a placeholder itemRgb leaves the defaults alone', () => {
-    // every itemRgb in the volvox-bed12 fixture is this placeholder; honoring it
-    // would paint an ordinary BED12 gene track black
+    // Every itemRgb in the volvox-bed12 fixture is this placeholder, and
+    // honoring it would paint an ordinary BED12 gene track black.
     expect(fill(bed12Child('exon', '0,0,0'))).toBe(FEATURE_DEFAULT_COLOR)
     expect(fill(bed12Child('five_prime_UTR', '0'))).toBe(UTR_DEFAULT_COLOR)
   })
@@ -94,8 +84,8 @@ describe('boxColor (BED itemRgb)', () => {
 })
 
 describe('boxColor (a per-transcript attribute read from the box)', () => {
-  // a per-transcript statistic lives on the transcript row only; the glyph
-  // paints one box per child, so the callback reaches up
+  // The statistic lives on the transcript row only and the glyph paints one box
+  // per child, so the callback has to reach up.
   const COLOR = "jexl:feature.parent.dtu=='liver'?'#124f95':'#b2b1ac'"
 
   const gene = new SimpleFeature({
@@ -127,8 +117,8 @@ describe('boxColor (a per-transcript attribute read from the box)', () => {
     }
   })
 
-  // No guard needed: member access on a nullish subject is undefined in the
-  // jexl fork, not a throw. Only an undefined RESULT falls back to magenta.
+  // Member access on a nullish subject is undefined in the jexl fork, not a
+  // throw, so only an undefined RESULT falls back to magenta.
   it('a rootless feature takes the default branch, not the invalid-color fallback', () => {
     const orphan = new SimpleFeature({
       uniqueId: 'o1',
@@ -150,9 +140,6 @@ describe('boxColor (an explicit color always beats the file)', () => {
     attrs: { itemRgb: '227,26,28' },
   })
 
-  // the reason `color` is a maybeColor: with a concrete 'goldenrod' default,
-  // stripDefault erased an explicit goldenrod, making it indistinguishable from
-  // unset — so itemRgb swallowed the one color a user is most likely to write
   it('honors an explicit color even when it equals the fallback', () => {
     expect(
       fill(itemRgbFeature, mockDisplayConfig({ color: FEATURE_DEFAULT_COLOR })),

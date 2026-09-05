@@ -28,7 +28,7 @@ function makeContext(): RenderContext {
   }
 }
 
-// plus-strand SpCas9 guide: protospacer 80..100, PAM 100..103, cut at 97
+// A plus-strand SpCas9 guide: protospacer 80..100, PAM 100..103, cut at 97.
 function guideFeature() {
   const pam = mockFeature({
     uniqueId: 'g1-pam',
@@ -63,14 +63,11 @@ test('emits protospacer box, red PAM overpaint, and dark cut tick', () => {
   expect(collector.rects).toHaveLength(3)
   const [box, pam, cut] = collector.rects
 
-  // protospacer+PAM box spans the whole feature in the config color
   expect(box).toMatchObject({ start: 80, end: 103 })
   expect(box!.color).not.toBe(CRISPR_PAM_COLOR)
 
-  // PAM overpainted red at its own coordinates
   expect(pam).toMatchObject({ start: 100, end: 103, color: CRISPR_PAM_COLOR })
 
-  // cut site: a zero-width dark rect (rect shader widens it to MIN_RECT_WIDTH_PX)
   expect(cut).toMatchObject({ start: 97, end: 97, color: CUT_SITE_COLOR })
 })
 
@@ -110,6 +107,5 @@ test('omits the cut tick when the feature has no cutSite', () => {
 
   processFeatureRecord(layout, ctx, collector)
 
-  // box + PAM only, no cut tick
   expect(collector.rects).toHaveLength(2)
 })

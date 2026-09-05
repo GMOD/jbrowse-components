@@ -6,16 +6,10 @@ import { packRenderArrays } from './packRenderArrays.ts'
 import type { RenderContext } from './collect/renderContext.ts'
 import type { FeatureLayout } from './types.ts'
 
-// Walks the per-feature layout tree, emits draw primitives + hit/label metadata
-// into a Collector (see collect/), then packs the visible window into the typed
-// arrays the GPU/Canvas2D renderers consume. Geometry stays in absolute genomic
-// uint32 — packRenderArrays filters to [regionStart, regionEnd) without
-// rebasing.
-//
-// One object, typed as the per-feature `RenderContext` plus what only this walk
-// needs: the context was already five of the arguments, bundled here and handed
-// straight to every emitter, so composing the type says that rather than
-// re-listing its fields.
+// Walks the per-feature layout tree, emits draw primitives and hit/label
+// metadata into a Collector, then packs the visible window into the typed
+// arrays the renderers consume. Geometry stays in absolute genomic uint32:
+// packRenderArrays filters to [regionStart, regionEnd) without rebasing.
 export function collectRenderData(
   args: RenderContext & {
     layouts: FeatureLayout[]

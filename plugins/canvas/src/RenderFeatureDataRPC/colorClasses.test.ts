@@ -24,9 +24,9 @@ import { makeFeatureData, mockDisplayConfig } from './testUtils.ts'
 const jexl = createJexlInstance()
 const palette = resolvePalette()
 
-// The worker holds no palette, so every one of these used to be a color it baked
-// from `theme` in the RPC payload — and every field of that payload is a cache
-// key, so a light/dark toggle refetched every visible region.
+// The worker holds no palette, and every field of the RPC payload is a cache
+// key, so a baked theme color would make a light/dark toggle refetch every
+// visible region.
 describe('the worker emits a class where it cannot resolve a color', () => {
   it('paints a CDS by reading frame as a frame class, not a color', () => {
     const cds = new SimpleFeature({
@@ -100,8 +100,7 @@ describe('the worker emits a class where it cannot resolve a color', () => {
   })
 
   // The codon stripe is two tints of the box it sits on, so a frame-colored box
-  // makes the stripes theme-derived too — the one derivation the class table has
-  // to carry rather than leave the worker to compute.
+  // makes the stripes theme-derived too.
   it('gives a frame-colored codon stripe its own tint classes', () => {
     const frame = cdsFrameClass(-2)
     expect(codonStripeClass(frame, false)).not.toBe(frame)
@@ -140,11 +139,8 @@ describe('the main thread resolves the classes', () => {
   })
 })
 
-// The payload, not a toggle: the test session's palette is fixed, and the
-// payload is where the invalidation lived. Every field of `rpcProps()` is an RPC
-// cache key, so while the theme was one of them a light/dark switch —
-// `SettingsInvalidate` -> `invalidateSettings()` -> refetch — re-downloaded and
-// re-parsed every visible region of every canvas feature track.
+// Every field of `rpcProps()` is an RPC cache key, so a theme among them makes
+// a light/dark switch re-download every visible region.
 describe('the theme is not an RPC cache key', () => {
   it('sends no theme in the worker payload', () => {
     const { display } = createTestEnvironment().createDisplay()

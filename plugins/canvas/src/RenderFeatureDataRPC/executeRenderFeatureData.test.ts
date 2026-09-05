@@ -34,8 +34,8 @@ describe('buildFeatureAdmission', () => {
   })
 
   it('accepts already-prefixed filters (the runtime "Filter by..." form)', () => {
-    // activeFilters() in the model emits `jexl:`-prefixed expressions; admission
-    // must normalize them identically to the unprefixed config-slot form.
+    // The model's activeFilters() emits `jexl:`-prefixed expressions, which
+    // admission normalizes to the unprefixed config-slot form.
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
@@ -58,9 +58,7 @@ describe('buildFeatureAdmission', () => {
   })
 
   it("hideSourceFeatures drops NCBI's gbkey=='Src' record and nothing else", () => {
-    // A gate rather than a jexl filter, so it applies with jexlFilters empty:
-    // drops NCBI's whole-molecule type=region source feature without touching
-    // other region features or non-NCBI features (which carry no gbkey).
+    // A gate rather than a jexl filter, so it applies with jexlFilters empty.
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({ jexlFilters: [] }),

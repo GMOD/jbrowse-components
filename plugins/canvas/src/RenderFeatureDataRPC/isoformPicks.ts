@@ -1,35 +1,24 @@
 import type { FeatureLayout } from './types.ts'
 
-// What actually chose the transcript each collapsed gene is showing: a count per
-// curated tag (`RefSeq Select`, `MANE Select`, …) and a count for the genes
-// whose annotation tagged nothing, which fell back to protein length.
-//
-// Counts rather than a flag, because one window holds both. NCBI tags its
-// protein-coding genes and leaves most non-coding ones alone, so "something here
-// used a tag" is true of nearly every window and says nothing about what the
-// reader is looking at. The chip names the tag that picked the most genes on
-// screen; the tooltip spends the whole breakdown.
+// What chose the transcript each collapsed gene is showing. Counts rather than
+// a flag, because one window holds both rules: NCBI tags its protein-coding
+// genes and leaves most non-coding ones alone, so "something here used a tag"
+// is true of nearly every window.
 export interface IsoformPicks {
   byTag: Record<string, number>
   byLength: number
-  // Genes the fit ladder's isoform rung trimmed, whatever rule ranked their
-  // survivors. Always 0 from the worker: the trim is the main thread's, and the
-  // chip announces it off the solve rather than off anything being hidden — a
-  // region fetched under `longestCoding` reports every multi-isoform gene as
-  // collapsed and the ladder never touched it.
+  // Genes the fit ladder's isoform rung trimmed. Always 0 from the worker,
+  // since that trim is the main thread's.
   byCap: number
 }
 
 // One tag, two spellings: NCBI's GFF3 writes `tag=MANE Select` and GENCODE's
-// writes `tag=MANE_Select`, and `canonicalTranscriptTags` lists both so either
-// file ranks. They are the same curated decision, so they count as one rule —
-// left apart, a window carrying both splits its own majority and the chip names
-// the smaller half.
+// `tag=MANE_Select`. Left apart, a window carrying both splits its own majority
+// and the chip names the smaller half.
 function tagRule(tag: string) {
   return tag.replaceAll('_', ' ')
 }
 
-// Count each pick under the rule that made it, into `picks`.
 function tallyPicks(
   picks: Pick<IsoformPicks, 'byTag' | 'byLength'>,
   picked: Iterable<{ canonicalTag?: string }>,
@@ -55,12 +44,7 @@ export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
   }
 }
 
-// The worker's picks plus the genes the main-thread trim took isoforms off:
-// each counts under the rule that ranked its survivors, exactly as a
-// worker-side collapse does, and under `byCap` — the chip's one piece of
-// evidence that the ladder is what is hiding transcripts here.
-//
-// The two sets never overlap. `longestCoding` leaves each gene one child, and
+// The two sets never overlap: `longestCoding` leaves each gene one child and
 // the trim's smallest k is 1, so a gene the worker collapsed is never trimmed
 // again.
 export function addTrimmedIsoformPicks(
@@ -79,8 +63,8 @@ export function addTrimmedIsoformPicks(
   }
 }
 
-// One summary over every loaded region, since the chip speaks for the whole
-// view. Fixtures that predate the field contribute nothing rather than throwing.
+// The chip speaks for the whole view. A fixture predating the field
+// contributes nothing rather than throwing.
 export function mergeIsoformPicks(
   picks: (IsoformPicks | undefined)[],
 ): IsoformPicks {
@@ -99,18 +83,16 @@ export function mergeIsoformPicks(
   return { byTag, byLength, byCap }
 }
 
-// Commonest first; ties break by name so panning between two equally common tags
-// doesn't swap the chip's word back and forth.
+// Ties break by name so panning between two equally common tags does not swap
+// the chip's word back and forth.
 function sortedTags(picks: IsoformPicks | undefined) {
   return Object.entries(picks?.byTag ?? {}).sort(
     ([a, x], [b, y]) => y - x || a.localeCompare(b),
   )
 }
 
-// Every rule that picked a gene here, commonest first, paired with its count.
-// The length fallback sorts last however common it is: it is the rule that
-// applies when no other one did, and reading it first implies the annotation
-// names nothing.
+// The length fallback sorts last however common it is: it applies only where
+// no other rule did, and reading it first implies the annotation names nothing.
 export function isoformPickEntries(
   picks: IsoformPicks | undefined,
 ): [string, number][] {
@@ -119,12 +101,10 @@ export function isoformPickEntries(
   return length > 0 ? [...tags, ['longest coding', length]] : tags
 }
 
-// The tag the chip names.
 export function dominantIsoformTag(picks: IsoformPicks | undefined) {
   return sortedTags(picks)[0]?.[0]
 }
 
-// Some gene here is drawn with isoforms missing.
 export function anyIsoformsHidden(picks: IsoformPicks | undefined) {
   return (
     picks !== undefined &&

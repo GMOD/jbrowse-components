@@ -13,9 +13,6 @@ import {
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-// Density gate used in executeRenderFeatureData: features-per-pixel over a
-// region vs maxFeatureScreenDensity, measured identically pre- and post-fetch.
-
 describe('featuresPerPx', () => {
   it('sparse features stay below the limit', () => {
     // 100 features / (10000bp / 10bpPerPx = 1000px) = 0.1 features/px
@@ -42,11 +39,8 @@ describe('featuresPerPx', () => {
   })
 })
 
-// The comparison the whole axis is made of, in one place because its three
-// callers — the pre-fetch sample, the post-fetch exact count, and the
-// main-thread banner — must not answer differently at the boundary. The byte
-// axis pins the same rule on `overByteBudget`; this one went unpinned until a
-// mutation sweep swapped the `>` for `>=` and every gate test stayed green.
+// The three callers — the pre-fetch sample, the post-fetch exact count, and the
+// main-thread banner — must not answer differently at the boundary.
 describe('overDensityBudget', () => {
   it('is over only when strictly above the budget', () => {
     expect(overDensityBudget(1.0001, 1)).toBe(true)
@@ -74,9 +68,9 @@ describe('densityTooLargeResult', () => {
   })
 
   it('emits a finite featureCount (never Infinity/undefined) when blocking', () => {
-    // Regression guard: a too-large result missing a finite featureCount is read
-    // by the model as a byte short-circuit, so the density banner never latches
-    // and the fetch autorun re-fires forever.
+    // The model reads a too-large result missing a finite featureCount as a byte
+    // short-circuit, so the density banner never latches and the fetch autorun
+    // re-fires forever.
     const result = densityTooLargeResult(0.1, region, 1000, 1, undefined)
     expect(result?.regionTooLarge).toBe(true)
     expect(Number.isFinite(result?.featureCount)).toBe(true)
@@ -96,10 +90,8 @@ describe('densityTooLargeResult', () => {
 
   it('decides on the rounded count (no round-across-threshold loop)', () => {
     // Unrounded density 1000.4/1000px = 1.0004 > 1 would block, but the count
-    // rounds to 1000 -> density 1.0 (not > 1), which is exactly what the model
-    // re-derives from the returned featureCount. Deciding on the same rounded
-    // count keeps the two in agreement, so we never bail without the model also
-    // latching the banner (which would re-trigger the fetch).
+    // rounds to 1000 -> density 1.0, which is what the model re-derives from the
+    // returned featureCount.
     expect(
       densityTooLargeResult(1.0004, { start: 0, end: 1000 }, 1, 1, undefined),
     ).toBeUndefined()
@@ -107,7 +99,7 @@ describe('densityTooLargeResult', () => {
 
   it('falls through on a non-finite density (sampling timeout)', () => {
     // Infinity means "could not estimate": defer to the full fetch rather than
-    // emitting Infinity, which JSON would serialize to null and slip the gate.
+    // emitting a value JSON would serialize to null and slip past the gate.
     expect(
       densityTooLargeResult(
         Number.POSITIVE_INFINITY,
@@ -121,9 +113,8 @@ describe('densityTooLargeResult', () => {
 })
 
 describe('samplePreFetchDensity', () => {
-  // Minimal test double: only getFeatures is exercised by the sampler. It
-  // returns the same features for any sampled window, so the estimate is
-  // deterministic (>= 70 features means the sampler stops after one window).
+  // Returns the same features for any sampled window, so the estimate is
+  // deterministic; >= 70 features stops the sampler after one window.
   function fakeAdapter(featuresPerWindow: number) {
     const feats = Array.from(
       { length: featuresPerWindow },
@@ -177,9 +168,7 @@ describe('samplePreFetchDensity', () => {
   it('gates on the admitted population, not the raw one', async () => {
     // The same 100-feature sample at the same zoom, decided two ways. Admitting
     // everything: 0.1/bp over 1Mb = 100k features / 10k px = 10/px, rejected.
-    // Admitting 5 of the 100: 5k features / 10k px = 0.5/px, allowed. Only the
-    // predicate differs, so this pins the gate to the population that will
-    // actually be drawn rather than the raw one it was measured from.
+    // Admitting 5 of the 100: 5k features / 10k px = 0.5/px, allowed.
     const args = {
       dataAdapter: fakeAdapter(100),
       region,
@@ -200,12 +189,8 @@ describe('samplePreFetchDensity', () => {
   })
 
   it('still runs under the NCBI gbkey=Src source-record gate', async () => {
-    // Regression guard for a gate that was inert in production: this stage used
-    // to be skipped whenever any admission filter was active, and the source
-    // record rule shipped as the `jexlFilters` slot's default, so every
-    // default-configured track skipped it and no track ever sampled. The rule
-    // drops at most one feature per molecule, so a dense region must still be
-    // rejected pre-fetch under it.
+    // The source-record rule drops at most one feature per molecule, so a dense
+    // region must still be rejected pre-fetch under it.
     const result = await samplePreFetchDensity({
       dataAdapter: fakeAdapter(100),
       region,
@@ -218,9 +203,8 @@ describe('samplePreFetchDensity', () => {
   })
 })
 
-// The probe's stopping rule, which decides both what the first sample window
-// costs and when the ladder stops. Its whole content is that a window is asked
-// for in *pixels* rather than bp, so the same rule holds at every zoom.
+// The probe asks for a window in PIXELS rather than bp, so the same stopping
+// rule holds at every zoom.
 describe('densityProbeGate', () => {
   it('asks for a window of DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN pixels', () => {
     const px = DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN
@@ -240,18 +224,17 @@ describe('densityProbeGate', () => {
     expect(settled(DENSITY_SETTLE_FEATURES, initialInterval * 2)).toBe(false)
   })
 
-  // A looser budget is reached by fewer bp, so the window that can settle it is
-  // narrower — the window tracks the question, not the zoom alone.
+  // A looser budget is reached by fewer bp, so the window that settles it is
+  // narrower: the window tracks the question, not the zoom alone.
   it('narrows the window as the budget loosens', () => {
     expect(densityProbeGate(100_000, 10)!.initialInterval).toBeCloseTo(
       densityProbeGate(100_000, 1)!.initialInterval / 10,
     )
   })
 
-  // A tighter budget asks for a proportionally wider window, and uncapped that
-  // runs past what a sample can mean: `maxFeatureScreenDensity: 0.01` at
-  // whole-genome zoom asks for half a gigabase, which clamps to the whole
-  // chromosome and downloads exactly what the probe exists to avoid.
+  // Uncapped, `maxFeatureScreenDensity: 0.01` at whole-genome zoom asks for half
+  // a gigabase, which clamps to the whole chromosome and downloads exactly what
+  // the probe exists to avoid.
   it('never asks for a wider window than the default budget does', () => {
     const bpPerPx = 3_088_000
     const atDefault = densityProbeGate(bpPerPx, 1)!.initialInterval
@@ -260,8 +243,8 @@ describe('densityProbeGate', () => {
     }
   })
 
-  // and the cap does not cost the verdict: a dense region still settles in that
-  // window, because a tighter budget makes the threshold easier to clear
+  // the cap does not cost the verdict: a tighter budget makes the threshold
+  // easier to clear
   it('still settles a dense region against a tight budget in the capped window', () => {
     const bpPerPx = 3_088_000
     const gate = densityProbeGate(bpPerPx, 0.01)!
@@ -271,10 +254,8 @@ describe('densityProbeGate', () => {
   })
 
   // `maxFeatureScreenDensity` is a config slot, so these reach the sizing
-  // arithmetic. 0 divides to an infinite window that clamps to the whole region
-  // — the download the probe exists to avoid — and NaN poisons every bound until
-  // the sample timeout, per region. Neither could hurt the old fixed start, so
-  // the answer is no gate and the plain ladder, not a derived bound.
+  // arithmetic: 0 divides to an infinite window that clamps to the whole region,
+  // and NaN poisons every bound until the sample timeout.
   it('declines to size a window from a budget that cannot size one', () => {
     for (const bad of [0, Number.NaN, Number.POSITIVE_INFINITY, -1]) {
       expect(densityProbeGate(3_088_000, bad)).toBeUndefined()
@@ -284,8 +265,7 @@ describe('densityProbeGate', () => {
   })
 
   // A whole-chromosome view of an annotation track sits a few times over budget,
-  // not a hundred, and that verdict has to be measured rather than extrapolated:
-  // the settling exit must not fire there, leaving the 70-feature ladder to it.
+  // not a hundred, and that verdict has to be measured rather than extrapolated.
   it('does not settle on a near-threshold density', () => {
     const bpPerPx = 133_797
     const { settled } = densityProbeGate(bpPerPx, 1)!

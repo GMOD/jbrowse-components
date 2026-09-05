@@ -43,10 +43,9 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStrand = parent.get('strand') ?? 0
   const parentRefName = parent.get('refName')
 
-  // The `parent` handle is what this helper is for. Anything reaching up from
-  // the box it paints — `jexl:feature.parent.dif`, the itemRgb walk in
-  // boxColor — has to find the transcript from a synthesized UTR too, or
-  // those come out the default color between exons that took the callback's.
+  // A synthesized UTR carries the `parent` handle so anything reaching up from
+  // the box it paints — a `feature.parent` jexl, the itemRgb walk — finds the
+  // transcript, rather than painting default between exons that took a color.
   const impliedUTR = (
     id: string,
     start: number,
@@ -65,17 +64,14 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
       parent,
     })
 
-  // Snapshot the exons before pushing: appending to `subparts` while iterating
-  // it would otherwise visit the synthesized UTRs (they're skipped only because
-  // they aren't exons — a fragile invariant to lean on).
+  // Snapshot the exons before pushing, so the loop below never visits the UTRs
+  // it synthesizes.
   const exons = subparts.filter(isExon)
 
-  // No exons at all (a CDS-only transcript): the parent transcript bounds are
-  // the only evidence for coding overhang, so imply UTRs from parentStart/End.
-  // When exons ARE present they are the authority — UTRs come purely from their
-  // geometry below, never from parent bounds. Deriving a parent-bounds UTR while
-  // exons exist would invent a UTR over an untranscribed region whenever the
-  // transcript's bounds overhang its exon union (malformed but real GFF).
+  // On a CDS-only transcript the parent bounds are the only evidence for coding
+  // overhang. Where exons exist they are the authority instead: a parent-bounds
+  // UTR would invent one over an untranscribed region whenever the transcript's
+  // bounds overhang its exon union, which malformed but real GFF does.
   if (exons.length === 0) {
     if (parentStart < codeStart) {
       subparts.push(
@@ -124,12 +120,9 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
     return []
   }
   const hasUTRs = c.some(isUTR)
-  // getSubparts only runs for the processed-transcript glyph, which findGlyph
-  // selects structurally (a direct CDS child) — so every feature reaching here
-  // is a coding transcript. Synthesize UTRs from the exon/CDS geometry when the
-  // transcript carries none explicitly; the global impliedUTRs slot can turn
-  // this off. Gated on !hasUTRs because makeUTRs would otherwise push a second,
-  // parent-derived set on top of the real UTR subfeatures.
+  // Only the processed-transcript glyph reaches here, so every feature is a
+  // coding transcript. Gated on !hasUTRs because makeUTRs would otherwise push a
+  // second, derived set on top of the real UTR subfeatures.
   const impliedUTRs = !hasUTRs && config.impliedUTRs
 
   if (impliedUTRs) {

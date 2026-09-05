@@ -2,7 +2,6 @@ import { aminoAcidsBySegment } from './aggregateAminoAcids.ts'
 
 describe('aminoAcidsBySegment', () => {
   it('forward strand: codon genomic ranges are correct', () => {
-    // CDS [100,106): 100-102 → aa0 (M), 103-105 → aa1 (K)
     const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', 1)
     const pieces = result.get('100-106')!
     expect(pieces).toHaveLength(2)
@@ -20,7 +19,7 @@ describe('aminoAcidsBySegment', () => {
   })
 
   it('reverse strand: codon genomic ranges are correct', () => {
-    // CDS [100,106), reverse: codon0 is the highest-coordinate triplet
+    // Reversed: codon0 is the highest-coordinate triplet.
     const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', -1)
     const pieces = result.get('100-106')!
     expect(pieces).toHaveLength(2)
@@ -56,8 +55,8 @@ describe('aminoAcidsBySegment', () => {
   })
 
   it('splits a codon that straddles an exon boundary into partial pieces', () => {
-    // seg1 [100,102) holds the first 2 bases of codon0; codon0 finishes in
-    // seg2 [200,205), so codon0 appears as a partial piece in both segments
+    // codon0 starts in seg1 [100,102) and finishes in seg2 [200,205), so it
+    // appears as a partial piece in both.
     const result = aminoAcidsBySegment(
       [
         { start: 100, end: 102 },
@@ -75,7 +74,6 @@ describe('aminoAcidsBySegment', () => {
       endBp: 102,
       isStopOrNonTriplet: true,
     })
-    // seg2 continues codon0 (1 base), then codon1 (full), then codon2 (partial)
     expect(seg2[0]).toMatchObject({
       proteinIndex: 0,
       startBp: 200,
@@ -91,11 +89,9 @@ describe('aminoAcidsBySegment', () => {
   })
 
   it('reverse strand: splits a codon straddling an exon boundary', () => {
-    // transcription order (reverse = descending genomic start): seg 200-205
-    // transcribed first. codon0 (M) = [202,205); codon1 (K) takes the last 2
-    // bases of seg1 ([200,202)) and the first base of seg2 ([101,102)); codon2
-    // (L) = [100,101). protein index stays continuous across the boundary and
-    // the higher-coordinate segment carries the lower index.
+    // Transcription order is descending genomic start here, so seg 200-205 is
+    // transcribed first, the protein index stays continuous across the boundary,
+    // and the higher-coordinate segment carries the lower index.
     const result = aminoAcidsBySegment(
       [
         { start: 200, end: 205 },
@@ -156,7 +152,8 @@ describe('aminoAcidsBySegment', () => {
   })
 
   it('phase>0 reserves protein index 0 for the leading partial codon', () => {
-    // phase 1: 1 leading base is the tail of an upstream codon → index 0 = '&'
+    // At phase 1 the leading base is the tail of an upstream codon, so index 0
+    // is '&'.
     const result = aminoAcidsBySegment(
       [{ start: 100, end: 107, phase: 1 }],
       '&MK',

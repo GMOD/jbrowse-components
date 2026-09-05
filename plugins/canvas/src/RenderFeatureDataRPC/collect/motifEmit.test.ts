@@ -34,7 +34,7 @@ function emit(feature: Feature) {
 }
 
 test('palindromic site draws staggered half-height cuts marking the overhang', () => {
-  // EcoRI G^AATTC at 100..106: top cut at 101, bottom at 105 (4bp 5' overhang)
+  // EcoRI G^AATTC at 100..106: top cut at 101, bottom at 105, a 4bp 5' overhang.
   const { layout, collector } = emit(
     mockFeature({
       uniqueId: 'm1',
@@ -53,7 +53,6 @@ test('palindromic site draws staggered half-height cuts marking the overhang', (
   const [box, top, bottom] = collector.rects
   expect(box).toMatchObject({ start: 100, end: 106 })
 
-  // the two cuts split the box vertically, so the stagger reads as the overhang
   expect(top).toMatchObject({ start: 101, end: 101, color: CUT_SITE_COLOR })
   expect(bottom).toMatchObject({ start: 105, end: 105, color: CUT_SITE_COLOR })
   expect(top!.height).toBeCloseTo(box!.height / 2)
@@ -77,15 +76,10 @@ test('single known cut draws one full-height tick', () => {
   expect(collector.rects).toHaveLength(2)
   const [box, cut] = collector.rects
   expect(cut).toMatchObject({ start: 101, end: 101, color: CUT_SITE_COLOR })
-  // full height: a half tick would imply a second cut the notation never gave
   expect(cut!.height).toBeCloseTo(box!.height)
 })
 
 test('a bottom-strand-only cut still draws its tick', () => {
-  // The single-cut branch keys on whichever cut is pinned, not on `cutSite`
-  // specifically: testing the top cut alone left a motif carrying only
-  // `cutSiteBottom` with no tick at all, which reads as "this enzyme doesn't cut
-  // here" rather than "we only know one side".
   const { collector } = emit(
     mockFeature({
       uniqueId: 'm4',

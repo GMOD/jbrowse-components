@@ -209,8 +209,6 @@ describe('findTranscriptsWithCDS', () => {
   })
 
   it('finds a coding transcript of any type name without configuration', () => {
-    // structural: a direct CDS child makes this a coding transcript regardless
-    // of whether its type is in any configured list
     const transcript = createMockFeature({
       id: 'transcript-1',
       type: 'some_org_specific_transcript',
@@ -244,9 +242,8 @@ describe('findTranscriptsWithCDS', () => {
   })
 
   it('finds a standalone polyprotein CDS (mature-protein children, no wrapper)', () => {
-    // a bare CDS -> mature_protein_region GFF with no gene/mRNA layer: the CDS
-    // is itself the coding unit, so it must be translated even though its
-    // cleavage-product children are not CDS segments
+    // With no gene/mRNA layer the CDS is itself the coding unit, even though its
+    // cleavage-product children are not CDS segments.
     const cds = createMockFeature({
       id: 'cds-1',
       type: 'CDS',
@@ -263,11 +260,9 @@ describe('findTranscriptsWithCDS', () => {
     expect(result[0]!.id()).toBe('cds-1')
   })
 
-  // test_data/sars-cov2/ncbi_original.gff3: the ORF1ab gene owns pp1ab
-  // (266..21555) and the overlapping pp1a (266..13483), each with its own
-  // cleavage products. Keying translation at the gene stitched both CDS spans
-  // into one 11502-aa ORF in place of the real 7096-aa protein, and every mature
-  // region in the shared span then drew residues from both.
+  // SARS-CoV-2's ORF1ab gene owns pp1ab (266..21555) and the overlapping pp1a
+  // (266..13483), each with its own cleavage products, so keying translation at
+  // the gene stitches both spans into one impossible ORF.
   it('translates each polyprotein CDS of a multi-CDS gene separately', () => {
     const polyprotein = (id: string) =>
       createMockFeature({
@@ -289,8 +284,8 @@ describe('findTranscriptsWithCDS', () => {
   })
 
   // The same polyprotein one level deeper, as a GenBank flatfile conversion
-  // emits it. The mRNA satisfies hasCDSSubfeature, so it used to be translated
-  // instead — leaving the emitter's per-CDS peptide lookup empty.
+  // emits it. The mRNA satisfies hasCDSSubfeature, so translating it instead
+  // leaves the emitter's per-CDS peptide lookup empty.
   it('reaches a polyprotein CDS nested under an mRNA', () => {
     const cds = createMockFeature({
       id: 'cds-1',
@@ -402,7 +397,6 @@ describe('transcriptGeneticCodeId', () => {
 })
 
 describe('processTranscriptFromSeq', () => {
-  // ATG=M, AAA=K
   const seq = 'ATGAAA'
 
   it('translates a forward-strand CDS', () => {
@@ -419,8 +413,8 @@ describe('processTranscriptFromSeq', () => {
   })
 
   it('translates a standalone polyprotein CDS from its own span', () => {
-    // the CDS owns mature_protein_region children (not CDS segments), so the
-    // coding sequence is the CDS feature's own extent
+    // The CDS owns mature_protein_region children rather than CDS segments, so
+    // the coding sequence is its own extent.
     const cds = createCoordFeature({
       type: 'CDS',
       start: 0,
@@ -453,16 +447,14 @@ describe('processTranscriptFromSeq', () => {
         createCoordFeature({ type: 'CDS', start: 0, end: 6 }),
       ],
     })
-    // without dedup the duplicate row would stitch to ATGAAAATGAAA -> MKMK
+    // Without the dedup the duplicate row stitches to ATGAAAATGAAA -> MKMK.
     expect(
       processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
     ).toBe('MK')
   })
 
-  // TGA codes Trp (not stop) under the vertebrate mitochondrial code, so the
-  // same sequence translates differently depending on the table passed in
+  // TGA codes Trp rather than stop under the vertebrate mitochondrial code.
   it('honors an alternative genetic code (vertebrate mitochondrial)', () => {
-    // ATG TGA AAA: M, (TGA), K
     const mitoSeq = 'ATGTGAAAA'
     const transcript = createCoordFeature({
       type: 'mRNA',
@@ -480,11 +472,9 @@ describe('processTranscriptFromSeq', () => {
     ).toBe('MWK')
   })
 
-  // matches the feature-detail protein view: a transl_except on the CDS rewrites
-  // the readthrough stop, so the in-track overlay shows U rather than *
   it('applies transl_except from the CDS (selenocysteine readthrough)', () => {
-    // ATG TGA AAA -> M * K under the standard code; transl_except rewrites the
-    // TGA codon (genomic 3..6) as selenocysteine
+    // ATG TGA AAA is M * K under the standard code; the transl_except rewrites
+    // the TGA codon at genomic 3..6 as selenocysteine.
     const seleno = 'ATGTGAAAA'
     const transcript = createCoordFeature({
       type: 'mRNA',
@@ -502,7 +492,6 @@ describe('processTranscriptFromSeq', () => {
     })
     const result = processTranscriptFromSeq(seleno, transcript, standardCode)
     expect(result?.protein).toBe('MUK')
-    // codon index 1 (the TGA->U) is reported so the overlay can highlight it
     expect([...(result?.translExceptIndices ?? [])]).toEqual([1])
   })
 })
@@ -510,7 +499,7 @@ describe('processTranscriptFromSeq', () => {
 describe('fetchPeptideData', () => {
   const CONTIG_LENGTH = 250_000
 
-  // Bases only at the coding positions; everywhere else is a base that would
+  // Real bases only at the coding positions; everywhere else is one that would
   // frameshift the protein if it ever leaked into a codon.
   function makeGenome(codingBases: Map<number, string>) {
     const genome = new Array<string>(CONTIG_LENGTH).fill('C')
@@ -522,9 +511,8 @@ describe('fetchPeptideData', () => {
     return genome.join('')
   }
 
-  // Records what the sequence adapter was actually asked for, which is the point
-  // of the exercise: the fetched ranges should track the CDS, not the span.
-  // ranges are fetched concurrently, so callers compare against this sorted
+  // Records what the sequence adapter was actually asked for. Ranges are fetched
+  // concurrently, so callers compare against this sorted.
   function installSequenceAdapter(genome: string, { fail = false } = {}) {
     const requested: { start: number; end: number }[] = []
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
@@ -584,7 +572,7 @@ describe('fetchPeptideData', () => {
   })
 
   it('fetches the coding stretches rather than the whole transcript span', async () => {
-    // ATGAAA + TTTGGG -> MKFG, split across an 8.9kb intron
+    // ATGAAA + TTTGGG -> MKFG, split across an 8.9kb intron.
     const genome = makeGenome(
       new Map([
         [100, 'ATGAAA'],
@@ -627,7 +615,7 @@ describe('fetchPeptideData', () => {
 
   it('caps the request count on a many-exon gene without changing the protein', async () => {
     // 20 single-codon exons, each separated by an intron far wider than the
-    // merge threshold — the cap has to close some of those gaps anyway
+    // merge threshold, so the cap has to close some of those gaps anyway.
     const exons = Array.from({ length: 20 }, (_, i) => ({
       start: 1000 + i * 10_000,
       end: 1000 + i * 10_000 + 3,

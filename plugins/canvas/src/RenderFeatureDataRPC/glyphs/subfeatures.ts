@@ -12,19 +12,11 @@ import type { IsoformStack } from '../rpcTypes.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Is this child of a gene one of the isoforms it is choosing among — i.e. a
-// transcript-shaped thing that takes a row of its own — rather than a
-// decoration alongside them (an NCBI source record, a `biological_region`)?
-//
-// Structural first, like findGlyph's own dispatch: a child with subfeatures is
-// what makes the gene a Subfeatures container to begin with, and the emitter
-// draws it exactly like an `mRNA`. `transcriptTypes` is a seven-entry list that
-// does NOT name `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript`, all
-// of which NCBI hangs off a gene next to its mRNAs, so keying only off it left
-// those isoforms out of the ranking entirely — a gene trimmed to 2 drew 7 —
-// and vanish under `longestCoding` while the layout reported nothing collapsed.
-// The type test stays as the fallback for a childless transcript. Matched
-// case-insensitively, like isCDS/isExon and the featureAdmission gate.
+// Is this child one of the isoforms the gene chooses among, rather than a
+// decoration beside them (an NCBI source record, a `biological_region`)?
+// Structural first, like findGlyph's dispatch, because `transcriptTypes` names
+// none of `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript` — the type
+// test only catches a childless transcript.
 function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
   return (
     getSubfeatures(sub).length > 0 ||
@@ -36,9 +28,6 @@ function transcriptTypeSet(config: DisplayConfig) {
   return new Set(config.transcriptTypes.map(t => t.toLowerCase()))
 }
 
-// The isoforms a gene is choosing among: its isoform-shaped children when
-// present, else the raw subfeatures. Single source so the "Isoforms collapsed"
-// notice and the gene-glyph control's visibility can't drift apart.
 function getIsoforms(
   subfeatures: Feature[],
   transcriptTypes: ReadonlySet<string>,
@@ -47,21 +36,10 @@ function getIsoforms(
   return isoforms.length > 0 ? isoforms : subfeatures
 }
 
-// Total coding bp across a feature's subtree (0 when non-coding). "Longest
-// coding" means the longest protein, i.e. summed CDS length — not the widest
-// genomic footprint, which an isoform with a large intron could win despite a
-// shorter protein. CDS segments are deduped by start-end (matching
-// dedupedSortedCDS): duplicated CDS rows are a real GFF3 quirk (e.g. Gencode)
-// and, counted twice here, would inflate one isoform's length and win it the
-// "longest coding" pick over a genuinely longer protein.
-//
-// A feature that IS the CDS falls back to its own span, which is the same
-// number and the same rule dedupedSortedCDS gives the translator — so a
-// polyprotein is ranked on the protein it really translates to, comparable with
-// the summed-CDS length every other isoform is ranked on. Summing its cleavage
-// products instead would count a different quantity: they can cover the same
-// bases twice (RefSeq annotates enterovirus VP0 beside the 1A and 1B it cleaves
-// into) and they stop short of the stop codon.
+// "Longest coding" is the longest protein — summed CDS length, not the widest
+// genomic footprint an isoform with a large intron could win. Segments dedupe by
+// start-end, because a duplicated CDS row is a real GFF3 quirk that would
+// otherwise inflate one isoform past a genuinely longer protein.
 function codingLength(feature: Feature): number {
   const seen = new Set<string>()
   let sum = 0
@@ -86,19 +64,10 @@ function codingLength(feature: Feature): number {
     : sum
 }
 
-// How highly the annotation itself rates this feature as the gene's
-// representative — its position in `canonicalTranscriptTags`, or Infinity for
-// one that carries no listed tag. Read out of whichever attribute the config
-// names (`tag=RefSeq Select` in NCBI's GFF3, `MANE_Select` / `Ensembl_canonical`
-// in Ensembl's); a GFF3 attribute holding a comma list arrives as an array, so
-// both shapes match, case-insensitively.
-//
-// A position rather than a boolean because the default list holds two tags a
-// single gene can carry at once: `MANE Plus Clinical` marks an ADDITIONAL
-// transcript kept for clinical variants outside the MANE Select one, and it is
-// often the longer of the two — so with both flattened to "tagged", the
-// coding-length tiebreak below picked between them by a coin flip, and got the
-// gene wrong exactly when the curators had said which one was right.
+// A position in `canonicalTranscriptTags` rather than a boolean, because the
+// default list holds two tags one gene can carry at once and flattening them to
+// "tagged" leaves the coding-length tiebreak to pick between them. A GFF3
+// attribute holding a comma list arrives as an array, hence both shapes.
 function canonicalRank(feature: Feature, field: string, wanted: string[]) {
   const value = feature.get(field)
   const values = Array.isArray(value)
@@ -121,14 +90,9 @@ interface IsoformScore {
   coding: boolean
 }
 
-// The two terms BOTH orderings below lead with, per child, measured once —
-// `isCodingFeature` walks the whole subtree, and the ranking (which the cap
-// and `longestCoding` share) and the stack sort each used to walk it again.
-//
-// Protein length is deliberately not here: only the ranking needs it, and
-// `codingLength` walks the subtree a second time. Every gene on screen pays for
-// this map on every layout, while the ranking runs only when a gene is actually
-// collapsing.
+// Protein length is deliberately absent: only the ranking needs it, and every
+// gene on screen would pay `codingLength`'s subtree walk on every layout while
+// the ranking runs only when a gene actually collapses.
 function scoreIsoforms(features: Feature[], config: DisplayConfig) {
   const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
   const wanted = canonicalTranscriptTags.map(t => t.toLowerCase())
@@ -147,22 +111,10 @@ function scoreIsoforms(features: Feature[], config: DisplayConfig) {
 
 type Scores = ReturnType<typeof scoreIsoforms>
 
-// The gene's isoforms, best first: `longestCoding` takes the head and the fit
-// ladder's trim takes the first n, so the two agree at n = 1 by construction.
-//
-// A tagged isoform outranks everything, because a curated tag is a better
-// answer to "which isoform speaks for this gene" than any measurement of one —
-// it is the choice a human made, and for a gene whose longest protein is a
-// minor variant it is the only thing that gets that gene right. Then coding
-// isoforms above non-coding ones and by protein length; a non-coding one is
-// ranked by span, which it is only ever compared on against other non-coding
-// ones — so that is also the whole ranking for a gene with no coding isoform at
-// all (a lncRNA), and for the annotations (most of them) that tag nothing.
-//
-// A coding-length tie resolves to the LATER isoform (DPP6 and other fixtures
-// depend on it), which a stable sort would break the other way — hence the
-// explicit index tiebreak. Sized once per isoform, not inside the comparator,
-// which would re-walk each subtree O(n log n) times.
+// Best first. A curated tag outranks every measurement, because for a gene whose
+// longest protein is a minor variant it is the only thing that picks the right
+// isoform. A coding-length tie resolves to the LATER isoform, which a stable
+// sort would break the other way — hence the explicit index term.
 function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
   return isoforms
     .map((feature, index) => {
@@ -191,13 +143,8 @@ function totalLabelRows(layout: FeatureLayout) {
   return (layout.labelRows ?? 0) + (layout.ownsLabelRow ? 1 : 0)
 }
 
-// The head of a ranked isoform list, and the curated tag that put it there —
-// the chip names that tag rather than only saying that transcripts are hidden,
-// and `tags[Infinity]` is the annotation that named none, which leaves the pick
-// to protein length.
-//
-// The survivor is a Set, so the caller's filter keeps the caller's order and a
-// gene under the cap lays out identically with the collapse on and off.
+// The survivor rides in a Set so the caller's filter keeps the caller's order,
+// and a gene under the cap lays out identically with the collapse on and off.
 function keepBest(ranked: Feature[], scores: Scores, config: DisplayConfig) {
   const best = ranked[0]!
   return {
@@ -207,12 +154,9 @@ function keepBest(ranked: Feature[], scores: Scores, config: DisplayConfig) {
   }
 }
 
-// Which isoforms this gene draws, or undefined when it draws all of them.
-//
-// `longestCoding` is the only collapse left in the worker. It is the user's own
-// pick and it is also the payload gate at whole-chromosome zoom, where shipping
-// every isoform of every gene was never measured (ADR-092). Everything else the
-// display gives up it gives up on the main thread, where it can see the pack.
+// `longestCoding` is the only collapse the worker still makes: it is the user's
+// own pick and the payload gate at whole-chromosome zoom. Everything else the
+// display gives up, it gives up on the main thread where it can see the pack.
 function collapseIsoforms({
   isoforms,
   scores,
@@ -227,10 +171,6 @@ function collapseIsoforms({
     : undefined
 }
 
-// One child of the gene laid out as its OWN glyph — dispatched through
-// `findGlyph`, so a transcript child lays out as a transcript — and tagged with
-// whether it spends a `below` label row, which is the parent's to count.
-//
 // Not `glyphUtils`' exported `layoutChild`, which is the opposite thing: a flat
 // `Box` with no children, for the glyphs whose children are leaves.
 function layoutStackedChild(child: Feature, args: LayoutArgs) {
@@ -253,11 +193,9 @@ function layoutStackedChild(child: Feature, args: LayoutArgs) {
   return layout
 }
 
-// The gene's children as the main-thread trim sees them: drawn order, with the
-// rank that decides which ones a smaller `k` keeps. `rank` is deliberately not
-// the drawn position — the stack sorts by (canonical, coding) alone while the
-// ranking also weighs protein length, so "drop a suffix" would keep a different
-// set than the worker's own `longestCoding` does at k = 1.
+// `rank` is deliberately not the drawn position: the stack sorts by (canonical,
+// coding) alone while the ranking also weighs protein length, so "drop a suffix"
+// would keep a different set than `longestCoding` does at k = 1.
 function buildIsoformStack({
   drawn,
   children,
@@ -310,41 +248,30 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode } = config
 
-  // the gene's own resolved height, used only for the inter-transcript gap below
-  // — each stacked child carries whatever height its own glyph resolved
+  // Spent only on the inter-transcript gap below — each stacked child carries
+  // whatever height its own glyph resolved.
   const heightPx = featureHeightPx(feature, args)
 
   let subfeatures = [...getSubfeatures(feature)]
 
   const scores = scoreIsoforms(subfeatures, config)
 
-  // Resolve the isoform list once and reuse it for both the gene-glyph control's
-  // visibility (does this gene actually have multiple isoforms to choose among?)
-  // and the longestCoding collapse, so the control appears exactly when switching
-  // modes would change anything.
+  // One list drives both the gene-glyph control's visibility and the
+  // longestCoding collapse, so the control appears exactly when switching modes
+  // would change something.
   const isoforms = getIsoforms(subfeatures, transcriptTypeSet(config))
   const hasMultipleIsoforms = isoforms.length > 1
   const isoformSet = new Set(isoforms)
 
-  // Which isoforms survive `longestCoding`, or undefined when none are dropped.
-  // Ranked BEFORE the stack sort below, which is in place and over an array
-  // `isoforms` can BE — getIsoforms falls back to the raw subfeatures for a
-  // gene with no isoform-shaped children. Ranking after it would rank a
-  // reordered list, and rankIsoforms breaks a tie by index.
-  //
-  // An expanded gene draws every isoform whatever the mode says. The badge that
-  // offers the way back is the main thread's, off `isoformCount` (see
-  // `IsoformStack`).
+  // Ranked BEFORE the stack sort below, which sorts in place over an array
+  // `isoforms` can BE, and rankIsoforms breaks a tie by index. An expanded gene
+  // draws every isoform whatever the mode says.
   const expanded = args.expandedGeneIds?.has(feature.id()) ?? false
   const collapsed = expanded
     ? undefined
     : collapseIsoforms({ isoforms, scores, config })
 
-  // Drop the isoforms that lost, leaving the decorations alongside them alone —
-  // an NCBI source record, a `biological_region`. `longestCoding` used to
-  // replace the child list with the isoform list outright, so those went with
-  // them, and for a gene with a single isoform beside one it did that while
-  // reporting nothing collapsed at all.
+  // Drops the isoforms that lost and leaves the decorations beside them alone.
   if (collapsed) {
     subfeatures = subfeatures.filter(
       f => !isoformSet.has(f) || collapsed.keep.has(f.id()),
@@ -352,25 +279,10 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   }
 
   if (!collapsed) {
-    // Stack the tagged isoform on top, then the coding ones. The two terms
-    // `rankIsoforms` leads with, so a capped gene draws first the transcript the
-    // chip credits with picking it. Stable below that, so isoforms tying on both
-    // terms keep the order they would have had — and an annotation that tags
-    // nothing, which is most of them, sorts exactly as before.
-    //
-    // Gated on the collapse, not on the mode: a collapse leaves one isoform and
-    // has nothing to order, but `longestCoding` also declines to collapse a gene
-    // the user EXPANDED, and that gene draws every isoform — reading the mode
-    // here left exactly those unordered.
-    //
-    // Two knock-ons, both of which bring `longestCoding` into line with every
-    // other mode rather than inventing an order for it. A gene with a SINGLE
-    // isoform is also uncollapsed, so its coding isoform now sorts above a
-    // decoration beside it (`biological_region`, an NCBI source record) — those
-    // score `canonical: Infinity`, and `Infinity - Infinity` is NaN, so the
-    // comparator falls through to the coding term. And `buildIsoformStack`
-    // re-ranks off the POST-sort `drawn` while `rankIsoforms` breaks a
-    // coding-length tie by index, so tie-broken isoform ranks move here too.
+    // Leads with the two terms `rankIsoforms` does, and stays stable below them.
+    // Gated on the collapse rather than the mode, because `longestCoding`
+    // declines to collapse a gene the user EXPANDED and that gene draws every
+    // isoform.
     subfeatures.sort((a, b) => {
       const x = scores.get(a.id())!
       const y = scores.get(b.id())!
@@ -380,13 +292,10 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   const children: FeatureLayout[] = []
   let currentYPx = 0
-  // `below` label rows placed so far. They are counted, never added to
-  // `currentYPx`: their height is the display mode's label font size and only
-  // the main thread knows it (see reservesBelowLabelRow). Every Y this loop
-  // writes therefore stays proportional to `heightPx`, which is what makes the
-  // main thread's uniform compact scale exact — the property
-  // TRANSCRIPT_PADDING_RATIO exists to preserve, and the one an absolute
-  // LABEL_FONT_SIZE in this running offset used to break.
+  // Counted, never added to `currentYPx`: a label row's height is the display
+  // mode's label font size and only the main thread knows it, so every Y this
+  // loop writes stays proportional to `heightPx` and the main thread's uniform
+  // compact scale stays exact.
   let labelRows = 0
 
   for (const [i, child] of subfeatures.entries()) {
@@ -398,10 +307,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     children.push(childLayout)
 
     currentYPx += childLayout.height
-    // rows the child spends INSIDE itself (a polyprotein CDS labels each of its
-    // cleavage products), which sit between this child's top and the next one's
-    // and so are above every sibling that follows, plus the one it reserves
-    // under its own body
     labelRows += totalLabelRows(childLayout)
     if (i < subfeatures.length - 1) {
       currentYPx += heightPx * TRANSCRIPT_PADDING_RATIO
@@ -416,9 +321,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     y: 0,
     height: totalHeightPx,
     children,
-    // the gene's own row has to grow by every label row it contains; the main
-    // thread spends them in bodyHeightPx, which is the one place both the fit
-    // probe and the committed pack read
     labelRows,
     isoformsCollapsed: collapsed !== undefined,
     canonicalTag: collapsed?.canonicalTag,

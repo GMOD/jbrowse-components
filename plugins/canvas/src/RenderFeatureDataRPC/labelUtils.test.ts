@@ -86,10 +86,8 @@ describe('readFeatureLabels', () => {
   })
 
   it('resolves a plugin-registered jexl function in labels.name when the instance is passed', () => {
-    // labels.name defaults ARE jexl, so a plugin-registered function only
-    // resolves when the worker pluginManager's jexl instance is threaded in
-    // (same contract as the mouseover slot). The expression string is unique so
-    // stringToJexlExpression's compilation cache binds it to this instance.
+    // The expression string is unique, so stringToJexlExpression's compilation
+    // cache binds it to this instance.
     const pluginJexl = createJexlInstance()
     pluginJexl.addFunction('shoutLabelUnique', (s: string) => `${s}!`)
     const config = mockDisplayConfig()
@@ -99,8 +97,7 @@ describe('readFeatureLabels', () => {
 })
 
 // The row is COUNTED here, not sized: its height is the display mode's label
-// font size and the worker is mode-agnostic. layoutSubfeatures turns each `true`
-// into one `labelRowsAbove` step, which the main thread spends at labelFontPx.
+// font size and the worker is mode-agnostic.
 describe('reservesBelowLabelRow', () => {
   const ask = (
     feature: unknown,
@@ -116,9 +113,8 @@ describe('reservesBelowLabelRow', () => {
       jexl,
     })
 
-  // A child that carries `product` and nothing the raw reader can see: no name,
-  // no id. Both halves matter — getFeatureName falls back to the id, so an
-  // id-bearing fixture would reserve either way and hide the divergence.
+  // No name and no id: getFeatureName falls back to the id, so an id-bearing
+  // fixture would reserve either way and hide the divergence.
   const productOnly = (product?: string) =>
     ({
       get: (key: string) => (key === 'product' ? product : undefined),
@@ -129,19 +125,16 @@ describe('reservesBelowLabelRow', () => {
     labels: { name: "jexl:get(feature,'product')" },
   }
 
-  // THE DIVERGENCE. The label that draws comes from the `labels.name` slot, so
-  // the reservation has to ask the same thing. Reading the raw name instead
-  // agreed on the default slot and disagreed on exactly the config the slot
-  // exists for: children carrying `product` and no name reserved nothing, and
-  // every transcript's label painted across the row beneath it.
+  // The label that draws comes from the `labels.name` slot, so the reservation
+  // has to ask the same thing.
   it('reserves off the labels.name slot, not the raw name', () => {
     const jexl = createJexlInstance()
     const feature = productOnly('nsp5')
     expect(
       ask(feature, 'below', 'ProcessedTranscript', NAME_FROM_PRODUCT, jexl),
     ).toBe(true)
-    // the emitted label is that same string, which is what makes the reserved
-    // row the right size
+    // the emitted label is that same string, which is what makes the row the
+    // right size
     expect(
       subfeatureLabelText(
         feature,
@@ -151,8 +144,7 @@ describe('reservesBelowLabelRow', () => {
     ).toBe('nsp5')
   })
 
-  // The converse, so the widened read cannot pass by reserving for everything:
-  // a child the slot resolves to nothing for draws no label and costs no row.
+  // The converse, so a widened read cannot pass by reserving for everything.
   it('does not reserve when the slot resolves to nothing either', () => {
     const jexl = createJexlInstance()
     expect(
@@ -171,9 +163,7 @@ describe('reservesBelowLabelRow', () => {
   })
 
   // The gate is the glyph, not the feature's type: a `lnc_RNA` isoform lands on
-  // Segments and its emitter labels it exactly like an mRNA, so it costs a row
-  // exactly like one. Keyed off `transcriptTypes` (which lists neither) the
-  // label drew with nothing reserved and lay across the transcript beneath.
+  // Segments and its emitter labels it exactly like an mRNA.
   it('reserves for a non-coding isoform, which draws the same label', () => {
     expect(ask(createMockFeature('XR_001234'), 'below', 'Segments')).toBe(true)
     expect(ask(createMockFeature('some-region'), 'below', 'Box')).toBe(true)
@@ -194,9 +184,8 @@ describe('reservesBelowLabelRow', () => {
     expect(ask(createMockFeature('NM_001234'), 'none')).toBe(false)
   })
 
-  // These label their CHILDREN, never themselves (a polyprotein's cleavage
-  // products, a transposon's subparts), so the rows belong to the child layout
-  // and counting one here too would double-spend them.
+  // These label their CHILDREN, never themselves, so the rows belong to the
+  // child layout and counting one here too would double-spend them.
   it('reserves nothing for a glyph that labels its children instead', () => {
     expect(
       ask(createMockFeature('polyprotein'), 'below', 'MatureProteinRegion'),

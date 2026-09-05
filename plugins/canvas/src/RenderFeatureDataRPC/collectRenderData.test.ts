@@ -12,8 +12,8 @@ import type { Feature } from '@jbrowse/core/util'
 const jexl = createJexlInstance()
 
 function mockFeature(opts: {
-  // optional, because a GFF/BED row without one is what the Box glyph's
-  // untyped-child path exists for
+  // optional: a GFF/BED row without one is what the Box glyph's untyped-child
+  // path exists for
   type?: string
   id: string
   start: number
@@ -21,8 +21,7 @@ function mockFeature(opts: {
   strand?: number
   phase?: number
   subfeatures?: Feature[]
-  // anything else the annotation carries, for the config-jexl slots that read
-  // arbitrary attributes off a feature
+  // anything else the annotation carries, for the config-jexl slots
   attributes?: Record<string, unknown>
 }): Feature {
   const { strand = 1, subfeatures = [], attributes, ...rest } = opts
@@ -51,9 +50,6 @@ function boxLayout(feature: Feature): FeatureLayout {
 
 const config = mockDisplayConfig({ color: '#cccc99' })
 
-// Every case here walks ONE layout over the same context; only the region end,
-// the config, the colorByCDS flag and the peptide map ever vary, so they arrive
-// as overrides rather than as seven repeated arguments.
 function collect(
   layout: FeatureLayout,
   overrides: Partial<Parameters<typeof collectRenderData>[0]> = {},
@@ -153,11 +149,8 @@ describe('collectRenderData peptide overlay', () => {
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 
-  // The repeated CDS row dedupedSortedCDS exists for (Gencode v36). It dedupes
-  // the residues, but the layout keeps BOTH rows, and both resolve the same
-  // `start-end` entry — so each residue used to be drawn twice: two stacked
-  // rects, two overlay items for the hover and the codon hit test to walk, and
-  // two identical <text> runs in an SVG export.
+  // Gencode v36 repeats a CDS row. The layout keeps both, and both resolve the
+  // same `start-end` entry.
   it('draws a repeated CDS row once, not once per copy', () => {
     const cdsA = mockFeature({ type: 'CDS', id: 'cdsA', start: 100, end: 109 })
     const cdsDup = mockFeature({
@@ -183,17 +176,15 @@ describe('collectRenderData peptide overlay', () => {
       },
       { peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]) },
     )
-    // 9 coding bases, so 3 codons — and one rect apiece, with no leftover box
-    // rect from the skipped copy painted over them.
+    // 9 coding bases, so 3 codons, one rect apiece
     expect(result.aminoAcidOverlay).toHaveLength(3)
     expect(result.rectYs).toHaveLength(3)
   })
 })
 
 // Viral polyprotein: gene → one CDS (the whole ORF) → mature_protein_region
-// children. The gene routes to Subfeatures, the CDS to MatureProteinRegion;
-// protein is keyed by the CDS id (each polyprotein CDS is its own reading
-// frame, see findTranscriptsWithCDS). Each region becomes a stacked row.
+// children, each of which becomes a stacked row. Protein is keyed by the CDS
+// id, since each polyprotein CDS is its own reading frame.
 function polyproteinLayout(
   cdsStart: number,
   cdsEnd: number,
@@ -264,8 +255,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   })
 
   // Real enterovirus shape: VP0 (the precursor) overlaps its own cleavage
-  // products VP4 and VP2, all siblings under the CDS. Each row independently
-  // shows the residues it covers — VP0 shows all six, VP4/VP2 their halves.
+  // products VP4 and VP2, all siblings under the CDS.
   it('shows residues independently for an overlapping precursor and its products', () => {
     const { layout } = polyproteinLayout(100, 118, [
       { start: 100, end: 118 }, // VP0 precursor (spans both)
@@ -288,8 +278,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
     expect(byRow(20)).toEqual(['L', 'S', 'T']) // VP2
   })
 
-  // The CDS spans the stop codon (118-121) but no mature region covers it, so
-  // the stop is excluded from every row — it is not part of any mature peptide.
+  // The CDS spans the stop codon (118-121) but no mature region covers it.
   it('excludes the trailing stop codon from every region', () => {
     const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
     const result = collect(layout, {
@@ -309,8 +298,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   })
 
   // On the - strand the protein's N-terminus (M) is at the highest genomic
-  // coordinate; clipping is purely genomic, so each region still gets the codons
-  // that physically fall within it regardless of translation direction.
+  // coordinate, while clipping stays purely genomic.
   it('clips by genomic position on the - strand', () => {
     const { layout } = polyproteinLayout(
       100,
@@ -370,9 +358,8 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     expect(result.flatbushItems[0]!.tooltip).toBe('m1')
   })
 
-  // An attribute that is present but empty comes back as null, not undefined —
-  // a VCF INFO key, a JSON `null` — and jexl hands it straight through. Rendered
-  // with String() that put the word "null" over the feature.
+  // An attribute present but empty comes back as null, not undefined — a VCF
+  // INFO key, a JSON `null` — and jexl hands it straight through.
   it('degrades to the feature name when a custom mouseover jexl reads a null attribute', () => {
     const feature = mockFeature({
       type: 'gene',
@@ -397,15 +384,13 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'id')` })
     const result = collect(layout, { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('tx1')
-    // subfeatures no longer carry their own tooltip — hover unifies on the
-    // top-level feature's resolved mouseover
     expect(result.subfeatureInfos.every(s => !('tooltip' in s))).toBe(true)
   })
 })
 
 describe('collectRenderData intron chevrons', () => {
-  // twoExonTranscript has exons 100-104 and 200-205, so a single intron line
-  // spans the 104-200 gap. The line's `direction` drives chevron rendering.
+  // twoExonTranscript has exons 100-104 and 200-205, so one intron line spans
+  // the 104-200 gap.
   it('sets intron line direction to the strand when chevrons are enabled', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ displayDirectionalChevrons: true })
@@ -421,12 +406,7 @@ describe('collectRenderData intron chevrons', () => {
   })
 })
 
-// gene → two mRNA transcripts, each with two CDS exons. The gene routes to
-// Subfeatures; each transcript to ProcessedTranscript stacked at its own y. This
-// pins the emit behavior of the stacked-transcript path: exon rects and intron
-// lines shifted to each transcript's offset, one strand arrow per transcript
-// (transcripts self-emit arrows regardless of nesting), and a subfeatureInfo per
-// transcript parented to the gene.
+// gene → two mRNA transcripts, each with two CDS exons, stacked at their own y.
 function geneWithTwoTranscripts() {
   function transcript(id: string, base: number, topPx: number) {
     const cds1 = mockFeature({
@@ -482,14 +462,10 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     const layout = geneWithTwoTranscripts()
     const result = collect(layout)
 
-    // four exon rects (two per transcript)
     expect(result.rectPositions.length).toBe(4 * 2)
-    // one intron line per transcript, at each transcript's mid-height offset
     expect([...result.lineYs]).toEqual([5, 20])
-    // one strand arrow per transcript, offset to its row center
     expect([...result.arrowYs]).toEqual([5, 20])
     expect(result.arrowXs.length).toBe(2)
-    // each transcript registered as a subfeature parented to the gene
     expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(['tx1', 'tx2'])
     expect(result.subfeatureInfos.every(s => s.parentFeatureId === 'g1')).toBe(
       true,
@@ -498,9 +474,8 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
   })
 
   it('registers a bare leaf child of a stacked gene as a hoverable subfeature', () => {
-    // gene with a transcript (makes it Subfeatures) plus a bare feature with no
-    // subfeatures (a Box child). The leaf must become its own subfeatureInfo
-    // parented to the gene, not just a rect with hover falling back to the gene.
+    // a gene with a transcript (so, Subfeatures) plus a bare feature with no
+    // subfeatures of its own (a Box child)
     const cds = mockFeature({ type: 'CDS', id: 'c1', start: 100, end: 140 })
     const mRNA = mockFeature({
       type: 'mRNA',
@@ -548,10 +523,8 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     })
   })
 
-  // The context menu names what was clicked ("Copy <noun> name"), falling back
-  // to a generic noun when the hit has no type. `''` is not that fallback — it
-  // is a type, as far as `?? 'subfeature'` can tell — so a typeless child ended
-  // up in menu rows with an empty noun in the middle of them.
+  // The context menu falls back to a generic noun when the hit has no type, and
+  // an empty string is not that fallback: `?? 'subfeature'` reads it as a type.
   it('leaves a typeless leaf child without a type, not with an empty one', () => {
     const leaf = mockFeature({ id: 'anon1', start: 150, end: 170 })
     const gene = mockFeature({
@@ -574,12 +547,9 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     ).toBeUndefined()
   })
 
-  // `Box` is a self-labeling glyph (SELF_LABELING_GLYPHS), so a leaf child of a
-  // gene spends its own `below` label row and `layoutChild` marks it
-  // `ownsLabelRow`. The parent's `labelRows` counts that row, and
-  // `applyLayoutToRegion` is what turns the flag into height — so a leaf that
-  // arrives here without it gets a hit box one label row short of the row the
-  // packer reserved for it, and the label under it resolves to the gene.
+  // `Box` is self-labeling, so a leaf child of a gene spends its own `below`
+  // row. Without `ownsLabelRow` its hit box comes out one row short of what the
+  // packer reserved, and the label under it resolves to the gene.
   it("carries a bare leaf child's own below-label row into its hit box", () => {
     const leaf = mockFeature({
       type: 'regulatory_region',
@@ -612,12 +582,9 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
   })
 
   it('parents a container-inside-a-container to the record root, not the container', () => {
-    // Three generic levels — a match with match_parts that themselves have
-    // parts, which nests one Subfeatures glyph inside another. `parentFeatureId`
-    // means "the top-level feature id" to everything that reads it: it gates
-    // `resolveSubfeature`'s pairing, it is the only id GetCanvasFeatureDetails
-    // resolves, and the highlight sweep pins by it. Attributing the grandchild
-    // to the intermediate container instead left it drawn, labelled, and
+    // Three generic levels, nesting one Subfeatures glyph inside another.
+    // `parentFeatureId` means "the top-level feature id" to everything that
+    // reads it, so a grandchild attributed to the intermediate container is
     // impossible to hover, select or right-click.
     const grandchild = mockFeature({
       type: 'match_part',
@@ -656,8 +623,7 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     }
     const result = collect(layout)
 
-    // only the leaf registers — a container glyph draws no primitives of its
-    // own and so has nothing to be hovered by — and it names the root
+    // only the leaf registers: a container glyph draws no primitives of its own
     expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(['part1'])
     expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('outer')
   })
@@ -666,9 +632,8 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
 describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
   // A gene spanning 100..2500 with two equal-coding isoforms: tx0 at 100..500
   // (CDS 100..200) and tx1 at 1100..1500 (CDS 1100..1200). longestCoding breaks
-  // the coding-length tie toward the later isoform (tx1), so the rendered glyph
-  // begins at 1100 — far right of the gene's own start (100). This reproduces
-  // the DPP6 case where the label floated left of the visible transcript.
+  // the tie toward tx1, so the rendered glyph begins far right of the gene's
+  // own start.
   function collapsedGeneLayout() {
     const makeTx = (i: number) => {
       const cds = mockFeature({
@@ -761,9 +726,7 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
 })
 
 describe('collectRenderData color-slot robustness', () => {
-  // A per-feature color jexl that throws (references an unregistered function)
-  // must not fail the whole track render — it degrades to a visible magenta
-  // sentinel per feature, mirroring the mouseover/labels slots.
+  // A throwing per-feature color jexl must not fail the whole track render.
   it('degrades to magenta when a per-feature color jexl throws', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const cfg = mockDisplayConfig({
@@ -774,10 +737,8 @@ describe('collectRenderData color-slot robustness', () => {
   })
 })
 
-// Fade eligibility is recorded once per FEATURE on the flatbush item. The
-// per-rect `rectDensityFade` array is allocated here but valued by the
-// main-thread layout, so it is deliberately all-zero on the way out of the
-// worker, so asserting on it here would be asserting on nothing.
+// Fade eligibility is recorded once per FEATURE on the flatbush item; the
+// per-rect array leaves the worker all-zero, so it pins nothing here.
 describe('collectRenderData density-fade eligibility', () => {
   it('marks whole-feature box glyphs (variants, plain BED) fade-eligible', () => {
     const feature = mockFeature({
@@ -799,10 +760,8 @@ describe('collectRenderData density-fade eligibility', () => {
   })
 })
 
-// Transcript coordinates ride on the hit-test entries so the hover can name the
-// exon and HGVS position under the cursor: on the transcript's SubfeatureInfo
-// when it sits under a gene, on the feature's own FlatbushItem when it stands
-// alone.
+// Transcript coordinates ride on the transcript's SubfeatureInfo when it sits
+// under a gene, on the feature's own FlatbushItem when it stands alone.
 describe('collectRenderData transcript coords', () => {
   const exon = (id: string, start: number, end: number) =>
     mockFeature({ type: 'exon', id, start, end })

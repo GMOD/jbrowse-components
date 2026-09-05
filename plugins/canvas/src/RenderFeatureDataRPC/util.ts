@@ -12,22 +12,14 @@ export function truncateLabel(text: string) {
 }
 
 // The unit `truncateToWidth` cuts on. Not UTF-16 units, which split a surrogate
-// pair into halves that draw as the replacement glyph, and not code points,
-// which split a combining sequence or an emoji ZWJ join — either way one visible
-// character becomes two. Built once: it is reached only by labels that overflow,
-// but on a dense annotation that is most of them.
+// pair, and not code points, which split a combining sequence or an emoji ZWJ
+// join.
 const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 
-// Truncates text so its rendered width at fontSize never exceeds maxWidthPx,
-// appending an ellipsis when shortened. Returns a string whose
-// measureText(result, fontSize) is guaranteed <= maxWidthPx, so the caller's
-// stored textWidth is bounded by construction and layout reservations match
-// what is drawn. Single pass over the per-char widths; only over-budget strings
-// enter the loop.
-//
-// A budget too small for the ellipsis itself yields nothing rather than a lone
-// '…' — the one input that could return something wider than it was given, and
-// the guarantee above is what the reservation is built on.
+// The result measures no wider than maxWidthPx, so a caller's stored textWidth
+// is bounded by construction. A budget too small for the ellipsis itself yields
+// nothing rather than a lone '…', the one input that could otherwise come back
+// wider than it was given.
 export function truncateToWidth(
   text: string,
   maxWidthPx: number,
@@ -54,22 +46,18 @@ export function truncateToWidth(
   return `${chars.slice(0, kept).join('')}…`
 }
 
-// True when the value is a string with at least one non-whitespace character.
-// Accepts undefined (treated as no text) and narrows to `string`, so callers can
-// use it directly as a guard. A bare `/\S/.test(undefined)` would coerce to the
-// string "undefined" and wrongly report visible text, so nullish is handled here.
+// A bare `/\S/.test(undefined)` coerces to the string "undefined" and wrongly
+// reports visible text, so this handles nullish itself.
 export function hasVisibleText(text: string | undefined): text is string {
   return text !== undefined && /\S/.test(text)
 }
 
-// Feature type as a plain string, never undefined — the single place the
-// optional `type` slot is defaulted. Pairs with isCDS/isExon/isUTR below.
+// The single place the optional `type` slot is defaulted.
 export function featureType(feature: Feature) {
   return feature.get('type') ?? ''
 }
 
-// Direct children as a plain array, never undefined — the single place the
-// optional `subfeatures` slot is resolved.
+// The single place the optional `subfeatures` slot is resolved.
 export function getSubfeatures(feature: Feature): Feature[] {
   return feature.get('subfeatures') ?? []
 }
@@ -78,15 +66,13 @@ export function isUTR(feature: Feature) {
   return UTR_REGEX.test(featureType(feature))
 }
 
-// Case-insensitive: GFF3 mandates uppercase `CDS`, but lowercase `cds` shows up
-// in real-world files. Centralizing avoids the dispatch path matching one case
-// and the layout path matching another.
+// Case-insensitive: GFF3 mandates uppercase `CDS`, but real-world files carry
+// lowercase `cds`.
 export function isCDS(feature: Feature) {
   return featureType(feature).toLowerCase() === 'cds'
 }
 
-// Case-insensitive for the same reason as isCDS: a function that finds CDS
-// bounds case-insensitively but matches exons case-sensitively would derive
+// Case-insensitive like isCDS: matching exons case-sensitively would derive
 // UTRs from only some exons.
 export function isExon(feature: Feature) {
   return featureType(feature).toLowerCase() === 'exon'

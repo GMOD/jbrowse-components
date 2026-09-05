@@ -6,10 +6,9 @@ import type { GlyphType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-// A label value may be a string, a multi-valued array (e.g. a GFF attribute
-// whose value contained unescaped commas, parsed into multiple values), or
-// absent. Normalize to a single string so downstream width-measurement and
-// truncation always operate on text, never an array.
+// A label value may arrive as a multi-valued array — a GFF attribute whose
+// value held unescaped commas — so width measurement and truncation downstream
+// always see text.
 function toLabelString(value: unknown) {
   if (value === undefined || value === null) {
     return undefined
@@ -23,11 +22,9 @@ export function getFeatureName(feature: Feature): string | undefined {
   return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
-// Reads a single config-jexl label slot. The labels.name/labels.description
-// defaults ARE jexl, so a plugin-registered jexl function only resolves when
-// the worker pluginManager's jexl instance is passed (same contract as the
-// `mouseover` slot). Returns undefined for empty/falsy values so callers can
-// use simple truthiness.
+// The labels.name/labels.description defaults ARE jexl, so a plugin-registered
+// jexl function only resolves when the caller passes the worker
+// pluginManager's jexl instance.
 function readFeatureLabel(
   config: DisplayConfig,
   feature: Feature,
@@ -45,9 +42,8 @@ function readFeatureLabel(
   )
 }
 
-// Config-jexl name only. Subfeature label paths (mature-protein regions, repeat
-// subparts) render a single name line, so evaluating the description slot too
-// would waste a jexl eval per feature.
+// Subfeature label paths render a single name line, so evaluating the
+// description slot too would waste a jexl eval per feature.
 export function readFeatureName(
   config: DisplayConfig,
   feature: Feature,
@@ -67,27 +63,10 @@ export function readFeatureLabels(
   }
 }
 
-// Does this glyph's emitter register the feature ITSELF as a labeled subfeature
-// (processTranscriptLayout's `!isRoot` branch, and emitBox's)? The rest label
-// their CHILDREN instead — a polyprotein's cleavage products, a transposon's
-// subparts.
-//
-// For `MatureProteinRegion` those child rows are counted by the child layout's
-// own `labelRows` (layoutMatureProteinRegion sets `ownsLabelRow` per child).
-// `RepeatRegion` and `CrisprGuide` register their children straight off the
-// feature instead, so no child layout owns a row and the containing layout
-// reserves the ONE row they all label into — see `sharedChildLabelRows`. Until
-// it did, `below` mode on either track drew that text into a row `bodyHeightPx`
-// never reserved, and it overhung the feature under it.
-//
-// Keyed off the glyph the child actually resolved to, because the emitter is:
-// it was keyed off `transcriptTypes` instead, a seven-entry type list that does
-// not name `lnc_RNA` or `misc_RNA`, so such an isoform drew a `below` label
-// with no row reserved for it and the text lay across the transcript beneath.
-//
-// Exhaustive over GlyphType, like GLYPH_EMITTERS itself: a new glyph is a
-// compile error here until it says whether it labels itself, which is the only
-// thing keeping this table and that one from drifting apart silently.
+// Does this glyph's emitter register the feature ITSELF as a labeled
+// subfeature? The rest label their CHILDREN instead. Exhaustive over GlyphType
+// like GLYPH_EMITTERS, so a new glyph is a compile error here until it says
+// which it does.
 const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
   ProcessedTranscript: true,
   Segments: true,
@@ -96,30 +75,15 @@ const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
   RepeatRegion: false,
   CrisprGuide: false,
   Motif: false,
-  // never a child of a gene — it IS the gene, and its own label is the
-  // feature's, drawn by processFeatureRecord
+  // never a child of a gene — it IS the gene, and processFeatureRecord draws
+  // the feature's own label
   Subfeatures: false,
 }
 
-// Whether a child inside a gene needs a `below` label row reserved under it —
-// i.e. `below` mode is on, the child draws its own label, and it has a name to
-// draw. Only the subfeature path reserves height (top-level and overlay labels
-// float without reserving); the name is the feature's own name/id, never a
-// config-jexl slot, so this pass stays jexl-free.
-//
-// Answers a BOOLEAN rather than a height, and that is the whole point. The row's
-// height is the display mode's resolved label font size, which the worker is
-// deliberately mode-agnostic about (so a compact toggle never refetches). No
-// constant works either: a reservation that clears the drawn label in every mode
-// is `LABEL_FONT_SIZE × max(labelMultiplier / heightMultiplier)` = 2.33×, which
-// is 2.33× too much in normal mode. So the row is COUNTED here and SPENT on the
-// main thread, where the mode is known (see `labelRowsAbove` on FeatureLayout).
-//
-// The same base-vs-drawn mismatch on the HORIZONTAL axis (baked `textWidth` at
-// LABEL_FONT_SIZE vs the narrower drawn text) is converted at the point of use
-// (`renderedTextWidth`) instead — a width is one multiply where it is read,
-// while this height folds into a running Y offset every following transcript
-// inherits.
+// Answers a BOOLEAN rather than a height. The row's height is the display
+// mode's resolved label font size, and the worker stays mode-agnostic so a
+// compact toggle never refetches — the main thread spends the row it counts
+// here.
 export function reservesBelowLabelRow(args: {
   feature: Feature
   config: DisplayConfig
@@ -138,19 +102,13 @@ export function reservesBelowLabelRow(args: {
 
 /**
  * The `labelRows` a glyph reserves for children that all label into ONE shared
- * row under its body — a `repeat_region`'s subparts, a CRISPR guide's PAM. Those
- * emitters register children straight off the feature, so no child layout owns a
- * row (unlike `MatureProteinRegion`, which gives each product its own) and the
- * containing layout is the only place left to reserve it.
+ * row under its body. Those emitters register children straight off the
+ * feature, so no child layout owns a row and the containing layout is the only
+ * place left to reserve it.
  *
  * Takes the label STRINGS the emitter will draw rather than the child features,
- * because they are not all the child's own name — the guide's PAM draws the
- * literal `PAM`, whose subfeature carries no name at all — so asking the
- * features would reserve nothing for exactly the row that always draws.
- *
- * One row however many children label into it, which is the glyph's own design:
- * the subparts share a row, so their labels share one too (side by side for the
- * LTRs and TSDs, overlapping where the internal element spans them).
+ * because they are not all the child's own name — a CRISPR guide's PAM draws
+ * the literal `PAM` off a subfeature carrying no name at all.
  */
 export function sharedChildLabelRows(
   config: DisplayConfig,
@@ -164,19 +122,8 @@ export function sharedChildLabelRows(
 
 /**
  * The text a subfeature's own label draws, which is what decides whether it
- * needs a row.
- *
- * The `labels.name` slot first, because that is the override's whole purpose —
- * a `product` surfaces for mature peptides and repeat subparts that carry no
- * `name` — then the plain name/id.
- *
- * **Both the reservation and the emit go through this.** They used to ask
- * different questions: the reservation read the raw name, on the stated grounds
- * that the layout pass stayed jexl-free, which it does not — `featureHeightPx`
- * resolves a per-feature expression in the same pass. The two agreed on the
- * default slot and diverged on exactly the config the slot exists for, so a
- * track labelling its children by `product` reserved nothing and every
- * transcript's label painted across the row below it.
+ * needs a row. Both the reservation and the emit go through this, so a track
+ * labelling its children by `product` reserves the row it then paints into.
  */
 export function subfeatureLabelText(
   feature: Feature,

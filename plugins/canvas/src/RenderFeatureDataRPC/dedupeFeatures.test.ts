@@ -15,9 +15,7 @@ function feat(uniqueId: string, type = 'gene'): Feature {
 }
 
 // One rule, three RPCs: the render pack, the multi-row pack and the clustering
-// matrix each pay differently for a duplicate (a double-counted density gate,
-// duplicate quads, double-counted bin coverage), and each used to spell this
-// loop out beside a comment claiming it mirrored the others.
+// matrix each pay differently for a duplicate.
 describe('dedupeFeaturesById', () => {
   it('keeps the first occurrence and preserves adapter order', () => {
     const first = feat('a')

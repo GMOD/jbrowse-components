@@ -3,13 +3,9 @@ import { getSubfeatures, isCDS } from '../util.ts'
 import type { CdsSegment } from './aggregateAminoAcids.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Absolute-coordinate CDS segments, ascending by genomic start and deduped on
-// start/end. GFF3 files (e.g. Gencode v36) can repeat a CDS row; left in, the
-// duplicated bases stitch into the translated sequence and frameshift the
-// protein. Both the amino-acid overlay (transcriptCDS in peptideMapping) and
-// the peptide translation (extractCDSRegions in peptideUtils) derive from this
-// single function, so their dedup can never drift — if they disagreed, the
-// rendered residues would misalign with the protein string.
+// A GFF3 file can repeat a CDS row, and the duplicated bases stitch into the
+// translated sequence and frameshift the protein. The overlay and the
+// translation both derive their segments here, so their dedup cannot drift.
 export function dedupedSortedCDS(feature: Feature): CdsSegment[] {
   const seen = new Set<string>()
   const cds: CdsSegment[] = []
@@ -27,11 +23,9 @@ export function dedupedSortedCDS(feature: Feature): CdsSegment[] {
       }
     }
   }
-  // Standalone polyprotein CDS (no gene/mRNA wrapper): its children are the
-  // mature-protein cleavage products, not CDS segments, so the loop above finds
-  // none. The CDS feature is itself the single coding unit, so its own span is
-  // the one translation segment — keeping the overlay and the translation in
-  // agreement, same as every other shape.
+  // A standalone polyprotein CDS carries cleavage products rather than CDS
+  // segments, so the loop above finds none and the feature's own span is the
+  // single translation segment.
   if (cds.length === 0 && isCDS(feature)) {
     const start = feature.get('start')
     const end = feature.get('end')

@@ -15,8 +15,7 @@ import type {
 } from './rpcTypes.ts'
 
 // `floatingLabelsData` is a Map in the render contract, but a fixture reads far
-// better as a literal keyed by feature id. Tests build one of these instead of
-// spelling out nested Map constructor arrays.
+// better as a literal keyed by feature id.
 export function labelsMap(
   entries: Record<string, FeatureLabelData>,
 ): FloatingLabelsDataMap {
@@ -53,10 +52,8 @@ export function mockDisplayConfig(
   }
 }
 
-// Packs the rect/line/arrow typed arrays a FeatureDataResult carries from a
-// minimal feature spec, using the same packRenderArrays the worker uses so
-// fixtures never drift from the production field set (e.g. a newly added
-// rectDensityFade). Every visible-window filter passes by default.
+// Uses the same packRenderArrays the worker does, so fixtures never drift from
+// the production field set.
 export function packFixtureRects(
   features: { startBp: number; endBp: number }[],
 ) {
@@ -74,8 +71,7 @@ export function packFixtureRects(
   return packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER)
 }
 
-// A hit-test FlatbushItem with sensible defaults; override what a test cares
-// about. Keeps every fixture in sync with the field set (e.g. densityFade).
+// Keeps every fixture in sync with the field set.
 export function makeFlatbushItem(
   overrides: Partial<FlatbushItem> & Pick<FlatbushItem, 'featureId'>,
 ): FlatbushItem {
@@ -93,11 +89,8 @@ export function makeFlatbushItem(
   }
 }
 
-// The subfeature twin of makeFlatbushItem — an isoform/mature-peptide/subpart
-// hit entry. `transcript` is deliberately absent by default: a subfeature only
-// carries exon geometry when the glyph that registered it was transcript-shaped,
-// and the hover's accession/coordinate pairing turns on exactly that (see
-// hoverReadout's hitTranscriptAndName).
+// `transcript` is deliberately absent by default: a subfeature carries exon
+// geometry only when the glyph that registered it was transcript-shaped.
 export function makeSubfeatureInfo(
   overrides: Partial<SubfeatureInfo> &
     Pick<SubfeatureInfo, 'featureId' | 'parentFeatureId'>,
@@ -113,9 +106,8 @@ export function makeSubfeatureInfo(
   }
 }
 
-// One residue of the amino-acid overlay. `isStopOrNonTriplet` defaults off the
-// letter so a fixture spelling `*` reads as a stop without having to say so
-// twice.
+// `isStopOrNonTriplet` defaults off the letter, so a fixture spelling `*` reads
+// as a stop without saying so twice.
 export function makeAminoAcidOverlayItem(
   overrides: Partial<AminoAcidOverlayItem> &
     Pick<AminoAcidOverlayItem, 'aminoAcid' | 'proteinIndex'>,
@@ -133,11 +125,8 @@ export function makeAminoAcidOverlayItem(
   }
 }
 
-// One gene as the worker ships it under `all`: N one-row isoforms stacked with
-// the inter-transcript gap, every rect stamped with its isoform's ordinal, and
-// the `IsoformStack` the fit ladder's trim reads. The ranking is the drawn
-// order unless `rank` says otherwise, which is the case a trim-by-rank test
-// needs and the packer's own sort otherwise gives.
+// One gene as the worker ships it under `all`. The ranking is the drawn order
+// unless `ranks` says otherwise.
 export interface StackedGeneSpec {
   featureId: string
   startBp: number
@@ -148,18 +137,15 @@ export interface StackedGeneSpec {
   heightPx?: number
   canonicalTag?: string
   // What the worker's own collapse left, when it left fewer than the gene has.
-  // A gene the user expanded ships every isoform and this count as the only
-  // record of what it was opened FROM — see `IsoformStack`.
   collapsedIsoformCount?: number
-  // isoforms the worker shipped, when fewer than the gene has: 1 for a gene
-  // collapsed under `longestCoding`. Defaults to `isoforms`.
+  // isoforms the worker shipped, when fewer than the gene has; defaults to
+  // `isoforms`
   drawn?: number
   // rank per isoform, drawn order; defaults to the drawn order itself
   ranks?: number[]
   // bp span per isoform, defaults to the gene's own
   spans?: [number, number][]
-  // box height per isoform, defaults to the gene's own — what a `jexl:`
-  // `featureHeight` resolving against the CHILD ships (see `featureHeightPx`)
+  // box height per isoform, defaults to the gene's own
   childHeightsPx?: number[]
 }
 
@@ -250,8 +236,8 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
   })
 }
 
-// A full FeatureDataResult built from the production packer, so tests never
-// hand-maintain the ~20 empty typed arrays it carries. Override any field.
+// Built from the production packer, so tests never hand-maintain the ~20 empty
+// typed arrays a FeatureDataResult carries.
 export function makeFeatureData(
   overrides: Partial<FeatureDataResult> = {},
 ): FeatureDataResult {

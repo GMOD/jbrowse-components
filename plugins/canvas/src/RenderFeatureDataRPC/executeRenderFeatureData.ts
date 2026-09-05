@@ -58,9 +58,8 @@ export async function executeRenderFeatureData({
     sequenceAdapter,
   })
 
-  // Stage 1 (cheap): index-only byte estimate, before any feature download.
-  // Adapters with no index estimate report none and fall through to the density
-  // gate below.
+  // Stage 1: index-only byte estimate. An adapter with no index estimate
+  // reports none and falls through to the density gate.
   const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
     dataAdapter,
     regions: [region],
@@ -73,10 +72,8 @@ export async function executeRenderFeatureData({
     return tooManyBytes
   }
 
-  // Feature admission (config jexlFilters + showOnlyGenes + solo/hidden) is
-  // built once here and used by both density gates and the layout pass below, so
-  // "what gets drawn" has exactly one answer and the pre-fetch estimate can't
-  // disagree with the exact post-fetch count.
+  // Both density gates and the layout pass use this one admission, so the
+  // pre-fetch estimate cannot disagree with the exact post-fetch count.
   const admit = buildFeatureAdmission({
     config: displayConfig,
     jexl: pluginManager.jexl,
@@ -85,20 +82,9 @@ export async function executeRenderFeatureData({
     hiddenFeatureIds,
   })
 
-  // Stage 1.5 (cheap): estimate feature density from a small sample before
-  // downloading the whole region. Only runs when maxFeatureDensity is set — the
-  // model leaves it undefined below AUTO_FORCE_LOAD_BP (the floor's one
-  // remaining job, `densityGateActive`) and when force-loaded, so small/forced
-  // renders skip it. The post-fetch count below is the backstop.
-  //
-  // This deliberately runs even when a filter is active. It used to be skipped
-  // whenever one was, because the sample counted the raw population and would
-  // false-reject a filtered view that renders fine (showOnlyGenes at
-  // whole-chromosome zoom over a dense GFF). That skip was inert anyway — back
-  // then the `jexlFilters` slot shipped the NCBI gbkey=Src source-record filter
-  // as its default, so every default-configured track took the skip and no
-  // track ever sampled. Passing `admit` removes the reason for the skip instead
-  // of the skip's trigger: the estimate now measures the admitted population.
+  // Stage 1.5: estimate density from a small sample before downloading the
+  // whole region. The model leaves `maxFeatureDensity` undefined for a small or
+  // force-loaded render, which skips this; the post-fetch count is the backstop.
   if (maxFeatureDensity !== undefined) {
     const tooLarge = await samplePreFetchDensity({
       dataAdapter,
@@ -116,10 +102,8 @@ export async function executeRenderFeatureData({
     }
   }
 
-  // pass statusCallback + stopToken so the adapter's own determinate download/
-  // processing progress reaches the display (overriding the "Downloading features"
-  // fallback label) and so a long fetch is interruptible mid-flight, not just at
-  // the checkStopTokenThrottled below
+  // The adapter's own statusCallback + stopToken make a long fetch
+  // interruptible mid-flight, not just at the checkStopTokenThrottled below.
   const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
@@ -127,16 +111,11 @@ export async function executeRenderFeatureData({
   )
   checkStopTokenThrottled(stopTokenCheck)
 
-  // region.start / region.end are integer bp by contract — see
-  // RenderFeatureDataArgs.region. No defensive rounding here.
-
-  // Admission (built above) runs inside the dedup, ahead of density-gating, so
-  // filtered-out features neither count toward density nor reach layout — and
-  // the returned featureCount is this map's size, so the gate uses the same
-  // count it reports and main-thread and worker decisions stay in sync.
+  // Admission runs inside the dedup, ahead of density-gating, so filtered-out
+  // features neither count toward density nor reach layout.
   const features = dedupeFeaturesById(featuresArray, admit)
 
-  // Stage 2: the exact count, the backstop for the sampled estimate above.
+  // Stage 2: the exact count.
   const tooManyFeatures = exactDensityTooLargeResult(
     features.size,
     region,
@@ -177,10 +156,8 @@ export async function executeRenderFeatureData({
 
   checkStopTokenThrottled(stopTokenCheck)
 
-  // One `withProgress` over the whole layout+collect pass, where the layout half
-  // used to have its own: `buildFeatureRenderData` reports per feature and the
-  // collect that follows is the same walk again, so a second determinate bar for
-  // it only made the first one lie about being finished.
+  // One `withProgress` over the whole layout+collect pass: the collect is the
+  // same walk again, so a second bar would make the first lie about finishing.
   const packed = await withProgress(
     {
       label: 'Computing layout',
@@ -207,10 +184,7 @@ export async function executeRenderFeatureData({
 
   const result: FeatureDataResult = { ...packed, bytes }
 
-  // rpcResultWithArrayBuffers wraps value + auto-derived transferables; the RPC
-  // framework unwraps it before returning to the caller. The caller-facing type
-  // is the RpcRegistry `RenderFeatureData.return` ambient declaration (see
-  // rpcTypes.ts), so this producer needs no return annotation or cast — matching
-  // the too-large early returns above, which the framework passes through as-is.
+  // The RPC framework unwraps this before returning to the caller, whose type
+  // comes from the RpcRegistry declaration rather than from an annotation here.
   return rpcResultWithArrayBuffers(result)
 }
