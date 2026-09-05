@@ -25,8 +25,9 @@ const builtins = new Set(builtinModules)
 // their imports are dev-tier like the tests themselves. A new name joins by
 // matching, which is the cost of the convention — a test-only helper named
 // like production code is checked at production strictness, which only ever
-// fails toward declaring too much.
-const TEST_SUPPORT = /\.test\.|\/test\/|test(env|utils|harness)/i
+// fails toward declaring too much. The optional hyphen admits the two private
+// harness packages, `display-test-utils` and `browser-test-utils`.
+const TEST_SUPPORT = /\.test\.|\/test\/|test-?(env|utils|harness)/i
 
 interface Manifest {
   name?: string
