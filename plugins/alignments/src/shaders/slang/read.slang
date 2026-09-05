@@ -242,7 +242,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   uint v = vid % 9u;
   float sx1 = bpToClipX(inst.startOff, u);
-  float sx2 = bpToClipX(inst.endOff, u);
+  // Floored at 1 CSS px and anchored on the read's start, as `pileupCellX`
+  // anchors a cell and the Canvas2D painter its rect: a read narrower than a
+  // pixel is otherwise a quad the rasterizer covers on some pans and not
+  // others, while the painter — and so the SVG export — always drew it.
+  float sx2 = extendToMinWidthX(
+      sx1, bpToClipX(inst.endOff, u), 1.0, u.canvasW);
 
   float2 yy = pileupY(float(inst.y), u);
   float syTop = yy.x;

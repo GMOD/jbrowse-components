@@ -1,4 +1,4 @@
-import { strokeRectInside } from '@jbrowse/render-core/canvas2dUtils'
+import { spanLeft, strokeRectInside } from '@jbrowse/render-core/canvas2dUtils'
 
 import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
@@ -227,9 +227,13 @@ export function drawReads(
       bpLength,
       fullBlockWidth,
     )
-    const xL = Math.min(xStart, xEnd)
-    const xR = Math.max(xStart, xEnd)
-    const w = Math.max(1, xR - xL)
+    // The 1 px floor grows away from the read's start, like every pileup cell
+    // (`pileupCellX`) and read.slang's body quad, so a reversed block mirrors a
+    // forward one. Anchoring the leftmost edge instead slid a sub-pixel read
+    // on a flipped region by up to a pixel from where the shader put it.
+    const w = Math.max(1, Math.abs(xEnd - xStart))
+    const xL = spanLeft(xStart, xEnd, w)
+    const xR = xL + w
     // The per-read half of the gate. Width is a property of one read, so it
     // belongs in the loop; the frame-level half was decided once, above.
     const outline = outlineFrame && w > READ_OUTLINE_MIN_WIDTH_PX

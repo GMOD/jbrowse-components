@@ -83,9 +83,15 @@ function draw(
     colorByType?: ColorSchemeType
   } = {},
   fullBlockWidth = 1000,
+  blockOverrides: Partial<DrawBlock> = {},
 ) {
   const ctx = new SvgCanvas()
-  const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
+  const block: DrawBlock = {
+    start: 0,
+    end: 100,
+    screenStartPx: 0,
+    ...blockOverrides,
+  }
   const colorScheme = colorSchemeIndexFor(colorByType)
   // Categories come from the real classifier, so these assertions exercise
   // classify->paint end to end rather than a hand-written category byte.
@@ -155,6 +161,26 @@ test('zoomed out below the base gate falls back to a plain rect', () => {
   const svg = draw([wideFwd], {}, 5)
   expect(svg).toContain('<rect')
   expect(svg).not.toContain('<path')
+})
+
+// A read narrower than a pixel is floored to one, and the floor grows away
+// from the read's START — the rule read.slang's body quad and every pileup
+// cell follow — so a reversed block's rect is the forward one's mirror. Read
+// bp [10,20] at 0.05 px/bp is half a pixel: forward it starts at x=0.5;
+// reversed the start lands at x=4.5 and the rect extends leftward from it.
+// Anchoring the leftmost edge put it at x=4, a pixel off the shader.
+describe('a sub-pixel read body', () => {
+  const sliver = { start: 10, end: 20, strand: 0 }
+
+  test('is floored to 1 px from its start on a forward block', () => {
+    const svg = draw([sliver], {}, 5)
+    expect(svg).toContain('<rect x="0.5" y="0" width="1" height="10"')
+  })
+
+  test('grows leftward from its start on a reversed block', () => {
+    const svg = draw([sliver], {}, 5, { reversed: true })
+    expect(svg).toContain('<rect x="3.5" y="0" width="1" height="10"')
+  })
 })
 
 test('strandless read (strand 0) never gets an arrowhead', () => {
