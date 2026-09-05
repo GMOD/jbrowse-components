@@ -138,3 +138,30 @@ export function cumBpAtGenomicCoord(entry: RegionIndexEntry, coord: number) {
   const r = entry.region
   return entry.bpBefore + (r.reversed ? r.end - coord : coord - r.start)
 }
+
+export interface CumBpSpan {
+  lo: number
+  hi: number
+}
+
+// The cumBp hull of a window's regions on one axis: what the fetch asked the
+// adapter for, restated in the coordinate the geometry stage culls in. A
+// reversed region maps its start above its end, so both ends feed both bounds.
+// Empty regions give an inverted span that every comparison lands outside of.
+export function regionsCumBpSpan(
+  idx: BpRegionIndex,
+  regions: Region[],
+): CumBpSpan {
+  let lo = Infinity
+  let hi = -Infinity
+  for (const r of regions) {
+    const entry = findRegionEntry(idx, r.refName, r.start, r.end)
+    if (entry) {
+      const a = cumBpInEntry(entry, r.start)
+      const b = cumBpInEntry(entry, r.end)
+      lo = Math.min(lo, a, b)
+      hi = Math.max(hi, a, b)
+    }
+  }
+  return { lo, hi }
+}

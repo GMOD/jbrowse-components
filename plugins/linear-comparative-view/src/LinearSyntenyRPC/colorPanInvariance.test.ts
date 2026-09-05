@@ -133,6 +133,7 @@ async function fetchAt(offsetPx: number) {
         bpPerPx: BP_PER_PX,
         offsetPx,
         displayedRegions: targetRegions,
+        windowRegions: targetRegions,
       },
     }),
   )

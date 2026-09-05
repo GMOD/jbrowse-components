@@ -1,10 +1,10 @@
 // The target axis is in the fetch key whether or not the bidirectional fetch
-// sends it: the worker culls geometry against the LOWER row's viewport too, so a
+// queries it: the worker emits geometry for the LOWER row's window too, so a
 // pan of that row past its buffer stales the held ribbons exactly as a pan of
-// the upper one does. `targetWindowRegions` is the one snapped window both
-// `fetchRegionsKey` and `targetFetchRegions` read, and this is the test that
-// keeps the obvious cleanup — pointing the key at `targetFetchRegions`, which is
-// [] with the setting off — from landing quietly.
+// the upper one does. `targetWindowRegions` is the one snapped window the key
+// and the RPC both read, and this is the test that keeps the obvious cleanup —
+// leaving the lower row out of the key when the setting is off — from landing
+// quietly.
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 

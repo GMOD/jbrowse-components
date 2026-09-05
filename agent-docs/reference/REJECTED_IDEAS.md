@@ -1763,11 +1763,12 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   but dotplot quads are a few px, so the rasterizer discards them about as
   cheaply as a vertex test would. Synteny's `isCulled` earns its place because
   its quads span the track.
-- **Tightening synteny's instance-capacity bound to the emit window** — cannot
-  be done. It looks loose (`buildSyntenyGeometry`'s `cigarBudget` comes from the
-  full feature width), but `segmentOffScreen` drops a segment only when it is
-  off-window on *both* axes, so a segment can survive on axis 1 while far off
-  axis 0. The bound really is `widthPx0 + widthPx1`.
+- **Tightening synteny's instance-capacity bound to the emit window** — buys
+  nothing. It looks loose (`buildSyntenyGeometry`'s `cigarBudget` comes from
+  the full feature width), and since `segmentOffScreen` went per edge a window
+  bound would be sound, but every block wide enough for it to matter carries a
+  CIGAR and `clipLargeBlockToWindow` has already re-anchored it to the query
+  window, so `widthPx0 + widthPx1` is at most a window and a bit.
 - **Closing the hi-C ramp texel-pick difference between GPU and CPU** — up to
   half an entry (sampler texel-center convention vs `round(t * 255)`), which is
   sub-visible on a 256-entry smooth ramp. Closing it adds machinery for no

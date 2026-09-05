@@ -1,6 +1,7 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import { viewportWindow } from '../LinearSyntenyRPC/testUtils.ts'
 import { KIND_BASE_TILE } from './shaders/syntenyTypes.generated.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
@@ -87,6 +88,16 @@ function geometry(blocks: Block[], matchesOnly: boolean): SyntenyInstanceData {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: VIEW_WIDTH,
+    window0: viewportWindow({
+      viewOff: 0,
+      viewWidth: VIEW_WIDTH,
+      bpPerPx: BP_PER_PX,
+    }),
+    window1: viewportWindow({
+      viewOff: 0,
+      viewWidth: VIEW_WIDTH,
+      bpPerPx: BP_PER_PX,
+    }),
   })
   return { ...g, colors: new Uint32Array(g.instanceCount).fill(OPAQUE_GRAY) }
 }

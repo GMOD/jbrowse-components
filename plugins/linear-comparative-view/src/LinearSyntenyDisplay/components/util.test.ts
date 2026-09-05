@@ -2,6 +2,7 @@ import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyColors.ts'
+import { viewportWindow } from '../../LinearSyntenyRPC/testUtils.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './util.ts'
 
 import type { FeatPos } from '../model.ts'
@@ -40,6 +41,8 @@ function buildIndelGeometry() {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 1000,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 1000, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 1000, bpPerPx: 1 }),
   })
 }
 

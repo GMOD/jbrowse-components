@@ -37,6 +37,7 @@ const targetView = {
   bpPerPx: 1,
   offsetPx: 0,
   displayedRegions: [region(TARGET_ASM, 't1')],
+  windowRegions: [region(TARGET_ASM, 't1')],
 }
 
 // Anchored on `refName`, mate on `mateRefName`, in whichever perspective the

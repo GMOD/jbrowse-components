@@ -29,25 +29,6 @@ function makeView(regions: TestRegion[], { bpPerPx = 1, offsetPx = 0 } = {}) {
   }
 }
 
-// A feature edge spanning [coordA, coordB] is off-screen in a view when its
-// whole screen span sits beyond the 50%-of-width buffer on either side — the
-// same test the worker's per-feature cull applies.
-function edgeOffScreen(
-  view: ReturnType<typeof makeView>,
-  refName: string,
-  coordA: number,
-  coordB: number,
-  viewWidth = 800,
-) {
-  const a = view.px(refName, coordA)!
-  const b = view.px(refName, coordB)!
-  const buffer = viewWidth * 0.5
-  return (
-    Math.max(a, b) - view.offsetPx < -buffer ||
-    Math.min(a, b) - view.offsetPx > viewWidth + buffer
-  )
-}
-
 describe('synteny coordinate → pixel offset (region index)', () => {
   it('returns the correct offset for the first region', () => {
     const v = makeView([
@@ -165,66 +146,6 @@ describe('synteny coordinate → pixel offset (region index)', () => {
     const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
     expect(chr5Blocks[0]!.offsetPx).toBe(offsetPx)
-  })
-})
-
-describe('viewport culling', () => {
-  it('culls features entirely left of both viewports', () => {
-    // viewports [1000,1800]; feature chr1:100-200 → px ~100-200, left of both
-    const v1 = makeView([{ refName: 'chr1', start: 0, end: 5000 }], {
-      offsetPx: 1000,
-    })
-    const v2 = makeView([{ refName: 'chr1', start: 0, end: 5000 }], {
-      offsetPx: 1000,
-    })
-    expect(edgeOffScreen(v1, 'chr1', 100, 200)).toBe(true)
-    expect(edgeOffScreen(v2, 'chr1', 100, 200)).toBe(true)
-  })
-
-  it('keeps features visible in view 1 even if off-screen in view 2', () => {
-    // view 1 [0,800] shows px 400-600; view 2 [5000,5800] does not
-    const v1 = makeView([{ refName: 'chr1', start: 0, end: 10000 }])
-    const v2 = makeView([{ refName: 'chr1', start: 0, end: 10000 }], {
-      offsetPx: 5000,
-    })
-    expect(edgeOffScreen(v1, 'chr1', 400, 600)).toBe(false)
-    expect(edgeOffScreen(v2, 'chr1', 400, 600)).toBe(true)
-  })
-
-  it('keeps features visible in both viewports', () => {
-    const v1 = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    const v2 = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    expect(edgeOffScreen(v1, 'chr1', 400, 600)).toBe(false)
-    expect(edgeOffScreen(v2, 'chr1', 400, 600)).toBe(false)
-  })
-
-  it('culls features entirely right of both viewports', () => {
-    // both viewports [0,800], feature at px 2000-3000
-    const v1 = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    const v2 = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    expect(edgeOffScreen(v1, 'chr1', 2000, 3000)).toBe(true)
-    expect(edgeOffScreen(v2, 'chr1', 2000, 3000)).toBe(true)
-  })
-
-  it('keeps diagonal features (on-screen in one view, off-screen in the other)', () => {
-    const v1 = makeView([{ refName: 'chr1', start: 0, end: 10000 }])
-    const v2 = makeView([{ refName: 'chr1', start: 0, end: 10000 }], {
-      offsetPx: 5000,
-    })
-    expect(edgeOffScreen(v1, 'chr1', 400, 600)).toBe(false)
-    expect(edgeOffScreen(v2, 'chr1', 400, 600)).toBe(true)
-  })
-
-  it('keeps features within the 50% buffer zone', () => {
-    // viewport [0,800], buffer 400 → cutoff 1200; feature 900-1000 is inside
-    const v = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    expect(edgeOffScreen(v, 'chr1', 900, 1000)).toBe(false)
-  })
-
-  it('culls features outside the 50% buffer zone', () => {
-    // feature 1300-1400 > 1200 cutoff → off-screen
-    const v = makeView([{ refName: 'chr1', start: 0, end: 5000 }])
-    expect(edgeOffScreen(v, 'chr1', 1300, 1400)).toBe(true)
   })
 })
 

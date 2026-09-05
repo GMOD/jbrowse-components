@@ -7,6 +7,7 @@ import {
   markerGridPitch,
 } from './buildSyntenyGeometry.ts'
 import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
+import { viewportWindow } from './testUtils.ts'
 
 // Everything here runs at bpPerPx=1 with viewOff=0 on both axes, so cumBp,
 // genomic bp and screen px are all the same number and a marker's position can
@@ -52,6 +53,8 @@ function buildWithMarkers(widthBp: number, cigar: number[] = []) {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: widthBp,
+    window0: viewportWindow({ viewOff: 0, viewWidth: widthBp, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: widthBp, bpPerPx: 1 }),
   })
 }
 
@@ -100,6 +103,8 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 500,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 500, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 500, bpPerPx: 1 }),
   })
   // The same ten positions the un-moved feature above took, not the same ten
   // offsets into the feature.
@@ -147,6 +152,8 @@ test('every marker sorts after every ribbon, whichever branch emitted it', () =>
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 400,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
   })
   const markers = markerIndices(g.kinds)
   const ribbons = [...g.kinds].flatMap((k, i) => (k === KIND_MARKER ? [] : [i]))
@@ -201,6 +208,8 @@ test('markers follow the CIGAR through a deletion', () => {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 400,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
   })
   const markers = markerIndices(g.kinds)
   // Ticks are still on the query grid — the deletion moves where they LAND on
@@ -250,9 +259,11 @@ test('a block far wider than the view budgets for the window, not the block', ()
     viewOff0: 0,
     viewOff1: 0,
     viewWidth,
+    window0: viewportWindow({ viewOff: 0, viewWidth, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth, bpPerPx: 1 }),
   })
-  // 3 view widths + 4 pan buffers, over the pitch, plus the ribbon and the slack
-  // — a few hundred, against span/PITCH = a million.
+  // the window plus a view width each side, over the pitch, plus the ribbon
+  // and the slack — a few hundred, against span/PITCH = a million.
   const allocatedSlots =
     g.bp1.buffer.byteLength / Float32Array.BYTES_PER_ELEMENT
   expect(allocatedSlots).toBeLessThan(1000)
@@ -292,6 +303,8 @@ test('an inverted alignment keeps the query grid and pairs backwards', () => {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 400,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 1 }),
   })
   const markers = markerIndices(g.kinds)
   // The same ten query coordinates a forward feature over this span takes — the

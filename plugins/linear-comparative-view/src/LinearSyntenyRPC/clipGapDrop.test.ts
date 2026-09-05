@@ -25,25 +25,31 @@ jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 const QUERY_ASM = 'query'
 const TARGET_ASM = 'target'
 
-function region(assemblyName: string, refName: string, end: number): Region {
-  return { assemblyName, refName, start: 0, end }
+function region(
+  assemblyName: string,
+  refName: string,
+  end: number,
+  start = 0,
+): Region {
+  return { assemblyName, refName, start, end }
 }
 
-// bpPerPx 1 and offsetPx 20000, so the window `clipLargeBlockToWindow` re-anchors
-// to is [18000, 22800]: the viewport plus `syntenyPanBufferPx`, which floors at
-// 2000px on a view this narrow.
+// bpPerPx 1 and a 800px viewport at offsetPx 20000, whose fetch window is
+// [18000, 22800]: the viewport plus `syntenyPanBufferPx`, which floors at
+// 2000px on a view this narrow. `clipLargeBlockToWindow` re-anchors to it.
 const queryView = {
   bpPerPx: 1,
   offsetPx: 20000,
   width: 800,
   displayedRegions: [region(QUERY_ASM, 'q1', 100000)],
-  fetchRegions: [region(QUERY_ASM, 'q1', 100000)],
+  fetchRegions: [region(QUERY_ASM, 'q1', 22800, 18000)],
 }
 
 const targetView = {
   bpPerPx: 1,
   offsetPx: 0,
   displayedRegions: [region(TARGET_ASM, 't1', 100000)],
+  windowRegions: [region(TARGET_ASM, 't1', 100000)],
 }
 
 function alignment({
@@ -105,7 +111,11 @@ const GAP_BLOCK = {
 
 // The same block seen from a viewport over its LEADING match, where the clip
 // keeps real alignment: the drop must be about the gap, not about the size.
-const overLeadingMatch = { ...queryView, offsetPx: 0 }
+const overLeadingMatch = {
+  ...queryView,
+  offsetPx: 0,
+  fetchRegions: [region(QUERY_ASM, 'q1', 2800)],
+}
 
 test('a clip that lands wholly inside a chain gap drops the block', async () => {
   const value = await run([alignment(GAP_BLOCK)])
@@ -198,6 +208,7 @@ test('a block collapsed on both axes is kept', async () => {
     targetView: {
       ...targetView,
       displayedRegions: [region(TARGET_ASM, 't1', 1000)],
+      windowRegions: [region(TARGET_ASM, 't1', 1000)],
     },
   })
 

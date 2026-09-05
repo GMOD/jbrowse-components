@@ -2,6 +2,7 @@ import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 import { KIND_MARKER } from './syntenyColors.ts'
+import { viewportWindow } from './testUtils.ts'
 
 const packed = (len: number, op: number) => (len << 4) | op
 
@@ -29,6 +30,8 @@ function build() {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 700,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 700, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 700, bpPerPx: 1 }),
   })
 }
 

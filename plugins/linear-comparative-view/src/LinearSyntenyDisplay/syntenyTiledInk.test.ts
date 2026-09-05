@@ -2,6 +2,7 @@ import { createCanvas } from 'canvas'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { viewportWindow } from '../LinearSyntenyRPC/testUtils.ts'
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 
 // How much ink transparent-indel mode lays down against the colored-indel mode
@@ -134,6 +135,16 @@ function inkOf(matchesOnly: boolean, ribbon: Ribbon = {}) {
       viewOff0: 0,
       viewOff1: 0,
       viewWidth: VIEW_W,
+      window0: viewportWindow({
+        viewOff: 0,
+        viewWidth: VIEW_W,
+        bpPerPx: BP_PER_PX,
+      }),
+      window1: viewportWindow({
+        viewOff: 0,
+        viewWidth: VIEW_W,
+        bpPerPx: BP_PER_PX,
+      }),
     }),
     fadeThinAlignments,
   )
@@ -211,6 +222,16 @@ test('the toggle still reaches an untiled thin ribbon', () => {
         viewOff0: 0,
         viewOff1: 0,
         viewWidth: VIEW_W,
+        window0: viewportWindow({
+          viewOff: 0,
+          viewWidth: VIEW_W,
+          bpPerPx: BP_PER_PX,
+        }),
+        window1: viewportWindow({
+          viewOff: 0,
+          viewWidth: VIEW_W,
+          bpPerPx: BP_PER_PX,
+        }),
       }),
       fadeThinAlignments,
     )

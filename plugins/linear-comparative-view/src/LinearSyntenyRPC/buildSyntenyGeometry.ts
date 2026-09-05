@@ -10,9 +10,7 @@ import {
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
-import { syntenyPanBufferPx } from '@jbrowse/synteny-core'
 
-import { spanOutsideBand } from '../LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import {
   KIND_BASE,
   KIND_BASE_TILE,
@@ -21,6 +19,8 @@ import {
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './syntenyColors.ts'
+
+import type { CumBpSpan } from '@jbrowse/synteny-core'
 
 // Worker-side geometry. `colors` is injected by the main thread (computedColors
 // in the display model) and is the only field SyntenyInstanceData adds. Keeps
@@ -216,6 +216,12 @@ export function markerGridPitch(bpPerPx: number) {
   return minorPitch === 0 ? majorPitch : minorPitch
 }
 
+// Does a span on one axis, in either corner order, lie entirely outside that
+// axis's emit window?
+function spanOutside(a: number, b: number, window: CumBpSpan) {
+  return Math.max(a, b) < window.lo || Math.min(a, b) > window.hi
+}
+
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
 function indelKind(op: number) {
   return op === CIGAR_I
@@ -244,6 +250,8 @@ export function buildSyntenyGeometry({
   viewOff0,
   viewOff1,
   viewWidth,
+  window0,
+  window1,
 }: {
   p11_cumBp: Float64Array
   p12_cumBp: Float64Array
@@ -265,32 +273,22 @@ export function buildSyntenyGeometry({
   bpPerPx1: number
   viewOff0: number
   viewOff1: number
+  // The view's width, which the draw-time travel cap on a marker is: what
+  // bounds the marker ladder beyond the emit window.
   viewWidth: number
+  // Emit window per axis, in that axis's cumBp: the snapped fetch window each
+  // row can pan across before the fetch key rolls over. CIGAR detail and
+  // location markers are emitted for all of it and nothing past it, so a pan
+  // that keeps the key never reaches a bare ribbon. The base trapezoid is not
+  // culled at all: a mate off its row's window still needs a base instance,
+  // which is what `culledRibbonMates` marks it from.
+  window0: CumBpSpan
+  window1: CumBpSpan
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
 
-  // Emit window for CIGAR detail segments and location markers (the base
-  // trapezoid is not culled here — features this far off-screen were already
-  // dropped by executeSyntenyFeaturesAndPositions). Same width-scaled buffer the
-  // fetch window and that whole-feature cull use: a fixed 2000px was narrower
-  // than both on a view wider than 4000px, and since the fetch key snaps to a
-  // buffer-sized grid, a pan of up to syntenyPanBufferPx doesn't refetch — so
-  // detail culled inside that distance left plain base ribbons at the leading
-  // edge of the pan until the snapped window rolled over.
-  //
-  // The comparison itself is `spanOutsideBand`, the shader's own — the same
-  // function the two draw-time culls (isCulled, isRibbonCulled) ask, differing
-  // only in the pad they hand it. This used to be an open-coded pair of
-  // comparisons against precomputed edges at each of the two emit sites below.
-  const emitBufferPx = syntenyPanBufferPx(viewWidth)
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
-
-  // cumBp -> screen px on each axis, which every cull below is expressed in.
-  // Named so the marker cull and the segment cull are visibly the same
-  // comparison at two pads rather than four open-coded copies of the projection.
-  const screenX0 = (cumBp: number) => cumBp * bpPerPxInv0 - viewOff0
-  const screenX1 = (cumBp: number) => cumBp * bpPerPxInv1 - viewOff1
 
   // Per-axis fetch-time base cumBp (the viewport-start cumBp). Corners are
   // stored relative to this so on-screen magnitudes stay small (Float32-exact
@@ -311,7 +309,7 @@ export function buildSyntenyGeometry({
   const markerGridExists = markerPitchPx > 0 && Number.isFinite(markerPitchPx)
 
   // The stretch of the QUERY AXIS a tick can be emitted over, so both the ladder
-  // below and the budget it is sized against are bounded by the viewport rather
+  // below and the budget it is sized against are bounded by the window rather
   // than by how wide the alignment is.
   //
   // Every other budget here is already bounded by something: a ribbon is one per
@@ -325,41 +323,32 @@ export function buildSyntenyGeometry({
   // about a gigabyte, in a worker, and the lanes are handed out as `subarray`
   // views so the whole allocation crosses the RPC boundary.
   //
-  // The bound is what the two DRAW-time marker rules leave room for, in view-0
-  // screen px. A tick paints only if its hull meets the band (so one end is
-  // within `overdrawPx` of it) AND its two ends are no further apart than the
-  // view is wide (`markerTravelsTooFar`) — together those pin its top end to
-  // `[-(overdrawPx + viewWidth), 2*viewWidth + overdrawPx]`. Each axis then pans
-  // up to `emitBufferPx` before the fetch key rolls over, which moves the tick
-  // relative to where it was emitted, so the fetch-time window is that widened
-  // by the buffer on each side.
-  //
-  // `overdrawPx` is a draw parameter the worker does not have, and standing in
-  // `emitBufferPx` for it assumes `overdrawPx <= emitBufferPx` — which is the
-  // assumption the per-tick cull below already makes (its whole justification is
-  // that the emit window IS the pan buffer), and which the overdraw slider caps
-  // at. So this narrows nothing that was surviving to the screen.
+  // The bound is what the two DRAW-time marker rules leave room for. A tick
+  // paints only if its hull meets the band AND its two ends are no further
+  // apart than the view is wide (`markerTravelsTooFar`), so its top end is
+  // within a view width of a band the query row can show, and the query row
+  // shows nothing outside `window0` before the fetch key rolls over. The
+  // window is at least a pan buffer wider than the visible region on each side
+  // it is not clamped on, and the overdraw slider caps under that buffer, so
+  // the overdraw a hull can reach across is already inside it.
   //
   // WHAT THIS COUPLES, and the reason to read the paragraph above before
-  // touching either end: a FETCH-time window is now derived from a DRAW-time
-  // rule. Loosen `markerTravelsTooFar` — raise the cap, make it depend on the
-  // band's height instead of the view's width, drop it — and this window becomes
-  // too narrow for the ticks that rule would now keep, which shows up as the
-  // grid stopping short at the edges of a sheared view and nothing failing
+  // touching either end: a FETCH-time window is derived from a DRAW-time rule.
+  // Loosen `markerTravelsTooFar` — raise the cap, make it depend on the band's
+  // height instead of the view's width, drop it — and this window becomes too
+  // narrow for the ticks that rule would now keep, which shows up as the grid
+  // stopping short at the edges of a sheared view and nothing failing
   // anywhere. The old code had no such dependency because it over-emitted and
   // let the frame decide; that is what the allocation above cost.
   //
   // The safe direction if that rule ever moves is to widen this by another view
   // width or two rather than to re-derive it. The allocation stays bounded by
-  // the viewport either way, which is the whole point — the constant is slack,
+  // the window either way, which is the whole point — the constant is slack,
   // not a budget anyone is spending.
-  //
-  // 3 view widths and 4 buffers: 12,200px on a 1400px view, or ~400 ticks at the
-  // 30px floor, against the 1,000,003 above.
-  const markerWindowPx = 3 * viewWidth + 4 * emitBufferPx
-  const markerWindowLoBp = (viewOff0 - viewWidth - 2 * emitBufferPx) * bpPerPx0
-  const markerWindowHiBp =
-    (viewOff0 + 2 * viewWidth + 2 * emitBufferPx) * bpPerPx0
+  const markerTravelBp = viewWidth * bpPerPx0
+  const markerWindowLoBp = window0.lo - markerTravelBp
+  const markerWindowHiBp = window0.hi + markerTravelBp
+  const markerWindowPx = (markerWindowHiBp - markerWindowLoBp) * bpPerPxInv0
 
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? When true, the emit loop
@@ -585,11 +574,12 @@ export function buildSyntenyGeometry({
       const t = (markerBp1 - bp1Start) / (bp1End - bp1Start)
       const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
-      // Culled by the HULL of the tick's two ends, which is the same rule both
-      // renderers apply (isCulled in syntenyTypes.slang, isRibbonCulled in
-      // syntenyRibbonPath.ts) — a marker is a line between one point per view, so
-      // the segment between them is on screen whenever the two ends straddle the
-      // band, even though NEITHER end is inside it. Testing the ends
+      // Culled when both ends are past their own row's window on the SAME
+      // side, which is the hull rule both renderers apply (isCulled in
+      // syntenyTypes.slang, isRibbonCulled in syntenyRibbonPath.ts) restated
+      // for two windows — a marker is a line between one point per view, so
+      // the segment between them is on screen whenever the two ends straddle
+      // the band, even though NEITHER end is inside it. Testing the ends
       // individually and dropping the tick when both fail is the per-edge rule
       // for a ribbon, and it deleted exactly the ticks the renderers were fixed
       // to keep: on an inversion the two ends are pulled apart by up to the
@@ -601,17 +591,11 @@ export function buildSyntenyGeometry({
       // `isRibbonCulled`. That distance is a function of how far the two views
       // have panned APART, which changes without a refetch, so a fetch-time
       // answer to it goes stale on the pan that makes it wrong. The hull is safe
-      // to answer here because the emit window IS the pan buffer: anything a pan
-      // can bring on screen before the fetch key rolls over was emitted.
-      const screenTopX = screenX0(markerBp1)
-      const screenBottomX = screenX1(markerBp2)
+      // to answer here because the emit window IS the fetch window: anything a
+      // pan can bring on screen before the fetch key rolls over was emitted.
       if (
-        spanOutsideBand(
-          Math.min(screenTopX, screenBottomX),
-          Math.max(screenTopX, screenBottomX),
-          viewWidth,
-          emitBufferPx,
-        )
+        (markerBp1 < window0.lo && markerBp2 < window1.lo) ||
+        (markerBp1 > window0.hi && markerBp2 > window1.hi)
       ) {
         continue
       }
@@ -651,21 +635,18 @@ export function buildSyntenyGeometry({
     return drawCIGARMatchesOnly ? transparentKind : indelKind(op)
   }
 
-  // A rendered segment is off-screen when both axes fall outside the pan
-  // buffer. cumBp -> screen px, then compared to the emit window.
+  // A rendered segment is off-screen when either edge lies outside its own
+  // row's window: `isRibbonCulled` drops a ribbon per edge at draw time, and a
+  // row shows nothing outside its window before the fetch key rolls over.
   function segmentOffScreen(
     bp1Start: number,
     bp1End: number,
     bp2Start: number,
     bp2End: number,
   ) {
-    const topMin = screenX0(Math.min(bp1Start, bp1End))
-    const topMax = screenX0(Math.max(bp1Start, bp1End))
-    const botMin = screenX1(Math.min(bp2Start, bp2End))
-    const botMax = screenX1(Math.max(bp2Start, bp2End))
     return (
-      spanOutsideBand(topMin, topMax, viewWidth, emitBufferPx) &&
-      spanOutsideBand(botMin, botMax, viewWidth, emitBufferPx)
+      spanOutside(bp1Start, bp1End, window0) ||
+      spanOutside(bp2Start, bp2End, window1)
     )
   }
 

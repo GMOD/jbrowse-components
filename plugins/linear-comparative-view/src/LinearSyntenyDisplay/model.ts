@@ -788,10 +788,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * The query axis's (v0) fetch window, and the regions the fetch actually
        * sends: the visible content blocks expanded by the shared pan buffer and
        * snapped outward to a buffer-sized grid, so a pan within the buffer
-       * neither refetches nor exposes an unfetched strip. The target axis is not
-       * scoped — the fetch is one-dimensional (query regions in, every mate out)
-       * — it only contributes its cumBp index, so it appears in
-       * `fetchRegionsKey` but not here.
+       * neither refetches nor exposes an unfetched strip. The worker emits
+       * geometry for exactly this window, so the two cannot disagree. The
+       * target axis is not scoped — the fetch is one-dimensional (query regions
+       * in, every mate out) — so its window is `targetWindowRegions`.
        */
       get fetchRegions() {
         const connected = this.connectedViews
@@ -799,18 +799,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The target axis's (v1) snapped fetch window, whether or not the fetch
-       * sends it.
+       * The target axis's (v1) snapped window: what the LOWER row can pan
+       * across before the fetch key rolls over, in the key and sent to the
+       * worker either way, because `buildSyntenyGeometry` emits detail for it
+       * exactly as it does for the query window. What the bidirectional setting
+       * decides is only whether the worker also QUERIES it, recovering the
+       * alignments anchored there whose query end is on a contig the row above
+       * is not displaying.
        *
-       * IT IS IN THE KEY EITHER WAY, which is the reason this is separate from
-       * `targetFetchRegions` below rather than the same getter read twice. The
-       * fetch is one-dimensional, but the worker's whole-feature cull and
-       * `buildSyntenyGeometry`'s emit culls are both sized against the LOWER
-       * row's viewport, so a pan of that row past its buffer stales the held
-       * geometry exactly as a pan of the upper one does. What the bidirectional
-       * setting decides is only whether the window is also QUERIED.
-       *
-       * THE CULLS, not the projection: corners are stored base-relative and the
+       * THE EMIT, not the projection: corners are stored base-relative and the
        * `panPx` uniforms compensate a pan at draw time, which is the whole
        * reason panning does not inherently need a refetch. And "the lower row"
        * rather than `v1`, which the worker spells the other way round —
@@ -819,17 +816,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get targetWindowRegions() {
         const connected = this.connectedViews
         return connected ? syntenyFetchRegions(connected.v1) : []
-      },
-      /**
-       * #getter
-       * The same window, or [] unless the view asked for the bidirectional fetch
-       * — in which case the worker queries it too, and recovers the alignments
-       * anchored there whose query end is on a contig the row above is not
-       * displaying. Empty is the signal, so the RPC argument carries nothing
-       * when the setting is off.
-       */
-      get targetFetchRegions() {
-        return this.view.bidirectionalFetch ? this.targetWindowRegions : []
       },
       /**
        * #getter

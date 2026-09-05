@@ -324,10 +324,8 @@ describe('clipLargeBlockToWindow window mapping', () => {
   })
 
   // The block's own span is tested against the window before the CIGAR string is
-  // parsed, which saves a parse of a multi-megabyte string for every block the
-  // viewport cull is about to drop anyway (a whole band of them: syntenyFetchRegions
-  // snaps the fetch window OUTWARD to a buffer-sized grid so panning within a cell
-  // doesn't refetch, while the cull window is only the viewport plus one buffer).
+  // parsed, which saves a parse of a multi-megabyte string for a block that
+  // belongs to another displayed locus of the same refName.
   //
   // Being a pure short-circuit, the saving itself is unobservable from out here —
   // what these pin is the part that could be WRONG, that it reaches the same answer

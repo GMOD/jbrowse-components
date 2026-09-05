@@ -36,6 +36,7 @@ const targetView = {
   bpPerPx: 100,
   offsetPx: 0,
   displayedRegions: [region(TARGET_ASM, 't1', 100000)],
+  windowRegions: [region(TARGET_ASM, 't1', 100000)],
 }
 
 function coarseRow(id: string, coarseCigar?: string): Feature {

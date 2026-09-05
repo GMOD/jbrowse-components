@@ -87,6 +87,7 @@ export async function runSyntenyRpc({
       bpPerPx: targetBp / width,
       offsetPx: 0,
       displayedRegions: targetRegions,
+      windowRegions: targetRegions,
     },
     drawCIGAR: true,
   })

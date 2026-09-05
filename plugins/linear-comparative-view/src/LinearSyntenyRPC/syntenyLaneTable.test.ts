@@ -64,6 +64,7 @@ beforeAll(async () => {
       bpPerPx: 1,
       offsetPx: 0,
       displayedRegions: [region('target', 't1')],
+      windowRegions: [region('target', 't1')],
     },
   })
   data = value

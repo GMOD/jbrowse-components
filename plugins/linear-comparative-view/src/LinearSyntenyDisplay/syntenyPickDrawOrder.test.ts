@@ -1,6 +1,7 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import { viewportWindow } from '../LinearSyntenyRPC/testUtils.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import { createGeometricPickCtx } from './testUtils.ts'
 
@@ -38,6 +39,8 @@ function geometry() {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 700,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 700, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 700, bpPerPx: 1 }),
   })
 }
 

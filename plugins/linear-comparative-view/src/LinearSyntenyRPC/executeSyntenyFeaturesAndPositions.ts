@@ -20,7 +20,7 @@ import {
   findRegionEntry,
   makeStringDict,
   readAttribute,
-  syntenyPanBufferPx,
+  regionsCumBpSpan,
   writeAttribute,
 } from '@jbrowse/synteny-core'
 
@@ -66,8 +66,8 @@ interface DecoratedFeature extends DrawOrderKey {
 }
 
 // Fields both axes supply: the cumBp index (bpPerPx + the whole concatenated
-// genome, spanning the full cumBp axis) plus the viewport-start offset the cull
-// converts against.
+// genome, spanning the full cumBp axis) plus the viewport-start offset the
+// geometry's corners are stored relative to.
 interface SyntenyViewSnapBase {
   bpPerPx: number
   offsetPx: number
@@ -75,21 +75,25 @@ interface SyntenyViewSnapBase {
 }
 
 // The query axis (v1) drives the scoped indexed fetch and supplies the viewport
-// width both views' culls size against (the two stacked LGVs share one width).
+// width the marker ladder is bounded by (the two stacked LGVs share one width).
 export interface SyntenyQueryViewSnap extends SyntenyViewSnapBase {
   width: number
-  // The visible window + pan buffer, clamped to displayedRegions. The indexed
-  // fetch is scoped to this (a superset of the worker's cull window) so a
-  // whole-genome PAF zoomed to one locus fetches only the on-screen slice.
+  // The visible window + pan buffer, snapped outward and clamped to
+  // displayedRegions: what the indexed fetch is scoped to, so a whole-genome
+  // PAF zoomed to one locus fetches only the on-screen slice, and what the
+  // geometry stage emits detail for, so a pan that keeps the fetch key never
+  // reaches unemitted geometry.
   fetchRegions: Region[]
 }
 
-// The target axis (v2). It always contributes its cumBp index and cull
-// geometry; `fetchRegions` arrives only when the view asked for the second
-// fetch, because carrying it unasked would ship dead bytes and pay a redundant
-// refName rename per fetch. No `width` either way — the two stacked rows share
-// one, and it comes off the query snap.
+// The target axis (v2). It always contributes its cumBp index and the window
+// its row can pan across before the fetch key rolls over, which is the window
+// the geometry stage emits its detail for. `fetchRegions` arrives only when the
+// view asked for the second fetch; it is the same window, and carrying it
+// unasked would be the signal to query it. No `width` either way — the two
+// stacked rows share one, and it comes off the query snap.
 export interface SyntenyTargetViewSnap extends SyntenyViewSnapBase {
+  windowRegions: Region[]
   fetchRegions?: Region[]
 }
 
@@ -135,9 +139,9 @@ export async function executeSyntenyFeaturesAndPositions({
 
   // forward statusCallback so the adapter's determinate download + parse phases
   // drive the bar; the loading overlay shows a plain "Loading" label otherwise.
-  // fetchRegions is the visible window + pan buffer (a superset of the cull
-  // window below), so an indexed adapter downloads only the on-screen slice
-  // while the cumBp index below still spans the whole displayedRegions.
+  // fetchRegions is the visible window + pan buffer, so an indexed adapter
+  // downloads only the on-screen slice while the cumBp index below still spans
+  // the whole displayedRegions.
   //
   // The query is on v1 (the query axis), which is what a synteny band has always
   // asked for. That leaves a whole class it cannot see AT ALL: an alignment
@@ -376,28 +380,20 @@ export async function executeSyntenyFeaturesAndPositions({
   const mateAssemblyNameDict = makeStringDict()
   const parsedCigars: Uint32Array[] = []
   let hasCigar = false
-  // Viewport culling: skip features entirely outside the visible area in
-  // both views. A synteny parallelogram is visible when at least one of its
-  // edges (top=view1, bottom=view2) overlaps the viewport.
-  const viewWidth = v1.width
-  const v1Offset = v1.offsetPx
-  const v2Offset = v2.offsetPx
   const bpPerPxInv1 = 1 / v1.bpPerPx
   const bpPerPxInv2 = 1 / v2.bpPerPx
-  // The one buffer all three windows use — the main-thread fetch window
-  // (syntenyFetchRegions), this whole-feature cull, and the emit cull in
-  // buildSyntenyGeometry — so this cull never drops a feature the geometry stage
-  // would emit, and the scoped fetch never omits a feature this cull would keep.
-  const bufferPx = syntenyPanBufferPx(viewWidth)
-  const offScreenLeftBound = -bufferPx
-  const offScreenRightBound = viewWidth + bufferPx
-
-  // Visible v1 window in whole-assembly cumBp (screenX 0..width, plus the pan
-  // buffer). Used to re-anchor oversized CIGAR blocks; within one region cumBp
-  // spans equal local-bp spans, so this drives both the size test and the
-  // per-region local window below.
-  const winCumLo = (v1Offset - bufferPx) * v1.bpPerPx
-  const winCumHi = (v1Offset + viewWidth + bufferPx) * v1.bpPerPx
+  // The one window per axis, in that axis's cumBp: what the fetch asked for on
+  // the query axis, and what the target row can pan across before the key
+  // rolls over. Oversized CIGAR blocks are re-anchored to the query window and
+  // the geometry stage emits detail for both, so nothing a pan can reach
+  // before a refetch was left out. No whole-feature cull sits between the
+  // fetch and the geometry: every feature the adapter returned overlaps the
+  // query window, and a mate off the target window still needs its base
+  // ribbon, which is what `culledRibbonMates` marks it from.
+  const window0 = regionsCumBpSpan(v1Index, v1.fetchRegions)
+  const window1 = regionsCumBpSpan(v2Index, v2.windowRegions)
+  const winCumLo = window0.lo
+  const winCumHi = window0.hi
   const windowSpan = winCumHi - winCumLo
 
   const channelList = channels.list
@@ -595,22 +591,6 @@ export async function executeSyntenyFeaturesAndPositions({
     const p21 = cumBpInEntry(e2, mStart)
     const p22 = cumBpInEntry(e2, mEnd)
 
-    // Cull features where BOTH view projections are entirely off-screen.
-    // Convert cumBp to screen px for the check.
-    const topMinX = Math.min(p11, p12) * bpPerPxInv1 - v1Offset
-    const topMaxX = Math.max(p11, p12) * bpPerPxInv1 - v1Offset
-    const botMinX = Math.min(p21, p22) * bpPerPxInv2 - v2Offset
-    const botMaxX = Math.max(p21, p22) * bpPerPxInv2 - v2Offset
-
-    const topOffScreen =
-      topMaxX < offScreenLeftBound || topMinX > offScreenRightBound
-    const botOffScreen =
-      botMaxX < offScreenLeftBound || botMinX > offScreenRightBound
-
-    if (topOffScreen && botOffScreen) {
-      continue
-    }
-
     p11Array[validCount] = p11
     p12Array[validCount] = p12
     p21Array[validCount] = p21
@@ -655,8 +635,8 @@ export async function executeSyntenyFeaturesAndPositions({
     // (`emitGridMarkers` over the whole feature), which needs no CIGAR. A
     // clipped block already carries its (short) visible-slice CIGAR from the
     // re-anchor above.
-    const widthPx0 = topMaxX - topMinX
-    const widthPx1 = botMaxX - botMinX
+    const widthPx0 = Math.abs(p12 - p11) * bpPerPxInv1
+    const widthPx1 = Math.abs(p22 - p21) * bpPerPxInv2
     const willNeedCigar =
       (!!cigarStr || !!coarseStr) &&
       drawCIGAR &&
@@ -726,7 +706,9 @@ export async function executeSyntenyFeaturesAndPositions({
         bpPerPx1: v2.bpPerPx,
         viewOff0: v1.offsetPx,
         viewOff1: v2.offsetPx,
-        viewWidth,
+        viewWidth: v1.width,
+        window0,
+        window1,
       }),
   )
 

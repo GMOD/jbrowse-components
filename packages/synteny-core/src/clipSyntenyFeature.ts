@@ -215,7 +215,7 @@ export function clipSyntenyFeature(
 }
 
 // Worker glue over clipSyntenyFeature: gate on size + resolve the v1 region the
-// visible window is over, convert the window to that region's local bp, parse
+// fetch window is over, convert the window to that region's local bp, parse
 // the CIGAR (or the coarse tier's fold of it) and clip. Returns undefined
 // (leave the block untouched) unless it is a block with an alignment string
 // more than `spanRatio`x the window on a clippable region. The clip
@@ -255,7 +255,7 @@ export function clipLargeBlockToWindow({
   if ((!cigar && !coarseCigar) || end - start <= spanRatio * windowSpan) {
     return undefined
   }
-  // Re-anchor to the region this refName's visible window falls in. A refName
+  // Re-anchor to the region this refName's fetch window falls in. A refName
   // can be displayed at several loci at once — e.g. a dispersed gene duplication
   // shows the same contig in multiple regions — so pick the region whose cumBp
   // span overlaps the window most (for the common single-region case, just that
@@ -280,8 +280,9 @@ export function clipLargeBlockToWindow({
   if (!r0) {
     return undefined
   }
-  // Snap the window to integer bp (widen outward). winCumLo/Hi are
-  // pixel-derived (offsetPx * bpPerPx), so they carry a sub-bp fraction. The
+  // Snap the window to integer bp (widen outward). winCumLo/Hi come off a
+  // fetch window snapped to a pixel-derived grid, so they can carry a sub-bp
+  // fraction. The
   // window is only a coarse "which ops to include" bound, but the clip trims
   // the boundary match op to start exactly at winStart — a fractional winStart
   // makes the whole re-anchored block's coords fractional (the op lengths stay
@@ -316,14 +317,11 @@ export function clipLargeBlockToWindow({
   )
   // A block that doesn't reach the window keeps no op — every op the walk below
   // retains has to overlap [winStart, winEnd], and the walk only ever moves
-  // forward from `start` — so answer that here, before parsing. What this saves
-  // is not a rare case: the fetch window snaps OUTWARD to a buffer-sized grid
-  // (syntenyFetchRegions, so panning within a cell doesn't refetch) while the
-  // cull window is only the viewport plus one buffer, so up to a full buffer of
-  // fetched blocks sits outside it by construction. Those blocks are dropped by
-  // the viewport cull moments later; without this they first pay
-  // parseCigar2Typed on a multi-megabyte CIGAR string, which is exactly the size
-  // of block that reaches this function at all.
+  // forward from `start` — so answer that here, before parsing a multi-megabyte
+  // CIGAR string, which is exactly the size of block that reaches this function
+  // at all. The window is the fetch window, so a fetched block reaches it
+  // unless the same refName is displayed at several loci and the block belongs
+  // to another of them.
   if (end < winStart || start > winEnd) {
     return undefined
   }

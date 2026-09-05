@@ -1,5 +1,6 @@
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
+import { viewportWindow } from './testUtils.ts'
 
 // Corners are stored WINDOW-RELATIVE (cumBp minus a per-axis fetch base) as a
 // single Float32 — no hi/lo split. The base keeps on-screen corners small so a
@@ -37,6 +38,16 @@ function buildAt(locusCumBp: number, bpPerPx: number, viewWidth: number) {
     viewOff0: offsetPx,
     viewOff1: offsetPx,
     viewWidth,
+    window0: viewportWindow({
+      viewOff: offsetPx,
+      viewWidth: viewWidth,
+      bpPerPx: bpPerPx,
+    }),
+    window1: viewportWindow({
+      viewOff: offsetPx,
+      viewWidth: viewWidth,
+      bpPerPx: bpPerPx,
+    }),
   })
   return { g, offsetPx }
 }
@@ -85,6 +96,8 @@ test('alignmentLength is each feature own block span, not aggregated', () => {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 20_000,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 20_000, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 20_000, bpPerPx: 1 }),
   })
   // The two base ribbons come first, one per feature — both features are wide
   // enough to carry location markers, which the worker emits unconditionally

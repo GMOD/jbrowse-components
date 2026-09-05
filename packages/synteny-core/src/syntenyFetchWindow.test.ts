@@ -1,3 +1,4 @@
+import { fetchWindowSignature } from './regionSignature.ts'
 import {
   PAN_BUFFER_PX,
   syntenyFetchRegions,
@@ -127,5 +128,87 @@ describe('syntenyFetchRegions', () => {
     })
     // panning within the region does not change the (whole-region) window
     expect(call(200_000, 400_000)).toEqual(call(600_000, 800_000))
+  })
+})
+
+// The invariant the emit window rests on: the worker emits geometry for the
+// fetch window and nothing past it, and the fetch key is that window's
+// signature, so every viewport that shares the key must sit inside the window —
+// with the band's overdraw, capped at PAN_BUFFER_PX, on each side, since a
+// ribbon edge that far outside the viewport still draws. Once broken, the
+// trailing strip of a pan draws nothing while `dataCurrent` reports true.
+//
+// Checked over a sweep of viewport starts rather than a pair: within one grid
+// cell of the snap the window is constant and the viewport moves, and the
+// clamp then pins the window to the displayed region over a pan the region
+// alone bounds, which is where a fixed-pad emit window was wrong.
+describe('every viewport sharing a fetch key sits inside its window', () => {
+  function violations({
+    width,
+    bpPerPx,
+    regionEnd,
+  }: {
+    width: number
+    bpPerPx: number
+    regionEnd: number
+  }) {
+    const region = {
+      refName: 'chr1',
+      assemblyName: ASM,
+      start: 0,
+      end: regionEnd,
+    }
+    const overdrawBp = PAN_BUFFER_PX * bpPerPx
+    const held = new Map<string, { start: number; end: number }>()
+    const out: { start: number; reach: number[]; window: number[] }[] = []
+    const step = Math.max(1, Math.floor((37 * bpPerPx) / 3))
+    for (let start = 0; start < regionEnd; start += step) {
+      const end = Math.min(regionEnd, start + width * bpPerPx)
+      const regions = syntenyFetchRegions({
+        visibleRegions: [vis(start, end)],
+        displayedRegions: [region],
+        width,
+        bpPerPx,
+      })
+      const key = fetchWindowSignature(regions)
+      const window = held.get(key) ?? regions[0]!
+      held.set(key, window)
+      const reach = [
+        Math.max(0, start - overdrawBp),
+        Math.min(regionEnd, end + overdrawBp),
+      ]
+      if (reach[0]! < window.start || reach[1]! > window.end) {
+        out.push({ start, reach, window: [window.start, window.end] })
+      }
+    }
+    return out
+  }
+
+  // The regime the fixed-pad emit window was wrong in: a region a few buffers
+  // wide, where the clamp holds the key over a pan of most of the region.
+  it('holds on the 500kb region at 100bp/px the defect was worked at', () => {
+    expect(
+      violations({ width: 1400, bpPerPx: 100, regionEnd: 500_000 }),
+    ).toEqual([])
+  })
+
+  it('holds across random widths, zooms and region lengths', () => {
+    let seed = 0x2f6e2b1
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0
+      return seed / 0x100000000
+    }
+    for (let i = 0; i < 40; i++) {
+      const width = 400 + Math.floor(rand() * 7600)
+      const bpPerPx = 2 ** (rand() * 16 - 4)
+      const bufferBp = syntenyPanBufferPx(width) * bpPerPx
+      const regionEnd = Math.ceil(bufferBp * (0.5 + rand() * 8))
+      expect({
+        width,
+        bpPerPx,
+        regionEnd,
+        violations: violations({ width, bpPerPx, regionEnd }),
+      }).toEqual({ width, bpPerPx, regionEnd, violations: [] })
+    }
   })
 })

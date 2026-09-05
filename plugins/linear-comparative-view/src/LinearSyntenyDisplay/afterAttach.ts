@@ -62,15 +62,15 @@ export function doAfterAttach(
         // setDisplayedRegions that yields an identical region signature would
         // refetch data that is still valid. Same shape as dotplot's fetch.
         //
-        // Untracked: the values behind that key, and the raw geometry the
-        // worker culls with. Reading them here rather than as deps keeps
+        // Untracked: the values behind that key, and the axes the worker
+        // projects with. Reading them here rather than as deps keeps
         // offsetPx/width changes from refiring the fetch, while the worker
         // still sees the current axes.
         //
-        // Query axis (v0) drives the scoped fetch, so it alone carries the cull
-        // width; the target axis (v1) supplies its cumBp index + cull geometry,
-        // and its own fetch window only when the view asked for the second
-        // query (`targetFetchRegions` is [] otherwise).
+        // Query axis (v0) drives the scoped fetch, so it alone carries the
+        // width; the target axis (v1) supplies its cumBp index and the window
+        // the geometry is emitted for, and asks the worker to query that
+        // window too only when the view asked for the second query.
         // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, currentFetchKey is the decision
         return untracked(() => {
           const { view } = self
@@ -97,7 +97,8 @@ export function doAfterAttach(
               bpPerPx: v1.bpPerPx,
               offsetPx: v1.offsetPx,
               displayedRegions: v1.displayedRegions,
-              fetchRegions: self.targetFetchRegions,
+              windowRegions: self.targetWindowRegions,
+              queried: view.bidirectionalFetch,
             },
           }
         })
@@ -117,21 +118,20 @@ export function doAfterAttach(
       ctx,
     ) => {
       const { adapterConfig, rename, assemblyManager } = ctx
-      // Both axes rename their displayed regions; each renames its fetch window
-      // too, and the target's is empty unless the view asked for the second
-      // query — in which case the worker needs it in the adapter's spelling for
-      // exactly the reason the query axis does.
+      // Both axes rename their displayed regions and their window: the worker
+      // compares both against feature coordinates in the adapter's spelling.
       const queryView = {
         ...rawQuery,
         displayedRegions: await rename(rawQuery.displayedRegions),
         fetchRegions: await rename(rawQuery.fetchRegions),
       }
+      const { queried, ...targetSnap } = rawTarget
+      const targetWindow = await rename(targetSnap.windowRegions)
       const targetView = {
-        ...rawTarget,
-        displayedRegions: await rename(rawTarget.displayedRegions),
-        fetchRegions: rawTarget.fetchRegions.length
-          ? await rename(rawTarget.fetchRegions)
-          : undefined,
+        ...targetSnap,
+        displayedRegions: await rename(targetSnap.displayedRegions),
+        windowRegions: targetWindow,
+        fetchRegions: queried ? targetWindow : undefined,
       }
       const result = await ctx.callRpc('SyntenyGetFeaturesAndPositions', {
         adapterConfig,

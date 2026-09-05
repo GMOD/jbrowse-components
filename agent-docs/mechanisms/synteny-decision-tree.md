@@ -38,12 +38,11 @@ adapter.
 ![How a comparative fetch key is built](diagrams/synteny-fetch.svg)
 
 - The **window** is the visible blocks widened by a pan buffer and snapped
-  outward to a grid, so panning inside a cell reuses the same window. One
-  function sizes that buffer for all three consumers — the fetch window, the
-  worker's cull and the geometry emit — so a feature the geometry stage would
-  draw is never left unfetched.
+  outward to a grid, so panning inside a cell reuses the same window. The
+  worker emits geometry for exactly this window on each axis, so a pan that
+  keeps the key never reaches geometry the worker left out.
 - The **zoom** enters the key as `floor(log2(bpPerPx))`: enough for the worker's
-  px-sized culls, and it fires once per doubling instead of once per wheel
+  px-sized gates, and it fires once per doubling instead of once per wheel
   notch.
 - The **tier** is fine (per-row CIGAR, every tag) or coarse (the CIGAR folded to
   a `cr:Z:` coarse CIGAR of runs and the indels `>= --coarse`; SYNTENY_LOD.md).

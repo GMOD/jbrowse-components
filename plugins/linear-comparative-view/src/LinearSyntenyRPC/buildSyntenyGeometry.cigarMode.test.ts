@@ -7,6 +7,7 @@ import {
   KIND_CIGAR_D,
   KIND_MARKER,
 } from './syntenyColors.ts'
+import { viewportWindow } from './testUtils.ts'
 
 // One feature, CIGAR M50 D50 M50 at bpPerPx=1. The deletion consumes the top
 // (query) axis but not the bottom (target) axis, so on the top axis it occupies
@@ -33,6 +34,8 @@ function build(drawCIGARMatchesOnly: boolean) {
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 200,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 200, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 200, bpPerPx: 1 }),
   })
 }
 

@@ -4,10 +4,12 @@ export {
   cumBpAtGenomicCoord,
   cumBpInEntry,
   findRegionEntry,
+  regionsCumBpSpan,
 } from './bpRegionIndex.ts'
 export type {
   BpIndexViewSnap,
   BpRegionIndex,
+  CumBpSpan,
   RegionIndexEntry,
 } from './bpRegionIndex.ts'
 export {

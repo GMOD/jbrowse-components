@@ -1,110 +1,123 @@
-import { syntenyPanBufferPx } from '@jbrowse/synteny-core'
+import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_MARKER } from './syntenyColors.ts'
+import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyColors.ts'
 
-// One CIGAR-less 800bp feature placed at a fixed off-screen px offset, at
-// bpPerPx=1 with viewOff=0, so cumBp equals screen px on both axes. It is wide
-// enough (>=30px average) for location markers, which are emit-culled against
-// the pan buffer — as CIGAR detail segments are. The whole-feature base
-// trapezoid is not: features that far off-screen were already dropped by
-// executeSyntenyFeaturesAndPositions' cull, which uses the same buffer.
-function markersAt({
-  viewWidth,
-  screenX,
+import type { CumBpSpan } from '@jbrowse/synteny-core'
+
+const op = (len: number, o: number) => (len << 4) | o
+
+// One 800bp feature at bpPerPx=1 with viewOff=0, so cumBp equals screen px on
+// both axes. Wide enough (>=30px) for location markers; with a CIGAR it draws
+// detail too. The windows are the test's own, in cumBp: the emit cull is
+// against them and nothing else.
+function build({
+  top,
+  bottom = top,
+  window0,
+  window1 = window0,
+  cigar = [],
 }: {
-  viewWidth: number
-  screenX: number
+  top: number
+  bottom?: number
+  window0: CumBpSpan
+  window1?: CumBpSpan
+  cigar?: number[]
 }) {
   const g = buildSyntenyGeometry({
-    p11_cumBp: new Float64Array([screenX]),
-    p12_cumBp: new Float64Array([screenX + 800]),
-    p21_cumBp: new Float64Array([screenX]),
-    p22_cumBp: new Float64Array([screenX + 800]),
+    p11_cumBp: new Float64Array([top]),
+    p12_cumBp: new Float64Array([top + 800]),
+    p21_cumBp: new Float64Array([bottom]),
+    p22_cumBp: new Float64Array([bottom + 800]),
     queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
-    parsedCigars: [[]],
-    starts: new Uint32Array([screenX]),
-    ends: new Uint32Array([screenX + 800]),
-    drawCIGAR: false,
+    parsedCigars: [cigar],
+    starts: new Uint32Array([top]),
+    ends: new Uint32Array([top + 800]),
+    drawCIGAR: cigar.length > 0,
     drawCIGARMatchesOnly: false,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,
     viewOff1: 0,
-    viewWidth,
+    viewWidth: 800,
+    window0,
+    window1,
   })
-  return [...g.kinds.subarray(0, g.instanceCount)].filter(
-    k => k === KIND_MARKER,
-  ).length
+  const kinds = [...g.kinds.subarray(0, g.instanceCount)]
+  return {
+    base: kinds.filter(k => k === KIND_BASE).length,
+    markers: kinds.filter(k => k === KIND_MARKER).length,
+    deletions: kinds.filter(k => k === KIND_CIGAR_D).length,
+  }
 }
 
-// The emit cull must use the same width-scaled buffer as the fetch window and
-// the worker's whole-feature cull. A fixed 2000px here was narrower than both on
-// a view wider than 4000px: the fetch key snaps to a buffer-sized grid, so a pan
-// of up to syntenyPanBufferPx doesn't refetch, and detail culled inside that
-// distance left plain base ribbons — no indel segments, no markers — at the
-// leading edge of the pan until the snapped window rolled over.
-test('a wide view emits detail out to its half-width pan buffer', () => {
-  const viewWidth = 6000
-  expect(syntenyPanBufferPx(viewWidth)).toBe(3000)
-  // 2100..2900px off the right edge: inside the 3000px buffer, outside a
-  // fixed 2000
-  expect(markersAt({ viewWidth, screenX: viewWidth + 2100 })).toBeGreaterThan(0)
+const WINDOW = { lo: -3000, hi: 3800 }
+
+// The emit window IS the fetch window, whatever its width: a pan that keeps
+// the fetch key stays inside it, so detail emitted to its edge and no further
+// is exactly what the frame can reach before a refetch.
+test('detail is emitted out to the window edge and not past it', () => {
+  expect(build({ top: 2900, window0: WINDOW }).markers).toBeGreaterThan(0)
+  expect(build({ top: 3900, window0: WINDOW }).markers).toBe(0)
+  expect(build({ top: -3900, window0: WINDOW }).markers).toBe(0)
 })
 
-test('detail past the pan buffer is still culled', () => {
-  expect(markersAt({ viewWidth: 6000, screenX: 6000 + 3100 })).toBe(0)
+// The base trapezoid is never culled: a mate the target row cannot reach
+// before a refetch still needs an instance, since `culledRibbonMates` reads the
+// marks it draws for such a feature off the instances, not the feature lanes.
+test('the base ribbon survives a feature entirely outside both windows', () => {
+  const r = build({ top: 9000, bottom: 9000, window0: WINDOW })
+  expect(r.base).toBe(1)
+  expect(r.markers).toBe(0)
 })
 
-test('a narrow view keeps the PAN_BUFFER_PX floor', () => {
-  const viewWidth = 800
-  expect(syntenyPanBufferPx(viewWidth)).toBe(2000)
-  expect(markersAt({ viewWidth, screenX: viewWidth + 1100 })).toBeGreaterThan(0)
-  expect(markersAt({ viewWidth, screenX: viewWidth + 2100 })).toBe(0)
+// Per edge, as `isRibbonCulled` drops a ribbon at draw time: a CIGAR segment
+// whose bottom edge is off the target row's window cannot draw before the key
+// rolls, whichever row it is in view on.
+test('a CIGAR segment is culled when either edge is outside its own window', () => {
+  const cigar = [op(300, CIGAR_M), op(200, CIGAR_D), op(300, CIGAR_M)]
+  expect(build({ top: 100, window0: WINDOW, cigar }).deletions).toBe(1)
+  expect(
+    build({ top: 100, bottom: 9000, window0: WINDOW, cigar }).deletions,
+  ).toBe(0)
+  expect(
+    build({ top: 9000, bottom: 100, window0: WINDOW, cigar }).deletions,
+  ).toBe(0)
 })
 
-// A tick spanning the band with NEITHER end inside it, which is what an
+// The two rows have their own windows: the target row can have panned
+// further, or be clamped at its region's edge, and only ITS window says what
+// its edge of a segment can reach.
+test("each edge is tested against its own row's window", () => {
+  const cigar = [op(300, CIGAR_M), op(200, CIGAR_D), op(300, CIGAR_M)]
+  const window1 = { lo: 8000, hi: 12000 }
+  expect(
+    build({ top: 100, bottom: 9000, window0: WINDOW, window1, cigar })
+      .deletions,
+  ).toBe(1)
+  expect(
+    build({ top: 100, bottom: 100, window0: WINDOW, window1, cigar }).deletions,
+  ).toBe(0)
+})
+
+// A tick spanning the band with NEITHER end inside a window, which is what an
 // inversion wide enough to leave the frame on both sides produces: the top ends
-// sit far left of the buffer and the bottom ends far right of it. The hull test
-// keeps it — testing the two endpoints separately would drop every such tick
-// while the ribbon under them stays.
+// sit far left of the query window and the bottom ends far right of the
+// target's. The hull rule keeps it — testing the two endpoints separately would
+// drop every such tick while the ribbon under them stays.
 //
-// The tick is nonetheless not drawn: it travels a whole emit window, so the
-// TRAVEL CAP drops it, which is what `hg002_haplotypes_location_markers` was
-// denied for twice. That cap is not here, though, and the division is the point
-// of this test. How far a tick travels is a function of how far the two views
+// The tick is nonetheless not drawn: it travels a whole window, so the TRAVEL
+// CAP drops it, which is what `hg002_haplotypes_location_markers` was denied
+// for twice. That cap is not here, though, and the division is the point of
+// this test. How far a tick travels is a function of how far the two views
 // have panned APART, which changes without a refetch — so the worker cannot
 // answer it, and both renderers ask it per frame instead (markerTravelsTooFar,
-// pinned in syntenyRibbonCull.test.ts). What the worker culls is only what a pan
-// cannot bring back without refetching: the emit window IS the pan buffer.
+// pinned in syntenyRibbonCull.test.ts). What the worker culls is only what a
+// pan cannot bring back without refetching.
 test('the emit cull keeps a marker the travel cap will drop, and leaves that to the cull', () => {
-  const viewWidth = 800
-  const buffer = syntenyPanBufferPx(viewWidth) // 2000
-  // Query axis 3000..3800px (left of -2000 once the view offset is applied);
-  // target axis lands past the right edge of the buffer. Both endpoints are
-  // outside the band, in opposite directions.
-  const g = buildSyntenyGeometry({
-    p11_cumBp: new Float64Array([0]),
-    p12_cumBp: new Float64Array([800]),
-    p21_cumBp: new Float64Array([viewWidth + buffer + 500]),
-    p22_cumBp: new Float64Array([viewWidth + buffer + 1300]),
-    queryGridAnchors: new Float64Array([0]),
-    strands: new Int8Array([1]),
-    parsedCigars: [[]],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([800]),
-    drawCIGAR: false,
-    drawCIGARMatchesOnly: false,
-    bpPerPx0: 1,
-    bpPerPx1: 1,
-    // shifts the query ends to -3000..-2200, past the left edge of the band
-    viewOff0: 3000,
-    viewOff1: 0,
-    viewWidth,
-  })
   expect(
-    [...g.kinds.subarray(0, g.instanceCount)].filter(k => k === KIND_MARKER)
-      .length,
+    build({ top: -3900, bottom: 3900, window0: WINDOW }).markers,
   ).toBeGreaterThan(0)
+  expect(build({ top: 3900, bottom: 3900, window0: WINDOW }).markers).toBe(0)
 })

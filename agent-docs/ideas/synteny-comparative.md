@@ -26,9 +26,8 @@ The fix is not to coarsen the grid alone: its pitch is load-bearing, since the
 distance a pan travels before rollover is exactly the distance the worker emitted
 geometry for, and a coarser grid lets a pan reach past the emitted band and pop
 ribbons out. It means quantizing `bpPerPx` UP a ladder and feeding that one value
-to all three windows (fetch, whole-feature cull, geometry emit) so they stay in
-step — costing one ladder step more geometry per level, ~10% on a 1.1 ladder and
-~25% on 1.25.
+to the fetch window, which the geometry emit now reads — costing one ladder
+step more geometry per level, ~10% on a 1.1 ladder and ~25% on 1.25.
 
 **Linked dotplot + linear synteny.** Selections/zoom propagate between both views.
 
