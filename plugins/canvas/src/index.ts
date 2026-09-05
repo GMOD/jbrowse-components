@@ -222,10 +222,12 @@ export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRende
 export {
   computeLaidOutData,
   createContentHeightProbe,
-  maxBottom,
-  minDrawnBoxHeight,
   scaleLaidOutData,
 } from './LinearBasicDisplay/layout.ts'
+export {
+  maxBottom,
+  minDrawnBoxHeight,
+} from './LinearBasicDisplay/layoutQueries.ts'
 export {
   MIN_FIT_BOX_PX,
   resolveFitLadder,

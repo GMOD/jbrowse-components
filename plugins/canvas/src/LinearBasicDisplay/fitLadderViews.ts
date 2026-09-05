@@ -11,8 +11,8 @@ import {
   createContentHeightProbe,
   createIncrementalLayout,
   createIsoformCountProbe,
-  minDrawnBoxHeight,
 } from './layout.ts'
+import { minDrawnBoxHeight } from './layoutQueries.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'

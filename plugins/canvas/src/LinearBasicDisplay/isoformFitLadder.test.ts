@@ -5,8 +5,8 @@ import {
   computeLaidOutData,
   createContentHeightProbe,
   createIsoformCountProbe,
-  maxBottom,
 } from './layout.ts'
+import { maxBottom } from './layoutQueries.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LayoutInputs, LayoutRegionData } from './layout.ts'

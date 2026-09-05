@@ -80,12 +80,12 @@ import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { snapFittedContentHeight } from './fitLadder.ts'
 import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
+import { scaleLaidOutData } from './layout.ts'
 import {
   countTruncatedFeatures,
   featureIdsTouchingBlocks,
   maxBottom,
-  scaleLaidOutData,
-} from './layout.ts'
+} from './layoutQueries.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
   canvasTrackMenuItems,

@@ -8,12 +8,11 @@ import {
 import {
   computeLaidOutData,
   createContentHeightProbe,
-  packedContentHeight,
   createIncrementalLayout,
-  featureIdsTouchingBlocks,
-  maxBottom,
+  packedContentHeight,
   scaleLaidOutData,
 } from './layout.ts'
+import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
 
 import type {
   FeatureDataResult,

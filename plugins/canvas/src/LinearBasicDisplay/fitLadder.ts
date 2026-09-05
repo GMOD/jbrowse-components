@@ -1,4 +1,4 @@
-import { maxBottom } from './layout.ts'
+import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 

@@ -2,7 +2,7 @@ import { animationAllowed, getSession } from '@jbrowse/core/util'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { untracked } from 'mobx'
 
-import { maxBottom } from './layout.ts'
+import { maxBottom } from './layoutQueries.ts'
 import {
   canMorph,
   captureFeatureTops,
