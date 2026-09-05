@@ -122,6 +122,12 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       (_sessionId: string, _method: string, args: { region: Region }) =>
         Promise.resolve(makeResult(args.region)),
     )
+    const tiedRegion = {
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+      assemblyName: 'volvox',
+    }
     const tied = (pos: number): ManhattanRpcResult => ({
       ...makeResult({ refName: 'ctgA', start: 0, end: 1, assemblyName: 'v' }),
       positions: new Uint32Array([pos]),
@@ -130,13 +136,13 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     })
 
     const first = createDisplay().display
-    first.setRpcData(0, tied(100))
-    first.setRpcData(1, tied(500))
+    first.setRpcData(0, tied(100), tiedRegion)
+    first.setRpcData(1, tied(500), tiedRegion)
     expect(first.topSnp).toBe('ctgA:101')
 
     const second = createDisplay().display
-    second.setRpcData(1, tied(500))
-    second.setRpcData(0, tied(100))
+    second.setRpcData(1, tied(500), tiedRegion)
+    second.setRpcData(0, tied(100), tiedRegion)
     expect(second.topSnp).toBe('ctgA:101')
   })
 

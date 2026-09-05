@@ -124,7 +124,7 @@ describe('flatbushIndexes caching', () => {
   it('evicts regions that leave the screen', () => {
     const { display, index, dispose } = setup()
     const first = index()
-    display.pruneRpcDataMapToVisible(new Set())
+    display.dropLoadedRegion(0)
     expect(display.flatbushIndexes.size).toBe(0)
     display.setRpcData(0, regionData(50), {
       assemblyName: 'volvox',

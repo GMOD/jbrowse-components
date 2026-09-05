@@ -5,6 +5,8 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 
+const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 }
+
 // The placement arithmetic lives in wiggle-core's scoreRules.test.ts, which this
 // display now shares. What is GWAS's own is the wiring: the slot reaches the
 // rule, and the threshold draws in the significance red rather than the grey a
@@ -40,7 +42,7 @@ describe('significanceLine config slot', () => {
 
   it('places the threshold in the significance red once there is a domain', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, makeResult(10))
+    display.setRpcData(0, makeResult(10), ctgA)
     setConf(display, 'significanceLine', 5)
 
     const box = axisPlotBox(display.height)
@@ -61,7 +63,7 @@ describe('significanceLine config slot', () => {
   // peaks with nothing to read them against and no hint one was asked for.
   it('widens the axis to a threshold the loaded scores never reach', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, makeResult(3))
+    display.setRpcData(0, makeResult(3), ctgA)
     setConf(display, 'significanceLine', 7.3)
 
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(7.3)
@@ -72,7 +74,7 @@ describe('significanceLine config slot', () => {
   // the user pinned still excludes a line outside it.
   it('an explicit maxScore below the threshold still wins', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, makeResult(3))
+    display.setRpcData(0, makeResult(3), ctgA)
     setConf(display, 'significanceLine', 7.3)
     setConf(display, 'maxScore', 4)
 

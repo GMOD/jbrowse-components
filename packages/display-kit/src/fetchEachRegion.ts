@@ -168,7 +168,17 @@ export async function fetchEachRegion<R>(
       ctx: FetchContext,
       displayedRegionIndex: number,
     ) => Promise<R | RegionTooLargeResult>
-    onResult: (displayedRegionIndex: number, result: R, region: Region) => void
+    /**
+     * Store this region's payload, and **return it**: the return is what the
+     * helper commits into the per-region store, so a display that has moved
+     * its payload there writes only this function and holds no map. A display
+     * still holding its own map stores into it and returns nothing.
+     */
+    onResult: (
+      displayedRegionIndex: number,
+      result: R,
+      region: Region,
+    ) => unknown
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
@@ -194,8 +204,10 @@ export async function fetchEachRegion<R>(
           // against a payload nobody received. See RegionFetchContext.
           batch.refuse()
         } else {
-          opts.onResult(displayedRegionIndex, result, region)
-          ctx.commitRegion(displayedRegionIndex)
+          ctx.commitRegion(
+            displayedRegionIndex,
+            opts.onResult(displayedRegionIndex, result, region),
+          )
         }
       }),
     )
@@ -226,7 +238,8 @@ export async function fetchAllRegions<R>(
       regions: Region[],
       ctx: FetchContext,
     ) => Promise<(R | RegionTooLargeResult)[]>
-    onResult: (displayedRegionIndex: number, result: R) => void
+    /** Stores the payload and returns it — see {@link fetchEachRegion}. */
+    onResult: (displayedRegionIndex: number, result: R) => unknown
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
@@ -245,8 +258,10 @@ export async function fetchAllRegions<R>(
       needed.forEach(({ displayedRegionIndex }, i) => {
         const result = results[i]!
         if (!isRegionRefused(result)) {
-          opts.onResult(displayedRegionIndex, result)
-          ctx.commitRegion(displayedRegionIndex)
+          ctx.commitRegion(
+            displayedRegionIndex,
+            opts.onResult(displayedRegionIndex, result),
+          )
         }
       })
       self.commitFetchBytes(results.map(measuredBytes), issued)

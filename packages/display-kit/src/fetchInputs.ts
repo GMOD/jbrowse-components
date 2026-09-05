@@ -1,4 +1,4 @@
-import { compareStructural, computed } from 'mobx'
+import { compareStructural, computed, isObservable, toJS } from 'mobx'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -42,6 +42,47 @@ export interface FetchInputsHost extends IStateTreeNode {
 }
 
 /**
+ * A fetch input as a value that cannot change behind the stamp.
+ *
+ * The stamp outlives the fetch that wrote it, so a field holding a live
+ * collection — MAF's `subtreeFilter: self.subtreeFilterSet`, a display handing
+ * over an MST array — is mutated in place inside every region's stamp, and the
+ * staleness compare then reads the current state against itself and says
+ * nothing moved. `JSON.stringify` was immune to that by construction; a value
+ * stamp is not, and this is what buys the immunity back.
+ *
+ * Plain objects, arrays and observable containers are rebuilt; a `Set` or `Map`
+ * becomes its entry list, which changes what the compare sees but changes it
+ * the same way on both sides. Everything else — primitives, `Date`, typed
+ * arrays, class instances — is carried by reference, so a class instance
+ * mutated in place is the one hazard left, and `compareStructural` walks its
+ * own fields either way.
+ */
+export function snapshotInputs(value: unknown): unknown {
+  const v: unknown = isObservable(value) ? toJS(value) : value
+  if (v === null || typeof v !== 'object') {
+    return v
+  }
+  if (Array.isArray(v)) {
+    return Object.freeze(v.map(snapshotInputs))
+  }
+  if (v instanceof Set) {
+    return Object.freeze([...v].map(snapshotInputs))
+  }
+  if (v instanceof Map) {
+    return Object.freeze([...v].map(entry => snapshotInputs(entry)))
+  }
+  if (Object.getPrototypeOf(v) !== Object.prototype) {
+    return v
+  }
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(v).map(([k, field]) => [k, snapshotInputs(field)]),
+    ),
+  )
+}
+
+/**
  * `settings` and `zoom` as two structural computeds on one display.
  *
  * Structural, so the value's identity survives a recomputation that lands on
@@ -58,17 +99,16 @@ export interface FetchInputsHost extends IStateTreeNode {
  */
 export function makeFetchInputs(self: FetchInputsHost) {
   const settings = computed(
-    () => ({
-      rpcProps: self.rpcProps?.call(self),
-      adapterConfig: self.adapterConfig,
-    }),
+    () =>
+      snapshotInputs({
+        rpcProps: self.rpcProps?.call(self),
+        adapterConfig: self.adapterConfig,
+      }),
     { equals: compareStructural },
   )
   const zoom = computed(
-    () => self.zoomFetchArgs?.call(self) ?? self.zoomFetchKey,
-    {
-      equals: compareStructural,
-    },
+    () => snapshotInputs(self.zoomFetchArgs?.call(self) ?? self.zoomFetchKey),
+    { equals: compareStructural },
   )
   const inputs = computed(
     (): FetchInputs => ({ settings: settings.get(), zoom: zoom.get() }),

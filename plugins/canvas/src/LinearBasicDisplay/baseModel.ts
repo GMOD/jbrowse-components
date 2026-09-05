@@ -38,7 +38,6 @@ import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS } from 'mobx'
@@ -137,18 +136,27 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 const EMPTY_LAID_OUT_DATA: ReadonlyMap<number, FeatureDataResult> = new Map()
 
-// Region identity (regionKey/reversed) is stored alongside the data so layout
-// grouping derives from rpcDataMap directly. Deriving it from loadedRegions
-// instead would lag: loadedRegions is cleared on every settings change but
-// rpcDataMap is preserved through the refetch window, and loadedRegions is
-// populated one action after setRpcData. During that gap every region would
-// collapse to one layout group and features from different refs would mis-stack.
+// Region identity (regionKey/reversed) rides in the stored payload rather than
+// being read back off the region record beside it — the layout groups by ref,
+// and a canonical refName is not what `Region.refName` carries.
 type LoadedFeatureData = FeatureDataResult & {
   regionKey: string
   // canonical refName, kept alongside the raw features so a highlight can be
   // resolved to its uniqueId *before* layout (see highlightedFeatureIdSet)
   refName: string
   reversed: boolean
+}
+
+function loadedFeatureData(
+  data: FeatureDataResult,
+  region: Region,
+): LoadedFeatureData {
+  return {
+    ...data,
+    regionKey: `${region.assemblyName}:${region.refName}`,
+    refName: region.refName,
+    reversed: !!region.reversed,
+  }
 }
 
 // The two pieces of optional chrome a canvas-family subclass can contribute to
@@ -322,10 +330,6 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        rpcDataMap: regionDataMap<LoadedFeatureData>('rpcDataMap'),
-        /**
-         * #volatile
-         */
         featureIdUnderMouse: undefined as string | undefined,
         /**
          * #volatile
@@ -346,6 +350,19 @@ export default function baseStateModelFactory(
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)
+      .views(self => ({
+        /**
+         * #getter
+         * The fetched features, keyed by displayedRegionIndex — the
+         * foundation's per-region store, narrowed. It was a volatile beside
+         * `loadedRegions`, written one action apart from it, which is what
+         * `regionHasData` checked from the reader's side and what
+         * `pruneRpcDataMapToVisible` had to keep in step by hand.
+         */
+        get rpcDataMap(): ReadonlyMap<number, LoadedFeatureData> {
+          return self.regionPayloads as ReadonlyMap<number, LoadedFeatureData>
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -1420,18 +1437,21 @@ export default function baseStateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * Stage a region as fetched — the store's raw write with this
+         * display's payload shape, so a test stands up a loaded display in one
+         * call. Production goes through `ctx.commitRegion`.
          */
         setRpcData(
           displayedRegionIndex: number,
           data: FeatureDataResult,
           region: Region,
         ) {
-          self.rpcDataMap.set(displayedRegionIndex, {
-            ...data,
-            regionKey: `${region.assemblyName}:${region.refName}`,
-            refName: region.refName,
-            reversed: !!region.reversed,
-          })
+          self.setLoadedRegion(
+            displayedRegionIndex,
+            region,
+            undefined,
+            loadedFeatureData(data, region),
+          )
         },
 
         // This display deliberately does NOT override
@@ -1441,12 +1461,12 @@ export default function baseStateModelFactory(
         // for this display alone, and the one `invalidateSettings` takes for
         // every per-region display since 2026-09:
         //
-        // - `rpcDataMap` and the gate's density stats survive, so features stay
-        //   on screen and the derived `regionTooLarge` banner stays stable across
-        //   small zoom/pan moves. `pruneRpcDataMapToVisible` below is what bounds
-        //   them instead, per-region, during fetchNeeded. When regionTooLarge is
-        //   true `laidOutDataMap` returns empty, so no stale features render
-        //   through the banner.
+        // - The gate's density stats survive, so the derived `regionTooLarge`
+        //   banner stays stable across small zoom/pan moves;
+        //   `pruneDensityStatsToVisible` below is what bounds them. The
+        //   features are the store's now and are bounded by it. When
+        //   regionTooLarge is true `laidOutDataMap` returns empty, so no stale
+        //   features render through the banner.
         // - `scrollTop` survives. clearAllRpcData fires on same-region refetches
         //   (zoom, settings), and zeroing scroll there yanks the viewport to the
         //   top on every zoom. The scroll-to-top reset lives in the
@@ -1455,25 +1475,13 @@ export default function baseStateModelFactory(
         //   maxScroll clamp.
         /**
          * #action
+         * The gate's own measurements, which are keyed by region and are not
+         * fetch payloads, so the store's bound does not reach them.
          */
-        pruneRpcDataMapToVisible(visibleDisplayedRegionIndices: Set<number>) {
-          for (const key of self.rpcDataMap.keys()) {
-            if (!visibleDisplayedRegionIndices.has(key)) {
-              self.rpcDataMap.delete(key)
-            }
-          }
+        pruneDensityStatsToVisible(visibleDisplayedRegionIndices: Set<number>) {
           for (const key of self.densityStatsPerRegion.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
               self.densityStatsPerRegion.delete(key)
-            }
-          }
-          // The coverage claim goes with the payload: the scrim reads
-          // `viewportWithinLoadedData` and never `regionHasData`, so a claim
-          // left here draws a pruned region as `ready` and blank through the
-          // debounce before the refetch `isCacheValid` owes goes out.
-          for (const key of self.loadedRegions.keys()) {
-            if (!visibleDisplayedRegionIndices.has(key)) {
-              self.dropLoadedRegion(key)
             }
           }
         },
@@ -1827,21 +1835,6 @@ export default function baseStateModelFactory(
               : ''
           return `${peptides}|${mode}${expanded}`
         },
-        /**
-         * #method
-         */
-        // The reader-side check of the write-side rule: `loadedRegions` is
-        // written where the payload is stored (`RegionFetchContext`), so an
-        // entry here without one in `rpcDataMap` is that rule being broken. It
-        // costs a map lookup and it decides which way the break fails — a
-        // refetch, or a viewport that reads as covered against data nobody has
-        // and never asks again — a display frozen until the page reloads.
-        //
-        // A view, not an action: as an action MobX untracks the `rpcDataMap`
-        // read and `FetchVisibleRegions` keeps a stale answer.
-        regionHasData(displayedRegionIndex: number) {
-          return self.rpcDataMap.has(displayedRegionIndex)
-        },
       }))
       .actions(self => ({
         /**
@@ -1923,11 +1916,7 @@ export default function baseStateModelFactory(
             // cache key.
             const maxFeatureDensity = self.maxFeatureDensity
             const args = rpcArgs(self)
-            // Drop cached entries (rpcDataMap + density stats) for regions no
-            // longer visible. Keeps on-screen data so labels stay up during
-            // the refetch window without letting either map grow unboundedly
-            // as the user pans.
-            self.pruneRpcDataMapToVisible(
+            self.pruneDensityStatsToVisible(
               new Set(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
@@ -1957,9 +1946,8 @@ export default function baseStateModelFactory(
                   maxFeatureDensity,
                 })
               },
-              onResult: (displayedRegionIndex, result, region) => {
-                self.setRpcData(displayedRegionIndex, result, region)
-              },
+              onResult: (_idx, result, region) =>
+                loadedFeatureData(result, region),
             })
           },
         }

@@ -32,7 +32,31 @@ export interface LoadedRegion extends Region {
    * the same two objects and the compare short-circuits on identity.
    */
   fetchInputs: FetchInputs
+  /**
+   * The payload that fetch stored for this region.
+   *
+   * The display's own `rpcDataMap` was this field held in a second map, and
+   * the two were written by two actions one tick apart — which is what
+   * `regionHasData` existed to check from the reader's side and what the
+   * canvas base model's layout grouping worked around by re-deriving the
+   * region identity it needed out of the payload. One record instead of two,
+   * for the reason this interface fused the span and the stamp one level up.
+   *
+   * `undefined` for a display still holding its own map: `commitRegion` takes
+   * the payload as an optional argument while both paths coexist.
+   */
+  payload?: unknown
 }
+
+/**
+ * What `commitRegion` stores for a display that still holds its payloads in a
+ * map of its own. Presence, not the payload — which is all `regionHasData` ever
+ * asked, and asking it of the store is what makes "marked loaded with nothing
+ * behind it" unreachable through the fetch path instead of checkable from the
+ * reader's side. It goes when the last display moves its payload here and the
+ * argument becomes required.
+ */
+export const HELD_BY_THE_DISPLAY = Symbol('heldByTheDisplay')
 
 /**
  * A {@link FetchContext} plus the one thing a per-region fetch can do that a
@@ -84,12 +108,15 @@ export interface LoadedRegion extends Region {
  */
 export interface RegionFetchContext extends FetchContext {
   /**
-   * Record that this region's data is now held. Over the span `fetchRegions`
-   * asked for it, resolved from `needed` — see above for why that is not the
-   * caller's to choose. Ignored once the fetch is stale, which is the same
-   * guard the write has always had, moved to where the write happens.
+   * Store this region's payload. Over the span `fetchRegions` asked for it,
+   * resolved from `needed` — see above for why that is not the caller's to
+   * choose. Ignored once the fetch is stale, which is the same guard the write
+   * has always had, moved to where the write happens.
+   *
+   * The payload is the argument, so storing it and claiming it are one call
+   * and a display cannot do either alone.
    */
-  commitRegion: (displayedRegionIndex: number) => void
+  commitRegion: (displayedRegionIndex: number, payload?: unknown) => void
 }
 
 /**

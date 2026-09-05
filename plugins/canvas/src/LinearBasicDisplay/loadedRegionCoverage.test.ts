@@ -87,7 +87,7 @@ function densityGatedRender(featuresPerBp: number) {
 }
 
 // The bp span of the payload the display is holding for region 0.
-function heldExtent(display: { rpcDataMap: Map<number, unknown> }) {
+function heldExtent(display: { rpcDataMap: ReadonlyMap<number, unknown> }) {
   const data = display.rpcDataMap.get(0) as
     | { flatbushItems: { startBp: number; endBp: number }[] }
     | undefined
@@ -243,8 +243,9 @@ describe('a loaded region with no data behind it', () => {
       expect(display.loadedRegions.size).toBe(1)
     })
 
-    // the forbidden state: the claim stays, the payload goes
-    display.pruneRpcDataMapToVisible(new Set())
+    // the forbidden state: a claim written with no payload behind it, which
+    // only a hand-written `setLoadedRegion` reaches now that the fetch path
+    // commits both as one record
     display.setLoadedRegion(0, view.displayedRegions[0])
     expect(display.viewportWithinLoadedData).toBe(true)
     expect(display.regionHasData(0)).toBe(false)

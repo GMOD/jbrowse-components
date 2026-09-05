@@ -36,11 +36,12 @@ export function fetchGatedRegions<
       region: Region,
       ctx: FetchContext,
     ) => Promise<Payload | RegionTooLargeResult>
+    /** Stores the payload and returns it — see {@link fetchEachRegion}. */
     onResult: (
       displayedRegionIndex: number,
       result: Payload,
       region: Region,
-    ) => void
+    ) => unknown
   },
 ) {
   const results = new Map<number, Payload | RegionTooLargeResult>()
@@ -50,9 +51,8 @@ export function fetchGatedRegions<
       results.set(displayedRegionIndex, result)
       return result
     },
-    onResult: (displayedRegionIndex, result: Payload, region) => {
-      opts.onResult(displayedRegionIndex, result, region)
-    },
+    onResult: (displayedRegionIndex, result: Payload, region) =>
+      opts.onResult(displayedRegionIndex, result, region),
     onComplete: issued => {
       self.commitGateMeasurements(
         needed.flatMap(({ region, displayedRegionIndex }) => {

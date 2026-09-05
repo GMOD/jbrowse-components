@@ -544,14 +544,12 @@ describe('FetchVisibleRegions autorun', () => {
 
     const callsAfterLoad = mockRpcCall.mock.calls.length
 
-    // Simulate the region scrolling far off-screen: fetchNeeded calls this
-    // before fetching newly visible regions, pruning anything outside the
-    // buffered viewport. Pass an empty set → prune everything.
-    display.pruneRpcDataMapToVisible(new Set())
+    // Simulate the region being evicted from the store. Payload and claim are
+    // one record, so one drop takes both and `boundsValid` is false on the next
+    // autorun evaluation, guaranteeing a refetch.
+    display.dropLoadedRegion(0)
 
     expect(display.rpcDataMap.size).toBe(0)
-    // With the fix, loadedRegions is also pruned so boundsValid=false on
-    // the next autorun evaluation, guaranteeing a refetch.
     expect(display.loadedRegions.size).toBe(0)
 
     // Zoom to trigger a visibleRegions change, which fires FetchVisibleRegions.

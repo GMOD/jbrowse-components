@@ -25,7 +25,6 @@ import {
 } from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   SCALE_TYPE_LINEAR,
   axisPlotBox,
@@ -59,6 +58,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Region } from '@jbrowse/core/util/types/data'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -66,6 +66,19 @@ import type { VisibleEntry } from '@jbrowse/wiggle-core'
 
 // The Manhattan walker: the worker ships each region's score extremes already
 // reduced, so the domain is their min/max rather than a scan of the scores.
+// The Flatbush the hit test needs, wrapped once at the commit and carried in
+// the stored payload. It was a second per-region map beside the data, and
+// keeping the two in step was what `clearDisplaySpecificData` had to clear
+// together.
+type StoredManhattanData = ManhattanRpcResult & { flatbush?: Flatbush }
+
+function storedManhattanData(data: ManhattanRpcResult): StoredManhattanData {
+  return {
+    ...data,
+    flatbush: data.flatbushData ? Flatbush.from(data.flatbushData) : undefined,
+  }
+}
+
 function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
   let scoreMin = Infinity
   let scoreMax = -Infinity
@@ -130,13 +143,30 @@ export function stateModelFactory(
           indexSnpPinned: types.stripDefault(types.boolean, false),
         }),
       )
-      .volatile(() => ({
-        // 1:1 points keyed by displayedRegionIndex.
-        rpcDataMap: regionDataMap<ManhattanRpcResult>('rpcDataMap'),
-        // Wrapped Flatbush per region. Kept in lockstep with rpcDataMap so
-        // a single-region fetch only re-wraps that region (whole-genome views
-        // land 20+ regions serially; a derived view would re-wrap them all).
-        flatbushes: regionDataMap<Flatbush>('flatbushes'),
+      .views(self => ({
+        /**
+         * #getter
+         * The fetched points, keyed by displayedRegionIndex — the foundation's
+         * per-region store, narrowed. The Flatbush rides in the payload rather
+         * than in a second map kept in lockstep with it, so a single-region
+         * fetch still wraps only that region.
+         */
+        get rpcDataMap(): ReadonlyMap<number, StoredManhattanData> {
+          return self.regionPayloads as ReadonlyMap<number, StoredManhattanData>
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The per-region hit-test indexes, as the map `findManhattanHit` takes.
+         */
+        get flatbushes(): ReadonlyMap<number, Flatbush> {
+          return new Map(
+            [...self.rpcDataMap].flatMap(([idx, d]) =>
+              d.flatbush ? [[idx, d.flatbush] as const] : [],
+            ),
+          )
+        },
       }))
       .views(self => ({
         /**
@@ -490,14 +520,17 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * Stage a region as fetched — the store's raw write with this
+         * display's payload shape, so a test stands up a loaded display in one
+         * call. Production goes through `ctx.commitRegion`.
          */
-        setRpcData(idx: number, data: ManhattanRpcResult) {
-          self.rpcDataMap.set(idx, data)
-          if (data.flatbushData) {
-            self.flatbushes.set(idx, Flatbush.from(data.flatbushData))
-          } else {
-            self.flatbushes.delete(idx)
-          }
+        setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
+          self.setLoadedRegion(
+            idx,
+            region,
+            undefined,
+            storedManhattanData(data),
+          )
         },
         /**
          * #action
@@ -546,13 +579,6 @@ export function stateModelFactory(
         useTopHitAsIndex() {
           self.indexSnpPinned = false
           self.indexSnp = self.topSnp
-        },
-        /**
-         * #action
-         */
-        clearDisplaySpecificData() {
-          self.rpcDataMap.clear()
-          self.flatbushes.clear()
         },
       }))
       .views(self => ({
@@ -674,9 +700,7 @@ export function stateModelFactory(
           return fetchEachRegion(self, needed, {
             call: (region, ctx) =>
               ctx.callRpc('GetManhattanData', { ...rpcArgs(self), region }),
-            onResult: (idx, result) => {
-              self.setRpcData(idx, result)
-            },
+            onResult: (_idx, result) => storedManhattanData(result),
           })
         },
         /**

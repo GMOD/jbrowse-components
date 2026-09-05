@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { compareStructural } from 'mobx'
+import { compareStructural, computed } from 'mobx'
 
 import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
@@ -14,7 +14,7 @@ import { foundationSvgReady } from './foundationSvgReady.ts'
 import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
-import { makeCommitChecks } from './regionCommit.ts'
+import { HELD_BY_THE_DISPLAY, makeCommitChecks } from './regionCommit.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { FetchInputs } from './fetchInputs.ts'
@@ -24,6 +24,14 @@ import type { RegionHost } from './regionHost.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+
+/**
+ * The store's hard bound, in regions. Above it, entries outside the view's
+ * buffered viewport are dropped oldest-first on the next fetch. High enough
+ * that a whole-genome view of a chromosome-level assembly never evicts, low
+ * enough that a long pan across a fragmented one cannot grow without limit.
+ */
+const MAX_STORED_REGIONS = 128
 
 /**
  * #stateModel MultiRegionDisplayMixin
@@ -48,9 +56,17 @@ export default function MultiRegionDisplayMixin() {
       .volatile(() => ({
         /**
          * #volatile
-         * regions whose data has been fetched and committed, keyed by
-         * displayedRegionIndex; populated only after the fetch work callback
-         * returns
+         * The per-region store, keyed by `displayedRegionIndex`: what a fetch
+         * asked for (the span), what it was issued under (`fetchInputs`) and
+         * what it brought back (`payload`), written as one record by
+         * `ctx.commitRegion`.
+         *
+         * A display's own `rpcDataMap` is the payload column of this map held
+         * separately, and every hook that exists to keep the two in step —
+         * `clearDisplaySpecificData`, a `regionHasData` that answers
+         * `rpcDataMap.has(idx)`, a hand-rolled prune — is that separation's
+         * cost. A converted display leaves the payload here and reads it back
+         * through `regionPayloads`.
          */
         loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
       }))
@@ -233,40 +249,39 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #method
-         * Overridable hook (default true): whether the display can actually
-         * draw what this region is marked loaded over. Two different displays
-         * want it for two different reasons, and both are real:
+         * Overridable hook: whether the display can actually draw what this
+         * region is marked loaded over.
          *
-         * - **The reader-side check of the write-side rule.** `loadedRegions` is
-         *   written where the payload is stored (`RegionFetchContext`), so an
-         *   entry with nothing behind it means that rule was broken somewhere.
-         *   Answering off the data map costs a lookup and decides which way the
-         *   break fails: a refetch, or a viewport that reads as covered against
-         *   data nobody has and never asks again. Both canvas displays.
-         * - **Which of several held payloads answers.** MAF caches a summary
-         *   tier and a detail tier side by side under one
-         *   `displayedRegionIndex`, so crossing the threshold inside an
-         *   already-loaded region changes which map has to answer — something
-         *   the coverage bounds cannot see at all.
+         * The default answers off the store — an entry a fetch committed
+         * carries what it stored, or the {@link HELD_BY_THE_DISPLAY} stand-in
+         * for a display still holding its own map — so "marked loaded with
+         * nothing behind it" is a state only a hand-written `setLoadedRegion`
+         * reaches. It used to be `true`, and the two canvas displays each
+         * overrode it with `rpcDataMap.has(idx)` to get this answer back.
          *
-         * Separate from `regionFetchKey` on purpose: for MAF a key would refetch
-         * the summary on every zoom back out, since both tiers are still held.
-         * And the mixin cannot see a display's data map, so a key that changed
-         * when data arrived would be the `rpcProps()` loop in different clothes.
+         * What survives an override is the question the store cannot answer:
+         * **which of several held payloads answers**. MAF caches a summary tier
+         * and a detail tier side by side under one `displayedRegionIndex`, so
+         * crossing the threshold inside an already-loaded region changes which
+         * map has to answer — something neither the coverage bounds nor one
+         * payload slot can see. A key would refetch the summary on every zoom
+         * back out, since both tiers are still held. The multi-row display's
+         * override survives for its second half, the auto-partition
+         * reconciliation (`regionHasPinnedData`).
          *
-         * **The fail-open default is load-bearing, not an omission.** A
-         * byte-gate refusal never marks a region loaded (the commit sits beside
-         * the store and skips refused results), so "marked loaded with nothing
-         * behind it" is unreachable from the gate — the one path that stamps
-         * without storing is sequence's legitimately-empty-region answer, and a
-         * store-derived default there would refetch forever: stamp, store
-         * nothing, read uncovered, fetch again. `true` is what lets "this fetch
-         * completed and there is genuinely nothing here" be a terminal state.
+         * **What the old fail-open default was protecting is now explicit.** A
+         * byte-gate refusal never commits at all, so it is unreachable either
+         * way; sequence's legitimately-empty region is the case that mattered,
+         * and it commits its empty record rather than stamping over nothing —
+         * which is a payload, so it stays terminal instead of refetching
+         * forever.
          *
-         * A view, not an action, for the reason `regionFetchKey` is a getter.
+         * A view, not an action, for the reason `zoomFetchKey` is a getter.
          */
-        regionHasData(_displayedRegionIndex: number): boolean {
-          return true
+        regionHasData(displayedRegionIndex: number): boolean {
+          return (
+            self.loadedRegions.get(displayedRegionIndex)?.payload !== undefined
+          )
         },
 
         /**
@@ -364,6 +379,34 @@ export default function MultiRegionDisplayMixin() {
            */
           get settingsFetchInputs(): unknown {
             return settings.get()
+          },
+        }
+      })
+      .views(self => {
+        // A projection, memoized by MobX, so its identity moves only when the
+        // store does: `installUpload` diffs it per key by reference and the
+        // hit-test indexes downstream of it keep their caches.
+        const payloads = computed(
+          () =>
+            new Map(
+              [...self.loadedRegions].flatMap(([idx, entry]) =>
+                entry.payload === undefined ||
+                entry.payload === HELD_BY_THE_DISPLAY
+                  ? []
+                  : [[idx, entry.payload]],
+              ),
+            ) as ReadonlyMap<number, unknown>,
+        )
+        return {
+          /**
+           * #getter
+           * The store's payloads, keyed by `displayedRegionIndex`. A converted
+           * display narrows this once — `get rpcDataMap() { return
+           * self.regionPayloads as ReadonlyMap<number, MyResult> }` — and every
+           * reader it already had goes on reading a map.
+           */
+          get regionPayloads(): ReadonlyMap<number, unknown> {
+            return payloads.get()
           },
         }
       })
@@ -596,11 +639,43 @@ export default function MultiRegionDisplayMixin() {
           // default's type lands as `any` and the published signature stopped
           // constraining the one field `isCacheValid` compares
           fetchInputs: FetchInputs = self.fetchInputs,
+          payload?: unknown,
         ) {
           self.loadedRegions.set(displayedRegionIndex, {
             ...region,
             fetchInputs,
+            payload,
           })
+        },
+
+        /**
+         * #action
+         * The store's bound. Drops the entries a fetch can no longer be about:
+         * an index outside the view's buffered viewport, once the store is over
+         * `MAX_STORED_REGIONS`, oldest first.
+         *
+         * One rule for every display, where canvas hand-rolled
+         * `pruneRpcDataMapToVisible` (prune to the buffer on every fetch) and
+         * every other display had no bound at all beyond
+         * `displayedRegions.length` — which is the contig count, so a
+         * fragmented assembly had none worth the name. The cap is what lets a
+         * pan back onto a recently-visited region draw immediately, which the
+         * prune-to-buffer rule gave up.
+         */
+        evictRegionStore(keep: ReadonlySet<number>) {
+          let over = self.loadedRegions.size - MAX_STORED_REGIONS
+          if (over <= 0) {
+            return
+          }
+          for (const idx of [...self.loadedRegions.keys()]) {
+            if (over <= 0) {
+              break
+            }
+            if (!keep.has(idx)) {
+              self.loadedRegions.delete(idx)
+              over--
+            }
+          }
         },
 
         /**
@@ -738,11 +813,18 @@ export default function MultiRegionDisplayMixin() {
             const issued = new Map(
               needed.map(n => [n.displayedRegionIndex, n.region]),
             )
+            self.evictRegionStore(
+              new Set(
+                self.host.bufferedVisibleRegions.map(
+                  b => b.displayedRegionIndex,
+                ),
+              ),
+            )
             await self.runFetch(async ctx => {
               let committed = 0
               await work({
                 ...ctx,
-                commitRegion: displayedRegionIndex => {
+                commitRegion: (displayedRegionIndex, payload) => {
                   // The span is the one this fetch asked for, looked up rather
                   // than taken from the caller — see RegionFetchContext. An
                   // index that is not in it has no span to be honest about, so
@@ -758,6 +840,7 @@ export default function MultiRegionDisplayMixin() {
                       displayedRegionIndex,
                       region,
                       fetchInputs,
+                      payload ?? HELD_BY_THE_DISPLAY,
                     )
                   }
                 },
