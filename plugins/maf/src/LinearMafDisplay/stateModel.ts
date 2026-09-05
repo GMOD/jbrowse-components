@@ -1249,22 +1249,22 @@ export default function stateModelFactory(
          * even where the rows scroll past the viewport — the tree canvas and the
          * SVG labels shift the whole thing by `scrollTop`, exactly as the rows
          * do. The coverage band is offset separately by the React layer.
-         *
-         * `root` is pruned again when the reference row is hidden, on the same
-         * `applySubtreeFilter` the subtree filter goes through. Without it the
-         * guide tree would still carry the reference's leaf,
-         * `computeClusterHierarchy` would decline to position a tree that no
-         * longer describes the rows, and hiding one row would take the whole
-         * dendrogram with it.
          */
         get hierarchy() {
-          return computeClusterHierarchy(
+          // The tree as it gets drawn. `root` is already narrowed to the
+          // subtree filter; a hidden reference row has to be pruned out of it
+          // too, because `computeClusterHierarchy` declines to position a tree
+          // whose leaves are no longer the rows on screen — so narrowing on the
+          // row side alone would take the whole dendrogram with it.
+          const root =
             self.showReferenceRow || !self.root
               ? self.root
               : applySubtreeFilter(
                   self.root,
                   self.sources.map(s => s.name),
-                ),
+                )
+          return computeClusterHierarchy(
+            root,
             self.sources,
             self.rowsContentHeight,
             self.treeAreaWidth,
