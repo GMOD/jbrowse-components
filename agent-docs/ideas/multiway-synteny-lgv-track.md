@@ -128,9 +128,14 @@ walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 
 **The interaction surface.** What shipped since: hovering a ribbon highlights
 its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
-recolor), and the track menu carries **Launch → Linear synteny view (visible
-region)** — the `syntenyRegionMenuItems` dialog seeded from this track alone,
-which is the "lane you want to drive independently" handoff. Lane order is
+recolor); clicking one keeps the group's ribbons outlined through the pairwise
+edge passes and opens the pair's details, surviving the refetch the widget's
+own resize causes because the click stores the group KEY rather than an index
+(2026-09-04, the worked example in
+`mechanisms/ui-state-holds-keys-not-indices.md`); and the track menu carries
+**Launch → Linear synteny view (visible region)** — the
+`syntenyRegionMenuItems` dialog seeded from this track alone, which is the
+"lane you want to drive independently" handoff. Lane order is
 densest-first by default (`rowAssembliesOf` counts placements over the fetched
 block set, not the viewport, so it holds still across a pan), which is what the
 tutorial used to tell a reader to hand-author `rowOrder` for.
@@ -224,17 +229,23 @@ property that keeps chains running.
 
 Still open: a **Match anchor scale** mode (one line in `computeRowFrame` — every
 lane's span is the anchor's, and content that does not fit runs off the lane
-edge, which is itself the information) and the height story. The display's
-`height` slot defaults to 240 rather than the base schema's 100, which stops the
-seven-genome demos landing on the 5px glyph floor, but a lane count past about
-eight still crushes: `TrackHeightMixin` is composed and `scrollableHeight` is
-never supplied, so the lanes divide whatever height there is instead of
-scrolling. The fix is a fixed lane pitch plus `scrollableHeight`, which drags in
-`VerticalScrollbar` + `useVirtualScrollWheel` the way `FeatureComponent` mounts
-them — or `HeightModeMixin`'s grow mode, whose `growTargetHeight` hook is
-exactly `rowCount * pitch`, with the caveat that
-`heightModeConfigSchemaFields` pins `promotedBase: 'fixed'` so grow is a menu
-choice rather than this display type's default. Ribbon color modes shipped
+edge, which is itself the information). The height story SHIPPED 2026-09-04:
+below `MIN_LANE_PITCH` (22px, under the figure corpus's tightest committed
+stack) the lanes stop dividing the height and scroll instead —
+`laneContentHeight` in `laneStack.ts`, `scrollableHeight` through
+`TrackHeightMixin`, the canvas display's `usePanelVirtualScroll` +
+`VerticalScrollbar` wheel arbitration — so the 47-genome demo is readable at
+the default height, and above the floor the layout is byte-identical to
+before. The SVG export stays a viewport export at the current `scrollTop`,
+which is the policy every virtual-scrolled display shares (the export
+composition sizes each track's box from `display.height`); a full-stack export
+would be a cross-cutting export-layout change. Two smaller height-adjacent
+items are open: an auto-collapse for lanes placing nothing (the stacked view's
+`collapseEmptyRows` has no lane counterpart, and `hiddenLanes` is purely
+manual — the stability walk above shows 33/259 empty steps per lane), and a
+user-guide section for the lanes UI, since the Lanes menu, the label drag and
+`hiddenLanes` appear in no user-facing page and a 47-lane reader is never told
+they can hide the Shigella lanes. Ribbon color modes shipped
 2026-08-27 as `ribbonColorBy` (`default`/`strand`/`identity`, **Color ribbons
 by** on the track menu): a main-thread recolor off the synteny view's own
 scheme and ramp, no refetch. Strand reads the DRAWN twist rather than a
@@ -440,7 +451,11 @@ chr2B at a 3 Mb window across the human chr2 fusion because _DPP10_ alone is
 chr2A did not reach the `alsoOn` bar either. `MultiWayGroup.weight` now
 carries the evidence per group: anchor bp for a nameless record, one per gene
 for a named one, and `resolvePanel` votes with the same rule so a launched
-panel still opens on the lane's contig. `ALSO_ON_SHARE` dropped from a half to
+panel still opens on the lane's contig. The rule is `voteEvidence` in
+`syntenyHysteresis.ts` since 2026-09-04, when the synteny follow's envelope
+vote — the third voter over the same data — turned out to still weigh anchor
+bp; a cross-import test in `followWindowMapping.test.ts` now pins all three to
+one contig. `ALSO_ON_SHARE` dropped from a half to
 a fifth with it, so the far side of a breakpoint stays named through most of
 a walk across it. The grape stability walk was re-run after the change; the
 table above is that run.

@@ -158,7 +158,11 @@ lever rather than a cap.
 1. **Gene-group seriation, main thread, behind a track menu item.** Build the
    N x N shared-group matrix off the placements already fetched, seriate, write
    `rowOrder`. No RPC, no new fetch, and it is the case a comparative stack of
-   annotated assemblies actually hits.
+   annotated assemblies actually hits. As of 2026-09-04 the motivating demos
+   exist at both scales: the gene-symbol tutorials stack eight primates and
+   forty-seven E. coli, and the 47-way page says out loud what densest-first
+   cannot — "the reduced Shigella genomes fall toward the bottom without
+   anything naming them".
 2. **`clusterMatrix` for the order, then a 2-opt pass.** Reuse the shared tail
    rather than hand-rolling, then improve the chain against the objective above.
    Keep the tree only if a sidebar is wanted; the ordering does not need it.

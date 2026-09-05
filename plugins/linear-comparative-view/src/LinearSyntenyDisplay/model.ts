@@ -639,6 +639,13 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * 'target' depending on which of its two assemblies is the anchor, so the
        * coloring stays consistent across levels. Every other mode passes
        * through.
+       *
+       * A level touching NEITHER anchor side (the C-D level of an A-B-C-D
+       * stack anchored on B) falls through to 'query': it cannot color by an
+       * assembly it does not draw, so the cross-level continuity the mode
+       * promises stops at that level, silently — the legend still reads
+       * "reference". Inherent to the mode; surfacing it is parked with the
+       * other legend work.
        */
       get effectiveColorBy(): SyntenyColorBy {
         const colorBy = this.colorByMode
