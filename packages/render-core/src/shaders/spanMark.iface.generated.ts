@@ -54,23 +54,23 @@ export const INSTANCE_STRIDE_WORDS = 4
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
-  startBp: 0,
-  endBp: 1,
-  rowIndex: 2,
+  x: 0,
+  x2: 1,
+  row: 2,
   color: 3,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
-  { name: 'a_startBp', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_endBp', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_rowIndex', components: 1, type: 'uint', offsetBytes: 8, integer: true },
+  { name: 'a_x', components: 1, type: 'uint', offsetBytes: 0, integer: true },
+  { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4, integer: true },
+  { name: 'a_row', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
 ]
 
 export interface InstanceArrays {
-  startBp: ArrayLike<number>
-  endBp: ArrayLike<number>
-  rowIndex: ArrayLike<number>
+  x: ArrayLike<number>
+  x2: ArrayLike<number>
+  row: ArrayLike<number>
   color: ArrayLike<number>
 }
 
@@ -80,41 +80,41 @@ export function packInstances(
   buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
 ) {
   const u32 = new Uint32Array(buf)
-  const { startBp, endBp, rowIndex, color } = arrays
+  const { x, x2, row, color } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
-    u32[o + 0] = startBp[i]!
-    u32[o + 1] = endBp[i]!
-    u32[o + 2] = rowIndex[i]!
+    u32[o + 0] = x[i]!
+    u32[o + 1] = x2[i]!
+    u32[o + 2] = row[i]!
     u32[o + 3] = color[i]!
   }
   return buf
 }
 
-// Instance `i`'s `startBp`.
-export function getInstanceStartBp(u32: Uint32Array, i: number) {
+// Instance `i`'s `x`.
+export function getInstanceX(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS]!
 }
 
-export function setInstanceStartBp(u32: Uint32Array, i: number, v: number) {
+export function setInstanceX(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS] = v
 }
 
-// Instance `i`'s `endBp`.
-export function getInstanceEndBp(u32: Uint32Array, i: number) {
+// Instance `i`'s `x2`.
+export function getInstanceX2(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 1]!
 }
 
-export function setInstanceEndBp(u32: Uint32Array, i: number, v: number) {
+export function setInstanceX2(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 1] = v
 }
 
-// Instance `i`'s `rowIndex`.
-export function getInstanceRowIndex(u32: Uint32Array, i: number) {
+// Instance `i`'s `row`.
+export function getInstanceRow(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 2]!
 }
 
-export function setInstanceRowIndex(u32: Uint32Array, i: number, v: number) {
+export function setInstanceRow(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 2] = v
 }
 
@@ -143,7 +143,7 @@ export class InstanceWriter {
     this.u32 = new Uint32Array(this.buf)
   }
 
-  push(startBp: number, endBp: number, rowIndex: number, color: number) {
+  push(x: number, x2: number, row: number, color: number) {
     if (this.count === this.capacity) {
       this.capacity *= 2
       const grown = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)
@@ -152,9 +152,9 @@ export class InstanceWriter {
       this.u32 = new Uint32Array(grown)
     }
     const o = this.count * INSTANCE_STRIDE_WORDS
-    this.u32[o] = startBp
-    this.u32[o + 1] = endBp
-    this.u32[o + 2] = rowIndex
+    this.u32[o] = x
+    this.u32[o + 1] = x2
+    this.u32[o + 2] = row
     this.u32[o + 3] = color
     this.count++
   }

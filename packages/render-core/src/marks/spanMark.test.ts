@@ -1,4 +1,5 @@
 import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
+import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { spanMark } from './spanMark.ts'
 
@@ -144,4 +145,23 @@ test('the seam pad widens a span without moving its anchor', () => {
     seamed,
   )
   expect(back.calls[0]).toMatchObject({ x: 800, w: 100.4 })
+})
+
+// The channels pack straight through: a lane is the struct field of the same
+// name, so a field reordered in rowRect.slang would repack a valid buffer that
+// draws the wrong picture.
+test('packs x/x2/row/color into the struct lanes of the same name', () => {
+  const buf = spanMark.pass.pack(
+    channels([42, 1337], [99, 2000], [0, 3], [RED, BLUE]),
+  )
+  const u32 = new Uint32Array(buf as ArrayBuffer)
+  const stride = shader.INSTANCE_STRIDE_WORDS
+  expect(u32[shader.INSTANCE_OFFSET_U32.x]).toBe(42)
+  expect(u32[shader.INSTANCE_OFFSET_U32.x2]).toBe(99)
+  expect(u32[shader.INSTANCE_OFFSET_U32.row]).toBe(0)
+  expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(RED)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x]).toBe(1337)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x2]).toBe(2000)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.row]).toBe(3)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(BLUE)
 })

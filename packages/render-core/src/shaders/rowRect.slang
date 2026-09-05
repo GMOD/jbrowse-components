@@ -1,6 +1,6 @@
 // Shared "row of colored rects" primitive: one instance is a rectangle
-// spanning [startBp, endBp) in absolute genomic coords, drawn on the row given
-// by `rowIndex` and filled with a per-instance packed ABGR color.
+// spanning [x, x2) in absolute genomic coords, drawn on the row given by
+// `row` and filled with a per-instance packed ABGR color.
 //
 // Two renderers draw exactly this: the MAF alignment renderer (run-merged
 // per-base cells) and the multi-row feature painter / "chromosome painting"
@@ -26,10 +26,10 @@ import colorPack;
 import hpmath;
 
 public struct RowRectInstance {
-  public uint startBp  : ATTR0;
-  public uint endBp    : ATTR1;
-  public uint rowIndex : ATTR2;
-  public uint color    : ATTR3;  // packed ABGR
+  public uint x     : ATTR0;
+  public uint x2    : ATTR1;
+  public uint row   : ATTR2;
+  public uint color : ATTR3;  // packed ABGR
 };
 
 public struct RowRectUniforms {
@@ -143,8 +143,7 @@ public RowRectVsOut rowRectVertex(
   RowRectInstance inst, uint vid, RowRectUniforms u
 ) {
   RowRectVsOut o;
-  o.position = rowRectClipPos(
-    inst.startBp, inst.endBp, float(inst.rowIndex), vid, u);
+  o.position = rowRectClipPos(inst.x, inst.x2, float(inst.row), vid, u);
   o.color = unpackRGBA(inst.color);
   return o;
 }

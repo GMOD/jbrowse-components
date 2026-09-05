@@ -60,11 +60,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   uniformByteSize: shader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...slangPass({ id: 'span', mod: shader }),
-    pack: c =>
-      shader.packInstances(
-        { startBp: c.x, endBp: c.x2, rowIndex: c.row, color: c.color },
-        c.count,
-      ),
+    pack: c => shader.packInstances(c, c.count),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
