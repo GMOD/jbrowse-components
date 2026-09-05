@@ -1,10 +1,6 @@
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region, UriLocation } from '@jbrowse/core/util'
-import type { Observable } from 'rxjs'
 
 /**
  * Shared types for MAF alignment data
@@ -45,33 +41,6 @@ export interface MafAdapterOptions extends BaseOptions {
 export interface MafSamplesResult {
   samples: Sample[]
   treeNewick: string | undefined
-}
-
-/**
- * Adapter contract the MAF RPC methods rely on: features plus `getSamples`.
- * `getSummaryFeatures` is optional in the type and implemented by all four MAF
- * adapters, each through the same `summaryAdapter` slot. It stays optional
- * because the slot itself is: an unconfigured track returns no rows and the
- * display falls back to the byte-estimate force-load gate.
- */
-export type MafSamplesAdapter = BaseFeatureDataAdapter & {
-  getSamples: () => Promise<MafSamplesResult>
-  getSummaryFeatures?: (
-    region: Region,
-    opts?: BaseOptions,
-  ) => Observable<MafSummaryRecord>
-  /**
-   * The `summaryAdapter` slot resolved, so the gate can measure the file the
-   * summary tier is about to read.
-   *
-   * Required where `getSummaryFeatures` is optional, because it answers a
-   * different question: not "does this track have a summary tier" — an
-   * unconfigured slot resolves `undefined` — but "resolve the slot", which every
-   * adapter can do. Optional, it would let an implementor of this contract drop
-   * the byte gate rather than fail to compile, and a summary read at
-   * whole-genome scale would then proceed unmeasured and silently.
-   */
-  summaryAdapter: () => Promise<BaseFeatureDataAdapter | undefined>
 }
 
 /**

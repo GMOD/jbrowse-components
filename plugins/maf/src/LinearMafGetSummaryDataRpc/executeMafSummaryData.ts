@@ -101,20 +101,21 @@ export async function executeMafSummaryData({
   // Insertion-ordered, so a discovered row set has a stable order the way the
   // alignment path's `discoveredOrder` does.
   const discovered = new Set<string>()
-  const obs = adapter.getSummaryFeatures?.(region, {
-    stopToken,
-    statusCallback,
-  })
-  if (obs) {
-    await subscribeToObservable(obs, record => {
+  // Unconditional: `loadMafSamplesAdapter` answers a `MafAdapterBase`, which
+  // always implements this. An unconfigured `summaryAdapter` slot is what
+  // yields no rows, and it yields them from inside — the `?.` here guarded
+  // against an adapter that cannot exist.
+  await subscribeToObservable(
+    adapter.getSummaryFeatures(region, { stopToken, statusCallback }),
+    record => {
       if (!hasConfiguredSamples) {
         discovered.add(record.src)
       }
       if (!visible || visible.has(record.src)) {
         records.push(record)
       }
-    })
-  }
+    },
+  )
   return {
     // A sample-discovery track (no `samples`, no `nhLocation`) has no row set
     // until something names one, and only the alignment path used to. A track

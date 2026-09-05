@@ -1045,16 +1045,16 @@ export const configManifest: ConfigManifest = {
           "type": "\"BgzipMafAdapter\""
         },
         {
-          "name": "samples",
-          "type": "(JexlString | frozen)"
-        },
-        {
           "name": "mafGzLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
         {
           "name": "taiLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "nhLocation",
@@ -1082,16 +1082,16 @@ export const configManifest: ConfigManifest = {
           "type": "\"BgzipTaffyAdapter\""
         },
         {
-          "name": "samples",
-          "type": "(JexlString | frozen)"
-        },
-        {
           "name": "tafGzLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
         {
           "name": "taiLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "nhLocation",
@@ -1119,12 +1119,12 @@ export const configManifest: ConfigManifest = {
           "type": "\"BigMafAdapter\""
         },
         {
-          "name": "samples",
-          "type": "(JexlString | frozen)"
-        },
-        {
           "name": "bigBedLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "nhLocation",
@@ -1148,10 +1148,6 @@ export const configManifest: ConfigManifest = {
           "type": "\"MafTabixAdapter\""
         },
         {
-          "name": "samples",
-          "type": "(JexlString | frozen)"
-        },
-        {
           "name": "bedGzLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
@@ -1172,6 +1168,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
             }
           ]
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "nhLocation",

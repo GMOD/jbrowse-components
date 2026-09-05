@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { mafAdapterConfigSchemaFields } from '../util/mafAdapterConfigSchemaFields.ts'
 import { expandMafShorthand, taiIndexSlot } from '../util/mafShorthand.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -35,15 +36,6 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    samples: {
-      type: 'frozen',
-      description:
-        'string[] or {id:string,label:string,color?:string,assemblyName?:string}[]; assemblyName makes rows for that sample navigable to its own genome',
-      defaultValue: [],
-    },
-    /**
-     * #slot
-     */
     mafGzLocation: {
       type: 'fileLocation',
       description: 'bgzip-compressed MAF file',
@@ -67,52 +59,10 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    /**
-     * #slot
-     */
-    nhLocation: {
-      type: 'fileLocation',
-      description: 'newick tree',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     * The zoom-out tier. The `.tai` makes a read cost the span on screen rather
-     * than the blocks it lands in, which is why this slot was left off at first
-     * — but span is only half of it. Cost is span × depth, and measured against
-     * HPRC's own v2.1 index the constant is about **19 compressed bytes per bp**
-     * at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1
-     * whole is 4.4 GB. So a deep alignment still runs out, just linearly instead
-     * of by block. Point it at a `BedTabixAdapter` over the summary BED `maf2bed
-     * --summary` writes, or at a `BigBedAdapter` over a UCSC `bigMafSummary.bb`
-     * covering the same alignment.
-     */
-    summaryAdapter: {
-      type: 'frozen',
-      description:
-        'optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
-      defaultValue: null,
-    },
-    /**
-     * #slot
-     * The CDS reading frames, in the same shape and read by the same code as
-     * the other three MAF adapters' — the display looks the slot up by path off
-     * the parent track (`['adapter', 'annotationAdapter']`) and is otherwise
-     * format-blind. This adapter was the one of the four that never declared
-     * it, so the read simply returned undefined and every consumer of it — the
-     * CDS strip, the codon row coloring, the codon conservation band, and the
-     * menu rows that gate on the slot's presence — was silently unavailable on
-     * a `.maf.gz` track, with nothing on screen saying why.
-     */
-    annotationAdapter: {
-      type: 'frozen',
-      description:
-        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it',
-      defaultValue: null,
-    },
+    ...mafAdapterConfigSchemaFields({
+      summaryAdapter:
+        "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it. The `.tai` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block",
+    }),
   },
   {
     explicitlyTyped: true,

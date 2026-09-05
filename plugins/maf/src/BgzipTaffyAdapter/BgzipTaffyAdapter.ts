@@ -1,15 +1,11 @@
 import { unzip } from '@gmod/bgzf-filehandle'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { buildSampleFilter } from '../util/getSamples.ts'
-import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import {
   readTaiIndex,
-  readTaiSlice,
+  taiBlockFeatures,
   taiRegionByteSize,
 } from '../util/taiSlice.ts'
 import {
@@ -22,14 +18,13 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { makeRefChrFilter } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 interface SetupData extends TaiIndex {
   runLengthEncodeBases: boolean
@@ -192,64 +187,15 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    const { statusCallback } = opts ?? {}
-    return ObservableCreate<Feature>(async observer => {
-      const { index, fileSize, runLengthEncodeBases } =
-        await this.configure(opts)
-      const resolver = makeSourceResolver(buildSampleFilter(opts))
-      const onQueriedChr = makeRefChrFilter(query.refName)
-
-      const slice = await readTaiSlice({
-        index,
-        fileSize,
-        refName: query.refName,
-        start: query.start,
-        end: query.end,
-        location: this.getConf('tafGzLocation'),
-        statusCallback,
-      })
-      if (!slice) {
-        observer.complete()
-        return
-      }
-
-      // Stream features using generator - no caching, immediate GC eligible
-      for (const feat of this.parseTafBlocksStreaming(
-        slice,
-        runLengthEncodeBases,
-        resolver.resolve,
-      )) {
-        // Overlapping the query span is not enough — the read runs past the
-        // chromosome's end by design, so a block of the *next* chromosome can
-        // overlap numerically. See `makeRefChrFilter`.
-        if (
-          feat.end > query.start &&
-          feat.start < query.end &&
-          onQueriedChr(feat.refSrc)
-        ) {
-          observer.next(
-            new MafFeature(
-              feat.uniqueId,
-              feat.start,
-              feat.end,
-              query.refName,
-              feat.strand,
-              feat.alignments,
-              feat.seq,
-            ),
-          )
-        }
-      }
-
-      resolver.reportUnmatched()
-      statusCallback?.('')
-      observer.complete()
-      // The stop token, like the tabix and bigMaf adapters pass: without it a
-      // cancelled fetch (any pan or zoom) kept delivering into a subscriber
-      // whose result was already discarded, and the abort never reached the
-      // rxjs chain at all. The body's own errors need no try/catch either —
-      // ObservableCreate forwards a rejected promise to `observer.error`.
-    }, opts?.stopToken)
+    return taiBlockFeatures({
+      configure: this.configure,
+      location: this.getConf('tafGzLocation'),
+      query,
+      opts,
+      // Streamed from a generator — no caching, immediately GC eligible.
+      parse: (slice, { runLengthEncodeBases }, resolve) =>
+        this.parseTafBlocksStreaming(slice, runLengthEncodeBases, resolve),
+    })
   }
 
   async getRegionByteSize(regions: Region[]) {

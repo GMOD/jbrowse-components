@@ -1,21 +1,16 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
-import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { buildSampleFilter } from '../util/getSamples.ts'
-import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import {
   readTaiIndex,
-  readTaiSlice,
+  taiBlockFeatures,
   taiRegionByteSize,
 } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 /**
  * A bgzip-compressed MAF with a Taffy `.tai` index.
@@ -27,11 +22,12 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * `MafTabixAdapter` a maf2bed BED, `BigMafAdapter` a bigMaf — so a published
  * alignment had to be converted before it could be looked at.
  *
- * The index and the block arithmetic are `BgzipTaffyAdapter`'s, unchanged: a
- * `.tai` describes bgzf virtual offsets against reference coordinates and does
- * not care which text format sits inside. Only the body parse differs, so that
- * is the only thing this does not share. Measured against HPRC's own index, a
- * 10 kb locus resolves to a ~924 KB read out of the 53 GB file.
+ * The index, the block arithmetic and the read around it are
+ * `BgzipTaffyAdapter`'s, unchanged: a `.tai` describes bgzf virtual offsets
+ * against reference coordinates and does not care which text format sits
+ * inside. Only the body parse differs, so `taiBlockFeatures` is everything but
+ * that. Measured against HPRC's own index, a 10 kb locus resolves to a ~924 KB
+ * read out of the 53 GB file.
  */
 export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfig> {
   private configure = cachedSetup({
@@ -48,55 +44,14 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    const { statusCallback } = opts ?? {}
-    return ObservableCreate<Feature>(async observer => {
-      const { index, fileSize } = await this.configure(opts)
-      const resolver = makeSourceResolver(buildSampleFilter(opts))
-      const onQueriedChr = makeRefChrFilter(query.refName)
-
-      const slice = await readTaiSlice({
-        index,
-        fileSize,
-        refName: query.refName,
-        start: query.start,
-        end: query.end,
-        location: this.getConf('mafGzLocation'),
-        statusCallback,
-      })
-      if (!slice) {
-        observer.complete()
-        return
-      }
-      const text = this.decoder.decode(slice)
-
-      for (const feat of parseMafBlocks(text, resolver.resolve)) {
-        // Overlapping the query span is not enough — the read runs past the
-        // chromosome's end by design, so a block of the *next* chromosome can
-        // overlap numerically. See `makeRefChrFilter`.
-        if (
-          feat.end > query.start &&
-          feat.start < query.end &&
-          onQueriedChr(feat.refSrc)
-        ) {
-          observer.next(
-            new MafFeature(
-              feat.uniqueId,
-              feat.start,
-              feat.end,
-              query.refName,
-              feat.strand,
-              feat.alignments,
-              feat.seq,
-              feat.empties,
-            ),
-          )
-        }
-      }
-
-      resolver.reportUnmatched()
-      statusCallback?.('')
-      observer.complete()
-    }, opts?.stopToken)
+    return taiBlockFeatures({
+      configure: this.configure,
+      location: this.getConf('mafGzLocation'),
+      query,
+      opts,
+      parse: (slice, _setup, resolve) =>
+        parseMafBlocks(this.decoder.decode(slice), resolve),
+    })
   }
 
   async getRegionByteSize(regions: Region[]) {

@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { mafAdapterConfigSchemaFields } from '../util/mafAdapterConfigSchemaFields.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -27,15 +29,6 @@ const configSchema = ConfigurationSchema(
   {
     /**
      * #slot
-     */
-    samples: {
-      type: 'frozen',
-      description:
-        'string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it',
-      defaultValue: [],
-    },
-    /**
-     * #slot
      * location of the bigMaf file — a BigBed whose extra field holds the MAF
      * alignment block, as built by UCSC's `mafToBigMaf` followed by
      * `bedToBigBed -type=bed3+1 -as=bigMaf.as -tab`.
@@ -47,35 +40,10 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    /**
-     * #slot
-     */
-    nhLocation: {
-      type: 'fileLocation',
-      description: 'newick tree',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    summaryAdapter: {
-      type: 'frozen',
-      description:
-        'optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
-      defaultValue: null,
-    },
-    /**
-     * #slot
-     */
-    annotationAdapter: {
-      type: 'frozen',
-      description:
-        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it',
-      defaultValue: null,
-    },
+    ...mafAdapterConfigSchemaFields({
+      summaryAdapter:
+        'optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; null disables it',
+    }),
   },
   { explicitlyTyped: true },
 )
