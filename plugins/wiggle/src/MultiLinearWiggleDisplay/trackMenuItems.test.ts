@@ -22,8 +22,12 @@ function makeDisplay({
   leafOrder?: string[]
 } = {}) {
   const { createDisplay } = createTestEnvironment()
-  const { display, session } = createDisplay()
-  display.setRpcData(0, { sources: sources.map(makeSource) })
+  const { display, session, view } = createDisplay()
+  display.setRpcData(
+    0,
+    { sources: sources.map(makeSource) },
+    view.displayedRegions[0],
+  )
   if (renderingType) {
     display.setRenderingType(renderingType)
   }

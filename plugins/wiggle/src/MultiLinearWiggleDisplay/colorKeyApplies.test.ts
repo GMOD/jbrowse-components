@@ -14,9 +14,9 @@ function cells(n: number, groups: number): WiggleSourceData[] {
 
 function makeDisplay(sources: WiggleSourceData[], height: number) {
   const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay()
+  const { display, view } = createDisplay()
   display.setHeight(height)
-  display.setRpcData(0, { sources })
+  display.setRpcData(0, { sources }, view.displayedRegions[0])
   return display
 }
 

@@ -1,7 +1,6 @@
 import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   autoscaleDomainFromStats,
   computeScoreStats,
@@ -23,6 +22,7 @@ import type {
   ConfigModelForFields,
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -60,12 +60,25 @@ const regionHost = (self: object) => (self as { host: RegionHost }).host
 const ownAdapterConfig = (self: object) =>
   (self as { adapterConfig: { type: string } }).adapterConfig
 
+// `MultiRegionDisplayMixin`'s per-region store, which both composers of this
+// mixin bring and this one only reads through.
+const regionStore = (self: object) =>
+  self as unknown as {
+    regionPayloads: ReadonlyMap<number, unknown>
+    setLoadedRegion: (
+      displayedRegionIndex: number,
+      region: Region,
+      fetchInputs?: unknown,
+      payload?: unknown,
+    ) => void
+  }
+
 /**
  * #stateModel WiggleCommonMixin
  * #category display
  *
- * Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
- * reset — plus the wiggle-specific config that used to sit in that mixin (the
+ * Extends WiggleScoreConfigMixin with the narrowed rpcDataMap and the autoscale
+ * domain — plus the wiggle-specific config that used to sit in that mixin (the
  * pos/neg palette, rendering type, summary mode, resolution and the line/gap
  * settings). They live here because this is where they are *read*: the other
  * composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of
@@ -84,11 +97,18 @@ export function WiggleCommonMixin() {
        */
       resolution: types.stripDefault(types.number, 1),
     })
-    .volatile(() => ({
+    .views(self => ({
       /**
-       * #volatile
+       * #getter
+       * The fetched scores, keyed by displayedRegionIndex — the foundation's
+       * per-region store, narrowed.
        */
-      rpcDataMap: regionDataMap<WiggleDataResult>('rpcDataMap'),
+      get rpcDataMap(): ReadonlyMap<number, WiggleDataResult> {
+        return regionStore(self).regionPayloads as ReadonlyMap<
+          number,
+          WiggleDataResult
+        >
+      },
     }))
     .views(self => ({
       /**
@@ -284,18 +304,21 @@ export function WiggleCommonMixin() {
     .actions(self => ({
       /**
        * #action
+       * Stage a region as fetched, with this mixin's payload shape — so a test
+       * stands up a loaded display in one call. Production goes through
+       * `ctx.commitRegion`.
        */
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-      },
-      /**
-       * #action
-       * The store half of both displays' `fetchNeeded`. Everything either one
-       * derives from a fetch — multi-wiggle's row list included — is a getter
-       * over this map, so there is nothing else for a result to update.
-       */
-      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
-        self.rpcDataMap.set(displayedRegionIndex, data)
+      setRpcData(
+        displayedRegionIndex: number,
+        data: WiggleDataResult,
+        region: Region,
+      ) {
+        regionStore(self).setLoadedRegion(
+          displayedRegionIndex,
+          region,
+          undefined,
+          data,
+        )
       },
       /**
        * #action

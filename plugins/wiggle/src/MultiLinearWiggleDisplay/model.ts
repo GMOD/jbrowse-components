@@ -512,9 +512,7 @@ export default function stateModelFactory(
               sources: sourcesWithoutLayout,
               bpPerPx,
             }),
-          onResult: (idx, result) => {
-            self.setRpcData(idx, result)
-          },
+          onResult: (_idx, result) => result,
         })
       },
 

@@ -37,7 +37,7 @@ function makeDisplay() {
     { value: 20, label: '2 copies' },
     { value: 15, label: '1.5 copies' },
   ])
-  display.setRpcData(0, makeData())
+  display.setRpcData(0, makeData(), view.displayedRegions[0])
   return display
 }
 

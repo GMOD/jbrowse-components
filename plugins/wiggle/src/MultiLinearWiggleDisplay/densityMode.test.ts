@@ -27,7 +27,11 @@ function makeDisplay() {
   const { display, view } = createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   display.configuration.setSlot('summaryScoreMode', 'whiskers')
-  display.setRpcData(0, { sources: [makeBinnedSource('a')] })
+  display.setRpcData(
+    0,
+    { sources: [makeBinnedSource('a')] },
+    view.displayedRegions[0],
+  )
   return display
 }
 

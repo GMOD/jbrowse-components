@@ -32,15 +32,11 @@ function scored(name: string, score: number) {
 function makeDisplay(scores: Record<string, number>, renderingType?: string) {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setRpcData(0, {
-    sources: Object.entries(scores).map(([name, s]) => scored(name, s)),
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    { sources: Object.entries(scores).map(([name, s]) => scored(name, s)) },
+    { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+  )
   if (renderingType) {
     display.setRenderingType(renderingType)
   }
@@ -159,7 +155,7 @@ test('does nothing when the clicked region has since been discarded', () => {
     bp: 50,
   })
   const items = display.contextMenuItems()
-  display.clearDisplaySpecificData()
+  display.dropLoadedRegion(0)
 
   click(items, 'Sort rows by score here')
 

@@ -33,6 +33,15 @@ function makeMultiWiggleData(names: string[]): WiggleDataResult {
   return { sources: names.map(name => ({ name, ...empty })) }
 }
 
+// A second staged region: these tests union sources across regions, so index 1
+// names a contig the one-region test view does not display.
+const ctgB = {
+  refName: 'ctgB',
+  start: 0,
+  end: 10_000,
+  assemblyName: 'volvox',
+}
+
 beforeEach(() => {
   jest.useFakeTimers()
 })
@@ -82,12 +91,16 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
   // reading the first one, otherwise the source stays invisible forever.
   it('merges sources first seen in a later region', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
 
-    display.setRpcData(0, makeMultiWiggleData(['a', 'b']))
+    display.setRpcData(
+      0,
+      makeMultiWiggleData(['a', 'b']),
+      view.displayedRegions[0],
+    )
     expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual(['a', 'b'])
 
-    display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']))
+    display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']), ctgB)
     expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
       'a',
       'b',
@@ -103,14 +116,18 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
   // does.
   it('hands back one array while the rows are unchanged', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
 
     const seen: unknown[] = []
     const stop = autorun(() => {
       seen.push(display.sourcesWithoutLayout)
     })
-    display.setRpcData(0, makeMultiWiggleData(['a', 'b']))
-    display.setRpcData(1, makeMultiWiggleData(['a', 'b']))
+    display.setRpcData(
+      0,
+      makeMultiWiggleData(['a', 'b']),
+      view.displayedRegions[0],
+    )
+    display.setRpcData(1, makeMultiWiggleData(['a', 'b']), ctgB)
     stop()
 
     expect(new Set(seen).size).toBe(2)
@@ -118,10 +135,14 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
 
   it('preserves existing order and appends only genuinely-new sources', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
 
-    display.setRpcData(0, makeMultiWiggleData(['b', 'a']))
-    display.setRpcData(1, makeMultiWiggleData(['a', 'c', 'b']))
+    display.setRpcData(
+      0,
+      makeMultiWiggleData(['b', 'a']),
+      view.displayedRegions[0],
+    )
+    display.setRpcData(1, makeMultiWiggleData(['a', 'c', 'b']), ctgB)
     expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
       'b',
       'a',

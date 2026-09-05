@@ -317,9 +317,7 @@ export default function stateModelFactory(
               ...zoom,
               regions,
             }),
-          onResult: (idx, result) => {
-            self.setRpcData(idx, result)
-          },
+          onResult: (_idx, result) => result,
         })
       },
     }))
