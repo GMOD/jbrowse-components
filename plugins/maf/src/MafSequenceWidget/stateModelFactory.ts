@@ -26,6 +26,12 @@ export function stateModelFactory() {
       adapterConfig: types.frozen<Record<string, unknown> | undefined>(
         undefined,
       ),
+      // The launching display's byte budget, captured at open. The widget's
+      // read is the alignment file over the widget's span, so the worker
+      // measures it against this before it downloads; undefined is the gate
+      // declining to act (force-load, or an ungated display) and measures
+      // nothing.
+      byteLimit: types.frozen<number | undefined>(undefined),
       samples: types.frozen<Sample[] | undefined>(undefined),
       regions: types.frozen<
         | {

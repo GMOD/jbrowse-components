@@ -2,6 +2,7 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { subsequenceItem } from '../launchMenuItems.ts'
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 import { rowSpanAtY } from './mafHitTest.ts'
 import {
@@ -44,7 +45,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   contextCoord: ContextCoord | undefined
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
-  const { samples } = model
+  const { samples, showSummary } = model
   const openRows = (rows: typeof samples) => {
     if (contextCoord) {
       openSubsequenceWidget(
@@ -64,21 +65,29 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
         setContextCoord(undefined)
       }}
       menuItems={[
-        {
-          label: 'View subsequences (all rows)',
-          onClick: () => {
-            openRows(samples)
+        // Both reach the per-base alignment the summary tier exists not to
+        // download, so both are off past its floor — see `subsequenceItem`.
+        subsequenceItem(
+          {
+            label: 'View subsequences (all rows)',
+            onClick: () => {
+              openRows(samples)
+            },
           },
-        },
-        {
-          label: 'View subsequences (selected rows)',
-          onClick: () => {
-            const { startRow, endRow } = contextCoord
-              ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
-              : { startRow: 0, endRow: 0 }
-            openRows(samples.slice(startRow, endRow))
+          showSummary,
+        ),
+        subsequenceItem(
+          {
+            label: 'View subsequences (selected rows)',
+            onClick: () => {
+              const { startRow, endRow } = contextCoord
+                ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
+                : { startRow: 0, endRow: 0 }
+              openRows(samples.slice(startRow, endRow))
+            },
           },
-        },
+          showSummary,
+        ),
         ...(contextCoord ? rowTargetItems(model, contextCoord) : []),
       ]}
     />

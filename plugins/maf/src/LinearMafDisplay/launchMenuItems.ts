@@ -7,6 +7,7 @@ import {
   visibleRowTargets,
 } from './components/sampleNavigationItems.ts'
 import { openSubsequenceWidget } from './openSubsequenceWidget.ts'
+import { ZOOM_IN_FOR_BAND, zoomGatedItem } from './trackMenuItems.ts'
 
 import type { Sample } from '../types.ts'
 import type { SampleNavigationModel } from './components/sampleNavigationItems.ts'
@@ -14,6 +15,7 @@ import type {
   MafSyntenyHost,
   MafSyntenyLaunchModel,
 } from './launchMafRowSynteny.ts'
+import type { SubsequenceHost } from './openSubsequenceWidget.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { NotificationSink } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -24,12 +26,34 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * structural there: it keeps this a plain function a literal can drive.
  */
 export type MafLaunchModel = SampleNavigationModel &
-  MafSyntenyLaunchModel & {
+  MafSyntenyLaunchModel &
+  SubsequenceHost & {
     samples: Sample[]
     sources: unknown[]
-    adapterConfig: Record<string, unknown>
+    showSummary: boolean
     view: { width: number }
   }
+
+/**
+ * The subsequence entry, off past the summary floor.
+ *
+ * The widget reads per-base sequence out of the alignment file, which is the
+ * one thing the summary tier exists not to download — the display's own detail
+ * fetch has already refused it there. Offered anyway, it opened a widget that
+ * asked the worker for the whole span with no measurement, and the FASTA
+ * builder preallocates one byte per sample per base before it starts: a 5 Mb
+ * window over HPRC's 464 haplotypes is a 2.3 GB allocation.
+ *
+ * The RPC now measures and refuses (`MafGetSequences`), so this is the reason
+ * said in advance rather than the only thing stopping it. Same wording the two
+ * band toggles use for the same override.
+ *
+ * Shared with the drag menu's two entries, which reach the same widget from a
+ * rubberband over the summary bars.
+ */
+export function subsequenceItem(item: MenuItem, showSummary: boolean) {
+  return zoomGatedItem(item, showSummary ? ZOOM_IN_FOR_BAND : undefined)
+}
 
 /**
  * Everything the drag-selection menu offers, over the visible window instead.
@@ -56,25 +80,28 @@ export function mafLaunchMenuItems({
   const subMenu = (): MenuItem[] => {
     const targets = visibleRowTargets(session, model)
     return [
-      {
-        label: 'View subsequences (visible region)',
-        icon: NotesIcon,
-        disabled: model.samples.length === 0,
-        onClick: () => {
-          // `width - 1`, the last pixel the window paints, not `width`: the
-          // entries below take the window from the same two pixels, and a
-          // right edge one past it puts one extra base in the widget and not
-          // in them.
-          openSubsequenceWidget(
-            session,
-            model,
-            view,
-            0,
-            view.width - 1,
-            model.samples,
-          )
+      subsequenceItem(
+        {
+          label: 'View subsequences (visible region)',
+          icon: NotesIcon,
+          disabled: model.samples.length === 0,
+          onClick: () => {
+            // `width - 1`, the last pixel the window paints, not `width`: the
+            // entries below take the window from the same two pixels, and a
+            // right edge one past it puts one extra base in the widget and not
+            // in them.
+            openSubsequenceWidget(
+              session,
+              model,
+              view,
+              0,
+              view.width - 1,
+              model.samples,
+            )
+          },
         },
-      },
+        model.showSummary,
+      ),
       ...sampleNavigationItems(session, model, targets),
       ...mafSyntenyLaunchItems(session, model, targets),
     ]

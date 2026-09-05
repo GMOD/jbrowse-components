@@ -54,6 +54,14 @@ export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
 }
 
 /**
+ * What the widget takes off the display it was launched from.
+ */
+export interface SubsequenceHost {
+  adapterConfig: Record<string, unknown>
+  resolvedByteLimit: () => number | undefined
+}
+
+/**
  * Open the MAF sequence widget for the genomic range under a drag selection.
  * Resolves refName/assemblyName from `view.pxToBp` at the selection's left
  * pixel, so it picks the right region under the cursor on multi-region views
@@ -62,9 +70,9 @@ export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
  */
 export function openSubsequenceWidget(
   session: IStateTreeNode,
-  // the one thing the widget takes off the display, so the track menu's
+  // the two things the widget takes off the display, so the track menu's
   // visible-region entry can pass its own model without naming this one
-  model: { adapterConfig: Record<string, unknown> },
+  model: SubsequenceHost,
   view: LinearGenomeViewModel,
   startPx: number,
   endPx: number,
@@ -75,6 +83,12 @@ export function openSubsequenceWidget(
   }
   const widget = session.addWidget('MafSequenceWidget', 'mafSequence', {
     adapterConfig: model.adapterConfig,
+    // The display's own budget, captured here because the widget has no
+    // display to ask. Its read is the same file over the same span as the
+    // detail tier's, so it is bounded by the same number — and undefined,
+    // which is the gate declining to act, reaches the worker as "measure
+    // nothing", so a force-loaded track's widget loads too.
+    byteLimit: model.resolvedByteLimit(),
     samples,
     regions: [
       selectionRegion(

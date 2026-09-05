@@ -18,10 +18,11 @@ import type { Observable } from 'rxjs'
  * fetch nothing when the assembly and adapter disagree on chromosome names
  * (e.g. `5` vs `chr5`).
  *
- * Every tier takes the shared `byteLimit`, and each measures the file it is
- * about to read — the alignment index on the detail path, the `summaryAdapter`
- * sub-adapter on the summary one — so the number the banner quotes always
- * describes the download that was actually refused.
+ * Every read takes the shared `byteLimit`, and each measures the file it is
+ * about to read — the alignment index on the detail path and in the sequence
+ * widget's `MafGetSequences`, the `summaryAdapter` sub-adapter on the summary
+ * one, the frames file on the annotation one — so the number the banner quotes
+ * always describes the download that was actually refused.
  */
 export interface BaseMafRpcArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>

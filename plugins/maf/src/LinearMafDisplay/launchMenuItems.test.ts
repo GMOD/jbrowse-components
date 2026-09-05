@@ -33,12 +33,17 @@ function target(sampleLabel: string) {
   }
 }
 
-function model(asked: [number, number, number, number][] = []) {
+function model(
+  asked: [number, number, number, number][] = [],
+  showSummary = false,
+) {
   return {
     id: 'display1',
     samples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
     sources: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
     adapterConfig: { type: 'MafTabixAdapter' },
+    showSummary,
+    resolvedByteLimit: () => 1_000_000,
     scrollTop: 0,
     rowsTopOffset: 0,
     effectiveRowHeight: 10,
@@ -139,4 +144,23 @@ test('the subsequence entry opens the widget over that same window', () => {
     { refName: 'chr1', start: 100, end: 180, assemblyName: 'hg38' },
   ])
   expect(widgets[0]!.samples).toHaveLength(3)
+  // The display's own budget travels with it: the widget has no display to ask
+  // and its read is the same file over the same span as the detail tier's.
+  expect(widgets[0]!.byteLimit).toBe(1_000_000)
+})
+
+// The widget reads per-base sequence, which is precisely what the summary tier
+// exists not to download — the display's detail fetch has already refused it
+// there. Offered anyway, it asked the worker for the whole span unmeasured.
+test('the subsequence entry is off past the summary floor, and says why', () => {
+  const [subsequences] = launchSubMenu(model([], true))
+  expect(subsequences).toMatchObject({
+    disabled: true,
+    disabledHelpText: 'zoom in past the summary tier',
+  })
+})
+
+test('and is offered below it', () => {
+  const [subsequences] = launchSubMenu(model())
+  expect(subsequences).toMatchObject({ disabled: false })
 })

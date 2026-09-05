@@ -1,8 +1,10 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getSession,
   statusProgressLabel,
+  toLocale,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -38,7 +40,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { adapterConfig, samples, regions } = model
+  const { adapterConfig, byteLimit, samples, regions } = model
   const settings = useMafSequenceSettings()
   const { showAllLetters, includeInsertions, singleLineFormat } = settings
 
@@ -54,6 +56,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
           regions,
           showAllLetters,
           includeInsertions,
+          byteLimit,
         ] as const)
       : null,
     // Read the key tuple (not the outer scope): the null-key ternary above has
@@ -68,6 +71,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       regions,
       showAllLetters,
       includeInsertions,
+      byteLimit,
       stopToken,
       statusCallback,
     ) =>
@@ -77,13 +81,20 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         showAllLetters,
         includeInsertions,
         regions,
+        byteLimit,
         stopToken,
         statusCallback,
       }),
   )
   const loading = !data && !error
-  const rawSequences = data?.rows ?? []
-  const colToGenomePos = data?.colToGenomePos ?? []
+  // The worker measures the alignment index before it reads, and answers this
+  // instead of a payload when the span is over the display's budget. Refusing
+  // is the point — the read it declined preallocates one byte per sample per
+  // base, so it is the download AND the worker's heap that were unbounded.
+  const refused = data && isRegionRefused(data) ? data : undefined
+  const fasta = data && !isRegionRefused(data) ? data : undefined
+  const rawSequences = fasta?.rows ?? []
+  const colToGenomePos = fasta?.colToGenomePos ?? []
 
   // Rebuilding the full FASTA string is expensive on large alignments, but the
   // React Compiler memoizes this derivation, so no manual useMemo is needed.
@@ -114,6 +125,16 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         <ErrorMessage error={error} />
       ) : loading ? (
         <LoadingEllipses message={statusProgressLabel(status)} />
+      ) : refused ? (
+        <div>
+          Too much alignment to fetch
+          {region ? ` over ${getBpDisplayStr(region.end - region.start)}` : ''}
+          {refused.bytes === undefined
+            ? ''
+            : ` (${toLocale(refused.bytes)} bytes)`}
+          . Zoom in, or use &ldquo;Force load&rdquo; on the track and reopen
+          this.
+        </div>
       ) : sequenceTooLarge ? (
         <div>
           {/* "Reference sequence" and "the Download button" both came over from
