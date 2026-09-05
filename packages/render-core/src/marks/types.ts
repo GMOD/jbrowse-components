@@ -1,3 +1,5 @@
+import { devicePxBand, withClip } from '../canvas2dUtils.ts'
+
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { ClipContext2D } from '../canvas2dUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
@@ -18,6 +20,7 @@ export interface MarkContext2D extends ClipContext2D {
   lineWidth: number
   fillRect(x: number, y: number, w: number, h: number): void
   strokeRect(x: number, y: number, w: number, h: number): void
+  translate(x: number, y: number): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
   arc(
@@ -33,6 +36,12 @@ export interface MarkContext2D extends ClipContext2D {
 }
 
 export type MarkFrame = FrameDimensions
+
+/** A horizontal strip of the canvas, in CSS px down from its top edge. */
+export interface MarkBand {
+  top: number
+  height: number
+}
 
 /** Where a shape's ink sits nearest a cursor, and how far that is. */
 export interface MarkHit {
@@ -174,6 +183,13 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * declaration says what the HAL's `drawPass(id, region, bufferPassId)` says:
  * the chevron mark's channels are the line mark's, packed once under the line
  * pass.
+ *
+ * `band` is the strip of the canvas the mark is clipped to, for a display that
+ * stacks bands on one canvas (MAF's coverage strip over its rows viewport).
+ * The GPU scissors to it and Canvas2D clips to it, a zero-height band draws
+ * nothing, and the shape still places Y against the whole canvas — the band is
+ * a clip, never an offset, which is what lets one `scrollTop` serve both
+ * backends. A mark without one paints wherever its shape puts ink.
  */
 export function defineMark<
   TRegion,
@@ -185,8 +201,9 @@ export function defineMark<
   channels: (region: TRegion) => TChannels
   params: (state: TState, region: TRegion) => TParams
   bufferOf?: Mark<TRegion, TState>
+  band?: (state: TState) => MarkBand
 }): Mark<TRegion, TState> {
-  const { shape, channels, params } = spec
+  const { shape, channels, params, band } = spec
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -203,33 +220,65 @@ export function defineMark<
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     bufferOf,
     drawRegion(hal, scratch, block, clip, region, state) {
+      const strip = band?.(state)
+      const scissor = strip
+        ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
+        : undefined
+      if (scissor && scissor.height === 0) {
+        return
+      }
       const p = params(state, region)
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
         return
+      }
+      if (scissor) {
+        hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
       }
       shape.writeUniforms(scratch, clip, block, state, p)
       hal.writeUniforms(scratch)
       hal.drawPass(shape.pass.id, block.displayedRegionIndex, bufferOf)
+      if (scissor) {
+        hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+      }
     },
     paintBlock(ctx, region, block, state) {
+      const strip = band?.(state)
+      if (strip && strip.height <= 0) {
+        return
+      }
       const p = params(state, region)
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
         return
       }
-      shape.paintBlock(ctx, channels(region), block, state, p)
+      const paint = () => {
+        shape.paintBlock(ctx, channels(region), block, state, p)
+      }
+      if (strip) {
+        withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, paint)
+      } else {
+        paint()
+      }
     },
     hitNearest: shape.hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) =>
-          shape.hitNearest!(
-            channels(region),
-            block,
-            state,
-            params(state, region),
-            xPx,
-            yPx,
-            candidates,
-            maxDistSq,
-          )
+          bandExcludes(band?.(state), yPx)
+            ? undefined
+            : shape.hitNearest!(
+                channels(region),
+                block,
+                state,
+                params(state, region),
+                xPx,
+                yPx,
+                candidates,
+                maxDistSq,
+              )
       : undefined,
   }
+}
+
+function bandExcludes(strip: MarkBand | undefined, yPx: number) {
+  return (
+    strip !== undefined && (yPx < strip.top || yPx > strip.top + strip.height)
+  )
 }

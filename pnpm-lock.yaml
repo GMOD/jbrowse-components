@@ -302,6 +302,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../wiggle-core

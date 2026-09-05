@@ -44,7 +44,7 @@ import {
 import { expandToMinWidthPx } from './spanMinWidth.generated.ts'
 
 import type { SnpBaseColors } from './labelConstants.ts'
-import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 interface InterbaseDrawColors {
   insertion: string
@@ -52,7 +52,7 @@ interface InterbaseDrawColors {
   hardclip: string
 }
 
-type Ctx = CanvasRenderingContext2D | SvgCanvas
+type Ctx = MarkContext2D
 
 /**
  * One sub-pixel-safe bar spanning ordered edges `px`..`px2`, widened to a 1 CSS

@@ -7,6 +7,7 @@ export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 
 export type {
   Mark,
+  MarkBand,
   MarkContext2D,
   MarkFrame,
   MarkHit,

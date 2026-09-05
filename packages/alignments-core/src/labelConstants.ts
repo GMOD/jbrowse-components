@@ -284,7 +284,10 @@ export { INDICATOR_TRIANGLE_HW, INDICATOR_TRIANGLE_H }
 /**
  * Draw a single downward-pointing indicator triangle on a Canvas2D context.
  */
-export function drawIndicatorTriangle(ctx: DrawCtx, cx: number) {
+export function drawIndicatorTriangle(
+  ctx: Pick<DrawCtx, 'beginPath' | 'moveTo' | 'lineTo' | 'closePath' | 'fill'>,
+  cx: number,
+) {
   ctx.beginPath()
   ctx.moveTo(cx - INDICATOR_TRIANGLE_HW, 0)
   ctx.lineTo(cx + INDICATOR_TRIANGLE_HW, 0)

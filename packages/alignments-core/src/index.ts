@@ -86,6 +86,15 @@ export {
   packModCovSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export {
+  coverageBandMarks,
+  coverageBarShape,
+  coverageIndicatorShape,
+  coverageInterbaseShape,
+  coverageModShape,
+  coverageSnpShape,
+} from './coverageBandMarks.ts'
+export type { CoverageBandParams } from './coverageBandMarks.ts'
+export {
   densityBinSize,
   densityToUniformBins,
   packDensityRegion,
