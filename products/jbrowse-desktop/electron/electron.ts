@@ -326,6 +326,7 @@ function runApp() {
         try {
           const stopMcpBridge = startMcpBridge({
             paths,
+            appVersion: app.getVersion(),
             getWindow: () => wm.current,
             openTarget: target => wm.ensureWindow(target),
           })

@@ -148,6 +148,28 @@ describe('run_javascript envelope', () => {
     spy.mockRestore()
   })
 
+  it('hands the code an AbortSignal that fires at the deadline', async () => {
+    const { pluginManager } = fakeApp()
+    const direct = await run(
+      pluginManager,
+      'return signal instanceof AbortSignal',
+    )
+    expect(direct).toMatchObject({ value: true })
+    const seen = { aborted: false }
+    ;(globalThis as Record<string, unknown>).__mcpAbortProbe = () => {
+      seen.aborted = true
+    }
+    await expect(
+      run(
+        pluginManager,
+        'signal.addEventListener("abort", () => globalThis.__mcpAbortProbe()); await new Promise(r => setTimeout(r, 5000))',
+        { timeoutMs: 1000 },
+      ),
+    ).rejects.toThrow(/still running/)
+    expect(seen.aborted).toBe(true)
+    delete (globalThis as Record<string, unknown>).__mcpAbortProbe
+  })
+
   it('delivers each notification once, with its level', async () => {
     const { pluginManager, session } = fakeApp()
     session.snackbarMessages.push({ message: 'track failed', level: 'error' })

@@ -55,6 +55,12 @@ const JBrowse = observer(function JBrowse({
     // above, so it survives a session swap; reassigning here rather than
     // memoizing is what keeps it in step with the two globals beside it.
     window.jb = createJbApi(pluginManager)
+    // the one channel a browser agent that only reads console output gets;
+    // the DOM channel is the ai-instructions meta tag in index.html
+    // eslint-disable-next-line no-console
+    console.info(
+      'window.jb drives this app programmatically — read jb.help, then orient with jb.sessionSummary()',
+    )
   }, [id, pluginManager, rootModel, session])
 
   useEffect(() => {

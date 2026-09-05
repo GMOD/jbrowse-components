@@ -67,7 +67,8 @@ discipline for using it.
 - **Big returns**: don't return thousands of raw features; aggregate in code, or
   write a file with `window.require('fs')` and return the path.
 - **Long jobs**: a call outliving `timeoutMs` (default 120 s) errors but keeps
-  running. Park the promise on `globalThis` and await it from a later call.
+  running, with its `signal` argument aborted — check `signal.aborted` in long
+  loops. Park the promise on `globalThis` and await it from a later call.
 
 Setup and architecture: `products/jbrowse-desktop/electron/mcp/README.md`.
 Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the built

@@ -84,8 +84,9 @@ correctness rule lives in `jb`, not in tool plumbing. The envelope is what a
 shell would give: the value, `logs` (the code's console output), the session's
 `notifications` since the previous call (each delivered once, with its level),
 and on a throw the line and column in the submitted code plus the output printed
-before it. A call outliving `timeoutMs` answers with that and keeps running; the
-bridge budgets its relay from the same number.
+before it. A call outliving `timeoutMs` answers with that and keeps running with
+its `signal` argument aborted; the bridge budgets its relay from the same
+number.
 
 The other three exist only because renderer JavaScript cannot express them:
 `screenshot` (pixels live in the main process; waits on the capture readiness
@@ -96,7 +97,10 @@ identity before answering; bare form lists recent sessions), and `docs`
 `model:<Name>` / `config:<Name>` for every documented type, compact pages
 `pnpm autogen` writes to `docs/typeDocs.generated.json` from the same pass as
 the website reference — bundled at build time, readable while the app is closed;
-a long topic answers with its headings and takes a `section`).
+a long topic answers with its headings and takes a `section`). The bundled docs
+match the packaged `--mcp` entry by construction; the standalone shim asks the
+running app its version and prefixes every docs answer with a note when they
+disagree (`versionSkewNote`).
 
 `pnpm test:mcp` (after `pnpm build && pnpm build:electron-main`) launches the
 built app and runs the conformance suite in `test/mcpConformance.ts` against

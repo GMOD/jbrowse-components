@@ -35,6 +35,7 @@ const delay = (ms: number) =>
 
 interface BridgeDeps {
   paths: AppPaths
+  appVersion: string
   getWindow: () => BrowserWindow | null
   // ensureWindow, not the link-confirming openTarget: the consent the dialog
   // asks for is given by configuring the MCP client, and a per-call native
@@ -42,7 +43,12 @@ interface BridgeDeps {
   openTarget: (target: LaunchTarget) => Promise<unknown>
 }
 
-export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
+export function startMcpBridge({
+  paths,
+  appVersion,
+  getWindow,
+  openTarget,
+}: BridgeDeps) {
   let relayId = 0
   const relays = new Map<number, (response: BridgeToolResult) => void>()
 
@@ -432,6 +438,11 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     tool: string,
     args: Record<string, unknown>,
   ): Promise<BridgeToolResult> {
+    // the stdio server compares this against its own version so the docs it
+    // bundles can say when they describe a different build than the one running
+    if (tool === 'app_version') {
+      return { result: { version: appVersion } }
+    }
     const definition = MCP_TOOLS.find(t => t.name === tool)
     if (!definition) {
       return { error: `Unknown tool: ${tool}` }

@@ -15,7 +15,11 @@ the last expression. In scope either way:
 - `rootModel`, its parent: the jbrowse config, menus, `session` itself
 - `pluginManager`, the plugin registry: track, view and adapter types, extension
   points
-- `jb`, the helper library below
+- `jb`, the helper library below. `jb.help` restates this contract in one
+  string, for an agent that finds the object before this page.
+- `signal` (Desktop only), an `AbortSignal` that fires when the call's
+  `timeoutMs` expires — check it in long loops so a timed-out call stops instead
+  of pinning the renderer
 - `window`, the real DOM. In Desktop this is an Electron renderer with
   nodeIntegration, so Node is one `window.require` away
 
@@ -108,8 +112,9 @@ Besides `value`, a call answers with:
   line, because V8 gives none for a function body: look for an unbalanced
   bracket or an `await` inside a non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) answers with an error and the
-  logs so far, and the code keeps running. For a long job, park the promise and
-  come back for it:
+  logs so far, and the code keeps running with its `signal` aborted — work that
+  checks `signal.aborted` stops. For a long job, park the promise and come back
+  for it:
 
 ```js
 // call 1: start it and return at once

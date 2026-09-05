@@ -847,6 +847,18 @@ export async function ensureReExports() {
   setReExportRegistry((await import('@jbrowse/core/ReExports/modules')).default)
 }
 
+// The front door for an agent that just found `jb` and knows nothing else —
+// jbrowse-web's console banner and meta tag point here, because a browser
+// agent has no MCP docs tool and no initialize instructions to learn the
+// contract from.
+const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a browser; the same object is the "jb" argument of JBrowse Desktop's run_javascript MCP tool).
+
+Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?) for trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is dropped SILENTLY; jb.inspect('views.0') for a live node's getters, actions and modelType.
+
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); add data with jb.addTrack({ location }); read data with await jb.getFeatures(trackId, loc?), which renames refNames ("chr1" vs "1") so the file answers — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+
+Full guide: https://jbrowse.org/jb2/docs/agents_live_model (JBrowse Desktop serves the same guide offline through its MCP docs tool — Help menu, "Connect an AI agent...").`
+
 // The helper library an agent drives the app through. Built from the plugin
 // manager alone, so one of these serves a whole app rather than one session —
 // which is what lets jbrowse-web hand the same object to every caller for the
@@ -865,6 +877,7 @@ export function createJbApi(pluginManager: PluginManager) {
     return current
   }
   const jb = {
+    help: JB_HELP,
     get session() {
       return live()
     },

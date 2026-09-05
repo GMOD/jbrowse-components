@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="A fast and flexible genome browser" />
+    <!-- for AI browser agents, which read the DOM and never think to probe
+         window globals: the page's scripting API and where its contract is -->
+    <meta
+      name="ai-instructions"
+      content="This page exposes window.jb, a scripting API for driving the genome browser. Evaluate jb.help for the contract, then orient with jb.sessionSummary(); mutate only through model actions."
+    />
     <link rel="manifest" href="manifest.json" />
     <title>JBrowse</title>
     <style>

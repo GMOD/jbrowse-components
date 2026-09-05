@@ -231,7 +231,7 @@ describe('getFeatures', () => {
 // ADDED freely, and this list updated, but taking one away is a breaking change
 // that has to be a decision rather than a refactor's side effect.
 describe('the jb roster', () => {
-  it('is the documented 23 members', () => {
+  it('is the documented 24 members', () => {
     const jb = createJbApi({
       rootModel: {},
     } as unknown as PluginManager)
@@ -244,6 +244,7 @@ describe('the jb roster', () => {
       'getFeatureAdapterOrThrow',
       'getFeatures',
       'getRpcSessionId',
+      'help',
       'inspect',
       'listTracks',
       'loadSessionSpec',

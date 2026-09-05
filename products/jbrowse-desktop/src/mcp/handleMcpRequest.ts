@@ -82,7 +82,7 @@ export function codePositions(stack: string) {
 class CodeTimeoutError extends Error {
   constructor(timeoutMs: number) {
     super(
-      `the code did not finish within ${timeoutMs} ms and is still running in the app. For a long job: start it, keep its promise on globalThis, return at once, and await that promise from a later call (the live-model guide shows the idiom). Raise timeoutMs only for work that has to block.`,
+      `the code did not finish within ${timeoutMs} ms and is still running in the app — its "signal" argument is now aborted, so work that checks it stops. For a long job: start it, keep its promise on globalThis, return at once, and await that promise from a later call (the live-model guide shows the idiom). Raise timeoutMs only for work that has to block.`,
     )
     this.name = 'CodeTimeoutError'
   }
@@ -118,6 +118,7 @@ function compileCode(code: string) {
       'pluginManager',
       'jb',
       'console',
+      'signal',
       `return (async () => {\n${code}\n})()`,
     ) as (
       session: AbstractSessionModel,
@@ -125,6 +126,7 @@ function compileCode(code: string) {
       pluginManager: PluginManager,
       jbHelpers: ReturnType<typeof createJbApi>,
       capturedConsole: Console,
+      signal: AbortSignal,
     ) => Promise<unknown>
   } catch (e) {
     throw new Error(
@@ -139,10 +141,15 @@ function clampTimeout(requested: unknown) {
   return Math.min(Math.max(ms, 1000), CODE_TIMEOUT_MAX_MS)
 }
 
-async function runWithTimeout<T>(work: Promise<T>, timeoutMs: number) {
+async function runWithTimeout<T>(
+  work: Promise<T>,
+  timeoutMs: number,
+  onTimeout: () => void,
+) {
   let timer: ReturnType<typeof setTimeout> | undefined
   const expiry = new Promise<never>((_resolve, reject) => {
     timer = setTimeout(() => {
+      onTimeout()
       reject(new CodeTimeoutError(timeoutMs))
     }, timeoutMs)
   })
@@ -168,6 +175,10 @@ async function evaluate(
   const jb = createJbApi(pluginManager)
   const fn = compileCode(code)
   const logs: string[] = []
+  // aborted when timeoutMs expires: the deadline otherwise only stops the
+  // ANSWER, and a runaway loop kept pinning the renderer with no remedy short
+  // of restarting the app — cooperative code that checks `signal` stops
+  const abort = new AbortController()
   let value: unknown
   try {
     value = await runWithTimeout(
@@ -177,8 +188,12 @@ async function evaluate(
         pluginManager,
         jb,
         captureConsole(logs),
+        abort.signal,
       ),
       timeoutMs,
+      () => {
+        abort.abort(new CodeTimeoutError(timeoutMs))
+      },
     )
   } catch (e) {
     throw new Error(codeErrorMessage(e, logs), { cause: e })

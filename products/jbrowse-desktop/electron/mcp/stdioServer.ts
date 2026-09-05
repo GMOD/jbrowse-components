@@ -122,6 +122,27 @@ function connectBridge(socketPath: string) {
   }
 }
 
+// The docs are bundled into this process at build time, so the packaged-app
+// entry cannot drift from the app — but the standalone `node build/mcpServer.js`
+// entry can drive a different install. The bridge answers app_version; a
+// mismatch prefixes every docs answer rather than failing it, and an app old
+// enough not to know app_version is itself proof of skew.
+export function versionSkewNote(
+  shimVersion: string,
+  appAnswer: BridgeToolResult,
+) {
+  if (appAnswer.error !== undefined) {
+    return appAnswer.error.startsWith('Unknown tool')
+      ? `NOTE: the running JBrowse Desktop is older than this documentation (server ${shimVersion}); some of what it describes may not exist in the app.`
+      : undefined
+  }
+  const appVersion = (appAnswer.result as { version?: unknown } | undefined)
+    ?.version
+  return typeof appVersion === 'string' && appVersion !== shimVersion
+    ? `NOTE: this documentation is from version ${shimVersion} but the running JBrowse Desktop is ${appVersion} — where they disagree, introspect the app (jb.describeSlots, jb.inspect).`
+    : undefined
+}
+
 function toolCallContent(outcome: BridgeToolResult) {
   if (outcome.error !== undefined) {
     return {
@@ -161,6 +182,31 @@ export function runMcpStdioServer({
 }) {
   const callBridge = connectBridge(socketPath)
   const rl = readline.createInterface({ input })
+
+  // Checked once per observed answer, not per docs call: the app's version
+  // cannot change while it runs, and an unreachable app leaves the question
+  // open for the next call rather than caching "no skew".
+  let skewNote: string | undefined
+  let skewChecked = false
+  async function docsSkewNote() {
+    if (!skewChecked) {
+      try {
+        const answer = await Promise.race([
+          callBridge('app_version', {}),
+          new Promise<never>((_resolve, reject) => {
+            setTimeout(() => {
+              reject(new Error('app_version timed out'))
+            }, 2000).unref()
+          }),
+        ])
+        skewNote = versionSkewNote(version, answer)
+        skewChecked = true
+      } catch {
+        // app closed or unreachable — the docs still answer, unannotated
+      }
+    }
+    return skewNote
+  }
 
   function respond(id: number | string | null, body: Record<string, unknown>) {
     output.write(`${JSON.stringify({ jsonrpc: '2.0', id, ...body })}\n`)
@@ -216,7 +262,15 @@ export function runMcpStdioServer({
           // while JBrowse Desktop is closed; lazy so jest never resolves the
           // .md imports it bundles
           const { docsToolResult } = await import('./docsContent.ts')
-          respond(id, { result: toolCallContent(docsToolResult(args)) })
+          const outcome = docsToolResult(args)
+          const note = await docsSkewNote()
+          respond(id, {
+            result: toolCallContent(
+              note && outcome.text !== undefined
+                ? { ...outcome, text: `${note}\n\n${outcome.text}` }
+                : outcome,
+            ),
+          })
         } else if (MCP_TOOLS.some(t => t.name === name)) {
           const outcome = await callBridge(name, args).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),

@@ -12,7 +12,7 @@ import path from 'node:path'
 import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
 
-import { runMcpStdioServer } from './stdioServer.ts'
+import { runMcpStdioServer, versionSkewNote } from './stdioServer.ts'
 
 interface JsonRpcResponse {
   id: number
@@ -198,6 +198,29 @@ test('the app not running reads as a launch hint, not a stack trace', async () =
   expect(call.result?.content?.[0]?.text).toContain(
     'Launch the JBrowse Desktop app',
   )
+})
+
+describe('versionSkewNote', () => {
+  it('is silent when the app matches, or the bridge failed for another reason', () => {
+    expect(
+      versionSkewNote('1.2.3', { result: { version: '1.2.3' } }),
+    ).toBeUndefined()
+    expect(
+      versionSkewNote('1.2.3', { error: 'no window open' }),
+    ).toBeUndefined()
+  })
+
+  it('names both versions on a mismatch', () => {
+    expect(versionSkewNote('1.2.3', { result: { version: '1.3.0' } })).toMatch(
+      /1\.2\.3.+1\.3\.0/,
+    )
+  })
+
+  it('reads an app that lacks the endpoint as skew', () => {
+    expect(
+      versionSkewNote('1.2.3', { error: 'Unknown tool: app_version' }),
+    ).toMatch(/older/)
+  })
 })
 
 test('an unknown tool is a JSON-RPC error', async () => {
