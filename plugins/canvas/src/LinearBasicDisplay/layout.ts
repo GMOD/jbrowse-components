@@ -1287,30 +1287,17 @@ interface PackPrep {
   collapsedSpansPx: readonly Span[]
 }
 
-// Gather the factor-invariant half of a pack. Reads the RAW (un-cloned,
-// un-height-scaled) region data and applies `heightMultiplier` itself, so packing
-// never depends on the clone `computeLaidOutData` makes afterward — that is what
-// lets the height probes skip cloning, and what makes probe and commit identical
-// by construction.
-function prepareRefPack(
-  // Raw regions sharing one `assembly:refName` key.
+// Per-feature label geometry: which kinds exist, and the reserved width of each.
+// The decimation measures the NAME alone (a long description or subfeature label
+// says nothing about whether the name fits its neighbor whitespace), while the
+// overhang reservation covers whichever labels survive — hence the per-kind
+// widths rather than one max across them.
+function gatherLabelInfo(
   regions: [number, FeatureDataResult][],
-  inputs: LabelRoomFactorFreeInputs,
-  metrics: DisplayModeMetrics,
-): PackPrep {
-  const {
-    bpPerPx,
-    showLabels,
-    showDescriptions,
-    reversedRegions,
-    labelDecimation = 'all',
-  } = inputs
-
-  // Per-feature label geometry: which kinds exist, and the reserved width of each.
-  // The decimation measures the NAME alone (a long description or subfeature label
-  // says nothing about whether the name fits its neighbor whitespace), while the
-  // overhang reservation covers whichever labels survive — hence the per-kind
-  // widths rather than one max across them.
+  showLabels: boolean,
+  showDescriptions: boolean,
+  labelFontPx: number,
+) {
   const labelInfoByFeatureId = new Map<string, LabelInfo>()
   for (const [, data] of regions) {
     for (const labelData of data.floatingLabelsData.values()) {
@@ -1319,7 +1306,7 @@ function prepareRefPack(
         labelData,
         showLabels,
         showDescriptions,
-        metrics.labelFontPx,
+        labelFontPx,
       )
       const existing = labelInfoByFeatureId.get(targetId)
       if (existing) {
@@ -1335,7 +1322,17 @@ function prepareRefPack(
       }
     }
   }
+  return labelInfoByFeatureId
+}
 
+// One entry per feature id across the group's regions, carrying the sides it is
+// drawn on: a feature spanning a reversed and a non-reversed region packs once
+// and reserves label overhang on both.
+function gatherFeatureGeometry(
+  regions: [number, FeatureDataResult][],
+  reversedRegions: ReadonlySet<number>,
+  metrics: DisplayModeMetrics,
+) {
   const features = new Map<string, FeatureGeometry>()
   for (const [displayedRegionIndex, data] of regions) {
     const reversed = reversedRegions.has(displayedRegionIndex)
@@ -1369,21 +1366,30 @@ function prepareRefPack(
       }
     }
   }
+  return features
+}
 
-  const labeledFeatureIds = new Set<string>()
-  for (const [id, info] of labelInfoByFeatureId) {
-    if (anyLabelRenders(info.widths)) {
-      labeledFeatureIds.add(id)
-    }
-  }
-
-  // Sub-pixel unlabeled boxes: everything the collapse could claim, before the
-  // overlap and depth tests narrow it. Empty at any zoom past the min-width clamp,
-  // for a fully labeled group, and in collapsed mode where there is no stacking to
-  // opt out of — and everything below is then skipped, being all per-feature
+// Which sub-pixel marks the density collapse pins to row 0, and the px they
+// paint. A mark qualifies only where nothing holding a real row is drawn over
+// it: a wide feature, OR a sub-pixel one held out of the collapse because it
+// carries a label. Counting the labeled sub-pixel features as solid is what
+// stops an unlabeled neighbor from pinning to row 0 on top of one (a
+// partially-rs-ID'd VCF at sub-pixel zoom: the named variant stacks, so the
+// unnamed one must see it).
+function planDensityCollapse(
+  features: Map<string, FeatureGeometry>,
+  labeledFeatureIds: ReadonlySet<string>,
+  bpPerPx: number,
+  collapseDepth: number,
+  // collapsed mode, where there is no stacking to opt out of
+  singleRow: boolean,
+) {
+  // Everything the collapse could claim, before the overlap and depth tests
+  // narrow it. Empty at any zoom past the min-width clamp and for a fully
+  // labeled group — and everything below is then skipped, being all per-feature
   // allocation and an O(n log n) sort thrown away on every re-pack.
   const eligible: [string, FeatureGeometry][] = []
-  if (!metrics.singleRow) {
+  if (!singleRow) {
     for (const [id, geom] of features) {
       if (isSubPixelFade(geom, bpPerPx) && !labeledFeatureIds.has(id)) {
         eligible.push([id, geom])
@@ -1391,11 +1397,6 @@ function prepareRefPack(
     }
   }
 
-  // Everything that will hold a real row, which is `eligible` minus the overlap
-  // clause: a wide feature, OR a sub-pixel one held out of the collapse because it
-  // carries a label. Counting the labeled sub-pixel features here is what stops an
-  // unlabeled neighbor from pinning to row 0 on top of one (a partially-rs-ID'd VCF
-  // at sub-pixel zoom: the named variant stacks, so the unnamed one must see it).
   const solidSpansPx: Span[] = []
   if (eligible.length > 0) {
     for (const [id, geom] of features) {
@@ -1415,10 +1416,50 @@ function prepareRefPack(
     }
   }
 
-  const collapsedFeatureIds = deeplyPiledIds(
-    candidates,
-    inputs.collapseDepth ?? DENSITY_COLLAPSE_DEPTH,
+  const collapsedFeatureIds = deeplyPiledIds(candidates, collapseDepth)
+  return {
+    collapsedFeatureIds,
+    collapsedSpansPx: mergeSpans(
+      candidates
+        .filter(mark => collapsedFeatureIds.has(mark.id))
+        .map(mark => [mark.startPx, mark.endPx] as Span),
+    ),
+  }
+}
+
+// Gather the factor-invariant half of a pack. Reads the RAW (un-cloned,
+// un-height-scaled) region data and applies `heightMultiplier` itself, so packing
+// never depends on the clone `computeLaidOutData` makes afterward — that is what
+// lets the height probes skip cloning, and what makes probe and commit identical
+// by construction.
+function prepareRefPack(
+  // Raw regions sharing one `assembly:refName` key.
+  regions: [number, FeatureDataResult][],
+  inputs: LabelRoomFactorFreeInputs,
+  metrics: DisplayModeMetrics,
+): PackPrep {
+  const {
+    bpPerPx,
+    showLabels,
+    showDescriptions,
+    reversedRegions,
+    labelDecimation = 'all',
+  } = inputs
+
+  const labelInfoByFeatureId = gatherLabelInfo(
+    regions,
+    showLabels,
+    showDescriptions,
+    metrics.labelFontPx,
   )
+  const features = gatherFeatureGeometry(regions, reversedRegions, metrics)
+
+  const labeledFeatureIds = new Set<string>()
+  for (const [id, info] of labelInfoByFeatureId) {
+    if (anyLabelRenders(info.widths)) {
+      labeledFeatureIds.add(id)
+    }
+  }
 
   const stacks: [string, IsoformStack][] = []
   for (const [id, geom] of features) {
@@ -1435,11 +1476,12 @@ function prepareRefPack(
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx)
         : undefined,
-    collapsedFeatureIds,
-    collapsedSpansPx: mergeSpans(
-      candidates
-        .filter(mark => collapsedFeatureIds.has(mark.id))
-        .map(mark => [mark.startPx, mark.endPx] as Span),
+    ...planDensityCollapse(
+      features,
+      labeledFeatureIds,
+      bpPerPx,
+      inputs.collapseDepth ?? DENSITY_COLLAPSE_DEPTH,
+      metrics.singleRow,
     ),
   }
 }
@@ -1629,6 +1671,62 @@ function compareRank(a: number, b: number) {
   return a === b ? 0 : a < b ? -1 : 1
 }
 
+// Insertion order = priority for the low rows in greedy first-fit. Features that
+// sat near the top of the previous layout are inserted first so they keep those
+// low rows across a zoom re-pack (when label overhang shifts the x-sort and would
+// otherwise reshuffle who wins a contested row); features new to this layout are
+// inserted last so they fill gaps without displacing an existing top feature.
+// This only reorders insertion — every feature still lands on its compact
+// first-fit row, so nothing is pushed below where it would pack on its own. Ties
+// fall back to layoutStartBp for determinism. Pinned features sort ahead of all
+// others (before the prior-y ordering) so they claim the lowest rows in their bp
+// range across every re-pack.
+//
+// Read the comparator as the three ranks it is: pinned, then prior row, then bp.
+// "New to this layout" is PRIOR_ROW_NONE rather than a special case, which is
+// what makes "new features sort after every returning one" fall out of the
+// ordering instead of needing branches of its own.
+function byPackPriority(
+  packed: ReadonlyMap<string, PackedExtent>,
+  pinnedFeatureIds: ReadonlySet<string>,
+  prevYByFeatureId?: ReadonlyMap<string, number>,
+) {
+  const pinRank = (id: string) => (pinnedFeatureIds.has(id) ? 0 : 1)
+  const priorRow = (id: string) => prevYByFeatureId?.get(id) ?? PRIOR_ROW_NONE
+  return [...packed.entries()].sort(
+    ([idA, a], [idB, b]) =>
+      compareRank(pinRank(idA), pinRank(idB)) ||
+      compareRank(priorRow(idA), priorRow(idB)) ||
+      compareRank(a.layoutStartBp, b.layoutStartBp),
+  )
+}
+
+// Book the pile out of row 0 before anything stacks. A collapsed mark is pinned
+// there without an `addRect` of its own — that is what makes it free of the row
+// limit and of the track height — so without this the greedy stacker reads row 0
+// as clear and hands it to the next feature overlapping the pile, which then
+// paints into it. One rect per merged span, tall enough to cover the marks
+// sitting in it, and never entered in `layoutMap`: it reserves, it does not
+// render. The height is the tallest collapsed mark anywhere, so it is one answer
+// for every span — and the fit solve re-runs the pack about ten times, which is
+// what made re-deriving it per span worth hoisting.
+function bookPileReservations(
+  layout: GranularRectLayout,
+  packed: ReadonlyMap<string, PackedExtent>,
+  collapsedFeatureIds: ReadonlySet<string>,
+  collapsedSpansPx: readonly Span[],
+) {
+  const reservedPileHeightPx = pileHeightPx(packed, collapsedFeatureIds)
+  for (const [startPx, endPx] of collapsedSpansPx) {
+    layout.addRect(
+      `${PILE_RESERVATION_ID}${startPx}`,
+      startPx,
+      endPx,
+      reservedPileHeightPx,
+    )
+  }
+}
+
 // Pack a prepared, trimmed ref-group into rows at one `labelRoomFactor`.
 function packPreparedRef(
   prep: PackPrep,
@@ -1636,7 +1734,7 @@ function packPreparedRef(
   inputs: LayoutInputs,
   metrics: DisplayModeMetrics,
   // Each feature's y (px) in the previous layout, if any. Used only to order
-  // insertion, not to force a row — see the sort below.
+  // insertion, not to force a row — see byPackPriority.
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
@@ -1681,47 +1779,8 @@ function packPreparedRef(
     pitchX: 1,
     pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
   })
-  // Book the pile out of row 0 before anything stacks. A collapsed mark is pinned
-  // there without an `addRect` of its own — that is what makes it free of the row
-  // limit and of the track height — so without this the greedy stacker reads row 0
-  // as clear and hands it to the next feature overlapping the pile, which then
-  // paints into it. One rect per merged span, tall enough to cover the marks
-  // sitting in it, and never entered in `layoutMap`: it reserves, it does not
-  // render. The height is the tallest collapsed mark anywhere, so it is one
-  // answer for every span — and the fit solve re-runs this whole pack about ten
-  // times, which is what made re-deriving it per span worth hoisting.
-  const reservedPileHeightPx = pileHeightPx(packed, collapsedFeatureIds)
-  for (const [startPx, endPx] of collapsedSpansPx) {
-    layout.addRect(
-      `${PILE_RESERVATION_ID}${startPx}`,
-      startPx,
-      endPx,
-      reservedPileHeightPx,
-    )
-  }
-  // Insertion order = priority for the low rows in greedy first-fit. Features
-  // that sat near the top of the previous layout are inserted first so they
-  // keep those low rows across a zoom re-pack (when label overhang shifts the
-  // x-sort and would otherwise reshuffle who wins a contested row); features
-  // new to this layout are inserted last so they fill gaps without displacing
-  // an existing top feature. This only reorders insertion — every feature still
-  // lands on its compact first-fit row, so nothing is pushed below where it
-  // would pack on its own. Ties fall back to layoutStartBp for determinism.
-  // Pinned features sort ahead of all others (before the prior-y ordering) so
-  // they claim the lowest rows in their bp range across every re-pack.
-  //
-  // Read the comparator as the three ranks it is: pinned, then prior row, then
-  // bp. "New to this layout" is PRIOR_ROW_NONE rather than a special case, which
-  // is what makes "new features sort after every returning one" fall out of the
-  // ordering instead of needing branches of its own.
-  const pinRank = (id: string) => (pinnedFeatureIds.has(id) ? 0 : 1)
-  const priorRow = (id: string) => prevYByFeatureId?.get(id) ?? PRIOR_ROW_NONE
-  const sorted = [...packed.entries()].sort(
-    ([idA, a], [idB, b]) =>
-      compareRank(pinRank(idA), pinRank(idB)) ||
-      compareRank(priorRow(idA), priorRow(idB)) ||
-      compareRank(a.layoutStartBp, b.layoutStartBp),
-  )
+  bookPileReservations(layout, packed, collapsedFeatureIds, collapsedSpansPx)
+  const sorted = byPackPriority(packed, pinnedFeatureIds, prevYByFeatureId)
 
   for (const [id, ext] of sorted) {
     const geom = features.get(id)!
