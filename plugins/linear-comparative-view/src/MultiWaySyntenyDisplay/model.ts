@@ -242,13 +242,14 @@ export function stateModelFactory(
       laneGenes: undefined as Map<string, HeldLaneGenes> | undefined,
       /**
        * #volatile
-       * whether a lane-gene commit has yet covered a MATE lane. The anchor's
-       * spec exists as soon as the view does, so the first commit can be the
-       * anchor alone, before the ortholog fetch has given any mate a frame;
-       * the lanes' first real filling is the commit after that, and it is the
-       * one a capture has to wait for
+       * the anchor assembly under which a lane-gene commit has covered a MATE
+       * lane. The anchor's spec exists as soon as the view does, so the first
+       * commit can be the anchor alone, before the ortholog fetch has given
+       * any mate a frame; the lanes' first real filling is the commit after
+       * that, and it is the one a capture has to wait for. Keyed by anchor so
+       * a re-anchor onto another genome waits again
        */
-      laneGenesCoverMates: false,
+      laneGenesCoverMatesFor: undefined as string | undefined,
       /**
        * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
@@ -311,9 +312,16 @@ export function stateModelFactory(
        */
       setFeatures(f: Feature[]) {
         self.features = f
-        // a bare targetIdx addresses the outgoing targets array; a group KEY
-        // re-resolves against the rebuilt geometry — load-bearing, since the
-        // click's own widget resizes the view and that refetches
+        self.clearDirectLinkClick()
+      },
+      /**
+       * #action
+       * a bare targetIdx addresses the outgoing targets array, so it goes
+       * whenever the lanes rebuild; a group KEY re-resolves against the
+       * rebuilt geometry and stays — load-bearing, since the click's own
+       * widget resizes the view and that refetches
+       */
+      clearDirectLinkClick() {
         if (self.clickedTarget?.groupKey === undefined) {
           self.clickedTarget = undefined
         }
@@ -327,7 +335,9 @@ export function stateModelFactory(
           held.set(lane, genes)
         }
         self.laneGenes = held
-        self.laneGenesCoverMates ||= coversMate
+        if (coversMate) {
+          self.laneGenesCoverMatesFor = self.anchorAssemblyName
+        }
       },
       /**
        * #action
@@ -338,9 +348,7 @@ export function stateModelFactory(
           held.set(pair, links)
         }
         self.laneLinks = held
-        if (self.clickedTarget?.groupKey === undefined) {
-          self.clickedTarget = undefined
-        }
+        self.clearDirectLinkClick()
       },
       /**
        * #action
@@ -1299,7 +1307,8 @@ export function stateModelFactory(
         const genes = self.laneGenesFetchSpecs
         return (
           (self.laneGenes === undefined && genes.length > 0) ||
-          (!self.laneGenesCoverMates && genes.length > 1) ||
+          (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
+            genes.length > 1) ||
           (self.laneLinks === undefined && self.laneLinksFetchSpecs.length > 0)
         )
       },

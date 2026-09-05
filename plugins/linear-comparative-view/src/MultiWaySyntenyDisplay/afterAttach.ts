@@ -258,6 +258,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     transform: () => self.ribbonGeometry.targets,
     clear: () => {
       self.clearHoveredFeature()
+      self.clearDirectLinkClick()
     },
     name: 'MultiWayClearHoverOnLaneRelayout',
   })

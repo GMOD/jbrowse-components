@@ -54,12 +54,12 @@ test('the lane fetch is part of loading only until it first lands', () => {
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
   display.setLaneGenes(new Map(), false)
-  expect(display.laneGenesCoverMates).toBe(false)
+  expect(display.laneGenesCoverMatesFor).toBeUndefined()
   display.setLaneGenes(new Map(), true)
-  expect(display.laneGenesCoverMates).toBe(true)
+  expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
   // covered once is covered: a later anchor-only refetch does not lower it
   display.setLaneGenes(new Map(), false)
-  expect(display.laneGenesCoverMates).toBe(true)
+  expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
 })
 
 // An all-vs-all file carries samples the config never declared, and those draw

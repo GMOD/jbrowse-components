@@ -111,16 +111,21 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
 
 // Move up / Move down / Hide lane carry `keepMenuOpen`, so they fire
 // repeatedly with the pointer nowhere near the canvas they are relaying out.
-test('a lane reorder drops the hover', async () => {
+// The click stores the same bare index, and its outline would otherwise land
+// on whatever ribbon the rebuilt array holds there.
+test('a lane reorder drops the hover and a direct-link click', async () => {
   const display = await stackedDisplay([link('L1', 110, 210)])
-  hoverDirectLink(display)
+  const idx = hoverDirectLink(display)
+  display.selectHovered()
   expect(display.hoverTarget).toBeDefined()
+  expect(display.clickedFeatureId).toBe(idx + 1)
 
   const viewport = viewportOf(display)
   display.setRowOrder([MATES[1]!, MATES[0]!])
   expect(display.rowAssemblies).toEqual([MATES[1], MATES[0]])
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()
+  expect(display.clickedFeatureId).toBe(0)
 })
 
 test('a hidden lane drops the hover', async () => {
