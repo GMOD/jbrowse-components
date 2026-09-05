@@ -34,14 +34,14 @@ test('the lane fetch is part of loading only until it first lands', () => {
 
   display.setLaneGenes(
     new Map([[anchor!.lane, { key: anchor!.key, genes: [] }]]),
-    false,
+    undefined,
   )
   expect(display.displayPhase).toBe('ready')
 
   // the pan's refetch: the lanes are already drawn, and the phase says so
   display.setLaneGenes(
     new Map([[anchor!.lane, { key: 'a-later-window', genes: [] }]]),
-    false,
+    undefined,
   )
   expect(display.displayPhase).toBe('ready')
 })
@@ -53,12 +53,12 @@ test('the lane fetch is part of loading only until it first lands', () => {
 // mate lane, which the fetch states off its own spec list.
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
-  display.setLaneGenes(new Map(), false)
+  display.setLaneGenes(new Map(), undefined)
   expect(display.laneGenesCoverMatesFor).toBeUndefined()
-  display.setLaneGenes(new Map(), true)
+  display.setLaneGenes(new Map(), display.anchorAssemblyName)
   expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
   // covered once is covered: a later anchor-only refetch does not lower it
-  display.setLaneGenes(new Map(), false)
+  display.setLaneGenes(new Map(), undefined)
   expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
 })
 

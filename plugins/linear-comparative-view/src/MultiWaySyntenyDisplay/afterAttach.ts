@@ -291,7 +291,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     commit: (genes, specs) => {
       // the anchor's spec exists as soon as the view does, so a commit covers
       // a mate lane only once the ortholog fetch has framed one
-      self.setLaneGenes(genes, specs.length > 1)
+      self.setLaneGenes(
+        genes,
+        specs.length > 1 ? self.anchorAssemblyName : undefined,
+      )
     },
   })
 

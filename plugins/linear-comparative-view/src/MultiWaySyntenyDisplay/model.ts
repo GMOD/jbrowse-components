@@ -306,132 +306,142 @@ export function stateModelFactory(
        */
       renderOriginPx: 0,
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[]) {
-        self.features = f
-        self.clearDirectLinkClick()
-      },
-      /**
-       * #action
-       * a bare targetIdx addresses the outgoing targets array, so it goes
-       * whenever the lanes rebuild; a group KEY re-resolves against the
-       * rebuilt geometry and stays — load-bearing, since the click's own
-       * widget resizes the view and that refetches
-       */
-      clearDirectLinkClick() {
+    .actions(self => {
+      function dropDirectLinkClick() {
         if (self.clickedTarget?.groupKey === undefined) {
           self.clickedTarget = undefined
         }
-      },
-      /**
-       * #action
-       */
-      setLaneGenes(fetched: Map<string, HeldLaneGenes>, coversMate: boolean) {
-        const held = new Map(self.laneGenes)
-        for (const [lane, genes] of fetched) {
-          held.set(lane, genes)
-        }
-        self.laneGenes = held
-        if (coversMate) {
-          self.laneGenesCoverMatesFor = self.anchorAssemblyName
-        }
-      },
-      /**
-       * #action
-       */
-      setLaneLinks(fetched: Map<string, HeldLaneLinks>) {
-        const held = new Map(self.laneLinks)
-        for (const [pair, links] of fetched) {
-          held.set(pair, links)
-        }
-        self.laneLinks = held
-        self.clearDirectLinkClick()
-      },
-      /**
-       * #action
-       */
-      setStarAnchor(assemblyName: string | undefined) {
-        self.starAnchor = assemblyName
-      },
-      /**
-       * #action
-       */
-      setLaneFrames(
-        originPx: number,
-        decisions: Map<string, LaneDecision | undefined>,
-      ) {
-        self.renderOriginPx = originPx
-        self.laneDecisions = decisions
-      },
-      /**
-       * #action
-       * pin a lane onto one of its contigs, or `undefined` to let it choose
-       * again. A fresh map, so the decision autorun sees the write
-       */
-      pinLaneContig(assemblyName: string, refName: string | undefined) {
-        const pins = new Map(self.pinnedLaneContigs)
-        if (refName === undefined) {
-          pins.delete(assemblyName)
-        } else {
-          pins.set(assemblyName, refName)
-        }
-        self.pinnedLaneContigs = pins
-      },
-      /**
-       * #action
-       */
-      setRowOrder(order: string[]) {
-        self.rowOrder.replace(mergeRowOrder([...self.rowOrder], order))
-      },
-      /**
-       * #action
-       * back to densest-first. Its own action rather than `setRowOrder([])`,
-       * which now means "here is the order of the lanes I can see" and would
-       * keep every lane the caller could not
-       */
-      resetRowOrder() {
-        self.rowOrder.clear()
-      },
-      /**
-       * #action
-       */
-      setHiddenLanes(names: string[]) {
-        self.hiddenLanes.replace(names)
-      },
-      /**
-       * #action
-       */
-      setBridgeSkippedLanes(flag: boolean) {
-        setConf(self, 'bridgeSkippedLanes', flag)
-      },
-      /**
-       * #action
-       */
-      setRibbonColorBy(mode: MultiWayRibbonColorBy) {
-        setConf(self, 'ribbonColorBy', mode)
-      },
-      /**
-       * #action
-       */
-      setDrawCurves(flag: boolean) {
-        setConf(self, 'drawCurves', flag)
-      },
-      /**
-       * #action
-       */
-      setShowLaneTicks(flag: boolean) {
-        setConf(self, 'showLaneTicks', flag)
-      },
-      /**
-       * #action
-       */
-      setLodMode(mode: LodMode) {
-        self.lodMode = mode
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         */
+        setFeatures(f: Feature[]) {
+          self.features = f
+          dropDirectLinkClick()
+        },
+        /**
+         * #action
+         * a bare targetIdx addresses the outgoing targets array, so it goes
+         * whenever the lanes rebuild; a group KEY re-resolves against the
+         * rebuilt geometry and stays — load-bearing, since the click's own
+         * widget resizes the view and that refetches
+         */
+        clearDirectLinkClick() {
+          dropDirectLinkClick()
+        },
+        /**
+         * #action
+         * `coversMatesFor` is the anchor assembly when this commit framed a
+         * mate lane, else undefined
+         */
+        setLaneGenes(
+          fetched: Map<string, HeldLaneGenes>,
+          coversMatesFor: string | undefined,
+        ) {
+          const held = new Map(self.laneGenes)
+          for (const [lane, genes] of fetched) {
+            held.set(lane, genes)
+          }
+          self.laneGenes = held
+          if (coversMatesFor !== undefined) {
+            self.laneGenesCoverMatesFor = coversMatesFor
+          }
+        },
+        /**
+         * #action
+         */
+        setLaneLinks(fetched: Map<string, HeldLaneLinks>) {
+          const held = new Map(self.laneLinks)
+          for (const [pair, links] of fetched) {
+            held.set(pair, links)
+          }
+          self.laneLinks = held
+          dropDirectLinkClick()
+        },
+        /**
+         * #action
+         */
+        setStarAnchor(assemblyName: string | undefined) {
+          self.starAnchor = assemblyName
+        },
+        /**
+         * #action
+         */
+        setLaneFrames(
+          originPx: number,
+          decisions: Map<string, LaneDecision | undefined>,
+        ) {
+          self.renderOriginPx = originPx
+          self.laneDecisions = decisions
+        },
+        /**
+         * #action
+         * pin a lane onto one of its contigs, or `undefined` to let it choose
+         * again. A fresh map, so the decision autorun sees the write
+         */
+        pinLaneContig(assemblyName: string, refName: string | undefined) {
+          const pins = new Map(self.pinnedLaneContigs)
+          if (refName === undefined) {
+            pins.delete(assemblyName)
+          } else {
+            pins.set(assemblyName, refName)
+          }
+          self.pinnedLaneContigs = pins
+        },
+        /**
+         * #action
+         */
+        setRowOrder(order: string[]) {
+          self.rowOrder.replace(mergeRowOrder([...self.rowOrder], order))
+        },
+        /**
+         * #action
+         * back to densest-first. Its own action rather than `setRowOrder([])`,
+         * which now means "here is the order of the lanes I can see" and would
+         * keep every lane the caller could not
+         */
+        resetRowOrder() {
+          self.rowOrder.clear()
+        },
+        /**
+         * #action
+         */
+        setHiddenLanes(names: string[]) {
+          self.hiddenLanes.replace(names)
+        },
+        /**
+         * #action
+         */
+        setBridgeSkippedLanes(flag: boolean) {
+          setConf(self, 'bridgeSkippedLanes', flag)
+        },
+        /**
+         * #action
+         */
+        setRibbonColorBy(mode: MultiWayRibbonColorBy) {
+          setConf(self, 'ribbonColorBy', mode)
+        },
+        /**
+         * #action
+         */
+        setDrawCurves(flag: boolean) {
+          setConf(self, 'drawCurves', flag)
+        },
+        /**
+         * #action
+         */
+        setShowLaneTicks(flag: boolean) {
+          setConf(self, 'showLaneTicks', flag)
+        },
+        /**
+         * #action
+         */
+        setLodMode(mode: LodMode) {
+          self.lodMode = mode
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
