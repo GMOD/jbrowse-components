@@ -6,7 +6,7 @@ import {
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-canvas'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { BandSeamHandle } from '../../shared/BandSeamHandle.tsx'
@@ -117,17 +117,20 @@ const HoveredMarkHighlight = observer(function HoveredMarkHighlight({
   // The box the layout placed, mapped by the region the pick resolved in — the
   // same numbers the painter drew from, so the box cannot land on a record other
   // than the one under the cursor. `startBp`/`endBp` are absolute.
-  const toX = makeBpMapper(region)
-  const x1 = toX(hit.feature.startBp)
-  const x2 = toX(hit.feature.endBp)
+  const { left, width } = spanRect(
+    makeBpMapper(region),
+    hit.feature.startBp,
+    hit.feature.endBp,
+    1,
+  )
   return (
     <div
       data-testid="variant_lane_hover_highlight"
       style={{
         position: 'absolute',
-        left: Math.min(x1, x2),
+        left,
         top: hit.feature.topPx,
-        width: Math.max(1, Math.abs(x2 - x1)),
+        width,
         height: hit.feature.bottomPx - hit.feature.topPx,
         ...hoverBoxStyle,
         pointerEvents: 'none',

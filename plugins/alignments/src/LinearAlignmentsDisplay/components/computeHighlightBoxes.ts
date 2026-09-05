@@ -1,3 +1,5 @@
+import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
+
 import {
   bandScreenTop,
   contentScreenY,
@@ -132,8 +134,7 @@ export function computeHighlightBoxes(
       if (bounds.displayedRegionIndex !== vr.displayedRegionIndex) {
         continue
       }
-      const x1 = bpToPx(bounds.startBp)
-      const x2 = bpToPx(bounds.endBp)
+      const span = spanRect(bpToPx, bounds.startBp, bounds.endBp)
       const top = contentScreenY(
         bounds.yRow * rowHeight + bounds.topOffset,
         scroll,
@@ -148,9 +149,9 @@ export function computeHighlightBoxes(
       // sectionTop), so its row anchored at sectionTop must not draw a box.
       if (top + featureHeight >= sectionTop && top < bottom) {
         boxes.push({
-          left: Math.min(x1, x2),
+          left: span.left,
           top,
-          width: Math.abs(x2 - x1),
+          width: span.width,
           height: featureHeight,
         })
       }

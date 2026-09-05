@@ -1,5 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
+import { makeBpMapper, spanRect } from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -74,16 +74,9 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const xa = bpToPx(x[i]!)
-      const xb = bpToPx(x2[i]!)
-      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      const { left, width } = spanRect(bpToPx, x[i]!, x2[i]!, minWidthPx)
       setFill(color[i]!)
-      ctx.fillRect(
-        spanLeft(xa, xb, width),
-        offset + rowHeight * row[i]! - scrollTop,
-        width,
-        h,
-      )
+      ctx.fillRect(left, offset + rowHeight * row[i]! - scrollTop, width, h)
     }
   },
 
@@ -99,10 +92,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
       if (i >= count) {
         continue
       }
-      const xa = bpToPx(x[i]!)
-      const xb = bpToPx(x2[i]!)
-      const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      const left = spanLeft(xa, xb, width)
+      const { left, width } = spanRect(bpToPx, x[i]!, x2[i]!, minWidthPx)
       const top = offset + rowHeight * row[i]! - scrollTop
       const px = Math.max(left, Math.min(xPx, left + width))
       const py = Math.max(top, Math.min(yPx, top + h))

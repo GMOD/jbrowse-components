@@ -1,6 +1,7 @@
 import {
   forEachClippedBlock,
   prepareCanvas,
+  spanRect,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
@@ -610,19 +611,19 @@ function paintSelectionBox(
 ) {
   const bpLength = block.end - block.start
   const fullBlockWidth = block.screenEndPx - block.screenStartPx
-  const x1 = bpToScreenX(bounds.startBp, block, bpLength, fullBlockWidth)
-  const x2 = bpToScreenX(bounds.endBp, block, bpLength, fullBlockWidth)
+  // On a reversed block bpToScreenX flips (startBp lands right of endBp), and a
+  // raw `x2 - x1` width goes negative. The raster canvas tolerates that, but
+  // SvgCanvas would emit `width="-…"` and the box silently vanished from SVG
+  // export.
+  const { left, width } = spanRect(
+    bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+    bounds.startBp,
+    bounds.endBp,
+  )
   const y = pileupRowY(bounds.yRow, state)
   ctx.strokeStyle = '#00b8ff'
   ctx.lineWidth = 2
-  // Span, so order the edges: on a reversed block bpToScreenX flips (startBp
-  // lands right of endBp), and a raw `x2 - x1` width goes negative. The raster
-  // canvas tolerates that, but SvgCanvas would emit `width="-…"` and the box
-  // silently vanished from SVG export. min/abs is the same rule every other
-  // span here uses (render-core/CLAUDE.md).
-  const left = Math.min(x1, x2)
-  const w = Math.abs(x2 - x1)
-  ctx.strokeRect(left, y, w, state.featureHeight)
+  ctx.strokeRect(left, y, width, state.featureHeight)
 }
 
 // Selection only — the hover highlight is a React overlay (HighlightOverlay).
