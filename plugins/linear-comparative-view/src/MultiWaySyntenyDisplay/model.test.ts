@@ -478,7 +478,7 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
         },
       ],
     ]),
-    false,
+    undefined,
   )
   expect(display.laneStack).toBe(stack)
   expect(display.ribbonGeometry).toBe(ribbons)
@@ -726,7 +726,7 @@ test('a settle rebuilds the lane cells against the same colour map', () => {
         },
       ],
     ]),
-    false,
+    undefined,
   )
   const stop = autorun(() => [display.glyphColors, display.laneGlyphCells])
   const colors = display.glyphColors
@@ -745,7 +745,7 @@ test('a settle rebuilds the lane cells against the same colour map', () => {
   // a gene commit is what the map is keyed on
   display.setLaneGenes(
     new Map([['volvox', { key: 'later', genes: [] }]]),
-    false,
+    undefined,
   )
   expect(display.glyphColors).not.toBe(colors)
   stop()

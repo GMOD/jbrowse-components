@@ -146,7 +146,7 @@ test('a lane-genes commit keeps a direct-link hover', async () => {
   hoverDirectLink(display)
   expect(display.hoverTarget).toBeDefined()
 
-  display.setLaneGenes(new Map(), true)
+  display.setLaneGenes(new Map(), display.anchorAssemblyName)
   expect(display.hoverTarget).toBeDefined()
   expect(display.hoverTarget?.feature.id()).toBe('L1')
 })
