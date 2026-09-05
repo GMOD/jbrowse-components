@@ -1,7 +1,8 @@
-import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
-import { scoreToYPx } from './shaders/manhattan.js.generated.ts'
+import { valueToYPx } from '@jbrowse/render-core/shaders/pointMark'
 
-// The retirement gate for manhattan.slang's `//! js-export` (adr-051).
+import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
+
+// The retirement gate for pointMark.slang's `//! js-export` (adr-051).
 //
 // `retiredScoreToY` is the body `manhattanRenderingBackendTypes.ts` carried.
 // It matters more than most twins because it is not only the draw: the hover
@@ -37,11 +38,11 @@ const DOMAINS: [number, number][] = [
 const SCORES = [-100, -1, 0, 0.5, 2, 5, 7.5, 8, 10, 1e6]
 const HEIGHTS = [1, 100, 337]
 
-test('the generated scoreToYPx reproduces the hand-written twin it replaced', () => {
+test('the generated valueToYPx reproduces the hand-written twin it replaced', () => {
   for (const domain of DOMAINS) {
     for (const score of SCORES) {
       for (const h of HEIGHTS) {
-        expect(scoreToYPx(score, domain[0], domain[1], h)).toBeCloseTo(
+        expect(valueToYPx(score, domain[0], domain[1], h)).toBeCloseTo(
           retiredScoreToY(score, domain, h),
           9,
         )

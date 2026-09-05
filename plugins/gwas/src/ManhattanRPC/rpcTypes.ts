@@ -1,21 +1,20 @@
 import {
-  GLYPH_INSERTION,
-  GLYPH_POINT,
-} from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
+  GLYPH_DISC,
+  GLYPH_TRIANGLE,
+} from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// The per-feature glyph classes this file used to declare are manhattan.slang's
-// now, generated into `shaders/manhattan.iface.generated.ts` by
-// `pnpm gen:shaders` (adr-051) — the shader's vertex branches and every
-// non-shader consumer read the one definition. They were previously restated
-// here and pinned to the shader by a test that string-matched its source.
+// The per-feature glyph classes belong to render-core's `point` shape, whose
+// pointMark.slang authors them once and `//! export-consts`es them (adr-051) —
+// the shader's vertex branches, the Canvas2D painter and this worker all read
+// the one definition. A SNP is the shape's disc; an insertion SV its triangle.
 
 // Glyph for a feature outside LD mode. The LD evaluator falls back to this for
 // every non-index SNP, so switching coloring modes can't silently flatten
 // insertion SVs into plain discs — one definition, both paths.
 export function defaultGlyph(feature: Feature) {
-  return feature.get('svtype') === 'INS' ? GLYPH_INSERTION : GLYPH_POINT
+  return feature.get('svtype') === 'INS' ? GLYPH_TRIANGLE : GLYPH_DISC
 }
 
 // Default Manhattan point color. Single source of truth for the `color` config

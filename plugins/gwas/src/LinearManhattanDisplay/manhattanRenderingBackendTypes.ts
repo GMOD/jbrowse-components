@@ -1,4 +1,4 @@
-import { scoreToYPx } from './shaders/manhattan.js.generated.ts'
+import { valueToYPx } from '@jbrowse/render-core/shaders/pointMark'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -22,14 +22,15 @@ export const DEFAULT_POINT_DIAMETER_PX = 4
 // draw path and the hover hit-test so the drawn point and its grab target stay
 // pixel-aligned; out-of-domain scores clamp to the top/bottom edge.
 //
-// The mapping itself is manhattan.slang's `scoreToYPx`, generated into TS
-// (adr-051); this is the tuple-taking wrapper both callers already use.
+// The mapping itself is the `point` shape's own y scale, generated into TS from
+// pointMark.slang (adr-051); this is the tuple-taking wrapper both callers
+// already use.
 export function scoreToY(
   score: number,
   domainY: [number, number],
   canvasHeight: number,
 ) {
-  return scoreToYPx(score, domainY[0], domainY[1], canvasHeight)
+  return valueToYPx(score, domainY[0], domainY[1], canvasHeight)
 }
 
 // Inverse of scoreToY (unclamped): canvas Y (px from top) → score. The hover

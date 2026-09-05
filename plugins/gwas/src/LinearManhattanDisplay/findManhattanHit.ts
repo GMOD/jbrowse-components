@@ -1,6 +1,7 @@
-import { bpAtPxExact, bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
-import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
+import { MANHATTAN_MARKS } from './manhattanMarks.ts'
+import { yToScore } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -21,15 +22,21 @@ export interface ManhattanHit {
 
 const HIT_RADIUS_PX = 8
 
+const MARK = MANHATTAN_MARKS[0]!
+
 // 2D hit test. The Flatbush index over (bp, score) is built worker-side per
 // region and wrapped by the display model's `flatbushes` map (kept in lockstep
 // with rpcDataMap so it survives mousemoves without rebuild). Here we derive a
-// (bp, score) query
-// box from the mouse position + current view and only check exact pixel
-// distance for points inside that box. Edge-clamped points (out-of-domain
-// scores pinned to the canvas top/bottom) are still catchable because the
-// query window is widened to ±Inf in score when the mouse is within
-// hit-radius of the canvas edge.
+// (bp, score) query box from the mouse position + current view; the mark's own
+// `hitNearest` then measures pixel distance to the glyph it drew.
+//
+// Where the ink is stays with the shape rather than here — the bar-vs-glyph
+// branch is a rule the shader, the painter and this share, and the copy that
+// used to live in this file is what drifts.
+//
+// Edge-clamped points (out-of-domain scores pinned to the canvas top/bottom)
+// are still catchable because the query window is widened to ±Inf in score when
+// the mouse is within hit-radius of the canvas edge.
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
@@ -51,7 +58,7 @@ export function findManhattanHit(
     if (!data || !flatbush || !refName) {
       continue
     }
-    const { screenStartPx, screenEndPx, reversed, start, end } = block
+    const { screenStartPx, screenEndPx, start, end } = block
     const blockWidthPx = screenEndPx - screenStartPx
     if (blockWidthPx <= 0) {
       continue
@@ -67,8 +74,8 @@ export function findManhattanHit(
 
     // ±HIT_RADIUS_PX in screen y → a score window via yToScore (which decreases
     // with y, so the lower pixel edge is the min score). Edge-clamped points
-    // (out-of-domain scores pinned to top/bottom) stay catchable by widening to
-    // ±Inf when the mouse is within hit-radius of the canvas edge.
+    // stay catchable by widening to ±Inf when the mouse is within hit-radius of
+    // the canvas edge.
     const candScoreMin =
       mouseY >= canvasHeight - HIT_RADIUS_PX
         ? -Infinity
@@ -78,62 +85,28 @@ export function findManhattanHit(
         ? Infinity
         : yToScore(mouseY - HIT_RADIUS_PX, domainY, canvasHeight)
 
-    const { positions, ends, scores, r2s } = data
-    const candidates = flatbush.search(
-      candBpMin,
-      candScoreMin,
-      candBpMax,
-      candScoreMax,
+    const hit = MARK.hitNearest(
+      data,
+      block,
+      state,
+      mouseX,
+      mouseY,
+      flatbush.search(candBpMin, candScoreMin, candBpMax, candScoreMax),
+      bestDistSq,
     )
-
-    for (const i of candidates) {
-      const pos = positions[i]!
-      const endPos = ends[i]!
-      const score = scores[i]!
+    if (hit) {
+      bestDistSq = hit.distSq
       // NaN r² (SNP absent from LD data) normalizes to undefined here so the
       // tooltip and feature widget can treat "no r²" uniformly.
-      const raw = r2s?.[i]
-      const r2 = Number.isFinite(raw) ? raw : undefined
-      const xStart = bpToScreenPx(
-        pos,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      const xEnd = bpToScreenPx(
-        endPos,
-        start,
-        end,
-        screenStartPx,
-        screenEndPx,
-        reversed,
-      )
-      // Distance to the rendered glyph: ranged SVs (drawn as a bar, same
-      // width threshold as the renderer) test against the nearest point along
-      // the span; everything else tests against the disc center at xStart.
-      const lo = Math.min(xStart, xEnd)
-      const hi = Math.max(xStart, xEnd)
-      const ptX =
-        hi - lo > state.pointDiameterPx
-          ? Math.max(lo, Math.min(mouseX, hi))
-          : xStart
-      const ptY = scoreToY(score, domainY, canvasHeight)
-      const dx = mouseX - ptX
-      const dy = mouseY - ptY
-      const distSq = dx * dx + dy * dy
-      if (distSq < bestDistSq) {
-        bestDistSq = distSq
-        best = {
-          refName,
-          start: pos,
-          end: endPos,
-          score,
-          r2,
-          screenX: ptX,
-          screenY: ptY,
-        }
+      const raw = data.r2s?.[hit.index]
+      best = {
+        refName,
+        start: data.positions[hit.index]!,
+        end: data.ends[hit.index]!,
+        score: data.scores[hit.index]!,
+        r2: Number.isFinite(raw) ? raw : undefined,
+        screenX: hit.x,
+        screenY: hit.y,
       }
     }
   }

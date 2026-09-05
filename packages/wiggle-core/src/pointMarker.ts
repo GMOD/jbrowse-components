@@ -1,5 +1,6 @@
-import { crispSquareTopLeftPx } from '@jbrowse/render-core/shaders/pointGlyph'
+import { appendGlyph } from '@jbrowse/render-core/marks/glyphPaint'
 import { SMALL_POINT_MAX_DIAMETER } from '@jbrowse/render-core/shaders/pointGlyphConsts'
+import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -10,31 +11,17 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 // alias keeps this module's long-standing public name.
 export const SMALL_POINT_MAX_DIAMETER_PX = SMALL_POINT_MAX_DIAMETER
 
-// Append one scatter point marker to the current path, centered on (cx, y): a
-// crisp filled square at/below SMALL_POINT_MAX_DIAMETER_PX, else an antialiased
-// disc. Shared by the wiggle scatter and GWAS Manhattan Canvas2D paths so the
-// square/disc threshold can't drift between them or from the shader. The caller
-// owns ctx.beginPath()/ctx.fill() so many markers batch into one fill.
+// Append one scatter point marker to the current path, centered on (cx, y): the
+// `point` shape's disc glyph, which is a crisp filled square at/below
+// SMALL_POINT_MAX_DIAMETER_PX and an antialiased disc above it. Wiggle's
+// scatter mode draws only that one glyph, so this is the shape's painter
+// reached at a name that predates it. The caller owns
+// ctx.beginPath()/ctx.fill() so many markers batch into one fill.
 export function appendPointMarker(
   ctx: Ctx2D,
   cx: number,
   y: number,
   diameter: number,
 ) {
-  const radius = diameter / 2
-  if (diameter <= SMALL_POINT_MAX_DIAMETER_PX) {
-    // Snap the top-left to the pixel grid (round-half-up) so the crisp square's
-    // fill lands on whole pixels instead of AA-blurring across columns/rows.
-    // `crispSquareTopLeftPx` is generated from pointGlyph.slang (adr-051), so
-    // this is the shader's snap rather than a re-derivation of it.
-    ctx.rect(
-      crispSquareTopLeftPx(cx, diameter),
-      crispSquareTopLeftPx(y, diameter),
-      diameter,
-      diameter,
-    )
-  } else {
-    ctx.moveTo(cx + radius, y)
-    ctx.arc(cx, y, radius, 0, Math.PI * 2)
-  }
+  appendGlyph(ctx, GLYPH_DISC, cx, y, diameter)
 }

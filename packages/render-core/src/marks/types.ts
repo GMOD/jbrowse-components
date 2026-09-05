@@ -1,0 +1,177 @@
+import type { BlockClipResult } from '../blockClipUtils.ts'
+import type { ClipContext2D } from '../canvas2dUtils.ts'
+import type { GpuHal } from '../hal/index.ts'
+import type { InstancePass } from '../instancePass.ts'
+import type { RenderBlock } from '../renderBlock.ts'
+
+/**
+ * The 2D-context subset a shape's painter needs, structural for the same reason
+ * `ClipContext2D` is: render-core must not depend on `@jbrowse/core`, where the
+ * real `Ctx2D = CanvasRenderingContext2D | SvgCanvas` union lives. Both members
+ * satisfy it, so a display passes its `Ctx2D` straight in — which is also what
+ * makes one painter the on-screen fallback and the SVG export path.
+ */
+export interface MarkContext2D extends ClipContext2D {
+  fillStyle: string | CanvasGradient | CanvasPattern
+  fillRect(x: number, y: number, w: number, h: number): void
+  moveTo(x: number, y: number): void
+  lineTo(x: number, y: number): void
+  arc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+  ): void
+  closePath(): void
+  fill(): void
+}
+
+/** What every shape needs off the frame, and what `FrameDimensions` already is. */
+export interface MarkFrame {
+  canvasWidth: number
+  canvasHeight: number
+}
+
+/** Where a shape's ink sits nearest a cursor, and how far that is. */
+export interface MarkHit {
+  index: number
+  x: number
+  y: number
+  distSq: number
+}
+
+/**
+ * A shape: one hand-written `.slang`, one packer, one Canvas2D painter and one
+ * hit test, all reading the same channel arrays.
+ *
+ * `TChannels` is the shape's own vocabulary — parallel typed arrays plus a
+ * count. `TParams` is everything else the drawing needs, which reaches the GPU
+ * as uniforms and the painter as arguments; the two must be the same values or
+ * the backends diverge, which is what having one object per shape prevents.
+ *
+ * There is no `MarkShape` constructor. A shape is written out once, in
+ * render-core, and admitted by a consumer rather than by completeness — the
+ * ADR-040 bar.
+ */
+export interface MarkShape<TChannels, TParams> {
+  readonly id: string
+  readonly pass: InstancePass<TChannels>
+  readonly uniformByteSize: number
+  writeUniforms(
+    scratch: ArrayBuffer,
+    clip: BlockClipResult,
+    block: RenderBlock,
+    frame: MarkFrame,
+    params: TParams,
+  ): void
+  paintBlock(
+    ctx: MarkContext2D,
+    channels: TChannels,
+    block: RenderBlock,
+    frame: MarkFrame,
+    params: TParams,
+  ): void
+  /**
+   * The nearest drawn ink to `(xPx, yPx)` among `candidates`, or undefined if
+   * nothing beats `maxDistSq`.
+   *
+   * The candidate set is the caller's, not the shape's: a display with a
+   * worker-built index (GWAS's Flatbush over (bp, value)) hands in what the
+   * index answered, and one without hands in every instance. What the shape
+   * owns is where its ink actually is — the half that drifts from the painter.
+   */
+  hitNearest(
+    channels: TChannels,
+    block: RenderBlock,
+    frame: MarkFrame,
+    params: TParams,
+    xPx: number,
+    yPx: number,
+    candidates: Iterable<number>,
+    maxDistSq: number,
+  ): MarkHit | undefined
+}
+
+/**
+ * A shape bound to one display's region payload and render state — what
+ * `defineMark` returns and what a display actually holds.
+ *
+ * The shape's own generics are erased here on purpose: a display draws a list
+ * of marks over heterogeneous shapes, and only the binding knows how to reach
+ * either one's channels.
+ */
+export interface Mark<TRegion, TState extends MarkFrame> {
+  readonly pass: InstancePass<TRegion>
+  readonly uniformByteSize: number
+  drawRegion(
+    hal: GpuHal,
+    scratch: ArrayBuffer,
+    block: RenderBlock,
+    clip: BlockClipResult,
+    region: TRegion,
+    state: TState,
+  ): void
+  paintBlock(
+    ctx: MarkContext2D,
+    region: TRegion,
+    block: RenderBlock,
+    state: TState,
+  ): void
+  hitNearest(
+    region: TRegion,
+    block: RenderBlock,
+    state: TState,
+    xPx: number,
+    yPx: number,
+    candidates: Iterable<number>,
+    maxDistSq: number,
+  ): MarkHit | undefined
+}
+
+/**
+ * `{ shape, channels }` over typed arrays — the declaration a display writes in
+ * place of a `GpuXxxRenderer` class, a `Canvas2DXxxRenderer` class, a factory
+ * and a pass list.
+ *
+ * `channels` and `params` are projections, not copies: `channels` names which
+ * of the region's arrays feed the shape's lanes, and `params` names which of
+ * the render state's values reach the uniforms. Both run once per block per
+ * frame, never per instance.
+ */
+export function defineMark<
+  TRegion,
+  TState extends MarkFrame,
+  TChannels,
+  TParams,
+>(spec: {
+  shape: MarkShape<TChannels, TParams>
+  channels: (region: TRegion) => TChannels
+  params: (state: TState) => TParams
+}): Mark<TRegion, TState> {
+  const { shape, channels, params } = spec
+  return {
+    pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
+    uniformByteSize: shape.uniformByteSize,
+    drawRegion(hal, scratch, block, clip, region, state) {
+      shape.writeUniforms(scratch, clip, block, state, params(state))
+      hal.writeUniforms(scratch)
+      hal.drawPass(shape.pass.id, block.displayedRegionIndex)
+    },
+    paintBlock(ctx, region, block, state) {
+      shape.paintBlock(ctx, channels(region), block, state, params(state))
+    },
+    hitNearest(region, block, state, xPx, yPx, candidates, maxDistSq) {
+      return shape.hitNearest(
+        channels(region),
+        block,
+        state,
+        params(state),
+        xPx,
+        yPx,
+        candidates,
+        maxDistSq,
+      )
+    },
+  }
+}

@@ -1,4 +1,6 @@
-import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
+import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -100,8 +102,9 @@ function data(
 test('draws one arc per feature at the expected screen position', () => {
   const { ctx, calls } = mockCtx()
   const red = abgr(255, 0, 0)
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([0, 500, 1000], [10, 5, 0], [red, red, red])]]),
     [block],
     state,
@@ -121,8 +124,9 @@ test('draws one arc per feature at the expected screen position', () => {
 test('draws tiny points as crisp squares instead of muddy discs', () => {
   const { ctx, calls } = mockCtx()
   const red = abgr(255, 0, 0)
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([500], [5], [red])]]),
     [block],
     { ...state, pointDiameterPx: 2 },
@@ -141,8 +145,9 @@ test('draws a ranged SV as a bar spanning start→end, points as discs', () => {
   const { ctx, calls } = mockCtx()
   const red = abgr(255, 0, 0)
   // pos 100→101 = point (disc); 300→600 = 300bp = 30px span (> point) = bar.
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([100, 300], [5, 5], [red, red], [101, 600])]]),
     [block],
     state,
@@ -162,8 +167,9 @@ test('draws an insertion (glyph 1) as an inverted triangle, not a disc', () => {
   const { ctx, calls } = mockCtx()
   const red = abgr(255, 0, 0)
   // pos 500, point span, glyph=1 (insertion).
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([500], [5], [red], [501], [1])]]),
     [block],
     state,
@@ -184,8 +190,9 @@ test('switches fillStyle per unique per-feature color', () => {
   const { ctx, calls } = mockCtx()
   const red = abgr(255, 0, 0)
   const blue = abgr(0, 0, 255)
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([100, 200, 300], [5, 5, 5], [red, blue, blue])]]),
     [block],
     state,
@@ -202,8 +209,9 @@ test('switches fillStyle per unique per-feature color', () => {
 test('preserves alpha so semi-transparent points match GPU output', () => {
   const { ctx, calls } = mockCtx()
   const halfRed = abgr(255, 0, 0, 128)
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map([[0, data([100], [5], [halfRed])]]),
     [block],
     state,
@@ -214,8 +222,9 @@ test('preserves alpha so semi-transparent points match GPU output', () => {
 
 test('skips regions with no data', () => {
   const { ctx, calls } = mockCtx()
-  drawManhattanBlocks(
+  paintMarkBlocks(
     ctx as unknown as CanvasRenderingContext2D,
+    MANHATTAN_MARKS,
     new Map(),
     [block],
     state,

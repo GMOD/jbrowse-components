@@ -5,14 +5,15 @@ import {
   svgLegendRightPx,
   svgScalebarLeftPx,
 } from '@jbrowse/plugin-wiggle'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
   ScoreRuleLines,
   YSCALEBAR_LABEL_OFFSET,
   YScaleBar,
 } from '@jbrowse/wiggle-core'
 
-import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
+import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -44,7 +45,7 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       {...props}
       clipIdPrefix="manhattan"
       paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        drawManhattanBlocks(ctx, model.rpcDataMap, renderBlocks, {
+        paintMarkBlocks(ctx, MANHATTAN_MARKS, model.rpcDataMap, renderBlocks, {
           ...model.renderState,
           canvasWidth: w,
           canvasHeight: drawHeight,

@@ -1,9 +1,10 @@
-import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import {
-  GLYPH_INDEX,
-  GLYPH_INSERTION,
-  GLYPH_POINT,
-} from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
+  GLYPH_DIAMOND,
+  GLYPH_DISC,
+  GLYPH_TRIANGLE,
+} from '@jbrowse/render-core/shaders/pointMarkConsts'
+
+import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 
@@ -44,17 +45,17 @@ test('SNP absent from the LD data: grey color, NaN r²', () => {
 
 test('glyph: index → diamond, insertion → triangle, others → point', () => {
   const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
-  expect(evalGlyph(feat({ name: 'rsIndex', start: 100 }))).toBe(GLYPH_INDEX)
+  expect(evalGlyph(feat({ name: 'rsIndex', start: 100 }))).toBe(GLYPH_DIAMOND)
   expect(evalGlyph(feat({ name: 'rsB', start: 500, svtype: 'INS' }))).toBe(
-    GLYPH_INSERTION,
+    GLYPH_TRIANGLE,
   )
-  expect(evalGlyph(feat({ name: 'rsB', start: 500 }))).toBe(GLYPH_POINT)
+  expect(evalGlyph(feat({ name: 'rsB', start: 500 }))).toBe(GLYPH_DISC)
 })
 
 test('index takes precedence over insertion glyph', () => {
   const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
   expect(evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' }))).toBe(
-    GLYPH_INDEX,
+    GLYPH_DIAMOND,
   )
 })
 

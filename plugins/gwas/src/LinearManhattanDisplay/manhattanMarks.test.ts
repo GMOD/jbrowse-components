@@ -1,11 +1,8 @@
+import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
+import * as shader from '@jbrowse/render-core/shaders/pointMarkIface'
 
-import {
-  GpuManhattanRenderer,
-  MANHATTAN_PASSES,
-  buildInstanceBuffer,
-} from './GpuManhattanRenderer.ts'
-import * as shader from './shaders/manhattan.generated.ts'
+import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -15,6 +12,8 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
   writable: true,
   configurable: true,
 })
+
+const MARK = MANHATTAN_MARKS[0]!
 
 function mkData(
   positions: number[],
@@ -36,8 +35,12 @@ function mkData(
   }
 }
 
-test('packs absPosition / absEnd / score / color / glyph at the offsets the shader expects', () => {
-  const buf = buildInstanceBuffer(
+// The declaration's own claim: which of this display's arrays reach which of
+// the shape's lanes. The shape owns the byte layout — a lane swap here would
+// pack a valid buffer that draws the wrong picture, which no shader-side test
+// can see.
+test('the declaration feeds positions/ends/scores/colors/glyphs to x/x2/y/color/glyph', () => {
+  const buf = MARK.pass.pack(
     mkData(
       [42, 1337],
       [0.5, 7.25],
@@ -46,35 +49,35 @@ test('packs absPosition / absEnd / score / color / glyph at the offsets the shad
       [0, 1],
     ),
   )
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf as ArrayBuffer)
+  const f32 = new Float32Array(buf as ArrayBuffer)
   const stride = shader.INSTANCE_STRIDE_WORDS
 
-  expect(u32[shader.INSTANCE_OFFSET_U32.absPosition]).toBe(42)
-  expect(u32[shader.INSTANCE_OFFSET_U32.absEnd]).toBe(99)
-  expect(f32[shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.5)
+  expect(u32[shader.INSTANCE_OFFSET_U32.x]).toBe(42)
+  expect(u32[shader.INSTANCE_OFFSET_U32.x2]).toBe(99)
+  expect(f32[shader.INSTANCE_OFFSET_F32.y]).toBeCloseTo(0.5)
   expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(0xff0000ff)
   expect(u32[shader.INSTANCE_OFFSET_U32.glyph]).toBe(0)
 
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.absPosition]).toBe(1337)
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.absEnd]).toBe(2000)
-  expect(f32[stride + shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(7.25)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x]).toBe(1337)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x2]).toBe(2000)
+  expect(f32[stride + shader.INSTANCE_OFFSET_F32.y]).toBeCloseTo(7.25)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(0xff00ff00)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.glyph]).toBe(1)
 })
 
 test('produces a buffer sized to numFeatures × stride', () => {
-  const buf = buildInstanceBuffer(mkData([1, 2, 3], [0, 0, 0], [0, 0, 0]))
+  const buf = MARK.pass.pack(mkData([1, 2, 3], [0, 0, 0], [0, 0, 0]))
   expect(buf.byteLength).toBe(3 * shader.INSTANCE_STRIDE_BYTES)
 })
 
 test('preserves uint32 positions above the float32-safe range', () => {
   // chr1 ≈ 250 Mbp; bigger than 2^24 — would lose precision if stored as f32.
   const bigPos = 250_000_001
-  const buf = buildInstanceBuffer(mkData([bigPos], [1], [0]))
-  expect(new Uint32Array(buf)[shader.INSTANCE_OFFSET_U32.absPosition]).toBe(
-    bigPos,
-  )
+  const buf = MARK.pass.pack(mkData([bigPos], [1], [0]))
+  expect(
+    new Uint32Array(buf as ArrayBuffer)[shader.INSTANCE_OFFSET_U32.x],
+  ).toBe(bigPos)
 })
 
 describe('reversed convention', () => {
@@ -94,11 +97,15 @@ describe('reversed convention', () => {
   }
 
   function bpRangeLen(reversed: boolean) {
-    const hal = new MockHal(MANHATTAN_PASSES)
-    const renderer = new GpuManhattanRenderer(hal)
+    const hal = new MockHal([MARK.pass])
+    const scratch = new ArrayBuffer(MARK.uniformByteSize)
     const data = mkData([500], [5], [0xff0000ff])
-    renderer.upload(0, data)
-    renderer.renderBlocks([{ ...block, reversed }], new Map([[0, data]]), state)
+    const b = { ...block, reversed }
+    const clip = clipBlock(b, state.canvasWidth, state.canvasHeight, {
+      x: 1,
+      y: 1,
+    })!
+    MARK.drawRegion(hal, scratch, b, clip, data, state)
     return hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.bpRangeX + 2]!
   }
 
