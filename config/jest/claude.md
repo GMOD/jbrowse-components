@@ -15,6 +15,28 @@ time (`rIC` resolves `window.requestIdleCallback` once) must be installed there.
 `setupFilesAfterEnv` is where `beforeEach`/`jest.mock` are available, so
 per-test resets (`localStorage.js`, `deterministicIds.js`) go there.
 
+## matchMedia is absent on purpose, and a responsive test must say so
+
+There is deliberately no `matchMedia` shim, and a responsive test that does not
+install one passes for the wrong reason. jsdom defines no `window.matchMedia`;
+MUI's `useMediaQuery` checks for that and returns its `defaultMatches` — `false`
+— rather than throwing. So every responsive component takes its wide branch
+under test, and a test written against a narrow branch passes just as well
+against a component that has no narrow branch at all.
+
+It stays absent because the absence is not only a jsdom gap: a worker, a node
+RPC context and an SSR pass genuinely have no `matchMedia`, `animationAllowed`
+and `PaletteContext` both guard for exactly that, and their tests exercise it
+ambiently. A global shim would erase the condition they are pinning — and
+`animationAllowed.test.ts` would then pass only because an earlier test in the
+file deletes the shim in its `finally`, so a `-t` run of it alone would fail.
+
+Install one per-test instead and delete it after, which
+`RecentSessionsDataGrid.test.tsx`, `animationAllowed.test.ts` and
+`PaletteContext.test.tsx` each do. Only `matches` is ever read. The first of
+those is the worked example for a width query, and it fails when the component's
+narrow branch is removed _and_ when its own stub is.
+
 ## Fill a jsdom gap; don't swap the type out from under it
 
 `blob.js` is the worked example. jsdom's Blob has no `text`/`arrayBuffer`/
