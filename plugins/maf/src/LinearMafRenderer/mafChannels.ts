@@ -92,18 +92,6 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
   const row = new Uint32Array(cap)
   const color = new Uint32Array(cap)
   let count = 0
-  const emit = (
-    startBp: number,
-    endBp: number,
-    rowIndex: number,
-    abgr: number,
-  ) => {
-    x[count] = startBp
-    x2[count] = endBp
-    row[count] = rowIndex
-    color[count] = abgr
-    count++
-  }
   const rowFlank = makeRowFlank(blocks)
   // One buffer for the whole encode rather than one per block — a real MAF is
   // tens of thousands of small blocks, so the per-block allocation was the
@@ -140,7 +128,11 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
           // Outside the row's aligned extent nothing paints, so close the open
           // run here rather than letting it span the blank.
           if (runStart >= 0) {
-            emit(startBp + runStart, startBp + runEnd, rowIndex, runColor)
+            x[count] = startBp + runStart
+            x2[count] = startBp + runEnd
+            row[count] = rowIndex
+            color[count] = runColor
+            count++
             runStart = -1
           }
         } else {
@@ -154,14 +146,22 @@ export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
             runStart = gpos
             runColor = abgr
           } else if (abgr !== runColor) {
-            emit(startBp + runStart, startBp + gpos, rowIndex, runColor)
+            x[count] = startBp + runStart
+            x2[count] = startBp + gpos
+            row[count] = rowIndex
+            color[count] = runColor
+            count++
             runStart = gpos
             runColor = abgr
           }
         }
       }
       if (runStart >= 0) {
-        emit(startBp + runStart, startBp + runEnd, rowIndex, runColor)
+        x[count] = startBp + runStart
+        x2[count] = startBp + runEnd
+        row[count] = rowIndex
+        color[count] = runColor
+        count++
       }
     }
   }
