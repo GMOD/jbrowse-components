@@ -27,7 +27,7 @@ import type {
   FeatureItemEntry,
   VisibleRegion,
 } from './components/hitTesting.ts'
-import type { LayoutInputs } from './layout.ts'
+import type { LayoutInputs } from './layoutInputs.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

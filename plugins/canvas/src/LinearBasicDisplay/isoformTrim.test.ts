@@ -6,7 +6,7 @@ import { maxIsoformCount, trimIsoformStack } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
 
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LayoutInputs, LayoutRegionData } from './layout.ts'
+import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 
 // Four children of one gene, 10px each with the 2px gap the worker spent
 // between them. `b` is a decoration — an NCBI source record, a

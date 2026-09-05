@@ -17,13 +17,13 @@ import { minDrawnBoxHeight } from './layoutQueries.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitRung, FitStage } from './fitLadder.ts'
+import type { IncrementalLayout } from './layout.ts'
 import type {
-  IncrementalLayout,
   IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
-} from './layout.ts'
+} from './layoutInputs.ts'
 
 /**
  * What the fit ladder reads off the display that installs it. The five memo

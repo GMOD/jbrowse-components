@@ -10,7 +10,7 @@ import { computeLaidOutData } from './layout.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { StackedGeneSpec } from '../RenderFeatureDataRPC/testUtils.ts'
-import type { LayoutInputs, LayoutRegionData } from './layout.ts'
+import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 
 const INPUTS: LayoutInputs = {
   bpPerPx: 1,

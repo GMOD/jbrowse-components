@@ -6,7 +6,7 @@ import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLaidOutData } from './layout.ts'
 
-import type { LayoutRegionData } from './layout.ts'
+import type { LayoutRegionData } from './layoutInputs.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()

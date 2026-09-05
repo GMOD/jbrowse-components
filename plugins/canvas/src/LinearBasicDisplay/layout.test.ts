@@ -18,7 +18,7 @@ import type {
   FeatureDataResult,
   FloatingLabelsDataMap,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LayoutRegionData } from './layout.ts'
+import type { LayoutRegionData } from './layoutInputs.ts'
 
 function makeFeatureData(opts: {
   features: {

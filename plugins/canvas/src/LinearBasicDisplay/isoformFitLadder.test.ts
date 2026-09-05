@@ -9,7 +9,7 @@ import {
 import { maxBottom } from './layoutQueries.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { LayoutInputs, LayoutRegionData } from './layout.ts'
+import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 
 // The shape the isoform rung was built for, from the session that found the bug
 // (share-oW8eg4-TTT, NCBI RefSeq hg38 chr10:86,656,837..86,755,086 in a 145px

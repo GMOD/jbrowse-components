@@ -15,7 +15,7 @@ import { computeLaidOutData } from './layout.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { ResolvedLabel } from './components/labelPositioning.ts'
-import type { LayoutRegionData } from './layout.ts'
+import type { LayoutRegionData } from './layoutInputs.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()
