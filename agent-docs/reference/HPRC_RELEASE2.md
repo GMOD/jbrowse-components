@@ -329,13 +329,14 @@ worth carrying here because none is specific to HPRC.
   lacks them.
 
 **Which is why the tier is a separate config rather than switched on for
-`hprc_maf.json`, and that is a finding rather than a preference.** `showSummary`
-swaps on **span** — `aboveForceLoadFloor`, 20 kb — while the question it is
+`hprc_maf.json`, and that is a finding rather than a preference.** The summary
+tier swaps on **span** — `coarseTierPastThreshold` is `aboveForceLoadFloor`,
+20 kb — while the question it is
 standing in for is **cost**. The tutorial's own figure is drawn at
 chr6:31,972,057-32,055,418, which is 83 kb, so wiring the summary onto that
 track silently replaces the per-haplotype base rows the figure exists to show
 with presence bands, for a detail read the budget would have allowed four times
-over. Verified: `showSummary: true` at that locus with the summary configured.
+over. Verified: `coarseTierActive: true` at that locus with the summary configured.
 
 This is the gap [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD lesson
 actually points at" predicted — "the per-species view built for see all 470
@@ -344,7 +345,7 @@ the most per useful pixel" — now with a concrete instance and a config that
 demonstrates both halves. Making the swap cost-based rather than span-based is
 the fix, and it is a design question rather than a one-liner: the estimate that
 would decide it is the *detail* tier's, which is exactly the measurement
-`byteGateAdapterConfig` points away from once `showSummary` is on.
+`byteGateAdapterConfig` points away from once the tier is on (`gateMeasuresCoarse`).
 
 ## Cutting a slice: two traps that look like tool bugs
 

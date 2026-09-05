@@ -179,8 +179,6 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   BaseDisplay,
   TrackHeightMixin(),
   MultiRegionDisplayMixin(),
-  // the summary tier: `bigMafSummary` rows drawn as presence bars past
-  // the 20kb floor, byte-gated against the summary adapter
   CoarseTierMixin<MafSummaryRecord[]>(),
   LegendMixin(),
   RowHeightMixin(),

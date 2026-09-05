@@ -50,7 +50,7 @@ region; both have since moved to their displays' `zoomFetchKey`.
   includes the zoom bucket (one per doubling of bp/px), fetched through the
   shared `installFetch` skeleton on its own rotation, and re-read only when a
   visible block leaves the span they were read over. They never enter
-  `loadedRegions` (`maf-tiers-share-one-loaded-span.md` is what sharing one
+  `loadedRegions` (`CoarseTierMixin` records the read's own span, since sharing one
   span between two tiers costs) and the mode never enters `rpcProps()`.
 - **A bin is a level, not a count, and the sidecar covers every base.** A
   bigWig's zoom levels average over the bases its rows cover, so a sidecar that

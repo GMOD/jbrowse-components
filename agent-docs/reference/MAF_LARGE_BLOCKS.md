@@ -443,8 +443,8 @@ the draw loop:
   adapters take a `summaryAdapter` slot now (see "Still open" above and "A `.tai`
   is not a tier" below), but a 470-way written without one still has no cheap
   zoom-out path — the tier exists, the file it reads has to be produced.
-- The identity plot is confined *below* the summary threshold — `showSummary`
-  makes `activeRowRendering` fall back to the bases — so the per-species view
+- The identity plot is confined *below* the summary threshold — the summary
+  tier makes `activeRowRendering` fall back to the bases — so the per-species view
   built for "see all 470 species at once" is only available in the zoom range
   where fetching all 470 species costs the most per useful pixel. The summary
   overlay does draw a per-species band there (presence + score), so this is a
@@ -456,7 +456,7 @@ generalizes. The summary tier used to turn the byte gate off outright
 (`gateEnabled = !showSummary`), on the grounds that it is the cheap tier. It
 is cheap per base — no sequence — but `mafSummaryFeatures` calls
 `adapter.getFeatures` on the sub-adapter, and a `BigBedAdapter` read is a
-whole-feature download; `showSummary` covers 20kb to the whole genome; and a
+whole-feature download; the summary tier covers 20kb to the whole genome; and a
 470-way emits a record per species per aligned run. So the escape hatch from the
 gate was itself capable of an unbounded ungated download — the exact failure the
 gate exists to prevent, in the one place nothing was watching. Both tiers are
@@ -499,7 +499,7 @@ So the two adapters that read *published* whole-genome alignments were the two
 without a zoom-out tier, while the two that have it (`MafTabixAdapter`,
 `BigMafAdapter`) read formats you produce yourself by conversion. Both take the
 slot now, through the same `mafSummaryFeatures` and the same `getSummaryFeatures`
-as the other two — the display side needed no change at all, since `showSummary`
+as the other two — the display side needed no change at all, since the tier
 only ever asked whether the slot was set.
 
 One thing this does *not* claim: it is a wire-bytes measurement off an index, not

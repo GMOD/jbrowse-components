@@ -131,74 +131,57 @@ region:
   on it picks its own set — the variant matrix lays columns out across the whole
   visible width, so a partial refetch has no meaning there.
 
-MAF's is the worked case for the second, since it also runs a second RPC
-concurrently under the same stop token, and takes one staleness guard around the
-whole batch rather than per region:
+MAF's is the worked case for the second. Its per-region call, shared with its
+summary tier, runs a second RPC concurrently under the same stop token and
+refuses the batch on the first refusal; `fetchRegionsBatched` then takes one
+staleness guard around the whole batch rather than per region:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
-type MafBatch = {
-  results: { displayedRegionIndex: number; result: R }[]
-  bytes?: number
+// The CDS-frame annotation overlay (when configured) fetches in the same
+// stop-token-guarded pass as the main data so the two share staleness
+// book-keeping; the two RPCs run concurrently.
+//
+// Concurrently, and each is itself a per-region fan-out, so they get a
+// slot apiece rather than the shared callback: two fan-outs writing one
+// status field directly is last-writer-wins between them, and the
+// annotation branch's rows are a small fraction of the alignment's.
+const slot = createStatusFanOut(ctx.statusCallback)
+const scope = refusalScope(ctx)
+const results = await Promise.all([
+  callEachRegion(
+    regions,
+    { ...scope.ctx, statusCallback: slot() },
+    (region, regionCtx, displayedRegionIndex) =>
+      scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
+  ),
+  fetchAnnotationData(self, regions, {
+    ...scope.ctx,
+    statusCallback: slot(),
+  }),
+])
+  .then(([answered]) => landed(answered))
+  .finally(() => {
+    scope.dispose()
+  })
+// The batch's own byte number, whichever way it goes: the budget is what
+// one region may cost, so the largest is what was judged and what the
+// banner quotes.
+const perRegionBytes = results.map(r => measuredBytes(r.result))
+const bytes = largestRegionBytes(perRegionBytes)
+const kept: { displayedRegionIndex: number; result: R }[] = []
+let refused = false
+for (const { displayedRegionIndex, result } of results) {
+  if (isRegionRefused(result)) {
+    refused = true
+  } else {
+    kept.push({ displayedRegionIndex, result })
+  }
 }
-await fetchRegionsBatched(self, needed, {
-  // Annotated, because the two arms are what tells `fetchRegionsBatched`
-  // which half is the payload: inferred, the marker's absent fields would
-  // widen the payload's own.
-  call: async (regions, ctx): Promise<MafBatch | RegionTooLargeResult> => {
-    // The CDS-frame annotation overlay (when configured) fetches in the same
-    // stop-token-guarded pass as the main data so the two share staleness +
-    // loadedRegions book-keeping; the two RPCs run concurrently.
-    //
-    // Concurrently, and each is itself a per-region fan-out, so they get a
-    // slot apiece rather than the shared callback: two fan-outs writing one
-    // status field directly is last-writer-wins between them, and the
-    // annotation branch's rows are a small fraction of the alignment's.
-    const slot = createStatusFanOut(ctx.statusCallback)
-    const scope = refusalScope(ctx)
-    const results = await Promise.all([
-      callEachRegion(
-        regions,
-        { ...scope.ctx, statusCallback: slot() },
-        (region, regionCtx, displayedRegionIndex) =>
-          scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
-      ),
-      fetchAnnotationData(self, regions, {
-        ...scope.ctx,
-        statusCallback: slot(),
-      }),
-    ])
-      .then(([answered]) => landed(answered))
-      .finally(() => {
-        scope.dispose()
-      })
-    // The batch's own byte number, whichever way it goes: the budget is what
-    // one region may cost, so the largest is what was judged and what the
-    // banner quotes.
-    const perRegionBytes = results.map(r => measuredBytes(r.result))
-    const bytes = largestRegionBytes(perRegionBytes)
-    const kept: { displayedRegionIndex: number; result: R }[] = []
-    let refused = false
-    for (const { displayedRegionIndex, result } of results) {
-      if (isRegionRefused(result)) {
-        refused = true
-      } else {
-        kept.push({ displayedRegionIndex, result })
-      }
-    }
-    return refused
-      ? { regionTooLarge: true as const, bytes }
-      : { results: kept, bytes }
-  },
-  commit: ({ results }) => {
-    const sampleSet = unionSampleSets(results)
-    if (sampleSet) {
-      self.setSamples(sampleSet)
-    }
-    commit(results)
-  },
-})
+return refused
+  ? { regionTooLarge: true as const, bytes }
+  : { results: kept, bytes }
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed

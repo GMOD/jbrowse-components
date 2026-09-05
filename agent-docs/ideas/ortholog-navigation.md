@@ -73,7 +73,7 @@ per-base fetch; (b) conservation graph — a per-bin "fraction matching the anch
 (or reuse a phastCons/phyloP bigWig); (c) fine — the current per-base `LinearMafDisplay`,
 only below a bp/px threshold. New work is the preprocessing CLI; rendering reuses
 synteny + wiggle + MAF. (The `bigMafSummary` half of this shipped — `BigMafAdapter`'s
-`summaryAdapter` slot feeding `LinearMafDisplay`'s `showSummary` zoom-out path —
+`summaryAdapter` slot feeding `LinearMafDisplay`'s summary tier —
 so what is left here is the coarse synteny and conservation-graph tiers.)
 
 References: `~/src/vendor/{pangene,impg}`; PR GMOD/jbrowse-components#4985;

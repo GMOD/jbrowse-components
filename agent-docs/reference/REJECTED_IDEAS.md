@@ -900,10 +900,11 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `LinearBasicDisplay/loadedRegionCoverage.test.ts`. The one stamp-without-store
   path is sequence's legitimately-empty-region answer, where fail-open is
   load-bearing — a store-derived default would refetch an empty region forever.
-  So `regionHasData` is a tier-selection hook (MAF) plus deliberate
-  defense-in-depth (the two canvas `rpcDataMap.has` overrides, which decide
-  which way a future commit/store drift fails), its default is right, and there
-  is nothing for a hook or a scan to fix. The scan variant was also a check
+  So `regionHasData` is deliberate defense-in-depth (the two canvas
+  `rpcDataMap.has` overrides, which decide which way a future commit/store
+  drift fails), its default is right, and there is nothing for a hook or a
+  scan to fix. MAF's tier-selection override is gone with the tier's own
+  store (`CoarseTierMixin`). The scan variant was also a check
   that cannot fail (`mechanisms/green-checks-that-cannot-fail.md`).
 - **Migrate the alignments plugin from its positive-`bpLen`-plus-`flipX`
   reversal convention onto the tree's negated-`bpRangeX` pivot** (wiggle, MAF,

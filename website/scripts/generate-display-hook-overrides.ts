@@ -166,7 +166,7 @@ const HOOKS: Hook[] = [
     name: 'byteGateAdapterPath',
     owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
-      'the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path',
+      'the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, which is what `CoarseTierMixin` fills for a gated coarse tier, since `byteGateAdapterConfig` is the config at this path',
   },
   {
     name: 'clearDisplaySpecificData',

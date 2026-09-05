@@ -1,6 +1,6 @@
 ---
 name: produce-and-host-the-hprc-summary-tier
-description: the tier is built and hosted and worth 354 Mb refused against 250 kB drawn; what is left is an upstream report to `maf2bed` about the overlap collapse, and the decision that stops it being switched on for `hprc_maf.json` — whether `showSummary` swaps on span or on cost
+description: the tier is built and hosted and worth 354 Mb refused against 250 kB drawn; what is left is an upstream report to `maf2bed` about the overlap collapse, and the decision that stops it being switched on for `hprc_maf.json` — whether the summary tier swaps on span or on cost
 ---
 
 # Produce and host the HPRC summary tier
@@ -24,7 +24,7 @@ measured, 500 to 50,000 removes 0.04% of the rows. Collapsing them into their
 union is a 13x reduction genome-wide and 69x on chr14, losslessly for what the
 slot feeds. The build script carries the workaround; the producer should do it.
 
-**Decide whether `showSummary` swaps on span or on cost**, which is what stops
+**Decide whether the summary tier swaps on span or on cost**, which is what stops
 the tier being switched on for `hprc_maf.json` itself. It swaps at 20 kb, and the
 tutorial's own figure is drawn at 83 kb, so wiring the summary there silently
 replaces the per-haplotype base rows the figure exists to show — for a detail
