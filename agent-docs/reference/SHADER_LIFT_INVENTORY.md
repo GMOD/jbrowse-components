@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 111 functions
-are inside the emitter's subset, of which **84 are exported**.
+Scanned 43 shaders with entry points. 110 functions
+are inside the emitter's subset, of which **83 are exported**.
 
 ## Candidates
 
@@ -117,5 +117,4 @@ is no longer shared with anything.
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `normalizeScore` | tests only — `densityColorParity.test.ts`, `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `valueToYPx` | nothing |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |
