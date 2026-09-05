@@ -131,6 +131,17 @@ reads the served tier and compares the zoom against the header's bound where
 there is one, the slot otherwise — so a slot raised above the bound does not
 widen what counts as approximate, and a `--no-coarse` file never reports it.
 
+`MultiPairwiseSyntenyAdapter` (N pairwise files sharing an anchor, composed
+into one track for the multiway display) declares the same slot and answers
+`getHeader` by folding its children's: `hasCoarseTier` only when EVERY child has
+one, and `coarseGap` the largest bound any child states. One child without the
+tier therefore pins the whole star to fine — a `lodMode: 'coarse'` is forwarded
+to every child unchanged, and `resolveCoarseTier` in the tierless child would
+serve fine anyway, so a mixed answer would only have moved the fetch key for
+bytes that do not change. The header also carries `anchorAssemblyName` and the
+star's `assemblyNames`, since the main thread otherwise has to read every child
+config to learn them.
+
 A failed info read is not terminal: the display goes on resolving off the slot,
 which is what it did before the header existed, and the primary fetch on the
 same file raises the real error. It is logged with `console.warn` and nothing

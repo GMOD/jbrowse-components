@@ -41,6 +41,7 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
 - **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
 - **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MultiPairwiseSyntenyAdapter](../multipairwisesyntenyadapter)
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
 - **State model:** [runtime API](../../models/linearsyntenydisplay)

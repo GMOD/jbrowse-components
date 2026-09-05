@@ -449,17 +449,26 @@ function adapterValueLines(code: string) {
   return lines
 }
 
-// A synteny track spans two assemblies. Keep the track's assemblyNames
-// consistent with the adapter snapshot it wraps: reuse the adapter's own
-// query/target (or assemblyNames) rather than a generic placeholder that would
-// contradict it.
+// A synteny track spans the assemblies its adapter names. Keep the track's
+// assemblyNames consistent with the adapter snapshot it wraps: reuse the
+// adapter's own query/target (or assemblyNames) rather than a generic
+// placeholder that would contradict it. A composite adapter's example names a
+// pair per child, so every `assemblyNames` in the snapshot is unioned.
 function syntenyAssemblyNames(adapterCode: string) {
   const query = /queryAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
   const target = /targetAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
-  const names = /assemblyNames:\s*(\[[^\]]*\])/.exec(adapterCode)
+  const names = [
+    ...new Set(
+      [...adapterCode.matchAll(/assemblyNames:\s*\[([^\]]*)\]/g)].flatMap(m =>
+        [...m[1]!.matchAll(/['"]([^'"]*)['"]/g)].map(n => n[1]!),
+      ),
+    ),
+  ]
   return query && target
     ? `['${query[1]}', '${target[1]}']`
-    : (names?.[1] ?? "['assembly1', 'assembly2']")
+    : names.length > 0
+      ? `[${names.map(n => `'${n}'`).join(', ')}]`
+      : "['assembly1', 'assembly2']"
 }
 
 function trackAssemblyNames(trackType: string, adapterCode: string) {

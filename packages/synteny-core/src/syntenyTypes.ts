@@ -10,6 +10,7 @@ export const syntenyTypes = [
   'PairwiseIndexedPAFAdapter',
   'AllVsAllPAFAdapter',
   'AllVsAllIndexedPAFAdapter',
+  'MultiPairwiseSyntenyAdapter',
 ]
 
 export const pairwiseTypes = [

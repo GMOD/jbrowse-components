@@ -158,6 +158,7 @@ explicit location slot, and derive the index location from it.
   uri, baseUri
 - [PairwiseIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/pairwiseindexedpafadapter.md)
   — shorthands: uri, baseUri, csi
+- [MultiPairwiseSyntenyAdapter](https://jbrowse.org/jb2/docs/config/multipairwisesyntenyadapter.md)
 - [DeltaAdapter](https://jbrowse.org/jb2/docs/config/deltaadapter.md) —
   shorthands: uri, baseUri
 - [ChainAdapter](https://jbrowse.org/jb2/docs/config/chainadapter.md) —

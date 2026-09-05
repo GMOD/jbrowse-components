@@ -13,6 +13,7 @@ import MCScanBlocksAdapterF from './MCScanBlocksAdapter/index.ts'
 import MCScanBlocksAddTrackComponentF from './MCScanBlocksAddTrackComponent/index.tsx'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
+import MultiPairwiseSyntenyAdapterF from './MultiPairwiseSyntenyAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 
@@ -26,6 +27,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     AllVsAllIndexedPAFAdapterF(pluginManager)
     PAFAdapterF(pluginManager)
     PairwiseIndexedPAFAdapterF(pluginManager)
+    MultiPairwiseSyntenyAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)

@@ -50,6 +50,7 @@ Every DotplotDisplay has a unique `displayId`, a required top-level field that i
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
 - **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
 - **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MultiPairwiseSyntenyAdapter](../multipairwisesyntenyadapter)
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
 - **State model:** [runtime API](../../models/dotplotdisplay)

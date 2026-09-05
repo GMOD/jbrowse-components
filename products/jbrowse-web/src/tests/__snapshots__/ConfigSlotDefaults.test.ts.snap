@@ -232,6 +232,10 @@ exports[`every registered schema slot default 1`] = `
     "searchReverse": "boolean = true",
     "sequenceAdapter": "frozen = null",
   },
+  "adapter: MultiPairwiseSyntenyAdapter": {
+    "adapters": "frozen = []",
+    "coarseBpPerPxThreshold": "number = 10000",
+  },
   "adapter: MultiWiggleAdapter": {
     "bigWigs": "frozen = []",
     "subadapters": "frozen = []",
