@@ -1,8 +1,8 @@
 import {
   forEachClippedBlock,
   makeBpMapper,
+  spanRect,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { paintedBpRange } from './paintedBpRange.ts'
 import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
