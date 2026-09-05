@@ -1145,7 +1145,7 @@ export default function stateModelFactory(
          * makes `effectiveRowHeight` derive from it.
          */
         setFitToHeight() {
-          setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
+          setConf(self, 'height', self.height)
           setConf(self, 'rowHeight', 0)
         },
         /**
