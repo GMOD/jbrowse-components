@@ -87,3 +87,11 @@ test('parseArgv treats a bare "-" as a value, not a new flag', () => {
   ])
   expect(standardizeArgv(parseArgv(['--tracks', '-']), []).tracks).toBe('-')
 })
+
+test('a single-dash flag names its option', () => {
+  expect(parseArgv(['-w', '100'])).toEqual([['w', ['100']]])
+  expect(parseArgv(['-w=100', '-out', 'out.svg'])).toEqual([
+    ['w', ['100']],
+    ['out', ['out.svg']],
+  ])
+})

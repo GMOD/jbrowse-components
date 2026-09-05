@@ -3,7 +3,7 @@ import path from 'node:path'
 import zlib from 'node:zlib'
 
 import { outputName, parseBedpe, recordArgv, recordLocs } from './batch.ts'
-import { DEFAULT_WIDTH } from './options.ts'
+import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
 import { renderRegion } from './renderRegion.ts'
 import { resolveConfigObject } from './resolveHub.ts'
@@ -61,19 +61,18 @@ function readJunctions(opts: BatchOpts) {
   const { bedpe, vcf, passOnly } = opts
   if (bedpe && vcf) {
     throw new Error('pass --bedpe or --vcf, not both')
-  }
-  if (vcf) {
+  } else if (vcf) {
     return parseVcfJunctions(readMaybeGzip(vcf), { passOnly })
-  }
-  if (bedpe) {
+  } else if (bedpe) {
     if (passOnly) {
       console.warn(
         'Warning: --passOnly reads a VCF FILTER column; --bedpe has none',
       )
     }
     return parseBedpe(fs.readFileSync(bedpe, 'utf8'))
+  } else {
+    throw new Error('batch needs --vcf <file> or --bedpe <file>')
   }
-  throw new Error('batch needs --vcf <file> or --bedpe <file>')
 }
 
 /**
@@ -93,7 +92,8 @@ export async function runBatch(opts: BatchOpts) {
   // type. Refused rather than ignored, because the failure is silent and looks
   // like success: N identical images under N filenames each naming a different
   // junction, and a `wrote N/N` to finish.
-  const fixed = (['spec', 'session'] as const).filter(key => opts[key])
+  const supplied = new Map<string, unknown>(Object.entries(opts))
+  const fixed = batchRefusedOptions.filter(key => supplied.get(key))
   if (fixed.length > 0) {
     throw new Error(
       `batch renders one view per junction, so ${fixed.map(k => `--${k}`).join(' and ')} cannot be combined with it: ${fixed.length > 1 ? 'they fix' : 'it fixes'} the view, and every row would render the same image`,

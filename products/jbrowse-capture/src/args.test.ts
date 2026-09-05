@@ -65,8 +65,25 @@ test('a zero or negative viewport dimension is an error', () => {
   expect(() => parseArgs(['--width', '-5'])).toThrow(
     '--width needs a positive number, got "-5"',
   )
-  // zero is a meaningful timeout/settle, so those two stay unconstrained
+})
+
+// `--timeout 0` means "no timeout at all" to puppeteer and "already expired" to
+// the waits polled from node, so the run either hangs forever or fails instantly
+// depending on which stage it reaches.
+test('a zero or negative timeout is an error', () => {
+  expect(() => parseArgs(['--timeout', '0'])).toThrow(
+    '--timeout needs a positive number, got "0"',
+  )
+  expect(() => parseArgs(['--timeout', '-1'])).toThrow(
+    '--timeout needs a positive number, got "-1"',
+  )
+})
+
+test('settle takes zero but not a negative pause', () => {
   expect(parseArgs(['--settle', '0']).settle).toBe(0)
+  expect(() => parseArgs(['--settle', '-1'])).toThrow(
+    '--settle needs a number of milliseconds that is zero or more, got "-1"',
+  )
 })
 
 test('a bare positional is an error', () => {

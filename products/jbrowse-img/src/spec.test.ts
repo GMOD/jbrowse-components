@@ -1,6 +1,6 @@
 import { dotplotViewKnobs, syntenyViewKnobs } from './comparativeInit.ts'
 import { subcommandForViewType, viewTypeModes } from './modes.ts'
-import { specMode, viewSettingsFromSpec } from './spec.ts'
+import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
 
 import type { ViewSpec } from './spec.ts'
 
@@ -68,5 +68,16 @@ describe('the linear view is not a --spec target', () => {
 
   it('has no subcommand to name for a view type jb2export cannot draw', () => {
     expect(subcommandForViewType('SpreadsheetView')).toBeUndefined()
+  })
+})
+
+describe('parseSpec', () => {
+  it('parses inline JSON too long to be a path', () => {
+    const inline = JSON.stringify({
+      type: 'DotplotView',
+      views: [],
+      note: 'x'.repeat(5000),
+    })
+    expect(parseSpec(inline).type).toBe('DotplotView')
   })
 })

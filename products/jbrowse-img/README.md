@@ -1271,7 +1271,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1318,7 +1318,7 @@ Options:
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs (or "-" for stdin)
+  --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1362,7 +1362,7 @@ Options:
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs (or "-" for stdin)
+  --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1410,7 +1410,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1439,7 +1439,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]

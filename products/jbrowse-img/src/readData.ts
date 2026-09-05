@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
@@ -9,7 +8,7 @@ import {
   syntenyTrackTypes,
 } from './makeConfigs.ts'
 import { modifierValue } from './parseArgv.ts'
-import { STDIN_ARG, readTextInput } from './util.ts'
+import { STDIN_ARG, isFile, readTextInput } from './util.ts'
 
 import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
 
@@ -134,7 +133,7 @@ export function readData(
   let assemblyData: Assembly | undefined
   // `-` reads the assembly JSON from stdin; any other non-existent value is an
   // assembly NAME to look up in the config below
-  if (asm && (asm === STDIN_ARG || fs.existsSync(asm))) {
+  if (asm && (asm === STDIN_ARG || isFile(asm))) {
     assemblyData = read(asm) as Assembly
     resolveLocalPaths(assemblyData, baseDirOf(asm))
   }
@@ -231,10 +230,17 @@ export function readData(
     )
   }
 
-  if (tracksData) {
-    configData.tracks = tracksData
-  } else if (!configData.tracks) {
+  if (!configData.tracks) {
     configData.tracks = []
+  }
+  const configTracks = configData.tracks
+  for (const track of tracksData ?? []) {
+    const existing = configTracks.findIndex(t => t.trackId === track.trackId)
+    if (existing === -1) {
+      configTracks.push(track)
+    } else {
+      configTracks[existing] = track
+    }
   }
   const usedTrackIds = new Set(configData.tracks.map(t => t.trackId))
   for (const track of syntenyTracks) {
@@ -248,27 +254,27 @@ export function readData(
   // what was built instead of recomputing the id from the filename.
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
-    const [file, ...rest] = opts
-    const index = modifierValue(rest, 'index')
-    const name = modifierValue(rest, 'name')
-    if (syntenyTrackTypes.includes(type)) {
-      continue
-    } else if (!file) {
-      throw new Error('no file specified')
-    }
-    const trackConfig =
-      type === 'multiwig'
-        ? makeMultiWiggleTrackConfig(
-            readMultiWiggleSources(file),
-            file,
-            configData.assembly,
-            name,
-          )
-        : makeTrackConfig(type, file, index, configData.assembly, name)
-    if (trackConfig) {
-      trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
-      configData.tracks.push(trackConfig)
-      openTracks.push({ trackId: trackConfig.trackId, opts: rest })
+    if (!syntenyTrackTypes.includes(type)) {
+      const [file, ...rest] = opts
+      if (!file) {
+        throw new Error(`--${type} requires a file argument`)
+      }
+      const index = modifierValue(rest, 'index')
+      const name = modifierValue(rest, 'name')
+      const trackConfig =
+        type === 'multiwig'
+          ? makeMultiWiggleTrackConfig(
+              readMultiWiggleSources(file),
+              file,
+              configData.assembly,
+              name,
+            )
+          : makeTrackConfig(type, file, index, configData.assembly, name)
+      if (trackConfig) {
+        trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
+        configData.tracks.push(trackConfig)
+        openTracks.push({ trackId: trackConfig.trackId, opts: rest })
+      }
     }
   }
   configData.openTracks = openTracks

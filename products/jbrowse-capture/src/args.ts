@@ -21,7 +21,8 @@ export interface ParsedArgs {
 }
 
 const NUMERIC = new Set(['width', 'height', 'scale', 'timeout', 'settle'])
-const POSITIVE = new Set(['width', 'height', 'scale'])
+const POSITIVE = new Set(['width', 'height', 'scale', 'timeout'])
+const NON_NEGATIVE = new Set(['settle'])
 const FLAGS = new Set([
   'fullPage',
   'headed',
@@ -101,10 +102,16 @@ export function parseArgs(argv: string[]): ParsedArgs {
       if (!Number.isFinite(n)) {
         throw new Error(`--${name} needs a number, got "${value}"`)
       }
-      // A zero-size viewport or scale otherwise fails much later, inside
-      // puppeteer, with an error naming neither the flag nor the value.
+      // Otherwise these fail much later and elsewhere: a zero size inside
+      // puppeteer, naming neither the flag nor the value, and `--timeout 0` as
+      // no timeout at all there while the node-polled waits read it as expired.
       if (POSITIVE.has(name) && n <= 0) {
         throw new Error(`--${name} needs a positive number, got "${value}"`)
+      }
+      if (NON_NEGATIVE.has(name) && n < 0) {
+        throw new Error(
+          `--${name} needs a number of milliseconds that is zero or more, got "${value}"`,
+        )
       }
       out[name] = n
     } else {

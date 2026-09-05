@@ -12,12 +12,6 @@ export const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-// Wait until the LoadingOverlay test-id is gone. NOTE: the overlay keeps the
-// literal text "Loading" in the DOM (hidden via opacity), so a text-based wait
-// burns its full timeout — only the `loading-overlay` test-id count is a
-// reliable signal. With `waitForDownloads`, also wait out adapter "Downloading…"
-// status text, which can linger after the overlay clears (e.g. a remote BAM
-// still fetching) so a capture doesn't catch a half-loaded track.
 // Every best-effort wait below runs through this. They swallow their own timeout
 // on purpose — a slow-but-finishing page should not be failed for being slow,
 // and a display in a terminal state publishes no attribute to wait on at all —
@@ -63,6 +57,14 @@ export const APP_READY = '[data-app-phase="ready"]'
  */
 const APP_SETTLED_HOLD_MS = 1000
 
+/**
+ * Wait until the loading overlay is gone, and with `waitForDownloads` until
+ * nothing else reports itself busy either — a remote fetch can outlive the
+ * overlay, so a capture taken on the overlay alone catches a half-loaded track.
+ *
+ * NOT best-effort: an overlay that never clears means a fetch that never
+ * finished, and there is no content behind it to fall through to.
+ */
 export async function waitForLoadingComplete(
   page: Page,
   {
@@ -70,20 +72,11 @@ export async function waitForLoadingComplete(
     waitForDownloads = false,
   }: { timeout?: number; waitForDownloads?: boolean } = {},
 ): Promise<boolean> {
-  // NOT best-effort: an overlay that never clears means a fetch that never
-  // finished, and there is no content behind it to fall through to.
   await page.waitForFunction(
     (selector: string) => document.querySelectorAll(selector).length === 0,
-    { timeout },
+    { timeout, polling: 'mutation' },
     LOADING_OVERLAY,
   )
-  // The download half asks the app what it is doing, through the attributes it
-  // publishes and each display's own status on the session model. It used to be
-  // `document.body.innerText.includes('Downloading')`, a string search over the
-  // whole rendered page: it matched a track NAMED "Downloading…", it matched
-  // documentation text, and it stopped matching the moment a message was
-  // reworded or translated.
-  //
   // `quietMs: 0` because this is the "nothing is in flight right now" question;
   // the one that needs the idle to hold is waitForQuietPeriod's own caller.
   return waitForDownloads
@@ -225,16 +218,20 @@ export const displaySettled = (testid: string) =>
 export const displayById = (displayId: string) =>
   `[data-display-id="${displayId}"]`
 
-// Wait until no display wrapper is still pending its first paint, or until the
-// timeout elapses (proceed anyway — a display stuck in its too-large/error state
-// renders no wrapper at all and never reports done).
+// Wait until no display is still pending its first paint AND could still reach
+// it: a pending display publishing `loading`, or publishing no phase at all (a
+// build older than the attribute), is still coming; a terminal phase is not. The
+// two comparative canvases hold `drawn=false` open through `error` deliberately,
+// so waiting on the attribute alone burns the whole timeout over an answer the
+// census already has — waitForJBrowseReady takes that census straight after and
+// reports whatever is left as unsettled.
 //
 // Keying on the *absence* of pending wrappers rather than counting done-vs-total
-// matters twice over. A page with no canvas displays — an import form, a menu or
-// widget figure — resolves immediately instead of burning the full timeout as a
-// hidden fixed sleep. And a page whose displays finish at different times waits
-// for the last one; the previous "any element ends in -done" fallback returned as
-// soon as the *first* of several tracks painted.
+// is what lets a page with no canvas displays — an import form, a menu or widget
+// figure — resolve immediately instead of paying the full timeout as a hidden
+// fixed sleep, and what makes a page whose displays finish at different times
+// wait for the last one; the previous "any element ends in -done" fallback
+// returned as soon as the *first* of several tracks painted.
 //
 // Absence is only meaningful once the views have mounted (a track's display
 // wrapper mounts with its TrackRenderingContainer), so call this after the
@@ -245,8 +242,13 @@ export function waitForDisplaysDone(
 ): Promise<boolean> {
   return settled(
     page.waitForFunction(
-      (selector: string) => document.querySelector(selector) === null,
-      { timeout: timeoutMs },
+      (selector: string) =>
+        [...document.querySelectorAll<HTMLElement>(selector)].every(
+          el =>
+            el.dataset.displayPhase !== undefined &&
+            el.dataset.displayPhase !== 'loading',
+        ),
+      { timeout: timeoutMs, polling: 'mutation' },
       PENDING_DISPLAYS,
     ),
   )
@@ -277,7 +279,7 @@ export function waitForDisplayPhases(
   return settled(
     page.waitForFunction(
       () => document.querySelector('[data-display-phase="loading"]') === null,
-      { timeout: timeoutMs },
+      { timeout: timeoutMs, polling: 'mutation' },
     ),
   )
 }
@@ -304,7 +306,7 @@ export function waitForViewPhases(page: Page, timeoutMs: number) {
     () =>
       document.querySelector('[data-view-phase="loading"]') === null &&
       document.querySelector('[data-view-component-pending]') === null,
-    { timeout: timeoutMs, polling: 500 },
+    { timeout: timeoutMs, polling: 'mutation' },
   )
 }
 
@@ -332,21 +334,16 @@ export const BUSY_SELECTOR = [
 /**
  * Is the app doing anything right now?
  *
- * Serialized into the page, so it declares everything it uses. Two sources: the
- * selector above, and the live session model's own per-display status, which is
- * the only PER-DISPLAY signal a build with no readiness attributes has left.
- * Both are contracts rather than renderings — a model field and a set of data
+ * Serialized into the page, so it declares everything it uses and takes
+ * `BUSY_SELECTOR` as an argument rather than importing it. Two sources: that
+ * selector, and the live session model's own per-display status, which is the
+ * only PER-DISPLAY signal a build with no readiness attributes has left. Both
+ * are contracts rather than renderings — a model field and a set of data
  * attributes — so neither moves when the UI is restyled.
  *
  * Exported so a test can call the real function rather than a copy of it.
  */
-export function isPageBusyInPage(): boolean {
-  const busySelector = [
-    '[data-testid="loading-overlay"]',
-    '[data-busy="true"]',
-    '[data-display-phase="loading"]',
-    '[data-view-phase="loading"]',
-  ].join(', ')
+export function isPageBusyInPage(busySelector: string): boolean {
   if (document.querySelector(busySelector)) {
     return true
   }
@@ -444,16 +441,20 @@ export async function waitForQuietPeriod(
   while (Date.now() < deadline) {
     // A page that navigates or closes under us fails the evaluate; treat that
     // as busy and let the deadline decide, rather than reporting quiet.
-    const busy = await page.evaluate(isPageBusyInPage).catch(() => true)
+    const busy = await page
+      .evaluate(isPageBusyInPage, BUSY_SELECTOR)
+      .catch(() => true)
     const now = Date.now()
     if (busy) {
       seenBusy = true
       quietSince = undefined
     } else {
       if (!seenBusy && now - start >= busyWindowMs) {
-        // never went busy within the window: nothing to wait out
+        // Never went busy within the window: nothing to wait out, and the idle
+        // that already ran the length of the window counts towards the hold —
+        // every sample in it was idle, since a failed evaluate reads as busy.
         seenBusy = true
-        quietSince = now
+        quietSince = start
       }
       if (seenBusy) {
         quietSince ??= now
@@ -468,12 +469,16 @@ export async function waitForQuietPeriod(
 }
 
 /**
- * Wait for the app to say it has finished.
+ * Wait for the FIRST frame the app says it has finished.
  *
- * One selector, no chain: `[data-app-phase="ready"]` is rendered by the session
- * itself, so it cannot be satisfied before the app exists. Returns false if the
- * page never publishes it, which is how a caller tells "not ready yet" from "a
- * build too old to have the marker" and falls back.
+ * `[data-app-phase="ready"]` is rendered by the session itself, so it cannot be
+ * satisfied before the app exists — but one frame of it is not the answer on its
+ * own: a display reads `ready` in the gap between one fetch finishing and the
+ * debounced next one starting. `waitForAppSettled` requires it to HOLD, and is
+ * what both the chain here and `jb.waitReady` use.
+ *
+ * Returns false if the page never publishes it, which is how a caller tells "not
+ * ready yet" from "a build too old to have the marker" and falls back.
  */
 export function waitForAppReady(
   page: Page,
@@ -492,12 +497,12 @@ export function hasAppReadyMarker(page: Page): Promise<boolean> {
 /**
  * Wait out work an INTERACTION started: `ready`, and still ready a beat later.
  *
- * The gate for after a click, a keystroke or a resize, where `waitForAppReady`
- * alone is not one. A page that is still LOADING starts at `loading` and the
- * transition into `ready` is the app finishing, so one read of the selector
- * answers it. After an interaction the app is already `ready` — it was finished a
- * moment ago — and stays that way until the click's work registers, so the same
- * read returns instantly, on the pre-click frame.
+ * The gate wherever `waitForAppReady` alone is not one, which is everywhere the
+ * app is working. After an interaction the app is already `ready` — it was
+ * finished a moment ago — and stays that way until the click's work registers,
+ * so a single read returns instantly, on the pre-click frame; during a load it
+ * reads `ready` in the gap between one fetch finishing and the debounced next
+ * one starting, and a single read takes that gap for the end.
  *
  * What it replaces is a fixed sleep, which is wrong in both directions and only
  * ever caught in one: too short captures the work in progress, and the figure it

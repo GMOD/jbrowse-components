@@ -41,6 +41,11 @@ export async function resolveConfigObject({
   hub?: string
   config?: string
 }) {
+  if (hub && config) {
+    throw new Error(
+      'pass --hub or --config, not both (a --hub is a complete config)',
+    )
+  }
   if (hub) {
     // the same open-record force the --config read applies: `assembly` is
     // filled in by readData, which is the only consumer

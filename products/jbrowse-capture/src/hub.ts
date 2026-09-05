@@ -1,4 +1,5 @@
 const HUB_HOST = 'https://jbrowse.org'
+const HUB_FETCH_TIMEOUT_MS = 30000
 
 // The genomes.jbrowse.org URL scheme: a UCSC database name (hg38, mm10, ...)
 // maps to /ucsc/<db>/config.json; a GenArk accession (GCA_/GCF_...) fans its 9
@@ -35,7 +36,23 @@ interface HubConfig {
  */
 export async function fetchHubConfig(hub: string): Promise<HubConfig> {
   const url = hubUrl(hub)
-  const res = await fetch(url)
+  // Without the signal a stalled connection hangs `jb2capture list` forever:
+  // fetch has no timeout of its own, and this is the one request the tool makes
+  // outside puppeteer's budget.
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(HUB_FETCH_TIMEOUT_MS),
+  }).catch((error: unknown) => {
+    // The budget is only part of the diagnosis when it is what fired; naming it
+    // on a DNS failure reads as though the request had been given 30s to resolve.
+    const timedOut = error instanceof Error && error.name === 'TimeoutError'
+    throw new Error(
+      `hub "${hub}" could not be fetched from ${url} ` +
+        `(${error instanceof Error ? error.message : error}${
+          timedOut ? `, after ${HUB_FETCH_TIMEOUT_MS}ms` : ''
+        }). ` +
+        'See https://genomes.jbrowse.org for the available assemblies.',
+    )
+  })
   if (!res.ok) {
     throw new Error(
       `hub "${hub}" not found (HTTP ${res.status} from ${url}). ` +

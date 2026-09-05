@@ -1,5 +1,7 @@
 import { hubUrl } from '@jbrowse/core/util/fetchHub'
 
+import { resolveConfigObject } from './resolveHub.ts'
+
 test('UCSC db name maps to the /ucsc config', () => {
   expect(hubUrl('hg19')).toBe('https://jbrowse.org/ucsc/hg19/config.json')
   expect(hubUrl('mm10')).toBe('https://jbrowse.org/ucsc/mm10/config.json')
@@ -12,4 +14,16 @@ test('GenArk accession splits into triplets under /hubs/genark', () => {
   expect(hubUrl('GCF_000001405.40')).toBe(
     'https://jbrowse.org/hubs/genark/GCF/000/001/405/GCF_000001405.40/config.json',
   )
+})
+
+test('--hub and --config together is an error, not a silent hub win', async () => {
+  await expect(
+    resolveConfigObject({ hub: 'hg19', config: 'jbrowse.json' }),
+  ).rejects.toThrow(/not both/)
+})
+
+test('a local --config file has nothing to fetch', async () => {
+  await expect(
+    resolveConfigObject({ config: 'jbrowse.json' }),
+  ).resolves.toBeUndefined()
 })

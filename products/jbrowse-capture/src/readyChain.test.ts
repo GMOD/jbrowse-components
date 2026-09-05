@@ -1,4 +1,5 @@
 import { waitForJBrowseReady } from './ready.ts'
+import { waitForDisplaysDone } from './waits.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -59,7 +60,9 @@ test('the marker census satisfies the session gate without a session walk', asyn
   const report = await waitForJBrowseReady(fakePage(), {
     assembly: 'hg38',
     trackIds: ['genes'],
-    timeout: 500,
+    // above the hold the marker path requires: `ready` has to still be ready a
+    // beat later, or the wait takes the frame between two debounced fetches
+    timeout: 2000,
   })
   expect(report.appMarker).toBe(true)
   expect(report.unsettled).toEqual([])
@@ -111,9 +114,9 @@ test('a session known to have no tracks open skips the quiet gate', async () => 
 }, 15000)
 
 // The marker path when the app never reports ready: the stage lands in
-// unsettled under its own name, the census still says which display had not
-// painted, and — with allowUnsettled — the caller gets the report rather than
-// a throw.
+// unsettled under its own name, the census lands beside it naming the display
+// and its phase, and — with allowUnsettled — the caller gets the report rather
+// than a throw.
 test('a marker build that never goes ready reports the stage and the census', async () => {
   document.body.innerHTML = `
     <span hidden data-app-phase="loading"></span>
@@ -125,7 +128,10 @@ test('a marker build that never goes ready reports the stage and the census', as
     timeout: 200,
   })
   expect(report.appMarker).toBe(true)
-  expect(report.unsettled).toEqual(['the app never reported itself ready'])
+  expect(report.unsettled).toEqual([
+    'the app never held itself ready',
+    'display(s) never painted: pileup is loading',
+  ])
   expect(report.pending).toEqual(['pileup'])
 }, 15000)
 
@@ -143,4 +149,37 @@ test('waitForDownloads: false leaves a lingering status message unsettled-free',
     timeout: 200,
   })
   expect(report.unsettled).toEqual([])
+}, 15000)
+
+// A display in a terminal phase is not coming back, and the two comparative
+// canvases hold `drawn=false` open through `error` on purpose. Waiting on the
+// attribute alone spent the whole timeout on an answer the census already had.
+test('a pending display that has errored ends the paint wait at once', async () => {
+  document.body.innerHTML = `
+    <div data-testid="pileup" data-display-drawn="false"
+         data-display-phase="error"></div>`
+  const start = Date.now()
+  await expect(waitForDisplaysDone(fakePage(), 2000)).resolves.toBe(true)
+  expect(Date.now() - start).toBeLessThan(500)
+})
+
+test.each([
+  ['still loading', 'data-display-phase="loading"'],
+  ['publishing no phase at all, on a build older than the attribute', ''],
+])('a pending display %s keeps the paint wait going', async (_name, attr) => {
+  document.body.innerHTML = `
+    <div data-testid="pileup" data-display-drawn="false" ${attr}></div>`
+  await expect(waitForDisplaysDone(fakePage(), 100)).resolves.toBe(false)
+})
+
+// ...and the census the early return is traded for: the chain still fails, with
+// the phase that says a longer timeout is not the fix.
+test('an errored display is named unsettled instead of burning the timeout', async () => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="ready"></span>
+    <div data-testid="pileup" data-display-drawn="false"
+         data-display-phase="error"></div>`
+  await expect(
+    waitForJBrowseReady(fakePage(), { expectSession: false, timeout: 30000 }),
+  ).rejects.toThrow(/display\(s\) never painted: pileup is error/)
 }, 15000)

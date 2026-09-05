@@ -101,6 +101,18 @@ describe('parseVcfJunctions', () => {
     expect(records[0]!.refName2).toBe('chr12')
   })
 
+  it('reads a Delly/LUMPY-style SVTYPE=TRA', () => {
+    const { records } = parseVcfJunctions(
+      vcf('chr3\t1000\tt\tN\t<TRA>\t.\tPASS\tSVTYPE=TRA;CHR2=chr12;END=9000'),
+    )
+    expect(records[0]).toMatchObject({
+      refName1: 'chr3',
+      refName2: 'chr12',
+      start2: 8999,
+      end2: 9000,
+    })
+  })
+
   it('skips, and reports, a record that names no second locus', () => {
     // An insertion names one locus, so there is no second panel to stack.
     const { records, skipped } = parseVcfJunctions(

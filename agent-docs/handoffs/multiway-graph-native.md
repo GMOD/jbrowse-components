@@ -1,6 +1,6 @@
 ---
 name: multiway-graph-native
-description: The multi-way synteny display now reads eukaryote-scale alignment sources (a star of pairwise PIFs, a PanSN multi-genome PIF) and the HPRC demo's alignments are unpacked from the graph's GFA offline — waiting on the GBZ-native adapter that would remove the conversion step, three tutorial figures the pages still lack, coarse tiers for the hosted liftOver PIFs, and four smaller items the reviews left open. Read before touching MultiWaySyntenyDisplay's fetch, the multi-genome adapters, or gfa_to_pairwise_paf.py.
+description: The multi-way synteny display now reads eukaryote-scale alignment sources (a star of pairwise PIFs, a PanSN multi-genome PIF, and a graph-native adapter that lives in jbrowse-plugin-graphgenomeviewer) while the HPRC demo's alignments are still unpacked from the graph's GFA offline — waiting on three tutorial figures the pages still lack, coarse tiers for the hosted liftOver PIFs, and four smaller items the reviews left open. Read before touching MultiWaySyntenyDisplay's fetch, the multi-genome adapters, or gfa_to_pairwise_paf.py.
 ---
 
 # Multi-way synteny, graph-native: handoff
@@ -31,6 +31,15 @@ time:
   set to the lower lane: the direct records between two mates, or nothing,
   in which case `composeLaneLinks` projects the pair through the anchor.
 
+**`GbzBaseSyntenyAdapter` answers both questions from a `.gbz.db` at query
+time.** It landed in core on 2026-09-05 and moved out the same evening, before
+a release carried it, to `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`,
+where its handoff holds the reader decision, the `@gmod/gbz-base` package notes
+and the window measurements. What it leaves to the display: `mateShape:
+'grouped'` is not implemented (the display reads either shape), and it reports
+no coarse tier, so a whole chromosome stays on the bubble tier and the PIF
+coarse tier.
+
 `scripts/gfa_to_pairwise_paf.py` is the offline version of exactly that walk,
 and its eight jest cases plus the E. coli and HPRC agreement numbers in
 PANGENOME_GRAPHS.md are the oracle a query-time implementation is checked
@@ -39,30 +48,12 @@ does once: locate the anchor window on the reference path, take the nodes it
 covers, and for each requested haplotype recover its walk through those nodes
 in order, emitting shared nodes as match runs and private runs as indels.
 
-What that needs, in order of how much it decides:
-
-- **A GBZ reader in JavaScript does not exist.** GBZ is GBWT plus GBWTGraph,
-  serialised by the C++ `gbwt`/`gbwtgraph` libraries (SDSL bit vectors). The
-  two routes are a WASM build of `gbwtgraph` (vg already builds to WASM for
-  the sequenceTubeMap, so the toolchain is known) or a second, JBrowse-owned
-  index written from the GBZ by a CLI step, which is what PIF is to PAF. The
-  second keeps the runtime free of a C++ dependency and is the one the rest of
-  the tree is shaped for; the first is what "GBZ-native" strictly means. Decide
-  this before writing an adapter, since every other line below depends on it.
-- **Query-time cost is bounded by walk length, not graph size.** The converter
-  measured 226 MB/s over the full HPRC GFA and 1.5 GB of memory because it
-  keeps one byte per node plus the reference walks. A window query touches the
-  reference walk's node range and, per haplotype, the GBWT `locate` of those
-  nodes, which is the GBWT's own fast path; the expensive part is the walk
-  between shared nodes, which is bounded by `--max-gap`.
-- **The display's group key for a nameless source is the record id.** A
-  query-time adapter emits records per window, so ids have to be
-  deterministic per (haplotype, first shared node, window) or the clicked
-  outline and the hover re-resolve wrongly across a refetch; `clipToRegion`
-  already suffixes ids with the region, which is the pattern.
-- **The rGFA adapter is not a starting point.** It reads segments with their
-  origin offsets as presence bands, and a lane needs each haplotype's own
-  coordinates; the two answer different questions and share no code.
+The constraint that is the display's rather than the adapter's: **the group key
+for a nameless source is the record id.** A query-time adapter emits records
+per window, so ids have to be deterministic per (haplotype, first shared node,
+window) or the clicked outline and the hover re-resolve wrongly across a
+refetch; `clipToRegion` already suffixes ids with the region, which is the
+pattern.
 
 ## Owed to the two new tutorials
 

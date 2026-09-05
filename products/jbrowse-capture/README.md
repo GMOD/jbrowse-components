@@ -19,10 +19,14 @@ config, builds a session, resolves an assembly, fetches each track, and then
 draws to a canvas — and a screenshot taken at any point before the last step is
 a picture of an empty browser that looks like a successful run.
 
-Every readiness signal JBrowse publishes is **negative**: no loading overlay, no
-display in its loading phase, no unpainted canvas. All of them therefore pass on
-a page whose JavaScript has not started yet. Measured against
-`jbrowse.org/code/jb2/latest`:
+Which signals exist at all depends on the build. Checked on 2026-09-05, the
+default `--instance` — `jbrowse.org/code/jb2/latest`, the released build every
+genomes.jbrowse.org link opens — publishes the loading overlay
+(`[data-testid="loading-overlay"]`) and none of `data-app-phase`,
+`data-view-phase`, `data-display-phase`, `data-display-drawn` or `data-busy`.
+Every one of those is a **negative** signal — no overlay, no display in its
+loading phase, no unpainted canvas — so all of them pass on a page whose
+JavaScript has not started yet. Measured against that instance:
 
 - `networkidle2` resolves at ~350ms
 - the session appears at ~880ms
@@ -37,6 +41,18 @@ session model that jbrowse-web publishes as `window.JBrowseSession`: the session
 exists, its views are initialized, and the assembly and trackIds you asked for
 are the ones actually open. A config URL that 404s, a trackId the config does
 not define, and an assembly name that does not match all fail there, loudly.
+
+What runs after that gate depends on which build answered it:
+
+- **One that publishes `data-app-phase`** — `jbrowse.org/code/jb2/main`, or a
+  local build of this repo, reached with `--instance` — needs one selector and
+  no chain: `[data-app-phase="ready"]` appears when no view is resolving an
+  assembly and no display is fetching, and `data-display-drawn` then says paint
+  happened.
+- **Every other build, the default included**, has the overlay and the status
+  text the session model carries per display. There the app has to be _seen
+  busy, then quiet for 2s_ — an absence alone is satisfied before the first
+  fetch is even set up — then given a fixed 1.5s for the paint nothing reports.
 
 ## Library
 
@@ -69,7 +85,9 @@ Two waits, depending on what you did:
   that is loading starts out `loading` and the transition into `ready` is it
   finishing; a page you just clicked is already `ready` and stays that way until
   the click's work registers, so waiting for `ready` there returns on the
-  pre-click frame. `waitForAppSettled` requires it to hold.
+  pre-click frame. `waitForAppSettled` requires it to hold, and on a build
+  without the marker falls back to the quiet period rather than passing
+  instantly.
 
 ## Timeouts and unsettled waits
 
@@ -93,18 +111,20 @@ still tells you what did not settle.
 
 ## Reading the result
 
-Three fields on a successful capture:
+Four fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
+- **`appMarker`** — which of the two paths above ran. False on the default
+  instance, and on anything else that predates `data-app-phase`.
 - **`pending`** — displays still reporting unpainted when the shutter fired. A
   display can return to pending after its stage passed, so this is a separate
   question from `unsettled`.
 - **`paintContract`** — whether this JBrowse build publishes the per-display
-  paint attributes at all. It does not on the current released build, which is
-  what every genomes.jbrowse.org link opens; there, `pending: []` means "cannot
-  tell", not "all done", and the CLI says so. A page with no tracks open reports
-  true — there is nothing to measure, which is not the same as being unable to.
+  paint attributes at all. It is false on the default instance, so `pending: []`
+  there means "cannot tell", not "all done", and the CLI says so. A page with no
+  tracks open reports true — there is nothing to measure, which is not the same
+  as being unable to.
 
 ## CLI
 

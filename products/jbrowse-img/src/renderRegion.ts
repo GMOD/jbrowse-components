@@ -342,17 +342,20 @@ async function addLaunchView<T extends InitView, N extends string>(
   ctx: ModeContext,
   viewType: N,
   makeSettings: () => ViewSnapshotInput<N>,
-  settingsFromSpec: (spec: ViewSpec) => SpecSettings,
+  settingsFromSpec?: (spec: ViewSpec) => SpecSettings,
 ) {
   const { session } = ctx.model
   const suppliedType = ctx.spec ? undefined : sessionViewType(session)
   if (suppliedType !== undefined && suppliedType !== viewType) {
     throw wrongViewTypeError(ctx.opts, suppliedType)
   }
+  if (ctx.spec && !settingsFromSpec) {
+    throw new Error(`--spec cannot describe a ${viewType}`)
+  }
   const view =
     suppliedType === viewType
       ? session.views[0]
-      : ctx.spec
+      : ctx.spec && settingsFromSpec
         ? await session.launchView<string>(viewType, settingsFromSpec(ctx.spec))
         : await session.launchView(viewType, makeSettings())
   return readyView(view as T, ctx)
@@ -371,19 +374,12 @@ const renderLinear: ModeRenderer = async ctx => {
   } = opts
 
   const { session } = model
-  const suppliedType = sessionViewType(session)
-  if (suppliedType !== undefined && suppliedType !== 'LinearGenomeView') {
-    throw wrongViewTypeError(opts, suppliedType)
-  }
-  // Adopted from the session when one supplied a view, else synthesized. Either
-  // way it goes through readyView, so an `init` the session carried is applied
-  // before anything below reads the view's position — and before `--loc`, which
-  // is an explicit instruction from the command line and so wins over whatever
-  // the session's init navigated to.
-  const view = await readyView(
-    (session.views[0] ??
-      session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
+  // the view arrives with an `init` the session carried already applied, so
+  // `--loc` below is read against a positioned view and wins over it
+  const view = await addLaunchView<LinearGenomeViewModel, 'LinearGenomeView'>(
     ctx,
+    'LinearGenomeView',
+    () => ({}),
   )
 
   if (loc) {
@@ -452,13 +448,12 @@ const renderLinear: ModeRenderer = async ctx => {
     )
   }
 
-  const svg = await renderLinearToSvg(view, {
+  return renderLinearToSvg(view, {
     ...baseSvgOpts(opts),
     createCanvas: nodeCanvas,
     showGridlines,
     trackLabels,
   })
-  return svg
 }
 
 const renderDotplot: ModeRenderer = async ctx => {
@@ -468,8 +463,7 @@ const renderDotplot: ModeRenderer = async ctx => {
     () => dotplotInit(ctx.data, ctx.opts),
     spec => viewSettingsFromSpec(spec, dotplotViewKnobs(ctx.opts)),
   )
-  const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
-  return svg
+  return renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
 }
 
 const renderSynteny: ModeRenderer = async ctx => {
@@ -479,13 +473,12 @@ const renderSynteny: ModeRenderer = async ctx => {
     () => syntenyInit(ctx.data, ctx.opts),
     spec => viewSettingsFromSpec(spec, syntenyViewKnobs(ctx.opts)),
   )
-  const svg = await renderSyntenyToSvg(view, {
+  return renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
     createCanvas: nodeCanvas,
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
-  return svg
 }
 
 // Which of the config's tracks a CircularView can actually open: it renders
@@ -534,8 +527,7 @@ const renderCircular: ModeRenderer = async ctx => {
     () => circularInit(ctx),
     spec => viewSettingsFromSpec(spec),
   )
-  const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
-  return svg
+  return renderCircularToSvg(view, baseSvgOpts(ctx.opts))
 }
 
 // A window per locstring in --loc, stacked, with the reads that leave one and
@@ -568,13 +560,12 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   // renderToSvg awaits every panel itself (awaitViewInitialized covers
   // pendingLaunch), and renderRegion's throwOnRenderError catches a failure
   // that reached only the session.
-  const svg = await renderBreakpointToSvg(view, {
+  return renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     createCanvas: nodeCanvas,
     trackLabels: opts.trackLabels,
     showGridlines: opts.showGridlines,
   })
-  return svg
 }
 
 // Options only renderLinear reads. A comparative or circular view takes its
@@ -587,32 +578,52 @@ const renderBreakpoint: ModeRenderer = async ctx => {
 // Breakpoint is the one non-linear mode that DOES read --track: its panels are
 // ordinary LGVs and the tracks on them are the whole picture.
 function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
-  if (mode === 'linear') {
-    return
+  if (mode !== 'linear') {
+    // A comparative view's levels are made of the synteny files, and it opens
+    // nothing else — so `--fasta a --paf x --fasta b --bigwig sig.bw` built the
+    // bigwig's track config and then showed it nowhere. Circular is exempt: it
+    // picks its chord tracks out of the whole config.
+    const droppedFiles = modeDescriptors[mode].comparative
+      ? [
+          ...new Set(
+            (opts.trackList ?? [])
+              .map(([type]) => type)
+              .filter(type => !syntenyTrackTypes.includes(type)),
+          ),
+        ].map(type => `--${type}`)
+      : []
+    const ignored = [
+      opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
+      opts.refseq ? '--refseq' : '',
+      mode === 'circular' && opts.loc ? '--loc' : '',
+      ...droppedFiles,
+    ].filter(Boolean)
+    if (ignored.length) {
+      console.warn(
+        `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
+      )
+    }
   }
-  // A comparative view's levels are made of the synteny files, and it opens
-  // nothing else — so `--fasta a --paf x --fasta b --bigwig sig.bw` built the
-  // bigwig's track config and then showed it nowhere. Circular is exempt: it
-  // picks its chord tracks out of the whole config.
-  const droppedFiles = modeDescriptors[mode].comparative
-    ? [
-        ...new Set(
-          (opts.trackList ?? [])
-            .map(([type]) => type)
-            .filter(type => !syntenyTrackTypes.includes(type)),
-        ),
-      ].map(type => `--${type}`)
-    : []
-  const ignored = [
-    opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
-    opts.refseq ? '--refseq' : '',
-    mode === 'circular' && opts.loc ? '--loc' : '',
-    ...droppedFiles,
-  ].filter(Boolean)
-  if (ignored.length) {
-    console.warn(
-      `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
-    )
+}
+
+// The mode a run renders in. An explicit subcommand and a --spec each name one,
+// and when both are present they have to agree — `jb2export dotplot --spec
+// synteny.json` used to render the flags-built dotplot and ignore the spec
+// entirely, and `jb2export lgv --spec x.json` ignored it whatever it held.
+export function resolveMode(
+  mode: ViewMode | undefined,
+  spec: ViewSpec | undefined,
+) {
+  if (spec) {
+    const specsMode = specMode(spec)
+    if (mode !== undefined && mode !== specsMode) {
+      throw new Error(
+        `--spec describes a ${spec.type}; render it with "jb2export ${modeDescriptors[specsMode].subcommand}" (not "jb2export ${modeDescriptors[mode].subcommand}")`,
+      )
+    }
+    return specsMode
+  } else {
+    return mode ?? 'linear'
   }
 }
 
@@ -639,6 +650,11 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
  */
 export async function renderRegion(opts: Opts, configObject?: Config) {
   const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
+  const spec = opts.spec ? parseSpec(opts.spec) : undefined
+  // before the model is built, so a subcommand that cannot draw the --spec is
+  // reported rather than left to fail against a view it never asked for
+  const mode = resolveMode(opts.mode, spec)
+  warnLinearOnlyOptions(mode, opts)
   const model = await createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from
@@ -648,11 +664,6 @@ export async function renderRegion(opts: Opts, configObject?: Config) {
   if (opts.themeName) {
     model.session.setThemeName(opts.themeName)
   }
-  const spec = opts.spec ? parseSpec(opts.spec) : undefined
-  // an explicit subcommand wins; otherwise a --spec selects its mode from the
-  // view type, falling back to the default linear view
-  const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
-  warnLinearOnlyOptions(mode, opts)
   try {
     const result = await modeRenderers[mode]({
       model,

@@ -1,4 +1,10 @@
 {
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg38",
@@ -262,6 +268,27 @@
           "height": 200
         }
       ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_chr20_gbz",
+      "name": "HPRC release 1 haplotypes vs GRCh38, chr20, read from the graph (gbz-base)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "GbzBaseSyntenyAdapter",
+        "uri": "https://jbrowse.org/demos/ivg/hprc/hprc-chr20.gbz.db",
+        "assemblyNames": ["hg38"],
+        "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
+        "context": 1000,
+        "nodeLimit": 12000
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hprc_chr20_gbz-MultiWaySyntenyDisplay",
+          "height": 600
+        }
+      ]
     }
   ],
   "defaultSession": {
@@ -270,8 +297,8 @@
       {
         "type": "LinearGenomeView",
         "assembly": "hg38",
-        "loc": "chr1:196,700,000-197,000,000",
-        "tracks": ["hg38_ncbiRefSeq_ucsc", "hprc_multiway"]
+        "loc": "chr20:44,580,000-44,680,000",
+        "tracks": ["hg38_ncbiRefSeq_ucsc", "hprc_multiway", "hprc_chr20_gbz"]
       }
     ]
   }

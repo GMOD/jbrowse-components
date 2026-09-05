@@ -16,9 +16,9 @@ export function parseArgv(rawArgv: string[]) {
       const eq = arg.indexOf('=')
       current = []
       if (eq === -1) {
-        entries.push([arg.slice(2), current])
+        entries.push([arg.replace(/^-+/, ''), current])
       } else {
-        entries.push([arg.slice(2, eq), current])
+        entries.push([arg.slice(0, eq).replace(/^-+/, ''), current])
         current.push(arg.slice(eq + 1))
       }
     } else {

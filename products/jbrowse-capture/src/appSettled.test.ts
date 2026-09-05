@@ -1,4 +1,4 @@
-import { waitForAppSettled } from './waits.ts'
+import { waitForAppSettled, waitForQuietPeriod } from './waits.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -70,4 +70,23 @@ test('a build with no marker falls back to watching the app work', async () => {
   await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
   expect(Date.now() - start).toBeGreaterThanOrEqual(40 + FAST.holdMs)
   clearTimeout(stopWorking)
+})
+
+// The busy window is itself a hold: every sample taken inside it read idle, since
+// a failed evaluate counts as busy. Starting the quiet hold from the END of the
+// window charged a page that had nothing to fetch for the same idle twice —
+// 600ms here rather than 300.
+test('a page that is never busy pays the busy window once', async () => {
+  const start = Date.now()
+  await expect(
+    waitForQuietPeriod(jsdomPage(), {
+      busyWindowMs: 300,
+      quietMs: 300,
+      pollMs: 10,
+      timeout: 3000,
+    }),
+  ).resolves.toBe(true)
+  const elapsed = Date.now() - start
+  expect(elapsed).toBeGreaterThanOrEqual(300)
+  expect(elapsed).toBeLessThan(500)
 })

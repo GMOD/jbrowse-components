@@ -232,7 +232,7 @@ export function makeFastaAssembly(
   cytobands: string | undefined,
   trackId: string,
 ): Assembly {
-  const bgzip = fasta.endsWith('gz')
+  const bgzip = /\.gz$/i.test(fasta)
   return withAliasesCytobands(
     {
       name: path.basename(fasta),

@@ -1,6 +1,10 @@
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
-import { convert } from './util.ts'
+import { DEFAULT_WIDTH } from './options.ts'
+import { convert, isFile } from './util.ts'
 
 jest.mock('node:child_process', () => ({ spawnSync: jest.fn() }))
 
@@ -61,5 +65,40 @@ describe('convert', () => {
     expect(() => {
       convert('<svg/>', { out: 'out.png' })
     }).not.toThrow()
+  })
+
+  test('an omitted width falls back to the CLI default width', () => {
+    mockSpawnSync.mockReturnValue(result({ status: 0 }))
+    convert('<svg/>', { out: 'out.png' })
+    expect(mockSpawnSync).toHaveBeenCalledWith(
+      'rsvg-convert',
+      ['-w', String(DEFAULT_WIDTH), '-o', 'out.png'],
+      { input: '<svg/>' },
+    )
+  })
+})
+
+describe('isFile', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-isFile-'))
+
+  afterAll(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test('a directory of the same name as an assembly is not a file', () => {
+    const dir = path.join(tmpDir, 'hg38')
+    fs.mkdirSync(dir)
+    expect(isFile(dir)).toBe(false)
+  })
+
+  test('an existing file is, a missing one is not', () => {
+    const file = path.join(tmpDir, 'assembly.json')
+    fs.writeFileSync(file, '{}')
+    expect(isFile(file)).toBe(true)
+    expect(isFile(path.join(tmpDir, 'missing.json'))).toBe(false)
+  })
+
+  test('inline JSON too long to be a path is not a file', () => {
+    expect(isFile(`{"type":"DotplotView"}`.padEnd(5000, ' '))).toBe(false)
   })
 })

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 
 import { viewTypeModes } from './modes.ts'
-import { STDIN_ARG, readStdin } from './util.ts'
+import { STDIN_ARG, isFile, readStdin } from './util.ts'
 
 import type { ViewMode } from './modes.ts'
 
@@ -21,7 +21,7 @@ export function parseSpec(spec: string): ViewSpec {
   const raw =
     spec === STDIN_ARG
       ? readStdin()
-      : fs.existsSync(spec)
+      : isFile(spec)
         ? fs.readFileSync(spec, 'utf8')
         : spec
   const obj = JSON.parse(raw) as Record<string, unknown>

@@ -20,9 +20,11 @@ import type { BedpeRecord } from './batch.ts'
 // junction for junction.
 
 const CONTIG_ID = /^##contig=<.*ID=([^,>]+)/
-// SVTYPEs that name a second locus on the same contig via INFO END. INS is
-// deliberately absent: it names one locus, so there is no second panel.
-const SYMBOLIC_WITH_END = new Set(['DEL', 'DUP', 'INV'])
+// SVTYPEs that name a second locus via INFO END, on the record's own contig or
+// the one CHR2 names — Delly and LUMPY write a translocation as SVTYPE=TRA with
+// both. INS is deliberately absent: it names one locus, so there is no second
+// panel.
+const SYMBOLIC_WITH_END = new Set(['DEL', 'DUP', 'INV', 'TRA'])
 
 // How far apart the two records of one reciprocal breakend pair may place it and
 // still count as one junction. Small on purpose, and NOT a "are these related"

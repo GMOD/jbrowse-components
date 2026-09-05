@@ -65,13 +65,6 @@ export async function openJBrowse(
     // half of what a caller passing nothing was told each stage would get.
     timeout = 60000,
     trackIds,
-    // Pulled out only to keep them out of `urlOptions`, which becomes the
-    // query string. They reach the ready wait through the `...options` spread
-    // below rather than from here.
-    waitForDownloads: _waitForDownloads,
-    settleMs: _settleMs,
-    expectSession: _expectSession,
-    allowUnsettled: _allowUnsettled,
     // `assembly` is deliberately NOT pulled out here: it is both a URL option
     // (which assembly to open) and the session gate's expectation (which
     // assembly must end up open), and destructuring it for the second use would

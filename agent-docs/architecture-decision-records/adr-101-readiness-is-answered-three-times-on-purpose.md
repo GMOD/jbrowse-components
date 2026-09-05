@@ -31,9 +31,9 @@ Three things make sharing the logic impossible rather than merely awkward:
   `page.evaluate`, which stringifies it, so it "can only call what it declares
   inside itself" — capture's own source says so three times
   (`sessionGate.ts:53-58`, `:73-78`, `waits.ts:340-342`). That is why
-  `BUSY_SELECTOR` is exported *and* re-typed inside `isPageBusyInPage`, and why
-  `readViews` is inlined rather than imported. A shared module import is exactly
-  what does not survive the trip into the page.
+  `BUSY_SELECTOR` is passed to `isPageBusyInPage` as an argument rather than
+  imported by it, and why `readViews` is inlined. A shared module import is
+  exactly what does not survive the trip into the page.
 - **Dependency direction.** `@jbrowse/capture` is a published CLI whose only
   runtime dependency is puppeteer. Importing `@jbrowse/app-core` pulls
   `@jbrowse/core`, MST, mobx and React into it, and

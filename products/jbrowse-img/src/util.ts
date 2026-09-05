@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 
+import { DEFAULT_WIDTH } from './options.ts'
+
 // `-` as a file argument means stdin, so a JSON input can be piped in rather
 // than staged as a file: `jq … | jb2export --spec -`
 export const STDIN_ARG = '-'
@@ -21,6 +23,14 @@ export function readTextInput(file: string) {
   return file === STDIN_ARG ? readStdin() : fs.readFileSync(file, 'utf8')
 }
 
+export function isFile(file: string) {
+  try {
+    return fs.statSync(file, { throwIfNoEntry: false })?.isFile() === true
+  } catch {
+    return false
+  }
+}
+
 // Write a rendered SVG: to stdout when no `outFile`, else by extension. .png and
 // .pdf route through rsvg-convert (.pdf via `-f pdf`); anything else is the raw
 // SVG. Both raster formats honor `width` so PDF matches PNG.
@@ -33,25 +43,25 @@ export function writeRendered(
   outFile: string | undefined,
   width: number,
 ) {
-  if (!outFile) {
-    console.log(result)
-    return
-  }
-  const lower = outFile.toLowerCase()
-  if (lower.endsWith('.png')) {
-    convert(result, { out: outFile, width: String(width) })
-  } else if (lower.endsWith('.pdf')) {
-    convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
-  } else {
-    // Only .png/.pdf are converted; everything else gets the raw SVG. Say so for
-    // an extension that asks for something else, since `--out fig.jpg` otherwise
-    // wrote SVG bytes under a name no viewer will open as SVG.
-    if (!lower.endsWith('.svg')) {
-      console.warn(
-        `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
-      )
+  if (outFile) {
+    const lower = outFile.toLowerCase()
+    if (lower.endsWith('.png')) {
+      convert(result, { out: outFile, width: String(width) })
+    } else if (lower.endsWith('.pdf')) {
+      convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
+    } else {
+      // Only .png/.pdf are converted; everything else gets the raw SVG. Say so
+      // for an extension that asks for something else, since `--out fig.jpg`
+      // otherwise wrote SVG bytes under a name no viewer will open as SVG.
+      if (!lower.endsWith('.svg')) {
+        console.warn(
+          `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
+        )
+      }
+      fs.writeFileSync(outFile, result)
     }
-    fs.writeFileSync(outFile, result)
+  } else {
+    console.log(result)
   }
 }
 
@@ -60,7 +70,7 @@ export function convert(
   args: { out: string; width?: string },
   spawnArgs: string[] = [],
 ) {
-  const { width = '2048', out } = args
+  const { width = String(DEFAULT_WIDTH), out } = args
   // the SVG goes in on stdin, so nothing is staged on disk
   const ls = spawnSync('rsvg-convert', ['-w', width, '-o', out, ...spawnArgs], {
     input: result,

@@ -68,6 +68,22 @@ describe('makeFastaAssembly', () => {
     })
   })
 
+  test('a .GZ fasta is bgzipped too', () => {
+    const a = makeFastaAssembly('genome.fa.GZ', undefined, undefined, 'rs')
+    expect(a.sequence.adapter).toMatchObject({
+      type: 'BgzipFastaAdapter',
+      gziLocation: { localPath: 'genome.fa.GZ.gzi' },
+    })
+  })
+
+  test('a name merely ending in the letters gz is not bgzipped', () => {
+    const a = makeFastaAssembly('genome.fagz', undefined, undefined, 'rs')
+    expect(a.sequence.adapter).toMatchObject({
+      type: 'IndexedFastaAdapter',
+      gziLocation: undefined,
+    })
+  })
+
   test('aliases attach a RefNameAliasAdapter only when provided', () => {
     expect(
       makeFastaAssembly('g.fa', undefined, undefined, 'rs').refNameAliases,

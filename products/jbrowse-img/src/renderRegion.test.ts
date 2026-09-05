@@ -5,6 +5,7 @@ import path from 'node:path'
 import { makeLocation, makeTrackConfig } from './makeConfigs.ts'
 import { standardizeArgv } from './parseArgv.ts'
 import { readData } from './readData.ts'
+import { renderRegion, resolveMode } from './renderRegion.ts'
 
 const dataDir = path.join(__dirname, '..', 'data')
 const configFile = path.join(dataDir, 'config.json')
@@ -403,7 +404,7 @@ describe('readData', () => {
         fasta: '/path/to/ref.fa',
         trackList: [['bam', []]],
       }),
-    ).toThrow(/no file specified/)
+    ).toThrow(/--bam requires a file argument/)
   })
 
   test('reads assembly by name from config file', () => {
@@ -553,4 +554,46 @@ describe('readData', () => {
       path.join(dir, 'sub/features.bb'),
     )
   })
+})
+
+describe('resolveMode', () => {
+  it('defaults to linear with neither a subcommand nor a spec', () => {
+    expect(resolveMode(undefined, undefined)).toBe('linear')
+  })
+
+  it('reads the mode off the spec when no subcommand was typed', () => {
+    expect(resolveMode(undefined, { type: 'DotplotView' })).toBe('dotplot')
+  })
+
+  it('accepts a subcommand that agrees with the spec', () => {
+    expect(resolveMode('synteny', { type: 'LinearSyntenyView' })).toBe(
+      'synteny',
+    )
+  })
+
+  it('names both subcommands when they disagree', () => {
+    expect(() => resolveMode('dotplot', { type: 'LinearSyntenyView' })).toThrow(
+      '--spec describes a LinearSyntenyView; render it with "jb2export synteny" (not "jb2export dotplot")',
+    )
+  })
+
+  it('refuses a spec on lgv rather than rendering an empty linear view', () => {
+    expect(() => resolveMode('linear', { type: 'DotplotView' })).toThrow(
+      /render it with "jb2export dotplot" \(not "jb2export lgv"\)/,
+    )
+    expect(() => resolveMode('linear', { type: 'LinearGenomeView' })).toThrow(
+      /unsupported view type in --spec: LinearGenomeView/,
+    )
+  })
+})
+
+// the mismatch is decided before the model is built, so this costs no render
+test('a mismatched --spec fails the run', async () => {
+  await expect(
+    renderRegion({
+      fasta: '/path/to/ref.fa',
+      mode: 'dotplot',
+      spec: JSON.stringify({ type: 'LinearSyntenyView' }),
+    }),
+  ).rejects.toThrow(/render it with "jb2export synteny"/)
 })

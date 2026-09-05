@@ -158,7 +158,7 @@ const optionDefs: OptionDef[] = [
   {
     name: 'tracks',
     description:
-      'Path to JSON file with an array of track configs (or "-" for stdin)',
+      'Path to JSON file with an array of track configs (or "-" for stdin); added to the config\'s tracks, replacing any with the same trackId',
   },
   { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
