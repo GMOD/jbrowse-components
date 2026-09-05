@@ -140,7 +140,6 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 ```
 
 The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export

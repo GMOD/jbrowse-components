@@ -231,9 +231,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         region,
         ...self.rpcProps(),
       }),
-    onResult: (idx, result) => {
-      self.setRpcData(idx, result)
-    },
+    // what a region stores; the foundation commits it with the region's
+    // span and fetch inputs as one record
+    onResult: (_idx, result) => result,
   })
 },
 ```

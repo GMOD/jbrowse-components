@@ -36,10 +36,10 @@ for which foundation each in-tree display uses.
 `clearAllRpcData()`:
 
 - cancels the in-flight fetch
-- clears `error` and `loadedRegions`
+- clears `error` and `loadedRegions`, which holds each region's payload
 - resets the canvas-drawn flag
-- calls `clearDisplaySpecificData()`, the hook your display overrides to drop
-  its own `rpcDataMap`
+- calls `clearDisplaySpecificData()`, the hook a display overrides only where it
+  holds something beside the store
 
 Cancelling bumps `fetchGeneration`, which re-fires `FetchVisibleRegions` to
 start fresh fetches.
@@ -94,9 +94,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         region,
         ...self.rpcProps(),
       }),
-    onResult: (idx, result) => {
-      self.setRpcData(idx, result)
-    },
+    // what a region stores; the foundation commits it with the region's
+    // span and fetch inputs as one record
+    onResult: (_idx, result) => result,
   })
 },
 ```
@@ -396,8 +396,8 @@ arrives rather than waiving it.
 ## Composing the mixin
 
 Compose it alongside `BaseDisplay` and `TrackHeightMixin`, then add the
-`rpcDataMap` volatile, the `rpcProps` view and the `setRpcData`/`fetchNeeded`
-actions above. `LinearScoreDisplay` in
+`rpcDataMap` getter over `regionPayloads`, the `rpcProps` view and the
+`fetchNeeded` action above. `LinearScoreDisplay` in
 [](/docs/developer_guides/plotting_features) is that model whole and compiling.
 
 ## See also
