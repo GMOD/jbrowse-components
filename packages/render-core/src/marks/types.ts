@@ -3,6 +3,7 @@ import type { ClipContext2D } from '../canvas2dUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
 import type { InstancePass } from '../instancePass.ts'
 import type { RenderBlock } from '../renderBlock.ts'
+import type { FrameDimensions } from '../renderingBackendBase.ts'
 
 /**
  * The 2D-context subset a shape's painter needs, structural for the same reason
@@ -27,11 +28,7 @@ export interface MarkContext2D extends ClipContext2D {
   fill(): void
 }
 
-/** What every shape needs off the frame, and what `FrameDimensions` already is. */
-export interface MarkFrame {
-  canvasWidth: number
-  canvasHeight: number
-}
+export type MarkFrame = FrameDimensions
 
 /** Where a shape's ink sits nearest a cursor, and how far that is. */
 export interface MarkHit {
