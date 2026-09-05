@@ -16,11 +16,7 @@ import {
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
-import {
-  MIN_BAND_HEIGHT,
-  boundBandHeight,
-  clampBandHeight,
-} from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -587,16 +583,6 @@ export default function stateModelFactory(
         /**
          * #action
          */
-        setCoverageHeight(arg: number) {
-          setConf(
-            self,
-            'coverageHeight',
-            boundBandHeight(arg, self.statedBandBounds),
-          )
-        },
-        /**
-         * #action
-         */
         setShowConservation(arg: boolean) {
           setConf(self, 'showConservation', arg)
         },
@@ -647,16 +633,6 @@ export default function stateModelFactory(
          */
         setShowReferenceRow(arg: boolean) {
           setConf(self, 'showReferenceRow', arg)
-        },
-        /**
-         * #action
-         */
-        setConservationHeight(arg: number) {
-          setConf(
-            self,
-            'conservationHeight',
-            boundBandHeight(arg, self.statedBandBounds),
-          )
         },
       }))
       .actions(self => {
@@ -1293,10 +1269,6 @@ export default function stateModelFactory(
          * emits one delta per animation frame, so a component computing
          * `renderHeight + delta` drops every tick that lands before React
          * re-renders. Mirrors `resizeHeight`.
-         *
-         * Sits here rather than with its `setCoverageHeight` twin because the
-         * ceiling comes off `fitTargetHeight`, which is declared above this
-         * block.
          */
         resizeCoverageHeight(distance: number) {
           setConf(
