@@ -250,7 +250,7 @@ below `MIN_LANE_PITCH` (22px, under the figure corpus's tightest committed
 stack) the lanes stop dividing the height and scroll instead —
 `laneContentHeight` in `laneStack.ts`, `scrollableHeight` through
 `TrackHeightMixin`, the canvas display's `usePanelVirtualScroll` +
-`VerticalScrollbar` wheel arbitration — so the 47-genome demo is readable at
+`VerticalScrollbar` wheel arbitration — so the 44-genome demo is readable at
 the default height, and above the floor the layout is byte-identical to
 before. The SVG export stays a viewport export at the current `scrollTop`,
 which is the policy every virtual-scrolled display shares (the export

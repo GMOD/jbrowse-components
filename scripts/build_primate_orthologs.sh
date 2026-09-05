@@ -105,6 +105,9 @@ done < species.tsv
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
   --anchor "$ANCHOR" -o primates.blocks \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
+# the adapter reads each file whole and unzips it itself
+gzip -kf primates.blocks
+for n in $NAMES; do gzip -kf "$n.bed"; done
 
 # ── The JBrowse config ───────────────────────────────────────────────────────
 python3 - "$BLOCK_ASSEMBLIES" <<'PY'
@@ -151,9 +154,9 @@ config = {
         'assemblyNames': order,
         'adapter': {
             'type': 'MCScanBlocksAdapter',
-            'mcscanBlocksLocation': uri('primates.blocks'),
+            'mcscanBlocksLocation': uri('primates.blocks.gz'),
             'blockAssemblies': order,
-            'bedLocations': [uri(f'{n}.bed') for n in order],
+            'bedLocations': [uri(f'{n}.bed.gz') for n in order],
             'assemblyNames': order,
         },
         # Orthologs share a symbol, so coloring a gene by its name runs one
@@ -183,8 +186,8 @@ cat <<EOF
 
 built in $OUTDIR:
   config.json                 $(wc -l < species.tsv) assemblies, the gene tracks and the ortholog track
-  primates.blocks             the ortholog table, $(wc -l < primates.blocks) rows
-  <genome>.bed                gene placements, one per genome
+  primates.blocks{,.gz}       the ortholog table, $(wc -l < primates.blocks) rows
+  <genome>.bed{,.gz}          gene placements, one per genome
   <genome>.gff.gz{,.tbi}      the annotation each lane draws
   <genome>.chrom.sizes        the assembly, <genome>.sequence_report.tsv its aliases
 

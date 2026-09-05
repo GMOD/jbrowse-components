@@ -114,9 +114,11 @@ One `SyntenyTrack` names all forty-four assemblies, each of which is a
 `ChromSizesAdapter` over its chromosome's length, since the lanes never read
 sequence. `blockAssemblies` and `bedLocations` are positional against the
 table's columns, in the order the helper printed; the list below is cut to the
-first four for the page. At the default height the display keeps every lane at a
-readable pitch and scrolls the stack inside the track; the `height` here sizes
-the track to the whole stack, so the figure below shows every lane at once:
+first four for the page. The table and the BEDs are gzipped, which the adapter
+undoes itself, since it reads each file whole before the first lane draws. At
+the default height the display keeps every lane at a readable pitch and scrolls
+the stack inside the track; the `height` here sizes the track to the whole
+stack, so the figure below shows every lane at once:
 
 ```json addtrack
 {
@@ -126,13 +128,13 @@ the track to the whole stack, so the figure below shows every lane at once:
   "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "ecoli.blocks" },
+    "mcscanBlocksLocation": { "uri": "ecoli.blocks.gz" },
     "blockAssemblies": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
     "bedLocations": [
-      { "uri": "MG1655.bed" },
-      { "uri": "Sakai.bed" },
-      { "uri": "CFT073.bed" },
-      { "uri": "Sflexneri_301.bed" }
+      { "uri": "MG1655.bed.gz" },
+      { "uri": "Sakai.bed.gz" },
+      { "uri": "CFT073.bed.gz" },
+      { "uri": "Sflexneri_301.bed.gz" }
     ],
     "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"]
   },

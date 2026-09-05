@@ -163,7 +163,7 @@ one color down the whole stack and a lane missing it breaks the column:
   ],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "primates.blocks" },
+    "mcscanBlocksLocation": { "uri": "primates.blocks.gz" },
     "blockAssemblies": [
       "human",
       "chimp",
@@ -175,14 +175,14 @@ one color down the whole stack and a lane missing it breaks the column:
       "macaque"
     ],
     "bedLocations": [
-      { "uri": "human.bed" },
-      { "uri": "chimp.bed" },
-      { "uri": "bonobo.bed" },
-      { "uri": "gorilla.bed" },
-      { "uri": "sumatran.bed" },
-      { "uri": "bornean.bed" },
-      { "uri": "siamang.bed" },
-      { "uri": "macaque.bed" }
+      { "uri": "human.bed.gz" },
+      { "uri": "chimp.bed.gz" },
+      { "uri": "bonobo.bed.gz" },
+      { "uri": "gorilla.bed.gz" },
+      { "uri": "sumatran.bed.gz" },
+      { "uri": "bornean.bed.gz" },
+      { "uri": "siamang.bed.gz" },
+      { "uri": "macaque.bed.gz" }
     ],
     "assemblyNames": [
       "human",

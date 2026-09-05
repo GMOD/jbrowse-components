@@ -130,7 +130,7 @@ import json, re, sys
 report, accessions, out, anchor = sys.argv[1:]
 
 def sanitise(s):
-    return re.sub(r'_+', '_', re.sub(r'[^A-Za-z0-9._-]', '_', s)).strip('_')
+    return re.sub(r'_+', '_', re.sub(r'[^A-Za-z0-9._-]', '_', s)).strip('_-')
 
 def spoken(strain):
     parent, sep, substrain = strain.partition(' substr. ')
@@ -144,12 +144,17 @@ def lane_name(organism, strain):
     prefix = f'S{shigella.group(1)}_' if shigella else ''
     return prefix + sanitise(spoken(strain))
 
+def strain_of(r):
+    names = r['organism'].get('infraspecificNames', {})
+    return names.get('strain') or names.get('isolate') or ''
+
 def drop_reason(r):
     organism = r['organism']['organismName']
     status = r['assemblyInfo']['assemblyStatus']
     wanted = organism.startswith('Escherichia coli') or SHIGELLA.match(organism)
     return '; '.join(([] if wanted else [f'organism is {organism}'])
-                     + ([] if status == 'current' else [f'RefSeq status {status}']))
+                     + ([] if status == 'current' else [f'RefSeq status {status}'])
+                     + ([] if sanitise(strain_of(r)) else ['no strain or isolate name']))
 
 with open(report) as fh:
     reports = {r['accession']: r for r in map(json.loads, fh)}
@@ -157,18 +162,21 @@ rows = []
 names = {}
 with open(accessions) as fh:
     for acc in fh.read().split():
-        r = reports[acc]
-        organism = r['organism']['organismName']
-        strain = r['organism']['infraspecificNames']['strain']
-        reason = drop_reason(r)
-        if reason:
-            print(f'dropped {acc} ({organism} {strain}): {reason}')
+        r = reports.get(acc)
+        if r is None:
+            print(f'dropped {acc}: not in the assembly report, so datasets did not download it')
         else:
-            name = lane_name(organism, strain)
-            if name in names:
-                name = f"{name}_{re.sub(r'[^0-9]', '', acc)}"
-            names[name] = acc
-            rows.append((name, acc, organism, strain))
+            organism = r['organism']['organismName']
+            strain = strain_of(r)
+            reason = drop_reason(r)
+            if reason:
+                print(f'dropped {acc} ({organism} {strain}): {reason}')
+            else:
+                name = lane_name(organism, strain)
+                if name in names:
+                    name = f"{name}_{re.sub(r'[^0-9]', '', acc)}"
+                names[name] = acc
+                rows.append((name, acc, organism, strain))
 if not rows or rows[0][0] != anchor:
     sys.exit(f'anchor {anchor} is not the first surviving genome: {rows[:1]}')
 with open(out, 'w') as fh:
@@ -226,6 +234,10 @@ done < strains.tsv
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
   --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
+# the adapter reads each file whole and unzips it itself, and the plain text
+# was 14 MB before a lane drew
+gzip -kf ecoli.blocks
+for n in $NAMES; do gzip -kf "$n.bed"; done
 
 # ── The JBrowse config ───────────────────────────────────────────────────────
 python3 - "$BLOCK_ASSEMBLIES" <<'PY'
@@ -271,9 +283,9 @@ config = {
         'assemblyNames': order,
         'adapter': {
             'type': 'MCScanBlocksAdapter',
-            'mcscanBlocksLocation': uri('ecoli.blocks'),
+            'mcscanBlocksLocation': uri('ecoli.blocks.gz'),
             'blockAssemblies': order,
-            'bedLocations': [uri(f'{n}.bed') for n in order],
+            'bedLocations': [uri(f'{n}.bed.gz') for n in order],
             'assemblyNames': order,
         },
         # Orthologs share a symbol, so coloring a gene by its name runs one
@@ -307,8 +319,8 @@ cat <<EOF
 built in $OUTDIR:
   config.json                 $(wc -l < strains.tsv | tr -d ' ') assemblies, the gene tracks and the ortholog track
   strains.tsv                 lane name, accession, organism and strain per genome
-  ecoli.blocks                the ortholog table, $(wc -l < ecoli.blocks | tr -d ' ') rows
-  <strain>.bed                gene placements, one per genome
+  ecoli.blocks{,.gz}          the ortholog table, $(wc -l < ecoli.blocks | tr -d ' ') rows
+  <strain>.bed{,.gz}          gene placements, one per genome
   <strain>.gff.gz{,.tbi}      the annotation each lane draws
   <strain>.chrom.sizes        the chromosome and its length
 

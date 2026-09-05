@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
@@ -204,4 +207,29 @@ describe('lane geometry', () => {
       }
     }
   })
+})
+
+test('every checked-in multiway demo sizes its track to the whole stack', () => {
+  for (const demo of ['ecoli_orthologs', 'primate_orthologs', 'hprc']) {
+    const config = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, `../../../../demos/${demo}/config.json`),
+        'utf8',
+      ),
+    ) as {
+      tracks: {
+        assemblyNames: string[]
+        displays?: { type: string; height?: number }[]
+      }[]
+    }
+    for (const track of config.tracks) {
+      for (const display of track.displays ?? []) {
+        if (display.type === 'MultiWaySyntenyDisplay' && display.height) {
+          expect(
+            laneContentHeight(display.height, track.assemblyNames.length),
+          ).toBe(display.height)
+        }
+      }
+    }
+  }
 })

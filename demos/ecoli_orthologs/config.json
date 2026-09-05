@@ -1553,7 +1553,7 @@
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "mcscanBlocksLocation": {
-          "uri": "ecoli.blocks",
+          "uri": "ecoli.blocks.gz",
           "locationType": "UriLocation"
         },
         "blockAssemblies": [
@@ -1604,179 +1604,179 @@
         ],
         "bedLocations": [
           {
-            "uri": "MG1655.bed",
+            "uri": "MG1655.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "DH10B.bed",
+            "uri": "DH10B.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sakai.bed",
+            "uri": "Sakai.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "EDL933.bed",
+            "uri": "EDL933.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "CFT073.bed",
+            "uri": "CFT073.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "UTI89.bed",
+            "uri": "UTI89.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "S88.bed",
+            "uri": "S88.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "UMN026.bed",
+            "uri": "UMN026.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "IAI39.bed",
+            "uri": "IAI39.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "IAI1.bed",
+            "uri": "IAI1.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "55989.bed",
+            "uri": "55989.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "ED1a.bed",
+            "uri": "ED1a.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "2011C-3493.bed",
+            "uri": "2011C-3493.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "E24377A.bed",
+            "uri": "E24377A.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "HS.bed",
+            "uri": "HS.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "SE11.bed",
+            "uri": "SE11.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "ATCC_8739.bed",
+            "uri": "ATCC_8739.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "SMS-3-5.bed",
+            "uri": "SMS-3-5.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "BL21_DE3.bed",
+            "uri": "BL21_DE3.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "APEC_O1.bed",
+            "uri": "APEC_O1.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Nissle_1917.bed",
+            "uri": "Nissle_1917.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "NCTC86.bed",
+            "uri": "NCTC86.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sflexneri_301.bed",
+            "uri": "Sflexneri_301.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sdysenteriae_Sd197.bed",
+            "uri": "Sdysenteriae_Sd197.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sboydii_Sb227.bed",
+            "uri": "Sboydii_Sb227.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Ssonnei_53G.bed",
+            "uri": "Ssonnei_53G.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "ST540.bed",
+            "uri": "ST540.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "ST2747.bed",
+            "uri": "ST2747.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "BL21_TaKaRa.bed",
+            "uri": "BL21_TaKaRa.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "HMS174.bed",
+            "uri": "HMS174.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "MG1655_TMP32XR1.bed",
+            "uri": "MG1655_TMP32XR1.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "2009C-3133.bed",
+            "uri": "2009C-3133.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "SaT040.bed",
+            "uri": "SaT040.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "SRCC_1675.bed",
+            "uri": "SRCC_1675.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "644-PT8.bed",
+            "uri": "644-PT8.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "M19.bed",
+            "uri": "M19.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "S30.bed",
+            "uri": "S30.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "S56.bed",
+            "uri": "S56.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "tolC-.bed",
+            "uri": "tolC-.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "WCHEC050613.bed",
+            "uri": "WCHEC050613.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "MGY.bed",
+            "uri": "MGY.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "C43_DE3.bed",
+            "uri": "C43_DE3.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "C3026.bed",
+            "uri": "C3026.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "G749.bed",
+            "uri": "G749.bed.gz",
             "locationType": "UriLocation"
           }
         ],

@@ -102,11 +102,13 @@ const LaneHeaders = observer(function LaneHeaders({
     const up = (e: MouseEvent) => {
       setDrag(undefined)
       setDragY(undefined)
-      const order = laneOrderAfterDrop(
-        model.rowAssemblies,
-        assemblyName,
-        dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop),
-      )
+      const order = armed
+        ? laneOrderAfterDrop(
+            model.rowAssemblies,
+            assemblyName,
+            dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop),
+          )
+        : undefined
       if (order) {
         model.setRowOrder(order)
       }

@@ -373,7 +373,7 @@
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "mcscanBlocksLocation": {
-          "uri": "primates.blocks",
+          "uri": "primates.blocks.gz",
           "locationType": "UriLocation"
         },
         "blockAssemblies": [
@@ -388,35 +388,35 @@
         ],
         "bedLocations": [
           {
-            "uri": "human.bed",
+            "uri": "human.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "chimp.bed",
+            "uri": "chimp.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "bonobo.bed",
+            "uri": "bonobo.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "gorilla.bed",
+            "uri": "gorilla.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "sumatran.bed",
+            "uri": "sumatran.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "bornean.bed",
+            "uri": "bornean.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "siamang.bed",
+            "uri": "siamang.bed.gz",
             "locationType": "UriLocation"
           },
           {
-            "uri": "macaque.bed",
+            "uri": "macaque.bed.gz",
             "locationType": "UriLocation"
           }
         ],
