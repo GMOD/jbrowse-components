@@ -1,4 +1,4 @@
-import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { MULTI_ROW_MIN_CELL_PX, rowBand } from './rowBand.ts'
 
@@ -12,11 +12,11 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 const MIN_WIDTH_PX = MULTI_ROW_MIN_CELL_PX + 1
 
 /**
- * Screen box of one block, in the geometry the painter gives it: `spanLeft` off
- * the row band, so a sub-pixel block widens away from its start edge on a
- * reversed region exactly as `the `span` mark's painter` widens it. Clamped to the
- * region, so a block running past the edge can't stripe its neighbour, and
- * undefined where it contributes no pixels.
+ * Screen box of one block, in the geometry the painter gives it: the same
+ * `spanRect` off the row band, so a sub-pixel block widens away from its start
+ * edge on a reversed region exactly as the `span` mark's painter widens it.
+ * Clamped to the region, so a block running past the edge can't stripe its
+ * neighbour, and undefined where it contributes no pixels.
  */
 export function blockScreenRect({
   hit,
@@ -35,13 +35,9 @@ export function blockScreenRect({
 }) {
   const block = blocks.find(b => b.displayedRegionIndex === hit.regionIndex)
   if (block) {
-    const bpToPx = makeBpMapper(block)
-    const xa = bpToPx(hit.start)
-    const xb = bpToPx(hit.end)
-    const width = Math.max(MIN_WIDTH_PX, Math.abs(xb - xa))
-    const unclampedLeft = spanLeft(xa, xb, width)
-    const left = Math.max(block.screenStartPx, unclampedLeft)
-    const right = Math.min(block.screenEndPx, unclampedLeft + width)
+    const span = spanRect(makeBpMapper(block), hit.start, hit.end, MIN_WIDTH_PX)
+    const left = Math.max(block.screenStartPx, span.left)
+    const right = Math.min(block.screenEndPx, span.left + span.width)
     const { height, offset } = rowBand(rowHeight, rowProportion)
     return right > left
       ? {

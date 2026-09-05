@@ -453,6 +453,35 @@ export function spanLeft(x1: number, x2: number, width: number) {
   return x2 < x1 ? x1 - width : x1
 }
 
+/**
+ * The `fillRect` x and width a genomic span paints as, given a bare
+ * `makeBpMapper`: `spanLeft`'s pivot and the min-width floor that goes with it,
+ * as one value a painter and its hit box can both read.
+ *
+ * `minWidth` defaults to 0, which makes this plain screen ordering — the
+ * leftmost projected edge and the unsigned distance. Pass a floor and the span
+ * grows away from `startBp`, which is the reversed-block rule `spanLeft` owns:
+ * anchoring the leftmost edge instead slides a sub-pixel mark by up to the floor
+ * on a flipped region and never on a forward one.
+ *
+ * Reach for this over `spanLeft` wherever the *numbers* are wanted rather than a
+ * fill — a hover box, an SVG rect, a cull test, an overlay div — which is where
+ * the pivot and the floor were being restated separately. The multi-row painter
+ * and the hover box it has to line up with each spelled out both.
+ * `fillBpSpan` is the same span when a `fillRect` is the only consumer.
+ */
+export function spanRect(
+  toX: (bp: number) => number,
+  startBp: number,
+  endBp: number,
+  minWidth = 0,
+) {
+  const x1 = toX(startBp)
+  const x2 = toX(endBp)
+  const width = Math.max(minWidth, Math.abs(x2 - x1))
+  return { left: spanLeft(x1, x2, width), width }
+}
+
 // Quantize a 0..1 ramp position to a 256-entry index. Shared so the direct
 // lookup and the fillStyle LUT below can't quantize differently — a half-step
 // of drift between them shows up as a one-shade mismatch between a cell's fill

@@ -12,6 +12,7 @@ import {
   maxCanvasCssPx,
   regionAtPixel,
   spanLeft,
+  spanRect,
   syncCanvasSize,
   withClip,
 } from './canvas2dUtils.ts'
@@ -155,6 +156,49 @@ describe('spanLeft', () => {
     ] as const) {
       const left = spanLeft(x1, x2, 2)
       expect([left, left + 2]).toContain(x1)
+    }
+  })
+})
+
+// spanLeft's pivot and the min-width floor as one value, for the consumers that
+// want the numbers rather than a fill. A painter and the hover box that has to
+// line up with it are the pair this exists for.
+describe('spanRect', () => {
+  const forward = (bp: number) => bp
+  const reversed = (bp: number) => 1000 - bp
+
+  test('with no floor it is plain screen ordering', () => {
+    expect(spanRect(forward, 100, 140)).toEqual({ left: 100, width: 40 })
+    expect(spanRect(reversed, 100, 140)).toEqual({ left: 860, width: 40 })
+  })
+
+  test('a sub-pixel span grows away from startBp, on both orientations', () => {
+    // Forward the start is the left edge, so the mark grows right from 100.
+    expect(spanRect(forward, 100, 100.5, 2)).toEqual({ left: 100, width: 2 })
+    // Reversed the start is the RIGHT edge (x=900), so it grows left to 898.
+    // Anchoring the leftmost edge instead would put it at 899.5 — the slide
+    // that shows only on flipped regions.
+    expect(spanRect(reversed, 100, 100.5, 2)).toEqual({ left: 898, width: 2 })
+  })
+
+  test('the reversed rect mirrors the forward one about the block', () => {
+    const f = spanRect(forward, 100, 140, 2)
+    const r = spanRect(reversed, 100, 140, 2)
+    expect(r.width).toBe(f.width)
+    expect(r.left + r.width).toBe(1000 - f.left)
+  })
+
+  test('it is spanLeft paired with the floor it was widened by', () => {
+    for (const [a, b] of [
+      [100, 140],
+      [100, 100.5],
+      [140, 140],
+    ] as const) {
+      for (const toX of [forward, reversed]) {
+        const { left, width } = spanRect(toX, a, b, 2)
+        expect(width).toBe(Math.max(2, Math.abs(toX(b) - toX(a))))
+        expect(left).toBe(spanLeft(toX(a), toX(b), width))
+      }
     }
   })
 })
