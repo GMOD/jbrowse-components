@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { pluralize } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
@@ -138,7 +139,7 @@ export default function stateModelFactory(
       // `zoomFetchKey` once it settles, on the same cadence as the layout.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         return this.geneGlyphMode === 'auto'
-          ? self.host.coarseBpPerPx > 100
+          ? containingLgv(self).coarseBpPerPx > 100
             ? 'longestCoding'
             : 'all'
           : this.geneGlyphMode
