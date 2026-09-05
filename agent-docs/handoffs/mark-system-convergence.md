@@ -1,6 +1,6 @@
 ---
 name: mark-system-convergence
-description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); the variant matrix display pulled params(state, region) and draws through a mark too; what is left is one recorded prerequisite no consumer has pulled (bufferOf) and a coordination note for the MAF/alignments store work, whose step 1 and step 2 have landed
+description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); the variant matrix display pulled params(state, region), and canvas basic and multiway pulled bufferOf, so every recorded prerequisite has a consumer and the canvas feature glyph set is five marks two displays declare; nothing is open, and the file closes once its remainder is filed
 ---
 
 # Mark-system convergence handoff
@@ -13,7 +13,7 @@ never work. The rule is now stated in `packages/render-core/CLAUDE.md`
 §Upload; this file records what landed against it, what was declined, and what
 is still open.
 
-## Landed on main (eleven commits, all fast-forwarded)
+## Landed on main (twelve commits, all fast-forwarded)
 
 - `a0856226cd`..`42bd8bfb1d` — cleanup batch: `MarkFrame` aliases
   `FrameDimensions`; core's `abgrToCssRgba` re-exports render-core's through
@@ -78,6 +78,23 @@ is still open.
   `VariantMatrixRenderer.ts` are gone; `variantMatrixMarks.test.ts` pins the
   lanes, the uniforms and the painter geometry the old test pinned.
   `GlobalRenderingBackend` is HiC's and LD's now.
+- The canvas feature glyph set is five marks (`2fbd892022`). `defineMark`
+  gained `bufferOf` (a mark drawing off another's uploaded buffer;
+  `createMarkBackend` uploads only the owners) and `MarkShape.paintsBlock`
+  (a shape declining a block from its place in the frame, before either
+  backend walks it). `plugins/canvas/.../marks/featureGlyphShapes.ts` holds
+  rect, line, chevron, arrow and continuation with their painters moved over
+  unchanged and one uniform writer; `featureGlyphMarks({ params,
+  maxChevronsPerLine, continuation })` is the list in paint order.
+  `LinearBasicDisplay` declares `CANVAS_FEATURE_MARKS` and
+  `MultiWaySyntenyDisplay` — the second consumer, through its own renderer
+  pair until then — declares `MULTIWAY_GLYPH_MARKS` under a px-per-bp block.
+  Both renderer pairs, the glyph-layer registry and its two draw tables are
+  gone. Cross-backend gate, canvas2d vs webgl on swiftshader: 18 pairs on the
+  gene and wiggle captures and 10 on multiway, every gene and multiway pair
+  0.00%, wiggle's known 0.3–0.4% antialiasing drift showing the comparison
+  live. `REJECTED_IDEAS.md` records why this converted and alignments still
+  does not.
 
 ## Declined during the review, do not re-propose
 
@@ -109,18 +126,18 @@ is still open.
   `computeVisibleLabels` palette-dependent, for a ~50-line saving. Nothing
   left to converge.
 
-## Recorded prerequisites, unbuilt until a consumer pulls
+## Prerequisites, all pulled
 
-- `bufferOf` on `defineMark`: a mark registered but never uploaded, drawn off
-  another mark's buffer via the HAL's existing `bufferPassId`.
-- `params(state, region)` is built (the matrix pulled it). Canvas rect's
-  per-region `outlineColor` can now be said; nothing has said it yet.
-- Even with `bufferOf`, canvas basic needs a conditional continuation draw off
-  `canvasEdgeFlags`, a renderer-chosen chevron cap and a typed layer registry
-  (`GpuCanvasFeatureRenderer.ts:168-186`); wiggle needs the pass chosen per
-  region off `sources[0].renderingType` and a ramp texture upload per pass
-  (`GpuWiggleRenderer.ts:140-220`). Alignments stays off for the reason
-  `REJECTED_IDEAS.md` §"Fold PileupMark" measured.
+- `params(state, region)`: the matrix's column count, the canvas rect's
+  per-region `outlineColor`.
+- `bufferOf`: the canvas chevrons off the line buffer, the continuation
+  markers off rect's.
+- Canvas basic converted without the "typed layer registry" the earlier
+  round listed as a need: the mark list is the order, each mark carries both
+  backends, and the passes register off it. Wiggle stays off (a pass chosen
+  per region off `sources[0].renderingType` and a ramp texture upload per
+  pass); alignments stays off for the reason `REJECTED_IDEAS.md` §"Fold
+  PileupMark" measured.
 
 ## Coordination: the MAF/alignments store work
 
