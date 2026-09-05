@@ -78,3 +78,28 @@ test('a pan of the lower row past its buffer moves the key with the bidirectiona
   lower.horizontalScroll(5000)
   expect(display.fetchRegionsKey).not.toBe(before)
 }, 20000)
+
+// The corners the worker emitted are relative to the region layout it was
+// given, so after a rewrite of a row's region list the held geometry draws at
+// loci that no longer exist. A pan keeps it; a region change drops it.
+test('a rewritten region list drops the held geometry, a pan keeps it', async () => {
+  const { view, display } = await openSynteny()
+  const d = display as unknown as {
+    instanceData: unknown
+    setRpcData: (a: unknown, b: unknown) => void
+  }
+  d.setRpcData(
+    {
+      attributeRanges: [],
+      featureIds: [],
+      starts: new Float64Array(0),
+      ends: new Float64Array(0),
+    },
+    { instanceCount: 0 },
+  )
+  expect(d.instanceData).toBeDefined()
+  view.views[0]!.horizontalScroll(100)
+  expect(d.instanceData).toBeDefined()
+  view.views[0]!.horizontallyFlip()
+  expect(d.instanceData).toBeUndefined()
+})

@@ -1,3 +1,4 @@
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import {
   canonicalizeSyntenyDictLanes,
   getCanonicalRefNameFn,
@@ -5,7 +6,7 @@ import {
   installComparativeFetchAutorun,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
-import { untracked } from 'mobx'
+import { reaction, untracked } from 'mobx'
 
 import { renameOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
@@ -21,6 +22,23 @@ export function doAfterAttach(
   self: Omit<LinearSyntenyDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
   installLodTierInfoFetch(self)
+
+  // Ribbon corners are stored relative to a cumBp layout the fetch saw, so a
+  // rewritten region list (a flip, a mate-mark drop, the follow's locstring
+  // fallback) leaves every ribbon and mark at a locus that no longer exists
+  // until the refetch lands. One blank frame is honest; a wrong one is not.
+  addDisposer(
+    self,
+    reaction(
+      () => self.regionSignature,
+      () => {
+        if (self.instanceData) {
+          self.setRpcData(undefined, undefined)
+        }
+      },
+      { name: 'SyntenyBlankOnRegionChange' },
+    ),
+  )
 
   installComparativeFetchAutorun(self, {
     name: 'SyntenyFetch',
