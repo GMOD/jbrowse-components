@@ -250,7 +250,7 @@ function CodonContents({
       ? `${codon.refCodon} → ${codon.codon}`
       : codon.codon
   return (
-    <TableShell caption={`Codon — ${location}`}>
+    <TableShell caption={`Codon - ${location}`}>
       {sampleLabel ? <Row label="Sample" value={sampleLabel} /> : null}
       {gene ? <Row label="Gene" value={gene} /> : null}
       <Row label="Codon" value={codonStr} />

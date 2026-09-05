@@ -13,7 +13,8 @@ import TableRowsIcon from '@mui/icons-material/TableRows'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { downloadAsFile } from '../util/clipboard.ts'
+import { downloadAsFile } from '../util/downloadAsFile.ts'
+import { fastaFileName } from './fastaFileName.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { MafSequenceSettings } from './useMafSequenceSettings.ts'
@@ -116,7 +117,7 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
           onClick: () => {
             void downloadAsFile(
               formattedSequence,
-              'sequence.fasta',
+              fastaFileName(model.regions?.[0]),
               () => {
                 session.notify('Sequence downloaded', 'info')
               },

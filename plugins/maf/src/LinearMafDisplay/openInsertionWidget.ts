@@ -44,8 +44,8 @@ export function openInsertionWidget(
 /**
  * On a plain click over an insertion marker, open the feature-details widget
  * with the inserted sequence. The hover tooltip drops the sequence once it
- * exceeds 20bp (see `formatInsertionLabel`), so clicking is the only way to
- * read a long insertion. Mirrors plugin-alignments' click-an-insertion →
+ * exceeds 20bp (see `MafAlignmentTooltipContents`), so clicking is the only
+ * way to read a long insertion. Mirrors plugin-alignments' click-an-insertion →
  * `openCigarWidget` flow (same `insertion` feature type + `length`/`sequence`
  * fields). No-op unless the click lands on an insertion marker — the row hover
  * resolves a cell/deletion/empty otherwise — and only in `bases` mode where the

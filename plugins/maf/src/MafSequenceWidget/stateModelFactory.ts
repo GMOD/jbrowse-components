@@ -1,7 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Sample } from '../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface HoverHighlight {
@@ -21,7 +20,12 @@ export function stateModelFactory() {
     .model('MafSequenceWidget', {
       id: types.identifier,
       type: types.literal('MafSequenceWidget'),
-      adapterConfig: types.frozen<AnyConfigurationModel | undefined>(undefined),
+      // The MAF adapter's config as a SNAPSHOT — `openSubsequenceWidget` reads
+      // the display's own `adapterConfig`, which is one. It used to be typed as
+      // the config model, which has getters and a slot API this never has.
+      adapterConfig: types.frozen<Record<string, unknown> | undefined>(
+        undefined,
+      ),
       samples: types.frozen<Sample[] | undefined>(undefined),
       regions: types.frozen<
         | {
