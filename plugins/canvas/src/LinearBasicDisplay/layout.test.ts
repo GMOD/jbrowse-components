@@ -5,12 +5,12 @@ import {
   makeFeatureData as makeBaseFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { scaleLaidOutData } from './applyLayout.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
   createIncrementalLayout,
   packedContentHeight,
-  scaleLaidOutData,
 } from './layout.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
 

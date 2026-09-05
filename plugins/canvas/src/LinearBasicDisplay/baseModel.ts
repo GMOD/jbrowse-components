@@ -63,6 +63,7 @@ import {
 } from '../shared/fetchCanvasFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
+import { scaleLaidOutData } from './applyLayout.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
@@ -80,7 +81,6 @@ import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { snapFittedContentHeight } from './fitLadder.ts'
 import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
-import { scaleLaidOutData } from './layout.ts'
 import {
   countTruncatedFeatures,
   featureIdsTouchingBlocks,
