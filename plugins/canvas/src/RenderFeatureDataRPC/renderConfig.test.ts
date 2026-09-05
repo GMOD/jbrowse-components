@@ -1,6 +1,6 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { isDisplayMode, readConfigValue } from './renderConfig.ts'
+import { isDisplayMode, readConfigValueSafe } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -21,43 +21,41 @@ const cfg = (o: Record<string, unknown>) => o as unknown as DisplayConfig
 
 const anyFeature = mockFeature()
 
-describe('readConfigValue', () => {
+// A fallback nothing could resolve to, so every case below pins whether the
+// read produced a value or gave up.
+const NONE = Symbol('none')
+
+function read(
+  config: DisplayConfig,
+  key: string | string[],
+  feature = anyFeature,
+) {
+  return readConfigValueSafe<unknown>(config, key, feature, jexl, NONE)
+}
+
+describe('readConfigValueSafe', () => {
   it('returns value when present', () => {
-    expect(
-      readConfigValue(cfg({ color: 'red' }), 'color', anyFeature, jexl),
-    ).toBe('red')
+    expect(read(cfg({ color: 'red' }), 'color')).toBe('red')
   })
 
-  it('returns undefined when key is missing', () => {
-    expect(readConfigValue(cfg({}), 'color', anyFeature, jexl)).toBeUndefined()
+  it('takes the fallback when the key is missing', () => {
+    expect(read(cfg({}), 'color')).toBe(NONE)
   })
 
   it('evaluates JEXL expression per-feature', () => {
     const config = cfg({
       color: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     })
-    expect(
-      readConfigValue(config, 'color', mockFeature({ type: 'SNV' }), jexl),
-    ).toBe('green')
-    expect(
-      readConfigValue(
-        config,
-        'color',
-        mockFeature({ type: 'insertion' }),
-        jexl,
-      ),
-    ).toBe('purple')
+    expect(read(config, 'color', mockFeature({ type: 'SNV' }))).toBe('green')
+    expect(read(config, 'color', mockFeature({ type: 'insertion' }))).toBe(
+      'purple',
+    )
   })
 
   it('resolves nested keys', () => {
-    expect(
-      readConfigValue(
-        cfg({ labels: { name: 'myGene' } }),
-        ['labels', 'name'],
-        anyFeature,
-        jexl,
-      ),
-    ).toBe('myGene')
+    expect(read(cfg({ labels: { name: 'myGene' } }), ['labels', 'name'])).toBe(
+      'myGene',
+    )
   })
 })
 

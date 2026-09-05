@@ -17,24 +17,6 @@ export {
 } from './displayModes.ts'
 export type { DisplayMode, SubfeatureLabels } from './displayModes.ts'
 
-// DisplayConfig-typed wrapper over the core reader. The core reader takes a
-// `Record<string, unknown>` for generic config snapshots; the single cast here
-// localizes that structural widening so every worker call site keeps the
-// precisely-typed DisplayConfig (and its property typos stay type errors).
-export function readConfigValue<T>(
-  config: DisplayConfig,
-  key: string | string[],
-  feature: Feature,
-  jexl: JexlInstance,
-): T {
-  return coreReadConfigValue<T>(
-    config as unknown as Record<string, unknown>,
-    key,
-    feature,
-    jexl,
-  )
-}
-
 // Evaluate a (possibly `jexl:`) config slot against a feature, degrading to
 // `fallback` when the expression throws — e.g. a custom `mouseover`/`labels`
 // jexl referencing a missing plugin function or reading an attribute off a
@@ -47,6 +29,11 @@ export function readConfigValue<T>(
 // empty is null rather than undefined — a VCF INFO key, a JSON `null` — and
 // jexl hands it straight back, so `mouseover` rendered the word "null" over the
 // feature and a color slot returned it as a color.
+//
+// The core reader takes a `Record<string, unknown>` for generic config
+// snapshots; the single cast here localizes that structural widening, so every
+// worker call site keeps the precisely-typed DisplayConfig and its property
+// typos stay type errors.
 export function readConfigValueSafe<T>(
   config: DisplayConfig,
   key: string | string[],
@@ -55,7 +42,12 @@ export function readConfigValueSafe<T>(
   fallback: T,
 ): T {
   try {
-    const value = readConfigValue<T>(config, key, feature, jexl)
+    const value = coreReadConfigValue<T>(
+      config as unknown as Record<string, unknown>,
+      key,
+      feature,
+      jexl,
+    )
     return value ?? fallback
   } catch {
     return fallback
@@ -74,7 +66,7 @@ export const THEME_DERIVED_COLOR = '#f0f'
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The
 // widening to `Record<string, unknown>` that the core config reader wants is
-// confined to the readConfigValue wrapper above.
+// confined to readConfigValueSafe above.
 export interface DisplayConfig {
   // displayMode is NOT sent to the worker — compact/superCompact height scaling
   // is applied on the main thread, so switching modes skips an RPC round-trip.
@@ -183,7 +175,7 @@ const DISPLAY_CONFIG_KEYS = Object.keys(
  * someone notices — rather than every unrelated config write refetching the
  * track, which nobody does.
  *
- * The assertion is the mirror of `readConfigValue`'s at the top of this file —
+ * The assertion is the mirror of `readConfigValueSafe`'s at the top of this file —
  * the same `Record<string, unknown>` round trip, in the other direction — and
  * what it stands on is different from what the `as DisplayConfig` it replaced
  * stood on: there, an unchecked superset; here, a key list the compiler proved
