@@ -41,7 +41,11 @@ function seedJunctions(display: LinearAlignmentsDisplayModel) {
     sashimiMotifs: new Uint8Array([1, 1]),
     sashimiCounts: new Uint32Array([40, 12]),
   }
-  display.setRpcData(0, { groups: [{ key: '', label: '', data }] })
+  display.setRpcData(
+    0,
+    { groups: [{ key: '', label: '', data }] },
+    display.view.displayedRegions[0]!,
+  )
 }
 
 // Distinct values a computed produced, in order — see the file header.
@@ -103,9 +107,13 @@ test('a pan re-projects the arcs and re-merges nothing', () => {
 // of reconciling a list of empty sections per frame.
 test('a track with no junctions hands the overlay the same empty array', () => {
   const { view, display } = panningDisplay()
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
+    },
+    display.view.displayedRegions[0]!,
+  )
 
   const projections = identityCounter<unknown>()
   const stop = autorun(() => {

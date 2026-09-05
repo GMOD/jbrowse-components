@@ -1,4 +1,7 @@
-import { createRpcTestEnvironment } from './testUtils.ts'
+import {
+  createRpcTestEnvironment,
+  makeEmptyAlignmentsResult,
+} from './testUtils.ts'
 
 type Env = ReturnType<
   ReturnType<typeof createRpcTestEnvironment>['createDisplay']
@@ -8,11 +11,14 @@ type Env = ReturnType<
 // stamped with the bin that fetch was issued under, and the canvas painted.
 // `setLoadedRegion`'s default stamp is `fetchInputs`, which is what a real
 // commit writes, so nothing here invents a stamp the fetch could not have
-// written. The stand-in payload is what this display's commit puts there while
-// it still holds its own `rpcDataMap` — presence, not the reads.
+// written.
 function simulateLoaded({ view, display }: Pick<Env, 'view' | 'display'>) {
   for (const b of view.bufferedVisibleRegions) {
-    display.setLoadedRegion(b.displayedRegionIndex, b.region, undefined, {})
+    display.setRpcData(
+      b.displayedRegionIndex,
+      makeEmptyAlignmentsResult(),
+      b.region,
+    )
   }
   display.markCanvasDrawn()
   display.stopActiveFetch()

@@ -29,27 +29,33 @@ function twoRegionDisplay() {
   ])
   applyView(view, 10, 0)
   display.setReadConnections('arc')
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 1500,
+      assemblyName: 'volvox',
+    },
+  )
   // The second region's fetch, empty of reads. The read scan walks the LOADED
   // list, so without it the mate is never seen at all; the partition itself is
   // keyed on the displayed list, which already holds both.
-  display.setRpcData(1, {
-    groups: [{ key: '', label: '', data: emptyPileupData() }],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 1500,
-    assemblyName: 'volvox',
-  })
-  display.setLoadedRegion(1, {
-    refName: 'ctgA',
-    start: 1500,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    1,
+    {
+      groups: [{ key: '', label: '', data: emptyPileupData() }],
+    },
+    {
+      refName: 'ctgA',
+      start: 1500,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   return display
 }
 
@@ -104,15 +110,18 @@ test('a single-region view has none of this', () => {
   const { view, display } = createTestAlignmentsDisplay()
   applyView(view, 10, 0)
   display.setReadConnections('arc')
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   expect(display.crossRegionArcsByGroup.get('')).toHaveLength(0)
   expect(display.crossRegionArcSections).toHaveLength(0)
   expect(display.arcsByGroup.get('')!.get(0)!.numArcs).toBe(1)

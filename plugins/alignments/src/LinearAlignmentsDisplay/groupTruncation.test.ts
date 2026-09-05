@@ -82,19 +82,22 @@ function seed(
   if (opts.collapseRows) {
     display.setCollapseGroupRows(true)
   }
-  display.setRpcData(0, {
-    groups: groups.map(g => ({
-      key: g.key,
-      label: g.label,
-      data: stackedReads(g.n),
-    })),
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: groups.map(g => ({
+        key: g.key,
+        label: g.label,
+        data: stackedReads(g.n),
+      })),
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   return display
 }
 

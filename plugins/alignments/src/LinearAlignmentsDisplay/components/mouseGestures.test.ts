@@ -37,26 +37,29 @@ function setup() {
   }
   const { view, display, openedWidgets } = createTestAlignmentsDisplay()
   applyView(view, 10, START)
-  display.setRpcData(0, {
-    groups: [
-      {
-        key: '',
-        label: '',
-        data: {
-          ...makeEmptyPileupData(),
-          ...oneReadWithMate(),
-          coverageStartPos: 0,
-          coverageDepths: new Float32Array(10_000).fill(10),
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            ...oneReadWithMate(),
+            coverageStartPos: 0,
+            coverageDepths: new Float32Array(10_000).fill(10),
+          },
         },
-      },
-    ],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+      ],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   const { result } = renderHook(() => useAlignmentsBase(display))
 
   // TracksContainer in miniature: the LGV's pan writes its state as attributes

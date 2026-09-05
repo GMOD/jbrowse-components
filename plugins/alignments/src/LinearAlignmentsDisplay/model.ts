@@ -45,7 +45,6 @@ import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ScoreScaleMixin,
   domainFromStats,
@@ -212,7 +211,7 @@ import type {
 } from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -409,19 +408,6 @@ export default function stateModelFactory(
           contextMenuFeature: undefined as Feature | undefined,
           /**
            * #volatile
-           */
-          // Region index → grouped worker result. Ungrouped fetches store a
-          // single group (key ''); grouping (Stage 5) stores N. Every reader
-          // iterates `.groups`, so the ungrouped path is the one-group case.
-          // Shallow (`deep: false`): entries are whole worker results (nested
-          // plain objects wrapping large typed arrays) that are only ever
-          // replaced via `.set`/`.delete`, never mutated in place. Deep
-          // observability would recursively wrap every nested object/array on
-          // insert and tax every property access (`getObservablePropValue_`) in
-          // the layout/draw hot loops for zero benefit.
-          rpcDataMap: regionDataMap<GroupedAlignmentsResult>('rpcDataMap'),
-          /**
-           * #volatile
            * Group keys whose pileup is collapsed to just its coverage band
            * (in-track grouping). Keyed by group key so it survives re-fetches;
            * volatile so it resets on reload. A key means nothing outside the
@@ -498,6 +484,21 @@ export default function stateModelFactory(
           selectedSashimiKey: undefined as string | undefined,
         }
       })
+      .views(self => ({
+        /**
+         * #getter
+         * Region index → grouped worker result, the foundation's per-region
+         * store narrowed. Ungrouped fetches store a single group (key '');
+         * grouping stores N. Every reader iterates `.groups`, so the ungrouped
+         * path is the one-group case.
+         */
+        get rpcDataMap(): ReadonlyMap<number, GroupedAlignmentsResult> {
+          return self.regionPayloads as ReadonlyMap<
+            number,
+            GroupedAlignmentsResult
+          >
+        },
+      }))
       // Named getters for frequently-tested conditions so the inline boolean
       // expression doesn't have to be re-derived (and re-explained) at each
       // call site.
@@ -637,7 +638,7 @@ export default function stateModelFactory(
          *
          * Derived, like the map it qualifies. It was a volatile flag that
          * `fetchNeeded` set true and nothing ever set back, so it outlived the
-         * data it described: after `clearDisplaySpecificData` it still claimed
+         * data it described: after `clearAllRpcData` it still claimed
          * an answer for reads that were no longer loaded, and the menu skipped
          * "Loading modifications..." while the replacing fetch was in flight.
          * Reading the data is what the flag was always trying to say.
@@ -3343,19 +3344,16 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Stage a region as fetched, with this display's payload shape — so
+           * a test stands up a loaded display in one call. Production goes
+           * through `ctx.commitRegion`.
            */
           setRpcData(
             displayedRegionIndex: number,
             data: GroupedAlignmentsResult,
+            region: Region,
           ) {
-            self.rpcDataMap.set(displayedRegionIndex, data)
-          },
-
-          /**
-           * #action
-           */
-          clearDisplaySpecificData() {
-            self.rpcDataMap.clear()
+            self.setLoadedRegion(displayedRegionIndex, region, undefined, data)
           },
 
           /**
@@ -4199,9 +4197,7 @@ export default function stateModelFactory(
           async fetchNeeded(needed: IndexedRegion[]) {
             await fetchEachRegion(self, needed, {
               call: (region, ctx) => fetchFeaturesForRegion(self, region, ctx),
-              onResult: (displayedRegionIndex, result) => {
-                self.setRpcData(displayedRegionIndex, result)
-              },
+              onResult: (_displayedRegionIndex, result) => result,
             })
           },
 
@@ -4384,7 +4380,7 @@ export default function stateModelFactory(
 
           // Scroll back to the top on a real region-list change (chromosome
           // navigation), not on the same-region refetch a zoom or a settings
-          // write issues — `clearDisplaySpecificData` used to zero the scroll
+          // write issues — the old display-data clear used to zero the scroll
           // for both, so changing a filter or a tag color yanked the reader off
           // the row they were reading. The canvas displays split it the same way
           // and for the same reason.

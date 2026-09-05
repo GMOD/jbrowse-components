@@ -86,18 +86,21 @@ function twoLanes() {
   const { view, display } = createEnv()
   display.setReadConnections('arc')
   display.setReadConnectionsDown(true)
-  display.setRpcData(0, {
-    groups: [
-      { key: 'notsplit', label: 'Not split', data: oneRead() },
-      { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
-    ],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: 'notsplit', label: 'Not split', data: oneRead() },
+        { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
+      ],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   return { view, display }
 }
 
@@ -125,12 +128,16 @@ test('the reserved band tracks the arc feed, not just the setting', () => {
   const withArcs = display.sections.contentHeight
   // Same reads, but now nothing pairs => neither lane has an arc to draw, so
   // both strips go away and the whole stack shortens by one band.
-  display.setRpcData(0, {
-    groups: [
-      { key: 'notsplit', label: 'Not split', data: oneRead() },
-      { key: 'split', label: 'Split (SA)', data: oneRead() },
-    ],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: 'notsplit', label: 'Not split', data: oneRead() },
+        { key: 'split', label: 'Split (SA)', data: oneRead() },
+      ],
+    },
+    display.view.displayedRegions[0]!,
+  )
   const layout: SectionsLayout = display.sections
   expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
   expect(display.sections.contentHeight).toBe(
@@ -146,12 +153,16 @@ test('turning read connections off drops the band from the lane that had one', (
   // walk when they are off — so toggling drops the fetched data. Re-seed it
   // here, standing in for the refetch, since what this test is about is the
   // band the layout reserves rather than the invalidation.
-  display.setRpcData(0, {
-    groups: [
-      { key: 'notsplit', label: 'Not split', data: oneRead() },
-      { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
-    ],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: 'notsplit', label: 'Not split', data: oneRead() },
+        { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
+      ],
+    },
+    display.view.displayedRegions[0]!,
+  )
   const layout: SectionsLayout = display.sections
   expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
   expect(display.sections.contentHeight).toBe(
@@ -174,18 +185,21 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     const { view, display } = createEnv()
     display.setReadConnections('cloud')
     display.setReadConnectionsDown(true)
-    display.setRpcData(0, {
-      groups: [
-        { key: 'a', label: 'Lane A', data: oneRead(2000) },
-        { key: 'b', label: 'Lane B', data: oneRead(3000) },
-      ],
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10_000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          { key: 'a', label: 'Lane A', data: oneRead(2000) },
+          { key: 'b', label: 'Lane B', data: oneRead(3000) },
+        ],
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      },
+    )
     return { view, display }
   }
 
@@ -232,18 +246,21 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     const { display } = createEnv()
     display.setReadConnections('cloud')
     display.setReadConnectionsDown(true)
-    display.setRpcData(0, {
-      groups: [
-        { key: 'a', label: 'Lane A', data: oneRead(2000) },
-        { key: 'b', label: 'Lane B', data: oneRead() },
-      ],
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10_000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          { key: 'a', label: 'Lane A', data: oneRead(2000) },
+          { key: 'b', label: 'Lane B', data: oneRead() },
+        ],
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      },
+    )
     expect(rulers(display).map(s => s.groupKey)).toEqual(['a'])
   })
 
@@ -266,15 +283,18 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     const { display } = createEnv()
     display.setReadConnections('arc')
     display.setReadConnectionsDown(true)
-    display.setRpcData(0, {
-      groups: [{ key: '', label: '', data: oneRead(mateBp) }],
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10_000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: [{ key: '', label: '', data: oneRead(mateBp) }],
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      },
+    )
     return display
   }
 
@@ -308,18 +328,21 @@ describe('the pooled below-coverage bands agree with the sections', () => {
       display.setReadConnections(connections)
       display.setReadConnectionsDown(true)
       display.setGroupBy({ type: 'strand' })
-      display.setRpcData(0, {
-        groups: [
-          { key: '+', label: 'Forward strand', data: oneRead() },
-          { key: '-', label: 'Reverse strand', data: oneRead() },
-        ],
-      })
-      display.setLoadedRegion(0, {
-        refName: 'ctgA',
-        start: 0,
-        end: 10_000,
-        assemblyName: 'volvox',
-      })
+      display.setRpcData(
+        0,
+        {
+          groups: [
+            { key: '+', label: 'Forward strand', data: oneRead() },
+            { key: '-', label: 'Reverse strand', data: oneRead() },
+          ],
+        },
+        {
+          refName: 'ctgA',
+          start: 0,
+          end: 10_000,
+          assemblyName: 'volvox',
+        },
+      )
       return display
     }
     const on = seedTwoUnpairedLanes('arc')
@@ -342,22 +365,25 @@ describe('the pooled below-coverage bands agree with the sections', () => {
       display.setReadConnections('arc')
       display.setReadConnectionsDown(true)
       display.setGroupBy({ type: 'strand' })
-      display.setRpcData(0, {
-        groups: [
-          { key: '+', label: 'Forward strand', data: stackedLane(20, 2000) },
-          {
-            key: '-',
-            label: 'Reverse strand',
-            data: stackedLane(20, secondLaneMate),
-          },
-        ],
-      })
-      display.setLoadedRegion(0, {
-        refName: 'ctgA',
-        start: 0,
-        end: 10_000,
-        assemblyName: 'volvox',
-      })
+      display.setRpcData(
+        0,
+        {
+          groups: [
+            { key: '+', label: 'Forward strand', data: stackedLane(20, 2000) },
+            {
+              key: '-',
+              label: 'Reverse strand',
+              data: stackedLane(20, secondLaneMate),
+            },
+          ],
+        },
+        {
+          refName: 'ctgA',
+          start: 0,
+          end: 10_000,
+          assemblyName: 'volvox',
+        },
+      )
       return display
     }
     const bothPaired = seed(3000)

@@ -32,6 +32,17 @@ function makeContextMenuBlock(): ResolvedBlock {
   }
 }
 
+// The span a staged payload stands over. Most cases stage payloads on a view
+// displaying nothing, so the span is spelled here; index 1 is a second contig.
+function region(displayedRegionIndex: number) {
+  return {
+    refName: displayedRegionIndex === 0 ? 'ctgA' : 'ctgB',
+    start: 0,
+    end: 10_000,
+    assemblyName: 'volvox',
+  }
+}
+
 // Builds a real LinearAlignmentsDisplay so the cross-feature coupling that
 // lives in the model actions (not the menu handlers) is tested against the
 // actual model rather than a mock that would just reimplement it.
@@ -755,29 +766,32 @@ describe('the feature-details lookup', () => {
     display: ReturnType<typeof createDisplay>,
     overrides: Partial<WorkerPileupData> = {},
   ) {
-    display.setRpcData(0, {
-      groups: [
-        {
-          key: '',
-          label: '',
-          data: {
-            ...makeEmptyPileupData(),
-            readKeys: ['read1'],
-            ...namesToBlock(['readA']),
-            readPositions: new Uint32Array([1000, 5000]),
-            readFlags: new Uint16Array([0]),
-            readMapqs: new Uint8Array([60]),
-            ...overrides,
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...makeEmptyPileupData(),
+              readKeys: ['read1'],
+              ...namesToBlock(['readA']),
+              readPositions: new Uint32Array([1000, 5000]),
+              readFlags: new Uint16Array([0]),
+              readMapqs: new Uint8Array([60]),
+              ...overrides,
+            },
           },
-        },
-      ],
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10000,
-      assemblyName: 'volvox',
-    })
+        ],
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 10000,
+        assemblyName: 'volvox',
+      },
+    )
   }
 
   function rpcCall(display: ReturnType<typeof createDisplay>) {
@@ -876,22 +890,26 @@ describe('the feature-details lookup', () => {
 describe('sashimi score filter releases the reserved band', () => {
   // Two interleaving junctions, the second supported by only 2 reads.
   function seedCrossingJunctions(display: ReturnType<typeof createDisplay>) {
-    display.setRpcData(0, {
-      groups: [
-        {
-          key: '',
-          label: '',
-          data: {
-            ...makeEmptyPileupData(),
-            sashimiX1: new Uint32Array([100, 300]),
-            sashimiX2: new Uint32Array([500, 700]),
-            sashimiStrands: new Int8Array([0, 0]),
-            sashimiMotifs: new Uint8Array(2),
-            sashimiCounts: new Uint32Array([20, 2]),
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...makeEmptyPileupData(),
+              sashimiX1: new Uint32Array([100, 300]),
+              sashimiX2: new Uint32Array([500, 700]),
+              sashimiStrands: new Int8Array([0, 0]),
+              sashimiMotifs: new Uint8Array(2),
+              sashimiCounts: new Uint32Array([20, 2]),
+            },
           },
-        },
-      ],
-    })
+        ],
+      },
+      region(0),
+    )
   }
 
   test('auto: filtering out the crossing junction gives the strip back to the pileup', () => {
@@ -947,12 +965,6 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setSashimiArcsMode('auto')
     display.setMinSashimiScore(0)
     seedCrossingJunctions(display)
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10000,
-      assemblyName: 'volvox',
-    })
 
     expect([...display.sashimiDownArcLanes]).toEqual([''])
     // heaviest-first: the 20-read junction claims 'up', the 2-read one drops
@@ -979,34 +991,39 @@ describe('sashimi score filter releases the reserved band', () => {
       sashimiCounts: new Uint32Array([20]),
     })
     // interleaving as bare numbers (10k < 30k < 50k < 70k), but one per chrom
-    display.setRpcData(0, {
-      groups: [{ key: '', label: '', data: junction(10_000, 50_000) }],
-    })
-    display.setRpcData(1, {
-      groups: [{ key: '', label: '', data: junction(30_000, 70_000) }],
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 100_000,
-      assemblyName: 'volvox',
-    })
-    display.setLoadedRegion(1, {
-      refName: 'ctgB',
-      start: 0,
-      end: 100_000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: [{ key: '', label: '', data: junction(10_000, 50_000) }],
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 100_000,
+        assemblyName: 'volvox',
+      },
+    )
+    display.setRpcData(
+      1,
+      {
+        groups: [{ key: '', label: '', data: junction(30_000, 70_000) }],
+      },
+      {
+        refName: 'ctgB',
+        start: 0,
+        end: 100_000,
+        assemblyName: 'volvox',
+      },
+    )
 
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
 
     // the same two spans on ONE chromosome do interleave and claim the strip
-    display.setLoadedRegion(1, {
-      refName: 'ctgA',
-      start: 0,
-      end: 100_000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      1,
+      { groups: [{ key: '', label: '', data: junction(30_000, 70_000) }] },
+      { refName: 'ctgA', start: 0, end: 100_000, assemblyName: 'volvox' },
+    )
     expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
   })
 })
@@ -1031,9 +1048,13 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
   })
   expect(runs).toBe(1)
 
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
+    },
+    region(0),
+  )
   expect(runs).toBe(2)
 
   dispose()
@@ -1056,31 +1077,35 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
     // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
     display.setColorScheme({ type: 'tag', tag: 'HP' })
-    display.setRpcData(0, {
-      groups: [
-        {
-          key: '',
-          label: '',
-          data: {
-            ...makeEmptyPileupData(),
-            readKeys: ['r1'],
-            ...namesToBlock(['r1']),
-            readPositions: new Uint32Array([100, 200]),
-            readFlags: new Uint16Array(1),
-            readMapqs: new Uint8Array(1),
-            readInsertSizes: new Float32Array(1),
-            readPairOrientations: new Uint8Array(1),
-            readStrands: new Int8Array([1]),
-            readInterchrom: new Uint8Array(1),
-            readTagValues: ['1'],
-            segmentPositions: new Uint32Array([100, 200]),
-            segmentReadIndices: new Uint32Array([0]),
-            segmentEdgeFlags: new Uint8Array([3]),
-            numSegments: 1,
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...makeEmptyPileupData(),
+              readKeys: ['r1'],
+              ...namesToBlock(['r1']),
+              readPositions: new Uint32Array([100, 200]),
+              readFlags: new Uint16Array(1),
+              readMapqs: new Uint8Array(1),
+              readInsertSizes: new Float32Array(1),
+              readPairOrientations: new Uint8Array(1),
+              readStrands: new Int8Array([1]),
+              readInterchrom: new Uint8Array(1),
+              readTagValues: ['1'],
+              segmentPositions: new Uint32Array([100, 200]),
+              segmentReadIndices: new Uint32Array([0]),
+              segmentEdgeFlags: new Uint8Array([3]),
+              numSegments: 1,
+            },
           },
-        },
-      ],
-    })
+        ],
+      },
+      region(0),
+    )
     expect(display.rpcDataMap.size).toBe(1)
     return display
   }
@@ -1155,7 +1180,7 @@ describe('modification detection follows the loaded regions', () => {
 
   test('a landed fetch is what makes the answer ready', () => {
     const display = createDisplay()
-    display.setRpcData(0, withMods('m'))
+    display.setRpcData(0, withMods('m'), region(0))
     expect(display.modificationsReady).toBe(true)
     expect(display.detectedModificationTypes).toEqual(['m'])
     // the colour the legend and the marks both resolve from the type code
@@ -1166,19 +1191,19 @@ describe('modification detection follows the loaded regions', () => {
   // must stop offering it.
   test('a type the new region does not carry is dropped', () => {
     const display = createDisplay()
-    display.setRpcData(0, withMods('m', 'a'))
+    display.setRpcData(0, withMods('m', 'a'), region(0))
     expect(display.detectedModificationTypes).toEqual(['m', 'a'])
-    display.setRpcData(0, withMods('m'))
+    display.setRpcData(0, withMods('m'), region(0))
     expect(display.detectedModificationTypes).toEqual(['m'])
   })
 
   test('every loaded region contributes, deduped', () => {
     const display = createDisplay()
-    display.setRpcData(0, withMods('m'))
-    display.setRpcData(1, withMods('m', 'h'))
+    display.setRpcData(0, withMods('m'), region(0))
+    display.setRpcData(1, withMods('m', 'h'), region(1))
     expect(display.detectedModificationTypes).toEqual(['m', 'h'])
     // refetching one region takes only what that region alone carried
-    display.setRpcData(1, withMods())
+    display.setRpcData(1, withMods(), region(1))
     expect(display.detectedModificationTypes).toEqual(['m'])
   })
 
@@ -1188,8 +1213,8 @@ describe('modification detection follows the loaded regions', () => {
   // while the replacing fetch was in flight.
   test('clearing the data un-readies the answer', () => {
     const display = createDisplay()
-    display.setRpcData(0, withMods('m'))
-    display.clearDisplaySpecificData()
+    display.setRpcData(0, withMods('m'), region(0))
+    display.clearAllRpcData()
     expect(display.modificationsReady).toBe(false)
     expect(display.detectedModificationTypes).toEqual([])
   })
@@ -1202,20 +1227,24 @@ describe('modification detection follows the loaded regions', () => {
   // off the laid-out map and so hidden-filtered.
   test('groups are unioned within a region', () => {
     const display = createDisplay()
-    display.setRpcData(0, {
-      groups: [
-        {
-          key: 'g1',
-          label: 'g1',
-          data: { ...makeEmptyPileupData(), detectedModifications: ['m'] },
-        },
-        {
-          key: 'g2',
-          label: 'g2',
-          data: { ...makeEmptyPileupData(), detectedModifications: ['a'] },
-        },
-      ],
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: 'g1',
+            label: 'g1',
+            data: { ...makeEmptyPileupData(), detectedModifications: ['m'] },
+          },
+          {
+            key: 'g2',
+            label: 'g2',
+            data: { ...makeEmptyPileupData(), detectedModifications: ['a'] },
+          },
+        ],
+      },
+      region(0),
+    )
     expect(display.detectedModificationTypes).toEqual(['m', 'a'])
   })
 })
@@ -1233,26 +1262,29 @@ describe('per-lane state belongs to one grouping key space', () => {
     display: ReturnType<typeof createDisplay>,
     groups: { key: string; label: string }[],
   ) {
-    display.setRpcData(0, {
-      groups: groups.map(({ key, label }) => ({
-        key,
-        label,
-        data: {
-          ...makeEmptyPileupData(),
-          readKeys: [`read-${key}`],
-          ...namesToBlock([`read-${key}`]),
-          readPositions: new Uint32Array([1000, 5000]),
-          readFlags: new Uint16Array([0]),
-          readMapqs: new Uint8Array([60]),
-        },
-      })),
-    })
-    display.setLoadedRegion(0, {
-      refName: 'ctgA',
-      start: 0,
-      end: 10000,
-      assemblyName: 'volvox',
-    })
+    display.setRpcData(
+      0,
+      {
+        groups: groups.map(({ key, label }) => ({
+          key,
+          label,
+          data: {
+            ...makeEmptyPileupData(),
+            readKeys: [`read-${key}`],
+            ...namesToBlock([`read-${key}`]),
+            readPositions: new Uint32Array([1000, 5000]),
+            readFlags: new Uint16Array([0]),
+            readMapqs: new Uint8Array([60]),
+          },
+        })),
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 10000,
+        assemblyName: 'volvox',
+      },
+    )
   }
 
   // Grouped by HP with the untagged reads collapsed — the state every case below

@@ -86,17 +86,20 @@ function setup({ down }: { down: boolean }) {
   applyView(view, 10, 0)
   display.setReadConnections('arc')
   display.setReadConnectionsDown(down)
-  display.setRpcData(0, {
-    groups: [
-      { key: '', label: '', data: coverageUnder(oneReadWithMate(2000)) },
-    ],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: '', label: '', data: coverageUnder(oneReadWithMate(2000)) },
+      ],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
 
   const { result } = renderHook(() => useAlignmentsBase(display))
   // The handlers read the LGV pan's state off the tracks container the canvas

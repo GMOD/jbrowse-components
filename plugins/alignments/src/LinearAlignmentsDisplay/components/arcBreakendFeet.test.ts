@@ -79,26 +79,32 @@ function twoContigDisplay(
   // breakpoint, so a one-read fixture draws NOTHING — no arc and no tick — and
   // every case here would pass its assertion on an empty section list.
   display.setMinInterchromSupport(1)
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data }],
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data }],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   // ctgB's own fetch, empty: the read scan walks the LOADED list, and the mate
   // is known here only from RNEXT/PNEXT on the ctgA record.
-  display.setRpcData(1, {
-    groups: [{ key: '', label: '', data: emptyPileupData() }],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
-  display.setLoadedRegion(1, {
-    refName: 'ctgB',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    1,
+    {
+      groups: [{ key: '', label: '', data: emptyPileupData() }],
+    },
+    {
+      refName: 'ctgB',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   return display
 }
 
@@ -235,24 +241,30 @@ test('a SAME-CHROMOSOME cross-region arc draws none', () => {
   ])
   applyView(view, 10, 0)
   display.setReadConnections('arc')
-  display.setRpcData(0, {
-    groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
-  })
-  display.setRpcData(1, {
-    groups: [{ key: '', label: '', data: emptyPileupData() }],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 1500,
-    assemblyName: 'volvox',
-  })
-  display.setLoadedRegion(1, {
-    refName: 'ctgA',
-    start: 1500,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+  display.setRpcData(
+    0,
+    {
+      groups: [{ key: '', label: '', data: oneReadWithMate(2000) }],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 1500,
+      assemblyName: 'volvox',
+    },
+  )
+  display.setRpcData(
+    1,
+    {
+      groups: [{ key: '', label: '', data: emptyPileupData() }],
+    },
+    {
+      refName: 'ctgA',
+      start: 1500,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   const arcs = display.crossRegionArcSections[0]!.arcs
   expect(arcs).toHaveLength(1)
   expect(feetOf(arcs[0]!.d).count).toBe(0)

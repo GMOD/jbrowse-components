@@ -51,29 +51,32 @@ function createEnvWithPileup(depth: number) {
     readPositions[i * 2] = 1000
     readPositions[i * 2 + 1] = 5000
   }
-  display.setRpcData(0, {
-    groups: [
-      {
-        key: '',
-        label: '',
-        data: {
-          ...makeEmptyPileupData(),
-          readKeys: Array.from({ length: depth }, (_, i) => `r${i}`),
-          ...namesToBlock(Array.from({ length: depth }, (_, i) => `r${i}`)),
-          readPositions,
-          readFlags: new Uint16Array(depth),
-          readMapqs: new Uint8Array(depth),
-          readStrands: new Int8Array(depth),
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            readKeys: Array.from({ length: depth }, (_, i) => `r${i}`),
+            ...namesToBlock(Array.from({ length: depth }, (_, i) => `r${i}`)),
+            readPositions,
+            readFlags: new Uint16Array(depth),
+            readMapqs: new Uint8Array(depth),
+            readStrands: new Int8Array(depth),
+          },
         },
-      },
-    ],
-  })
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-    assemblyName: 'volvox',
-  })
+      ],
+    },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    },
+  )
   return { view, display }
 }
 
