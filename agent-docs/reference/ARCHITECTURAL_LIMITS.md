@@ -444,7 +444,7 @@ side: the reads are legitimate, and the two tests pin both shapes.
 Three code paths have such a dependency. Only the first is outside the helper,
 so only it is untouched by ADR-078:
 
-- **`LinearAlignmentsDisplay`** reads the map directly (`rpcDataMap.size === 0`,
+- **`LinearAlignmentsDisplay`** reads the store directly (`hasRegionData`,
   for the zero-group grouped-fetch reason in [HISTORICAL.md](HISTORICAL.md)
   §"Each display asserted its own 'did we paint?'") **and** transitively:
   `renderState.sections` is `buildSectionRenders(self.sections, …)`, and

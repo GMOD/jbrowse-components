@@ -2566,8 +2566,7 @@ export default function stateModelFactory(
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources
               // over a loaded region is NOT this state — see renderState.
-              const hasFetched =
-                self.sourcesKnown || self.loadedRegions.size > 0
+              const hasFetched = self.sourcesKnown || self.hasRegionData
               // One call whatever the rows are doing, because this canvas now
               // carries the coverage band too. Out of `bases` mode the rows are
               // owned by a sibling canvas (the identity plot, the codon view,

@@ -110,9 +110,9 @@ Answerable only from the fetched lanes:
   `scalebarOverlapLeft` is 0.
 - **`isGrouped`** (>1 lane) — the scroll model, and nothing else. Ungrouped
   keeps coverage sticky; grouped scrolls the whole stack.
-- **`rpcDataMap.size === 0`** — has data arrived? **Never gate first paint on a
-  laid-out map**, since a grouped fetch over an empty region partitions to zero
-  lanes and the overlay never clears.
+- **`hasRegionData`** — has data arrived? **Never gate first paint on a laid-out
+  map**, since a grouped fetch over an empty region partitions to zero lanes and
+  the overlay never clears.
 
 **The same rule one layer down: `renderBlocks` reports paint off the SYNCED
 REGION, never off a band having pixels in it.** A section whose fetch landed

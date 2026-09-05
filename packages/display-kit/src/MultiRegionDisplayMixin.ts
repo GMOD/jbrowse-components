@@ -430,6 +430,17 @@ export default function MultiRegionDisplayMixin() {
             ),
           ) as ReadonlyMap<number, unknown>
         },
+
+        /**
+         * #getter
+         * A fetch has landed: at least one region's payload is in the store.
+         * The render callback's first-paint gate reads this, so an empty frame
+         * before any data cannot flip `canvasDrawn`; an empty but loaded
+         * region counts, and paints its empty frame.
+         */
+        get hasRegionData(): boolean {
+          return this.regionPayloads.size > 0
+        },
       }))
       .views(self => ({
         /**

@@ -3884,21 +3884,19 @@ export default function stateModelFactory(
                 // support), so a change to it has to reach the pack.
                 readConnectionsLineWidth: self.readConnectionsLineWidth,
               }),
-            // size === 0 keeps first paint gated until data arrives, so the
-            // loading overlay stays up (canvasDrawn stays false); an empty but
-            // loaded region has size > 0 and paints an empty pileup. Keyed on the
-            // per-REGION map, not on a group's laid-out map: a grouped fetch over a
-            // region with no reads partitions to zero groups, so the first group's
-            // map is empty even though the fetch is done — gating on that left the
-            // loading overlay up forever (and hung any test waiting on first paint).
+            // `hasRegionData` is the per-REGION store, not a group's laid-out
+            // map: a grouped fetch over a region with no reads partitions to
+            // zero groups, so the first group's map is empty even though the
+            // fetch is done — gating on that left the loading overlay up
+            // forever (and hung any test waiting on first paint).
             //
-            // With the band standing in nothing reaches `rpcDataMap`, so first
+            // With the band standing in nothing reaches the store, so first
             // paint waits on the band's own read instead.
             render: b =>
               (
                 self.densityStandsIn
                   ? densityBandPending(self)
-                  : self.rpcDataMap.size === 0
+                  : !self.hasRegionData
               )
                 ? false
                 : b.renderBlocks(self.renderBlocks, self.renderState),
