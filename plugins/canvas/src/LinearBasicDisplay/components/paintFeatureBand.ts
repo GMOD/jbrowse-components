@@ -1,4 +1,6 @@
-import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { labelColors } from './labelColors.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { paintLabels } from './paintLabels.ts'
@@ -36,11 +38,13 @@ export function paintFeatureBand(
     palette,
   }: FeatureBandPaint,
 ) {
-  drawFeatureBlocks(ctx, resolveMapColors(dataMap, palette), blocks, {
-    scrollY: 0,
-    canvasWidth,
-    canvasHeight: bandHeight,
-  })
+  paintMarkBlocks(
+    ctx,
+    CANVAS_FEATURE_MARKS,
+    resolveMapColors(dataMap, palette),
+    blocks,
+    { scrollY: 0, canvasWidth, canvasHeight: bandHeight },
+  )
   forEachDisplayLabel(
     regions,
     dataMap,

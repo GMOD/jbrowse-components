@@ -14,7 +14,10 @@ import type { FrameDimensions } from '../renderingBackendBase.ts'
  */
 export interface MarkContext2D extends ClipContext2D {
   fillStyle: string | CanvasGradient | CanvasPattern
+  strokeStyle: string | CanvasGradient | CanvasPattern
+  lineWidth: number
   fillRect(x: number, y: number, w: number, h: number): void
+  strokeRect(x: number, y: number, w: number, h: number): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
   arc(
@@ -26,6 +29,7 @@ export interface MarkContext2D extends ClipContext2D {
   ): void
   closePath(): void
   fill(): void
+  stroke(): void
 }
 
 export type MarkFrame = FrameDimensions
@@ -73,6 +77,16 @@ export interface MarkShape<TChannels, TParams> {
     params: TParams,
   ): void
   /**
+   * Whether the shape has any ink on this block at all, decided from the
+   * block's place in the frame rather than its instances. Both backends skip
+   * the block when it says no. Optional: a shape whose every block can carry
+   * ink leaves it off. The canvas continuation marker is the one that needs
+   * it — it exists only where a block meets a canvas edge, and an interior
+   * block would otherwise shade a whole pileup's worth of vertices to draw
+   * nothing.
+   */
+  paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
+  /**
    * The nearest drawn ink to `(xPx, yPx)` among `candidates`, or undefined if
    * nothing beats `maxDistSq`.
    *
@@ -115,6 +129,13 @@ export interface MarkShape<TChannels, TParams> {
 export interface Mark<TRegion, TState extends MarkFrame> {
   readonly pass: InstancePass<TRegion>
   readonly uniformByteSize: number
+  /**
+   * The pass id whose instance buffer this mark draws from, for a mark that
+   * is registered but never uploaded to: the canvas chevrons ride the line
+   * buffer and the continuation markers ride rect's. The HAL asserts the two
+   * passes declare one instance struct.
+   */
+  readonly bufferOf?: string
   drawRegion(
     hal: GpuHal,
     scratch: ArrayBuffer,
@@ -150,6 +171,11 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * the render state's values reach the uniforms — and which of the region's,
  * for a value the payload carries rather than the frame (the variant matrix's
  * column count). Both run once per block per frame, never per instance.
+ *
+ * `bufferOf` names the mark whose uploaded buffer this one draws from, so the
+ * declaration says what the HAL's `drawPass(id, region, bufferPassId)` says:
+ * the chevron mark's channels are the line mark's, packed once under the line
+ * pass.
  */
 export function defineMark<
   TRegion,
@@ -160,24 +186,29 @@ export function defineMark<
   shape: MarkShape<TChannels, TParams>
   channels: (region: TRegion) => TChannels
   params: (state: TState, region: TRegion) => TParams
+  bufferOf?: Mark<TRegion, TState>
 }): Mark<TRegion, TState> {
   const { shape, channels, params } = spec
+  const bufferOf = spec.bufferOf?.pass.id
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     uniformByteSize: shape.uniformByteSize,
+    bufferOf,
     drawRegion(hal, scratch, block, clip, region, state) {
-      shape.writeUniforms(scratch, clip, block, state, params(state, region))
+      const p = params(state, region)
+      if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+        return
+      }
+      shape.writeUniforms(scratch, clip, block, state, p)
       hal.writeUniforms(scratch)
-      hal.drawPass(shape.pass.id, block.displayedRegionIndex)
+      hal.drawPass(shape.pass.id, block.displayedRegionIndex, bufferOf)
     },
     paintBlock(ctx, region, block, state) {
-      shape.paintBlock(
-        ctx,
-        channels(region),
-        block,
-        state,
-        params(state, region),
-      )
+      const p = params(state, region)
+      if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+        return
+      }
+      shape.paintBlock(ctx, channels(region), block, state, p)
     },
     hitNearest: shape.hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) =>

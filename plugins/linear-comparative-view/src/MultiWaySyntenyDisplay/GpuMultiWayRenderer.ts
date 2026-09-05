@@ -1,20 +1,4 @@
-import {
-  ARROW_PASS,
-  ArrowPass,
-  CHEVRON_PASS,
-  FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
-  LINE_PASS,
-  LinePass,
-  MAX_VISIBLE_CHEVRONS_PER_LINE,
-  RECT_PASS,
-  RectPass,
-  featureGlyphShader,
-  makeChevronPass,
-  packArrows,
-  packLines,
-  packRects,
-} from '@jbrowse/plugin-canvas'
-import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
+import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
@@ -26,7 +10,12 @@ import {
 } from '../LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
 import { SyntenyRibbonBuffers } from '../LinearSyntenyDisplay/syntenyRibbonBuffers.ts'
 import { RibbonPickCells } from './Canvas2DMultiWayRenderer.ts'
-import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
+import {
+  MULTIWAY_GLYPH_MARKS,
+  glyphBlock,
+  glyphFrame,
+} from './multiwayGlyphMarks.ts'
+import { ribbonParams } from './multiwayRenderTypes.ts'
 
 import type {
   GlyphLayer,
@@ -36,70 +25,22 @@ import type {
   MultiWayRenderingBackend,
   RibbonLayer,
 } from './multiwayRenderTypes.ts'
+import type { CanvasScale } from '@jbrowse/render-core/canvas2dUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
-import type { InstancePass } from '@jbrowse/render-core/instancePass'
-
-const RECT_INSTANCES: InstancePass<LaneGlyphData> = {
-  ...RectPass,
-  pack: data =>
-    packRects(
-      {
-        startEnd: data.rectPositions,
-        y: data.rectYs,
-        height: data.rectHeights,
-        color: data.rectColors,
-        densityFade: data.rectDensityFade,
-        strand: data.rectStrands,
-      },
-      data.rectYs.length,
-    ),
-}
-const LINE_INSTANCES: InstancePass<LaneGlyphData> = {
-  ...LinePass,
-  pack: data =>
-    packLines(
-      {
-        startEnd: data.linePositions,
-        y: data.lineYs,
-        height: data.lineHeights,
-        direction: data.lineDirections,
-        color: data.lineColors,
-      },
-      data.lineYs.length,
-    ),
-}
-const ARROW_INSTANCES: InstancePass<LaneGlyphData> = {
-  ...ArrowPass,
-  pack: data =>
-    packArrows(
-      {
-        x: data.arrowXs,
-        y: data.arrowYs,
-        height: data.arrowHeights,
-        widthBp: data.arrowWidthsBp,
-        direction: data.arrowDirections,
-        color: data.arrowColors,
-      },
-      data.arrowYs.length,
-    ),
-}
-const GLYPH_PASSES = [RECT_INSTANCES, LINE_INSTANCES, ARROW_INSTANCES]
 
 /**
  * The synteny stack's four passes for the ribbons and ticks, and the feature
- * track's glyph passes for the lanes. Every pass owns its buffer, so one
- * region key holds a ribbon cell's fill buffer or a lane cell's three glyph
- * buffers, never both.
+ * track's glyph marks' passes for the lanes. A region key holds a ribbon
+ * cell's fill buffer or a lane cell's glyph buffers, never both.
  */
 export const MULTIWAY_PASSES: PipelineDescriptor[] = [
   ...SYNTENY_PASSES,
-  ...GLYPH_PASSES,
-  makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
+  ...MULTIWAY_GLYPH_MARKS.map(m => m.pass),
 ]
 
 export const MULTIWAY_UNIFORM_BYTE_SIZE = Math.max(
   SYNTENY_UNIFORM_BYTE_SIZE,
-  FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
+  ...MULTIWAY_GLYPH_MARKS.map(m => m.uniformByteSize),
 )
 
 export class GpuMultiWayRenderer
@@ -131,8 +72,10 @@ export class GpuMultiWayRenderer
     if (cell.kind === 'ribbons') {
       this.ribbons.set(key, cell.data)
     } else {
-      for (const pass of GLYPH_PASSES) {
-        uploadPass(this.hal, id, pass, cell.data)
+      for (const mark of MULTIWAY_GLYPH_MARKS) {
+        if (!mark.bufferOf) {
+          uploadPass(this.hal, id, mark.pass, cell.data)
+        }
       }
     }
   }
@@ -146,7 +89,7 @@ export class GpuMultiWayRenderer
   }
 
   render(state: MultiWayRenderState) {
-    this.hal.resize(state.width, state.height)
+    const scale = this.hal.resize(state.width, state.height)
     this.hal.beginFrame(0, 0, 0, 0)
     for (const layer of state.layers) {
       const cell = this.cells.get(layer.key)
@@ -156,7 +99,7 @@ export class GpuMultiWayRenderer
       if (layer.kind === 'ribbons' && cell.kind === 'ribbons') {
         this.drawRibbons(layer, state)
       } else if (layer.kind === 'glyphs' && cell.kind === 'glyphs') {
-        this.drawGlyphs(layer, cell.data, state)
+        this.drawGlyphs(layer, cell.data, state, scale)
       }
     }
     this.hal.endFrame()
@@ -201,26 +144,16 @@ export class GpuMultiWayRenderer
     layer: GlyphLayer,
     data: LaneGlyphData,
     state: MultiWayRenderState,
+    scale: CanvasScale,
   ) {
-    const id = this.ribbons.idOf(layer.key)
-    const [hi, lo] = splitPositionWithFrac(glyphRangeStart(layer, state))
-    featureGlyphShader.writeUniforms(this.uniformData, {
-      bpRangeX: [hi, lo, state.width],
-      canvasHeight: state.height,
-      canvasWidth: state.width,
-      scrollY: state.scrollTopPx,
-      bpPerPx: 1,
-      zero: 0,
-      reversed: 0,
-      outlineColor: data.outlineColor,
-      leftIsCanvasEdge: 0,
-      rightIsCanvasEdge: 0,
-    })
-    this.hal.writeUniforms(this.uniformData)
-    this.hal.drawPass(LINE_PASS, id)
-    this.hal.drawPass(CHEVRON_PASS, id, LINE_PASS)
-    this.hal.drawPass(RECT_PASS, id)
-    this.hal.drawPass(ARROW_PASS, id)
+    const block = glyphBlock(layer, state, this.ribbons.idOf(layer.key))
+    const clip = clipBlock(block, state.width, state.height, scale)
+    if (clip) {
+      const frame = glyphFrame(state)
+      for (const mark of MULTIWAY_GLYPH_MARKS) {
+        mark.drawRegion(this.hal, this.uniformData, block, clip, data, frame)
+      }
+    }
   }
 
   pickRibbon(x: number, y: number, state: MultiWayRenderState) {

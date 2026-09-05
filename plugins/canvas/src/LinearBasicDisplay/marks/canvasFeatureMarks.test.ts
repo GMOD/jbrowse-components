@@ -1,18 +1,13 @@
 import { MockHal } from '@jbrowse/render-core/hal'
+import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { CANVAS_GLYPH_DRAW } from './Canvas2DFeatureRenderer.ts'
-import {
-  CANVAS_FEATURE_PASSES,
-  GPU_GLYPH_DRAW,
-  GpuCanvasFeatureRenderer,
-} from './GpuCanvasFeatureRenderer.ts'
-import { GLYPH_LAYERS } from './glyphLayers.ts'
+import { CANVAS_FEATURE_MARKS } from './canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
   FeatureRenderBlock,
   RenderState,
-} from './canvasFeatureRenderingBackendTypes.ts'
+} from '../components/canvasFeatureRenderingBackendTypes.ts'
 
 // The parity and snapshot tests exercise the Canvas2D path, so an extra upload or
 // a pass pointed at the wrong buffer shows up nowhere but as garbage glyphs on a
@@ -70,8 +65,14 @@ function block(over: Partial<FeatureRenderBlock> = {}): FeatureRenderBlock {
 }
 
 function setup() {
-  const hal = new MockHal(CANVAS_FEATURE_PASSES)
-  return { hal, renderer: new GpuCanvasFeatureRenderer(hal) }
+  const hal = new MockHal(CANVAS_FEATURE_MARKS.map(m => m.pass))
+  const uniformByteSize = Math.max(
+    ...CANVAS_FEATURE_MARKS.map(m => m.uniformByteSize),
+  )
+  return {
+    hal,
+    renderer: new GpuMarkBackend(hal, uniformByteSize, CANVAS_FEATURE_MARKS),
+  }
 }
 
 function callsTo(hal: MockHal, method: string) {
@@ -83,15 +84,16 @@ describe('per-region uploads', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(4))
     const uploads = callsTo(hal, 'uploadBuffer')
-    // One upload per pass that owns a buffer; continuation draws from rect's.
-    expect(uploads.map(c => c.args[1])).toStrictEqual(['rect', 'line', 'arrow'])
-    expect(uploads[0]!.args[3]).toBe(4)
+    // One upload per mark that owns a buffer, in mark order; the chevrons draw
+    // from line's and the continuation markers from rect's.
+    expect(uploads.map(c => c.args[1])).toStrictEqual(['line', 'rect', 'arrow'])
+    expect(uploads[1]!.args[3]).toBe(4)
   })
 
   it('packs the strand the continuation pass needs into that one buffer', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(3))
-    const [upload] = callsTo(hal, 'uploadBuffer')
+    const upload = callsTo(hal, 'uploadBuffer').find(c => c.args[1] === 'rect')
     // 3 instances x 28 bytes. The strand is what makes one buffer serve both
     // passes; drop it and the stride falls back to 24.
     expect(upload!.args[2]).toBe(3 * 28)
@@ -109,15 +111,6 @@ describe('per-region uploads', () => {
 })
 
 describe('draw passes', () => {
-  // `Record<GlyphLayerId, …>` makes each backend hold an entry for every id, but
-  // `GLYPH_LAYERS` is a plain array: an id left out of it is wired in both
-  // backends, compiles, and draws nowhere.
-  it('lists every glyph layer both backends carry an entry for', () => {
-    const ids = [...GLYPH_LAYERS].sort()
-    expect(ids).toStrictEqual(Object.keys(GPU_GLYPH_DRAW).sort())
-    expect(ids).toStrictEqual(Object.keys(CANVAS_GLYPH_DRAW).sort())
-  })
-
   it('draws the borrowing passes from the lender’s buffer', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(2))
@@ -153,11 +146,8 @@ describe('draw passes', () => {
     renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
 
-    // A pass added to `CANVAS_FEATURE_PASSES` and missed in `GPU_GLYPH_DRAW`
-    // registers, compiles and never draws. The typed records catch a missing
-    // layer; only this catches a pass with no layer to carry it.
     expect(new Set(callsTo(hal, 'drawPass').map(c => c.args[0]))).toStrictEqual(
-      new Set(CANVAS_FEATURE_PASSES.map(p => p.id)),
+      new Set(CANVAS_FEATURE_MARKS.map(m => m.pass.id)),
     )
   })
 

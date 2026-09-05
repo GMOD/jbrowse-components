@@ -1,4 +1,3 @@
-import { CANVAS_GLYPH_DRAW } from '@jbrowse/plugin-canvas'
 import { getDpr, prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
@@ -8,7 +7,12 @@ import {
   makePickCtx,
   pickFeatureAtPoint,
 } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
+import {
+  MULTIWAY_GLYPH_MARKS,
+  glyphBlock,
+  glyphFrame,
+} from './multiwayGlyphMarks.ts'
+import { ribbonParams } from './multiwayRenderTypes.ts'
 
 import type { PickCanvasLike } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import type {
@@ -25,16 +29,6 @@ import type {
   MultiWayRibbonPick,
 } from './multiwayRenderTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
-
-// the glyph painters take a block and a clip for the per-region display's
-// scissoring and continuation marks; a lane is one unclipped band
-const WHOLE_BAND: BlockClip = {
-  scissorX: 0,
-  scissorW: 0,
-  fullBlockWidth: 0,
-  bpLength: 0,
-}
 
 function drawGlyphLayer(
   ctx: Ctx2D,
@@ -42,22 +36,10 @@ function drawGlyphLayer(
   layer: GlyphLayer,
   state: MultiWayRenderState,
 ) {
-  const start = glyphRangeStart(layer, state)
-  const toX = (px: number) => px - start
-  const block = {
-    start: 0,
-    end: state.width,
-    screenStartPx: 0,
-    screenEndPx: state.width,
-    reversed: false,
-  }
-  const frame = {
-    scrollY: state.scrollTopPx,
-    canvasWidth: state.width,
-    canvasHeight: state.height,
-  }
-  for (const id of ['line', 'rect', 'arrow'] as const) {
-    CANVAS_GLYPH_DRAW[id](ctx, data, block, toX, frame, WHOLE_BAND)
+  const block = glyphBlock(layer, state, 0)
+  const frame = glyphFrame(state)
+  for (const mark of MULTIWAY_GLYPH_MARKS) {
+    mark.paintBlock(ctx, data, block, frame)
   }
 }
 

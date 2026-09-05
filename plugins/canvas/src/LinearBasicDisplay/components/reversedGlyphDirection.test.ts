@@ -2,7 +2,9 @@
 // worker cannot know a block is reversed, so each owes its direction a flip on
 // the render side. A parity gate cannot see a missing one: both backends read the
 // same genomic field, so they are wrong together.
-import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
@@ -79,7 +81,7 @@ function draw(region: RegionRenderData, reversed: boolean) {
     screenEndPx: 100,
     reversed,
   }
-  drawFeatureBlocks(ctx, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 100,
     canvasHeight: 50,

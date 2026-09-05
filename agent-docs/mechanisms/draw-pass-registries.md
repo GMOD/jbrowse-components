@@ -29,9 +29,12 @@ sections make it extend `GpuRenderingBackendBase` directly.
 
 **3. The id registry.** A shared ordered list carrying z-order and, where the
 marks are settings-gated, an `enabled(state)` — `PILEUP_LAYERS`,
-`COVERAGE_LAYERS`, `GLYPH_LAYERS` — resolved by an exhaustive
-`Record<LayerId, …>` per consumer, and with pass registration derived from the
-registry rather than re-listed. **Conditional; see the precondition below.**
+`COVERAGE_LAYERS` — resolved by an exhaustive `Record<LayerId, …>` per
+consumer, and with pass registration derived from the registry rather than
+re-listed. **Conditional; see the precondition below.** A display on
+render-core's mark list has this for free: the list is the order, each mark
+carries both backends, and `createMarkBackend` registers the passes off it
+(canvas `LinearBasicDisplay` moved there from a `GLYPH_LAYERS` registry).
 
 **4. `HIT_GATES`.** A second exhaustive record over the same ids forcing every
 drawn layer to state a hit-testing story, checked against each layer's actual
@@ -74,7 +77,7 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 | alignments coverage | 5 | yes | yes | GPU, Canvas2D | `COVERAGE_LAYERS` |
 | alignments arcs | 4 | yes | band-level only | GPU, `drawArcs` | list + `flatPaintOrder.test.ts` |
 | alignments SVG overlays | 3 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
-| canvas `LinearBasicDisplay` | 4 | yes | no | GPU, Canvas2D, SVG | `GLYPH_LAYERS`, no gate column |
+| canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `CANVAS_FEATURE_MARKS`, a mark list |
 | sequence rows | 3 kinds | yes | yes | painter, hover, height | `rowLayout` |
 | wiggle | 3 | mode-exclusive | n/a | GPU, Canvas2D | no |
 | synteny | 4 | 2x2 mode grid | no | GPU | no |

@@ -19,12 +19,13 @@ import {
   FloatingLegend,
 } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { MORPH_DURATION_MS, morphClockMs } from '../yMorph.ts'
-import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
@@ -38,6 +39,10 @@ import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
+
+function createCanvasFeatureBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, CANVAS_FEATURE_MARKS)
+}
 
 export interface LinearBasicDisplayComponentProps {
   model: LinearCanvasBaseDisplayModel
@@ -127,7 +132,7 @@ const FeatureComponent = observer(function FeatureComponent({
   return (
     <DisplayChrome
       model={model}
-      factory={CanvasFeatureRenderer}
+      factory={createCanvasFeatureBackend}
       testid="feature-display"
       className={classes.root}
       style={{ height: model.height }}

@@ -26,6 +26,10 @@ function recordingCtx() {
     arc() {},
     closePath() {},
     fill() {},
+    strokeStyle: '',
+    lineWidth: 1,
+    strokeRect() {},
+    stroke() {},
   } satisfies MarkContext2D
   return { rects, ctx }
 }

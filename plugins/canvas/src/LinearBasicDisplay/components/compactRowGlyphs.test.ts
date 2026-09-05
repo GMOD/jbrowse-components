@@ -1,3 +1,5 @@
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
 // What a compacted transcript row has to keep true: everything drawn on the body
 // stays on the body. At superCompact's 3px body one pixel is a third of the
 // glyph, which is where both halves of it come apart.
@@ -6,7 +8,7 @@ import {
   centerShrink,
 } from '../../RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { HEIGHT_MULTIPLIERS } from '../../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
@@ -104,7 +106,7 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     arrowDirections: new Int8Array([1]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   }
-  drawFeatureBlocks(ctx, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 60,

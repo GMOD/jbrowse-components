@@ -484,10 +484,10 @@ touching either path, preserve whichever of these the display uses:
   asking.
 
   **Reach for this at the scale that needs it.** What broke alignments was 17
-  passes and 250 lines between upload and draw. `LinearBasicDisplay`'s 5-pass
-  renderer gets the same guarantee more cheaply: one `CANVAS_FEATURE_PASSES` list
-  with the two non-obvious cases commented on the entries themselves, upload and
-  draw ~60 lines apart and readable together. Don't add registries to a renderer
+  passes and 250 lines between upload and draw. `LinearBasicDisplay`'s five
+  passes are a mark list (`CANVAS_FEATURE_MARKS`): the two that borrow a
+  buffer say so with `bufferOf`, and `createMarkBackend` derives what uploads
+  and what draws from that one declaration. Don't add registries to a renderer
   you can check by reading.
 
   **The `id` is the last unkeyed thing, and it is two keys.** A pass id names
@@ -1142,8 +1142,9 @@ What does NOT belong as renderer instance state:
 - **Per-region metadata derivable from `rpcDataMap`** — `hasRects` / `hasLines` /
   `outlineColor` style fields. `drawPass` skips missing buffers so the boolean
   flags aren't needed; per-region scalars used in uniforms should be passed into
-  `renderBlocks` from the MST model rather than cached on the renderer. See
-  `GpuCanvasFeatureRenderer` for the canonical shape.
+  `renderBlocks` from the MST model rather than cached on the renderer. A
+  mark's `params(state, region)` is where such a scalar reaches the uniforms
+  (`outlineColor` in `canvasFeatureMarks.ts`).
 - **Write-only mirror copies of upload data** — if a value lives in
   `rpcDataMap[idx].foo`, don't also store it as `LocalRegion.foo`.
 

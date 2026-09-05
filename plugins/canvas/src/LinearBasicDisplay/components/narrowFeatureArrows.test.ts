@@ -1,7 +1,9 @@
 // The strand arrow draws outside the box it annotates, at a fixed 7px, so on a
 // zoomed-out repeat track every arrow is wider than its feature and lands on the
 // neighbour. A feature too narrow to be worth a direction marker gets none.
-import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { ARROW_MIN_FEATURE_WIDTH_PX } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -70,7 +72,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
     screenEndPx: 100,
     reversed,
   }
-  drawFeatureBlocks(ctx, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 100,
     canvasHeight: 50,

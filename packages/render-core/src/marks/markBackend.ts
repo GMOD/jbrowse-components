@@ -13,7 +13,12 @@ import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { Mark } from './types.ts'
 
-class GpuMarkBackend<
+/**
+ * The HAL-side half of `createMarkBackend`, exported so a display's mark list
+ * can be driven against `MockHal`: which marks upload, which draw off another's
+ * buffer, and which blocks a shape declines.
+ */
+export class GpuMarkBackend<
   TRegion,
   TState extends FrameDimensions,
 > extends GpuPerRegionRenderingBackend<TRegion, TState> {
@@ -25,7 +30,8 @@ class GpuMarkBackend<
     private marks: readonly Mark<TRegion, TState>[],
   ) {
     super(hal, uniformByteSize)
-    this.regionPasses = marks.map(m => m.pass)
+    // a mark drawing off another's buffer is registered but never uploaded to
+    this.regionPasses = marks.filter(m => !m.bufferOf).map(m => m.pass)
   }
 
   protected drawRegion(

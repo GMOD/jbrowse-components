@@ -5,13 +5,11 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { drawDensityBand } from '../shared/densityBand.ts'
-import {
-  drawFeatureBlocks,
-  drawHighlightBoxes,
-} from './components/Canvas2DFeatureRenderer.ts'
+import { drawHighlightBoxes } from './components/highlightBoxes.ts'
 import { highlightBoxColors } from './components/highlightUtils.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
@@ -22,6 +20,7 @@ import {
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { resolveMapColors } from './components/resolveRegionColors.ts'
+import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
@@ -123,7 +122,13 @@ function CanvasFeaturesSvgBody({
         height={height}
         opts={opts}
         paint={ctx => {
-          drawFeatureBlocks(ctx, dataMap, renderBlocks, renderState)
+          paintMarkBlocks(
+            ctx,
+            CANVAS_FEATURE_MARKS,
+            dataMap,
+            renderBlocks,
+            renderState,
+          )
         }}
       />
       {/* The three overlays the app canvas never paints — on-screen they are the

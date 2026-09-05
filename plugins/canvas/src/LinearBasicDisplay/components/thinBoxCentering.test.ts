@@ -2,7 +2,9 @@
 // even number of rows does not have. At the 2px bodies fit mode squeezes down to
 // that half-pixel is half the box, so thin boxes draw at an odd height and these
 // pin the symmetry it buys.
-import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+
+import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
@@ -79,7 +81,7 @@ function drawTranscript(heightPx: number, topY: number) {
     // No chevrons, so moveTo fires once, for the line itself.
     lineDirections: new Int8Array([0]),
   }
-  drawFeatureBlocks(ctx, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 50,

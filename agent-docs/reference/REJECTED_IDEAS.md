@@ -271,6 +271,16 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   day at 2.5x on 200K bins; the canvas painter's `paintedRectSpan` tuple pair
   and synteny's per-instance `ResolvedFill` literal are allocation-shaped and
   stay unmeasured: an allocation alone has priced at 1.00x in this tree.
+  **Later the same day the canvas feature pipeline converted after all** —
+  the variant display with it, being that subclass — once the two things the
+  rule named became declarations: `bufferOf` on `defineMark` says which mark's
+  buffer a pass borrows, and `params(state, region)` carries the per-region
+  uniform. What made it a convergence rather than a port was the second
+  consumer: `MultiWaySyntenyDisplay` drew the same five glyph passes through
+  its own renderer pair, and both now declare `featureGlyphMarks`. The
+  shared uniform block is written once per mark rather than once per block,
+  five small writes for one; the alignments decline above stands, because
+  thirteen passes over a zoom-resolved block is a different sum.
 
 - **Lift `PileupMark` (`plugins/alignments/src/features/mark.ts`) into a shared
   package so MAF's per-base cells or the multi-sample variant cells declare

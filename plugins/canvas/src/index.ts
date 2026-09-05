@@ -112,24 +112,12 @@ export type {
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
 
-// The feature glyph passes and their Canvas2D painters, for a display outside
-// this plugin drawing gene glyphs under its own axis.
-export {
-  ArrowPass,
-  ARROW_PASS,
-  CHEVRON_PASS,
-  FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
-  LINE_PASS,
-  LinePass,
-  RECT_PASS,
-  RectPass,
-  makeChevronPass,
-  packArrows,
-  packLines,
-  packRects,
-  rectShader as featureGlyphShader,
-} from './LinearBasicDisplay/passes/index.ts'
-export { CANVAS_GLYPH_DRAW } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
+// The feature glyph set as marks, for a display outside this plugin drawing
+// gene glyphs under its own axis.
+export { featureGlyphMarks } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
+export { rectShader as featureGlyphShader } from './LinearBasicDisplay/passes/index.ts'
+export type { FeatureGlyphLanes } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
+export type { FeatureGlyphParams } from './LinearBasicDisplay/marks/featureGlyphShapes.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
 // glyphs through the passes above.
