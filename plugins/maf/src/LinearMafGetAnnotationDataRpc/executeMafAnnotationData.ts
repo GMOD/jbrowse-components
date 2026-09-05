@@ -42,7 +42,17 @@ export async function executeMafAnnotationData({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'LinearMafGetAnnotationData'>
 }): Promise<LinearMafGetAnnotationDataResult | RegionTooLargeResult> {
-  const { regions, adapterConfig, byteLimit, sessionId, stopToken } = args
+  // `statusCallback` is this branch's own slot in the fetch's status fan-out —
+  // `fetchMafData` hands the annotation branch one — so the frames read reports
+  // progress alongside the alignment's instead of leaving the slot empty.
+  const {
+    regions,
+    adapterConfig,
+    byteLimit,
+    sessionId,
+    stopToken,
+    statusCallback,
+  } = args
   const region = regions[0]!
   const adapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -55,35 +65,39 @@ export async function executeMafAnnotationData({
     regions: [region],
     byteLimit,
     stopToken,
+    statusCallback,
   })
   if (tooLarge) {
     return tooLarge
   }
 
   const records: MafFrameRecord[] = []
-  await subscribeToObservable(adapter.getFeatures(region, { stopToken }), f => {
-    const src = f.get('src')
-    // Only mafFrames-shaped features (those carrying a `src` species column)
-    // contribute; a plain reference annotation adapter without `src` is ignored
-    // here (it would need a different, reference-row-only path).
-    if (typeof src === 'string') {
-      // `nextFramePos` alone of the autoSql's four linkage columns — see
-      // `MafFrameRecord` for why the other three have no reader. A plain
-      // annotation adapter without it yields undefined and the cross-exon
-      // stitch no-ops.
-      const nextFramePos = f.get('nextFramePos')
-      records.push({
-        refName: region.refName,
-        start: f.get('start'),
-        end: f.get('end'),
-        src,
-        frame: Number(f.get('frame')),
-        strand: f.get('strand') ?? 1,
-        name: String(f.get('name') ?? ''),
-        nextFramePos:
-          nextFramePos === undefined ? undefined : Number(nextFramePos),
-      })
-    }
-  })
+  await subscribeToObservable(
+    adapter.getFeatures(region, { stopToken, statusCallback }),
+    f => {
+      const src = f.get('src')
+      // Only mafFrames-shaped features (those carrying a `src` species column)
+      // contribute; a plain reference annotation adapter without `src` is ignored
+      // here (it would need a different, reference-row-only path).
+      if (typeof src === 'string') {
+        // `nextFramePos` alone of the autoSql's four linkage columns — see
+        // `MafFrameRecord` for why the other three have no reader. A plain
+        // annotation adapter without it yields undefined and the cross-exon
+        // stitch no-ops.
+        const nextFramePos = f.get('nextFramePos')
+        records.push({
+          refName: region.refName,
+          start: f.get('start'),
+          end: f.get('end'),
+          src,
+          frame: Number(f.get('frame')),
+          strand: f.get('strand') ?? 1,
+          name: String(f.get('name') ?? ''),
+          nextFramePos:
+            nextFramePos === undefined ? undefined : Number(nextFramePos),
+        })
+      }
+    },
+  )
   return { records }
 }

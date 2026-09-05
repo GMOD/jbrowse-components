@@ -27,11 +27,12 @@ const FRAME = {
 const REGION = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
 
 async function run(bytes: number | undefined, byteLimit?: number) {
-  const getFeatures = jest.fn(() => of(FRAME))
-  mockGetFeatureAdapter.mockResolvedValue({
-    getFeatures,
-    getRegionByteSize: () => Promise.resolve(bytes),
-  })
+  const getFeatures = jest.fn((_region: unknown, _opts?: unknown) => of(FRAME))
+  const getRegionByteSize = jest.fn((_regions: unknown, _opts?: unknown) =>
+    Promise.resolve(bytes),
+  )
+  mockGetFeatureAdapter.mockResolvedValue({ getFeatures, getRegionByteSize })
+  const statusCallback = jest.fn()
   const result = await executeMafAnnotationData({
     pluginManager: {} as PluginManager,
     args: {
@@ -39,9 +40,10 @@ async function run(bytes: number | undefined, byteLimit?: number) {
       adapterConfig: { type: 'BigBedAdapter' },
       sessionId: 'session-1',
       byteLimit,
+      statusCallback,
     },
   })
-  return { result, getFeatures }
+  return { result, getFeatures, getRegionByteSize, statusCallback }
 }
 
 // The frames file is one record per CDS exon *per species*, so it grows with
@@ -105,4 +107,16 @@ test('keeps the frame rows that name a species', async () => {
       nextFramePos: undefined,
     },
   ])
+})
+
+// The fan-out gives this branch a status slot of its own, precisely so its
+// progress does not clobber the alignment's. Nothing here used to read the
+// argument, so the slot it was handed stayed empty for the whole read.
+test('reports progress into the slot it was given', async () => {
+  const { getFeatures, getRegionByteSize, statusCallback } = await run(
+    500,
+    1_000_000,
+  )
+  expect(getRegionByteSize.mock.calls[0]![1]).toMatchObject({ statusCallback })
+  expect(getFeatures.mock.calls[0]![1]).toMatchObject({ statusCallback })
 })
