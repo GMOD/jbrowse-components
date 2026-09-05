@@ -1,6 +1,6 @@
 ---
 name: pangenome-graphs
-description: How a graph reaches JBrowse — what rGFA and plain GFA can and cannot say about coordinates and carriage, the one-node-per-bubble level of detail, ceilings measured on the hosted HPRC index, and the decisions that look like bugs and are not. Read before touching a graph adapter, a pangenome figure, or a linearized-variation lane.
+description: How a graph reaches JBrowse — what rGFA and plain GFA can and cannot say about coordinates and carriage, the one-node-per-bubble level of detail, ceilings measured on the hosted HPRC index, how pairwise alignments are unpacked from a GFA's walks (gfa_to_pairwise_paf.py, measured against halSynteny and minimap2 on E. coli and streamed over the 63 GB HPRC graph), and the decisions that look like bugs and are not. Read before touching a graph adapter, a pangenome figure, or a linearized-variation lane.
 ---
 
 # Pangenome graphs
@@ -695,6 +695,116 @@ Rules they encode, each a reverted first attempt:
   the marker claims reference haplotypes have the sequence.
 - `featureDeltas.length === featureStarts.length` is the multi-row "slot is set"
   gate, because a zero delta is a legitimate reference-length allele.
+
+## Pairwise alignments unpacked from the GFA (2026-09-05)
+
+`scripts/gfa_to_pairwise_paf.py` turns a graph's own path walks into PAF: two
+walks through one node carry identical sequence, so a query haplotype's
+alignment to any other path is the nodes the two walks share, in the order the
+reference visits them. It needs no HAL, no MAF and no projection, reads
+minigraph-cactus (W lines) and pggb (P lines) alike, and any path can be the
+reference, which is what makes a mate-vs-mate alignment (Sakai against CFT073,
+HG01109 against HG01123) a direct read rather than a projection through the
+reference. `scripts/build_hprc_multiway_synteny.sh` runs it as `SOURCE=gfa`,
+its default, with the TAF route kept as `SOURCE=taf`; the two produce the same
+output shape (PanSN names, `cg:Z:` over `=`/`X`/`I`/`D`, a chrom.sizes per
+query) so `make-pif` and the demo config do not care which was used.
+`scripts/gfa_to_pairwise_paf.test.ts` works an eleven-node graph by hand: a
+SNP bubble, an insertion, a deletion, an inversion, a contig arriving as two W
+pieces with offsets, a node the reference visits twice, and the same graph as
+P lines.
+
+**What it does.** One pass over the GFA. S lines keep only each node's length
+(`array('I')` indexed by id; a dict when ids are not integers); L lines are
+skipped; a W or P line is parsed only when its sample#hap is the reference or a
+requested query, else skipped on its first two fields, which is what makes the
+63 GB HPRC file tractable. The reference's walks are laid end to end as one
+ranked step list with a node → packed (rank, orientation) array, and a node the
+reference visits more than once keeps its extra occurrences in a side dict. A
+query walk is then followed step by step keeping the query offset: a step on a
+reference node is an anchor, a chain is a run of anchors whose ranks move
+monotonically — up when the query traverses the nodes in the reference's
+orientation, down when flipped — with at most `--max-gap` (default 10,000)
+private bp skipped between two anchors on either side, and a node with several
+reference occurrences takes the one nearest ahead in the chain's direction. One
+record per chain: forward query coordinates with strand `-` for a flipped
+chain, the CIGAR in the reference's forward direction the way minimap2 writes a
+`-` row (a flipped chain's runs are reversed on emit), each shared node `<len>=`
+and the private bp between two anchors `min(q,r)X` then the remainder `I` or
+`D` (`--no-x` writes plain `I` then `D`). The common step — the next reference
+node with nothing private between — only lengthens the open `=` run, on local
+variables; everything else is the slow path, which is why it runs at ~1.8 M
+steps/s in pure python with no numpy.
+
+**E. coli, against halSynteny and minimap2 on the same four strains.** The
+local `ecoli_cactus_build/mc/ecoli.gfa.gz` (K12, Sakai, CFT073, NCTC86;
+525,146 nodes, 14 W lines, K12 318,884 steps) converts in 2 s at 97 MB RSS.
+The hosted `ecoli_cactus_ava.pif.gz` is from a *different* cactus run (five
+strains, an NCTC86 of 5,111,920 bp where this graph's is 4,903,501), so the
+comparison below is against halSynteny re-run on this build's own
+`ecoli.full.hal` in the cactus image, and against the hosted minimap2
+`all_vs_all.paf.gz` (same RefSeq K12, Sakai and CFT073; its NCTC86 is the other
+assembly, so that pair is halSynteny only). Coverage is the union of intervals;
+identity is `=/(=+X)` for the converter and matches/M for minimap2.
+
+| pair | converter rows / K12 cov / query cov / `=` / identity | halSynteny rows / K12 cov / query cov / matches | minimap2 rows / K12 cov / query cov / identity |
+| --- | --- | --- | --- |
+| K12 vs Sakai | 36 / 4,289,306 / 4,376,394 / 4,007,318 / 0.9643 | 58 / 4,166,988 / 4,221,099 / 4,068,229 | 397 / 4,189,841 / 4,196,504 / 0.9824 |
+| K12 vs CFT073 | 34 / 4,232,813 / 4,203,541 / 3,773,147 / 0.9597 | 72 / 4,052,450 / 3,997,871 / 3,863,170 | 380 / 4,001,532 / 3,981,973 / 0.9735 |
+| K12 vs NCTC86 | 31 (all `-`) / 4,316,067 / 4,267,626 / 3,849,023 / 0.9594 | 74 / 4,128,569 / 4,051,769 / 3,945,293 | other assembly |
+| Sakai vs CFT073, direct | 46 / 4,289,741 / 4,181,435 / 3,733,336 / 0.9432 | 82 / 4,040,431 / 3,949,204 / 3,814,510 | 625 / 4,185,105 / 4,087,945 / 0.9701 |
+
+The converter covers 3–6% more of each genome than halSynteny with half as
+many rows, because a chain bridges the private runs halSynteny's blocks break
+at (the six largest 20 kb-bin differences per pair are all bins the converter
+fills and halSynteny half-covers, e.g. K12:3,900,000-3,920,000 at 20,000 vs
+8,164); no 20 kb bin of K12 is covered by one and not the other in any K12 pair,
+and the Sakai/CFT073 direct alignment has 4 bins the converter covers and
+halSynteny does not. Its `=` count is 1.5–2.3% below halSynteny's matches,
+which is the sequence minigraph-cactus put in private bubbles rather than
+shared nodes. Two checks that matter more than the totals: every `=` column
+compared against the FASTAs is identical — 11,629,488 columns over the three
+K12 pairs and 3,733,336 over Sakai/CFT073, 0 differing, the reverse-strand
+NCTC86 rows included — and at reference positions sampled every 997 bp the
+converter maps a base to the same query base as minimap2 at 99.87% (K12/Sakai,
+3,986 of 3,991), 99.97% (K12/CFT073) and 99.70% (Sakai/CFT073); the rest are
+repeat copies minimap2 placed elsewhere. Of the `X` columns, 10.6% (K12 pairs)
+and 13.7% (Sakai/CFT073) are bases that are in fact equal, which is the
+honest cost of pairing private runs without realigning them.
+
+**HPRC, the whole 63 GB graph in one stream.** `hprc-v2.0-mc-grch38.gfa.gz` (63.1 GB gzipped, 464 haplotypes; 135,927,476
+nodes, GRCh38 83,073,334 steps on 195 walks) downloads in 38 min and converts,
+`pigz -dc | python3`, in 1665 s: 376 GB of text at 226 MB/s, pigz-bound
+(79–86% of a core against python's 41–49%), 1.49 GB peak RSS, one process — the
+TAF route took ~43 min across six taffy streams and hundreds of MB each. The
+file is written one chromosome at a time (S, L, then W lines, GRCh38's walk
+first in each), which the first attempt did not survive: a converter assuming
+the reference walks are contiguous stopped at chr11's after 74 s. It now
+indexes reference walks as they come, aligns a query walk at once when a
+reference has been seen, and keeps a byte per node a query walked as private so
+a later reference walk that visits one is refused with a pointer at
+`--hold-queries`. The eight haplotypes come out as 4,146 rows (475–551 each,
+645 on `-`), 176 MB, `make-pif --csi` in 8 s to a 127 MB PIF. Contig lengths
+off the walks are short by the clipped telomere (CM092085.1 walks to
+242,284,449 of 242,287,352), so the build passes the assemblies' own `.fai`
+from the release 2 index as `--contig-lengths`, and the chrom.sizes then equal
+the TAF route's byte for byte on seven haplotypes; HG01960 lists one contig
+more (JBHIHM010000047.1, 139 kb, walked but sharing no node with GRCh38, so
+no row). Agreement with the TAF route and the impg PAF is in
+`HPRC_RELEASE2.md` §"The GFA route".
+
+**Limits, stated once.** An `=` is exact by construction; an `X` is
+graph-induced — "the graph put different sequence between these two anchors" —
+and the E. coli figure above says one in ten of them is not a mismatch.
+Contig lengths come from the largest W end seen (`--contig-lengths` takes a
+chrom.sizes when the assembly's are known), and where minigraph-cactus clipped
+the tail of a contig the length is short. Sequence the graph clipped is not in
+the graph: Sakai 1,137,308-1,221,174 is absent from every Sakai W line, so no
+route through the GFA can align it, where minimap2 does; the HAL still has it,
+and that is the one thing the TAF route sees that this one cannot. A haplotype
+that reaches a node the reference visits several times is placed at the
+occurrence that continues its chain, which is right for a tandem repeat the
+query walks in order and a guess when it does not.
 
 ## Prior art
 

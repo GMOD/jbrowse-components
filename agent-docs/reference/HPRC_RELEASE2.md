@@ -1,6 +1,6 @@
 ---
 name: hprc-release2
-description: What HPRC release 2 publishes and which artifacts JBrowse can open — why the tutorial reads a v2.0 TAF rather than the v2.1 MAF, how pairwise PAF is unpacked from the graph's own alignment (maf_to_pairwise_paf.py, its chaining, its agreement with impg, and the taffy index bug that refuses chr1/chr2), and the four measurements not to re-derive (impg's PAF is projections not compositions, the vs-GRCh38 PAF is a star so 741 of 780 sample pairs are unstated, the per-chromosome pggb graphs do not fit in memory, and the published MAF is tab-separated). Read before touching the pangenome MAF or synteny path, or before cutting a slice of one of these files.
+description: What HPRC release 2 publishes and which artifacts JBrowse can open — why the tutorial reads a v2.0 TAF rather than the v2.1 MAF, how pairwise PAF is unpacked from the graph itself (gfa_to_pairwise_paf.py off the GFA's walks, the default; maf_to_pairwise_paf.py off the TAF; their chaining, their agreement with each other and with impg, and the taffy index bug that refuses chr1/chr2), and the four measurements not to re-derive (impg's PAF is projections not compositions, the vs-GRCh38 PAF is a star so 741 of 780 sample pairs are unstated, the per-chromosome pggb graphs do not fit in memory, and the published MAF is tab-separated). Read before touching the pangenome MAF or synteny path, or before cutting a slice of one of these files.
 audience: internal
 ---
 
@@ -195,6 +195,83 @@ files under their original names and the graph-derived ones as
 against 60–114, no size conflicts), which is why they could not replace them
 in place. The checked-in `demos/hprc_multiway/config.json` points at the graph
 files.
+
+### The GFA route
+
+Since 2026-09-05 the script's default (`SOURCE=gfa`; the TAF route above is
+`SOURCE=taf`). The same alignment is also in the graph itself:
+`hprc-v2.0-mc-grch38.gfa.gz` (63.1 GB gzipped, 464 haplotypes as W lines)
+carries every haplotype as a walk through shared nodes, and two walks through
+one node are identical sequence, so `scripts/gfa_to_pairwise_paf.py` reads a
+haplotype's pairwise alignment to GRCh38 straight off the walks — no taffy, no
+HAL, no `-r` range that silently refuses chr1 and chr2, and any path can be the
+reference, so a mate-vs-mate alignment is a direct read. How it chains, what an
+`X` means, and the E. coli agreement against halSynteny and minimap2 are in
+`PANGENOME_GRAPHS.md` §"Pairwise alignments unpacked from the GFA"; this
+section is the HPRC run and how it compares with the TAF and impg routes.
+
+**What it costs.** 135,927,476 nodes, GRCh38 83,073,334 steps on 195 walks.
+The download is 38 min at 27 MB/s; `pigz -dc | python3 gfa_to_pairwise_paf.py
+--reference GRCh38#0 --queries <8> --max-gap 10000 --contig-lengths <fai>` then
+runs 1665 s over 376,401 MB of text (226 MB/s), pigz at 79–86% of a core and
+python at 41–49% (891 s user), 1.49 GB peak RSS, one process; the TAF route
+was ~43 min across six taffy streams. `make-pif --csi` takes 8 s on the 176 MB
+PAF and writes a 127 MB PIF (`hprc_multiway_gfa.pif.gz`, 44,908 byte CSI). The
+file is one chromosome after another (S, L, W; GRCh38's walk first in each
+block), so the converter indexes reference walks as they arrive and refuses,
+with a byte-per-node guard, a reference walk that lands on nodes an
+already-aligned query walked as private — the first run died there at 74 s
+before the guard and the interleaving existed.
+
+**Agreement with the TAF route (`hprc_multiway_graph.pif.gz`) and impg
+(`hprc_multiway.pif.gz`), per haplotype over the primary chromosomes.**
+Coverage is the union of intervals per sequence; identity is `=/(=+X)`.
+
+| | GFA | TAF | impg |
+| --- | --- | --- | --- |
+| rows | 475–551 (645 of 4,146 on `-`) | 477–606 (846 of 4,332) | 14,480–19,081 |
+| GRCh38 covered | 2.689–2.825 Gb | 2.690–2.826 Gb (GFA is 99.95% of it) | 2.726–2.854 Gb (GFA is 98.7–99.0%) |
+| `=` bp | 2,687,428,613–2,824,039,133 | 2,687,679,830–2,824,338,304 (GFA within 0.011%) | 2.85–2.97 Gb (M columns) |
+| identity | 0.9986–0.9988 | 0.9988–0.9990 | 0.9969–0.9978 |
+| `X` / `I` / `D` per haplotype | 3.3–3.7 / 7.5–8.0 / 4.7–5.5 Mb | 2.8–3.2 / 6.6–7.5 / 8.3–9.1 Mb | 6.4–9.1 / 10.0–15.7 / 7.7–10.3 Mb |
+| median / max record span | 535 kb–765 kb / 84–97 Mb | 291 kb–637 kb / 75–99 Mb | 12–14 kb / 6.8–14.6 Mb |
+
+The GFA's `=` total is the TAF's to within 300 kb per haplotype (0.011%): the
+shared nodes and the aligned columns are the same alignment. Where they differ
+is how the private bp are written — the GFA pairs them as `X` first, so it has
+0.5 Mb more `X`, 0.8–1.0 Mb more `I` and 3.5–3.8 Mb less `D` — and in record
+length, since a chain runs
+through what a MAF block boundary split (HG01109's CFH-side record starts at
+chr1:161.6 Mb in the GFA and 184.6 Mb in the TAF). At
+`chr1:196,700,000-197,000,000` the two routes say the same thing to the base
+on the right break and to 8 bp on the left:
+
+| | TAF | GFA |
+| --- | --- | --- |
+| HG01109, HG01123, HG01960, HG02055 | 2 rows, all four breaking at 196,753,096 and resuming at 196,837,771 | 2 rows, all four breaking at 196,753,088 and resuming at 196,837,771 |
+| HG00097, HG00099, HG00128, HG00133 | 1 row through | 1 row through |
+| identity in window | 0.9989–0.9992 | 0.9989–0.9992 |
+
+(impg: 2 rows for the carriers at 196,758,573–196,767,397 / 196,835,914–
+196,836,333, 6 overlapping rows for HG00133, as recorded above.) The 8 bp is
+the last shared node before the deletion bubble: the MAF block ends where the
+projection's column ends, the chain where the node does.
+
+**chrom.sizes.** The GFA route's `<sample>.<hap>.gfa.chrom.sizes` equal the
+TAF route's `.graph.chrom.sizes` byte for byte on seven of eight haplotypes
+once the `.fai` lengths are in (HG01960 lists one more contig,
+JBHIHM010000047.1, walked but with no shared node and so no row); without
+`--contig-lengths` every chromosome-scale contig comes out a few kb short,
+because minigraph-cactus clipped the telomeres out of the walks.
+
+**Hosting.** The GFA build goes up beside the others as
+`hprc_multiway_gfa.pif.gz{,.csi}`, `<sample>.<hap>.gfa.chrom.sizes` and
+`README_gfa.txt` (`UPLOAD=1`, an `aws s3 sync --size-only` limited to those
+names, so nothing already there is touched). `demos/hprc_multiway/config.json`
+still points at the TAF files; switching it is a two-line change per haplotype
+(`.graph.chrom.sizes` → `.gfa.chrom.sizes`, `hprc_multiway_graph.pif.gz` →
+`hprc_multiway_gfa.pif.gz`) plus the track name, deployed with
+`scripts/deploy-demo.sh` from the checked-in copy.
 
 ## What the zoom-out tier is worth
 

@@ -11,8 +11,8 @@
 #           GENOMES="panTro6 mm39" bash scripts/build_hg38_liftover_multiway.sh
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-OUT="${1:-$SCRIPT_DIR/../demos/hg38_vertebrates/config.json}"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${1:-$REPO_ROOT/demos/hg38_vertebrates/config.json}"
 GENOMES="${GENOMES:-panTro6 gorGor6 ponAbe3 rheMac10 calJac4 mm39 canFam6 bosTau9}"
 HUB=https://jbrowse.org/ucsc
 CACHE="${TMPDIR:-/tmp}/hg38_liftover_multiway"
@@ -144,4 +144,4 @@ with open(out, 'w') as fh:
     fh.write('\n')
 print(f'   {len(assemblies)} assemblies, {len(tracks)} tracks, {lanes} lanes, display height {height}')
 PY
-(cd "$SCRIPT_DIR/.." && pnpm exec oxfmt "$OUT" >/dev/null 2>&1) || true
+(cd "$REPO_ROOT" && pnpm exec oxfmt "$OUT" >/dev/null 2>&1) || true

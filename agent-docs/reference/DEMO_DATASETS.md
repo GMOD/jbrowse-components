@@ -302,12 +302,17 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **`demos/hprc_multiway` is the CFH panel's eight haplotypes taken
   whole-genome, unpacked from the graph** (`build_hprc_multiway_synteny.sh`):
   the same `HG01109.1 … HG00133.1` that `demos/hprc` slices to one window,
-  read out of the minigraph-cactus graph's own alignment (the v2.0
-  `hprc-v2.0-mc-grch38.full.taf.gz`, hal2maf of the run that produced the
-  graph) one chromosome at a time through `taffy view -m` and
-  `maf_to_pairwise_paf.py`, then indexed by `make-pif` into a single two-tier
-  PIF (`#pif … tiers:Z:fine,coarse coarse:i:10000 cigars:Z:all`, 127 MB,
-  4,332 PAF rows, 477–606 per haplotype, 361 coarse seqids). It is the
+  read out of the minigraph-cactus GFA itself (`SOURCE=gfa`, the default: the
+  63 GB `hprc-v2.0-mc-grch38.gfa.gz` streamed once through
+  `gfa_to_pairwise_paf.py`, 28 min at 1.5 GB RSS, every haplotype's walk
+  aligned against GRCh38's through the nodes they share), then indexed by
+  `make-pif` into a single two-tier PIF (`hprc_multiway_gfa.pif.gz`, 127 MB,
+  4,146 PAF rows, 475–551 per haplotype). The served config points at it;
+  `SOURCE=taf` builds the same thing from the graph's published projection
+  (`hprc-v2.0-mc-grch38.full.taf.gz` through `taffy view -m` and
+  `maf_to_pairwise_paf.py`, `hprc_multiway_graph.pif.gz`, 4,332 rows), and the
+  two agree on GRCh38 covered to 99.95% with the deletion below 8 bp apart,
+  which is the check that either reads the graph faithfully. It is the
   whole-genome, eukaryote-scale PIF that [HOSTING.md](HOSTING.md) says the
   coarse tier needs to be demonstrated on, and the first hosted
   `AllVsAllIndexedPAFAdapter` file whose names are PanSN haplotypes
@@ -338,11 +343,13 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 
   The impg-derived build (`hprc_multiway.pif.gz`, 197 MB, 147,879 rows, grep on
   the line start at over a GB/s where awk ran at 17 MB/s) stays hosted beside
-  it under its original names; the graph files are `hprc_multiway_graph.pif.gz`,
-  `<sample>.<hap>.graph.chrom.sizes` and `README_graph.txt`, since each
-  haplotype's graph `chrom.sizes` lists only contigs aligned to a primary
-  chromosome (34–54, a strict subset of impg's 60–114) and could not replace
-  the impg one in place. Each haplotype's CAT GFF3 is the whole assembly
+  it under its original names; the GFA route's files are
+  `hprc_multiway_gfa.pif.gz`, `<sample>.<hap>.gfa.chrom.sizes` (lengths from
+  the assemblies' `.fai`) and `README_gfa.txt`, the TAF route's
+  `hprc_multiway_graph.pif.gz`, `<sample>.<hap>.graph.chrom.sizes` and
+  `README_graph.txt`, since each route's `chrom.sizes` lists only contigs it
+  aligned (a strict subset of impg's 60–114) and could not replace the impg one
+  in place. Each haplotype's CAT GFF3 is the whole assembly
   (114-127 MB bgzipped, 80-83k genes) with `intron`/`start_codon`/`stop_codon`
   rows dropped and any gene over 5 Mb removed with its children on `gene_id=`:
   21 across the eight, six of them on HG01960.1, the haplotype whose 61 Mb

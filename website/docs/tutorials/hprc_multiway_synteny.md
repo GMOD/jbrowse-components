@@ -12,18 +12,17 @@ data: pipeline
 
 **TL;DR:** we look at one human locus across eight assembled haplotypes from the
 Human Pangenome Reference Consortium, whole genome, without running an aligner.
-The consortium builds its pangenome graph from a multiple alignment and
-publishes that alignment projected onto GRCh38, so each haplotype's pairwise
-alignment to the reference is already inside it: a small converter unpacks the
-haplotype's rows into PAF, `jbrowse make-pif` indexes the result, and each
+The consortium's pangenome graph carries every haplotype as a walk through
+shared nodes, so each haplotype's pairwise alignment to the reference is already
+inside it: a small converter walks the GFA once and unpacks each haplotype's
+alignment to GRCh38 into PAF, `jbrowse make-pif` indexes the result, and each
 haplotype becomes a lane under the reference carrying the consortium's own gene
 annotation of it. At the complement factor H cluster, half the lanes carry a
 deletion that removes two genes, and that is where the page ends.
 
 ## Prerequisites
 
-- [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), to stream a
-  chromosome of the alignment as MAF
+- `pigz` (or `gzip`), to stream the graph
 - htslib (`bgzip`, `tabix`)
 - `python3`
 - The [JBrowse CLI](/docs/cli) (`jbrowse`), for `make-pif`
@@ -58,66 +57,65 @@ them. An alignment file places sequence: every base of the reference window that
 a haplotype aligns has a position on that haplotype's own contig, and a gene the
 haplotype lacks shows as the alignment stopping and resuming past it.
 
-The alignment here is the one the graph was built from. Minigraph-Cactus makes
-the graph out of a Cactus multiple alignment of every assembly, and release 2
-publishes that alignment projected onto GRCh38 as a TAF, the
-[pangenome page](/docs/tutorials/pangenome_hprc#the-alignment-underneath-both)
-opens it as a MAF track. Each block of it holds the reference row and one row
-per haplotype aligned there, so a haplotype's pairwise alignment to GRCh38 is
-its rows, read off block by block. Nothing is aligned on this page; what the
-lanes draw is the graph.
+The alignment here is the graph itself. Minigraph-Cactus writes every haplotype
+into the graph as a walk through its nodes, and two walks that pass through one
+node carry identical sequence there. A haplotype's pairwise alignment to GRCh38
+is therefore its walk read against the reference walk: the nodes both traverse
+are matches, the nodes only one of them traverses between two shared ones are
+the indels and substitutions. Nothing is aligned on this page; what the lanes
+draw is the graph.
 
 The consortium also publishes a separate all-vs-GRCh38 PAF of the same
 haplotypes, produced by a different aligner, and the
 [CFH panel on the pangenome page](/docs/tutorials/pangenome_hprc#every-haplotype-in-its-own-coordinates)
 slices its lanes out of that file. This page does not use it. One input is what
-makes the build reproducible: the alignment the graph and its callset are
-derived from, read as published, with no aligner run and no choice of aligner
-settings to record.
+makes the build reproducible: the graph, read as published, with no aligner run
+and no choice of aligner settings to record.
 
-`taffy view` streams one chromosome of the TAF as MAF, and
-`maf_to_pairwise_paf.py` keeps the rows of the haplotypes asked for. Cactus
-blocks tile the reference, so the converter chains a haplotype's consecutive
-rows into one PAF record while it continues on both sequences and on one strand,
-reads an `=`/`X`/`I`/`D` CIGAR off the two rows' columns, and writes PanSN
-names, which is what `make-pif` and the adapter below expect. A block boundary
-in the projection drops any insertion that falls between two blocks, so
-`--max-gap` bridges a short jump on either sequence as an indel; at zero, only
-exact continuations chain. `--chrom-sizes-dir` writes each haplotype's contigs
-and lengths off the same rows, which is all an assembly needs when its lane
-never reads sequence:
-
-<!-- from: scripts/build_hprc_multiway_synteny.sh -->
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_pairwise_paf.py
-# one chromosome of blocks as MAF, over the chromosome's whole length: a range
-# past the contig's end returns an empty MAF and exit 0, so the length is read
-# off hg38.chrom.sizes rather than guessed
-taffy view -i hprc-v2.0-mc-grch38.full.taf.gz -r GRCh38.chr22:0-50818468 -m \
-  | python3 maf_to_pairwise_paf.py --reference GRCh38 \
-      --queries HG01109#1,HG00099#1 \
-      --max-gap 10000 \
-      --chrom-sizes-dir sizes/ > chr22.paf
-```
-
-Two chromosomes need one more step, and the build script takes it: taffy's index
-scan for chr1 and chr2 stops at the contig whose name sorts next (chr10, chr20)
-rather than at the end of the chromosome, so a whole-length range on those two
-is refused as "not found". The script retries such a range capped at the last
-entry the index holds for the contig, which drops the telomeric tail.
-
-The converter reports on stderr how many rows it read and how many records it
-wrote, and a chromosome that wrote none is a wrong range or a wrong prefix. The
-per-chromosome files concatenate into one PAF, which `make-pif` sorts, bgzips
-and indexes with a fine tier for the per-base CIGARs and a coarse one for
-whole-chromosome zooms:
+`gfa_to_pairwise_paf.py` streams the GFA once and keeps only the reference walks
+and the haplotypes asked for; every other walk is skipped unparsed, which is
+what makes the whole graph tractable on a laptop. For each haplotype it chains
+the shared nodes in reference order into records, one per run that stays on one
+strand and skips at most `--max-gap` private bases on either side, and writes an
+`=`/`X`/`I`/`D` CIGAR off the node lengths with PanSN names, which is what
+`make-pif` and the adapter below expect. A walk states where a contig's piece
+starts and ends but not the contig's full length, so `--contig-lengths` takes
+the assemblies' `.fai` files and `--chrom-sizes-dir` writes each haplotype's
+contigs and lengths, which is all an assembly needs when its lane never reads
+sequence:
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
-jbrowse make-pif hprc_multiway_graph.paf --csi --out hprc_multiway_graph.pif.gz
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
+pigz -dc hprc-v2.0-mc-grch38.gfa.gz \
+  | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
+      --queries HG01109#1,HG00099#1 --max-gap 10000 \
+      --contig-lengths contig_lengths.fai \
+      --chrom-sizes-dir sizes/ > hprc_multiway_gfa.paf
 ```
+
+The converter reports on stderr, per haplotype, the walks it read, the records
+it wrote and the bases it aligned, and a haplotype that wrote none is a wrong
+sample spelling. The graph is written one chromosome at a time with the
+reference walk first, which is the order the converter expects; a graph whose
+haplotype walks precede the reference's wants `--hold-queries`, which it says
+when it meets one. `make-pif` sorts, bgzips and indexes the PAF with a fine tier
+for the per-base CIGARs and a coarse one for whole-chromosome zooms:
+
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
+
+```bash
+jbrowse make-pif hprc_multiway_gfa.paf --csi --out hprc_multiway_gfa.pif.gz
+```
+
+The same script unpacks the alignment a second way, from the graph's published
+projection onto GRCh38 instead of the graph file, with `SOURCE=taf`:
+[taffy](https://github.com/ComparativeGenomicsToolkit/taffy) streams a
+chromosome of the TAF as MAF and `maf_to_pairwise_paf.py` chains each
+haplotype's rows. The two routes agree on the reference covered to within a
+tenth of a percent and put the deletion below at the same coordinate, which is
+the check that either is reading the graph faithfully.
 
 ## The assemblies and their gene models
 
@@ -147,7 +145,7 @@ carries all eight.
   "assemblyNames": ["hg38", "HG01109.1", "HG01123.1", "HG00099.1"],
   "adapter": {
     "type": "AllVsAllIndexedPAFAdapter",
-    "uri": "hprc_multiway_graph.pif.gz",
+    "uri": "hprc_multiway_gfa.pif.gz",
     "csi": true,
     "assemblyNames": ["hg38", "HG01109.1", "HG01123.1", "HG00099.1"],
     "assemblyNameToPanSN": {

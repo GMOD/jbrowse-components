@@ -16,7 +16,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG01109.1.graph.chrom.sizes",
+            "uri": "HG01109.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -30,7 +30,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG01123.1.graph.chrom.sizes",
+            "uri": "HG01123.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -44,7 +44,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG01960.1.graph.chrom.sizes",
+            "uri": "HG01960.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -58,7 +58,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG02055.1.graph.chrom.sizes",
+            "uri": "HG02055.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -72,7 +72,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG00097.1.graph.chrom.sizes",
+            "uri": "HG00097.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -86,7 +86,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG00099.1.graph.chrom.sizes",
+            "uri": "HG00099.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -100,7 +100,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG00128.1.graph.chrom.sizes",
+            "uri": "HG00128.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -114,7 +114,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "HG00133.1.graph.chrom.sizes",
+            "uri": "HG00133.1.gfa.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -216,7 +216,7 @@
     {
       "type": "SyntenyTrack",
       "trackId": "hprc_multiway",
-      "name": "HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 graph)",
+      "name": "HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 GFA)",
       "assemblyNames": [
         "hg38",
         "HG01109.1",
@@ -230,7 +230,7 @@
       ],
       "adapter": {
         "type": "AllVsAllIndexedPAFAdapter",
-        "uri": "hprc_multiway_graph.pif.gz",
+        "uri": "hprc_multiway_gfa.pif.gz",
         "csi": true,
         "assemblyNames": [
           "hg38",
