@@ -449,6 +449,26 @@ describe('readData', () => {
   // Track ids are file basenames, so `--bam tumor/sample.bam --bam
   // normal/sample.bam` produced two configs with one id: showTrack found the
   // first already open and handed it back, so only one file was ever drawn.
+  test('one alignment file on two synteny levels is two tracks with two ids', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const result = readData({
+      argv: [
+        ['fasta', ['/a.fa']],
+        ['paf', ['/aln.paf']],
+        ['fasta', ['/b.fa']],
+        ['paf', ['/aln.paf']],
+        ['fasta', ['/c.fa']],
+      ],
+    })
+    const synteny = result.tracks.filter(t => t.type === 'SyntenyTrack')
+    expect(synteny.map(t => t.trackId)).toEqual(['aln.paf', 'aln.paf-2'])
+    expect(synteny.map(t => t.assemblyNames)).toEqual([
+      ['a.fa', 'b.fa'],
+      ['b.fa', 'c.fa'],
+    ])
+    warn.mockRestore()
+  })
+
   test('two inputs sharing a basename get distinct trackIds', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const result = readData({

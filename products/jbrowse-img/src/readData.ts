@@ -236,14 +236,17 @@ export function readData(
   } else if (!configData.tracks) {
     configData.tracks = []
   }
-  configData.tracks.push(...syntenyTracks)
+  const usedTrackIds = new Set(configData.tracks.map(t => t.trackId))
+  for (const track of syntenyTracks) {
+    track.trackId = uniqueTrackId(usedTrackIds, track.trackId)
+    configData.tracks.push(track)
+  }
 
   // Regular (non-synteny) tracks attach to the primary assembly; synteny tracks
   // are built per-level in buildComparative above. Each one is recorded in
   // `openTracks` under the id it actually got, so the renderer opens exactly
   // what was built instead of recomputing the id from the filename.
   const openTracks: OpenTrack[] = []
-  const usedTrackIds = new Set(configData.tracks.map(t => t.trackId))
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
     const index = modifierValue(rest, 'index')

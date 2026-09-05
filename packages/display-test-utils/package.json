@@ -13,7 +13,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1"
   },
-  "devDependencies": {
+  "peerDependencies": {
     "@testing-library/react": "^16.3.3"
   }
 }

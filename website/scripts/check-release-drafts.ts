@@ -273,12 +273,12 @@ for (const file of drafts) {
   }
   // Check what release.ts will actually write, not the source: a repo-relative
   // figure path is legal in the draft and normalized on the way in.
-  const notes = prepareDraftNotes(source)
-  if (notes === '') {
+  const rendered = prepareDraftNotes(source)
+  if (rendered === '') {
     flag('is empty once comments are stripped')
   }
   for (const { re, what } of BANNED) {
-    if (re.test(notes)) {
+    if (re.test(rendered)) {
       flag(`contains ${what}`)
     }
   }
@@ -286,19 +286,19 @@ for (const file of drafts) {
   // The whole point of the placeholder is that the figure behind it moves under
   // every commit, so nobody proofreading the draft can catch a misspelled one by
   // noticing the number is wrong -- there is no number there to notice.
-  for (const [, name] of notes.matchAll(/\$\{(\w+)\}/g)) {
+  for (const [, name] of rendered.matchAll(/\$\{(\w+)\}/g)) {
     if (!(RELEASE_STAT_NAMES as readonly string[]).includes(name!)) {
       flag(
         `writes \`\${${name}}\`, which no release fills, so it publishes literally. The stats a draft may ask for: ${RELEASE_STAT_NAMES.join(', ')}`,
       )
     }
   }
-  for (const name of unresolvedNames(source, notes)) {
+  for (const name of unresolvedNames(source, rendered)) {
     flag(
       `names \`${name}\`, which appears nowhere in the source — it was probably renamed or removed before release. Fix the entry, or add \`<!-- name-ok: ${name} -->\` if the source builds that string from a template`,
     )
   }
-  for (const [, url] of notes.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)) {
+  for (const [, url] of rendered.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)) {
     if (url!.startsWith('/img/')) {
       const repoPath = `website/static${url}`
       if (!figureExists(repoPath)) {

@@ -46,7 +46,7 @@ for g in $GENOMES; do
     echo "-- $g: dropped, no .csi beside $pif"
   else
     fetch "$HUB/$g/config.json" "$CACHE/$g.config.json"
-    header=$(tabix -H "$pif" 2>/dev/null | head -1)
+    header=$(tabix -H "$pif" 2>/dev/null | awk 'NR==1')
     coarse=$(tabix -l "$pif" 2>/dev/null | grep -c '^[TQ]' || true)
     size=$(curl -sI "$pif" | tr -d '\r' | awk 'tolower($1)=="content-length:" {print $2}')
     echo "== $g: $((size / 1048576)) MB, coarse seqids $coarse, header ${header:-none}"
