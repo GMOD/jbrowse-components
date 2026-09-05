@@ -13,10 +13,8 @@ const LinearBasicDisplayComponent = lazy(
 )
 
 export default function register(pluginManager: PluginManager) {
-  // geneGlyphMode "longest" and a boolean showLabels are legacy values on
-  // existing enum slots, so normalize them before the display union validates
-  // the snapshot (a config-schema preProcessSnapshot does not run there).
-  // Matches the alias too, since this fires before alias normalization.
+  // Legacy values on existing enum slots, normalized before the display union
+  // validates the snapshot, where a schema preProcessSnapshot does not run.
   addDisplayConfigMigration(
     pluginManager,
     ['LinearBasicDisplay', 'LinearFeatureDisplay'],
@@ -30,12 +28,9 @@ export default function register(pluginManager: PluginManager) {
       helpText:
         'GPU-accelerated feature display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
       configSchema,
-      // lazily loaded: the feature-display model and its layout math are the
-      // largest eager subgraph in this plugin, and are fetched only when a
-      // feature track is shown or a session names this display. Nothing eager
-      // may hold a static edge into './model.ts' or './baseModel.ts' — the
-      // subpath exports in package.json are how a display outside this plugin
-      // builds on either.
+      // Nothing eager may hold a static edge into './model.ts' or
+      // './baseModel.ts'; the subpath exports in package.json are how a
+      // display outside this plugin builds on either.
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',

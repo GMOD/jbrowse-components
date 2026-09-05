@@ -23,21 +23,15 @@ const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
-// Loose type test, matched case-insensitively like isCDS/isExon: real GFFs carry
-// 'mRNA', 'lnc_RNA', 'protein_coding_gene', 'transcript'. Anchored at the end
-// for gene and RNA so 'intergenic_region' is not offered a collapse. Gates the
-// menu item on the clicked FEATURE (see the display's contextMenuItems) and the
-// transcript scope on the clicked SUBFEATURE, so a mature-protein or repeat
-// subpart hit doesn't offer to collapse itself.
+// Anchored at the end for gene and RNA so 'intergenic_region' is not offered
+// a collapse.
 const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript/
 export function isGeneLikeType(type: string | undefined) {
   return type !== undefined && GENE_LIKE_TYPE.test(type.toLowerCase())
 }
 
-// Structural rather than `Instance<typeof stateModelFactory>`: the factory calls
-// this builder, so importing its inferred model type back here would be a
-// circular type reference. Same idiom, and same reason, as
-// `FeatureMenuSelf` in featureContextMenu.ts.
+// Structural rather than the model's instance type: the factory calls this
+// builder, so importing its type back here is a circular reference.
 interface CollapseIntronsSelf extends IStateTreeNode {
   fetchFullFeature: (
     featureId: string,
@@ -45,19 +39,9 @@ interface CollapseIntronsSelf extends IStateTreeNode {
   ) => Promise<Feature | undefined>
 }
 
-/**
- * The "Collapse introns" context-menu row, in whichever of its two shapes the
- * hit earns.
- *
- * A gene glyph's transcript hit boxes cover its whole span, so a right-click on
- * the glyph ALWAYS resolves to a transcript. Narrowing to it unconditionally
- * would therefore leave no way to ask for the union of the gene's transcripts,
- * so a transcript hit offers both scopes side by side (the same shape the
- * Highlight submenu uses) and anything else is the plain gene-scope action.
- *
- * The row's identity — label and icon — is written once and spread into both
- * shapes, so they can't drift into reading as two different menu entries.
- */
+// A gene glyph's transcript hit boxes cover its whole span, so a right-click
+// on the glyph always resolves to a transcript; a transcript hit therefore
+// offers both scopes side by side.
 export function collapseIntronsMenuItem(
   self: CollapseIntronsSelf,
   info: FeatureContextMenuInfo,
@@ -67,13 +51,6 @@ export function collapseIntronsMenuItem(
     subfeature,
     displayedRegionIndex,
   } = info
-  // `subfeatureId` scopes the collapse to the isoform actually clicked; omitted,
-  // the whole gene's transcripts are unioned.
-  // `withFeatureDetails` owns the three ways the lookup itself can end — threw,
-  // found nothing, display gone — so what remains here is the run of early
-  // returns for the ways a feature that WAS found still can't be collapsed. Each
-  // of those already said something; the lookup coming back empty was the one
-  // that said nothing at all.
   const openDialog = async (subfeatureId?: string) =>
     withFeatureDetails(
       self,
@@ -99,7 +76,6 @@ export function collapseIntronsMenuItem(
           ? session.assemblyManager.get(assemblyName)
           : undefined
         if (!assembly) {
-          // silently doing nothing here reads as a broken menu item
           session.notify(
             "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
             'warning',
@@ -113,21 +89,13 @@ export function collapseIntronsMenuItem(
             transcripts,
             handleClose,
             assembly,
-            // solo is an exact uniqueId match and a gene-shaped feature draws from
-            // its top-level id, so this stays the gene even when a single transcript
-            // was picked
+            // Solo matches the exact uniqueId and a gene-shaped feature draws
+            // from its top-level id, so this stays the gene even when one
+            // transcript was picked.
             featureId,
-            // Names the resulting view: the scope that was chosen, not
-            // transcripts[0], since the gene scope collapses the union of all
-            // its transcripts.
-            //
-            // The DRAWN name of that scope -- the track's `labels.name`
-            // expression resolved the glyph's label, and titling the new view
-            // with a field the user has never seen on this track is how a
-            // configured label and its own view stop agreeing. The record's
-            // name is only the floor, for a track whose expression names
-            // nothing: the view still needs a title, and nothing on screen
-            // contradicts it there.
+            // Titled with the drawn name, the track's `labels.name`
+            // expression, so the new view agrees with the glyph the user
+            // clicked; the record's own name is only the floor.
             featureName:
               (subfeatureId === undefined
                 ? drawnFeatureName

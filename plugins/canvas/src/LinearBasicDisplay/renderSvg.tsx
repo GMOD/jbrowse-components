@@ -35,8 +35,8 @@ export interface RenderSvgModel extends SvgExportable {
   height: number
   scrollTop: number
   regionTooLarge: boolean
-  // `renderDisplaySvg`'s hook: the band is drawn in the too-large terminal, so
-  // the note that would replace this whole body must not
+  // The density band draws in the too-large state, so the too-large note must
+  // not replace this body.
   drawsWhenTooLarge: boolean
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
@@ -45,8 +45,6 @@ export interface RenderSvgModel extends SvgExportable {
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
-  // off only while a fit squeeze is scaling the rows these labels were reserved
-  // in — see the model getter
   renderedShowSubfeatureLabels: boolean
   labelFontSize: number
   colorLegend: LegendItem[]
@@ -57,9 +55,8 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // renderDisplaySvg's awaitSvgReady waits for ALL visible regions, not just the
-  // first to stream in, so whole-genome / multi-region exports aren't partially
-  // drawn.
+  // `awaitSvgReady` waits for every visible region, so a multi-region export
+  // is not partially drawn.
   return renderDisplaySvg(model, opts, CanvasFeaturesSvgBody)
 }
 
@@ -71,26 +68,20 @@ function CanvasFeaturesSvgBody({
   renderBlocks,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  // The JBrowse palette, not Material UI's `useTheme`, for the same reason the
-  // on-screen `overlayBoxStyles` reads it: `highlight` is a JBrowse entry a bare
-  // Material theme doesn't have. `wrapSvgExport` mounts both providers from the
-  // export theme, so this is still the theme the user picked in the dialog.
+  // The JBrowse palette, not MUI's `useTheme`: `highlight` is a JBrowse entry
+  // a bare Material theme lacks.
   const palette = usePalette()
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
 
-  // autoHeight defaults off, so a feature track is a fixed-height viewport with
-  // vertical overflow the user scrolls. On-screen `renderState.scrollY` is
-  // `self.scrollTop`; the export honors the same offset so a scrolled track
-  // exports what's on screen (top viewport) rather than always the track top.
+  // The export honours `scrollTop`, so a scrolled track exports what is on
+  // screen.
   const scrollY = model.scrollTop
-  // Shared by the geometry pass and the highlight pass, so the boxes can't be
-  // scissored against a different canvas than the glyphs they wrap.
+  // Shared by the geometry pass and the highlight pass, so the boxes are
+  // scissored against the same canvas as the glyphs.
   const renderState = { scrollY, canvasWidth, canvasHeight: height }
   const fontSize = model.labelFontSize
   const colorLegend = model.colorLegend
-  // One label context for both consumers: the highlight boxes reserve exactly
-  // the label width the label pass then paints.
   const labelContext = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
@@ -98,16 +89,12 @@ function CanvasFeaturesSvgBody({
     fontSize,
     colors: labelColors(palette),
   }
-  // The theme classes the worker emitted, resolved against the EXPORT theme's
-  // palette rather than the session's — the whole reason the colors ride as
-  // classes (see resolveRegionColors).
+  // Resolved against the export theme's palette, not the session's, which is
+  // why the colors ride as classes.
   const dataMap = resolveMapColors(model.laidOutDataMap, palette)
-  // The export clips to the scrolled viewport (SvgClipRect below, `scrollY`
-  // above), so a label whose feature sits outside it is written into the file
-  // and then clipped away — on a fixed-height track scrolling over content many
-  // times its height, that is most of them. Culled with the DOM overlay's own
-  // band rather than a tighter export-only one: it is the band that ships on
-  // screen, so the export emits exactly the labels the user is looking at.
+  // Culled with the DOM overlay's own band so the export emits exactly the
+  // labels on screen; anything outside the clip would be written and then
+  // clipped away.
   const cullBand = labelCullBand(labelScrollBucket(scrollY), height)
 
   return (
@@ -151,7 +138,6 @@ function CanvasFeaturesSvgBody({
         width={canvasWidth}
         height={height}
         paint={ctx => {
-          // Same highlight.main border/tint as the on-screen searchHighlightBox.
           drawHighlightBoxes(
             ctx,
             model.laidOutDataMap,
@@ -161,10 +147,8 @@ function CanvasFeaturesSvgBody({
             highlightBoxColors(palette.highlight.main),
             labelContext,
           )
-          // Labels/peptides are laid out in absolute track px (drawHighlightBoxes
-          // above applies scrollY itself, as drawFeatureBlocks does); shift the
-          // rest of the layer up by scrollY so text tracks the feature geometry
-          // when scrolled.
+          // Labels and peptides are laid out in absolute track px, so the
+          // layer shifts up by scrollY.
           ctx.translate(0, -scrollY)
           forEachDisplayLabel(
             visibleRegions,
@@ -175,11 +159,8 @@ function CanvasFeaturesSvgBody({
             },
             cullBand,
           )
-          // Same peptide walk the app canvas runs (drawPeptidesForRegions), so
-          // the export can't drift from on-screen. Peptides need no cross-region
-          // dedup, unlike labels above: codons straddling a boundary overstrike
-          // identically rather than doubling; labels differ only because
-          // computeLabelPosition clamps X per region.
+          // Peptides need no cross-region dedup, unlike labels: codons
+          // straddling a boundary overstrike identically.
           if (renderPeptidesFlag) {
             drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
           }

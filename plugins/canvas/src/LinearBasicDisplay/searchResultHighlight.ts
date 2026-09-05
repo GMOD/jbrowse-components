@@ -20,10 +20,6 @@ function isFeatureHighlightCapable(
   )
 }
 
-// Turn a chosen text-search result into a feature highlight on its track's
-// canvas display. Trix records the feature's exact span plus its indexed name
-// (never the uniqueId), so we pass that signature through as a declarative
-// highlight and let the display resolve it to the specific rendered feature.
 export function highlightSearchResultFeature({
   result,
   model,
@@ -41,11 +37,8 @@ export function highlightSearchResultFeature({
       assemblyManager.isValidRefName(ref, assemblyName),
     )
     if (parsed.start !== undefined && parsed.end !== undefined) {
-      // Canonicalize the parsed refName: trix records whatever refName the
-      // source GFF/GTF used (e.g. "1"), but visibleRegions carry the assembly's
-      // canonical name (e.g. "chr1"). featureMatchesHighlight compares them
-      // directly, so an alias here would navigate correctly yet never resolve
-      // to a highlight.
+      // Trix records the source file's refName while regions carry the
+      // canonical one, and `featureMatchesHighlight` compares them directly.
       const assembly = assemblyManager.get(assemblyName)
       const highlight: FeatureHighlight = {
         refName:

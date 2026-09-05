@@ -25,34 +25,16 @@ import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-// What the recovery rows (clear highlights, unpin, the filter family) carry so
-// they sort to the bottom of the track menu. Every menu level sorts by
-// `priority` (CascadingMenu) and the sort is stable, so this pins them below
-// whatever a subclass appends — LinearBasicDisplay's "Gene glyph" landed after
-// "Filter by..." otherwise — while staying above the track's own "Display
-// types" at -1000. Shared by all of them so they stay adjacent.
+// Every menu level sorts by `priority` and the sort is stable, so this pins
+// the recovery rows below whatever a subclass appends and above "Display
+// types" at -1000.
 const RECOVERY_PRIORITY = -100
 
-// A named group of mutually-exclusive radio options rendered inline: a
-// subHeader followed by the radios, so a settings menu reads as one flat list
-// of checkboxes/radios instead of nesting a submenu the user has to hover into.
-// The rows come from core's `promotableRadioItems` rather than being spelled out
-// here, so every radio in every canvas menu keeps the menu open on click — a
-// hand-rolled copy is how the "Gene glyph" submenu ended up dismissing the whole
-// track menu while its siblings stayed put — and every option in the group gets
-// a pin, the `promotedBase` one included.
-//
-// `pin` is required rather than optional. Every promotable radio group in this
-// plugin passes one, and an optional pin on a builder is a row that can silently
-// go missing (`promotableRadioItems`' own note).
-//
-// `hint` names a row whose setting is real but currently inert (collapsed mode
-// paints no labels of any kind). It is applied to the ROW's label after the pin
-// is attached, never to the option handed to `promotableRadioItems`: that
-// builder copies the option's label into `pin.label`, which PinAdornment writes
-// into a tooltip and an aria-label naming the SETTING — so a hint folded in up
-// front reads out as "Make Name only — hidden while collapsed the default for
-// all tracks of this type".
+// Rows come from core's `promotableRadioItems`, so every radio keeps the menu
+// open on click; a hand-rolled copy is how the Gene glyph submenu came to
+// dismiss the whole menu. `hint` is applied to the row's label after the pin
+// is attached, never to the option, because the builder copies the option's
+// label into the pin's tooltip and aria-label.
 export function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
@@ -70,22 +52,12 @@ export function inlineRadioGroup<T extends string>(
   ]
 }
 
-// Structural for the same reason as FeatureMenuSelf: the model factory calls
-// these builders, so it can't hand them its own inferred type. The model is
-// passed in at the call site, so a drifted field fails to typecheck there.
-// Extends the cascade's own shape because the labels group carries a pin, which
-// reaches the session through the display node. `LinearBasicDisplayConfig` for
-// the same reason `FeatureHeightSelf` names it: `ResolvableDisplay` alone widens
-// `configuration` and switches the slot-name check off.
+// Structural for the same reason as `FeatureMenuSelf`;
+// `LinearBasicDisplayConfig` rather than a bare `ResolvableDisplay`, which
+// widens `configuration` and switches the slot-name check off.
 interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
-  // Collapsed mode drops every label kind regardless of the chosen rung, and
-  // the fit ladder drops descriptions and names to make the stack fit, so the
-  // selected radio can sit there describing text nothing is painting. Read here
-  // to say why rather than disabling the group — the choice is still meaningful,
-  // it just isn't reaching the canvas. ('auto' hiding at high density needs no
-  // such note: that is the mode doing its advertised job.)
   displayMode: DisplayMode
   labelsFitHint: string | undefined
   colorLegend: LegendItem[]
@@ -103,9 +75,8 @@ interface ColorMenuSelf {
   setFeatureColor: (color?: string) => void
 }
 
-// `HeightModeMenuModel<LinearBasicDisplayConfig>`, not the bare form: this menu
-// pins `displayMode` as well as `heightMode`, and only a concrete schema checks
-// that name.
+// `HeightModeMenuModel<LinearBasicDisplayConfig>`, not the bare form: this
+// menu pins `displayMode` too, and only a concrete schema checks that name.
 interface FeatureHeightSelf
   extends IStateTreeNode, HeightModeMenuModel<LinearBasicDisplayConfig> {
   displayMode: DisplayMode
@@ -113,9 +84,6 @@ interface FeatureHeightSelf
 }
 
 interface TrackMenuSelf {
-  // The model's own declarations — the count, the undo rows and the group clear
-  // are derived from these here, so this menu reads no separately-maintained
-  // total and no separately-maintained reset.
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -124,21 +92,10 @@ interface TrackMenuSelf {
   openFilterDialog: () => void
 }
 
-// The two recovery rows the base contributes — clearing the highlight boxes and
-// unpinning the features held at the top — built from the display's own
-// declaration (see `featureMarks`) rather than assembled here. Both are
-// reversible state that MARKS rather than hides, so neither joins the filter
-// family's count; what they share with it is the row shape and the reason for
-// having one at all, which is that both outlive the navigation that created
-// them and neither is reachable from the feature once it is off screen.
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
   return undoItems(self.featureMarks(), RECOVERY_PRIORITY)
 }
 
-// The checkbox rows of the "Show..." submenu. Subclasses append their own via the
-// showSubmenuCheckboxItems override; the flat list of all checkboxes is rendered
-// before the radio groups so the menu reads top-to-bottom as
-// checkboxes-then-radios rather than an interleaved mix.
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
     toggleItem('Show outline', self.showOutline, self.setShowOutline),
@@ -146,8 +103,6 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   ]
 }
 
-// The radio groups of the "Show..." submenu, each a subHeader + inline radios.
-// Rendered after the checkboxes; subclasses override to append.
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
   return inlineRadioGroup(
     'Labels',
@@ -156,26 +111,16 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     mode => {
       self.setShowLabels(mode)
     },
-    // Every rung is pinnable, `auto` included: once a user promotes 'none' for
-    // all their feature tracks, pinning `auto` back is the only per-value way to
-    // undo it from its own row.
+    // Every rung is pinnable, `auto` included: once a user promotes 'none'
+    // for all their feature tracks, pinning `auto` back is the only per-value
+    // way to undo it.
     mode => makePin(self, 'showLabels', mode),
     inertLabelHint(self, self.showLabelsMode, self.labelsFitHint),
   )
 }
 
-// The note on the selected row of a label group, saying why the chosen rung
-// is not reaching the canvas: collapsed mode paints no label of any kind, and
-// the fit ladder drops descriptions, then names, then squeezes the rows
-// subfeature labels sit in. Shared by the two label groups (this one and
-// LinearBasicDisplay's "Subfeature labels"), which sit adjacent in the same
-// submenu under the same suppressions — one of them saying so and the other not
-// read as the two behaving differently.
-//
-// Collapsed wins over the fit note: collapsed mode strips the labels before the
-// ladder ever sees them, so the ladder has nothing of its own to report.
-//
-// 'none' never carries it: that row is already describing the absence.
+// Collapsed wins over the fit note, since collapsed mode strips labels before
+// the ladder sees them; 'none' never carries a hint.
 export function inertLabelHint<T extends string>(
   self: { displayMode: DisplayMode },
   current: T,
@@ -189,9 +134,6 @@ export function inertLabelHint<T extends string>(
         : fitHint
 }
 
-// The way back to an unset `color` slot from any of the choices below, where a
-// BED track's own itemRgb paints again. Shared with the variants menu, which
-// composes its own presets around it.
 export function defaultColorItem(self: ColorMenuSelf): MenuItem {
   return {
     label: 'Default',
@@ -203,8 +145,6 @@ export function defaultColorItem(self: ColorMenuSelf): MenuItem {
   }
 }
 
-// The "Color by..." radio choices (default/solid/strand/attribute), shared so
-// subclasses can reuse them while assembling their own color menu.
 export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   return [
     defaultColorItem(self),
@@ -212,9 +152,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       label: 'Solid color...',
       type: 'radio' as const,
       checked: self.colorByMode === 'solid',
-      // opts out of the checkbox/radio default: this opens a dialog, so it
-      // dismisses like any other action (same split as the multi-row "Row
-      // height" group, whose "Custom..." peer does too)
+      // Opens a dialog, so it dismisses like any other action.
       keepMenuOpen: false,
       onClick: () => {
         self.openSetColorDialog()
@@ -240,27 +178,15 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   ]
 }
 
-// One "Set feature height" menu with two independent radio groups, mirroring
-// the alignments display: the size presets (how tall each feature is drawn) and,
-// under a "Track sizing" subheader, how the track responds when there are more
-// features than fit — scroll / expand / squeeze. The two axes are orthogonal, so
-// picking a size never changes the mode and vice versa. Shared by every canvas
-// display (genes, variants), and worded with the generic "feature" throughout
-// rather than each display's featureNoun — "Variant height" reads like a
-// different setting than "Feature height" when it is the same one. The noun
-// still varies where it names content rather than a control ("Show 3 hidden
-// variants").
+// Worded with the generic "feature" rather than `featureNoun`: "Variant
+// height" reads like a different setting than "Feature height" when it is the
+// same one.
 export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   return [
     {
       label: 'Set feature height',
       icon: HeightIcon,
       subMenu: [
-        // Each preset row carries its own pin: the radio selects the mode for
-        // this track, the pin applies that preset to every open track of this
-        // display type and offers it as the display type's default. displayMode
-        // is a sentinel promotable slot, so every preset — `normal`
-        // included — is customizable back over another session default.
         ...promotableRadioItems(
           DISPLAY_MODE_OPTIONS,
           self.displayMode,
@@ -276,10 +202,8 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   ]
 }
 
-// The canvas track menu. Reads its three grouped sections back off `self`
-// (showSubmenuMenuItems / featureHeightMenuItems / colorMenuItems) rather than
-// calling the builders above directly, so a subclass's override of any of them
-// lands here.
+// Reads its sections back off `self` rather than calling the builders
+// directly, so a subclass override of any of them lands here.
 export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
@@ -290,16 +214,8 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   ]
 }
 
-// The filter family, in the shape shared with the alignments, LD and
-// multi-sample variant displays: one "Filter by... (n)" row that stays a plain
-// dialog opener until there is something to recover, then earns its submenu.
 // The priority rides the top-level row the builder returns, never the dialog
-// opener inside it — there it would sort below the recovery rows it heads.
-//
-// The count, the recovery rows inside the submenu and what "Clear all filters"
-// clears all come from `featureNarrowings`, so a subclass that adds a filter
-// (LinearBasicDisplay's "Show only genes") gets all three by appending one
-// entry — it used to have to override a count AND a clear and keep them in step.
+// opener inside it, where it would sort below the recovery rows it heads.
 function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   return filterMenuItems({
     narrowings: self.featureNarrowings(),
@@ -310,11 +226,8 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   })
 }
 
-// The color-related track-menu entry: a single "Color by..." whose "Solid
-// color..." choice opens the solid+UTR color picker. Reads the choices back off
-// `self` rather than calling colorBySubMenuItems directly — variants overrides
-// that model method to swap in its consequence/SV-type presets and relies on this
-// wrapper picking them up.
+// Reads the choices back off `self`: variants overrides `colorBySubMenuItems`
+// and relies on this wrapper picking it up.
 export function colorMenuItems(self: {
   colorBySubMenuItems: () => MenuItem[]
 }): MenuItem[] {
