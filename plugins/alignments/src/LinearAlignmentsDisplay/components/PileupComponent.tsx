@@ -108,10 +108,7 @@ const PileupBody = observer(function PileupBody({
     return null
   }
 
-  const { height, belowCoverageBands: bands } = model
-  // The scrollbar track starts below the sticky coverage (ungrouped) or spans
-  // the whole display (grouped, where the entire stack scrolls).
-  const topOffset = model.isGrouped ? 0 : bands.bottom
+  const { height, stickyBandHeight } = model
 
   return (
     <div
@@ -171,7 +168,7 @@ const PileupBody = observer(function PileupBody({
         scrollTop={model.scrollTop}
         viewportHeight={model.pileupViewportHeight}
         contentHeight={model.pileupContentHeight}
-        top={topOffset}
+        top={stickyBandHeight}
       />
 
       <VerticalScrollbar
@@ -182,7 +179,7 @@ const PileupBody = observer(function PileupBody({
         viewportHeight={model.pileupViewportHeight}
         contentHeight={model.pileupContentHeight}
         controlsId={canvasId}
-        top={topOffset}
+        top={stickyBandHeight}
       />
     </div>
   )
