@@ -242,7 +242,7 @@ export default function baseStateModelFactory(
            * Feature ids the user pinned to the top of the layout via the feature
            * right-click menu. Pinned features are inserted first into the greedy
            * row-packer, so they hold the topmost rows in their bp range across
-           * zoom re-packs (see packPreparedRef in layout.ts). stripDefault so a display
+           * zoom re-packs (see packPreparedRef in packRef.ts). stripDefault so a display
            * with nothing pinned omits the empty array from its snapshot.
            *
            * Persisted by uniqueId, which resolves back to the same feature after
@@ -417,7 +417,7 @@ export default function baseStateModelFactory(
          * #getter
          * The features whose bp span touches the viewport. Why that is not the
          * whole packed stack — and the matching rules — live with the pure
-         * `featureIdsTouchingBlocks` in layout.ts; this getter is the reactive
+         * `featureIdsTouchingBlocks` in layoutQueries.ts; this getter is the reactive
          * half, deciding when to ask.
          *
          * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's

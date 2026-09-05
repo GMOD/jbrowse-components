@@ -6,10 +6,10 @@ import type { DisplayMode } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Exported for main-thread post-processing in layout.ts: after the worker
-// returns geometry in normal-mode units (multiplier=1), the layout step scales
-// all height/y fields by this factor so compact/superCompact never require a
-// re-fetch.
+// Exported for main-thread post-processing (applyHeightScale in
+// applyLayout.ts): after the worker returns geometry in normal-mode units
+// (multiplier=1), the layout step scales all height/y fields by this factor so
+// compact/superCompact never require a re-fetch.
 export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.6,
