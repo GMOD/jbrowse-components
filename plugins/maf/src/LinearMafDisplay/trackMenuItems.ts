@@ -83,6 +83,10 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
+  showReferenceRow: boolean
+  // Whether the reference species is one of the rows at all, which is what
+  // decides if the toggle above can do anything.
+  referenceRowPresent: boolean
   // Not settings and not settable — the three states in which a tick above is
   // correct and inert anyway. Read only to say so: the summary tier (both band
   // toggles), base-level zoom (the codon row coloring), and a frames read the
@@ -119,6 +123,7 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
+  setShowReferenceRow: (f: boolean) => void
   setConservationMode: (m: ConservationMode) => void
   setShowAnnotations: (f: boolean) => void
   setShowInversions: (f: boolean) => void
@@ -257,6 +262,22 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.setShowCoverage,
     ),
     toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
+    // Under the default mismatch coloring every cell in the reference's own row
+    // matches by definition, so it is a solid match-colored bar carrying no
+    // information, and UCSC omits it. Disabled rather than hidden where the
+    // reference is not itself one of the rows — a MAF whose reference species
+    // is absent from `samples` or from the guide tree — because there the tick
+    // would be on, correct, and doing nothing.
+    zoomGatedItem(
+      toggleItem(
+        'Show reference row',
+        self.showReferenceRow,
+        self.setShowReferenceRow,
+      ),
+      self.referenceRowPresent
+        ? undefined
+        : 'the reference species has no row here',
+    ),
     toggleItem(
       withHint(
         'Show conservation (% identity)',

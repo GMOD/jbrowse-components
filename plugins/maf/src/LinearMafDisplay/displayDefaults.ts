@@ -51,4 +51,10 @@ export const DEFAULTS = {
   showTranslation: false,
   colorByChromosome: false,
   showInversions: false,
+  // On, because that is what the track has always drawn. Under the default
+  // mismatch coloring the row is a solid match-colored bar and UCSC omits it,
+  // so this is the toggle's more useful position — but a row silently
+  // disappearing from every existing MAF track is not what a version bump
+  // should do.
+  showReferenceRow: true,
 } as const

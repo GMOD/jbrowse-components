@@ -40,6 +40,7 @@ import {
   ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
+  applySubtreeFilter,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -309,6 +310,20 @@ export default function stateModelFactory(
          * rather than re-fetching it.
          */
         treeNewickVolatile: undefined as string | undefined,
+        /**
+         * #volatile
+         * Which sample row the worker resolved as the reference
+         * (`referenceSampleId`, off the block whose sequence the row carries),
+         * latched from the first region that names one.
+         *
+         * A volatile rather than a walk over `rpcDataMap`, because `sources`
+         * reads it: the row-placement autorun *writes* `rpcDataMap`, so a
+         * reference id derived from that map would put the autorun's own write
+         * in its dependency set and re-place forever. Latching also makes it
+         * survive `clearAlignmentData`, which is right — a track has one
+         * reference species, and it does not change with the viewport.
+         */
+        refSampleIdVolatile: undefined as string | undefined,
       }))
       .views(self => ({
         get view() {
@@ -445,6 +460,12 @@ export default function stateModelFactory(
          */
         get showInversions(): boolean {
           return getConf(self, 'showInversions')
+        },
+        /**
+         * #getter
+         */
+        get showReferenceRow(): boolean {
+          return getConf(self, 'showReferenceRow')
         },
       }))
       .actions(self => ({
@@ -613,6 +634,12 @@ export default function stateModelFactory(
         /**
          * #action
          */
+        setShowReferenceRow(arg: boolean) {
+          setConf(self, 'showReferenceRow', arg)
+        },
+        /**
+         * #action
+         */
         setConservationHeight(arg: number) {
           setConf(
             self,
@@ -666,15 +693,11 @@ export default function stateModelFactory(
          * the same row.
          *
          * Any loaded region answers — a track has one reference species — so
-         * this takes the first that names one.
+         * `refSampleIdVolatile` latches the first that names one; see there for
+         * why this does not walk `rpcDataMap`.
          */
         get referenceSampleId(): string | undefined {
-          for (const region of self.rpcDataMap.values()) {
-            if (region.refSampleId !== undefined) {
-              return region.refSampleId
-            }
-          }
-          return self.view.assemblyNames[0]
+          return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
@@ -772,7 +795,13 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The display rows: `editableSources` narrowed to the selected subtree.
+         * The display rows: `editableSources` narrowed to the selected subtree,
+         * and to the reference row when `showReferenceRow` is off.
+         *
+         * Both narrowings are hide-only and both are here rather than at the
+         * fetch: the reference row is what the *other* rows' mismatches are
+         * scored against (the worker's `refSeqBytes`, the coverage and
+         * conservation bands), so it has to be read whether or not it is drawn.
          *
          * **Resolved — an array, never `undefined`**, the shared spelling across
          * the row displays. The two consumers that used to read the absent case
@@ -784,7 +813,14 @@ export default function stateModelFactory(
          * needs its own name rather than a truthiness test on this.
          */
         get sources(): MafSource[] {
-          return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+          const rows = filterRowsBySubtree(
+            self.editableSources,
+            self.subtreeFilter,
+          )
+          const refSrc = self.referenceSampleId
+          return self.showReferenceRow
+            ? rows
+            : rows.filter(s => s.name !== refSrc)
         },
 
         /**
@@ -797,6 +833,22 @@ export default function stateModelFactory(
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
+        },
+
+        /**
+         * #getter
+         * Whether the reference species is one of the rows at all — what says
+         * if "Show reference row" has anything to hide. A MAF can name a
+         * reference that is not in `samples` or in the guide tree, and there
+         * the toggle would be on, correct and inert.
+         *
+         * Read off `editableSources`, the pre-filter list, so focusing a clade
+         * that excludes the reference does not turn the row into "no such
+         * species".
+         */
+        get referenceRowPresent(): boolean {
+          const refSrc = self.referenceSampleId
+          return self.editableSources.some(s => s.name === refSrc)
         },
 
         /**
@@ -1197,10 +1249,22 @@ export default function stateModelFactory(
          * even where the rows scroll past the viewport — the tree canvas and the
          * SVG labels shift the whole thing by `scrollTop`, exactly as the rows
          * do. The coverage band is offset separately by the React layer.
+         *
+         * `root` is pruned again when the reference row is hidden, on the same
+         * `applySubtreeFilter` the subtree filter goes through. Without it the
+         * guide tree would still carry the reference's leaf,
+         * `computeClusterHierarchy` would decline to position a tree that no
+         * longer describes the rows, and hiding one row would take the whole
+         * dendrogram with it.
          */
         get hierarchy() {
           return computeClusterHierarchy(
-            self.root,
+            self.showReferenceRow || !self.root
+              ? self.root
+              : applySubtreeFilter(
+                  self.root,
+                  self.sources.map(s => s.name),
+                ),
             self.sources,
             self.rowsContentHeight,
             self.treeAreaWidth,
@@ -2391,6 +2455,15 @@ export default function stateModelFactory(
       }))
       .actions(self => ({
         setRpcData(regionIndex: number, data: MafWireRegionData) {
+          // Guarded on inequality, not just on presence: this is a dependency
+          // of `sources`, so an unconditional write would invalidate the row
+          // order on every region that lands.
+          if (
+            data.refSampleId !== undefined &&
+            data.refSampleId !== self.refSampleIdVolatile
+          ) {
+            self.refSampleIdVolatile = data.refSampleId
+          }
           self.wireDataMap.set(regionIndex, data)
           self.rpcDataMap.set(
             regionIndex,

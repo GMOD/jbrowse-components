@@ -9,9 +9,30 @@ import { createMafTestEnvironment } from './testEnv.ts'
 // `placeFetchedRows` instead would install cleanly and then never re-place.
 test('the row-placement autorun tracks the row order', () => {
   const { display } = createMafTestEnvironment().createDisplay()
-  expect(reactionDependencies(display, 'Maf:placeFetchedRows')).toEqual([
-    'LinearMafDisplay.layout',
-    'LinearMafDisplay.sourcesVolatile',
-    'LinearMafDisplay.subtreeFilter',
-  ])
+  expect(reactionDependencies(display, 'Maf:placeFetchedRows')).toEqual(
+    expect.arrayContaining([
+      'LinearMafDisplay.layout',
+      'LinearMafDisplay.sourcesVolatile',
+      'LinearMafDisplay.subtreeFilter',
+      // Both halves of "hide the reference row": which row it is, and whether
+      // it is hidden. Rows move when either changes, so the placement has to
+      // see both.
+      'LinearMafDisplay.refSampleIdVolatile',
+      'LinearMafDisplayConfigurationSchema.showReferenceRow',
+    ]),
+  )
+})
+
+// `sources` narrows by the reference row, and the reference id was a walk over
+// `rpcDataMap` — the very map this autorun's own action writes. Read that way
+// it puts the write in the dependency set, and the autorun re-places forever
+// (`placeMafRegionData` returns fresh objects, so the map never settles). The
+// id is latched into `refSampleIdVolatile` on the way in instead.
+test('and not on the map it writes', () => {
+  const { display } = createMafTestEnvironment().createDisplay()
+  expect(
+    reactionDependencies(display, 'Maf:placeFetchedRows').filter(d =>
+      d.includes('rpcDataMap'),
+    ),
+  ).toEqual([])
 })

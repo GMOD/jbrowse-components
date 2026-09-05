@@ -280,6 +280,22 @@ export default function configSchemaF() {
       },
       /**
        * #slot
+       * Draw the reference species as a row of its own.
+       *
+       * It is one row among the others today, and under mismatch coloring — the
+       * default — every cell in it matches by definition, so it is a solid
+       * match-colored bar carrying no information. UCSC omits it. The row the
+       * worker named as the reference (`refSampleId`) is the one dropped, not
+       * the top row and not the view's assembly name, which is a different
+       * string whenever the MAF names its reference differently.
+       */
+      showReferenceRow: {
+        type: 'boolean',
+        defaultValue: DEFAULTS.showReferenceRow,
+        description: 'give the reference species a row of its own',
+      },
+      /**
+       * #slot
        * Overlay a strand-flip (inversion) indicator: inverted blocks get a
        * diagonal hatch.
        */

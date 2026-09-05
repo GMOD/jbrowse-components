@@ -4938,6 +4938,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showReferenceRow",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "showInversions",
           "type": "(JexlString | boolean)"
         }
