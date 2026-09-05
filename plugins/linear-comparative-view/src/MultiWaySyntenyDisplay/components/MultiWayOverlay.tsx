@@ -43,8 +43,9 @@ const GroupHighlight = observer(function GroupHighlight({
  * On screen this is the hover outline alone, which follows the stack's scroll
  * — the headers are HTML (`LaneHeaders`), mounted beside this by the display's
  * body, because they are controls and SVG gave them neither layout nor a
- * focusable affordance. The export takes the outline plus `SvgLaneHeaders`,
- * the caption half of the same rows: no menu glyph, no cursors, no testids.
+ * focusable affordance. The export takes `SvgLaneHeaders` alone, the caption
+ * half of the same rows: no menu glyph, no cursors, no testids, and no hover
+ * outline, since whatever the pointer was over is not part of the figure.
  */
 const MultiWayOverlay = observer(function MultiWayOverlay({
   model,
@@ -72,20 +73,17 @@ const MultiWayOverlay = observer(function MultiWayOverlay({
     )
   }
   return (
-    <>
-      <GroupHighlight model={model} />
-      <g transform={`translate(0 ${-model.scrollTop})`}>
-        <SvgLaneHeaders
-          rows={laneHeaderRows(
-            model.laneStack.lanes,
-            model.visibleBpSpan,
-            view.coarseVisibleLocStrings || view.visibleLocStrings,
-          )}
-          width={model.canvasWidth}
-          palette={palette}
-        />
-      </g>
-    </>
+    <g transform={`translate(0 ${-model.scrollTop})`}>
+      <SvgLaneHeaders
+        rows={laneHeaderRows(
+          model.laneStack.lanes,
+          model.visibleBpSpan,
+          view.coarseVisibleLocStrings || view.visibleLocStrings,
+        )}
+        width={model.canvasWidth}
+        palette={palette}
+      />
+    </g>
   )
 })
 

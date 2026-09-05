@@ -2,7 +2,6 @@ import { clamp } from '@jbrowse/core/util'
 
 import { frameSpan, groupRunSpansOnRow } from './layoutMultiWay.ts'
 
-import type { LaneGene } from './geneGlyph.ts'
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
 
 const LABEL_HEIGHT = 12
@@ -11,10 +10,7 @@ const MAX_GLYPH_PX = 18
 
 // A lane pitch below this is an unreadable crush, so the stack stops dividing
 // the track height and lays out at this fixed pitch instead, scrolling inside
-// the viewport. 22 sits under the tightest committed figure
-// (multiway_synteny/ecoli_symbol_*: 47 lanes in 1100 px ≈ 23.4 px/lane), so
-// every existing spec keeps today's divide-the-height layout, and above the
-// crush where headers collide into glyphs.
+// the viewport. build_ecoli_orthologs.sh derives its config height from it.
 export const MIN_LANE_PITCH = 22
 
 /**
@@ -95,12 +91,12 @@ export interface Lane {
    * nothing on
    */
   frame: RowFrame | undefined
-  /** this lane's own gene models, empty until the dependent fetch lands */
-  genes: LaneGene[]
   /**
    * whether the SESSION holds an annotation track for this lane — a different
-   * question from whether `genes` is empty, which this window can answer no to
-   * over a gene desert
+   * question from whether the lane's gene fetch answered anything, which this
+   * window can answer no to over a gene desert. The genes themselves are not
+   * on the lane: only the glyph cells read them, and a stack that carried them
+   * gave the ribbons and ticks a new identity on every gene commit
    */
   hasAnnotation: boolean
   /**
@@ -163,7 +159,6 @@ export interface BuildLanesOpts {
   /** where the anchor lane draws each group, off the view's own `bpToPx` */
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
-  laneGenes: Map<string, LaneGene[]> | undefined
   laneGeneAdapters: Map<string, unknown>
   /** an interval on the anchor lane's axis, clipped — `axisSpan` bound to the view */
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
@@ -191,7 +186,6 @@ export function buildLanes({
   groups,
   anchorSpans,
   rowFrames,
-  laneGenes,
   laneGeneAdapters,
   axisSpanOf,
   refNameAliasOf,
@@ -245,7 +239,6 @@ export function buildLanes({
         assemblyName,
         isAnchor,
         frame,
-        genes: laneGenes?.get(assemblyName) ?? [],
         hasAnnotation: laneGeneAdapters.has(assemblyName),
         placements,
         canon,

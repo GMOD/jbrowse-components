@@ -4,7 +4,7 @@ import {
   LaneGene,
   geneGlyphGeometry,
   geneGlyphShape,
-  coveringGene,
+  annotatedSpans,
   laneGeneFeatures,
 } from './geneGlyph.ts'
 
@@ -396,6 +396,9 @@ test('lane genes arriving once per static block draw once', () => {
 // gene anywhere suppressing every box — a table naming genes the lane's GFF3
 // does not left those groups' ribbons hanging off nothing.
 describe('a placement box beside the lane annotation', () => {
+  const coveringGene = (annotated: Span[], span: Span) =>
+    annotatedSpans(annotated)(span)
+
   test('stands where no drawn gene reaches', () => {
     expect(coveringGene([[10, 40]], [100, 140])).toBeUndefined()
     expect(coveringGene([], [100, 140])).toBeUndefined()
@@ -423,5 +426,42 @@ describe('a placement box beside the lane annotation', () => {
     )
     expect(wide?.index).toBe(1)
     expect(wide?.overlap).toBe(60)
+  })
+
+  // the index answers exactly what a scan of every gene answered, nested and
+  // reversed spans included, and the first drawn gene on a tied overlap
+  test('answers the same as a scan over a gene-dense lane', () => {
+    const scan = (annotated: Span[], span: Span) => {
+      const lo = Math.min(span[0], span[1])
+      const hi = Math.max(span[0], span[1])
+      let best: { index: number; overlap: number } | undefined
+      for (const [index, a] of annotated.entries()) {
+        const alo = Math.min(a[0], a[1])
+        const ahi = Math.max(a[0], a[1])
+        if (ahi > lo && alo < hi) {
+          const overlap = Math.min(ahi, hi) - Math.max(alo, lo)
+          if (best === undefined || overlap > best.overlap) {
+            best = { index, overlap }
+          }
+        }
+      }
+      return best
+    }
+    let seed = 7
+    const random = () => {
+      seed = (seed * 48271) % 2147483647
+      return seed / 2147483647
+    }
+    const annotated: Span[] = Array.from({ length: 2000 }, () => {
+      const start = Math.floor(random() * 20_000)
+      const length = 1 + Math.floor(random() * 400)
+      return random() < 0.2 ? [start + length, start] : [start, start + length]
+    })
+    const covering = annotatedSpans(annotated)
+    for (let i = 0; i < 3000; i++) {
+      const start = Math.floor(random() * 20_000)
+      const span: Span = [start, start + Math.floor(random() * 300)]
+      expect(covering(span)).toEqual(scan(annotated, span))
+    }
   })
 })

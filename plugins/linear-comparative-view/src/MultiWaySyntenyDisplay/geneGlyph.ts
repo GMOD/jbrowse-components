@@ -11,7 +11,7 @@
  * the px half does not; that is the seam, and it runs through the middle of
  * this file rather than between two.
  */
-import { dedupe, doesIntersect2 } from '@jbrowse/core/util'
+import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
 import {
   featureType,
   getSubfeatures,
@@ -66,8 +66,9 @@ export class LaneGene {
 }
 
 /**
- * Which of a lane's own genes already draws over this span, if any — the widest
- * overlap where several do.
+ * A lane's drawn gene spans, asking which of them already draws over a
+ * placement span — the widest overlap where several do, the first drawn on a
+ * tie.
  *
  * A lane draws gene models where it has them and the table's placement boxes
  * where it does not, and the choice is per GROUP rather than per lane. Made per
@@ -87,25 +88,38 @@ export class LaneGene {
  * genes and its group spans both come through the view's axis, a mate lane's
  * both come through its frame, and neither pair is comparable in bp with the
  * other.
+ *
+ * Indexed once per lane: asked per placement span, a scan of every gene was
+ * tens of millions of interval tests over a gene-dense window of forty lanes.
+ * The tree answers the closed overlap, so an abutting gene comes back and the
+ * strict test below drops it, keeping a box the gene merely touches drawn.
  */
-export function coveringGene(annotated: Span[], span: Span) {
-  const lo = Math.min(span[0], span[1])
-  const hi = Math.max(span[0], span[1])
-  let best: { index: number; overlap: number } | undefined
+export function annotatedSpans(annotated: Span[]) {
+  const tree = new IntervalTree<number>()
   for (const [index, a] of annotated.entries()) {
-    const alo = Math.min(a[0], a[1])
-    const ahi = Math.max(a[0], a[1])
-    // the same test as before, kept as a predicate so a box the gene merely
-    // abuts is still drawn — reading the width only to arbitrate between two
-    // genes over one placement
-    if (doesIntersect2(alo, ahi, lo, hi)) {
-      const overlap = Math.min(ahi, hi) - Math.max(alo, lo)
-      if (best === undefined || overlap > best.overlap) {
-        best = { index, overlap }
+    tree.insert([a[0], a[1]], index)
+  }
+  return (span: Span) => {
+    const lo = Math.min(span[0], span[1])
+    const hi = Math.max(span[0], span[1])
+    let best: { index: number; overlap: number } | undefined
+    for (const index of tree.search([lo, hi])) {
+      const a = annotated[index]!
+      const alo = Math.min(a[0], a[1])
+      const ahi = Math.max(a[0], a[1])
+      if (doesIntersect2(alo, ahi, lo, hi)) {
+        const overlap = Math.min(ahi, hi) - Math.max(alo, lo)
+        if (
+          best === undefined ||
+          overlap > best.overlap ||
+          (overlap === best.overlap && index < best.index)
+        ) {
+          best = { index, overlap }
+        }
       }
     }
+    return best
   }
-  return best
 }
 
 function subtractIntervals(base: [number, number][], cut: [number, number][]) {

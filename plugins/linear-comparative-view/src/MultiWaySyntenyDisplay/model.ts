@@ -839,7 +839,10 @@ export function stateModelFactory(
        * the stack the picture is drawn from: one `Lane` per assembly, plus the
        * geometry every layer places against. Every layer — bands, ticks,
        * ribbons, glyphs, boxes, headers, the hover outline — is a walk over
-       * this, and the on-screen body and the SVG export walk the same one
+       * this, and the on-screen body and the SVG export walk the same one.
+       * The lane genes are not in it: only the glyph cells read them, and a
+       * stack that carried them re-uploaded every ribbon and tick, and dropped
+       * the hover, on every gene commit
        */
       get laneStack(): LaneStack {
         const { assemblyManager } = getSession(self)
@@ -849,7 +852,6 @@ export function stateModelFactory(
           groups: self.visibleGroups,
           anchorSpans: self.anchorSpans,
           rowFrames: self.rowFrames,
-          laneGenes: self.laneGenes,
           laneGeneAdapters: self.laneGeneAdapters,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
@@ -923,7 +925,7 @@ export function stateModelFactory(
        * glyph, so the hover — a render parameter — never re-runs it
        */
       get laneGlyphCells() {
-        const { palette, selectedFeatureId } = self
+        const { palette, selectedFeatureId, laneGenes } = self
         const { lanes, glyphHeight } = self.laneStack
         const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
           selectedFeatureId === feature.id()
@@ -933,6 +935,7 @@ export function stateModelFactory(
         lanes.forEach((lane, row) => {
           const { glyphs, boxes } = buildLaneCells({
             lane,
+            genes: laneGenes?.get(lane.assemblyName) ?? [],
             glyphHeight,
             width: self.canvasWidth,
             colors: {

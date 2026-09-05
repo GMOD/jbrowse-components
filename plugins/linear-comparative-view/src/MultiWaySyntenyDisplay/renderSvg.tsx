@@ -12,7 +12,8 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 // the lazy boundary for the export path: the model's renderSvg reaches this
 // through one import(). The paint layer runs the same Canvas2D draw the
-// fallback backend runs, over the same cells and render state
+// fallback backend runs, over the same cells and render state — less the
+// hover and the click, which are the pointer's and not the figure's
 export async function renderMultiWaySvg(
   model: MultiWaySyntenyDisplayModel,
   opts?: ExportSvgDisplayOptions,
@@ -36,7 +37,11 @@ export async function renderMultiWaySvg(
             height={height}
             opts={opts}
             paint={ctx => {
-              drawMultiWay(ctx, model.renderCells, model.renderState)
+              drawMultiWay(ctx, model.renderCells, {
+                ...model.renderState,
+                hoveredFeatureId: 0,
+                clickedFeatureId: 0,
+              })
             }}
           />
           <MultiWayOverlay model={model} exportSVG />

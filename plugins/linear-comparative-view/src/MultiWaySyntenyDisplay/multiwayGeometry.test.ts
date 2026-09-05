@@ -78,11 +78,9 @@ const cacaoFrame: RowFrame = { ...peachFrame, refName: 'Tc1' }
 
 function stack({
   features,
-  laneGenes,
   assemblyNames = ['grape', 'peach'],
 }: {
   features: Feature[]
-  laneGenes?: Map<string, LaneGene[]>
   assemblyNames?: string[]
 }) {
   const groups = groupFeatures(features)
@@ -99,7 +97,6 @@ function stack({
       ['peach', peachFrame],
       ['cacao', cacaoFrame],
     ]),
-    laneGenes,
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
     refNameAliasOf: () => undefined,
@@ -215,6 +212,14 @@ describe('the ribbons', () => {
     expect(bridge.instanceCount).toBe(1)
     expect(bridge.instanceFeatureIdx[0]).toBe(groupTarget.get('g1'))
     expect(abgrAlpha(bridge.colors[0]!)).toBe(Math.round(0.4 * 255))
+    // the near end is the anchor's span and the far end is CACAO's span for
+    // the group, not peach's: a bridge lands on the lane that places it
+    const [anchorSpan] = s.lanes[0]!.placements.get('g1')!.spans
+    const [cacaoSpan] = s.lanes[2]!.placements.get('g1')!.spans
+    expect(s.lanes[1]!.placements.has('g1')).toBe(false)
+    expect([bridge.bp1[0], bridge.bp2[0]]).toEqual(anchorSpan)
+    expect([bridge.bp4[0], bridge.bp3[0]]).toEqual(cacaoSpan)
+    expect(cacaoSpan).toEqual([80, 160])
     const layer = layers.find(l => l.key === 'ribbons:0>2')!
     expect(layer.yTop).toBe(s.lanes[0]!.glyphTop + s.glyphHeight)
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
@@ -389,13 +394,11 @@ describe('a lane cell', () => {
   })
 
   test('packs a gene as its baseline, UTR and CDS boxes and an arrowhead the way it reads', () => {
-    const s = stack({
-      features: [pairFeature('g1', 100, 200)],
-      laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
-    })
+    const s = stack({ features: [pairFeature('g1', 100, 200)] })
     const lane = s.lanes[0]!
     const { glyphs: cell } = buildLaneCells({
       lane,
+      genes: [new LaneGene(gene)],
       glyphHeight: s.glyphHeight,
       width: WIDTH,
       colors,
@@ -441,10 +444,10 @@ describe('a lane cell', () => {
   test('draws the table’s own box, translucent and outlined, where no gene reaches', () => {
     const s = stack({
       features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
-      laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
     })
     const { glyphs, boxes } = buildLaneCells({
       lane: s.lanes[0]!,
+      genes: [new LaneGene(gene)],
       glyphHeight: s.glyphHeight,
       width: WIDTH,
       colors,

@@ -8,11 +8,12 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { coveringGene, geneGlyphGeometry } from './geneGlyph.ts'
+import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import { frameTickXs } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { LaneGene } from './geneGlyph.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { MultiWayGroup, Span } from './layoutMultiWay.ts'
 import type {
@@ -507,11 +508,14 @@ export interface LaneCells {
  */
 export function buildLaneCells({
   lane,
+  genes,
   glyphHeight,
   width,
   colors,
 }: {
   lane: Lane
+  /** the lane's own gene models, none until its fetch lands */
+  genes: LaneGene[]
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
@@ -544,7 +548,7 @@ export function buildLaneCells({
   }
 
   const annotated: Span[] = []
-  for (const gene of lane.genes) {
+  for (const gene of genes) {
     const { feature } = gene
     const refName = feature.get('refName')
     const span = lane.spanOf(refName, feature.get('start'), feature.get('end'))
@@ -596,9 +600,10 @@ export function buildLaneCells({
   // one gene is a tandem array or a clipped edge, and the reader wants the one
   // the gene is mostly made of
   const claimed = new Map<number, number>()
+  const coveringGene = annotatedSpans(annotated)
   for (const [key, { group, spans }] of lane.placements) {
     for (const span of spans) {
-      const cover = coveringGene(annotated, span)
+      const cover = coveringGene(span)
       if (cover) {
         if (cover.overlap > (claimed.get(cover.index) ?? 0)) {
           claimed.set(cover.index, cover.overlap)

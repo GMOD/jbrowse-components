@@ -91,10 +91,10 @@ const track = buildFeatureRenderData({
 const { glyphs: lane } = buildLaneCells({
   lane: {
     glyphTop: 0,
-    genes: [new LaneGene(gene)],
     spanOf: (_refName: string, start: number, end: number) => [start, end],
     placements: new Map(),
   } as unknown as Lane,
+  genes: [new LaneGene(gene)],
   glyphHeight: HEIGHT,
   width: 1000,
   colors: { colorOf: () => 'goldenrod', stroke: '#222', divider: '#ccc' },

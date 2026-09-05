@@ -164,6 +164,22 @@ a mate lane on its own. Both hops are dead while the lane places nothing or the
 session does not hold the genome; the anchor lane's menu is the open-in-new-view
 copy of the view region alone.
 
+Two of those surfaces were doing more than they said (2026-09-05). A plain
+click on a mate lane's label armed the drag and the release wrote the unmoved
+order back, which pinned every lane, ended the densest-first sort and rebuilt
+every cell; the drop now writes only an order that differs elementwise from
+`rowAssemblies` (`laneOrderAfterDrop`), and the drop bar arms only past a few
+px of travel. "Let the lane choose" after a pin was a no-op, since the released
+contig went back in as the incumbent and the switch margin held it against a
+comparable copy; a decision now records `pinned`, and an incumbent whose pin is
+gone is no incumbent, so the lane votes fresh once. The SVG export also baked
+the hover and the click into the paint and drew the group outline; it exports
+with both ids zeroed and without `GroupHighlight`. Selection is still a
+per-glyph recolour through the jexl slot rather than a per-draw id: the feature
+glyph passes' shared uniforms (`featureGlyphUniforms.slang`) carry no
+highlighted feature the way the synteny passes carry `hoveredFeatureId`, so
+moving it there is a pass change, not a display one.
+
 **A ribbon bridges a lane that places nothing for its group**
 (`bridgeSkippedLanes`, on by default, 2026-08-27). A ribbon joined ADJACENT
 lanes only, so a group the middle lane's table did not name broke the chain
@@ -388,6 +404,16 @@ deadband over at least five shared groups, carried across a contig change since
 the anchor-order sum a fresh lane falls back on is the noisiest vote there is;
 and the placement by coverage, held while the frame still shows 90% of the
 placed weight.
+
+A group a lane places twice was one sample over the two copies' bounding box,
+weighted by its width, so two copies 300 kb apart outweighed the collinear
+genes and the weighted median slid the lane to put the gap under the anchor
+gene; since 2026-09-05 each run is its own placement at its own length
+(`LanePlacement`), the orientation vote skips pairs within one group, and the
+lane below aligns to the heaviest run. The same day the lane genes came out of
+`buildLanes`: only the glyph cells read them, and a stack that carried them
+gave the ribbon and tick cells a new identity on every gene commit — every
+ribbon re-uploaded and the hover cleared for a commit that moved no ribbon.
 
 What a decision states is `{refName, flipped, rung, pivotAnchor, pivotLaneBp}`
 — the lane bp pinned under one anchor coordinate, at a rung of the anchor's

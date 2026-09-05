@@ -5,6 +5,8 @@ import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
 import LaneHeaders from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/LaneHeaders.tsx'
+import MultiWayOverlay from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/MultiWayOverlay.tsx'
+import { getMates } from '../../../../plugins/linear-comparative-view/src/syntenyMate.ts'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
@@ -68,7 +70,12 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   expect(g1.mates.get('cacao')).toHaveLength(1)
   const g2 = display.groups[1]!
   expect(g2.mates.has('cacao')).toBe(false)
-  expect(display.features).toHaveLength(6)
+  expect(display.features).toHaveLength(4)
+  expect(
+    Object.fromEntries(
+      display.features!.map(f => [f.get('name'), getMates(f)?.length]),
+    ),
+  ).toEqual({ g1: 2, g2: 1, g3: 1, g4: 2 })
 
   await waitFor(
     () => {
@@ -310,7 +317,13 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
     },
     { timeout: 30000 },
   )
-  const outlines = async () =>
+  const { queryAllByTestId } = render(<MultiWayOverlay model={display} />)
+  const expectOutlines = async (count: number) => {
+    await waitFor(() => {
+      expect(queryAllByTestId('multiway-hover-outline')).toHaveLength(count)
+    })
+  }
+  const exportedOutlines = async () =>
     renderToString(<>{await display.renderSvg()}</>).match(
       /data-testid="multiway-hover-outline"/g,
     )?.length ?? 0
@@ -321,13 +334,14 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
     display.setHoverTarget({ ...targets[targetIdx]!, targetIdx })
   }
 
-  expect(await outlines()).toBe(0)
+  await expectOutlines(0)
   hoverGroup('g1')
-  expect(await outlines()).toBe(3)
+  await expectOutlines(3)
+  expect(await exportedOutlines()).toBe(0)
   hoverGroup('g2')
-  expect(await outlines()).toBe(2)
+  await expectOutlines(2)
   display.setHoverTarget(undefined)
-  expect(await outlines()).toBe(0)
+  await expectOutlines(0)
 
   // ...and the pointer reaches that state on its own. The assertions above
   // hover a RIBBON, which carries its group, and that is how the gene case
@@ -352,7 +366,7 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   )
   expect(geneHit?.groupKey).toBe('g1')
   display.setHoverTarget(geneHit)
-  expect(await outlines()).toBe(3)
+  await expectOutlines(3)
 }, 40000)
 
 // The menu's Move up/down is two clicks away from the picture; the label is

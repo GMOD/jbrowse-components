@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { autorun } from 'mobx'
 
+import { LaneGene } from './geneGlyph.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
@@ -96,6 +97,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     fitMin: 100,
     fitMax: 300,
     alsoOn: [],
+    pinned: false,
   }
   display.setLaneFrames(
     0,
@@ -359,6 +361,7 @@ describe('the lane stack scrolls once lanes would crush', () => {
             fitMin: 100,
             fitMax: 300,
             alsoOn: [],
+            pinned: false,
           },
         ],
       ]),
@@ -419,5 +422,61 @@ test('a selection in another track does not rebuild the lane glyph cells', () =>
   session.setSelection(display.features![0]!)
   expect(display.selectedFeatureId).toBe('own1')
   expect(display.laneGlyphCells).not.toBe(before)
+  stop()
+})
+
+// The lane genes fed `buildLanes`, so every gene commit — one per pan that
+// moved a lane's fetch window — gave the stack a new identity, and with it the
+// ribbon and tick cells: all re-uploaded, and the hover cleared under a
+// stationary pointer, for a commit that changed no ribbon
+test('a lane-genes commit leaves the stack and the ribbons where they were', () => {
+  const display = createDisplay()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'own1',
+      name: 'gene1',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+  ])
+  // keep the computeds hot: outside a reaction they re-evaluate on every
+  // read and identity says nothing
+  const stop = autorun(() => [
+    display.laneStack,
+    display.ribbonGeometry,
+    display.tickGeometry,
+    display.laneGlyphCells,
+  ])
+  const stack = display.laneStack
+  const ribbons = display.ribbonGeometry
+  const ticks = display.tickGeometry
+  const glyphs = display.laneGlyphCells
+
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'ctgA',
+    start: 120,
+    end: 280,
+    type: 'gene',
+  })
+  display.setLaneGenes(
+    new Map([['volvox', [new LaneGene(gene)]]]),
+    display.laneGenesFetchSpecs.key,
+    false,
+  )
+  expect(display.laneStack).toBe(stack)
+  expect(display.ribbonGeometry).toBe(ribbons)
+  expect(display.tickGeometry).toBe(ticks)
+  // the glyph cells are what a gene commit is for
+  expect(display.laneGlyphCells).not.toBe(glyphs)
+  expect(display.laneStack.lanes[0]!.hasAnnotation).toBe(true)
   stop()
 })

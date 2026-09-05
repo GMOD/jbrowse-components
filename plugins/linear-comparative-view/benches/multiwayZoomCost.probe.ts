@@ -254,7 +254,6 @@ for (let step = 0; step < 12; step++, span *= 1.35) {
       groups: visible,
       anchorSpans,
       rowFrames,
-      laneGenes,
       laneGeneAdapters: geneAdapters,
       axisSpanOf: (_r, s, e) => [pxOf(s), pxOf(e)],
       refNameAliasOf: a => canonOf.get(a),
@@ -296,6 +295,7 @@ for (let step = 0; step < 12; step++, span *= 1.35) {
     for (const lane of stack.lanes) {
       buildLaneCells({
         lane,
+        genes: laneGenes.get(lane.assemblyName) ?? [],
         glyphHeight: stack.glyphHeight,
         width: WIDTH,
         colors: { colorOf, stroke: '#000', divider: '#ccc' },
@@ -311,7 +311,7 @@ for (let step = 0; step < 12; step++, span *= 1.35) {
     spans.length = 0
     geneCount = 0
     for (const lane of stack.lanes) {
-      for (const gene of lane.genes) {
+      for (const gene of laneGenes.get(lane.assemblyName) ?? []) {
         geneCount++
         const span = lane.spanOf(
           gene.feature.get('refName'),

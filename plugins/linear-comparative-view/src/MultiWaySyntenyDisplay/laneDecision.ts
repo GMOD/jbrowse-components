@@ -37,6 +37,11 @@ export interface LaneDecision {
   fitMin: number
   fitMax: number
   alsoOn: string[]
+  /**
+   * the contig was the reader's pin rather than the vote's, so once the pin
+   * is gone it is not an incumbent and the lane decides fresh
+   */
+  pinned: boolean
 }
 
 // The scales a lane's frame is allowed to sit at, as multiples of the anchor's
@@ -192,7 +197,10 @@ export function computeRowFrame(
   return fitLane(groups, assemblyName, unitBp, incumbent, undefined)?.frame
 }
 
-type FitIncumbent = Pick<LaneDecision, 'refName' | 'rung' | 'fitMin' | 'fitMax'>
+type FitIncumbent = Pick<
+  LaneDecision,
+  'refName' | 'rung' | 'fitMin' | 'fitMax' | 'pinned'
+>
 
 function fitLane(
   groups: MultiWayGroup[],
@@ -201,7 +209,13 @@ function fitLane(
   incumbent: FitIncumbent | undefined,
   pinned: string | undefined,
 ) {
-  const contig = pickContig(groups, assemblyName, incumbent?.refName, pinned)
+  const released = incumbent?.pinned && incumbent.refName !== pinned
+  const contig = pickContig(
+    groups,
+    assemblyName,
+    released ? undefined : incumbent?.refName,
+    pinned,
+  )
   if (!contig) {
     return undefined
   }
@@ -217,6 +231,7 @@ function fitLane(
   const min = Math.max(0, (lo + hi) / 2 - span / 2)
   return {
     rung,
+    pinned: contig.refName === pinned,
     frame: {
       refName: contig.refName,
       min,
@@ -229,7 +244,10 @@ function fitLane(
   }
 }
 
+// one run of a group on a lane, weighted by its length: a group placed twice
+// is two of these under one key, not one sample over the gap between them
 interface LanePlacement {
+  group: MultiWayGroup
   key: string
   center: number
   weight: number
@@ -242,28 +260,47 @@ function lanePlacements(
 ): LanePlacement[] {
   const out: LanePlacement[] = []
   for (const group of groups) {
-    const runs = groupRunsOnRow(group, assemblyName, frame)
-    if (runs.length) {
-      const min = runs[0]!.min
-      const max = runs.at(-1)!.max
+    for (const run of groupRunsOnRow(group, assemblyName, frame)) {
       out.push({
+        group,
         key: group.key,
-        center: (min + max) / 2,
-        weight: Math.max(max - min, 1),
+        center: (run.min + run.max) / 2,
+        weight: Math.max(run.max - run.min, 1),
       })
     }
   }
   return out
 }
 
+// where a lane draws each group, as the px the lane below aligns to: the
+// heaviest run where the lane places a group more than once
+function lanePlacementXs(
+  placements: LanePlacement[],
+  frame: RowFrame,
+  width: number,
+) {
+  const heaviest = new Map<string, LanePlacement>()
+  for (const p of placements) {
+    const held = heaviest.get(p.key)
+    if (!held || p.weight > held.weight) {
+      heaviest.set(p.key, p)
+    }
+  }
+  return new Map(
+    [...heaviest.values()].map(p => [p.key, rowFrameX(frame, p.center, width)]),
+  )
+}
+
 // how the lane's shared groups run against the lane above: the share of the
 // paired weight reading backwards, and the majority it makes. Undefined on
-// fewer than three shared groups, or a tie
+// fewer than three shared groups, or a tie. Two runs of one group share an
+// x above and say nothing about order between them
 function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
     .filter(p => upperX.has(p.key))
     .sort((a, b) => upperX.get(a.key)! - upperX.get(b.key)!)
-  if (shared.length < MIN_SHARED_FOR_ORIENTATION) {
+  const sharedGroups = new Set(shared.map(p => p.key)).size
+  if (sharedGroups < MIN_SHARED_FOR_ORIENTATION) {
     return undefined
   }
   let backwards = 0
@@ -271,16 +308,18 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   for (let i = 1; i < shared.length; i++) {
     const a = shared[i - 1]!
     const b = shared[i]!
-    const w = Math.min(a.weight, b.weight)
-    total += w
-    if (b.center < a.center) {
-      backwards += w
+    if (a.key !== b.key) {
+      const w = Math.min(a.weight, b.weight)
+      total += w
+      if (b.center < a.center) {
+        backwards += w
+      }
     }
   }
   const share = total > 0 ? backwards / total : 0.5
   return {
     share,
-    shared: shared.length,
+    shared: sharedGroups,
     backwards: share === 0.5 ? undefined : share > 0.5,
   }
 }
@@ -405,6 +444,7 @@ export interface DecideLaneFramesOpts {
 function sameDecision(a: LaneDecision, b: LaneDecision) {
   return (
     a.refName === b.refName &&
+    a.pinned === b.pinned &&
     a.flipped === b.flipped &&
     a.rung === b.rung &&
     a.pivotLaneBp === b.pivotLaneBp &&
@@ -441,7 +481,7 @@ export function decideLaneFrames({
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   let upperX = anchorX
-  for (const assemblyName of assemblyNames) {
+  for (const [i, assemblyName] of assemblyNames.entries()) {
     const prev = previous.get(assemblyName)
     const fit = fitLane(
       groups,
@@ -454,7 +494,7 @@ export function decideLaneFrames({
       out.set(assemblyName, undefined)
       continue
     }
-    const { rung, frame: fitted } = fit
+    const { rung, pinned: onPin, frame: fitted } = fit
     const placements = lanePlacements(groups, assemblyName, fitted)
     // the vote reads screen px, so it comes back in screen terms; the
     // decision is stated against the anchor's order
@@ -488,6 +528,7 @@ export function decideLaneFrames({
       const carried = {
         ...held,
         rung,
+        pinned: onPin,
         fitMin: aligned.fitMin,
         fitMax: aligned.fitMax,
         alsoOn: aligned.alsoOn,
@@ -507,12 +548,14 @@ export function decideLaneFrames({
     }
     if (!decision) {
       const pivot = placements
-        .map(p => ({ key: p.key, x: anchorX.get(p.key) }))
-        .filter((p): p is { key: string; x: number } => p.x !== undefined)
+        .map(p => ({ group: p.group, x: anchorX.get(p.key) }))
+        .filter(
+          (p): p is { group: MultiWayGroup; x: number } => p.x !== undefined,
+        )
         .sort(
           (a, b) => Math.abs(a.x - width / 2) - Math.abs(b.x - width / 2),
         )[0]
-      const group = pivot && groups.find(g => g.key === pivot.key)
+      const group = pivot?.group
       const pivotPx = group && pxOfAnchor(anchorCoordOf(group))
       if (group && pivotPx !== undefined) {
         decision = {
@@ -524,6 +567,7 @@ export function decideLaneFrames({
           fitMin: aligned.fitMin,
           fitMax: aligned.fitMax,
           alsoOn: aligned.alsoOn,
+          pinned: onPin,
         }
         if (prev && sameDecision(prev, decision)) {
           decision = prev
@@ -531,21 +575,23 @@ export function decideLaneFrames({
       }
     }
     out.set(assemblyName, decision)
-    const frame = decision
-      ? frameFromDecision(
-          decision,
-          pxOfAnchor(decision.pivotAnchor)!,
-          unitBp,
-          width,
-          anchorReversed,
-        )
-      : aligned
-    upperX = new Map(
-      lanePlacements(groups, assemblyName, frame).map(p => [
-        p.key,
-        rowFrameX(frame, p.center, width),
-      ]),
-    )
+    // the lane below aligns to where this one draws; the last lane has none
+    if (i + 1 < assemblyNames.length) {
+      const frame = decision
+        ? frameFromDecision(
+            decision,
+            pxOfAnchor(decision.pivotAnchor)!,
+            unitBp,
+            width,
+            anchorReversed,
+          )
+        : aligned
+      upperX = lanePlacementXs(
+        lanePlacements(groups, assemblyName, frame),
+        frame,
+        width,
+      )
+    }
   }
   return out
 }

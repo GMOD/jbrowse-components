@@ -69,7 +69,6 @@ function stack(overrides: Partial<BuildLanesOpts> = {}) {
       ]),
     ),
     rowFrames: new Map([['peach', peachFrame]]),
-    laneGenes: undefined,
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
     refNameAliasOf: () => undefined,
@@ -146,18 +145,13 @@ describe('the map a lane answers intervals with', () => {
   })
 })
 
-// `no annotation` in the header is a claim about the SESSION. Asked of this
-// window's genes instead it would blink on and off as a lane panned across a
-// gene desert.
-test('whether a lane has an annotation is not whether this window drew one', () => {
-  const { lanes } = stack({ laneGenes: new Map([['grape', []]]) })
+// `no annotation` in the header is a claim about the SESSION, read off the
+// tracks it holds. Asked of this window's genes instead it would blink on and
+// off as a lane panned across a gene desert.
+test('whether a lane has an annotation is whether the session holds one for it', () => {
+  const { lanes } = stack()
   expect(lanes[0]!.hasAnnotation).toBe(true)
-  expect(lanes[0]!.genes).toEqual([])
   expect(lanes[1]!.hasAnnotation).toBe(false)
-})
-
-test('a lane whose genes have not landed yet holds an empty list, not undefined', () => {
-  expect(stack().lanes.every(l => Array.isArray(l.genes))).toBe(true)
 })
 
 describe('lane geometry', () => {
@@ -208,28 +202,6 @@ describe('lane geometry', () => {
       if (row > 0) {
         expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
       }
-    }
-  })
-
-  // Every committed multiway figure keeps today's layout byte-identically,
-  // because each sits above the floor. The pairs are the corpus's
-  // (website/scripts/specs/synteny.ts, height / lane count with the anchor):
-  // grape 340/7, HPRC CFH 460/9, E. coli all-vs-all 340/5, grasses 320/5,
-  // nightshades 320/5, flies 320/5, primates 620/8, and the tightest —
-  // E. coli orthologs at 1100/47 ≈ 23.4 px per lane, which MIN_LANE_PITCH
-  // sits just under.
-  test('every figure in the corpus stays above the floor and does not scroll', () => {
-    const corpus: [number, number][] = [
-      [340, 7],
-      [460, 9],
-      [340, 5],
-      [320, 5],
-      [620, 8],
-      [1100, 47],
-    ]
-    for (const [height, laneCount] of corpus) {
-      expect(height / laneCount).toBeGreaterThanOrEqual(MIN_LANE_PITCH)
-      expect(laneContentHeight(height, laneCount)).toBe(height)
     }
   })
 })

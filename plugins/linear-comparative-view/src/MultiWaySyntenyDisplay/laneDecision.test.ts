@@ -38,25 +38,45 @@ function pair(
 
 const px = (bp: number) => (bp / SPAN_BP) * WIDTH
 
-function settle(
+function decide(
   groups: ReturnType<typeof groupFeatures>,
-  previous = new Map<string, LaneDecision | undefined>(),
+  {
+    assemblyNames = ['peach'],
+    previous = new Map<string, LaneDecision | undefined>(),
+    pinned,
+    anchorReversed = false,
+  }: {
+    assemblyNames?: string[]
+    previous?: Map<string, LaneDecision | undefined>
+    pinned?: Map<string, string>
+    anchorReversed?: boolean
+  } = {},
 ) {
+  const pxOf = (bp: number) => (anchorReversed ? WIDTH - px(bp) : px(bp))
   return decideLaneFrames({
     groups,
-    assemblyNames: ['peach'],
+    assemblyNames,
     anchorX: new Map(
-      groups.map(g => [g.key, px((g.anchor.start + g.anchor.end) / 2)]),
+      groups.map(g => [g.key, pxOf((g.anchor.start + g.anchor.end) / 2)]),
     ),
     anchorCoordOf: g => ({
       refName: g.anchor.refName,
       coord: (g.anchor.start + g.anchor.end) / 2,
     }),
-    pxOfAnchor: c => px(c.coord),
+    pxOfAnchor: c => pxOf(c.coord),
     unitBp: SPAN_BP,
     width: WIDTH,
+    anchorReversed,
     previous,
-  }).get('peach')!
+    pinned,
+  })
+}
+
+function settle(
+  groups: ReturnType<typeof groupFeatures>,
+  previous = new Map<string, LaneDecision | undefined>(),
+) {
+  return decide(groups, { previous }).get('peach')!
 }
 
 // four orthologs, anchor and lane spaced alike, so the lane sits at rung 1
@@ -116,26 +136,7 @@ describe('a settled lane under the view transform', () => {
   })
 
   test('a decision made under a flipped view still reads against the anchor', () => {
-    const reversedPx = (bp: number) => WIDTH - px(bp)
-    const under = decideLaneFrames({
-      groups: collinear,
-      assemblyNames: ['peach'],
-      anchorX: new Map(
-        collinear.map(g => [
-          g.key,
-          reversedPx((g.anchor.start + g.anchor.end) / 2),
-        ]),
-      ),
-      anchorCoordOf: g => ({
-        refName: g.anchor.refName,
-        coord: (g.anchor.start + g.anchor.end) / 2,
-      }),
-      pxOfAnchor: c => reversedPx(c.coord),
-      unitBp: SPAN_BP,
-      width: WIDTH,
-      anchorReversed: true,
-      previous: new Map(),
-    }).get('peach')!
+    const under = decide(collinear, { anchorReversed: true }).get('peach')!
     expect(under.flipped).toBe(false)
   })
 })
@@ -256,25 +257,38 @@ describe('the contig', () => {
 
   test('a pin outranks the vote while the window still places on it', () => {
     const pinned = new Map([['peach', 'Pp2']])
-    const groups = twoContigs(200, 30)
-    const decision = decideLaneFrames({
-      groups,
-      assemblyNames: ['peach'],
-      anchorX: new Map(
-        groups.map(g => [g.key, px((g.anchor.start + g.anchor.end) / 2)]),
-      ),
-      anchorCoordOf: g => ({
-        refName: g.anchor.refName,
-        coord: (g.anchor.start + g.anchor.end) / 2,
-      }),
-      pxOfAnchor: c => px(c.coord),
-      unitBp: SPAN_BP,
-      width: WIDTH,
-      previous: new Map(),
-      pinned,
-    }).get('peach')!
+    const decision = decide(twoContigs(200, 30), { pinned }).get('peach')!
     expect(decision.refName).toBe('Pp2')
+    expect(decision.pinned).toBe(true)
     expect(decision.alsoOn).toEqual(['Pp1'])
+  })
+
+  // The case a pin exists for is two comparable copies, and comparable is
+  // inside the switch margin: a released pin that stayed the incumbent was
+  // held there by the margin, so "let the lane choose" chose nothing
+  test('releasing a pin lets the lane vote fresh rather than hold the pinned contig', () => {
+    const groups = twoContigs(180, 130)
+    const pinned = decide(groups, { pinned: new Map([['peach', 'Pp2']]) })
+    expect(pinned.get('peach')!.refName).toBe('Pp2')
+
+    const released = decide(groups, { previous: pinned }).get('peach')!
+    expect(released.refName).toBe('Pp1')
+    expect(released.pinned).toBe(false)
+
+    // and once it has voted, the vote holds the way any decision does
+    const held = decide(groups, {
+      previous: new Map([['peach', released]]),
+    }).get('peach')!
+    expect(held).toBe(released)
+  })
+
+  test('a contig the vote chose is held by the margin, pin or no pin', () => {
+    const groups = twoContigs(180, 130)
+    const voted = decide(twoContigs(100, 130))
+    expect(voted.get('peach')!.refName).toBe('Pp2')
+    expect(decide(groups, { previous: voted }).get('peach')!.refName).toBe(
+      'Pp2',
+    )
   })
 })
 
@@ -397,5 +411,152 @@ describe('the placement', () => {
 
   test('a settle that changes nothing returns the same decision', () => {
     expect(settle(collinear, previous)).toBe(first)
+  })
+})
+
+function frameOf(decision: LaneDecision, anchorReversed = false) {
+  const coord = decision.pivotAnchor.coord
+  return frameFromDecision(
+    decision,
+    anchorReversed ? WIDTH - px(coord) : px(coord),
+    SPAN_BP,
+    WIDTH,
+    anchorReversed,
+  )
+}
+
+// A group the lane places twice was one sample over the two copies' bounding
+// box, weighted by its width: two copies 300 bp apart in a 1000 bp frame
+// outweighed the four collinear genes together and slid the lane to put the
+// gap between the copies under the anchor gene
+describe('a group placed twice on a lane', () => {
+  const twoCopies = groupFeatures([
+    ...[100, 300, 500, 700].map((start, i) =>
+      pair(`${i}`, `g${i}`, start, { start: 500_000 + start }),
+    ),
+    pair('dup-a', 'dup', 530, { start: 500_530 }),
+    pair('dup-b', 'dup', 530, { start: 500_830 }),
+  ])
+
+  test('is two placements, so the collinear genes still sit under the anchor', () => {
+    const frame = frameOf(settle(twoCopies))
+    for (const start of [100, 300, 500, 700]) {
+      expect(rowFrameX(frame, 500_030 + start, WIDTH)).toBeCloseTo(
+        px(start + 30),
+      )
+    }
+  })
+
+  test('keeps the same decision as the lane without the second copy', () => {
+    const one = frameOf(settle(collinear))
+    const two = frameOf(settle(twoCopies))
+    expect(two.min).toBeCloseTo(one.min)
+    expect(two.flipped).toBe(one.flipped)
+  })
+})
+
+function pairOn(
+  assemblyName: string,
+  name: string,
+  start: number,
+  mateStart: number,
+  { refName = 'X1', strand = 1 } = {},
+) {
+  return new SimpleFeature({
+    uniqueId: `${name}-${assemblyName}`,
+    refName: 'chr1',
+    start,
+    end: start + 60,
+    strand,
+    name,
+    assemblyName: 'anchor',
+    mate: {
+      assemblyName,
+      refName,
+      start: mateStart,
+      end: mateStart + 60,
+    },
+  })
+}
+
+describe('a stack of two mate lanes', () => {
+  const anchors = [100, 250, 400, 550, 700, 850]
+  const lanes = ['peach', 'cacao']
+  const stacked = (
+    peachStarts: number[],
+    cacaoStarts: number[],
+    cacaoStrand = 1,
+  ) =>
+    groupFeatures([
+      ...anchors.map((start, i) =>
+        pairOn('peach', `g${i}`, start, 500_000 + peachStarts[i]!),
+      ),
+      ...anchors.map((start, i) =>
+        pairOn('cacao', `g${i}`, start, 900_000 + cacaoStarts[i]!, {
+          strand: cacaoStrand,
+        }),
+      ),
+    ])
+  const reversed = [...anchors].reverse()
+  const bothCollinear = stacked(anchors, anchors)
+
+  test('the lower lane lines up under the lane above, not under the anchor', () => {
+    const first = decide(bothCollinear, { assemblyNames: lanes })
+    // peach's content drifts 60 bp and its hold keeps it drawn where it was,
+    // so its genes now sit 48 px right of the anchor's; a fresh cacao
+    // follows peach there rather than the anchor
+    const drifted = stacked(
+      anchors.map(start => start + 60),
+      anchors,
+    )
+    const second = decide(drifted, {
+      assemblyNames: lanes,
+      previous: new Map([['peach', first.get('peach')]]),
+    })
+    const peach = frameOf(second.get('peach')!)
+    const cacao = frameOf(second.get('cacao')!)
+    for (const [i, start] of anchors.entries()) {
+      const peachX = rowFrameX(peach, 500_030 + start + 60, WIDTH)
+      const cacaoX = rowFrameX(cacao, 900_030 + anchors[i]!, WIDTH)
+      expect(peachX).toBeCloseTo(px(start + 30) + 48)
+      expect(cacaoX).toBeCloseTo(peachX)
+    }
+  })
+
+  test('orientation composes across a flipped middle lane', () => {
+    // peach reads backwards against the anchor; cacao collinear with PEACH
+    // is backwards against the anchor too, and cacao collinear with the
+    // anchor reads backwards against peach's mirrored frame
+    const withPeach = decide(stacked(reversed, reversed, -1), {
+      assemblyNames: lanes,
+    })
+    expect(withPeach.get('peach')!.flipped).toBe(true)
+    expect(withPeach.get('cacao')!.flipped).toBe(true)
+
+    const withAnchor = decide(stacked(reversed, anchors), {
+      assemblyNames: lanes,
+    })
+    expect(withAnchor.get('peach')!.flipped).toBe(true)
+    expect(withAnchor.get('cacao')!.flipped).toBe(false)
+  })
+
+  test('under a reversed anchor both lanes mirror with it and decide nothing', () => {
+    const decisions = decide(bothCollinear, {
+      assemblyNames: lanes,
+      anchorReversed: true,
+    })
+    const peach = decisions.get('peach')!
+    const cacao = decisions.get('cacao')!
+    expect(peach.flipped).toBe(false)
+    expect(cacao.flipped).toBe(false)
+    const peachFrame = frameOf(peach, true)
+    const cacaoFrame = frameOf(cacao, true)
+    expect(peachFrame.flipped).toBe(true)
+    expect(cacaoFrame.flipped).toBe(true)
+    for (const start of anchors) {
+      const x = WIDTH - px(start + 30)
+      expect(rowFrameX(peachFrame, 500_030 + start, WIDTH)).toBeCloseTo(x)
+      expect(rowFrameX(cacaoFrame, 900_030 + start, WIDTH)).toBeCloseTo(x)
+    }
   })
 })

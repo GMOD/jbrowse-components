@@ -127,3 +127,15 @@ test('a hidden lane drops the hover', async () => {
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()
 })
+
+// A gene commit changes what the lanes draw on their baselines and no ribbon;
+// the hover the reader is holding over a ribbon has no reason to go
+test('a lane-genes commit keeps a direct-link hover', async () => {
+  const display = await stackedDisplay([link('L1', 110, 210)])
+  hoverDirectLink(display)
+  expect(display.hoverTarget).toBeDefined()
+
+  display.setLaneGenes(new Map(), 'window-2', true)
+  expect(display.hoverTarget).toBeDefined()
+  expect(display.hoverTarget?.feature.id()).toBe('L1')
+})

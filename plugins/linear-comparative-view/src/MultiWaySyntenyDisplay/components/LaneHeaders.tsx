@@ -4,20 +4,22 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
-import { dropRowAt, moveLaneTo } from '../laneDrag.ts'
+import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
 import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 
-// The lane being dragged and the origin its ys are measured from — fixed for
-// the whole gesture, so the listener effect can depend on it honestly. The
-// moving y is its own state: it changes on every mousemove, and re-binding
-// window listeners that often is what the split avoids.
+// The lane being dragged, the origin its ys are measured from and where the
+// press landed — fixed for the whole gesture, so the listener effect can
+// depend on it honestly. The moving y is its own state: it changes on every
+// mousemove, and re-binding window listeners that often is what the split
+// avoids.
 interface LaneDrag {
   assemblyName: string
   top: number
+  startY: number
 }
 
 interface LaneMenu {
@@ -38,7 +40,9 @@ interface LaneMenu {
  * Press a mate lane's label, move it over another lane, release: the row under
  * the pointer is read off the lanes' band extents, and the drop writes the
  * whole order back the way the menu's Move up/down does, so the lanes the drag
- * did not touch stay where the reader saw them.
+ * did not touch stay where the reader saw them. A press that goes nowhere is a
+ * click: it shows no drop bar and writes no order, since writing the order the
+ * lanes already have would pin every lane and end the densest-first sort.
  */
 const LaneHeaders = observer(function LaneHeaders({
   model,
@@ -85,19 +89,26 @@ const LaneHeaders = observer(function LaneHeaders({
     if (!drag) {
       return
     }
-    const { assemblyName, top } = drag
+    const { assemblyName, top, startY } = drag
     const yOf = (e: MouseEvent) => e.clientY - top
+    let armed = false
     const move = (e: MouseEvent) => {
-      setDragY(yOf(e))
+      const y = yOf(e)
+      armed ||= pastDragSlop(startY, y)
+      if (armed) {
+        setDragY(y)
+      }
     }
     const up = (e: MouseEvent) => {
       setDrag(undefined)
       setDragY(undefined)
-      const row = dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop)
-      if (row !== undefined) {
-        model.setRowOrder(
-          moveLaneTo(model.rowAssemblies, assemblyName, row - 1),
-        )
+      const order = laneOrderAfterDrop(
+        model.rowAssemblies,
+        assemblyName,
+        dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop),
+      )
+      if (order) {
+        model.setRowOrder(order)
       }
     }
     window.addEventListener('mousemove', move)
@@ -113,8 +124,7 @@ const LaneHeaders = observer(function LaneHeaders({
     event.preventDefault()
     const box = event.currentTarget.closest('[data-lane-headers]')
     const top = box?.getBoundingClientRect().top ?? 0
-    setDrag({ assemblyName, top })
-    setDragY(event.clientY - top)
+    setDrag({ assemblyName, top, startY: event.clientY - top })
   }
 
   return (
