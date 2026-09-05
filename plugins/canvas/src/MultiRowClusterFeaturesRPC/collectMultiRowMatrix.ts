@@ -15,11 +15,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-// The matrix both multi-row clustering RPCs share: fetch the features over the
-// regions, bucket them by the row the painting drew them in, and bin each row's
-// colors. `MultiRowClusterFeatures` clusters it; `MultiRowGetFeatureMatrix`
-// hands it back for the R-script path. Payload plus call context rather than
-// an `RpcExecuteArgs<'Key'>`, because it serves two registry entries.
 export async function collectMultiRowMatrix({
   pluginManager,
   args,
@@ -45,19 +40,13 @@ export async function collectMultiRowMatrix({
     adapterConfig,
   })
 
-  // must mirror the painting exactly — colorKey IS the on-screen color, so rows
-  // cluster on what the user sees (see makeFeatureColorResolver)
   const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
-  // likewise mirrors the painting: the row a feature lands in has to be the row
-  // it was drawn in, or the cluster order describes an arrangement nobody sees
   const featurePartition = makeFeaturePartitionResolver(
     partitionField,
     pluginManager.jexl,
   )
-  // Every region at once: the regions are independent, and awaited one at a
-  // time a 24-region clustering run paid 24 round trips end to end. Each gets
-  // its own status slot so the concurrent downloads aggregate into one bar
-  // rather than clobbering the shared field, the way the score matrix does.
+  // Each concurrent download gets its own status slot so they aggregate into one
+  // bar rather than clobbering the shared field.
   const slot = createStatusFanOut(statusCallback)
   const featuresPerRegion = await updateStatus(
     'Downloading features',
@@ -75,10 +64,8 @@ export async function collectMultiRowMatrix({
   const features: MatrixFeature[] = []
   for (const [regionIndex, feats] of featuresPerRegion.entries()) {
     checkStopTokenThrottled(stopTokenCheck)
-    // Dedup by feature id — a duplicate would double-count coverage in the
-    // matrix and skew the row order. Per region rather than across the whole
-    // fetch: a feature genuinely appearing in two clustered regions covers bins
-    // in both, and `regionIndex` is what keeps those apart.
+    // Dedup per region, not across the fetch: a feature appearing in two
+    // clustered regions covers bins in both.
     for (const f of dedupeFeaturesById(feats).values()) {
       features.push({
         regionIndex,
@@ -90,8 +77,5 @@ export async function collectMultiRowMatrix({
     }
   }
 
-  // Keyed in `sources` order by the builder, which is what the cluster `order`
-  // indexes back into via buildClusteredLayout(sourcesWithoutLayout, ...) — see
-  // ClusterMatrix for why the names have to ride along with the rows.
   return buildMultiRowMatrix({ sources, regions, features })
 }

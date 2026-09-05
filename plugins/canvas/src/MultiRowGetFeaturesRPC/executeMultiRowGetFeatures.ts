@@ -39,9 +39,6 @@ export async function executeMultiRowGetFeatures({
     adapterConfig,
   })
 
-  // Stage 1 (cheap): index-only byte estimate before any feature download — the
-  // same shared fold-into-fetch gate the feature-render RPC uses. Byte-only here:
-  // the display turns the mixin's density axis off, so there is no stage 1.5.
   const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
     dataAdapter,
     regions: [region],
@@ -61,8 +58,6 @@ export async function executeMultiRowGetFeatures({
   )
   checkStopTokenThrottled(stopTokenCheck)
 
-  // Dedup by feature id — a duplicate would otherwise pack duplicate quads. See
-  // dedupeFeaturesById for why all three feature RPCs run the same one.
   const features = [...dedupeFeaturesById(featuresArray).values()]
 
   const result = packMultiRowFeatures({
@@ -78,11 +73,6 @@ export async function executeMultiRowGetFeatures({
       stopTokenCheck,
     }),
   })
-  // Caller-facing type comes from the RpcRegistry `MultiRowGetFeatures.return`
-  // ambient declaration (see rpcTypes.ts); the framework unwraps the rpcResult
-  // wrapper, so no return annotation or cast is needed here. Carries `bytes` and
-  // no feature count — this display gates on the byte axis only, so a count has
-  // nothing on the main thread that would read it.
   return rpcResultWithArrayBuffers({
     ...result,
     bytes,

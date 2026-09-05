@@ -2,10 +2,6 @@ import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
 
-// multi-row's unset-slot fallback is just the generic feature default; unset is
-// also what turns on the per-row palette (resolveRowColorStrings), which paints
-// over this on the main thread, so it's mostly invisible. A pure fallback, never
-// compared against a stored value (the slot is a `maybeColor`).
 import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type {
@@ -16,10 +12,6 @@ import type {
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-// Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
-// degrading to the default color on a bad expression or non-string result.
-// Called for a set slot, or for an unset slot when the feature carries no BED
-// color (the resolver falls back to it with `colorCfg.color` = the default).
 function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
@@ -34,35 +26,14 @@ function evalColorSlot(
 }
 
 /**
- * Build the per-feature color resolver for a `color` slot value. A BED that
- * declares its own color has already said how it wants to be painted, so an
- * unset slot yields to it — no jexl needed; any set slot wins. cssColorToABGR
- * understands the bare "255,0,0" triple, so the value goes through as-is. No
- * parent walk: these painting tracks are flat (disableGeneHeuristic), so the
- * drawn feature is the one carrying the color.
- *
- * A factory rather than a plain function so the slot is interpreted exactly
- * once, off the one `colorConfig` — the per-feature work then can't be handed a
- * mismatched pair — and so the jexl config object is hoisted out of the loop.
- *
- * Shared with the clustering RPC on purpose. `colorKey` there is *defined* as
- * the color painted on screen — rows cluster by which colors fall at which
- * positions — so if the two resolutions drifted, an itemRgb painting would
- * cluster on a uniform color nobody sees and silently produce a meaningless
- * order. `fromBed` additionally tells the main thread to drop the per-row
- * palette, which would otherwise cover the colors the BED asked for.
+ * The clustering RPC resolves colors through this same function, because rows
+ * there cluster by which colors fall at which positions — a drift between the
+ * two would order the rows on colors nobody sees.
  */
 export function makeFeatureColorResolver(
   colorConfig: string | undefined,
   jexl: JexlInstance,
 ) {
-  // A painting is half a million features per region, so whatever the slot
-  // settles once must not be re-settled per feature — the same
-  // `isCallbackValue` split `makeFeaturePartitionResolver` makes below, for the
-  // same reason. Only the callback form has a per-feature answer: an unset slot
-  // asks the BED and otherwise hands back one constant, and a plain CSS value IS
-  // the answer. Both used to reach `readConfigValue` per feature to be told what
-  // they already knew.
   if (colorConfig === undefined) {
     const fallback = { css: FEATURE_DEFAULT_COLOR, fromBed: false }
     return (feature: Feature) => {
@@ -83,24 +54,13 @@ export function makeFeatureColorResolver(
   }
 }
 
-// A BED column arrives as a string or a number depending on the parser, and a
-// numeric category (a chromHMM state number, a cluster id) is a real row name
-// and a real label, so coerce rather than trust. Absent stays '' rather than
-// becoming "undefined" — and '' is what the row axis and the legend both read as
-// "this feature names nothing".
+// A numeric BED column is a real row name, so coerce rather than trust the
+// declared type; an absent one stays '', which the row axis and the legend both
+// read as naming nothing.
 function columnValue(raw: unknown) {
   return raw === undefined || raw === null ? '' : String(raw)
 }
 
-/**
- * This display's feed of the shared derived-key collector, which is what the
- * main thread builds the color legend from instead of re-walking the features. A
- * region's rows are its `partitionValues`, so a candidate's `rowIndex` indexes
- * that list and `buildColorLegend` resolves it to a display row.
- *
- * A pass of its own rather than a line inside the pack loop, so it can also be
- * run over an already-packed region.
- */
 export function collectLegendCandidates({
   featureNames,
   featureColors,
@@ -120,9 +80,6 @@ export function collectLegendCandidates({
   return collector.candidates
 }
 
-// Attributes that name a feature's PLACE rather than anything about it. Rows
-// keyed on one of these are one row per feature, which is the shape this menu
-// exists to get a reader out of.
 const NON_PARTITION_TAGS = new Set([
   'start',
   'end',
@@ -136,20 +93,12 @@ const NON_PARTITION_TAGS = new Set([
   'source',
 ])
 
-// How many features to read tags off. A BED's columns are the same on every
-// line, so one would do; a GFF's attributes are per record, so a few rows cover
-// the common case of a file whose first feature happens to omit an optional
-// column. Bounded either way — this cannot grow with the region.
 const PARTITION_CANDIDATE_SAMPLE = 20
 
 /**
- * The attribute names a reader could partition on, sampled off the head of the
- * feature list. Sorted, so the menu built from it does not reorder itself when a
- * pan changes which features arrive first.
- *
- * Through `toJSON`, not `tags()`: `tags` is `SimpleFeature`'s, and the `Feature`
- * interface an adapter is free to implement carries only the serializer. Both
- * enumerate the same attribute set.
+ * Enumerates attributes through `toJSON`, not `tags()`: `tags` is
+ * `SimpleFeature`'s, and the `Feature` interface an adapter may implement
+ * carries only the serializer.
  */
 function collectPartitionCandidates(features: Feature[]) {
   const names = new Set<string>()
@@ -164,38 +113,17 @@ function collectPartitionCandidates(features: Feature[]) {
   return [...names].sort()
 }
 
-// Distinct values counted per candidate before it is declared high-cardinality
-// and dropped from the walk. Past this a count is not a decision anyone makes
-// differently: 200 rows and 40,000 rows are both "not this attribute".
 export const MAX_COUNTED_PARTITION_VALUES = 200
 
-// A stored value is truncated to this many characters before it goes in the
-// set. Cardinality counting only needs distinctness, so this bounds what a
-// single GFF3 Note or a stringified Parent array can cost — both in the set
-// the worker holds and in what crosses the postMessage boundary to the main
-// thread — without resorting to a hash that would make the shipped value
-// unreadable. Two distinct values sharing this prefix undercount by one, which
-// is the same kind of approximation the sample below already accepts.
+// Truncating makes the count approximate: two values sharing this prefix
+// undercount by one.
 export const MAX_PARTITION_VALUE_LENGTH = 64
 
-// How many features to read for value counting, out of a region that can carry
-// half a million. Past this a value's presence doesn't change what the menu
-// should say — a field with 20 categories has shown all of them long before
-// this many rows, and a unique-per-feature field has already overflowed the
-// 200-value cap by row 201. Bounds the per-feature work this pass adds to O(1)
-// against the region size instead of O(features).
 export const PARTITION_VALUE_COUNT_SAMPLE = 5_000
 
 /**
- * The distinct values each partition candidate takes over the region, capped
- * and sampled, so the "Partition by..." menu can say how many rows a choice
- * would draw before the refetch that would otherwise be the only way to find
- * out.
- *
- * Values rather than counts because regions land independently and the main
- * thread unions them; a count cannot be unioned. A candidate that overflows the
- * cap stops being read at all, so a unique-per-feature column costs its first
- * two hundred features and nothing after.
+ * Collects values rather than counts because regions land independently and the
+ * main thread unions them, and a count cannot be unioned.
  */
 function createCandidateValueCounter(candidates: string[]) {
   const active = new Map(candidates.map(c => [c, new Set<string>()]))
@@ -225,42 +153,16 @@ function createCandidateValueCounter(candidates: string[]) {
   }
 }
 
-// The `partitionField` slot left empty: pick the row attribute off the data.
 export const AUTO_PARTITION_FIELD = ''
 
-// What auto picks, in preference order, when the loaded features carry it.
-//
-// One entry, and it is RepeatMasker's. That file is both the commonest track
-// anyone points this display at and the one where the old default was worst:
-// `name` on rmsk is the repeat instance, so the display opened as tens of
-// thousands of one-feature rows — a hairline each, no structure, and the fix
-// (Partition by... → repClass) discoverable only by opening a menu the reader
-// had no reason to think they needed. `repClass` is ~20 rows of exactly the
-// signal the track is read for.
-//
-// Kept a list because the next entry is a matter of finding another attribute
-// name that is this unambiguous, not of changing anything here.
 const PREFERRED_PARTITION_FIELDS = ['repClass']
 
-// What auto falls back to: the feature's own name. Right for a file whose rows
-// ARE its names — an ancestry painting keyed by sample — and the historical
-// default, so a track that was relying on it keeps its rows.
 const FALLBACK_PARTITION_FIELD = 'name'
 
 /**
- * The attribute a region actually partitions on: the configured one, or — when
- * the slot is left empty — the first preferred attribute the data carries.
- *
- * Resolved in the worker, against the same sampled `partitionCandidates` the
- * "Partition by..." menu is built from, because this is the only side that
- * knows the answer before the features are walked. Doing it on the main thread
- * means fetching a region to discover its columns and then fetching it again to
- * partition on one of them, which on the RepeatMasker files this exists for is
- * the expensive half of the load, twice.
- *
- * Reported back as `resolvedPartitionField` so the menu can check the radio for
- * a field nobody configured, and so clustering — which must land each feature in
- * the row the painting drew it in — asks for the same one.
+ * Only the worker knows which columns the data carries, so it picks the field
+ * and reports it back as `resolvedPartitionField` — clustering has to ask for
+ * the same one to land each feature in the row the painting drew it in.
  */
 export function resolvePartitionField(
   partitionField: string,
@@ -277,25 +179,8 @@ export function resolvePartitionField(
 }
 
 /**
- * Build the per-feature row resolver for a `partitionField` value: the plain
- * attribute lookup, or a `jexl:` expression evaluated per feature.
- *
- * The expression form exists because a file can carry the category without
- * carrying a column for it. UCSC's `bigRmskBed` is the case in hand: the class
- * is a suffix on the name (`L1HS#LINE/L1`), so an attribute lookup can only
- * partition on the full repeat name, which is thousands of rows rather than
- * twenty. `jexl:split(split(feature.name,'#')[1],'/')[0]` is the same file read
- * as classes.
- *
- * A factory for the same two reasons the color one is: the slot is interpreted
- * once rather than per feature, and — more importantly — this is SHARED with the
- * clustering RPC on purpose. Rows cluster by which colors fall at which
- * positions in each row, so if the two sides resolved a row differently the
- * cluster order would describe rows nobody is looking at.
- *
- * A throwing expression yields '' for that feature rather than failing the
- * region, mirroring evalColorSlot: one unparseable name costs its own row
- * assignment, not the track.
+ * The clustering RPC resolves rows through this same function — were the two to
+ * drift, the cluster order would describe rows the painting never drew.
  */
 export function makeFeaturePartitionResolver(
   partitionField: string,
@@ -314,21 +199,6 @@ export function makeFeaturePartitionResolver(
   }
 }
 
-/**
- * Pack features into the multi-row wire arrays: absolute genomic start/end, a
- * per-feature ABGR color (the `color` slot evaluated per feature — this is the
- * per-feature axis, e.g. per-segment `itemRgb` painting), and a row reference
- * indirected through a deduplicated `partitionValues` list (so row strings ship
- * once, not per feature). Pure — the worker supplies the features.
- *
- * With the `color` slot at its default, a feature's own `itemRgb` is used when
- * present, and `usedItemRgb` reports that back so the main thread can drop the
- * per-row palette that would otherwise cover it.
- *
- * Per-ROW color (sampleColorMap / palette / the arrangement dialog) is resolved
- * on the main thread at render time (see resolveRowColorStrings), so it never
- * refetches and isn't this function's concern.
- */
 export function packMultiRowFeatures({
   features,
   partitionField,
@@ -349,17 +219,12 @@ export function packMultiRowFeatures({
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
   const featurePartitionIndex = new Uint32Array(n)
-  // Length-zero when the slot is unset, which is how the render side knows the
-  // indel-glyph pass is off — cheaper than a parallel boolean, and it can't
-  // disagree with the array it gates.
   const packDeltas = lengthField !== ''
   const featureDeltas = new Int32Array(packDeltas ? n : 0)
   const featureNames: string[] = new Array(n)
   const featureIds: string[] = new Array(n)
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
-  // an unset (`maybeColor` undefined) slot is what lets the file's own color, or
-  // the per-row palette, paint — see the `color` slot in configSchema.ts
   const featureColor = makeFeatureColorResolver(colorConfig, jexl)
   const partitionCandidates = collectPartitionCandidates(features)
   const resolvedPartitionField = resolvePartitionField(
@@ -371,13 +236,6 @@ export function packMultiRowFeatures({
     resolvedPartitionField,
     jexl,
   )
-  // A painting repeats a handful of color strings across every feature it has —
-  // eight ancestry hues over half a million segments — and parsing one is not
-  // cheap: trim, lowercase, a named-color lookup, a BED-triple regex, then the
-  // parser. Measured at 570ms per 500k features uncached against 6ms memoized,
-  // which is most of a second of worker time per region, spent resolving eight
-  // answers. The clustering RPC caches the same resolution for the same reason
-  // (buildMultiRowMatrix's rgbCache); this side had been left doing it long-hand.
   const abgrByCss = new Map<string, number>()
   let usedItemRgb = false
 
@@ -387,18 +245,10 @@ export function packMultiRowFeatures({
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')
     featureIds[i] = feature.id()
-    // The same coercion the partition value gets, and for the same reason: a
-    // numeric name (a chromHMM state number, a numeric category) is a real
-    // label, and dropped to '' it cost the tooltip its text and the legend its
-    // entry. `get('name')`'s `string | undefined` overload is optimistic about
-    // exactly that, which is why the value is coerced rather than trusted.
     const name: unknown = feature.get('name')
     featureNames[i] = columnValue(name)
 
     if (packDeltas) {
-      // A BED column arrives as a string or a number depending on the parser, so
-      // coerce either way; anything unparsable is 0, which draws no glyph rather
-      // than a glyph of garbage length.
       const num = Number(feature.get(lengthField))
       featureDeltas[i] = Number.isFinite(num) ? num : 0
     }

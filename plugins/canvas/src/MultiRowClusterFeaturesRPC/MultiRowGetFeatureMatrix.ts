@@ -10,15 +10,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     MultiRowGetFeatureMatrix: {
       args: MultiRowClusterFeaturesArgs
       return: Map<string, Float32Array<ArrayBuffer>>
-      // wrapped in rpcResult so postMessage transfers its buffers
       transferables: true
     }
   }
 }
 
-// The matrix `MultiRowClusterFeatures` clusters, handed back unclustered for
-// the cluster dialog's R-script tab — the multi-row analogue of
-// `MultiWiggleGetScoreMatrix`.
 export default class MultiRowGetFeatureMatrix extends RpcMethodTypeWithRenameRegions<'MultiRowGetFeatureMatrix'> {
   name = 'MultiRowGetFeatureMatrix' as const
 

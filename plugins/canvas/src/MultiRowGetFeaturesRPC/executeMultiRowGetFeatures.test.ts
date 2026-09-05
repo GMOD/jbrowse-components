@@ -10,11 +10,6 @@ jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
   getFeatureAdapterOrThrow: jest.fn(),
 }))
 
-// `rpcResultWithArrayBuffers` derives the transfer list by walking the payload,
-// so it cannot disagree with itself — but its walk stops one level down, and
-// nothing here had ever run the deeper walk `checkTransferList` does over what
-// this executor actually returns. That check runs under NODE_ENV=test for any
-// method a test drives, and this method had no test.
 const features = [
   new SimpleFeature({
     uniqueId: '1',
@@ -52,9 +47,6 @@ function run(byteLimit?: number) {
   })
 }
 
-// the executor returns the byte gate's plain object OR an rpcResult, so the two
-// payload tests narrow rather than casting — a run that took the gate would
-// otherwise assert nothing and pass
 async function runPayload(byteLimit?: number) {
   const result = await run(byteLimit)
   if (!('__rpcResult' in result)) {
@@ -70,16 +62,12 @@ test('every buffer in the packed payload is in the transfer list', async () => {
   expect(transferables).toContain(value.featurePartitionIndex.buffer)
 })
 
-// the byte gate reports through the same wrapper, and `bytes` beside the arrays
-// is the field a level-limited walk would trip over
 test('the byte measurement rides along without upsetting the list', async () => {
   const { value, transferables } = await runPayload(1_000_000)
   expect(value.bytes).toBe(1024)
   expect(new Set(transferables).size).toBe(transferables.length)
 })
 
-// over budget the executor returns the gate's plain object rather than an
-// rpcResult, so there is no list to check — and nothing that looks like one
 test('an over-budget region returns the gate result, not a payload', async () => {
   const result = await run(1)
   expect(result).toEqual({ regionTooLarge: true, bytes: 1024 })

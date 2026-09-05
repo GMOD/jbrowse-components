@@ -13,17 +13,11 @@ import {
 
 import type { Feature } from '@jbrowse/core/util'
 
-// A real SimpleFeature rather than a stub of one. The pack reads features three
-// ways now — `get`, `id` and (for the partition candidates) `toJSON` — and a
-// hand-rolled object answering those independently can pass a test while naming
-// a column nothing can be read from. It also needs no cast.
 function feat(
   attrs: Record<string, unknown> & { start: number; end: number },
 ): Feature {
   return new SimpleFeature({
     uniqueId: String(attrs.id ?? attrs.start),
-    // required of a serialized feature and irrelevant to every assertion here;
-    // ahead of the spread so a case can still name its own
     refName: 'ctgA',
     ...attrs,
   })
@@ -94,7 +88,6 @@ test('an unset color slot paints from the feature itemRgb, no jexl needed', () =
     cssColorToABGR('rgb(31,120,180)'),
     cssColorToABGR('rgb(170,170,170)'),
   ])
-  // tells the main thread to drop the per-row palette that would cover these
   expect(r.usedItemRgb).toBe(true)
 })
 
@@ -111,8 +104,6 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
 })
 
 test('a placeholder itemRgb does not hijack the per-row palette', () => {
-  // a plain BED12 fills itemRgb with the "no color specified" placeholder, which
-  // must not read as black and knock out the palette
   const r = packMultiRowFeatures({
     features: [
       feat({ start: 0, end: 5, sample: 'mom', itemRgb: '0,0,0' }),
@@ -191,10 +182,6 @@ test('captures feature name for tooltips ("" when absent)', () => {
 })
 
 test('a numeric name column is a label, not an absent name', () => {
-  // same coercion the partition value gets, and for the same reason: which of
-  // string/number a BED column arrives as is the parser's business. Dropped to
-  // '' these lost the tooltip its text and the legend its entry, since
-  // buildColorLegend skips unnamed features.
   const r = packMultiRowFeatures({
     features: [
       feat({ start: 0, end: 5, sample: 'mom', name: 12 }),
@@ -208,11 +195,6 @@ test('a numeric name column is a label, not an absent name', () => {
   expect(r.featureNames).toEqual(['12', '0'])
 })
 
-// `colorKey` in the clustering RPC is *defined* as the color painted on screen —
-// rows cluster by which colors fall where. makeFeatureColorResolver is shared
-// with executeMultiRowClusterFeatures so the two can't disagree; if they did, an
-// itemRgb painting would cluster on a uniform color nobody sees and silently
-// produce a meaningless row order.
 describe('makeFeatureColorResolver (shared with clustering)', () => {
   const resolve = (colorConfig: string | undefined) =>
     features.map(makeFeatureColorResolver(colorConfig, createJexlInstance()))
@@ -228,17 +210,12 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
   })
 
   test('a set slot resolves every feature the same, and never claims fromBed', () => {
-    // The constant-slot fast path: one answer for the whole region, and a set
-    // slot beats the file's own itemRgb (which these features all carry).
     const colors = resolve('red')
     expect(colors.map(c => c.css)).toEqual(['red', 'red', 'red'])
     expect(colors.some(c => c.fromBed)).toBe(false)
   })
 
   test('a jexl slot is still evaluated per feature', () => {
-    // The other side of the fast path above: a callback slot cannot be hoisted,
-    // and hoisting it would paint the whole region in whichever color the first
-    // feature happened to resolve.
     const colors = resolve(
       "jexl:feature.sample=='mom'?'tomato':'cornflowerblue'",
     )
@@ -251,8 +228,6 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
   })
 
   test('a jexl slot that yields no color degrades to the default', () => {
-    // Whether the expression throws or simply resolves to a non-string, one bad
-    // slot costs the color and not the region.
     const colors = resolve('jexl:feature.missing.deeper')
     expect(colors.map(c => c.css)).toEqual([
       FEATURE_DEFAULT_COLOR,
@@ -262,7 +237,6 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
   })
 
   test('resolves the same colors the painting bakes', () => {
-    // the invariant clustering depends on: colorKey IS the on-screen color
     const r = packMultiRowFeatures({
       features,
       partitionField: 'sample',
@@ -284,15 +258,11 @@ test('packs no deltas when lengthField is unset', () => {
     colorConfig: undefined,
     jexl: createJexlInstance(),
   })
-  // length 0, not n zeros: this is what tells the render side the glyph pass is
-  // off, and a zero delta is a legitimate reference-length allele
   expect(r.featureDeltas).toHaveLength(0)
 })
 
 test('packs signed deltas from lengthField, coercing strings', () => {
   const r = packMultiRowFeatures({
-    // a BED column arrives as a string from some parsers and a number from
-    // others, and an absent value must not become a glyph
     features: [
       feat({ start: 0, end: 50, sample: 'a', delta: '113174' }),
       feat({ start: 0, end: 30, sample: 'b', delta: -3217 }),
@@ -307,9 +277,6 @@ test('packs signed deltas from lengthField, coercing strings', () => {
   expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
 })
 
-// UCSC's bigRmskBed keeps the repeat class in the name (`L1HS#LINE/L1`) rather
-// than in a column, so the attribute form can only split on the full repeat
-// name. This is the same file read as ~20 classes instead of thousands of names.
 const RMSK_CLASS = "jexl:split(split(feature.name,'#')[1],'/')[0]"
 
 test('partitions on a jexl expression, not just an attribute', () => {
@@ -329,10 +296,6 @@ test('partitions on a jexl expression, not just an attribute', () => {
   expect([...r.featurePartitionIndex]).toEqual([0, 1, 0, 2])
 })
 
-// The empty slot is the auto sentinel. A RepeatMasker table carries `repClass`
-// as a column, and `name` there is the repeat instance — tens of thousands of
-// one-feature rows — so the pick has to happen off the columns rather than off
-// the config, which never saw them.
 describe('the empty partitionField picks a column off the data', () => {
   const rmskFeatures = [
     feat({ start: 0, end: 50, name: 'L1HS', repClass: 'LINE' }),
@@ -363,8 +326,6 @@ describe('the empty partitionField picks a column off the data', () => {
     expect(r.partitionValues).toEqual(['seg1'])
   })
 
-  // A configured field is a decision, and auto does not get to second-guess it —
-  // including on the very file the preference exists for.
   it('leaves a configured field alone', () => {
     const r = packed(rmskFeatures, 'name')
     expect(r.resolvedPartitionField).toBe('name')
@@ -374,7 +335,6 @@ describe('the empty partitionField picks a column off the data', () => {
 
 test('a feature the expression throws on costs its own row, not the region', () => {
   const r = packMultiRowFeatures({
-    // no '#', so the inner split yields undefined and the outer one throws
     features: [
       feat({ start: 0, end: 50, name: 'L1HS#LINE/L1' }),
       feat({ start: 0, end: 30, name: 'unparseable' }),
@@ -403,9 +363,6 @@ test('coerces a numeric partition value rather than dropping it', () => {
   expect(r.partitionValues).toEqual(['15', ''])
 })
 
-// What the color legend is derived from. Packed here because the main thread
-// would otherwise re-walk every feature of every region on every row reorder and
-// recolor to find the same handful of pairs.
 describe('the legend candidates', () => {
   const chromHmm = [
     feat({ start: 0, end: 5, sample: 'mom', name: 'TssA', itemRgb: '255,0,0' }),
@@ -434,14 +391,11 @@ describe('the legend candidates', () => {
     expect(packed(chromHmm).legendCandidates).toEqual([
       { rowIndex: 0, label: 'TssA', color: red },
       { rowIndex: 0, label: 'Quies', color: cssColorToABGR('0,255,0') },
-      // the same pair on 'dad', which may be the only row still painting it
       { rowIndex: 1, label: 'TssA', color: red },
     ])
   })
 
   it('packs nothing for unnamed features', () => {
-    // an unnamed track has no vocabulary to key, so the legend gets an empty
-    // list rather than one entry per feature
     expect(
       packed([feat({ start: 0, end: 5, sample: 'mom', itemRgb: '255,0,0' })])
         .legendCandidates,
@@ -459,8 +413,6 @@ describe('the legend candidates', () => {
   })
 })
 
-// The "Partition by..." menu's options. Discovered from the data rather than
-// declared, so the one thing the display is built on stops being config-only.
 test('collects the attribute names a reader could partition on', () => {
   const r = packMultiRowFeatures({
     features,
@@ -469,9 +421,6 @@ test('collects the attribute names a reader could partition on', () => {
     colorConfig: undefined,
     jexl: createJexlInstance(),
   })
-  // sorted, and without the ones naming a feature's PLACE — rows keyed on
-  // `start` are one row per feature, which is what the menu exists to get a
-  // reader out of
   expect(r.partitionCandidates).toEqual(['itemRgb', 'sample'])
 })
 
@@ -489,8 +438,6 @@ test('unions the names over the head of the list, not just the first feature', (
   expect(r.partitionCandidates).toEqual(['clade', 'sample'])
 })
 
-// Bounded, so this cannot become a per-feature cost on a painting carrying half
-// a million segments.
 test('samples the head rather than every feature', () => {
   const many = Array.from({ length: 500 }, (_, i) =>
     feat({ start: i, end: i + 1, sample: 'a', [`col${i}`]: 1 }),
@@ -506,8 +453,6 @@ test('samples the head rather than every feature', () => {
   expect(r.partitionCandidates).not.toContain('col400')
 })
 
-// What each candidate would cost in rows, so the menu can say so before the
-// refetch. Values rather than counts, since the main thread unions regions.
 describe('the distinct values per partition candidate', () => {
   test('lists each candidate with the values it takes', () => {
     const r = packMultiRowFeatures({
