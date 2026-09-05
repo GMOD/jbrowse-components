@@ -1,11 +1,8 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import {
-  readTaiIndex,
-  taiBlockFeatures,
-  taiRegionByteSize,
-} from '../util/taiSlice.ts'
+import { taiBlockFeatures } from '../util/taiBlockFeatures.ts'
+import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
 import type { MafAdapterOptions } from '../types.ts'

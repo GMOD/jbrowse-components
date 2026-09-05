@@ -3,11 +3,8 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import {
-  readTaiIndex,
-  taiBlockFeatures,
-  taiRegionByteSize,
-} from '../util/taiSlice.ts'
+import { taiBlockFeatures } from '../util/taiBlockFeatures.ts'
+import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
