@@ -829,21 +829,43 @@ function groupRawByRef(rpcDataMap: ReadonlyMap<number, LayoutRegionData>) {
   return refGroups
 }
 
+// The memo's cache key: every `LayoutInputs` field a group's output depends on,
+// compared by `===`. Exhaustive by construction, which is the point — the three
+// hand-kept lists this replaced (the cached fields, the compare, the cache
+// write) let a new input be compared in one place and forgotten in another, and
+// a forgotten one serves a stale layout from the memo with nothing to catch it.
+// `pinnedFeatureIds` and `expandedGeneIds` are MobX-computed sets, stable by
+// reference until they change, so `===` catches a toggle.
+//
+// `reversedRegions` is the one exclusion: it spans every region on screen, so
+// comparing it re-packs every group whenever any region flips. `groupUnchanged`
+// compares the per-group `reversed` set instead.
+const LAYOUT_CACHE_KEYS_RECORD: Record<
+  Exclude<keyof LayoutInputs, 'reversedRegions'>,
+  true
+> = {
+  bpPerPx: true,
+  showLabels: true,
+  showDescriptions: true,
+  displayMode: true,
+  pinnedFeatureIds: true,
+  labelDecimation: true,
+  labelRoomFactor: true,
+  maxIsoformsPerGene: true,
+  expandedGeneIds: true,
+  collapseDepth: true,
+  flattenRows: true,
+  dropBelowLabelRows: true,
+}
+
+const LAYOUT_CACHE_KEYS = Object.keys(LAYOUT_CACHE_KEYS_RECORD) as Exclude<
+  keyof LayoutInputs,
+  'reversedRegions'
+>[]
+
 interface GroupCache {
-  bpPerPx: number
-  showLabels: boolean
-  showDescriptions: boolean
-  labelDecimation: LabelDecimation
-  labelRoomFactor: number
-  maxIsoformsPerGene: number | undefined
-  expandedGeneIds: ReadonlySet<string> | undefined
-  collapseDepth: number | undefined
-  flattenRows: boolean | undefined
-  dropBelowLabelRows: boolean | undefined
-  displayMode: DisplayMode
-  // The MobX-computed pinned set; a stable reference until pins change, so a
-  // reference compare in groupUnchanged detects a pin toggle.
-  pinnedFeatureIds: ReadonlySet<string>
+  // the inputs this group was laid out with, compared over LAYOUT_CACHE_KEYS
+  inputs: LayoutInputs
   // idx -> raw fetch object, by reference. A new fetch swaps the reference.
   members: Map<number, LayoutRegionData>
   // members currently rendered reversed (affects label-overhang packing)
@@ -860,37 +882,10 @@ function groupUnchanged(
   members: Map<number, LayoutRegionData>,
   inputs: LayoutInputs,
 ) {
-  const {
-    bpPerPx,
-    showLabels,
-    showDescriptions,
-    reversedRegions,
-    displayMode,
-    pinnedFeatureIds,
-    labelDecimation = 'all',
-    labelRoomFactor = 1,
-    maxIsoformsPerGene,
-    expandedGeneIds,
-    collapseDepth,
-    flattenRows,
-    dropBelowLabelRows,
-  } = inputs
-  const paramsSame =
-    prev.bpPerPx === bpPerPx &&
-    prev.showLabels === showLabels &&
-    prev.showDescriptions === showDescriptions &&
-    prev.labelDecimation === labelDecimation &&
-    prev.labelRoomFactor === labelRoomFactor &&
-    prev.maxIsoformsPerGene === maxIsoformsPerGene &&
-    prev.expandedGeneIds === expandedGeneIds &&
-    prev.collapseDepth === collapseDepth &&
-    prev.flattenRows === flattenRows &&
-    prev.dropBelowLabelRows === dropBelowLabelRows &&
-    prev.displayMode === displayMode &&
-    prev.pinnedFeatureIds === pinnedFeatureIds &&
-    prev.members.size === members.size
+  const { reversedRegions } = inputs
   return (
-    paramsSame &&
+    LAYOUT_CACHE_KEYS.every(key => prev.inputs[key] === inputs[key]) &&
+    prev.members.size === members.size &&
     [...members].every(
       ([idx, raw]) =>
         prev.members.get(idx) === raw &&
@@ -1002,18 +997,7 @@ export function createIncrementalLayout({
           out.set(idx, result)
         }
         nextCache.set(key, {
-          bpPerPx: inputs.bpPerPx,
-          showLabels: inputs.showLabels,
-          showDescriptions: inputs.showDescriptions,
-          labelDecimation: inputs.labelDecimation ?? 'all',
-          labelRoomFactor: inputs.labelRoomFactor ?? 1,
-          maxIsoformsPerGene: inputs.maxIsoformsPerGene,
-          expandedGeneIds: inputs.expandedGeneIds,
-          collapseDepth: inputs.collapseDepth,
-          flattenRows: inputs.flattenRows,
-          dropBelowLabelRows: inputs.dropBelowLabelRows,
-          displayMode: inputs.displayMode,
-          pinnedFeatureIds: inputs.pinnedFeatureIds,
+          inputs,
           members: new Map(members),
           reversed,
           output,
