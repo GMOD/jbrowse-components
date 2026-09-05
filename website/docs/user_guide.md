@@ -128,6 +128,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/rnaseq)
 - [](/docs/tutorials/dtu)
+- [](/docs/tutorials/tp53_structures)
 
 ### Configuration & embedding
 

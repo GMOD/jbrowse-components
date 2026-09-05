@@ -28,6 +28,7 @@ showBranchLength
 showLegend
 showVariantLane
 sideBySide
+structures
 thickness
 transcriptId
 uniprotId
