@@ -78,7 +78,11 @@ import {
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { snapFittedContentHeight } from './fitLadder.ts'
-import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
+import {
+  EMPTY_LAID_OUT_DATA,
+  fitLadderViews,
+  fitLadderVolatiles,
+} from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   countTruncatedFeatures,
@@ -133,8 +137,6 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
-
-const EMPTY_LAID_OUT_DATA: ReadonlyMap<number, FeatureDataResult> = new Map()
 
 // Region identity (regionKey/reversed) rides in the stored payload rather than
 // being read back off the region record beside it — the layout groups by ref,
@@ -973,59 +975,40 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Descriptions are painted at the `full` stage, and at the `isoforms`
-         * one where a fixed-height track reached it — that ladder is `full →
-         * isoforms` and gives up transcripts rather than labels, so the rung
-         * packs the descriptions the settings asked for and this has to agree.
-         * Fit mode only reaches `isoforms` after `labels` dropped them. Every
-         * render-time consumer — label draw and the highlight/hit/SVG
+         * Descriptions are painted where the kept rung reserved room for them.
+         * Every render-time consumer — label draw and the highlight/hit/SVG
          * label-width reservation — reads this so a box never reserves width
          * for a description it won't draw.
          */
         get renderedShowDescriptions() {
-          const { level } = self.fitStage
-          return (
-            self.effectiveShowDescriptions &&
-            (level === 'full' ||
-              (level === 'isoforms' && !self.fitHeightToDisplay))
-          )
+          return self.fitStage.showDescriptions
         },
         /**
          * #getter
-         * Names are painted at every stage short of `bodies` and `bare` (and
-         * whenever fit is off), where the packer reserved row height + overhang
-         * for the names it kept so they never overlap — including the
-         * `decimated` stage, whose per-feature pruning happens inside the
-         * layout (dropped names are removed from floatingLabelsData), not via
-         * this flag. At `bodies` and below nothing is reserved, so all names
-         * are hidden rather than drawn on top of the boxes. Every render-time
-         * consumer reads this so hidden names reserve nothing.
+         * Names are painted where the kept rung reserved row height + overhang
+         * for them. The `decimated` rung's per-feature pruning happens inside
+         * the layout (dropped names leave floatingLabelsData), not via this
+         * flag. Every render-time consumer reads this so hidden names reserve
+         * nothing.
          */
         get renderedShowLabels() {
-          const { level } = self.fitStage
-          return self.showLabels && level !== 'bodies' && level !== 'bare'
+          return self.fitStage.showLabels
         },
         /**
          * #getter
-         * A subfeature label (a transcript name under its gene) is a worker-baked
-         * config choice rather than a fit concession — `showLabels`/
-         * `showDescriptions` govern only the feature's OWN two lines, and the
-         * packer reserves this label's row and overhang to match. So it
-         * survives every rung with another reduction to offer, `bodies`
-         * included — only the `bare` rung, whose whole reduction IS these rows
-         * (spent at zero in the pack), drops it.
+         * A subfeature label (a transcript name under its gene) is worker-baked
+         * and its row is reserved in the pack, so it survives every rung that
+         * kept those rows and goes only where the kept rung spent them at zero.
          *
          * It does not survive a squeeze either. The reserved rows are spent in
          * `bodyHeightPx` and scaled with everything else, while the text draws
          * at the mode's own font size — so at scale 0.3 the names would paint
          * over rows a third as tall as the text, on top of each other and of
-         * the boxes. On a display that reserves these rows the ladder reaches
-         * `bare` before it squeezes, so the scale guard covers the remaining
-         * squeezable ladders (rows never reserved — nothing real is hidden).
+         * the boxes.
          */
         get renderedShowSubfeatureLabels() {
-          const { level, scale } = self.fitStage
-          return scale >= 1 && level !== 'bare'
+          const { scale, dropBelowLabelRows } = self.fitStage
+          return scale >= 1 && !dropBelowLabelRows
         },
         /**
          * #getter
@@ -1037,14 +1020,10 @@ export default function baseStateModelFactory(
             self.fitStage,
             self.showLabels,
             self.effectiveShowDescriptions,
-            this.renderedShowDescriptions,
             // Solving for one costs a bisection, and only this rung reports it.
             self.fitStage.level === 'decimated'
               ? self.fitDecimatedFactor
               : undefined,
-            // The `bare` rung exists only where the settings reserve the rows,
-            // so its level alone says the reserved labels were dropped.
-            self.fitStage.level === 'bare',
           )
         },
       }))

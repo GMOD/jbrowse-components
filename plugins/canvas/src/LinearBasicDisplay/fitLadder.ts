@@ -146,16 +146,27 @@ export function solveLabelRoomFactor(
 // picture the reader can use, and one drawn with all 10 and no name is not.
 //
 // `bare` sits below `bodies` because subfeature labels are a config choice, not
-// a fit concession (see renderedShowSubfeatureLabels) — they survive every rung
-// that has another reduction to offer, and are given up only where the
-// alternative is squeezing bodies under rows whose text the squeeze would hide
-// anyway. The rung exists only on a display whose settings reserve those rows.
+// a fit concession — they survive every rung that has another reduction to
+// offer, and are given up only where the alternative is squeezing bodies under
+// rows whose text the squeeze would hide anyway. The rung exists only on a
+// display whose settings reserve those rows.
 type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies' | 'bare'
+
+// The label room a rung's pack was called with. The rung carries it and the
+// stage reports it, so a renderer never re-derives from the level what the
+// packer reserved — a rung that hands back another rung's stack by reference
+// declares that stack's reservation.
+export interface LabelReservation {
+  showLabels: boolean
+  showDescriptions: boolean
+  dropBelowLabelRows: boolean
+}
 
 // One rung. Lazy so a rung tighter than the one that fits is never laid out — in
 // the common non-overflowing case only `full` is materialized.
 export interface FitRung {
   level: FitLevel
+  reserved: LabelReservation
   layout: () => Map<number, FeatureDataResult>
   // isoforms per gene this rung packs at, undefined for every one the worker
   // sent. Carried on the rung rather than derived from the level, because the
@@ -170,8 +181,8 @@ export interface FitRung {
 // `maxScale`), < 1 squeezes the last rung (floored at `minScale`), 1 when it
 // lands exactly. `contentHeight` is the kept rung's unscaled `maxBottom`, so a
 // caller derives the fitted height as `contentHeight * scale` without re-walking
-// the scaled map.
-export interface FitStage {
+// the scaled map. The reservation is the kept rung's.
+export interface FitStage extends LabelReservation {
   level: FitLevel
   layout: Map<number, FeatureDataResult>
   scale: number
@@ -293,6 +304,7 @@ export function resolveFitLadder(
     if (contentHeight <= trackHeight || isLastRung) {
       return {
         level: rung.level,
+        ...rung.reserved,
         layout,
         contentHeight,
         maxIsoforms: rung.maxIsoforms?.(),

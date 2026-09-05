@@ -644,12 +644,28 @@ export function stateModelFactory(
                 })
           }
           const shortestBox = minDrawnBoxHeight(full)
+          const names = {
+            showLabels: self.topBands.wantsName,
+            showDescriptions: false,
+            dropBelowLabelRows: false,
+          }
           return resolveFitLadder(
             [
-              { level: 'full', layout: () => full },
-              { level: 'labels', layout: labelsOnly },
-              { level: 'decimated', layout: decimated },
-              { level: 'bodies', layout: bodies },
+              {
+                level: 'full',
+                reserved: {
+                  ...names,
+                  showDescriptions: self.topBands.wantsDescription,
+                },
+                layout: () => full,
+              },
+              { level: 'labels', reserved: names, layout: labelsOnly },
+              { level: 'decimated', reserved: names, layout: decimated },
+              {
+                level: 'bodies',
+                reserved: { ...names, showLabels: false },
+                layout: bodies,
+              },
             ],
             self.topBands.laneHeight,
             // the same floor a track's squeeze bottoms out at, and the same one

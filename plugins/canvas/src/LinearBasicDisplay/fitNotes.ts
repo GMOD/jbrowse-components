@@ -15,15 +15,15 @@ export interface FitDrops {
   squeezePct: number | undefined
 }
 
+// The stage says what the kept rung reserved; the two settings say what was
+// asked for, and a drop is the difference.
 export function fitDrops(
-  stage: Pick<FitStage, 'level' | 'scale'>,
+  stage: Pick<
+    FitStage,
+    'level' | 'scale' | 'showLabels' | 'showDescriptions' | 'dropBelowLabelRows'
+  >,
   showLabels: boolean,
   showDescriptions: boolean,
-  // whether descriptions are actually painted at the rung that survived. Read
-  // rather than inferred from the level: fixed height reaches `isoforms`
-  // keeping them, fit mode only reaches it after `labels` dropped them, and one
-  // level answers both.
-  renderedShowDescriptions: boolean,
   // the whitespace factor the `decimated` rung committed at. Factor 0 drops no
   // name at all — `keepFeatureLabel` asks for `room >= width * 0` and no
   // overhang room is negative — and the rung reaches 0 legitimately, because
@@ -31,24 +31,20 @@ export function fitDrops(
   // `solveLabelRoomFactor`). Any factor above 0 means fits(0) failed, so at
   // least one name went.
   decimatedFactor: number | undefined,
-  // whether the kept rung dropped the reserved `below` subfeature-label rows —
-  // the `bare` rung only exists where the settings reserve them, so its level
-  // alone answers this and the caller passes exactly that.
-  droppedSubfeatureLabels: boolean,
 ): FitDrops {
   const names = !showLabels
     ? 'none'
-    : stage.level === 'bodies' || stage.level === 'bare'
+    : !stage.showLabels
       ? 'all'
       : stage.level === 'decimated' && (decimatedFactor ?? 0) > 0
         ? 'some'
         : 'none'
-  const descriptions = showDescriptions && !renderedShowDescriptions
+  const descriptions = showDescriptions && !stage.showDescriptions
   const pct = Math.round(stage.scale * 100)
   return {
     names,
     descriptions,
-    subfeatureLabels: droppedSubfeatureLabels,
+    subfeatureLabels: stage.dropBelowLabelRows,
     everyLabel:
       (names === 'all' || (descriptions && !showLabels)) &&
       (descriptions || !showDescriptions),

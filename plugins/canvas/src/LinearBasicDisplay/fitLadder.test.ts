@@ -12,7 +12,15 @@ import {
   squeezeFloorScale,
 } from './fitLadder.ts'
 
-import type { FitRung } from './fitLadder.ts'
+import type { FitRung, LabelReservation } from './fitLadder.ts'
+
+// The walk and the scale math read no reservation; these tests hand every rung
+// the same one and pin the pass-through once.
+const NO_LABELS: LabelReservation = {
+  showLabels: false,
+  showDescriptions: false,
+  dropBelowLabelRows: false,
+}
 
 // A one-region layout whose content height (maxBottom) is exactly `bottomPx`.
 function layoutOfHeight(bottomPx: number) {
@@ -32,6 +40,7 @@ function spyRung(level: FitRung['level'], bottomPx: number) {
   const calls = { count: 0 }
   const rung: FitRung = {
     level,
+    reserved: NO_LABELS,
     layout: () => {
       calls.count++
       return layoutOfHeight(bottomPx)
@@ -226,15 +235,48 @@ describe('snapFittedContentHeight', () => {
 })
 
 describe('resolveFitLadder', () => {
+  // The kept rung's reservation is the stage's, untouched: a renderer reads
+  // what the packer reserved rather than re-deriving it from the level.
+  it('reports the kept rung’s reservation', () => {
+    const reserved: LabelReservation = {
+      showLabels: true,
+      showDescriptions: false,
+      dropBelowLabelRows: true,
+    }
+    const stage = resolveFitLadder(
+      [
+        {
+          level: 'full',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(300),
+        },
+        { level: 'labels', reserved, layout: () => layoutOfHeight(90) },
+      ],
+      100,
+      0.2,
+      1,
+    )
+    expect(stage).toMatchObject(reserved)
+  })
+
   // The rung carries the count it packed at, so the chip and the tooltip read
   // the solve rather than a flag from the worker.
   it('reports the kept rung’s isoform count', () => {
     const stage = resolveFitLadder(
       [
-        { level: 'full', layout: () => layoutOfHeight(300) },
-        { level: 'labels', layout: () => layoutOfHeight(200) },
+        {
+          level: 'full',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(300),
+        },
+        {
+          level: 'labels',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(200),
+        },
         {
           level: 'isoforms',
+          reserved: NO_LABELS,
           layout: () => layoutOfHeight(90),
           maxIsoforms: () => 5,
         },
@@ -249,7 +291,13 @@ describe('resolveFitLadder', () => {
 
   it('reports no count on a rung that trimmed nothing', () => {
     const stage = resolveFitLadder(
-      [{ level: 'full', layout: () => layoutOfHeight(90) }],
+      [
+        {
+          level: 'full',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(90),
+        },
+      ],
       100,
       0.2,
       1,
@@ -263,14 +311,20 @@ describe('resolveFitLadder', () => {
   it('lets the rungs below inherit the count the trim failed at', () => {
     const stage = resolveFitLadder(
       [
-        { level: 'full', layout: () => layoutOfHeight(300) },
+        {
+          level: 'full',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(300),
+        },
         {
           level: 'isoforms',
+          reserved: NO_LABELS,
           layout: () => layoutOfHeight(200),
           maxIsoforms: () => 1,
         },
         {
           level: 'bodies',
+          reserved: NO_LABELS,
           layout: () => layoutOfHeight(80),
           maxIsoforms: () => 1,
         },
@@ -285,9 +339,17 @@ describe('resolveFitLadder', () => {
 
   it('keeps the least-reduced rung that fills the track, at scale 1', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(100) },
-      { level: 'labels', layout: () => layoutOfHeight(50) },
-      { level: 'bodies', layout: () => layoutOfHeight(30) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(100) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(50),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(30),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('full')
@@ -296,9 +358,17 @@ describe('resolveFitLadder', () => {
 
   it('grows the kept rung to fill the track when it fits with room to spare', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(50) },
-      { level: 'labels', layout: () => layoutOfHeight(30) },
-      { level: 'bodies', layout: () => layoutOfHeight(20) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(50) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(30),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(20),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('full')
@@ -307,7 +377,7 @@ describe('resolveFitLadder', () => {
 
   it('caps the grow at maxScale (surplus stays whitespace)', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(10) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(10) },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('full')
@@ -316,9 +386,17 @@ describe('resolveFitLadder', () => {
 
   it('descends to the first rung whose unscaled stack fits, then grows it', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(300) },
-      { level: 'labels', layout: () => layoutOfHeight(90) },
-      { level: 'bodies', layout: () => layoutOfHeight(30) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(300) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(90),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(30),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('labels')
@@ -327,10 +405,22 @@ describe('resolveFitLadder', () => {
 
   it('descends through decimated to bodies and squeezes when nothing fits', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(400) },
-      { level: 'labels', layout: () => layoutOfHeight(300) },
-      { level: 'decimated', layout: () => layoutOfHeight(200) },
-      { level: 'bodies', layout: () => layoutOfHeight(200) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(400) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(300),
+      },
+      {
+        level: 'decimated',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(200),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(200),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('bodies')
@@ -339,10 +429,22 @@ describe('resolveFitLadder', () => {
 
   it('keeps the decimated rung when it fits but labels does not', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(300) },
-      { level: 'labels', layout: () => layoutOfHeight(150) },
-      { level: 'decimated', layout: () => layoutOfHeight(90) },
-      { level: 'bodies', layout: () => layoutOfHeight(40) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(300) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(150),
+      },
+      {
+        level: 'decimated',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(90),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(40),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('decimated')
@@ -351,9 +453,17 @@ describe('resolveFitLadder', () => {
 
   it('floors the last-rung squeeze at minScale (overflow then scrolls)', () => {
     const rungs: [FitRung, ...FitRung[]] = [
-      { level: 'full', layout: () => layoutOfHeight(300) },
-      { level: 'labels', layout: () => layoutOfHeight(250) },
-      { level: 'bodies', layout: () => layoutOfHeight(1000) },
+      { level: 'full', reserved: NO_LABELS, layout: () => layoutOfHeight(300) },
+      {
+        level: 'labels',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(250),
+      },
+      {
+        level: 'bodies',
+        reserved: NO_LABELS,
+        layout: () => layoutOfHeight(1000),
+      },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('bodies')
@@ -368,6 +478,7 @@ describe('resolveFitLadder', () => {
     let measured = 0
     const sharedRung = (level: FitRung['level']): FitRung => ({
       level,
+      reserved: NO_LABELS,
       layout: () => {
         measured++
         return shared
@@ -375,7 +486,11 @@ describe('resolveFitLadder', () => {
     })
     const stage = resolveFitLadder(
       [
-        { level: 'full', layout: () => layoutOfHeight(400) },
+        {
+          level: 'full',
+          reserved: NO_LABELS,
+          layout: () => layoutOfHeight(400),
+        },
         sharedRung('labels'),
         sharedRung('decimated'),
         sharedRung('bodies'),

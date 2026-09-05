@@ -2,12 +2,25 @@ import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 
 import type { FitStage } from './fitLadder.ts'
 
-const stage = (level: FitStage['level'], scale = 1) => ({ level, scale })
+// The fit ladder's reservation at each rung, as the display's rungs declare it:
+// names through `decimated`, descriptions at `full` alone, the `below` rows
+// spent at `bare`. The fixed-height ladder reaches `isoforms` with descriptions
+// kept, and has a case of its own.
+const stage = (
+  level: FitStage['level'],
+  scale = 1,
+  { fixed = false } = {},
+): Pick<
+  FitStage,
+  'level' | 'scale' | 'showLabels' | 'showDescriptions' | 'dropBelowLabelRows'
+> => ({
+  level,
+  scale,
+  showLabels: level !== 'bodies' && level !== 'bare',
+  showDescriptions: level === 'full' || (level === 'isoforms' && fixed),
+  dropBelowLabelRows: level === 'bare',
+})
 
-// Fit mode paints descriptions at `full` and at no rung below it, which is what
-// the display's `renderedShowDescriptions` answers — spelled once here so each
-// case below reads as the rung it is about. The fixed-height ladder is the one
-// that reaches `isoforms` still painting them, and has a case of its own.
 const drops = (
   at: ReturnType<typeof stage>,
   showLabels: boolean,
@@ -15,15 +28,7 @@ const drops = (
   // the factor the `decimated` rung committed at; above 0 by default, since a
   // rung that reached 0 dropped no name and has a case of its own below
   decimatedFactor = 1,
-) =>
-  fitDrops(
-    at,
-    showLabels,
-    showDescriptions,
-    at.level === 'full',
-    decimatedFactor,
-    at.level === 'bare',
-  )
+) => fitDrops(at, showLabels, showDescriptions, decimatedFactor)
 
 describe('fitDrops', () => {
   // Outside fit mode the stage is always `full` at scale 1, so this is also
@@ -56,7 +61,7 @@ describe('fitDrops', () => {
   // the note stays silent.
   it('reports nothing when a fixed track trims isoforms', () => {
     expect(
-      fitDrops(stage('isoforms'), true, true, true, undefined, false),
+      fitDrops(stage('isoforms', 1, { fixed: true }), true, true, undefined),
     ).toEqual({
       names: 'none',
       descriptions: false,

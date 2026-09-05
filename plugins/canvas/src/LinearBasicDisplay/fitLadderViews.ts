@@ -16,7 +16,7 @@ import { minDrawnBoxHeight } from './layoutQueries.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FitRung, FitStage } from './fitLadder.ts'
+import type { FitRung, FitStage, LabelReservation } from './fitLadder.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type {
   IsoformCountFreeInputs,
@@ -24,6 +24,20 @@ import type {
   LayoutInputs,
   LayoutRegionData,
 } from './layoutInputs.ts'
+
+export const EMPTY_LAID_OUT_DATA = new Map<number, FeatureDataResult>()
+
+const BODIES_RESERVATION: LabelReservation = {
+  showLabels: false,
+  showDescriptions: false,
+  dropBelowLabelRows: false,
+}
+
+const BARE_RESERVATION: LabelReservation = {
+  showLabels: false,
+  showDescriptions: false,
+  dropBelowLabelRows: true,
+}
 
 /**
  * What the fit ladder reads off the display that installs it. The five memo
@@ -139,23 +153,60 @@ export function fitLadderViews(self: FitLadderHost) {
   return {
     /**
      * #method
-     * One fit-escalation candidate: the stack packed with the given
-     * label/description reservation, via that config's own memo instance so
-     * each keeps stable references across renders. Empty until
-     * initialized/in-bounds, so the GPU upload autorun has nothing to push.
+     * One fit-escalation candidate: the stack packed with the given label
+     * reservation, via that config's own memo instance so each keeps stable
+     * references across renders. Empty until initialized/in-bounds, so the GPU
+     * upload autorun has nothing to push.
      */
     fitLayoutAt(
       memo: IncrementalLayout,
-      showLabels: boolean,
-      showDescriptions: boolean,
+      reserved: LabelReservation,
     ): Map<number, FeatureDataResult> {
       return self.layoutReady
-        ? memo(self.rpcDataMap, {
-            ...self.layoutInputs,
-            showLabels,
-            showDescriptions,
-          })
-        : new Map<number, FeatureDataResult>()
+        ? memo(self.rpcDataMap, { ...self.layoutInputs, ...reserved })
+        : EMPTY_LAID_OUT_DATA
+    },
+    /**
+     * #getter
+     * What the `full` rung reserves: the names and descriptions the settings
+     * ask for. Each rung's reservation is read twice — by the pack and by the
+     * rung `fitStage` declares — so the stage cannot report a room the packer
+     * did not reserve.
+     */
+    get fullReservation(): LabelReservation {
+      return {
+        showLabels: self.showLabels,
+        showDescriptions: self.effectiveShowDescriptions,
+        dropBelowLabelRows: false,
+      }
+    },
+    /**
+     * #getter
+     * The `labels` and `decimated` rungs' reservation: names kept,
+     * descriptions dropped.
+     */
+    get labelsReservation(): LabelReservation {
+      return {
+        showLabels: self.showLabels,
+        showDescriptions: false,
+        dropBelowLabelRows: false,
+      }
+    },
+    /**
+     * #getter
+     * The `isoforms` rung's reservation. Fit mode reaches the rung only after
+     * `labels` dropped descriptions; fixed height never passes through that
+     * rung and keeps whatever the settings asked for, trimming transcripts
+     * rather than labels.
+     */
+    get isoformsReservation(): LabelReservation {
+      return {
+        showLabels: self.showLabels,
+        showDescriptions: self.fitHeightToDisplay
+          ? false
+          : self.effectiveShowDescriptions,
+        dropBelowLabelRows: false,
+      }
     },
     /**
      * #getter
@@ -166,8 +217,7 @@ export function fitLadderViews(self: FitLadderHost) {
     get decimatedBaseInputs(): LabelRoomFactorFreeInputs {
       return {
         ...self.layoutInputs,
-        showLabels: self.showLabels,
-        showDescriptions: false,
+        ...this.labelsReservation,
         labelDecimation: 'fitWidth',
         // The rungs below `isoforms` inherit the count that rung failed at —
         // every isoform goes before any name does, so once the trim has run
@@ -219,22 +269,10 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * The `isoforms` rung's layout inputs minus the count itself, typed without
-     * it so the solve's shared preparation provably cannot depend on it. Same
-     * reservation as `labels` — names kept, descriptions dropped — because the
-     * whole point of the rung is that names survive the trim.
+     * it so the solve's shared preparation provably cannot depend on it.
      */
     get isoformsBaseInputs(): IsoformCountFreeInputs {
-      return {
-        ...self.layoutInputs,
-        showLabels: self.showLabels,
-        // Fit mode reaches this rung only after `labels` overflowed, so
-        // descriptions are already gone. Fixed height never passed through
-        // that rung and keeps whatever the settings asked for: it scrolls
-        // rather than degrading, and trimming is the one thing it does.
-        showDescriptions: self.fitHeightToDisplay
-          ? false
-          : self.effectiveShowDescriptions,
-      }
+      return { ...self.layoutInputs, ...this.isoformsReservation }
     },
     /**
      * #getter
@@ -321,11 +359,7 @@ export function fitLadderViews(self: FitLadderHost) {
      * and in non-fit modes, and the first stack `fitStage` probes.
      */
     get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
-      return this.fitLayoutAt(
-        self.incrementalLayout,
-        self.showLabels,
-        self.effectiveShowDescriptions,
-      )
+      return this.fitLayoutAt(self.incrementalLayout, this.fullReservation)
     },
     /**
      * #getter
@@ -338,8 +372,7 @@ export function fitLadderViews(self: FitLadderHost) {
       return self.effectiveShowDescriptions
         ? this.fitLayoutAt(
             self.incrementalLayoutLabelsOnly,
-            self.showLabels,
-            false,
+            this.labelsReservation,
           )
         : this.baseLaidOutDataMap
     },
@@ -401,8 +434,7 @@ export function fitLadderViews(self: FitLadderHost) {
       return self.showLabels || maxIsoformsPerGene !== undefined
         ? self.incrementalLayoutBodiesOnly(self.rpcDataMap, {
             ...self.layoutInputs,
-            showLabels: false,
-            showDescriptions: false,
+            ...BODIES_RESERVATION,
             maxIsoformsPerGene,
           })
         : this.fitLabelsOnlyLayout
@@ -418,10 +450,8 @@ export function fitLadderViews(self: FitLadderHost) {
     get fitBareLayout(): Map<number, FeatureDataResult> {
       return self.incrementalLayoutBare(self.rpcDataMap, {
         ...self.layoutInputs,
-        showLabels: false,
-        showDescriptions: false,
+        ...BARE_RESERVATION,
         maxIsoformsPerGene: this.fitIsoformCount,
-        dropBelowLabelRows: true,
       })
     },
     /**
@@ -522,6 +552,10 @@ export function fitLadderViews(self: FitLadderHost) {
      * mode, everything otherwise — so the rung that survives and the squeeze
      * it gets are decided by the stack in view, not by the half-viewport of
      * buffered features packed on either side of it.
+     *
+     * Each rung declares the reservation its layout getter packs with (a
+     * fallback-by-reference rung packs with the same one), and the stage
+     * reports the kept rung's.
      */
     get fitStage(): FitStage {
       const base = this.baseLaidOutDataMap
@@ -534,7 +568,11 @@ export function fitLadderViews(self: FitLadderHost) {
       // drift apart.
       // A thunk: the solve packs, and a stack that fits at `full` never asks.
       const trimmed = () => this.fitIsoformCount
-      const full: FitRung = { level: 'full', layout: () => base }
+      const full: FitRung = {
+        level: 'full',
+        reserved: this.fullReservation,
+        layout: () => base,
+      }
       // "All transcripts" leaves the ladder no isoform rung at all, rather than
       // one that solves to `undefined` and trims nothing: kept, it is the LAST
       // rung of the fixed-height ladder, which is always the one resolved, so
@@ -545,6 +583,7 @@ export function fitLadderViews(self: FitLadderHost) {
         : [
             {
               level: 'isoforms',
+              reserved: this.isoformsReservation,
               layout: () => this.fitIsoformsSolved,
               maxIsoforms: trimmed,
             },
@@ -557,6 +596,7 @@ export function fitLadderViews(self: FitLadderHost) {
         ? [
             {
               level: 'bare',
+              reserved: BARE_RESERVATION,
               layout: () => this.fitBareLayout,
               maxIsoforms: trimmed,
             },
@@ -566,15 +606,21 @@ export function fitLadderViews(self: FitLadderHost) {
         fit
           ? [
               full,
-              { level: 'labels', layout: () => this.fitLabelsOnlyLayout },
+              {
+                level: 'labels',
+                reserved: this.labelsReservation,
+                layout: () => this.fitLabelsOnlyLayout,
+              },
               ...isoformRung,
               {
                 level: 'decimated',
+                reserved: this.labelsReservation,
                 layout: () => this.fitDecimatedSolved,
                 maxIsoforms: trimmed,
               },
               {
                 level: 'bodies',
+                reserved: BODIES_RESERVATION,
                 layout: () => this.fitBodiesOnlyLayout,
                 maxIsoforms: trimmed,
               },
