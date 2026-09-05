@@ -327,6 +327,7 @@ export default function baseStateModelFactory(
         }),
       )
       .volatile(() => ({
+        // #region volatile
         /**
          * #volatile
          */
@@ -347,6 +348,7 @@ export default function baseStateModelFactory(
          * from this display, read by the LGV crosshair overlay
          */
         sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
+        // #endregion
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)

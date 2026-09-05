@@ -433,13 +433,33 @@ the inherited track menu:
 ## Volatile state
 
 Use `.volatile(() => ({ … }))` for state that should not be persisted in
-snapshots — loading flags, fetched data, hover and menu state that a reload
-should reset. The multi-row display's block, in full:
+snapshots — loading flags, hover and menu state that a reload should reset.
+Fetched data is not one: it lives on the foundation's per-region store and a
+display reads it back through a getter. The canvas display's block, in full:
 
-<!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#volatile -->
+<!-- include: plugins/canvas/src/LinearBasicDisplay/baseModel.ts#volatile -->
 
 ```ts
-rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
+/**
+ * #volatile
+ */
+featureIdUnderMouse: undefined as string | undefined,
+/**
+ * #volatile
+ */
+subfeatureIdUnderMouse: undefined as string | undefined,
+/**
+ * #volatile
+ * the hover tooltip's rows, each rendered as its own element — see
+ * hoverTooltipRows for why this is a list and not one HTML string
+ */
+mouseoverExtraInformation: undefined as string[] | undefined,
+/**
+ * #volatile
+ * genomic base currently hovered in a feature sequence dialog opened
+ * from this display, read by the LGV crosshair overlay
+ */
+sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot

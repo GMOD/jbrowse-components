@@ -6,8 +6,8 @@ sidebar_label: Mixin -> WiggleCommonMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
-Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
-reset — plus the wiggle-specific config that used to sit in that mixin (the
+Extends WiggleScoreConfigMixin with the narrowed rpcDataMap and the autoscale
+domain — plus the wiggle-specific config that used to sit in that mixin (the
 pos/neg palette, rendering type, summary mode, resolution and the line/gap
 settings). They live here because this is where they are *read*: the other
 composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of
@@ -27,18 +27,12 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- |
 | <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  |
 
-## Volatiles
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;('rpcDataMap')</code> |  |
-
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. | WiggleCommonMixin |
 | <span id="getter-zoomfetchkey">**zoomFetchKey**</span><br><code>string</code> | Strict zoom equality (adr-008): the worker bins scores to the requested bpPerPx, so data fetched at another zoom is the wrong summary, however well the viewport still sits inside it.<br><br>On this mixin, not the score-config one below it: the rule is about what a fetch returns, and `LinearManhattanDisplay` composes that mixin for the score axis while fetching untransformed SNPs. | WiggleCommonMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known.<br><br>Here rather than on `WiggleScoreConfigMixin` because the slot is in `wiggleConfigSchemaFields`, which is this mixin's host table. It sat one level up, whose OTHER composer is `LinearManhattanDisplay` -- linear-only by construction, so its schema declares no `symlogConstant` and the getter answered `undefined` while typed `number`. Inert, because nothing on that path reads it, and invisible: `getConf` on an undeclared slot returns `undefined` and reports nothing at any layer. That is the same reasoning the getter already carried for moving off `ScoreScaleMixin` (the alignments coverage band composes that against a schema that never declares it) -- it just stopped one mixin too high. | WiggleCommonMixin |
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |
@@ -77,8 +71,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setrpcdata">**setRpcData**</span><br><code>(displayedRegionIndex: number, data: WiggleDataResult) =&gt; void</code> | The store half of both displays' `fetchNeeded`. Everything either one derives from a fetch — multi-wiggle's row list included — is a getter over this map, so there is nothing else for a result to update. | WiggleCommonMixin |
+| <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: WiggleDataResult, region:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: WiggleDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this mixin's payload shape — so a test stands up a loaded display in one call. Production goes through `ctx.commitRegion`. | WiggleCommonMixin |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
