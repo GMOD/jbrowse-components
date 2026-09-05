@@ -5,6 +5,7 @@ import type {
   CoverageBandBuffers,
   CoverageBandColors,
 } from '@jbrowse/render-core/coverageBand'
+import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -54,16 +55,11 @@ export interface MafGPURenderState {
   mismatchRendering: boolean
   /**
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
-   * insertion). Consumed by the Canvas2D fallback's `drawMafBlocks` so that
-   * theme changes flow into rendering without hardcoded fallbacks.
+   * insertion). The cells resolve their colours at encode time, so what reads
+   * this is the overlay and export layers drawn beside them — the insertion
+   * markers, the deletion labels, the empty lines and the summary bars.
    */
   palette: MafColorPalette
-  /**
-   * Genomic bp per painted cell (see `MafGpuProps.binBp`). Carried here too so
-   * the Canvas2D fallback and the SVG export decimate identically to the GPU
-   * encoder rather than emitting a rect per base at every zoom.
-   */
-  binBp: number
 }
 
 // One MAF "block" is a single ungapped alignment stanza emitted by the
@@ -272,9 +268,9 @@ export interface MafRegionData {
   refSampleId?: string
 }
 
-// Inputs to `buildInstanceBuffer` — derived from theme + user toggles on
+// Inputs to `buildMafChannels` — derived from theme + user toggles on
 // the main thread. Changes here re-encode (without refetching). The
-// instance buffer itself is built in the per-region encode autorun
+// channels themselves are built in the per-region encode autorun
 // installed by `startRenderingBackend`, so color/style settings never
 // round-trip through the worker.
 export interface MafGpuProps {
@@ -290,31 +286,36 @@ export interface MafGpuProps {
 }
 
 // Payload the per-region autorun ships to the backend each time `gpuProps`
-// or the underlying `regionData` changes. The rows half is pre-encoded on the
+// or the underlying `regionData` changes. The rows half is encoded on the
 // main thread because encoding depends on theme + user toggles (`MafGpuProps`);
 // the coverage half is the worker's own packed buffers, carried through by
 // reference so render-core's shared band passes can upload them verbatim.
-export interface MafUploadPayload extends CoverageBandBuffers {
-  // A typed array rather than a bare ArrayBuffer, so both HAL backends upload
-  // exactly the encoded byte range. `InstanceWriter.finish` right-sizes it with
-  // a copy rather than handing back a subarray of its over-allocation — the
-  // payload is retained for as long as the region is loaded, and a view would
-  // pin the dead tail with it.
-  //
-  // Being right-sized is also why there is no count beside it: the upload takes
-  // the instance count off the bytes (`uploadPass`), so a second field could
-  // only ever disagree.
-  instanceBuffer: Uint32Array
+/**
+ * The rows band as the `span` shape's channels — the single walk both backends
+ * draw from. The GPU packs them into the shape's instance buffer, the Canvas2D
+ * painter and the SVG export walk them directly.
+ *
+ * Its own interface because the mark reads only this much: the SVG export
+ * re-encodes the cells and has no coverage buffers to hand over.
+ */
+export interface MafCellsPayload {
+  cells: SpanChannels
 }
 
-// MAF uploads a pre-encoded GPU buffer; the render-side reads raw blocks
-// directly from the model's `rpcDataMap` (so Canvas2D can draw them and
-// GPU can check presence). RenderData thus diverges from UploadData — the same
-// shape LinearMultiRowFeatureDisplay uses; most per-region plugins instead keep
-// the default `RenderData = UploadData`.
+export interface MafUploadPayload extends CoverageBandBuffers, MafCellsPayload {
+  /**
+   * The worker's own per-region coverage, carried by reference: the band's GPU
+   * passes read its two maxima for their uniforms and the Canvas2D band painter
+   * reads all of it. It rides on the payload rather than being looked up in
+   * `rpcDataMap` at draw time so the render side has one map to read.
+   */
+  coverage: MafCoverageRegion
+}
+
+// Upload and render read the same payload, which is what encoding to channels
+// bought: the render side used to take raw blocks so the Canvas2D fallback
+// could re-walk them column by column.
 export type MafRenderingBackend = PerRegionRenderingBackend<
   MafUploadPayload,
-  MafGPURenderState,
-  MafRenderBlock,
-  MafRegionData
+  MafGPURenderState
 >

@@ -80,8 +80,13 @@ export interface MarkShape<TChannels, TParams> {
    * worker-built index (GWAS's Flatbush over (bp, value)) hands in what the
    * index answered, and one without hands in every instance. What the shape
    * owns is where its ink actually is — the half that drifts from the painter.
+   *
+   * Optional, because a shape earns it from a consumer like any other member.
+   * `span`'s two displays both answer a hit from data the channels do not carry
+   * — multi-row from a feature index, MAF from row/column arithmetic over the
+   * alignment — so `span` declares none.
    */
-  hitNearest(
+  hitNearest?(
     channels: TChannels,
     block: RenderBlock,
     frame: MarkFrame,
@@ -118,7 +123,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     block: RenderBlock,
     state: TState,
   ): void
-  hitNearest(
+  hitNearest?(
     region: TRegion,
     block: RenderBlock,
     state: TState,
@@ -161,17 +166,18 @@ export function defineMark<
     paintBlock(ctx, region, block, state) {
       shape.paintBlock(ctx, channels(region), block, state, params(state))
     },
-    hitNearest(region, block, state, xPx, yPx, candidates, maxDistSq) {
-      return shape.hitNearest(
-        channels(region),
-        block,
-        state,
-        params(state),
-        xPx,
-        yPx,
-        candidates,
-        maxDistSq,
-      )
-    },
+    hitNearest: shape.hitNearest
+      ? (region, block, state, xPx, yPx, candidates, maxDistSq) =>
+          shape.hitNearest!(
+            channels(region),
+            block,
+            state,
+            params(state),
+            xPx,
+            yPx,
+            candidates,
+            maxDistSq,
+          )
+      : undefined,
   }
 }

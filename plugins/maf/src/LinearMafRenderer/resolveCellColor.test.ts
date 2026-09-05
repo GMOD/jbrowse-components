@@ -1,10 +1,9 @@
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
+import { DASH } from '../util/asciiBytes.ts'
 import {
   RESOLVE_PACKED_SKIP,
   packMafCellColorConfig,
-  resolveCellColor,
   resolveCellPacked,
+  resolvePackedUncached,
 } from './resolveCellColor.ts'
 
 import type { MafCellColorConfig } from './resolveCellColor.ts'
@@ -27,21 +26,17 @@ const cfg: MafCellColorConfig = {
 
 const byte = (c: string) => c.charCodeAt(0)
 
-// The CSS resolver and the packed (GPU) resolver must map every cell to the
-// same color — a divergence would show as GPU-vs-Canvas2D pixel mismatches. The
-// shared `classifyCell` cascade is what guarantees this; this test pins it.
+// `packMafCellColorConfig` builds its 65536-entry table by memcpy — one
+// mismatch row stamped per reference byte, with the two case-folding matches
+// overwritten — rather than by running the cascade 65536 times. That is a
+// claim about which inputs the answer depends on, and an exhaustive sweep
+// against the cascade is what checks it.
 //
-// Swept over the whole 8-bit domain rather than a handful of representative
-// bases, because the packed side no longer walks the cascade per cell: it reads
-// a table keyed on `(alnByte, isMatch)` only, and the claim that the reference
-// byte is otherwise irrelevant is exactly what an exhaustive sweep checks.
-//
-// 8-bit and not 7, even though alignment bytes are always ASCII: the packed
-// side's base lookup masks `& 0x7f` because its table is 128 entries, so a high
-// byte folds onto a letter. The CSS side now masks the same way, and the range
-// where that is the *only* thing keeping them together is the range a 7-bit
-// sweep excludes.
-test('resolveCellColor and resolveCellPacked agree over every byte pair', () => {
+// 8-bit and not 7, even though alignment bytes are always ASCII: the base
+// lookup masks `& 0x7f` because its table is 128 entries, so a high byte folds
+// onto a letter, and the range where that is the only thing keeping the two
+// together is the range a 7-bit sweep excludes.
+test('the packed colour table agrees with the cascade over every byte pair', () => {
   const disagreements: string[] = []
   for (const showAllLetters of [false, true]) {
     for (const mismatchRendering of [false, true]) {
@@ -49,13 +44,14 @@ test('resolveCellColor and resolveCellPacked agree over every byte pair', () => 
       const packed = packMafCellColorConfig(c)
       for (let refByte = 0; refByte < 256; refByte++) {
         for (let alnByte = 0; alnByte < 256; alnByte++) {
-          const css = resolveCellColor(refByte, alnByte, c)
           const int = resolveCellPacked(refByte, alnByte, packed)
           const want =
-            css === undefined ? RESOLVE_PACKED_SKIP : cssColorToABGR(css)
+            refByte === DASH
+              ? RESOLVE_PACKED_SKIP
+              : resolvePackedUncached(refByte, alnByte, packed)
           if (int !== want) {
             disagreements.push(
-              `ref=${refByte} aln=${alnByte} showAllLetters=${showAllLetters} mismatchRendering=${mismatchRendering}: packed ${int} !== css ${want}`,
+              `ref=${refByte} aln=${alnByte} showAllLetters=${showAllLetters} mismatchRendering=${mismatchRendering}: table ${int} !== cascade ${want}`,
             )
           }
         }
@@ -65,8 +61,7 @@ test('resolveCellColor and resolveCellPacked agree over every byte pair', () => 
   expect(disagreements).toEqual([])
 })
 
-test('reference insertion (ref dash) is skipped in both resolvers', () => {
-  expect(resolveCellColor(byte('-'), byte('A'), cfg)).toBeUndefined()
+test('reference insertion (ref dash) is skipped', () => {
   expect(
     resolveCellPacked(byte('-'), byte('A'), packMafCellColorConfig(cfg)),
   ).toBe(RESOLVE_PACKED_SKIP)

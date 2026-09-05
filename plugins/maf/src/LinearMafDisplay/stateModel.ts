@@ -58,7 +58,10 @@ import {
   getMafCoverageColors,
   packMafCoverageColors,
 } from '../LinearMafRenderer/coverageBandColors.ts'
-import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
+import {
+  EMPTY_MAF_CELLS,
+  buildMafChannels,
+} from '../LinearMafRenderer/mafChannels.ts'
 import {
   getCodonLegendItems,
   getFrameLegendItems,
@@ -1630,7 +1633,6 @@ export default function stateModelFactory(
             showAllLetters: self.showAllLetters,
             mismatchRendering: self.mismatchRendering,
             palette: self.colorPalette,
-            binBp: self.encodeBinBp,
           }
         },
       }))
@@ -2543,25 +2545,28 @@ export default function stateModelFactory(
               // The coverage band's four buffers are the worker's own, carried
               // through by reference — nothing to encode, and they upload
               // whatever the rows are doing, since the band is drawn from the
-              // same canvas and gated only by its own setting.
-              const coverage = coverageBandBuffers(regionData.coverage)
-              // The rows pass draws nothing unless the rows area is in `bases`
+              // same canvas and gated only by its own setting. The region's
+              // coverage rides along whole, because the band's uniforms and its
+              // Canvas2D painter read it at draw time.
+              const band = {
+                ...coverageBandBuffers(regionData.coverage),
+                coverage: regionData.coverage,
+              }
+              // The rows mark draws nothing unless the rows area is in `bases`
               // mode — the identity plot, codon view and color-by-chromosome all
               // paint the rows on sibling canvases. Encoding anyway built and
               // uploaded a buffer (tens of MB on a wide region) that never
-              // reached a pixel. An empty payload skips the encode *and*
-              // releases the GPU buffer (an empty pack deletes the pass's
-              // buffer); flipping back to `bases` re-encodes immediately.
-              if (!basesActive) {
-                return { instanceBuffer: new Uint32Array(0), ...coverage }
+              // reached a pixel. Empty channels skip the encode *and* release
+              // the GPU buffer (an empty pack deletes the pass's buffer);
+              // flipping back to `bases` re-encodes immediately.
+              return {
+                cells: basesActive
+                  ? buildMafChannels({ blocks: regionData.blocks, ...gpu })
+                  : EMPTY_MAF_CELLS,
+                ...band,
               }
-              const { buffer } = buildInstanceBuffer({
-                blocks: regionData.blocks,
-                ...gpu,
-              })
-              return { instanceBuffer: buffer, ...coverage }
             },
-            render: b => {
+            render: (b, encoded) => {
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources
               // over a loaded region is NOT this state — see renderState.
@@ -2583,7 +2588,7 @@ export default function stateModelFactory(
               return hasFetched
                 ? b.renderBlocks(
                     self.renderBlocks,
-                    self.rpcDataMap,
+                    encoded,
                     self.renderState,
                   ) || !self.basesRenderingActive
                 : false

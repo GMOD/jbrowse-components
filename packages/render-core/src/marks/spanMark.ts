@@ -8,7 +8,7 @@ import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 
-import type { MarkHit, MarkShape } from './types.ts'
+import type { MarkShape } from './types.ts'
 
 /**
  * The `span` shape's channels: a coloured rectangle from `x` to `x2` on the
@@ -34,6 +34,23 @@ export interface SpanParams {
    * intervals floors, because at chromosome zoom the alternative is a smudge.
    */
   minWidthPx: number
+  /**
+   * CSS px of overlap added to each span's right edge by the **painter only**.
+   *
+   * The GPU pass needs none: abutting quads share an exact clip-space edge and
+   * the rasterizer fills it once. Canvas2D antialiases each `fillRect`
+   * independently, so two runs meeting on a fractional pixel each take partial
+   * coverage of it and a hairline of background shows through. Which callers
+   * want it splits on the same axis `minWidthPx` does — MAF's cells tile, so it
+   * pads; the multi-row painter's features are sparse intervals with background
+   * between them by right, so it writes 0.
+   *
+   * Padding the drawn width and not the anchor is what keeps it growing
+   * rightward on both orientations, so a reversed block's spans stay exact
+   * mirrors of a forward block's. Wiggle's `WIGGLE_FUDGE_FACTOR` is the same
+   * rule spelled per display; the shader must not grow a matching pad.
+   */
+  seamPx: number
   /** Rows-area scroll offset in CSS px; 0 for a canvas sized to its content. */
   scrollTop: number
 }
@@ -68,7 +85,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
 
   paintBlock(ctx, channels, block, _frame, params) {
     const { x, x2, row, color, count } = channels
-    const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
+    const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
     const h = drawnRowHeightPx(rowHeight, rowProportion)
     const offset = rowBandOffsetPx(rowHeight, rowProportion)
     const bpToPx = makeBpMapper(block)
@@ -76,34 +93,12 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     for (let i = 0; i < count; i++) {
       const { left, width } = spanRect(bpToPx, x[i]!, x2[i]!, minWidthPx)
       setFill(color[i]!)
-      ctx.fillRect(left, offset + rowHeight * row[i]! - scrollTop, width, h)
+      ctx.fillRect(
+        left,
+        offset + rowHeight * row[i]! - scrollTop,
+        width + seamPx,
+        h,
+      )
     }
-  },
-
-  hitNearest(channels, block, _frame, params, xPx, yPx, candidates, maxDistSq) {
-    const { x, x2, row, count } = channels
-    const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
-    const h = drawnRowHeightPx(rowHeight, rowProportion)
-    const offset = rowBandOffsetPx(rowHeight, rowProportion)
-    const bpToPx = makeBpMapper(block)
-    let best: MarkHit | undefined
-    let bestDistSq = maxDistSq
-    for (const i of candidates) {
-      if (i >= count) {
-        continue
-      }
-      const { left, width } = spanRect(bpToPx, x[i]!, x2[i]!, minWidthPx)
-      const top = offset + rowHeight * row[i]! - scrollTop
-      const px = Math.max(left, Math.min(xPx, left + width))
-      const py = Math.max(top, Math.min(yPx, top + h))
-      const dx = xPx - px
-      const dy = yPx - py
-      const distSq = dx * dx + dy * dy
-      if (distSq < bestDistSq) {
-        bestDistSq = distSq
-        best = { index: i, x: px, y: py, distSq }
-      }
-    }
-    return best
   },
 }

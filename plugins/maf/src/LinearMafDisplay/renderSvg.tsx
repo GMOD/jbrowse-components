@@ -11,11 +11,13 @@ import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { getMafCoverageColors } from '../LinearMafRenderer/coverageBandColors.ts'
-import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafCoverage } from '../LinearMafRenderer/drawMafCoverage.ts'
+import { buildMafChannels } from '../LinearMafRenderer/mafChannels.ts'
+import { MAF_ROW_MARKS } from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
@@ -96,6 +98,24 @@ function MafSvgBody({
     palette: getMafColorPalette(palette),
   }
   const contrast = getContrastBaseMap(palette)
+  // Re-encoded here rather than read off the screen's upload: the encoded map
+  // lives in the upload autorun's closure and the export runs headless, with no
+  // backend attached. The export theme is a different palette anyway, so the
+  // screen's channels would carry the wrong colours.
+  const svgCells = new Map(
+    (basesRenderingActive ? [...model.rpcDataMap] : []).map(
+      ([idx, regionData]) => [
+        idx,
+        {
+          cells: buildMafChannels({
+            blocks: regionData.blocks,
+            ...model.gpuProps(),
+            palette: svgState.palette,
+          }),
+        },
+      ],
+    ),
+  )
 
   return (
     <SvgClipRect
@@ -161,7 +181,13 @@ function MafSvgBody({
             if (rowsCanvas2dMode !== undefined) {
               drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
             } else if (basesRenderingActive) {
-              drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
+              paintMarkBlocks(
+                ctx,
+                MAF_ROW_MARKS,
+                svgCells,
+                renderBlocks,
+                svgState,
+              )
             }
             drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
             drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)

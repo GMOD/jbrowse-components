@@ -8,7 +8,6 @@ import { GpuMafRenderer, MAF_PASSES } from './GpuMafRenderer.ts'
 import type {
   MafCoverageBandState,
   MafGPURenderState,
-  MafRegionData,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
 
@@ -72,22 +71,21 @@ function state(coverage: MafCoverageBandState | undefined): MafGPURenderState {
       bridgeLineColor: 'grey',
       missingDataColor: 'white',
     },
-    binBp: 1,
   }
 }
 
 // One region with a real depth peak, distinct from the display's domain max.
-function region(): MafRegionData {
-  return {
-    blocks: [],
-    coverage: { ...emptyMafCoverage(), coverageMaxDepth: 5 },
-  }
-}
-
 function payload(): MafUploadPayload {
-  const { coverage } = region()
+  const coverage = { ...emptyMafCoverage(), coverageMaxDepth: 5 }
   return {
-    instanceBuffer: new Uint32Array(4),
+    cells: {
+      x: Uint32Array.of(0),
+      x2: Uint32Array.of(10),
+      row: Uint32Array.of(0),
+      color: Uint32Array.of(0xff0000ff),
+      count: 1,
+    },
+    coverage,
     coveragePackedBuffer: new ArrayBuffer(8),
     snpPackedBuffer: coverage.snpPackedBuffer,
     interbasePackedBuffer: coverage.interbasePackedBuffer,
@@ -98,7 +96,8 @@ function payload(): MafUploadPayload {
 function render(coverage: MafCoverageBandState | undefined) {
   const hal = new MockHal(MAF_PASSES)
   const renderer = new GpuMafRenderer(hal)
-  renderer.upload(0, payload())
+  const region = payload()
+  renderer.upload(0, region)
   renderer.renderBlocks(
     [
       {
@@ -110,7 +109,7 @@ function render(coverage: MafCoverageBandState | undefined) {
         reversed: false,
       },
     ],
-    new Map([[0, region()]]),
+    new Map([[0, region]]),
     state(coverage),
   )
   return hal
@@ -122,18 +121,18 @@ describe('the MAF coverage band on the rows canvas', () => {
   const hal = render(BAND)
   const draws = hal.draws()
 
-  test('draws the four shared band passes, in paint order, then the rows', () => {
+  test('draws the four shared band passes, in paint order, then the rows mark', () => {
     expect(draws.map(d => d.passId)).toEqual([
       'coverage',
       'snpCov',
       'interbase',
       'indicator',
-      'rect',
+      'span',
     ])
   })
 
   test('scissors the band to its own strip at the canvas top', () => {
-    for (const draw of draws.filter(d => d.passId !== 'rect')) {
+    for (const draw of draws.filter(d => d.passId !== 'span')) {
       expect(draw.scissor).toEqual({
         x: 0,
         y: 0,
@@ -144,7 +143,7 @@ describe('the MAF coverage band on the rows canvas', () => {
   })
 
   test('scissors the rows below it, and leaves the viewport full-height', () => {
-    const rows = draws.find(d => d.passId === 'rect')!
+    const rows = draws.find(d => d.passId === 'span')!
     expect(rows.scissor).toEqual({
       x: 0,
       y: COVERAGE_HEIGHT * dpr,
@@ -175,14 +174,14 @@ describe('the MAF coverage band on the rows canvas', () => {
   })
 
   test('the rows pass reads a later write than the band did', () => {
-    const rows = draws.find(d => d.passId === 'rect')!
+    const rows = draws.find(d => d.passId === 'span')!
     expect(rows.uniformWrite).toBeGreaterThan(draws[0]!.uniformWrite)
   })
 })
 
 test('no band state draws no band passes, and the rows fill the canvas', () => {
   const draws = render(undefined).draws()
-  expect(draws.map(d => d.passId)).toEqual(['rect'])
+  expect(draws.map(d => d.passId)).toEqual(['span'])
   expect(draws[0]!.scissor).toEqual({
     x: 0,
     y: 0,

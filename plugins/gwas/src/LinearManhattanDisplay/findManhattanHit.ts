@@ -85,7 +85,7 @@ export function findManhattanHit(
         ? Infinity
         : yToScore(mouseY - HIT_RADIUS_PX, domainY, canvasHeight)
 
-    const hit = MARK.hitNearest(
+    const hit = MARK.hitNearest?.(
       data,
       block,
       state,

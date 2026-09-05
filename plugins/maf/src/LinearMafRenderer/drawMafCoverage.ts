@@ -13,10 +13,7 @@ import { orderCoverageBandLayers } from '@jbrowse/render-core/coverageBand'
 import { SCALE_TYPE_LINEAR, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type { MafCoverageColors } from './coverageBandColors.ts'
-import type {
-  MafCoverageRegion,
-  MafRegionData,
-} from './mafRenderingBackendTypes.ts'
+import type { MafCoverageRegion } from './mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -138,7 +135,7 @@ const MAF_CANVAS_COVERAGE_LAYERS = orderCoverageBandLayers(
 export function drawMafCoverage(
   ctx: Ctx2D,
   blocks: RenderBlock[],
-  regions: ReadonlyMap<number, MafRegionData>,
+  regions: ReadonlyMap<number, { coverage: MafCoverageRegion }>,
   state: DrawMafCoverageState,
 ) {
   const { coverageHeight, canvasWidth, domainMax, colors } = state

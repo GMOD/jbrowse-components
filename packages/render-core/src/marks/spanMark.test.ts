@@ -52,6 +52,7 @@ const params: SpanParams = {
   rowHeight: 20,
   rowProportion: 1,
   minWidthPx: MULTI_ROW_MIN_CELL_PX,
+  seamPx: 0,
   scrollTop: 0,
 }
 
@@ -119,24 +120,28 @@ test('paints nothing past the channels count', () => {
   expect(calls).toHaveLength(1)
 })
 
-// The hit test measures against the rect the painter drew, min-width floor
-// included — a mark narrower than the floor is grabbable across the ink it
-// actually has, not across its bp span.
-test('hitNearest answers inside the painted rect, floor included', () => {
-  const narrow = channels([50], [51], [0], [RED])
-  const narrowBlock = { ...block, screenEndPx: 50 }
-  const inside = spanMark.hitNearest(
-    narrow,
-    narrowBlock,
+// A tiling caller pads each span's right edge so two runs meeting on a
+// fractional pixel leave no hairline. The pad grows rightward on both
+// orientations, so reversing mirrors the spans exactly.
+test('the seam pad widens a span without moving its anchor', () => {
+  const seamed: SpanParams = { ...params, minWidthPx: 0, seamPx: 0.4 }
+  const forward = mockCtx()
+  spanMark.paintBlock(
+    forward.ctx,
+    channels([10], [20], [0], [RED]),
+    block,
     frame,
-    params,
-    26,
-    10,
-    [0],
-    64,
+    seamed,
   )
-  expect(inside).toMatchObject({ index: 0, distSq: 0 })
-  expect(
-    spanMark.hitNearest(narrow, narrowBlock, frame, params, 40, 10, [0], 64),
-  ).toBeUndefined()
+  expect(forward.calls[0]).toMatchObject({ x: 100, w: 100.4 })
+
+  const back = mockCtx()
+  spanMark.paintBlock(
+    back.ctx,
+    channels([10], [20], [0], [RED]),
+    { ...block, reversed: true },
+    frame,
+    seamed,
+  )
+  expect(back.calls[0]).toMatchObject({ x: 800, w: 100.4 })
 })

@@ -1,10 +1,7 @@
-import { buildInstanceBuffer } from './mafInstanceBuffer.ts'
-import {
-  INSTANCE_OFFSET_U32,
-  INSTANCE_STRIDE_WORDS,
-} from './shaders/maf.generated.ts'
+import { buildMafChannels } from './mafChannels.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
+import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 interface DecodedRun {
   startBp: number
@@ -13,15 +10,17 @@ interface DecodedRun {
   color: number
 }
 
-function decodeRuns(u32: Uint32Array, count: number): DecodedRun[] {
+// The declaration's lanes, not a shader record's field names: a lane swap in
+// `mafMarks.ts` packs a perfectly valid buffer that draws the wrong picture,
+// and only a test reading the channels can see it.
+function decodeRuns(c: SpanChannels): DecodedRun[] {
   const runs: DecodedRun[] = []
-  for (let i = 0; i < count; i++) {
-    const base = i * INSTANCE_STRIDE_WORDS
+  for (let i = 0; i < c.count; i++) {
     runs.push({
-      startBp: u32[base + INSTANCE_OFFSET_U32.startBp]!,
-      endBp: u32[base + INSTANCE_OFFSET_U32.endBp]!,
-      rowIndex: u32[base + INSTANCE_OFFSET_U32.rowIndex]!,
-      color: u32[base + INSTANCE_OFFSET_U32.color]!,
+      startBp: c.x[i]!,
+      endBp: c.x2[i]!,
+      rowIndex: c.row[i]!,
+      color: c.color[i]!,
     })
   }
   return runs
@@ -74,8 +73,8 @@ test('two disjoint blocks emit runs at distinct absolute positions', () => {
     block(100, 'ACGTA', [[0, 'ACGTA']]),
     block(1100, 'ACGTA', [[0, 'ACGTA']]),
   ]
-  const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-  const runs = decodeRuns(buffer, count)
+  const channels = buildMafChannels({ blocks, ...args })
+  const runs = decodeRuns(channels)
 
   expect(runs).toHaveLength(2)
   expect(runs[0]).toMatchObject({ startBp: 100, endBp: 105, rowIndex: 0 })
@@ -89,8 +88,8 @@ test('mismatch in a later block does not bleed into the earlier block', () => {
     block(100, 'ACGTA', [[0, 'ACGTA']]),
     block(1100, 'ACGTA', [[0, 'ACTTA']]),
   ]
-  const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-  const runs = decodeRuns(buffer, count)
+  const channels = buildMafChannels({ blocks, ...args })
+  const runs = decodeRuns(channels)
 
   const mismatch = runs.find(r => r.startBp === 1102)
   expect(mismatch).toBeDefined()
@@ -109,12 +108,12 @@ describe('binned encode (zoomed out)', () => {
 
   test('collapses a block to one run per bin, merging equal neighbours', () => {
     const blocks = [block(100, ref, [[0, ref]])]
-    const { buffer, count } = buildInstanceBuffer({
+    const channels = buildMafChannels({
       blocks,
       ...args,
       binBp: 4,
     })
-    const runs = decodeRuns(buffer, count)
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 116, rowIndex: 0 })
   })
@@ -123,12 +122,12 @@ describe('binned encode (zoomed out)', () => {
     // Mismatch at genomic offset 8, which bin 2 samples.
     const aln = 'ACGTACGTTCGTACGT'
     const blocks = [block(100, ref, [[0, aln]])]
-    const { buffer, count } = buildInstanceBuffer({
+    const channels = buildMafChannels({
       blocks,
       ...args,
       binBp: 4,
     })
-    const runs = decodeRuns(buffer, count)
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(3)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 108 })
     expect(runs[1]).toMatchObject({ startBp: 108, endBp: 112 })
@@ -141,36 +140,36 @@ describe('binned encode (zoomed out)', () => {
     // 4 inserted reference columns in the middle; the block still spans 16bp.
     const refIns = 'ACGTACGT----ACGTACGT'
     const blocks = [block(100, refIns, [[0, 'ACGTACGTAAAAACGTACGT']])]
-    const { buffer, count } = buildInstanceBuffer({
+    const channels = buildMafChannels({
       blocks,
       ...args,
       binBp: 4,
     })
-    const runs = decodeRuns(buffer, count)
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 116 })
   })
 
   test('a trailing partial bin clamps to the block end', () => {
     const blocks = [block(100, 'ACGTAC', [[0, 'ACGTAC']])]
-    const { buffer, count } = buildInstanceBuffer({
+    const channels = buildMafChannels({
       blocks,
       ...args,
       binBp: 4,
     })
-    const runs = decodeRuns(buffer, count)
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 106 })
   })
 
   test('a row shorter than the reference closes its run early', () => {
     const blocks = [block(100, ref, [[0, 'ACGTACGT']])]
-    const { buffer, count } = buildInstanceBuffer({
+    const channels = buildMafChannels({
       blocks,
       ...args,
       binBp: 4,
     })
-    const runs = decodeRuns(buffer, count)
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 108 })
   })
@@ -179,23 +178,23 @@ describe('binned encode (zoomed out)', () => {
 describe('gap runs at a block boundary', () => {
   test('a trailing gap run paints nothing', () => {
     const blocks = [block(100, 'ACGTA', [[0, 'ACG--']])]
-    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-    const runs = decodeRuns(buffer, count)
+    const channels = buildMafChannels({ blocks, ...args })
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
   })
 
   test('a leading gap run paints nothing', () => {
     const blocks = [block(100, 'ACGTA', [[0, '--GTA']])]
-    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-    const runs = decodeRuns(buffer, count)
+    const channels = buildMafChannels({ blocks, ...args })
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(1)
     expect(runs[0]).toMatchObject({ startBp: 102, endBp: 105 })
   })
 
   test('an all-gap row emits nothing', () => {
     const blocks = [block(100, 'ACGTA', [[0, '-----']])]
-    const { count } = buildInstanceBuffer({ blocks, ...args })
+    const { count } = buildMafChannels({ blocks, ...args })
     expect(count).toBe(0)
   })
 
@@ -206,8 +205,8 @@ describe('gap runs at a block boundary', () => {
       block(100, 'ACGTA', [[0, 'ACG--']]),
       block(105, 'ACGTA', [[0, 'ACGTA']]),
     ]
-    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-    const runs = decodeRuns(buffer, count)
+    const channels = buildMafChannels({ blocks, ...args })
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(3)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
     expect(runs[1]).toMatchObject({ startBp: 103, endBp: 105 })
@@ -220,8 +219,8 @@ describe('gap runs at a block boundary', () => {
       block(100, 'ACGTA', [[0, 'ACG--']]),
       block(105, 'ACGTA', [[0, '--GTA']]),
     ]
-    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-    const runs = decodeRuns(buffer, count)
+    const channels = buildMafChannels({ blocks, ...args })
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(2)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 103 })
     expect(runs[1]).toMatchObject({ startBp: 107, endBp: 110 })
@@ -231,8 +230,8 @@ describe('gap runs at a block boundary', () => {
     // gapColor differs from matchColor, so the interior gap is its own run and
     // the trailing gap must not extend it.
     const blocks = [block(100, 'ACGTACG', [[0, 'A--TAC-']])]
-    const { buffer, count } = buildInstanceBuffer({ blocks, ...args })
-    const runs = decodeRuns(buffer, count)
+    const channels = buildMafChannels({ blocks, ...args })
+    const runs = decodeRuns(channels)
     expect(runs).toHaveLength(3)
     expect(runs[0]).toMatchObject({ startBp: 100, endBp: 101 })
     expect(runs[1]).toMatchObject({ startBp: 101, endBp: 103 })

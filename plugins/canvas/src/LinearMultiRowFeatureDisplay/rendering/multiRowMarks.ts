@@ -20,6 +20,9 @@ export const MULTI_ROW_MARKS = [
       rowHeight: s.rowHeight,
       rowProportion: s.rowProportion,
       minWidthPx: MULTI_ROW_MIN_CELL_PX,
+      // Sparse intervals with background between them by right, so nothing to
+      // seam; MAF's tiling cells are the caller that pads.
+      seamPx: 0,
       scrollTop: 0,
     }),
   }),

@@ -1,17 +1,14 @@
 /**
- * Single source of truth for "what color should this MAF cell be".
- * Shared by the GPU instance-buffer encoder (`buildInstanceBuffer`) and
- * the Canvas2D fallback (`rendering/bases.ts`) so both paths produce
- * identical pixels.
+ * What colour a MAF cell is, as a packed ABGR int, for the one walk both
+ * backends draw from (`buildMafChannels`).
  *
- * Returns `undefined` for cells that should not be drawn as a base rect
- * (reference insertions — those are rendered by the separate insertion
- * pass).
+ * `RESOLVE_PACKED_SKIP` for cells that are not drawn as a base rect —
+ * reference insertions, which the separate insertion pass renders.
  *
- * Two flavors: `resolveCellColor` returns CSS strings (for ctx.fillStyle);
- * `resolveCellPacked` returns pre-packed ABGR integers (for the GPU instance
- * buffer). The packed variant avoids the per-cell CSS-string allocation +
- * Map lookup that bridged the gap before.
+ * There used to be a CSS-string flavour beside this one, because the Canvas2D
+ * fallback re-walked the alignment column by column and set `fillStyle` per
+ * run. Encoding to the `span` shape's channels made that walk the encode's, so
+ * a colour is resolved once, in one representation.
  */
 
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
@@ -49,12 +46,9 @@ export interface MafCellColorConfig {
 }
 
 /**
- * The single branch cascade behind both color resolvers, returning a category
- * rather than a representation. Both `resolveCellColor` (CSS strings) and
- * `resolveCellPacked` (ABGR ints) map this to their leaf value, so the decision
- * tree lives in exactly one place and the two paths can never silently diverge
- * (which would produce GPU-vs-Canvas2D pixel mismatches). `Base` means "look up
- * the aligned base's own color"; the caller still holds `alnByte`.
+ * The branch cascade behind the resolver, returning a category rather than a
+ * representation. `Base` means "look up the aligned base's own color"; the
+ * caller still holds `alnByte`.
  */
 const CellCategory = {
   Skip: 0, // reference insertion — drawn separately
@@ -90,40 +84,9 @@ export function classifyCell(
   return category
 }
 
-export function resolveCellColor(
-  refByte: number,
-  alnByte: number,
-  cfg: MafCellColorConfig,
-): string | undefined {
-  const category = classifyCell(
-    refByte,
-    alnByte,
-    cfg.showAllLetters,
-    cfg.mismatchRendering,
-  )
-  let color: string | undefined
-  if (category === CellCategory.Skip) {
-    color = undefined
-  } else if (category === CellCategory.Gap) {
-    color = cfg.gapColor
-  } else if (category === CellCategory.Match) {
-    color = cfg.matchColor
-  } else if (category === CellCategory.ShowAllNoMismatch) {
-    color = SHOW_ALL_NO_MISMATCH_FALLBACK
-  } else if (category === CellCategory.MismatchOff) {
-    color = cfg.mismatchOffColor
-  } else {
-    // `& 0x7f` as the packed twin does, so a byte outside ASCII resolves to the
-    // same cell in both paths rather than only in the one with a bounded table.
-    const base = String.fromCharCode((alnByte | LOWER_BIT) & 0x7f)
-    color = cfg.colorForBase[base] ?? cfg.unknownBaseColor
-  }
-  return color
-}
-
 /**
  * Packed-ABGR mirror of `MafCellColorConfig`. Built once per
- * `buildInstanceBuffer` call via `packMafCellColorConfig`; the GPU hot loop
+ * `buildMafChannels` call via `packMafCellColorConfig`; the encode hot loop
  * does a direct byte→packed-int lookup (no Map.get, no String allocation).
  */
 export interface MafCellPackedColors {
@@ -165,8 +128,11 @@ export interface MafCellPackedConfig extends MafCellPackedColors {
   packedByRefAln: Uint32Array
 }
 
-/** The branch cascade, run only while filling the table above. */
-function resolvePackedUncached(
+/**
+ * The branch cascade, run only while filling the table above — and the oracle
+ * the table is swept against, which is what it is exported for.
+ */
+export function resolvePackedUncached(
   refByte: number,
   alnByte: number,
   cfg: MafCellPackedColors,

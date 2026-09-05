@@ -1,5 +1,4 @@
 import { interbaseBarHeightPx } from '@jbrowse/alignments-core'
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { devicePxBand } from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
@@ -11,33 +10,20 @@ import {
   writeCoverageBandUniforms,
 } from '@jbrowse/render-core/coverageBand'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
-import * as mafShader from './shaders/maf.generated.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/maf.iface.generated.ts'
+import { MAF_ROW_MARK } from './mafMarks.ts'
 
 import type {
   MafCoverageBandState,
   MafGPURenderState,
-  MafRegionData,
   MafRenderBlock,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
-
-const PASS_RECT = 'rect'
-
-const ROW_PASS: InstancePass<MafUploadPayload> = {
-  ...slangPass({ id: PASS_RECT, mod: mafShader }),
-  // Pre-encoded on the main thread by the per-region encode autorun
-  // (`InstanceWriter`, right-sized on finish), so the pack is the handoff.
-  // The shader unpacks absolute genomic coords + rowIndex + color.
-  pack: data => data.instanceBuffer,
-}
 
 // The coverage band's passes, in render-core's paint order — the same order the
 // Canvas2D fallback's painters are resolved into (`MAF_CANVAS_COVERAGE_DRAW`),
@@ -63,7 +49,7 @@ export const MAF_COVERAGE_PASSES = orderCoverageBandLayers<
 // rows instances are encoded on the main thread from theme + toggles, the band's
 // four buffers arrive packed out of the RPC.
 export const MAF_PASSES: InstancePass<MafUploadPayload>[] = [
-  ROW_PASS,
+  MAF_ROW_MARK.pass,
   ...MAF_COVERAGE_PASSES,
 ]
 
@@ -71,15 +57,13 @@ export const MAF_PASSES: InstancePass<MafUploadPayload>[] = [
 // two are unrelated declarations — the rows pass reads render-core's
 // `RowRectUniforms`, the band's passes its `CoverageBandUniforms`.
 export const MAF_UNIFORM_BYTE_SIZE = Math.max(
-  UNIFORMS_SIZE_BYTES,
+  MAF_ROW_MARK.uniformByteSize,
   COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
 )
 
 export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   MafUploadPayload,
-  MafGPURenderState,
-  MafRenderBlock,
-  MafRegionData
+  MafGPURenderState
 > {
   protected regionPasses = MAF_PASSES
 
@@ -97,7 +81,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   protected drawRegion(
     block: MafRenderBlock,
     clip: BlockClipResult,
-    region: MafRegionData,
+    region: MafUploadPayload,
     state: MafGPURenderState,
   ) {
     // Two bands out of one canvas: the coverage strip pinned at the top, the
@@ -107,13 +91,13 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     if (state.coverage) {
       this.drawCoverageBand(block, clip, region, state, state.coverage)
     }
-    this.drawRows(block, clip, state)
+    this.drawRows(block, clip, region, state)
   }
 
   private drawCoverageBand(
     block: MafRenderBlock,
     clip: BlockClipResult,
-    region: MafRegionData,
+    region: MafUploadPayload,
     state: MafGPURenderState,
     band: MafCoverageBandState,
   ) {
@@ -176,6 +160,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   private drawRows(
     block: MafRenderBlock,
     clip: BlockClipResult,
+    region: MafUploadPayload,
     state: MafGPURenderState,
   ) {
     const scissor = devicePxBand(
@@ -187,37 +172,19 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     if (scissor.height === 0) {
       return
     }
-    mafShader.writeUniforms(this.uniformData, {
-      bpRangeX: bpRangeXTuple(clip, block.reversed),
-      canvasHeight: state.canvasHeight,
-      // Inert while `minCellPx` is 0, and kept only because the uniform struct
-      // is shared. The unit used to matter and used to be device px, which made
-      // the floor move with the monitor.
-      minCellDenomPx: clip.pxW,
-      // MAF does not floor. Its cells tile the row, so a sub-pixel cell is read
-      // as part of the run around it, and widening one to a whole pixel paints
-      // ink the alignment does not contain: measured at 2.3x the colour of a
-      // supersampled ground truth, against 1.05x for no floor
-      // (agent-docs/reference/MAF_SUBPIXEL_CELLS.md). The multi-row painter floors
-      // and should — its features are sparse intervals, not a tiling, and
-      // MULTI_ROW_MIN_CELL_PX says why.
-      minCellPx: 0,
-      zero: 0,
-      rowHeight: state.rowHeight,
-      rowProportion: state.rowProportion,
-      // The rows band is the viewport, not the rows content: rows past it are
-      // scrolled to, not grown into. `- rowsTop` is what places the band inside
-      // a canvas that now also holds the coverage strip above it — the shader
-      // paints row i at `rowHeight*i - scrollTop`, so offsetting the scroll is
-      // offsetting the band, and the scissor below keeps a scrolled row from
-      // painting up into the strip. Every other MAF layer (Canvas2D fallback,
-      // overlays, tree, hit-test) shifts by the same model.scrollTop inside a
-      // container that already carries `rowsTopOffset`.
-      scrollTop: state.scrollTop - state.rowsTop,
-    })
-
-    this.hal.writeUniforms(this.uniformData)
+    // The rows band is the viewport, not the rows content: rows past it are
+    // scrolled to, not grown into, and the scissor is what keeps a scrolled row
+    // from painting up into the strip above. Everything inside the band — the
+    // row placement, the min-width rule, the hp clip-x span — is the `span`
+    // shape's, drawn from the very channels the Canvas2D painter walks.
     this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-    this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
+    MAF_ROW_MARK.drawRegion(
+      this.hal,
+      this.uniformData,
+      block,
+      clip,
+      region,
+      state,
+    )
   }
 }
