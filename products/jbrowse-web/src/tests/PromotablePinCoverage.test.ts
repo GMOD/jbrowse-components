@@ -2,6 +2,7 @@ import {
   displayTypesWithPromotableSlots,
   promotableSlotsWithoutPin,
 } from '@jbrowse/core/ui'
+import { waitFor } from '@testing-library/react'
 
 import { syntenySettingsMenuItems } from '../../../../plugins/linear-comparative-view/src/LinearComparativeView/components/syntenySettingsMenuItems.ts'
 import { doBeforeEach, getPluginManager } from './util.tsx'
@@ -92,6 +93,10 @@ interface Fixture {
   // `trackMenuItems()` here would report the slots as pin-less and the
   // baseline would grow an entry saying so.
   menuItems?: (display: any) => MenuItem[]
+  // What to wait out before the test ends, where entering a state started
+  // work the harness would otherwise tear down under — a fetch whose adapter
+  // loads lazily lands its import after the module registry is gone.
+  settle?: (display: any) => Promise<void>
 }
 
 // One drawn feature, which is all `hasDrawnFeatures` asks for.
@@ -175,6 +180,7 @@ const FIXTURES: Fixture[] = [
     displayType: 'LinearMafDisplay',
     trackId: 'volvox_maf',
     states: [identityRendering],
+    settle: fetchLanded,
   },
   {
     displayType: 'LinearMultiSampleVariantDisplay',
@@ -230,6 +236,18 @@ function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
 function overlayWithSources(d: any) {
   d.setRenderingType('multixyplot')
   d.setRpcData(0, { sources: [{ name: 'a' }, { name: 'b' }] })
+}
+
+// `identityRendering` lays the view out, and an initialized view fetches: the
+// MAF adapter loads lazily on the RPC's side, so a test that returned first
+// left that import to land on a torn-down registry.
+async function fetchLanded(d: any) {
+  await waitFor(
+    () => {
+      expect(d.hasRegionData || d.error !== undefined).toBe(true)
+    },
+    { timeout: 20000 },
+  )
 }
 
 // maf's key is the row rendering's, and `bases` (the default) has none: the
@@ -363,7 +381,9 @@ test.each(FIXTURES.map(f => [f.displayType, f] as const))(
     expect(promotableSlotsWithoutPin(display, menuItems)).toEqual(
       KNOWN_UNPINNED[displayType] ?? [],
     )
+    await fixture.settle?.(display)
   },
+  30000,
 )
 
 // The baseline is only as good as its reach: an entry for a display type no
