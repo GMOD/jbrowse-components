@@ -79,13 +79,16 @@ export default function SharedModelF(
         return getConf(self, 'gcMode')
       },
       /**
-       * #getter
-       * Overrides the wiggle base's strict-zoom key: the adapter computes GC
-       * from `windowSize`/`windowDelta`/`gcMode` alone and the worker does no
-       * per-zoom binning, so data fetched at one zoom is right at every other.
+       * #method
+       * Overrides the wiggle base's strict-zoom arguments with none: the
+       * adapter computes GC from `windowSize`/`windowDelta`/`gcMode` alone and
+       * the worker does no per-zoom binning, so data fetched at one zoom is
+       * right at every other — and this display sends no `bpPerPx` either,
+       * which is what makes the empty object the honest answer rather than a
+       * key that happens to be constant.
        */
-      get zoomFetchKey(): string {
-        return ''
+      zoomFetchArgs() {
+        return {}
       },
       /**
        * #getter

@@ -42,8 +42,13 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
   /** read by the hover-clear reaction, which the too-large banner also fires */
   regionTooLarge: boolean
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
-  rpcPropsCacheKey: string
-  adapterConfigKey: string
+  /**
+   * The settings tier of `fetchInputs`, as a structural computed's value: its
+   * identity moves only when `rpcProps()` or the adapter config really changes,
+   * so `SettingsInvalidate` can track it directly instead of a serialized
+   * restatement of it.
+   */
+  settingsFetchInputs: unknown
   isCacheValid: (displayedRegionIndex: number) => boolean
   fetchNeeded: (needed: IndexedRegion[]) => void
   setError: (error?: unknown) => void
@@ -107,13 +112,16 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   )
 
   const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
-  // Re-fetch when the RPC payload or the adapter changes. The settings key is
-  // what rpcProps() *returns*, not what building it reads — see the
-  // `rpcPropsCacheKey` getter — and the adapter key is the config a track was
-  // re-pointed at in the config editor.
+  // Re-fetch when the RPC payload or the adapter changes. The trigger is the
+  // settings tier of `fetchInputs` — what rpcProps() *returns* plus the adapter
+  // config, held in a structural computed, so the far larger set of observables
+  // that building the payload reads does not invalidate it. That is the same
+  // job `JSON.stringify` used to do here, minus its two blind spots: an
+  // `undefined`-valued field no longer drops out of the comparison, and a class
+  // with no own enumerable fields no longer flattens to `{}`.
   //
-  // Both are axes of `regionFetchKey`, so every loaded region already reads as
-  // stale to `isCacheValid` the moment either moves and the plan refetches on
+  // The tier is one term of `fetchInputs`, so every loaded region already reads
+  // as stale to `isCacheValid` the moment it moves and the plan refetches on
   // its own; `staleSettingsDrawn` raises the scrim over the data meanwhile.
   // What this still buys is `invalidateSettings`: a fetch superseded now rather
   // than after it lands, an errored display unblocked, and the display's own
@@ -121,12 +129,11 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // map is what used to raise the scrim — and blank every display but canvas
   // for the debounce plus the RPC.
   //
-  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return, and `adapterConfigKey` | `invalidateSettings()`: supersede the in-flight fetch, clear a blocking error or cancel, drop settings-baked data. `loadedRegions` stays, so the held data draws under the `staleSettingsDrawn` scrim until the refetch lands
+  // #autorun `settingsFetchInputs`, the `rpcProps()` return and the adapter config compared structurally | `invalidateSettings()`: supersede the in-flight fetch, clear a blocking error or cancel, drop settings-baked data. `loadedRegions` stays, so the held data draws under the `staleSettingsDrawn` scrim until the refetch lands
   autorunOnReadyView(
     self,
     () => {
-      void self.rpcPropsCacheKey
-      void self.adapterConfigKey
+      void self.settingsFetchInputs
       loopGuard()
       self.invalidateSettings()
     },

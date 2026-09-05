@@ -67,5 +67,5 @@ test('the refetch the moved key triggers reopens the gate', async () => {
     { timeout: 10_000 },
   )
   expect(display.zoomFetchKey).toBe('b')
-  expect(display.loadedRegions.get(0)?.fetchKey).toBe(display.regionFetchKey)
+  expect(display.isCacheValid(0)).toBe(true)
 })

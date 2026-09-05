@@ -448,7 +448,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     it('rides in the zoom key and the RPC call, not in rpcProps', async () => {
       const { display, view, mockRpcCall } = await loadedCollapsed()
-      const settingsKey = display.settingsFetchKey
+      const settings = display.settingsFetchInputs
       expect(display.zoomFetchKey).toBe('false|longestCoding')
       expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
         displayConfig: { geneGlyphMode: 'longestCoding' },
@@ -468,7 +468,7 @@ describe('FetchVisibleRegions autorun', () => {
         })
       })
       expect(display.zoomFetchKey).toBe('false|all')
-      expect(display.settingsFetchKey).toBe(settingsKey)
+      expect(display.settingsFetchInputs).toEqual(settings)
       expect(display.staleSettingsDrawn).toBe(false)
     })
 
@@ -493,7 +493,7 @@ describe('FetchVisibleRegions autorun', () => {
     // payload and refetches nothing.
     it('an opened gene refetches under longestCoding, scrim-free', async () => {
       const { display, mockRpcCall } = await loadedCollapsed()
-      const settingsKey = display.settingsFetchKey
+      const settings = display.settingsFetchInputs
       const callsBefore = mockRpcCall.mock.calls.length
 
       display.toggleExpandedGene('gene1')
@@ -508,7 +508,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
         expandedGeneIds: ['gene1'],
       })
-      expect(display.settingsFetchKey).toBe(settingsKey)
+      expect(display.settingsFetchInputs).toEqual(settings)
       expect(display.staleSettingsDrawn).toBe(false)
     })
 

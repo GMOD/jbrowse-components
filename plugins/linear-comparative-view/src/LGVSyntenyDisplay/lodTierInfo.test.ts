@@ -58,7 +58,7 @@ test('a tier flip is a zoom-key move, not a settings change', async () => {
   })
   zoomOut(view)
   await flush()
-  const settingsKey = display.settingsFetchKey
+  const settings = display.settingsFetchInputs
   expect(display.lodTier).toBe('coarse')
   expect(display.zoomFetchKey).toBe('1|coarse')
   expect(display.rpcProps()).not.toHaveProperty('lodMode')
@@ -72,7 +72,7 @@ test('a tier flip is a zoom-key move, not a settings change', async () => {
   expect(display.lodTier).toBe('fine')
   expect(display.dataSuperseded).toBe(false)
   expect(display.zoomFetchKey).toBe('1|fine')
-  expect(display.settingsFetchKey).toBe(settingsKey)
+  expect(display.settingsFetchInputs).toEqual(settings)
 })
 
 test('a file with no coarse tier resolves fine once its info lands, whatever the mode', async () => {
@@ -94,10 +94,10 @@ test('a default-built file leaves the resolved tier where it was', async () => {
     coarseGap: 10000,
   })
   zoomOut(view)
-  const before = display.regionFetchKey
+  const before = display.fetchInputs
   await flush()
   expect(display.lodTierInfo).toEqual({ hasCoarseTier: true, coarseGap: 10000 })
-  expect(display.regionFetchKey).toBe(before)
+  expect(display.fetchInputs).toEqual(before)
   expect(display.lodTier).toBe('coarse')
   // this display's afterAttach sits beside the base alignments display's
   // rather than over it — the fork auto-chains the hook, and the primary fetch

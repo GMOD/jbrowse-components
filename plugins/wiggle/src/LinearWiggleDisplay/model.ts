@@ -234,6 +234,21 @@ export default function stateModelFactory(
 
       /**
        * #method
+       * The zoom-derived worker arguments, declared once and both sent and
+       * stamped. BigWig has discrete zoom levels and the worker picks one from
+       * `bpPerPx / resolution`, so data fetched at another zoom is the wrong
+       * summary however well the viewport still sits inside it (adr-008).
+       *
+       * `WiggleCommonMixin.zoomFetchKey` says the same thing as a string for
+       * the displays still on that hook; this display sends the object it keys
+       * on, so there is no second spelling to drift.
+       */
+      zoomFetchArgs() {
+        return { bpPerPx: self.host.bpPerPx }
+      },
+
+      /**
+       * #method
        * single-source gpuProps mapped onto the multi-source build path:
        * - bicolor: no source color override; build emits pos+neg with their
        *   respective colors
@@ -294,13 +309,13 @@ export default function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: IndexedRegion[]) {
-        const { bpPerPx } = self.host
+        const zoom = self.zoomFetchArgs()
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
             ctx.callRpc('RenderWiggleData', {
               ...rpcArgs(self),
+              ...zoom,
               regions,
-              bpPerPx,
             }),
           onResult: (idx, result) => {
             self.setRpcData(idx, result)

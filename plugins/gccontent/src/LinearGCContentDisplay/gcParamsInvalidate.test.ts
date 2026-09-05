@@ -210,7 +210,7 @@ test('a zoom inside a loaded region keeps the cache valid', async () => {
   }
   view.setWidth(800)
   view.setDisplayedRegions([region])
-  display.loadedRegions.set(0, { ...region, fetchKey: display.regionFetchKey })
+  display.loadedRegions.set(0, { ...region, fetchInputs: display.fetchInputs })
   expect(display.isCacheValid(0)).toBe(true)
 
   const before = view.bpPerPx

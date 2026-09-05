@@ -41,7 +41,7 @@ describe('per-base bin supersession', () => {
 
     expect(display.perBaseBinBp).toBe(8)
     expect(display.zoomFetchKey).toBe('8')
-    expect(display.loadedRegions.get(0)?.fetchKey).toBe(display.regionFetchKey)
+    expect(display.isCacheValid(0)).toBe(true)
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)
     expect(display.displayPhase).toBe('ready')
@@ -80,7 +80,7 @@ describe('per-base bin supersession', () => {
     simulateLoaded(env)
 
     expect(display.zoomFetchKey).toBe('1')
-    expect(display.loadedRegions.get(0)?.fetchKey).toBe(display.regionFetchKey)
+    expect(display.isCacheValid(0)).toBe(true)
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)
     expect(display.displayPhase).toBe('ready')

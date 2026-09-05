@@ -3,9 +3,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { compareStructural } from 'mobx'
 
 import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
+import { fetchInputsCurrent, makeFetchInputs } from './fetchInputs.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
@@ -15,6 +17,7 @@ import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
+import type { FetchInputs } from './fetchInputs.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
 import type { RegionHost } from './regionHost.ts'
@@ -210,6 +213,26 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #method
+         * Overridable hook, and the converted form of `zoomFetchKey` above:
+         * the zoom-derived worker arguments as an **object**, which the
+         * display spreads into its own RPC call and the foundation stamps
+         * beside every region the call loads. A display that fills this leaves
+         * `zoomFetchKey` alone; the foundation prefers this when it exists.
+         *
+         * One declaration instead of two is the whole of it. The key and the
+         * argument are the same fact, and writing them apart is what lets them
+         * disagree — a `zoomFetchKey` that reads no observable is memoized for
+         * the display's life while the call goes on sending a live value, and
+         * a key naming a threshold while the call sends the mode behind it
+         * says stale on a crossing the worker never sees.
+         *
+         * Looked up dynamically rather than declared, so a display keeps its
+         * narrow return type through MST's `.views()` chain — the same reason
+         * `rpcProps` is not declared here.
+         */
+
+        /**
+         * #method
          * Overridable hook (default true): whether the display can actually
          * draw what this region is marked loaded over. Two different displays
          * want it for two different reasons, and both are real:
@@ -312,51 +335,55 @@ export default function MultiRegionDisplayMixin() {
       // this be your only dependency" an unwritten precondition on every
       // override. `zoomFetchKey` and `regionHasData` are views for the same
       // reason.
+      .views(self => {
+        const { settings, inputs } = makeFetchInputs(self)
+        return {
+          /**
+           * #getter
+           * What a fetch issued right now would stamp on a region: the
+           * settings tier (`rpcProps()` and the adapter config) and the zoom
+           * tier (the display's `zoomFetchArgs()` object, or its
+           * `zoomFetchKey` string where it has not been converted).
+           * `fetchRegions` captures it before the RPC goes out and stamps it
+           * beside the loaded region; `isCacheValid` compares against it.
+           *
+           * A **value**, not a string. The inputs already exist as the object
+           * the display sends the worker, so a second serialized spelling of
+           * them is one more thing to keep in step — and `JSON.stringify`,
+           * which was that spelling, cannot tell an `undefined`-valued field
+           * from an absent one.
+           */
+          get fetchInputs(): FetchInputs {
+            return inputs.get()
+          },
+          /**
+           * #getter
+           * The settings tier alone, which `staleSettingsDrawn` compares: the
+           * scrim goes up on a settings or adapter change and stays down on a
+           * zoom.
+           */
+          get settingsFetchInputs(): unknown {
+            return settings.get()
+          },
+        }
+      })
       .views(self => ({
-        /**
-         * #getter
-         * The settings axis (`rpcPropsCacheKey`) and the adapter axis
-         * (`adapterConfigKey`) of `regionFetchKey`: everything a fetch issued
-         * right now would stamp on a region except the zoom. Stamped beside
-         * the whole key (`LoadedRegion.settingsKey`) so `staleSettingsDrawn`
-         * can compare these two axes alone.
-         */
-        get settingsFetchKey(): string {
-          return `${self.rpcPropsCacheKey}|${self.adapterConfigKey}`
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * What a fetch issued right now would stamp on a region:
-         * `settingsFetchKey` plus the display's zoom term (`zoomFetchKey`).
-         * `fetchRegions` captures it before the RPC goes out and stamps it
-         * beside the loaded region; `isCacheValid` compares against it. The
-         * same three axes the global family's `currentFetchKey` carries, so a
-         * settings change reads as stale here through the one compare — which
-         * is what closes the export gate on a setting the way it closes on a
-         * zoom, and what lets `SettingsInvalidate` keep the coverage map.
-         */
-        get regionFetchKey(): string {
-          return `${self.settingsFetchKey}|${self.zoomFetchKey}`
-        },
         /**
          * #method
          * Whether the data held for a region still answers the current view.
          * Not a hook a display fills: a display states its rule as
-         * `zoomFetchKey` (the zoom term of what a fetch now would produce) and
-         * `regionHasData` (did the last one store anything), and this compares
-         * the whole key against the one the region was fetched under. A
-         * subclass that changes what it fetches spells the change in the key,
-         * and one that forgets gets a redundant fetch rather than a cached
-         * answer for a zoom the data was never fetched at.
-         *
+         * `zoomFetchArgs` (the zoom-derived arguments a fetch now would send)
+         * and `regionHasData` (did the last one store anything), and this
+         * compares the whole input set against the one the region was fetched
+         * under.
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
             self.regionHasData(displayedRegionIndex) &&
-            self.loadedRegions.get(displayedRegionIndex)?.fetchKey ===
-              this.regionFetchKey
+            fetchInputsCurrent(
+              self.loadedRegions.get(displayedRegionIndex)?.fetchInputs,
+              self.fetchInputs,
+            )
           )
         },
       }))
@@ -385,12 +412,15 @@ export default function MultiRegionDisplayMixin() {
          */
         get staleSettingsDrawn(): boolean {
           const { host } = self
-          const settingsKey = self.settingsFetchKey
+          const settings = self.settingsFetchInputs
           return (
             host.initialized &&
             host.visibleRegions.some(block => {
               const loaded = self.loadedRegions.get(block.displayedRegionIndex)
-              return loaded !== undefined && loaded.settingsKey !== settingsKey
+              return (
+                loaded !== undefined &&
+                !compareStructural(loaded.fetchInputs.settings, settings)
+              )
             })
           )
         },
@@ -565,13 +595,11 @@ export default function MultiRegionDisplayMixin() {
           // annotated, not inferred: `self` here is mid-composition, so the
           // default's type lands as `any` and the published signature stopped
           // constraining the one field `isCacheValid` compares
-          fetchKey: string = self.regionFetchKey,
-          settingsKey: string = self.settingsFetchKey,
+          fetchInputs: FetchInputs = self.fetchInputs,
         ) {
           self.loadedRegions.set(displayedRegionIndex, {
             ...region,
-            fetchKey,
-            settingsKey,
+            fetchInputs,
           })
         },
 
@@ -706,8 +734,7 @@ export default function MultiRegionDisplayMixin() {
             needed: IndexedRegion[],
             work: (ctx: RegionFetchContext) => Promise<void>,
           ) {
-            const fetchKey = self.regionFetchKey
-            const settingsKey = self.settingsFetchKey
+            const fetchInputs = self.fetchInputs
             const issued = new Map(
               needed.map(n => [n.displayedRegionIndex, n.region]),
             )
@@ -730,8 +757,7 @@ export default function MultiRegionDisplayMixin() {
                     self.setLoadedRegion(
                       displayedRegionIndex,
                       region,
-                      fetchKey,
-                      settingsKey,
+                      fetchInputs,
                     )
                   }
                 },

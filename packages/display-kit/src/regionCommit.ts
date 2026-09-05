@@ -2,6 +2,7 @@ import { getType } from '@jbrowse/mobx-state-tree'
 import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 
 import type { FetchContext } from './FetchMixin.ts'
+import type { FetchInputs } from './fetchInputs.ts'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -20,14 +21,17 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * `isCacheValid` looks at the key.
  */
 export interface LoadedRegion extends Region {
-  /** the `regionFetchKey` the fetch that stored this region was issued under */
-  fetchKey: string
   /**
-   * The settings and adapter half of that key (`settingsFetchKey`), stamped
-   * beside it so `staleSettingsDrawn` can tell a settings change from a zoom —
-   * the whole key moves on either, and only one of the two raises the scrim.
+   * The inputs the fetch that stored this region was issued under, as the two
+   * tiers `MultiRegionDisplayMixin.fetchInputs` publishes: the settings and
+   * adapter tier, and the display's zoom-derived worker arguments. Both are
+   * held so `staleSettingsDrawn` can compare the settings tier alone — the
+   * whole set moves on either, and only one of the two raises the scrim.
+   *
+   * The tiers are structural computeds, so every region one fetch stamps holds
+   * the same two objects and the compare short-circuits on identity.
    */
-  settingsKey: string
+  fetchInputs: FetchInputs
 }
 
 /**

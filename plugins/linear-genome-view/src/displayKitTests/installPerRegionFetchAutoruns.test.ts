@@ -258,8 +258,8 @@ describe('SettingsInvalidate keeps the held data drawn', () => {
     expect(display.isLoading).toBe(false)
     control.fetchDelayMs = 0
     expect(await quiet(display)).toBe(3)
-    expect(display.loadedRegions.get(0)?.settingsKey).toBe(
-      display.settingsFetchKey,
+    expect(display.loadedRegions.get(0)?.fetchInputs.settings).toEqual(
+      display.settingsFetchInputs,
     )
   })
 
