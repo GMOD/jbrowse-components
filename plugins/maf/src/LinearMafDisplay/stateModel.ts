@@ -312,16 +312,16 @@ export default function stateModelFactory(
         treeNewickVolatile: undefined as string | undefined,
         /**
          * #volatile
-         * Which sample row the worker resolved as the reference
-         * (`referenceSampleId`, off the block whose sequence the row carries),
-         * latched from the first region that names one.
+         * Which sample row the worker resolved as the reference (off the block
+         * whose sequence the row carries), latched from the first region that
+         * names one and never rewritten.
          *
-         * A volatile rather than a walk over `rpcDataMap`, because `sources`
-         * reads it: the row-placement autorun *writes* `rpcDataMap`, so a
-         * reference id derived from that map would put the autorun's own write
-         * in its dependency set and re-place forever. Latching also makes it
-         * survive `clearAlignmentData`, which is right — a track has one
-         * reference species, and it does not change with the viewport.
+         * A latch because that is what the value is: a track has one reference
+         * species and it does not change with the viewport, so surviving
+         * `clearAlignmentData` and a chromosome navigation is correct rather
+         * than a saving. `sources` reads it — which is also why it cannot go on
+         * being a walk over `rpcDataMap`, the map the row-placement autorun
+         * itself writes.
          */
         refSampleIdVolatile: undefined as string | undefined,
       }))
@@ -2455,15 +2455,7 @@ export default function stateModelFactory(
       }))
       .actions(self => ({
         setRpcData(regionIndex: number, data: MafWireRegionData) {
-          // Guarded on inequality, not just on presence: this is a dependency
-          // of `sources`, so an unconditional write would invalidate the row
-          // order on every region that lands.
-          if (
-            data.refSampleId !== undefined &&
-            data.refSampleId !== self.refSampleIdVolatile
-          ) {
-            self.refSampleIdVolatile = data.refSampleId
-          }
+          self.refSampleIdVolatile ??= data.refSampleId
           self.wireDataMap.set(regionIndex, data)
           self.rpcDataMap.set(
             regionIndex,

@@ -95,6 +95,32 @@ test('empty array', () => {
   expect(normalizeSamples([])).toEqual([])
 })
 
+// Each entry is read on its own. The array used to be typed off element 0, so a
+// list that started with a name read every object after it as a name — `String`
+// of an object — and one that started with an object read the plain names as
+// objects with an `undefined` id, which threw out of sample resolution and so
+// failed the whole track.
+test('an array may mix plain names and objects', () => {
+  expect(
+    normalizeSamples(['hg38', { id: 'mm10', label: 'Mouse', color: 'red' }]),
+  ).toEqual([
+    { id: 'hg38', label: 'hg38' },
+    { id: 'mm10', label: 'Mouse', color: 'red' },
+  ])
+  expect(
+    normalizeSamples([{ id: 'mm10', label: 'Mouse' }, 'hg38']),
+  ).toMatchObject([
+    { id: 'mm10', label: 'Mouse' },
+    { id: 'hg38', label: 'hg38' },
+  ])
+})
+
+test('an entry naming nothing is dropped, not made a nameless row', () => {
+  expect(
+    normalizeSamples(['', '  ', { label: 'Human' } as never, { id: 'mm10' }]),
+  ).toEqual([{ id: 'mm10', label: 'mm10' }])
+})
+
 describe('resolveSamplesFromTree', () => {
   const tree = '((hg38:0.1,mm10:0.2):0.3,panTro6:0.4);'
 

@@ -1,6 +1,6 @@
 import { makeIndex } from '@jbrowse/core/util/tracks'
 
-import type { SampleConfig, SampleConfigEntry } from '../util/getSamples.ts'
+import type { SampleConfig } from '../util/getSamples.ts'
 import type { FileLocation } from '@jbrowse/core/util'
 
 export type AdapterTypeOptions =
@@ -52,43 +52,17 @@ function framesAnnotation(framesLoc: FileLocation | undefined) {
 }
 
 /**
- * The alignment file's own sibling index, for the two branches that used to
- * demand a picker for it. Every one of these adapters' `uri` shorthands already
- * resolves the same sibling — `taiIndexSlot` for the two `.tai` formats,
- * `tabixIndexSlot` for the tabix one — and the form derives the *summary* BED's
- * `.tbi` two fields down, so demanding it here made the required field the odd
- * one out rather than the safe one. The picker is still offered for an index
- * that is not a sibling, and wins when filled in.
- *
- * The suffix follows the Index-type radio rather than the file name, because
- * here the radio is the user's answer and there is no name to read it off.
- */
-function siblingIndex(loc: FileLocation, indexType: IndexTypeOptions) {
-  return makeIndex(loc, indexType === 'CSI' ? '.csi' : '.tbi')
-}
-
-/**
- * One entry of a JSON `samples` array, kept only when it names an id — the
- * `samples` slot is frozen, so an `{ label: 'hg38' }` with no id reaches
- * `normalizeSamples` as an unnamed row and trims `undefined`.
- */
-function sampleEntry(entry: unknown) {
-  const { id } = entry as { id?: unknown }
-  return typeof id === 'string' && id.trim() ? [entry as SampleConfigEntry] : []
-}
-
-/**
  * Parse the free-form sample-names text box. Accepts a JSON array (which
  * must actually *be* an array — bare strings/numbers parse as valid JSON but
  * aren't sample lists) or one name per line. CRLF/CR/LF all split correctly
  * so pasted Windows/Mac text doesn't leave a trailing \r.
  *
  * An array of `{id,label,color,assemblyName,…}` objects — what the box's
- * placeholder invites and what every adapter's `samples` slot accepts — comes
- * back as objects. Every entry used to go through `String()`, so each one
- * landed in the config as the literal text `[object Object]`, and the track
- * drew one unnamed row per sample. A mixed array normalizes to objects,
- * because `normalizeSamples` types the whole array off its first element.
+ * placeholder invites and what every adapter's `samples` slot accepts — passes
+ * through as objects. Every entry used to go through `String()`, so each one
+ * landed in the config as the literal text `[object Object]` and the track drew
+ * that many nameless rows. Mixing the two forms is `normalizeSamples`' problem
+ * and not this one's: it reads each entry on its own.
  */
 export function parseSampleNames(input: string): SampleConfig {
   let parsed: unknown
@@ -98,13 +72,9 @@ export function parseSampleNames(input: string): SampleConfig {
     // fall through to line split
   }
   const entries = Array.isArray(parsed) ? parsed : input.split(/\r\n|[\r\n]/)
-  return entries.some(e => typeof e === 'object' && e !== null)
-    ? entries.flatMap(e =>
-        typeof e === 'object' && e !== null
-          ? sampleEntry(e)
-          : sampleEntry({ id: String(e).trim() }),
-      )
-    : entries.map(e => String(e).trim()).filter(Boolean)
+  return entries
+    .map(e => (typeof e === 'object' && e !== null ? e : String(e).trim()))
+    .filter(Boolean)
 }
 
 interface BuildArgs {
@@ -159,7 +129,12 @@ export function buildAdapterConfig(args: BuildArgs) {
         nhLocation: nhLoc,
         index: {
           indexType: indexTypeChoice,
-          location: indexLoc ?? siblingIndex(loc, indexTypeChoice),
+          // The suffix follows the Index-type radio rather than the file name:
+          // here the radio is the user's answer and there is no name to read
+          // it off.
+          location:
+            indexLoc ??
+            makeIndex(loc, indexTypeChoice === 'CSI' ? '.csi' : '.tbi'),
         },
         samples,
         ...bedTabixSummary(summaryLoc),

@@ -25,18 +25,15 @@ const DEFAULT_LABEL_WIDTH = 150
 const MIN_LABEL_WIDTH = 50
 const MAX_LABEL_WIDTH = 400
 
-// Room for the horizontal scrollbar the sequence pane grows when the alignment
-// is wider than the widget, which otherwise eats the last row's pixels.
-const SCROLLBAR_ALLOWANCE = 15
-
 const useStyles = makeStyles()(theme => ({
   container: {
     border: `1px solid ${theme.palette.divider}`,
     borderRadius: theme.shape.borderRadius,
-    // Sized to the alignment, not to a constant: a fixed 400px box scrolled a
-    // 464-haplotype cohort inside a widget panel that was itself scrolling and
-    // mostly empty. The cap is the viewport rather than a pixel count so the
-    // box never grows past what the panel can show.
+    // Sized to the alignment: the flex box takes its height from
+    // `sequenceInner`, which is `samples.length * ROW_HEIGHT` tall. A fixed
+    // 400px scrolled a 464-haplotype cohort inside a widget panel that was
+    // itself scrolling and mostly empty. The cap is the viewport rather than a
+    // pixel count, so the box never grows past what the panel can show.
     maxHeight: '70vh',
     width: '100%',
     backgroundColor: theme.palette.background.paper,
@@ -136,10 +133,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const genomicPos = genomePosAt(colToGenomePos, hover?.col)
 
   return (
-    <div
-      className={classes.container}
-      style={{ height: totalHeight + SCROLLBAR_ALLOWANCE }}
-    >
+    <div className={classes.container}>
       {showSampleNames && height !== undefined && (
         <div
           className={classes.labelsWrapper}

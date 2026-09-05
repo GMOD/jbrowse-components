@@ -54,19 +54,12 @@ describe('parseSampleNames', () => {
     ])
   })
 
-  // `normalizeSamples` types the whole array off its first element, so a mixed
-  // array has to come back homogeneous or the strings after an object are read
-  // as objects with no id.
-  test('a mixed array normalizes to objects', () => {
+  // Left mixed rather than homogenized: `normalizeSamples` reads each entry on
+  // its own, so this is both what the user typed and what the adapter takes.
+  test('a mixed array keeps both forms', () => {
     expect(parseSampleNames('["hg38", {"id":"mm10","label":"Mouse"}]')).toEqual(
-      [{ id: 'hg38' }, { id: 'mm10', label: 'Mouse' }],
+      ['hg38', { id: 'mm10', label: 'Mouse' }],
     )
-  })
-
-  test('object entries with no id are dropped', () => {
-    expect(parseSampleNames('[{"label":"Human"}, {"id":"mm10"}]')).toEqual([
-      { id: 'mm10' },
-    ])
   })
 })
 

@@ -35,27 +35,6 @@ export type MafLaunchModel = SampleNavigationModel &
   }
 
 /**
- * The subsequence entry, off past the summary floor.
- *
- * The widget reads per-base sequence out of the alignment file, which is the
- * one thing the summary tier exists not to download — the display's own detail
- * fetch has already refused it there. Offered anyway, it opened a widget that
- * asked the worker for the whole span with no measurement, and the FASTA
- * builder preallocates one byte per sample per base before it starts: a 5 Mb
- * window over HPRC's 464 haplotypes is a 2.3 GB allocation.
- *
- * The RPC now measures and refuses (`MafGetSequences`), so this is the reason
- * said in advance rather than the only thing stopping it. Same wording the two
- * band toggles use for the same override.
- *
- * Shared with the drag menu's two entries, which reach the same widget from a
- * rubberband over the summary bars.
- */
-export function subsequenceItem(item: MenuItem, showSummary: boolean) {
-  return zoomGatedItem(item, showSummary ? ZOOM_IN_FOR_BAND : undefined)
-}
-
-/**
  * Everything the drag-selection menu offers, over the visible window instead.
  *
  * All three entries — the subsequences, the per-sample jump, the two-row
@@ -79,8 +58,13 @@ export function mafLaunchMenuItems({
 }): MenuItem[] {
   const subMenu = (): MenuItem[] => {
     const targets = visibleRowTargets(session, model)
+    // The widget reads per-base sequence out of the alignment file, which is
+    // the one thing the summary tier exists not to download — the display's own
+    // detail fetch has already refused it there. Same wording the two band
+    // toggles use for the same override.
+    const zoomHint = model.showSummary ? ZOOM_IN_FOR_BAND : undefined
     return [
-      subsequenceItem(
+      zoomGatedItem(
         {
           label: 'View subsequences (visible region)',
           icon: NotesIcon,
@@ -100,7 +84,7 @@ export function mafLaunchMenuItems({
             )
           },
         },
-        model.showSummary,
+        zoomHint,
       ),
       ...sampleNavigationItems(session, model, targets),
       ...mafSyntenyLaunchItems(session, model, targets),

@@ -2,8 +2,8 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { subsequenceItem } from '../launchMenuItems.ts'
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
+import { ZOOM_IN_FOR_BAND, zoomGatedItem } from '../trackMenuItems.ts'
 import { rowSpanAtY } from './mafHitTest.ts'
 import {
   mafSyntenyLaunchItems,
@@ -46,6 +46,10 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
   const { samples, showSummary } = model
+  // Both entries reach the per-base alignment the summary tier exists not to
+  // download, so both are off past its floor — the same override the track
+  // menu's own subsequence entry and the two band toggles carry.
+  const zoomHint = showSummary ? ZOOM_IN_FOR_BAND : undefined
   const openRows = (rows: typeof samples) => {
     if (contextCoord) {
       openSubsequenceWidget(
@@ -65,18 +69,16 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
         setContextCoord(undefined)
       }}
       menuItems={[
-        // Both reach the per-base alignment the summary tier exists not to
-        // download, so both are off past its floor — see `subsequenceItem`.
-        subsequenceItem(
+        zoomGatedItem(
           {
             label: 'View subsequences (all rows)',
             onClick: () => {
               openRows(samples)
             },
           },
-          showSummary,
+          zoomHint,
         ),
-        subsequenceItem(
+        zoomGatedItem(
           {
             label: 'View subsequences (selected rows)',
             onClick: () => {
@@ -86,7 +88,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
               openRows(samples.slice(startRow, endRow))
             },
           },
-          showSummary,
+          zoomHint,
         ),
         ...(contextCoord ? rowTargetItems(model, contextCoord) : []),
       ]}

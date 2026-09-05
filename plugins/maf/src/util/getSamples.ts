@@ -24,33 +24,45 @@ export interface SampleConfigEntry {
   assemblyConfigLocation?: UriLocation
 }
 
-export type SampleConfig = string[] | SampleConfigEntry[]
-
-function isStringArray(r: SampleConfig): r is string[] {
-  return r.length === 0 || typeof r[0] === 'string'
-}
+export type SampleConfig = (string | SampleConfigEntry)[]
 
 /**
- * Sample ids are matched against the file's source tokens character for
- * character (`matchSampleId`), so a stray space is a total mismatch that looks
- * like a correct config — and these come from a hand-written JSON array or a
- * pasted-in list. Trimmed at the source rather than at the comparison so the id
- * the sidebar labels a row with, the id `rowIndexBySrc` keys on and the id the
- * adapter matches are all the same string.
+ * The `samples` slot as rows.
+ *
+ * Each entry is read on its own — a bare name or an object — so an array may
+ * mix the two. It used to be typed off element 0, which read
+ * `["hg38", {"id": "mm10"}]` as two objects and gave the second row an
+ * `undefined` id.
+ *
+ * Ids are trimmed here rather than at the comparison, because they are matched
+ * against the file's source tokens character for character (`matchSampleId`):
+ * a stray space is a total mismatch that looks like a correct config, and these
+ * come from a hand-written JSON array or a pasted-in list. One trim means the
+ * id the sidebar labels a row with, the id `rowIndexBySrc` keys on and the id
+ * the adapter matches are the same string.
+ *
+ * An entry naming nothing is dropped rather than becoming a nameless row — it
+ * used to throw out of sample resolution, which fails the whole track.
  */
-function trimId(id: string) {
-  return id.trim()
-}
-
 export function normalizeSamples(r: SampleConfig): Sample[] {
-  return isStringArray(r)
-    ? r.map(id => ({ id: trimId(id), label: trimId(id) }))
-    : r.map(s => ({
-        id: trimId(s.id),
-        label: s.label ?? trimId(s.id),
-        color: s.color,
-        ...navigationFields(s),
-      }))
+  return r.flatMap(s => {
+    // `Partial`, because `samples` is a frozen slot: nothing has checked that
+    // an object entry carries an id at all, and the declared `string` is the
+    // contract rather than a fact about the config that was loaded.
+    const entry: Partial<SampleConfigEntry> =
+      typeof s === 'string' ? { id: s } : s
+    const id = entry.id?.trim()
+    return id
+      ? [
+          {
+            id,
+            label: entry.label ?? id,
+            color: entry.color,
+            ...navigationFields(entry),
+          },
+        ]
+      : []
+  })
 }
 
 /**
