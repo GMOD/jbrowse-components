@@ -6,7 +6,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The tutorials/tp53_structures page: one session holding TP53's AlphaFold
 // model, the DNA-bound core domain (1TUP) and the p53 peptide on MDM2 (1YCR),
 // every structure mapped to the same RefSeq transcript. `structures` on
-// LaunchView-ProteinView (protein3d >= 0.10.0) builds it from one link; the
+// LaunchView-ProteinView (protein3d >= 0.11.0) builds it from one link; the
 // hosted `latest/` bundle the config loads has to serve that release before
 // these render, and until then the run reports the view unapplied.
 //
@@ -74,9 +74,10 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
   },
   {
     // R248, the DNA-contact hotspot, pre-selected on 1TUP through
-    // initialSelection: 0-based structure residue 154 is UniProt 248, since the
-    // chain starts at UniProt 94. The selection lights the residue in 3D, the
-    // column in 1TUP's alignment, and the codon on both genome tracks, where the
+    // initialResidues, which names the residue the way the papers do: inclusive
+    // author numbering, resolved to a position once the file's numbering is
+    // known. The selection lights the residue in 3D, the column in 1TUP's
+    // alignment, and the codon on both genome tracks, where the
     // ClinVar rows under the band are the R248 substitutions. The genome view
     // opens on exon 7 rather than the gene: at gene-wide zoom a codon's band is
     // a hairline, and the ClinVar rows at it are indistinguishable from their
@@ -86,7 +87,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     url: tp53Session(
       [
         { uniprotId: 'P04637' },
-        { pdbId: '1TUP', initialSelection: { start: 154, end: 155 } },
+        { pdbId: '1TUP', initialResidues: { start: 248, end: 248 } },
         { pdbId: '1YCR' },
       ],
       'chr17:7,674,100-7,674,350',
@@ -94,10 +95,11 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ...READY,
   },
   {
-    // 1YCR's Mapped chain picker open. 1TUP also has one (its DNA strands are
-    // entities too), so the second picker on the page is 1YCR's. The p53
-    // peptide, Chain B, is checked; MDM2 above it is the chain the transcript
-    // does not encode.
+    // 1YCR's Mapped chain picker open. Each alignment panel carries the
+    // structure it aligns in data-structure, so the picker is addressed by name
+    // rather than by its position among the pickers on the page -- 1TUP has one
+    // too, its DNA strands being entities. The p53 peptide, Chain B, is
+    // checked; MDM2 above it is the chain the transcript does not encode.
     mode: 'url',
     name: 'protein/tp53_mapped_chain',
     url: tp53Session(THREE_STRUCTURES),
@@ -106,7 +108,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
       {
         type: 'click',
         selector:
-          '::-p-xpath((//div[@data-testid="protein-mapped-chain"])[2]//div[@role="combobox"])',
+          '[data-structure="1YCR"] [data-testid="protein-mapped-chain"] [role="combobox"]',
       },
       { type: 'waitForText', text: 'Chain A (109 aa)' },
       { type: 'delay', ms: 1000 },

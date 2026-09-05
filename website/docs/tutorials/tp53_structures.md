@@ -62,10 +62,11 @@ superposes the structures with TM-align.
 
 Each alignment panel puts the transcript's translation on the GENOME row and the
 structure's own sequence on the STRUCT row, with a residue ruler under them in
-the structure's numbering. The AlphaFold panel is one unbroken match. The 1TUP
-panel starts in the middle of the transcript and stops well before its end,
-because the crystallised construct is the DNA-binding core; its ruler counts
-from one where the transcript row is already past residue ninety.
+the numbering the structure's authors assigned. The AlphaFold panel is one
+unbroken match. The 1TUP panel starts in the middle of the transcript and stops
+well before its end, because the crystallised construct is the DNA-binding core;
+its ruler starts at 94, the residue of p53 the construct begins at, so a tick
+under the row is the number a paper would cite.
 
 Under the STRUCT row of the AlphaFold panel, pLDDT is high across the core and
 falls away at both ends of the protein, which is the same region the crystal
@@ -90,9 +91,10 @@ residue lights on the genome.
 
 ## Click a hotspot
 
-[Open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialSelection%22%3A%7B%22start%22%3A154%2C%22end%22%3A155%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%22clinvar_ncbi_hg38%22%5D%7D%7D%5D%7D),
-or click residue 155 on the 1TUP panel's STRUCT row yourself: the ruler under
-the row names it, and the transcript row above shows it is arginine 248 of p53.
+[Open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialResidues%22%3A%7B%22start%22%3A248%2C%22end%22%3A248%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%22clinvar_ncbi_hg38%22%5D%7D%7D%5D%7D),
+or click residue 248 on the 1TUP panel's STRUCT row yourself: the ruler under
+the row and the transcript row above agree on the number, because 1TUP's authors
+numbered their construct the way UniProt numbers the whole protein.
 
 <Figure src="/img/protein/tp53_hotspot.png" caption="R248 selected on 1TUP: magenta on the crystal's DNA-contact loop, a band over its codon on NCBI RefSeq, and the ClinVar rows that fall inside the band. The AlphaFold model carries the same residue, so the hover reaches both structures." />
 
