@@ -1,4 +1,4 @@
-import { createMarkBackend } from '@jbrowse/render-core/marks'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
 import { MULTI_ROW_MARKS } from './multiRowMarks.ts'
 

@@ -1,9 +1,9 @@
-import { forEachClippedBlock } from '../canvas2dUtils.ts'
 import { createRenderingBackend } from '../createRenderingBackend.ts'
 import {
   Canvas2DPerRegionRenderingBackend,
   GpuPerRegionRenderingBackend,
 } from '../perRegionRenderingBackend.ts'
+import { paintMarkBlocks } from './markPaint.ts'
 
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
@@ -11,36 +11,7 @@ import type { SampleCount } from '../hal/types.ts'
 import type { PerRegionRenderingBackend } from '../perRegionRenderingBackend.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
-import type { Mark, MarkContext2D } from './types.ts'
-
-/**
- * Paint one frame's blocks with a mark list — the Canvas2D half of a
- * declaration, and the SVG export path, since `MarkContext2D` is satisfied by
- * both a real 2D context and the SVG one.
- *
- * Exported on its own because SVG export runs it against the model's data map
- * with the export's own canvas dimensions rather than through a backend.
- */
-export function paintMarkBlocks<TRegion, TState extends FrameDimensions>(
-  ctx: MarkContext2D,
-  marks: readonly Mark<TRegion, TState>[],
-  regions: ReadonlyMap<number, TRegion>,
-  blocks: RenderBlock[],
-  state: TState,
-) {
-  forEachClippedBlock(
-    ctx,
-    blocks,
-    state.canvasWidth,
-    state.canvasHeight,
-    block => regions.get(block.displayedRegionIndex),
-    (region, block) => {
-      for (const mark of marks) {
-        mark.paintBlock(ctx, region, block, state)
-      }
-    },
-  )
-}
+import type { Mark } from './types.ts'
 
 class GpuMarkBackend<
   TRegion,
@@ -91,6 +62,13 @@ class Canvas2DMarkBackend<
 
 /**
  * Build a display's rendering backend from its mark declarations.
+ *
+ * **This is the only module on the mark path that reaches the HAL**, which is
+ * why it is not on the `marks` subpath: a display's declaration, its painter
+ * and its hit test are all things a state model can legitimately reach, and a
+ * state model is eager (ADR-091). Reaching the backend costs the GPU stack at
+ * plugin-install time, so it is a separate import a display makes once, from
+ * the factory the component hands to `DisplayChrome`.
  *
  * This is the whole of what a display used to spell as a `GpuXxxRenderer`
  * class, a `Canvas2DXxxRenderer` class, a pass list and a factory: the passes

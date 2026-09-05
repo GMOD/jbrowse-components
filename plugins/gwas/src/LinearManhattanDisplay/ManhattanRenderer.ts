@@ -1,4 +1,4 @@
-import { createMarkBackend } from '@jbrowse/render-core/marks'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 

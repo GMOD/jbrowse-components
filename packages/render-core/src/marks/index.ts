@@ -1,8 +1,8 @@
-export { createMarkBackend, paintMarkBlocks } from './markBackend.ts'
 export { defineMark } from './types.ts'
+export { paintMarkBlocks } from './markPaint.ts'
 export { pointMark } from './pointMark.ts'
-export { appendGlyph } from './glyphPaint.ts'
 export { spanMark } from './spanMark.ts'
+export { appendGlyph } from './glyphPaint.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 
 export type {
