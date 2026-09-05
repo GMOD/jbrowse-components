@@ -1,5 +1,6 @@
 import { canonicalizeViewRefName } from '@jbrowse/core/util'
 import { sameOptionalStrings } from '@jbrowse/core/util/sameStrings'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   resolveFeatureHighlights,
@@ -15,19 +16,6 @@ import type {
 } from './featureHighlight.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IMSTArray, IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-// The MST highlight node as the plain object `setFeatureHighlights` takes.
-// Both the canonicalizing getter and the removal action rebuild it, so a field
-// added to FeatureHighlightModel is added here once.
-function plainHighlight(h: FeatureHighlight): FeatureHighlight {
-  return {
-    refName: h.refName,
-    start: h.start,
-    end: h.end,
-    name: h.name,
-    featureId: h.featureId,
-  }
-}
 
 /**
  * What resolving and marking highlights reads off the display. Structural
@@ -76,7 +64,7 @@ export function featureHighlightViews(self: FeatureHighlightHost) {
     // that has no producer to fix it.
     get canonicalFeatureHighlights(): FeatureHighlight[] {
       return self.featureHighlights.map(h => ({
-        ...plainHighlight(h),
+        ...getSnapshot(h),
         refName: canonicalizeViewRefName(self, h.refName),
       }))
     },
@@ -245,7 +233,7 @@ export function featureHighlightActions(self: FeatureHoverHost) {
       this.setFeatureHighlights(
         self.featureHighlights
           .filter((_h, i) => !boxedBy[i]?.has(featureId))
-          .map(h => plainHighlight(h)),
+          .map(h => getSnapshot(h)),
       )
     },
 
