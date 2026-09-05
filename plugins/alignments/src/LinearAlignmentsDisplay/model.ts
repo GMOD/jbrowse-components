@@ -3486,7 +3486,7 @@ export default function stateModelFactory(
            */
           setFeatureHeight(height?: number) {
             if (self.fitHeightToDisplay) {
-              setConf(self, 'heightMode', 'fixed')
+              self.setHeightMode('fixed')
             }
             setConf(self, 'featureHeight', height)
             self.scrollTop = 0
