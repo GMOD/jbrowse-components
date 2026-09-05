@@ -245,7 +245,7 @@ export interface SectionBandOpts {
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
   showSashimiArcs?: boolean
-  sashimiHeight?: number
+  sashimiArcsHeight?: number
   // The range each stated height is bound to at read time — the same slot
   // `belowCoverageBandsGeometry` takes, so the pooled geometry and the
   // per-section stacking cannot resolve one band to two heights.
@@ -315,7 +315,7 @@ export function computeStackedSections(
       },
       sashimi: {
         active: hasSashimiBand,
-        height: opts.sashimiHeight ?? 0,
+        height: opts.sashimiArcsHeight ?? 0,
         bounds,
       },
     })

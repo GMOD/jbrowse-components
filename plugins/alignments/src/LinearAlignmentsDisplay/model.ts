@@ -1281,30 +1281,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The band settings `computeStackedSections` stacks a section from,
-         * bundled so the layout can hand them over whole. Carries `bandBounds`,
-         * so the per-section stacking clamps a stated height exactly as
-         * `belowCoverageBandsGeometry` does — the two answer for the same bands
-         * and used to be able to resolve one of them to two heights.
-         *
-         * Named for the sections rather than the arcs: it fed `computeArcBand`
-         * directly until that function stopped taking a `showCoverage`/height
-         * pair, and it never was the whole of what a section reserves.
-         */
-        get sectionBandInput() {
-          return {
-            showCoverage: self.showCoverage,
-            coverageHeight: self.coverageHeight,
-            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            readConnections: self.readConnections,
-            readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
-            bandBounds: this.statedBandBounds,
-          }
-        },
-
-        /**
-         * #getter
          * Per group, which junctions draw in the strip below coverage (by
          * `junctionKey`). The single sashimi side decision: `sashimiDownArcLanes`
          * reads it to reserve the strip and `sashimiArcSections` reads it to
@@ -2145,10 +2121,9 @@ export default function stateModelFactory(
          */
         get sections(): SectionsLayout {
           return computeStackedSections(toSectionGroupInputs(this.drawnLanes), {
-            ...self.sectionBandInput,
+            ...self.belowCoverageBandsSettings,
+            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
             rowHeight: self.rowHeight,
-            showSashimiArcs: self.showSashimiArcs,
-            sashimiHeight: self.sashimiArcsHeight,
             // Only when the chips are actually drawn — an ungrouped display
             // reserves nothing, so its geometry is untouched.
             minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,

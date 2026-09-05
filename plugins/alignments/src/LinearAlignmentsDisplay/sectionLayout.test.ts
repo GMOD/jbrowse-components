@@ -261,7 +261,7 @@ test('the sashimi strip is reserved per lane too', () => {
       coverageHeight: 40,
       rowHeight: 10,
       showSashimiArcs: true,
-      sashimiHeight: 30,
+      sashimiArcsHeight: 30,
     },
   )
   // Lane a: coverage 40, pileup 40..60. Lane b starts at 60 and is the only one
@@ -282,7 +282,7 @@ test('both strips stack for a lane that has arcs and sashimi', () => {
       readConnectionsDown: true,
       readConnectionsHeight: 100,
       showSashimiArcs: true,
-      sashimiHeight: 30,
+      sashimiArcsHeight: 30,
     },
   )
   expect(sections[0]).toMatchObject({
@@ -302,7 +302,7 @@ test('the sashimi strip needs the coverage band it hangs off', () => {
       showCoverage: false,
       rowHeight: 10,
       showSashimiArcs: true,
-      sashimiHeight: 30,
+      sashimiArcsHeight: 30,
     },
   )
   expect(sections[0]).toMatchObject({ pileupTop: 0, hasSashimiBand: false })
