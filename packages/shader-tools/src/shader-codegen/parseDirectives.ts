@@ -549,6 +549,19 @@ export function parseBlend(source: string) {
 }
 
 /**
+ * `//! coverage: analytic` — the fragment stage computes its own edge coverage
+ * or pixel-snaps, so the pass draws the same at sample count 1 and 4. A shader
+ * without it is taken to lean on the multisampled target, and
+ * `createRenderingBackend` derives a display's sample count from the set.
+ */
+const COVERAGES = ['analytic'] as const
+export type Coverage = (typeof COVERAGES)[number]
+
+export function parseCoverage(source: string) {
+  return parseChoice(source, 'coverage', COVERAGES)
+}
+
+/**
  * `//! instance-writer` — emit the append-at-a-time `InstanceWriter` class.
  *
  * Opt-in, where `packInstances` and the per-field accessors are emitted for every

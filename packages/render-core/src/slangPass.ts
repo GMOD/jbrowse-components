@@ -27,6 +27,9 @@ export interface ShaderModule {
   // two passes at different settings declares neither; see SlangPassOpts.
   TOPOLOGY?: PipelineDescriptor['topology']
   BLEND_STATE?: BlendState
+  // Emitted from `//! coverage:`. A property of the fragment stage alone, so
+  // no pass overrides it.
+  COVERAGE?: PipelineDescriptor['coverage']
   // Present if the shader declares `Sampler2D<T>` bindings. The codegen
   // derives bindings from reflection so the renderer doesn't hand-maintain
   // them.
@@ -93,6 +96,7 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     blendState: opts.blendState ?? opts.mod.BLEND_STATE,
     vertexAttributes: opts.mod.VERTEX_ATTRIBUTES,
     topology: opts.topology ?? opts.mod.TOPOLOGY,
+    coverage: opts.mod.COVERAGE,
     textures: opts.textures ?? opts.mod.TEXTURES,
     bindings: opts.mod.BINDINGS,
   }

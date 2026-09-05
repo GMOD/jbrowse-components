@@ -1,6 +1,7 @@
 import {
   assertOutPathsUnique,
   parseBlend,
+  parseCoverage,
   parseExportedConsts,
   parseInstanceWriter,
   parseJsExports,
@@ -301,6 +302,14 @@ describe('parseTopology / parseBlend', () => {
     expect(parseTopology('//! topology: line-list')).toBe('line-list')
     expect(parseBlend('//! blend: premultiplied')).toBe('premultiplied')
     expect(parseBlend('//! blend: max')).toBe('max')
+    expect(parseCoverage('//! coverage: analytic')).toBe('analytic')
+    expect(parseCoverage('// no directive')).toBeUndefined()
+  })
+
+  test('rejects a coverage the derivation does not model', () => {
+    expect(() => parseCoverage('//! coverage: msaa')).toThrow(
+      /supported: analytic/,
+    )
   })
 
   // The whole point of a closed set: a typo that fell through as `undefined`

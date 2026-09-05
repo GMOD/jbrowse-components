@@ -11,6 +11,8 @@ export const VERTS_PER_INSTANCE = 6
 
 export const BLEND_STATE: BlendState = { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }
 
+export const COVERAGE = 'analytic' as const
+
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

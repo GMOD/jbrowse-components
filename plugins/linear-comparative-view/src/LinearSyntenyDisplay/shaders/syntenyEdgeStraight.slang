@@ -7,6 +7,7 @@
 // ribbon polygon rather than two per-edge line quads is what lets strokeFs
 // measure against the same analytic edges the fill clips to.
 //! targets: wgsl, glsl
+//! coverage: analytic
 
 import syntenyTypes;
 

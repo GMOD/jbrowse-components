@@ -12,27 +12,29 @@ export interface RenderingBackendOptions<TRenderingBackend> {
   passes: PipelineDescriptor[]
   uniformByteSize: number
   /**
-   * Samples per pixel this display's WebGPU target is allocated at — 4 unless
-   * stated, which is what every display asked for while this was a build-time
-   * constant.
+   * Samples per pixel this display's WebGPU target is allocated at. Omitted, it
+   * is derived from `passes`: 1 when every registered pass declares
+   * `//! coverage: analytic`, else 4. Registered, not drawn — an inactive pass
+   * that leans on MSAA holds its display at 4. Passing it overrides the
+   * derivation in either direction.
    *
-   * **It is a property of the display, not of the build**, because what it buys
-   * differs per display and what it costs does not. The cost is one colour
-   * attachment the size of the canvas, so an empty 600px track pays what a full
-   * one does and eight ordinary tracks on a retina panel hold 109.7 MiB nothing
-   * counts (ARCHITECTURAL_LIMITS.md §"The MSAA target is the largest
-   * per-display allocation"). What it buys is nothing at all for a display
-   * whose fragments compute their own coverage, and the one fix there is for
-   * conflation at the shared edges of tiled cells, which is Hi-C and LD.
-   *
-   * Setting it to 1 allocates **no** target rather than a smaller one. Which
-   * displays should is a look-at-the-pixels decision taken one display at a
-   * time; `ideas/arc-antialiasing-without-msaa.md` is the survey and the
-   * captures.
+   * The cost is one colour attachment the size of the canvas — an empty 600px
+   * track pays what a full one does, and eight ordinary tracks on a retina
+   * panel hold 109.7 MiB nothing counts (ARCHITECTURAL_LIMITS.md §"The MSAA
+   * target is the largest per-display allocation"); 1 allocates none. Whether a
+   * display's pixels survive the flip is a look-at-the-pixels decision taken
+   * one display at a time; `ideas/arc-antialiasing-without-msaa.md` is the
+   * survey and the captures.
    */
   sampleCount?: SampleCount
   createGpuBackend: (hal: GpuHal) => TRenderingBackend
   createCanvas2DBackend: (canvas: HTMLCanvasElement) => TRenderingBackend
+}
+
+export function deriveSampleCount(
+  passes: readonly PipelineDescriptor[],
+): SampleCount {
+  return passes.every(p => p.coverage === 'analytic') ? 1 : 4
 }
 
 export async function createRenderingBackend<TRenderingBackend>(
@@ -40,7 +42,7 @@ export async function createRenderingBackend<TRenderingBackend>(
   {
     passes,
     uniformByteSize,
-    sampleCount = 4,
+    sampleCount = deriveSampleCount(passes),
     createGpuBackend,
     createCanvas2DBackend,
   }: RenderingBackendOptions<TRenderingBackend>,

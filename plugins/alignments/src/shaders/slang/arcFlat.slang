@@ -15,6 +15,7 @@
 // The two shapes are disjoint per draw, so splitting costs nothing: in arc mode
 // this pass has zero instances, in read cloud the curve pass does.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
 
 import alignmentsUniforms;

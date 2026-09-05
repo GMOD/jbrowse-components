@@ -23,6 +23,7 @@
 // connector is **diagonal**, so the quad is extruded along the segment's own
 // frame rather than axis-aligned.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: LINKED_READ_LINE_ALPHA, LINKED_READ_LINE_WIDTH_PX
 
 import alignmentsUniforms;

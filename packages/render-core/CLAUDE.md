@@ -40,6 +40,12 @@ follows is this package's own.
   one of those is still a change to mirror.
 - A shared `.slang` **shape** module needs two real consumers and non-obvious
   math (ADR-040).
+- **`//! coverage: analytic` on a shader whose fragments compute their own edge
+  coverage or pixel-snap.** `createRenderingBackend` derives a display's sample
+  count from it — 1 when every registered pass declares it, else 4 — and
+  `sampleCount` is the per-display override. A flat fill with a fractional edge
+  on either axis does not qualify; the survey and captures are
+  `ideas/arc-antialiasing-without-msaa.md`.
 
 ## The reversed-block family
 

@@ -6,6 +6,7 @@
 // vertex.buffers; Slang's GLSL output emits `in T a_field;` declarations
 // that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
 //! js-export: rectSpanPx, rectDrawsOutline
 

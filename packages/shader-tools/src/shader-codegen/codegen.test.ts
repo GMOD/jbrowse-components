@@ -353,6 +353,13 @@ describe('emitInterface compute', () => {
         blend: 'premultiplied',
       }),
     ).toThrow(/no vertex stage/)
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: computeReflection,
+        coverage: 'analytic',
+      }),
+    ).toThrow(/coverage but has no vertex stage/)
   })
 })
 
@@ -460,10 +467,20 @@ describe('emitInterface InstanceWriter', () => {
 })
 
 describe('emitInterface pipeline state', () => {
-  test('emits nothing when the shader declares neither', () => {
+  test('emits nothing when the shader declares none', () => {
     const out = emitInterface({ baseName: 'test', reflection })
     expect(out).not.toContain('TOPOLOGY')
     expect(out).not.toContain('BLEND_STATE')
+    expect(out).not.toContain('COVERAGE')
+  })
+
+  test('emits the coverage as a literal type', () => {
+    const out = emitInterface({
+      baseName: 'test',
+      reflection,
+      coverage: 'analytic',
+    })
+    expect(out).toContain(`export const COVERAGE = 'analytic' as const`)
   })
 
   // `as const` so the literal type survives: `PipelineDescriptor['topology']`

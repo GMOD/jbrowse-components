@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arcs stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the whole arc band by at most one 8-bit level. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch.
+description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arcs stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the whole arc band by at most one 8-bit level. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%).
 ---
 
 # Antialiasing arcs without MSAA

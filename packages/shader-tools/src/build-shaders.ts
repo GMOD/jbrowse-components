@@ -78,6 +78,7 @@ import {
 import {
   assertOutPathsUnique,
   parseBlend,
+  parseCoverage,
   parseExportedConsts,
   parseInstanceWriter,
   parseJsExports,
@@ -871,6 +872,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       exportedConsts: parseExportedConsts(source, imported),
       topology: parseTopology(source),
       blend: parseBlend(source),
+      coverage: parseCoverage(source),
       instanceWriter: parseInstanceWriter(source),
     }
     // The interface is emitted FIRST, because it is the one that refuses an

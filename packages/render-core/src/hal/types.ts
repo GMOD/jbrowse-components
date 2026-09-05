@@ -102,6 +102,9 @@ export interface PipelineDescriptor {
   vertexAttributes: readonly VertexAttributeLayout[]
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
+  // 'analytic' when the fragment stage computes its own edge coverage or
+  // pixel-snaps, so the pass draws the same at sample count 1 and 4
+  coverage?: 'analytic'
   // Texture binding for this pass. Only textures[0] is wired up by both HAL
   // implementations — multi-texture passes are not currently supported, and
   // `pnpm gen:shaders` refuses a shader that declares a second sampler.

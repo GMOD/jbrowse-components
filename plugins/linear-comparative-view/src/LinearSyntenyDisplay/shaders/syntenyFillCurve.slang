@@ -19,6 +19,7 @@
 //   developer.nvidia.com/gpugems/gpugems3 chapter 25 (Loop-Blinn)
 //   drewcassidy.me/2020/06/26/sdf-antialiasing/  (SDF AA)
 //! targets: wgsl, glsl
+//! coverage: analytic
 
 import syntenyTypes;
 

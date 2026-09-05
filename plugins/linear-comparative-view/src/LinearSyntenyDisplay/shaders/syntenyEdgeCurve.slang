@@ -9,6 +9,7 @@
 // Sharing the fill's polygon and clipping analytically makes the outline exact
 // at any segment count — and costs 48 verts/instance instead of 192.
 //! targets: wgsl, glsl
+//! coverage: analytic
 
 import syntenyTypes;
 

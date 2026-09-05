@@ -26,7 +26,7 @@ import {
   findInstanceStruct,
 } from './reflection.ts'
 
-import type { BlendMode, Topology } from './parseDirectives.ts'
+import type { BlendMode, Coverage, Topology } from './parseDirectives.ts'
 import type {
   ArrayType,
   Field,
@@ -50,6 +50,7 @@ export interface CodegenInputs {
   exportedConsts?: Record<string, number>
   topology?: Topology
   blend?: BlendMode
+  coverage?: Coverage
   instanceWriter?: boolean
 }
 
@@ -821,6 +822,7 @@ export function emitInterface(inputs: CodegenInputs) {
     vertsPerInstance,
     topology,
     blend,
+    coverage,
     instanceWriter,
   } = inputs
   const lines = header(baseName)
@@ -877,12 +879,13 @@ export function emitInterface(inputs: CodegenInputs) {
     lines.push(`export const VERTS_PER_INSTANCE = ${vertsPerInstance}`, '')
   }
 
-  // Pipeline state that follows from the stages, from `//! topology:` and
-  // `//! blend:`. Both are defaults a pass may override — see parseDirectives.
+  // Pipeline state that follows from the stages, from `//! topology:`,
+  // `//! blend:` and `//! coverage:`. The first two are defaults a pass may
+  // override — see parseDirectives.
   //
   // Refused on a shader with no vertex stage rather than emitted and ignored: a
-  // compute kernel is dispatched, not drawn, so neither has any meaning there
-  // and a directive on one is a misunderstanding worth naming.
+  // compute kernel is dispatched, not drawn, so none has any meaning there and
+  // a directive on one is a misunderstanding worth naming.
   if (instanceWriter && !vs) {
     throw new Error(
       `${baseName}.slang declares //! instance-writer but reflects no instance ` +
@@ -891,12 +894,19 @@ export function emitInterface(inputs: CodegenInputs) {
         `an encoder packs.`,
     )
   }
-  if ((topology !== undefined || blend !== undefined) && !vs) {
+  const stageDirective =
+    topology !== undefined
+      ? 'topology'
+      : blend !== undefined
+        ? 'blend'
+        : coverage !== undefined
+          ? 'coverage'
+          : undefined
+  if (stageDirective !== undefined && !vs) {
     throw new Error(
-      `${baseName}.slang declares //! ${topology !== undefined ? 'topology' : 'blend'} ` +
-        `but has no vertex stage. Both describe how a draw rasterizes, and a ` +
-        `compute kernel is dispatched rather than drawn — there is no pipeline ` +
-        `for either to configure.`,
+      `${baseName}.slang declares //! ${stageDirective} but has no vertex ` +
+        `stage. Each describes how a draw rasterizes, and a compute kernel is ` +
+        `dispatched rather than drawn — there is no pipeline for it to configure.`,
     )
   }
   if (topology !== undefined) {
@@ -909,6 +919,10 @@ export function emitInterface(inputs: CodegenInputs) {
       `export const BLEND_STATE: BlendState = ${BLEND_STATE_LITERAL[blend]}`,
       '',
     )
+  }
+  if (coverage !== undefined) {
+    // #shaderExport COVERAGE | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target
+    lines.push(`export const COVERAGE = '${coverage}' as const`, '')
   }
 
   // Compute entry point + its [numthreads] X dimension. Both come from the

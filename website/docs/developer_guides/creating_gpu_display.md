@@ -248,6 +248,7 @@ re-exports the other two modules, so the table below is the union of all three:
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
 | `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
 | `BLEND_STATE` | the blend the fragment stage's output wants, when the shader declares one |
+| `COVERAGE` | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |
 | `UNIFORMS_SIZE_BYTES` | size of the uniform block, the `uniformByteSize` a backend passes |
