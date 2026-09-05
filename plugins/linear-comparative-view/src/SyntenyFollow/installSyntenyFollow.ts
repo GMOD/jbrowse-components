@@ -352,11 +352,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * DROPPING THE PICK IS PART OF THE PLACEMENT. No one block places the row
    * here, and the frame pass steers by whatever the last settle chose — leaving
    * a pick standing kept placing the row through a single alignment this rung
-   * has just decided does not describe the window.
+   * has just decided does not describe the window. The orientation key goes
+   * with it: a spread has no block to orient by, and its locstring fallback
+   * lands the row forward, so the next single-block placement decides again.
    */
   function executeSpread({ level, movingView, spans }: SpreadWork) {
     const state = levelStates.get(level)
     state.pick = undefined
+    state.orientedKey = undefined
     const placed = self.holdFollowAnchor(() =>
       positionViewOnSpans(movingView, spans),
     )
