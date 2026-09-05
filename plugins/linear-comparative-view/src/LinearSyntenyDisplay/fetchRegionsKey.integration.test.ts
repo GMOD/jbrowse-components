@@ -81,11 +81,14 @@ test('a pan of the lower row past its buffer moves the key with the bidirectiona
 
 // The corners the worker emitted are relative to the region layout it was
 // given, so after a rewrite of a row's region list the held geometry draws at
-// loci that no longer exist. A pan keeps it; a region change drops it.
-test('a rewritten region list drops the held geometry, a pan keeps it', async () => {
+// loci that no longer exist. A pan keeps it; a region change drops it. The
+// feature lanes name loci in bp and stay, because the follow walks them to
+// place the other row from exactly such a rewrite.
+test('a rewritten region list drops the held geometry and keeps the features, a pan keeps both', async () => {
   const { view, display } = await openSynteny()
   const d = display as unknown as {
     instanceData: unknown
+    featureData: unknown
     setRpcData: (a: unknown, b: unknown) => void
   }
   d.setRpcData(
@@ -102,4 +105,5 @@ test('a rewritten region list drops the held geometry, a pan keeps it', async ()
   expect(d.instanceData).toBeDefined()
   view.views[0]!.horizontallyFlip()
   expect(d.instanceData).toBeUndefined()
+  expect(d.featureData).toBeDefined()
 })

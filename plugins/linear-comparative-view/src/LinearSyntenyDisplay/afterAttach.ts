@@ -27,13 +27,15 @@ export function doAfterAttach(
   // rewritten region list (a flip, a mate-mark drop, the follow's locstring
   // fallback) leaves every ribbon and mark at a locus that no longer exists
   // until the refetch lands. One blank frame is honest; a wrong one is not.
+  // The feature lanes stay: they name loci in bp, and a row the follow places
+  // from has just rewritten its regions when the follow walks them.
   addDisposer(
     self,
     reaction(
       () => self.regionSignature,
       () => {
         if (self.instanceData) {
-          self.setRpcData(undefined, undefined)
+          self.setRpcData(self.featureData, undefined)
         }
       },
       { name: 'SyntenyBlankOnRegionChange' },
