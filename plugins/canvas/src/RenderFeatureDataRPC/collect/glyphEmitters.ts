@@ -281,8 +281,7 @@ function processMatureProteinLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx } = place
-  const { parentFeature: rootFeature } = place
+  const { baseTopPx, flatbushIdx, parentFeature: rootFeature } = place
   const cdsFeature = layout.feature
   // one flat residue list for the whole ORF; the polyprotein CDS is a single
   // reading frame, so mature regions are sub-slices of it rather than the

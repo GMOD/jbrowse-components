@@ -430,21 +430,15 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
               self.soloFeature(featureId)
             },
           },
-          inSoloList
-            ? {
-                label: 'Remove from show-only list',
-                icon: PlaylistRemoveIcon,
-                onClick: () => {
-                  self.toggleSoloFeature(featureId)
-                },
-              }
-            : {
-                label: 'Add to show-only list',
-                icon: PlaylistAddIcon,
-                onClick: () => {
-                  self.toggleSoloFeature(featureId)
-                },
-              },
+          {
+            label: inSoloList
+              ? 'Remove from show-only list'
+              : 'Add to show-only list',
+            icon: inSoloList ? PlaylistRemoveIcon : PlaylistAddIcon,
+            onClick: () => {
+              self.toggleSoloFeature(featureId)
+            },
+          },
         ]),
     ...(self.soloApplied
       ? [

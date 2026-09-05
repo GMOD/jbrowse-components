@@ -73,7 +73,7 @@ export function collapseSummary(result: CollapseResult, spannedBp: number) {
 // their position in the list.
 function transcriptLabel(transcript: Feature, idx: number) {
   const parts = getExonsAndCDS([transcript])
-  const exons = parts.filter(f => isExon(f)).length
+  const exons = parts.filter(isExon).length
   const counted =
     exons > 0 ? `${exons} ${pluralize(exons, 'exon')}` : `${parts.length} CDS`
   const length = transcript.get('end') - transcript.get('start')
