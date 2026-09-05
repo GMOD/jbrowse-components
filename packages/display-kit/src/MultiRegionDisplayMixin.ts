@@ -632,6 +632,12 @@ export default function MultiRegionDisplayMixin() {
          * inexpressible — see {@link RegionFetchContext}. Direct callers are
          * tests staging an already-loaded display.
          *
+         * The payload is named on every call, `undefined` included: this write
+         * replaces the whole record, so a re-stamp that left it off dropped the
+         * data a test had staged one line earlier, and the failure surfaced as
+         * a reader throwing three layers away. A test stages a claim with
+         * nothing behind it by saying so.
+         *
          * An action so callers after an async boundary stay in MST strict mode.
          * Stamps the region with the fetch key its data came back under.
          * `fetchRegions` passes the key it captured before issuing the RPC; the
@@ -642,11 +648,11 @@ export default function MultiRegionDisplayMixin() {
         setLoadedRegion(
           displayedRegionIndex: number,
           region: Region,
+          payload: RegionPayload | undefined,
           // annotated, not inferred: `self` here is mid-composition, so the
           // default's type lands as `any` and the published signature stopped
           // constraining the one field `isCacheValid` compares
           fetchInputs: FetchInputs = self.fetchInputs,
-          payload?: RegionPayload,
         ) {
           self.loadedRegions.set(displayedRegionIndex, {
             ...region,
@@ -846,8 +852,8 @@ export default function MultiRegionDisplayMixin() {
                     self.setLoadedRegion(
                       displayedRegionIndex,
                       region,
-                      fetchInputs,
                       payload,
+                      fetchInputs,
                     )
                   }
                 },

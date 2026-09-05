@@ -525,12 +525,7 @@ export function stateModelFactory(
          * call. Production goes through `ctx.commitRegion`.
          */
         setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
-          self.setLoadedRegion(
-            idx,
-            region,
-            undefined,
-            storedManhattanData(data),
-          )
+          self.setLoadedRegion(idx, region, storedManhattanData(data))
         },
         /**
          * #action

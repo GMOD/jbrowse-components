@@ -48,13 +48,12 @@ test('the reactive method hooks are views, not actions', () => {
 describe('the presence hook is the whole cache rule', () => {
   it('is invalid for a region the fetch stored nothing for', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-    display.setLoadedRegion(0, view.displayedRegions[0])
+    display.setLoadedRegion(0, view.displayedRegions[0], undefined)
     expect(display.isCacheValid(0)).toBe(false)
   })
 
   it('stays valid through a zoom once the features are committed', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-    display.setLoadedRegion(0, view.displayedRegions[0])
     display.setRpcData(0, emptyRegionData(), ctgA)
     expect(display.isCacheValid(0)).toBe(true)
 

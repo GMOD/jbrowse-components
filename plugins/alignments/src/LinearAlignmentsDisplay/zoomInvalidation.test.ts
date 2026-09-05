@@ -11,7 +11,7 @@ function simulateLoaded(
   >['display'],
 ) {
   for (const b of view.bufferedVisibleRegions) {
-    display.setLoadedRegion(b.displayedRegionIndex, b.region)
+    display.setLoadedRegion(b.displayedRegionIndex, b.region, undefined)
   }
   display.markCanvasDrawn()
   // Attaching the display starts a real fetch — the autorun runs on the leading

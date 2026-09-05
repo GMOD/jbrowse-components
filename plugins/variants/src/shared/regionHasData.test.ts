@@ -14,8 +14,8 @@ const REGIONS = [
 function twoRegionsLoaded() {
   const { display, view } = createTestEnvironment().createDisplay()
   view.setDisplayedRegions(REGIONS)
-  display.setLoadedRegion(0, REGIONS[0]!)
-  display.setLoadedRegion(1, REGIONS[1]!)
+  display.setLoadedRegion(0, REGIONS[0]!, undefined)
+  display.setLoadedRegion(1, REGIONS[1]!, undefined)
   return display
 }
 

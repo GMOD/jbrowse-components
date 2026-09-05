@@ -113,7 +113,7 @@ describe('the store is bounded', () => {
     await quiet(display)
 
     for (let i = 1; i <= MAX_STORED_REGIONS + 20; i++) {
-      display.setLoadedRegion(i, region, undefined, `off-screen-${i}`)
+      display.setLoadedRegion(i, region, `off-screen-${i}`)
     }
     expect(display.loadedRegions.size).toBe(MAX_STORED_REGIONS + 21)
 
@@ -132,7 +132,7 @@ describe('the store is bounded', () => {
     const { display } = setup()
     await quiet(display)
 
-    display.setLoadedRegion(7, region, undefined, 'off-screen')
+    display.setLoadedRegion(7, region, 'off-screen')
     display.evictRegionStore(new Set([0]))
 
     expect(display.loadedRegions.size).toBe(2)
@@ -142,7 +142,7 @@ describe('the store is bounded', () => {
     const { display, control } = setup()
     await quiet(display)
     for (let i = 1; i <= MAX_STORED_REGIONS + 20; i++) {
-      display.setLoadedRegion(i, region, undefined, `off-screen-${i}`)
+      display.setLoadedRegion(i, region, `off-screen-${i}`)
     }
 
     control.payloadTag = 'refetched'
@@ -162,7 +162,7 @@ describe('a claim with no payload behind it', () => {
     const { display, view } = setup()
     await quiet(display)
 
-    display.setLoadedRegion(0, view.displayedRegions[0]!)
+    display.setLoadedRegion(0, view.displayedRegions[0]!, undefined)
 
     expect(display.viewportWithinLoadedData).toBe(true)
     expect(display.regionHasData(0)).toBe(false)

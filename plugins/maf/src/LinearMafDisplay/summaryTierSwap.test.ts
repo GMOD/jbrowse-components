@@ -131,7 +131,7 @@ describe('the summary bars stand in until the alignment lands', () => {
   it('leaves both tiers cache-valid, so the zoom back out refetches nothing', () => {
     const { display, view } = env().createDisplay()
     seedSources(display)
-    display.setLoadedRegion(0, view.displayedRegions[0])
+    display.setLoadedRegion(0, view.displayedRegions[0], undefined)
     seedSummary(display)
     seedAlignment(display)
 
@@ -150,7 +150,7 @@ describe('the summary bars stand in until the alignment lands', () => {
   it('is cache-invalid on the tier whose map is empty', () => {
     const { display, view } = env().createDisplay()
     seedSources(display)
-    display.setLoadedRegion(0, view.displayedRegions[0])
+    display.setLoadedRegion(0, view.displayedRegions[0], undefined)
     seedSummary(display)
 
     view.zoomTo(100)

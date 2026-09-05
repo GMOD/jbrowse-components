@@ -3353,7 +3353,7 @@ export default function stateModelFactory(
             data: GroupedAlignmentsResult,
             region: Region,
           ) {
-            self.setLoadedRegion(displayedRegionIndex, region, undefined, data)
+            self.setLoadedRegion(displayedRegionIndex, region, data)
           },
 
           /**

@@ -246,7 +246,7 @@ describe('a loaded region with no data behind it', () => {
     // the forbidden state: a claim written with no payload behind it, which
     // only a hand-written `setLoadedRegion` reaches now that the fetch path
     // commits both as one record
-    display.setLoadedRegion(0, view.displayedRegions[0])
+    display.setLoadedRegion(0, view.displayedRegions[0], undefined)
     expect(display.viewportWithinLoadedData).toBe(true)
     expect(display.regionHasData(0)).toBe(false)
     expect(display.isCacheValid(0)).toBe(false)

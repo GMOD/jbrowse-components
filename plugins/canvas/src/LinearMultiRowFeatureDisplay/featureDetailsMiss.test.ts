@@ -17,7 +17,7 @@ const ctgA = {
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, session, mockRpcCall } = createDisplay()
-  display.setLoadedRegion(0, ctgA)
+  display.setLoadedRegion(0, ctgA, undefined)
   return { display, session, mockRpcCall }
 }
 

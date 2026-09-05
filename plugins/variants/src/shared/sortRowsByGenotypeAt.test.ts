@@ -9,12 +9,16 @@ const SOURCES = [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }]
 function displayWithCells() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 1000,
-    assemblyName: 'volvox',
-  })
+  display.setLoadedRegion(
+    0,
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+      assemblyName: 'volvox',
+    },
+    undefined,
+  )
   const genotypeDict = ['0/0', '1/1']
   const codes = (gts: string[]) =>
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
@@ -103,12 +107,16 @@ test('sortRowsBy at a bare column waits for a record there', async () => {
   } as unknown as Parameters<typeof display.setCellData>[0])
   // the commit that lands with it — what the autorun watches, since the action
   // it dispatches into reads `cellData` untracked
-  display.setLoadedRegion(0, {
-    refName: 'ctgA',
-    start: 0,
-    end: 1000,
-    assemblyName: 'volvox',
-  })
+  display.setLoadedRegion(
+    0,
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+      assemblyName: 'volvox',
+    },
+    undefined,
+  )
   await waitFor(() => {
     expect(display.sortRowsBy).toBeUndefined()
   })

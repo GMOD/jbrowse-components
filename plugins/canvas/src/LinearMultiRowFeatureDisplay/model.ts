@@ -1101,7 +1101,7 @@ export default function stateModelFactory(
           data: MultiRowRegionData,
           region: Region,
         ) {
-          self.setLoadedRegion(regionIndex, region, undefined, data)
+          self.setLoadedRegion(regionIndex, region, data)
         },
         /**
          * #action

@@ -38,7 +38,6 @@ function regionData(): MultiRowRegionData {
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, mockRpcCall } = createDisplay()
-  display.setLoadedRegion(0, ctgA)
   display.setRpcData(0, regionData(), ctgA)
   mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
     method === 'GetCanvasFeatureDetails'

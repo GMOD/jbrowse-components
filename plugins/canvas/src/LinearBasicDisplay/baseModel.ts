@@ -1451,7 +1451,6 @@ export default function baseStateModelFactory(
           self.setLoadedRegion(
             displayedRegionIndex,
             region,
-            undefined,
             loadedFeatureData(data, region),
           )
         },

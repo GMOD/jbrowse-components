@@ -68,8 +68,7 @@ const regionStore = (self: object) =>
     setLoadedRegion: (
       displayedRegionIndex: number,
       region: Region,
-      fetchInputs?: unknown,
-      payload?: unknown,
+      payload: unknown,
     ) => void
   }
 
@@ -313,12 +312,7 @@ export function WiggleCommonMixin() {
         data: WiggleDataResult,
         region: Region,
       ) {
-        regionStore(self).setLoadedRegion(
-          displayedRegionIndex,
-          region,
-          undefined,
-          data,
-        )
+        regionStore(self).setLoadedRegion(displayedRegionIndex, region, data)
       },
       /**
        * #action
