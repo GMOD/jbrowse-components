@@ -615,9 +615,10 @@ export class SvgCanvas {
   // The family goes through, not just the size: `measureText` switches to the
   // fixed monospace advance on seeing one, so dropping it measured a monospace
   // string against the proportional table — the same string, laid out one way on
-  // a real canvas and another in the export, with nothing to show which. No draw
-  // function calls ctx.measureText today; this is here so the first one to do it
-  // doesn't inherit a silent discrepancy.
+  // a real canvas and another in the export, with nothing to show which. An
+  // estimate all the same: a draw whose layout turns on a width (synteny's
+  // off-screen mate labels) measures through a real canvas and passes the
+  // result in, so the figure names what the screen named.
   measureText(text: string) {
     const { size, family } = parseFont(this.font)
     return { width: measureTextWidth(text, Number(size), family) }

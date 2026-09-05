@@ -198,6 +198,20 @@ export interface OffscreenMateBand {
   markColor: string
   labelColor: string
   haloColor: string
+  // Label width in px at LABEL_FONT. Defaults to the draw context's own
+  // measureText, which on an SvgCanvas is an advance table rather than the
+  // browser's font: the vector export passes `canvasLabelMeasurer()` so it
+  // merges and fits the same labels the screen and the raster export do.
+  measure?: (text: string) => number
+}
+
+export function canvasLabelMeasurer() {
+  const ctx = document.createElement('canvas').getContext('2d')
+  if (!ctx) {
+    return undefined
+  }
+  ctx.font = LABEL_FONT
+  return (text: string) => ctx.measureText(text).width
 }
 
 interface LabelRun {
@@ -382,7 +396,7 @@ function placeLabels(
   return placed
 }
 
-export interface OffscreenMateRect {
+interface OffscreenMateRect {
   // the dataset and lane index it came from, rather than the contig name it
   // points at: the hover scan builds one of these per candidate and reads the
   // name only for the one it answers with
@@ -740,6 +754,7 @@ export function drawOffscreenMates(
   band: OffscreenMateBand,
 ) {
   const { width, height, markColor, labelColor, haloColor } = band
+  const measure = band.measure ?? (text => ctx.measureText(text).width)
   const laneRects = lanes.map(lane =>
     offscreenMateRects({ ...lane, width, height }),
   )
@@ -775,7 +790,7 @@ export function drawOffscreenMates(
   const zones = lanes.map(lane => markZone(lane.side, height, markHeight))
   const labels = placeLabels(
     lanes.map((lane, i) => ({
-      runs: labelRuns(laneRects[i]!, text => ctx.measureText(text).width),
+      runs: labelRuns(laneRects[i]!, measure),
       baselines: labelBaselines(lane.side, height, zones),
     })),
     width,

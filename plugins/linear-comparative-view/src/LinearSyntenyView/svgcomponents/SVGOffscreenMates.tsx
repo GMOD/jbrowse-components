@@ -1,6 +1,7 @@
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
 import {
+  canvasLabelMeasurer,
   drawOffscreenMates,
   offscreenMateColors,
 } from '../../LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -48,6 +49,7 @@ export default function SVGOffscreenMates({
         drawOffscreenMates(ctx, strips, {
           width,
           height,
+          measure: canvasLabelMeasurer(),
           ...offscreenMateColors(groundColor),
         })
       }}

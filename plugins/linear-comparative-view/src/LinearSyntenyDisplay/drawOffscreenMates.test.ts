@@ -507,6 +507,19 @@ test('the same draw emits marks and labels through SvgCanvas', () => {
   expect(out).toContain('ctgB')
 })
 
+// SvgCanvas measures off an advance table, and the label merge, fit and
+// centring all turn on the width, so the export takes the measurer the screen
+// used rather than the context's own.
+test('a measure passed in decides the SvgCanvas labels, not the table', () => {
+  const svg = new SvgCanvas()
+  drawOffscreenMates(
+    svg,
+    [{ ...params, datasets: [data([[0, 1000]], ['ctgB'])] }],
+    { ...params, width: 1000, measure: () => 5000 },
+  )
+  expect(svg.getSerializedSvg()).not.toContain('<text')
+})
+
 // The case the whole feature exists for is one query segment with SEVERAL
 // counterparts — peach chr1 has about three grape chromosomes over each of its
 // segments — so those stretches cover the same pixels by construction. On one
