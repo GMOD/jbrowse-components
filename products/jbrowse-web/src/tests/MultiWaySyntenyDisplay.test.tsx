@@ -79,13 +79,13 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
 
   await waitFor(
     () => {
-      expect(display.laneGenes?.get('grape')?.length).toBe(2)
+      expect(display.laneGenes?.get('grape')?.genes.length).toBe(2)
     },
     { timeout: 30000 },
   )
   const gene = display
     .laneGenes!.get('grape')!
-    .find(g => g.feature.get('name') === 'g1')!
+    .genes.find(g => g.feature.get('name') === 'g1')!
   const exons = gene.feature
     .get('subfeatures')![0]!
     .get('subfeatures')!
@@ -407,10 +407,13 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
   expect([...display.rowOrder]).toEqual(['cacao', 'peach'])
   expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
 
-  // a drop on the anchor's band is the top of the mate lanes
+  // a drop on the anchor's band is the top of the mate lanes — once the
+  // press has travelled past the drag slop, since a release inside it is a
+  // click
   fireEvent.mouseDown(await findByTestId('multiway-lane-label-peach'), {
-    clientY: 1,
+    clientY: peach!.bandStart + 1,
   })
+  fireEvent.mouseMove(window, { clientY: anchor!.bandStart + 1 })
   fireEvent.mouseUp(window, { clientY: anchor!.bandStart + 1 })
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 

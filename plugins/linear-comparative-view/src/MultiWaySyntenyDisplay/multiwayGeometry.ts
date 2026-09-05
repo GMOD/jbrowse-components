@@ -9,7 +9,7 @@ import {
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
-import { frameTickXs } from './layoutMultiWay.ts'
+import { frameTickXs, groupSpansLanes } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -182,7 +182,8 @@ export function buildRibbonGeometry({
   bridgeSkippedLanes,
 }: {
   stack: LaneStack
-  laneLinks: Map<string, Feature[]> | undefined
+  /** per `upper|lower` pair, the direct records fetched for it */
+  laneLinks: ReadonlyMap<string, { links: Feature[] }> | undefined
   ribbonColor: string
   ribbonColorBy?: MultiWayRibbonColorBy
   drawCurves: boolean
@@ -227,7 +228,8 @@ export function buildRibbonGeometry({
     for (const [key, { group, spans, orientations }] of upper.placements) {
       let toRow = row + 1
       let far = lower.placements.get(key)
-      while (!far && bridgeSkippedLanes && toRow + 1 < lanes.length) {
+      const bridging = bridgeSkippedLanes && groupSpansLanes(group)
+      while (!far && bridging && toRow + 1 < lanes.length) {
         far = lanes[++toRow]!.placements.get(key)
       }
       if (!far) {
@@ -254,7 +256,8 @@ export function buildRibbonGeometry({
       })
     }
     for (const link of row > 0
-      ? (laneLinks?.get(`${upper.assemblyName}|${lower.assemblyName}`) ?? [])
+      ? (laneLinks?.get(`${upper.assemblyName}|${lower.assemblyName}`)?.links ??
+        [])
       : []) {
       const mate = link.get('mate') as {
         refName: string

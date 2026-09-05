@@ -196,6 +196,33 @@ is the other answer to the same picture, and the two compose. The stacked
 gap between `views[level]` and `views[level + 1]` in ten files, so a track that
 joins row 0 to row 2 across row 1 is a level with a span, not a setting.
 
+**Genome scale over an alignment-level source (2026-09-05).** Four things
+stood between the display and a whole-chromosome human window on an indexed
+PIF, and all four were the display's own. The ortholog fetch and the lane-link
+fetch passed no `lodMode`, so a tiered file was always read at its fine tier —
+at 10 kb/px a genome-wide fine fetch, the regime
+[SYNTENY_LOD.md](../reference/SYNTENY_LOD.md) costs out; the display now has
+LGVSyntenyDisplay's machinery whole (`lodMode`, `LodTierInfoMixin`, `lodTier`
+off the settled zoom in `viewSignature`, the tier on both RPCs, the shared
+"Level of detail" submenu gated on `trackHasLodTiers`, so a gene table sees
+none of it). Bridging walked every nameless group down to the next lane that
+placed it, and a one-record alignment has exactly one mate, so on an all-vs-all
+file every anchor record whose mate was not lane 1 fanned across the gutters
+over the direct links the pairs fetch for themselves; a bridge now needs a
+group that can span lanes (`groupSpansLanes`: named, or carrying several
+mates). The lane-genes and lane-link fetches folded every lane into one key and
+reissued every lane when it moved, 44 tabix RPCs for a pan that moved one
+lane's quantized window; each lane's held result now carries the region key it
+was fetched under, the skeleton's predicate gate (`heldAnswers`) asks only the
+stale lanes, and the rest keep their identity. And `laneGlyphCells` resolved the
+`color`/`utrColor` jexl slots per gene per settle; `glyphColors` resolves them
+per fetched set and the cells read the map. Same pass: a lane annotated through
+a connection reads its annotation (`allSessionTracks`, the hop's own source),
+and a star source — the HPRC vs-GRCh38 PAF, `MultiPairwiseSyntenyAdapter` —
+gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
+read by `pairLinks`) where the file states none: without a fetch when the
+header names its anchor, after an empty pair fetch otherwise.
+
 **Lane scale legibility, and what is still open on it.** Every lane sits in its
 own frame, and until 2026-08-24 nothing in the picture said so: the view's
 gridlines (`Gridlines.tsx`, painted under track content at the ANCHOR's bp

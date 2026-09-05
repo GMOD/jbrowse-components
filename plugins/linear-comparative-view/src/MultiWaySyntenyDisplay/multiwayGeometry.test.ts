@@ -225,6 +225,56 @@ describe('the ribbons', () => {
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
   })
 
+  // An alignment-level source groups per record, and a record has exactly one
+  // mate: the skipped lane never held it, and the anchor's record to the third
+  // lane bridged over the direct peach|cacao link the pair fetched for itself,
+  // so every mate lane fanned out of the anchor
+  test('do not bridge a nameless record: its group has one mate and no lane it is missing from', () => {
+    const nameless = (
+      id: string,
+      mate: string,
+      mateRef: string,
+      start: number,
+    ) =>
+      new SimpleFeature({
+        uniqueId: id,
+        refName: 'chr1',
+        start,
+        end: start + 100,
+        strand: 1,
+        assemblyName: 'grape',
+        mate: { assemblyName: mate, refName: mateRef, start: 1500, end: 1600 },
+      })
+    const s = stack({
+      features: [
+        nameless('r1', 'peach', 'Pp1', 100),
+        nameless('r2', 'cacao', 'Tc1', 300),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    })
+    const link = new SimpleFeature({
+      uniqueId: 'link',
+      refName: 'Pp1',
+      start: 1500,
+      end: 1600,
+      strand: 1,
+      assemblyName: 'peach',
+      mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1600 },
+    })
+    const { cells, layers } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: true,
+    })
+    expect(s.lanes[1]!.placements.has('r2')).toBe(false)
+    expect(s.lanes[2]!.placements.has('r2')).toBe(true)
+    expect(layers.map(l => l.key)).toEqual(['ribbons:0', 'ribbons:1'])
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(1)
+    expect(ribbonData(cells, 'ribbons:1').instanceCount).toBe(1)
+  })
+
   // g2's record is reverse against the anchor, so its ribbon takes the reverse
   // color; g1 the forward one
   test('color by strand reads the record’s strand, at the slot color’s alpha', () => {
@@ -304,7 +354,7 @@ describe('the ribbons', () => {
     })
     const { cells, targets } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', [link]]]),
+      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
       ribbonColor: 'grey',
       drawCurves: true,
       bridgeSkippedLanes: false,

@@ -50,17 +50,26 @@ export interface LodTierInfoHost extends PrerequisiteFetchHost {
  * display keeps resolving off the slot, which is what it did before the header
  * existed, and the primary fetch on the same file raises the real error — so it
  * is only logged.
+ *
+ * `onHeader` hands the display the whole header the tier info was narrowed
+ * from, in the same commit: a header can carry more than tiers (a star
+ * adapter's names its anchor), and a second `CoreGetInfo` for the rest would be
+ * the same round trip twice.
  */
-export function installLodTierInfoFetch(self: LodTierInfoHost) {
+export function installLodTierInfoFetch(
+  self: LodTierInfoHost,
+  { onHeader }: { onHeader?: (header: unknown) => void } = {},
+) {
   installPrerequisiteFetch(self, {
     name: 'LodTierInfo',
     delay: 0,
     report: { setStatusMessage: () => {} },
     gate: () => trackHasLodTiers(self.parentTrack),
-    run: async (adapterConfig, ctx) =>
-      readLodTierInfo(await ctx.callRpc('CoreGetInfo', { adapterConfig })),
-    commit: info => {
-      self.setLodTierInfo(info)
+    run: (adapterConfig, ctx): Promise<unknown> =>
+      ctx.callRpc('CoreGetInfo', { adapterConfig }),
+    commit: header => {
+      self.setLodTierInfo(readLodTierInfo(header))
+      onHeader?.(header)
     },
     setError: error => {
       if (error !== undefined) {

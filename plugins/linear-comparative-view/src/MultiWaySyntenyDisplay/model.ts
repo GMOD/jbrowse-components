@@ -15,6 +15,7 @@ import {
 } from '@jbrowse/core/util'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import {
+  allSessionTracks,
   annotationTrackIds,
   isSameAssemblyName,
   openAssemblyInLinearView,
@@ -24,7 +25,13 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { bandGroundColor } from '@jbrowse/synteny-core'
+import {
+  LodTierInfoMixin,
+  bandGroundColor,
+  lodMenuItems,
+  lodTierAt,
+  trackHasLodTiers,
+} from '@jbrowse/synteny-core'
 
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
@@ -35,6 +42,7 @@ import {
 import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
+import { composeLaneLinks } from './composeLaneLinks.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
@@ -61,6 +69,7 @@ import {
 } from './multiwayGeometry.ts'
 
 import type { AxisPlacement } from './anchorAxis.ts'
+import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
@@ -73,10 +82,12 @@ import type {
   MultiWayRenderState,
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LodMode, LodTier } from '@jbrowse/synteny-core'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -94,21 +105,63 @@ export interface LaneRegion {
   end: number
 }
 
-export interface LaneGenesFetchSpec {
-  assemblyName: string
+/**
+ * One lane's share of a dependent fetch. `lane` is the held map's key — the
+ * lane's assembly, or the pair a link fetch joins — and `key` is what the
+ * lane's held result is stale against: the region it asked for.
+ */
+export interface LaneFetchSpec {
+  lane: string
+  key: string
+}
+
+export interface LaneGenesFetchSpec extends LaneFetchSpec {
   adapterConfig: Record<string, unknown>
   regions: LaneRegion[]
 }
 
-export interface LaneLinksFetchSpec {
+export interface LaneLinksFetchSpec extends LaneFetchSpec {
   upperAssembly: string
   lowerAssembly: string
   region: LaneRegion
+  lodTier: LodTier
 }
 
-// what a fetch is stale against: the region it asked for, spelled once
+/** a lane's fetched result beside the region key it was fetched under */
+export interface HeldLaneGenes {
+  key: string
+  genes: LaneGene[]
+}
+
+export interface HeldLaneLinks {
+  key: string
+  links: Feature[]
+}
+
 function regionKey(r: LaneRegion) {
   return `${r.refName}:${r.start}-${r.end}`
+}
+
+/**
+ * The anchor a star source names in its `CoreGetInfo` header
+ * (MultiPairwiseSyntenyAdapter's `anchorAssemblyName`); undefined for a header
+ * that names none, which is every other adapter's.
+ */
+export function starAnchorOf(header: unknown) {
+  return typeof header === 'object' &&
+    header !== null &&
+    'anchorAssemblyName' in header &&
+    typeof header.anchorAssemblyName === 'string'
+    ? header.anchorAssemblyName
+    : undefined
+}
+
+/** the specs whose lane holds nothing fetched under their key */
+export function staleLaneSpecs<Spec extends LaneFetchSpec>(
+  specs: Spec[],
+  held: ReadonlyMap<string, { key: string }> | undefined,
+) {
+  return specs.filter(spec => held?.get(spec.lane)?.key !== spec.key)
 }
 
 /**
@@ -133,6 +186,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       GlobalFetchMixin(),
+      LodTierInfoMixin(),
       types.model({
         /**
          * #property
@@ -142,6 +196,18 @@ export function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Level-of-detail tier selection for tiered PIF adapters, the setting
+         * the synteny view, dotplot and LGVSyntenyDisplay carry under the same
+         * name: 'auto' uses the adapter's bpPerPx threshold; 'fine' pins the
+         * per-row CIGAR tier; 'coarse' the tier whose CIGAR is folded to its
+         * large indels
+         */
+        lodMode: types.stripDefault(
+          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+          'auto',
+        ),
         /**
          * #property
          * lanes to pin to the top, in order; lanes it does not name follow
@@ -166,17 +232,14 @@ export function stateModelFactory(
       features: undefined as Feature[] | undefined,
       /**
        * #volatile
-       * per-lane gene models fetched from each assembly's own gene track, so a
-       * lane draws real exon structure at that genome's coordinates
+       * per lane, the gene models fetched from that assembly's own gene track,
+       * so a lane draws real exon structure at that genome's coordinates, and
+       * the region key they were fetched under — the lane fetch's committed
+       * stamp, which its gate compares and `dataSuperseded` reads per lane.
+       * Merged a lane at a time: a pan that moves one lane's quantized window
+       * refetches that lane and leaves the others' genes as they were
        */
-      laneGenes: undefined as Map<string, LaneGene[]> | undefined,
-      /**
-       * #volatile
-       * the `laneGenesFetchSpecs.key` the held lane genes were fetched under —
-       * the lane fetch's committed stamp, which its skeleton gate compares and
-       * `dataSuperseded` reads
-       */
-      laneGenesKey: undefined as string | undefined,
+      laneGenes: undefined as Map<string, HeldLaneGenes> | undefined,
       /**
        * #volatile
        * whether a lane-gene commit has yet covered a MATE lane. The anchor's
@@ -190,14 +253,17 @@ export function stateModelFactory(
        * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
        * track when the source is an all-vs-all alignment file — the direct
-       * records the file holds for that pair, at the lanes' own coordinates
+       * records the file holds for that pair, at the lanes' own coordinates —
+       * each beside the region key it was fetched under, merged per pair
        */
-      laneLinks: undefined as Map<string, Feature[]> | undefined,
+      laneLinks: undefined as Map<string, HeldLaneLinks> | undefined,
       /**
        * #volatile
-       * the `laneLinksFetchSpecs.key` the held lane links were fetched under
+       * the anchor a star source announces in its header. A star of pairwise
+       * alignments holds no mate-vs-mate rows, so its adjacent pairs' links
+       * are composed through the anchor rather than asked for
        */
-      laneLinksKey: undefined as string | undefined,
+      starAnchor: undefined as string | undefined,
       /**
        * #volatile
        * the glyph, box or ribbon under the pointer — what a click opens and
@@ -255,24 +321,32 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLaneGenes(
-        genes: Map<string, LaneGene[]>,
-        key: string,
-        coversMate: boolean,
-      ) {
-        self.laneGenes = genes
-        self.laneGenesKey = key
+      setLaneGenes(fetched: Map<string, HeldLaneGenes>, coversMate: boolean) {
+        const held = new Map(self.laneGenes)
+        for (const [lane, genes] of fetched) {
+          held.set(lane, genes)
+        }
+        self.laneGenes = held
         self.laneGenesCoverMates ||= coversMate
       },
       /**
        * #action
        */
-      setLaneLinks(links: Map<string, Feature[]>, key: string) {
-        self.laneLinks = links
-        self.laneLinksKey = key
+      setLaneLinks(fetched: Map<string, HeldLaneLinks>) {
+        const held = new Map(self.laneLinks)
+        for (const [pair, links] of fetched) {
+          held.set(pair, links)
+        }
+        self.laneLinks = held
         if (self.clickedTarget?.groupKey === undefined) {
           self.clickedTarget = undefined
         }
+      },
+      /**
+       * #action
+       */
+      setStarAnchor(assemblyName: string | undefined) {
+        self.starAnchor = assemblyName
       },
       /**
        * #action
@@ -343,6 +417,12 @@ export function stateModelFactory(
       setShowLaneTicks(flag: boolean) {
         setConf(self, 'showLaneTicks', flag)
       },
+      /**
+       * #action
+       */
+      setLodMode(mode: LodMode) {
+        self.lodMode = mode
+      },
     }))
     .views(self => ({
       /**
@@ -366,17 +446,47 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * whether the track's adapter has tiered storage to switch between —
+       * gates the "Level of detail" menu, the way LGVSyntenyDisplay gates it
+       */
+      get hasLodCapableAdapter() {
+        return trackHasLodTiers(self.parentTrack)
+      },
+      /**
+       * #getter
+       * the tier the ortholog and lane-link fetches ask an indexed PIF for,
+       * resolved here on the main thread off the SETTLED zoom and folded into
+       * `viewSignature`, so a tier flip refetches and a gesture travelling
+       * through the threshold does not. 'fine' at every zoom for an adapter
+       * with no tiers, a gene table included
+       */
+      get lodTier() {
+        return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
+      },
+      /**
+       * #getter
+       * the same tier off the live zoom, for `dataSuperseded`
+       */
+      get liveLodTier() {
+        return lodTierAt(self, self.lgv.bpPerPx, self.lodMode)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get canvasWidth() {
         return self.lgv.width
       },
       /**
        * #getter
-       * staleness axis is the static-block set, same as arc: pan/zoom past a
-       * block boundary refetches, a scroll inside the loaded blocks does not
+       * staleness axes are the static-block set, same as arc — pan/zoom past a
+       * block boundary refetches, a scroll inside the loaded blocks does not —
+       * and the level-of-detail tier
        */
       get viewSignature() {
-        return self.staticBlockSignature
+        const blocks = self.staticBlockSignature
+        return blocks === undefined ? undefined : `${blocks}|${self.lodTier}`
       },
       /**
        * #getter
@@ -439,7 +549,7 @@ export function stateModelFactory(
         for (const f of self.features ?? []) {
           out.add(f.id())
         }
-        for (const genes of self.laneGenes?.values() ?? []) {
+        for (const { genes } of self.laneGenes?.values() ?? []) {
           for (const g of genes) {
             out.add(g.feature.id())
           }
@@ -448,6 +558,36 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the `color` and `utrColor` slots resolved per feature a lane draws —
+       * every lane's genes, and the groups' own records for the placement
+       * boxes — keyed by feature id. Off the fetched sets and the config
+       * alone: a settle rebuilds every lane's cells against this map, so a
+       * settle runs no jexl
+       */
+      get glyphColors() {
+        const { configuration } = self
+        const color = new Map<string, string>()
+        const utrColor = new Map<string, string>()
+        for (const { feature } of self.groups) {
+          color.set(
+            feature.id(),
+            readConfObject(configuration, 'color', { feature }),
+          )
+        }
+        for (const { genes } of self.laneGenes?.values() ?? []) {
+          for (const { feature } of genes) {
+            const id = feature.id()
+            color.set(id, readConfObject(configuration, 'color', { feature }))
+            utrColor.set(
+              id,
+              readConfObject(configuration, 'utrColor', { feature }),
+            )
+          }
+        }
+        return { color, utrColor }
+      },
       /**
        * #getter
        * the session selection where it names a feature THIS display draws,
@@ -595,28 +735,39 @@ export function stateModelFactory(
         const session = getSession(self)
         const { assemblyManager } = session
         const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
-        const out = new Map<string, Record<string, unknown>>()
-        const ranked = new Map<string, number>()
-        for (const track of session.tracks) {
+        const best = new Map<
+          string,
+          { rank: number; track: AnyConfigurationModel }
+        >()
+        // the tracks the "Open assembly" hop brings along, connections
+        // included, so a lane annotated through one does not read as bare
+        for (const track of allSessionTracks(session)) {
           const names = readConfObject(track, 'assemblyNames') as string[]
-          const adapter = readConfObject(track, 'adapter') as {
-            type?: string
-          } | null
-          const rank = annotationRank(adapter?.type)
-          if (names.length !== 1 || rank === undefined) {
-            continue
-          }
-          // every lane the track answers for, not the first: two mates can
-          // spell one assembly two ways and both lanes draw from the one track
-          for (const lane of lanes) {
-            if (
-              rank < (ranked.get(lane) ?? Number.POSITIVE_INFINITY) &&
-              isSameAssemblyName(names[0], lane, assemblyManager)
-            ) {
-              ranked.set(lane, rank)
-              out.set(lane, adapter as Record<string, unknown>)
+          const type: unknown = readConfObject(track, ['adapter', 'type'])
+          const rank = annotationRank(
+            typeof type === 'string' ? type : undefined,
+          )
+          if (names.length === 1 && rank !== undefined) {
+            // every lane the track answers for, not the first: two mates can
+            // spell one assembly two ways and both lanes draw from the one
+            // track
+            for (const lane of lanes) {
+              const held = best.get(lane)
+              if (
+                (held === undefined || rank < held.rank) &&
+                isSameAssemblyName(names[0], lane, assemblyManager)
+              ) {
+                best.set(lane, { rank, track })
+              }
             }
           }
+        }
+        const out = new Map<string, Record<string, unknown>>()
+        for (const [lane, { track }] of best) {
+          out.set(
+            lane,
+            readConfObject(track, 'adapter') as Record<string, unknown>,
+          )
         }
         return out
       },
@@ -744,7 +895,7 @@ export function stateModelFactory(
        * what the lane-genes autorun fetches: one spec per lane with a gene
        * track, over the quantized window each lane's frame slides in
        */
-      get laneGenesFetchSpecs() {
+      get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
         const view = self.lgv
         const adapters = self.laneGeneAdapters
         const specs: LaneGenesFetchSpec[] = []
@@ -758,7 +909,8 @@ export function stateModelFactory(
           }))
           if (anchorAdapter && regions.length) {
             specs.push({
-              assemblyName: self.anchorAssemblyName,
+              lane: self.anchorAssemblyName,
+              key: regions.map(regionKey).join(','),
               adapterConfig: anchorAdapter,
               regions,
             })
@@ -766,39 +918,34 @@ export function stateModelFactory(
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
             if (adapter && frame && self.holdsAssembly(assemblyName)) {
+              const region = { assemblyName, ...laneFetchRegion(frame) }
               specs.push({
-                assemblyName,
+                lane: assemblyName,
+                key: regionKey(region),
                 adapterConfig: adapter,
-                regions: [{ assemblyName, ...laneFetchRegion(frame) }],
+                regions: [region],
               })
             }
           }
         }
-        return {
-          key: specs
-            .map(spec =>
-              spec.regions
-                .map(r => `${spec.assemblyName}:${regionKey(r)}`)
-                .join(','),
-            )
-            .join(';'),
-          specs,
-        }
+        return specs
       },
       /**
        * #getter
        * one spec per ADJACENT mate-lane pair when the source is an all-vs-all
        * alignment file: the upper lane's window queried against the lower
-       * lane's assembly, which an all-vs-all adapter answers with the direct
-       * records it holds for that pair. Only pairs the session holds both
-       * assemblies of: the fetch renames its region through the assembly
-       * manager, which refuses a PanSN sample the config never declared, and
-       * an all-vs-all file routinely carries more of those than the config
-       * names
+       * lane's assembly at the settled tier, which an all-vs-all adapter
+       * answers with the direct records it holds for that pair. None for a
+       * source that announced itself a star, which holds no such rows. Only
+       * pairs the session holds both assemblies of: the fetch renames its
+       * region through the assembly manager, which refuses a PanSN sample the
+       * config never declared, and an all-vs-all file routinely carries more
+       * of those than the config names
        */
-      get laneLinksFetchSpecs() {
+      get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
-        if (self.featuresAreNameless) {
+        if (self.featuresAreNameless && self.starAnchor === undefined) {
+          const { lodTier } = self
           const rows = self.rowAssemblies
           for (let i = 0; i + 1 < rows.length; i++) {
             const upperAssembly = rows[i]!
@@ -811,26 +958,22 @@ export function stateModelFactory(
               self.holdsAssembly(upperAssembly) &&
               self.holdsAssembly(lowerAssembly)
             ) {
+              const region = {
+                assemblyName: upperAssembly,
+                ...laneFetchRegion(upper),
+              }
               specs.push({
+                lane: `${upperAssembly}|${lowerAssembly}`,
+                key: `${regionKey(region)}|${lodTier}`,
                 upperAssembly,
                 lowerAssembly,
-                region: {
-                  assemblyName: upperAssembly,
-                  ...laneFetchRegion(upper),
-                },
+                region,
+                lodTier,
               })
             }
           }
         }
-        return {
-          key: specs
-            .map(
-              spec =>
-                `${spec.upperAssembly}>${spec.lowerAssembly}:${regionKey(spec.region)}`,
-            )
-            .join(';'),
-          specs,
-        }
+        return specs
       },
     }))
     .views(self => ({
@@ -867,6 +1010,59 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the direct records between each adjacent mate-lane pair as the
+       * ribbons read them: the pair's fetched links where the file holds any,
+       * else — a star of pairwise alignments states none, whether it
+       * announced itself one or its pair fetch came back empty — the links
+       * composed through the anchor from the groups, one record per placement
+       * either lane makes. Off the fetched sets alone, never the frames, so a
+       * settle recomposes nothing
+       */
+      get pairLinks(): ReadonlyMap<string, { links: Feature[] }> {
+        const out = new Map<string, { links: Feature[] }>()
+        const rows = self.rowAssemblies
+        const placementsOn = (assemblyName: string) =>
+          self.groups.flatMap(group =>
+            (group.mates.get(assemblyName) ?? []).map(
+              (p): LanePlacementRecord => ({
+                anchorRefName: group.anchor.refName,
+                anchorStart: group.anchor.start,
+                anchorEnd: group.anchor.end,
+                refName: p.refName,
+                start: p.start,
+                end: p.end,
+                strand: p.orientation < 0 ? -1 : 1,
+                feature: group.feature,
+              }),
+            ),
+          )
+        for (let i = 0; i + 1 < rows.length; i++) {
+          const upper = rows[i]!
+          const lower = rows[i + 1]!
+          const pair = `${upper}|${lower}`
+          const fetched = self.laneLinks?.get(pair)
+          if (fetched !== undefined && fetched.links.length > 0) {
+            out.set(pair, fetched)
+          } else if (
+            self.featuresAreNameless &&
+            (self.starAnchor !== undefined || fetched !== undefined)
+          ) {
+            out.set(pair, {
+              links: composeLaneLinks({
+                upper: placementsOn(upper),
+                lower: placementsOn(lower),
+                upperAssemblyName: upper,
+                lowerAssemblyName: lower,
+              }),
+            })
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
       get palette() {
         return getPaletteHost(self).palette
       },
@@ -878,7 +1074,7 @@ export function stateModelFactory(
       get ribbonGeometry() {
         return buildRibbonGeometry({
           stack: self.laneStack,
-          laneLinks: self.laneLinks,
+          laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
           ribbonColorBy: self.ribbonColorBy,
           drawCurves: self.drawCurves,
@@ -921,21 +1117,22 @@ export function stateModelFactory(
        * two cells per lane — its gene models and baseline, and its placement
        * boxes — since only the boxes carry an outline. Boxes first, so a hit
        * test walking these in order answers the box over the gene the way the
-       * draw order does. The one place a jexl color slot is resolved per
-       * glyph, so the hover — a render parameter — never re-runs it
+       * draw order does. Colors come off `glyphColors`, so neither the hover —
+       * a render parameter — nor a settle re-runs a jexl slot
        */
       get laneGlyphCells() {
-        const { palette, selectedFeatureId, laneGenes } = self
+        const { palette, selectedFeatureId, laneGenes, glyphColors } = self
         const { lanes, glyphHeight } = self.laneStack
         const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
           selectedFeatureId === feature.id()
             ? palette.highlight.main
-            : readConfObject(self.configuration, slot, { feature })
+            : (glyphColors[slot].get(feature.id()) ??
+              readConfObject(self.configuration, slot, { feature }))
         const out = new Map<string, MultiWayCell>()
         lanes.forEach((lane, row) => {
           const { glyphs, boxes } = buildLaneCells({
             lane,
-            genes: laneGenes?.get(lane.assemblyName) ?? [],
+            genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
             glyphHeight,
             width: self.canvasWidth,
             colors: {
@@ -1101,27 +1298,26 @@ export function stateModelFactory(
       get awaitingDependentData(): boolean {
         const genes = self.laneGenesFetchSpecs
         return (
-          (self.laneGenes === undefined && genes.specs.length > 0) ||
-          (!self.laneGenesCoverMates && genes.specs.length > 1) ||
-          (self.laneLinks === undefined &&
-            self.laneLinksFetchSpecs.specs.length > 0)
+          (self.laneGenes === undefined && genes.length > 0) ||
+          (!self.laneGenesCoverMates && genes.length > 1) ||
+          (self.laneLinks === undefined && self.laneLinksFetchSpecs.length > 0)
         )
       },
       /**
        * #getter
-       * `GlobalFetchMixin`'s hook: a lane fetch is out, or holds lanes fetched
-       * under a key the frames have moved past, so the ortholog data the
-       * signature calls current is about to be redrawn over. Holds the export,
-       * where the phase above holds only the first landing's scrim. A lane
-       * fetch always commits — one failed lane drops out of an otherwise
-       * committed map (see afterAttach) — so this cannot latch
+       * `GlobalFetchMixin`'s hook: a lane fetch is out, or some lane holds a
+       * result fetched under a key its frame has moved past, so the ortholog
+       * data the signature calls current is about to be redrawn over; or the
+       * live zoom has left the settled tier the held data was fetched at.
+       * Holds the export, where the phase above holds only the first landing's
+       * scrim. A lane fetch always commits — one failed lane is stamped with
+       * an empty result (see afterAttach) — so this cannot latch
        */
       get dataSuperseded(): boolean {
-        const genes = self.laneGenesFetchSpecs
-        const links = self.laneLinksFetchSpecs
         return (
-          (genes.specs.length > 0 && self.laneGenesKey !== genes.key) ||
-          (links.specs.length > 0 && self.laneLinksKey !== links.key)
+          staleLaneSpecs(self.laneGenesFetchSpecs, self.laneGenes).length > 0 ||
+          staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).length > 0 ||
+          self.lodTier !== self.liveLodTier
         )
       },
       /**
@@ -1161,6 +1357,7 @@ export function stateModelFactory(
             ...items,
             { type: 'divider' },
             ...laneSettingsMenuItems(self),
+            ...lodMenuItems(self),
             ...laneOrderMenuItem(self),
           ]
         },

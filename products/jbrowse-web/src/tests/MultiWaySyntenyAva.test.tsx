@@ -59,12 +59,12 @@ test('MultiWaySyntenyDisplay on an all-vs-all PAF groups per record and fetches 
   await waitFor(
     () => {
       expect(
-        display.laneLinks?.get('volvox_ins|volvox_del')?.length,
+        display.laneLinks?.get('volvox_ins|volvox_del')?.links.length,
       ).toBeGreaterThan(0)
     },
     { timeout: 30000 },
   )
-  const link = display.laneLinks!.get('volvox_ins|volvox_del')![0]!
+  const link = display.laneLinks!.get('volvox_ins|volvox_del')!.links[0]!
   expect((link.get('mate') as { assemblyName: string }).assemblyName).toBe(
     'volvox_del',
   )

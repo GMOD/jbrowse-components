@@ -139,6 +139,15 @@ export function groupFeatures(features: Feature[]) {
   )
 }
 
+// Whether a group can gather placements from several lanes — a gene keyed by
+// its name across the pair tables, or a folded record carrying several mates —
+// so a lane that places nothing for it is a lane the group is missing from. A
+// one-record alignment holds exactly its one mate: no other lane ever had it,
+// and bridging it fans the anchor to every lane over the pairs' direct links.
+export function groupSpansLanes(group: MultiWayGroup) {
+  return group.mates.size > 1 || isNamedRecord(group.feature)
+}
+
 // Mate assemblies densest-first over the anchor-sorted groups: a ribbon
 // connects ADJACENT lanes only, so a near-empty lane sitting mid-stack cuts the
 // chains of every denser lane below it. Density is counted over the whole

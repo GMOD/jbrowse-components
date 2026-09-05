@@ -18,6 +18,7 @@ import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
+import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 /**
  * A real MultiWaySyntenyDisplay on a SyntenyTrack, in a real LGV, beside a
@@ -36,25 +37,59 @@ export function createDisplay() {
   return createDisplayWithSession().display
 }
 
-/** the same display, with the harness session it lives in for its snackbars */
 const HELD_ASSEMBLIES = new Set(['volvox', 'volvox_random', 'volvox_ins'])
 
-export function createDisplayWithSession() {
+export interface GeneTrackSpec {
+  trackId: string
+  assemblyNames: string[]
+}
+
+export type RpcCall = (
+  functionName: string,
+  args: Record<string, unknown>,
+) => Promise<unknown>
+
+/**
+ * The same display, with the harness session it lives in for its snackbars.
+ * The synteny track's adapter, the gene tracks beside it — in the session and
+ * behind a connection — and what the RPC answers are the harness's knobs: a
+ * tiered adapter is what gives the display a level-of-detail tier to resolve,
+ * a mate lane's gene track is what gives the lane fetch a second spec, and a
+ * recording RPC is how a test sees what a fetch asked for.
+ */
+export function createDisplayWithSession({
+  syntenyAdapter = { type: 'MCScanBlocksAdapter' },
+  geneTracks = [{ trackId: 'volvox_genes', assemblyNames: ['volvox'] }],
+  connectionGeneTracks = [],
+  rpc = async () => [],
+}: {
+  syntenyAdapter?: Record<string, unknown>
+  geneTracks?: GeneTrackSpec[]
+  connectionGeneTracks?: GeneTrackSpec[]
+  rpc?: RpcCall
+} = {}) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
 
   // Config-only: `laneGeneAdapters` matches on the adapter's TYPE NAME, and an
-  // unregistered one reads back as an empty config rather than failing
-  for (const name of ['MCScanBlocksAdapter', 'Gff3TabixAdapter']) {
+  // unregistered one reads back as an empty config rather than failing. The
+  // indexed PAF adapter declares the threshold slot `trackHasLodTiers` tests
+  // for, which is the whole of what makes a track tiered to the display
+  const adapterSlots: Record<string, ConfigurationSchemaDefinition> = {
+    MCScanBlocksAdapter: {},
+    Gff3TabixAdapter: {},
+    PairwiseIndexedPAFAdapter: {
+      coarseBpPerPxThreshold: { type: 'number', defaultValue: 10000 },
+    },
+  }
+  for (const [name, slots] of Object.entries(adapterSlots)) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name,
-          configSchema: ConfigurationSchema(
-            name,
-            {},
-            { explicitlyTyped: true },
-          ),
+          configSchema: ConfigurationSchema(name, slots, {
+            explicitlyTyped: true,
+          }),
           getAdapterClass: () => {
             throw new Error(`${name} is config-only in tests`)
           },
@@ -113,21 +148,26 @@ export function createDisplayWithSession() {
       type: 'SyntenyTrack',
       trackId: 'multiway_track',
       assemblyNames: ['volvox', 'volvox_random'],
-      adapter: { type: 'MCScanBlocksAdapter' },
+      adapter: syntenyAdapter,
     },
     { pluginManager },
   )
-  // the anchor's own gene track: one assembly, a Gff3 adapter — the two things
+  // a lane's own gene track: one assembly, a Gff3 adapter — the two things
   // `laneGeneAdapters` matches on
-  const geneTrack = trackSchema.create(
-    {
-      type: 'FeatureTrack',
-      trackId: 'volvox_genes',
-      assemblyNames: ['volvox'],
-      adapter: { type: 'Gff3TabixAdapter' },
-    },
-    { pluginManager },
-  )
+  const geneTrackConf = ({ trackId, assemblyNames }: GeneTrackSpec) =>
+    trackSchema.create(
+      {
+        type: 'FeatureTrack',
+        trackId,
+        assemblyNames,
+        adapter: { type: 'Gff3TabixAdapter' },
+      },
+      { pluginManager },
+    )
+  const sessionTracks = [syntenyTrack, ...geneTracks.map(geneTrackConf)]
+  const connectionInstances = connectionGeneTracks.length
+    ? [{ tracks: connectionGeneTracks.map(geneTrackConf) }]
+    : []
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
   const Session = types.compose(
@@ -136,7 +176,13 @@ export function createDisplayWithSession() {
       viewModel: LinearGenomeModel,
       // the installers reach a real RPC once the microtask queue runs; these
       // read the display synchronously, so this only has to exist
-      rpcManager: { call: async () => [] },
+      rpcManager: {
+        call: (
+          _sessionId: string,
+          functionName: string,
+          args: Record<string, unknown>,
+        ) => rpc(functionName, args),
+      },
       assemblyManager: {
         get: () => testAssembly(),
         // the dependent lane fetches canonicalize their regions through this
@@ -155,7 +201,9 @@ export function createDisplayWithSession() {
       getTrackById: (id: string) =>
         id === 'multiway_track' ? syntenyTrack : undefined,
     }),
-    types.model({}).volatile(() => ({ tracks: [syntenyTrack, geneTrack] })),
+    types
+      .model({})
+      .volatile(() => ({ tracks: sessionTracks, connectionInstances })),
   )
 
   const session = Session.create({ configuration: {} }, { pluginManager })

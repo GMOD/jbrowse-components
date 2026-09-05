@@ -3,20 +3,30 @@ import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { installClearHoverOnSurfaceMove } from '@jbrowse/synteny-core'
+import {
+  installClearHoverOnSurfaceMove,
+  installLodTierInfoFetch,
+} from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
+import { staleLaneSpecs, starAnchorOf } from './model.ts'
 
-import type { LaneRegion, MultiWaySyntenyDisplayModel } from './model.ts'
+import type {
+  LaneFetchSpec,
+  LaneRegion,
+  MultiWaySyntenyDisplayModel,
+} from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import type { LodTier } from '@jbrowse/synteny-core'
 
 interface MultiWayFetchArgs {
   regions: ContentBlock[]
+  lodTier: LodTier
 }
 
 const DEPENDENT_FETCH_DELAY = 500
@@ -27,19 +37,21 @@ function fetchPhases(
   return {
     prepare: () => {
       const regions = self.lgv.staticBlocks.contentBlocks
-      return regions.length ? { regions } : undefined
+      return regions.length ? { regions, lodTier: self.lodTier } : undefined
     },
     // no targetAssemblyName: a multi-genome adapter queried with no target
     // answers with every pair anchored on the queried assembly, which is
     // exactly the row set this display draws. `mateShape: 'grouped'` asks an
     // adapter that can to fold those pairs per anchor before they cross the
-    // RPC; `groupFeatures` reads either shape, so one that cannot is unaffected
-    run: async ({ regions }, ctx) =>
+    // RPC; `groupFeatures` reads either shape, so one that cannot is
+    // unaffected. The tier is the one the key was issued at, so an indexed
+    // PIF at a whole-chromosome window serves its coarse rows
+    run: async ({ regions, lodTier }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
           adapterConfig: self.adapterConfig,
-          opts: { mateShape: 'grouped' },
+          opts: { mateShape: 'grouped', lodMode: lodTier },
         }),
         r => r.id(),
       ),
@@ -68,44 +80,47 @@ async function laneRegions(
  * calls aggregate into one bar rather than clobbering each other.
  *
  * **One lane failing is a partial result, not a failed fetch.** That lane keeps
- * the placement boxes it already draws and every other lane keeps its gene
- * models, so this resolves either way and the commit always happens — which is
- * also what settles `displayPhase` off `loading` when the first one lands. The
- * log guard is `handleFetchError`'s rule per lane: an abort is the ordinary end
- * of a superseded run, and a stale run's failure belongs to whatever replaced
- * it.
+ * the placement boxes it already draws and is stamped with `empty` under the
+ * key it asked for, so it reads as fetched rather than as owed, and every other
+ * lane keeps its gene models; this resolves either way and the commit always
+ * happens — which is also what settles `displayPhase` off `loading` when the
+ * first one lands. The log guard is `handleFetchError`'s rule per lane: an
+ * abort is the ordinary end of a superseded run, and a stale run's failure
+ * belongs to whatever replaced it.
  */
-async function fetchEachLane<Spec, Result>(
+async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
   label: string,
   specs: Spec[],
   ctx: FetchContext,
-  fetchOne: (
-    spec: Spec,
-    ctx: FetchContext,
-  ) => Promise<readonly [string, Result]>,
+  fetchOne: (spec: Spec, ctx: FetchContext) => Promise<Result>,
+  empty: (spec: Spec) => Result,
 ) {
   const perLane = fanOutStatus(ctx, specs.length)
   const settled = await Promise.allSettled(
     specs.map((spec, i) => fetchOne(spec, perLane[i]!)),
   )
-  const entries: (readonly [string, Result])[] = []
-  for (const result of settled) {
+  const byLane = new Map<string, Result>()
+  specs.forEach((spec, i) => {
+    const result = settled[i]!
     if (result.status === 'fulfilled') {
-      entries.push(result.value)
-    } else if (!ctx.isStale() && !isAbortException(result.reason)) {
-      console.error(
-        `${label}: one lane failed, the rest still draw`,
-        result.reason,
-      )
+      byLane.set(spec.lane, result.value)
+    } else {
+      if (!ctx.isStale() && !isAbortException(result.reason)) {
+        console.error(
+          `${label}: one lane failed, the rest still draw`,
+          result.reason,
+        )
+      }
+      byLane.set(spec.lane, empty(spec))
     }
-  }
-  return new Map(entries)
+  })
+  return byLane
 }
 
 /**
  * A SECOND fetch on this display: one that runs off the lane frames the
- * ortholog fetch produced, asks per lane, and commits under the key its specs
- * were built at.
+ * ortholog fetch produced, asks per lane, and commits each lane under the key
+ * its own spec was built at.
  *
  * There are two of them and they differ only in what a lane asks for and where
  * the answer lands. Everything else here is a rule with a reason, and each was
@@ -117,12 +132,13 @@ async function fetchEachLane<Spec, Result>(
  *   its own: a lane refetch runs over lanes that are already drawn, so
  *   `displayPhase` is `ready` and this reports through the corner progress chip
  *   instead of the scrim.
- * - **`prepare` answers only "is there anything to fetch".** Whether the
- *   committed result already answers these specs is the skeleton's key gate,
- *   stamped at commit and overridden on a reload — so neither pair needs a
- *   `reload()` of its own. Spelling that comparison in `prepare` instead is the
- *   dead Retry this display shipped once and `installFetch` exists to make
- *   unspellable.
+ * - **The freshness gate is per lane**, in the skeleton's predicate form: a run
+ *   asks only the lanes whose held result was fetched under another key, so a
+ *   pan that moves one lane's quantized window costs one RPC at 44 lanes
+ *   rather than 44, and the other lanes' genes keep their identity. The
+ *   compare is the skeleton's, not `prepare`'s, so a reload overrides it — the
+ *   dead Retry this display shipped once — and a run the override lets through
+ *   with nothing stale re-reads every lane, which is what a Retry asks for.
  * - **No `contract`**: both are second fetches on a display whose global
  *   foundation already installed the two display-contract checks.
  * - **`setError` is a noop.** A lane's extra records are an enhancement over
@@ -130,26 +146,22 @@ async function fetchEachLane<Spec, Result>(
  *   the error slot the ortholog fetch owns — least of all through the clear it
  *   would do at the start of every run.
  */
-function installLaneFetch<Spec, Result>(
+function installLaneFetch<Spec extends LaneFetchSpec, Result>(
   self: MultiWaySyntenyDisplayModel,
   {
     name,
     fetchSpecs,
+    held,
     fetchOne,
-    loadedKey,
+    empty,
     commit,
   }: {
     name: string
-    fetchSpecs: () => { key: string; specs: Spec[] }
-    fetchOne: (
-      spec: Spec,
-      ctx: FetchContext,
-    ) => Promise<readonly [string, Result]>
-    loadedKey: () => string | undefined
-    commit: (
-      byLane: Map<string, Result>,
-      prepared: { key: string; specs: Spec[] },
-    ) => void
+    fetchSpecs: () => Spec[]
+    held: () => ReadonlyMap<string, { key: string }> | undefined
+    fetchOne: (spec: Spec, ctx: FetchContext) => Promise<Result>
+    empty: (spec: Spec) => Result
+    commit: (byLane: Map<string, Result>, specs: Spec[]) => void
   },
 ) {
   installFetch(self, {
@@ -158,16 +170,22 @@ function installLaneFetch<Spec, Result>(
     report: { statusWindow: self.statusWindow },
     gate: () => !self.isMinimized,
     prepare: () => {
-      const { key, specs } = fetchSpecs()
-      return specs.length > 0 ? { key, specs } : undefined
+      const specs = fetchSpecs()
+      return specs.length > 0
+        ? { specs, stale: staleLaneSpecs(specs, held()) }
+        : undefined
     },
-    fetchKey: ({ key }) => key,
-    // the display's own stamp rather than the skeleton's, so `dataSuperseded`
-    // reads the same key the gate compares
-    loadedKey,
-    run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
-    commit: (byLane, prepared) => {
-      commit(byLane, prepared)
+    heldAnswers: ({ stale }) => stale.length === 0,
+    run: ({ specs, stale }, ctx) =>
+      fetchEachLane(
+        name,
+        stale.length > 0 ? stale : specs,
+        ctx,
+        fetchOne,
+        empty,
+      ),
+    commit: (byLane, { specs }) => {
+      commit(byLane, specs)
     },
     setError: () => {},
   })
@@ -239,6 +257,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWayClearHoverOnLaneRelayout',
   })
   installLaneFrameDecision(self)
+  installLodTierInfoFetch(self, {
+    onHeader: header => {
+      self.setStarAnchor(starAnchorOf(header))
+    },
+  })
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
     delay: 1000,
@@ -250,44 +273,44 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
-    loadedKey: () => self.laneGenesKey,
+    held: () => self.laneGenes,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
-        regions: await laneRegions(
-          getSession(self),
-          spec.assemblyName,
-          spec.regions,
-        ),
+        regions: await laneRegions(getSession(self), spec.lane, spec.regions),
       })
-      return [spec.assemblyName, laneGeneFeatures(features)] as const
+      return { key: spec.key, genes: laneGeneFeatures(features) }
     },
-    commit: (genes, { key, specs }) => {
+    empty: spec => ({ key: spec.key, genes: [] }),
+    commit: (genes, specs) => {
       // the anchor's spec exists as soon as the view does, so a commit covers
       // a mate lane only once the ortholog fetch has framed one
-      self.setLaneGenes(genes, key, specs.length > 1)
+      self.setLaneGenes(genes, specs.length > 1)
     },
   })
 
   // The third, for alignment-level sources: the direct records between each
   // ADJACENT mate-lane pair, out of the same all-vs-all track. The specs exist
-  // only when the source names no genes, so a gene table never issues these.
+  // only when the source names no genes, so a gene table never issues these,
+  // and not for a star that announced its anchor, whose pairs `pairLinks`
+  // composes instead.
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
-    loadedKey: () => self.laneLinksKey,
+    held: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
-      const features = await ctx.callRpc('CoreGetFeatures', {
+      const links = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,
         regions: await laneRegions(getSession(self), spec.region.assemblyName, [
           spec.region,
         ]),
-        opts: { targetAssemblyName: spec.lowerAssembly },
+        opts: { targetAssemblyName: spec.lowerAssembly, lodMode: spec.lodTier },
       })
-      return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
+      return { key: spec.key, links }
     },
-    commit: (links, { key }) => {
-      self.setLaneLinks(links, key)
+    empty: spec => ({ key: spec.key, links: [] }),
+    commit: links => {
+      self.setLaneLinks(links)
     },
   })
 }

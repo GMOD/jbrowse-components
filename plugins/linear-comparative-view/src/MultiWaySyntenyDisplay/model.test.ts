@@ -1,9 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
+import { staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
@@ -27,14 +28,21 @@ test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
   // the harness mounts no canvas; the paint half of loading is the mixin's
   display.markCanvasDrawn()
-  expect(display.laneGenesFetchSpecs.specs.length).toBeGreaterThan(0)
+  const [anchor] = display.laneGenesFetchSpecs
+  expect(anchor).toBeDefined()
   expect(display.displayPhase).toBe('loading')
 
-  display.setLaneGenes(new Map(), display.laneGenesFetchSpecs.key, false)
+  display.setLaneGenes(
+    new Map([[anchor!.lane, { key: anchor!.key, genes: [] }]]),
+    false,
+  )
   expect(display.displayPhase).toBe('ready')
 
   // the pan's refetch: the lanes are already drawn, and the phase says so
-  display.setLaneGenes(new Map(), 'a-later-window', false)
+  display.setLaneGenes(
+    new Map([[anchor!.lane, { key: 'a-later-window', genes: [] }]]),
+    false,
+  )
   expect(display.displayPhase).toBe('ready')
 })
 
@@ -45,16 +53,12 @@ test('the lane fetch is part of loading only until it first lands', () => {
 // mate lane, which the fetch states off its own spec list.
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
-  display.setLaneGenes(new Map(), 'volvox:ctgA:0-1000', false)
+  display.setLaneGenes(new Map(), false)
   expect(display.laneGenesCoverMates).toBe(false)
-  display.setLaneGenes(
-    new Map(),
-    'volvox:ctgA:0-1000;volvox_random:ctgB:0-2048',
-    true,
-  )
+  display.setLaneGenes(new Map(), true)
   expect(display.laneGenesCoverMates).toBe(true)
   // covered once is covered: a later anchor-only refetch does not lower it
-  display.setLaneGenes(new Map(), 'volvox:ctgA:500-1500', false)
+  display.setLaneGenes(new Map(), false)
   expect(display.laneGenesCoverMates).toBe(true)
 })
 
@@ -107,7 +111,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     ]),
   )
   expect([...display.rowFrames.values()].every(Boolean)).toBe(true)
-  expect(display.laneLinksFetchSpecs.specs).toEqual([])
+  expect(display.laneLinksFetchSpecs).toEqual([])
 
   display.setFeatures([
     nameless('f1', 'volvox_random'),
@@ -121,10 +125,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     ]),
   )
   expect(
-    display.laneLinksFetchSpecs.specs.map(s => [
-      s.upperAssembly,
-      s.lowerAssembly,
-    ]),
+    display.laneLinksFetchSpecs.map(s => [s.upperAssembly, s.lowerAssembly]),
   ).toEqual([['volvox_random', 'volvox_ins']])
 })
 
@@ -468,8 +469,15 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
     type: 'gene',
   })
   display.setLaneGenes(
-    new Map([['volvox', [new LaneGene(gene)]]]),
-    display.laneGenesFetchSpecs.key,
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: [new LaneGene(gene)],
+        },
+      ],
+    ]),
     false,
   )
   expect(display.laneStack).toBe(stack)
@@ -479,4 +487,377 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
   expect(display.laneGlyphCells).not.toBe(glyphs)
   expect(display.laneStack.lanes[0]!.hasAnnotation).toBe(true)
   stop()
+})
+
+const decisionOn = (refName: string, pivotLaneBp: number) => ({
+  refName,
+  flipped: false,
+  rung: 1,
+  pivotAnchor: { refName: 'ctgA', coord: 200 },
+  pivotLaneBp,
+  fitMin: pivotLaneBp - 100,
+  fitMax: pivotLaneBp + 100,
+  alsoOn: [],
+  pinned: false,
+})
+
+const mateRecord = (id: string, mateAssembly: string, name?: string) =>
+  new SimpleFeature({
+    uniqueId: id,
+    name,
+    refName: 'ctgA',
+    start: 100,
+    end: 300,
+    strand: 1,
+    mate: { assemblyName: mateAssembly, refName: 'ctgB', start: 100, end: 300 },
+  })
+
+const menuLabels = (display: ReturnType<typeof createDisplay>) =>
+  display.trackMenuItems().map(i => ('label' in i ? i.label : undefined))
+
+// polled, not `when`: a recorded RPC call is not an observable
+async function until(condition: () => boolean) {
+  for (let i = 0; i < 400 && !condition(); i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(condition()).toBe(true)
+}
+
+// The ortholog fetch asked an indexed PIF for its fine tier at every zoom, so
+// a whole-chromosome window was a genome-wide fine fetch. The tier is
+// resolved here off the settled zoom and rides the fetch key, the way the
+// synteny view, the dotplot and LGVSyntenyDisplay already do it.
+describe('the level-of-detail tier', () => {
+  test('rides the fetch key and offers its menu on a tiered adapter', () => {
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
+    })
+    expect(display.hasLodCapableAdapter).toBe(true)
+    expect(display.lodTier).toBe('fine')
+    const before = display.currentFetchKey
+    expect(before).toContain('|fine|')
+
+    display.setLodMode('coarse')
+    expect(display.lodTier).toBe('coarse')
+    expect(display.currentFetchKey).not.toBe(before)
+    expect(display.currentFetchKey).toContain('|coarse|')
+    expect(menuLabels(display)).toContain('Level of detail')
+  })
+
+  test('a file with no coarse tier resolves fine under a pinned coarse', () => {
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
+    })
+    display.setLodMode('coarse')
+    display.setLodTierInfo({ hasCoarseTier: false })
+    expect(display.lodTier).toBe('fine')
+  })
+
+  test('a gene table has no tiers: no menu item, and a mode change moves nothing', () => {
+    const display = createDisplay()
+    expect(display.hasLodCapableAdapter).toBe(false)
+    expect(menuLabels(display)).not.toContain('Level of detail')
+    const before = display.currentFetchKey
+    display.setLodMode('coarse')
+    expect(display.lodTier).toBe('fine')
+    expect(display.currentFetchKey).toBe(before)
+  })
+
+  test('the ortholog fetch and the link fetch pass the tier, and the header is read once', async () => {
+    const calls: { name: string; args: Record<string, unknown> }[] = []
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
+      rpc: async (name, args) => {
+        calls.push({ name, args })
+        return name === 'CoreGetInfo'
+          ? { hasCoarseTier: true, coarseGap: 10000 }
+          : []
+      },
+    })
+    display.setLodMode('coarse')
+    // the anchor's own gene fetch carries no opts at all
+    const opts = (call: { args: Record<string, unknown> }) =>
+      (call.args.opts ?? {}) as {
+        lodMode?: string
+        targetAssemblyName?: string
+      }
+    await until(() => calls.some(c => c.name === 'CoreGetFeatures'))
+    expect(opts(calls.find(c => c.name === 'CoreGetFeatures')!).lodMode).toBe(
+      'coarse',
+    )
+    await when(() => display.lodTierInfo !== undefined, { timeout: 5000 })
+    expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
+
+    // the per-pair link fetch, once the anchor fetch has framed two lanes
+    await when(() => display.features !== undefined, { timeout: 5000 })
+    display.setFeatures([
+      mateRecord('r1', 'volvox_random'),
+      mateRecord('r2', 'volvox_ins'),
+    ])
+    display.setLaneFrames(
+      0,
+      new Map([
+        ['volvox_random', decisionOn('ctgB', 200)],
+        ['volvox_ins', decisionOn('ctgB', 200)],
+      ]),
+    )
+    expect(display.laneLinksFetchSpecs.map(s => s.lodTier)).toEqual(['coarse'])
+    const linkCall = () =>
+      calls.find(
+        c =>
+          c.name === 'CoreGetFeatures' &&
+          opts(c).targetAssemblyName === 'volvox_ins',
+      )
+    await until(() => linkCall() !== undefined)
+    expect(opts(linkCall()!).lodMode).toBe('coarse')
+  })
+})
+
+// `laneGenesFetchSpecs` folded every lane into one key and the fetch reissued
+// every spec when it moved, so at 44 lanes a pan that moved one lane's
+// quantized window cost 44 tabix RPCs and a commit that waited on all of them.
+test('one lane’s window change refetches that lane alone', async () => {
+  const calls: Record<string, unknown>[] = []
+  const { display } = createDisplayWithSession({
+    geneTracks: [
+      { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random_genes', assemblyNames: ['volvox_random'] },
+    ],
+    rpc: async (name, args) => {
+      if (name === 'CoreGetFeatures') {
+        calls.push(args)
+      }
+      return []
+    },
+  })
+  const geneCalls = () =>
+    calls.filter(
+      args =>
+        (args.adapterConfig as { type: string }).type === 'Gff3TabixAdapter',
+    )
+  const laneOf = (args: Record<string, unknown>) =>
+    (args.regions as { assemblyName: string }[])[0]!.assemblyName
+
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', decisionOn('ctgB', 200)]]),
+  )
+  expect(display.laneGenesFetchSpecs.map(s => s.lane)).toEqual([
+    'volvox',
+    'volvox_random',
+  ])
+  await when(() => display.laneGenes?.has('volvox_random') ?? false, {
+    timeout: 5000,
+  })
+  expect(display.dataSuperseded).toBe(false)
+  const anchorGenes = display.laneGenes!.get('volvox')
+  const mateGenes = display.laneGenes!.get('volvox_random')
+  const issued = geneCalls().length
+
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', decisionOn('ctgB', 100200)]]),
+  )
+  expect(display.dataSuperseded).toBe(true)
+  await when(() => !display.dataSuperseded, { timeout: 5000 })
+  const since = geneCalls().slice(issued)
+  expect(since.map(laneOf)).toEqual(['volvox_random'])
+  expect(display.laneGenes!.get('volvox')).toBe(anchorGenes)
+  expect(display.laneGenes!.get('volvox_random')).not.toBe(mateGenes)
+  expect(display.laneGenes!.get('volvox_random')!.key).toBe(
+    display.laneGenesFetchSpecs[1]!.key,
+  )
+})
+
+// `laneGlyphCells` resolved the `color` and `utrColor` jexl slots per gene on
+// every lane whenever the stack changed, which is every settle. The colour
+// depends on the feature, the config and the selection, never on the frame.
+test('a settle rebuilds the lane cells against the same colour map', () => {
+  const display = createDisplay()
+  display.setFeatures([mateRecord('own1', 'volvox_random', 'gene1')])
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'ctgA',
+    start: 120,
+    end: 280,
+    type: 'gene',
+  })
+  display.setLaneGenes(
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: [new LaneGene(gene)],
+        },
+      ],
+    ]),
+    false,
+  )
+  const stop = autorun(() => [display.glyphColors, display.laneGlyphCells])
+  const colors = display.glyphColors
+  const cells = display.laneGlyphCells
+  expect(colors.color.has('own1')).toBe(true)
+  expect(colors.color.has('g')).toBe(true)
+  expect(colors.utrColor.has('g')).toBe(true)
+
+  display.setLaneFrames(
+    37,
+    new Map([['volvox_random', decisionOn('ctgB', 200)]]),
+  )
+  expect(display.laneGlyphCells).not.toBe(cells)
+  expect(display.glyphColors).toBe(colors)
+
+  // a gene commit is what the map is keyed on
+  display.setLaneGenes(
+    new Map([['volvox', { key: 'later', genes: [] }]]),
+    false,
+  )
+  expect(display.glyphColors).not.toBe(colors)
+  stop()
+})
+
+// `laneGeneAdapters` walked `session.tracks` while the "Open assembly" hop
+// walked `allSessionTracks`, so a lane annotated through a connection read
+// "no annotation" although the hop brought the track along.
+test('a lane annotated through a connection has an annotation', () => {
+  const { display } = createDisplayWithSession({
+    connectionGeneTracks: [
+      { trackId: 'volvox_random_genes', assemblyNames: ['volvox_random'] },
+    ],
+  })
+  display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
+  expect([...display.laneGeneAdapters.keys()]).toEqual([
+    'volvox',
+    'volvox_random',
+  ])
+  expect(display.laneGeneAdapters.get('volvox_random')).toMatchObject({
+    type: 'Gff3TabixAdapter',
+  })
+  expect(
+    display.laneStack.lanes.find(l => l.assemblyName === 'volvox_random')
+      ?.hasAnnotation,
+  ).toBe(true)
+})
+
+// A star of pairwise alignments — the HPRC vs-GRCh38 PAF, a
+// MultiPairwiseSyntenyAdapter — holds no mate-vs-mate rows, so the second
+// gutter down had nothing to draw. Wherever two lanes cover one stretch of the
+// anchor, the link between them is composed through it.
+describe('a star source composes its adjacent-pair links through the anchor', () => {
+  const ribbonsBetweenMates = (display: ReturnType<typeof createDisplay>) => {
+    const { cells } = display.ribbonGeometry
+    const cell = cells.get('ribbons:1')!
+    if (cell.kind !== 'ribbons') {
+      throw new Error('ribbons:1 is not a ribbon cell')
+    }
+    return cell.data
+  }
+  const starRecords = () => [
+    new SimpleFeature({
+      uniqueId: 'r1',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+    new SimpleFeature({
+      uniqueId: 'r2',
+      refName: 'ctgA',
+      start: 200,
+      end: 400,
+      strand: -1,
+      mate: {
+        assemblyName: 'volvox_ins',
+        refName: 'ctgC',
+        start: 1100,
+        end: 1300,
+      },
+    }),
+  ]
+  const frames = new Map([
+    ['volvox_random', decisionOn('ctgB', 200)],
+    ['volvox_ins', decisionOn('ctgC', 1200)],
+  ])
+  const pair = 'volvox_random|volvox_ins'
+
+  test('once the pair fetch has come back empty', () => {
+    const display = createDisplay()
+    display.setFeatures(starRecords())
+    display.setLaneFrames(0, frames)
+    expect(display.laneLinksFetchSpecs.map(s => s.lane)).toEqual([pair])
+    // nothing composed until the file has been asked
+    expect(display.pairLinks.has(pair)).toBe(false)
+
+    display.setLaneLinks(
+      new Map([
+        [pair, { key: display.laneLinksFetchSpecs[0]!.key, links: [] }],
+      ]),
+    )
+    const composed = display.pairLinks.get(pair)!.links
+    expect(composed).toHaveLength(1)
+    const [link] = composed
+    // the anchor overlap is ctgA:200-300; forward in the upper lane, reversed
+    // in the lower, so the link runs crosswise and the lower span is the
+    // record's far end
+    expect(link!.get('refName')).toBe('ctgB')
+    expect([link!.get('start'), link!.get('end')]).toEqual([200, 300])
+    expect(link!.get('strand')).toBe(-1)
+    expect(link!.get('mate')).toEqual({
+      assemblyName: 'volvox_ins',
+      refName: 'ctgC',
+      start: 1200,
+      end: 1300,
+    })
+
+    const data = ribbonsBetweenMates(display)
+    expect(data.instanceCount).toBe(1)
+    const lower = display.laneStack.lanes[2]!
+    const [x1, x2] = lower.spanOf('ctgC', 1200, 1300)!
+    expect(Math.min(data.bp3[0]!, data.bp4[0]!)).toBe(Math.min(x1, x2))
+    expect(Math.max(data.bp3[0]!, data.bp4[0]!)).toBe(Math.max(x1, x2))
+    // the composed links owe the export nothing: the pair is fetched
+    expect(
+      staleLaneSpecs(display.laneLinksFetchSpecs, display.laneLinks),
+    ).toEqual([])
+  })
+
+  test('without asking, once the header has named the anchor', () => {
+    const display = createDisplay()
+    display.setFeatures(starRecords())
+    display.setLaneFrames(0, frames)
+    display.setStarAnchor('volvox')
+    expect(display.laneLinksFetchSpecs).toEqual([])
+    expect(display.pairLinks.get(pair)!.links).toHaveLength(1)
+    expect(ribbonsBetweenMates(display).instanceCount).toBe(1)
+  })
+
+  test('a pair the file answers keeps its own records', () => {
+    const display = createDisplay()
+    display.setFeatures(starRecords())
+    display.setLaneFrames(0, frames)
+    const direct = new SimpleFeature({
+      uniqueId: 'direct',
+      refName: 'ctgB',
+      start: 150,
+      end: 250,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_ins',
+        refName: 'ctgC',
+        start: 1150,
+        end: 1250,
+      },
+    })
+    display.setLaneLinks(new Map([[pair, { key: 'k', links: [direct] }]]))
+    expect(display.pairLinks.get(pair)!.links).toEqual([direct])
+  })
 })

@@ -54,7 +54,7 @@ async function stackedDisplay(links: Feature[]) {
     ...orthologFeatures('g2', 400, 500),
     ...orthologFeatures('g3', 700, 800),
   ])
-  display.setLaneLinks(new Map([[LINK_PAIR, links]]), 'window-1')
+  display.setLaneLinks(new Map([[LINK_PAIR, { key: 'window-1', links }]]))
   return display
 }
 
@@ -90,10 +90,16 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
     new Map([
       [
         LINK_PAIR,
-        [link('L0', 10, 60), link('L1', 110, 210), link('L2', 410, 510)],
+        {
+          key: 'window-2',
+          links: [
+            link('L0', 10, 60),
+            link('L1', 110, 210),
+            link('L2', 410, 510),
+          ],
+        },
       ],
     ]),
-    'window-2',
   )
   expect(viewportOf(display)).toEqual(viewport)
   // what the stored index would otherwise light up, name and open
@@ -135,7 +141,7 @@ test('a lane-genes commit keeps a direct-link hover', async () => {
   hoverDirectLink(display)
   expect(display.hoverTarget).toBeDefined()
 
-  display.setLaneGenes(new Map(), 'window-2', true)
+  display.setLaneGenes(new Map(), true)
   expect(display.hoverTarget).toBeDefined()
   expect(display.hoverTarget?.feature.id()).toBe('L1')
 })
