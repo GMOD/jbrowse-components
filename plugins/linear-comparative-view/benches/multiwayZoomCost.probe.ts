@@ -8,15 +8,21 @@
 //
 // Times the pure builders the display's getters call — the lane decision, the
 // lane stack, the ribbon, tick, band and glyph cells — on the tutorial
-// session's own data (grape chr11 around 11:822,000 at 1588 px), over twelve
-// zoom-out steps of 1.35x. The genes are re-wrapped as SimpleFeature the way
-// the RPC hands them to the main thread, so an attribute read costs what it
-// costs there. Network time is excluded and every builder is the minimum of
-// five runs; the bracketed glyph split re-times its pieces on their own, with
-// `shape` the uncached walk `LaneGene` now runs once per feature.
+// session's own data (grape chr11 around 11:822,000 at 1588 px), over nineteen
+// zoom-out steps of 1.35x — out to 19.5 Mb, which is the whole chromosome and
+// where the quadratic terms show. The genes are re-wrapped as SimpleFeature
+// the way the RPC hands them to the main thread, so an attribute read costs
+// what it costs there. Network time is excluded and every builder is the
+// minimum of five runs; the bracketed glyph split re-times its pieces on their
+// own, with `shape` the uncached walk `LaneGene` now runs once per feature.
 //
 // 2026-08-27, before and after `LaneGene` cached the shape: at 1430 on-canvas
 // genes the glyph cells went 23 ms -> 11 ms and the px projection 12.8 -> 1.9.
+//
+// 2026-09-05, before and after `annotatedSpans` indexed the placement/gene overlap:
+// at the whole chromosome (660 groups, 5009 on-canvas genes) the glyph cells
+// went 66 ms -> 34 ms, the cover scan itself 41 -> 1.6 over 3.1M pairs. The
+// twelve-step range this probe used to stop at only reached 11 -> 9.5.
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -176,7 +182,7 @@ function ms(f: () => void) {
 let previous = new Map<string, LaneDecision | undefined>()
 let span = 88_000
 const geneCache = new Map<string, LaneGene[]>()
-for (let step = 0; step < 12; step++, span *= 1.35) {
+for (let step = 0; step < 19; step++, span *= 1.35) {
   const start = CENTER - span / 2
   const end = CENTER + span / 2
   const visible = groups.filter(
