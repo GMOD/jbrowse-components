@@ -7,6 +7,7 @@ import {
   drawnFeatureContext,
   drawnFeaturesByRow,
   findTopDrawnFeatureInRow,
+  regionWithDeltas,
 } from './rendering/featurePainting.ts'
 import { paintedSpanContainsBp, rowBand } from './rendering/rowBand.ts'
 
@@ -144,11 +145,31 @@ export function createDrawnFeaturesByRowIndex() {
   }
 }
 
+type PointerBase = ReturnType<HitTestView['pxToBp']>
+
 /**
- * The feature under a display-relative pixel: the rows whose painted band
- * covers it, genomic bp from the view, then the first feature on one of those
- * rows whose PAINTED block covers the bp. Undefined over the sidebar, off-row,
- * out-of-bounds, or over a gap.
+ * The view's answer for a display-relative pixel, or undefined where this
+ * display answers nothing: over the tree sidebar, which overlays it and owns
+ * its own menu, and in the inter-region gutter, where there is no base to name.
+ *
+ * The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the latter
+ * is where labels are *drawn* from, while the resize handle sitting in the 4px
+ * past it is the sidebar's interactive edge, and a hit under the handle would
+ * fight the drag. Same bound the wiggle family hit-tests against, and the same
+ * one the crosshair's guide stops at.
+ */
+function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
+  if (mouseX < treeSidebarRightEdge(self)) {
+    return undefined
+  }
+  const p = self.view.pxToBp(mouseX)
+  return p.oob ? undefined : p
+}
+
+/**
+ * The feature at a resolved pointer base: the rows whose painted band covers
+ * `mouseY`, then the first feature on one of those rows whose PAINTED block
+ * covers the bp. Undefined off-row or over a gap.
  *
  * The row comes from `rowsUnderPointer`, the shared rule maf, variants and
  * wiggle read their stacks with, rather than `mouseY / rowHeight`. Two things
@@ -158,26 +179,13 @@ export function createDrawnFeaturesByRowIndex() {
  * a sub-pixel row is painted at MIN_DRAWN_ROW_PX, so several rows share one
  * drawn pixel: the walk from `nearest` down to `lowest` finds whichever of them
  * actually put a block there, which is the block the reader can see.
- *
- * The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the latter
- * is where labels are *drawn* from, while the resize handle sitting in the 4px
- * past it is the sidebar's interactive edge, and a hit under the handle would
- * fight the drag. Same bound the wiggle family hit-tests against, and the same
- * one the crosshair's guide stops at.
  */
-export function featureAtPixel(
+function featureAtBase(
   self: MultiRowHitTestSlice,
-  mouseX: number,
+  p: PointerBase,
   mouseY: number,
 ): MultiRowHit | undefined {
-  if (mouseX < treeSidebarRightEdge(self)) {
-    return undefined
-  }
   const { view } = self
-  const p = view.pxToBp(mouseX)
-  if (p.oob) {
-    return undefined
-  }
   const region = self.drawnRegionData.get(p.index)
   if (!region) {
     return undefined
@@ -189,13 +197,8 @@ export function featureAtPixel(
   // the base drawn under the cursor, which the containment test compares
   // against; coord0 names the one to its right when reversed
   const bp = basePaintedAt(p, p.offset)
-  const {
-    featureStarts,
-    featureEnds,
-    featureNames,
-    featureIds,
-    featureDeltas,
-  } = region
+  const { featureStarts, featureEnds, featureNames, featureIds } = region
+  const deltas = regionWithDeltas(region)?.featureDeltas
   const rowHeight = self.effectiveRowHeight
   const { nearest, lowest } = rowsUnderPointer(
     mouseY,
@@ -227,18 +230,22 @@ export function featureAtPixel(
           refName: p.refName,
           start: featureStarts[i]!,
           end: featureEnds[i]!,
-          // the length agreement `regionWithDeltas` makes, for the same reason:
-          // `featureDeltas` is EMPTY rather than zero-filled when the
-          // `lengthField` slot is unset
-          delta:
-            featureDeltas.length === featureStarts.length
-              ? featureDeltas[i]!
-              : undefined,
+          delta: deltas?.[i],
         }
       }
     }
   }
   return undefined
+}
+
+/** The feature under a display-relative pixel, or undefined where none is. */
+export function featureAtPixel(
+  self: MultiRowHitTestSlice,
+  mouseX: number,
+  mouseY: number,
+): MultiRowHit | undefined {
+  const p = pointerBase(self, mouseX)
+  return p && featureAtBase(self, p, mouseY)
 }
 
 /**
@@ -247,10 +254,8 @@ export function featureAtPixel(
  * and the feature there when the click landed on one.
  *
  * Undefined wherever no menu should open, which is what the component needs in
- * order to decide whether to `preventDefault` — over the tree sidebar, which
- * overlays this display and owns its own menu, and in the inter-region gutter,
- * where there is no base to name. Beside `featureAtPixel` because it is the
- * same question about the same pixel; spelled out in the component it
+ * order to decide whether to `preventDefault`. Beside `featureAtPixel` because
+ * it is the same question about the same pixel; spelled out in the component it
  * re-derived `pxToBp`, the sidebar bound and the painted base.
  */
 export function contextTargetAtPixel(
@@ -258,20 +263,16 @@ export function contextTargetAtPixel(
   mouseX: number,
   mouseY: number,
 ) {
-  if (mouseX < treeSidebarRightEdge(self)) {
-    return undefined
-  }
-  const p = self.view.pxToBp(mouseX)
-  if (p.oob) {
-    return undefined
-  }
-  return {
-    refName: p.refName,
-    // anchors "sort rows by color here" on the clicked column, so it must be
-    // the base drawn there (coord0 is off by one when reversed)
-    pos: basePaintedAt(p, p.offset),
-    hit: featureAtPixel(self, mouseX, mouseY),
-  }
+  const p = pointerBase(self, mouseX)
+  return (
+    p && {
+      refName: p.refName,
+      // anchors "sort rows by color here" on the clicked column, so it must be
+      // the base drawn there (coord0 is off by one when reversed)
+      pos: basePaintedAt(p, p.offset),
+      hit: featureAtBase(self, p, mouseY),
+    }
+  )
 }
 
 /**

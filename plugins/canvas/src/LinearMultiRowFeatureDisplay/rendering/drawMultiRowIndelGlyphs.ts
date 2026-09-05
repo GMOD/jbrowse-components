@@ -12,7 +12,11 @@ import {
   pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
+import {
+  drawnFeatureContext,
+  forEachDrawnFeature,
+  regionWithDeltas,
+} from './featurePainting.ts'
 import { rowBand } from './rowBand.ts'
 
 import type {
@@ -58,18 +62,6 @@ function makeLabelColorResolver() {
     }
     return text
   }
-}
-
-// The region's data if it carries a delta per feature, else undefined (nothing to
-// annotate, so the block is skipped entirely). Named because the test it performs
-// is not the obvious one: `featureDeltas` is EMPTY, not zero-filled, when the
-// `lengthField` slot is unset — see `featureDeltas` in the RPC result type — so
-// "has deltas" is a length agreement with `featureStarts`, and the per-feature
-// `featureDeltas[i]!` reads below are only sound once it holds.
-function regionWithDeltas(data: MultiRowRegionData | undefined) {
-  return data && data.featureDeltas.length === data.featureStarts.length
-    ? data
-    : undefined
 }
 
 /**

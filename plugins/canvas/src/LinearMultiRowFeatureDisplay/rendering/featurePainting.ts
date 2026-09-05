@@ -3,6 +3,19 @@ import type {
   MultiRowRegionData,
 } from './multiRowRenderingBackendTypes.ts'
 
+// The region's data if it carries a delta per feature, else undefined (nothing
+// to annotate, so the indel overlay skips the block entirely and the hit test
+// reports no delta). Named because the test it performs is not the obvious one:
+// `featureDeltas` is EMPTY, not zero-filled, when the `lengthField` slot is
+// unset — see `featureDeltas` in the RPC result type — so "has deltas" is a
+// length agreement with `featureStarts`, and every per-feature
+// `featureDeltas[i]!` read is only sound once it holds.
+export function regionWithDeltas(data: MultiRowRegionData | undefined) {
+  return data && data.featureDeltas.length === data.featureStarts.length
+    ? data
+    : undefined
+}
+
 // Resolve each region-local partition value to its global display-row index
 // (undefined = a row not currently shown), so the per-feature lookup in the hot
 // loop is an array index rather than a string-keyed Map.get.
