@@ -102,10 +102,10 @@ boundary did the hiding.**
 
 - **Fixed mode's resolved stage can be `isoforms` with `maxIsoforms:
   undefined`** — the rung packing the base layout because no count fit. Both
-  consumers read that correctly already: `renderedShowDescriptions` treats a
-  non-fit `isoforms` rung as descriptions-kept, which is what the base pack did,
-  and `geneGlyphIsoformCap` reads undefined, so the chip and the badges stay
-  quiet about a trim that did not happen.
+  consumers read that correctly already: `renderedShowDescriptions` reads the
+  reservation the rung declared, which in fixed mode keeps descriptions — what
+  the base pack did — and `geneGlyphIsoformCap` reads undefined, so the chip and
+  the badges stay quiet about a trim that did not happen.
 
 - **`truncatedFeatureCount` narrows in fixed mode too.** Its own rationale
   already said a buffer-inclusive count lies — it is surfaced as "N not shown

@@ -45,9 +45,14 @@ Two asymmetries live in that predicate and are easy to "simplify" away:
   `showLabels: 'off'` + `showDescriptions: true` pair.
 - A **subfeature label is ungated**, because it is baked in the worker and there
   is nothing main-thread to gate. `collapsed` mode suppresses it by forcing
-  `subfeatureLabels: 'none'` in `rpcProps()` instead, which is why that
+  `effectiveSubfeatureLabels` to `'none'` instead, which is why that
   substitution is there and not in the renderer.
+
+The rung that packed a layout says what it reserved (`FitRung.reserved`, read
+back as `fitStage.showLabels` / `showDescriptions` / `dropBelowLabelRows`);
+nothing re-derives that from the rung's name.
 
 `labelPositioning.test.ts` § "the reservation and the ink agree" pins the
 property across all four visibility combinations and every subset of the three
-labels.
+labels; `fitStageReservation.test.ts` pins the stage's flags to the pack the
+kept rung's layout came from, on every ladder shape.
