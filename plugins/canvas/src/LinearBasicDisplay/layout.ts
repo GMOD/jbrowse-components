@@ -1542,6 +1542,41 @@ function trimPreparedRef(
   return { trimPlan, bodies }
 }
 
+// Whitespace the name overhang can use, on the side(s) this feature points: the
+// min across the sides it occupies, so a feature spanning both directions must
+// clear on both. Infinity (no room measured) under the `all` policy.
+function availableOverhangRoomPx(
+  overhangRoom: PackPrep['overhangRoom'],
+  geom: FeatureGeometry,
+  id: string,
+) {
+  return overhangRoom
+    ? Math.min(
+        geom.hasNonReversed ? overhangRoom.rightRoom.get(id)! : Infinity,
+        geom.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
+      )
+    : Infinity
+}
+
+// The feature's span widened by its label overhang, so the packer keeps a kept
+// label off its neighbor's row. A reversed region overhangs toward lower bp
+// (widening the start); otherwise toward higher bp (widening the end).
+function overhangWidenedSpan(
+  startBp: number,
+  endBp: number,
+  overhangBp: number,
+  geom: FeatureGeometry,
+) {
+  return {
+    layoutStartBp: geom.hasReversed
+      ? Math.min(startBp, endBp - overhangBp)
+      : startBp,
+    layoutEndBp: geom.hasNonReversed
+      ? Math.max(endBp, startBp + overhangBp)
+      : endBp,
+  }
+}
+
 // Decide each feature's kept label lines at this `labelRoomFactor`, reserving
 // their row height and widening its layout span by the reserved label overhang.
 // Pure in `prep` and `trims`: it reads the shared geometry and returns fresh
@@ -1574,15 +1609,7 @@ function decideLabelReservations(
     const body = trims.bodies.get(id)
     const { bodyHeightPx, startBp, endBp } = body ?? geom
     const badgeWidthPx = body ? body.badgeWidthPx : 0
-    // Whitespace the name overhang can use, on the side(s) this feature points:
-    // the min across the sides it occupies so a feature spanning both directions
-    // must clear on both. Infinity (no room measured) under the `all` policy.
-    const availableRoomPx = overhangRoom
-      ? Math.min(
-          geom.hasNonReversed ? overhangRoom.rightRoom.get(id)! : Infinity,
-          geom.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
-        )
-      : Infinity
+    const availableRoomPx = availableOverhangRoomPx(overhangRoom, geom, id)
     // Does this feature have a name that the current flags would draw at all?
     // Both the keep decision and the dropped-name record hang off this one term,
     // so "dropped" can only ever mean "had a name and lost it" — spelling the
@@ -1616,16 +1643,7 @@ function decideLabelReservations(
     // line reserves the mode's resolved font size (labelFontPx) so compact rows
     // shrink with the smaller text the renderers draw.
     const labelLines = (keepName ? 1 : 0) + (keepDescription ? 1 : 0)
-    const ext: PackedExtent = {
-      layoutStartBp: startBp,
-      layoutEndBp: endBp,
-      height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
-    }
 
-    // Widen the layout span by the label overhang so the packer keeps a kept
-    // label off its neighbor's row. A reversed region overhangs toward lower bp
-    // (widen layoutStartBp); otherwise toward higher bp (widen layoutEndBp).
-    //
     // Deliberately NOT gated on the feature keeping a name or description line:
     // a subfeature label (a transcript name under its gene) is un-gated at draw
     // time — showLabels/showDescriptions govern only the feature's OWN name and
@@ -1644,16 +1662,10 @@ function decideLabelReservations(
           keepDescription,
         )
       : 0
-    if (overhangPx > 0) {
-      const labelBp = overhangPx * bpPerPx
-      if (geom.hasNonReversed) {
-        ext.layoutEndBp = Math.max(ext.layoutEndBp, startBp + labelBp)
-      }
-      if (geom.hasReversed) {
-        ext.layoutStartBp = Math.min(ext.layoutStartBp, endBp - labelBp)
-      }
-    }
-    packed.set(id, ext)
+    packed.set(id, {
+      ...overhangWidenedSpan(startBp, endBp, overhangPx * bpPerPx, geom),
+      height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
+    })
   }
   return { packed, droppedLabelIds }
 }
