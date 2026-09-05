@@ -147,8 +147,9 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  *
  * `channels` and `params` are projections, not copies: `channels` names which
  * of the region's arrays feed the shape's lanes, and `params` names which of
- * the render state's values reach the uniforms. Both run once per block per
- * frame, never per instance.
+ * the render state's values reach the uniforms — and which of the region's,
+ * for a value the payload carries rather than the frame (the variant matrix's
+ * column count). Both run once per block per frame, never per instance.
  */
 export function defineMark<
   TRegion,
@@ -158,19 +159,25 @@ export function defineMark<
 >(spec: {
   shape: MarkShape<TChannels, TParams>
   channels: (region: TRegion) => TChannels
-  params: (state: TState) => TParams
+  params: (state: TState, region: TRegion) => TParams
 }): Mark<TRegion, TState> {
   const { shape, channels, params } = spec
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     uniformByteSize: shape.uniformByteSize,
     drawRegion(hal, scratch, block, clip, region, state) {
-      shape.writeUniforms(scratch, clip, block, state, params(state))
+      shape.writeUniforms(scratch, clip, block, state, params(state, region))
       hal.writeUniforms(scratch)
       hal.drawPass(shape.pass.id, block.displayedRegionIndex)
     },
     paintBlock(ctx, region, block, state) {
-      shape.paintBlock(ctx, channels(region), block, state, params(state))
+      shape.paintBlock(
+        ctx,
+        channels(region),
+        block,
+        state,
+        params(state, region),
+      )
     },
     hitNearest: shape.hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) =>
@@ -178,7 +185,7 @@ export function defineMark<
             channels(region),
             block,
             state,
-            params(state),
+            params(state, region),
             xPx,
             yPx,
             candidates,

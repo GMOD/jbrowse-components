@@ -1,16 +1,18 @@
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
-import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import { VARIANT_MATRIX_MARKS } from './components/variantMatrixMarks.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { MatrixConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import type {
   MatrixRenderState,
+  VariantMatrixRenderBlock,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -21,6 +23,8 @@ interface MatrixRenderSvgModel
   referenceDrawingMode: string
   renderState: MatrixRenderState
   placedMatrixData: VariantMatrixUploadData | undefined
+  matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
+  matrixBlocks: VariantMatrixRenderBlock[]
   // only `left` is read here — the column origin the matrix is shifted to when
   // the content doesn't reach the left viewport edge
   columnGeometry: { left: number }
@@ -81,7 +85,13 @@ function VariantMatrixSvgBody({
               ctx.fillStyle = REFERENCE_COLOR
               ctx.fillRect(0, 0, matrixWidth, canvasHeight)
             }
-            drawVariantMatrixBlocks(ctx, placedMatrixData, renderState)
+            paintMarkBlocks(
+              ctx,
+              VARIANT_MATRIX_MARKS,
+              model.matrixRegions,
+              model.matrixBlocks,
+              renderState,
+            )
           }}
         />
       </g>

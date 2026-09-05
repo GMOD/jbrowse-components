@@ -1,4 +1,6 @@
-import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+
+export type { RenderBlock as VariantMatrixRenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface MatrixRenderState {
   canvasWidth: number
@@ -22,7 +24,7 @@ export interface VariantMatrixUploadData {
   numFeatures: number
 }
 
-export type VariantMatrixRenderingBackend = GlobalRenderingBackend<
+export type VariantMatrixRenderingBackend = PerRegionRenderingBackend<
   VariantMatrixUploadData,
   MatrixRenderState
 >

@@ -10,8 +10,8 @@ import type {
 } from './renderingBackendBase.ts'
 
 /**
- * Shared contract for monolithic GPU backends (HiC, LD, multi-variant
- * matrix) — displays with no region partitioning. One payload under the
+ * Shared contract for monolithic GPU backends (HiC, LD) — displays with no
+ * region partitioning. One payload under the
  * `data` key, one draw per frame. Render receives the data directly so
  * Canvas2D backends stay stateless; GPU backends use `upload` to push bytes
  * into a HAL buffer and ignore the `data` arg at render time.

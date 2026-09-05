@@ -10,6 +10,7 @@ import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type {
+  VariantMatrixRenderBlock,
   VariantMatrixRenderingBackend,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
@@ -121,6 +122,36 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * The matrix as the mark backend's region map: one payload under key
+         * 0, left out while it has no cells so the backend answers "nothing
+         * drawn" and the loading scrim stays over a blank canvas.
+         */
+        get matrixRegions(): ReadonlyMap<number, VariantMatrixUploadData> {
+          const data = self.placedMatrixData
+          return oneCell(0, data?.numCells ? data : undefined)
+        },
+        /**
+         * #getter
+         * The one block the mark backend draws: the whole canvas, spanning
+         * the column indices. A column is addressed by index rather than bp,
+         * so the block carries the clip and the payload's `numFeatures`
+         * carries the pitch.
+         */
+        get matrixBlocks(): VariantMatrixRenderBlock[] {
+          const { canvasWidth } = self
+          return [
+            {
+              displayedRegionIndex: 0,
+              start: 0,
+              end: self.placedMatrixData?.numFeatures ?? 0,
+              screenStartPx: 0,
+              screenEndPx: canvasWidth,
+              reversed: false,
+            },
+          ]
+        },
+        /**
+         * #getter
          * Column pitch and origin of the matrix in viewport pixels: `left` is
          * where the content starts when it doesn't reach the left viewport edge
          * (offsetPx < 0), `columnWidth` the per-column width the canvas lays out
@@ -215,15 +246,13 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: VariantMatrixRenderingBackend) {
           installUpload(self, backend, {
-            cells: () => oneCell('data', self.placedMatrixData),
-            // The backend answers "did real content reach the canvas", the same
-            // way a per-region `renderBlocks` does (ADR-009). It used to be this
-            // callback's answer, and "the placed data is here" was the wrong
-            // question: a payload with no cells paints nothing, and flipping
-            // `canvasDrawn` over it would let the loading scrim drop and the
-            // first snapshot catch a blank canvas.
+            cells: () => self.matrixRegions,
             render: b =>
-              b.render(self.placedMatrixData ?? null, self.renderState),
+              b.renderBlocks(
+                self.matrixBlocks,
+                self.matrixRegions,
+                self.renderState,
+              ),
           })
         },
       }))

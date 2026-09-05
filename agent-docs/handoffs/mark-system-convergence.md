@@ -1,6 +1,6 @@
 ---
 name: mark-system-convergence
-description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); what is left is two recorded prerequisites no consumer has pulled (bufferOf, params(state, region), now with the variant matrix display as a second would-be puller) and a coordination note for the MAF/alignments store work
+description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); the variant matrix display pulled params(state, region) and draws through a mark too; what is left is one recorded prerequisite no consumer has pulled (bufferOf) and a coordination note for the MAF/alignments store work, whose step 1 and step 2 have landed
 ---
 
 # Mark-system convergence handoff
@@ -13,7 +13,7 @@ never work. The rule is now stated in `packages/render-core/CLAUDE.md`
 §Upload; this file records what landed against it, what was declined, and what
 is still open.
 
-## Landed on main (nine commits, all fast-forwarded)
+## Landed on main (eleven commits, all fast-forwarded)
 
 - `a0856226cd`..`42bd8bfb1d` — cleanup batch: `MarkFrame` aliases
   `FrameDimensions`; core's `abgrToCssRgba` re-exports render-core's through
@@ -63,6 +63,21 @@ is still open.
   test-support pattern matched `testutils` but not `test-utils`, so the
   private `display-test-utils` harness was held at production strictness for
   its `@testing-library/react` import.
+- `LinearMultiSampleVariantMatrixDisplay` draws through a mark, and
+  `defineMark`'s `params` sees the region. `components/matrixCellMark.ts` is a
+  `MarkShape` over `variantMatrix.slang` (unchanged), `variantMatrixMarks.ts`
+  declares `VARIANT_MATRIX_MARKS` with `params: (state, data) => ({
+  numFeatures: data.numFeatures, ... })`, and the display hands
+  `createMarkBackend` one block spanning the canvas over `[0, numFeatures]`
+  (`matrixBlocks`) with the payload under key 0 (`matrixRegions`, left out
+  while it has no cells so `canvasDrawn` stays down over a blank canvas, as
+  the global backend's `false` did). No global mark backend was needed: a
+  matrix is one region whose x axis is a column index, and the per-region
+  backend's whole-canvas clip is a no-op on it. `GpuVariantMatrixRenderer`,
+  `Canvas2DVariantMatrixRenderer`, `variantMatrixShaders.ts` and
+  `VariantMatrixRenderer.ts` are gone; `variantMatrixMarks.test.ts` pins the
+  lanes, the uniforms and the painter geometry the old test pinned.
+  `GlobalRenderingBackend` is HiC's and LD's now.
 
 ## Declined during the review, do not re-propose
 
@@ -98,15 +113,9 @@ is still open.
 
 - `bufferOf` on `defineMark`: a mark registered but never uploaded, drawn off
   another mark's buffer via the HAL's existing `bufferPassId`.
-- `params(state, region)`: `writeUniforms` never sees the region, so a
-  per-region uniform (canvas rect's `outlineColor`) is unsayable. Second
-  would-be puller: `LinearMultiSampleVariantMatrixDisplay`, whose column
-  width is `canvasWidth / data.numFeatures`. It also draws one payload with
-  no bp axis through `GpuGlobalRenderingBackend`, so it needs a global mark
-  backend beside `createMarkBackend` too. Its renderer pair
-  (`GpuVariantMatrixRenderer` + `Canvas2DVariantMatrixRenderer`, ~160 lines)
-  is the last hand-written one in the plugin.
-- Even with both, canvas basic needs a conditional continuation draw off
+- `params(state, region)` is built (the matrix pulled it). Canvas rect's
+  per-region `outlineColor` can now be said; nothing has said it yet.
+- Even with `bufferOf`, canvas basic needs a conditional continuation draw off
   `canvasEdgeFlags`, a renderer-chosen chevron cap and a typed layer registry
   (`GpuCanvasFeatureRenderer.ts:168-186`); wiggle needs the pass chosen per
   region off `sources[0].renderingType` and a ramp texture upload per pass
@@ -116,9 +125,9 @@ is still open.
 ## Coordination: the MAF/alignments store work
 
 Another session generalized `DensityTierMixin` into `CoarseTierMixin` (step
-1, landed `0dc7cb37cc`..`d8621afe31` on 2026-09-05) and is moving MAF's detail
-rows onto the foundation store with the placed map as a projection (step 2).
-Told them: rebase onto main; step 2's "per-region memo
+1, `0dc7cb37cc`..`d8621afe31`) and moved MAF's detail rows onto the foundation
+store (step 2, `06952f2574`), both on 2026-09-05; its handoff closed with
+`eab557a060`. What had been told them, kept for the record: rebase onto main; step 2's "per-region memo
 keyed on wire identity and row order" IS `createEncodeMemo` (cells = wire map,
 inputs = row order, encode = placement), do not write a third memo; MAF's
 upload memo reads `self.rpcDataMap` as cells and only that getter moves when

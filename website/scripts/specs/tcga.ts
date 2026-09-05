@@ -372,7 +372,7 @@ const MATRIX_DONE = displayPainted('variant-matrix-display')
 // Display height for the 979-row cohort matrices, i.e. about a third of a pixel
 // per tumor. Rows auto-fit by dividing the height and are allowed below a pixel
 // (effectiveRowHeight only floors at 1 when the line zone has swallowed the
-// display), and drawVariantMatrixBlocks deliberately draws sub-pixel cells at
+// display), and matrixCellMark deliberately draws sub-pixel cells at
 // float coordinates with a 0.3px overdraw rather than snapping them to a pixel.
 // So a mutated tumor in a crowded band is an antialiased smear that accumulates
 // with its neighbours, and the density difference between two clinical bands

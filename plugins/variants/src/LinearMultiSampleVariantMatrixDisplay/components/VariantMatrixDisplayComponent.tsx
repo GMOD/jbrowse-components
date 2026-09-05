@@ -3,6 +3,7 @@ import { useId, useState } from 'react'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -15,10 +16,14 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 import VariantMatrixBody, {
   variantMatrixSurface,
 } from './VariantMatrixComponent.tsx'
-import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
+import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { ReactNode } from 'react'
+
+function createVariantMatrixBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, VARIANT_MATRIX_MARKS)
+}
 
 // The matrix's own box, offset past the bands above the rows and clamped to the
 // viewport's left edge.
@@ -72,7 +77,7 @@ const VariantMatrixDisplayComponent = observer(
     return (
       <DisplayChrome
         model={model}
-        factory={VariantMatrixRenderer}
+        factory={createVariantMatrixBackend}
         testid="variant-matrix-display"
         style={{ height }}
         // One pointer source for the whole display: the hover, the tooltip,
