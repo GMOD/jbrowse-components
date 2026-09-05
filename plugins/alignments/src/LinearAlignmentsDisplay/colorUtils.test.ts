@@ -624,7 +624,7 @@ describe('rgbaPrefix255 rejoins into rgba255', () => {
   const ALPHAS = [0, 0.004, 0.25, 0.4000000059604645, 0.5, 0.999, 1]
   test.each(COLORS)('%p through every alpha', (r, g, b) => {
     for (const alpha of ALPHAS) {
-      expect(rgbaPrefix255([r, g, b]) + alpha + ')').toBe(
+      expect(`${rgbaPrefix255([r, g, b])}${alpha})`).toBe(
         rgba255([r, g, b], alpha),
       )
     }

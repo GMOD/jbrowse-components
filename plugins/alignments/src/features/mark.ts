@@ -407,7 +407,7 @@ export function paintMarks<Data>(
     keys === undefined && (fade === Fade.opaque || fade === Fade.intron)
       ? constantAlpha >= 1
         ? opaqueCss[0]!
-        : fadedCss[0]! + constantAlpha + ')'
+        : `${fadedCss[0]!}${constantAlpha})`
       : undefined
   if (constantCss !== undefined) {
     ctx.fillStyle = constantCss
@@ -487,7 +487,7 @@ export function paintMarks<Data>(
               ctx.fillStyle = lastCss
             } else {
               ctx.fillStyle =
-                alpha >= 1 ? opaqueCss[key]! : fadedCss[key]! + alpha + ')'
+                alpha >= 1 ? opaqueCss[key]! : `${fadedCss[key]!}${alpha})`
             }
           }
           const top = rowY + bandOffset
