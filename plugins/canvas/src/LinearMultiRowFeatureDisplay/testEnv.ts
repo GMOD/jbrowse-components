@@ -64,3 +64,8 @@ export function createTestEnvironment(opts?: {
       env.createDisplay({ displayedRegions }),
   }
 }
+
+// The harness's two contigs, as `setRpcData` takes them when a test stands up
+// an already-loaded display.
+export const ctgA = REGIONS[0]!
+export const ctgB = REGIONS[1]!

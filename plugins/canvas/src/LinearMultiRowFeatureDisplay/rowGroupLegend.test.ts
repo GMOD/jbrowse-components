@@ -1,4 +1,4 @@
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -34,7 +34,7 @@ function makeDisplay(n: number, height: number, rowGroups = ROW_GROUPS) {
     displayConfig: { rowGroups },
   })
   const { display } = createDisplay()
-  display.setRpcData(0, rows(n))
+  display.setRpcData(0, rows(n), ctgA)
   display.setRowHeight(0)
   display.setHeight(height)
   return display

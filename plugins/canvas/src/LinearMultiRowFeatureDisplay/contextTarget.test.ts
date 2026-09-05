@@ -1,7 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { waitFor } from '@testing-library/react'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -39,7 +39,7 @@ function region(): MultiRowRegionData {
 
 function setup(regions = CTGA_1KB) {
   const { display } = createTestEnvironment().createDisplay(regions)
-  display.setRpcData(0, region())
+  display.setRpcData(0, region(), ctgA)
   return display
 }
 

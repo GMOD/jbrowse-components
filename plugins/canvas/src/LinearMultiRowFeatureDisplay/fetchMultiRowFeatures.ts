@@ -4,7 +4,6 @@ import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
-import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { FetchEachRegionModel } from '@jbrowse/display-kit/fetchEachRegion'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
@@ -16,7 +15,6 @@ interface FetchSelf extends FetchEachRegionModel {
   >
   pinnedPartitionField: string
   resolvedByteLimit: () => number | undefined
-  setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
 }
 
 export function fetchMultiRowFeatures(
@@ -45,8 +43,6 @@ export function fetchMultiRowFeatures(
         region,
         partitionField,
       }),
-    onResult: (idx, result) => {
-      self.setRpcData(idx, result)
-    },
+    onResult: (_idx, result) => result,
   })
 }

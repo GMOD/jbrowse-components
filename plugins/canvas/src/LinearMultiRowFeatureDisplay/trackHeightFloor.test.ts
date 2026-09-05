@@ -1,6 +1,6 @@
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -33,7 +33,7 @@ describe('the track cannot be dragged below a usable height', () => {
   it('floors a few-row painting at MIN_DISPLAY_HEIGHT in fixed row-height mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(3))
+    display.setRpcData(0, rowsOnly(3), ctgA)
     display.setRowHeight(14)
 
     // drag far past the bottom
@@ -47,7 +47,7 @@ describe('the track cannot be dragged below a usable height', () => {
   it('floors auto-fit mode the same way', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(3))
+    display.setRpcData(0, rowsOnly(3), ctgA)
     display.setRowHeight(0)
 
     display.setHeight(2)
@@ -58,7 +58,7 @@ describe('the track cannot be dragged below a usable height', () => {
   it('lets a fixed-height drag shrink a big cohort past a pixel a row', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(1987))
+    display.setRpcData(0, rowsOnly(1987), ctgA)
     display.setRowHeight(14)
 
     // A pinned row height used to floor at 1px a row, which stalled this drag
@@ -89,7 +89,7 @@ describe('the derived height carries the floor the drag does', () => {
   it('floors a pinned row height when a subtree filter names no row', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(3))
+    display.setRpcData(0, rowsOnly(3), ctgA)
     display.setRowHeight(14)
     expect(display.height).toBeCloseTo(42)
 
@@ -102,7 +102,7 @@ describe('the derived height carries the floor the drag does', () => {
   it('leaves a taller stack alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(10))
+    display.setRpcData(0, rowsOnly(10), ctgA)
     display.setRowHeight(14)
 
     expect(display.height).toBeCloseTo(140)

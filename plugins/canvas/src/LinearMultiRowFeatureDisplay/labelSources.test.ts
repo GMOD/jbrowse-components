@@ -1,6 +1,6 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -31,7 +31,7 @@ function makeDisplay(
   displayConfig?: Record<string, unknown>,
 ) {
   const { display } = createTestEnvironment({ displayConfig }).createDisplay()
-  display.setRpcData(0, data)
+  display.setRpcData(0, data, ctgA)
   return display
 }
 

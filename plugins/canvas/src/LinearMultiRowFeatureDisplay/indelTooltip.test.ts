@@ -1,7 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { indelMagnitude } from './components/MultiRowTooltip.tsx'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -36,7 +36,7 @@ function displayWith(data: MultiRowRegionData) {
   const { display } = createTestEnvironment({
     displayConfig: { lengthField: 'length_delta' },
   }).createDisplay(CTGA_1KB)
-  display.setRpcData(0, data)
+  display.setRpcData(0, data, ctgA)
   return display
 }
 

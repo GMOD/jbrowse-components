@@ -1,7 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -66,7 +66,7 @@ const CTGA_1KB = [
 // the default 100px display each band is 50px tall.
 function twoRowDisplay(regionData: MultiRowRegionData, regions = CTGA_1KB) {
   const { display, view } = createTestEnvironment().createDisplay(regions)
-  display.setRpcData(0, regionData)
+  display.setRpcData(0, regionData, ctgA)
   return { display, view }
 }
 
@@ -162,6 +162,7 @@ describe('featureAt', () => {
         { row: 'a', start, end: start + 300, id: 'alu' },
         { row: 'b', start: 0, end: 10_000_000 },
       ]),
+      ctgA,
     )
 
     // 300bp is 0.03px, and the painted block is the 2px floor from px 500
@@ -263,7 +264,7 @@ describe('featureAt', () => {
     function cohortDisplay(featureRows: number[]) {
       const { display } = createTestEnvironment().createDisplay(CTGA_1KB)
       display.setRowHeight(0)
-      display.setRpcData(0, cohort(featureRows))
+      display.setRpcData(0, cohort(featureRows), ctgA)
       display.setHeight(320)
       expect(display.effectiveRowHeight).toBeCloseTo(0.32)
       return display

@@ -1,4 +1,4 @@
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -35,7 +35,7 @@ function rowNames(display: { sources: { name: string }[] }) {
 describe('the dendrogram positions only while it describes the rows', () => {
   it('positions against a clustered order', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, regionData(['a', 'b', 'c']))
+    display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
     display.setLayoutAndClusterTree(
       [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
       '((c,a),b);',
@@ -49,13 +49,13 @@ describe('the dendrogram positions only while it describes the rows', () => {
   // revealed a partition value the clustering run never saw.
   it('stops positioning when a later region widens the row set', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, regionData(['a', 'b', 'c']))
+    display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
     display.setLayoutAndClusterTree(
       [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
       '((c,a),b);',
     )
 
-    display.setRpcData(1, regionData(['a', 'd']))
+    display.setRpcData(1, regionData(['a', 'd']), ctgB)
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b', 'd'])
     expect(display.clusterTree).toBe('((c,a),b);')
@@ -70,8 +70,8 @@ describe('repartitioning', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.partitionCandidates).toEqual([])
 
-    display.setRpcData(0, regionData(['a'], ['repFamily', 'repClass']))
-    display.setRpcData(1, regionData(['b'], ['repClass', 'strain']))
+    display.setRpcData(0, regionData(['a'], ['repFamily', 'repClass']), ctgA)
+    display.setRpcData(1, regionData(['b'], ['repClass', 'strain']), ctgB)
 
     expect(display.partitionCandidates).toEqual([
       'repClass',
@@ -91,6 +91,7 @@ describe('repartitioning', () => {
     display.setRpcData(
       0,
       regionData(['LINE'], ['repClass', 'name'], 'repClass'),
+      ctgA,
     )
 
     expect(display.effectivePartitionField).toBe('repClass')
@@ -103,7 +104,7 @@ describe('repartitioning', () => {
   // new one, empty, each with whatever colour it had been given.
   it('drops the row state keyed on the old partition', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']))
+    display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
     display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
     display.setHiddenCategories(['a'])
 
@@ -121,12 +122,16 @@ describe('repartitioning', () => {
   // then match none of the new ones.
   it('drops a subtree filter naming rows the new partition cannot have', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, regionData(['a', 'b', 'c'], ['sample', 'clade']))
+    display.setRpcData(
+      0,
+      regionData(['a', 'b', 'c'], ['sample', 'clade']),
+      ctgA,
+    )
     display.setSubtreeFilter(['a', 'b'])
     expect(rowNames(display)).toEqual(['a', 'b'])
 
     display.setPartitionField('clade')
-    display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']))
+    display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']), ctgA)
 
     // without the clear this is [], i.e. a blank canvas with no row labels
     expect(display.subtreeFilter).toBeUndefined()
@@ -140,7 +145,7 @@ describe('repartitioning', () => {
   // refetch the painting already on screen.
   it('leaves everything alone when the partition is already that', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(0, regionData(['a', 'b'], ['sample']))
+    display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
     display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
     expect(display.partitionField).toBe('')
 

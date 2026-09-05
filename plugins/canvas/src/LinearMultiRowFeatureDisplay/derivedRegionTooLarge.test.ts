@@ -1,7 +1,7 @@
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -55,7 +55,7 @@ describe('the presence hook is the whole cache rule', () => {
   it('stays valid through a zoom once the features are committed', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     display.setLoadedRegion(0, view.displayedRegions[0])
-    display.setRpcData(0, emptyRegionData())
+    display.setRpcData(0, emptyRegionData(), ctgA)
     expect(display.isCacheValid(0)).toBe(true)
 
     view.zoomTo(view.bpPerPx / 4)

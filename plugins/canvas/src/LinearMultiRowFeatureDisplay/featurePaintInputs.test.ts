@@ -1,6 +1,6 @@
 import { autorun } from 'mobx'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -28,7 +28,7 @@ function regionData(): MultiRowRegionData {
 function makeDisplay() {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setRpcData(0, regionData())
+  display.setRpcData(0, regionData(), ctgA)
   return display
 }
 
@@ -129,7 +129,7 @@ describe('featurePaintInputs', () => {
     const display = makeDisplay()
     const paint = countRecomputes(() => display.featurePaintInputs)
 
-    display.setRpcData(1, regionData())
+    display.setRpcData(1, regionData(), ctgB)
 
     expect(paint.count()).toBe(1)
     paint.dispose()
@@ -139,10 +139,14 @@ describe('featurePaintInputs', () => {
     const display = makeDisplay()
     const paint = countRecomputes(() => display.featurePaintInputs)
 
-    display.setRpcData(1, {
-      ...regionData(),
-      partitionValues: ['sampleA', 'sampleC'],
-    })
+    display.setRpcData(
+      1,
+      {
+        ...regionData(),
+        partitionValues: ['sampleA', 'sampleC'],
+      },
+      ctgB,
+    )
 
     expect(paint.count()).toBe(2)
     paint.dispose()
@@ -157,7 +161,7 @@ describe('featurePaintInputs', () => {
     const display = makeDisplay()
     const first = display.drawnFeaturesByRow.get(0)
 
-    display.setRpcData(1, regionData())
+    display.setRpcData(1, regionData(), ctgB)
 
     expect(display.drawnFeaturesByRow.get(0)).toBe(first)
     expect(display.drawnFeaturesByRow.get(1)).toBeDefined()
@@ -167,7 +171,7 @@ describe('featurePaintInputs', () => {
     const display = makeDisplay()
     const first = display.drawnFeaturesByRow.get(0)
 
-    display.setRpcData(0, regionData())
+    display.setRpcData(0, regionData(), ctgA)
 
     expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
   })
@@ -176,10 +180,10 @@ describe('featurePaintInputs', () => {
     const display = makeDisplay()
     const first = display.drawnFeaturesByRow.get(0)
 
-    display.clearDisplaySpecificData()
+    display.dropLoadedRegion(0)
     expect(display.drawnFeaturesByRow.size).toBe(0)
 
-    display.setRpcData(0, regionData())
+    display.setRpcData(0, regionData(), ctgA)
     expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
   })
 

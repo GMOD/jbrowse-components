@@ -1,6 +1,6 @@
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -31,7 +31,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
   it('caps a pinned row height so the stack still fits a drawable canvas', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(BIG_COHORT))
+    display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
 
     // the "Normal" preset from the Row height menu, which is two clicks away
     display.setRowHeight(14)
@@ -46,7 +46,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
   it('leaves a row height that already fits alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(10))
+    display.setRpcData(0, rowsOnly(10), ctgA)
 
     display.setRowHeight(14)
 
@@ -57,7 +57,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
   it('caps auto-fit too, since the height slot it divides is drag-resizable', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(4))
+    display.setRpcData(0, rowsOnly(4), ctgA)
     // auto-fit divides this slot across the rows, so a big enough one is the
     // same unbounded canvas by another route
     display.setRowHeight(0)
@@ -69,7 +69,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
   it('stalls a drag at the cap rather than growing a canvas that cannot draw', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(BIG_COHORT))
+    display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
     display.setRowHeight(14)
 
     expect(display.resizeHeight(500)).toBe(0)
@@ -79,7 +79,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
   it('a drag down from the cap still shrinks', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(BIG_COHORT))
+    display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
     display.setRowHeight(14)
     const capped = display.height
 

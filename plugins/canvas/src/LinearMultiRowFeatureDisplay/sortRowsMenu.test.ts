@@ -59,10 +59,9 @@ const LOADED = {
 
 function clustered() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setRpcData(0, regionData(['a', 'b', 'c']))
-  // the span the sort resolves its column against — a click always lands in
-  // one, so a test that omits it is testing the declining path by accident
-  display.setLoadedRegion(0, LOADED)
+  // LOADED, not the whole contig: the span the sort resolves its column
+  // against, so `50_000` below really is off the end of what was fetched
+  display.setRpcData(0, regionData(['a', 'b', 'c']), LOADED)
   display.setLayoutAndClusterTree(
     [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
     '((c,a),b);',
@@ -111,8 +110,7 @@ describe('"Sort rows by color here"', () => {
   it('leaves them alone when only one row survives', () => {
     const display = clustered()
     display.clearAllRpcData()
-    display.setRpcData(0, regionData(['b']))
-    display.setLoadedRegion(0, LOADED)
+    display.setRpcData(0, regionData(['b']), LOADED)
 
     expect(display.editableSources.map(s => s.name)).toEqual(['b'])
     display.sortRowsByValueAt('ctgA', 100)
@@ -165,6 +163,7 @@ describe('"Sort rows by color here"', () => {
           [2, 0xff00ff00],
         ],
       ),
+      LOADED,
     )
     expect(display.editableSources.map(s => s.name)).toEqual(['c', 'a', 'b'])
 

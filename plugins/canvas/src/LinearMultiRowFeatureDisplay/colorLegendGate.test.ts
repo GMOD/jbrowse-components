@@ -2,7 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -70,7 +70,7 @@ describe('the color key waits for a painting to key', () => {
     const { display } = createTestEnvironment({
       displayConfig: { legend: LEGEND },
     }).createDisplay()
-    display.setRpcData(0, painted())
+    display.setRpcData(0, painted(), ctgA)
 
     expect(display.colorLegend.map(e => e.label)).toEqual(['EUR', 'AFR'])
     expect(display.hasLegendEntries).toBe(true)
@@ -82,7 +82,7 @@ describe('the color key waits for a painting to key', () => {
       displayConfig: { legend: LEGEND },
     }).createDisplay()
     view.zoomTo(100)
-    display.setRpcData(0, painted())
+    display.setRpcData(0, painted(), ctgA)
     expect(display.colorLegend).toHaveLength(2)
 
     setConf(display, 'densityTier', 'density')
@@ -122,16 +122,20 @@ describe('the color key waits for a painting to key', () => {
     const { display } = createTestEnvironment({
       displayConfig: { legend: LEGEND },
     }).createDisplay()
-    display.setRpcData(0, {
-      ...painted(),
-      featureStarts: new Uint32Array(0),
-      featureEnds: new Uint32Array(0),
-      featureColors: new Uint32Array(0),
-      partitionValues: [],
-      featurePartitionIndex: new Uint32Array(0),
-      featureNames: [],
-      featureIds: [],
-    })
+    display.setRpcData(
+      0,
+      {
+        ...painted(),
+        featureStarts: new Uint32Array(0),
+        featureEnds: new Uint32Array(0),
+        featureColors: new Uint32Array(0),
+        partitionValues: [],
+        featurePartitionIndex: new Uint32Array(0),
+        featureNames: [],
+        featureIds: [],
+      },
+      ctgA,
+    )
 
     expect(display.colorLegend).toHaveLength(0)
   })

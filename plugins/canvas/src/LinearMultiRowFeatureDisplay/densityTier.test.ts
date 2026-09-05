@@ -1,7 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -114,7 +114,7 @@ describe('the density tier stands in for the too-large banner', () => {
 describe('the band stands alone, and fetches nothing', () => {
   it('empties what the painters and the sidebar read while holding what was loaded', () => {
     const { display } = unrefusedDisplay(DENSITY_ADAPTER)
-    display.setRpcData(0, oneRow())
+    display.setRpcData(0, oneRow(), ctgA)
     expect(display.drawnRegionData.size).toBe(1)
     expect(display.fetchSuspended).toBe(false)
 

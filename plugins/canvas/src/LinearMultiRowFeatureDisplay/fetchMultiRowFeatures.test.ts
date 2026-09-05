@@ -79,7 +79,6 @@ function makeSelf() {
             },
           }),
         ).then(() => {}),
-      setRpcData: () => {},
       // the snapshot the mixin takes at issue; this stub stands in for a
       // measured view under an active gate
       gateFetchState: () => ({

@@ -22,7 +22,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ContextMenuMixin,
   RowHeightMixin,
@@ -158,10 +157,15 @@ export default function stateModelFactory(
         hiddenCategories: types.array(types.string),
       }),
     )
-    .volatile(() => ({
-      // #region volatile
-      rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
-      // #endregion
+    .views(self => ({
+      /**
+       * #getter
+       * The fetched rows, keyed by displayedRegionIndex — the foundation's
+       * per-region store, narrowed.
+       */
+      get rpcDataMap(): ReadonlyMap<number, MultiRowRegionData> {
+        return self.regionPayloads as ReadonlyMap<number, MultiRowRegionData>
+      },
     }))
     .views(self => ({
       /**
@@ -1088,15 +1092,16 @@ export default function stateModelFactory(
         },
         /**
          * #action
+         * Stage a region as fetched, with this display's payload shape — so a
+         * test stands up a loaded display in one call. Production goes through
+         * `ctx.commitRegion`.
          */
-        setRpcData(regionIndex: number, data: MultiRowRegionData) {
-          self.rpcDataMap.set(regionIndex, data)
-        },
-        /**
-         * #action
-         */
-        clearDisplaySpecificData() {
-          self.rpcDataMap.clear()
+        setRpcData(
+          regionIndex: number,
+          data: MultiRowRegionData,
+          region: Region,
+        ) {
+          self.setLoadedRegion(regionIndex, region, undefined, data)
         },
         /**
          * #action
@@ -1166,19 +1171,15 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * The reader-side check of the write-side rule: `loadedRegions` is written
-       * where the payload is stored (`RegionFetchContext`), so an entry here
-       * without one in `rpcDataMap` is that rule being broken. It costs a map
-       * lookup and it decides which way the break fails — a refetch, or a
-       * viewport that reads as covered against data nobody has and never asks
-       * again.
+       * The reconciliation for auto partitioning, which is the whole of what
+       * this override is now for: a region that answered a different attribute
+       * than the pin holds nothing this display can draw, and is refetched with
+       * the field spelled out. `regionHasPinnedData` is that rule. The
+       * foundation's own default — did the commit store a payload — is the
+       * first half of what this returns.
        *
        * No zoom rule beside it: the worker's output is absolute genomic uint32,
        * so `zoomFetchKey` stays at its empty default.
-       *
-       * **And the reconciliation for auto partitioning**, which is the second
-       * thing this hook is for (MAF's "which of several held payloads answers"
-       * is the first) — `regionHasPinnedData` is that half.
        *
        * A view, not an action: as an action MobX untracks the `rpcDataMap` read
        * and `FetchVisibleRegions` keeps a stale answer.

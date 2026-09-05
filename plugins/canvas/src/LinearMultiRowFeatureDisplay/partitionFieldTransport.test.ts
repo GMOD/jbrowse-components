@@ -1,6 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 // The `partitionField` slot is a DEFERRED expression: the worker binds `feature`
 // and evaluates it once per feature (makeFeaturePartitionResolver). So the model
@@ -101,7 +101,7 @@ describe('auto resolution is pinned once a region has answered', () => {
   it('takes the loaded region answer, not the display default', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('repClass'))
+    display.setRpcData(0, regionData('repClass'), ctgA)
 
     expect(display.pinnedPartitionField).toBe('repClass')
     // still the auto sentinel where it is the invalidation key
@@ -113,7 +113,7 @@ describe('auto resolution is pinned once a region has answered', () => {
       displayConfig: { partitionField: 'sample' },
     })
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('sample'))
+    display.setRpcData(0, regionData('sample'), ctgA)
 
     expect(display.rpcProps().partitionField).toBe('sample')
   })
@@ -128,14 +128,14 @@ describe('auto resolution is pinned once a region has answered', () => {
   it('is not established by a region that came back empty', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, emptyRegionData())
+    display.setRpcData(0, emptyRegionData(), ctgA)
 
     expect(display.pinnedPartitionField).toBe('')
     // and the empty region is not itself treated as unresolved data — it has no
     // feature to land in the wrong row, so refetching it would buy nothing
     expect(display.regionHasData(0)).toBe(true)
 
-    display.setRpcData(1, regionData('repClass'))
+    display.setRpcData(1, regionData('repClass'), ctgB)
 
     expect(display.pinnedPartitionField).toBe('repClass')
     expect(display.effectivePartitionField).toBe('repClass')
@@ -151,8 +151,8 @@ describe('regions that resolved differently reconcile to the pin', () => {
   it('reads a region that answered another field as holding no data', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('repClass'))
-    display.setRpcData(3, regionData('name'))
+    display.setRpcData(0, regionData('repClass'), ctgA)
+    display.setRpcData(3, regionData('name'), ctgB)
 
     expect(display.pinnedPartitionField).toBe('repClass')
     expect(display.regionHasData(0)).toBe(true)
@@ -164,10 +164,10 @@ describe('regions that resolved differently reconcile to the pin', () => {
   it('settles once the refetch lands', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('repClass'))
-    display.setRpcData(3, regionData('name'))
+    display.setRpcData(0, regionData('repClass'), ctgA)
+    display.setRpcData(3, regionData('name'), ctgB)
 
-    display.setRpcData(3, regionData('repClass'))
+    display.setRpcData(3, regionData('repClass'), ctgB)
 
     expect(display.regionHasData(3)).toBe(true)
   })
@@ -175,8 +175,8 @@ describe('regions that resolved differently reconcile to the pin', () => {
   it('leaves the empty regions of a whole-genome load alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('repClass'))
-    display.setRpcData(1, emptyRegionData())
+    display.setRpcData(0, regionData('repClass'), ctgA)
+    display.setRpcData(1, emptyRegionData(), ctgB)
 
     expect(display.regionHasData(1)).toBe(true)
   })
@@ -186,8 +186,8 @@ describe('regions that resolved differently reconcile to the pin', () => {
       displayConfig: { partitionField: 'sample' },
     })
     const { display } = createDisplay()
-    display.setRpcData(0, regionData('sample'))
-    display.setRpcData(1, regionData('sample'))
+    display.setRpcData(0, regionData('sample'), ctgA)
+    display.setRpcData(1, regionData('sample'), ctgB)
 
     expect(display.regionHasData(0)).toBe(true)
     expect(display.regionHasData(1)).toBe(true)
@@ -207,7 +207,7 @@ describe('the pin survives the density band standing in', () => {
     })
     const { display, view } = createDisplay()
     view.zoomTo(100)
-    display.setRpcData(0, regionData('repClass'))
+    display.setRpcData(0, regionData('repClass'), ctgA)
     setConf(display, 'densityTier', 'density')
     expect(display.densityBandActive).toBe(true)
     return display
