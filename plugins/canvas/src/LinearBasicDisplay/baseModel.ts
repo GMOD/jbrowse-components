@@ -68,7 +68,7 @@ import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
-import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
+import { labelScrollBucket } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -487,7 +487,7 @@ export default function baseStateModelFactory(
         // leaves the value unchanged and MobX skips the (expensive) label
         // rebuild — labels only re-emit once the user scrolls a full bucket.
         get labelScrollBucket() {
-          return Math.floor(self.scrollTop / LABEL_CULL_BUCKET_PX)
+          return labelScrollBucket(self.scrollTop)
         },
 
         /**

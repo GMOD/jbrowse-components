@@ -1,4 +1,4 @@
-import { toggleArrayMember } from './baseModelHelpers.ts'
+import { toggleArrayMember } from '../shared/toggleArrayMember.ts'
 
 import type { IObservableArray } from 'mobx'
 

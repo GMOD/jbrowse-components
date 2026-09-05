@@ -42,8 +42,14 @@ export interface LabelCullBand {
   bottom: number
 }
 
-// The content-coordinate band to keep, given a quantized scroll bucket
-// (Math.floor(scrollTop / LABEL_CULL_BUCKET_PX)) and the viewport height. For
+// The bucket a scroll position falls in — what `labelCullBand` takes, and what
+// the overlay observes in place of raw scrollTop.
+export function labelScrollBucket(scrollTop: number) {
+  return Math.floor(scrollTop / LABEL_CULL_BUCKET_PX)
+}
+
+// The content-coordinate band to keep, given a quantized scroll bucket and the
+// viewport height. For
 // any scrollTop in [bucket·B, (bucket+1)·B) the visible range is
 // [scrollTop, scrollTop + viewportHeight] ⊆ [bucket·B, bucket·B + B + vh], which
 // this band covers with a full bucket of margin on each side.

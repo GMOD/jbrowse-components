@@ -15,9 +15,9 @@ import {
 import { highlightBoxColors } from './components/highlightUtils.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
-  LABEL_CULL_BUCKET_PX,
   forEachDisplayLabel,
   labelCullBand,
+  labelScrollBucket,
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
@@ -108,10 +108,7 @@ function CanvasFeaturesSvgBody({
   // times its height, that is most of them. Culled with the DOM overlay's own
   // band rather than a tighter export-only one: it is the band that ships on
   // screen, so the export emits exactly the labels the user is looking at.
-  const cullBand = labelCullBand(
-    Math.floor(scrollY / LABEL_CULL_BUCKET_PX),
-    height,
-  )
+  const cullBand = labelCullBand(labelScrollBucket(scrollY), height)
 
   return (
     <SvgClipRect

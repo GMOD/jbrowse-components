@@ -48,6 +48,7 @@ import {
   fetchCanvasFeatureDetails,
 } from '../shared/fetchCanvasFeatureDetails.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
+import { toggleArrayMember } from '../shared/toggleArrayMember.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
@@ -983,10 +984,7 @@ export default function stateModelFactory(
          * Show/hide a legend category by label (render-time, no refetch).
          */
         toggleCategory(label: string) {
-          const next = self.hiddenCategories.includes(label)
-            ? self.hiddenCategories.filter(l => l !== label)
-            : [...self.hiddenCategories, label]
-          self.hiddenCategories.replace(next)
+          toggleArrayMember(self.hiddenCategories, label)
         },
         /**
          * #action
