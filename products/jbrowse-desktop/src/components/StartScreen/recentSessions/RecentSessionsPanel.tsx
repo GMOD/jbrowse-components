@@ -26,6 +26,7 @@ import {
   ToggleButtonGroup,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
 
 import { invokeIpc } from '../../../ipc.ts'
@@ -33,6 +34,7 @@ import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { NARROW_QUERY } from '../narrow.ts'
 import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager, openSpecLink } from '../util.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
@@ -110,6 +112,7 @@ export default function RecentSessionPanel({
   const { classes } = useStyles()
   const notifyError = useNotifyError()
   const { height: innerHeight } = useInnerDims()
+  const narrow = useMediaQuery(NARROW_QUERY, { noSsr: true })
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
@@ -253,7 +256,9 @@ export default function RecentSessionPanel({
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        {displayMode === 'list' ? (
+        {/* the grid drops its checkbox column at this width, so these two have
+        nothing left to act on; the row's own menu carries both actions */}
+        {displayMode === 'list' && !narrow ? (
           <div style={{ display: 'flex' }}>
             <IconButtonWithTooltip
               title="Delete sessions"

@@ -1,9 +1,10 @@
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
+import { Tooltip, useMediaQuery } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import { NARROW_QUERY } from '../narrow.ts'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
 import { formatLastModified } from './formatLastModified.ts'
@@ -47,6 +48,11 @@ function RecentSessionsDataGrid({
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
+  // The same query the start screen stacks its panels at, so "narrow" here
+  // means the grid has the whole window and still not much of it. `noSsr`
+  // because the default renders once with `false` before the real value: on a
+  // narrow window that is a first paint of the wide column set.
+  const narrow = useMediaQuery(NARROW_QUERY, { noSsr: true })
 
   const rows = sessions.map(session => {
     const { label, tooltip } = formatLastModified(session.updated)
@@ -67,7 +73,9 @@ function RecentSessionsDataGrid({
     {
       field: 'name',
       headerName: 'Session name',
-      width: nameWidth,
+      // measured to fit at any width the grid can have; narrow, the name is the
+      // only column worth the space, so it takes what the others leave
+      ...(narrow ? { flex: 1, minWidth: 150 } : { width: nameWidth }),
       renderCell: ({ value, row }: GridRenderCellParams) => (
         <SessionNameCell
           value={String(value)}
@@ -81,16 +89,23 @@ function RecentSessionsDataGrid({
         />
       ),
     },
-    {
-      field: 'path',
-      headerName: 'Session path',
-      width: 200,
-      renderCell: ({ value }: GridRenderCellParams) => (
-        <Tooltip title={String(value)}>
-          <div className={classes.cell}>{String(value)}</div>
-        </Tooltip>
-      ),
-    },
+    // a path column narrow enough to fit shows "/home/user/jbrowse/sessi…" and
+    // nothing the user can act on, so a narrow window spends the width on the
+    // name instead; the row menu still names the file
+    ...(narrow
+      ? []
+      : [
+          {
+            field: 'path',
+            headerName: 'Session path',
+            width: 200,
+            renderCell: ({ value }: GridRenderCellParams) => (
+              <Tooltip title={String(value)}>
+                <div className={classes.cell}>{String(value)}</div>
+              </Tooltip>
+            ),
+          },
+        ]),
     {
       field: 'lastModified',
       headerName: 'Last modified',
@@ -107,7 +122,10 @@ function RecentSessionsDataGrid({
   return (
     <DataGridFlexContainer>
       <DataGrid
-        checkboxSelection
+        // 50px of checkbox for a multi-select whose two toolbar buttons the
+        // panel hides at this width: every one of their actions is in the row's
+        // own menu, and the name needs the space more
+        checkboxSelection={!narrow}
         disableRowSelectionOnClick
         getRowId={row => row.path}
         onRowSelectionModelChange={(model: GridRowSelectionModel) => {

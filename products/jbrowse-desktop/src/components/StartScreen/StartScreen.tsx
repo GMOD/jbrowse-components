@@ -27,6 +27,7 @@ import {
   reloadWithGlobalPlugins,
 } from './globalPlugins.ts'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
+import { narrowMedia } from './narrow.ts'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 import { createStartScreenPluginManager, loadPluginManager } from './util.tsx'
 
@@ -34,17 +35,48 @@ import type { StartScreenPanelProps } from './startScreenExtensionPoints.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 
+// Below this width the 450px floor is what scrolls the page sideways, and the
+// full-width basis is what makes the row wrap at all — clearing the floor alone
+// leaves the two panels side by side and crushed, which is worse.
+const narrowPanel = {
+  [narrowMedia]: {
+    flexBasis: '100%',
+    minWidth: 0,
+    maxWidth: 'none',
+    padding: 8,
+  },
+}
+
 const useStyles = makeStyles()({
+  // the menu button rides in the header row rather than floating over the page,
+  // so a logo scaled down to a narrow window never ends up underneath it
+  header: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 8,
+    padding: 16,
+  },
+
+  headerLogo: {
+    flex: 1,
+    minWidth: 0,
+  },
+
   root: {
     marginLeft: 30,
     marginRight: 30,
-    marginTop: 50,
+    marginBottom: 30,
     display: 'flex',
     gap: 10,
     // a window too narrow for both used to hold the launch panel at its minimum
     // and crush the recent-sessions panel, which has the wider content of the
     // two; stack them instead
     flexWrap: 'wrap',
+    [narrowMedia]: {
+      marginLeft: 8,
+      marginRight: 8,
+      marginBottom: 8,
+    },
   },
 
   panel: {
@@ -52,6 +84,7 @@ const useStyles = makeStyles()({
     padding: 16,
     minWidth: 450,
     maxWidth: 600,
+    ...narrowPanel,
   },
 
   recentPanel: {
@@ -59,12 +92,7 @@ const useStyles = makeStyles()({
     padding: 16,
     minWidth: 450,
     overflow: 'auto',
-  },
-
-  menuButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
+    ...narrowPanel,
   },
 
   banner: {
@@ -197,7 +225,10 @@ export default function StartScreen({
 
   return (
     <div>
-      <div className={classes.menuButton}>
+      <div className={classes.header}>
+        <div className={classes.headerLogo}>
+          <Logo />
+        </div>
         <CascadingMenuButton
           menuItems={() => [
             {
@@ -225,7 +256,6 @@ export default function StartScreen({
           <MenuIcon />
         </CascadingMenuButton>
       </div>
-      <Logo />
       {safeMode ? (
         <Alert
           severity="info"

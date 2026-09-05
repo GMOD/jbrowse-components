@@ -23,6 +23,7 @@ import type { RecentSessionData } from '../types.ts'
 const useStyles = makeStyles()({
   card: {
     width: 250,
+    maxWidth: '100%',
     '&:hover': {
       boxShadow: '0px 5px 15px rgba(0,0,0,0.3)',
     },
