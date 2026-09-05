@@ -466,7 +466,10 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   record entry. `COVERAGE_LAYERS` followed in 2026-08: the `drawCoverage`
   wrapper turned out to hold five calls mapping 1:1 to the five passes, under
   gates that already agreed — so what the entry described as a structural
-  mismatch was two statements of one list, which is what a registry is for.
+  mismatch was two statements of one list, which is what a registry is for. In
+  2026-09 the list and its two records collapsed further, into
+  `coverageBandMarks` in alignments-core: each layer is a shape carrying its
+  pass and its painter, and MAF and alignments declare the same five.
 
   **The lesson is about what "not 1:1" licenses.** It argues against collapsing
   the CALLS; it says nothing about sharing the LIST, and the list is where drift

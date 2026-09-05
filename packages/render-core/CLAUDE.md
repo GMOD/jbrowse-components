@@ -129,3 +129,10 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
   `select` callback is the single skip gate, and the `finally`-paired restore is
   what keeps a throwing painter from leaving every later frame clipped.
+- **A display that stacks bands on one canvas declares them as `band` on
+  `defineMark`**, never as a renderer pair around the mark list: the GPU
+  scissors to the strip and hands the block column back, Canvas2D clips, a
+  zero-height band draws nothing. The band is a clip, not an offset — the shape
+  still places Y against the whole canvas, which is what lets one `scrollTop`
+  serve both backends. A display with its own frame scaffold (alignments'
+  sections) scissors around `mark.drawRegion` itself and declares none.

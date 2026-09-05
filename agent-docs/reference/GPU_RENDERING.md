@@ -440,9 +440,11 @@ touching either path, preserve whichever of these the display uses:
   trusting it.** Multi-layer displays list layers/z-order/gating once and map
   each id to a per-backend mechanism through a `Record<LayerId, …>`, which makes
   a half-added layer a compile error; `coverageParity.test.ts` cross-checks
-  output. Alignments has two such lists — `PILEUP_LAYERS` and `COVERAGE_LAYERS`
-  — because its two bands take different draw signatures; that is a reason for a
-  second list, never for a second backend keeping its own.
+  output. Alignments has `PILEUP_LAYERS` for its pileup band; its coverage band
+  is a mark list (`ALIGNMENTS_COVERAGE_MARKS`), the same mechanism with the
+  per-backend record folded into each shape. Two bands with different draw
+  signatures is a reason for a second list, never for a second backend keeping
+  its own.
 
   **"The layers aren't 1:1" is not a reason to skip this**, and it read like one
   for two months. A registry shares the LIST, not the calls: a backend's record
@@ -604,13 +606,11 @@ Two invariants keep the renderer implementations small and uniform:
 - `hal.drawPass` short-circuits when the region has no buffer for that pass, so
   GPU renderers issue draws unconditionally — no per-region flag cache.
 
-For MAF, `UploadData` and `RenderData` diverge. The upload payload
-(`MafUploadPayload`) carries only the pre-encoded GPU buffer (`{ instanceBuffer,
-instanceCount }`); the render side reads the raw `MafRegionData` from the model's
-`rpcDataMap` (so Canvas2D can draw it and the GPU path can check presence).
-`PerRegionRenderingBackend`'s optional fourth type param `RenderData` (defaults to
-`UploadData`) expresses this split — shared with `LinearMultiRowFeatureDisplay`;
-most per-region plugins keep the default.
+`PerRegionRenderingBackend`'s optional fourth type param `RenderData` (defaults
+to `UploadData`) lets the upload payload and the render-side payload diverge;
+no per-region display uses it today. MAF used to — its upload carried a
+pre-encoded buffer and the render side re-read `rpcDataMap` — until the rows
+became `span` channels both backends draw from.
 
 Whole-map synced (alignments, multi-LGV synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins define their own backend interfaces
@@ -1258,12 +1258,13 @@ second consumer at an existing shape.
 its depth normalizer, and the five entry points beside it (`coverageBar`,
 `coverageSnp`, `coverageMod`, `coverageInterbase`, `coverageIndicator`) are the
 only copy of each draw. The alignments pileup band and the MAF display band both
-register them, from the same worker-packed layouts — which is what makes it a
-whole band rather than a primitive: a mark's height rule is shared with the
-buffer layout it reads and the Canvas2D painter it must land on, and those three
-had no way to travel together while the shaders lived in one plugin. A plugin's
-own renderer still owns the UBO write (`writeCoverageBandUniforms`) and the
-scissor, because where the band sits on the canvas is the display's business.
+declare them, from the same worker-packed layouts, through
+`@jbrowse/alignments-core`'s `coverageBandMarks` — one `MarkShape` per layer
+over the pass and the package's own painter, sharing one uniform write — which
+is what makes it a whole band rather than a primitive: a mark's height rule is
+shared with the buffer layout it reads and the Canvas2D painter it must land
+on. The display still owns where the band sits: MAF declares it as the mark's
+`band`, alignments scissors per section around the list.
 `slangPass()` turns a generated module into a `PipelineDescriptor`, with overrides for
 `topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
 and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
@@ -1660,8 +1661,8 @@ allocate transient render targets when a frame has many of both, with
 dependencies between them. Ours has one render pass, one color attachment, no
 offscreen targets, and no pass that consumes another's output. Ordering is a
 static z-ordered list beside the renderers that read it (`PILEUP_LAYERS` is the
-largest, at 12 entries with per-layer `enabled` gates; `COVERAGE_LAYERS` is the
-other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
+largest, at 12 entries with per-layer `enabled` gates; the coverage band's mark
+list is the other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
 frame graph — a unified GPU/Canvas2D "layer manifest" driving draw dispatch from
 a table — was declined 2026-06 and has since been overturned for both of those
 bands, which is a narrower thing than a frame graph and worth not confusing with
@@ -1722,8 +1723,8 @@ the wiggle center line, and nothing passes `blend: false`. Blending only
 composes correctly in draw order, back to front. A
 depth test rejects a fragment by its Z, which is exactly the fragment a
 translucent mark behind it was meant to show through; it would break the
-painter's-algorithm compositing the z-ordered pass lists (`PILEUP_LAYERS`,
-`COVERAGE_LAYERS`) exist to define. What early-Z would save is the overdraw of
+painter's-algorithm compositing the z-ordered pass lists (`PILEUP_LAYERS`, the
+coverage band's mark list) exist to define. What early-Z would save is the overdraw of
 fully opaque marks, and there the rasterizer already discards a quad only a few
 pixels wide about as cheaply (see "GPU-driven culling"). Order is the
 correctness mechanism here; a depth buffer trades it for a saving nothing has

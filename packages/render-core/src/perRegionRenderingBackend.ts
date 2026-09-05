@@ -27,9 +27,8 @@ export type { FrameDimensions } from './renderingBackendBase.ts'
  * against a data map passed back through `renderBlocks` each frame.
  *
  * `UploadData` is what the upload-side autorun pushes per region;
- * `RenderData` is what the render-side reads. They default to the same
- * type — MAF is the lone case where they diverge (upload payload also
- * carries a pre-encoded GPU buffer that the render side doesn't need).
+ * `RenderData` is what the render-side reads. They default to the same type,
+ * and every per-region display keeps the default today.
  *
  * Renderers are stateless: they keep no per-region cache. Canvas2D backends
  * stub `upload` / `release` as no-ops since they read everything from the

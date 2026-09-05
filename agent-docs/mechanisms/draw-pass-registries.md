@@ -28,13 +28,15 @@ Alignments is the one renderer that doesn't inherit it, because bands and
 sections make it extend `GpuRenderingBackendBase` directly.
 
 **3. The id registry.** A shared ordered list carrying z-order and, where the
-marks are settings-gated, an `enabled(state)` — `PILEUP_LAYERS`,
-`COVERAGE_LAYERS` — resolved by an exhaustive `Record<LayerId, …>` per
-consumer, and with pass registration derived from the registry rather than
-re-listed. **Conditional; see the precondition below.** A display on
-render-core's mark list has this for free: the list is the order, each mark
-carries both backends, and `createMarkBackend` registers the passes off it
-(canvas `LinearBasicDisplay` moved there from a `GLYPH_LAYERS` registry).
+marks are settings-gated, an `enabled(state)` — `PILEUP_LAYERS` — resolved by
+an exhaustive `Record<LayerId, …>` per consumer, and with pass registration
+derived from the registry rather than re-listed. **Conditional; see the
+precondition below.** A display on render-core's mark list has this for free:
+the list is the order, each mark carries both backends, and `createMarkBackend`
+registers the passes off it (canvas `LinearBasicDisplay` moved there from a
+`GLYPH_LAYERS` registry, and the alignments coverage band from `COVERAGE_LAYERS`
+plus two records to `coverageBandMarks`, whose shapes gate through
+`paintsBlock`).
 
 **4. `HIT_GATES`.** A second exhaustive record over the same ids forcing every
 drawn layer to state a hit-testing story, checked against each layer's actual
@@ -74,7 +76,7 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 | Display | Marks | Ordered | Per-mark gate | Consumers | Verdict |
 | --- | --- | --- | --- | --- | --- |
 | alignments pileup | 13 | yes | yes | GPU, Canvas2D, hit (+SVG free) | `PILEUP_LAYERS` |
-| alignments coverage | 5 | yes | yes | GPU, Canvas2D | `COVERAGE_LAYERS` |
+| alignments coverage | 5 | yes | yes | GPU, Canvas2D | `ALIGNMENTS_COVERAGE_MARKS`, a mark list MAF declares too |
 | alignments arcs | 4 | yes | band-level only | GPU, `drawArcs` | list + `flatPaintOrder.test.ts` |
 | alignments SVG overlays | 3 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
 | canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `CANVAS_FEATURE_MARKS`, a mark list |

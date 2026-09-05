@@ -361,7 +361,7 @@ from what you asked for rather than what you got.
 `MAX_CANVAS_DIM_PX` (8192 physical px per axis) so an oversized canvas can't
 throw `InvalidStateError`. But the cap applies only at the canvas: every
 downstream rect is still derived as `cssPx * getDpr()` from the **true** dpr
-(`clipBlock`, alignments' `computeBlockGeom`, the per-region base's `pxH`). Past
+(`clipBlock`, which alignments shares, and the per-region base's `pxH`). Past
 the cap the browser stretches the smaller backing store over the larger element
 *and* the scissor/viewport rects can exceed it, where WebGL2 clamps silently and
 WebGPU rejects the rect and blanks the frame. The one-shot `console.warn` reads
@@ -385,8 +385,7 @@ backing store clamped at 8192.
 **The fix is that `syncCanvasSize` now reports the scale each axis actually got,
 and every device-px rect derives from that** rather than from the free
 `getDpr()`: `hal.resize` returns it, `clipBlock` takes it per-axis (only one axis
-clamps at a time), and alignments' `bufH` / `computeBlockGeom` read it the same
-way. `prepareCanvas` transforms by it too, which is the Canvas2D half — that path
+clamps at a time), and alignments' `bufH` reads it the same way. `prepareCanvas` transforms by it too, which is the Canvas2D half — that path
 used to stretch its top slice over the whole track. Past the clamp a display now
 draws at reduced resolution, which nobody can see at a track height no screen
 shows at once, instead of not drawing. Verified on the panel that broke it: at

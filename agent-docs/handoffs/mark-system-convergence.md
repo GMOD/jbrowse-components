@@ -1,6 +1,6 @@
 ---
 name: mark-system-convergence
-description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); the variant matrix display pulled params(state, region), and canvas basic and multiway pulled bufferOf, so every recorded prerequisite has a consumer and the canvas feature glyph set is five marks two displays declare; nothing is open, and the file closes once its remainder is filed
+description: The 2026-09-05 render-core mark-system review landed five of its six items on main (the display-held encode memo, span's hitNearest with a draw-against-hit sweep, MSAA derived from a shader directive, a cleanup batch, and the multi-sample variant display drawing through a plugin-held cell mark); the positioned-label overlay was declined as already built (OverlayCanvas plus Ctx2D); the variant matrix display pulled params(state, region), canvas basic and multiway pulled bufferOf, and the coverage band pulled `band` on defineMark — five shared marks in alignments-core that MAF (now on createMarkBackend, renderer pair gone) and alignments both declare; nothing is open, and the file closes once its remainder is filed
 ---
 
 # Mark-system convergence handoff
@@ -95,6 +95,38 @@ is still open.
   0.00%, wiggle's known 0.3–0.4% antialiasing drift showing the comparison
   live. `REJECTED_IDEAS.md` records why this converted and alignments still
   does not.
+
+- The coverage band is five shared marks, and MAF is a declaration
+  (2026-09-05, third session). `defineMark` took `band: state => { top,
+  height }` — the GPU scissors to the strip and restores the block column,
+  Canvas2D clips, zero height draws nothing, a hit outside it is no hit — so a
+  display stacking bands on one canvas no longer needs a renderer pair around
+  its mark list. `@jbrowse/alignments-core` (now depending on render-core)
+  holds `coverageBandMarks`: one `MarkShape` per band layer over render-core's
+  pass and the package's own painter, one uniform write, the depth-scaled
+  layers gated on the domain and the interbase pair on the toggle through
+  `paintsBlock`, painters retyped on `MarkContext2D`. MAF's `MAF_MARKS` is the
+  four band layers under a `{ top: 0, height }` band plus the row mark under
+  the rows band; `GpuMafRenderer`, `Canvas2DMafRenderer`, `MafRendererFactory`
+  and `drawMafCoverage` are gone, the band state is never absent (height 0 is
+  off; an unresolved domain draws the indicators alone, as alignments does),
+  and render-core's `coverageBandBuffers` projection went with its last
+  caller. Alignments declares `ALIGNMENTS_COVERAGE_MARKS` and walks it inside
+  its own section scissor on both backends; `COVERAGE_LAYERS`,
+  `GPU_COVERAGE_PASS`, `CANVAS_COVERAGE_DRAW`, `fillCoverageBandUniforms`, the
+  five per-layer `drawCanvas.ts`/`packGpu.ts` pairs and `coverageScale.ts` are
+  gone, and its GPU renderer clips with `clipBlock` instead of its own
+  `computeBlockGeom` twin, which is what handed the marks a `BlockClipResult`.
+  **Behaviour changes:** the Canvas2D band paints packed colours back out as
+  `rgba(r,g,b,1)` rather than `rgb(r,g,b)` (the export snapshots did not
+  move); the band's painters cull at `min(block.screenEndPx, canvasWidth)`
+  rather than the canvas width; a MAF band whose domain has not resolved now
+  draws its indicator triangles. Oracles: typecheck, `plugins/alignments`
+  (235 suites), `plugins/maf`, `render-core`, `alignments-core`,
+  `linear-comparative-view`, nine jbrowse-web export and alignments suites,
+  lint, format, autogen. The alignments pileup stays where the rejected-ideas
+  entry left it: the band was already its own uniform block, the pileup's
+  thirteen passes are not.
 
 ## Declined during the review, do not re-propose
 
