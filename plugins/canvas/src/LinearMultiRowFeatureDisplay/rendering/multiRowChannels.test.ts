@@ -1,11 +1,7 @@
-import { buildMultiRowInstanceBuffer } from './multiRowInstanceBuffer.ts'
-import {
-  INSTANCE_OFFSET_U32,
-  INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS,
-} from './shaders/multiRow.generated.ts'
+import { buildMultiRowChannels } from './multiRowChannels.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
+import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 interface DecodedInstance {
   startBp: number
@@ -14,20 +10,17 @@ interface DecodedInstance {
   color: number
 }
 
-// The encoder returns the bytes alone, so the count is read off them the way
-// the upload reads it — which is also the invariant worth asserting: a buffer
-// right-sized to what was written, never the one-per-feature seed.
-function decode(buffer: ArrayBuffer): DecodedInstance[] {
-  expect(buffer.byteLength % INSTANCE_STRIDE_BYTES).toBe(0)
-  const u32 = new Uint32Array(buffer)
+// `count` is what was written, never the one-per-feature seed, and both the
+// packer and the painter read it — so reading the channels past it is reading
+// capacity, which is the invariant worth asserting.
+function decode(c: SpanChannels): DecodedInstance[] {
   const out: DecodedInstance[] = []
-  for (let i = 0; i < buffer.byteLength / INSTANCE_STRIDE_BYTES; i++) {
-    const base = i * INSTANCE_STRIDE_WORDS
+  for (let i = 0; i < c.count; i++) {
     out.push({
-      startBp: u32[base + INSTANCE_OFFSET_U32.startBp]!,
-      endBp: u32[base + INSTANCE_OFFSET_U32.endBp]!,
-      rowIndex: u32[base + INSTANCE_OFFSET_U32.rowIndex]!,
-      color: u32[base + INSTANCE_OFFSET_U32.color]!,
+      startBp: c.x[i]!,
+      endBp: c.x2[i]!,
+      rowIndex: c.row[i]!,
+      color: c.color[i]!,
     })
   }
   return out
@@ -71,10 +64,7 @@ test('maps partition values to global row indices', () => {
     ['dadHP1', 0],
     ['momHP0', 1],
   ])
-  const buffer = buildMultiRowInstanceBuffer(
-    region,
-    paintState(rowIndexByValue),
-  )
+  const buffer = buildMultiRowChannels(region, paintState(rowIndexByValue))
   expect(decode(buffer)).toEqual([
     { startBp: 10, endBp: 15, rowIndex: 1, color: 0xff0000ff },
     { startBp: 20, endBp: 25, rowIndex: 0, color: 0xff00ff00 },
@@ -84,10 +74,7 @@ test('maps partition values to global row indices', () => {
 
 test('skips features whose partition value has no assigned row', () => {
   const rowIndexByValue = new Map([['momHP0', 0]])
-  const buffer = buildMultiRowInstanceBuffer(
-    region,
-    paintState(rowIndexByValue),
-  )
+  const buffer = buildMultiRowChannels(region, paintState(rowIndexByValue))
   expect(decode(buffer).map(d => d.startBp)).toEqual([10, 30])
 })
 
@@ -97,7 +84,7 @@ test('skips features whose color is a hidden category', () => {
     ['dadHP1', 1],
   ])
   // hide 0xff00ff00 (feature 1, on dadHP1); features 0 and 2 remain
-  const buffer = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, { hiddenColors: new Set([0xff00ff00]) }),
   )
@@ -112,7 +99,7 @@ test('a hidden category does not drop features on rows with a color override', (
   // row 0 (momHP0) is recolored, so it paints the override, not its baked color.
   // hiding 0xff0000ff (feature 0's baked color) must NOT drop feature 0 — that
   // color is not what the row paints and isn't in the legend.
-  const buffer = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, {
       rowColorsByIndex: [0xff123456, undefined],
@@ -128,7 +115,7 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
     ['dadHP1', 1],
   ])
   // override row 0 (momHP0) only; row 1 keeps its baked feature color
-  const buffer = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowChannels(
     region,
     paintState(rowIndexByValue, { rowColorsByIndex: [0xff123456, undefined] }),
   )

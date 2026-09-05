@@ -67,7 +67,7 @@ function makeLabelColorResolver() {
 /**
  * Alignment-style indel glyphs over the multi-row blocks, from the signed bp
  * deltas the `lengthField` slot packs. Takes the same four arguments as
- * `drawMultiRowBlocks` and walks the same `forEachClippedBlock` + `makeBpMapper`
+ * `the `span` mark's painter` and walks the same `forEachClippedBlock` + `makeBpMapper`
  * geometry, so a glyph always lands on the block it annotates; that sharing is
  * the point of the identical signature.
  *

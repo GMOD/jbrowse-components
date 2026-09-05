@@ -68,7 +68,7 @@ import {
   buildColorLegend,
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
-import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
+import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -1149,25 +1149,16 @@ export default function stateModelFactory(
         startRenderingBackend(backend: MultiRowRenderingBackend) {
           installUpload(self, backend, {
             cells: () => self.drawnRegionData,
-            // `featurePaintInputs`, never `renderState`: the instance buffer holds
-            // {startBp,endBp,rowIndex,color} and no geometry — the row height and
-            // canvas box reach the shader as uniforms, and both move on every
-            // frame of a track-height drag. Declaring the narrow one is what keeps
-            // a reorder / recolor / category toggle re-encoding without an RPC
+            // `featurePaintInputs`, never `renderState`: the channels hold
+            // {x,x2,row,color} and no geometry — the row height and canvas box
+            // reach the shape as uniforms, and both move on every frame of a
+            // track-height drag. Declaring the narrow one is what keeps a
+            // reorder / recolor / category toggle re-encoding without an RPC
             // roundtrip while a resize re-encodes nothing.
             inputs: () => self.featurePaintInputs,
-            encode: (regionData, paintInputs) => ({
-              instanceBuffer: buildMultiRowInstanceBuffer(
-                regionData,
-                paintInputs,
-              ),
-            }),
-            render: b =>
-              b.renderBlocks(
-                self.renderBlocks,
-                self.drawnRegionData,
-                self.renderState,
-              ),
+            encode: buildMultiRowChannels,
+            render: (b, encoded) =>
+              b.renderBlocks(self.renderBlocks, encoded, self.renderState),
           })
         },
       }

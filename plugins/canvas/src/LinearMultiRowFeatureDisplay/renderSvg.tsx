@@ -4,12 +4,14 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawDensityBand } from '../shared/densityBand.ts'
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
-import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
+import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
+import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { DensityBandLayer } from '../shared/densityBand.ts'
@@ -41,7 +43,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
-  drawnRegionData: { get: (key: number) => MultiRowRegionData | undefined }
+  drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
   // `sources` with the per-row painted color folded into `labelColor` when the
@@ -109,7 +111,21 @@ function MultiRowSvgBody({
                 palette: exportPalette,
               })
             }
-            drawMultiRowBlocks(ctx, self.drawnRegionData, renderBlocks, state)
+            // The export encodes the channels itself: the on-screen encode
+            // lives in the upload autorun, whose output the model does not
+            // retain.
+            paintMarkBlocks(
+              ctx,
+              MULTI_ROW_MARKS,
+              new Map(
+                [...self.drawnRegionData].map(([k, d]) => [
+                  k,
+                  buildMultiRowChannels(d, state),
+                ]),
+              ),
+              renderBlocks,
+              state,
+            )
             // Same layer, after the blocks, so the export stacks them the way
             // the on-screen overlay composites over the canvas.
             drawMultiRowIndelGlyphs(
