@@ -66,12 +66,6 @@ function ownersOf(hook: Hook) {
 // distinguishable from any other getter.
 const HOOKS: Hook[] = [
   {
-    name: 'regionFetchKey',
-    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
-    ifNotOverridden:
-      'the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at',
-  },
-  {
     name: 'regionHasData',
     owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:

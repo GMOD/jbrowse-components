@@ -47,7 +47,7 @@ export const MAX_STORED_REGIONS = 32
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
  * autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
- * `rpcProps`, `regionFetchKey`, `regionHasData`, `gateEnabled`) plus
+ * `rpcProps`, `zoomFetchArgs`, `regionHasData`, `gateEnabled`) plus
  * the `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
@@ -147,7 +147,7 @@ export default function MultiRegionDisplayMixin() {
          * block is still what a fetch would bring back is `isCacheValid`, which
          * `dataCurrent` conjoins for the export gate. The scrim reads this
          * getter and `dataSuperseded`, never `isCacheValid`: a phase that went
-         * `loading` on a moved `regionFetchKey` would raise the overlay into
+         * `loading` on a moved `fetchInputs` would raise the overlay into
          * every zoom.
          */
         get viewportWithinLoadedData() {
@@ -213,7 +213,7 @@ export default function MultiRegionDisplayMixin() {
          * Overridable hook (default `''`): the zoom-dependent term of what a
          * fetch issued right now would produce for a region — the one axis of
          * the fetch key the display supplies, where the settings and adapter
-         * axes are the mixin's (`regionFetchKey` below). Wiggle returns
+         * axes are the mixin's (`fetchInputs` below). Wiggle returns
          * `String(view.bpPerPx)` (adr-008), canvas the peptide-overlay
          * threshold, the variant matrix its zoom in matrix mode only,
          * alignments its per-base sampling bin.
@@ -487,11 +487,11 @@ export default function MultiRegionDisplayMixin() {
          *
          * **`isCacheValid` belongs here and not in the scrim.** Coverage answers
          * "is the data here", never "is it what a fetch now would bring back", so
-         * a zoom that moves `regionFetchKey` leaves every held region covered and
+         * a zoom that moves `fetchInputs` leaves every held region covered and
          * stale at once — and an export sampling `svgReady` across that window
          * painted bins the worker computed for the previous zoom. `displayPhase`
          * takes `dataSuperseded` but NOT this term: folding a moved
-         * `regionFetchKey` into the phase raises the loading scrim into every
+         * `fetchInputs` into the phase raises the loading scrim into every
          * zoom, which is the trade REJECTED_IDEAS.md "Folding content staleness
          * into `displayPhase`" turned down and this does not take.
          *
@@ -747,7 +747,7 @@ export default function MultiRegionDisplayMixin() {
            * #action
            * `SettingsInvalidate`'s reset: the half of `clearAllRpcData` a
            * settings change still needs now that the settings and adapter
-           * axes are in `regionFetchKey`. The in-flight fetch is superseded
+           * axes are in `fetchInputs`. The in-flight fetch is superseded
            * now rather than when its payload lands stamped stale, a blocking
            * error or cancel is cleared so the plan is not `blocked`, and the
            * display drops its settings-baked data. `loadedRegions` and the

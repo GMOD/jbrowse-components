@@ -3247,7 +3247,7 @@ export default function stateModelFactory(
          * it, so the clear is inevitable and not yet committed.
          *
          * **Only the debounce half is here.** Once the settled bin moves, the
-         * stamp a region was fetched under stops matching `regionFetchKey` and
+         * stamp a region was fetched under stops matching `fetchInputs` and
          * the foundation's own `isCacheValid` term in `dataCurrent` covers it —
          * this display carried that compare privately until the foundation took
          * it. What no key can state is the window before the debounce catches
