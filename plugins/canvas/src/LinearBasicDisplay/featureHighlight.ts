@@ -258,19 +258,22 @@ export function resolveFeatureHighlights(
   const box = new Set<string>()
   const pin = new Set<string>()
   const boxedBy = highlights.map(h => {
-    let { boxed, pin: pins } = sweep(regionList, (item, featureId, refName) =>
+    const exact = sweep(regionList, (item, featureId, refName) =>
       highlightHits(h, item, featureId, refName),
     )
-    // Only if the exact pass boxed NOTHING anywhere, and never for a featureId
-    // highlight — falling back to its name would box every same-named sibling,
-    // the exact symptom storing the id fixed. Scoped whole-sweep rather than
-    // per-region so a span match in one region can't also name-match something
-    // unrelated in another.
-    if (boxed.size === 0 && h.name !== undefined && h.featureId === undefined) {
-      ;({ boxed, pin: pins } = sweep(regionList, (item, _featureId, refName) =>
-        featureNameMatchesHighlight(item, refName, h),
-      ))
-    }
+    // The name fallback runs only if the exact pass boxed NOTHING anywhere, and
+    // never for a featureId highlight — falling back to its name would box every
+    // same-named sibling, the exact symptom storing the id fixed. Scoped
+    // whole-sweep rather than per-region so a span match in one region can't
+    // also name-match something unrelated in another.
+    const { boxed, pin: pins } =
+      exact.boxed.size === 0 &&
+      h.name !== undefined &&
+      h.featureId === undefined
+        ? sweep(regionList, (item, _featureId, refName) =>
+            featureNameMatchesHighlight(item, refName, h),
+          )
+        : exact
     for (const id of boxed) {
       box.add(id)
     }
