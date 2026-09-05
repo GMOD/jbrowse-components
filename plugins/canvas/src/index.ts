@@ -237,7 +237,6 @@ export {
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
   buildFeatureFlatbushIndex,
-  isHitFeature,
   performMultiRegionHitDetection,
 } from './LinearBasicDisplay/components/hitTesting.ts'
 export {

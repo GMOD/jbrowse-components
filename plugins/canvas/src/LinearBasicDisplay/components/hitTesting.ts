@@ -71,14 +71,6 @@ export interface HitFeatureResult {
   displayedRegionIndex: number
 }
 
-type HitResult =
-  | HitFeatureResult
-  | { feature: undefined; subfeature: undefined }
-
-export function isHitFeature(r: HitResult): r is HitFeatureResult {
-  return r.feature !== undefined
-}
-
 // The hit a hover on a feature's floating label stands for: the label names its
 // feature and nothing finer, and the base under the cursor is read through the
 // label's own region so the transcript readouts match what the glyph beside it
@@ -240,7 +232,7 @@ export function performMultiRegionHitDetection(
   visibleRegions: VisibleRegion[],
   mouseXPx: number,
   yPos: number,
-): HitResult {
+): HitFeatureResult | undefined {
   const vr = regionAtPixel(visibleRegions, mouseXPx)
   if (vr) {
     const data = laidOutDataMap.get(vr.displayedRegionIndex)
@@ -272,5 +264,5 @@ export function performMultiRegionHitDetection(
       }
     }
   }
-  return { feature: undefined, subfeature: undefined }
+  return undefined
 }

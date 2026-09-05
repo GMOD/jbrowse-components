@@ -28,7 +28,7 @@ import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
-import { isHitFeature, performMultiRegionHitDetection } from './hitTesting.ts'
+import { performMultiRegionHitDetection } from './hitTesting.ts'
 import {
   hgvsHitLabel,
   hoverTooltipRows,
@@ -288,7 +288,7 @@ const FeatureBody = observer(function FeatureBody({
     }
     model.setDensityHoverPx(canvasX)
     const result = hitTestAt(canvasX, canvasY)
-    if (isHitFeature(result)) {
+    if (result) {
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId,
@@ -317,9 +317,9 @@ const FeatureBody = observer(function FeatureBody({
     // Ctrl/Cmd+click builds the "show only these features" collection instead
     // of opening the feature details, so several features can be tagged while
     // they're all still visible, then isolated together via the context menu.
-    if ((e.ctrlKey || e.metaKey) && isHitFeature(result)) {
+    if ((e.ctrlKey || e.metaKey) && result) {
       model.toggleSoloFeature(result.feature.featureId)
-    } else if (isHitFeature(result)) {
+    } else if (result) {
       model.selectFeatureById(
         result.feature.featureId,
         result.subfeature,
@@ -332,7 +332,7 @@ const FeatureBody = observer(function FeatureBody({
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
-    if (isHitFeature(result)) {
+    if (result) {
       // The subfeature rides along so the menu can target the exact transcript
       // under the cursor, not just its gene.
       e.preventDefault()

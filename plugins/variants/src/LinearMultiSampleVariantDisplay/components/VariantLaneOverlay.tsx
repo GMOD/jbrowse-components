@@ -1,7 +1,6 @@
 import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
-  isHitFeature,
   paintFeatureBand,
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-canvas'
@@ -49,7 +48,7 @@ function getHoveredLaneMark(
     mouseX,
     mouseY,
   )
-  if (!isHitFeature(result)) {
+  if (!result) {
     return undefined
   }
   const { featureId } = result.feature

@@ -8,7 +8,6 @@ import {
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
-  isHitFeature,
   labelHit,
   performMultiRegionHitDetection,
   regionBpPerPx,
@@ -149,8 +148,7 @@ test('hits feature at correct coordinates', () => {
     320,
     10,
   )
-  expect(result.feature).toBeDefined()
-  expect(result.feature!.featureId).toBe('gene1')
+  expect(result!.feature.featureId).toBe('gene1')
 })
 
 test('misses when clicking outside feature bounds', () => {
@@ -161,7 +159,7 @@ test('misses when clicking outside feature bounds', () => {
     10,
     10,
   )
-  expect(result.feature).toBeUndefined()
+  expect(result).toBeUndefined()
 })
 
 test('misses when clicking below feature', () => {
@@ -172,7 +170,7 @@ test('misses when clicking below feature', () => {
     320,
     25,
   )
-  expect(result.feature).toBeUndefined()
+  expect(result).toBeUndefined()
 })
 
 test('returns correct displayedRegionIndex', () => {
@@ -183,8 +181,8 @@ test('returns correct displayedRegionIndex', () => {
     320,
     10,
   )
-  expect(isHitFeature(result)).toBe(true)
-  if (isHitFeature(result)) {
+  expect(result).toBeDefined()
+  if (result) {
     expect(result.displayedRegionIndex).toBe(7)
   }
 })
@@ -194,8 +192,8 @@ test('skips regions where mouseX is outside screen bounds', () => {
   const laidOutDataMap = new Map([[0, data]])
   const region = makeRegion(0, 0, 10000, 100, 500)
 
-  expect(hit(laidOutDataMap, [region], 50, 10).feature).toBeUndefined()
-  expect(hit(laidOutDataMap, [region], 250, 10).feature).toBeDefined()
+  expect(hit(laidOutDataMap, [region], 50, 10)).toBeUndefined()
+  expect(hit(laidOutDataMap, [region], 250, 10)).toBeDefined()
 })
 
 test('hits subfeature when within subfeature bounds', () => {
@@ -208,8 +206,8 @@ test('hits subfeature when within subfeature bounds', () => {
     200,
     10,
   )
-  expect(result.feature!.featureId).toBe('gene1')
-  expect(result.subfeature!.featureId).toBe('mRNA1')
+  expect(result!.feature.featureId).toBe('gene1')
+  expect(result!.subfeature!.featureId).toBe('mRNA1')
 })
 
 test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
@@ -228,7 +226,7 @@ test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
     120, // ≈1500bp, inside both the body (1000-5000) and the LTR (1000-2000)
     10,
   )
-  expect(result.subfeature!.featureId).toBe('ltr')
+  expect(result!.subfeature!.featureId).toBe('ltr')
 })
 
 test('overlapping features: the hit feature keeps its own topmost subfeature', () => {
@@ -249,8 +247,8 @@ test('overlapping features: the hit feature keeps its own topmost subfeature', (
     160, // ≈2000bp, inside both genes and both transcripts
     10,
   )
-  expect(result.feature!.featureId).toBe('gene1')
-  expect(result.subfeature!.featureId).toBe('mRNA1')
+  expect(result!.feature.featureId).toBe('gene1')
+  expect(result!.subfeature!.featureId).toBe('mRNA1')
 })
 
 // The consumer half of the invariant `emitSubfeaturesGlyph` holds: a subfeature
@@ -268,7 +266,7 @@ test('pairs a subfeature named after the record, at any nesting depth', () => {
     200, // ≈2500bp, inside both
     10,
   )
-  expect(result.subfeature!.featureId).toBe('part1')
+  expect(result!.subfeature!.featureId).toBe('part1')
 })
 
 test('drops a subfeature naming a container instead of the record', () => {
@@ -282,8 +280,8 @@ test('drops a subfeature naming a container instead of the record', () => {
     200,
     10,
   )
-  expect(result.feature!.featureId).toBe('match1')
-  expect(result.subfeature).toBeUndefined()
+  expect(result!.feature.featureId).toBe('match1')
+  expect(result!.subfeature).toBeUndefined()
 })
 
 test('returns no subfeature when outside subfeature but inside feature', () => {
@@ -296,19 +294,19 @@ test('returns no subfeature when outside subfeature but inside feature', () => {
     120,
     25,
   )
-  expect(result.feature!.featureId).toBe('gene1')
-  expect(result.subfeature).toBeUndefined()
+  expect(result!.feature.featureId).toBe('gene1')
+  expect(result!.subfeature).toBeUndefined()
 })
 
 test('returns no hit when laidOutDataMap is empty', () => {
   const result = hit(new Map(), [makeRegion(0, 0, 10000, 0, 800)], 400, 10)
-  expect(result.feature).toBeUndefined()
+  expect(result).toBeUndefined()
 })
 
 test('returns no hit when no visible regions', () => {
   const data = makeData([makeItem('gene1', 1000, 5000, 0, 20)])
   const result = hit(new Map([[0, data]]), [], 400, 10)
-  expect(result.feature).toBeUndefined()
+  expect(result).toBeUndefined()
 })
 
 test('multi-region selects correct region', () => {
@@ -324,15 +322,15 @@ test('multi-region selects correct region', () => {
   ]
 
   const hitR0 = hit(laidOutDataMap, regions, 100, 10)
-  expect(isHitFeature(hitR0)).toBe(true)
-  if (isHitFeature(hitR0)) {
+  expect(hitR0).toBeDefined()
+  if (hitR0) {
     expect(hitR0.feature.featureId).toBe('geneA')
     expect(hitR0.displayedRegionIndex).toBe(0)
   }
 
   const hitR1 = hit(laidOutDataMap, regions, 500, 10)
-  expect(isHitFeature(hitR1)).toBe(true)
-  if (isHitFeature(hitR1)) {
+  expect(hitR1).toBeDefined()
+  if (hitR1) {
     expect(hitR1.feature.featureId).toBe('geneB')
     expect(hitR1.displayedRegionIndex).toBe(1)
   }
@@ -354,8 +352,8 @@ test('adjacent regions: shared boundary pixel goes to the later region', () => {
   ]
 
   const boundary = hit(laidOutDataMap, regions, 400, 10)
-  expect(isHitFeature(boundary)).toBe(true)
-  if (isHitFeature(boundary)) {
+  expect(boundary).toBeDefined()
+  if (boundary) {
     expect(boundary.feature.featureId).toBe('geneB')
     expect(boundary.displayedRegionIndex).toBe(1)
   }
@@ -374,10 +372,10 @@ test('multi-region continues to next region when first has no hit', () => {
     makeRegion(1, 0, 1000, 0, 800),
   ]
 
-  expect(hit(laidOutDataMap, regions, 100, 999).feature).toBeUndefined()
+  expect(hit(laidOutDataMap, regions, 100, 999)).toBeUndefined()
   const h = hit(laidOutDataMap, regions, 100, 10)
-  expect(isHitFeature(h)).toBe(true)
-  if (isHitFeature(h)) {
+  expect(h).toBeDefined()
+  if (h) {
     expect(h.feature.featureId).toBe('geneA')
     expect(h.displayedRegionIndex).toBe(0)
   }
@@ -410,8 +408,8 @@ test('returns the amino-acid codon under the cursor', () => {
     80,
     10,
   )
-  expect(isHitFeature(result)).toBe(true)
-  if (isHitFeature(result)) {
+  expect(result).toBeDefined()
+  if (result) {
     expect(result.feature.featureId).toBe('gene1')
     expect(result.peptide?.aminoAcid).toBe('M')
   }
@@ -430,8 +428,8 @@ test('no peptide when feature hit but no codon under cursor', () => {
     320,
     10,
   )
-  expect(isHitFeature(result)).toBe(true)
-  if (isHitFeature(result)) {
+  expect(result).toBeDefined()
+  if (result) {
     expect(result.feature.featureId).toBe('gene1')
     expect(result.peptide).toBeUndefined()
   }
@@ -448,8 +446,8 @@ test('bpPos is floored to an integer even when the mouse pixel maps to a fractio
     81,
     10,
   )
-  expect(isHitFeature(result)).toBe(true)
-  if (isHitFeature(result)) {
+  expect(result).toBeDefined()
+  if (result) {
     expect(result.bpPos).toBe(1012)
     expect(Number.isInteger(result.bpPos)).toBe(true)
   }
@@ -462,7 +460,7 @@ test('handles reversed region with explicit flag', () => {
   const data = makeData([makeItem('gene1', 3000, 4000, 0, 20)])
   const region = makeRegion(0, 0, 10000, 0, 800, true)
   const result = hit(new Map([[0, data]]), [region], 500, 10)
-  expect(result.feature!.featureId).toBe('gene1')
+  expect(result!.feature.featureId).toBe('gene1')
 })
 
 // Reversed, base b paints across pixels ((end-b-1)/bpPerPx, (end-b)/bpPerPx],
@@ -475,7 +473,7 @@ test('reversed base zoom resolves each pixel column to the base painted there', 
   const region = makeRegion(0, 1000, 1010, 0, 100, true)
   const bpAt = (x: number) => {
     const result = hit(new Map([[0, data]]), [region], x, 10)
-    return isHitFeature(result) ? result.bpPos : undefined
+    return result?.bpPos
   }
   expect(bpAt(0)).toBe(1009)
   expect(bpAt(5)).toBe(1009)
@@ -489,7 +487,7 @@ test('forward base zoom resolves each pixel column to the base painted there', (
   const region = makeRegion(0, 1000, 1010, 0, 100)
   const bpAt = (x: number) => {
     const result = hit(new Map([[0, data]]), [region], x, 10)
-    return isHitFeature(result) ? result.bpPos : undefined
+    return result?.bpPos
   }
   expect(bpAt(0)).toBe(1000)
   expect(bpAt(9.9)).toBe(1000)
@@ -530,23 +528,23 @@ test('hit pad expands hit area on both sides of small features', () => {
   // 1 bp/px, feature 1000-1010. HIT_PAD_PX=4 so hit zone is 996..1014.
   const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
   const region = makeRegion(0, 0, 2000, 0, 2000) // 1 bp/px
-  expect(hit(new Map([[0, data]]), [region], 997, 10).feature?.featureId).toBe(
+  expect(hit(new Map([[0, data]]), [region], 997, 10)?.feature.featureId).toBe(
     'gene1',
   )
-  expect(hit(new Map([[0, data]]), [region], 1013, 10).feature?.featureId).toBe(
+  expect(hit(new Map([[0, data]]), [region], 1013, 10)?.feature.featureId).toBe(
     'gene1',
   )
-  expect(hit(new Map([[0, data]]), [region], 990, 10).feature).toBeUndefined()
-  expect(hit(new Map([[0, data]]), [region], 1020, 10).feature).toBeUndefined()
+  expect(hit(new Map([[0, data]]), [region], 990, 10)).toBeUndefined()
+  expect(hit(new Map([[0, data]]), [region], 1020, 10)).toBeUndefined()
 })
 
 test('hit pad expands un-stranded features equally', () => {
   const data = makeData([makeItem('region1', 500, 502, 0, 20)])
   const region = makeRegion(0, 0, 2000, 0, 2000) // 1 bp/px
-  expect(hit(new Map([[0, data]]), [region], 498, 10).feature?.featureId).toBe(
+  expect(hit(new Map([[0, data]]), [region], 498, 10)?.feature.featureId).toBe(
     'region1',
   )
-  expect(hit(new Map([[0, data]]), [region], 505, 10).feature?.featureId).toBe(
+  expect(hit(new Map([[0, data]]), [region], 505, 10)?.feature.featureId).toBe(
     'region1',
   )
 })
@@ -560,7 +558,7 @@ test('label hit area extends past feature when showLabels is true', () => {
     10,
     { ...DEFAULT_LABELS, showLabels: true },
   )
-  expect(result.feature).toBeDefined()
+  expect(result).toBeDefined()
 })
 
 // Reversed, a label still draws to the RIGHT of its feature on screen, which is
@@ -570,7 +568,7 @@ test('label hit area extends past feature when showLabels is true', () => {
 test('label hit area extends to the low-bp side in a reversed region', () => {
   const data = makeDataWithLabel([makeItem('gene1', 1000, 1100, 0, 20)], 50)
   const regions = [makeRegion(0, 0, 10000, 0, 800, true)]
-  const at = (x: number) => hit(new Map([[0, data]]), regions, x, 10).feature
+  const at = (x: number) => hit(new Map([[0, data]]), regions, x, 10)?.feature
   expect(at(750)?.featureId).toBe('gene1')
   expect(at(690)).toBeUndefined()
 })
@@ -600,7 +598,7 @@ test('label hit area collapses when showLabels is false', () => {
     10,
     { ...DEFAULT_LABELS, showLabels: false },
   )
-  expect(result.feature).toBeUndefined()
+  expect(result).toBeUndefined()
 })
 
 test('subfeature label hit area is reserved when the label is present', () => {
@@ -638,5 +636,5 @@ test('subfeature label hit area is reserved when the label is present', () => {
     ...DEFAULT_LABELS,
     showLabels: false,
   })
-  expect(shown.feature).toBeDefined()
+  expect(shown).toBeDefined()
 })
