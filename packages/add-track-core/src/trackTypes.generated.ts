@@ -7,8 +7,6 @@
  * fall back to `FeatureTrack`.
  */
 export const adapterTypesToTrackTypeMap: Record<string, string> = {
-  AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
-  AllVsAllPAFAdapter: 'SyntenyTrack',
   BamAdapter: 'AlignmentsTrack',
   BedAdapter: 'FeatureTrack',
   BedGraphAdapter: 'QuantitativeTrack',
@@ -44,6 +42,8 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   MCScanAnchorsAdapter: 'SyntenyTrack',
   MCScanBlocksAdapter: 'SyntenyTrack',
   MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
+  MultiGenomeIndexedPAFAdapter: 'SyntenyTrack',
+  MultiGenomePAFAdapter: 'SyntenyTrack',
   MultiPairwiseSyntenyAdapter: 'SyntenyTrack',
   MultiWiggleAdapter: 'MultiQuantitativeTrack',
   NCListAdapter: 'FeatureTrack',

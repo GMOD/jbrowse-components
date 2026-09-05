@@ -618,25 +618,26 @@ express "or this other one". Where two adapters genuinely read the same
 extension, the one the chain does not pick declares that on its own
 registration, and the "Add track" form offers it alongside the guess:
 
-<!-- include: plugins/comparative-adapters/src/AllVsAllPAFAdapter/index.ts#alsoReads -->
+<!-- include: plugins/comparative-adapters/src/MultiGenomePAFAdapter/index.ts#alsoReads -->
 
 ```typescript
-export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
+export default function MultiGenomePAFAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'AllVsAllPAFAdapter',
-        displayName: 'All-vs-all PAF adapter',
+        name: 'MultiGenomePAFAdapter',
+        aliases: ['AllVsAllPAFAdapter'],
+        displayName: 'Multi-genome PAF adapter',
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
-          // a .paf is claimed by PAFAdapter, and an all-vs-all one is
+          // a .paf is claimed by PAFAdapter, and a multi-genome one is
           // indistinguishable by name; read as pairwise it attributes one
           // genome's contigs to another rather than merely dropping them
           alsoReads: /\.paf(\.gz)?$/i,
         },
         getAdapterClass: () =>
-          import('./AllVsAllPAFAdapter.ts').then(r => r.default),
+          import('./MultiGenomePAFAdapter.ts').then(r => r.default),
       }),
   )
 }

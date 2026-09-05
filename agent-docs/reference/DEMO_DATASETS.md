@@ -265,7 +265,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 
 - **The pangenome tutorial teaches four linear projections** of a pggb graph,
   because JBrowse has no graph-native adapter: synteny (wfmash PAF → `make-pif`
-  → `AllVsAllIndexedPAFAdapter`), variants (`pggb -V` VCF →
+  → `MultiGenomeIndexedPAFAdapter`), variants (`pggb -V` VCF →
   `LinearMultiSampleVariantMatrixDisplay`), MAF (`pggb -M` → re-root →
   `BgzipTaffyAdapter`), and depth/PAV bigWigs.
 - **73% of pggb `-M` MAF rows violate the MAF spec** — smoothxg (v0.8.2,
@@ -315,7 +315,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   which is the check that either reads the graph faithfully. It is the
   whole-genome, eukaryote-scale PIF that [HOSTING.md](HOSTING.md) says the
   coarse tier needs to be demonstrated on, and the first hosted
-  `AllVsAllIndexedPAFAdapter` file whose names are PanSN haplotypes
+  `MultiGenomeIndexedPAFAdapter` file whose names are PanSN haplotypes
   (`HG01109#1#JAHEPA020000055.1`), so the track maps `assemblyNameToPanSN`
   (`hg38` → `GRCh38#0`, `HG01109.1` → `HG01109#1`). The build, the converter's
   chaining, the taffy index bug that refuses chr1/chr2 at full length, and the

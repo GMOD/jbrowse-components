@@ -9,7 +9,7 @@
  * Nothing behaved differently; the config pages just said it differently six
  * times.
  *
- * **Only the pairwise adapters take this.** `AllVsAllPAFAdapter` and the MCScan
+ * **Only the pairwise adapters take this.** `MultiGenomePAFAdapter` and the MCScan
  * family also declare `assemblyNames`, and it does not mean an ordered
  * query/target pair there — all-vs-all names N assemblies and reads none of
  * them through this slot — so giving them the description would document a

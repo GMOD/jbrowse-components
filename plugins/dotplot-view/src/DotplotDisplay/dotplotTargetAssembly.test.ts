@@ -27,7 +27,7 @@ beforeEach(() => {
   mockGetFeatures.mockClear()
 })
 
-// A multi-genome adapter (MCScanBlocksAdapter, AllVsAllPAFAdapter) draws N-1
+// A multi-genome adapter (MCScanBlocksAdapter, MultiGenomePAFAdapter) draws N-1
 // pairs from one track and resolves the mate as "the first other entry in
 // assemblyNames" when no target is given. A grape x cacao dotplot on a
 // grape/peach/cacao track therefore silently fetched the grape x PEACH band,

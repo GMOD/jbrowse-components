@@ -183,7 +183,7 @@ tpeach#1#G1	1000	300	400	+	grape#1#chr1	1000	100	200	90	100	60
 
 Column 1 is the prefix letter followed by the whole PanSN name. The mate in
 columns 6-9 is the PanSN name alone, with no letter. Load such a file with
-[](/docs/config/allvsallindexedpafadapter).
+[](/docs/config/multigenomeindexedpafadapter).
 
 **The letter is a perspective, not an assembly.** In a pairwise file `q` is
 `assemblyNames[0]` and `t` is `assemblyNames[1]` in every row, so one query per
@@ -193,12 +193,12 @@ others. Above, `peach#1#G1` is the target, and wherever peach was the query its
 rows are filed under `qpeach#1#G1`. Both letters are read and unioned.
 
 **Assembly identity comes from the name.** Each entry in the adapter's
-[`assemblyNames`](/docs/config/allvsallindexedpafadapter/#slot-assemblynames)
+[`assemblyNames`](/docs/config/multigenomeindexedpafadapter/#slot-assemblynames)
 must resolve to a PanSN prefix present in the file, either a sample (`grape`,
 covering all of its haplotypes) or one haplotype (`grape#1`) for a
 haplotype-resolved pangenome that loads each haplotype separately. Where the
 JBrowse assembly name and the PanSN prefix differ, map them with
-[`assemblyNameToPanSN`](/docs/config/allvsallindexedpafadapter/#slot-assemblynametopansn).
+[`assemblyNameToPanSN`](/docs/config/multigenomeindexedpafadapter/#slot-assemblynametopansn).
 An assembly matching no prefix raises an error listing the prefixes the file
 does hold.
 
@@ -264,7 +264,7 @@ An all-vs-all file, where `assemblyNames` are PanSN prefixes:
   "name": "All vs all",
   "assemblyNames": ["grape", "peach", "cacao"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "assemblyNames": ["grape", "peach", "cacao"],
     "pifGzLocation": { "uri": "all_vs_all.pif.gz" },
     "index": {
@@ -307,7 +307,7 @@ and the coarse tier exist for.
 ## See also
 
 - Adapter config: [](/docs/config/pairwiseindexedpafadapter),
-  [](/docs/config/allvsallindexedpafadapter), [](/docs/config/pafadapter)
+  [](/docs/config/multigenomeindexedpafadapter), [](/docs/config/pafadapter)
 - [Config guide: synteny track](/docs/config_guides/synteny_track)
 
 Tutorials that build or load a PIF:

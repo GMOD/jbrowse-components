@@ -1022,7 +1022,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // tutorial. Both load a
   // hosted demo config (whose defaultSession opens the stacked LinearSyntenyView)
   // as a bare ?config= against the local build, since MCScanBlocksAdapter /
-  // AllVsAllPAFAdapter are newer than jbrowse.org/code/jb2/latest. Generous
+  // MultiGenomePAFAdapter are newer than jbrowse.org/code/jb2/latest. Generous
   // timeout/settle: the config pulls remote genomes + a synteny file and
   // autoDiagonalize runs a whole-genome RPC before the canvas settles.
   {
@@ -3468,7 +3468,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // track (ecoli_ava) on purpose — it is this tutorial's own all_vs_all.paf, and
   // "the same mode zoomed out" should be literally the same lanes.
   //
-  // It used to run on ecoli_pggb_ava (AllVsAllIndexedPAFAdapter) to cover the
+  // It used to run on ecoli_pggb_ava (MultiGenomeIndexedPAFAdapter) to cover the
   // indexed adapter in a plain LGV. That was wrong twice over, both in the
   // hosted asset rather than in our code, and both invisible in a caption:
   //

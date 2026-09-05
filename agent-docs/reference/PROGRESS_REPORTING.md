@@ -484,6 +484,6 @@ at all. The card's determinate branch was repaired three times before anything
 rendered it.
 
 `PAFAdapter.getFeatures` still linear-scans every record per region query
-(`AllVsAllPAFAdapter` builds a `sidesByContig` index for this); that is a
+(`MultiGenomePAFAdapter` builds a `sidesByContig` index for this); that is a
 performance gap, not a reporting one, but it is what makes the unreported
 stretches long enough to notice.

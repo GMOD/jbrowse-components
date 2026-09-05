@@ -183,7 +183,7 @@ export function orientPafRecord(record: PAFRecord, flip: boolean) {
 
 // Build a SyntenyFeature from a parsed PAF row already resolved to the
 // perspective the view is anchored on. Shared by PAFAdapter and
-// AllVsAllPAFAdapter, which differ only in how they derive start/end/refName
+// MultiGenomePAFAdapter, which differ only in how they derive start/end/refName
 // and the mate (raw names vs PanSN-stripped) — the orientation, identity and
 // feature construction are identical. `flip` is true when the queried assembly
 // is the PAF query side.

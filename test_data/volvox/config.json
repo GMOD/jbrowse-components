@@ -2377,7 +2377,7 @@
       "name": "volvox all-vs-all (ins/volvox/del pangenome)",
       "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
       "adapter": {
-        "type": "AllVsAllPAFAdapter",
+        "type": "MultiGenomePAFAdapter",
         "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
         "pafLocation": {
           "uri": "volvox_all_vs_all.paf"
@@ -2391,7 +2391,7 @@
       "name": "volvox all-vs-all indexed (ins/volvox/del pangenome)",
       "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
         "pifGzLocation": {
           "uri": "volvox_all_vs_all.pif.gz"

@@ -11,7 +11,7 @@ export type {
   RegionIndexEntry,
 } from './bpRegionIndex.ts'
 export {
-  allVsAllTypes,
+  multiGenomePAFTypes,
   mcscanBlocksTypes,
   mcscanTypes,
   pairwiseTypes,

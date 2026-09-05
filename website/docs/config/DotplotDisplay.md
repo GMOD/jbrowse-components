@@ -41,8 +41,6 @@ Every DotplotDisplay has a unique `displayId`, a required top-level field that i
 
 ## Related links
 
-- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
 - **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
 - **Adapter:** [ChainAdapter](../chainadapter)
 - **Adapter:** [DeltaAdapter](../deltaadapter)
@@ -50,6 +48,8 @@ Every DotplotDisplay has a unique `displayId`, a required top-level field that i
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
 - **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
 - **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MultiGenomeIndexedPAFAdapter](../multigenomeindexedpafadapter)
+- **Adapter:** [MultiGenomePAFAdapter](../multigenomepafadapter)
 - **Adapter:** [MultiPairwiseSyntenyAdapter](../multipairwisesyntenyadapter)
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)

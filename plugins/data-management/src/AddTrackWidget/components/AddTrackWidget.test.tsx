@@ -256,7 +256,7 @@ test('a file two adapters can read says so on the adapter field', () => {
   const { getByText } = render(<ConfirmTrack model={model} />)
 
   expect(
-    getByText(/This file can also be read as.*All-vs-all PAF adapter/),
+    getByText(/This file can also be read as.*Multi-genome PAF adapter/),
   ).toBeTruthy()
 })
 
@@ -269,8 +269,8 @@ test('the alternative is also pulled to the top of the dropdown', async () => {
   const listbox = within(await findByRole('listbox'))
   expect(listbox.getByText('Also reads this file')).toBeTruthy()
   // picking it re-guesses through the existing adapterHint path
-  fireEvent.click(listbox.getAllByText('All-vs-all PAF adapter')[0]!)
-  expect(model.trackAdapter?.type).toBe('AllVsAllPAFAdapter')
+  fireEvent.click(listbox.getAllByText('Multi-genome PAF adapter')[0]!)
+  expect(model.trackAdapter?.type).toBe('MultiGenomePAFAdapter')
 })
 
 // the ordinary case, which is nearly every file: only a handful of adapters
@@ -287,7 +287,7 @@ test('an unambiguous file says nothing extra', () => {
 test('the chosen adapter is not listed as an alternative to itself', () => {
   const { model } = getSession()
   model.setTrackData({ uri: 'all_vs_all.paf', locationType: 'UriLocation' })
-  model.setAdapterHint('AllVsAllPAFAdapter')
+  model.setAdapterHint('MultiGenomePAFAdapter')
   const { queryByText } = render(<ConfirmTrack model={model} />)
 
   expect(queryByText(/can also be read as/)).toBeNull()
@@ -306,13 +306,13 @@ test('an unclaimed extension still names the adapter that reads it', () => {
   ).toBeTruthy()
 })
 
-test('an all-vs-all PIF is offered alongside the pairwise guess', () => {
+test('a multi-genome PIF is offered alongside the pairwise guess', () => {
   const { model } = getSession()
   model.setTrackData({ uri: 'ava.pif.gz', locationType: 'UriLocation' })
   const { getByText } = render(<ConfirmTrack model={model} />)
 
   expect(model.trackAdapter?.type).toBe('PairwiseIndexedPAFAdapter')
   expect(
-    getByText(/can also be read as.*All-vs-all indexed PAF adapter/),
+    getByText(/can also be read as.*Multi-genome indexed PAF adapter/),
   ).toBeTruthy()
 })

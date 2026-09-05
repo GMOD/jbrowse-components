@@ -2,17 +2,6 @@
 
 exports[`every registered schema slot default 1`] = `
 {
-  "adapter: AllVsAllIndexedPAFAdapter": {
-    "assemblyNameToPanSN": "frozen = {}",
-    "assemblyNames": "stringArray = []",
-    "coarseBpPerPxThreshold": "number = 10000",
-    "pifGzLocation": "fileLocation = {"uri":"/path/to/all_vs_all.pif.gz","locationType":"UriLocation"}",
-  },
-  "adapter: AllVsAllPAFAdapter": {
-    "assemblyNameToPanSN": "frozen = {}",
-    "assemblyNames": "stringArray = []",
-    "pafLocation": "fileLocation = {"uri":"/path/to/file.paf","locationType":"UriLocation"}",
-  },
   "adapter: BamAdapter": {
     "bamLocation": "fileLocation = {"uri":"/path/to/my.bam","locationType":"UriLocation"}",
     "densityAdapter": "frozen = null",
@@ -231,6 +220,17 @@ exports[`every registered schema slot default 1`] = `
     "searchForward": "boolean = true",
     "searchReverse": "boolean = true",
     "sequenceAdapter": "frozen = null",
+  },
+  "adapter: MultiGenomeIndexedPAFAdapter": {
+    "assemblyNameToPanSN": "frozen = {}",
+    "assemblyNames": "stringArray = []",
+    "coarseBpPerPxThreshold": "number = 10000",
+    "pifGzLocation": "fileLocation = {"uri":"/path/to/all_vs_all.pif.gz","locationType":"UriLocation"}",
+  },
+  "adapter: MultiGenomePAFAdapter": {
+    "assemblyNameToPanSN": "frozen = {}",
+    "assemblyNames": "stringArray = []",
+    "pafLocation": "fileLocation = {"uri":"/path/to/file.paf","locationType":"UriLocation"}",
   },
   "adapter: MultiPairwiseSyntenyAdapter": {
     "adapters": "frozen = []",

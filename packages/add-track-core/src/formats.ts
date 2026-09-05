@@ -397,7 +397,7 @@ export const formats: FormatEntry[] = [
     // mapping come from its add-track form
     spec: {
       kind: 'single',
-      adapterType: 'AllVsAllPAFAdapter',
+      adapterType: 'MultiGenomePAFAdapter',
       locField: 'pafLocation',
     },
   },
@@ -405,7 +405,7 @@ export const formats: FormatEntry[] = [
     // likewise an all-vs-all PIF against a pairwise one
     spec: {
       kind: 'indexed',
-      adapterType: 'AllVsAllIndexedPAFAdapter',
+      adapterType: 'MultiGenomeIndexedPAFAdapter',
       locField: 'pifGzLocation',
       suffix: '.tbi',
       indexType: 'TBI',

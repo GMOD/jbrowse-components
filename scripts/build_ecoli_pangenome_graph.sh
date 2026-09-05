@@ -567,7 +567,7 @@ cat > ava_track.json <<JSON
   "name": "pggb graph: all-vs-all synteny (wfmash)",
   "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_pggb_ava.pif.gz" },
     "index": { "location": { "uri": "ecoli_pggb_ava.pif.gz.tbi" } },
     "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
@@ -588,7 +588,7 @@ cat > untangle_track.json <<JSON
   "name": "pggb graph: synteny from the graph (odgi untangle)",
   "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_pggb_untangle.pif.gz" },
     "index": { "location": { "uri": "ecoli_pggb_untangle.pif.gz.tbi" } },
     "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]

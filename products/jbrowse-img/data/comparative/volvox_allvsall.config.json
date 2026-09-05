@@ -47,7 +47,7 @@
       "name": "volvox all-vs-all",
       "assemblyNames": ["volvox_ins", "volvox_del", "volvox"],
       "adapter": {
-        "type": "AllVsAllPAFAdapter",
+        "type": "MultiGenomePAFAdapter",
         "pafLocation": {
           "localPath": "volvox_all_vs_all.paf"
         },

@@ -129,7 +129,7 @@ export async function executeDotplotFeaturesAndPositions({
       lodMode,
       statusCallback,
       // The assembly on the vertical axis. A multi-genome adapter
-      // (MCScanBlocksAdapter, AllVsAllPAFAdapter) draws N-1 pairs from one
+      // (MCScanBlocksAdapter, MultiGenomePAFAdapter) draws N-1 pairs from one
       // track, so the fetch must name which pair this dotplot is — otherwise
       // the adapter defaults the mate to the first *other* assembly in
       // assemblyNames and returns another pair's alignments, whose refNames

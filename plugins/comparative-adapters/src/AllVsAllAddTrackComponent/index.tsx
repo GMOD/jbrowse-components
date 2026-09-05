@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { addAddTrackComponent } from '@jbrowse/core/util'
-import { allVsAllTypes } from '@jbrowse/synteny-core'
+import { multiGenomePAFTypes } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -14,7 +14,7 @@ export default function AllVsAllAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
   addAddTrackComponent(pluginManager, {
-    adapterTypes: allVsAllTypes,
+    adapterTypes: multiGenomePAFTypes,
     component: AllVsAllAddTrackComponent,
     ownsAssembly: true,
   })

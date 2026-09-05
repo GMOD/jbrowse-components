@@ -3005,7 +3005,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "pafLocation": {
           "uri": "volvox_all_vs_all.paf",
         },
-        "type": "AllVsAllPAFAdapter",
+        "type": "MultiGenomePAFAdapter",
       },
       "assemblyNames": [
         "volvox_ins",
@@ -3035,7 +3035,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "pifGzLocation": {
           "uri": "volvox_all_vs_all.pif.gz",
         },
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
       },
       "assemblyNames": [
         "volvox_ins",

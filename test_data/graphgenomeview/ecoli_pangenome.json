@@ -206,7 +206,7 @@
       "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
       "category": ["Pangenome graph"],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "pifGzLocation": {
           "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_ava.pif.gz",
           "locationType": "UriLocation"

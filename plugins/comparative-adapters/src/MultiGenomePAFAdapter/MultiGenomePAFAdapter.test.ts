@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './AllVsAllPAFAdapter.ts'
+import Adapter from './MultiGenomePAFAdapter.ts'
 import configSchema from './configSchema.ts'
 
 // Write an inline PAF to a temp file and return a LocalPathLocation for it.

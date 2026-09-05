@@ -88,7 +88,7 @@ describe('syntenyTrackLevels', () => {
     warn.mockRestore()
   })
 
-  // One AllVsAllPAFAdapter / MCScanBlocksAdapter track lists every assembly its
+  // One MultiGenomePAFAdapter / MCScanBlocksAdapter track lists every assembly its
   // file covers and backs every band of the stack — each level hands it that
   // level's pair. This is what the multiway and all-vs-all synteny tutorials
   // build, and matching only the first level left every band below the top one

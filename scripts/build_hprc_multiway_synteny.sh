@@ -354,7 +354,7 @@ config = {
         'name': f'HPRC haplotypes vs GRCh38 (hg38 + {len(names)} haplotypes, unpacked from the release 2 graph{" GFA" if source == "gfa" else ""})',
         'assemblyNames': ['hg38', *names],
         'adapter': {
-            'type': 'AllVsAllIndexedPAFAdapter',
+            'type': 'MultiGenomeIndexedPAFAdapter',
             'uri': pif,
             'csi': True,
             'assemblyNames': ['hg38', *names],

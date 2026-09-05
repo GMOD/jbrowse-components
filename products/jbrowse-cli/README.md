@@ -262,7 +262,7 @@ Options:
                              string. For pairwise synteny tracks the order is
                              query,target (reverse of minimap2/nucmer argument
                              order); for all-vs-all adapters
-                             (AllVsAllPAFAdapter/AllVsAllIndexedPAFAdapter) list
+                             (MultiGenomePAFAdapter/MultiGenomeIndexedPAFAdapter) list
                              every assembly the file covers, in any order
 
       --category             Optional comma separated string of categories to
@@ -350,7 +350,7 @@ VcfTabixAdapter and SplitVcfTabixAdapter.
 
 For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target
 — the reverse of the minimap2/nucmer input order. For the all-vs-all adapters
-(AllVsAllPAFAdapter, AllVsAllIndexedPAFAdapter) it is instead the full list of
+(MultiGenomePAFAdapter, MultiGenomeIndexedPAFAdapter) it is instead the full list of
 assemblies the file covers, in any order, since one all-vs-all file backs every
 pair.
 

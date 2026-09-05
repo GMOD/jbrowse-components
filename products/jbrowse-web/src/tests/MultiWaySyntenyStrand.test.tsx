@@ -43,7 +43,7 @@ function reversePafConfig() {
     name: 'grape/peach/cacao all-vs-all',
     assemblyNames: ['grape', 'peach', 'cacao'],
     adapter: {
-      type: 'AllVsAllPAFAdapter',
+      type: 'MultiGenomePAFAdapter',
       assemblyNames: ['grape', 'peach', 'cacao'],
       pafLocation: {
         uri: 'three_way_rev.paf',
@@ -151,7 +151,7 @@ function farPafConfig() {
     name: 'grape/peach/cacao with an off-frame pair record',
     assemblyNames: ['grape', 'peach', 'cacao'],
     adapter: {
-      type: 'AllVsAllPAFAdapter',
+      type: 'MultiGenomePAFAdapter',
       assemblyNames: ['grape', 'peach', 'cacao'],
       pafLocation: {
         uri: 'three_way_far.paf',

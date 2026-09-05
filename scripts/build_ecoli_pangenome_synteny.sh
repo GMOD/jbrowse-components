@@ -7,7 +7,7 @@
 # keeps only each chromosome renamed `chr`, PanSN-renames a concatenated copy
 # and self-aligns it with minimap2 into one all-vs-all PAF, downloads JBrowse,
 # and writes a config.json with the five assemblies, per-strain gene tracks, one
-# AllVsAllPAFAdapter synteny track, and a default session that stacks the five
+# MultiGenomePAFAdapter synteny track, and a default session that stacks the five
 # strains K12 - Sakai - CFT073 - NCTC86 - IAI39.
 #
 # Everything is pinned (fixed RefSeq accessions, fixed minimap2 preset), so
@@ -107,14 +107,14 @@ done
 # inferred adapter rather than merging into it, so pafLocation has to be
 # restated here; naming only the type would leave an adapter with no file.
 # This is DELIBERATELY behind the tutorial, which now shows the one-line
-# `--adapterType AllVsAllPAFAdapter` form. That flag landed after the v4.3.0
+# `--adapterType MultiGenomePAFAdapter` form. That flag landed after the v4.3.0
 # tag, and this script runs against whatever `npx @jbrowse/cli` resolves to, so
 # it stays on --config until --adapterType is in a published release. Collapse
 # the two once it is.
 CSV="$(echo $STRAINS | tr ' ' ,)"
 JSON_NAMES="$(echo $STRAINS | tr ' ' '\n' | sed 's/.*/"&"/' | paste -sd, -)"
 jb add-track all_vs_all.paf \
-  --config "{\"adapter\":{\"type\":\"AllVsAllPAFAdapter\",\"pafLocation\":{\"uri\":\"all_vs_all.paf\",\"locationType\":\"UriLocation\"},\"assemblyNames\":[$JSON_NAMES]}}" \
+  --config "{\"adapter\":{\"type\":\"MultiGenomePAFAdapter\",\"pafLocation\":{\"uri\":\"all_vs_all.paf\",\"locationType\":\"UriLocation\"},\"assemblyNames\":[$JSON_NAMES]}}" \
   --trackId ecoli_ava --name "E. coli pangenome (all-vs-all PAF)" \
   -a "$CSV" --load copy --force --out "$APP"
 

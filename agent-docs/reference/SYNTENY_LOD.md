@@ -142,6 +142,12 @@ bytes that do not change. The header also carries `anchorAssemblyName` and the
 star's `assemblyNames`, since the main thread otherwise has to read every child
 config to learn them.
 
+`MultiGenomeIndexedPAFAdapter` (one PanSN PIF holding any set of pairs, a
+complete all-vs-all or a star) declares the slot too. It and
+`MultiGenomePAFAdapter` were spelled `AllVsAllIndexedPAFAdapter` /
+`AllVsAllPAFAdapter` until 2026-09; a config still saying so resolves through
+the AdapterType's `aliases`.
+
 A failed info read is not terminal: the display goes on resolving off the slot,
 which is what it did before the header existed, and the primary fetch on the
 same file raises the real error. It is logged with `console.warn` and nothing

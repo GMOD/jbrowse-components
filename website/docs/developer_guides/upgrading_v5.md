@@ -256,6 +256,17 @@ migrates their settings across, so a saved config's `type:` still resolves. A
 plugin that extended or referenced the old display classes directly needs
 updating.
 
+## Adapter types renamed
+
+`AllVsAllPAFAdapter` is now `MultiGenomePAFAdapter` and
+`AllVsAllIndexedPAFAdapter` is now `MultiGenomeIndexedPAFAdapter`: one
+PanSN-named PAF holds any set of pairs, a complete all-vs-all or a star of many
+haplotypes against one reference, so the old names undersold the file. Both old
+names are registered as aliases on the adapter, so a config still saying them
+loads and [`jbrowse validate`](/docs/cli#jbrowse-validate) accepts them. Plugin
+code that imports the adapter classes or the `AllVsAll…Config` types needs the
+new names.
+
 ## Config models were flattened
 
 Config slots are no longer each their own MST instance; one model holds many

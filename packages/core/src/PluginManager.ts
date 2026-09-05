@@ -987,7 +987,32 @@ export default class PluginManager {
       ? types.snapshotProcessor(union, {
           preProcessor: (snap: unknown) => expandLooseTrackConfig(snap, this),
         })
-      : union
+      : typeGroup === 'adapter'
+        ? types.snapshotProcessor(union, {
+            preProcessor: (snap: unknown) =>
+              this.canonicalizeAdapterSnapshot(snap),
+          })
+        : union
+  }
+
+  /**
+   * An adapter union dispatches on `type`, so a config still spelling an
+   * adapter's old name has to be rewritten to the name it registers under
+   * before the union sees it. Here rather than in each schema holding an
+   * adapter slot, so a track, an assembly's sequence and a connection all take
+   * it.
+   */
+  private canonicalizeAdapterSnapshot(snap: unknown) {
+    if (
+      typeof snap === 'object' &&
+      snap !== null &&
+      'type' in snap &&
+      typeof snap.type === 'string'
+    ) {
+      const canonical = this.canonicalAdapterTypeName(snap.type)
+      return canonical === snap.type ? snap : { ...snap, type: canonical }
+    }
+    return snap
   }
 
   jbrequireCache = new Map()
@@ -1036,7 +1061,19 @@ export default class PluginManager {
   }
 
   getAdapterType(typeName: string) {
-    return this.adapterTypes.get(typeName)
+    return this.adapterTypes.get(this.canonicalAdapterTypeName(typeName))
+  }
+
+  /**
+   * The name an adapter `type` registers under: itself, or the adapter that
+   * declares it in `aliases`. A name nothing answers to comes back as written,
+   * so the registered-names error still names what the config said.
+   */
+  canonicalAdapterTypeName(typeName: string) {
+    return this.adapterTypes.has(typeName)
+      ? typeName
+      : (this.adapterTypes.all().find(t => t.aliases?.includes(typeName))
+          ?.name ?? typeName)
   }
 
   /**
@@ -1046,7 +1083,7 @@ export default class PluginManager {
    * claims to be an adapter and wrong when you are asking whether it is one.
    */
   hasAdapterType(typeName: string) {
-    return this.adapterTypes.has(typeName)
+    return this.adapterTypes.has(this.canonicalAdapterTypeName(typeName))
   }
 
   getTextSearchAdapterType(typeName: string) {

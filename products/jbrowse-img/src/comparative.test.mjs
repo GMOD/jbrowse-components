@@ -187,7 +187,7 @@ test('three-assembly synteny renders from a config + session-spec JSON', async (
   assert.ok(svg.includes('<image'), 'synteny should rasterize ribbon layers')
 })
 
-// One AllVsAllPAFAdapter track lists every assembly its file covers and backs
+// One MultiGenomePAFAdapter track lists every assembly its file covers and backs
 // every band of the stack — each level hands the adapter that level's pair, and
 // the adapter serves the matching comparison. This is what the all-vs-all and
 // multiway synteny tutorials build. Placing such a track on only the first

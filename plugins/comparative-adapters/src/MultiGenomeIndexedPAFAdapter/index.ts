@@ -4,14 +4,15 @@ import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function AllVsAllIndexedPAFAdapterF(
+export default function MultiGenomeIndexedPAFAdapterF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'AllVsAllIndexedPAFAdapter',
-        displayName: 'All-vs-all indexed PAF adapter',
+        name: 'MultiGenomeIndexedPAFAdapter',
+        aliases: ['AllVsAllIndexedPAFAdapter'],
+        displayName: 'Multi-genome indexed PAF adapter',
         normalizeSnapshot,
         configSchema,
         adapterMetadata: {
@@ -21,7 +22,7 @@ export default function AllVsAllIndexedPAFAdapterF(
           alsoReads: /\.pif\.gz$/i,
         },
         getAdapterClass: () =>
-          import('./AllVsAllIndexedPAFAdapter.ts').then(r => r.default),
+          import('./MultiGenomeIndexedPAFAdapter.ts').then(r => r.default),
       }),
   )
 }

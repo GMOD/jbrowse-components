@@ -408,6 +408,22 @@ describe('validateConfig', () => {
     expect(validateConfig(config).problems).toEqual([])
   })
 
+  it('checks a legacy adapter type against the adapter that answers to it', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'SyntenyTrack',
+      assemblyNames: ['hg38', 'hg38'],
+      adapter: {
+        type: 'AllVsAllIndexedPAFAdapter',
+        uri: 'all_vs_all.pif.gz',
+        // @ts-expect-error a MultiGenomeIndexedPAFAdapter slot
+        assemblyNames: ['hg38'],
+      },
+    }
+    expect(validateConfig(config).problems).toEqual([])
+  })
+
   // `renderer` is lifted into current slots by LinearBasicDisplay, and silently
   // dropped by LinearWiggleDisplay. Same key, different verdict — which is why
   // the manifest records it per type rather than globally.

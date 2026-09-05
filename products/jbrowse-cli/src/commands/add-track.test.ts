@@ -951,7 +951,7 @@ test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNam
       '--load',
       'copy',
       '--adapterType',
-      'AllVsAllPAFAdapter',
+      'MultiGenomePAFAdapter',
       '--assemblyNames',
       'grape,peach,cacao',
     ])
@@ -960,7 +960,7 @@ test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNam
     }
     const track = readConf(ctx).tracks[0]
     expect(track.type).toBe('SyntenyTrack')
-    expect(track.adapter.type).toBe('AllVsAllPAFAdapter')
+    expect(track.adapter.type).toBe('MultiGenomePAFAdapter')
     expect(track.adapter.assemblyNames).toEqual(['grape', 'peach', 'cacao'])
     // the unknown adapterType reuses the .paf extension's pafLocation layout
     // rather than dropping the file, so the track is actually loadable

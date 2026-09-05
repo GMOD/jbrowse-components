@@ -171,7 +171,7 @@ Two files answer this, a track each.
 pggb's first step is a wfmash all-vs-all PAF, the same input the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny) loads. Index it
 with `jbrowse make-pif` and load it with an
-[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter):
+[`MultiGenomeIndexedPAFAdapter`](/docs/config/multigenomeindexedpafadapter):
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -187,7 +187,7 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
   "name": "pggb graph: all-vs-all synteny (wfmash)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_pggb_ava.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
@@ -246,7 +246,7 @@ Load it as its own `SyntenyTrack`:
   "name": "pggb graph: synteny from the graph (odgi untangle)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_pggb_untangle.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }

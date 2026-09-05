@@ -229,7 +229,7 @@
         "HG00133.1"
       ],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "uri": "hprc_multiway_gfa.pif.gz",
         "csi": true,
         "assemblyNames": [

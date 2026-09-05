@@ -3,40 +3,39 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
- * #config AllVsAllPAFAdapter
+ * #config MultiGenomePAFAdapter
  * #trackType SyntenyTrack
- * #fileFormat synteny | All-vs-all PAF | PanSN-prefixed; one file backs every pair in a multi-way view
- * Loads a single "all-vs-all" PAF (e.g. `minimap2 all.fa all.fa`, or the PGGB
- * mapping step) where every sequence name is PanSN-prefixed with its assembly
- * (`sample#haplotype#contig`). Because such a file contains every pairwise
- * alignment, one file (and one track) backs every synteny band of a multi-way
- * view: the synteny view tells the adapter which pair a given band draws, and
- * the adapter keeps only those records, stripping the PanSN prefix to recover
- * each assembly's own refName. In a plain LGV (LGVSyntenyDisplay) there is no
- * band to isolate, so the track draws its assembly against every OTHER sample
- * in the file — "one vs all" — including samples not listed in `assemblyNames`
- * (those mates are labelled by their PanSN prefix). `assemblyNames` therefore
- * only needs to list the assemblies you actually load into JBrowse and want the
- * track to appear on.
+ * #fileFormat synteny | Multi-genome PAF | PanSN-prefixed; one file backs every pair in a multi-way view
+ * Loads a single PAF holding alignments among several genomes, where every
+ * sequence name is PanSN-prefixed with its assembly (`sample#haplotype#contig`).
+ * The file may state any set of pairs: a complete all-vs-all (`minimap2 all.fa
+ * all.fa`, or the PGGB mapping step), or a star of many haplotypes against one
+ * reference (as HPRC publishes against GRCh38). One file (and one track) then
+ * backs every synteny band of a multi-way view: the synteny view tells the
+ * adapter which pair a given band draws, and the adapter keeps only those
+ * records, stripping the PanSN prefix to recover each assembly's own refName. A
+ * band between two assemblies the file never aligns says so rather than drawing
+ * empty. In a plain LGV (LGVSyntenyDisplay) there is no band to isolate, so the
+ * track draws its assembly against every OTHER sample in the file — "one vs
+ * all" — including samples not listed in `assemblyNames` (those mates are
+ * labelled by their PanSN prefix). `assemblyNames` therefore only needs to list
+ * the assemblies you actually load into JBrowse and want the track to appear
+ * on.
  *
- * A reference-anchored alignment is not this — HPRC publishes 465 haplotypes
- * against GRCh38 alongside its complete all-vs-all — and read as all-vs-all it
- * draws an empty band for every pair not involving that reference. Order the
- * synteny rows so the reference sits between the others, use a complete
- * all-vs-all if the project publishes one, or view a larger cohort as a multiple
- * alignment (MAF) rather than a stack of pairwise bands.
+ * Registered before 2026-09 as `AllVsAllPAFAdapter`, which a config may still
+ * say.
  *
  * #example
  * ```js
  * {
- *   type: 'AllVsAllPAFAdapter',
+ *   type: 'MultiGenomePAFAdapter',
  *   uri: 'all_vs_all.paf.gz',
  *   assemblyNames: ['grape', 'peach', 'cacao'],
  * }
  * ```
  */
-const AllVsAllPAFAdapter = ConfigurationSchema(
-  'AllVsAllPAFAdapter',
+const MultiGenomePAFAdapter = ConfigurationSchema(
+  'MultiGenomePAFAdapter',
   {
     /**
      * #slot
@@ -87,7 +86,7 @@ const AllVsAllPAFAdapter = ConfigurationSchema(
      * preprocessor to allow minimal config:
      * ```json
      * {
-     *   "type": "AllVsAllPAFAdapter",
+     *   "type": "MultiGenomePAFAdapter",
      *   "uri": "file.paf.gz",
      *   "assemblyNames": ["grape", "peach"]
      * }
@@ -107,6 +106,6 @@ const AllVsAllPAFAdapter = ConfigurationSchema(
   },
 )
 
-export type AllVsAllPAFAdapterConfig = Instance<typeof AllVsAllPAFAdapter>
+export type MultiGenomePAFAdapterConfig = Instance<typeof MultiGenomePAFAdapter>
 
-export default AllVsAllPAFAdapter
+export default MultiGenomePAFAdapter

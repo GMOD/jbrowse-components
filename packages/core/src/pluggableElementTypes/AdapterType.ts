@@ -54,7 +54,7 @@ export default class AdapterType extends PluggableElementBase {
    * declaring the shorthand once gets both. It used to be a second, separate
    * registration, and five in-tree adapters had only the schema half
    * (`MafTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`,
-   * `AllVsAllPAFAdapter`, `MCScanBlocksAdapter`) — which reads as working,
+   * `MultiGenomePAFAdapter`, `MCScanBlocksAdapter`) — which reads as working,
    * because loading such a config from a URL goes through the schema. Only
    * `normalizeAdapterSnapshots` consults *this*, so what broke was `localFiles`
    * in the embedded products: the shorthand stayed unexpanded, `uri` never
@@ -87,6 +87,7 @@ export default class AdapterType extends PluggableElementBase {
       name: string
       configSchema: AnyConfigurationSchemaType
       displayName?: string
+      aliases?: string[]
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
       normalizeSnapshot?: NormalizeSnapshot

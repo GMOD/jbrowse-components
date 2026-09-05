@@ -163,7 +163,7 @@ const SHORTHAND_PROBES = __SHORTHAND_PROBES__
 // An adapter's normalizer used to live in either of two places — \`normalizeSnapshot\`
 // on the AdapterType, or the ConfigurationSchema's own \`preProcessSnapshot\` — and
 // this had to try both, because an adapter wiring only the schema half
-// (AllVsAllPAFAdapter, MCScanBlocksAdapter) otherwise reported NO shorthands and
+// (MultiGenomePAFAdapter, MCScanBlocksAdapter) otherwise reported NO shorthands and
 // \`jbrowse validate\` called \`uri\` an unknown slot on the very config their
 // #example shows. \`AdapterType.normalizeSnapshot\` now falls back to the schema's
 // hook itself, so reading the one property covers both — and the localFiles path,

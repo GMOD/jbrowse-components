@@ -25,7 +25,7 @@ const threeWayView = {
 // Same ins/volvox/del stack, but BOTH bands are backed by a single all-vs-all
 // PanSN PAF track (volvox_all_vs_all, assemblyNames lists all three) instead of
 // two separate pairwise PAFs. The synteny RPC passes each band's target
-// assembly, and the AllVsAllPAFAdapter filters the shared file to that pair.
+// assembly, and the MultiGenomePAFAdapter filters the shared file to that pair.
 // Exercises the multi-genome one-track-backs-all-bands path end-to-end (unit
 // tests only hit the adapter in isolation).
 const threeWayAllVsAllView = {
@@ -39,7 +39,7 @@ const threeWayAllVsAllView = {
 }
 
 // Same stack again, but the shared all-vs-all track is the tabix-indexed
-// (make-pif) form: AllVsAllIndexedPAFAdapter range-queries the PanSN seqid per
+// (make-pif) form: MultiGenomeIndexedPAFAdapter range-queries the PanSN seqid per
 // band instead of loading the whole file. Should render identically to the
 // in-memory all-vs-all view above.
 const threeWayAllVsAllIndexedView = {

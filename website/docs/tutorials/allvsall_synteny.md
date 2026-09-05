@@ -123,7 +123,7 @@ the prefix draws empty. The
 [assemblies configuration guide](/docs/config_guides/assemblies) has the
 equivalent JSON.
 
-## Loading the PAF with AllVsAllPAFAdapter
+## Loading the PAF with MultiGenomePAFAdapter
 
 One track backs every band of the stacked view. List every assembly the file
 covers in `assemblyNames`; the adapter keeps only the records whose PanSN
@@ -136,15 +136,15 @@ prefixes match the pair each band draws:
   "name": "E. coli pangenome (all-vs-all PAF)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllPAFAdapter",
+    "type": "MultiGenomePAFAdapter",
     "uri": "all_vs_all.paf",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
 ```
 
-`AllVsAllPAFAdapter` has to be named; a `.paf` guessed from its extension is the
-pairwise `PAFAdapter`, which reads only the first two assembly names.
+`MultiGenomePAFAdapter` has to be named; a `.paf` guessed from its extension is
+the pairwise `PAFAdapter`, which reads only the first two assembly names.
 
 If an assembly name differs from its PanSN sample prefix, map it with
 `assemblyNameToPanSN`, e.g. `{ "Ecoli_K12": "K12" }`. A name matching no sample
@@ -159,9 +159,9 @@ prefix, making hap1 against hap2 a band in its own right. See
 
 ## Large files: index with make-pif
 
-`AllVsAllPAFAdapter` reads the whole PAF into memory. For a whole-genome
+`MultiGenomePAFAdapter` reads the whole PAF into memory. For a whole-genome
 pangenome of many samples, index it with `jbrowse make-pif` and switch to
-`AllVsAllIndexedPAFAdapter`, which fetches only the records overlapping the
+`MultiGenomeIndexedPAFAdapter`, which fetches only the records overlapping the
 region in view:
 
 ```bash
@@ -173,7 +173,7 @@ jbrowse make-pif all_vs_all.paf
 found:
 
 ```bash
-jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
+jbrowse add-track all_vs_all.pif.gz --adapterType MultiGenomeIndexedPAFAdapter \
   -a CFT073,IAI39,K12,NCTC86,Sakai --load copy
 ```
 
@@ -186,7 +186,7 @@ Only the `adapter` block differs from the un-indexed version:
   "name": "E. coli all-vs-all (indexed)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "all_vs_all.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
@@ -196,7 +196,7 @@ Only the `adapter` block differs from the un-indexed version:
 `make-pif` emits a coarse zoomed-out tier by default so whole-genome views stay
 responsive. `--coarse` tunes that tier and `--csi` swaps the TBI index for
 sequences longer than ~512 Mb. Raising `--coarse` means raising the adapter's
-[`coarseBpPerPxThreshold`](/docs/config/allvsallindexedpafadapter#slot-coarsebpperpxthreshold)
+[`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
 with it, so coarse ribbons stay at zooms where their flattened indels are too
 small to see.
 
@@ -441,7 +441,7 @@ track, and a default session opening the stacked view. It needs the tools under
 [Prerequisites](#prerequisites).
 
 For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
-`AllVsAllIndexedPAFAdapter` path from
+`MultiGenomeIndexedPAFAdapter` path from
 [Large files](#large-files-index-with-make-pif).
 
 ## See also
@@ -453,8 +453,8 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/config_guides/synteny_track)
-- [](/docs/config/allvsallpafadapter)
-- [](/docs/config/allvsallindexedpafadapter)
+- [](/docs/config/multigenomepafadapter)
+- [](/docs/config/multigenomeindexedpafadapter)
 - [](/docs/developer_guides/pif_format)
 - [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)

@@ -21,7 +21,7 @@ The file's convention is detected from its first block. A prefix passed to
 --reference/--queries may be spelled either way (`HG01109#1` or `HG01109.1`;
 `GRCh38` means `GRCh38#0`), and output names are always PanSN,
 `<sample>#<hap>#<contig>`, which is what `jbrowse make-pif` and
-AllVsAllIndexedPAFAdapter's assemblyNameToPanSN expect. With --queries omitted
+MultiGenomeIndexedPAFAdapter's assemblyNameToPanSN expect. With --queries omitted
 every non-reference genome is a query, and a dotted name is split as
 `<sample>.<hap>` when its second field is an integer followed by more fields,
 else on its first dot.

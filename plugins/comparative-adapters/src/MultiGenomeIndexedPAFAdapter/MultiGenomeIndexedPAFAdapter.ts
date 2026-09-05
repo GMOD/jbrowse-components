@@ -22,7 +22,7 @@ import {
 } from '../util.ts'
 
 import type { AlignedSide, PifLine } from '../util.ts'
-import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
+import type { MultiGenomeIndexedPAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -44,7 +44,7 @@ function pifSide(line: PifLine): AlignedSide {
   }
 }
 
-export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<AllVsAllIndexedPAFAdapterConfig> {
+export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase<MultiGenomeIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
   // tiers) grouped prefix -> contig -> seqids. Every seqid is filed under each

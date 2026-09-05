@@ -32,7 +32,7 @@ export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
 // Returns one entry per level (assemblies - 1).
 //
 // A track goes on EVERY level whose pair it can back, not just the first. One
-// `AllVsAllPAFAdapter` or `MCScanBlocksAdapter` track listing N assemblies is
+// `MultiGenomePAFAdapter` or `MCScanBlocksAdapter` track listing N assemblies is
 // meant to back every band of the stack — the level hands the adapter its own
 // `assemblyNames` pair and the adapter serves that comparison, which is exactly
 // what the multiway and all-vs-all synteny tutorials build. Matching only the

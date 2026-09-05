@@ -265,7 +265,7 @@
       "name": "E. coli pangenome (all-vs-all PAF)",
       "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
       "adapter": {
-        "type": "AllVsAllPAFAdapter",
+        "type": "MultiGenomePAFAdapter",
         "pafLocation": {
           "uri": "all_vs_all.paf.gz",
           "locationType": "UriLocation"
@@ -279,7 +279,7 @@
       "name": "pggb graph: all-vs-all synteny (wfmash)",
       "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "pifGzLocation": {
           "uri": "ecoli_pggb_ava.pif.gz"
         },
@@ -297,7 +297,7 @@
       "name": "pggb graph: synteny from the graph (odgi untangle)",
       "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "pifGzLocation": {
           "uri": "ecoli_pggb_untangle.pif.gz"
         },
@@ -611,7 +611,7 @@
       "name": "MC graph: all-vs-all synteny (halSynteny)",
       "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
       "adapter": {
-        "type": "AllVsAllIndexedPAFAdapter",
+        "type": "MultiGenomeIndexedPAFAdapter",
         "pifGzLocation": {
           "uri": "ecoli_cactus_ava.pif.gz"
         },

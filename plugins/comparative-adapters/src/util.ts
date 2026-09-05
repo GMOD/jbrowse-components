@@ -29,8 +29,8 @@ export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
   return assemblyNames
 }
 
-// The two all-vs-all PAF adapters (in-memory AllVsAllPAFAdapter and
-// tabix-indexed AllVsAllIndexedPAFAdapter) share this assembly-name <-> PanSN
+// The two all-vs-all PAF adapters (in-memory MultiGenomePAFAdapter and
+// tabix-indexed MultiGenomeIndexedPAFAdapter) share this assembly-name <-> PanSN
 // sample-prefix mapping; only the record fetch differs. Free functions rather
 // than a shared base class so each adapter keeps its own concrete config type
 // and getConf's slot-name typing — a base generic over the config can't prove
@@ -298,7 +298,7 @@ export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V) {
  * the callers ask per region: a whole-genome dotplot fetches one region per
  * visible contig, so a scaffold-level assembly turned one query into hundreds
  * of full scans of the same array. Built once in `setup` — the same move
- * AllVsAllPAFAdapter's own index makes — a query walks one bucket.
+ * MultiGenomePAFAdapter's own index makes — a query walks one bucket.
  */
 export function indexRecordsByName<T>(
   records: T[],

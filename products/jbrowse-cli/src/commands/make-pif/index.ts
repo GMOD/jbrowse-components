@@ -206,7 +206,7 @@ export async function run(args?: string[]) {
   const nextCommand =
     samples.size > 0
       ? 'Next, add it as an all-vs-all synteny track (PanSN names detected):\n' +
-        `  jbrowse add-track ${outputFile} --adapterType AllVsAllIndexedPAFAdapter -a ${[...samples].sort().join(',')} --load copy`
+        `  jbrowse add-track ${outputFile} --adapterType MultiGenomeIndexedPAFAdapter -a ${[...samples].sort().join(',')} --load copy`
       : 'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
         `  jbrowse add-track ${outputFile} -a query,target --load copy`
   console.log(`Created ${outputFile} and ${indexFile}\n\n${nextCommand}`)

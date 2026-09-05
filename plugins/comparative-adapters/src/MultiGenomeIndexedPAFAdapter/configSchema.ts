@@ -11,34 +11,34 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 }
 
 /**
- * #config AllVsAllIndexedPAFAdapter
+ * #config MultiGenomeIndexedPAFAdapter
  * #trackType SyntenyTrack
- * #fileFormat synteny | All-vs-all indexed PAF (PIF) | The tabix-indexed form of all-vs-all PAF
- * The tabix-indexed (PIF) form of the `AllVsAllPAFAdapter`. Run
- * `jbrowse make-pif all_vs_all.paf` on an all-vs-all PAF whose sequence names
+ * #fileFormat synteny | Multi-genome indexed PAF (PIF) | The tabix-indexed form of multi-genome PAF
+ * The tabix-indexed (PIF) form of the `MultiGenomePAFAdapter`. Run
+ * `jbrowse make-pif all_vs_all.paf` on a multi-genome PAF whose sequence names
  * are PanSN-prefixed (`sample#haplotype#contig`) and point this adapter at the
  * resulting `.pif.gz`. Because PIF double-emits each record keyed on both of its
  * PanSN sequence names, a region query resolves to a tabix range lookup on the
  * anchor's PanSN seqid(s) instead of scanning the whole file — so it scales to
  * whole-genome pangenome alignments that do not fit in memory. Semantics match
- * `AllVsAllPAFAdapter`: one-vs-all in a plain LGV, single-pair when the synteny
- * view supplies a `targetAssemblyName`.
+ * `MultiGenomePAFAdapter`: the file may state any set of pairs (a complete
+ * all-vs-all or a star against one reference), one-vs-all in a plain LGV,
+ * single-pair when the synteny view supplies a `targetAssemblyName`.
  *
- * A reference-anchored alignment read as all-vs-all draws an empty band for
- * every pair not involving the reference; see `AllVsAllPAFAdapter` for what to do
- * about that.
+ * Registered before 2026-09 as `AllVsAllIndexedPAFAdapter`, which a config may
+ * still say.
  *
  * #example
  * ```js
  * {
- *   type: 'AllVsAllIndexedPAFAdapter',
+ *   type: 'MultiGenomeIndexedPAFAdapter',
  *   uri: 'all_vs_all.pif.gz',
  *   assemblyNames: ['grape', 'peach', 'cacao'],
  * }
  * ```
  */
-const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
-  'AllVsAllIndexedPAFAdapter',
+const MultiGenomeIndexedPAFAdapter = ConfigurationSchema(
+  'MultiGenomeIndexedPAFAdapter',
   {
     /**
      * #slot
@@ -58,7 +58,7 @@ const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
      */
     pifGzLocation: {
       type: 'fileLocation',
-      description: 'location of the all-vs-all tabix indexed PAF (pif)',
+      description: 'location of the multi-genome tabix indexed PAF (pif)',
       defaultValue: {
         uri: '/path/to/all_vs_all.pif.gz',
         locationType: 'UriLocation',
@@ -106,7 +106,7 @@ const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
      * preprocessor to allow minimal config, assumes all_vs_all.pif.gz.tbi:
      * ```json
      * {
-     *   "type": "AllVsAllIndexedPAFAdapter",
+     *   "type": "MultiGenomeIndexedPAFAdapter",
      *   "uri": "all_vs_all.pif.gz",
      *   "assemblyNames": ["grape", "peach", "cacao"]
      * }
@@ -116,8 +116,8 @@ const AllVsAllIndexedPAFAdapter = ConfigurationSchema(
   },
 )
 
-export type AllVsAllIndexedPAFAdapterConfig = Instance<
-  typeof AllVsAllIndexedPAFAdapter
+export type MultiGenomeIndexedPAFAdapterConfig = Instance<
+  typeof MultiGenomeIndexedPAFAdapter
 >
 
-export default AllVsAllIndexedPAFAdapter
+export default MultiGenomeIndexedPAFAdapter

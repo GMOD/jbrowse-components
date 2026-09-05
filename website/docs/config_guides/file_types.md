@@ -205,8 +205,6 @@ which fetches only the alignments in view
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| All-vs-all indexed PAF (PIF) | [](/docs/config/allvsallindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of all-vs-all PAF |
-| All-vs-all PAF | [](/docs/config/allvsallpafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
 | BLAST tabular | [](/docs/config/blasttabularadapter) | [](/docs/config/syntenytrack) |  |
 | Chain (UCSC liftOver / lastz) | [](/docs/config/chainadapter) | [](/docs/config/syntenytrack) |  |
 | Delta (MUMmer / nucmer) | [](/docs/config/deltaadapter) | [](/docs/config/syntenytrack) |  |
@@ -215,6 +213,8 @@ which fetches only the alignments in view
 | MCScan anchors | [](/docs/config/mcscananchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
 | MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
 | MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| Multi-genome indexed PAF (PIF) | [](/docs/config/multigenomeindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of multi-genome PAF |
+| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 

@@ -8,7 +8,7 @@ demo from the
 `tracks[i]` connects `views[i]` and `views[i+1]`. Because a single all-vs-all
 PAF aligns every strain to every other, one
 [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack/) over an
-[AllVsAllPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallpafadapter/)
+[MultiGenomePAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomepafadapter/)
 backs all three bands:
 
 ```js

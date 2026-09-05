@@ -32,7 +32,7 @@ const tracks = [
     assemblyNames: strains.map(s => s.name),
     category: ['Synteny'],
     adapter: {
-      type: 'AllVsAllPAFAdapter',
+      type: 'MultiGenomePAFAdapter',
       pafLocation: { uri: `${base}/all_vs_all.paf.gz` },
       assemblyNames: strains.map(s => s.name),
     },

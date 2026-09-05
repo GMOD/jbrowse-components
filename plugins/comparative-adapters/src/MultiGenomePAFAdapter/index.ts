@@ -5,22 +5,23 @@ import configSchema from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // #region alsoReads
-export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
+export default function MultiGenomePAFAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'AllVsAllPAFAdapter',
-        displayName: 'All-vs-all PAF adapter',
+        name: 'MultiGenomePAFAdapter',
+        aliases: ['AllVsAllPAFAdapter'],
+        displayName: 'Multi-genome PAF adapter',
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
-          // a .paf is claimed by PAFAdapter, and an all-vs-all one is
+          // a .paf is claimed by PAFAdapter, and a multi-genome one is
           // indistinguishable by name; read as pairwise it attributes one
           // genome's contigs to another rather than merely dropping them
           alsoReads: /\.paf(\.gz)?$/i,
         },
         getAdapterClass: () =>
-          import('./AllVsAllPAFAdapter.ts').then(r => r.default),
+          import('./MultiGenomePAFAdapter.ts').then(r => r.default),
       }),
   )
 }

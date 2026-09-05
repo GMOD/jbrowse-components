@@ -8,8 +8,8 @@ export const syntenyTypes = [
   'MCScanSimpleAnchorsAdapter',
   'MCScanBlocksAdapter',
   'PairwiseIndexedPAFAdapter',
-  'AllVsAllPAFAdapter',
-  'AllVsAllIndexedPAFAdapter',
+  'MultiGenomePAFAdapter',
+  'MultiGenomeIndexedPAFAdapter',
   'MultiPairwiseSyntenyAdapter',
 ]
 
@@ -32,4 +32,7 @@ export const mcscanTypes = [
 // query/target pair
 export const mcscanBlocksTypes = ['MCScanBlocksAdapter']
 
-export const allVsAllTypes = ['AllVsAllPAFAdapter', 'AllVsAllIndexedPAFAdapter']
+export const multiGenomePAFTypes = [
+  'MultiGenomePAFAdapter',
+  'MultiGenomeIndexedPAFAdapter',
+]

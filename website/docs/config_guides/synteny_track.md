@@ -16,8 +16,6 @@ format (PAF for minimap2). The one thing to get right is that `assemblyNames` is
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
-| All-vs-all indexed PAF (PIF) | [](/docs/config/allvsallindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of all-vs-all PAF |
-| All-vs-all PAF | [](/docs/config/allvsallpafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
 | BLAST tabular | [](/docs/config/blasttabularadapter) | [](/docs/config/syntenytrack) |  |
 | Chain (UCSC liftOver / lastz) | [](/docs/config/chainadapter) | [](/docs/config/syntenytrack) |  |
 | Delta (MUMmer / nucmer) | [](/docs/config/deltaadapter) | [](/docs/config/syntenytrack) |  |
@@ -26,6 +24,8 @@ format (PAF for minimap2). The one thing to get right is that `assemblyNames` is
 | MCScan anchors | [](/docs/config/mcscananchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
 | MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
 | MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| Multi-genome indexed PAF (PIF) | [](/docs/config/multigenomeindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of multi-genome PAF |
+| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 
@@ -112,7 +112,7 @@ Each adapter's config page lists its slots. Across all of them:
   order; the MCScan adapters take only `assemblyNames`. On an all-vs-all adapter
   it is the full list of genomes in the file, in any order
 - **Every adapter except `PairwiseIndexedPAFAdapter` and
-  `AllVsAllIndexedPAFAdapter` reads the whole file into memory.** Convert a
+  `MultiGenomeIndexedPAFAdapter` reads the whole file into memory.** Convert a
   large alignment to PIF and use one of those
 - **The two compressions are not interchangeable.** A whole-file adapter takes
   plain `gzip`, so `.paf.gz` works with no index. The two indexed adapters need
@@ -198,7 +198,7 @@ prefix may name a whole sample (`grape`) or a single haplotype (`grape#1`):
   "name": "Grape/peach haplotypes all-vs-all",
   "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
   "adapter": {
-    "type": "AllVsAllPAFAdapter",
+    "type": "MultiGenomePAFAdapter",
     "uri": "all_vs_all.paf",
     "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
     "assemblyNameToPanSN": {

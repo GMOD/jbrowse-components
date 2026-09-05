@@ -83,7 +83,7 @@ async function syntenyDisplay(adapter: Record<string, unknown>) {
 // proof that the view's bpPerPx is what reaches the comparison.
 function tiered(coarseBpPerPxThreshold?: number) {
   return {
-    type: 'AllVsAllIndexedPAFAdapter',
+    type: 'MultiGenomeIndexedPAFAdapter',
     pifGzLocation: { uri: 'nonexistent.pif.gz', locationType: 'UriLocation' },
     index: {
       location: { uri: 'nonexistent.pif.gz.tbi', locationType: 'UriLocation' },

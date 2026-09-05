@@ -150,9 +150,9 @@ explicit location slot, and derive the index location from it.
   shorthands: uri, baseUri, csi, nhUri
 - [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands:
   uri, baseUri
-- [AllVsAllPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallpafadapter.md)
+- [MultiGenomePAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomepafadapter.md)
   — shorthands: uri, baseUri
-- [AllVsAllIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallindexedpafadapter.md)
+- [MultiGenomeIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomeindexedpafadapter.md)
   — shorthands: uri, baseUri, csi
 - [PAFAdapter](https://jbrowse.org/jb2/docs/config/pafadapter.md) — shorthands:
   uri, baseUri

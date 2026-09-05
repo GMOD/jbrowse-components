@@ -185,8 +185,9 @@ jbrowse make-pif ecoli_cactus_ava.paf   # -> ecoli_cactus_ava.pif.gz (+ .tbi)
 ```
 
 Load it with an
-[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter), whose
-PanSN `sample#` prefix on every record is how it maps a record to its strain:
+[`MultiGenomeIndexedPAFAdapter`](/docs/config/multigenomeindexedpafadapter),
+whose PanSN `sample#` prefix on every record is how it maps a record to its
+strain:
 
 ```json addtrack
 {
@@ -195,7 +196,7 @@ PanSN `sample#` prefix on every record is how it maps a record to its strain:
   "name": "MC graph: all-vs-all synteny (halSynteny)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_cactus_ava.pif.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }

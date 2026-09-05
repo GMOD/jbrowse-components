@@ -97,7 +97,7 @@ export async function executeDiagonalize(
   checkStopToken(stopToken)
 
   // Which of its N-1 pairs a multi-genome adapter (MCScanBlocksAdapter,
-  // AllVsAllPAFAdapter) should return: the assembly being reordered. Derived
+  // MultiGenomePAFAdapter) should return: the assembly being reordered. Derived
   // rather than taken as an argument — it is exactly currentRegions' assembly,
   // so a caller could only ever pass the same value or a wrong one. Forgetting
   // to pass it is what made the dotplot diagonalize against the wrong band

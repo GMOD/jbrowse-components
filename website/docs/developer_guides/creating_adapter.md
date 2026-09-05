@@ -320,7 +320,7 @@ export interface BaseOptions {
   assemblyName?: string
   // The assembly on the *other* side of a synteny band, set by the synteny
   // render RPC from the target view. Lets a multi-genome adapter (e.g.
-  // AllVsAllPAFAdapter) whose config lists all N assemblies isolate the exact
+  // MultiGenomePAFAdapter) whose config lists all N assemblies isolate the exact
   // pair a band draws — `assemblyName` alone can't, since one file backs every
   // pair. Pairwise adapters (which already know their pair) ignore it.
   targetAssemblyName?: string

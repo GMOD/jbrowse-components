@@ -191,7 +191,7 @@ distinct feature ids)." True of **ids** — but ids are distinct on purpose, and
 below.
 
 Checked 2026-08-14, against `make-pif/pif-generator.ts` and
-`AllVsAllPAFAdapter.ts`. Three adapters join today; two do not, for reasons that
+`MultiGenomePAFAdapter.ts`. Three adapters join today; two do not, for reasons that
 have nothing to do with each other:
 
 | adapter | `syntenyId` | joinable across perspectives? |

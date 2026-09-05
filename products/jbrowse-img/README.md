@@ -873,7 +873,7 @@ jb2export --config jbrowse.json --spec spec.json --out synteny.svg
 Without a `--spec`, `synteny --config` stacks the config's assemblies in the
 order they are listed and places each SyntenyTrack by its `assemblyNames`: a
 pairwise track lands in the one gap between the two genomes it names, and a
-track listing three or more (an `AllVsAllPAFAdapter` or `MCScanBlocksAdapter`
+track listing three or more (a `MultiGenomePAFAdapter` or `MCScanBlocksAdapter`
 file covering N genomes, as built in the
 [all-vs-all](https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/) and
 [multiway](https://jbrowse.org/jb2/docs/tutorials/multiway_synteny_grape_peach_cacao/)
@@ -948,8 +948,8 @@ reads the whole file as a single query-vs-target comparison, so repeating the
 same all-vs-all file across the gaps fails every band past the first with
 `AssemblyNotInAdapterError` — the PanSN prefixes that say which genome each
 record belongs to mean nothing to that adapter. The adapter that reads them is
-`AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for a `make-pif` index),
-named in a config:
+`MultiGenomePAFAdapter` (or `MultiGenomeIndexedPAFAdapter` for a `make-pif`
+index), named in a config:
 
 ```json addtrack
 {
@@ -958,7 +958,7 @@ named in a config:
   "name": "E. coli pangenome (all-vs-all PAF)",
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
   "adapter": {
-    "type": "AllVsAllPAFAdapter",
+    "type": "MultiGenomePAFAdapter",
     "uri": "all_vs_all.paf.gz",
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }

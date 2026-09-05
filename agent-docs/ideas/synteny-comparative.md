@@ -182,7 +182,7 @@ and add an RPC assemblyName guard unconditionally
 no-op safety net for existing pairwise adapters — bare-refName users get correct results
 with zero extra config, PanSN users flip one flag.
 
-Phasing: **1** — `AllVsAllPAFAdapter` evolving PR #4985: full N-list `assemblyNames`
+Phasing: **1** — `MultiGenomePAFAdapter` evolving PR #4985: full N-list `assemblyNames`
 (or auto-derived from distinct PanSN prefixes during `setup()`), a `parsePanSN(name, sep)`
 helper replacing the hardcoded flip logic, per-assembly `getRefNames`, and fixing
 `getWeightedMeans` keying (`PAFAdapter/util.ts:68` uses raw `qname-tname`) to parsed
@@ -203,10 +203,10 @@ whole-genome PAF is the likeliest path to hit it, so fold the `uint` fix in here
 than doing it speculatively.
 
 **PIF / tabix indexing weaknesses + improvements** (the all-vs-all adapter now
-ships in two forms: in-memory `AllVsAllPAFAdapter` and tabix-indexed
-`AllVsAllIndexedPAFAdapter` over a stock `make-pif` `.pif.gz`, querying the
+ships in two forms: in-memory `MultiGenomePAFAdapter` and tabix-indexed
+`MultiGenomeIndexedPAFAdapter` over a stock `make-pif` `.pif.gz`, querying the
 anchor's PanSN seqid on both `q`/`t` perspectives — see
-`plugins/comparative-adapters/src/AllVsAllIndexedPAFAdapter/`). PIF reuses proven
+`plugins/comparative-adapters/src/MultiGenomeIndexedPAFAdapter/`). PIF reuses proven
 infra (`@gmod/tabix`, bgzip, HTTP range, CSI for >512 Mb) and the double-emit is
 format-agnostic (all-vs-all needed zero `make-pif` changes), but has structural
 limits worth recording:
@@ -292,9 +292,9 @@ current stack. The overriding conclusion is that **the render/model/color surfac
 already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
 reference·identity·meanQueryIdentity·mappingQuality`, plus `opacityByIdentity`,
 `fadeThinAlignments`, N-way stacked views, `colorBy:'reference'` chromosome-painting,
-and `AllVsAllPAFAdapter`. So the remaining wins are **leaf parsers that map a popular
+and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
 file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
-below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `AllVsAllPAFAdapter`
+below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`
 template: "one file backs N-1 pairwise tracks, no renderer change").
 
 - **ntSynt long-format blocks adapter (best leaf; local demo data ready).** ntSynt emits

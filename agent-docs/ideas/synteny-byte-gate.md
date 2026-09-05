@@ -24,7 +24,7 @@ that are decisions, not omissions".
 
 `PifFile` is `TabixIndexedFile`-backed, so the estimate is the same one-liner
 `BedTabixAdapter` already ships (`bytesForRegions` off the index) on
-`PairwiseIndexedPAFAdapter` / `AllVsAllIndexedPAFAdapter`. The moment it lands,
+`PairwiseIndexedPAFAdapter` / `MultiGenomeIndexedPAFAdapter`. The moment it lands,
 `check-gated-adapter-budgets.ts` (whose scan now walks `extends` chains) fails
 until the budget is written into `gatedAdapterBudgets.json` — which is the
 point: the budget is the real work here, not the method.

@@ -37,8 +37,6 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
 - **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
 - **Adapter:** [ChainAdapter](../chainadapter)
 - **Adapter:** [DeltaAdapter](../deltaadapter)
@@ -46,6 +44,8 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
 - **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
 - **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MultiGenomeIndexedPAFAdapter](../multigenomeindexedpafadapter)
+- **Adapter:** [MultiGenomePAFAdapter](../multigenomepafadapter)
 - **Adapter:** [MultiPairwiseSyntenyAdapter](../multipairwisesyntenyadapter)
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)

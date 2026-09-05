@@ -1,10 +1,10 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './AllVsAllIndexedPAFAdapter.ts'
+import Adapter from './MultiGenomeIndexedPAFAdapter.ts'
 import configSchema from './configSchema.ts'
 
-// all_vs_all.pif.gz is `jbrowse make-pif` run on the AllVsAllPAFAdapter fixture
+// all_vs_all.pif.gz is `jbrowse make-pif` run on the MultiGenomePAFAdapter fixture
 // (grape/peach/cacao all-vs-all), so the two adapters answer the same queries.
 const loc = (uri: string) => ({
   localPath: require.resolve(uri),

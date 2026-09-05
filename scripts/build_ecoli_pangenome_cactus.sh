@@ -137,7 +137,7 @@ printf 'chr\t%s\n' "$REFLEN" > chrom.sizes
 # whole-chromosome blocks. halSynteny reads the HAL's base-level alignment and
 # emits proper synteny blocks per pair (PSL). Its PSL names every sequence `chr`
 # (no sample), so inject the PanSN `sample#0#chr` query/target names here — the
-# AllVsAllIndexedPAFAdapter maps each record to its assembly by that prefix.
+# MultiGenomeIndexedPAFAdapter maps each record to its assembly by that prefix.
 # halSynteny keeps the query on '+' and flips only the target strand, so the PAF
 # strand is the 2nd char of PSL col 9 (`++` -> '+', `+-` -> '-').
 : > ecoli_cactus_ava.paf
@@ -401,7 +401,7 @@ cat > ava_track.json <<JSON
   "name": "MC graph: all-vs-all synteny (halSynteny)",
   "assemblyNames": [$AN],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_cactus_ava.pif.gz" },
     "index": { "location": { "uri": "ecoli_cactus_ava.pif.gz.tbi" } },
     "assemblyNames": [$AN]

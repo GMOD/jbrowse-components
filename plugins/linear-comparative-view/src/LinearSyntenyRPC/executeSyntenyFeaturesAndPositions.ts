@@ -158,7 +158,7 @@ export async function executeSyntenyFeaturesAndPositions({
       lodMode,
       statusCallback,
       // the assembly on the other side of this band; a multi-genome adapter
-      // (AllVsAllPAFAdapter) uses it to keep only this pair's records
+      // (MultiGenomePAFAdapter) uses it to keep only this pair's records
       targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
     }),
     // Anchored on v2, so the pair's OTHER assembly is v1's — and the regions

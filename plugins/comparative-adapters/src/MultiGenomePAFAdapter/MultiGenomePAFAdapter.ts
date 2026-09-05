@@ -25,7 +25,7 @@ import {
 } from '../util.ts'
 
 import type { AlignedSide } from '../util.ts'
-import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
+import type { MultiGenomePAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -46,7 +46,7 @@ interface IndexedSide extends AlignedSide {
   syntenyId: number
 }
 
-export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllPAFAdapterConfig> {
+export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiGenomePAFAdapterConfig> {
   setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   /**

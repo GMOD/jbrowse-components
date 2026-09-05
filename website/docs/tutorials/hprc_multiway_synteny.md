@@ -131,7 +131,7 @@ to exist under the lane's assembly name.
 ## The alignment track
 
 One `SyntenyTrack` names hg38 and every haplotype, and its adapter is an
-`AllVsAllIndexedPAFAdapter` over the index. The PAF names every sequence
+`MultiGenomeIndexedPAFAdapter` over the index. The PAF names every sequence
 PanSN-style, `HG01109#1#<contig>`, while the assemblies are named `HG01109.1`,
 and `assemblyNameToPanSN` is the map between the two, with GRCh38 as `GRCh38#0`.
 The list below is cut to three haplotypes for the page; the hosted config
@@ -144,7 +144,7 @@ carries all eight.
   "name": "HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 graph)",
   "assemblyNames": ["hg38", "HG01109.1", "HG01123.1", "HG00099.1"],
   "adapter": {
-    "type": "AllVsAllIndexedPAFAdapter",
+    "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "hprc_multiway_gfa.pif.gz",
     "csi": true,
     "assemblyNames": ["hg38", "HG01109.1", "HG01123.1", "HG00099.1"],
