@@ -263,8 +263,8 @@ export default function MultiRegionDisplayMixin() {
          * carries what it stored, or the {@link HELD_BY_THE_DISPLAY} stand-in
          * for a display still holding its own map — so "marked loaded with
          * nothing behind it" is a state only a hand-written `setLoadedRegion`
-         * reaches. It used to be `true`, and the two canvas displays each
-         * overrode it with `rpcDataMap.has(idx)` to get this answer back.
+         * reaches. It used to be `true`, and the base canvas display overrode
+         * it with `rpcDataMap.has(idx)` to get this answer back.
          *
          * What survives an override is the question the store cannot answer:
          * **which of several held payloads answers**. MAF caches a summary tier
@@ -278,10 +278,10 @@ export default function MultiRegionDisplayMixin() {
          *
          * **What the old fail-open default was protecting is now explicit.** A
          * byte-gate refusal never commits at all, so it is unreachable either
-         * way; sequence's legitimately-empty region is the case that mattered,
-         * and it commits its empty record rather than stamping over nothing —
-         * which is a payload, so it stays terminal instead of refetching
-         * forever.
+         * way. The case that mattered is sequence's legitimately-empty region,
+         * which stamped without storing and which a store-derived default would
+         * have refetched forever — and a commit is a payload now, the empty
+         * record or the stand-in, so it stays terminal.
          *
          * A view, not an action, for the reason `zoomFetchKey` is a getter.
          */
