@@ -129,7 +129,7 @@ test('a pile of overlapping records makes a taller stack', () => {
 
 // The lane's marks are the same color as the alt cells in the column under
 // them, and this is the seam that carries it: `config.color` is unset, so
-// plugin-canvas's `getBoxColor` reads the color each rebuilt feature declares
+// plugin-canvas's `boxColor` reads the color each rebuilt feature declares
 // for itself. A concrete `color` slot would repaint every mark alike.
 test('each record keeps the color the display resolved for it', () => {
   const map = laidOut(

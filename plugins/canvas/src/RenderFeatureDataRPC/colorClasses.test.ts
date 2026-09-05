@@ -5,7 +5,11 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
 import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
-import { resolveOutlineColor } from './collect/glyphColors.ts'
+import {
+  boxColor,
+  resolveOutlineColor,
+  strokeColor,
+} from './collect/glyphColors.ts'
 import {
   LITERAL,
   OUTLINE,
@@ -16,7 +20,6 @@ import {
 } from './colorClasses.ts'
 import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 import { makeFeatureData, mockDisplayConfig } from './testUtils.ts'
-import { getBoxColor, getStrokeColor } from './util.ts'
 
 const jexl = createJexlInstance()
 const palette = resolvePalette()
@@ -35,8 +38,7 @@ describe('the worker emits a class where it cannot resolve a color', () => {
       strand: 1,
       phase: 0,
     })
-    const { color, colorClass } = getBoxColor({
-      feature: cds,
+    const { color, colorClass } = boxColor(cds, {
       config: mockDisplayConfig(),
       colorByCDS: true,
       jexl,
@@ -55,8 +57,7 @@ describe('the worker emits a class where it cannot resolve a color', () => {
       strand: 1,
       phase: 0,
     })
-    const { color, colorClass } = getBoxColor({
-      feature: cds,
+    const { color, colorClass } = boxColor(cds, {
       config: mockDisplayConfig({ color: 'red' }),
       colorByCDS: false,
       jexl,
@@ -72,12 +73,14 @@ describe('the worker emits a class where it cannot resolve a color', () => {
       start: 0,
       end: 10,
     })
-    const stroke = getStrokeColor({
-      feature,
+    const stroke = strokeColor(feature, {
       config: mockDisplayConfig(),
+      colorByCDS: false,
       jexl,
     })
-    expect(stroke.color).toBeUndefined()
+    // nothing to pack: the class names the color and the main-thread encode
+    // writes the lane
+    expect(stroke.color).toBe(0)
     expect(stroke.colorClass).toBe(STROKE)
   })
 

@@ -37,7 +37,7 @@ function getFeats(f: string) {
 
 // The gene glyph draws one box per subfeature, so what matters is not that the
 // top-level feature parsed an itemRgb but that a *drawn* box can reach it.
-// getBoxColor walks parent() to do that; this pins the wiring it depends on.
+// boxColor walks parent() to do that; this pins the wiring it depends on.
 test('a colored BED12 exposes itemRgb to its subfeatures via parent()', async () => {
   const feats = await getFeats('./test_data/volvox-bed12-itemrgb.bed.gz')
   const parent = feats[0]!

@@ -112,7 +112,7 @@ export interface DisplayConfig {
   // type error rather than a silent one.
   featureHeight: number | string
   // `maybeColor` slots: undefined = unset, meaning the feature's own BED color
-  // paints it (see getBoxColor). Not the same as any concrete color.
+  // paints it (see boxColor). Not the same as any concrete color.
   color: string | undefined
   connectorColor: string | undefined
   utrColor: string | undefined

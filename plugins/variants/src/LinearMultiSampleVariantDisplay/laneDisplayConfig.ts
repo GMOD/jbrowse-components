@@ -30,7 +30,7 @@ export function laneDisplayConfig({
     // stamps it with — the display resolved that color once, for the alt cells,
     // and a lane mark being the same color as the column under it is the whole
     // point of drawing them in one display. A concrete color here would repaint
-    // every mark alike; the BED-color path (`itemRgb`, which `getBoxColor` falls
+    // every mark alike; the BED-color path (`itemRgb`, which `boxColor` falls
     // through to when this is unset) takes only an `r,g,b` triple and would drop
     // the alpha a jexl-authored cell color can carry.
     color: `jexl:get(feature,'laneColor')`,

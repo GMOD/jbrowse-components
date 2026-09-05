@@ -17,8 +17,7 @@ import {
 
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { FeatureLayout } from '../types.ts'
-import type { ClassedColor } from '../util.ts'
-import type { PackedColor } from './glyphColors.ts'
+import type { ClassedColor, PackedColor } from './glyphColors.ts'
 import type {
   Collector,
   GlyphPlacement,

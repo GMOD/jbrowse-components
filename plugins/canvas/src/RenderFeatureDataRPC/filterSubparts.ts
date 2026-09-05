@@ -45,7 +45,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
 
   // The `parent` handle is what this helper is for. Anything reaching up from
   // the box it paints — `jexl:feature.parent.dif`, the itemRgb walk in
-  // getBoxColor — has to find the transcript from a synthesized UTR too, or
+  // boxColor — has to find the transcript from a synthesized UTR too, or
   // those come out the default color between exons that took the callback's.
   const impliedUTR = (
     id: string,
