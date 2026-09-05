@@ -77,7 +77,7 @@ class DrawingGpuBackend extends GpuPerRegionRenderingBackend<
 }
 
 function gpuBackend() {
-  return new TestGpuBackend(new MockHal([]), 256)
+  return new TestGpuBackend(new MockHal([]))
 }
 
 function canvas2dBackend() {
@@ -137,7 +137,7 @@ describe('GpuPerRegionRenderingBackend.renderBlocks paint reporting', () => {
 
   test('frame is always paired, even when nothing painted', () => {
     const hal = new MockHal([])
-    const b = new TestGpuBackend(hal, 256)
+    const b = new TestGpuBackend(hal)
     expect(b.renderBlocks([block(0)], new Map(), STATE)).toBe(false)
     const methods = hal.calls.map(c => c.method)
     expect(methods).toContain('beginFrame')
@@ -208,6 +208,7 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
       glslVertex: '',
       glslFragment: '',
       instanceStride: STRIDE,
+      uniformByteSize: 0,
       verticesPerInstance: 6,
       blend: true,
       vertexAttributes: [],
@@ -234,7 +235,7 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
 
   function backend() {
     const hal = new MockHal([])
-    return { hal, b: new TwoPassBackend(hal, 256) }
+    return { hal, b: new TwoPassBackend(hal) }
   }
 
   test('each pass gets as many instances as its packed bytes hold', () => {
@@ -265,7 +266,7 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
 describe('GpuPerRegionRenderingBackend.renderBlocks block clipping', () => {
   function drawingBackend() {
     const hal = new MockHal([{ id: 'rect' } as unknown as PipelineDescriptor])
-    return { hal, b: new DrawingGpuBackend(hal, 256) }
+    return { hal, b: new DrawingGpuBackend(hal) }
   }
 
   test('each block draws clipped to its own columns', () => {

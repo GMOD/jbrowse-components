@@ -26,10 +26,9 @@ export class GpuMarkBackend<
 
   constructor(
     hal: GpuHal,
-    uniformByteSize: number,
     private marks: readonly Mark<TRegion, TState>[],
   ) {
-    super(hal, uniformByteSize)
+    super(hal)
     // a mark drawing off another's buffer is registered but never uploaded to
     this.regionPasses = marks.filter(m => !m.bufferOf).map(m => m.pass)
   }
@@ -78,8 +77,7 @@ class Canvas2DMarkBackend<
  *
  * This is the whole of what a display used to spell as a `GpuXxxRenderer`
  * class, a `Canvas2DXxxRenderer` class, a pass list and a factory: the passes
- * are the marks' own, the uniform scratch is sized to the largest shape's, and
- * each backend walks the same list.
+ * are the marks' own and each backend walks the same list.
  *
  * One uniform buffer serves every mark because each writes its own layout into
  * the scratch immediately before its own `drawPass`, which is what the HAL's
@@ -90,14 +88,12 @@ export function createMarkBackend<TRegion, TState extends FrameDimensions>(
   marks: readonly Mark<TRegion, TState>[],
   opts: { sampleCount?: SampleCount } = {},
 ): Promise<PerRegionRenderingBackend<TRegion, TState>> {
-  const uniformByteSize = Math.max(...marks.map(m => m.uniformByteSize))
   return createRenderingBackend<PerRegionRenderingBackend<TRegion, TState>>(
     canvas,
     {
       passes: marks.map(m => m.pass),
-      uniformByteSize,
       sampleCount: opts.sampleCount,
-      createGpuBackend: hal => new GpuMarkBackend(hal, uniformByteSize, marks),
+      createGpuBackend: hal => new GpuMarkBackend(hal, marks),
       createCanvas2DBackend: c => new Canvas2DMarkBackend(c, marks),
     },
   )

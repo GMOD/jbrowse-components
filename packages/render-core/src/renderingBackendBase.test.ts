@@ -22,7 +22,7 @@ class TestCanvas2DBackend extends Canvas2DRenderingBackendBase {}
 
 test('a GPU backend forwards its error handler to the HAL', () => {
   const hal = new MockHal([])
-  const backend = new TestGpuBackend(hal, 64)
+  const backend = new TestGpuBackend(hal)
   const seen: Error[] = []
 
   backend.setErrorHandler(e => {

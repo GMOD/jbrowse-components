@@ -55,9 +55,9 @@ export abstract class GpuRenderingBackendBase {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 
-  constructor(hal: GpuHal, uniformByteSize: number) {
+  constructor(hal: GpuHal) {
     this.hal = hal
-    this.uniformData = new ArrayBuffer(uniformByteSize)
+    this.uniformData = new ArrayBuffer(hal.uniformByteSize)
   }
 
   // Forward OOM / over-limit allocation failures from the HAL to the display's

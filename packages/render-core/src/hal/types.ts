@@ -94,6 +94,8 @@ export interface PipelineDescriptor {
   glslVertex: string
   glslFragment: string
   instanceStride: number
+  /** Bytes of the uniform block the shader binds; the HAL's slot is the largest over its passes. */
+  uniformByteSize: number
   // 6 for quads (2 triangles), 3 for triangles
   verticesPerInstance: number
   blend: boolean
@@ -117,6 +119,8 @@ export interface PipelineDescriptor {
 }
 
 export interface GpuHal {
+  /** The uniform slot size, the largest block any registered pass binds. */
+  readonly uniformByteSize: number
   /**
    * Size the canvas, and report the scale its backing store actually got.
    * Callers derive every device-px rect from THAT rather than from `getDpr()`:

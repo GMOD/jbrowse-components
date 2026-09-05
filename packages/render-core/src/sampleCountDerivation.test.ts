@@ -25,6 +25,7 @@ function pass(id: string, coverage?: 'analytic'): PipelineDescriptor {
     glslVertex: '',
     glslFragment: '',
     instanceStride: 16,
+    uniformByteSize: 0,
     verticesPerInstance: 6,
     blend: true,
     vertexAttributes: [],
@@ -41,7 +42,6 @@ async function sampleCountFor(
     document.createElement('canvas'),
     {
       passes,
-      uniformByteSize: 16,
       sampleCount,
       createGpuBackend: hal => hal,
       createCanvas2DBackend: () => {

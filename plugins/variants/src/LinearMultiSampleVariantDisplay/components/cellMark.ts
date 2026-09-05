@@ -38,7 +38,6 @@ export interface CellParams {
  */
 export const cellMark: MarkShape<CellChannels, CellParams> = {
   id: 'cell',
-  uniformByteSize: shader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...slangPass({ id: 'cell', mod: shader }),
     pack: c => shader.packInstances(c, c.count),

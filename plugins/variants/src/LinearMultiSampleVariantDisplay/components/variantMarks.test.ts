@@ -121,7 +121,7 @@ test('the declaration feeds positions/rows/shapes/colors to startEnd/rowIndex/sh
 describe('uniforms', () => {
   function uniformsFor(block: VariantRenderBlock, state = STATE) {
     const hal = new MockHal([MARK.pass])
-    const scratch = new ArrayBuffer(MARK.uniformByteSize)
+    const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
     const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
       x: 1,
       y: 1,

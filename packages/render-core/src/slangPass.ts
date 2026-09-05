@@ -15,6 +15,7 @@ export interface ShaderModule {
   GLSL_VERTEX: string
   GLSL_FRAGMENT: string
   INSTANCE_STRIDE_BYTES: number
+  UNIFORMS_SIZE_BYTES: number
   VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[]
   // Emitted when the .slang source declares
   // `public static const uint VERTS_PER_INSTANCE = <expr>;` at module scope.
@@ -91,6 +92,7 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     glslVertex: opts.mod.GLSL_VERTEX,
     glslFragment: opts.mod.GLSL_FRAGMENT,
     instanceStride: opts.mod.INSTANCE_STRIDE_BYTES,
+    uniformByteSize: opts.mod.UNIFORMS_SIZE_BYTES,
     verticesPerInstance,
     blend: opts.blend ?? true,
     blendState: opts.blendState ?? opts.mod.BLEND_STATE,

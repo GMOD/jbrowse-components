@@ -275,7 +275,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     canvas: HTMLCanvasElement,
     context: GPUCanvasContext,
     descriptors: PipelineDescriptor[],
-    uniformByteSize: number,
     sampleCount: SampleCount,
     pipelines: Map<string, GPURenderPipeline>,
     layouts: DeviceLayouts,
@@ -290,7 +289,8 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
     // Align uniform slots to device requirements for dynamic offsets
     const alignment = device.limits.minUniformBufferOffsetAlignment
-    this.alignedUniformSize = Math.ceil(uniformByteSize / alignment) * alignment
+    this.alignedUniformSize =
+      Math.ceil(this.uniformByteSize / alignment) * alignment
 
     const ringSize = MAX_UNIFORM_SLOTS * this.alignedUniformSize
     this.uniformRingBuffer = device.createBuffer({
@@ -343,7 +343,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   static async create(
     canvas: HTMLCanvasElement,
     descriptors: PipelineDescriptor[],
-    uniformByteSize: number,
     sampleCount: SampleCount,
   ) {
     const device = await getGpuDevice()
@@ -371,7 +370,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       canvas,
       context,
       descriptors,
-      uniformByteSize,
       sampleCount,
       pipelines,
       layouts,

@@ -36,7 +36,6 @@ export interface MatrixCellParams {
  */
 export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
   id: 'matrixCell',
-  uniformByteSize: shader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...slangPass({ id: 'matrixCell', mod: shader }),
     pack: c => shader.packInstances(c, c.count),

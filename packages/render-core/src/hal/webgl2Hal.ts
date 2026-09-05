@@ -213,11 +213,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    descriptors: PipelineDescriptor[],
-    uniformByteSize: number,
-  ) {
+  constructor(canvas: HTMLCanvasElement, descriptors: PipelineDescriptor[]) {
     super(descriptors, 'WebGL2Hal')
     this.canvas = canvas
     this.debug = debugEnabled()
@@ -268,7 +264,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
     this.ubo = gl.createBuffer()!
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
-    gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
+    gl.bufferData(gl.UNIFORM_BUFFER, this.uniformByteSize, gl.DYNAMIC_DRAW)
 
     this.passes = new Map()
 

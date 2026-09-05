@@ -34,7 +34,6 @@ export interface PointParams {
 
 export const pointMark: MarkShape<PointChannels, PointParams> = {
   id: 'point',
-  uniformByteSize: shader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...slangPass({ id: 'point', mod: shader }),
     pack: c => shader.packInstances(c, c.count),

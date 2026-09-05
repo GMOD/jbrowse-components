@@ -123,7 +123,7 @@ export class GpuWiggleRenderer
   private boundDensityRamp: Uint8Array | undefined
 
   constructor(hal: GpuHal) {
-    super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
+    super(hal)
   }
 
   protected drawRegion(

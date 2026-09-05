@@ -19,6 +19,7 @@ function shaderModule(extra: Partial<ShaderModule> = {}): ShaderModule {
     GLSL_VERTEX: 'vs',
     GLSL_FRAGMENT: 'fs',
     INSTANCE_STRIDE_BYTES: 16,
+    UNIFORMS_SIZE_BYTES: 48,
     VERTEX_ATTRIBUTES: ATTRS,
     ...extra,
   }
@@ -43,6 +44,7 @@ describe('slangPass', () => {
       glslVertex: 'vs',
       glslFragment: 'fs',
       instanceStride: 16,
+      uniformByteSize: 48,
       verticesPerInstance: 6,
       vertexAttributes: ATTRS,
       // Nothing disables blending today, which is why there is no `//! blend:

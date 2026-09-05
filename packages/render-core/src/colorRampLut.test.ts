@@ -9,6 +9,7 @@ const texturedPass = (id: string): PipelineDescriptor => ({
   glslVertex: '',
   glslFragment: '',
   instanceStride: 4,
+  uniformByteSize: 0,
   verticesPerInstance: 6,
   blend: true,
   vertexAttributes: [],

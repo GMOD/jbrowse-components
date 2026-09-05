@@ -98,7 +98,7 @@ describe('reversed convention', () => {
 
   function bpRangeLen(reversed: boolean) {
     const hal = new MockHal([MARK.pass])
-    const scratch = new ArrayBuffer(MARK.uniformByteSize)
+    const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
     const data = mkData([500], [5], [0xff0000ff])
     const b = { ...block, reversed }
     const clip = clipBlock(b, state.canvasWidth, state.canvasHeight, {

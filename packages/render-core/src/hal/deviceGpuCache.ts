@@ -24,8 +24,8 @@ import type { PipelineDescriptor, SampleCount } from './types.ts'
  * is the one pipeline input the descriptor cannot express, so it is the inner
  * key; see the `pipelines` field.
  *
- * The one field of a pipeline that is not on the descriptor is the uniform
- * size, and it cannot make two HALs disagree here:
+ * The descriptor's `uniformByteSize` never reaches the pipeline, so it cannot
+ * make two HALs disagree here:
  * `createUniformOnlyBindGroupLayout` declares no `minBindingSize`, so the
  * layout — and thus the pipeline built against it — is the same whatever a
  * display's `uniformByteSize` is. The size reaches the GPU through the bind

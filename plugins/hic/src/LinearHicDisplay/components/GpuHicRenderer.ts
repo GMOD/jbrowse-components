@@ -14,7 +14,6 @@ import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
-const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 
 export const HIC_PASSES: PipelineDescriptor[] = [
   slangPass({
@@ -22,8 +21,6 @@ export const HIC_PASSES: PipelineDescriptor[] = [
     mod: hicShader,
   }),
 ]
-
-export { UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE }
 
 export class GpuHicRenderer
   extends GpuGlobalRenderingBackend<
@@ -35,7 +32,7 @@ export class GpuHicRenderer
   implements HicRenderingBackend
 {
   constructor(hal: GpuHal) {
-    super(hal, UNIFORMS_SIZE_BYTES)
+    super(hal)
   }
 
   upload(_key: HicCellKey, cell: HicUploadData | Uint8Array) {

@@ -32,6 +32,7 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
   protected descriptors: Map<string, PipelineDescriptor>
   protected regions: RegionRegistry<Buf>
   protected oom: OomReporter
+  readonly uniformByteSize: number
 
   // Guards dispose() against double invocation (pagehide + React cleanup can
   // both fire).
@@ -39,6 +40,10 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
 
   constructor(descriptors: PipelineDescriptor[], halName: string) {
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
+    this.uniformByteSize = Math.max(
+      0,
+      ...descriptors.map(d => d.uniformByteSize),
+    )
     this.oom = new OomReporter(halName)
     this.regions = new RegionRegistry<Buf>(buf => {
       this.destroyBuffer(buf)

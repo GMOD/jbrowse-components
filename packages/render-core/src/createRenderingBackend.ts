@@ -10,7 +10,6 @@ import type { GpuHal, PipelineDescriptor, SampleCount } from './hal/types.ts'
  */
 export interface RenderingBackendOptions<TRenderingBackend> {
   passes: PipelineDescriptor[]
-  uniformByteSize: number
   /**
    * Samples per pixel this display's WebGPU target is allocated at. Omitted, it
    * is derived from `passes`: 1 when every registered pass declares
@@ -41,7 +40,6 @@ export async function createRenderingBackend<TRenderingBackend>(
   canvas: HTMLCanvasElement,
   {
     passes,
-    uniformByteSize,
     sampleCount = deriveSampleCount(passes),
     createGpuBackend,
     createCanvas2DBackend,
@@ -62,7 +60,6 @@ export async function createRenderingBackend<TRenderingBackend>(
   const ladderFailures: unknown[] = []
   const hal = await createGpuHal(canvas, {
     passes,
-    uniformByteSize,
     sampleCount,
     failures: ladderFailures,
   })

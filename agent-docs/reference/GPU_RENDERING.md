@@ -350,7 +350,6 @@ either a GPU or a Canvas2D implementation:
 export function XxxRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<XxxRenderingBackend>(canvas, {
     passes: XXX_PASSES,
-    uniformByteSize: XXX_UNIFORM_BYTE_SIZE,
     createGpuBackend: hal => new GpuXxxRenderer(hal),
     createCanvas2DBackend: c => new Canvas2DXxxRenderer(c),
   })
@@ -568,7 +567,7 @@ export const XXX_PASSES = [
 // GPU renderer declares its passes and implements drawRegion:
 export class GpuXxxRenderer extends GpuPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {
   protected regionPasses = XXX_PASSES
-  constructor(hal: GpuHal) { super(hal, XXX_UNIFORM_BYTE_SIZE) }
+  constructor(hal: GpuHal) { super(hal) }
   protected drawRegion(block, clip, region, state) { … }
 }
 
@@ -949,7 +948,7 @@ hundreds of call sites to restate what the type now says once. Read `passId` as
 "pipeline id" and the whole interface follows.
 
 ```
-createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
+createGpuHal(canvas, { passes, sampleCount }): Promise<GpuHal | null>
   ?renderer=canvas2d|canvas  → return null                 (Canvas2D backend)
   ?renderer=webgl            → skip WebGPU, try WebGL2 → null on failure
   otherwise                  → try WebGPU → WebGL2 → null

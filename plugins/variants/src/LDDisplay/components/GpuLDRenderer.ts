@@ -17,10 +17,6 @@ const PASS_MAIN = 'main'
 const PASS_GENOMIC = 'genomic'
 const REGION_KEY = 0
 
-// Both shader variants share an identical uniform block (ldUniforms.slang
-// module) — either module's offsets are authoritative.
-const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
-
 // The generated packer, not a loop of our own: `ldGenomic`'s instance struct is
 // exactly `{position: float2, cellSize: float2, ldValue: float}`, and
 // `packInstances` reads a vecN field as N consecutive values per instance —
@@ -56,8 +52,6 @@ export const LD_PASSES: PipelineDescriptor[] = [
   }),
 ]
 
-export { UNIFORMS_SIZE_BYTES as LD_UNIFORM_BYTE_SIZE }
-
 export class GpuLDRenderer
   extends GpuGlobalRenderingBackend<
     LDUploadData,
@@ -68,7 +62,7 @@ export class GpuLDRenderer
   implements LDRenderingBackend
 {
   constructor(hal: GpuHal) {
-    super(hal, UNIFORMS_SIZE_BYTES)
+    super(hal)
   }
 
   upload(_key: LDCellKey, cell: LDUploadData | Uint8Array) {

@@ -457,7 +457,7 @@ this option is *the decision*, one display at a time — and the decision is the
 part this doc cannot make.
 
 **What a flip takes now.** One line in the display's renderer factory:
-`sampleCount: 1` beside `passes` and `uniformByteSize`. Nothing else moves. The
+`sampleCount: 1` beside `passes`. Nothing else moves. The
 displays that must NOT take it are Hi-C (`plugins/hic/.../HicRenderer.ts`) and
 LD (`plugins/variants/src/LDDisplay/components/LDRenderer.ts`), for the
 conflation reason option 5 records.

@@ -232,7 +232,6 @@ function paintedRectSpan(
 
 export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
   id: 'rect',
-  uniformByteSize: rectShader.UNIFORMS_SIZE_BYTES,
   pass: { ...RectPass, pack: c => rectShader.packInstances(c, c.count) },
   writeUniforms: writeFeatureGlyphUniforms,
 
@@ -280,7 +279,6 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
  */
 export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   id: 'line',
-  uniformByteSize: lineShader.UNIFORMS_SIZE_BYTES,
   pass: { ...LinePass, pack: c => lineShader.packInstances(c, c.count) },
   writeUniforms: writeFeatureGlyphUniforms,
 
@@ -355,7 +353,6 @@ export function makeChevronShape(
 ): MarkShape<LineChannels, FeatureGlyphParams> {
   return {
     id: 'chevron',
-    uniformByteSize: lineShader.UNIFORMS_SIZE_BYTES,
     pass: {
       ...makeChevronPass(maxChevronsPerLine),
       pack: c => lineShader.packInstances(c, c.count),
@@ -367,7 +364,6 @@ export function makeChevronShape(
 
 export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   id: 'arrow',
-  uniformByteSize: arrowShader.UNIFORMS_SIZE_BYTES,
   pass: { ...ArrowPass, pack: c => arrowShader.packInstances(c, c.count) },
   writeUniforms: writeFeatureGlyphUniforms,
 
@@ -472,7 +468,6 @@ function drawEdgeMarker(
  */
 export const continuationShape: MarkShape<RectChannels, FeatureGlyphParams> = {
   id: 'continuation',
-  uniformByteSize: rectShader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...ContinuationPass,
     pack: c => rectShader.packInstances(c, c.count),

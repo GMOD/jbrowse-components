@@ -78,7 +78,7 @@ function installGpu(device: GPUDevice) {
 async function drawOneFrame(sampleCount: SampleCount) {
   const fake = fakeDevice()
   installGpu(fake.device)
-  const hal = await WebGPUHal.create(fakeCanvas(), [], 64, sampleCount)
+  const hal = await WebGPUHal.create(fakeCanvas(), [], sampleCount)
   if (!hal) {
     throw new Error('fake stack failed to build a HAL')
   }

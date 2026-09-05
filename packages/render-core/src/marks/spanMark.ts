@@ -57,7 +57,6 @@ export interface SpanParams {
 
 export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   id: 'span',
-  uniformByteSize: shader.UNIFORMS_SIZE_BYTES,
   pass: {
     ...slangPass({ id: 'span', mod: shader }),
     pack: c => shader.packInstances(c, c.count),

@@ -251,7 +251,7 @@ re-exports the other two modules, so the table below is the union of all three:
 | `COVERAGE` | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |
-| `UNIFORMS_SIZE_BYTES` | size of the uniform block, the `uniformByteSize` a backend passes |
+| `UNIFORMS_SIZE_BYTES` | size of the uniform block; `slangPass` carries it onto the descriptor |
 | `UNIFORM_OFFSET_F32 / _U32 / _I32` | per-field indices into the uniform scratch buffer, one map per view |
 | `UNIFORM_SLOT_ARRAYS` | element counts for array-valued uniform slots |
 | `Uniforms` | the uniform block as a TS interface, one field per shader uniform; `writeUniforms` takes it |
@@ -333,7 +333,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
 
   constructor(hal: GpuHal) {
     // the base allocates the reusable this.uniformData scratch buffer
-    super(hal, shader.UNIFORMS_SIZE_BYTES)
+    super(hal)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.uniformU32 = new Uint32Array(this.uniformData)
   }
@@ -382,7 +382,6 @@ import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBack
 
 import { Canvas2DScoreRenderer } from './Canvas2DScoreRenderer.ts'
 import { GpuScoreRenderer, SCORE_PASSES } from './GpuScoreRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/score.generated.ts'
 
 import type { ScoreRenderingBackend } from './scoreTypes.ts'
 
@@ -392,7 +391,6 @@ import type { ScoreRenderingBackend } from './scoreTypes.ts'
 export function ScoreRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<ScoreRenderingBackend>(canvas, {
     passes: SCORE_PASSES,
-    uniformByteSize: UNIFORMS_SIZE_BYTES,
     createGpuBackend: hal => new GpuScoreRenderer(hal),
     createCanvas2DBackend: c => new Canvas2DScoreRenderer(c),
   })

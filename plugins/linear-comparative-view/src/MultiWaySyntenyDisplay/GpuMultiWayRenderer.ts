@@ -5,7 +5,6 @@ import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBa
 
 import {
   SYNTENY_PASSES,
-  SYNTENY_UNIFORM_BYTE_SIZE,
   writeSyntenyUniforms,
 } from '../LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
 import { SyntenyRibbonBuffers } from '../LinearSyntenyDisplay/syntenyRibbonBuffers.ts'
@@ -38,11 +37,6 @@ export const MULTIWAY_PASSES: PipelineDescriptor[] = [
   ...MULTIWAY_GLYPH_MARKS.map(m => m.pass),
 ]
 
-export const MULTIWAY_UNIFORM_BYTE_SIZE = Math.max(
-  SYNTENY_UNIFORM_BYTE_SIZE,
-  ...MULTIWAY_GLYPH_MARKS.map(m => m.uniformByteSize),
-)
-
 export class GpuMultiWayRenderer
   extends GpuRenderingBackendBase
   implements MultiWayRenderingBackend
@@ -54,7 +48,7 @@ export class GpuMultiWayRenderer
   private buffers: SyntenyRibbonBuffers
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
-    super(hal, MULTIWAY_UNIFORM_BYTE_SIZE)
+    super(hal)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.canvas = canvas
     this.buffers = new SyntenyRibbonBuffers(this.hal)

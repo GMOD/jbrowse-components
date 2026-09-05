@@ -46,7 +46,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
 
   constructor(hal: GpuHal) {
     // the base allocates the reusable this.uniformData scratch buffer
-    super(hal, shader.UNIFORMS_SIZE_BYTES)
+    super(hal)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.uniformU32 = new Uint32Array(this.uniformData)
   }

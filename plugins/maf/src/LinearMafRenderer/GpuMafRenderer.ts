@@ -53,14 +53,6 @@ export const MAF_PASSES: InstancePass<MafUploadPayload>[] = [
   ...MAF_COVERAGE_PASSES,
 ]
 
-// The HAL's uniform ring slot has to hold whichever struct is largest, and the
-// two are unrelated declarations — the rows pass reads render-core's
-// `RowRectUniforms`, the band's passes its `CoverageBandUniforms`.
-export const MAF_UNIFORM_BYTE_SIZE = Math.max(
-  MAF_ROW_MARK.uniformByteSize,
-  COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
-)
-
 export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   MafUploadPayload,
   MafGPURenderState
@@ -68,7 +60,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   protected regionPasses = MAF_PASSES
 
   constructor(hal: GpuHal) {
-    super(hal, MAF_UNIFORM_BYTE_SIZE)
+    super(hal)
   }
 
   // The band's own UBO. A second buffer rather than a second view over

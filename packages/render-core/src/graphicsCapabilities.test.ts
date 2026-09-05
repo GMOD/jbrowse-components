@@ -315,7 +315,6 @@ test('effectiveRenderer reports the rung createGpuHal built once one exists', as
   const { createGpuHal } = await import('./hal/createHal.ts')
   const hal = await createGpuHal(document.createElement('canvas'), {
     passes: [],
-    uniformByteSize: 0,
     sampleCount: 1,
   })
 

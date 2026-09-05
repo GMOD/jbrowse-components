@@ -45,7 +45,7 @@ class TestCanvas2DBackend extends Canvas2DGlobalRenderingBackend<
 
 function gpuBackend() {
   const hal = new MockHal([])
-  const backend = new TestGpuBackend(hal, 256)
+  const backend = new TestGpuBackend(hal)
   return { hal, backend }
 }
 

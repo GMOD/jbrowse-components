@@ -3,7 +3,6 @@ import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBack
 
 import { Canvas2DScoreRenderer } from './Canvas2DScoreRenderer.ts'
 import { GpuScoreRenderer, SCORE_PASSES } from './GpuScoreRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/score.generated.ts'
 
 import type { ScoreRenderingBackend } from './scoreTypes.ts'
 
@@ -13,7 +12,6 @@ import type { ScoreRenderingBackend } from './scoreTypes.ts'
 export function ScoreRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<ScoreRenderingBackend>(canvas, {
     passes: SCORE_PASSES,
-    uniformByteSize: UNIFORMS_SIZE_BYTES,
     createGpuBackend: hal => new GpuScoreRenderer(hal),
     createCanvas2DBackend: c => new Canvas2DScoreRenderer(c),
   })

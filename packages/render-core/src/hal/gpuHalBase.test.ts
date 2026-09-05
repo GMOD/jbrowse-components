@@ -66,6 +66,16 @@ function makeHal() {
   return { hal, errors }
 }
 
+test('the uniform slot is the largest block any registered pass binds', () => {
+  const sized = (id: string, uniformByteSize: number) =>
+    ({ id, uniformByteSize }) as PipelineDescriptor
+  expect(new TestHal([], 'TestHal').uniformByteSize).toBe(0)
+  expect(
+    new TestHal([sized('a', 16), sized('b', 64), sized('c', 32)], 'TestHal')
+      .uniformByteSize,
+  ).toBe(64)
+})
+
 test('an upload replaces the pass buffer, destroying the one it replaces', () => {
   const { hal } = makeHal()
   hal.uploadBuffer(0, 'rect', new Uint8Array(8), 2)

@@ -117,7 +117,7 @@ test('the uniforms carry the payload column count beside the frame', () => {
   const data = makeData({ numFeatures: 4 })
   const state = { ...STATE, scrollTop: 50 }
   const hal = new MockHal([MARK.pass])
-  const scratch = new ArrayBuffer(MARK.uniformByteSize)
+  const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
   const b = block(data, state)
   const clip = clipBlock(b, state.canvasWidth, state.canvasHeight, {
     x: 1,

@@ -66,12 +66,9 @@ function block(over: Partial<FeatureRenderBlock> = {}): FeatureRenderBlock {
 
 function setup() {
   const hal = new MockHal(CANVAS_FEATURE_MARKS.map(m => m.pass))
-  const uniformByteSize = Math.max(
-    ...CANVAS_FEATURE_MARKS.map(m => m.uniformByteSize),
-  )
   return {
     hal,
-    renderer: new GpuMarkBackend(hal, uniformByteSize, CANVAS_FEATURE_MARKS),
+    renderer: new GpuMarkBackend(hal, CANVAS_FEATURE_MARKS),
   }
 }
 

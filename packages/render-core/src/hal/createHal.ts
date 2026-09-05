@@ -27,7 +27,6 @@ function warnSoftwareRasterizerOnce(glRenderer: string | undefined) {
 
 export interface GpuHalOptions {
   passes: PipelineDescriptor[]
-  uniformByteSize: number
   /**
    * Reaches the WebGPU rung only. The WebGL2 rung draws to the default
    * framebuffer with `antialias: true`, so its multisampling is the browser's
@@ -67,7 +66,7 @@ export async function createGpuHal(
 
 async function climbLadder(
   canvas: HTMLCanvasElement,
-  { passes, uniformByteSize, sampleCount, failures }: GpuHalOptions,
+  { passes, sampleCount, failures }: GpuHalOptions,
 ): Promise<GpuHal | null> {
   if (isGpuRenderingDisabled()) {
     return null
@@ -75,12 +74,7 @@ async function climbLadder(
   const override = getGpuOverride()
   if (override !== 'webgl') {
     try {
-      const webgpu = await WebGPUHal.create(
-        canvas,
-        passes,
-        uniformByteSize,
-        sampleCount,
-      )
+      const webgpu = await WebGPUHal.create(canvas, passes, sampleCount)
       if (webgpu) {
         return webgpu
       }
@@ -137,7 +131,7 @@ async function climbLadder(
     }
   }
   try {
-    return new WebGL2Hal(canvas, passes, uniformByteSize)
+    return new WebGL2Hal(canvas, passes)
   } catch (e) {
     console.warn('[GPU] WebGL2 unavailable, falling back to Canvas2D:', e)
     failures?.push(e)

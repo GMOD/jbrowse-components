@@ -14,7 +14,6 @@ import type {
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_LINE = 'line'
-const UNIFORMS_SIZE_BYTES = dotplotShader.UNIFORMS_SIZE_BYTES
 const U = dotplotShader.UNIFORM_OFFSET_F32
 
 export const DOTPLOT_PASSES: PipelineDescriptor[] = [
@@ -47,7 +46,7 @@ export class GpuDotplotRenderer
     // `setErrorHandler` that routes a HAL over-limit allocation to renderError
     // — which is what puts the "too much data, zoom in" banner on a dotplot too
     // big for the device, instead of a blank canvas.
-    super(hal, UNIFORMS_SIZE_BYTES)
+    super(hal)
     this.uniformF32 = new Float32Array(this.uniformData)
   }
 
@@ -124,5 +123,3 @@ export class GpuDotplotRenderer
     super.dispose()
   }
 }
-
-export { UNIFORMS_SIZE_BYTES as DOTPLOT_UNIFORM_BYTE_SIZE }

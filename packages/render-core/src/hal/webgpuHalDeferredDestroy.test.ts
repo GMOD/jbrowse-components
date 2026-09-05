@@ -96,7 +96,7 @@ function installGpu(device: GPUDevice) {
 // deferral is keyed on the frame being open, not on what was drawn into it.
 async function makeHal(device: GPUDevice) {
   installGpu(device)
-  const hal = await WebGPUHal.create(fakeCanvas(), [], 64, 1)
+  const hal = await WebGPUHal.create(fakeCanvas(), [], 1)
   if (!hal) {
     throw new Error('fake stack failed to build a HAL')
   }

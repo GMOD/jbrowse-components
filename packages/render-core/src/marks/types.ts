@@ -61,7 +61,6 @@ export interface MarkHit {
 export interface MarkShape<TChannels, TParams> {
   readonly id: string
   readonly pass: InstancePass<TChannels>
-  readonly uniformByteSize: number
   writeUniforms(
     scratch: ArrayBuffer,
     clip: BlockClipResult,
@@ -128,7 +127,6 @@ export interface MarkShape<TChannels, TParams> {
  */
 export interface Mark<TRegion, TState extends MarkFrame> {
   readonly pass: InstancePass<TRegion>
-  readonly uniformByteSize: number
   /**
    * The pass id whose instance buffer this mark draws from, for a mark that
    * is registered but never uploaded to: the canvas chevrons ride the line
@@ -203,7 +201,6 @@ export function defineMark<
   const bufferOf = lender?.id
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
-    uniformByteSize: shape.uniformByteSize,
     bufferOf,
     drawRegion(hal, scratch, block, clip, region, state) {
       const p = params(state, region)

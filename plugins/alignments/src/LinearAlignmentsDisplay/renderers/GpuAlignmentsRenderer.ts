@@ -421,8 +421,6 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   }
 }
 
-export { UNIFORMS_SIZE_BYTES }
-
 // Pure LocalRegion constructor — the shape a region with no pileup feed gets
 // (arcs whose mate is off-screen bring their own region key).
 function emptyRegion(): LocalRegion {
@@ -754,7 +752,7 @@ export class GpuAlignmentsRenderer
   constructor(hal: GpuHal) {
     // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
     // `setErrorHandler` that routes a HAL over-limit allocation to renderError.
-    super(hal, UNIFORMS_SIZE_BYTES)
+    super(hal)
     this.uData = this.uniformData
     this.uF32 = new Float32Array(this.uData)
     this.uU32 = new Uint32Array(this.uData)

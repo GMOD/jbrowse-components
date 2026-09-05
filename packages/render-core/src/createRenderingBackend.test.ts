@@ -13,7 +13,6 @@ function makeCanvas() {
 
 const OPTS = {
   passes: [],
-  uniformByteSize: 16,
   createGpuBackend: () => ({ dispose() {} }),
   createCanvas2DBackend: (canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d')

@@ -31,7 +31,6 @@ import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 // All four shaders share the same Uniforms layout (defined in
 // syntenyTypes.slang) and the same Instance layout, so any shader's
 // generated module is a valid source of these constants.
-const UNIFORMS_SIZE_BYTES = syntenyFillStraightShader.UNIFORMS_SIZE_BYTES
 const U = syntenyFillStraightShader.UNIFORM_OFFSET_F32
 
 // Each edge pass carries its own buffer — the clicked feature's instances
@@ -67,7 +66,7 @@ export class GpuSyntenyRenderer
     // `setErrorHandler` that routes a HAL over-limit allocation to renderError
     // — which is what puts the "too much data, zoom in" banner on an
     // all-vs-all band too big for the device, instead of a blank canvas.
-    super(hal, UNIFORMS_SIZE_BYTES)
+    super(hal)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.canvas = canvas
     this.buffers = new SyntenyRibbonBuffers(this.hal)
@@ -229,5 +228,3 @@ export function writeSyntenyUniforms(
   u[U.ink + 1] = ig / 255
   u[U.ink + 2] = ib / 255
 }
-
-export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }

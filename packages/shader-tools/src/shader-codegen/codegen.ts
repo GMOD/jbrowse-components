@@ -950,7 +950,7 @@ export function emitInterface(inputs: CodegenInputs) {
     // rather than loudly. See assertModeledFieldType.
     assertModeledStruct(`${baseName}.slang uniform block`, u)
     const totalBytes = cb.elementVarLayout.binding.size
-    // #shaderExport UNIFORMS_SIZE_BYTES | size of the uniform block, the `uniformByteSize` a backend passes
+    // #shaderExport UNIFORMS_SIZE_BYTES | size of the uniform block; `slangPass` carries it onto the descriptor
     lines.push(`export const UNIFORMS_SIZE_BYTES = ${totalBytes}`, '')
 
     // Per-view offset maps. Each uniform field appears only under the map
