@@ -1,5 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { makeBpMapper, spanRect } from '../canvas2dUtils.ts'
+import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -91,10 +91,12 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const { left, width } = spanRect(bpToPx, x[i]!, x2[i]!, minWidthPx)
+      const xa = bpToPx(x[i]!)
+      const xb = bpToPx(x2[i]!)
+      const width = Math.max(minWidthPx, Math.abs(xb - xa))
       setFill(color[i]!)
       ctx.fillRect(
-        left,
+        spanLeft(xa, xb, width),
         offset + rowHeight * row[i]! - scrollTop,
         width + seamPx,
         h,
