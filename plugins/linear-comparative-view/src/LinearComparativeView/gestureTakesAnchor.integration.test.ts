@@ -1,6 +1,6 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { when } from 'mobx'
+import { transaction, when } from 'mobx'
 
 import {
   ROW_GESTURES,
@@ -111,6 +111,29 @@ test('a navigation held for the follow is not a gesture', async () => {
   view.holdFollowAnchor(() => {
     view.views[2]!.horizontalScroll(40)
     view.views[1]!.zoomTo(view.views[1]!.bpPerPx * 2)
+  })
+  expect(view.followAnchorIndex).toBe(0)
+})
+
+// The band's drag and wheel drive every row from a React handler, where a
+// plain transaction makes each row's call a root action and the follow reads
+// N gestures, the last non-anchor row winning. `LevelSyntenyCanvas.dragPan`
+// and `useWheelScrollZoom`'s `hold` run them under `holdFollowAnchor` instead.
+test('a band gesture over every row is held, not taken by the last row', async () => {
+  const view = await openStack()
+  transaction(() => {
+    for (const row of view.views) {
+      row.horizontalScroll(40)
+    }
+  })
+  expect(view.followAnchorIndex).toBe(2)
+  view.setFollowAnchorIndex(0)
+  view.holdFollowAnchor(() => {
+    transaction(() => {
+      for (const row of view.views) {
+        row.horizontalScroll(40)
+      }
+    })
   })
   expect(view.followAnchorIndex).toBe(0)
 })

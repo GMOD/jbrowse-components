@@ -127,6 +127,10 @@ export interface WheelZoomTarget {
   // Nms". event.offsetX would be simpler but is unreliable, since wheel events
   // bubble up from child elements.
   originElement: () => HTMLElement | undefined
+  // Runs the frame's row navigations as ONE action of the caller's. Without
+  // it each row's zoomTo/horizontalScroll is its own root action, and a stack
+  // whose follow re-anchors on any gesture reads N gestures on N rows.
+  hold?: <T>(fn: () => T) => T
 }
 
 export interface WheelZoomControllerOptions {
@@ -237,22 +241,29 @@ export function createWheelZoomController({
         s.originLeft = origin.getBoundingClientRect().left
       }
       const originLeft = s.originLeft
-      transaction(() => {
-        if (s.zoomAccum !== 0 && originLeft !== undefined) {
-          const offset = s.lastClientX - originLeft
-          for (const view of target.views) {
-            view.zoomTo(
-              applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
-              offset,
-            )
+      const apply = () => {
+        transaction(() => {
+          if (s.zoomAccum !== 0 && originLeft !== undefined) {
+            const offset = s.lastClientX - originLeft
+            for (const view of target.views) {
+              view.zoomTo(
+                applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
+                offset,
+              )
+            }
           }
-        }
-        if (s.scrollDelta !== 0) {
-          for (const view of target.views) {
-            view.horizontalScroll(s.scrollDelta)
+          if (s.scrollDelta !== 0) {
+            for (const view of target.views) {
+              view.horizontalScroll(s.scrollDelta)
+            }
           }
-        }
-      })
+        })
+      }
+      if (target.hold) {
+        target.hold(apply)
+      } else {
+        apply()
+      }
     }
     s.zoomAccum = 0
     s.scrollDelta = 0

@@ -276,6 +276,36 @@ describe('createWheelZoomController', () => {
     }
   })
 
+  test("hold wraps the frame's zooms and pans in one call", () => {
+    const views = [makeView(10), makeView(20)]
+    const inside: string[] = []
+    dispose = createWheelZoomController({
+      element,
+      resolveTarget: () => ({
+        views,
+        scrollZoom: true,
+        originElement: () => element,
+        hold: fn => {
+          inside.push('enter')
+          const r = fn()
+          inside.push('exit')
+          return r
+        },
+      }),
+    })
+    for (const view of views) {
+      view.zoomTo.mockImplementation(() => inside.push('zoom'))
+      view.horizontalScroll.mockImplementation(() => inside.push('pan'))
+    }
+    wheel({ deltaY: -20, clientX: 100 })
+    runFrame(1000)
+    expect(inside).toEqual(['enter', 'zoom', 'zoom', 'exit'])
+    inside.length = 0
+    wheel({ deltaX: 30, deltaY: 5, timeStamp: 5000 })
+    runFrame(6000)
+    expect(inside).toEqual(['enter', 'pan', 'pan', 'exit'])
+  })
+
   test('scrollZoom treats a dominant deltaX as a pan, not a zoom', () => {
     const view = makeView()
     setup({ views: [view], scrollZoom: true })

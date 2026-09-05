@@ -47,6 +47,7 @@ export function useWheelScrollZoom(
         views: parentView.views,
         scrollZoom: parentView.scrollZoom,
         originElement: () => canvas,
+        hold: fn => parentView.holdFollowAnchor(fn),
       }),
     })
     return () => {

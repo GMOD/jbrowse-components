@@ -185,13 +185,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       : undefined
   }
 
-  // Drag-pan accumulator. Drag mode flushes synchronously per event because
-  // pointer moves already arrive at about frame rate, no batching needed.
+  // Flushes per event, since pointer moves already arrive at about frame rate.
+  // Held so the follow reads one stack pan, not a gesture on each row.
   function dragPan(dx: number) {
-    transaction(() => {
-      for (const v of parentView.views) {
-        v.horizontalScroll(dx)
-      }
+    parentView.holdFollowAnchor(() => {
+      transaction(() => {
+        for (const v of parentView.views) {
+          v.horizontalScroll(dx)
+        }
+      })
     })
   }
 
@@ -246,9 +248,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handlePointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (event.button !== PRIMARY_BUTTON) {
+      return
+    }
     const drag = dragRef.current
     dragRef.current = undefined
-    if (!drag || event.button !== PRIMARY_BUTTON) {
+    if (!drag) {
       return
     }
     if (drag.panned) {
