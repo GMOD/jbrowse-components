@@ -298,6 +298,9 @@ async function applyInit(
   // `initPending` term covers only the apply window below
   self.beginAutoDiagonalize(!!init.autoDiagonalize)
   await buildViews(self, init, superseded)
+  if (superseded()) {
+    return
+  }
   await applyInitViewLocsAndTracks(self, init)
   await applyInitSyntenyTracks(self, init)
   // split the band budget across however many levels this view has, so a

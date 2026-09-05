@@ -851,8 +851,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Per-track render params consumed by the view's aggregator. The view
-       * substitutes yTop before handing this to the backend.
+       * Per-track render params consumed by the view's aggregator. yTop is 0
+       * here: the level's canvas is the band, and only the multiway display
+       * stacks tracks within one.
        */
       get renderParams() {
         // same spelling as the fetch autorun's gate, so "draws nothing" and

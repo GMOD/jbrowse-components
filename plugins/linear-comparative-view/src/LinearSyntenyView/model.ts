@@ -53,11 +53,6 @@ import type {
   LodMode,
 } from '@jbrowse/synteny-core'
 
-export {
-  DEFAULT_ALPHA,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
-  DEFAULT_OVERDRAW_PX,
-} from './consts.ts'
 export { asSyntenyModel } from './asSyntenyModel.ts'
 import {
   DEFAULT_ALPHA,
@@ -458,7 +453,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return best
       },
       /**
-       * #getter
+       * #method
        * Every synteny track across every level, in order, paired with whatever
        * color the user pinned on it. View-wide rather than per level: the
        * floating legend is one box for the whole stack, so two levels handing

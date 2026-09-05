@@ -170,7 +170,7 @@ export function clipSyntenyFeature(
             }
           }
         }
-      } else if (tAdv > 0 && bp1 >= winStart && bp1 <= winEnd) {
+      } else if (tAdv > 0) {
         // I (or a run with no query span): target-consuming gap at a single
         // query position; keep it whole
         if (isRun) {

@@ -13,11 +13,11 @@ export const PASS_FILL_CURVE = 'fillCurve'
 export const PASS_EDGE_STRAIGHT = 'edgeStraight'
 export const PASS_EDGE_CURVE = 'edgeCurve'
 
-export function fillPassOf(curves: boolean) {
+function fillPassOf(curves: boolean) {
   return curves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
 }
 
-export function edgePassOf(curves: boolean) {
+function edgePassOf(curves: boolean) {
   return curves ? PASS_EDGE_CURVE : PASS_EDGE_STRAIGHT
 }
 

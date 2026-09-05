@@ -573,15 +573,17 @@ export async function executeSyntenyFeaturesAndPositions({
     // itself a slice inside the gap reaches the second without ever tripping
     // the first's size gate. Guarding the first call alone left that door open.
     //
-    // `fStart < fEnd` because `clampBlockToRegions` can collapse BOTH axes when
+    // Exactly one axis collapsed: `clampBlockToRegions` can collapse BOTH when
     // a block meets a region at a single point, which is a different (and
-    // harmless) degeneracy this rule has no business claiming.
+    // harmless) degeneracy this rule has no business claiming. The query axis
+    // collapses the same way when `clipLargeBlockToWindow` meets an oversized
+    // block at an insertion on its edge, so the rule reads both.
     //
     // THE SAME RULE THE FOLLOW ALREADY HAS. `installSyntenyFollow` walks the
     // CIGAR through `resolveAlignmentSpan` and holds the row on a span that
     // comes back empty — "a walk that collapses to a point is not a place" —
     // which is why the follow was never wrong here and the geometry was.
-    if (mStart === mEnd && fStart < fEnd) {
+    if ((mStart === mEnd) !== (fStart === fEnd)) {
       continue
     }
 
