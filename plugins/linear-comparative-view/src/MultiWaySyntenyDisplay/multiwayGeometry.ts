@@ -528,7 +528,7 @@ export function buildLaneCells({
   const boxes = new GlyphBuilder()
   const y = lane.glyphTop
   // rect takes the box top, line and arrow take its centre — the feature
-  // track's own split, stated at Canvas2DFeatureRenderer's `centeredRowVisible`
+  // track's own split, stated at featureGlyphShapes.ts's `centeredRowVisible`
   // and in line.slang/arrow.slang's `snapBoxCenterY`
   const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)

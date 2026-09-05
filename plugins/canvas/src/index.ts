@@ -116,7 +116,6 @@ export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
 // gene glyphs under its own axis.
 export { featureGlyphMarks } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
 export { rectShader as featureGlyphShader } from './LinearBasicDisplay/passes/index.ts'
-export type { FeatureGlyphLanes } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
 export type { FeatureGlyphParams } from './LinearBasicDisplay/marks/featureGlyphShapes.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
@@ -134,7 +133,6 @@ export {
 } from './RenderFeatureDataRPC/util.ts'
 export { mergeSpans } from './shared/mergeSpans.ts'
 export type { Span as GlyphSpan } from './shared/mergeSpans.ts'
-export type { RenderState as FeatureGlyphRenderState } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 
 // The feature band as pure functions, for the multi-sample variant display's
 // lane and any other consumer drawing this plugin's data. The seam is the data,

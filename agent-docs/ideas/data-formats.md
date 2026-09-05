@@ -17,7 +17,7 @@ a tweak: the **worker** reads the attrs in `RenderFeatureDataRPC` and derives a
 per-feature 2-bit open-end flag (5'/3', strand-corrected); that flag is threaded
 through the **packed render arrays** as a new per-feature byte (mind the
 byte-offset/UBO layout invariants called out in CLAUDE.md and
-`GpuCanvasFeatureRenderer.ts`); and the **glyph** draws the open cap in a new
+`featureGlyphShapes.ts`); and the **glyph** draws the open cap in a new
 `.slang` source (run `pnpm gen:shaders`, never hand-edit `*.generated.ts`) with a
 matching Canvas2D fallback path. Worth a dedicated task with browser verification
 on a real NCBI eukaryote GFF (e.g. a partial gene near a contig edge) before

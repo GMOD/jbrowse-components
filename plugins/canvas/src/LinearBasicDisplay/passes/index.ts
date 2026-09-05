@@ -59,13 +59,6 @@ export const ContinuationPass: PipelineDescriptor = slangPass({
   mod: continuationShader,
 })
 
-export const packRects = rectShader.packInstances
-export const packLines = lineShader.packInstances
-export const packArrows = arrowShader.packInstances
-
-// All passes bind the same UBO, so any pass's size is the uniform-buffer size.
-export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
-
 // The `.slang` draw dimensions and clamps stay out of this barrel: it
 // namespace-imports the shader string modules, so anything reachable through it
 // drags the WGSL/GLSL along. The display side reads them from each shader's own

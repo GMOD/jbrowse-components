@@ -132,8 +132,8 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   /**
    * The pass id whose instance buffer this mark draws from, for a mark that
    * is registered but never uploaded to: the canvas chevrons ride the line
-   * buffer and the continuation markers ride rect's. The HAL asserts the two
-   * passes declare one instance struct.
+   * buffer and the continuation markers ride rect's. `defineMark` refuses the
+   * pairing unless the two passes declare one instance struct.
    */
   readonly bufferOf?: string
   drawRegion(
@@ -189,7 +189,18 @@ export function defineMark<
   bufferOf?: Mark<TRegion, TState>
 }): Mark<TRegion, TState> {
   const { shape, channels, params } = spec
-  const bufferOf = spec.bufferOf?.pass.id
+  const lender = spec.bufferOf?.pass
+  if (
+    lender &&
+    (lender.instanceStride !== shape.pass.instanceStride ||
+      JSON.stringify(lender.vertexAttributes) !==
+        JSON.stringify(shape.pass.vertexAttributes))
+  ) {
+    throw new Error(
+      `mark ${shape.id} draws off ${lender.id}'s buffer but declares a different instance struct`,
+    )
+  }
+  const bufferOf = lender?.id
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     uniformByteSize: shape.uniformByteSize,

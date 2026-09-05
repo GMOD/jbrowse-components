@@ -8,33 +8,9 @@ import {
   rectShape,
 } from './featureGlyphShapes.ts'
 
+import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureGlyphParams } from './featureGlyphShapes.ts'
 import type { Mark, MarkFrame } from '@jbrowse/render-core/marks'
-
-/**
- * The lanes the worker's feature layout ships, which every consumer of the
- * glyph set carries under these names: the canvas display's
- * `RegionRenderData` and multiway's `LaneGlyphData` both satisfy it.
- */
-export interface FeatureGlyphLanes {
-  rectPositions: Uint32Array
-  rectYs: Float32Array
-  rectHeights: Float32Array
-  rectColors: Uint32Array
-  rectDensityFade: Uint32Array
-  rectStrands: Float32Array
-  linePositions: Uint32Array
-  lineYs: Float32Array
-  lineHeights: Float32Array
-  lineDirections: Int8Array
-  lineColors: Uint32Array
-  arrowXs: Uint32Array
-  arrowYs: Float32Array
-  arrowHeights: Float32Array
-  arrowWidthsBp: Uint32Array
-  arrowDirections: Int8Array
-  arrowColors: Uint32Array
-}
 
 /**
  * The feature glyph set as a mark list, in paint order: lines, their chevrons
@@ -45,7 +21,7 @@ export interface FeatureGlyphLanes {
  * shades that many slots per line whether or not a chevron lands in one.
  */
 export function featureGlyphMarks<
-  TRegion extends FeatureGlyphLanes,
+  TRegion extends RegionRenderData,
   TState extends MarkFrame,
 >(spec: {
   params: (state: TState, region: TRegion) => FeatureGlyphParams

@@ -1,9 +1,9 @@
 // Two agreements between these passes that the compiler cannot see, both
 // load-bearing at the HAL and neither stated anywhere in TypeScript.
 //
-// The first is the instance layout. `GpuCanvasFeatureRenderer` issues
-// `drawPass(chevron, region, bufferPassId=line)`, so the chevron pipeline
-// rasterizes bytes that were packed for `line` — a layout that drifted would
+// The first is the instance layout. The chevron mark is declared `bufferOf` the
+// line mark, so `drawPass(chevron, region, bufferPassId=line)` has the chevron
+// pipeline rasterize bytes that were packed for `line` — a layout that drifted would
 // silently reinterpret them, on both backends, with nothing to attribute the
 // picture to. What makes that safe is that both shaders declare the same
 // `LineInstance` struct out of `lineInstance.slang`, so both modules reflect the

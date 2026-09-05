@@ -144,7 +144,7 @@ that display's functions:
 `buildLaneRenderData` rebuilds `SimpleFeature`s from the cell payload (the span,
 ID, description and SO type are all already on the wire) and hands them to
 plugin-canvas's `buildFeatureRenderData`; `computeLaidOutData` packs them;
-`resolveFitLadder` compacts the stack into `laneHeight`; `drawFeatureBlocks`
+`resolveFitLadder` compacts the stack into `laneHeight`; `paintFeatureBand`
 paints it; `forEachDisplayLabel` + `paintLabels` letter it;
 `performMultiRegionHitDetection` picks. So overlap packing, paint order, label
 placement, outlines and the click target are decided once — there, for both
