@@ -44,10 +44,6 @@ function setup() {
   return { display, menuTarget: items[0]!, other: items[2]! }
 }
 
-// The highlight box is derived from the open menu's target rather than pinned
-// into the hover: the box the user sees and the thing the menu names are one
-// value, so no hover source can re-point one without the other. Same rule as
-// the multi-row display's `highlightedBlockRect`.
 describe('the highlight box follows the context menu target', () => {
   it('boxes the right-clicked feature', () => {
     const { display, menuTarget } = setup()

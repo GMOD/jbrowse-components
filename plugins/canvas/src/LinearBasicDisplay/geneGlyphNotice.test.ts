@@ -4,14 +4,6 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-// The bottom-right isoform-collapse control (GeneGlyphControl) is gated by
-// showGeneGlyphNotice: the loaded data has a multi-isoform gene, so switching
-// modes is meaningful. It stays visible in every mode (geneGlyphCollapsed only
-// picks the loud chip vs the quiet icon) so picking "All transcripts" from its
-// own menu doesn't make the control disappear. Dismissing only shrinks the loud
-// chip to the quiet icon (geneGlyphNoticeDismissed) — it must NOT drop the
-// control, so showGeneGlyphNotice stays true through a dismiss.
-
 const region = {
   assemblyName: 'volvox',
   refName: 'ctgA',
@@ -26,7 +18,6 @@ describe('gene-glyph collapse notice', () => {
     const { display } = createDisplay()
     display.setGeneGlyphMode('longestCoding')
 
-    // no multi-isoform gene in the data → nothing to switch, control hidden
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: false }),
@@ -34,7 +25,6 @@ describe('gene-glyph collapse notice', () => {
     )
     expect(display.showGeneGlyphNotice).toBe(false)
 
-    // multi-isoform gene present under longestCoding → visible + loud chip
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
@@ -43,8 +33,6 @@ describe('gene-glyph collapse notice', () => {
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphCollapsed).toBe(true)
 
-    // switching to All transcripts keeps the control (as the quiet icon) so the
-    // user can switch back — it must not vanish
     display.setGeneGlyphMode('all')
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphCollapsed).toBe(false)
@@ -65,16 +53,10 @@ describe('gene-glyph collapse notice', () => {
 
     display.dismissGeneGlyphNotice()
 
-    // still visible (renders as the quiet icon button), just marked dismissed
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphNoticeDismissed).toBe(true)
   })
 
-  // The shared canvas body renders the control from this one hook, whose base
-  // default is `undefined` (the variant display shares that body and has no
-  // geneGlyphMode slot to answer with). So the bundle both existing and carrying
-  // working actions is the whole contract: reorder the `.views()` blocks so the
-  // base default wins and the chip silently vanishes with nothing else failing.
   it('exposes the control as a geneGlyphNotice bundle wired to the actions', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -101,7 +83,6 @@ describe('gene-glyph collapse notice', () => {
       dismiss: expect.any(Function),
     })
 
-    // the bundled callbacks are the model's own actions, not inert copies
     display.geneGlyphNotice!.setMode('all')
     expect(display.geneGlyphMode).toBe('all')
     expect(display.geneGlyphNotice!.collapsed).toBe(false)
@@ -110,9 +91,6 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphNotice!.dismissed).toBe(true)
   })
 
-  // The chip names the rule that picked the transcripts on screen (`RefSeq
-  // Select`), which only the worker knows — it reports one summary per region
-  // and the notice sums them, since the chip speaks for the whole view.
   it('sums each region’s picks into the notice the chip reads', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -139,9 +117,6 @@ describe('gene-glyph collapse notice', () => {
     })
   })
 
-  // The trim's chip announces a number, so it must fire on a trim that actually
-  // dropped something — a track tall enough for every gene in view trims
-  // nothing, and the ladder's own solve is where that shows.
   it('announces the trim only once the ladder has made one', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -162,9 +137,6 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphCollapsed).toBe(true)
   })
 
-  // "All transcripts" is a promise in those words, so the height that trims
-  // under `auto` must take nothing under `all` — the surplus scrolls. Same
-  // gene, same 60px, so the only difference is the mode.
   it('never trims under All transcripts, however short the track', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -187,9 +159,6 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphTrimmedGenes.size).toBe(0)
   })
 
-  // Zooming out past `auto`'s threshold puts every multi-isoform gene through
-  // the worker's `longestCoding` collapse, which reports a pick per gene. The
-  // ladder trimmed none of them, so the chip must not claim a count.
   it('does not announce a trim on data the collapse mode hid', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

@@ -15,15 +15,9 @@ import stateModelFactory from './model.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// Boots a real LinearBasicDisplay (canvas) inside an LGV so getConf-backed
-// reads resolve. jexlFilters on the display config is what activeFilters() reads
-// as the config default.
-//
-// NB: the view's display snapshot MUST set `configuration: '<displayId>'` (a
-// string reference), exactly like production showTrackGeneric does
-// (util/tracks.ts). Omitting it makes the configuration union fall to its inline
-// schemaType branch and silently build a *default* config — so every slot reads
-// its default and the track's real config (jexlFilters etc.) is never seen.
+// The view's display snapshot must set `configuration: '<displayId>'`, or the
+// configuration union falls to its inline branch and silently builds a
+// default config.
 function createDisplay(jexlFilters?: string[]) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory(pluginManager)
@@ -88,8 +82,6 @@ function createDisplay(jexlFilters?: string[]) {
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
       },
-      // every promotable slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
       getDisplayTypeDefault() {
         return undefined
       },
@@ -133,10 +125,6 @@ describe('canvas display runtime filters', () => {
   })
 
   it('a track that declares no filters opens the dialog empty', () => {
-    // The slot's default is []. It used to ship the NCBI gbkey=Src source
-    // record rule, which meant every user of every track met the "Filter by..."
-    // dialog pre-populated with a jexl expression they had not written; that
-    // rule is `hideSourceFeatures`, a gate in buildFeatureAdmission, now.
     const display = createDisplay()
     expect(display.activeFilters()).toEqual([])
   })
@@ -162,21 +150,13 @@ describe('canvas display runtime filters', () => {
     ])
   })
 
-  // "Filter by... (n)" is the only affordance saying a filter is silently
-  // hiding features, so it must not count an override that changes nothing. The
-  // dialog seeds itself from activeFilters(), so opening it and pressing Submit
-  // banks an override identical to the config default — and the slot ships a
-  // non-empty default on every track, making that the ordinary path through the
-  // dialog rather than a corner.
   it('does not count a runtime override equal to the config default', () => {
     const display = createDisplay([`get(feature,'type')=='gene'`])
     expect(display.featureFilterCount()).toBe(0)
 
-    // exactly what the dialog submits when the user edits nothing
     display.setJexlFilters(display.activeFilters())
     expect(display.featureFilterCount()).toBe(0)
 
-    // and the same on the schema default, which is what an ordinary track has
     const defaulted = createDisplay()
     defaulted.setJexlFilters(defaulted.activeFilters())
     expect(defaulted.featureFilterCount()).toBe(0)
@@ -187,13 +167,10 @@ describe('canvas display runtime filters', () => {
     narrower.setJexlFilters([`jexl:get(feature,'score')>5`])
     expect(narrower.featureFilterCount()).toBe(1)
 
-    // emptying a slot that declares filters widens the view past what the
-    // config asked for; the clear is the way back to the declared set
     const widened = createDisplay([`get(feature,'type')=='gene'`])
     widened.setJexlFilters([])
     expect(widened.featureFilterCount()).toBe(1)
 
-    // an empty override over an empty slot replaces nothing
     const empty = createDisplay([])
     empty.setJexlFilters([])
     expect(empty.featureFilterCount()).toBe(0)
@@ -217,8 +194,6 @@ interface MenuEntry {
   subMenu?: MenuEntry[]
 }
 
-// Depth-first find by label across nested subMenus (no early returns per house
-// style — first match wins, later items are skipped once found).
 function findMenuItem(
   items: MenuEntry[],
   label: string,

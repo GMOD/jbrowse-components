@@ -38,9 +38,6 @@ function isoform(featureId: string, type: string): SubfeatureInfo {
 
 const eden1 = isoform('EDEN.1', 'mRNA')
 
-// What GetCanvasFeatureDetails returns for the whole gene: two isoforms, each
-// spliced, with no exon shared between them — so the three scopes (each isoform
-// and their union) produce distinguishable region counts.
 const fullGene = {
   uniqueId: 'EDEN',
   refName: 'ctgA',
@@ -141,7 +138,6 @@ function clickSubMenu(item: MenuItem, label: string) {
   row.onClick()
 }
 
-// the queued dialog's props, once the fetch behind the click has resolved
 async function queuedDialogProps(session: Session) {
   await waitFor(() => {
     expect(session.queuedDialogs).toHaveLength(1)
@@ -191,7 +187,6 @@ describe('collapse introns context menu', () => {
     const props = await queuedDialogProps(session)
     expect(transcriptIds(props)).toEqual(['EDEN.1'])
     expect(props.featureName).toBe('EDEN.1')
-    // solo matches the top-level drawn id, so it stays the gene even here
     expect(props.featureId).toBe('EDEN')
   })
 
@@ -241,11 +236,6 @@ describe('isGeneLikeType', () => {
   })
 })
 
-// `labels.name` is a jexl slot, so a track can name its features by any
-// attribute -- and then the glyph's label, the hover and this menu's own
-// transcript row all read that, while the record's `name` is a different string
-// underneath. Titling the collapsed view from the record opened a view named
-// after something the user has never seen on this track.
 describe('the collapsed view is titled the way the track labels', () => {
   const labelled = makeFlatbushItem({
     featureId: 'EDEN',

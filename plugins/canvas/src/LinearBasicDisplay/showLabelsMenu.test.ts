@@ -4,16 +4,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the "Labels" radio group: the five rungs of the
-// unified `showLabels` enum (which absorbed the retired showDescriptions
-// boolean), each promotable as the session-wide default. The group renders
-// inline in the "Show..." submenu under a "Labels" subHeader, the same shape as
-// "Subfeature labels" next door.
-//
-// What the enum resolves *into* — which of names and descriptions actually
-// paint at this zoom and display mode — is `showLabels` / `showDescriptions` on
-// the model, covered by the layout and label tests. This is about the choice.
-
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
 }
@@ -27,8 +17,6 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
-// The radios that follow the "Labels" subHeader in the flat "Show..." submenu,
-// up to the next subHeader/divider.
 function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   const items = subMenuOf(display.trackMenuItems(), 'Show...')
   const start = items.findIndex(
@@ -44,8 +32,6 @@ function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   return end === -1 ? rest : rest.slice(0, end)
 }
 
-// `label` is `ReactNode` across the MenuItem union, so narrow rather than hand a
-// `ReactNode` to `radio` below — every row of this group carries a plain string.
 function labelsOf(subMenu: MenuItem[]) {
   return subMenu.flatMap(i =>
     'label' in i && typeof i.label === 'string' ? [i.label] : [],
@@ -84,15 +70,12 @@ describe('Labels submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, session } = createDisplay()
 
-    // a track following the default (the slot at its inherit sentinel) resolves
-    // to the `auto` base, which is what every existing config renders as today
     expect(display.showLabelsMode).toBe('auto')
     expect(radio(showSubMenu(display), 'Auto').checked).toBe(true)
 
     session.setDisplayTypeDefault(display.type, 'showLabels', 'none')
     expect(display.showLabelsMode).toBe('none')
     expect(radio(showSubMenu(display), 'None').checked).toBe(true)
-    // the two derived flags the rest of the display reads move with it
     expect(display.showLabels).toBe(false)
     expect(display.showDescriptions).toBe(false)
   })
@@ -104,9 +87,6 @@ describe('Labels submenu', () => {
     session.setDisplayTypeDefault(display.type, 'showLabels', 'none')
     expect(display.showLabelsMode).toBe('none')
 
-    // `auto` is the base, and spending only the unset state on the sentinel is
-    // what leaves it customizable over an opposite default — a track that wants
-    // density-adaptive labels under a session-wide "None" can say so
     display.setShowLabels('auto')
     expect(display.showLabelsMode).toBe('auto')
     expect(radio(showSubMenu(display), 'Auto').checked).toBe(true)

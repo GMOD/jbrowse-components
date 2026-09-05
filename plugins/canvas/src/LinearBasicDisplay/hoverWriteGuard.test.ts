@@ -1,14 +1,5 @@
 import { createTestEnvironment } from './testEnv.ts'
 
-// `mouseoverExtraInformation` is a fresh array on every hit, and a fresh array
-// is a fresh observable identity — so an unguarded write re-renders
-// `FeatureTooltip` on every raw mousemove while the cursor rests on one feature,
-// with identical rows each time. The pointer path is coalesced to one frame now,
-// but a frame is still a write, and this is the half that makes a settled hover
-// cost nothing at all.
-//
-// Object identity, not `toEqual`: equal contents written anyway is exactly the
-// bug, and it is invisible to a value comparison.
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
@@ -52,8 +43,6 @@ describe('setHover write guard', () => {
     const display = setup()
     display.setHover('f1', 'sub1', ['gene1'])
     const rows = display.mouseoverExtraInformation
-    // two features whose tooltips happen to read the same — the guard is about
-    // the array, and must not pin the hover itself
     display.setHover('f2', 'sub2', ['gene1'])
     expect(display.featureIdUnderMouse).toBe('f2')
     expect(display.subfeatureIdUnderMouse).toBe('sub2')

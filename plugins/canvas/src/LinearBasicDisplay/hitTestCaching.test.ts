@@ -6,8 +6,6 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-// Reference identity, not a spy: a reused index IS the same object, a rebuilt one
-// is a fresh Flatbush. Exact, and no mocking needed.
 function regionData(n: number) {
   const features = Array.from({ length: n }, (_, i) => ({
     featureId: `f${i}`,
@@ -44,11 +42,8 @@ function setup() {
     start: 0,
     end: 10_000,
   })
-  // Mimic the real component: the overlay layers observe renderDataMap /
-  // featureItemMap during render. Nothing here observes flatbushIndexes — only
-  // the model's own CanvasHitIndexes autorun does, and that subscription is
-  // exactly what makes MobX cache it (an unobserved computed is suspended and
-  // re-evaluates on every read).
+  // Nothing here observes flatbushIndexes; only the model's CanvasHitIndexes
+  // autorun does, and that subscription is what makes MobX cache it.
   const dispose = autorun(() => {
     void display.renderDataMap
     void display.featureItemMap
@@ -66,9 +61,6 @@ describe('flatbushIndexes caching', () => {
     dispose()
   })
 
-  // Regression: hit-testing reads this view only from mouse handlers, so without
-  // the CanvasHitIndexes autorun it has no observer, MobX suspends it, and every
-  // mousemove rebuilt a Flatbush (Hilbert sort + tree build) per region.
   it('reuses indexes across mousemoves at a fixed viewport', () => {
     const { index, dispose } = setup()
     const first = index()
@@ -78,8 +70,6 @@ describe('flatbushIndexes caching', () => {
     dispose()
   })
 
-  // Keyed on coarseBpPerPx (the settled zoom the layout packs rows at), so an
-  // in-flight zoom gesture does not rebuild every index each frame.
   it('does not rebuild while a zoom gesture is in flight', () => {
     const { view, index, dispose } = setup()
     const first = index()

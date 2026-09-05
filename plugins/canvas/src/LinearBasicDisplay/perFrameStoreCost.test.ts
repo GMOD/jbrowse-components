@@ -1,14 +1,9 @@
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-// `compareStructural` returns on `a === b` before it walks anything, so the
-// question a frame poses is not "was the comparator called" — `isCacheValid`
-// runs per visible block on every viewport change — but "did any call have to
-// walk". A wrapper records the answer per call; the deep walks are the calls
-// where the two arguments were not the same object.
-//
-// The mock is `fetchInputs.ts`'s import of it. Everything else about mobx is
-// the real module, spread through.
+// `compareStructural` returns on `a === b` before walking, so the deep walks
+// are the calls where the two arguments were not the same object; the mock is
+// `fetchInputs.ts`'s import of it.
 const comparisons: { identical: boolean; sameSettings: boolean }[] = []
 jest.mock('mobx', () => {
   const actual = jest.requireActual('mobx')
@@ -37,11 +32,8 @@ function loaded() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   display.setRpcData(0, makeFeatureData(), ctgA)
-  // Nothing here observes anything. The reactions that make these getters
-  // memoized are the ones the display installs for itself — `CanvasHitIndexes`
-  // and, in a browser, the render lifecycle's upload autorun — and that is the
-  // point: a display whose payload map has no reader inside a reaction rebuilds
-  // it on every frame, and no type says so.
+  // Nothing here observes anything, so the memoization under test is only
+  // what the display's own reactions install.
   comparisons.length = 0
   return { display, view }
 }
@@ -59,9 +51,6 @@ describe('a frame that changes no data allocates nothing in the store', () => {
     expect(display.rpcDataMap).toBe(before)
   })
 
-  // The expensive half of the stamp: `snapshotInputs` deep-clones the RPC
-  // payload, and the settings tier is what holds the clone. Its identity
-  // surviving a frame is what says the clone ran once and not per read.
   it('hands back the same settings tier across a pan and a zoom', () => {
     const { display, view } = loaded()
     const before = display.settingsFetchInputs
@@ -70,18 +59,12 @@ describe('a frame that changes no data allocates nothing in the store', () => {
     view.zoomTo(view.bpPerPx * 1.1)
 
     expect(display.settingsFetchInputs).toBe(before)
-    // and it is the object stamped on the region, so `isCacheValid`'s walk
-    // stops at a reference test rather than descending into the payload
     expect(
       (display.loadedRegions.get(0)!.fetchInputs as { settings: unknown })
         .settings,
     ).toBe(before)
   })
 
-  // The zoom tier is deliberately NOT held: it is the one fetch input that
-  // moves with `bpPerPx`, so holding it would recompute on every frame of a
-  // gesture instead of once when the plan next asks. What must never happen is
-  // a comparison descending into the settings payload — that is the deep walk.
   it('never walks into the settings payload', () => {
     const { display, view } = loaded()
 
@@ -93,8 +76,6 @@ describe('a frame that changes no data allocates nothing in the store', () => {
     expect(comparisons.filter(c => !c.sameSettings)).toEqual([])
   })
 
-  // The eviction is a commit-time action, not something a getter runs — so a
-  // frame cannot pay for it however many entries the store holds.
   it('does not evict from a getter', () => {
     const { display, view } = loaded()
     for (let i = 1; i <= 200; i++) {

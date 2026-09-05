@@ -27,9 +27,6 @@ function mockFeature(opts: {
   } as unknown as Feature
 }
 
-// Three named coding transcripts. The MIDDLE one has the longest CDS, so the
-// ranking keeps it at k = 1 while the drawn order puts it second: a trim that
-// dropped a suffix, or one that shifted nothing, keeps the wrong picture.
 const GENE = mockFeature({
   type: 'gene',
   name: 'GENE1',
@@ -53,10 +50,9 @@ const GENE = mockFeature({
   ),
 })
 
-// The real pipeline — worker layout, worker collect, main-thread pack — with
-// the worker stamping the ordinals itself. The layout-level tests build their
-// regions with `packStackedGenes`, whose ordinals are pre-stamped, so this is
-// the one place a missing stamp on the worker side can fail.
+// The layout-level tests build regions with `packStackedGenes`, whose
+// ordinals are pre-stamped, so this is the one place a missing worker-side
+// stamp can fail.
 function layoutAt(
   maxIsoformsPerGene: number | undefined,
   gene: Feature = GENE,
@@ -147,9 +143,6 @@ describe('the trim through the worker pipeline', () => {
   })
 })
 
-// Same shape, except only the KEPT transcript has two exons — so the gene's one
-// intron line is a line the trim drops nothing from, while the isoform that
-// drew it still rises by the height of the isoform dropped above it.
 const SINGLE_INTRON_GENE = mockFeature({
   type: 'gene',
   name: 'GENE2',
@@ -189,8 +182,6 @@ const SINGLE_INTRON_GENE = mockFeature({
   ),
 })
 
-// Peptides on the isoform the trim drops AND on the one it keeps, so the codon
-// overlay has an entry on either side of the cut.
 describe('the amino-acid overlay', () => {
   const peptides = new Map([
     ['mRNA-a', { protein: 'MFKL' }],
@@ -224,8 +215,6 @@ describe('a primitive kind the trim drops nothing from', () => {
   it('still shifts the survivor it drew', () => {
     expect(full.lineYs).toHaveLength(1)
     expect(trimmed.lineYs).toHaveLength(1)
-    // one arrow per transcript, so this lane IS filtered — and its Y is where
-    // the line's has to land
     expect(full.arrowYs).toHaveLength(3)
     expect(trimmed.arrowYs).toHaveLength(1)
     const lineY = trimmed.lineYs[0]!

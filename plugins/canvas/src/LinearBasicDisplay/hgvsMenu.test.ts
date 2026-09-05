@@ -46,8 +46,6 @@ function open(display: TestDisplay, hgvsLabel?: string, tooltipText?: string) {
 }
 
 describe('HGVS position context menu', () => {
-  // The value is in the label rather than behind a generic "Copy HGVS
-  // position", so what lands on the clipboard is visible before clicking.
   it('offers the clicked position, naming it in the label', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -58,8 +56,6 @@ describe('HGVS position context menu', () => {
     )
   })
 
-  // Absent rather than disabled: zoomed out, or off a transcript, there is no
-  // honest position to offer.
   it('offers nothing when the click resolved no position', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -68,7 +64,6 @@ describe('HGVS position context menu', () => {
     expect(
       contextMenuLabels(display).some(l => String(l).startsWith('Copy HGVS')),
     ).toBe(false)
-    // the rest of the menu is unaffected
     expect(contextMenuLabels(display)).toContain('Open feature details')
   })
 })
@@ -82,8 +77,6 @@ describe('Copy tooltip context menu item', () => {
     expect(contextMenuLabels(display)).toContain('Copy tooltip text')
   })
 
-  // Absent rather than disabled: nothing to copy when the hit resolved no
-  // tooltip content.
   it('offers nothing when the hit resolved no tooltip text', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -94,16 +87,14 @@ describe('Copy tooltip context menu item', () => {
 })
 
 describe('Copy location context menu item', () => {
-  // The one row here whose value gets pasted somewhere rather than read, so it
-  // is written the way the location box reads it back: 1-based, closed.
   it('copies the feature span as a locString', async () => {
     const writeText = jest.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText },
       configurable: true,
     })
-    // copyToClipboard gates the async API on this and otherwise falls back to
-    // execCommand, which jsdom does not implement
+    // copyToClipboard gates the async API on `isSecureContext` and otherwise
+    // falls back to execCommand, which jsdom does not implement.
     Object.defineProperty(window, 'isSecureContext', {
       value: true,
       configurable: true,
@@ -120,8 +111,6 @@ describe('Copy location context menu item', () => {
     })
   })
 
-  // The refName naming the span comes off the loaded region, so a hit whose
-  // region has been pruned has no honest location to offer.
   it('offers nothing when the hit region is no longer loaded', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -132,9 +121,6 @@ describe('Copy location context menu item', () => {
 })
 
 describe('Feature info (JSON) copy', () => {
-  // Unlike the position and tooltip copies, this doesn't depend on the hit
-  // resolving a base or any text — the isoform and the gene it belongs to
-  // are always both available to copy.
   it('offers both the subfeature and the whole feature, named individually', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

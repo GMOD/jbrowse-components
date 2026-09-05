@@ -8,10 +8,6 @@ import { computeLaidOutData } from './layout.ts'
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 
-// Four children of one gene, 10px each with the 2px gap the worker spent
-// between them. `b` is a decoration — an NCBI source record, a
-// `biological_region` — sitting between two isoforms, which is the arrangement
-// a count alone cannot describe and the one this whole table exists for.
 const STACK: IsoformStack = {
   isoformCount: 3,
   boxHeightPx: 10,
@@ -38,18 +34,13 @@ describe('trimIsoformStack', () => {
     ])
   })
 
-  // The decoration is not one of the isoforms being chosen among, so it is
-  // never a loser — and it takes a real row, which is why the trim prices a
-  // gene in px rather than counting transcripts.
   it('keeps every decoration whatever the count', () => {
     expect(trimIsoformStack(STACK, 1).keptOrdinals.has(1)).toBe(true)
   })
 
   it('shifts a decoration below a dropped isoform up into its place', () => {
     const trim = trimIsoformStack(STACK, 1)
-    // ordinal 0 went, so the decoration that sat at 12 now starts the stack
     expect(trim.shiftPxByOrdinal.get(1)).toBe(12)
-    // and the isoform under it rises by the same 12
     expect(trim.shiftPxByOrdinal.get(2)).toBe(12)
     expect(trim.heightPx).toBe(22)
   })
@@ -67,9 +58,6 @@ describe('trimIsoformStack', () => {
     expect(trim.endBp).toBe(220)
   })
 
-  // What the badge counts: every isoform the gene HAS and does not draw, which
-  // is not the same as the children the trim dropped — a `longestCoding` gene
-  // arrives with one child and a count of all of them.
   it('counts the isoforms the gene is missing, not the children dropped', () => {
     expect(trimIsoformStack(STACK, 1).hidden).toBe(2)
     expect(trimIsoformStack(STACK, 3).hidden).toBe(0)
@@ -101,8 +89,6 @@ describe('maxIsoformCount', () => {
     expect(maxIsoformCount(regions, new Set(['narrow']), undefined)).toBe(3)
   })
 
-  // No count trims a gene the user opened, so its isoforms are not a bracket
-  // the solve can bisect over.
   it('leaves an expanded gene out', () => {
     expect(maxIsoformCount(regions, undefined, new Set(['wide']))).toBe(3)
     expect(
@@ -110,9 +96,6 @@ describe('maxIsoformCount', () => {
     ).toBe(0)
   })
 
-  // A `longestCoding` gene ships one child and counts all of its isoforms, so
-  // its count is the badge's, not the bracket's: no count takes anything from
-  // a gene already drawing one.
   it('counts a worker-collapsed gene by what it shipped', () => {
     const collapsed = [
       {
@@ -156,9 +139,6 @@ const INPUTS: LayoutInputs = {
 }
 
 describe('the trimmed region arrays', () => {
-  // Thirty-odd parallel fields ride on one index. A filter that misses one
-  // draws a row in the wrong colour, at the wrong height, or attributed to a
-  // feature that isn't there — and none of them throws.
   it('stay parallel across every rect field', () => {
     const data = computeLaidOutData(REGIONS, {
       ...INPUTS,
@@ -200,9 +180,6 @@ describe('the trimmed region arrays', () => {
     expect(kept.size).toBe(2)
   })
 
-  // The `full` rung packs at no count at all, and the GPU upload diff and the
-  // Y-morph idle check both key on array identity — so a rung that trims
-  // nothing must allocate nothing.
   it('are the worker’s own, by reference, when nothing is trimmed', () => {
     const raw = REGIONS.get(0)!
     const data = computeLaidOutData(REGIONS, INPUTS).get(0)!

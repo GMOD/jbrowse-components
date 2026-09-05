@@ -21,8 +21,6 @@ interface PersistenceSnapshot {
   pinnedFeatureIds?: string[]
 }
 
-// A minus-strand-agnostic two-exon gene with a wide intron, so collapsing
-// yields two padded regions.
 const transcripts = [
   feat({
     refName: 'ctgA',
@@ -43,12 +41,6 @@ const assembly = {
   getRegionForRefName: (r: string) => CONTIGS.find(c => c.refName === r),
 } as unknown as Assembly
 
-// These tests pin the behavior that makes solo/hidden a declarative prop:
-//   - a display created with solo/hidden in its snapshot hydrates already
-//     isolated, and the isolation reaches the worker (rpcProps)
-//   - stripDefault keeps an at-default display's snapshot clean, but preserves
-//     seeded (non-default) values so they survive a session save/reload
-//   - seedSoloInTracks injects onto the solo-capable display only
 describe('solo/hidden declarative persistence', () => {
   it('a snapshot-seeded display hydrates already isolated', () => {
     const { createDisplay } = createTestEnvironment()
@@ -59,8 +51,6 @@ describe('solo/hidden declarative persistence', () => {
 
     expect(display.soloApplied).toBe(true)
     expect([...display.soloFeatureIdSet]).toEqual(['gene1'])
-    // The value the worker uses to drop non-members — proves the seed actually
-    // isolates rather than just sitting in state.
     expect(display.rpcProps().soloFeatureIds).toEqual(['gene1'])
   })
 
@@ -106,11 +96,6 @@ describe('solo/hidden declarative persistence', () => {
   })
 
   it('a persisted snapshot re-hydrates into a fresh display (refresh survival)', () => {
-    // Simulates a page refresh: capture the snapshot from one environment, then
-    // rebuild a display from those persisted fields in a completely fresh one.
-    // Solo/hidden must still reach the worker and pinned must still resolve.
-    // This is the display half; the ids only line up because adapters mint
-    // reload-stable ids (see the pinnedFeatureIds prop doc).
     const { display } = createTestEnvironment().createDisplay({
       soloFeatureIds: ['gene1'],
       soloApplied: true,
@@ -175,10 +160,6 @@ describe('seedSoloInTracks', () => {
   })
 })
 
-// buildCollapsedViewSnapshot is the pure half of collapseIntrons: it turns a
-// live view + transcripts into a complete, self-contained view snapshot. These
-// prove the whole collapsed view — regions, zoom, and solo focus — is data,
-// with no post-init mutation (collapseIntrons only hands the result to addView).
 describe('buildCollapsedViewSnapshot', () => {
   function args(soloFeatureId?: string) {
     const { view } = createTestEnvironment().createDisplay()
@@ -203,7 +184,6 @@ describe('buildCollapsedViewSnapshot', () => {
   it('builds merged regions and the window framing them', () => {
     const snap = buildCollapsedViewSnapshot(args())
 
-    // Two exons with a wide intron collapse to two padded regions.
     expect(snap.displayedRegions).toHaveLength(2)
     expect(snap.displayedRegions[0]).toMatchObject({ refName: 'ctgA' })
     expect(snap.windowWidthBp).toBeGreaterThan(0)

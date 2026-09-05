@@ -28,8 +28,6 @@ test('off-by-one span (base convention drift) still matches', () => {
 })
 
 test('an overlapping but non-exact span does not match (no overlap fallback)', () => {
-  // previously rescued by a matching name; text search now resolves by span
-  // alone, so a nested/overlapping feature no longer gets swept in
   expect(
     featureMatchesHighlight({ startBp: 1200, endBp: 1800 }, 'chr1', gene),
   ).toBe(false)
@@ -65,7 +63,6 @@ describe('warnUnresolvedHighlights', () => {
   })
 
   it('warns when a highlight matches nothing', () => {
-    // 7bp past the real end — the mistake a hand-written spec actually makes
     const h = [{ refName: 'chr1', start: 100, end: 207, name: 'KRAS' }]
     warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).toHaveBeenCalledTimes(1)
@@ -93,8 +90,6 @@ describe('warnUnresolvedHighlights', () => {
   })
 
   it('stays silent once the view navigates off the highlighted refName', () => {
-    // the highlight is still stored and still resolves to nothing, but chr12
-    // was never fetched — blaming the coordinates here is a false alarm
     const h = [{ refName: 'chr12', start: 100, end: 200, name: 'KRAS' }]
     warnUnresolvedHighlights(h, resolveFeatureHighlights([region], h), loaded)
     expect(warn).not.toHaveBeenCalled()
@@ -124,7 +119,6 @@ describe('name fallback', () => {
   }
 
   it('rescues a highlight whose span is off by more than 1bp', () => {
-    // the real KRAS bug: end 7bp past the track's own record
     const h = [
       { refName: 'chr12', start: 25205245, end: 25250936, name: 'KRAS' },
     ]
@@ -142,8 +136,6 @@ describe('name fallback', () => {
   })
 
   it('does not fall back when the span already matched', () => {
-    // span points at BCAT1 while the name says KRAS; the span wins outright,
-    // so a stale name can never drag in a second feature
     const h = [
       { refName: 'chr12', start: 30000000, end: 30001000, name: 'KRAS' },
     ]
@@ -205,8 +197,6 @@ describe('name fallback', () => {
   })
 
   it('never name-falls-back for a right-click (featureId) highlight', () => {
-    // a stale featureId must resolve to nothing rather than boxing every
-    // same-named sibling — the regression 5153e76cee fixed
     const dup = {
       refName: 'chr12',
       flatbushItems: [

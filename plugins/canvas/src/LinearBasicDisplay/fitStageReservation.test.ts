@@ -16,10 +16,8 @@ import type { FitStage, LabelReservation } from './fitLadder.ts'
 import type * as Layout from './layout.ts'
 import type { LayoutInputs } from './layoutInputs.ts'
 
-// Every stack any packing memo handed back, keyed by the map itself, with the
-// inputs that pack was called with. A rung that hands back another rung's stack
-// by reference resolves to that stack's pack, which is the point: the stage's
-// flags are checked against what was packed, not against what a rung says.
+// Keyed by the map itself, so a rung handing back another rung's stack by
+// reference resolves to that stack's pack.
 const mockPackedWith = new Map<
   ReadonlyMap<number, FeatureDataResult>,
   LayoutInputs
@@ -52,10 +50,6 @@ const ctgA = {
   end: 10_000,
 }
 
-// Overlapping multi-isoform genes, each with a name and a description and one
-// worker-counted `below` label row, so every rung has something of its own to
-// give up: descriptions (`labels`), transcripts (`isoforms`), names
-// (`decimated`, `bodies`) and the label rows (`bare`).
 function geneStack(count: number) {
   const data = packStackedGenes(
     Array.from({ length: count }, (_, i) => ({
@@ -81,9 +75,6 @@ function geneStack(count: number) {
   })
 }
 
-// Narrow features under wide names whose start-to-start gap ramps, so
-// decimation sheds names one at a time and the `decimated` rung is kept at
-// heights where `labels` overflows.
 function crowdedNames(count: number) {
   const features: { featureId: string; startBp: number; endBp: number }[] = []
   let pos = 100
@@ -180,9 +171,6 @@ const reservationOf = (
   dropBelowLabelRows: s.dropBelowLabelRows,
 })
 
-// What each rung reserves, by name — the table the three rendered-flag getters
-// used to spell out, kept here so a rung declaring the wrong reservation fails
-// against the level it was kept at as well as against its own pack.
 function reservationByLevel(
   level: FitStage['level'],
   display: { showLabels: boolean; effectiveShowDescriptions: boolean },
@@ -269,7 +257,6 @@ describe('the rung that packed a layout says what it reserved', () => {
     }
   }
 
-  // The sweep above is only as strong as the rungs it lands on.
   it('landed on every rung each ladder has', () => {
     expect([...reached.get('fit')!].sort()).toEqual(
       ['bare', 'bodies', 'decimated', 'full', 'isoforms', 'labels'].sort(),

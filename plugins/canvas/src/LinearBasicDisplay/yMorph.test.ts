@@ -12,7 +12,6 @@ import {
   rowGeometrySignature,
 } from './yMorph.ts'
 
-// One rect per feature, sitting at the feature's top.
 function region(features: { featureId: string; top: number }[]) {
   return makeFeatureData({
     flatbushItems: features.map(f =>
@@ -56,7 +55,6 @@ test('captureFeatureTops records each feature row by id', () => {
 })
 
 test('a feature eases from its old row to its new one', () => {
-  // feature "a" was at 60, now lays out at 0
   const fromTops = new Map([['a', 60]])
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
 
@@ -66,8 +64,6 @@ test('a feature eases from its old row to its new one', () => {
 })
 
 test('survives a re-fetch: matching is by id, not array index', () => {
-  // old layout had [a@0, b@30]; new fetch returns [b@0, c@30, a@60] (different
-  // order and length) — b and a still animate from their old rows.
   const fromTops = new Map([
     ['a', 0],
     ['b', 30],
@@ -83,7 +79,6 @@ test('survives a re-fetch: matching is by id, not array index', () => {
     ],
   ])
   const start = interpolateYData(fromTops, target, 0).get(0)!
-  // b: old 30 -> new 0, a: old 0 -> new 60, c: new (no old) stays
   expect([...start.rectYs]).toEqual([30, 30, 0])
 })
 
@@ -93,7 +88,6 @@ test('non-Y fields and hit-test extents come from target', () => {
   target.get(0)!.rectColors = new Uint32Array([0xdeadbeef])
   const mid = interpolateYData(fromTops, target, 0.5).get(0)!
   expect([...mid.rectColors]).toEqual([0xdeadbeef])
-  // hit-test extent stays at the destination
   expect(mid.flatbushItems[0]!.topPx).toBe(0)
 })
 
@@ -121,14 +115,11 @@ test('canMorph needs at least one shared feature and a bounded rect count', () =
 })
 
 test('canMorph is false when a shared feature did not move', () => {
-  // stable seeding kept "a" on the same row across the repack — nothing to ease
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   expect(canMorph(new Map([['a', 0]]), target)).toBe(false)
 })
 
 test('captureFeatureTops skips features overflowed off-screen', () => {
-  // "a" overflowed maxHeight in the prior layout (OFFSCREEN_Y ~ -1e6); it must
-  // not become a morph source, else it flies in from ~-1e6 when it reappears.
   const tops = captureFeatureTops(
     new Map([
       [
@@ -145,9 +136,6 @@ test('captureFeatureTops skips features overflowed off-screen', () => {
 })
 
 test('captureFeatureTops with a morph in flight records displayed tops', () => {
-  // "a" is morphing from row 60 (source) toward row 0 (its row in this layout).
-  // Halfway through, its displayed top is 30 — that's what re-seeds a morph
-  // interrupted mid-flight.
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   const fromTops = new Map([['a', 60]])
   expect(captureFeatureTops(target, fromTops, 0).get('a')).toBe(60)
@@ -160,8 +148,6 @@ test('captureFeatureTops leaves features with no morph source at their row', () 
   expect(captureFeatureTops(target, new Map(), 0.5).get('a')).toBe(40)
 })
 
-// What the DOM overlay boxes add to their tops. Same easing as the rect Ys
-// above, so a highlight and the glyph it frames are never a frame apart.
 test('morphOffset is the displacement interpolateYData applies', () => {
   const fromTops = new Map([['a', 60]])
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
@@ -169,23 +155,17 @@ test('morphOffset is the displacement interpolateYData applies', () => {
     const rectY = interpolateYData(fromTops, target, t).get(0)!.rectYs[0]!
     expect(morphOffset(fromTops, 'a', 0, t)).toBe(rectY - 0)
   }
-  // no source row, and an unplaced destination: nothing to displace
   expect(morphOffset(fromTops, 'unknown', 0, 0)).toBe(0)
   expect(morphOffset(fromTops, 'a', -1e6, 0)).toBe(0)
 })
 
 test('a feature overflowing off-screen in the target does not animate', () => {
-  // "a" was on-screen at 50, now overflows off-screen at ~-1e6: it must stay at
-  // its destination, not sweep from 50 down to -1e6 over the morph.
   const fromTops = new Map([['a', 50]])
   const target = new Map([[0, region([{ featureId: 'a', top: -1e6 }])]])
   expect(canMorph(fromTops, target)).toBe(false)
   expect(interpolateYData(fromTops, target, 0).get(0)!.rectYs[0]).toBe(-1e6)
 })
 
-// A drag-resize at fixed height re-solves the isoform count every frame, and a
-// trimmed gene's row is as tall as the transcripts it keeps — so two counts are
-// two row geometries, and the morph must snap between them rather than ease.
 test('rowGeometrySignature separates two isoform counts', () => {
   const at = (maxIsoforms: number | undefined) =>
     rowGeometrySignature({

@@ -12,7 +12,6 @@ import type { TestDisplay } from './testEnv.ts'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
-// volvox's EDEN locus, 1050..9000 — wider than either exon block below
 const gene = makeFlatbushItem({
   featureId: 'EDEN',
   type: 'gene',
@@ -21,9 +20,6 @@ const gene = makeFlatbushItem({
   endBp: 9000,
 })
 
-// A collapsed-introns view's shape: the gene's exons as separate displayed
-// regions on one refName, so the gene's own span is inside NEITHER of them.
-// This display's "Collapse introns" builds exactly this.
 const splitRegions = [
   { assemblyName: 'volvox', start: 1000, end: 2000, refName: 'ctgA' },
   { assemblyName: 'volvox', start: 8000, end: 9100, refName: 'ctgA' },
@@ -42,17 +38,11 @@ describe('feature "Zoom to feature" context menu', () => {
     rightClick(display, gene)
     clickContextMenuItem(display, 'Zoom to feature')
 
-    // 1050..9000 grown ~20% each side and clamped to the region: the gene is
-    // framed, not pinned to the viewport edges
     const [vr] = view.visibleRegions
     expect(vr!.start).toBeLessThan(1050)
     expect(vr!.end).toBeGreaterThan(9000)
   })
 
-  // `navTo` takes a span wholly inside ONE displayed region and THROWS
-  // otherwise, so before the clamp this raised `could not find a region that
-  // contained "ctgA:1,051..9,000"` out of a menu item's onClick — no
-  // navigation, nothing said, and the error escaping the React handler.
   it('clamps to the displayed region when the feature outgrows it', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
@@ -64,8 +54,6 @@ describe('feature "Zoom to feature" context menu', () => {
       clickContextMenuItem(display, 'Zoom to feature')
     }).not.toThrow()
 
-    // zoomed to the part of the gene the clicked block shows (1050..2000, grown
-    // and clamped back to the block), rather than nowhere at all
     expect(
       view.visibleRegions.map(
         (vr: { displayedRegionIndex: number }) => vr.displayedRegionIndex,
@@ -76,9 +64,6 @@ describe('feature "Zoom to feature" context menu', () => {
     expect(Math.round(vr!.end)).toBe(2000)
   })
 
-  // The span guard below the clamp reads a zero-length feature as empty, so the
-  // item did nothing at all on an insertion — the same degenerate span
-  // `featureSpanContainsBp` covers for the hit test.
   it('zooms to the base a zero-length feature is painted at', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
@@ -105,7 +90,6 @@ describe('feature "Zoom to feature" context menu', () => {
     view.setDisplayedRegions(splitRegions)
     loadGene(display)
 
-    // the same gene as drawn in the SECOND exon block
     display.openContextMenu({
       item: gene,
       displayedRegionIndex: 1,
@@ -114,9 +98,6 @@ describe('feature "Zoom to feature" context menu', () => {
     })
     clickContextMenuItem(display, 'Zoom to feature')
 
-    // the second block, filling the viewport (region 0 trails behind as a
-    // zero-width edge block). Clamping to region 0 instead would have zoomed
-    // 6kb away from where the click landed.
     const vr = view.visibleRegions.find(
       (r: { displayedRegionIndex: number }) => r.displayedRegionIndex === 1,
     )

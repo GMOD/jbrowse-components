@@ -4,12 +4,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the single "Feature height" menu, mirroring the
-// alignments display: the three size presets, then a "Track sizing" subheader,
-// then the scroll/expand/squeeze modes. The mutual-exclusion invariants are
-// covered in fitToDisplayHeight.test.ts; here we assert the menu wires up
-// to them.
-
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
 }
@@ -54,13 +48,11 @@ describe('Feature height submenu', () => {
       'Fixed feature height + autogrow track height',
       'Fit feature height to track height',
     ])
-    // one "Track sizing" subheader separates the two radio groups
     expect(
       subMenu.filter(
         i => i.type === 'subHeader' && hasLabel(i, 'Track sizing'),
       ),
     ).toHaveLength(1)
-    // each size preset carries a "make default" pin
     expect(radio(subMenu, 'Normal').pin).toBeDefined()
     expect(radio(subMenu, 'Compact').pin).toBeDefined()
     expect(radio(subMenu, 'Super-compact').pin).toBeDefined()
@@ -70,16 +62,11 @@ describe('Feature height submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, session } = createDisplay()
 
-    // a track following the default (displayMode at the `inherit` sentinel) resolves to normal
     expect(display.displayMode).toBe('normal')
 
-    // promoting Compact as the display-type default flows through the resolved
-    // getter without the track customizing its own value
     session.setDisplayTypeDefault(display.type, 'displayMode', 'compact')
     expect(display.displayMode).toBe('compact')
 
-    // the track can still pin Normal back over the Compact session default —
-    // the sentinel default is what makes `normal` distinguishable from unset
     display.setDisplayMode('normal')
     expect(display.displayMode).toBe('normal')
   })
@@ -103,12 +90,8 @@ describe('Feature height submenu', () => {
     expect(display.effectiveShowDescriptions).toBe(true)
 
     display.setDisplayMode('collapsed')
-    // both label kinds are forced off for the single-row overview
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(false)
-    // ...but the persisted mode is untouched, so the label radio still reflects
-    // the user's choice (gated at the render layer, not the mode-derived
-    // getter) and returns on leaving collapsed
     expect(display.showLabelsMode).toBe('nameAndDescription')
     expect(display.showDescriptions).toBe(true)
     display.setDisplayMode('normal')
@@ -126,7 +109,6 @@ describe('Feature height submenu', () => {
     expect(
       radio(sizing, 'Fixed feature height + fixed track height').checked,
     ).toBe(true)
-    // each mode carries a "make default" pin, like the size presets
     expect(
       radio(sizing, 'Fixed feature height + fixed track height').pin,
     ).toBeDefined()
@@ -145,9 +127,7 @@ describe('Feature height submenu', () => {
     expect(
       radio(sizing2, 'Fixed feature height + fixed track height').checked,
     ).toBe(false)
-    // density is orthogonal — still Compact while the track grows
     expect(display.displayMode).toBe('compact')
-    // and the size presets still read as Compact in the same menu
     expect(radio(sizing2, 'Compact').checked).toBe(true)
   })
 })

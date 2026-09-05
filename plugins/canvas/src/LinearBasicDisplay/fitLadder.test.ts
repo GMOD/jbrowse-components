@@ -14,15 +14,12 @@ import {
 
 import type { FitRung, LabelReservation } from './fitLadder.ts'
 
-// The walk and the scale math read no reservation; these tests hand every rung
-// the same one and pin the pass-through once.
 const NO_LABELS: LabelReservation = {
   showLabels: false,
   showDescriptions: false,
   dropBelowLabelRows: false,
 }
 
-// A one-region layout whose content height (maxBottom) is exactly `bottomPx`.
 function layoutOfHeight(bottomPx: number) {
   return new Map([
     [
@@ -34,8 +31,6 @@ function layoutOfHeight(bottomPx: number) {
   ])
 }
 
-// A rung that records whether its layout thunk was evaluated, so tests can assert
-// the ladder never lays out a rung tighter than the one it keeps.
 function spyRung(level: FitRung['level'], bottomPx: number) {
   const calls = { count: 0 }
   const rung: FitRung = {
@@ -59,8 +54,6 @@ describe('fitScaleToFill', () => {
   })
 
   it('caps the grow at maxScale rather than ballooning a sparse stack', () => {
-    // 100/10 = 10 would fill the track, but that exceeds the max-box ceiling, so
-    // it holds at 3 and the surplus stays whitespace.
     expect(fitScaleToFill(10, 100, 0.2, 3)).toBe(3)
   })
 
@@ -73,14 +66,10 @@ describe('fitScaleToFill', () => {
   })
 
   it('floors at minScale rather than shrinking the body to nothing', () => {
-    // 100/1000 = 0.1 would fit, but that shrinks bodies below the floor, so it
-    // holds at 0.2 and the surplus scrolls.
     expect(fitScaleToFill(1000, 100, 0.2, 3)).toBe(0.2)
   })
 
   it('answers 1 for an empty stack rather than Infinity/maxScale', () => {
-    // The division would give Infinity, which clamps to maxScale — a stack of
-    // nothing reported as "grown". The guard lives with the division.
     expect(fitScaleToFill(0, 100, 0.2, 3)).toBe(1)
   })
 
@@ -101,8 +90,6 @@ describe('squeezeFloorScale', () => {
   })
 
   it('offers no squeeze once the shortest body is at or under the minimum', () => {
-    // A stack already at the floor has nothing left to give — 1, not a scale that
-    // would take it below.
     expect(squeezeFloorScale(2, 2)).toBe(1)
     expect(squeezeFloorScale(1, 2)).toBe(1)
   })
@@ -116,16 +103,12 @@ describe('squeezeFloorScale', () => {
       const s = squeezeFloorScale(body, 2)
       expect(s).toBeGreaterThan(0)
       expect(s).toBeLessThanOrEqual(1)
-      // and it really is a floor: the deepest squeeze it allows never takes a
-      // body below the minimum — or, for a body ALREADY under the minimum, below
-      // where it started (the floor stops further shrinking; it can't grow one).
       expect(body * s).toBeGreaterThanOrEqual(Math.min(body, 2) - 1e-9)
     }
   })
 })
 
 describe('bisectSmallestFitting', () => {
-  // The precondition the two probes in solveLabelRoomFactor exist to establish.
   const fitsAbove = (threshold: number) => (x: number) => x >= threshold
 
   it('converges on the threshold from above', () => {
@@ -142,8 +125,6 @@ describe('bisectSmallestFitting', () => {
   })
 
   it('returns hi untouched when no iterations are allowed', () => {
-    // hi is the caller's measured-to-fit bound, so zero iterations is still a
-    // correct (just imprecise) answer — never an unmeasured one.
     expect(bisectSmallestFitting(fitsAbove(3), 0, 8, 0)).toBe(8)
   })
 
@@ -156,7 +137,6 @@ describe('bisectSmallestFitting', () => {
 })
 
 describe('bisectLargestFitting', () => {
-  // The integer twin, so the bracket closes on its own rather than on a count.
   it('finds the largest fitting integer', () => {
     expect(bisectLargestFitting(x => x <= 7, 1, 40)).toBe(7)
     expect(bisectLargestFitting(x => x <= 1, 1, 40)).toBe(1)
@@ -178,7 +158,6 @@ describe('bisectLargestFitting', () => {
 })
 
 describe('solveIsoformCount', () => {
-  // 12px a transcript, so a height of h holds floor(h/12) of them.
   const heightAt = (n: number) => n * 12
 
   it('answers the largest count that fits', () => {
@@ -189,17 +168,11 @@ describe('solveIsoformCount', () => {
     expect(solveIsoformCount(heightAt, 600, 10, 1)).toBeUndefined()
   })
 
-  // "Names before isoforms": in fit mode one per gene is the floor, and the
-  // rungs below inherit it rather than going back to the full stack to save a
-  // name. Fixed mode has no rung below, so a trim that cannot achieve a fit
-  // costs every transcript and scrolls anyway — it declines instead.
   it('answers the caller’s floor when even one per gene overflows', () => {
     expect(solveIsoformCount(heightAt, 5, 10, 1)).toBe(1)
     expect(solveIsoformCount(heightAt, 5, 10, undefined)).toBeUndefined()
   })
 
-  // The floor is only reachable through the "nothing fits" branch: wherever a
-  // count does fit, both callers get it.
   it('ignores the floor wherever a count fits', () => {
     expect(solveIsoformCount(heightAt, 60, 10, undefined)).toBe(5)
     expect(solveIsoformCount(heightAt, 12, 10, undefined)).toBe(1)
@@ -213,30 +186,24 @@ describe('solveIsoformCount', () => {
 
 describe('snapFittedContentHeight', () => {
   it('swallows a sub-pixel overflow while squeezing', () => {
-    // The multiply-then-measure round-trip that lands a hair over the track.
     expect(snapFittedContentHeight(100.4, 100, true)).toBe(100)
   })
 
   it('never rounds a fitting stack up to the track height', () => {
-    // Below the track — a squeeze that fit with room to spare stays as measured.
     expect(snapFittedContentHeight(96, 100, true)).toBe(96)
   })
 
   it('keeps a real (>=1px) overflow so it scrolls', () => {
-    // The min-box floor stopped the squeeze short of fitting.
     expect(snapFittedContentHeight(130, 100, true)).toBe(130)
   })
 
   it('leaves the raw height untouched when not squeezing', () => {
-    // A rung that fit (scale 1) or non-fit mode: overflow here is genuine.
     expect(snapFittedContentHeight(100.4, 100, false)).toBe(100.4)
     expect(snapFittedContentHeight(130, 100, false)).toBe(130)
   })
 })
 
 describe('resolveFitLadder', () => {
-  // The kept rung's reservation is the stage's, untouched: a renderer reads
-  // what the packer reserved rather than re-deriving it from the level.
   it('reports the kept rung’s reservation', () => {
     const reserved: LabelReservation = {
       showLabels: true,
@@ -259,8 +226,6 @@ describe('resolveFitLadder', () => {
     expect(stage).toMatchObject(reserved)
   })
 
-  // The rung carries the count it packed at, so the chip and the tooltip read
-  // the solve rather than a flag from the worker.
   it('reports the kept rung’s isoform count', () => {
     const stage = resolveFitLadder(
       [
@@ -305,9 +270,6 @@ describe('resolveFitLadder', () => {
     expect(stage.maxIsoforms).toBeUndefined()
   })
 
-  // Every isoform goes before any name does, so the two rungs below `isoforms`
-  // pack at the count it failed at — carried on the rung rather than derived
-  // from the level, which cannot tell them apart.
   it('lets the rungs below inherit the count the trim failed at', () => {
     const stage = resolveFitLadder(
       [
@@ -470,9 +432,6 @@ describe('resolveFitLadder', () => {
     expect(stage.scale).toBe(0.2)
   })
 
-  // Rungs coincide constantly — with names off, `labels`, `decimated` and
-  // `bodies` are one stack handed back by reference. The ladder must treat that
-  // as one height (it is one object), descend through them, and keep the last.
   it('treats reference-identical rungs as one stack', () => {
     const shared = layoutOfHeight(200)
     let measured = 0

@@ -22,8 +22,6 @@ type Display = ReturnType<
   ReturnType<typeof createTestEnvironment>['createDisplay']
 >['display']
 
-// Load one rendered feature into region 0's raw data (rpcDataMap), the input the
-// pre-layout highlight resolver reads.
 function loadFeature(
   display: Display,
   item: { featureId: string; startBp: number; endBp: number; name?: string },
@@ -35,9 +33,6 @@ function loadFeature(
   )
 }
 
-// Load a gene whose span (0..3000) is the union of its transcripts, alongside a
-// subfeature transcript spanning the searched region — the shape a text search
-// for a transcript produces (its span never matches the gene's full span).
 function loadGeneWithTranscript(display: Display) {
   display.setRpcData(
     0,
@@ -101,10 +96,6 @@ describe('feature highlight declarative persistence', () => {
     expect(display.featureHighlights.length).toBe(0)
   })
 
-  // A highlight can outlive the view that created it (pan away, or a search
-  // highlight nothing has replaced), and per-feature "Remove highlight" needs
-  // the boxed feature under the cursor — so the track menu carries the only
-  // reachable clear.
   it('offers a track-menu clear only while something is highlighted', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -138,7 +129,6 @@ describe('feature highlight declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
 
-    // resolver runs against the raw fetched data; empty until features load
     expect([...display.highlightedFeatureIdSet]).toEqual([])
   })
 
@@ -153,21 +143,13 @@ describe('feature highlight declarative persistence', () => {
       name: 'BRCA1',
     })
 
-    // resolved pre-layout (from rpcDataMap) so it can feed the pin set
     expect([...display.highlightedFeatureIdSet]).toEqual(['feat-xyz'])
-    // and the searched feature is pinned toward the top of the layout
     expect([...display.layoutPinnedFeatureIdSet]).toContain('feat-xyz')
   })
 
-  // The provenance the matchers were never written for: nobody produces this
-  // highlight, so nothing canonicalizes its refName on the way in. An author
-  // types what the location box showed them, which is an alias as often as it
-  // is the assembly's own name — and the regions it is matched against are
-  // canonical. Both forms have to resolve, or the same spec key works on one
-  // assembly and silently does nothing on another.
   it('resolves a spec highlight written with an aliased refName', () => {
     const { createDisplay } = createTestEnvironment()
-    // 'chrA' is the testEnv assembly's alias for the canonical 'ctgA'
+    // 'chrA' is the testEnv assembly's alias for the canonical 'ctgA'.
     const { display } = createDisplay({
       featureHighlights: [{ ...brca1, refName: 'chrA' }],
     })
@@ -211,7 +193,6 @@ describe('feature highlight declarative persistence', () => {
     })
 
     expect(display.highlightedFeatureIdSet.size).toBe(0)
-    // falls back to the (empty) user pin set by reference
     expect(display.layoutPinnedFeatureIdSet).toBe(display.pinnedFeatureIdSet)
   })
 
@@ -237,10 +218,7 @@ describe('feature highlight declarative persistence', () => {
 
     loadGeneWithTranscript(display)
 
-    // the gene's full span (0..3000) does not match; the transcript subfeature
-    // (1000..2000) does, so the subfeature is boxed...
     expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
-    // ...while its PARENT gene is what gets pinned to the top of the layout
     expect([...display.layoutPinnedFeatureIdSet]).toEqual(['gene-1'])
   })
 
@@ -248,8 +226,6 @@ describe('feature highlight declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
 
-    // gene span (1000..2000) matches the highlight exactly, and its transcript
-    // subfeatures share the gene's indexed name and overlap its span
     display.setRpcData(
       0,
       makeFeatureData({
@@ -278,7 +254,6 @@ describe('feature highlight declarative persistence', () => {
       ctgA,
     )
 
-    // one clean box around the gene, no redundant sub-boxes inside the glyph
     expect([...display.highlightedFeatureIdSet]).toEqual(['gene-1'])
   })
 
@@ -321,8 +296,6 @@ describe('feature highlight declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    // two features sharing a name and an overlapping span — span+name matching
-    // used to box both; the right-click highlight carries the clicked id
     display.setRpcData(
       0,
       makeFeatureData({
@@ -356,7 +329,6 @@ describe('feature highlight declarative persistence', () => {
     const { display } = createDisplay()
     loadGeneWithTranscript(display)
 
-    // the gene and transcript share a name; the id resolves to the transcript
     display.addFeatureHighlightForItem(
       {
         startBp: 1000,
@@ -367,9 +339,6 @@ describe('feature highlight declarative persistence', () => {
       'ctgA',
     )
     expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
-    // A right-click highlight marks a feature the user just clicked, so unlike
-    // the searched one above it must NOT pin: pinning yanked the containing gene
-    // to row 0, reshuffling the track around the box the user asked for.
     expect([...display.layoutPinnedFeatureIdSet]).toEqual([])
   })
 
@@ -408,9 +377,6 @@ describe('feature highlight declarative persistence', () => {
 
   it('removeFeatureHighlightsForId clears a search-drifted highlight by span', () => {
     const { createDisplay } = createTestEnvironment()
-    // a search highlight whose stored name is trix's indexed description, not
-    // the rendered feature's Name — it still resolves to the feature by span, so
-    // removing that feature's box must still clear it
     const searchDrift: FeatureHighlight = {
       refName: 'ctgA',
       start: 1000,
@@ -443,10 +409,6 @@ describe('feature highlight declarative persistence', () => {
     expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
   })
 
-  // The unresolved-highlight warning exists to catch a hand-authored spec whose
-  // coordinates are a few bases off the track's record. It is gated on the
-  // LOADED REGION SPANS, because a stored highlight resolves to nothing for the
-  // much more common reason that the user navigated away from it.
   describe('unresolved-highlight warning', () => {
     beforeEach(() => {
       resetUnresolvedHighlightWarnings()
@@ -454,7 +416,6 @@ describe('feature highlight declarative persistence', () => {
 
     it('warns when data covering the highlight has nothing that matches', () => {
       const { createDisplay } = createTestEnvironment()
-      // 7bp past the rendered feature's end, and a name that matches nothing
       const { display } = createDisplay({
         featureHighlights: [
           { refName: 'ctgA', start: 1000, end: 2007, name: 'NOT_A_GENE' },
@@ -486,10 +447,6 @@ describe('feature highlight declarative persistence', () => {
       )
       expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
 
-      // the same region, redrawn without that isoform — what hiding it, filtering
-      // it, or the gene glyph collapsing to the longest transcript at zoom-out
-      // all produce. Nothing here is a mistyped coordinate, so the span-authoring
-      // warning must not fire: the id came from a feature that WAS rendered.
       loadFeature(display, {
         featureId: 'gene-1',
         startBp: 0,

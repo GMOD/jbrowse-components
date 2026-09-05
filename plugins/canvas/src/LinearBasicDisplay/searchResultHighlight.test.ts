@@ -7,10 +7,8 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { TestDisplay } from './testEnv.ts'
 
-// The stub assembly manager says yes to every refName, under which every
-// "ref:start..end" reads as ambiguous (the whole string could be a refName with
-// a colon in it). Answer the way a real assembly does: the canonical name and
-// its alias, and nothing else.
+// The stub assembly manager says yes to every refName, so answer like a real
+// assembly: the canonical name and its alias, nothing else.
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const env = createDisplay()
@@ -72,9 +70,6 @@ describe('highlightSearchResultFeature', () => {
     expect(highlightsOf(display)).toEqual([])
   })
 
-  // A malformed coordinate is a parse error, not a miss: the extension point
-  // that calls this (PluginManager.evaluateExtensionPoint) catches and logs it,
-  // so the app-level effect is "nothing", but a direct caller gets the throw.
   it('throws on coordinates that do not parse', () => {
     const { display, view } = setup()
     expect(() => {

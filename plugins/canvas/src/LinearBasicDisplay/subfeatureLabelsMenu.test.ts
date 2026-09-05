@@ -4,13 +4,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the "Subfeature labels" radio group: a three-way radio
-// (Off/Below/Overlay) over the promotable `subfeatureLabels` slot, each option
-// promotable as the session-wide default. The group is rendered inline in the
-// "Show..." submenu under a "Subfeature labels" subHeader. Render-side handling
-// of `below` vs `overlay` is covered in labelUtils.test.ts /
-// glyphs/subfeatures.test.ts.
-
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
 }
@@ -24,8 +17,6 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
-// The radios that follow the "Subfeature labels" subHeader in the flat "Show..."
-// submenu, up to the next subHeader/divider.
 function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   const items = subMenuOf(display.trackMenuItems(), 'Show...')
   const start = items.findIndex(
@@ -67,18 +58,13 @@ describe('Subfeature labels submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, session } = createDisplay()
 
-    // a track following the default (subfeatureLabels at the `inherit` sentinel) resolves to
-    // the `none` base
     expect(display.subfeatureLabels).toBe('none')
     expect(radio(showSubMenu(display), 'Off').checked).toBe(true)
 
-    // a display-type default flows through the resolved getter without the track
-    // customizing its own value
     session.setDisplayTypeDefault(display.type, 'subfeatureLabels', 'overlay')
     expect(display.subfeatureLabels).toBe('overlay')
     expect(radio(showSubMenu(display), 'Overlay').checked).toBe(true)
 
-    // the track can still pin Below back over the Overlay session default
     display.setSubfeatureLabels('below')
     expect(display.subfeatureLabels).toBe('below')
     const subMenu = showSubMenu(display)

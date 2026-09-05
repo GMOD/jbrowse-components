@@ -2,10 +2,6 @@ import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 
 import type { FitStage } from './fitLadder.ts'
 
-// The fit ladder's reservation at each rung, as the display's rungs declare it:
-// names through `decimated`, descriptions at `full` alone, the `below` rows
-// spent at `bare`. The fixed-height ladder reaches `isoforms` with descriptions
-// kept, and has a case of its own.
 const stage = (
   level: FitStage['level'],
   scale = 1,
@@ -25,14 +21,10 @@ const drops = (
   at: ReturnType<typeof stage>,
   showLabels: boolean,
   showDescriptions: boolean,
-  // the factor the `decimated` rung committed at; above 0 by default, since a
-  // rung that reached 0 dropped no name and has a case of its own below
   decimatedFactor = 1,
 ) => fitDrops(at, showLabels, showDescriptions, decimatedFactor)
 
 describe('fitDrops', () => {
-  // Outside fit mode the stage is always `full` at scale 1, so this is also
-  // the "no note anywhere" case for fixed and grow.
   it('reports nothing at the full rung', () => {
     expect(drops(stage('full'), true, true)).toEqual({
       names: 'none',
@@ -43,8 +35,6 @@ describe('fitDrops', () => {
     })
   })
 
-  // A rung drops a RESERVATION; dropping descriptions nobody turned on is not
-  // a loss the user can see, so it is not one the note reports.
   it('counts only the label kinds the settings reserved', () => {
     expect(drops(stage('labels'), true, false).descriptions).toBe(false)
     expect(drops(stage('bodies'), false, false)).toEqual({
@@ -56,9 +46,6 @@ describe('fitDrops', () => {
     })
   })
 
-  // Fixed height runs `full -> isoforms`: it gives up transcripts rather than
-  // labels, so a track that lands there has dropped no label kind at all and
-  // the note stays silent.
   it('reports nothing when a fixed track trims isoforms', () => {
     expect(
       fitDrops(stage('isoforms', 1, { fixed: true }), true, true, undefined),
@@ -71,8 +58,6 @@ describe('fitDrops', () => {
     })
   })
 
-  // The `bare` rung exists only where the settings reserve `below` label rows,
-  // so landing on it always means both every name and those rows went.
   it('reports the below-label rows dropped at the bare rung', () => {
     expect(drops(stage('bare'), true, false)).toMatchObject({
       names: 'all',
@@ -82,16 +67,11 @@ describe('fitDrops', () => {
     expect(drops(stage('bare'), false, false).subfeatureLabels).toBe(true)
   })
 
-  // The `decimated` rung commits at factor 0 whenever the unseeded pack fits
-  // where the seeded `labels` pack did not, and factor 0 keeps every name
-  // (`keepFeatureLabel` asks for `room >= width * 0`). The note said "some
-  // names hidden" over a track drawing all of them.
   it('reports no names hidden at a decimated factor of 0', () => {
     expect(drops(stage('decimated'), true, false, 0).names).toBe('none')
     expect(fitLadderNote(drops(stage('decimated'), true, false, 0))).toBe(
       undefined,
     )
-    // and a factor above 0 means fits(0) failed, so a name really went
     expect(drops(stage('decimated'), true, false, 0.5).names).toBe('some')
   })
 
@@ -113,7 +93,6 @@ describe('fitDrops', () => {
     expect(drops(stage('labels'), false, true).everyLabel).toBe(true)
   })
 
-  // A grown stack (scale > 1) and a float-epsilon squeeze both round to 100
   it('reports a squeeze only when it rounds below 100%', () => {
     expect(drops(stage('bodies', 0.384), false, false).squeezePct).toBe(38)
     expect(drops(stage('bodies', 0.999), false, false).squeezePct).toBe(
@@ -152,8 +131,6 @@ describe('labelsFitHint', () => {
     expect(labelsFitHint(drops(stage('full'), true, true))).toBeUndefined()
   })
 
-  // The row already names the setting, so the hint says only what of it is
-  // not reaching the canvas — "hidden to fit" once none of it is.
   it('says which part of the row went, or that all of it did', () => {
     expect(labelsFitHint(drops(stage('labels'), true, true))).toBe(
       'descriptions hidden to fit',
@@ -169,9 +146,6 @@ describe('labelsFitHint', () => {
     )
   })
 
-  // Subfeature labels are their own radio, so their drop never leaks into the
-  // Labels radio's hint — with nothing of the Labels row hidden there is no
-  // hint at all at the bare rung.
   it('leaves the subfeature-label drop to the track-sizing note', () => {
     expect(labelsFitHint(drops(stage('bare'), false, false))).toBeUndefined()
   })

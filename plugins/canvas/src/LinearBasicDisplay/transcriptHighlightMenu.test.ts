@@ -14,14 +14,6 @@ import type { TestDisplay } from './testEnv.ts'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
-// Volvox's EDEN locus, copied from test_data/volvox/volvox.sort.gff3 — the
-// canonical GFF3 example, and the shape a span-only identity cannot address:
-//   gene EDEN   1050..9000
-//   mRNA EDEN.1 1050..9000  <- same span as the gene
-//   mRNA EDEN.2 1050..9000  <- same span as the gene AND as EDEN.1
-//   mRNA EDEN.3 1300..9000
-// Only the name separates EDEN.1 from EDEN.2, so a fixture that nests a
-// transcript strictly inside its gene tests a case real data rarely produces.
 const gene = makeFlatbushItem({
   featureId: 'EDEN',
   type: 'gene',
@@ -71,7 +63,6 @@ describe('transcript highlight context menu', () => {
 
     rightClick(display, gene, eden1)
 
-    // the entry must survive EDEN.1's span being identical to EDEN's
     expect(contextMenuLabels(display)).toContain('mRNA (EDEN.1)')
     expect(contextMenuLabels(display)).toContain('Whole gene (EDEN)')
   })
@@ -85,8 +76,6 @@ describe('transcript highlight context menu', () => {
     clickContextMenuItem(display, 'mRNA (EDEN.1)')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
-    // and leaves the layout alone: the user is looking at EDEN, so pinning it to
-    // row 0 would move the thing they just boxed (see resolveFeatureHighlights)
     expect([...display.layoutPinnedFeatureIdSet]).toEqual([])
   })
 
@@ -98,7 +87,6 @@ describe('transcript highlight context menu', () => {
     rightClick(display, gene, eden2)
     clickContextMenuItem(display, 'mRNA (EDEN.2)')
 
-    // only the name separates these two; a span-keyed highlight boxes both
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.2'])
   })
 
@@ -121,7 +109,6 @@ describe('transcript highlight context menu', () => {
     rightClick(display, gene, eden1)
     clickContextMenuItem(display, 'Whole gene (EDEN)')
 
-    // the gene, and none of its three isoforms
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
   })
 
@@ -152,7 +139,6 @@ describe('transcript highlight context menu', () => {
   it('names each scope by its own type, not a hardcoded transcript/gene', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    // subfeatureInfos carries non-transcripts too — a transposon's LTR parts
     const repeat = makeFlatbushItem({
       featureId: 'repeat-1',
       type: 'repeat_region',
@@ -197,8 +183,6 @@ describe('transcript highlight context menu', () => {
     rightClick(display, gene, unnamed)
     clickContextMenuItem(display, 'This mRNA')
 
-    // right-click highlights resolve by the clicked feature's exact id, not
-    // span/name, so a same-span sibling is never swept in regardless of naming
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
   })
 
@@ -215,7 +199,6 @@ describe('transcript highlight context menu', () => {
 
   it('leaves the text-search highlight path matching fuzzily', () => {
     const { createDisplay } = createTestEnvironment()
-    // an unscoped highlight is what trix produces: span-first, name as rescue
     const { display } = createDisplay({
       featureHighlights: [
         { refName: 'ctgA', start: 1050, end: 9000, name: 'EDEN' },
@@ -223,7 +206,6 @@ describe('transcript highlight context menu', () => {
     })
     loadGene(display, [eden1, eden2, eden3])
 
-    // still resolves to the gene by span, unaffected by the new subfeature scope
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
   })
 
@@ -238,9 +220,6 @@ describe('transcript highlight context menu', () => {
 
     rightClick(display, gene, eden1)
 
-    // the search highlight boxes the gene, so EDEN.1 is NOT highlighted and the
-    // menu offers to add it — the click must not be swallowed as a duplicate
-    // just because the search highlight's span happens to equal EDEN.1's
     clickContextMenuItem(display, 'mRNA (EDEN.1)')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN', 'EDEN.1'])
@@ -262,9 +241,6 @@ describe('transcript highlight context menu', () => {
     clickContextMenuItem(display, 'mRNA (EDEN.1)')
     clickContextMenuItem(display, 'Remove mRNA (EDEN.1) highlight')
 
-    // the gene highlight fuzzily MATCHES EDEN.1's span (identical to the gene's)
-    // but boxes the gene, not the isoform — so it must survive. Removal asks what
-    // is actually boxed, never re-runs the heuristic matcher.
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
     expect(display.featureHighlights.length).toBe(1)
   })

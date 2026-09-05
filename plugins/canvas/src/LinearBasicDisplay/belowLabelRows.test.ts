@@ -36,9 +36,6 @@ function mockFeature(opts: {
   } as unknown as Feature
 }
 
-// A gene with three named mRNAs, each a single-exon transcript — the shape that
-// stacks inside one row and so the shape a `below` label row has to be reserved
-// within.
 function geneWithTranscripts(names: string[]) {
   return mockFeature({
     type: 'gene',
@@ -64,9 +61,6 @@ function geneWithTranscripts(names: string[]) {
   })
 }
 
-// A polyprotein CDS whose mature_protein_region children tile the ORF — the
-// other glyph that reserves a `below` label row, and the one that reserved it by
-// halving its own row rather than by adding to a running offset.
 function polyprotein(names: string[]) {
   return mockFeature({
     type: 'CDS',
@@ -84,8 +78,6 @@ function polyprotein(names: string[]) {
   })
 }
 
-// Runs the real pipeline — worker layout, worker collect, main-thread pack —
-// and returns the laid-out region for one display mode.
 function layoutAt(
   displayMode: DisplayMode,
   subfeatureLabels: string,
@@ -125,7 +117,6 @@ function layoutAt(
   }).get(0)!
 }
 
-// Subfeature rows of one type, in draw order, as [top, bottom].
 function rowsOfType(data: FeatureDataResult, type: string) {
   return data.subfeatureInfos
     .filter(i => i.type === type)
@@ -137,13 +128,6 @@ function transcriptRows(data: FeatureDataResult) {
   return rowsOfType(data, 'mRNA')
 }
 
-// The bug this file exists for: the worker reserved the `below` label row as a
-// raw LABEL_FONT_SIZE in normal-mode units, which the main thread then scaled by
-// HEIGHT_MULTIPLIERS along with the geometry — while the label itself draws at
-// the gentler LABEL_FONT_MULTIPLIERS. So the reserved gap came out SMALLER than
-// the text (6.6px against 9.35px in compact, 3.3px against 7.7px in
-// superCompact), every `below` label lay across the transcript under it, and the
-// shortfall accumulated down the gene's stack.
 describe('below subfeature-label rows survive compact scaling', () => {
   const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
 
@@ -153,15 +137,9 @@ describe('below subfeature-label rows survive compact scaling', () => {
 
     const drawnLabelPx = labelFontSize(mode)
     for (let i = 1; i < rows.length; i++) {
-      // gap between one transcript's BODY bottom and the next one's top. The hit
-      // box (bottomPx) already covers the label row, so measure from the body:
-      // top + the body height the previous row reports.
       const gap = rows[i]![0] - rows[i - 1]![1]
-      // bottomPx includes the owned label row, so a non-negative gap here means
-      // the label row fits with the next transcript starting at or after it
       expect(gap).toBeGreaterThanOrEqual(0)
     }
-    // and the row a label occupies is the size the label is actually drawn at
     const ownedRow = rows[0]![1] - rows[0]![0]
     const bodyOnly = transcriptRows(layoutAt(mode, 'none'))[0]!
     expect(ownedRow - (bodyOnly[1] - bodyOnly[0])).toBeCloseTo(drawnLabelPx, 5)
@@ -171,31 +149,20 @@ describe('below subfeature-label rows survive compact scaling', () => {
     for (const mode of modes) {
       const withLabels = layoutAt(mode, 'below')
       const without = layoutAt(mode, 'none')
-      // the label rows are the ONLY difference; with them off the pass is
-      // length-zero on the wire and adds no pixels
       expect(without.rectLabelRows.length).toBe(0)
       expect(withLabels.rectLabelRows.length).toBeGreaterThan(0)
     }
   })
 
-  // superCompact is where the old arithmetic was worst: it reserved 3.3px for a
-  // 7.7px label, so each of the three transcripts lost 4.4px to its neighbour.
   it('scales the label row on label units, not on geometry units', () => {
     const compact = transcriptRows(layoutAt('compact', 'below'))
     const superCompact = transcriptRows(layoutAt('superCompact', 'below'))
     const rowOf = (rows: readonly (readonly [number, number])[]) =>
       rows[0]![1] - rows[0]![0]
-    // the bodies shrink on HEIGHT_MULTIPLIERS (0.6 -> 0.3, halving), but the
-    // label row shrinks only on LABEL_FONT_MULTIPLIERS (0.85 -> 0.7), so the
-    // labeled row must NOT halve between the two modes
     expect(rowOf(superCompact)).toBeGreaterThan(rowOf(compact) / 2)
   })
 })
 
-// The mature-protein glyph reserved its label by HALVING the row rather than by
-// adding to a running offset, so it expressed the label's share in geometry
-// units too — and, because halving also halves what a full-size label lives in,
-// it overflowed in NORMAL mode as well, unlike the transcript path.
 describe('below label rows on the polyprotein glyph', () => {
   const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
 
@@ -213,13 +180,10 @@ describe('below label rows on the polyprotein glyph', () => {
     expect(labeled).toHaveLength(3)
 
     const drawnLabelPx = labelFontSize(mode)
-    // each product's own row grows by exactly the line its label is drawn at
     for (const [i, row] of labeled.entries()) {
       const grew = row[1] - row[0] - (plain[i]![1] - plain[i]![0])
       expect(grew).toBeCloseTo(drawnLabelPx, 5)
     }
-    // and consecutive products are pushed apart by that same line, so a label
-    // never lands on the product under it
     for (let i = 1; i < labeled.length; i++) {
       const plainGap = plain[i]![0] - plain[i - 1]![0]
       const labeledGap = labeled[i]![0] - labeled[i - 1]![0]
@@ -228,12 +192,8 @@ describe('below label rows on the polyprotein glyph', () => {
   })
 })
 
-// The gene's own name label hangs off `topY + featureHeight` of its
-// floatingLabelsData entry, the same extent its hit box reports. Missing the
-// rows its transcripts reserve, it drew the DTU gene name across a transcript.
 describe("a container's floating label clears the rows it contains", () => {
   const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
-  // the gene needs a name label of its own for there to be an entry at all
   const named = {
     labels: { name: "jexl:get(feature,'name')", description: '' },
   }
@@ -267,10 +227,6 @@ describe("a container's floating label clears the rows it contains", () => {
   })
 })
 
-// EDTA / LTR_retriever-style intact transposon: the subparts share ONE row, so
-// their `below` labels share one row too — the row `layoutRepeatRegion`
-// reserves, since the emitter registers those children straight off the feature
-// and no child layout owns a row.
 function intactRetrotransposon() {
   return mockFeature({
     type: 'repeat_region',
@@ -312,8 +268,6 @@ function intactRetrotransposon() {
   })
 }
 
-// A CrisprGuideAdapter guide: one PAM subfeature, labeled with the literal
-// 'PAM' rather than a name of its own.
 function crisprGuide() {
   return mockFeature({
     type: 'guide_rna',
@@ -326,14 +280,8 @@ function crisprGuide() {
   })
 }
 
-// The two glyphs whose registered children all label into ONE row under the
-// body with no child layout owning it. Until the layouts reserved that row,
-// `bodyHeightPx` stopped at the feature's box and every subpart label — and the
-// guide's `PAM` — drew past it into the next feature's row.
 describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
   const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
-  // both features carry a name of their own, which is the label that has to
-  // clear the shared row rather than land a couple of px from it
   const named = {
     labels: { name: "jexl:get(feature,'name')", description: '' },
   }
@@ -344,8 +292,6 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
     screenEndPx: 10_000,
   }
 
-  // Every label the display draws, positioned through the production path, so
-  // the top gap each kind gets is not restated here.
   function drawnLabels(data: FeatureDataResult, mode: DisplayMode) {
     const out: ResolvedLabel[] = []
     forEachRenderedLabel(
@@ -377,9 +323,6 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
         .map(l => l.labelY + labelFontSize(mode))
     const item = data.flatbushItems.find(i => i.featureId === feature.id())!
     return {
-      // THE reservation: the worker height scaled by the mode plus the label
-      // rows it counted — `bodyHeightPx`, the one derivation the fit probe and
-      // the committed pack share
       bodyBottom: item.topPx + item.featureHeightPx,
       subBottoms: bottoms('sub'),
       nameTop: Math.min(
@@ -402,8 +345,6 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
         for (const bottom of subBottoms) {
           expect(bottom).toBeLessThanOrEqual(bodyBottom + 1e-9)
         }
-        // and the reservation is spent, not merely large enough: the lowest label
-        // ends exactly at the row the pack charged for
         expect(Math.max(...subBottoms)).toBeCloseTo(bodyBottom, 5)
       },
     )
@@ -411,8 +352,6 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
     it.each(modes)('costs exactly one label line (%s)', mode => {
       const withLabels = measure(makeFeature(), glyph, mode)
       const without = measure(makeFeature(), glyph, mode, 'none')
-      // one row, and spent at the LABEL font size rather than scaled with the
-      // geometry — whatever the number of children labeling into it
       expect(withLabels.bodyBottom - without.bodyBottom).toBeCloseTo(
         labelFontSize(mode),
         5,
@@ -422,9 +361,6 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
 
     it.each(modes)("clears the feature's own name label (%s)", mode => {
       const { subBottoms, nameTop } = measure(makeFeature(), glyph, mode)
-      // The name hangs off the same extent the reservation grew, so it moves
-      // down by the row instead of landing on it. Unreserved, a guide's name sat
-      // 2px under its `PAM` — two 11px lines on top of each other.
       expect(nameTop).toBeGreaterThanOrEqual(Math.max(...subBottoms))
     })
   })

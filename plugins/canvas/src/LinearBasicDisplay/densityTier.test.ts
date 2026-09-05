@@ -14,10 +14,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 const DENSITY_ADAPTER = { type: 'BigWigAdapter', uri: 'features.bw' }
 
-// A refused display, wide enough that the byte axis is on its full budget tier.
-// `adapterFetchSizeLimit` is deliberately huge so the byte axis is quiet until a
-// test hands it an estimate, and the density axis quiet until a test hands it
-// counts.
+// `adapterFetchSizeLimit` is huge so the byte axis stays quiet until a test
+// hands it an estimate, and the density axis until a test hands it counts.
 function refusableDisplay(densityAdapter?: Record<string, unknown>) {
   const env = createTestEnvironment({
     adapterFetchSizeLimit: 50_000_000,
@@ -64,13 +62,8 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.displayPhase).not.toBe('tooLarge')
   })
 
-  // The gate is one verdict over two axes, so "too many features" has to reach
-  // the band the same way "too many bytes" does — the tier reads the verdict,
-  // never an axis.
   it('swaps on the density axis too', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
-    // 5,000 features over the 406px the region occupies, against the default
-    // budget of one per pixel
     display.commitGateMeasurements(
       [
         {
@@ -101,13 +94,9 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.displayPhase).toBe('ready')
     expect(display.densityBandActive).toBe(true)
     expect(display.densityBandLayer.maxDepth).toBeGreaterThan(0)
-    // and the export paints its own body rather than the too-large note
     expect(display.drawsWhenTooLarge).toBe(true)
   })
 
-  // A wheel zoom under a stationary cursor fires no mousemove, so the readout
-  // has to follow the bp now under the same px rather than hold the bp it was
-  // set at.
   it('reads the value under the cursor at the current zoom', () => {
     const { display, view } = refusableDisplay(DENSITY_ADAPTER)
     refuseOnBytes(display)
@@ -136,10 +125,6 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.densityHover).toBeUndefined()
   })
 
-  // `regionTooLarge` outranks `error` in the shared precedence, so under a
-  // refusal — the state the tier exists for — the base phase is `tooLarge`
-  // however the read went, and reading the failure terminals off it swapped a
-  // failed read for a scrim nothing could lift.
   it('reports a failed read as an error, not an endless scrim', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
     refuseOnBytes(display)
@@ -147,13 +132,9 @@ describe('the density tier stands in for the too-large banner', () => {
 
     display.setError(new Error('sidecar 404'))
     expect(display.displayPhase).toBe('error')
-    // and the export stops waiting on bins that are not coming
     expect(display.svgReady).toBe(true)
   })
 
-  // `{ uri }` is the shorthand every location slot accepts, and the display used
-  // to read it as a source while the adapter declined to build one: the band
-  // turned on for a read that answered nothing, and the phase waited forever.
   it('keeps the banner where the slot holds no adapter config', () => {
     const { display } = refusableDisplay({ uri: 'genes.density.bw' })
     refuseOnBytes(display)
@@ -163,8 +144,6 @@ describe('the density tier stands in for the too-large banner', () => {
     expect(display.displayPhase).toBe('tooLarge')
   })
 
-  // Not the banner's business: a track told to draw the band always draws it,
-  // and one told never to keeps the banner whatever the gate says.
   it('follows the densityTier slot over the verdict', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
 
@@ -238,13 +217,10 @@ describe('the band stands alone, and fetches nothing', () => {
 
   it('keeps the measurement pass a refused auto owes', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
-    // the band from 1 bp/px outward, so auto is active with no refusal
     setConf(display, 'densityTierBpPerPx', 1)
     expect(display.densityTierActive).toBe(true)
     expect(display.fetchSuspended).toBe(true)
 
-    // a refused viewport keeps its fetch, which stops at the gate and
-    // re-measures: that is what the gate releases through
     refuseOnBytes(display)
     expect(display.fetchSuspended).toBe(false)
   })
@@ -286,10 +262,6 @@ function densityBandItems(display: { trackMenuItems: () => MenuItem[] }) {
   return band && 'subMenu' in band ? resolveSubMenu(band) : []
 }
 
-// The band replaced the banner the Force-load button lived on, so the way to
-// the features is offered where the band is, and only where the band stands
-// in for a refusal: a forced density has nothing to release, and a fetch the
-// gate allows needs no forcing.
 test("the band carries the banner's force-load while it stands in for a refusal", () => {
   const { display } = refusableDisplay(DENSITY_ADAPTER)
   const labels = () =>

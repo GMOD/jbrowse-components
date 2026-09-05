@@ -23,9 +23,6 @@ type TrackConfigSnapshot = {
   displays?: DisplaySnapshot[]
 }
 
-// Mirrors the registration in ./index.ts. geneGlyphMode "longest" and a boolean
-// showLabels are legacy values on existing enum slots, so they must be repaired
-// before the display union validates the snapshot.
 function evaluate(snap: TrackConfigSnapshot) {
   const pm = new PluginManager()
   addDisplayConfigMigration(
@@ -71,8 +68,6 @@ test('leaves non-canvas displays untouched', () => {
   expect(out.displays![0]!.geneGlyphMode).toBe('longest')
 })
 
-// v4.3.0 stored feature colors in the config under legacy color1/color2/color3/
-// outline names — the sole path to preserve an old track's colors now.
 test('renames legacy color1/color2/color3/outline config slots', () => {
   const out = evaluate({
     type: 'FeatureTrack',
@@ -95,8 +90,6 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
   })
 })
 
-// The former `autoHeight: true` boolean slot is folded into the unified
-// `heightMode` slot as its `grow` value, and the retired key is dropped.
 test('migrates legacy autoHeight:true to heightMode grow', () => {
   const out = evaluate({
     type: 'FeatureTrack',
@@ -115,9 +108,6 @@ test('drops a legacy autoHeight:false without setting heightMode', () => {
   expect(out.displays![0]!.autoHeight).toBeUndefined()
 })
 
-// The retired `maxHeight` slot (a second grow ceiling; growMaxHeight is the one
-// grow clamp now) is dropped, including the old renderer's layout-bound slot of
-// the same name that liftRendererProps carries up.
 test('drops the retired maxHeight slot, from the display and the renderer', () => {
   const out = evaluate({
     type: 'FeatureTrack',
@@ -130,8 +120,6 @@ test('drops the retired maxHeight slot, from the display and the renderer', () =
   expect(out.displays![1]!.maxHeight).toBeUndefined()
 })
 
-// Pre-GPU-rewrite configs nested style slots under a `renderer` sub-config that
-// no longer exists; they lift onto the display and the renderer key is dropped.
 test('lifts style slots out of the old renderer sub-config', () => {
   const out = evaluate({
     type: 'FeatureTrack',
@@ -146,10 +134,6 @@ test('lifts style slots out of the old renderer sub-config', () => {
   expect(out.displays![0]!.renderer).toBeUndefined()
 })
 
-// regression: `renderer.height` was v4's feature-body height and lifted by name
-// onto the display's `height`, which is the whole track — so the standard v4 way
-// of setting feature height opened as a ~10px-tall track with its feature height
-// back at the default.
 test('renderer.height becomes featureHeight, not the track height', () => {
   const out = evaluate({
     type: 'FeatureTrack',
@@ -164,7 +148,6 @@ test('renderer.height becomes featureHeight, not the track height', () => {
   expect(out.displays![0]!.height).toBeUndefined()
 })
 
-// an explicit display-level height is the track's, and outranks the lift
 test('a display height alongside renderer.height keeps both meanings', () => {
   const out = evaluate({
     type: 'FeatureTrack',

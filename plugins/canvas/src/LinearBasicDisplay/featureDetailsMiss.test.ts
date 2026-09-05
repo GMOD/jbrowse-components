@@ -6,14 +6,6 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-// A click whose details lookup comes back empty used to do nothing at all — no
-// widget, no message, no way for the user to tell a missing feature from a dead
-// button. These pin the four paths that reach `notifyFeatureDetailsMiss`, and
-// the two ways a lookup can come back empty are deliberately BOTH covered:
-// `{ feature: undefined }` is the adapter answering "not found", while a
-// rejected call is already reported by `fetchCanvasFeatureDetails` itself and
-// must not be reported a second time here.
-
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
 const gene = makeFlatbushItem({
@@ -37,10 +29,8 @@ function misses(session: { notifications: { message: string }[] }) {
   )
 }
 
-// Answer only the details method: a blanket `mockResolvedValue` answers the
-// per-region FETCH too, and the display stores that reply as region data, where
-// the getters reading it throw inside an autorun. Unstubbed methods keep the
-// harness default, which never settles.
+// Answers only the details method: a blanket `mockResolvedValue` answers the
+// per-region fetch too, and the display stores that reply as region data.
 function onlyDetails(mock: jest.Mock, reply: () => unknown) {
   mock.mockImplementation((_sessionId: string, method: string) => {
     if (method === 'GetCanvasFeatureDetails') {
@@ -73,17 +63,12 @@ describe('a details lookup that finds nothing says so', () => {
 
     display.selectFeatureById('EDEN', undefined, 0)
 
-    // the widget opening is what says it worked; assert on the quiet as well,
-    // since a notice on every successful click is the obvious over-correction
     await waitFor(() => {
       expect(mockRpcCall).toHaveBeenCalled()
     })
     expect(misses(session)).toHaveLength(0)
   })
 
-  // The fetch catches its own errors and notifies with the reason, so the miss
-  // must stay quiet — otherwise one click tells the user off twice, the second
-  // time less usefully than the first.
   it('does not double-report a failed lookup', async () => {
     const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { display, session, mockRpcCall } = setup()
@@ -106,7 +91,6 @@ describe('a details lookup that finds nothing says so', () => {
   it('a region that is no longer loaded is the same nothing-to-open', async () => {
     const { display, session } = setup()
 
-    // region index 7 was never loaded
     display.selectFeatureById('EDEN', undefined, 7)
 
     await waitFor(() => {

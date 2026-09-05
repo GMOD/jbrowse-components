@@ -5,11 +5,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The declared color key. A `jexl:` color expression paints a category the
-// drawn feature carries no name for, so the vocabulary is a config slot; the
-// shared canvas body (and the SVG export, off the same hook) draws whatever
-// `colorLegend` returns.
-
 describe('declared color legend', () => {
   it('is empty until the legend slot carries entries', () => {
     const { createDisplay } = createTestEnvironment()
@@ -26,8 +21,6 @@ describe('declared color legend', () => {
     ])
   })
 
-  // The key's own "×" writes the same showLegend slot the track menu's
-  // checkbox toggles, so putting it away and getting it back are one setting.
   it('offers the showLegend toggle only where there is a key', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

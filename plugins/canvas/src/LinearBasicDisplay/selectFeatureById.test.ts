@@ -30,8 +30,6 @@ const eden1: SubfeatureInfo = {
   displayLabel: 'EDEN.1',
 }
 
-// The gene as GetCanvasFeatureDetails answers it: the top-level record with the
-// clicked isoform under it, which `selectFeatureById` descends into.
 const edenRecord = {
   uniqueId: 'EDEN',
   refName: 'ctgA',
@@ -59,19 +57,12 @@ function setup() {
   return { display, mockRpcCall }
 }
 
-// The id each fetch asked GetCanvasFeatureDetails for.
 function fetchedIds(mockRpcCall: jest.Mock) {
   return mockRpcCall.mock.calls
     .filter(([, method]) => method === 'GetCanvasFeatureDetails')
     .map(([, , args]) => (args as { featureId: string }).featureId)
 }
 
-// GetCanvasFeatureDetails resolves top-level features only (it searches the
-// adapter's own getFeaturesArray by id), so the drawn record's id is the only
-// one that can be fetched. `selectFeatureById` descends to the clicked
-// subfeature with a recursive search, which reaches any depth from the root —
-// so the id it fetches must always be the FlatbushItem's, never the
-// subfeature's idea of who its parent is.
 describe('selectFeatureById fetch target', () => {
   it('fetches the drawn feature for a plain feature click', async () => {
     const { display, mockRpcCall } = setup()
@@ -93,8 +84,6 @@ describe('selectFeatureById fetch target', () => {
 
   it('ignores a parentFeatureId naming something below the top level', async () => {
     const { display, mockRpcCall } = setup()
-    // a subfeature of a subfeature: its parent is a container the RPC cannot
-    // resolve, and fetching it answered undefined and opened nothing at all
     display.selectFeatureById(
       'EDEN',
       { ...eden1, parentFeatureId: 'EDEN.1' },
@@ -107,12 +96,6 @@ describe('selectFeatureById fetch target', () => {
   })
 })
 
-// The panel opens on the exact isoform clicked, whose card is headed `EDEN.1 -
-// mRNA` -- so the gene is the one thing it cannot show, and the hover that
-// preceded the click named it. The name comes off the DRAWN item rather than
-// the fetched record because which field names a feature on screen is the
-// track's `labels.name` expression: reading `name` off the record instead would
-// make the panel and the hover disagree on any track that configures one.
 describe('the containing feature the panel is told about', () => {
   function setupOpening() {
     const { createDisplay } = createTestEnvironment()

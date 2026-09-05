@@ -28,9 +28,6 @@ function laidOut(displayMode: DisplayMode, genes: StackedGeneSpec[]) {
   return computeLaidOutData(regions, { ...INPUTS, displayMode }).get(0)!
 }
 
-// Every rect as the renderer paints it: whole pixel rows, through the same two
-// snapping rules both backends draw by (rect.slang's vs_main). The gap a reader
-// sees is between these, never between the float Ys the layout holds.
 function drawnBoxes(data: FeatureDataResult, featureId: string) {
   return [...data.rectYs]
     .map((y, i) => {
@@ -58,16 +55,10 @@ const GENE: StackedGeneSpec = {
   isoforms: 3,
 }
 
-// The whole point: at superCompact's 0.3 scale the worker's proportional gap is
-// 0.6px, which the row snapping rounds into a pixel of air for one pair of rows
-// and none for the next — three isoforms drawn as one solid bar.
 test.each([
   ['normal', 10],
   ['compact', 10],
   ['superCompact', 10],
-  // A `featureHeight` whose superCompact box (2.4px) is nudged UP to 3px by the
-  // odd-height rule, so a floor written as "gap >= 1" would still let the rows
-  // touch. The floor is a pitch for that reason.
   ['superCompact', 8],
   ['collapsed', 10],
 ] as [DisplayMode, number][])(
@@ -82,9 +73,6 @@ test.each([
   },
 )
 
-// The floor is a floor: where the worker's own gap already clears it, the rows
-// stay exactly where the worker put them, so normal mode is not quietly
-// loosened by a rule written for superCompact.
 test.each([
   ['normal', 12],
   ['compact', 7.2],
@@ -98,10 +86,6 @@ test.each([
   },
 )
 
-// `featureHeight` is a per-feature callback slot, so a transcript can resolve a
-// taller box than the gene that stacks it. Priced off the gene's box alone, the
-// 2.4px/3.6px pair below spread by 1.12px onto a 4.0px pitch — and a 3.6px box
-// draws 5px (the odd-height nudge), so the pair still merged.
 test('a gene whose transcripts resolve their own heights keeps every pixel', () => {
   const data = laidOut('superCompact', [
     { ...GENE, heightPx: 8, childHeightsPx: [8, 12, 20] },
@@ -113,9 +97,6 @@ test('a gene whose transcripts resolve their own heights keeps every pixel', () 
   }
 })
 
-// The pitch each pair needs is its own, so one number per gene cannot be right:
-// the 3px box over the 5px one needs 1.52px more than the worker gave, the 5px
-// box over the 6px one 1.22px.
 test('each gap is priced from the pair of boxes it separates', () => {
   const stack = packStackedGenes([
     { ...GENE, heightPx: 8, childHeightsPx: [8, 12, 20] },
@@ -126,13 +107,9 @@ test('each gap is priced from the pair of boxes it separates', () => {
   expect(isoformGapSpreadPx(stack, 0.3, undefined)).toBeCloseTo(2.74, 2)
 })
 
-// The pack prices the spread through `isoformGapSpreadPx` and the render pass
-// spends it through `applyIsoformGapFloor`. If the two ever disagree the gene
-// grows into the row below it, which is the one thing worse than the merged
-// bar this fixes. Ten rows at a `featureHeight` the floor spreads by ~1.1px
-// each, because the packer quantizes row tops to a pitch of a few px — a
-// shallower stack rounds the priced and the unpriced row to the same count and
-// the assertion then holds however wrong the price is.
+// Ten rows, because the packer quantizes row tops to a pitch of a few px: a
+// shallower stack rounds the priced and the unpriced row to the same count
+// and the assertion holds however wrong the price is.
 test('the row a spread gene is given covers what it draws', () => {
   const data = laidOut('superCompact', [
     { ...GENE, heightPx: 8, isoforms: 10 },

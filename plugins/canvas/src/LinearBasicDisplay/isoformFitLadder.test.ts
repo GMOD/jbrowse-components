@@ -11,13 +11,6 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 
-// The shape the isoform rung was built for, from the session that found the bug
-// (share-oW8eg4-TTT, NCBI RefSeq hg38 chr10:86,656,837..86,755,086 in a 145px
-// fitted track). OPN4 and LDB3 are 327bp apart — about 4.4px at this zoom — so
-// the worker's own pre-fetch arithmetic gave LDB3 the whole lane and handed it
-// all 10 transcripts. The main-thread packer then put it UNDER OPN4 anyway,
-// because a strand arrow is 8px of layout width the worker never sees, and the
-// labelled stack came out 204px in a 145px track.
 const OPN4 = {
   featureId: 'OPN4',
   name: 'OPN4',
@@ -59,9 +52,6 @@ const namesDrawn = (maxIsoformsPerGene?: number) =>
     .map(label => label.nameLabel?.text)
     .filter(Boolean)
 
-// Isoforms of one gene still on screen, counted off the rects rather than off
-// the trim that produced them — a trim that filtered the wrong lane would leave
-// this number right and the picture wrong.
 function isoformsDrawn(featureId: string, maxIsoformsPerGene?: number) {
   const data = laidOut(maxIsoformsPerGene).get(0)!
   const idx = data.flatbushItems.findIndex(i => i.featureId === featureId)
@@ -77,17 +67,11 @@ function isoformsDrawn(featureId: string, maxIsoformsPerGene?: number) {
 const isoformProbe = createIsoformCountProbe(REGIONS, INPUTS)
 
 describe('the isoform rung, on the shape that needed it', () => {
-  // The measured `labels` rung: OPN4 0-62, LDB3 70-204. Both names, 59px of
-  // overflow, and nothing left to give but the names themselves.
   it('overflows the track with every transcript drawn', () => {
     expect(maxBottom(laidOut())).toBeCloseTo(204)
     expect(namesDrawn()).toEqual(['OPN4', 'LDB3'])
   })
 
-  // What the ladder used to do instead: no factor keeps a name and fits, so it
-  // fell through `decimated` to `bodies` and the user saw ten transcripts with
-  // nothing naming the gene they belong to. This is the rung's sabotage — skip
-  // it and the names go.
   it('has no name-keeping decimation to fall back on', () => {
     const decimated = createContentHeightProbe(REGIONS, {
       ...INPUTS,
@@ -107,7 +91,6 @@ describe('the isoform rung, on the shape that needed it', () => {
     const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10, 1)!
     expect(namesDrawn(count)).toEqual(['OPN4', 'LDB3'])
     expect(isoformsDrawn('LDB3', count)).toBeLessThanOrEqual(5)
-    // OPN4 has four and the count is five, so it is left alone
     expect(isoformsDrawn('OPN4', count)).toBe(4)
     expect(maxBottom(laidOut(count))).toBeLessThanOrEqual(TRACK_HEIGHT)
   })
@@ -122,18 +105,11 @@ describe('the isoform rung, on the shape that needed it', () => {
     expect(labels.get('OPN4')!.moreIsoformsLabel).toBeUndefined()
   })
 
-  // Fewer transcripts can only make a stack shorter, which is what lets the
-  // solve bisect at all.
   it('is monotone in the count', () => {
     const heights = [1, 2, 3, 4, 5, 6, 8, 10].map(isoformProbe)
     expect(heights).toEqual([...heights].sort((a, b) => a - b))
   })
 
-  // A track too short for even one transcript per gene still answers 1 for fit
-  // mode, so the `decimated` and `bodies` rungs below run there rather than back
-  // at the full stack: every isoform goes before any name does. Fixed mode has
-  // no rung below and so declines the trim — see the display-level case in
-  // fitToDisplayHeight.test.ts.
   it('answers one when even one per gene overflows', () => {
     expect(solveIsoformCount(isoformProbe, 20, 10, 1)).toBe(1)
     expect(solveIsoformCount(isoformProbe, 20, 10, undefined)).toBeUndefined()
@@ -143,8 +119,6 @@ describe('the isoform rung, on the shape that needed it', () => {
     expect(solveIsoformCount(isoformProbe, 400, 10, 1)).toBeUndefined()
   })
 
-  // An expanded gene is the user's own request for the full stack, so the count
-  // does not apply to it — and the badge on it says so.
   it('never trims a gene the user opened', () => {
     const expanded = computeLaidOutData(REGIONS, {
       ...INPUTS,
@@ -165,11 +139,6 @@ describe('the isoform rung, on the shape that needed it', () => {
   })
 })
 
-// An opened gene is the user's own request for the full stack, so no count takes
-// anything off it. With every stacked gene open the solve has no bracket:
-// height@10 is height@1, both overflow, and counting the open genes' isoforms
-// anyway made the fit-mode floor answer 1 over a stack drawing every transcript
-// — a chip saying "One isoform" on a gene showing all ten.
 describe('the isoform rung with every stacked gene expanded', () => {
   const expandedGeneIds = new Set(['OPN4', 'LDB3'])
   const probe = createIsoformCountProbe(REGIONS, { ...INPUTS, expandedGeneIds })

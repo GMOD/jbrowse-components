@@ -19,16 +19,10 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay' },
       { pluginManager: pm },
     )
-    // color/utrColor/connectorColor are `maybeColor`: unset by default, which is
-    // what lets a feature's own BED color paint (and the theme drive the
-    // connector). The concrete fallbacks live in featureColors.ts and
-    // strokeColor, not in the slot.
     expect(readConfObject(config, 'color')).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
     expect(readConfObject(config, 'connectorColor')).toBeUndefined()
     expect(readConfObject(config, 'featureHeight')).toBe(10)
-    // raw slot default is the promotable unset sentinel; the resolved display
-    // getter turns it into `normal` (see promotableDefaults.ts)
     expect(readConfObject(config, 'displayMode')).toBeUndefined()
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
     expect(readConfObject(config, 'transcriptTypes')).toEqual([
@@ -65,7 +59,6 @@ describe('LinearBasicDisplay configSchema', () => {
       },
       { pluginManager: pm },
     )
-    // The raw value is the JEXL string
     expect(isCallbackValue(config.color)).toBe(true)
   })
 
@@ -80,19 +73,14 @@ describe('LinearBasicDisplay configSchema', () => {
     )
     const snap = readConfObject(config)
 
-    // Should be a plain object, not an MST node
     expect(typeof snap).toBe('object')
-    // Should contain the custom value
     expect(snap.color).toBe('red')
-    // Should have display-level fields
     expect(snap.displayId).toBe('test')
     expect(snap.type).toBe('LinearBasicDisplay')
 
-    // postProcessSnapshot strips default values, so defaults are absent
     expect(snap.transcriptTypes).toBeUndefined()
     expect(snap.labels).toBeUndefined()
 
-    // renderer slot was removed — should not appear in snapshot
     expect(snap.renderer).toBeUndefined()
   })
 
@@ -150,9 +138,6 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(config.color).toBe(jexlExpr)
   })
 
-  // Compat: old configs stored colour/label settings under a renderer
-  // sub-config, using the legacy color1 name. The preProcessSnapshot lifts
-  // those props to the display level and renames color1 -> color.
   describe('SvgFeatureRenderer/CanvasFeatureRenderer compat migration', () => {
     it('lifts color1 from renderer to display level as color', () => {
       const config = schema.create(
@@ -164,7 +149,6 @@ describe('LinearBasicDisplay configSchema', () => {
         { pluginManager: pm },
       )
       expect(readConfObject(config, 'color')).toBe('red')
-      // renderer slot was removed — snapshot should not have it
       expect('renderer' in config).toBe(false)
     })
 
@@ -181,7 +165,6 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      // Check raw slot value to avoid evaluating JEXL without a feature context
       expect(config.labels.description).toBe(expr)
       expect(isCallbackValue(config.labels.description)).toBe(true)
     })
@@ -231,9 +214,6 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, 'showLabels')).toBe('auto')
     })
 
-    // showLabels absorbed showDescriptions, so the legacy pair folds onto one
-    // enum. A boolean false meant "no names, descriptions per the other slot",
-    // which is the description rung — not `none`.
     it('converts boolean showLabels=false to the description rung', () => {
       const config = schema.create(
         {
@@ -252,8 +232,6 @@ describe('LinearBasicDisplay configSchema', () => {
       [{ showLabels: 'off' }, 'description'],
       [{ showLabels: 'off', showDescriptions: false }, 'none'],
       [{ showLabels: false, showDescriptions: false }, 'none'],
-      // 'auto' + descriptions off has no rung of its own; it lands back on
-      // 'auto' rather than pinning 'name' and forfeiting the density gate
       [{ showLabels: 'auto', showDescriptions: false }, 'auto'],
     ])('folds the legacy %s pair onto the unified enum', (legacy, expected) => {
       const config = schema.create(
@@ -311,9 +289,6 @@ describe('LinearBasicDisplay configSchema', () => {
     })
   })
 
-  // color1/color2/color3 were renamed to the self-describing
-  // color/connectorColor/utrColor; old configs using the legacy names still
-  // load by mapping onto the new slots.
   describe('legacy color1/color2/color3 names', () => {
     it('maps color1/color2/color3/outline onto the new names', () => {
       const config = schema.create(
