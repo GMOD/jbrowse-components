@@ -18,7 +18,6 @@ import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-/** The morph clock's own state, read by every member below. */
 export interface YMorphState {
   morphFromTops: Map<string, number> | undefined
   morphProgress: number
@@ -26,19 +25,16 @@ export interface YMorphState {
   morphFromMaxY: number
 }
 
-/** What the morph views read: its own clock plus the settled destination. */
 export interface YMorphHost extends YMorphState {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
 }
 
-/** What `morphOffsetFor` additionally needs: the two id → item indexes. */
 export interface MorphOffsetHost extends YMorphState {
   morphEased: number
   featureIdIndex: ReadonlyMap<string, { topPx: number }>
   subfeatureIdIndex: ReadonlyMap<string, { parentFeatureId: string }>
 }
 
-/** What the morph autorun drives and reads. */
 export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   morphEased: number
@@ -52,13 +48,6 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   endYMorph: () => void
 }
 
-/**
- * Feature-Y transition state. While `morphFromTops` is set, `renderDataMap`
- * eases each feature from its previous row (id -> topPx here) toward its
- * `laidOutDataMap` row by `morphProgress` (0->1, driven by a rAF clock).
- * Render-only — hit-test and layout always read the destination
- * `laidOutDataMap`.
- */
 export function yMorphVolatiles() {
   return {
     /**
@@ -70,8 +59,6 @@ export function yMorphVolatiles() {
      */
     morphProgress: 1,
     morphStartMs: 0,
-    // Height of the layout being animated away from; `maxY` holds at the
-    // taller of this and the destination during a morph (anti-clip).
     morphFromMaxY: 0,
   }
 }
@@ -81,31 +68,23 @@ export function yMorphViews(self: YMorphHost) {
     /**
      * #getter
      */
-    // The morph's progress with the easing curve applied. The ONE place
-    // `easeInOutCubic` is called on it: the interpolated map below, the
-    // overlay offset and the mid-flight re-seed in CanvasYMorph all read
-    // this, so none of them can end up describing a different frame than
-    // the one the canvas drew.
+    // The one place `easeInOutCubic` is applied, so the interpolated map, the
+    // overlay offset and the mid-flight re-seed all describe the frame the
+    // canvas drew.
     get morphEased() {
       return easeInOutCubic(self.morphProgress)
     },
     /**
      * #getter
      */
-    // What the canvas + DOM overlays actually draw. Identical to
-    // `laidOutDataMap` except during a row re-pack, when feature Y eases
-    // from the previous layout to the new one (see yMorph). Returns the
-    // same object reference as `laidOutDataMap` when idle, so consumers
-    // don't re-upload/re-render unless an animation is in flight.
+    // Returns `laidOutDataMap` by reference when idle, so consumers do not
+    // re-upload unless an animation is in flight.
     get renderDataMap(): ReadonlyMap<number, FeatureDataResult> {
       const from = self.morphFromTops
       const t = this.morphEased
       // t === 1 is the settled frame between the clock's final
-      // setMorphProgress(1) and endYMorph clearing morphFromTops: every
-      // feature already sits at its destination, so return laidOutDataMap by
-      // reference (same as idle) instead of rebuilding an identical map. The
-      // stable reference also lets the MobX computed skip a redundant
-      // re-render when endYMorph then clears the morph.
+      // `setMorphProgress(1)` and `endYMorph`, so it returns the destination
+      // by reference rather than an identical rebuilt map.
       if (from === undefined || t === 1) {
         return self.laidOutDataMap
       }
@@ -119,15 +98,6 @@ export function yMorphActions(self: YMorphState) {
     /**
      * #action
      */
-    // Start the feature-Y transition from `fromTops` (each feature's row in
-    // the layout being left) toward the current `laidOutDataMap`. The rAF
-    // clock that advances `morphProgress` lives in FeatureComponent (it
-    // observes `morphFromTops`) and recomputes t from `morphStartMs` each
-    // frame, so resetting these mid-flight cleanly retargets the animation.
-    // A zoom morph (300ms) finishes before the next zoom (coarseBpPerPx is
-    // debounced 500ms), but non-debounced changes (pin toggle, region flip)
-    // can land mid-morph; the CanvasYMorph autorun re-seeds `fromTops` from
-    // the live displayed positions in that case so the retarget doesn't snap.
     beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
       self.morphFromTops = fromTops
       self.morphFromMaxY = fromMaxY
@@ -146,10 +116,9 @@ export function yMorphActions(self: YMorphState) {
     endYMorph() {
       self.morphFromTops = undefined
       self.morphProgress = 1
-      // Cleared, not left behind: `maxY` reads it only while a morph is in
-      // flight, but CanvasYMorph folds it into the next morph's hold with a
-      // plain `Math.max`, which is only correct if a settled display reports
-      // no held height.
+      // Cleared, not left behind: the morph autorun folds it into the next
+      // hold with a plain `Math.max`, which is only right if a settled
+      // display holds no height.
       self.morphFromMaxY = 0
     },
   }
@@ -160,14 +129,9 @@ export function morphOffsetViews(self: MorphOffsetHost) {
     /**
      * #method
      */
-    // How far this feature's glyph is currently drawn from the row it is
-    // laid out on, or 0 when no morph is easing it. The DOM overlay boxes
-    // add it to their tops: they take geometry from `featureItemMap`, which
-    // is built off the settled `laidOutDataMap` so hit targets are the
-    // destination, and without this a selection or hover box sits on the
-    // destination row for the morph's 300ms while the glyph inside it is
-    // still travelling. A subfeature rides its parent's row, so its box
-    // takes the parent's offset.
+    // Overlay boxes take geometry from the settled `laidOutDataMap`, so
+    // without this a hover box sits on the destination row while the glyph is
+    // still travelling; a subfeature rides its parent's row.
     morphOffsetFor(featureId: string) {
       const from = self.morphFromTops
       if (from === undefined) {
@@ -184,22 +148,10 @@ export function morphOffsetViews(self: MorphOffsetHost) {
   }
 }
 
-/**
- * Drive the feature-Y transition. When `laidOutDataMap` re-packs at the same
- * vertical scale (a zoom step — not a label/mode change, which alters row
- * heights), animate from the previous rows to the new ones; otherwise snap.
- * Compares to the prior map kept in closure so the trigger is the layout change
- * itself.
- *
- * Seeded lazily on the autorun's first initialized run, NOT at install:
- * showLabels/effectiveShowDescriptions transitively read view.width (via the
- * density gate), which throws before the view is measured. Reading them
- * synchronously in afterAttach would throw during session restore —
- * propagating out of display instantiation and making the session loader drop
- * the display as "unhydratable". These prevs are only compared once prevLayout
- * is non-undefined, which can't happen until after the first guarded run has
- * set them.
- */
+// Seeded lazily on the first initialized run, not at install: `showLabels`
+// transitively reads view.width, which throws before the view is measured,
+// and a throw in afterAttach makes the session loader drop the display as
+// unhydratable.
 export function installYMorphAutorun(self: YMorphAutorunHost) {
   let prevLayout: ReadonlyMap<number, FeatureDataResult> | undefined
   let prevGeometry: string | undefined
@@ -207,12 +159,6 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
     self,
     () => {
       const current = self.laidOutDataMap
-      // Same row heights/scale as the previous layout means the change
-      // is a same-scale zoom re-pack (row *assignment* only) and can
-      // morph; a changed signature rescaled every row (mode/label/fit-
-      // level change, or a fit squeeze) and must snap. See
-      // rowGeometrySignature for why it reads the rendered, not raw,
-      // label/description flags.
       const { level, maxIsoforms } = self.fitStage
       const geometry = rowGeometrySignature({
         displayMode: self.displayMode,
@@ -220,9 +166,8 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         renderedShowDescriptions: self.renderedShowDescriptions,
         fitScale: self.fitScale,
         fitLevel: level,
-        // Only where it selects rows: at any other rung the solve is
-        // never run, and reading it would pay for a bisection to
-        // discriminate stacks it had no hand in.
+        // Only where it selects rows: at any other rung reading it would pay
+        // for a bisection to discriminate stacks it had no hand in.
         labelRoomFactor:
           level === 'decimated' ? self.fitDecimatedFactor : undefined,
         maxIsoforms,
@@ -231,8 +176,6 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       const from = prevLayout
       prevLayout = current
       prevGeometry = geometry
-      // Not a real layout-to-layout transition (first data, an
-      // empty map on nav) — nothing to morph or snap.
       if (
         from === undefined ||
         from === current ||
@@ -245,16 +188,9 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       // read untracked so the morph clock can't re-trigger this layout autorun.
       // eslint-disable-next-line no-restricted-syntax -- self-write: the morph clock is this layout's own effect
       const { fromTops, fromMaxY } = untracked(() => {
-        // A morph still in flight means a second, non-debounced
-        // layout change (a pin toggle or region flip — unlike zoom)
-        // is interrupting it. Re-seed the next morph from each
-        // feature's live displayed position instead of `from`'s
-        // settled rows so mid-flight features don't snap, and hold
-        // the content height across the taller of the two morphs so
-        // a feature easing up from a deep row isn't clipped. With
-        // nothing in flight both fall through to `from` alone: no
-        // morphFromTops eases the capture, and endYMorph zeroed the
-        // held height.
+        // A morph still in flight means a non-debounced second layout change
+        // interrupted it; re-seed from the live displayed positions and hold
+        // the taller of the two heights.
         return {
           fromTops: captureFeatureTops(
             from,
@@ -264,17 +200,9 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
           fromMaxY: Math.max(maxBottom(from), self.morphFromMaxY),
         }
       })
-      // No scroll clamp here. A shorter layout is one of the geometry changes
-      // TrackHeightMixin's `TrackHeightClampScroll` already pulls the offset
-      // back for, and it clamps harder: its bound is `scrollableHeight`, off the
-      // ON-SCREEN extent, where a clamp written here could only see the whole
-      // buffered pack. The morph hold does not weaken it either — `maxY` is held
-      // at the taller of old/new for the anti-clip, but `scrollExtentMaxY` reads
-      // `settledMaxY` and is not held.
-      //
-      // Only a same-scale repack (a zoom step) has comparable rows to
-      // pin against; a mode/label change rescales every row, so let it
-      // snap without a row morph.
+      // No scroll clamp here: `TrackHeightClampScroll` already pulls the
+      // offset back, bounded by the on-screen `scrollableHeight`, where a
+      // clamp written here could only see the buffered pack.
       if (
         scaleUnchanged &&
         animationAllowed(getSession(self).animationMode) &&

@@ -44,12 +44,8 @@ export type { Region } from '@jbrowse/core/util'
 
 /**
  * #stateModel LinearBasicDisplay
- * GPU-accelerated feature display with gene-specific UI on top of the
- * shared canvas base display (`LinearCanvasBaseDisplay`). This is the GPU
- * stack — despite the name it does NOT extend `BaseLinearDisplay` (the legacy
- * block stack). See
- * [display stacks](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
- *
+ * GPU-accelerated feature display with gene-specific UI on top of the shared
+ * canvas base display (`LinearCanvasBaseDisplay`).
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
  * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
@@ -81,20 +77,12 @@ export default function stateModelFactory(
   return baseStateModelFactory(configSchema)
     .props({
       type: types.literal('LinearBasicDisplay'),
-      // Reclaims this display's own slots for the config readers. The base
-      // declares `configuration` off the SHARED canvas schema (LinearVariantDisplay
-      // composes the same model), so `getConf`/`setConf`, which name their slots
-      // off `self.configuration`, could only see base slots — a read of
-      // `showOnlyGenes`, declared on this schema alone, was a type error. See
-      // packages/core/src/configuration/CLAUDE.md §"Read type narrowing".
+      // Reclaims this display's own slots: the base declares `configuration`
+      // off the shared canvas schema, so `getConf`/`setConf` there see only
+      // base slots.
       configuration: ConfigurationReference(configSchema),
     })
     .volatile(() => ({
-      // Session-only acknowledgement of the isoform-collapse chip.
-      // Dismissing collapses the loud text chip down to the quiet icon button
-      // for the session (the button stays, so re-opening the menu is always one
-      // click away); it never changes the collapse itself. Volatile, so a
-      // reload is the natural reset boundary.
       geneGlyphNoticeDismissed: false,
     }))
     .views(self => ({
@@ -107,9 +95,6 @@ export default function stateModelFactory(
         return self.configuration
       },
 
-      // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
-      // the cascade (pinned track value -> session default -> base 'none') and
-      // always yields a real mode, never the unset sentinel.
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
         return resolveConf(self, 'subfeatureLabels')
       },
@@ -118,25 +103,19 @@ export default function stateModelFactory(
         return getConf(self, 'geneGlyphMode')
       },
 
-      // Config slot rather than a display prop, like every other toggle in this
-      // menu. It was a prop until a config carrying `showOnlyGenes` was found to
-      // do nothing at all — MST drops a snapshot key the schema never declared,
-      // so test_data/config_demo.json had asked eleven NCBI gene tracks to show
-      // only genes since June and none of them had.
+      // A config slot, not a display prop: MST drops a snapshot key the
+      // schema never declared, so a config carrying `showOnlyGenes` silently
+      // did nothing.
       get showOnlyGenes(): boolean {
         return getConf(self, 'showOnlyGenes')
       },
 
-      // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConf
-      // walks the cascade (pinned track value -> session default -> base `true`)
-      // and always yields a concrete boolean, never the unset sentinel.
       get displayDirectionalChevrons(): boolean {
         return resolveConf(self, 'displayDirectionalChevrons')
       },
 
-      // The base's hook for the mode the worker collapses genes under, off
-      // the debounced zoom so a gesture crossing the `auto` threshold moves
-      // `zoomFetchKey` once it settles, on the same cadence as the layout.
+      // Off the debounced zoom, so a gesture crossing the `auto` threshold
+      // moves `zoomFetchKey` once it settles, on the layout's cadence.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         return this.geneGlyphMode === 'auto'
           ? containingLgv(self).coarseBpPerPx > 100
@@ -145,22 +124,15 @@ export default function stateModelFactory(
           : this.geneGlyphMode
       },
 
-      // The base's hook for the fit ladder's isoform rung. Read off the RAW
-      // mode, not `effectiveGeneGlyphMode`: `auto` resolves to `all` at every
-      // zoom under 100bp/px, and that is the mode whose whole job is to fit the
-      // track — only the user picking "All transcripts" themselves withholds
-      // the trim.
+      // Off the raw mode, not `effectiveGeneGlyphMode`: `auto` resolves to
+      // `all` under 100bp/px and its job is to fit the track; only the user
+      // picking "All transcripts" withholds the trim.
       get showsEveryIsoform() {
         return this.geneGlyphMode === 'all'
       },
 
-      // Gate for the bottom-right isoform-collapse control: the loaded data has
-      // a multi-isoform gene, so switching modes is meaningful. Shown in every
-      // mode (not just when collapsed) so picking "All transcripts" from the
-      // control's menu doesn't make the control itself disappear — the user can
-      // always switch back. Independent of dismissal — dismissing only shrinks
-      // the loud text chip down to the quiet icon button
-      // (geneGlyphNoticeDismissed), it never removes the control.
+      // Shown in every mode, so picking "All transcripts" from the control
+      // does not make the control disappear.
       get showGeneGlyphNotice() {
         return [...self.rpcDataMap.values()].some(
           data => data.hasMultiIsoformGenes,
@@ -182,12 +154,9 @@ export default function stateModelFactory(
         )
       },
 
-      // The genes the ladder's isoform rung actually took transcripts off, at
-      // the count it committed to. Re-planned from the stacks rather than read
-      // off the trimmed layout, because a trimmed gene draws exactly like a
-      // gene with that many transcripts — nothing in the arrays says one was
-      // cut. `planIsoformTrims` is the same function the pack ran, so the two
-      // cannot disagree about which genes those are.
+      // Re-planned from the stacks rather than read off the trimmed layout,
+      // because a trimmed gene draws exactly like a gene with that many
+      // transcripts.
       get geneGlyphTrimmedGenes() {
         const maxIsoforms = self.fitStage.maxIsoforms
         const stacks: [string, IsoformStack][] = []
@@ -210,18 +179,13 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The isoform count the fit ladder trimmed to, or undefined when nothing
-       * on screen was trimmed. Read off the solve that did the trimming
-       * (`fitStage.maxIsoforms`) rather than off anything merely being hidden:
-       * a region fetched under `longestCoding` reports every multi-isoform gene
-       * as collapsed and the ladder never touched it.
+       * The isoform count the fit ladder trimmed to, or undefined when
+       * nothing on screen was trimmed.
        */
       get geneGlyphIsoformCap(): number | undefined {
         return self.fitStage.maxIsoforms
       },
 
-      // Transcripts are being left out, so the control shows its loud chip
-      // rather than the quiet icon button.
       get geneGlyphCollapsed() {
         return (
           this.effectiveGeneGlyphMode === 'longestCoding' ||
@@ -262,13 +226,10 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Its own getter rather than the inline `isGeneLikeType(info.item.type)`
-      // the one caller in this file would need, and in an EARLIER block than
-      // that caller so `self` carries it there. jbrowse-plugin-msaview reads it
-      // off the display; inlining it (684142b329) took "Launch MSA view" out of
-      // the right-click menu on every gene track and nothing failed, because
-      // the plugin still had contextMenuInfo and fetchFullFeature and its gate
-      // simply read undefined. pluginFacingDisplayApi.test.ts is the guard.
+      // Its own getter in an earlier block than its caller:
+      // jbrowse-plugin-msaview reads it off the display, and inlining it took
+      // "Launch MSA view" out of every gene track's menu with nothing
+      // failing; pluginFacingDisplayApi.test.ts is the guard.
       /**
        * #getter
        * whether the right-clicked feature is a gene, transcript or RNA
@@ -280,9 +241,8 @@ export default function stateModelFactory(
       /**
        * #getter
        * This display's answer to the base's isoform-collapse chrome hook (see
-       * `geneGlyphNotice` on the canvas base): absent unless the loaded data has
-       * a multi-isoform gene, so switching modes is meaningful. Its own block,
-       * after the actions it hands over, so `self` carries them.
+       * `geneGlyphNotice` on the canvas base): absent unless the loaded data
+       * has a multi-isoform gene, so switching modes is meaningful.
        */
       get geneGlyphNotice() {
         return self.showGeneGlyphNotice
@@ -300,16 +260,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * This display's answer to the base's `colorLegend` chrome hook, from the
-       * `legend` config slot. A `jexl:` color expression is a lookup table whose
-       * keys are readable only in the config, so the drawn feature carries the
-       * color and nothing carries its meaning; declaring the vocabulary is the
-       * only place that can come from. Empty slot draws nothing, so a track that
-       * declares no key is unaffected.
-       *
-       * Not auto-derived: the color a feature is painted has no name attached to
-       * it, and guessing one from a feature field would name whichever field
-       * happened to correlate.
+       * This display's answer to the base's `colorLegend` chrome hook, from
+       * the `legend` config slot.
        */
       get colorLegend() {
         return getConf(self, 'legend') as LegendItem[]
@@ -322,15 +274,9 @@ export default function stateModelFactory(
       const superContextMenuItems = self.contextMenuItems
       const superFeatureNarrowings = self.featureNarrowings
       return {
-        // "Show only genes" is a worker-side admission filter (see
-        // featureAdmission.ts), so it is one of this display's narrowings —
-        // otherwise a track showing only genes reports nothing is filtering it
-        // and the track menu never offers "Clear filters".
-        //
-        // ONE override, where this used to be two: a `featureFilterCount` that
-        // added to the base's total and a `clearAllFeatureFilters` that reset the
-        // slot, held together by comments on each pointing at the other. The
-        // count, the group clear and any row all derive from this entry now.
+        // "Show only genes" is a worker-side admission filter, so it is one
+        // of this display's narrowings; otherwise the track menu never offers
+        // "Clear filters".
         featureNarrowings() {
           return {
             ...superFeatureNarrowings(),
@@ -343,8 +289,6 @@ export default function stateModelFactory(
           }
         },
 
-        // Append gene-specific checkbox toggles after the base display toggles,
-        // so the "Show..." submenu reads generic-then-gene-specific.
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
@@ -365,11 +309,6 @@ export default function stateModelFactory(
             }),
           ]
         },
-        // Append the promotable "Subfeature labels" radio group after the base
-        // "Labels" group, through the same builder so the two label groups keep
-        // the same shape, the same pin-per-option rule and the same
-        // collapsed-mode note — `rpcProps` forces this slot to 'none' whenever
-        // the display mode is collapsed, exactly as it drops the base group's.
         showSubmenuRadioGroups() {
           return [
             ...superShowSubmenuRadioGroups(),
@@ -404,12 +343,8 @@ export default function stateModelFactory(
                     self.setGeneGlyphMode(value)
                   },
                 ),
-                // The way back from a run of per-gene expansions. Each badge
-                // re-collapses its own gene, but a reader who opened six of them
-                // across a locus has six badges to find again — and the ones
-                // they panned away from are not on screen to find. Absent while
-                // nothing is expanded, so the submenu stays the mode radio it is
-                // on every ordinary track.
+                // Absent while nothing is expanded, so the submenu stays the
+                // mode radio on every ordinary track.
                 ...(self.expandedGeneIds.length > 0
                   ? [
                       { type: 'divider' as const },

@@ -39,18 +39,12 @@ const BARE_RESERVATION: LabelReservation = {
   dropBelowLabelRows: true,
 }
 
-/**
- * What the fit ladder reads off the display that installs it. The five memo
- * instances are volatiles the display holds (see `fitLadderVolatiles`); the
- * rest are the layout inputs and the height-mode answers the ladder is solved
- * against.
- */
 export interface FitLadderHost {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>
   layoutReady: boolean
-  // `expandedGeneIds` is Required, not merely picked: every rung spreads these
-  // inputs, so a host that could omit it is a host whose `full` rung
-  // re-collapses the gene the user opened.
+  // `expandedGeneIds` is Required, not merely picked: every rung spreads
+  // these inputs, and a host that could omit it re-collapses the gene the
+  // user opened at the `full` rung.
   layoutInputs: Pick<
     LayoutInputs,
     'bpPerPx' | 'reversedRegions' | 'displayMode' | 'pinnedFeatureIds'
@@ -61,13 +55,8 @@ export interface FitLadderHost {
   displayMode: DisplayMode
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
-  // grow mode: the track's height IS its content's, so nothing is ever trimmed
   autoHeight: boolean
-  // "All transcripts": the setting names every isoform, so the rung that would
-  // drop one is withheld and the surplus scrolls
   showsEveryIsoform: boolean
-  // whether the settings reserve `below` subfeature-label rows at all — the
-  // `bare` rung exists only where there are rows to give back
   reservesBelowLabelRows: boolean
   fitTargetHeight: number
   incrementalLayout: IncrementalLayout
@@ -78,27 +67,19 @@ export interface FitLadderHost {
   incrementalLayoutBare: IncrementalLayout
 }
 
-/**
- * The five packing memos the ladder escalates through. One instance per
- * reservation config, so each keeps its own stable per-group references and
- * prior-row ordering — a single shared instance can only cache one config at a
- * time.
- */
+// One instance per reservation config: a shared instance can only cache one
+// config at a time.
 export function fitLadderVolatiles() {
   return {
     /**
      * #volatile
      */
-    // Per-instance memo backing `laidOutDataMap`. Stateful (holds the
-    // previous per-ref-group layout) so unchanged chromosomes keep stable
-    // object references — turns whole-genome layout/upload from O(N²) to
-    // O(N). The volatile holds a stable reference; mutating its internal
-    // cache is invisible to MobX, so reading it in the computed is safe.
+    // Mutating the memo's internal cache is invisible to MobX, so reading it
+    // inside a computed is safe.
     incrementalLayout: createIncrementalLayout(),
     /**
      * #volatile
      */
-    // Fit-mode escalation layouts (see `fitStage`).
     incrementalLayoutLabelsOnly: createIncrementalLayout(),
     /**
      * #volatile
@@ -107,56 +88,33 @@ export function fitLadderVolatiles() {
     /**
      * #volatile
      */
-    // The `decimated` rung's memo. Unlike its three siblings this one packs
-    // WITHOUT prior-row seeding (`seedPriorRows: false`), because the rung's
-    // whitespace factor is chosen by measuring unseeded candidate packs and
-    // the commit has to match what was measured — see `fitDecimatedSolved`.
-    // Its job here is purely to hand back the same stack by reference when
-    // the solve lands on the factor it already committed, which is the common
-    // case: every pan settle and every drag-resize frame re-solves, and most
-    // of those re-solve to the same factor over the same data.
+    // Unseeded because the rung's factor is chosen by measuring unseeded
+    // candidate packs, and the commit has to match what was measured.
     incrementalLayoutDecimated: createIncrementalLayout({
       seedPriorRows: false,
     }),
     /**
      * #volatile
      */
-    // The `isoforms` rung's memo, unseeded for the same reason its `decimated`
-    // sibling is: the isoform count is chosen by MEASURING candidate packs, so
-    // the commit has to pack the way the probe did. Its job here is to hand
-    // back the same stack by reference when the solve lands on the count it
-    // already committed — every pan settle and every drag-resize frame
-    // re-solves, and most of those land on the same count over the same data.
+    // Unseeded for the same reason as `incrementalLayoutDecimated`: the count
+    // is chosen by measuring.
     incrementalLayoutIsoforms: createIncrementalLayout({
       seedPriorRows: false,
     }),
     /**
      * #volatile
      */
-    // The `bare` rung's memo (bodies with the `below` label rows spent at
-    // zero). No solve chooses it, so it seeds like its `bodies` sibling.
     incrementalLayoutBare: createIncrementalLayout(),
   }
 }
 
-/**
- * The fit ladder: every candidate stack, the two solves that choose the
- * `isoforms` rung's transcript count and the `decimated` rung's whitespace
- * factor, the scale bounds, and the `fitStage` that resolves them into one
- * outcome.
- *
- * A plain `.views()` layer rather than a mixin: `types.compose` depth is a real
- * ceiling in this chain (ADR-041), and the ladder reads `height`-mode and
- * layout members contributed by mixins the display already composes.
- */
 export function fitLadderViews(self: FitLadderHost) {
   return {
     /**
      * #method
      * One fit-escalation candidate: the stack packed with the given label
      * reservation, via that config's own memo instance so each keeps stable
-     * references across renders. Empty until initialized/in-bounds, so the GPU
-     * upload autorun has nothing to push.
+     * references across renders.
      */
     fitLayoutAt(
       memo: IncrementalLayout,
@@ -169,9 +127,7 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * What the `full` rung reserves: the names and descriptions the settings
-     * ask for. Each rung's reservation is read twice — by the pack and by the
-     * rung `fitStage` declares — so the stage cannot report a room the packer
-     * did not reserve.
+     * ask for.
      */
     get fullReservation(): LabelReservation {
       return {
@@ -194,10 +150,7 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The `isoforms` rung's reservation. Fit mode reaches the rung only after
-     * `labels` dropped descriptions; fixed height never passes through that
-     * rung and keeps whatever the settings asked for, trimming transcripts
-     * rather than labels.
+     * The `isoforms` rung's reservation.
      */
     get isoformsReservation(): LabelReservation {
       return {
@@ -210,27 +163,21 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The `decimated` rung's layout inputs minus the whitespace factor. Typed
-     * without `labelRoomFactor` so the solve's shared preparation provably can't
-     * depend on it (see createContentHeightProbe).
+     * The `decimated` rung's layout inputs minus the whitespace factor.
      */
     get decimatedBaseInputs(): LabelRoomFactorFreeInputs {
       return {
         ...self.layoutInputs,
         ...this.labelsReservation,
         labelDecimation: 'fitWidth',
-        // The rungs below `isoforms` inherit the count that rung failed at —
-        // every isoform goes before any name does, so once the trim has run
-        // out of room there is no going back to the full stack to save a name.
+        // The rungs below `isoforms` inherit the count that rung failed at:
+        // every isoform goes before any name does.
         maxIsoformsPerGene: this.fitIsoformCount,
       }
     },
     /**
      * #method
-     * Layout inputs for the `decimated` rung at one whitespace factor. Every
-     * probe and the committed layout go through this single builder, so the
-     * stack the solve measures cannot differ from the stack it commits by a
-     * forgotten field.
+     * Layout inputs for the `decimated` rung at one whitespace factor.
      */
     decimatedLayoutInputs(labelRoomFactor: number): LayoutInputs {
       return { ...this.decimatedBaseInputs, labelRoomFactor }
@@ -241,12 +188,6 @@ export function fitLadderViews(self: FitLadderHost) {
      * against the features the ladder measures its rungs with — so the factor
      * the solve picks is judged on the same stack the rung is then kept or
      * rejected on.
-     *
-     * A getter, not a call inside the solve, because the preparation it holds
-     * (per-kind label widths, the two neighbor-room sorts — about a fifth of
-     * a layout) depends on the data and the layout inputs but NOT on the track
-     * height. Dragging the resize handle re-solves every frame; caching it
-     * here keeps those frames to the bisection's packs alone.
      */
     get decimatedHeightProbe(): (labelRoomFactor: number) => number {
       return createContentHeightProbe(
@@ -259,29 +200,24 @@ export function fitLadderViews(self: FitLadderHost) {
      * #method
      * The whitespace factor the `decimated` rung commits at: the smallest one
      * whose packed stack fits `trackHeight` (smallest = most names kept), or
-     * undefined when even the most aggressive decimation overflows. The
-     * bisection lives in `solveLabelRoomFactor` (fitLadder.ts), next to the
-     * ladder walk it serves.
+     * undefined when even the most aggressive decimation overflows.
      */
     solveLabelRoomFactor(trackHeight: number) {
       return solveLabelRoomFactor(this.decimatedHeightProbe, trackHeight)
     },
     /**
      * #getter
-     * The `isoforms` rung's layout inputs minus the count itself, typed without
-     * it so the solve's shared preparation provably cannot depend on it.
+     * The `isoforms` rung's layout inputs minus the count itself, typed
+     * without it so the solve's shared preparation provably cannot depend on
+     * it.
      */
     get isoformsBaseInputs(): IsoformCountFreeInputs {
       return { ...self.layoutInputs, ...this.isoformsReservation }
     },
     /**
      * #getter
-     * Measures the `isoforms` rung's stack height at any isoform count, against
-     * the features the ladder measures its rungs with.
-     *
-     * A getter for the reason `decimatedHeightProbe` is one: the preparation it
-     * holds depends on the data and the layout inputs but NOT on the track
-     * height, and dragging the resize handle re-solves every frame.
+     * Measures the `isoforms` rung's stack height at any isoform count,
+     * against the features the ladder measures its rungs with.
      */
     get isoformsHeightProbe(): (maxIsoforms: number) => number {
       return createIsoformCountProbe(
@@ -293,10 +229,8 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * The most isoforms any trimmable gene ON SCREEN has — the top of the
-     * solve's bracket, and the count above which a trim can take nothing away.
-     * A gene the worker collapsed counts the one it shipped, and genes the
-     * user opened are left out: no count trims either, so with every stacked
-     * gene collapsed or open this is at most 1 and the solve has nothing to do.
+     * solve's bracket, and the count above which a trim can take nothing
+     * away.
      */
     get maxIsoformsOnScreen() {
       return maxIsoformCount(
@@ -308,22 +242,8 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * The isoform count the `isoforms` rung commits at: the largest whose
-     * names-kept stack fits `fitTargetHeight`, so the most transcripts are kept
-     * without giving up a name. Undefined when nothing is worth trimming.
-     *
-     * When even one transcript per gene overflows, fit mode commits to 1 — which
-     * the `decimated` and `bodies` rungs below then inherit, every isoform going
-     * before any name does — while fixed mode leaves the stack whole and
-     * scrolls. Fixed has no rung below the trim, so a trim that cannot achieve a
-     * fit there costs every transcript and scrolls anyway.
-     *
-     * Never in `grow`, whose height is its own content's — trimming there would
-     * shrink the track it was measured against. Never under "All transcripts"
-     * either: that setting is a promise the menu makes in those words, so the
-     * rung is withheld and the stack scrolls rather than losing a transcript.
-     * The rungs below it then inherit `undefined` and pack the full stack, so
-     * the ladder gives up descriptions and names — the reductions the reader
-     * asked for by naming the transcripts first.
+     * names-kept stack fits `fitTargetHeight`, so the most transcripts are
+     * kept without giving up a name.
      */
     get fitIsoformCount(): number | undefined {
       return self.layoutReady && !self.autoHeight && !self.showsEveryIsoform
@@ -338,8 +258,7 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * The `isoforms` stack: every gene trimmed to `fitIsoformCount`
-     * transcripts, names intact. Falls back to the `labels` stack when there is
-     * nothing to trim.
+     * transcripts, names intact.
      */
     get fitIsoformsSolved(): Map<number, FeatureDataResult> {
       const maxIsoformsPerGene = this.fitIsoformCount
@@ -363,10 +282,7 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * Names reserved, descriptions dropped — the `labels` stage's stack. With
-     * descriptions already off (config, or the auto density gate) this rung's
-     * reservation is the base one, so reuse that stack by reference rather than
-     * packing a byte-identical copy into a second memo.
+     * Names reserved, descriptions dropped — the `labels` stage's stack.
      */
     get fitLabelsOnlyLayout(): Map<number, FeatureDataResult> {
       return self.effectiveShowDescriptions
@@ -378,15 +294,12 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The whitespace factor the `decimated` rung commits at: the smallest
-     * one whose packed stack fits `fitTargetHeight`, so the most names are
-     * kept. Undefined when there is nothing to decimate (names off) or when
-     * even the most aggressive factor overflows.
+     * The whitespace factor the `decimated` rung commits at: the smallest one
+     * whose packed stack fits `fitTargetHeight`, so the most names are kept.
      */
     get fitDecimatedFactor(): number | undefined {
-      // A memoized getter rather than the bare `solveLabelRoomFactor` call
-      // it replaces, so `rowGeometrySignature` reads the same answer the
-      // rung packed at without paying for a second bisection (~9 packs).
+      // Memoized so `rowGeometrySignature` reads the same answer the rung
+      // packed at without a second bisection.
       return self.layoutReady && self.showLabels
         ? this.solveLabelRoomFactor(self.fitTargetHeight)
         : undefined
@@ -395,30 +308,16 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The `decimated` stack: names kept only on features with at least
      * `fitDecimatedFactor ×` their label width in neighbour whitespace (plus
-     * pinned/highlighted, always). Filling the height with as many
-     * non-overlapping names as fit, rather than snapping between a few fixed
-     * rungs, is what this rung is for; it decimates by isolation, not by any
-     * notion of feature importance. Falls back to the `labels` stack when
-     * there is nothing to decimate or no factor fits.
+     * pinned/highlighted, always).
      */
     get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-      // Probe and commit must pack identically or the committed stack
-      // overflows the height the solve fit, the ladder descends to `bodies`
-      // and every name vanishes on the tallest tracks. Hence
-      // `incrementalLayoutDecimated`, built with `seedPriorRows: false` to
-      // match the unseeded probe; the memo is there for reference stability
-      // across the re-solve every pan settle and drag frame triggers.
-      //
-      // Seeding this rung from the factor-independent `labels` stack was
-      // tried and moved zero rows — that seed's order and the
-      // `layoutStartBp` tiebreak it would replace already coincide. Don't
-      // re-add it without a measurement.
+      // Probe and commit must pack identically, hence the unseeded
+      // `incrementalLayoutDecimated`; seeding this rung from the `labels`
+      // stack was tried and moved zero rows.
       const factor = this.fitDecimatedFactor
-      // The `isoforms` stack, not the `labels` one, when there is nothing to
-      // decimate: this rung is BELOW that one, so falling back past its trim
-      // packs a stack the ladder has already rejected — and reports the count
-      // over it. With names off there is never a factor, which is exactly when
-      // the stacks are deepest.
+      // Falls back to the `isoforms` stack, not `labels`: this rung is below
+      // that one, and falling past its trim packs a stack the ladder already
+      // rejected.
       return factor === undefined
         ? this.fitIsoformsSolved
         : self.incrementalLayoutDecimated(
@@ -428,9 +327,8 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
       const maxIsoformsPerGene = this.fitIsoformCount
-      // With names already off this rung's reservation is the base one, so the
-      // stack is shared by reference rather than packed a second time — but
-      // only while there is no trim to apply, or the reuse drops it.
+      // Shared by reference only while there is no trim to apply, or the
+      // reuse drops it.
       return self.showLabels || maxIsoformsPerGene !== undefined
         ? self.incrementalLayoutBodiesOnly(self.rpcDataMap, {
             ...self.layoutInputs,
@@ -443,9 +341,7 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The `bare` stack: `bodies` with the `below` subfeature-label rows spent
      * at zero height, so the last reduction before a squeeze gives back rows
-     * whose text the squeeze was about to hide anyway. Only ever read through
-     * the rung `fitStage` adds when the settings reserve those rows
-     * (`reservesBelowLabelRows`).
+     * whose text the squeeze was about to hide anyway.
      */
     get fitBareLayout(): Map<number, FeatureDataResult> {
       return self.incrementalLayoutBare(self.rpcDataMap, {
@@ -456,38 +352,9 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The unscaled height (px) of the shortest box on screen that the layout
-     * actually DRAWS — a UTR at its 0.65 fraction, a transcript rect inside a
-     * gene, a plain variant box — which is the one a uniform squeeze takes
-     * below a visible size first, and so the basis for the squeeze floor
-     * below. 0 when nothing is drawn, which makes that floor a no-op.
-     *
-     * A drawn box, not a feature's laid-out extent, and the distinction is the
-     * whole floor: a gene's extent is every stacked transcript plus its label
-     * rows, so a floor built on it promised 2px boxes while letting each
-     * transcript render at a third of a pixel. See `minDrawnBoxHeight`.
-     *
-     * Measured off the layout, never off the `featureHeight` config slot. The
-     * slot is a per-feature jexl callback slot (`contextVariable:
-     * ['feature']`), so reading it here — with no feature in scope —
-     * evaluates the callback against nothing and throws, taking the whole fit
-     * layout down with it. And even where it holds a plain number it names
-     * the plain-rect glyph's row height, which is not what a UTR or an
-     * isoform inside a gene is drawn at.
-     *
-     * Reads the `full` rung specifically because it is the stack the ladder
-     * always materializes, so it costs nothing extra. Box HEIGHTS don't vary
-     * across rungs (only the label reservation does), but the set of boxes
-     * counted can: `minDrawnBoxHeight` skips a feature the packer left
-     * unplaced, and `bodies` — the only rung a squeeze ever runs on — packs
-     * tighter and so places features `full` pushed past the row limit. On a
-     * stack deep enough to truncate at `full`, the floor is therefore
-     * measured over a subset and can allow a squeeze slightly past the
-     * MIN_FIT_BOX_PX promise. Reading it off `bodies` instead would be
-     * circular — that layout is chosen using this scale.
-     *
-     * Narrowed to `fitMeasureFeatureIds`, the same on-screen set every rung
-     * is measured over.
+     * The shortest box the layout draws on screen, read off the layout rather
+     * than the `featureHeight` slot, a per-feature jexl callback that throws
+     * with no feature in scope.
      */
     get fitSmallestBoxPx() {
       return minDrawnBoxHeight(
@@ -498,31 +365,15 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * Floor on the fit squeeze: the smallest vertical scale that still leaves
-     * every drawn box at least `MIN_FIT_BOX_PX` tall. When boxes would pack
-     * tighter than this the squeeze stops here and the surplus scrolls instead
-     * of vanishing. `squeezeFloorScale` answers both degenerate cases (nothing
-     * drawn, or boxes already at the minimum) as 1 — no squeeze available — so
-     * there is nothing to clamp or zero-check here.
+     * every drawn box at least `MIN_FIT_BOX_PX` tall.
      */
     get fitMinScale() {
       return squeezeFloorScale(this.fitSmallestBoxPx, MIN_FIT_BOX_PX)
     },
     /**
      * #getter
-     * Ceiling on the fit grow: the largest vertical scale before a feature body
-     * exceeds the height it would have outside fit mode. A sparse stack grows
-     * to fill the track only until its bodies reach that height, so fit never
-     * makes a feature taller than the display normally draws it. In normal
-     * display mode the laid-out body already is that height, pinning the scale
-     * at 1 (no grow, surplus stays whitespace); a compact mode may grow back up
-     * to — but not past — it.
-     *
-     * That works out to exactly `1 / multiplier`, with no body height read at
-     * all: the grow target is the unmultiplied height and the laid-out body is
-     * that height times the mode's multiplier, so it cancels whatever it was
-     * per feature and the ceiling is purely the display mode's compact ratio (1
-     * in normal mode → no grow). Unlike the squeeze floor, which has to know
-     * the shortest actual box (see `fitSmallestBoxPx`), this bound is uniform.
+     * Ceiling on the fit grow: the largest vertical scale before a feature
+     * body exceeds the height it would have outside fit mode.
      */
     get fitMaxScale() {
       return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])
@@ -531,53 +382,22 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The resolved fit outcome — which reservation `level` survived, its
      * unscaled `layout`, and the vertical `scale` to fill the track — bundled
-     * so the three can never disagree. The ladder keeps the least reduction
-     * whose *unscaled* stack fits the track height: `full` (names +
-     * descriptions), else `labels` (drop descriptions), else `decimated` at a
-     * whitespace factor solved to the height (`fitDecimatedSolved` — keeps as
-     * many non-overlapping names as fit, filling the space continuously), else
-     * `bodies` (drop names too, pack tight) when even the tightest decimation
-     * overflows, else — only where the settings reserve `below` subfeature
-     * label rows — `bare` (spend those rows at zero too). The kept rung is
-     * then scaled to fill the track: grown up to `fitMaxScale` when it fits
-     * with room to spare, but never past the normal feature height — so in
-     * normal display mode grow is pinned at 1 and spare space stays
-     * whitespace, while a compact mode may enlarge back up to normal; or —
-     * only at the ladder's last rung — squeezed down to `fitMinScale` and
-     * scrolled if even that overflows. Non-fit modes stay at `full`, scale 1.
-     * Read off the unscaled candidate heights so it can't feed back on its own
-     * `scale`. The ladder walk + scale math live in `resolveFitLadder`.
-     *
-     * Every rung is measured over `fitMeasureFeatureIds` — on screen in fit
-     * mode, everything otherwise — so the rung that survives and the squeeze
-     * it gets are decided by the stack in view, not by the half-viewport of
-     * buffered features packed on either side of it.
-     *
-     * Each rung declares the reservation its layout getter packs with (a
-     * fallback-by-reference rung packs with the same one), and the stage
-     * reports the kept rung's.
+     * so the three can never disagree.
      */
     get fitStage(): FitStage {
       const base = this.baseLaidOutDataMap
       const fit = self.fitHeightToDisplay
-      // Non-fit mode is the `full` rung with no scaling freedom:
-      // minScale=maxScale=1 pins the scale at 1 and the lone rung lays out
-      // only `base` (resolveFitLadder returns immediately on the last rung).
-      // Routing both modes through resolveFitLadder keeps FitStage assembled
-      // in one place, so its fields (level/layout/scale/contentHeight) can't
-      // drift apart.
-      // A thunk: the solve packs, and a stack that fits at `full` never asks.
+      // Non-fit mode routes through `resolveFitLadder` too, with minScale =
+      // maxScale = 1, so FitStage is assembled in one place.
       const trimmed = () => this.fitIsoformCount
       const full: FitRung = {
         level: 'full',
         reserved: this.fullReservation,
         layout: () => base,
       }
-      // "All transcripts" leaves the ladder no isoform rung at all, rather than
-      // one that solves to `undefined` and trims nothing: kept, it is the LAST
-      // rung of the fixed-height ladder, which is always the one resolved, so
-      // the stage would report `level: 'isoforms'` over a stack every transcript
-      // survived.
+      // "All transcripts" leaves no isoform rung rather than one that trims
+      // nothing: as the last rung of the fixed ladder it would report `level:
+      // 'isoforms'` over a stack every transcript survived.
       const isoformRung: FitRung[] = self.showsEveryIsoform
         ? []
         : [
@@ -588,10 +408,9 @@ export function fitLadderViews(self: FitLadderHost) {
               maxIsoforms: trimmed,
             },
           ]
-      // Only where the settings reserve `below` label rows: with none reserved
-      // the rung would pack a byte-identical copy of `bodies` into a second
-      // memo and report a reduction that reduced nothing — the same reasoning
-      // that withholds the isoform rung under "All transcripts".
+      // Only where the settings reserve `below` rows, or the rung packs a
+      // byte-identical copy of `bodies` and reports a reduction that reduced
+      // nothing.
       const bareRung: FitRung[] = self.reservesBelowLabelRows
         ? [
             {
@@ -627,15 +446,8 @@ export function fitLadderViews(self: FitLadderHost) {
               ...bareRung,
             ]
           : self.autoHeight
-            ? // Grow's height IS its content's, so it gives nothing up.
-              [full]
-            : // Fixed height scrolls rather than degrading, but it trims where
-              // trimming achieves a fit: a gene with 28 transcripts in a 100px
-              // lane draws the count that fits, which is the case the worker's
-              // cap was built for and the one `grow` deliberately keeps. Where
-              // no count fits, `fitIsoformCount` is undefined and this rung
-              // packs the whole stack into the lane's own scrollbar.
-              [full, ...isoformRung],
+            ? [full]
+            : [full, ...isoformRung],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,
         fit ? this.fitMaxScale : 1,

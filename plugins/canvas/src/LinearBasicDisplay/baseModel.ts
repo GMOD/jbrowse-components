@@ -99,8 +99,8 @@ import {
 
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-// rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
-// from it is enough to make rpcManager.call() resolve to the typed args.
+// Importing any type from rpcTypes.ts pulls in its RpcRegistry augmentation,
+// which types `rpcManager.call()`.
 import type {
   FeatureDataResult,
   SubfeatureInfo,
@@ -129,13 +129,10 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-// Region identity (regionKey/reversed) rides in the stored payload rather than
-// being read back off the region record beside it — the layout groups by ref,
-// and a canonical refName is not what `Region.refName` carries.
+// Region identity rides in the stored payload: the layout groups by ref, and
+// a canonical refName is not what `Region.refName` carries.
 type LoadedFeatureData = FeatureDataResult & {
   regionKey: string
-  // canonical refName, kept alongside the raw features so a highlight can be
-  // resolved to its uniqueId *before* layout (see highlightedFeatureIdSet)
   refName: string
   reversed: boolean
 }
@@ -152,17 +149,9 @@ function loadedFeatureData(
   }
 }
 
-// The two pieces of optional chrome a canvas-family subclass can contribute to
-// the shared body (see the `geneGlyphNotice` / `colorLegend` hooks). Each bundles
-// its state with the actions that change it, so the component never reaches for a
-// model field the display it's rendering might not have.
 export interface GeneGlyphNotice {
   collapsed: boolean
-  // the per-gene isoform cap, when a cap is what `collapsed` is about. Absent
-  // for the `longestCoding` collapse, which is a mode rather than a number.
   maxIsoforms?: number
-  // what chose the transcript the collapsed genes are showing, which is what the
-  // chip names — a curated tag where the annotation carries one, else length
   picks?: IsoformPicks
   dismissed: boolean
   mode: GeneGlyphMode
@@ -171,8 +160,8 @@ export interface GeneGlyphNotice {
 }
 
 export type { Region } from '@jbrowse/core/util'
-// Off this subpath rather than the barrel, for the subclass that composes its
-// own "Color by..." presets around it without a value edge into the eager entry.
+// Off this subpath rather than the barrel, so a subclass composing its own
+// "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'
 
 const ColorByAttributeDialog = lazy(
@@ -185,13 +174,7 @@ const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
  * #stateModel LinearCanvasBaseDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * #category display
- *
  * Shared GPU-accelerated feature display base for canvas-rendered tracks.
- * Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
- * the fetch-invalidation autorun. Subclasses layer schema-specific properties
- * and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
- * super-extension pattern, and extend rpcProps() via the standard
- * super-capture pattern.
  */
 export default function baseStateModelFactory(
   configSchema: LinearCanvasBaseDisplayConfigModel,
@@ -205,18 +188,8 @@ export default function baseStateModelFactory(
         HeightModeMixin(),
         LegendMixin(),
         MultiRegionDisplayMixin(),
-        // The feature-density axis of the region-too-large gate: the model-side
-        // sibling of DisplayChrome. Supplies densityStatsPerRegion,
-        // observedMaxDensity/visibleFeatureDensityPerPx, the `densityTooLarge`
-        // override and the worker's `maxFeatureDensity` budget, plus the
-        // commit/clear helpers — folded into the feature fetch below. The byte
-        // axis and its `resolvedByteLimit()` budget are RegionTooLargeMixin's,
-        // reached through MultiRegionDisplayMixin above.
         CanvasFeatureGateMixin(),
-        // The density tier and the band it draws: where the verdict above
-        // refuses the features, a track with a density sidecar draws features
-        // per bin in the banner's place. After both gate mixins, since it keys
-        // off their verdict.
+        // After both gate mixins, since it keys off their verdict.
         DensityBandMixin(),
         ContextMenuMixin<FeatureContextMenuInfo>(),
         types.model({
@@ -226,86 +199,44 @@ export default function baseStateModelFactory(
           configuration: ConfigurationReference(configSchema),
           /**
            * #property
-           * Runtime "Filter by..." override. When set (even to an empty list) it
-           * replaces the `jexlFilters` config slot; when undefined the config
-           * default applies. Stored as already-`jexl:`-prefixed expressions
-           * (runtime convention), unlike the deferred-evaluation config slot.
+           * Runtime "Filter by..." override.
            */
           jexlFiltersSetting: types.maybe(types.array(types.string)),
           /**
            * #property
-           * Feature ids the user pinned to the top of the layout via the feature
-           * right-click menu. Pinned features are inserted first into the greedy
-           * row-packer, so they hold the topmost rows in their bp range across
-           * zoom re-packs (see packPreparedRef in packRef.ts). stripDefault so a display
-           * with nothing pinned omits the empty array from its snapshot.
-           *
-           * Persisted by uniqueId, which resolves back to the same feature after
-           * a plain reload of the same remote file: every adapter id is
-           * `adp-<configHash>` (idMaker over the config) plus a file byte offset
-           * (tabix/BigBed) or a deterministic full-file parse index (plain
-           * GFF3/BED/VCF). Caveat: NOT robust to editing a file read by a plain
-           * (non-tabix) adapter (the indices shift), nor to local blob files
-           * (their handleId changes each session — but a blob can't reload its
-           * data across refresh anyway). Same basis for solo/hiddenFeatureIds.
+           * Feature ids the user pinned to the top of the layout via the
+           * feature right-click menu.
            */
           pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
            * "Show only these features": the collected set the user builds by
-           * ctrl+clicking features (or via the right-click menu). Only isolates
-           * the view once `soloApplied` is true — before that it's a highlighted
-           * selection that hides nothing, so the candidates stay clickable.
-           * Persistent so a view can be opened pre-focused declaratively (e.g.
-           * collapse-introns seeds it in the new view's snapshot). stripDefault
-           * so an unfocused display omits the empty array from its snapshot.
+           * ctrl+clicking features (or via the right-click menu).
            */
           soloFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
-           * Whether the collected soloFeatureIds set is actually isolating the
-           * view (worker drops non-members). Decoupled from collection so
-           * building a multi-feature set doesn't hide the features mid-build.
+           * Whether the collected soloFeatureIds set is actually isolating
+           * the view (worker drops non-members).
            */
           soloApplied: types.stripDefault(types.boolean, false),
           /**
            * #property
            * "Hide this feature" exclusion set (inverse of solo): the worker
-           * drops these from layout/drawing. Applies immediately per feature —
-           * no collect-then-apply. Persistent like the solo set, so a hidden
-           * feature stays hidden across reload/session save. stripDefault so a
-           * display with nothing hidden omits the empty array from its snapshot.
+           * drops these from layout/drawing.
            */
           hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
            * Genes the user opened from the isoform badge on their own label:
            * these draw every isoform whatever `geneGlyphMode` or the fit
-           * ladder's isoform rung would otherwise collapse them to. A per-GENE override of a
-           * track-wide setting, so the reader can open the one gene they are
-           * reading without turning every other gene on screen into a stack.
-           *
-           * The worker reads it only under `longestCoding`, the one collapse
-           * it still owns, so it is a `zoomFetchKey` term in that mode and a
-           * call-site RPC argument rather than an `rpcProps` cache key: a
-           * click there refetches the visible regions scrim-free, and a click
-           * under `all` — where the main-thread trim already exempts the gene
-           * — refetches nothing.
-           *
-           * Persistent and by uniqueId, on the same basis as
-           * solo/hidden/pinnedFeatureIds; stripDefault so a display with nothing
-           * opened omits the empty array from its snapshot.
+           * ladder's isoform rung would otherwise collapse them to.
            */
           expandedGeneIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
            * Declarative feature highlights, typically seeded by a text search
-           * (highlight the gene you searched for). Each entry pins a feature by
-           * its span+name signature rather than its uniqueId — a search result
-           * carries no uniqueId to persist (unlike solo/hidden/pinned, which come
-           * from a click on a rendered feature and so DO have a reload-stable id)
-           * — and is resolved against rendered features on the main thread.
-           * stripDefault so a display with no highlights omits it from snapshot.
+           * (highlight the gene you searched for).
            */
           featureHighlights: types.stripDefault(
             types.array(FeatureHighlightModel),
@@ -343,10 +274,7 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * The fetched features, keyed by displayedRegionIndex — the
-         * foundation's per-region store, narrowed. It was a volatile beside
-         * `loadedRegions`, written one action apart from it, which is what
-         * `regionHasData` checked from the reader's side and what
-         * `pruneRpcDataMapToVisible` had to keep in step by hand.
+         * foundation's per-region store, narrowed.
          */
         get rpcDataMap(): ReadonlyMap<number, LoadedFeatureData> {
           return self.regionPayloads as ReadonlyMap<number, LoadedFeatureData>
@@ -365,12 +293,10 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
-         *
-         * In its own block ahead of `activeFilters` / `featureFilterCount` so
-         * both reach it through `self`: `featureFilterCount` is super-captured by
-         * subclasses and called unbound, so a same-block `this` is undefined
-         * there.
+         * What the `jexlFilters` config slot alone declares,
+         * `jexl:`-prefixed; in its own block so `featureFilterCount`, which
+         * subclasses super-capture and call unbound, reaches it through
+         * `self`.
          */
         configuredFilters(): string[] {
           return configuredJexlFilters(self)
@@ -382,14 +308,7 @@ export default function baseStateModelFactory(
          * #getter
          * Overridable hook (default absent): the isoform-collapse control the
          * shared canvas body draws in its bottom-right chip stack, or nothing
-         * when the display has no gene glyphs. Bundled — state plus the two
-         * actions — because the real implementation reads a `geneGlyphMode`
-         * config slot that only `LinearBasicDisplay`'s schema declares; the
-         * variant display shares this body and simply doesn't answer.
-         *
-         * Chrome a subclass owns arrives through hooks like this rather than
-         * through a per-subclass component, so one registered component serves
-         * every canvas-family display and no plugin imports another's component.
+         * when the display has no gene glyphs.
          */
         get geneGlyphNotice(): GeneGlyphNotice | undefined {
           return undefined
@@ -399,7 +318,6 @@ export default function baseStateModelFactory(
          * Overridable hook (default none): the color key to draw over the
          * canvas whenever the display's active coloring has one — variants'
          * consequence impact / SV type presets, the `legend` config slot.
-         * Whether it shows is `LegendMixin`'s `showLegend`.
          */
         get colorLegend(): LegendItem[] {
           return []
@@ -408,10 +326,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Whether features can be laid out: data is fetched, in-bounds, and the
-         * view is measured. The shared readiness guard for every layout getter —
-         * an empty stack until then, so the GPU upload autorun has nothing to
-         * push and view-geometry getters aren't read before the view is measured.
+         * Whether features can be laid out: data is fetched, in-bounds, and
+         * the view is measured.
          */
         get layoutReady() {
           return (
@@ -422,20 +338,7 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The features whose bp span touches the viewport. Why that is not the
-         * whole packed stack — and the matching rules — live with the pure
-         * `featureIdsTouchingBlocks` in layoutQueries.ts; this getter is the reactive
-         * half, deciding when to ask.
-         *
-         * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
-         * `coarseBpPerPx`, so a pan re-measures once it settles instead of
-         * breathing the whole stack every frame. Undefined until the view has
-         * coarse blocks, which every consumer reads as "measure the whole
-         * stack".
-         *
-         * Three things measure over it: the label density gate
-         * (`labelDensityPerPx`), the fit/fixed ladder (`fitMeasureFeatureIds`)
-         * and the scroll extent (`scrollExtentMaxY`).
+         * The features whose bp span touches the viewport.
          */
         get onScreenFeatureIds(): ReadonlySet<string> | undefined {
           if (!self.layoutReady) {
@@ -450,14 +353,6 @@ export default function baseStateModelFactory(
          * #getter
          * Features per pixel of what is actually ON SCREEN — the density the
          * `auto` label modes gate on (ADR-093).
-         *
-         * `visibleFeatureDensityPerPx`, which this replaces at those two call
-         * sites, divides a region's feature count by its whole FETCHED span, so
-         * labels toggled off the buffer's average and a refetch widening the
-         * buffer moved the verdict without anything on screen changing. That
-         * region average keeps its own job in the too-large gate
-         * (`densityTooLarge`), and stands in here while there is no window to
-         * measure — before data, or before the view has coarse blocks.
          */
         get labelDensityPerPx() {
           const ids = this.onScreenFeatureIds
@@ -488,11 +383,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Quantized scroll position for the floating-label vertical cull (see
-        // labelCullBand). Deliberately a coarse bucket, not raw scrollTop: the
-        // label overlay observes THIS so a scroll tick within the same bucket
-        // leaves the value unchanged and MobX skips the (expensive) label
-        // rebuild — labels only re-emit once the user scrolls a full bucket.
+        // A coarse bucket, not raw scrollTop, so the label overlay only
+        // rebuilds once the user scrolls a full bucket.
         get labelScrollBucket() {
           return labelScrollBucket(self.scrollTop)
         },
@@ -500,19 +392,13 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Feature height preset (normal/compact/superCompact). Promotable
-        // sentinel enum (see baseConfigSchema.ts): resolveConf walks the
-        // customized-track -> session-default -> `normal` cascade and always returns
-        // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
           return resolveConf(self, 'displayMode')
         },
 
         /**
          * #getter
-         * The subfeature-label mode the worker bakes. Collapsed mode forces it
-         * off here, since a worker-baked label has nothing main-thread to gate
-         * it; the menu radio reads the raw slot.
+         * The subfeature-label mode the worker bakes.
          */
         get effectiveSubfeatureLabels() {
           return this.displayMode === 'collapsed'
@@ -523,10 +409,6 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Resolved label font size (px) for the current display mode. Single
-        // source shared by layout row reservation, the DOM overlay, and the SVG
-        // export so compact modes shrink label text without any of the three
-        // paths drifting.
         get labelFontSize() {
           return labelFontSize(this.displayMode)
         },
@@ -541,15 +423,9 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Effective name visibility used by layout, hit testing, the DOM
-        // overlay, and SVG export. 'auto' switches to false once the ON-SCREEN
-        // feature density crosses the readability threshold so layout-reserved
-        // label space, the rendered DOM elements, and the hit-test geometry all
-        // agree — otherwise rows reserve label height that never gets used.
-        // Collapsed mode is a single-row overview, so it suppresses names
-        // outright — gated here (not just at renderedShowLabels) so all four
-        // consumers agree. Descriptions and subfeature labels are suppressed
-        // separately (effectiveShowDescriptions / effectiveSubfeatureLabels).
+        // Gated here rather than only at `renderedShowLabels`, so layout, hit
+        // testing, the DOM overlay and the SVG export agree; otherwise rows
+        // reserve label height nothing uses.
         get showLabels() {
           const mode = this.showLabelsMode
           return (
@@ -563,11 +439,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Whether the chosen mode admits descriptions at all, before the
-        // density gate and collapsed mode get a say — the persisted intent, so
-        // the track menu's radio reflects the user's choice rather than what
-        // this zoom happens to be painting. Render-time consumers read
-        // effectiveShowDescriptions / renderedShowDescriptions instead.
+        // The persisted intent, before the density gate and collapsed mode
+        // have a say, so the track menu's radio reflects the user's choice.
         get showDescriptions() {
           return modeCanShowDescription(this.showLabelsMode)
         },
@@ -576,18 +449,10 @@ export default function baseStateModelFactory(
          * #getter
          */
         get effectiveShowDescriptions() {
-          // Auto degrades in two steps: descriptions go at
-          // maxDescriptionFeatureDensity, names at the higher
-          // maxLabelFeatureDensity. Anded with `showLabels` so a config that
-          // inverts the two thresholds can't leave descriptions painting after
-          // names are gone — the tighter of the pair always wins. The pinned
-          // modes skip the density gate entirely, `description` included: that
-          // rung deliberately paints descriptions with no name. Collapsed
-          // suppresses them outright (like names) — gated at this render-layer
-          // getter, not the mode-derived `showDescriptions` one, so the track
-          // menu's radio still reflects the persisted choice rather than
-          // reading false while collapsed (mirrors effectiveSubfeatureLabels,
-          // not its menu-facing getter).
+          // Anded with `showLabels` so a config that inverts the two
+          // thresholds cannot leave descriptions painting after names are
+          // gone; the pinned modes skip the density gate, `description`
+          // included.
           return (
             this.displayMode !== 'collapsed' &&
             this.showDescriptions &&
@@ -648,20 +513,8 @@ export default function baseStateModelFactory(
 
         /**
          * #getter
-         * Singular, lowercase noun for what this track holds. Every menu label,
-         * chip and indicator that names the thing reads it from here, so a
-         * subclass renames its whole vocabulary with one override rather than
-         * threading a noun through a dozen call sites — LinearVariantDisplay
-         * returns 'variant' and its menu stops saying "feature" at the user.
-         *
-         * Distinct from the per-hit noun the context menu derives from the
-         * clicked item's own `type` ("mRNA", "gene"); that names one annotation,
-         * this names the track's contents. The hit noun falls back to this.
+         * Singular, lowercase noun for what this track holds.
          */
-        // `featureNoun` and `featureWidgetType` are `BaseDisplay`'s, and this
-        // display's answers ARE the defaults — it draws plain features into the
-        // generic widget. The variant display, which shares this base, overrides
-        // both.
       }))
       .views(featureSetViews)
       .views(featureHighlightViews)
@@ -669,50 +522,21 @@ export default function baseStateModelFactory(
         /**
          * #method
          */
-        // User-controlled settings sent to the worker via RPC. Every field
-        // read here becomes a cache key: SettingsInvalidate autorun calls
-        // rpcProps() and clears data when any field changes. Structural args
-        // (adapterConfig, sequenceAdapter, region, bpPerPx) are added at the
-        // RPC call site, matching the pattern used by every other display
-        // type. Subclasses extend via the super-capture pattern.
+        // Every field read here is an RPC cache key: the settings autorun
+        // clears data when any of them changes.
         rpcProps() {
-          // getConfigSnapshotWithPromotables hands the worker concrete values for
-          // every promotable slot (chevrons, subfeatureLabels, ...) instead of
-          // their raw inherit sentinels — so a new promotable worker-slot needs
-          // no rpcProps change here.
-          //
-          // It snapshots EVERY slot the schema and its inherited bases declare,
-          // though, and this payload is the RPC cache key (see
-          // rpcPropsCacheKey) — so what reaches the worker is PICKED here rather
-          // than filtered. `pickDisplayConfig` is that pick and carries why;
-          // the short version is that the subtractive spelling made every slot
-          // nobody had thought to exclude a silent refetch trigger, and the
-          // expensive ones came from `BaseLinearDisplay`'s schema rather than
-          // from this plugin.
-          //
-          // The gate budgets — resolved and raw — are NOT cache keys. The
-          // RESOLVED values (`resolvedByteLimit()`, `maxFeatureDensity`) ride
-          // at the CALL SITE because they swing on the viewport: as a cache key
-          // `maxFeatureDensity` made zooming across the 20 kb floor a full
-          // `clearAllRpcData()` + refetch, blanking the display at exactly the
-          // zoom people settle a gene at, for data identical on both sides of
-          // it. And the RAW slots need no invalidation role either, because an
-          // edit reaches the verdict through tracked reads: a region the
-          // worker rejected stores no data and is never marked loaded, the
-          // fetch autorun tracks `regionTooLarge`, so raising a budget releases
-          // the banner and refetches the blocked region with the new budget —
-          // while regions already loaded and in budget keep their data, which
-          // a cache-key invalidation would have thrown away. Lowering a budget
-          // re-banners from the live verdict (`densityStatsPerRegion` is
-          // committed on every successful fetch regardless of budget, and the
-          // byte estimate survives), with the worker re-gating whenever a
-          // fetch actually happens — the moment a download would occur.
+          // Picked rather than filtered: the snapshot carries every slot the
+          // schema and its bases declare, and the subtractive spelling made
+          // every slot nobody excluded a silent refetch trigger. The gate
+          // budgets are not cache keys; as one, `maxFeatureDensity` made
+          // zooming across the 20 kb floor a full clear and refetch, and a
+          // raised budget already reaches the verdict through the tracked
+          // `regionTooLarge`.
           const snapshot = getConfigSnapshotWithPromotables(self)
           const workerConfig = pickDisplayConfig(snapshot)
           return {
-            // jexlFilters carries the effective runtime filters; reading
-            // activeFilters() here makes it an RPC cache key so toggling filters
-            // refetches. buildFeatureAdmission normalizes the prefix either way.
+            // Reading `activeFilters()` here makes it a cache key, so
+            // toggling filters refetches.
             displayConfig: {
               ...workerConfig,
               subfeatureLabels: self.effectiveSubfeatureLabels,
@@ -720,16 +544,12 @@ export default function baseStateModelFactory(
             },
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
-            // Only isolate once the collection is applied; collecting (ctrl+
-            // click) leaves this undefined so building the set doesn't refetch
-            // or hide anything. Reading both here makes them RPC cache keys, so
-            // applying/clearing the solo refetches through the admission gate.
+            // Undefined while collecting, so building the set neither
+            // refetches nor hides anything.
             soloFeatureIds:
               self.soloApplied && self.soloFeatureIds.length > 0
                 ? toJS(self.soloFeatureIds)
                 : undefined,
-            // "Hide this feature" applies immediately (no collect step), so send
-            // it whenever non-empty. A cache key, so hide/unhide refetches.
             hiddenFeatureIds:
               self.hiddenFeatureIds.length > 0
                 ? toJS(self.hiddenFeatureIds)
@@ -740,54 +560,20 @@ export default function baseStateModelFactory(
         /**
          * #method
          * What the main-thread encode needs beyond a region's own data: the
-         * packed color for every theme class the worker emitted.
-         *
-         * The theme deliberately does NOT appear in `rpcProps()` above. It used
-         * to, so worker-baked CDS-frame and connector colors could follow it —
-         * and every field of that payload is an RPC cache key, so a light/dark
-         * toggle or a config `theme` edit re-downloaded and re-parsed every
-         * visible region of every canvas feature track. The worker now emits a
-         * class where it used to bake a theme color (colorClasses.ts) and this
-         * resolves it, so the same toggle is a re-encode of what is already
-         * loaded.
-         *
-         * `session.palette`, not `session.theme`: this crosses no boundary that
-         * needs MUI, and a getter rather than a pushed volatile so the SVG
-         * export and the RPC — neither of which has a component — see a real
-         * palette (ARCHITECTURE.md, "Theme-derived render inputs are session
-         * getters").
+         * packed color for every theme class the worker emitted, off
+         * `session.palette` so a theme toggle re-encodes what is loaded
+         * instead of refetching it.
          */
         gpuProps() {
           return { colorTable: themedColorTable(getPaletteHost(self).palette) }
         },
       }))
-      // Laid-out data derived from the raw per-region fetch results. MobX
-      // caches this — it only recomputes when any tracked input changes (raw
-      // data, coarseBpPerPx, label visibility). coarseBpPerPx is debounced
-      // 500ms so Y-row packing doesn't recompute on every animation frame
-      // during smooth zoom. Every consumer (hit test, GPU upload, React
-      // render) reads this getter and sees the same cached map until an
-      // input moves. Returns empty when too-large so the GPU upload autorun
-      // has nothing to push — banner UI hides the canvas, preventing stale flash.
       .views(self => ({
         /**
          * #getter
-         * Layout inputs shared by the base layout and every fit-escalation
-         * layout, minus the per-config label/description reservation flags. One
-         * source so the candidate layouts can't drift on bpPerPx / orientation /
-         * display mode / pins / opened genes.
-         *
-         * `expandedGeneIds` belongs here and not on the rungs that trim, even
-         * though only they consult it: an expanded gene arrives carrying
-         * `collapsedIsoformCount`, so EVERY rung's pack trims it back to what
-         * the mode collapsed it to, and a rung that inherits the layout inputs
-         * without the exemption re-collapses the gene the user just opened.
-         * The three trimming rungs each added it for themselves; `full` and
-         * `labels` did not, which in `grow` — where `full` is the only rung —
-         * left no rung below to recover on.
-         *
-         * Each region's ref key is NOT here: it rides on the region itself, which
-         * is what the layout groups by (see `LayoutRegionData`).
+         * Layout inputs shared by the base layout and every fit rung,
+         * `expandedGeneIds` included: a rung inheriting them without the
+         * exemption re-collapses the gene the user just opened.
          */
         get layoutInputs() {
           const view = containingLgv(self)
@@ -802,16 +588,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * The features the ladder measures its rungs and its isoform solve
-         * against: the on-screen set in `fit` and `fixed`, undefined in `grow`
-         * (which measures the whole stack).
-         *
-         * Grow's height IS its content's, so it owes every buffered feature a
-         * row to grow into. The other two size a stack to a slot the user fixed,
-         * and a slot spent on a cluster half a viewport away is spent on
-         * something the reader cannot see — a refetch widening the buffer then
-         * moved the trim with nothing on screen changed (ADR-093). What is DRAWN
-         * is never narrowed: `settledMaxY` measures the whole pack outside fit
-         * mode.
+         * against: the on-screen set in `fit` and `fixed`, undefined in
+         * `grow` (which measures the whole stack).
          */
         get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
           return self.autoHeight ? undefined : self.onScreenFeatureIds
@@ -819,14 +597,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Overridable hook (default false): the display's transcript setting
-         * names every isoform, so the fit ladder's `isoforms` rung may not trim
-         * — the surplus scrolls instead. `LinearBasicDisplay` answers it off
-         * `geneGlyphMode`; a display with no such setting never withholds the
-         * rung.
-         *
-         * A hook rather than a `geneGlyphMode` read here for the reason
-         * `geneGlyphNotice` is one: the variant display shares this base and has
-         * no gene glyphs to name a mode for.
+         * names every isoform, so the fit ladder's `isoforms` rung may not
+         * trim — the surplus scrolls instead.
          */
         get showsEveryIsoform() {
           return false
@@ -834,19 +606,15 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Overridable hook: the gene-glyph mode the worker collapses under.
-         * The raw slot here; `LinearBasicDisplay` resolves `auto` against the
-         * zoom. A term of `zoomFetchKey` and a call-site RPC argument rather
-         * than an `rpcProps` field, so a crossing of the `auto` threshold
-         * refetches the regions on screen without a settings invalidation.
          */
         get effectiveGeneGlyphMode(): GeneGlyphMode {
           return getConf(self, 'geneGlyphMode')
         },
         /**
          * #getter
-         * Whether the settings reserve `below` subfeature-label rows, which is
-         * what earns the fit ladder its `bare` rung — with nothing reserved
-         * the rung would repack an identical stack.
+         * Whether the settings reserve `below` subfeature-label rows, which
+         * is what earns the fit ladder its `bare` rung — with nothing
+         * reserved the rung would repack an identical stack.
          */
         get reservesBelowLabelRows() {
           return self.effectiveSubfeatureLabels === 'below'
@@ -856,8 +624,9 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Uniform vertical scale for fit mode; 1 unless the resolved stack is being
-         * grown to fill the track (> 1) or the bodies stack squeezed to fit (< 1).
+         * Uniform vertical scale for fit mode; 1 unless the resolved stack is
+         * being grown to fill the track (> 1) or the bodies stack squeezed to
+         * fit (< 1).
          */
         get fitScale() {
           return self.fitStage.scale
@@ -865,16 +634,7 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only when grown or squeezed. A fit
-         * stack shorter than the track stays top-anchored at y=0 (the surplus is
-         * bottom whitespace), so a relayout — an isoform collapse, a filter — packs
-         * back up against the top instead of jumping to a re-centered offset.
-         * Returned by reference off the untransformed path (scale 1) so the
-         * incremental-layout upload diff and Y-morph idle check stay intact.
-         * Empty while the density band stands in for the features, which is
-         * what makes that swap total: every painter, hit test and label reads
-         * this, so a track forced to `density` over data it already holds
-         * draws the band alone.
+         * resolved fit layout, cloned and scaled only when grown or squeezed.
          */
         get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
@@ -886,36 +646,26 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Descriptions are painted where the kept rung reserved room for them.
-         * Every render-time consumer — label draw and the highlight/hit/SVG
-         * label-width reservation — reads this so a box never reserves width
-         * for a description it won't draw.
+         * Descriptions are painted where the kept rung reserved room for
+         * them.
          */
         get renderedShowDescriptions() {
           return self.fitStage.showDescriptions
         },
         /**
          * #getter
-         * Names are painted where the kept rung reserved row height + overhang
-         * for them. The `decimated` rung's per-feature pruning happens inside
-         * the layout (dropped names leave floatingLabelsData), not via this
-         * flag. Every render-time consumer reads this so hidden names reserve
-         * nothing.
+         * Names are painted where the kept rung reserved row height +
+         * overhang for them.
          */
         get renderedShowLabels() {
           return self.fitStage.showLabels
         },
         /**
          * #getter
-         * A subfeature label (a transcript name under its gene) is worker-baked
-         * and its row is reserved in the pack, so it survives every rung that
-         * kept those rows and goes only where the kept rung spent them at zero.
-         *
-         * It does not survive a squeeze either. The reserved rows are spent in
-         * `bodyHeightPx` and scaled with everything else, while the text draws
-         * at the mode's own font size — so at scale 0.3 the names would paint
-         * over rows a third as tall as the text, on top of each other and of
-         * the boxes.
+         * A subfeature label (a transcript name under its gene) is
+         * worker-baked and its row is reserved in the pack, so it survives
+         * every rung that kept those rows and goes only where the kept rung
+         * spent them at zero.
          */
         get renderedShowSubfeatureLabels() {
           const { scale, dropBelowLabelRows } = self.fitStage
@@ -931,7 +681,8 @@ export default function baseStateModelFactory(
             self.fitStage,
             self.showLabels,
             self.effectiveShowDescriptions,
-            // Solving for one costs a bisection, and only this rung reports it.
+            // Solving for one costs a bisection, and only this rung reports
+            // it.
             self.fitStage.level === 'decimated'
               ? self.fitDecimatedFactor
               : undefined,
@@ -942,10 +693,7 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * The track-sizing control's account of what fit mode gave up, or
-         * undefined when nothing. The ladder drops labels silently and the
-         * "Labels" radio keeps saying they are on, so without this a user has
-         * no way to tell a track with no descriptions from one whose
-         * descriptions fit mode hid.
+         * undefined when nothing.
          */
         get fitNote() {
           return fitLadderNote(self.fitDrops)
@@ -977,19 +725,9 @@ export default function baseStateModelFactory(
           return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
         },
       }))
-      // The id-index consumers sit in their own block, after the two getters
-      // they read, so each reads them off `self` rather than `this`. Same shape
-      // and same reason as `MultiRegionDisplayMixin`'s `dataCurrent`/`svgReady`
-      // split ("a super-captured view is called bare") — except here it is not
-      // hypothetical. `overlayElements.tsx` destructures `morphOffsetFor` off
-      // the model and calls it with no receiver, which under `this` threw
-      // `Cannot read properties of undefined (reading 'featureIdIndex')` the
-      // moment anything asked for an overlay box: a search hit, a selection, a
-      // solo pick, or a hover. A getter survives being destructured because it
-      // is evaluated at that moment with the right receiver; a *method* does
-      // not, so the two kinds cannot be told apart by looking at the call site.
-      // Read siblings off `self` in a later block and the distinction stops
-      // mattering.
+      // Its own block so `morphOffsetFor` reads these off `self`:
+      // `overlayElements.tsx` destructures it off the model and calls it with
+      // no receiver, which under `this` threw.
       .views(morphOffsetViews)
       .views(self => ({
         /**
@@ -1013,8 +751,7 @@ export default function baseStateModelFactory(
          * #getter
          * The feature the hover box frames: the open context menu's target
          * while one is open, so the box always agrees with what the menu acts
-         * on, else the feature under the cursor. Same rule as the multi-row
-         * display's `highlightedBlockRect`.
+         * on, else the feature under the cursor.
          */
         get hoverBoxFeature() {
           const info = self.contextMenuInfo
@@ -1022,8 +759,8 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The transcript the hover box frames instead of its gene, by the rule
-         * of `hoverBoxFeature`.
+         * The transcript the hover box frames instead of its gene, by the
+         * rule of `hoverBoxFeature`.
          */
         get hoverBoxSubfeature() {
           const info = self.contextMenuInfo
@@ -1046,30 +783,10 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Per-feature entry across visible regions, indexed by featureId.
-        // Drives overlay rendering (hover/selection highlights) — keyed on
-        // laidOutDataMap + view.visibleRegions, so it recomputes on layout
-        // change, pan, or zoom. Feature wins over subfeature on id collision.
-        //
-        // That collision rule is why the feature `set` below is unconditional
-        // rather than guarded like the subfeature one: a guard would let a
-        // subfeature inserted by an earlier region block a feature from a later
-        // one. The side effect is that a feature spanning several regions
-        // resolves to the LAST region's copy here, while `indexById`
-        // (featureIdIndex/subfeatureIdIndex) documents and keeps the FIRST — so
-        // the two tables hand back different entries for the same id, and
-        // HighlightLayer's hover box reads geometry from one and refName/label
-        // width from the other.
-        //
-        // Harmless as things stand, and deliberately left alone rather than
-        // "fixed" into agreement: bp/px extents are absolute and a spanning
-        // feature shares one row across its whole ref-group, and both regions
-        // carry the same floatingLabelsData entry (the drop/decimate decisions
-        // are made once per ref-group), so the copies are interchangeable. If a
-        // per-region difference ever appears in the fields overlays read, make
-        // this first-wins via `map.get(id)?.kind !== 'feature'` — which keeps
-        // the feature-over-subfeature rule intact, as a bare `!map.has` would
-        // not.
+        // Feature wins over subfeature on id collision, so the feature `set`
+        // is unconditional; a spanning feature resolves to the last region's
+        // copy here and the first in `indexById`, which is harmless because
+        // the copies are interchangeable.
         get featureItemMap(): Map<string, FeatureItemEntry> {
           const map = new Map<string, FeatureItemEntry>()
           const visibleRegions = containingLgv(self).visibleRegions
@@ -1093,19 +810,11 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Flatbush spatial indexes per region for hit testing. MobX caches this,
-        // but ONLY because afterAttach keeps an autorun subscribed to it: its one
-        // consumer is hit-testing inside DOM event handlers, and an unobserved
-        // computed is suspended by MobX (it drops its dependency subscriptions, so
-        // it can't know when a cached value went stale, and re-evaluates on every
-        // read) — which made every mousemove rebuild a Hilbert-sorted index per
-        // region. See the CanvasHitIndexes autorun.
-        //
-        // coarseBpPerPx (debounced), NOT live bpPerPx: the only bpPerPx-dependent
-        // parts are the px->bp conversions for the hit padding and the label
-        // overhang, and the layout already reserved that overhang at coarseBpPerPx
-        // — so this both matches the geometry the rows were packed at and keeps a
-        // smooth zoom from rebuilding every index each frame.
+        // MobX caches this only because afterAttach keeps an autorun
+        // subscribed: an unobserved computed is suspended and re-evaluates on
+        // every read, which rebuilt a Hilbert-sorted index per mousemove.
+        // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
+        // were packed at.
         get flatbushIndexes() {
           const bpPerPx = containingLgv(self).coarseBpPerPx
           const labels = {
@@ -1140,8 +849,8 @@ export default function baseStateModelFactory(
         /**
          * #action
          * Stage a region as fetched — the store's raw write with this
-         * display's payload shape, so a test stands up a loaded display in one
-         * call. Production goes through `ctx.commitRegion`.
+         * display's payload shape, so a test stands up a loaded display in
+         * one call.
          */
         setRpcData(
           displayedRegionIndex: number,
@@ -1155,25 +864,10 @@ export default function baseStateModelFactory(
           )
         },
 
-        // This display deliberately does NOT override
-        // `clearDisplaySpecificData` (MultiRegionDisplayMixin's no-op default
-        // stands), so a `clearAllRpcData` keeps everything below and the track
-        // stays painted through the refetch window — the stance ADR-006 took
-        // for this display alone, and the one `invalidateSettings` takes for
-        // every per-region display since 2026-09:
-        //
-        // - The gate's density stats survive, so the derived `regionTooLarge`
-        //   banner stays stable across small zoom/pan moves;
-        //   `pruneDensityStatsToVisible` below is what bounds them. The
-        //   features are the store's now and are bounded by it. When
-        //   regionTooLarge is true `laidOutDataMap` returns empty, so no stale
-        //   features render through the banner.
-        // - `scrollTop` survives. clearAllRpcData fires on same-region refetches
-        //   (zoom, settings), and zeroing scroll there yanks the viewport to the
-        //   top on every zoom. The scroll-to-top reset lives in the
-        //   displayedRegions-change handler (chromosome nav) instead, and a
-        //   re-pack that shrinks content is clamped by the layout autorun's
-        //   maxScroll clamp.
+        // Deliberately no `clearDisplaySpecificData` override:
+        // `clearAllRpcData` fires on same-region refetches, and zeroing
+        // scroll or the gate's density stats there yanks the viewport and
+        // flickers the banner on every zoom.
         /**
          * #action
          * The gate's own measurements, which are keyed by region and are not
@@ -1191,13 +885,9 @@ export default function baseStateModelFactory(
          * #action
          */
         startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
-          // Upload only regions whose laid-out data reference changed, so a new
-          // chromosome streaming in doesn't re-upload the ones already on the
-          // GPU. `laidOutDataMap` keeps stable references for unchanged
-          // ref-groups (see createIncrementalLayout), making the diff
-          // meaningful. `renderDataMap === laidOutDataMap` when idle; during a Y
-          // morph it yields fresh per-frame region objects, so the interpolated
-          // rows re-upload each frame (and once more on settle).
+          // `renderDataMap` is `laidOutDataMap` by reference when idle and
+          // fresh per-frame objects during a Y morph, so only changed regions
+          // re-upload.
           installUpload(self, backend, {
             cells: () => self.renderDataMap,
             inputs: () => self.gpuProps(),
@@ -1215,8 +905,9 @@ export default function baseStateModelFactory(
         return {
           /**
            * #action
-           * Drops the hover first, so its tooltip does not sit under the menu;
-           * the highlight box stays on the target through `hoverBoxFeature`.
+           * Drops the hover first, so its tooltip does not sit under the
+           * menu; the highlight box stays on the target through
+           * `hoverBoxFeature`.
            */
           openContextMenu(info: FeatureContextMenuInfo) {
             self.clearHover()
@@ -1230,9 +921,8 @@ export default function baseStateModelFactory(
           /**
            * #action
            * Open the feature-details widget on what `fetch` resolves to, with
-           * the adapter's header metadata beside it; a lookup that resolves to
-           * nothing is reported as a miss. `parentFeature` names the feature the
-           * click was made THROUGH, where it was made through one.
+           * the adapter's header metadata beside it; a lookup that resolves
+           * to nothing is reported as a miss.
            */
           openFeatureDetails(
             fetch: () => Promise<Feature | undefined>,
@@ -1266,8 +956,7 @@ export default function baseStateModelFactory(
           /**
            * #action
            * Sets the runtime filter override (already-`jexl:`-prefixed
-           * expressions). Pass undefined to clear it and fall back to the config
-           * `jexlFilters` slot.
+           * expressions).
            */
           setJexlFilters(filters?: string[]) {
             self.jexlFiltersSetting = cast(filters)
@@ -1277,17 +966,14 @@ export default function baseStateModelFactory(
            * #action
            */
           setShowOutline(value: boolean) {
-            // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
-            // theme-appropriate outline so it stays visible on dark tracks too.
+            // The worker resolves THEME_DERIVED_COLOR to an outline that
+            // stays visible on dark tracks.
             setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
           },
 
           /**
            * #action
            */
-          // undefined resets to the slot's config default (which may be a
-          // per-feature jexl color); a string sets a solid color for all
-          // features. Flows to the worker via rpcProps -> displayConfig.color.
           setFeatureColor(color?: string) {
             setConf(self, 'color', color)
           },
@@ -1302,10 +988,8 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          // Published by a feature sequence dialog opened off this display's
-          // right-click menu, so the LGV can draw a crosshair at the base the
-          // sequence readout is hovering. Skips no-op updates: mousemove fires
-          // per pixel but the base under the cursor changes far less often.
+          // Skips no-op updates: mousemove fires per pixel but the base under
+          // the cursor changes far less often.
           setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
             const prev = self.sequenceHoverPosition
             const same =
@@ -1323,22 +1007,13 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Set the feature-size (density) preset. Orthogonal to the track-height
-        // strategy — fit/grow scale or accommodate whatever size this sets —
-        // so it deliberately leaves heightMode untouched.
         setDisplayMode(value: DisplayMode) {
           setConf(self, 'displayMode', value)
         },
 
-        // `setHeightMode` (write the slot, drop a contradicted scroll offset) is
-        // HeightModeMixin's; the `laidOutDataMap` getter does the actual fit
-        // reactively and needs no extra teardown here.
-
         /**
          * #action
          */
-        // Opens the solid-color picker. UTR row hidden for displays without UTRs
-        // (e.g. variants).
         openSetColorDialog(showUtrColor = true) {
           getDialogHost(self).queueDialog(handleClose => [
             SetColorDialog,
@@ -1385,11 +1060,8 @@ export default function baseStateModelFactory(
           if (!region) {
             return undefined
           }
-          // Ask for the clicked feature's own span, not the buffered region the
-          // paint came from — the display already knows where it is, and the
-          // whole region is a second download of everything on screen. Falls
-          // back to the region when the id has no laid-out item, which is the
-          // same miss the RPC's own `find` reports.
+          // The feature's own span, not the buffered region: the whole region
+          // is a second download of everything on screen.
           const item = self.featureIdIndex.get(featureId)
           return fetchCanvasFeatureDetails(
             getSession(self),
@@ -1405,32 +1077,9 @@ export default function baseStateModelFactory(
         /**
          * #method
          * Everything this display is doing to narrow what the user sees, each
-         * declared once (see `Reversible`). The "Filter by... (n)" count, the
-         * undo rows inside that submenu, and what "Clear all filters" clears are
-         * all derived from this one list, so they cannot disagree — the pairing
-         * rule that used to be a comment on two separately-maintained members.
-         *
-         * A METHOD, not a getter, because it is the subclass extension seam and
-         * a getter cannot be super-captured — `const { x } = self` on a getter
-         * evaluates it once at composition time and freezes that value forever.
-         * Same rule as every other seam here (showSubmenuMenuItems,
-         * trackMenuItems); the count this replaces carried the same note.
-         *
-         * A subclass adds a filter by super-capturing THIS and appending one
-         * entry, rather than overriding a count and a clear and hoping the two
-         * stay in step (LinearBasicDisplay's "Show only genes" did exactly that).
-         *
-         * A narrowing counts when its value is not the **no-op** one, which is
-         * not always its default:
-         *
-         * - the jexl override's no-op is the CONFIG DEFAULT, not the empty list —
-         *   `jexlFilterNarrowing` states that one, since all three displays with
-         *   this row need it.
-         * - `soloApplied`, not `soloFeatureIds.length`: while the user is still
-         *   collecting (ctrl+click) the set only draws boxes and hides nothing.
-         *   The SoloSelectionChip's × is the recovery for an unapplied one.
-         * - the hidden set is ONE narrowing however many features it holds — one
-         *   thing to clear, and its own row already names N.
+         * declared once, so the "Filter by... (n)" count, its undo rows and
+         * "Clear all filters" cannot disagree; a method, not a getter,
+         * because a getter cannot be super-captured.
          */
         featureNarrowings(): Reversibles {
           return {
@@ -1456,15 +1105,8 @@ export default function baseStateModelFactory(
         /**
          * #method
          * Reversible state that MARKS features rather than hiding them — the
-         * highlight boxes and the pins holding features at the top of the layout.
-         * Same declaration shape as the narrowings above and the same undo rows,
-         * but deliberately a separate list: neither hides anything, so neither
-         * belongs in the "Filter by... (n)" count or under "Clear all filters".
-         *
-         * They need the rows for the same reason the narrowings do. Both outlive
-         * the navigation that created them and neither is reachable from the
-         * feature itself once the user has panned away — and a pin is worse than
-         * a highlight, because nothing on screen marks a pinned feature at all.
+         * highlight boxes and the pins holding features at the top of the
+         * layout.
          */
         featureMarks(): Reversibles {
           return {
@@ -1490,9 +1132,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #method
-         * How many independent things are narrowing what the display shows —
-         * the "(n)" in "Filter by... (n)", and the gate on "Clear all filters".
-         * Derived, so it cannot drift from the list it counts.
+         * How many independent things are narrowing what the display shows,
+         * derived so it cannot drift from the list it counts.
          */
         featureFilterCount(): number {
           return activeCount(self.featureNarrowings())
@@ -1501,9 +1142,7 @@ export default function baseStateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Reverse every narrowing. Derived from the same list `featureFilterCount`
-         * counts, so a subclass that adds one gets both halves at once and the
-         * menu cannot offer a recovery that doesn't recover.
+         * Reverse every narrowing.
          */
         clearAllFeatureFilters() {
           clearAll(self.featureNarrowings())
@@ -1513,18 +1152,9 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Two bpPerPx-dependent worker decisions: the amino-acid overlay,
-        // fetched under `showAminoAcids && shouldRenderPeptideBackground`
-        // (executeRenderFeatureData), so the term is that gate rather than the
-        // zoom itself, and the gene-glyph mode `auto` resolves against the
-        // settled zoom. Every other zoom change reuses the cached features, and
-        // a track with the overlay off and a fixed mode never refetches on zoom.
-        //
-        // The opened genes ride here too, and only under `longestCoding`: that
-        // is the one mode whose collapse the worker runs, so under `all` the
-        // payload cannot change and a click refetches nothing.
-        //
-        // A getter, not an action: an action would untrack the view.bpPerPx read.
+        // Only the two bpPerPx-dependent worker decisions, so a track with
+        // the overlay off and a fixed mode never refetches on zoom; a getter,
+        // not an action, because an action would untrack the `bpPerPx` read.
         get zoomFetchKey(): string {
           const peptides =
             self.showAminoAcids &&
@@ -1541,27 +1171,17 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Re-fetch the full feature by id and open it in the details widget (the
-        // painting ships only slim render arrays). With a subfeatureInfo we
-        // descend to the clicked subfeature; otherwise the feature itself.
-        // Serves both the click path and the context menu's "Open feature
-        // details" (which passes no subfeature).
-        //
-        // Always fetches `featureId` — the top-level id every caller passes
-        // from a FlatbushItem — rather than `subfeatureInfo.parentFeatureId`,
-        // which names whichever feature the subfeature hangs off.
-        // GetCanvasFeatureDetails searches top-level features only, so anything
-        // else answers undefined; findSubfeatureById below recurses, so the root
-        // always reaches the target.
+        // Always fetches `featureId`, the top-level id, not
+        // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
+        // top-level features only, and `findSubfeatureById` recurses from the
+        // root.
         selectFeatureById(
           featureId: string,
           subfeatureInfo: SubfeatureInfo | undefined,
           displayedRegionIndex: number,
         ) {
-          // What the containing feature is CALLED comes off the item the
-          // display drew, not off the fetched record: which field names a
-          // feature on screen is the track's `labels.name` expression, and the
-          // hover's own gene row reads the same `name` (see hoverTooltipRows).
+          // The name comes off the item the display drew, since the track's
+          // `labels.name` expression decides what names a feature on screen.
           const drawn = subfeatureInfo
             ? self.featureIdIndex.get(featureId)
             : undefined
@@ -1585,19 +1205,15 @@ export default function baseStateModelFactory(
       .actions(self => {
         const superReload = self.reload
         return {
-          // `superReload()` is not optional: it is what bumps `reloadCounter`,
-          // and that counter is the whole arming mechanism of the dead-Retry
-          // check. MST replaces an action outright, so an override that skips it
-          // freezes the counter — which reads as a display that never retries,
-          // and turns the check off here and on `LinearVariantDisplay` with no
-          // symptom at all. `reloadReachesCounter.test.ts` watches every
-          // `reload()` in the tree for the next one.
+          // `superReload()` is what bumps `reloadCounter`, the arming
+          // mechanism of the dead-Retry check; skipping it turns that check
+          // off with no symptom.
           /**
            * #action
            * Clears the loaded regions and fetches straight away, rather than
-           * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of the
-           * family does — Retry and Force load are both clicks, and this is the
-           * display the user is most often clicking on.
+           * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of
+           * the family does — Retry and Force load are both clicks, and this
+           * is the display the user is most often clicking on.
            */
           reload() {
             superReload()
@@ -1613,8 +1229,8 @@ export default function baseStateModelFactory(
           fetchNeeded(needed: IndexedRegion[]) {
             const view = containingLgv(self)
             const bpPerPx = view.bpPerPx
-            // Not in `rpcProps()` — see the note there for why it must not be a
-            // cache key.
+            // Not in `rpcProps()`, so a budget change is not a cache-key
+            // invalidation.
             const maxFeatureDensity = self.maxFeatureDensity
             const args = rpcArgs(self)
             self.pruneDensityStatsToVisible(
@@ -1624,10 +1240,8 @@ export default function baseStateModelFactory(
             )
             void fetchGatedRegions(self, needed, {
               call: (region, ctx) => {
-                // Per-region translation table from the assembly's geneticCodes
-                // config (alias-bridged via getGeneticCodeId), so the worker can
-                // translate peptides on contigs whose features carry no
-                // transl_table.
+                // The assembly's genetic code, so the worker can translate
+                // peptides on contigs whose features carry no transl_table.
                 const assembly = getSession(self).assemblyManager.get(
                   region.assemblyName,
                 )
@@ -1659,21 +1273,14 @@ export default function baseStateModelFactory(
            * #action
            * Fills `BaseDisplay`'s hover-clear hook, which the fetch
            * foundation's reaction calls on every viewport change.
-           *
-           * The painting is a sticky canvas, so a pan or zoom under a stationary
-           * cursor fires no mousemove and no mouseleave, and the highlight box
-           * keeps naming whatever used to be under it.
            */
           clearHoveredFeature() {
             self.clearHover()
           },
 
           afterAttach() {
-            // Reset scroll to the top on an actual region-list change
-            // (chromosome navigation) — not on same-region zoom/pan, which must
-            // keep the user's scroll position (see clearDisplaySpecificData). The
-            // gate's own stale-stats cleanup on nav lives in
-            // CanvasFeatureGateMixin.afterAttach, not here.
+            // Reset scroll on a region-list change only; a same-region zoom
+            // or pan keeps the user's scroll position.
             onDisplayedRegionsChange(
               self,
               () => {
@@ -1682,28 +1289,11 @@ export default function baseStateModelFactory(
               'CanvasResetScrollOnDisplayedRegions',
             )
 
-            // Keep the hit-test indexes observed, which is the only reason MobX
-            // caches them: their sole consumer is hit-testing inside DOM event
-            // handlers, and MobX suspends a computed with no observers — so
-            // without this every mousemove rebuilt a Hilbert-sorted Flatbush per
-            // visible region. Safe to hold BECAUSE `flatbushIndexes` keys off
-            // `laidOutDataMap` and the debounced `coarseBpPerPx`: the rebuild
-            // lands on the layout's own cadence, a small marginal cost on top of
-            // the strictly more expensive layout pass that already runs eagerly
-            // for every track on those same inputs. A getter that read live
-            // `visibleRegions` instead must NOT be held this way — see
-            // `laneFlatbushIndexes` in plugin-variants for that trap.
-            // autorunOnReadyView because flatbushIndexes transitively reads view
-            // geometry that throws before the view is measured.
-            //
-            // The two id->item maps ride along, and they suspend far more often
-            // than the Flatbush ones: their only readers are
-            // hoveredFeature/hoveredSubfeature, which short-circuit to undefined when
-            // nothing is under the cursor — so the dependency disappears on every
-            // hover-out, and the next hover-in rebuilt a Map over every laid-out
-            // feature. Drag-panning over a track hit that on every frame (the
-            // clearHover-on-viewport-change autorun below un-hovers, the next
-            // mousemove re-hovers).
+            // Holding the hit-test indexes observed is the only reason MobX
+            // caches them: MobX suspends an unobserved computed, and every
+            // mousemove rebuilt a Flatbush per region. Safe to hold because
+            // `flatbushIndexes` keys off the debounced `coarseBpPerPx`; a
+            // getter reading live `visibleRegions` must not be held this way.
             autorunOnReadyView(
               self,
               () => {
@@ -1718,12 +1308,6 @@ export default function baseStateModelFactory(
           },
         }
       })
-      // The menu builders live in ./trackMenus.ts and ./featureContextMenu.ts —
-      // ~450 lines of MUI construction that is not model state. Each method here
-      // stays as the thin, overridable seam: subclasses extend by super-capturing
-      // these (the flattened "Show..." submenu, colorMenuItems, trackMenuItems),
-      // and the builders read the composed section methods back off `self`, so an
-      // override still lands.
       .views(self => ({
         /**
          * #method
@@ -1742,9 +1326,7 @@ export default function baseStateModelFactory(
         /**
          * #method
          * Flattened "Show..." submenu: all checkbox toggles first, then the
-         * radio groups (each under its own subHeader). Composed from the two
-         * extension points above so subclasses inject toggles/groups in place
-         * without rebuilding trackMenuItems from scratch.
+         * radio groups (each under its own subHeader).
          */
         showSubmenuMenuItems(): MenuItem[] {
           return [
@@ -1765,8 +1347,7 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * The "Color by..." radio choices (solid/strand/attribute). Split out so
-         * subclasses can reuse them while assembling their own color menu.
+         * The "Color by..." radio choices (solid/strand/attribute).
          */
         colorBySubMenuItems(): MenuItem[] {
           return colorBySubMenuItems(self)
@@ -1775,11 +1356,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Color-related track menu entries: a single "Color by..." entry whose
-         * "Solid color..." choice opens the solid+UTR color picker. A subclass
-         * changing the choices overrides `colorBySubMenuItems` (variants swaps
-         * in its consequence-impact and SV-type presets); this wrapper reads
-         * that back off `self`, so it is not the seam to override.
+         * Color-related track menu entries: a single "Color by..." entry
+         * whose "Solid color..." choice opens the solid+UTR color picker.
          */
         colorMenuItems(): MenuItem[] {
           return colorMenuItems(self)
@@ -1787,9 +1365,9 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * One "Feature height" menu with two independent radio groups: the size
-         * presets and, under a "Track sizing" subheader, how the track responds
-         * when there are more features than fit.
+         * One "Feature height" menu with two independent radio groups: the
+         * size presets and, under a "Track sizing" subheader, how the track
+         * responds when there are more features than fit.
          */
         featureHeightMenuItems(): MenuItem[] {
           return featureHeightMenuItems(self)
@@ -1809,8 +1387,5 @@ export default function baseStateModelFactory(
 type LinearCanvasBaseDisplayStateModel = ReturnType<
   typeof baseStateModelFactory
 >
-// What FeatureComponent and its layers take. The subclasses (LinearBasicDisplay,
-// LinearVariantDisplay) only add to this, so their instances satisfy it — one
-// component serves both with no hand-mirrored structural type.
 export type LinearCanvasBaseDisplayModel =
   Instance<LinearCanvasBaseDisplayStateModel>
