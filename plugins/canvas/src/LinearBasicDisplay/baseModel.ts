@@ -1280,13 +1280,6 @@ export default function baseStateModelFactory(
           const id = self.subfeatureIdUnderMouse
           return id === undefined ? undefined : self.subfeatureIdIndex.get(id)
         },
-
-        /**
-         * #method
-         */
-        getFeatureById(featureId: string) {
-          return self.featureIdIndex.get(featureId)
-        },
       }))
       .views(self => ({
         /**
@@ -1315,7 +1308,7 @@ export default function baseStateModelFactory(
          * #method
          */
         searchFeatureByID(id: string) {
-          const item = self.getFeatureById(id)
+          const item = self.featureIdIndex.get(id)
           if (!item) {
             return undefined
           }

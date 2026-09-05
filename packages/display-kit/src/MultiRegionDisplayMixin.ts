@@ -200,7 +200,7 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * Overridable hook (default false): whether a searchable feature layout
          * currently exists. Any display defining a feature-lookup method
-         * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
+         * (`searchFeatureByID`) must override it, so callers can
          * tell "laid out, but off-display" from "no layout exists yet" — a
          * distinction only the display can make. See
          * packages/display-kit/CLAUDE.md §"Four

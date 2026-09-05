@@ -22,7 +22,7 @@ describe('LinearBasicDisplay configSchema', () => {
     // color/utrColor/connectorColor are `maybeColor`: unset by default, which is
     // what lets a feature's own BED color paint (and the theme drive the
     // connector). The concrete fallbacks live in featureColors.ts and
-    // getStrokeColor, not in the slot.
+    // strokeColor, not in the slot.
     expect(readConfObject(config, 'color')).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
     expect(readConfObject(config, 'connectorColor')).toBeUndefined()

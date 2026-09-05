@@ -140,9 +140,8 @@ describe('morphOffsetFor', () => {
     )
     display.setMorphProgress(0.5)
 
-    const { morphOffsetFor, getFeatureById, searchFeatureByID } = display
+    const { morphOffsetFor, searchFeatureByID } = display
     expect(morphOffsetFor('f1')).toBeCloseTo(30)
-    expect(getFeatureById('f1')).toBeDefined()
     expect(searchFeatureByID('f1')).toBeDefined()
   })
 })
