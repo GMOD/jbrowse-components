@@ -1,15 +1,15 @@
 ---
-title: Synteny from gene symbols (47 E. coli genomes)
+title: Synteny from gene symbols (44 E. coli genomes)
 sidebar_label: Synteny (gene-symbol lanes, bacteria)
 description:
-  Stack forty-seven E. coli and Shigella genomes under K-12 at one operon by
+  Stack forty-four E. coli and Shigella genomes under K-12 at one operon by
   joining their RefSeq annotations on the gene symbol, with no alignment step
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** we look at one K-12 operon across forty-six other E. coli and
+**TL;DR:** we look at one K-12 operon across forty-three other E. coli and
 Shigella genomes at once, without aligning any of them. RefSeq's bacterial
 pipeline gives an orthologous gene the same symbol in every strain it names, so
 the ortholog table is a join on the gene name over the GFF3 files, and each
@@ -28,10 +28,16 @@ the lanes draw their own genes and no ribbons, which is where the page ends.
 
 ## Where the data comes from
 
-Forty-seven RefSeq assemblies, each fetched by accession with the `datasets`
-CLI: the classic reference strains across phylogroups A, B1, B2, D and E, four
+Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:
+the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
-The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
+Nothing about a genome is typed by hand: the zip `datasets` writes carries an
+assembly report, and each lane's name is that report's strain field (MG1655
+rather than "K-12 substr. MG1655", `Sflexneri_301` for the Shigella so it does
+not read as an E. coli strain), and the report's organism name is a screen of
+its own — three accessions the listing handed over turned out to be a Leclercia,
+a Salmonella and a suppressed _Shigella_ sp., and the build drops them and says
+so. The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions — MG1655 is the strain those pages call K12 — so the
 three pages read one set of genomes three ways. The
@@ -86,7 +92,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 # --anchor names the genome whose genes are the rows; --unnamed is the
 # locus-tag shape PGAP falls back to, which joins nothing
 python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' \
-  MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflex301=Sflex301.gff.gz
+  MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflexneri_301=Sflexneri_301.gff.gz
 ```
 
 The helper reports how much of each column it filled, and that number is the
@@ -104,7 +110,7 @@ gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
 
 ## The ortholog track
 
-One `SyntenyTrack` names all forty-seven assemblies, each of which is a
+One `SyntenyTrack` names all forty-four assemblies, each of which is a
 `ChromSizesAdapter` over its chromosome's length, since the lanes never read
 sequence. `blockAssemblies` and `bedLocations` are positional against the
 table's columns, in the order the helper printed; the list below is cut to the
@@ -116,32 +122,32 @@ the track to the whole stack, so the figure below shows every lane at once:
 {
   "type": "SyntenyTrack",
   "trackId": "ecoli_orthologs",
-  "name": "E. coli orthologs by gene symbol (47 genomes, RefSeq)",
-  "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflex301"],
+  "name": "E. coli orthologs by gene symbol (44 genomes, RefSeq)",
+  "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "mcscanBlocksLocation": { "uri": "ecoli.blocks" },
-    "blockAssemblies": ["MG1655", "Sakai", "CFT073", "Sflex301"],
+    "blockAssemblies": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
     "bedLocations": [
       { "uri": "MG1655.bed" },
       { "uri": "Sakai.bed" },
       { "uri": "CFT073.bed" },
-      { "uri": "Sflex301.bed" }
+      { "uri": "Sflexneri_301.bed" }
     ],
-    "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflex301"]
+    "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"]
   },
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
       "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
-      "height": 1100
+      "height": 970
     }
   ]
 }
 ```
 
-## One operon, forty-seven genomes
+## One operon, forty-four genomes
 
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
 K-12 axis. Every gene is colored by its symbol, so a conserved gene is one color
@@ -154,7 +160,7 @@ naming them.
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
   "defaultSession": {
-    "name": "The atp operon across 47 genomes",
+    "name": "The atp operon across 44 genomes",
     "views": [
       {
         "type": "LinearGenomeView",
@@ -164,7 +170,7 @@ naming them.
           {
             "trackId": "ecoli_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "height": 1100
+            "height": 970
           }
         ]
       }
@@ -173,19 +179,22 @@ naming them.
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-six E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models. Every gene's color runs the full stack; the lanes reading the operon reversed are the ones whose chromosome was deposited the other way round." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models. Every gene's color runs the full stack; the lanes reading the operon reversed are the ones whose chromosome was deposited the other way round." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
 ## Where the join stops
 
 The O-antigen cluster between _galF_ and _gnd_ is the locus that differs most
 between strains: each serotype carries its own set of sugar pathway genes, and
 those share no symbol across serotypes. The lanes that keep the whole cluster
-sort to the top, and they are the K-12 derivatives, whose cluster is K-12's gene
-for gene. Below them the flanking genes chain down every lane, and between the
-flanks each lane draws whatever its own annotation holds with no ribbon to it.
-That is the accessory genome as the join sees it.
+sort to the top, and their headers say why: DH10B, HMS174, C3026, MGY, tolC- and
+MG1655_TMP32XR1 are all K-12 derivatives, whose cluster is K-12's gene for gene.
+Below them the flanking genes chain down every lane, _galF_ on one side and
+_wzzB_ and _ugd_ on the other (_gnd_ itself is a locus tag in most PGAP
+annotations, so it joins only a handful of lanes), and between the flanks each
+lane draws whatever its own annotation holds with no ribbon to it. That is the
+accessory genome as the join sees it.
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-six lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF and gnd chains run through and the cluster between them is that strain's own, joined to nothing." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, wzzB and ugd chains run through and the cluster between them is that strain's own, joined to nothing." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 For the variable loci the table wants a homology call across the proteomes, an
 [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
@@ -194,8 +203,9 @@ locus base by base for five strains.
 
 ## Reproduce it end to end
 
-The script fetches the forty-seven annotations, builds the table and writes the
-config; see [Prerequisites](#prerequisites).
+The script fetches the annotations, names and screens the genomes off NCBI's
+assembly report, builds the table and writes the config; see
+[Prerequisites](#prerequisites).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_orthologs.sh

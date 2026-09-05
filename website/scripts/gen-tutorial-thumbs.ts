@@ -365,7 +365,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.22, 0.75],
   },
   ecoli_orthologs_synteny: {
-    // The top of the 47-lane stack at the atp operon, where the ortholog
+    // The top of the 44-lane stack at the atp operon, where the ortholog
     // colour columns run straight down.
     src: 'multiway_synteny/ecoli_symbol_atp_operon.png',
     band: [0.14, 0.5],

@@ -1787,7 +1787,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 820,
   },
 
-  // The same join at cohort scale: 47 E. coli and Shigella genomes under K-12
+  // The same join at cohort scale: 44 E. coli and Shigella genomes under K-12
   // at the atp operon, every lane carrying its own PGAP gene models and every
   // gene one color down the stack. Densest-first puts the reduced Shigella
   // genomes at the bottom; the [rev] lanes are chromosomes deposited the

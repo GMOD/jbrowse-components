@@ -141,14 +141,14 @@
       }
     },
     {
-      "name": "Ec55989",
+      "name": "55989",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Ec55989-ReferenceSequenceTrack",
+        "trackId": "55989-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Ec55989.chrom.sizes",
+            "uri": "55989.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -169,14 +169,14 @@
       }
     },
     {
-      "name": "O104H4",
+      "name": "2011C-3493",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "O104H4-ReferenceSequenceTrack",
+        "trackId": "2011C-3493-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "O104H4.chrom.sizes",
+            "uri": "2011C-3493.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -225,70 +225,70 @@
       }
     },
     {
-      "name": "ATCC8739",
+      "name": "ATCC_8739",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "ATCC8739-ReferenceSequenceTrack",
+        "trackId": "ATCC_8739-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "ATCC8739.chrom.sizes",
+            "uri": "ATCC_8739.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "SMS35",
+      "name": "SMS-3-5",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "SMS35-ReferenceSequenceTrack",
+        "trackId": "SMS-3-5-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "SMS35.chrom.sizes",
+            "uri": "SMS-3-5.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "BL21DE3",
+      "name": "BL21_DE3",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "BL21DE3-ReferenceSequenceTrack",
+        "trackId": "BL21_DE3-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "BL21DE3.chrom.sizes",
+            "uri": "BL21_DE3.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "APECO1",
+      "name": "APEC_O1",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "APECO1-ReferenceSequenceTrack",
+        "trackId": "APEC_O1-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "APECO1.chrom.sizes",
+            "uri": "APEC_O1.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "Nissle1917",
+      "name": "Nissle_1917",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Nissle1917-ReferenceSequenceTrack",
+        "trackId": "Nissle_1917-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Nissle1917.chrom.sizes",
+            "uri": "Nissle_1917.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -309,56 +309,56 @@
       }
     },
     {
-      "name": "Sflex301",
+      "name": "Sflexneri_301",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Sflex301-ReferenceSequenceTrack",
+        "trackId": "Sflexneri_301-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Sflex301.chrom.sizes",
+            "uri": "Sflexneri_301.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "Sdys197",
+      "name": "Sdysenteriae_Sd197",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Sdys197-ReferenceSequenceTrack",
+        "trackId": "Sdysenteriae_Sd197-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Sdys197.chrom.sizes",
+            "uri": "Sdysenteriae_Sd197.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "Sboy227",
+      "name": "Sboydii_Sb227",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Sboy227-ReferenceSequenceTrack",
+        "trackId": "Sboydii_Sb227-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Sboy227.chrom.sizes",
+            "uri": "Sboydii_Sb227.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "Sson53G",
+      "name": "Ssonnei_53G",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "Sson53G-ReferenceSequenceTrack",
+        "trackId": "Ssonnei_53G-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "Sson53G.chrom.sizes",
+            "uri": "Ssonnei_53G.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -407,112 +407,84 @@
       }
     },
     {
-      "name": "SF_166",
+      "name": "HMS174",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "SF_166-ReferenceSequenceTrack",
+        "trackId": "HMS174-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "SF_166.chrom.sizes",
+            "uri": "HMS174.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "K_12_substr_MG1655",
+      "name": "MG1655_TMP32XR1",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "K_12_substr_MG1655-ReferenceSequenceTrack",
+        "trackId": "MG1655_TMP32XR1-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "K_12_substr_MG1655.chrom.sizes",
+            "uri": "MG1655_TMP32XR1.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "S2012C_4227",
+      "name": "2009C-3133",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "S2012C_4227-ReferenceSequenceTrack",
+        "trackId": "2009C-3133-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "S2012C_4227.chrom.sizes",
+            "uri": "2009C-3133.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "S2011C_4315",
+      "name": "SaT040",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "S2011C_4315-ReferenceSequenceTrack",
+        "trackId": "SaT040-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "S2011C_4315.chrom.sizes",
+            "uri": "SaT040.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "UPEC_26_1",
+      "name": "SRCC_1675",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "UPEC_26_1-ReferenceSequenceTrack",
+        "trackId": "SRCC_1675-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "UPEC_26_1.chrom.sizes",
+            "uri": "SRCC_1675.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "FORC_028",
+      "name": "644-PT8",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "FORC_028-ReferenceSequenceTrack",
+        "trackId": "644-PT8-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "FORC_028.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "S210221272",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "S210221272-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "S210221272.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "D8",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "D8-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "D8.chrom.sizes",
+            "uri": "644-PT8.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -561,14 +533,14 @@
       }
     },
     {
-      "name": "tolC",
+      "name": "tolC-",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "tolC-ReferenceSequenceTrack",
+        "trackId": "tolC--ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "tolC.chrom.sizes",
+            "uri": "tolC-.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -603,56 +575,42 @@
       }
     },
     {
-      "name": "JJ2434",
+      "name": "C43_DE3",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "JJ2434-ReferenceSequenceTrack",
+        "trackId": "C43_DE3-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "JJ2434.chrom.sizes",
+            "uri": "C43_DE3.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "CI5",
+      "name": "C3026",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "CI5-ReferenceSequenceTrack",
+        "trackId": "C3026-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "CI5.chrom.sizes",
+            "uri": "C3026.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
       }
     },
     {
-      "name": "GB089",
+      "name": "G749",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "GB089-ReferenceSequenceTrack",
+        "trackId": "G749-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "GB089.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "S06_00048",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "S06_00048-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "S06_00048.chrom.sizes",
+            "uri": "G749.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -864,18 +822,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Ec55989_genes",
-      "name": "Ec55989 genes (RefSeq)",
-      "assemblyNames": ["Ec55989"],
+      "trackId": "55989_genes",
+      "name": "55989 genes (RefSeq)",
+      "assemblyNames": ["55989"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Ec55989.gff.gz",
+          "uri": "55989.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Ec55989.gff.gz.tbi",
+            "uri": "55989.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -904,18 +862,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "O104H4_genes",
-      "name": "O104H4 genes (RefSeq)",
-      "assemblyNames": ["O104H4"],
+      "trackId": "2011C-3493_genes",
+      "name": "2011C-3493 genes (RefSeq)",
+      "assemblyNames": ["2011C-3493"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "O104H4.gff.gz",
+          "uri": "2011C-3493.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "O104H4.gff.gz.tbi",
+            "uri": "2011C-3493.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -984,18 +942,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "ATCC8739_genes",
-      "name": "ATCC8739 genes (RefSeq)",
-      "assemblyNames": ["ATCC8739"],
+      "trackId": "ATCC_8739_genes",
+      "name": "ATCC_8739 genes (RefSeq)",
+      "assemblyNames": ["ATCC_8739"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "ATCC8739.gff.gz",
+          "uri": "ATCC_8739.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "ATCC8739.gff.gz.tbi",
+            "uri": "ATCC_8739.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1004,18 +962,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "SMS35_genes",
-      "name": "SMS35 genes (RefSeq)",
-      "assemblyNames": ["SMS35"],
+      "trackId": "SMS-3-5_genes",
+      "name": "SMS-3-5 genes (RefSeq)",
+      "assemblyNames": ["SMS-3-5"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "SMS35.gff.gz",
+          "uri": "SMS-3-5.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "SMS35.gff.gz.tbi",
+            "uri": "SMS-3-5.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1024,18 +982,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "BL21DE3_genes",
-      "name": "BL21DE3 genes (RefSeq)",
-      "assemblyNames": ["BL21DE3"],
+      "trackId": "BL21_DE3_genes",
+      "name": "BL21_DE3 genes (RefSeq)",
+      "assemblyNames": ["BL21_DE3"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "BL21DE3.gff.gz",
+          "uri": "BL21_DE3.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "BL21DE3.gff.gz.tbi",
+            "uri": "BL21_DE3.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1044,18 +1002,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "APECO1_genes",
-      "name": "APECO1 genes (RefSeq)",
-      "assemblyNames": ["APECO1"],
+      "trackId": "APEC_O1_genes",
+      "name": "APEC_O1 genes (RefSeq)",
+      "assemblyNames": ["APEC_O1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "APECO1.gff.gz",
+          "uri": "APEC_O1.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "APECO1.gff.gz.tbi",
+            "uri": "APEC_O1.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1064,18 +1022,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Nissle1917_genes",
-      "name": "Nissle1917 genes (RefSeq)",
-      "assemblyNames": ["Nissle1917"],
+      "trackId": "Nissle_1917_genes",
+      "name": "Nissle_1917 genes (RefSeq)",
+      "assemblyNames": ["Nissle_1917"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Nissle1917.gff.gz",
+          "uri": "Nissle_1917.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Nissle1917.gff.gz.tbi",
+            "uri": "Nissle_1917.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1104,18 +1062,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Sflex301_genes",
-      "name": "Sflex301 genes (RefSeq)",
-      "assemblyNames": ["Sflex301"],
+      "trackId": "Sflexneri_301_genes",
+      "name": "Sflexneri_301 genes (RefSeq)",
+      "assemblyNames": ["Sflexneri_301"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Sflex301.gff.gz",
+          "uri": "Sflexneri_301.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Sflex301.gff.gz.tbi",
+            "uri": "Sflexneri_301.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1124,18 +1082,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Sdys197_genes",
-      "name": "Sdys197 genes (RefSeq)",
-      "assemblyNames": ["Sdys197"],
+      "trackId": "Sdysenteriae_Sd197_genes",
+      "name": "Sdysenteriae_Sd197 genes (RefSeq)",
+      "assemblyNames": ["Sdysenteriae_Sd197"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Sdys197.gff.gz",
+          "uri": "Sdysenteriae_Sd197.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Sdys197.gff.gz.tbi",
+            "uri": "Sdysenteriae_Sd197.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1144,18 +1102,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Sboy227_genes",
-      "name": "Sboy227 genes (RefSeq)",
-      "assemblyNames": ["Sboy227"],
+      "trackId": "Sboydii_Sb227_genes",
+      "name": "Sboydii_Sb227 genes (RefSeq)",
+      "assemblyNames": ["Sboydii_Sb227"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Sboy227.gff.gz",
+          "uri": "Sboydii_Sb227.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Sboy227.gff.gz.tbi",
+            "uri": "Sboydii_Sb227.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1164,18 +1122,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Sson53G_genes",
-      "name": "Sson53G genes (RefSeq)",
-      "assemblyNames": ["Sson53G"],
+      "trackId": "Ssonnei_53G_genes",
+      "name": "Ssonnei_53G genes (RefSeq)",
+      "assemblyNames": ["Ssonnei_53G"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "Sson53G.gff.gz",
+          "uri": "Ssonnei_53G.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "Sson53G.gff.gz.tbi",
+            "uri": "Ssonnei_53G.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1244,18 +1202,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "SF_166_genes",
-      "name": "SF_166 genes (RefSeq)",
-      "assemblyNames": ["SF_166"],
+      "trackId": "HMS174_genes",
+      "name": "HMS174 genes (RefSeq)",
+      "assemblyNames": ["HMS174"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "SF_166.gff.gz",
+          "uri": "HMS174.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "SF_166.gff.gz.tbi",
+            "uri": "HMS174.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1264,18 +1222,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "K_12_substr_MG1655_genes",
-      "name": "K_12_substr_MG1655 genes (RefSeq)",
-      "assemblyNames": ["K_12_substr_MG1655"],
+      "trackId": "MG1655_TMP32XR1_genes",
+      "name": "MG1655_TMP32XR1 genes (RefSeq)",
+      "assemblyNames": ["MG1655_TMP32XR1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "K_12_substr_MG1655.gff.gz",
+          "uri": "MG1655_TMP32XR1.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "K_12_substr_MG1655.gff.gz.tbi",
+            "uri": "MG1655_TMP32XR1.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1284,18 +1242,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "S2012C_4227_genes",
-      "name": "S2012C_4227 genes (RefSeq)",
-      "assemblyNames": ["S2012C_4227"],
+      "trackId": "2009C-3133_genes",
+      "name": "2009C-3133 genes (RefSeq)",
+      "assemblyNames": ["2009C-3133"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "S2012C_4227.gff.gz",
+          "uri": "2009C-3133.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "S2012C_4227.gff.gz.tbi",
+            "uri": "2009C-3133.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1304,18 +1262,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "S2011C_4315_genes",
-      "name": "S2011C_4315 genes (RefSeq)",
-      "assemblyNames": ["S2011C_4315"],
+      "trackId": "SaT040_genes",
+      "name": "SaT040 genes (RefSeq)",
+      "assemblyNames": ["SaT040"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "S2011C_4315.gff.gz",
+          "uri": "SaT040.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "S2011C_4315.gff.gz.tbi",
+            "uri": "SaT040.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1324,18 +1282,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "UPEC_26_1_genes",
-      "name": "UPEC_26_1 genes (RefSeq)",
-      "assemblyNames": ["UPEC_26_1"],
+      "trackId": "SRCC_1675_genes",
+      "name": "SRCC_1675 genes (RefSeq)",
+      "assemblyNames": ["SRCC_1675"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "UPEC_26_1.gff.gz",
+          "uri": "SRCC_1675.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "UPEC_26_1.gff.gz.tbi",
+            "uri": "SRCC_1675.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1344,58 +1302,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "FORC_028_genes",
-      "name": "FORC_028 genes (RefSeq)",
-      "assemblyNames": ["FORC_028"],
+      "trackId": "644-PT8_genes",
+      "name": "644-PT8 genes (RefSeq)",
+      "assemblyNames": ["644-PT8"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "FORC_028.gff.gz",
+          "uri": "644-PT8.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "FORC_028.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "S210221272_genes",
-      "name": "S210221272 genes (RefSeq)",
-      "assemblyNames": ["S210221272"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "S210221272.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "S210221272.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "D8_genes",
-      "name": "D8 genes (RefSeq)",
-      "assemblyNames": ["D8"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "D8.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "D8.gff.gz.tbi",
+            "uri": "644-PT8.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1464,18 +1382,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "tolC_genes",
-      "name": "tolC genes (RefSeq)",
-      "assemblyNames": ["tolC"],
+      "trackId": "tolC-_genes",
+      "name": "tolC- genes (RefSeq)",
+      "assemblyNames": ["tolC-"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "tolC.gff.gz",
+          "uri": "tolC-.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "tolC.gff.gz.tbi",
+            "uri": "tolC-.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1524,18 +1442,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "JJ2434_genes",
-      "name": "JJ2434 genes (RefSeq)",
-      "assemblyNames": ["JJ2434"],
+      "trackId": "C43_DE3_genes",
+      "name": "C43_DE3 genes (RefSeq)",
+      "assemblyNames": ["C43_DE3"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "JJ2434.gff.gz",
+          "uri": "C43_DE3.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "JJ2434.gff.gz.tbi",
+            "uri": "C43_DE3.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1544,18 +1462,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "CI5_genes",
-      "name": "CI5 genes (RefSeq)",
-      "assemblyNames": ["CI5"],
+      "trackId": "C3026_genes",
+      "name": "C3026 genes (RefSeq)",
+      "assemblyNames": ["C3026"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "CI5.gff.gz",
+          "uri": "C3026.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "CI5.gff.gz.tbi",
+            "uri": "C3026.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1564,38 +1482,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "GB089_genes",
-      "name": "GB089 genes (RefSeq)",
-      "assemblyNames": ["GB089"],
+      "trackId": "G749_genes",
+      "name": "G749 genes (RefSeq)",
+      "assemblyNames": ["G749"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "GB089.gff.gz",
+          "uri": "G749.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "GB089.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "S06_00048_genes",
-      "name": "S06_00048 genes (RefSeq)",
-      "assemblyNames": ["S06_00048"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "S06_00048.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "S06_00048.gff.gz.tbi",
+            "uri": "G749.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1605,7 +1503,7 @@
     {
       "type": "SyntenyTrack",
       "trackId": "ecoli_orthologs",
-      "name": "E. coli orthologs by gene symbol (47 genomes, RefSeq)",
+      "name": "E. coli orthologs by gene symbol (44 genomes, RefSeq)",
       "assemblyNames": [
         "MG1655",
         "DH10B",
@@ -1617,43 +1515,40 @@
         "UMN026",
         "IAI39",
         "IAI1",
-        "Ec55989",
+        "55989",
         "ED1a",
-        "O104H4",
+        "2011C-3493",
         "E24377A",
         "HS",
         "SE11",
-        "ATCC8739",
-        "SMS35",
-        "BL21DE3",
-        "APECO1",
-        "Nissle1917",
+        "ATCC_8739",
+        "SMS-3-5",
+        "BL21_DE3",
+        "APEC_O1",
+        "Nissle_1917",
         "NCTC86",
-        "Sflex301",
-        "Sdys197",
-        "Sboy227",
-        "Sson53G",
+        "Sflexneri_301",
+        "Sdysenteriae_Sd197",
+        "Sboydii_Sb227",
+        "Ssonnei_53G",
         "ST540",
         "ST2747",
         "BL21_TaKaRa",
-        "SF_166",
-        "K_12_substr_MG1655",
-        "S2012C_4227",
-        "S2011C_4315",
-        "UPEC_26_1",
-        "FORC_028",
-        "S210221272",
-        "D8",
+        "HMS174",
+        "MG1655_TMP32XR1",
+        "2009C-3133",
+        "SaT040",
+        "SRCC_1675",
+        "644-PT8",
         "M19",
         "S30",
         "S56",
-        "tolC",
+        "tolC-",
         "WCHEC050613",
         "MGY",
-        "JJ2434",
-        "CI5",
-        "GB089",
-        "S06_00048"
+        "C43_DE3",
+        "C3026",
+        "G749"
       ],
       "adapter": {
         "type": "MCScanBlocksAdapter",
@@ -1672,43 +1567,40 @@
           "UMN026",
           "IAI39",
           "IAI1",
-          "Ec55989",
+          "55989",
           "ED1a",
-          "O104H4",
+          "2011C-3493",
           "E24377A",
           "HS",
           "SE11",
-          "ATCC8739",
-          "SMS35",
-          "BL21DE3",
-          "APECO1",
-          "Nissle1917",
+          "ATCC_8739",
+          "SMS-3-5",
+          "BL21_DE3",
+          "APEC_O1",
+          "Nissle_1917",
           "NCTC86",
-          "Sflex301",
-          "Sdys197",
-          "Sboy227",
-          "Sson53G",
+          "Sflexneri_301",
+          "Sdysenteriae_Sd197",
+          "Sboydii_Sb227",
+          "Ssonnei_53G",
           "ST540",
           "ST2747",
           "BL21_TaKaRa",
-          "SF_166",
-          "K_12_substr_MG1655",
-          "S2012C_4227",
-          "S2011C_4315",
-          "UPEC_26_1",
-          "FORC_028",
-          "S210221272",
-          "D8",
+          "HMS174",
+          "MG1655_TMP32XR1",
+          "2009C-3133",
+          "SaT040",
+          "SRCC_1675",
+          "644-PT8",
           "M19",
           "S30",
           "S56",
-          "tolC",
+          "tolC-",
           "WCHEC050613",
           "MGY",
-          "JJ2434",
-          "CI5",
-          "GB089",
-          "S06_00048"
+          "C43_DE3",
+          "C3026",
+          "G749"
         ],
         "bedLocations": [
           {
@@ -1752,7 +1644,7 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "Ec55989.bed",
+            "uri": "55989.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1760,7 +1652,7 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "O104H4.bed",
+            "uri": "2011C-3493.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1776,23 +1668,23 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "ATCC8739.bed",
+            "uri": "ATCC_8739.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "SMS35.bed",
+            "uri": "SMS-3-5.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "BL21DE3.bed",
+            "uri": "BL21_DE3.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "APECO1.bed",
+            "uri": "APEC_O1.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Nissle1917.bed",
+            "uri": "Nissle_1917.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1800,19 +1692,19 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sflex301.bed",
+            "uri": "Sflexneri_301.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sdys197.bed",
+            "uri": "Sdysenteriae_Sd197.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sboy227.bed",
+            "uri": "Sboydii_Sb227.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "Sson53G.bed",
+            "uri": "Ssonnei_53G.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1828,35 +1720,27 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "SF_166.bed",
+            "uri": "HMS174.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "K_12_substr_MG1655.bed",
+            "uri": "MG1655_TMP32XR1.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "S2012C_4227.bed",
+            "uri": "2009C-3133.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "S2011C_4315.bed",
+            "uri": "SaT040.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "UPEC_26_1.bed",
+            "uri": "SRCC_1675.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "FORC_028.bed",
-            "locationType": "UriLocation"
-          },
-          {
-            "uri": "S210221272.bed",
-            "locationType": "UriLocation"
-          },
-          {
-            "uri": "D8.bed",
+            "uri": "644-PT8.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1872,7 +1756,7 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "tolC.bed",
+            "uri": "tolC-.bed",
             "locationType": "UriLocation"
           },
           {
@@ -1884,19 +1768,15 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "JJ2434.bed",
+            "uri": "C43_DE3.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "CI5.bed",
+            "uri": "C3026.bed",
             "locationType": "UriLocation"
           },
           {
-            "uri": "GB089.bed",
-            "locationType": "UriLocation"
-          },
-          {
-            "uri": "S06_00048.bed",
+            "uri": "G749.bed",
             "locationType": "UriLocation"
           }
         ],
@@ -1911,43 +1791,40 @@
           "UMN026",
           "IAI39",
           "IAI1",
-          "Ec55989",
+          "55989",
           "ED1a",
-          "O104H4",
+          "2011C-3493",
           "E24377A",
           "HS",
           "SE11",
-          "ATCC8739",
-          "SMS35",
-          "BL21DE3",
-          "APECO1",
-          "Nissle1917",
+          "ATCC_8739",
+          "SMS-3-5",
+          "BL21_DE3",
+          "APEC_O1",
+          "Nissle_1917",
           "NCTC86",
-          "Sflex301",
-          "Sdys197",
-          "Sboy227",
-          "Sson53G",
+          "Sflexneri_301",
+          "Sdysenteriae_Sd197",
+          "Sboydii_Sb227",
+          "Ssonnei_53G",
           "ST540",
           "ST2747",
           "BL21_TaKaRa",
-          "SF_166",
-          "K_12_substr_MG1655",
-          "S2012C_4227",
-          "S2011C_4315",
-          "UPEC_26_1",
-          "FORC_028",
-          "S210221272",
-          "D8",
+          "HMS174",
+          "MG1655_TMP32XR1",
+          "2009C-3133",
+          "SaT040",
+          "SRCC_1675",
+          "644-PT8",
           "M19",
           "S30",
           "S56",
-          "tolC",
+          "tolC-",
           "WCHEC050613",
           "MGY",
-          "JJ2434",
-          "CI5",
-          "GB089",
-          "S06_00048"
+          "C43_DE3",
+          "C3026",
+          "G749"
         ]
       },
       "displays": [
@@ -1955,7 +1832,7 @@
           "type": "MultiWaySyntenyDisplay",
           "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
           "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
-          "height": 1100
+          "height": 970
         }
       ]
     }

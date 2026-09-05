@@ -287,14 +287,18 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   fusion, every ape lane on one of its two chromosomes), the AMY1 cluster at
   `chr1:103,500,000-103,800,000` as the join's negative (LOC ids in the apes).
 - **`demos/ecoli_orthologs` is the same join at cohort scale**
-  (`build_ecoli_orthologs.sh`): the 47 of those 100 accessions whose longest
-  sequence is a chromosome of 4 Mb or more and whose annotation names at least
-  2,000 genes, `--unnamed '_RS[0-9]+$'` for PGAP's locus tags. Loci: the atp
-  operon `NC_000913.3:3,910,000-3,925,000` (every lane places), the O-antigen
-  cluster `NC_000913.3:2,095,000-2,115,000` as the accessory-genome negative.
-  Past about 500 kb the stack is unreadable and no figure should try: the
-  display has no coarse tier, and at 47 lanes the bridged ribbons of any
-  sparse lane sweep the whole track.
+  (`build_ecoli_orthologs.sh`): the 44 of those 100 accessions whose longest
+  sequence is a chromosome of 4 Mb or more, whose annotation names at least
+  2,000 genes, and whose assembly report calls them a current E. coli or one
+  of the four named Shigella species (the hand-typed list had a Leclercia, a
+  Salmonella and a suppressed Shigella sp. in it), `--unnamed '_RS[0-9]+$'`
+  for PGAP's locus tags. Lane names come from the report's strain field, not
+  the script. Loci: the atp operon `NC_000913.3:3,910,000-3,925,000` (every
+  lane places), the O-antigen cluster `NC_000913.3:2,095,000-2,115,000` as
+  the accessory-genome negative (the six K-12 derivatives fill 15 of its 20
+  anchor genes, the next lane 12). Past about 500 kb the stack is unreadable
+  and no figure should try: the display has no coarse tier, and at 44 lanes
+  the bridged ribbons of any sparse lane sweep the whole track.
 
 ## Other demos
 

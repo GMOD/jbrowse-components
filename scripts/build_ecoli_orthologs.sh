@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Stack 47 E. coli and Shigella genomes as lanes of one MultiWaySyntenyDisplay
+# Stack 44 E. coli and Shigella genomes as lanes of one MultiWaySyntenyDisplay
 # from their RefSeq annotations alone: no genome FASTA, no aligner.
 #
 # The sibling builders (build_ecoli_pangenome_synteny.sh, _graph, _cactus)
@@ -12,7 +12,7 @@
 # genes that differ between strains share no symbol, and the lanes draw their
 # own genes there with no ribbon between them.
 #
-# The strain list is what survived a screen, not a list picked by name. A
+# The accession list is what survived a screen, not a list picked by name. A
 # hundred RefSeq E. coli accessions were tried on 2026-09-02: 18 no longer
 # download, two are phage genomes, and a quarter of the rest carry PGAP
 # annotations that name genes by locus tag only, so they join nothing. What is
@@ -24,6 +24,11 @@
 # to re-run before adding a strain:
 #
 #   gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
+#
+# Lane names are not typed here: each comes from the strain field of the
+# assembly report `datasets` ships in the zip, and the report's organism name
+# is a screen of its own, because three of the accessions that listing handed
+# over turned out to be a Leclercia, a Salmonella and a suppressed Shigella sp.
 #
 # Requires: the NCBI `datasets` CLI, bgzip/tabix (htslib), unzip, python3
 # Usage:    bash build_ecoli_orthologs.sh [outdir]
@@ -39,82 +44,148 @@ done
 
 OUTDIR="${1:-ecoli_orthologs_build}"
 
-# name, RefSeq accession. The first is the anchor: every row of the table is
-# one of its genes, and K-12 MG1655 is the strain the rest are described
-# against in the literature.
-read -r -d '' STRAINS <<'TABLE' || true
-MG1655               GCF_000005845.2
-DH10B                GCF_000019425.1
-Sakai                GCF_000008865.2
-EDL933               GCF_000006665.1
-CFT073               GCF_000007445.1
-UTI89                GCF_000013265.1
-S88                  GCF_000026285.1
-UMN026               GCF_000026325.1
-IAI39                GCF_000026345.1
-IAI1                 GCF_000026265.1
-Ec55989              GCF_000026245.1
-ED1a                 GCF_000026305.1
-O104H4               GCF_000299455.1
-E24377A              GCF_000017745.1
-HS                   GCF_000017765.1
-SE11                 GCF_000010385.1
-ATCC8739             GCF_000019385.1
-SMS35                GCF_000019645.1
-BL21DE3              GCF_000022665.1
-APECO1               GCF_000014845.1
-Nissle1917           GCF_003546975.1
-NCTC86               GCF_002007705.1
-Sflex301             GCF_000006925.2
-Sdys197              GCF_000012005.1
-Sboy227              GCF_000012025.1
-Sson53G              GCF_000283715.1
-ST540                GCF_000597845.1
-ST2747               GCF_000599665.1
-BL21_TaKaRa          GCF_000833145.1
-SF_166               GCF_000953515.1
-K_12_substr_MG1655   GCF_001308125.1
-S2012C_4227          GCF_001420955.1
-S2011C_4315          GCF_001518835.1
-UPEC_26_1            GCF_001566615.1
-FORC_028             GCF_001596115.1
-S210221272           GCF_001612495.1
-D8                   GCF_001650295.1
-M19                  GCF_001901215.1
-S30                  GCF_001901365.1
-S56                  GCF_001901445.1
-tolC                 GCF_001932515.1
-WCHEC050613          GCF_001969285.3
-MGY                  GCF_001999185.1
-JJ2434               GCF_001039415.1
-CI5                  GCF_001559675.1
-GB089                GCF_001566635.1
-S06_00048            GCF_001612515.1
-TABLE
+# RefSeq accessions. The first is the anchor: every row of the table is one of
+# its genes, and K-12 MG1655 is the strain the rest are described against in
+# the literature.
+ANCHOR=MG1655
+read -r -d '' ACCESSIONS <<'LIST' || true
+GCF_000005845.2
+GCF_000019425.1
+GCF_000008865.2
+GCF_000006665.1
+GCF_000007445.1
+GCF_000013265.1
+GCF_000026285.1
+GCF_000026325.1
+GCF_000026345.1
+GCF_000026265.1
+GCF_000026245.1
+GCF_000026305.1
+GCF_000299455.1
+GCF_000017745.1
+GCF_000017765.1
+GCF_000010385.1
+GCF_000019385.1
+GCF_000019645.1
+GCF_000022665.1
+GCF_000014845.1
+GCF_003546975.1
+GCF_002007705.1
+GCF_000006925.2
+GCF_000012005.1
+GCF_000012025.1
+GCF_000283715.1
+GCF_000597845.1
+GCF_000599665.1
+GCF_000833145.1
+GCF_000953515.1
+GCF_001308125.1
+GCF_001420955.1
+GCF_001518835.1
+GCF_001566615.1
+GCF_001596115.1
+GCF_001612495.1
+GCF_001650295.1
+GCF_001901215.1
+GCF_001901365.1
+GCF_001901445.1
+GCF_001932515.1
+GCF_001969285.3
+GCF_001999185.1
+GCF_001039415.1
+GCF_001559675.1
+GCF_001566635.1
+GCF_001612515.1
+LIST
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
-echo "$STRAINS" > strains.tsv
-ANCHOR=$(head -1 strains.tsv | awk '{print $1}')
-NAMES=$(awk '{print $1}' strains.tsv)
 
-# ── GFF3 and sequence report per genome, in one archive ──────────────────────
+# ── GFF3, sequence report and assembly report per genome, in one archive ─────
+# The zip is fetched under a temporary name so an interrupted download is
+# retried rather than unzipped.
 mkdir -p ncbi
-awk '{print $2}' strains.tsv > ncbi/accessions.txt
+echo "$ACCESSIONS" > ncbi/accessions.txt
 if [ ! -f ncbi/genomes.zip ]; then
   datasets download genome accession --inputfile ncbi/accessions.txt \
-    --include gff3,seq-report --filename ncbi/genomes.zip --no-progressbar
+    --include gff3,seq-report --filename ncbi/genomes.zip.part --no-progressbar
+  mv ncbi/genomes.zip.part ncbi/genomes.zip
 fi
 if [ ! -d ncbi/extract/ncbi_dataset/data ]; then
-  unzip -q -o ncbi/genomes.zip -d ncbi/extract
+  rm -rf ncbi/extract.part
+  unzip -q -o ncbi/genomes.zip -d ncbi/extract.part
+  mv ncbi/extract.part ncbi/extract
 fi
 DATA=ncbi/extract/ncbi_dataset/data
+
+# ── Lane names from the assembly report, and the organism screen ─────────────
+# A lane is named what a microbiologist would say: the report's strain field,
+# minus the "K-12 substr." that RefSeq writes ahead of MG1655, DH10B and
+# HMS174, minus the substrain that follows Sakai, and with a species prefix on
+# the Shigella so Sflexneri_301 does not read as an E. coli strain. A genome
+# stays only when the report calls it Escherichia coli or one of the four
+# named Shigella species, and RefSeq still has it as current.
+python3 - "$DATA/assembly_data_report.jsonl" ncbi/accessions.txt strains.tsv "$ANCHOR" <<'PY'
+import json, re, sys
+report, accessions, out, anchor = sys.argv[1:]
+
+def sanitise(s):
+    return re.sub(r'_+', '_', re.sub(r'[^A-Za-z0-9._-]', '_', s)).strip('_')
+
+def spoken(strain):
+    parent, sep, substrain = strain.partition(' substr. ')
+    picked = (substrain if parent == 'K-12' else parent) if sep else strain
+    return re.sub(r'^K-12 ', '', picked)
+
+SHIGELLA = re.compile(r'^Shigella (flexneri|dysenteriae|boydii|sonnei)\b')
+
+def lane_name(organism, strain):
+    shigella = SHIGELLA.match(organism)
+    prefix = f'S{shigella.group(1)}_' if shigella else ''
+    return prefix + sanitise(spoken(strain))
+
+def drop_reason(r):
+    organism = r['organism']['organismName']
+    status = r['assemblyInfo']['assemblyStatus']
+    wanted = organism.startswith('Escherichia coli') or SHIGELLA.match(organism)
+    return '; '.join(([] if wanted else [f'organism is {organism}'])
+                     + ([] if status == 'current' else [f'RefSeq status {status}']))
+
+with open(report) as fh:
+    reports = {r['accession']: r for r in map(json.loads, fh)}
+rows = []
+names = {}
+with open(accessions) as fh:
+    for acc in fh.read().split():
+        r = reports[acc]
+        organism = r['organism']['organismName']
+        strain = r['organism']['infraspecificNames']['strain']
+        reason = drop_reason(r)
+        if reason:
+            print(f'dropped {acc} ({organism} {strain}): {reason}')
+        else:
+            name = lane_name(organism, strain)
+            if name in names:
+                name = f"{name}_{re.sub(r'[^0-9]', '', acc)}"
+            names[name] = acc
+            rows.append((name, acc, organism, strain))
+if not rows or rows[0][0] != anchor:
+    sys.exit(f'anchor {anchor} is not the first surviving genome: {rows[:1]}')
+with open(out, 'w') as fh:
+    for row in rows:
+        fh.write('\t'.join(row) + '\n')
+width = max(len(name) for name, *_ in rows)
+for name, acc, organism, strain in rows:
+    print(f'{name:<{width}}  {acc}  {organism} [{strain}]')
+print(f'{len(rows)} genomes kept of {len(reports)}')
+PY
+NAMES=$(cut -f1 strains.tsv)
 
 # ── Per genome: the chromosome, its length, its indexed GFF3 ─────────────────
 # The chromosome is the longest sequence in the report and the plasmids are
 # dropped: a lane follows one contig, and a plasmid lane would draw on
 # whichever one the window's placements happened to favour.
-while read -r name acc; do
+while IFS=$'\t' read -r name acc _; do
   if [ -f "$name.gff.gz.tbi" ]; then
     echo "reusing $name"
     continue
@@ -158,8 +229,12 @@ BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
 
 # ── The JBrowse config ───────────────────────────────────────────────────────
 python3 - "$BLOCK_ASSEMBLIES" <<'PY'
-import json, sys
+import json, math, sys
 order = sys.argv[1].split()
+
+# MultiWaySyntenyDisplay's MIN_LANE_PITCH: below this per lane the stack
+# scrolls inside the track instead of dividing its height
+LANE_PITCH = 22
 
 def uri(u):
     return {'uri': u, 'locationType': 'UriLocation'}
@@ -203,13 +278,13 @@ config = {
         },
         # Orthologs share a symbol, so coloring a gene by its name runs one
         # color down the whole stack for a conserved gene and breaks the
-        # column where a lane lacks it. The height is what 47 lanes need for
-        # every header to draw.
+        # column where a lane lacks it. The height is what every lane at the
+        # minimum pitch needs for every header to draw.
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'ecoli_orthologs-MultiWaySyntenyDisplay',
             'color': "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
-            'height': 1100,
+            'height': math.ceil(len(order) * LANE_PITCH / 10) * 10,
         }],
     }],
     'defaultSession': {
@@ -230,8 +305,9 @@ PY
 cat <<EOF
 
 built in $OUTDIR:
-  config.json                 $(wc -l < strains.tsv) assemblies, the gene tracks and the ortholog track
-  ecoli.blocks                the ortholog table, $(wc -l < ecoli.blocks) rows
+  config.json                 $(wc -l < strains.tsv | tr -d ' ') assemblies, the gene tracks and the ortholog track
+  strains.tsv                 lane name, accession, organism and strain per genome
+  ecoli.blocks                the ortholog table, $(wc -l < ecoli.blocks | tr -d ' ') rows
   <strain>.bed                gene placements, one per genome
   <strain>.gff.gz{,.tbi}      the annotation each lane draws
   <strain>.chrom.sizes        the chromosome and its length

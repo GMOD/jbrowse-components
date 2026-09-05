@@ -160,7 +160,7 @@ lever rather than a cap.
    `rowOrder`. No RPC, no new fetch, and it is the case a comparative stack of
    annotated assemblies actually hits. As of 2026-09-04 the motivating demos
    exist at both scales: the gene-symbol tutorials stack eight primates and
-   forty-seven E. coli, and the 47-way page says out loud what densest-first
+   forty-four E. coli, and the 44-way page says out loud what densest-first
    cannot — "the reduced Shigella genomes fall toward the bottom without
    anything naming them".
 2. **`clusterMatrix` for the order, then a 2-opt pass.** Reuse the shared tail
