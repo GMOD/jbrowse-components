@@ -524,6 +524,18 @@ export default function baseStateModelFactory(
 
         /**
          * #getter
+         * The subfeature-label mode the worker bakes. Collapsed mode forces it
+         * off here, since a worker-baked label has nothing main-thread to gate
+         * it; the menu radio reads the raw slot.
+         */
+        get effectiveSubfeatureLabels() {
+          return this.displayMode === 'collapsed'
+            ? 'none'
+            : resolveConf(self, 'subfeatureLabels')
+        },
+
+        /**
+         * #getter
          */
         // Resolved label font size (px) for the current display mode. Single
         // source shared by layout row reservation, the DOM overlay, and the SVG
@@ -551,7 +563,7 @@ export default function baseStateModelFactory(
         // Collapsed mode is a single-row overview, so it suppresses names
         // outright — gated here (not just at renderedShowLabels) so all four
         // consumers agree. Descriptions and subfeature labels are suppressed
-        // separately (effectiveShowDescriptions / rpcProps).
+        // separately (effectiveShowDescriptions / effectiveSubfeatureLabels).
         get showLabels() {
           const mode = this.showLabelsMode
           return (
@@ -664,8 +676,8 @@ export default function baseStateModelFactory(
           // suppresses them outright (like names) — gated at this render-layer
           // getter, not the mode-derived `showDescriptions` one, so the track
           // menu's radio still reflects the persisted choice rather than
-          // reading false while collapsed (mirrors how subfeatureLabels is
-          // forced off in rpcProps, not in its menu-facing getter).
+          // reading false while collapsed (mirrors effectiveSubfeatureLabels,
+          // not its menu-facing getter).
           return (
             this.displayMode !== 'collapsed' &&
             this.showDescriptions &&
@@ -793,13 +805,7 @@ export default function baseStateModelFactory(
             // refetches. buildFeatureAdmission normalizes the prefix either way.
             displayConfig: {
               ...workerConfig,
-              // Subfeature labels are worker-baked, so unlike name/description
-              // labels they can't be gated on the main thread — force them off
-              // here so collapsed mode suppresses every label.
-              subfeatureLabels:
-                self.displayMode === 'collapsed'
-                  ? 'none'
-                  : workerConfig.subfeatureLabels,
+              subfeatureLabels: self.effectiveSubfeatureLabels,
               jexlFilters: self.activeFilters(),
             },
             colorByCDS: self.colorByCDS,
@@ -930,15 +936,10 @@ export default function baseStateModelFactory(
          * #getter
          * Whether the settings reserve `below` subfeature-label rows, which is
          * what earns the fit ladder its `bare` rung — with nothing reserved
-         * the rung would repack an identical stack. Collapsed mode forces the
-         * labels off in rpcProps, so the worker counted no rows there whatever
-         * the slot says.
+         * the rung would repack an identical stack.
          */
         get reservesBelowLabelRows() {
-          return (
-            self.displayMode !== 'collapsed' &&
-            resolveConf(self, 'subfeatureLabels') === 'below'
-          )
+          return self.effectiveSubfeatureLabels === 'below'
         },
       }))
       .views(fitLadderViews)
