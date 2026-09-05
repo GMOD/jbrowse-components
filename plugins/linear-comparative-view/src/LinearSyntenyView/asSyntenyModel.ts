@@ -11,8 +11,16 @@ import type { LinearSyntenyViewModel } from './model.ts'
  *
  * A leaf module (the model imports are type-only) so the components chunk can
  * use it without pulling the lazily loaded state model into its chunk.
+ *
+ * The return type is written out rather than inferred. Both models are composed
+ * MST types whose serialized form is enormous, and declaration emit — not
+ * `tsc --noEmit` — is what has to write it down: a getter added anywhere along
+ * LinearComparativeView's compose chain tips the inferred union over TS7056,
+ * from a file that never mentioned the getter.
  */
-export function asSyntenyModel(model: LinearComparativeViewModel) {
+export function asSyntenyModel(
+  model: LinearComparativeViewModel,
+): LinearSyntenyViewModel | undefined {
   return model.type === 'LinearSyntenyView'
     ? (model as LinearSyntenyViewModel)
     : undefined
