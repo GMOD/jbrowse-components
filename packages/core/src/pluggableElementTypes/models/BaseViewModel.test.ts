@@ -9,7 +9,11 @@ import BaseViewModel from './BaseViewModel.ts'
 // because the walk itself is what these pin: a stand-in re-implementing it
 // would pass whatever the base does.
 
-const Track = types.model('Track', { trackId: types.string })
+const Track = types.model('Track', {
+  trackId: types.string,
+  configuration: types.optional(types.frozen(), {}),
+  displays: types.optional(types.array(types.frozen()), []),
+})
 
 const PlainView = types.compose(
   BaseViewModel,
@@ -78,6 +82,24 @@ test('a non-view living under `views` is not descended into', () => {
   })
   expect(view.allViews).toEqual([view])
   expect(ids(view.allTracks)).toEqual(['paf'])
+})
+
+// react-msaview's view keeps its MSA annotation rows under `tracks`. A row has
+// no displays and no configuration, and reading either off it as a track
+// crashed the readiness marker for every session holding an MSA view.
+test('a non-track living under `tracks` is not a track', () => {
+  const Msaish = types.compose(
+    BaseViewModel,
+    types.model({
+      type: 'Msaish',
+      tracks: types.array(
+        types.model({ id: types.string, name: types.string }),
+      ),
+    }),
+  )
+  const view = Msaish.create({ tracks: [{ id: 'ann', name: 'Annotations' }] })
+  expect(view.ownTracks).toEqual([])
+  expect(view.allTracks).toEqual([])
 })
 
 test('a view with no track-bearing properties reports empty, not undefined', () => {

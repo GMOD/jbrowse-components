@@ -42,15 +42,25 @@ function containingViewOf(node: IAnyStateTreeNode) {
  * so a consumer asks `ownTracks`/`allViews`/`allTracks` and never learns which
  * property a container keeps its children on.
  *
- * A `views` entry answers only if it carries the contract itself: the dotplot
- * keeps its two 1D axis models under the same property name, and an axis is
- * not a view — it composes no base, holds no tracks, and descending into it
- * would put undefined in the census.
+ * An entry answers only if it carries the contract itself: the dotplot keeps
+ * its two 1D axis models under `views`, and react-msaview's view keeps its MSA
+ * annotation rows under `tracks`. Neither is what the name says — an axis
+ * composes no base and an annotation row has no displays — and descending into
+ * one put undefined in the census.
  */
 interface ViewTreeSelf extends IStateTreeNode {
-  tracks?: AbstractTrackModel[]
-  trackContainers?: { tracks?: AbstractTrackModel[] }[]
+  tracks?: unknown[]
+  trackContainers?: { tracks?: unknown[] }[]
   views?: { allViews?: AbstractViewModel[] }[]
+}
+
+function isTrack(entry: unknown): entry is AbstractTrackModel {
+  return (
+    typeof entry === 'object' &&
+    entry !== null &&
+    'configuration' in entry &&
+    'displays' in entry
+  )
 }
 
 /**
@@ -144,7 +154,7 @@ const BaseViewModel = types
       return [
         ...(s.tracks ?? []),
         ...(s.trackContainers ?? []).flatMap(c => c.tracks ?? []),
-      ]
+      ].filter(isTrack)
     },
     /**
      * #getter
