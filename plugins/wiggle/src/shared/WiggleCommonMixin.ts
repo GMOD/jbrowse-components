@@ -23,6 +23,7 @@ import type {
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
+import type { RegionStoreSelf } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -62,15 +63,7 @@ const ownAdapterConfig = (self: object) =>
 
 // `MultiRegionDisplayMixin`'s per-region store, which both composers of this
 // mixin bring and this one only reads through.
-const regionStore = (self: object) =>
-  self as unknown as {
-    regionPayloads: ReadonlyMap<number, unknown>
-    setLoadedRegion: (
-      displayedRegionIndex: number,
-      region: Region,
-      payload: unknown,
-    ) => void
-  }
+const regionStore = (self: object) => self as RegionStoreSelf
 
 /**
  * #stateModel WiggleCommonMixin

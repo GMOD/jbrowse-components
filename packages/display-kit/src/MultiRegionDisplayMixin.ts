@@ -27,6 +27,7 @@ import type {
 import type { RegionHost } from './regionHost.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
@@ -896,4 +897,16 @@ export default function MultiRegionDisplayMixin() {
 
 export type MultiRegionDisplayMixinType = ReturnType<
   typeof MultiRegionDisplayMixin
+>
+
+/**
+ * The store as a mixin composed beside `MultiRegionDisplayMixin` reaches it:
+ * the payload map and the staging write, taken from the mixin's own instance
+ * type. A cast that names this cannot restate either signature, which is how
+ * the wiggle mixin's copy kept the old argument order and typechecked while it
+ * would have stored the data as the fetch inputs.
+ */
+export type RegionStoreSelf = Pick<
+  Instance<ReturnType<typeof MultiRegionDisplayMixin>>,
+  'regionPayloads' | 'setLoadedRegion'
 >
