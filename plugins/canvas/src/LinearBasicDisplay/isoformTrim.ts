@@ -306,6 +306,32 @@ function trimPrimitiveKind(
 }
 
 /**
+ * The trim's verdict on one isoform of one gene: `'untouched'` where no trim
+ * applies (no plan entry for the gene, or the gene's own root record), the
+ * px/label-row shift that closes the gaps above a kept isoform, or undefined
+ * where the trim dropped it. The primitive arrays, the subfeature hit boxes,
+ * the peptide overlay and the floating labels all rule on the same three
+ * outcomes, so they all ask here.
+ */
+function trimShift(
+  trims: ReadonlyMap<string, IsoformTrim>,
+  geneId: string,
+  childOrdinal: number | undefined,
+) {
+  const ordinal = childOrdinal ?? ROOT_CHILD_ORDINAL
+  const trim = trims.get(geneId)
+  if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
+    return 'untouched' as const
+  }
+  return trim.keptOrdinals.has(ordinal)
+    ? {
+        px: trim.shiftPxByOrdinal.get(ordinal) ?? 0,
+        rows: trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0,
+      }
+    : undefined
+}
+
+/**
  * Drop the isoforms one plan leaves out of ONE region's cloned arrays, and
  * close the gaps the drop leaves.
  *
@@ -334,37 +360,34 @@ export function applyIsoformTrim(
     }
 
     data.subfeatureInfos = data.subfeatureInfos.filter(info => {
-      const trim = trims.get(info.parentFeatureId)
-      const ordinal = info.childOrdinal ?? ROOT_CHILD_ORDINAL
-      if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
+      const shift = trimShift(trims, info.parentFeatureId, info.childOrdinal)
+      if (shift === 'untouched') {
         return true
       }
-      if (!trim.keptOrdinals.has(ordinal)) {
+      if (!shift) {
         return false
       }
-      const shiftPx = trim.shiftPxByOrdinal.get(ordinal) ?? 0
-      info.topPx -= shiftPx
-      info.bottomPx -= shiftPx
-      info.labelRowsAbove =
-        (info.labelRowsAbove ?? 0) -
-        (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
+      info.topPx -= shift.px
+      info.bottomPx -= shift.px
+      info.labelRowsAbove = (info.labelRowsAbove ?? 0) - shift.rows
       return true
     })
 
     if (data.aminoAcidOverlay) {
       data.aminoAcidOverlay = data.aminoAcidOverlay.filter(aa => {
-        const ordinal = aa.childOrdinal ?? ROOT_CHILD_ORDINAL
-        const trim = trims.get(data.flatbushItems[aa.flatbushIdx]!.featureId)
-        if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
+        const shift = trimShift(
+          trims,
+          data.flatbushItems[aa.flatbushIdx]!.featureId,
+          aa.childOrdinal,
+        )
+        if (shift === 'untouched') {
           return true
         }
-        if (!trim.keptOrdinals.has(ordinal)) {
+        if (!shift) {
           return false
         }
-        aa.topPx -= trim.shiftPxByOrdinal.get(ordinal) ?? 0
-        aa.labelRowsAbove =
-          (aa.labelRowsAbove ?? 0) -
-          (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
+        aa.topPx -= shift.px
+        aa.labelRowsAbove = (aa.labelRowsAbove ?? 0) - shift.rows
         return true
       })
     }
@@ -382,22 +405,17 @@ export function applyIsoformTrim(
 
   for (const [key, labelData] of data.floatingLabelsData) {
     const geneId = labelData.parentFeatureId ?? labelData.featureId
-    const ordinal = labelData.childOrdinal ?? ROOT_CHILD_ORDINAL
-    const trim = trims.get(geneId)
-    if (trim && ordinal !== ROOT_CHILD_ORDINAL) {
-      if (trim.keptOrdinals.has(ordinal)) {
-        labelData.topY -= trim.shiftPxByOrdinal.get(ordinal) ?? 0
-        labelData.labelRowsAbove =
-          (labelData.labelRowsAbove ?? 0) -
-          (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
-      } else {
+    if ((labelData.childOrdinal ?? ROOT_CHILD_ORDINAL) !== ROOT_CHILD_ORDINAL) {
+      const shift = trimShift(trims, geneId, labelData.childOrdinal)
+      if (!shift) {
         data.floatingLabelsData.delete(key)
+      } else if (shift !== 'untouched') {
+        labelData.topY -= shift.px
+        labelData.labelRowsAbove = (labelData.labelRowsAbove ?? 0) - shift.rows
       }
       continue
     }
-    if (ordinal !== ROOT_CHILD_ORDINAL) {
-      continue
-    }
+    const trim = trims.get(geneId)
     // The gene's own entry. Re-anchored to what actually drew, the way
     // `processFeatureRecord` re-anchors a `longestCoding` collapse — otherwise
     // the name floats left of the visible glyph over empty track.

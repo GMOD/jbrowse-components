@@ -509,17 +509,15 @@ function applyHeightScale(
   multiplier: number,
   labelFontPx: number,
 ) {
-  scaleYWithLabelRows(data.rectYs, data.rectLabelRows, multiplier, labelFontPx)
-  scaleYWithLabelRows(data.lineYs, data.lineLabelRows, multiplier, labelFontPx)
-  scaleYWithLabelRows(
-    data.arrowYs,
-    data.arrowLabelRows,
-    multiplier,
-    labelFontPx,
-  )
-  scaleFloat32(data.rectHeights, multiplier)
-  scaleFloat32(data.lineHeights, multiplier)
-  scaleFloat32(data.arrowHeights, multiplier)
+  for (const kind of ['rect', 'line', 'arrow'] as const) {
+    scaleYWithLabelRows(
+      data[`${kind}Ys`],
+      data[`${kind}LabelRows`],
+      multiplier,
+      labelFontPx,
+    )
+    scaleFloat32(data[`${kind}Heights`], multiplier)
+  }
   for (const item of data.flatbushItems) {
     // A gene's own extent has to cover every label row it contains. The packed
     // ROW height comes from `bodyHeightPx`, which applies the same term — this
@@ -1985,17 +1983,12 @@ function applyLayoutToRegion(
     data.rectDensityFade[i] = densityFadeIds.has(featureId) ? 1 : 0
   }
 
-  for (let i = 0; i < data.rectYs.length; i++) {
-    data.rectYs[i] =
-      data.rectYs[i]! + featureOffsets[data.rectFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.lineYs.length; i++) {
-    data.lineYs[i] =
-      data.lineYs[i]! + featureOffsets[data.lineFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.arrowYs.length; i++) {
-    data.arrowYs[i] =
-      data.arrowYs[i]! + featureOffsets[data.arrowFeatureIndices[i]!]!
+  for (const kind of ['rect', 'line', 'arrow'] as const) {
+    const ys = data[`${kind}Ys`]
+    const featureIndices = data[`${kind}FeatureIndices`]
+    for (let i = 0; i < ys.length; i++) {
+      ys[i] = ys[i]! + featureOffsets[featureIndices[i]!]!
+    }
   }
 
   for (let i = 0; i < data.flatbushItems.length; i++) {
