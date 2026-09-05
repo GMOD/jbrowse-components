@@ -11,21 +11,22 @@ import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
+import { mergeContiguousRegions } from './layoutMultiWay.ts'
 import { staleLaneSpecs, starAnchorOf } from './model.ts'
 
+import type { FetchRegion } from './layoutMultiWay.ts'
 import type {
   LaneFetchSpec,
   LaneRegion,
   MultiWaySyntenyDisplayModel,
 } from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 interface MultiWayFetchArgs {
-  regions: ContentBlock[]
+  regions: FetchRegion[]
   lodTier: LodTier
 }
 
@@ -36,7 +37,9 @@ function fetchPhases(
 ): GlobalFetchPhases<MultiWayFetchArgs, Feature[]> {
   return {
     prepare: () => {
-      const regions = self.lgv.staticBlocks.contentBlocks
+      const regions = mergeContiguousRegions(
+        self.lgv.staticBlocks.contentBlocks,
+      )
       return regions.length ? { regions, lodTier: self.lodTier } : undefined
     },
     // no targetAssemblyName: a multi-genome adapter queried with no target
@@ -45,13 +48,15 @@ function fetchPhases(
     // adapter that can to fold those pairs per anchor before they cross the
     // RPC; `groupFeatures` reads either shape, so one that cannot is
     // unaffected. The tier is the one the key was issued at, so an indexed
-    // PIF at a whole-chromosome window serves its coarse rows
+    // PIF at a whole-chromosome window serves its coarse rows. `clipToRegion`
+    // cuts each alignment record to the window on both axes before it crosses
+    // the RPC: a lane fitted to whole liftOver chains sat at 80x the window
     run: async ({ regions, lodTier }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
           adapterConfig: self.adapterConfig,
-          opts: { mateShape: 'grouped', lodMode: lodTier },
+          opts: { mateShape: 'grouped', lodMode: lodTier, clipToRegion: true },
         }),
         r => r.id(),
       ),
@@ -304,7 +309,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         regions: await laneRegions(getSession(self), spec.region.assemblyName, [
           spec.region,
         ]),
-        opts: { targetAssemblyName: spec.lowerAssembly, lodMode: spec.lodTier },
+        opts: {
+          targetAssemblyName: spec.lowerAssembly,
+          lodMode: spec.lodTier,
+          clipToRegion: true,
+        },
       })
       return { key: spec.key, links }
     },

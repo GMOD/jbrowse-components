@@ -8,6 +8,47 @@ import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
 
+export interface FetchRegion {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+}
+
+/**
+ * The view's content blocks as the regions a clipping fetch asks for: blocks
+ * that abut on one refName become one region, so a record spanning two blocks
+ * is cut once rather than once per block, and every edge is snapped outward to
+ * a whole base, since a block is a span of screen and a clip names bases.
+ */
+export function mergeContiguousRegions(blocks: FetchRegion[]) {
+  const merged: FetchRegion[] = []
+  for (const block of blocks) {
+    const last = merged.at(-1)
+    const abuts =
+      last !== undefined &&
+      last.assemblyName === block.assemblyName &&
+      last.refName === block.refName &&
+      (last.end === block.start || block.end === last.start)
+    if (last !== undefined && abuts) {
+      last.start = Math.min(last.start, block.start)
+      last.end = Math.max(last.end, block.end)
+    } else {
+      merged.push({
+        assemblyName: block.assemblyName,
+        refName: block.refName,
+        start: block.start,
+        end: block.end,
+      })
+    }
+  }
+  return merged.map(region => ({
+    ...region,
+    start: Math.floor(region.start),
+    end: Math.ceil(region.end),
+  }))
+}
+
 export interface MultiWayPlacement {
   refName: string
   start: number

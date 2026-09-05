@@ -13,6 +13,7 @@ import {
   laneFetchWindow,
   groupFeatures,
   groupRunSpansOnRow,
+  mergeContiguousRegions,
   rowAssembliesOf,
   rowFrameX,
   tickIntervalFor,
@@ -453,6 +454,61 @@ test('features carrying syntenyId group on it even with no names', () => {
   ])
   expect(groups).toHaveLength(1)
   expect([...groups[0]!.mates.keys()]).toEqual(['peach', 'cacao'])
+})
+
+// The pieces one record leaves in two fetch regions come back with the window
+// in both ids, so they are two groups, each weighing what it shows of the anchor
+test('the clipped pieces of one record are one group each, weighed by the clipped anchor bp', () => {
+  const piece = (window: string, start: number, end: number) =>
+    new SimpleFeature({
+      uniqueId: `0-3000:${window}`,
+      refName: 'chr1',
+      start,
+      end,
+      syntenyId: `0:3000:${window}`,
+      assemblyName: 'anchor',
+      mate: { assemblyName: 'peach', refName: 'Pp1', start, end },
+    })
+  const groups = groupFeatures([
+    piece('0-1000', 700, 1000),
+    piece('1000-2000', 1000, 1400),
+  ])
+  expect(groups.map(g => [g.key, g.weight])).toEqual([
+    ['0:3000:0-1000', 300],
+    ['0:3000:1000-2000', 400],
+  ])
+})
+
+test('contiguous blocks on one refName merge into one whole-base region', () => {
+  const block = (
+    refName: string,
+    start: number,
+    end: number,
+    assemblyName = 'anchor',
+  ) => ({ assemblyName, refName, start, end })
+  expect(
+    mergeContiguousRegions([
+      block('chr1', 0.5, 1000),
+      block('chr1', 1000, 2000),
+      block('chr1', 2000, 2999.5),
+      block('chr1', 5000, 6000),
+      block('chr2', 6000, 7000),
+      block('chr2', 7000, 8000, 'other'),
+    ]),
+  ).toEqual([
+    block('chr1', 0, 3000),
+    block('chr1', 5000, 6000),
+    block('chr2', 6000, 7000),
+    block('chr2', 7000, 8000, 'other'),
+  ])
+  // a reversed region's blocks run the other way along the refName
+  expect(
+    mergeContiguousRegions([
+      block('chr1', 2000, 3000),
+      block('chr1', 1000, 2000),
+    ]),
+  ).toEqual([block('chr1', 1000, 3000)])
+  expect(mergeContiguousRegions([])).toEqual([])
 })
 
 test('a group with nothing on the dominant refName gets no span on that row', () => {

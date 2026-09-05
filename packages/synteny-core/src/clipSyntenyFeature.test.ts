@@ -7,8 +7,8 @@ import {
   CIGAR_S,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
-import { buildBpRegionIndex } from '@jbrowse/synteny-core'
 
+import { buildBpRegionIndex } from './bpRegionIndex.ts'
 import {
   clipLargeBlockToWindow,
   clipSyntenyFeature,

@@ -49,6 +49,8 @@ export interface AnchorsSource {
 export abstract class McscanAnchorsAdapterBase<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 > extends ComparativeAdapterBase<CONF> {
+  protected override readonly recordsAreAlignments = false
+
   setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   protected abstract anchorsSource(): AnchorsSource

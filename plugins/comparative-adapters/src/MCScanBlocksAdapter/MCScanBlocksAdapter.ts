@@ -211,6 +211,8 @@ function columnPairs(
 // every pair the track declares, which for a legacy 2-entry assemblyNames config
 // is the same single mate it always was.
 export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBlocksAdapterConfig> {
+  protected override readonly recordsAreAlignments = false
+
   setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   async setupPre(opts: BaseOptions) {

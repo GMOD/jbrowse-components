@@ -580,6 +580,7 @@ describe('the level-of-detail tier', () => {
       (call.args.opts ?? {}) as {
         lodMode?: string
         targetAssemblyName?: string
+        clipToRegion?: boolean
       }
     await until(() => calls.some(c => c.name === 'CoreGetFeatures'))
     expect(opts(calls.find(c => c.name === 'CoreGetFeatures')!).lodMode).toBe(
@@ -610,6 +611,37 @@ describe('the level-of-detail tier', () => {
       )
     await until(() => linkCall() !== undefined)
     expect(opts(linkCall()!).lodMode).toBe('coarse')
+    expect(opts(linkCall()!).clipToRegion).toBe(true)
+  })
+
+  // A liftOver chain spans tens of Mb, and a lane fitted to whole records sat
+  // at 80x a 300 kb window: the fetch asks for the records cut to the window,
+  // and asks over the view's blocks merged, so a record spanning two of them
+  // is cut once rather than once per block.
+  test('the ortholog fetch asks for records clipped to the merged blocks', async () => {
+    const calls: { name: string; args: Record<string, unknown> }[] = []
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
+      rpc: async (name, args) => {
+        calls.push({ name, args })
+        return name === 'CoreGetInfo' ? { hasCoarseTier: false } : []
+      },
+    })
+    const blocks = display.lgv.staticBlocks.contentBlocks
+    expect(blocks.map(b => [b.start, b.end])).toEqual([
+      [0, 800],
+      [800, 1000],
+    ])
+    await until(() => calls.some(c => c.name === 'CoreGetFeatures'))
+    const { args } = calls.find(c => c.name === 'CoreGetFeatures')!
+    expect(args.opts).toEqual({
+      mateShape: 'grouped',
+      lodMode: 'fine',
+      clipToRegion: true,
+    })
+    expect(args.regions).toEqual([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+    ])
   })
 })
 

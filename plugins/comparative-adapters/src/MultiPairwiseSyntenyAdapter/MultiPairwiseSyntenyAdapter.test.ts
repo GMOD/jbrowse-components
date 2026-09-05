@@ -307,4 +307,29 @@ describe('MultiPairwiseSyntenyAdapter', () => {
       'genomeC',
     ])
   })
+
+  // The star inherits the clip and its children never see the option, so a
+  // record is cut once: the child re-key is the id's prefix, the window its
+  // one suffix, and the CIGAR is gone.
+  it('clips each child record to the region once', async () => {
+    const pieces = await firstValueFrom(
+      makeAdapter(STAR)
+        .getFeaturesInMultipleRegions(
+          [{ assemblyName: 'anchor', refName: 'ctgA', start: 7000, end: 9000 }],
+          { clipToRegion: true },
+        )
+        .pipe(toArray()),
+    )
+    const b = pieces.find(f => mateOf(f).assemblyName === 'genomeB')!
+    expect([b.get('start'), b.get('end')]).toEqual([7000, 9000])
+    expect(mateOf(b)).toEqual({
+      assemblyName: 'genomeB',
+      refName: 'bctg1',
+      start: 2000,
+      end: 4000,
+    })
+    expect(b.get('CIGAR')).toBeUndefined()
+    expect(b.id()).toMatch(/^0-[^:]+:7000-9000$/)
+    expect(String(b.get('syntenyId'))).toMatch(/^0:[^:]+:7000-9000$/)
+  })
 })

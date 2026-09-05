@@ -31,6 +31,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
+    "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",

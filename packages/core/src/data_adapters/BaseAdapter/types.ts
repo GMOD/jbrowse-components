@@ -34,6 +34,12 @@ export interface BaseOptions {
   // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
   // feature per pair.
   mateShape?: 'grouped'
+  // Each alignment record comes back cut to the region that fetched it, on both
+  // axes, with its alignment string dropped: a liftOver chain spans tens of Mb,
+  // and a display fitting a lane to whole records saw 80x the window. Honoured
+  // by the comparative adapters' `getFeaturesInMultipleRegions`, for records
+  // that ARE alignments — a gene-pair table's rows are genes and stay whole.
+  clipToRegion?: boolean
   // Which level-of-detail tier to read, for adapters that expose more than one
   // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
   // fine tier is served; adapters without tiering ignore it entirely.

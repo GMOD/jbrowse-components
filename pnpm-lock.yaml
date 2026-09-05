@@ -643,6 +643,9 @@ importers:
 
   packages/synteny-core:
     dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core

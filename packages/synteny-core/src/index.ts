@@ -18,6 +18,17 @@ export {
   syntenyTypes,
 } from './syntenyTypes.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
+export {
+  clipLargeBlockToWindow,
+  clipSyntenyFeature,
+} from './clipSyntenyFeature.ts'
+export type { ClippedSyntenyFeature } from './clipSyntenyFeature.ts'
+export {
+  getAlignmentOps,
+  getCigar,
+  getCoarseCigar,
+  hasAlignmentString,
+} from './featureAlignmentOps.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
 export { UNNAMED, makeStringDict, unnamedNameId } from './stringDict.ts'
 export type { StringDict } from './stringDict.ts'

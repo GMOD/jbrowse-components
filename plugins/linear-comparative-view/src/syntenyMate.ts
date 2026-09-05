@@ -1,6 +1,13 @@
-import { parseCigar2Typed, parseCoarseCigar } from '@jbrowse/cigar-utils'
-
 import type { Feature } from '@jbrowse/core/util'
+
+// The alignment-string readers moved to synteny-core so the comparative
+// adapters can clip a record worker-side with the same walk this plugin uses.
+export {
+  getAlignmentOps,
+  getCigar,
+  getCoarseCigar,
+  hasAlignmentString,
+} from '@jbrowse/synteny-core'
 
 // Synteny-feature `mate` shape: the other side of a PAF/delta/chain row. Shared
 // by the display, the tooltip jexl function, the launch dialog and the synteny
@@ -53,51 +60,4 @@ export type SyntenyGroupedMate = SyntenyMate & {
 export function getMates(feature: Feature) {
   const mates = feature.get('mates')
   return Array.isArray(mates) ? (mates as SyntenyGroupedMate[]) : undefined
-}
-
-// The block's CIGAR, when the source carries one. `undefined` is the ordinary
-// case, not an error: a PAF from minimap2 without `-c` has no `cg` tag, and
-// neither do MashMap, MCScan or a PIF's coarse tier (which carries the fold
-// below instead) — the launch interpolates across such a block instead of
-// walking it.
-//
-// Narrowed rather than cast, and here rather than in each of the three places
-// that read it (the spec builder's walk, the launch dialog's "is there a CIGAR"
-// wording, the mate-discovery worker's serialization): `Feature.get` types a
-// non-standard key as `unknown`, so each copy was its own three-line
-// `typeof val === 'string'` helper, and one of them read it untyped.
-export function getCigar(feature: Feature) {
-  const cigar = feature.get('CIGAR')
-  return typeof cigar === 'string' ? cigar : undefined
-}
-
-// The coarse tier's fold of the CIGAR (`cr:Z:`, see ADR-104): the indels
-// make-pif kept and one run between each pair, a run being a match that
-// advances the two axes by its own lengths. `undefined` on the fine tier and on
-// coarse rows with nothing to keep.
-export function getCoarseCigar(feature: Feature) {
-  const coarse = feature.get('coarseCigar')
-  return typeof coarse === 'string' ? coarse : undefined
-}
-
-// Whether the block carries anything a walk can follow — the gate every "walk
-// or interpolate" decision reads, so a coarse-tier block with a fold counts the
-// way a fine one with a CIGAR does.
-export function hasAlignmentString(feature: Feature) {
-  return (
-    getCigar(feature) !== undefined || getCoarseCigar(feature) !== undefined
-  )
-}
-
-// The block's alignment in packed `(len << 4) | op` form, whichever string it
-// carries: a CIGAR, or the coarse fold, whose runs pack as `CIGAR_RUN` word
-// pairs that every walker in this plugin understands.
-export function getAlignmentOps(feature: Feature) {
-  const cigar = getCigar(feature)
-  const coarse = cigar === undefined ? getCoarseCigar(feature) : undefined
-  return cigar !== undefined
-    ? parseCigar2Typed(cigar)
-    : coarse !== undefined
-      ? parseCoarseCigar(coarse)
-      : undefined
 }
