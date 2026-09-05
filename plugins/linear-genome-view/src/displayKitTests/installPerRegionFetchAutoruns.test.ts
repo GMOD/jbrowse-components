@@ -526,10 +526,11 @@ describe('the dependency set is the contract', () => {
     'LinearGenomeView.windowStartBp',
     'LinearGenomeView.windowWidthBp',
   ]
-  // The settings and adapter axes of `regionFetchKey`, reached through
-  // `isCacheValid` on a covered block: `rpcPropsCacheKey` is the `rpcProps`
-  // existence probe on a display that declares none, and `adapterConfigKey` is
-  // the track's adapter config read through `getConf` — its slots, the
+  // The two tiers of `fetchInputs`, reached through `isCacheValid` on a covered
+  // block. Both hook lookups are dynamic, so a display declaring neither still
+  // registers the existence probe: `rpcProps?` for the settings tier and
+  // `zoomFetchArgs?` for the zoom tier, which falls back to `zoomFetchKey`. The
+  // rest is the track's adapter config read through `getConf` — its slots, the
   // observability probes `readConfObject` makes on them, and one MST snapshot
   // computed, which MobX names by allocation order and so is normalized below.
   const fetchKeyAxes = [
@@ -546,6 +547,7 @@ describe('the dependency set is the contract', () => {
     'FeatureTrackConfigurationSchema.trackId',
     'FeatureTrackConfigurationSchema.trackId?',
     'PerRegionTestDisplay.rpcProps?',
+    'PerRegionTestDisplay.zoomFetchArgs?',
   ]
 
   function dependencies(display: PerRegionTestDisplay) {

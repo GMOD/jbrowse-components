@@ -34,6 +34,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./densityTierMenu",
   "./displayAutoruns",
   "./fetchEachRegion",
+  "./fetchInputs",
   "./foundationDisplayPhase",
   "./foundationPaintInert",
   "./foundationSvgReady",
