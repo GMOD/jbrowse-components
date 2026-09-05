@@ -23,6 +23,7 @@ import type {
   RibbonLayer,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
+import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // ribbons narrower than this on both ends are clutter at alignment-record
@@ -116,7 +117,7 @@ class RibbonBuilder {
   }
 }
 
-export type MultiWayRibbonColorBy = 'default' | 'strand' | 'identity'
+export type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 
 /**
  * A ribbon's color from what it joins. `strand` is the two runs' strands

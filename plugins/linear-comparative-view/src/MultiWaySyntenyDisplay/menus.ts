@@ -3,9 +3,10 @@ import { toLocale } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 
 import { frameStartBp } from './layoutMultiWay.ts'
+import { RIBBON_COLOR_MODES } from './ribbonColorModes.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { MultiWayRibbonColorBy } from './multiwayGeometry.ts'
+import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface LaneOrderModel {
@@ -275,15 +276,6 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
  * the ticks help or crowd is making that call in front of the picture, and
  * config is the wrong distance from it.
  */
-export const RIBBON_COLOR_MODES: readonly (readonly [
-  MultiWayRibbonColorBy,
-  string,
-])[] = [
-  ['default', 'Default'],
-  ['strand', 'Strand'],
-  ['identity', 'Identity'],
-]
-
 export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
   return [
     makeRadioSubMenu({

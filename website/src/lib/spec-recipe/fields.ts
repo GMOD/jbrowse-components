@@ -23,7 +23,7 @@ import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
-import { RIBBON_COLOR_MODES } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/menus.ts'
+import { RIBBON_COLOR_MODES } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorModes.ts'
 import { COLOR_MODES } from '../../../../packages/synteny-core/src/colorModes.ts'
 import { OFFSCREEN_MATE_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/offscreenMateModes.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'

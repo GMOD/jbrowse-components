@@ -44,6 +44,7 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   MCScanAnchorsAdapter: 'SyntenyTrack',
   MCScanBlocksAdapter: 'SyntenyTrack',
   MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
+  MultiPairwiseSyntenyAdapter: 'SyntenyTrack',
   MultiWiggleAdapter: 'MultiQuantitativeTrack',
   NCListAdapter: 'FeatureTrack',
   PAFAdapter: 'SyntenyTrack',
