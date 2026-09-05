@@ -6,11 +6,13 @@ type Env = ReturnType<
 
 // The state after a fetch settled at the current zoom: every buffered region
 // stamped with the bin that fetch was issued under, and the canvas painted.
-// `setLoadedRegion`'s default key is `regionFetchKey`, which is what a real
-// commit stamps, so nothing here invents a key the fetch could not have written.
+// `setLoadedRegion`'s default stamp is `fetchInputs`, which is what a real
+// commit writes, so nothing here invents a stamp the fetch could not have
+// written. The stand-in payload is what this display's commit puts there while
+// it still holds its own `rpcDataMap` — presence, not the reads.
 function simulateLoaded({ view, display }: Pick<Env, 'view' | 'display'>) {
   for (const b of view.bufferedVisibleRegions) {
-    display.setLoadedRegion(b.displayedRegionIndex, b.region)
+    display.setLoadedRegion(b.displayedRegionIndex, b.region, undefined, {})
   }
   display.markCanvasDrawn()
   display.stopActiveFetch()

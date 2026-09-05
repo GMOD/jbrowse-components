@@ -26,12 +26,19 @@ import type { Region } from '@jbrowse/core/util/types/data'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
- * The store's hard bound, in regions. Above it, entries outside the view's
- * buffered viewport are dropped oldest-first on the next fetch. High enough
- * that a whole-genome view of a chromosome-level assembly never evicts, low
- * enough that a long pan across a fragmented one cannot grow without limit.
+ * The store's bound, in regions — a bound on **history**, never on the
+ * viewport: what the view is buffering is kept whatever the count, and the cap
+ * decides only how much of what the reader panned away from is worth keeping
+ * for the pan back. So a whole-genome view over a chromosome-level assembly is
+ * unaffected however many contigs it shows, and a pan across a fragmented one
+ * settles here instead of at the contig count.
+ *
+ * A count and not a byte budget: a payload's resident size is a display's own
+ * question, and asking it would be one more hook on the surface this store
+ * exists to shrink. What bounds the bytes per entry is the byte gate, which
+ * already refuses a region over `resolvedByteLimit()`.
  */
-export const MAX_STORED_REGIONS = 128
+export const MAX_STORED_REGIONS = 32
 
 /**
  * #stateModel MultiRegionDisplayMixin

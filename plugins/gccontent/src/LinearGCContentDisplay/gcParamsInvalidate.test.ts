@@ -210,7 +210,13 @@ test('a zoom inside a loaded region keeps the cache valid', async () => {
   }
   view.setWidth(800)
   view.setDisplayedRegions([region])
-  display.loadedRegions.set(0, { ...region, fetchInputs: display.fetchInputs })
+  // `payload` is the stand-in a display still holding its own `rpcDataMap`
+  // commits: the store answers presence, the display answers with the data.
+  display.loadedRegions.set(0, {
+    ...region,
+    fetchInputs: display.fetchInputs,
+    payload: {},
+  })
   expect(display.isCacheValid(0)).toBe(true)
 
   const before = view.bpPerPx
