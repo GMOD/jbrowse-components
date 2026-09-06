@@ -6,10 +6,27 @@
 #
 # IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
 # this runs the fixer: `pnpm autogen --fix-stale` when its check says anything
-# is stale, both linters with `--fix`, and `pnpm format` over the whole tree.
-# Reporting "regenerate and commit" only to have the person run the exact
-# command the hook already knew was minutes of waiting to be told to wait
-# minutes more.
+# is stale, both linters with `--fix`, and the formatter. Reporting "regenerate
+# and commit" only to have the person run the exact command the hook already
+# knew was minutes of waiting to be told to wait minutes more.
+#
+# THE FIXERS ARE SCOPED TO THE PUSH, NOT THE TREE. This checkout is shared:
+# several agents edit it at once, and every one of them has files half-done
+# that no fixer gets to rewrite. So the linters and the formatter run over
+# exactly the paths this push changes (what differs between the remote and the
+# local ref, plus whatever is staged), minus any path that carries an unstaged
+# edit or is untracked — that is someone's work in progress, whoever's it is.
+# The earlier version formatted the whole tree and blocked when it had touched
+# an already-dirty path, which on a shared checkout meant another agent's edit
+# could both be rewritten and stop the push. Neither happens now.
+#
+# autogen is the one fixer that cannot be scoped, since a generated artifact is
+# a function of every source that feeds it and the generators write wherever
+# they write. It still runs, but every path that was dirty when the run started
+# is copied aside first and put back afterwards if a generator overwrote it —
+# the artifact stays stale on disk, which is reported, and the other agent's
+# edit stays theirs. The window in which they could have saved again is the
+# generator's own run, seconds, against losing the edit outright.
 #
 # AND IT COMMITS AND PUSHES WHAT IT FIXED. The fixes land in the working tree,
 # not in the commits on their way out, so the push git is holding would send
@@ -25,28 +42,24 @@
 # as many words before exiting; `git status` is the check — "up to date with
 # origin/<branch>" means it landed.
 #
-# WHAT IT WILL NOT COMMIT: a path that was ALREADY dirty when the run started.
-# That is someone else's work in progress on the shared checkout, or a
-# half-finished edit here that a fixer happened to rewrite, and neither belongs
-# in a commit nobody wrote. Those still block with the old message. Same for a
-# push of anything but the current branch, where there is no HEAD to commit onto.
+# WHAT STILL ONLY REPORTS: `check-docs`, `diagrams:check` and `build:esm` have
+# no fixer, and `--fix` on either linter leaves whatever rule has no autofix.
+# Those are still yours to fix by hand, and nothing gets pushed until they
+# pass. They read the whole working tree, so from a shared checkout they can
+# report on someone else's uncommitted edit; the fixers cannot.
 #
-# WHAT STILL ONLY REPORTS: `check-docs` and `build:esm` have no fixer, and
-# `--fix` on either linter leaves whatever rule has no autofix. Those are still
-# yours to fix by hand, and nothing gets pushed until they pass.
+# CI's `Format` job (`pnpm check-format`, whole tree) is not reproduced here
+# any more: the scoped format covers the pushed paths, and a mis-formatted
+# file nobody pushed is CI's to name.
 #
-# CI's `Format` job has no counterpart here and does not need one: the format
-# step below runs over the whole tree, so `pnpm check-format` is satisfied by
-# construction rather than checked.
-#
-# WHY PRE-PUSH AND NOT PRE-COMMIT. All of them read the whole tree — there is
-# no staged-paths version of "is this generated artifact current", because the
-# artifact is a function of every source that feeds it. At minutes that is far
-# too slow per commit and about right per push, which is also the moment the
-# cost lands on other people rather than on you.
+# WHY PRE-PUSH AND NOT PRE-COMMIT. The read-only gates read the whole tree —
+# there is no staged-paths version of "is this generated artifact current",
+# because the artifact is a function of every source that feeds it. At minutes
+# that is far too slow per commit and about right per push, which is also the
+# moment the cost lands on other people rather than on you.
 #
 # WHAT IT COSTS. Measured warm on 2026-09-01, on a machine at load 6-12 with
-# other agents running:
+# other agents running, before the fixers were scoped:
 #   pnpm figures:check       1.5s
 #   pnpm autogen --check     5.4s  with `--skip-whole-repo-program`; 22.5s
 #                                  without it, because `config/model/api docs`
@@ -54,33 +67,18 @@
 #                                  hide behind it in the pool
 #   pnpm check-docs          9.2s  31s of validators, pooled four at a time.
 #                                  Now the longest single gate here
-#   pnpm lint               10.1s  type-aware oxlint; `lint:fast` is 4s of it
+#   pnpm lint               10.1s  type-aware oxlint over the tree; scoped to
+#                                  a push's files it is the type program plus
+#                                  a little
 #   pnpm lint:eslint         5.6s  (127s without --cache)
-#   pnpm format              9.4s  whole tree, 6908 files
+#   pnpm format              9.4s  whole tree; scoped it is well under a second
 #   pnpm build:esm           1.7s  incremental
 # Every gate here is CPU-bound and this machine runs several agents, so a wall
-# number swings by a factor of two with what else is running. That is why the
-# end-to-end figures are quoted as interleaved A/B pairs and not as single runs:
-# 33-47s here, against 77-96s for the version that ran the whole-repo program,
-# alternating on the same tree minutes apart while the load average went from 4
-# to 22. The version before that one, which also paid for pnpm seven times over
-# and rewrote every generator to heal one, was 81-106s.
+# number swings by a factor of two with what else is running.
 #
-# THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
-# write to the same files: autogen emits sources the linters then lint, and both
-# linters rewrite the same `.ts`. Only the two read-only gates still overlap.
-# That costs nothing in wall time — contention was eating the parallelism
-# anyway.
-#
-# GOING FURTHER DOWN THAT ROAD DOES NOT WORK, and was measured on 2026-09-01
-# rather than reasoned about: running `autogen --check` and `check-docs` as one
-# read-only lane ALONGSIDE the fixers, which on paper folds two ~23s lanes into
-# one, came out at 83s and 84s against the sequential version's 79s and 85s in
-# an interleaved A/B. The lanes want ~22 cores between them on a 16-core machine
-# that already has 6-12 in use, so the overlap buys nothing and the wall number
-# is set by what else is running. What was actually costing the time was the
-# 21s program, and the fix for that was not to schedule it differently but to
-# stop running it here at all.
+# THE FIXERS RUN IN SEQUENCE, because they write to the same files: autogen
+# emits sources the linters then lint, and both linters rewrite the same `.ts`.
+# Only the read-only gates overlap them.
 #
 # A COLD `build:esm` is worse and happens once per checkout — tsc has no
 # .tsbuildinfo to reuse and takes a minute or more. Every run after that is the
@@ -97,23 +95,6 @@
 # the browser bundle. None of it was visible to anyone, because work lands
 # locally here and these gates only ran on push — and main had not been pushed.
 # Every one was a one-line fix at the moment it landed.
-#
-# IT READS THE WORKING TREE, NOT THE COMMITS BEING PUSHED. Every command here
-# answers its question against the files on disk, so pushing from the
-# SHARED primary checkout reports on whatever else is uncommitted there — the
-# first push after this landed was told `config/model/api docs` was stale, which
-# was six model docs another agent had regenerated and not yet committed, not
-# anything in the push. Push from your own worktree and the question is about
-# your work. There is no cheap fix: checking the pushed commits instead means
-# materialising them somewhere clean, which costs more than the check.
-#
-# NOW THAT IT WRITES AND COMMITS, that same property has teeth: from the shared
-# checkout the fixers rewrite whatever else is uncommitted there, and the lists
-# at the end will name another agent's work alongside yours. What keeps that out
-# of a commit is the already-dirty rule above — a path someone else was midway
-# through is dirty when the run starts, so it reports instead. A path they had
-# left clean is regeneration, and committing that is the point. One more reason
-# to push from your own worktree all the same.
 set -eu
 
 if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
@@ -150,7 +131,7 @@ eval "$(node -e '
     }
     console.log(`cmd_${name.replace(/\W/g, "_")}=${JSON.stringify(chain.join(" && "))}`)
   }
-' figures:check autogen check-docs diagrams:check lint lint:eslint format build:esm)"
+' figures:check autogen check-docs diagrams:check lint lint:eslint build:esm)"
 
 # stdin is one `<local ref> <local sha> <remote ref> <remote sha>` line per ref.
 # A zero local sha is a branch deletion (nothing to check); a zero remote sha is
@@ -192,10 +173,39 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~40s, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format on the pushed files, building esm (~40s, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+
+# The paths the fixers may write: what this push changes plus what is staged,
+# less anything with an unstaged edit or untracked — a path someone is in the
+# middle of, whoever they are — and less anything not on disk any more.
+git diff --name-only 2>/dev/null >"$tmp/wip" || : >"$tmp/wip"
+git ls-files --others --exclude-standard 2>/dev/null >>"$tmp/wip" || true
+{
+  printf '%s' "$range_files"
+  git diff --cached --name-only 2>/dev/null || true
+} | grep . | sort -u >"$tmp/scope-all" || : >"$tmp/scope-all"
+# an empty pattern file means "exclude nothing" to GNU grep and "exclude
+# everything" to BSD grep, so the filter runs only when there is something in it
+if [ -s "$tmp/wip" ]; then
+  grep -Fxv -f "$tmp/wip" "$tmp/scope-all" >"$tmp/scope" || : >"$tmp/scope"
+else
+  cp "$tmp/scope-all" "$tmp/scope"
+fi
+scope_existing=$(mktemp "$tmp/scope.XXXXXX")
+while IFS= read -r f; do
+  if [ -f "$f" ]; then
+    printf '%s\n' "$f"
+  fi
+done <"$tmp/scope" >"$scope_existing"
+mv "$scope_existing" "$tmp/scope"
+grep -E '\.(js|cjs|mjs|jsx|ts|cts|mts|tsx)$' "$tmp/scope" >"$tmp/scope-lint" || : >"$tmp/scope-lint"
+grep -E '\.astro$' "$tmp/scope" >"$tmp/scope-astro" || : >"$tmp/scope-astro"
+tr '\n' '\0' <"$tmp/scope" >"$tmp/scope.0"
+tr '\n' '\0' <"$tmp/scope-lint" >"$tmp/scope-lint.0"
+tr '\n' '\0' <"$tmp/scope-astro" >"$tmp/scope-astro.0"
 
 # What the tree looks like before the fixers touch it, so the end of the run can
 # say what they changed. Names alone are not enough — a file already dirty stays
@@ -212,6 +222,17 @@ tree_state >"$tmp/before" 2>/dev/null || true
 # path a fixer would have rewritten.
 git status --porcelain -uall 2>/dev/null | sed 's/^...//; s/.* -> //' \
   >"$tmp/dirty-before" || : >"$tmp/dirty-before"
+
+# And their contents, so a generator that overwrites one can be undone. Only
+# autogen can reach them — the linters and the formatter never see a dirty
+# path — and only a file can be copied.
+mkdir -p "$tmp/snap"
+while IFS= read -r f; do
+  if [ -f "$f" ]; then
+    mkdir -p "$tmp/snap/$(dirname "$f")"
+    cp -p "$f" "$tmp/snap/$f"
+  fi
+done <"$tmp/dirty-before"
 
 # The two files a REVIEW APP writes, which no fixer here writes. The comparison
 # above is a before/after over a ~40s window, so anything that changes during
@@ -321,6 +342,24 @@ if [ "$astatus" != 0 ]; then
   status=$astatus
 fi
 
+# A generator that rewrote a path someone had already edited gets undone: the
+# edit goes back exactly as it was, the artifact stays stale on disk, and the
+# push goes on — CI's generated job names the staleness with a patch attached.
+restored=
+while IFS= read -r f; do
+  if [ -f "$tmp/snap/$f" ] && [ -f "$f" ] && ! cmp -s "$tmp/snap/$f" "$f"; then
+    cp -p "$tmp/snap/$f" "$f"
+    restored=$restored$f'
+'
+  fi
+done <"$tmp/dirty-before"
+if [ -n "$restored" ]; then
+  echo >&2
+  echo "pre-push: autogen rewrote files that were already modified; put back as they were:" >&2
+  printf '%s' "$restored" | sed 's/^/  /' >&2
+  echo "Their generated content is stale on disk until whoever is editing them regenerates." >&2
+fi
+
 # The two ratcheted lists inside check-docs that DO have a write mode, run as
 # writers before check-docs reads them with --check. A grown list is still a
 # regression and the banner below says which line grew — but the news is in the
@@ -360,7 +399,9 @@ docs_pid=$!
 # `--fix` still exits nonzero for anything it could not fix, so this is one pass
 # and not a fix-then-verify pair.
 lstatus=0
-eval "$cmd_lint --fix" >"$tmp/lint.log" 2>&1 || lstatus=$?
+if [ -s "$tmp/scope-lint" ]; then
+  xargs -0 sh -c "$cmd_lint --fix \"\$@\"" sh <"$tmp/scope-lint.0" >"$tmp/lint.log" 2>&1 || lstatus=$?
+fi
 if [ "$lstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm lint --fix left errors it cannot fix" >&2
@@ -374,9 +415,14 @@ fi
 # rest out of the cache — 127s to 9s on this tree. CI gets a fresh checkout
 # every time and would only pay to write a cache nothing reads, which is why the
 # flag is on this line rather than in the script.
+#
+# `--no-warn-ignored`: a scoped run names files, and a named file the config
+# ignores is a warning, which `--max-warnings 0` would turn into a block.
 estatus=0
-eval "$cmd_lint_eslint --fix --cache --cache-location node_modules/.cache/eslint/" \
-  >"$tmp/eslint.log" 2>&1 || estatus=$?
+if [ -s "$tmp/scope-lint" ]; then
+  xargs -0 sh -c "$cmd_lint_eslint --fix --cache --cache-location node_modules/.cache/eslint/ --no-warn-ignored \"\$@\"" sh \
+    <"$tmp/scope-lint.0" >"$tmp/eslint.log" 2>&1 || estatus=$?
+fi
 if [ "$estatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm lint:eslint --fix left errors it cannot fix" >&2
@@ -385,31 +431,26 @@ if [ "$estatus" != 0 ]; then
 fi
 
 # Format LAST, so it has the final say over whatever the two `--fix` passes
-# rewrote. `--fix` is repo-wide, not range-scoped, and it emits formatter-
-# hostile code: eslint's fixes to two bench files went in as `if (x) {y += z}`
-# on one line and a prefer-template fix with a line break inside the `${`.
-#
-# WHOLE-TREE, AND UNSCOPED ON PURPOSE — which is worth stating because a scoped
-# `pnpm format <paths>` looks like the careful version and is not. Two reasons:
-#
-#   - Neither formatter touches a file it would not change. Measured
-#     2026-08-14: `oxfmt` on an already-formatted file leaves its mtime alone,
-#     and so does the `postformat` prettier pass over the .astro files. So the
-#     set this rewrites IS the set that is mis-formatted — the same set a scope
-#     is trying to approximate, arrived at exactly instead of by guessing.
-#   - Any scope narrower than the tree leaves the files a fixer just touched
-#     unformatted, since `--fix` ranges over the whole repo and the push does
-#     not. The first version of this scoped to the pushed paths and shipped
-#     both bench files above.
-#
-# It also stands in for CI's `Format` job (`pnpm check-format`, push.yml),
-# which nothing here covered before: after this runs, that job is satisfied by
-# construction rather than checked. ~7s for 6300 files.
+# rewrote: eslint's fixes emit formatter-hostile code (an `if (x) {y += z}` on
+# one line, a prefer-template fix with a line break inside the `${`). The same
+# scope as the linters, plus the non-code files in it — the formatter skips
+# what it has no printer for — and prettier for any `.astro` in the push, the
+# way `postformat` runs it over the tree.
 fstatus=0
-eval "$cmd_format" >"$tmp/format.log" 2>&1 || fstatus=$?
+if [ -s "$tmp/scope" ]; then
+  xargs -0 oxfmt <"$tmp/scope.0" >"$tmp/format.log" 2>&1 || fstatus=$?
+  # a push of only shell scripts or .astro files gives oxfmt nothing it
+  # formats, which it reports as an error and this treats as nothing to do
+  if [ "$fstatus" != 0 ] && grep -q 'Expected at least one target file' "$tmp/format.log"; then
+    fstatus=0
+  fi
+fi
+if [ "$fstatus" = 0 ] && [ -s "$tmp/scope-astro" ]; then
+  xargs -0 prettier --write <"$tmp/scope-astro.0" >>"$tmp/format.log" 2>&1 || fstatus=$?
+fi
 if [ "$fstatus" != 0 ]; then
   echo >&2
-  echo "pre-push: pnpm format failed" >&2
+  echo "pre-push: formatting the pushed files failed" >&2
   cat "$tmp/format.log" >&2
   status=$fstatus
 fi
@@ -492,8 +533,8 @@ if [ -n "$auto" ]; then
     >"$tmp/msg"
   printf '%s' "$auto" | sed 's/^/  /' >>"$tmp/msg"
   # Pathspec commit: the index may hold someone else's staged work, and this
-  # commit is about these paths only. --no-verify because pre-commit's formatter
-  # has already run over everything here, via `pnpm format` above.
+  # commit is about these paths only. --no-verify because the formatter has
+  # already run over every path in it.
   printf '%s' "$auto" | tr '\n' '\0' |
     xargs -0 git commit --quiet --no-verify -F "$tmp/msg" -- >&2
   echo >&2
@@ -501,14 +542,14 @@ if [ -n "$auto" ]; then
   printf '%s' "$auto" | sed 's/^/  /' >&2
 fi
 
+# By construction nothing lands here: the linters and the formatter never see
+# a dirty path and autogen's writes to one were put back above. It stays as
+# the report for the case the construction missed, and reports rather than
+# blocks — a file someone else is editing is not a reason this push waits.
 if [ -n "$manual" ]; then
   echo >&2
-  echo "pre-push: the fixers also rewrote files that were already modified:" >&2
+  echo "pre-push: files that were already modified changed during the run; left as they are:" >&2
   printf '%s' "$manual" | sed 's/^/  /' >&2
-  echo >&2
-  echo "Those are left alone — a fixer rewriting your unfinished edit is not a" >&2
-  echo "commit this hook gets to write. Sort them out and push again." >&2
-  exit 1
 fi
 
 if [ "$status" != 0 ]; then
