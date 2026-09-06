@@ -1501,15 +1501,45 @@ ids are not, so match a record to a bubble by interval rather than by id.
   "type": "SyntenyTrack",
   "trackId": "hprc_v2_1_gbz_lanes",
   "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
-  "assemblyNames": ["hg38"],
+  "assemblyNames": [
+    "hg38",
+    "HG00097.1",
+    "HG00099.1",
+    "HG00128.1",
+    "HG00133.1",
+    "HG01109.1",
+    "HG01123.1",
+    "HG01960.1",
+    "HG02055.1"
+  ],
   "adapter": {
     "type": "GbzBaseSyntenyAdapter",
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
     "haplotypeIndexLocation": {
       "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db"
     },
-    "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
+    "assemblyNames": [
+      "hg38",
+      "HG00097.1",
+      "HG00099.1",
+      "HG00128.1",
+      "HG00133.1",
+      "HG01109.1",
+      "HG01123.1",
+      "HG01960.1",
+      "HG02055.1"
+    ],
+    "assemblyNameToPanSN": {
+      "hg38": "GRCh38#0",
+      "HG00097.1": "HG00097#1",
+      "HG00099.1": "HG00099#1",
+      "HG00128.1": "HG00128#1",
+      "HG00133.1": "HG00133#1",
+      "HG01109.1": "HG01109#1",
+      "HG01123.1": "HG01123#1",
+      "HG01960.1": "HG01960#1",
+      "HG02055.1": "HG02055#1"
+    },
     "context": 1000,
     "nodeLimit": 50000
   },
@@ -1517,11 +1547,28 @@ ids are not, so match a record to a bubble by interval rather than by id.
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
-      "height": 600
+      "height": 600,
+      "lanes": [
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1"
+      ]
     }
   ]
 }
 ```
+
+The eight lanes are the same eight as above, listed twice: in `assemblyNames` so
+each lane is the assembly the session already holds (its gene annotation follows
+it), and in the display's `lanes` so the track opens on them rather than on
+all 464. **Choose lanes...** on the track menu lists every haplotype the graph
+names, grouped by sample, so any other set is a tick away, and **Every lane** is
+the whole cohort.
 
 `GbzBaseSyntenyAdapter` answers a window rather than reading a file. It locates
 the window on GRCh38's own path through the graph, reads the subgraph over it,
@@ -1540,50 +1587,56 @@ haplotype names.
 
 ### What a window costs {#gbz-window-cost}
 
-`context` is the slot that decides how many records a window becomes, and it is
-worth setting before anything else. At 0 a haplotype is cut wherever it leaves
-the window's nodes, which on a human graph is every private bubble it passes
-through: the C4 window below comes back as 8,082 records at `context: 0` and 463
-at `context: 1000`, one per haplotype, from the same 60 kb. These are all at
-1000, contained snarls, `@gmod/gbz-base` 2.1.0, reading both files over HTTP,
-the database from HPRC's bucket and the companion from ours:
+A window comes back as one record per haplotype walk through it, whatever
+`context` is set to: `@gmod/gbz-base` joins the pieces of a walk that leaves the
+window's nodes and comes back, so a private bubble becomes the record's
+insertion and the reference it skipped the deletion. What `context` trades is
+nodes read against pieces joined. The C4 window below is 8,083 pieces at
+`context: 0` and 463 walks at 1000, for the same 463 records; MHC class II sits
+inside a snarl far larger than the window, so it is 1.1 million pieces at 0 and
+takes three times as long as at 1000. The default is 1000. These are all at
+1000, contained snarls, `@gmod/gbz-base` 2.3.0, reading both files over HTTP,
+the database from HPRC's bucket and the companion from ours, timed around the
+whole command:
 
-| Locus        | Window                         | Nodes  | Records | Companion read    | Time   |
-| ------------ | ------------------------------ | ------ | ------- | ----------------- | ------ |
-| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB     | 5.1 s  |
-| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB     | 5.8 s  |
-| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB    | 12.3 s |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB    | 15.5 s |
-| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB    | 25.2 s |
-| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 5,202 req, 325 MB | 234 s  |
+| Locus        | Window                         | Nodes  | Records | Companion read | Time   |
+| ------------ | ------------------------------ | ------ | ------- | -------------- | ------ |
+| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 7.5 s  |
+| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 5.0 s  |
+| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 8.1 s  |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 8.5 s  |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 12.7 s |
+| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 12.8 s |
 
-Every fragment is named in all six, and the first five are the shape to expect:
-one record per haplotype, a time that tracks how many nodes the window covers,
-and a companion that is barely touched, a megabyte at most out of its 7 GB.
+Every record is named in all six, the time tracks how many nodes the window
+covers with a floor of a few seconds of request latency, and the companion is
+barely touched, a megabyte and a half at most out of its 7 GB. The first five
+are one record per haplotype.
 
-_AMY1_ is the row that breaks the pattern, and it is the locus a copy-number
-question would start from. It has a third of MHC class II's nodes and takes nine
-times as long, and the last column is why. The amylase repeat sends each
-haplotype out of the window's nodes and back, so 464 haplotypes arrive as 1,912
-fragments; a fragment shorter than the 16 kb the companion samples at holds no
-recorded position and has to be walked to one, 78,506 steps against zero at
-every other locus here. Those steps land on 464 different haplotypes at
-scattered positions, so the companion is read 325 MB deep instead of one.
+_AMY1_ is the row with more records than haplotypes, and it is the locus a
+copy-number question would start from. The amylase repeat sends each haplotype
+out of the window's nodes and back, so 490 haplotype walks arrive as 1,912
+pieces; the pieces of one walk that follow each other along the reference are
+joined, and the ones that do not, because an extra copy of the repeat unit
+revisits the same stretch of GRCh38, stay separate. That is 1,395 records, and
+those extra records, the ones whose reference interval falls on the repeat unit,
+are where a copy count per haplotype would be read off the graph. Naming those
+pieces is also the one place the companion is walked rather than looked up: a
+piece shorter than the 16 kb it samples at holds no recorded position and is
+walked to one, 78,506 steps here against zero at every other locus, and since
+`@gmod/gbz-base` 2.3.0 that costs 24 requests rather than the 5,202 it did when
+the index was scanned across the gaps between the repeat's node-id clusters.
 
-Steps alone are not the cost, which the 10 kb C4 window shows: it is smaller
-than the sampling interval too and takes 3,937 steps, but they stay in one
-neighbourhood and cost 8 requests. Scatter is the cost.
-
-The usual repair makes it worse. `context` 5000, `context` 20000 and
+`context` is also the wrong repair for a window like _AMY1_. `context` 20000 and
 `overlapping` snarls each pull in enough of the repeat to exhaust a 4 GB heap
-before returning anything, so the window that most wants a wider read is the one
-that cannot afford it.
+after about a minute, so the window that most wants a wider read is the one that
+cannot afford it; the contained cut at 1000 is what the table shows.
 
 `nodeLimit` is the guard on the other end. It fails a window rather than letting
-the display sit on a whole chromosome, so it has to clear the largest window you
-mean to open: 12,000 is enough for C4 and refuses MHC class II. It does not
-bound the time, and it does not catch _AMY1_ at all, whose 12,240 nodes are
-under any limit that lets the other loci through.
+the display sit on a whole chromosome, and the failure names a zoom that would
+fit, so it has to clear the largest window you mean to open: 12,000 is enough
+for C4 and refuses MHC class II. It bounds nodes, not time, and _AMY1_'s 12,240
+nodes are under any limit that lets the other loci through.
 
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
