@@ -54,12 +54,17 @@ const MHC_REGION = {
 // scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` prints the
 // cut's ids with their lengths and ranks.
 //
-// It is 1,775 bp of HG01433 hap 2 (`CM086511.1:32,520,440-32,522,215` in the
-// links index), and the two backbone segments it hangs off are s101144, ending
-// at chr6:32,517,416, and s101146, starting at 32,529,437 — so the interval it
-// attaches across is the 12,021 bp s101145, which is what **Highlight in hg38**
-// writes into the linear view. That is also, near exactly, HLA-DRB5
-// (chr6:32,517,353-32,530,287), the gene present only on DR51 haplotypes.
+// It is 1,780 bp of NA20809 hap 2 (`CM094351.1:32,495,296-32,497,076` in the
+// links index, rank 10), and the two backbone segments it hangs off are
+// s329874+, ending at chr6:32,517,416, and s329886+, starting at 32,529,437 —
+// so the interval it attaches across is 12,021 bp of GRCh38, which release 2.1
+// cuts into eleven segments (s329875 to s329885, the longest s329879 at 4,280
+// bp) where 2.0 had the one 12 kb node s101145, and which is what
+// **Highlight in hg38** writes into the linear view. That is also, near
+// exactly, HLA-DRB5 (chr6:32,517,353-32,530,287), the gene present only on
+// DR51 haplotypes. Release 2.0 credited the same allele to HG01433 hap 2
+// (s318599); minigraph names an allele after the first assembly it saw it in,
+// and 2.1's build order differs.
 //
 // Which is why the caption has to say it (review: "it looks like this is
 // highlighting a 'black' node, instead of the green one, which is, afaict, the
@@ -68,7 +73,7 @@ const MHC_REGION = {
 // node beside it is the reference segment the highlight lands on. Nothing in the
 // frame joins the two, so a ring on a black node over a band 12 kb wide reads as
 // the wrong node being ringed unless the words are there.
-const HPRC_ALLELE = 's318599'
+const HPRC_ALLELE = 's348700+'
 
 // The complement factor H cluster. CFH, CFHR3, CFHR1 and CFHR4 all fall in this
 // 200 kb, and the graph holds three deletions across it.
@@ -467,32 +472,20 @@ function repeatLane(trackId: string) {
 // columns. Same filter the hprc2 matrix figures use.
 const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
 
-// The two landmark nodes both halves circle, so the pair states its own
-// correspondence instead of asserting it in a caption (review: "IDEALLY this
-// would even circle things in the backbone view that match the force directed
-// bandage view"). One reference node and the longest allele over it, picked off
-// `probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` rather than by eye:
-//
-//   s101145+  12,021 bp  rank 0, GRCh38#0#chr6:32,517,416
-//   s396436+  12,253 bp  rank 5, HG00738.2#2#CM086684.1:32,492,010
-//
-// They are the two longest nodes in the cut, so the graph writes `12 kb` and
-// `12.3 kb` beside them in both layouts and the rings do not have to carry the
-// identification themselves -- which is what let the numbered badges that used
-// to sit on them come off when the pair was reported as too busy. Anchored by
-// id, so each layout can put them where it likes.
-// ONE, not two (review: "why are there three circles? try to just use the one
-// circle for the green path"). The pair was the reference node and the allele
-// over it, and on the force half those two are drawn touching, so their rings
-// overlapped and the reader was counting circles rather than reading them.
-//
-// The one kept is s101145+, the rank-0 node -- the green one, under the
-// reference-position ramp -- and it is the right survivor for a reason beyond
-// the count: it is also the interval **Highlight in hg38** writes into the
-// linear view, so on the force half the ring, the menu item boxed under it and
-// the orange band above are three views of one object instead of three
-// unrelated marks.
-const MHC_LANDMARK_NODES = ['s101145+']
+// The one node both halves circle, so the pair states its own correspondence
+// instead of asserting it in a caption (review: "IDEALLY this would even
+// circle things in the backbone view that match the force directed bandage
+// view"). Through release 2.0 this was the 12 kb reference node the allele
+// attaches across, the green one under the reference-position ramp, chosen
+// because it was also the interval `Highlight in hg38` writes; release 2.1
+// cuts that stretch into eleven segments, none of them a landmark, so the ring
+// moved onto the allele itself: the node the menu is open on, black because
+// it has no reference position, sitting under the band the menu left in the
+// linear view. The caption says which is which. ONE ring, not two (review:
+// "why are there three circles?"): the pair used to ring the allele's
+// reference node and the longest allele over it, drawn touching on the force
+// half, and the reader counted circles rather than reading them.
+const MHC_LANDMARK_NODES = [HPRC_ALLELE]
 
 // The layout trade, as one subgraph drawn twice — the halves of
 // pangenome/hprc_mhc_anchored. The HPRC tutorial spends a paragraph on the
@@ -753,7 +746,7 @@ export const HPRC_SEGMENTS_TRACK_JSON = `{
 export const TOUR_MHC_LOCUS = 'chr6:32,500,000-32,560,000'
 
 // The node the tour right-clicks, which is the node the force half of
-// pangenome/hprc_mhc_anchored opens its menu on: the 1.8 kb HG01433.2 allele
+// pangenome/hprc_mhc_anchored opens its menu on: the 1.8 kb NA20809.2 allele
 // over HLA-DRB5. HPRC_ALLELE above carries the whole account, including why
 // `Highlight in hg38` marks a different node than the one clicked.
 export const TOUR_NODE = HPRC_ALLELE
@@ -877,16 +870,16 @@ function cytobandLane() {
 // from the reference's flanking interval into the donor's own coordinates
 // ---------------------------------------------------------------------------
 //
-// HG01433 haplotype 2 is the donor minigraph credits most of the MHC class II
-// window to (42 link endpoints over chr6:32,500,000-32,560,000 in the hosted
-// links index, against 9 for the next haplotype), and HPRC_ALLELE above is one
-// of its segments. UCSC's GenArk hub for that assembly (GCA_042027645.1) names
-// its sequences by GenBank accession, which is how the graph names them too
-// (`HG01433.2#2#CM086511.1` in the graph is `CM086511.1` in the 2bit), and its
-// chromAlias file spells the graph's PanSN name in an `hprcV2` column. So the
-// assembly loads under its PanSN sample name with nothing translated, and the
-// launch resolves by that name alone. The fixture is
-// test_data/graphgenomeview/hprc_haplotype.json.
+// NA20809 haplotype 2 is the donor minigraph credits HPRC_ALLELE to (the
+// class II bubble's off-reference sequence is mostly HG01071 haplotype 1's, 64
+// of its 254 segments and 121 kb, but this allele is not among them). UCSC's
+// GenArk hub for that assembly (GCA_044166615.1) names its sequences by
+// GenBank accession, which is how the graph names them too
+// (`NA20809#2#CM094351.1` in the graph is `CM094351.1` in the 2bit), and its
+// chromAlias file spells the graph's PanSN name in an `hprcV2` column. The
+// assembly loads as `NA20809.2` with the graph's `NA20809#2` among its
+// aliases, and the launch resolves the node's haplotype against that alias.
+// The fixture is test_data/graphgenomeview/hprc_haplotype.json.
 //
 // The segments track there lists the haplotype among its `assemblyNames`, so
 // the pane the launch opens carries the graph's own segments on the
@@ -894,14 +887,15 @@ function cytobandLane() {
 const HPRC_HAPLOTYPE_CONFIG = local(
   'test_data/graphgenomeview/hprc_haplotype.json',
 )
-const HAPLOTYPE = 'HG01433.2'
+const HAPLOTYPE = 'NA20809.2'
 // `<trackId>-<displayType>`, the id a track shown with no explicit displayId
 // gets (packages/core/src/util/tracks.ts); the launched pane shows its lanes
 // that way. The lane is HPRC's CAT annotation of this haplotype, sliced to the
-// MHC (test_data/graphgenomeview/hprc_mhc_HG01433.2.genes.gff3.gz): GenArk's
+// MHC (test_data/graphgenomeview/hprc_mhc_NA20809.2.genes.gff3.gz): GenArk's
 // own gene lanes are empty here, RefSeq mRNAs mapping nothing within 100 kb of
-// the allele.
-const HAPLOTYPE_GENES_DISPLAY = 'HG01433.2_cat_genes-LinearBasicDisplay'
+// the allele. CAT puts HLA-DRB9 and HLA-DRB6 either side of it and no HLA-DRB5
+// anywhere on this haplotype.
+const HAPLOTYPE_GENES_DISPLAY = 'NA20809.2_cat_genes-LinearBasicDisplay'
 const HAPLOTYPE_GENES_READY = `[data-display-id="${HAPLOTYPE_GENES_DISPLAY}"][data-display-phase="ready"]`
 const HAPLOTYPE_LGV = 'hprc_haplotype_lgv'
 const HAPLOTYPE_GRAPH = 'hprc_haplotype_graph'
@@ -1326,8 +1320,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // half, with a menu, one ring and the band the menu leaves behind on top —
   // so those three things moved onto the half itself (see mhcLayoutPartSpecs)
   // and the second capture of the MHC subgraph went away. The claim they carry
-  // is unchanged: `Highlight in hg38` on a 1.8 kb HG01433.2 allele writes the
-  // 12 kb GRCh38 backbone segment it attaches across, which is HLA-DRB5,
+  // is unchanged: `Highlight in hg38` on a 1.8 kb NA20809.2 allele writes the
+  // 12 kb of GRCh38 backbone it attaches across, which is HLA-DRB5,
   // because an off-reference node is drawn over the reference it replaces and
   // never over its own length.
   ...mhcLayoutPartSpecs(),
@@ -2475,10 +2469,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // has pangenome/pggb_strain_launch for this move and this page had only
   // CHM13 (hprc_chm13_allele), on the belief that the other 460 haplotypes
   // could not be loaded — see hprcHaplotypeSession for why they can. The node
-  // is the 1.8 kb HG01433.2 allele over HLA-DRB5 that the layout pair and the
+  // is the 1.8 kb NA20809.2 allele over HLA-DRB5 that the layout pair and the
   // end-to-end tour already open a menu on; here the menu's `Open in
-  // HG01433.2` entry is taken, and what the frame adds is the pane that opens:
-  // the haplotype's own chr6 (CM086511.1) at the segment's own offset, with
+  // NA20809.2` entry is taken, and what the frame adds is the pane that opens:
+  // the haplotype's own chr6 (CM094351.1) at the segment's own offset, with
   // the GenArk RefSeq-mRNA lane and the segments track on those coordinates.
   //
   // The menu is driven rather than the end state declared, so the pane is the

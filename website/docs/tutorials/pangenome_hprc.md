@@ -68,10 +68,10 @@ straight off S3 or through small tabix projections we host beside them.
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
 - every release 2 assembly as a UCSC GenArk hub, a 2bit and an alias file per
-  haplotype; this is haplotype 2 of HG01433, the one the graph opens below:
-  https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/
+  haplotype; this is haplotype 2 of NA20809, the one the graph opens below:
+  https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/
 - that haplotype's CAT annotation, whole genome, from the index above:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01433/assemblies/release2/annotation/cat/HG01433_mat_hprc_r2_v1.0.1_cat_v1.3.gff3.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/NA20809/assemblies/release2/annotation/cat/NA20809_hap2_hprc_r2_v1.0.1_cat_v1.3.gff3.gz
 - the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
   https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
 - GRCh38's RepeatMasker annotation, binned for the repeat-density lanes:
@@ -474,11 +474,13 @@ of them:
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
-Both halves ring the same node, the 12 kb reference stretch the graph draws in
-green. On the left a right-click menu is open on the black allele beside it, and
-**Highlight in hg38** wrote the orange band above over that ringed backbone
-segment: an off-reference allele is highlighted across the reference it
-replaces.
+Both halves ring the same node, the 1.8 kb allele the right-click menu on the
+left is open on: black under the reference-position ramp, because it has no
+reference position of its own. **Highlight in hg38** wrote the orange band above
+over the 12 kb of backbone it attaches across, eleven green segments in release
+2.1: an off-reference allele is highlighted across the reference it replaces.
+The anchored half labels the same node a 10.2 kb deletion, which is the net of
+1.8 kb standing in for 12.
 
 Taking the dropdown from one to the other says which node in the tangle is which
 node on the axis, and the video under [HPRC release 2](#hprc-release-2) makes
@@ -565,9 +567,9 @@ node you clicked states who walks it, and the `.gbz` states the walks
 themselves, which is [the route below](#walks-from-the-graph).
 
 That route is drawn in the [layout figure above](#the-layout-dropdown): its left
-half has the menu open on a 1.8 kb HG01433.2 allele, the black node ringed
-without a number, over the band **Highlight in hg38** left in the linear view.
-The band is the 12 kb backbone segment that allele attaches across, which here
+half has the menu open on a 1.8 kb allele of NA20809 haplotype 2, the black node
+ringed without a number, over the band **Highlight in hg38** left in the linear
+view. The band is the 12 kb of backbone that allele attaches across, which here
 is _HLA-DRB5_.
 
 The lanes above combine into one route:
@@ -596,31 +598,35 @@ Every segment states the assembly that contributed it and its offset there, so a
 node can open the haplotype it came from once that haplotype is loaded.
 [UCSC GenArk](https://hgdownload.soe.ucsc.edu/hubs/) hosts every release 2
 assembly, a 2bit and an alias file each, and names the sequences by the same
-GenBank accessions the graph does: `HG01433.2#2#CM086511.1` in the graph is
-`CM086511.1` in the 2bit. So a haplotype loads under its PanSN sample name with
-nothing translated, and the alias file's `ucsc` column adds `chr6`.
+GenBank accessions the graph does: `NA20809#2#CM094351.1` in the graph is
+`CM094351.1` in the 2bit. So a haplotype loads with nothing translated, and the
+alias file's `ucsc` column adds `chr6`.
 
-Which haplotype to load is read off the graph. A node's tooltip and details name
-`contributingAssembly`, and over the MHC class II window most alleles name
-HG01433 haplotype 2, whose accession is on the
+Which haplotype to load is read off the graph. A node's details name
+`contributingHaplotype`, the `sample#haplotype` off its rGFA name, and the 1.8
+kb allele the [layout figure](#the-layout-dropdown) opens its menu on names
+`NA20809#2`, whose accession is on the
 [HPRC sample table](https://genomes.jbrowse.org/pangenomes/hprc): haplotype 2 of
-HG01433 is GCA_042027645.1.
+NA20809 is GCA_044166615.1. (Most of the class II bubble's off-reference
+sequence is credited to HG01071 haplotype 1, which answers a different question;
+what is loaded here is the haplotype this allele belongs to.)
 
 ```json addassembly
 {
-  "name": "HG01433.2",
-  "displayName": "HG01433 haplotype 2 (HPRC release 2, GCA_042027645.1)",
-  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.2bit",
+  "name": "NA20809.2",
+  "aliases": ["NA20809#2"],
+  "displayName": "NA20809 haplotype 2 (HPRC release 2, GCA_044166615.1)",
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/GCA_044166615.1.2bit",
   "refNameAliases": {
-    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.chromAlias.txt"
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/GCA_044166615.1.chromAlias.txt"
   }
 }
 ```
 
-The `name` is the graph's PanSN sample, and that is the whole of the join: the
-view resolves a node's sample against the loaded assemblies by name and alias,
-so an assembly kept under its accession needs `HG01433.2` among its `aliases`
-instead.
+The alias is the whole of the join: the view resolves a node's haplotype
+(`NA20809#2`) against the loaded assemblies by name and alias, then its sample
+(`NA20809`), so the assembly can keep whatever name the session likes as long as
+one of the two is among its `aliases`.
 
 A launched view carries the session's annotation for the assembly it opens, and
 the annotation worth carrying is HPRC's own: release 2 runs CAT on every
@@ -631,24 +637,24 @@ names one GFF3 per haplotype in its `location` column, whole-genome and
 unindexed, so slice the window once and index the slice:
 
 ```bash
-# haplotype 2 of HG01433, from the index's location column; chr6 is CM086511.1 there
-curl -sSL https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01433/assemblies/release2/annotation/cat/HG01433_mat_hprc_r2_v1.0.1_cat_v1.3.gff3.gz \
+# haplotype 2 of NA20809, from the index's location column; chr6 is CM094351.1 there
+curl -sSL https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/NA20809/assemblies/release2/annotation/cat/NA20809_hap2_hprc_r2_v1.0.1_cat_v1.3.gff3.gz \
   | gzip -dc \
-  | awk -F'\t' '/^#/ {next} $1=="CM086511.1" && $5>=32300000 && $4<=32800000' \
-  | sort -k1,1 -k4,4n > hprc_mhc_HG01433.2.genes.gff3
-bgzip hprc_mhc_HG01433.2.genes.gff3
-tabix -p gff hprc_mhc_HG01433.2.genes.gff3.gz
+  | awk -F'\t' '/^#/ {next} $1=="CM094351.1" && $5>=32300000 && $4<=32800000' \
+  | sort -k1,1 -k4,4n > hprc_mhc_NA20809.2.genes.gff3
+bgzip hprc_mhc_NA20809.2.genes.gff3
+tabix -p gff hprc_mhc_NA20809.2.genes.gff3.gz
 ```
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "HG01433.2_cat_genes",
-  "name": "CAT genes (HG01433 haplotype 2)",
-  "assemblyNames": ["HG01433.2"],
+  "trackId": "NA20809.2_cat_genes",
+  "name": "CAT genes (NA20809 haplotype 2)",
+  "assemblyNames": ["NA20809.2"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "hprc_mhc_HG01433.2.genes.gff3.gz"
+    "uri": "hprc_mhc_NA20809.2.genes.gff3.gz"
   }
 }
 ```
@@ -657,21 +663,20 @@ GenArk's own gene lanes are the alternative that needs no download, and they are
 thin here: its RefSeq mRNAs are other species' transcripts mapped onto the
 assembly, and none lands within 100 kb of this allele.
 
-The segments track draws on the haplotype too once its `assemblyNames` list it,
-with no mapping to add, since the assembly name is already the PanSN sample.
-This replaces the track [above](#load-the-graph), same `trackId`, one more
-assembly:
+The segments track draws on the haplotype too once its `assemblyNames` list it
+and `assemblyNameToPanSN` says which haplotype the name means. This replaces the
+track [above](#load-the-graph), same `trackId`, one more assembly:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hprc_minigraph_segments",
   "name": "HPRC release 2 graph (rGFA segments)",
-  "assemblyNames": ["hg38", "HG01433.2"],
+  "assemblyNames": ["hg38", "NA20809.2"],
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+    "assemblyNameToPanSN": { "hg38": "GRCh38", "NA20809.2": "NA20809#2" }
   },
   "displayDefaults": {
     "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
@@ -681,21 +686,21 @@ assembly:
 
 Cut the MHC class II window as a graph and right-click the 1.8 kb allele the
 [layout figure](#the-layout-dropdown) opens its menu on. The menu now carries
-**Open in HG01433.2** with the allele's own locus, beside the GRCh38 entries it
+**Open in NA20809.2** with the allele's own locus, beside the GRCh38 entries it
 had before, and taking it adds a linear view of that haplotype's chr6 framed on
 the allele, with its CAT genes and the segments the graph credits to it. The
 launch frames the pane on the allele alone, so zoom out for what surrounds it.
 
-<Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with HG01433 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in HG01433.2 entry adding a view of that haplotype's own chromosome 6 at the allele, and that view zoomed out to the CAT genes around it." />
+<Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with NA20809 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in NA20809.2 entry adding a view of that haplotype's own chromosome 6 at the allele, and that view zoomed out to the CAT genes around it." />
 
-<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, with the HG01433.2 allele ringed. Below, the view its Open in entry opened, zoomed out from the allele: HG01433 haplotype 2 on its own chromosome 6, the segments the graph credits to it, and its CAT annotation, where HLA-DRB5 spans the whole window." src="/img/pangenome/hprc_haplotype_launch.png" />
+<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, with the NA20809.2 allele ringed. Below, the view its Open in entry opened, zoomed out from the allele: NA20809 haplotype 2 on its own chromosome 6, the segments the graph credits to it, and its CAT annotation, which has HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-On GRCh38 the ringed allele attaches across the 12 kb backbone segment the
+On GRCh38 the ringed allele attaches across the 12 kb of backbone the
 [layout figure](#the-layout-dropdown) highlights, which is most of HLA-DRB5. On
-HG01433 haplotype 2 the same 1.8 kb sits inside a HLA-DRB5 model of its own, so
-the two views state the same structural difference from either side: the graph
-as an allele that replaces 12 kb, the haplotype's annotation as a gene whose
-extent differs from the reference's.
+NA20809 haplotype 2 the same 1.8 kb sits in the gap between HLA-DRB9 and
+HLA-DRB6, and the annotation has no HLA-DRB5 model at all, so the two views
+state the same structural difference from either side: the graph as an allele
+that replaces 12 kb, the haplotype's annotation as a gene that is not there.
 
 Which haplotype a window offers is build order: minigraph credits an allele to
 the first assembly to contribute it, so a haplotype added late is named on few

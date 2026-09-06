@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/b698a8707f46/jbrowse-plugin-graphgenomeviewer.esm.js"
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/49099de3de0a/jbrowse-plugin-graphgenomeviewer.esm.js"
     }
   ],
   "assemblies": [
@@ -18,11 +18,12 @@
       }
     },
     {
-      "name": "HG01433.2",
-      "displayName": "HG01433 haplotype 2 (HPRC release 2, GCA_042027645.1)",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.2bit",
+      "name": "NA20809.2",
+      "aliases": ["NA20809#2"],
+      "displayName": "NA20809 haplotype 2 (HPRC release 2, GCA_044166615.1)",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/GCA_044166615.1.2bit",
       "refNameAliases": {
-        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/042/027/645/GCA_042027645.1/GCA_042027645.1.chromAlias.txt"
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/GCA_044166615.1.chromAlias.txt"
       }
     }
   ],
@@ -42,11 +43,14 @@
       "type": "FeatureTrack",
       "trackId": "hprc_minigraph_segments",
       "name": "HPRC release 2 graph (rGFA segments)",
-      "assemblyNames": ["hg38", "HG01433.2"],
+      "assemblyNames": ["hg38", "NA20809.2"],
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
-        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38",
+          "NA20809.2": "NA20809#2"
+        }
       },
       "displayDefaults": {
         "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
@@ -54,12 +58,12 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "HG01433.2_cat_genes",
-      "name": "CAT genes (HG01433 haplotype 2)",
-      "assemblyNames": ["HG01433.2"],
+      "trackId": "NA20809.2_cat_genes",
+      "name": "CAT genes (NA20809 haplotype 2)",
+      "assemblyNames": ["NA20809.2"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_mhc_HG01433.2.genes.gff3.gz"
+        "uri": "hprc_mhc_NA20809.2.genes.gff3.gz"
       }
     }
   ]

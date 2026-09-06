@@ -747,14 +747,14 @@ export const pangenomeVideos: VideoSpec[] = [
   // OUT OF THE GRAPH AND INTO THE HAPLOTYPE, on the human graph. The E. coli
   // page films this move as pggb_out_to_strain; on HPRC the page said the
   // haplotypes could not be loaded, and the end-to-end tour stops at
-  // `Highlight in hg38`. With HG01433 haplotype 2 loaded from its GenArk hub
+  // `Highlight in hg38`. With NA20809 haplotype 2 loaded from its GenArk hub
   // (hprcHaplotypeSession says why that works), the same node's menu carries
-  // `Open in HG01433.2` with the allele's own locus, and this is that entry
+  // `Open in NA20809.2` with the allele's own locus, and this is that entry
   // taken. pangenome/hprc_haplotype_launch is the still of what it opens.
   {
     name: 'pangenome/hprc_out_to_haplotype',
     description:
-      "An HPRC allele opened on the haplotype that contributed it: right-click the HG01433.2 node in the MHC class II cut, take its Open in entry, and read the same sequence on that haplotype's own chromosome 6",
+      "An HPRC allele opened on the haplotype that contributed it: right-click the NA20809.2 node in the MHC class II cut, take its Open in entry, and read the same sequence on that haplotype's own chromosome 6",
     // 420 on the graph pane, as the still has it: the launched view below is
     // what the tour is for, and at the pane's own 600 the run put it 265 px
     // under the frame.
@@ -771,7 +771,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2000,
-        say: 'The MHC class II cut, with HG01433 haplotype 2 loaded',
+        say: 'The MHC class II cut, with NA20809 haplotype 2 loaded',
       },
       // the tooltip names contributingAssembly, which is what says which
       // haplotype to have loaded
@@ -801,7 +801,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2500,
-        say: 'HG01433 haplotype 2, on its own chromosome 6',
+        say: 'NA20809 haplotype 2, on its own chromosome 6',
       },
       // The launch frames the pane on the allele alone, so the first thing a
       // reader does is zoom out for what surrounds it on the haplotype.

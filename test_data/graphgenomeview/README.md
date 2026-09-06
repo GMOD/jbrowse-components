@@ -32,13 +32,13 @@ Six configs live here, data-free but for one gene slice:
   `demos/ecoli_pangenome/config.json` by keeping the assemblies, genes and
   `ecoli_pggb_ava`, and adding the plugin plus the rGFA track.
 - `hprc_haplotype.json` — hg38, its genes, the HPRC segments track, and one
-  contributing haplotype loaded as an assembly: HG01433 haplotype 2 from its
-  UCSC GenArk hub (GCA_042027645.1), under its PanSN sample name `HG01433.2`.
-  GenArk names the 2bit's sequences by GenBank accession, which is how the graph
-  names a haplotype's contigs too, so the node menu's **Open in HG01433.2**
-  resolves with nothing translated. Its gene lane is
-  `hprc_mhc_HG01433.2.genes.gff3.gz`, HPRC's CAT annotation of that haplotype
-  sliced to `CM086511.1:32,300,000-32,800,000` with the command the tutorial
+  contributing haplotype loaded as an assembly: NA20809 haplotype 2 from its
+  UCSC GenArk hub (GCA_044166615.1), as `NA20809.2` with the graph's `NA20809#2`
+  among its aliases. GenArk names the 2bit's sequences by GenBank accession,
+  which is how the graph names a haplotype's contigs too, so the node menu's
+  **Open in NA20809.2** resolves with nothing translated. Its gene lane is
+  `hprc_mhc_NA20809.2.genes.gff3.gz`, HPRC's CAT annotation of that haplotype
+  sliced to `CM094351.1:32,300,000-32,800,000` with the command the tutorial
   prints (GenArk's own gene lanes are empty around the allele). Backs
   `pangenome/hprc_haplotype_launch` and the `pangenome/hprc_out_to_haplotype`
   tour; `hprc.json` deliberately does not carry the assembly, since the extra
