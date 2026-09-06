@@ -11,6 +11,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
+  colorableColumns,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -475,7 +476,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * adapter has no such slot contributes nothing.
        */
       colorableAttributeNames() {
-        return (
+        return colorableColumns(
           self.levels
             .flatMap(l => l.tracks)
             // Annotated for the reason ComparativeTrackModel documents, which is
@@ -489,7 +490,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 | string[]
                 | undefined
               return declared ?? []
-            })
+            }),
         )
       },
       /**

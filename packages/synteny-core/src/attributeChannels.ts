@@ -40,6 +40,19 @@ export function declaredAttributes(adapterConfig: Record<string, unknown>) {
 }
 
 /**
+ * The reserved column naming the color a text label is painted with. It has to
+ * be declared in `attributeColumns` for the adapter to parse it onto the
+ * feature at all, but it is the palette for another column rather than a
+ * measurement of its own, so no menu offers it as a mode.
+ */
+export const COLOR_COLUMN = 'color'
+
+/** The declared columns a color-by menu offers, which is all but the palette. */
+export function colorableColumns(declared: readonly string[]) {
+  return declared.filter(column => column !== COLOR_COLUMN)
+}
+
+/**
  * One channel: its Float32Array, plus the range it has covered so far.
  *
  * The range rides on the channel rather than in a name-keyed map beside it
@@ -87,7 +100,7 @@ export function writeAttribute(
 }
 
 function fileColor(feature: Feature) {
-  const color: unknown = feature.get('color')
+  const color: unknown = feature.get(COLOR_COLUMN)
   return typeof color === 'string' && color !== '' ? color : undefined
 }
 

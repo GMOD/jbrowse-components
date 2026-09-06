@@ -29,6 +29,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   bandGroundColor,
+  colorableColumns,
   declaredAttributes,
   lodMenuItems,
   lodTierAt,
@@ -649,7 +650,7 @@ export function stateModelFactory(
        * first fetch
        */
       get ribbonColorAttributes(): string[] {
-        return declaredAttributes(self.adapterConfig)
+        return colorableColumns(declaredAttributes(self.adapterConfig))
       },
       /**
        * #getter

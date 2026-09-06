@@ -141,7 +141,9 @@ export type {
 export { default as ColorBySelector } from './ColorBySelector.tsx'
 export { default as ComparativeTooltip } from './ComparativeTooltip.tsx'
 export {
+  COLOR_COLUMN,
   PRESET_ATTRIBUTES,
+  colorableColumns,
   createAttributeChannels,
   declaredAttributes,
   readAttribute,

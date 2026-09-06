@@ -37,6 +37,7 @@ import {
   TrackColorsMixin,
   collectTrackWarnings,
   comparativeSurfacePhase,
+  colorableColumns,
   comparativeSurfaceSettled,
   regionSignature,
   releaseTemporaryAssemblies,
@@ -943,12 +944,14 @@ export default function stateModelFactory(pm: PluginManager) {
           // Annotated for the reason ComparativeTrackModel documents: this array
           // is `any`, which switched off checking on the getConf call below
           // until the shape was named.
-          return self.tracks.flatMap((t: ComparativeTrackModel) => {
-            const declared = getConf(t, ['adapter', 'attributeColumns']) as
-              | string[]
-              | undefined
-            return declared ?? []
-          })
+          return colorableColumns(
+            self.tracks.flatMap((t: ComparativeTrackModel) => {
+              const declared = getConf(t, ['adapter', 'attributeColumns']) as
+                | string[]
+                | undefined
+              return declared ?? []
+            }),
+          )
         },
         /**
          * #method
