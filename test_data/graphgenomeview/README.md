@@ -78,22 +78,15 @@ plugin's own `pnpm betabuild`, never by hand: it gates on lint, typecheck and
 tests, sets Cache-Control, invalidates the edge, and then verifies what the CDN
 actually serves.
 
-**Every config here pins `esmUrl` to a content-addressed prefix**
-(`demos/graphgenomeviewer/<hash>/`), which every betabuild writes alongside the
-unversioned entry point and prints at the end. The plugin lives in another repo,
-so an unpinned url means a deploy changes every graph figure with no commit here
-to attribute it to — that is how a renamed Color dropdown label broke
-`pangenome/rgfa_segment_neighbourhood`, whose spec clicked the old text, and the
-failure read as a spec bug. Bumping the pin is a one-line reviewable diff;
-regenerate the graph figures in the same commit.
-
-The unversioned url stays current, and it is what the **demo** configs under
-`demos/` name and what the tutorials tell a reader to install. That split is the
-same argument from both ends: a figure must not change without a commit here to
-attribute it to, and a visitor opening a demo wants the build the docs just told
-them to install. Pinning a demo instead buys nothing and costs a bump nobody
-remembers — `demos/hprc/config.json` went stale twice that way, once two builds
-behind and once one, while `demos/ecoli_pangenome/config.json` never has.
-`pnpm check-live-configs` holds both halves.
+**Every config here names the plugin's unversioned `esmUrl`**, the entry point
+every betabuild rewrites, which is also what the `demos/` configs name and what
+the tutorials tell a reader to install. So a plugin publish moves the graph
+figures with no commit here to attribute it to; the next regen's
+`pnpm figures:report` is where that move is read, and a spec that clicked a
+label the plugin renamed fails there rather than silently. The fixtures pinned a
+content-addressed build (`demos/graphgenomeviewer/<hash>/`, which betabuild
+still writes) until 2026-09-06; pinning cost a bump nobody remembered, and
+`demos/hprc/config.json` went stale twice that way. `pnpm check-live-configs`
+refuses a pin in either place.
 
 Once the plugin is on npm, point `esmUrl` at a pinned version there instead.

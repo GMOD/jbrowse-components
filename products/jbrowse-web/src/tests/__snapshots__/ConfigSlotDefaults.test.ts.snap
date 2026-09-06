@@ -838,6 +838,7 @@ exports[`every registered schema slot default 1`] = `
     "forceLoad": "boolean = false",
     "height": "number = 240",
     "jexlFilters": "stringArray = []",
+    "lanes": "stringArray = []",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "ribbonColor": "color = "rgba(130,130,130,0.3)"",
     "ribbonColorBy": "stringEnum = "default" of ["default","strand","identity"]",

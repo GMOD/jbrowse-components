@@ -44,19 +44,18 @@ const HOSTED_MIRRORS: Record<string, string> = {
   'demos/hprc/config.json': 'https://jbrowse.org/demos/hprc/config.json',
 }
 
-// A demo names the plugin's UNVERSIONED entry point; a screenshot fixture pins a
-// content-addressed build, and they all pin the same one.
-//
-// The two halves are the same argument from opposite ends. A figure must not
-// change without a commit here to attribute it to, so its fixture pins. A demo
-// is a session a visitor opens, so it wants what the tutorials tell that visitor
-// to install, which is the unversioned url — and pinning one buys nothing and
-// costs a bump nobody remembers: `demos/hprc/config.json` went stale twice this
-// way, once two builds behind (`29402c586a`, which cost visitors a Bandage
-// engine that aborted on every minigraph rGFA and then exhausted the worker's
-// heap) and once one build behind, missing the capped deletion bow the HPRC page
-// is full of. Its sibling `demos/ecoli_pangenome/config.json` has never gone
-// stale, because it names the unversioned url and picks each publish up.
+// Every config, demo or screenshot fixture, names the plugin's UNVERSIONED
+// entry point. A demo is a session a visitor opens, so it wants what the
+// tutorials tell that visitor to install; a fixture wants the same build the
+// figures' live links open. Pinning a content-addressed build buys nothing and
+// costs a bump nobody remembers: `demos/hprc/config.json` went stale twice
+// that way, once two builds behind (`29402c586a`, which cost visitors a
+// Bandage engine that aborted on every minigraph rGFA and then exhausted the
+// worker's heap) and once one build behind. The fixtures pinned until
+// 2026-09-06, on the argument that a figure must not change without a commit
+// here; the decision since is that a plugin publish is allowed to move the
+// graph figures, and `pnpm figures:report` after the next regen is where that
+// move is read.
 //
 // `*_local.json` is the GRAPH_PLUGIN_LOCAL switch's output, gitignored and
 // pointed at a local build on purpose.
@@ -82,25 +81,13 @@ function pluginUrls(dir: string) {
 
 function checkPluginPins() {
   const problems: string[] = []
-  const fixtures = pluginUrls('test_data')
-  const demos = pluginUrls('demos')
-  for (const { file, hash } of fixtures) {
-    if (!hash) {
-      problems.push(
-        `${file} names the plugin's unversioned entry point, so a publish changes its figures with no commit here to attribute it to. Pin it (test_data/graphgenomeview/README.md).`,
-      )
-    }
-  }
-  const pins = new Set(fixtures.map(f => f.hash).filter(Boolean))
-  if (pins.size > 1) {
-    problems.push(
-      `the fixtures pin ${pins.size} different plugin builds (${[...pins].join(', ')}), so the figures were not all rendered against one:\n    ${fixtures.map(f => `${f.file} ${f.hash}`).join('\n    ')}`,
-    )
-  }
-  for (const { file, hash } of demos) {
+  for (const { file, hash } of [
+    ...pluginUrls('test_data'),
+    ...pluginUrls('demos'),
+  ]) {
     if (hash) {
       problems.push(
-        `${file} pins the plugin at ${hash}, so a visitor opening it gets whatever build was current when someone last remembered. Name the unversioned entry point, as demos/ecoli_pangenome/config.json does.`,
+        `${file} pins the plugin at ${hash}, so it gets whatever build was current when someone last remembered. Name the unversioned entry point, as demos/ecoli_pangenome/config.json does.`,
       )
     }
   }
