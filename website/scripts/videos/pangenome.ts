@@ -805,7 +805,7 @@ export const pangenomeVideos: VideoSpec[] = [
       },
       // The launch frames the pane on the allele alone, so the first thing a
       // reader does is zoom out for what surrounds it on the haplotype.
-      ...launchedZoomOut(4).map((step, i) =>
+      ...launchedZoomOut(6).map((step, i) =>
         i === 0 ? { ...step, say: 'Zoom out for its neighbours' } : step,
       ),
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },

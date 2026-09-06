@@ -1719,7 +1719,7 @@ crosses the genes, the segments lane and the genotype matrix in one column, and
 the reference-position ramp gives the graph's backbone at that position the same
 hue as the segments above it.
 
-<Figure caption="One window, both products. The band is one 14.6 kb deletion site from the callset, and the matrix below it, all 464 haplotypes clustered by genotype, colors the haplotypes carrying it. The force graph has no coordinate axis, so an arrow runs from the band to the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band is one deletion site from the callset, 12 kb of HLA-DRB5 that 46 haplotypes replace with 1.8 kb, and the matrix below it, all 464 haplotypes clustered by genotype, colors the haplotypes carrying it. The force graph has no coordinate axis, so an arrow runs from the band to the 1.8 kb allele, which is the same deletion as the graph draws it." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 

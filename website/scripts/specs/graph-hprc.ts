@@ -316,12 +316,26 @@ const MHC_CLASSII_REGION = {
   end: 32600000,
 }
 
-// The one event pangenome/hprc_graph_vs_callset marks in both products: a
-// 14,596 bp deletion, the largest record in the window that more than one donor
-// carries. From the callset itself —
+// The one event pangenome/hprc_graph_vs_callset marks in both products: the
+// record at chr6:32,517,422 with a 12,014 bp REF, the largest in the window,
+// whose four 1.8 kb alleles are a 10,246 bp deletion carried by 46 of 437
+// haplotypes (AC 13, 1, 23 and 9; the other alleles are 11 and 6 bp shorter
+// than REF). From the callset itself —
 // `tabix hprc-v2.1-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
-// among the records the SV filter keeps.
-const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
+// among the records the SV filter keeps — and the same event HPRC_ALLELE is
+// in the graph: 1.8 kb standing in for 12 kb of HLA-DRB5. Release 2.0's
+// largest record here was a 14,596 bp deletion at 32,514,842.
+const MHC_MARKED_DELETION = '6:32,517,422-32,529,435'
+
+// SV_FILTER with that one record let through. vcfwave nests the DRB5 record
+// under the class II snarl at LV=1 in release 2.1 (2.0 had it top-level), and
+// the LV==0 half of the filter would leave the band over an empty column;
+// admitting it by position keeps the rest of the matrix at the top level,
+// which is what stops one event landing in two columns. `feature.start` is
+// 0-based, the VCF POS less one.
+const MHC_CALLSET_FILTER = [
+  'jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50',
+]
 
 // The HPRC segments lane, shared by every figure that carries it so they read
 // the same. `showLabels: 'none'`: the ids are the graph's own `s101124`
@@ -1883,7 +1897,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // and in none of the 3 after it.
     actions: [{ type: 'delay', ms: 4000 }],
     viewportWidth: 1000,
-    viewportHeight: 1090,
+    viewportHeight: 1210,
     hideTooltip: true,
   },
   // A donor node opened on the assembly that contributed it, which needs a
@@ -2029,7 +2043,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // same review note: the graph pane 420 -> 320, the repeat lane to one
     // collapsed row, and the bubble lane to the one row its filter leaves. It
     // was 1078, which the CLIPPED BELOW THE FOLD report then put 33 px over.
-    viewportHeight: 1112,
+    viewportHeight: 1222,
     hideTooltip: true,
     annotations: [
       {
@@ -2162,8 +2176,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
   // locus list. Every record in hprc-v2.1-mc-grch38.bubbles.bed.gz, ranked for a
   // bubble that is deeply traversed and still few enough segments to follow:
-  // GRCh38 chr6:160,606,991-160,639,012 is 33 segments and 584 recorded paths,
-  // and its alleles reach 176,236 bp against the 32 kb of reference they replace.
+  // GRCh38 chr6:160,616,002-160,646,753 is 29 segments and 129 recorded paths
+  // in release 2.1 (2.0: 33 segments, 584 paths, 160,606,991-160,639,012),
+  // and its alleles reach 174,966 bp against the 31 kb of reference they replace.
   // The window sits entirely inside LPA (160,531,482-160,664,275), whose KIV-2
   // copy number is the main determinant of Lp(a) and is not measurable off short
   // reads at all.
@@ -2228,16 +2243,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // frame crops the drawing; it does not scale it. Nor does a wider one
     // spread it: the force layout is fixed in graph units and auto-fits at
     // 50%, so 1400 px of frame only adds empty canvas to the right.
-    viewportHeight: 1170,
+    viewportHeight: 1330,
     hideTooltip: true,
     // Why this locus and not another deeply traversed bubble: KIV-2 copy number
     // is the reason anyone measures LPA, and nothing in a chain of loops says
     // so. On review the figure read as an arbitrary tangle.
     //
-    // Anchored on s338849+, the first node of the GRCh38 walk (12,567 bp at
-    // chr6:160,508,381), and dropped below it into the part of the canvas the
-    // force layout leaves empty. A graph node rather than a viewport
-    // coordinate, so re-running the layout carries the pill with the drawing.
+    // The reading pill sits in the canvas's top-left corner (see it below);
+    // it used to hang off s338849+, the first node of the GRCh38 walk, until
+    // release 2.1's layout carried that drop off the capture.
     annotations: [
       {
         type: 'text',
@@ -2256,21 +2270,33 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // still wraps at maxWidth on its own, so authored line ends land in the
         // middle of the pill
         maxWidth: 420,
-        anchor: { view: 1, graphNode: 's338849+', dx: 20, dy: 320 },
+        // On the canvas rather than on a node: through release 2.0 this hung
+        // off the first GRCh38 node, dropped into the empty part of the force
+        // drawing, and 2.1's layout put that node where the drop landed off
+        // the capture. The top-left corner is empty in either layout.
+        anchor: {
+          selector: '[data-testid="graph-genome-canvas"]',
+          alignX: 'left',
+          alignY: 'top',
+        },
+        dx: 20,
+        dy: 40,
       },
       // WHERE it is, which the pill above never said (review: "the term
       // 'KIV-2' is not visible in the screenshot, may be useful if there was a
       // repeat track or specific location-of-kiv-2 track"). No new track is
       // needed: the array already IS the widest bar in the bubbles lane, the
-      // one labelled 33 segments and up to 584 paths, and that bubble's own
-      // record is `chr6:160,606,991-160,639,012` — the coordinates this whole
-      // figure was picked on. Boxing it names the bar and locates the repeat in
-      // one mark, and a repeat track would restate what the graph already says.
+      // one labelled 29 segments and up to 129 paths, and that bubble's own
+      // record is `chr6:160,616,002-160,646,753` in release 2.1 (2.0 had it as
+      // 33 segments and 584 paths over 160,606,991-160,639,012) — the
+      // coordinates this whole figure was picked on. Boxing it names the bar
+      // and locates the repeat in one mark, and a repeat track would restate
+      // what the graph already says.
       {
         type: 'box',
         anchor: {
           track: 'hprc_minigraph_bubbles',
-          locus: 'chr6:160,606,991-160,639,012',
+          locus: 'chr6:160,616,002-160,646,753',
         },
         pad: 3,
       },
@@ -2286,7 +2312,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         textAlign: 'end',
         anchor: {
           track: 'hprc_minigraph_bubbles',
-          locus: 'chr6:160,606,991-160,639,012',
+          locus: 'chr6:160,616,002-160,646,753',
           alignX: 'left',
           fracY: 0,
           dx: -16,
@@ -2315,10 +2341,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // an undecomposed bubble in the graph pane above can face several records
   // below, and the nested children would put one event in two columns.
   //
-  // The marked deletion survives that filter (LV=0 on its own record) but is
-  // MULTI-ALLELIC -- five deletion ALTs, four of 584 bp and one of 14,595 -- so
-  // the colored block under the band is the site's carriers, not the 14,596 bp
-  // allele's alone. The caption says "a deletion there" for that reason.
+  // The marked deletion survives that filter but is MULTI-ALLELIC -- nine
+  // deletion ALTs, four of them the 1.8 kb allele (10,246 bp gone) and five
+  // within 11 bp of REF -- so the colored block under the band is the site's
+  // carriers, not the 10.2 kb allele's alone. The caption says "a deletion
+  // there" for that reason.
   //
   // The regular multi-sample display, not the matrix: these columns have to
   // land under the graph rows above them, and matrix mode spreads columns
@@ -2337,10 +2364,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // other way. Relabelling the callset rows into PanSN would therefore have
   // asserted a mapping that is not true, which is the trap avoided here.
   //
-  // So the figure marks one EVENT instead: `highlight` puts a band on the 14,596
-  // bp deletion at chr6:32,514,842, which crosses the gene lane, the segments
-  // lane and the genotype matrix in one column — 6 of the 10 donors carry it,
-  // on 9 of their 20 haplotypes. The graph below is the force drawing (review:
+  // So the figure marks one EVENT instead: `highlight` puts a band on the
+  // 12,014 bp record at chr6:32,517,422, which crosses the gene lane, the
+  // segments lane and the genotype matrix in one column — 46 of 437
+  // haplotypes carry its 10.2 kb deletion. The graph below is the force drawing (review:
   // "consider using force directed bandage graph"), where the same event is a
   // bubble rather than a row. What the pair says: the callset names who carries
   // it, the graph names what the alternative sequence is.
@@ -2381,7 +2408,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               // — where the graph pane below it is the half this figure is
               // about, and was the half being squeezed.
               height: 340,
-              jexlFilters: SV_FILTER,
+              jexlFilters: MHC_CALLSET_FILTER,
               runClustering: true,
             },
           ],
@@ -2405,18 +2432,19 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the gene lane, the segments lane, the 464-row callset, and the graph pane
     // under them — the force drawing is about as tall as it is wide where the
     // row stack was flat
-    viewportHeight: 1420,
+    viewportHeight: 1480,
     hideTooltip: true,
     // The event in the graph as well as in the tracks (review: "i see there is a
     // highlight on the lineargenomeview but no highlight in the graph itself").
     // The view's `highlight` is a band on a coordinate axis and the force
     // drawing has none, so the graph side is a ring on the node instead.
     //
-    // s101145+ is the reference node the marked deletion removes most of:
-    // 12,021 bp at GRCh38#0#chr6:32,517,416, ending at 32,529,437 against the
-    // band's 32,529,438. Read out of `probe-graph-nodes.ts`, which also says the
-    // band covers a run of eleven backbone nodes (s101135+ to s101145+) — this
-    // is the one worth ringing, the other ten being a few hundred bp each.
+    // The ring is on HPRC_ALLELE, the 1.8 kb node that IS the deletion in the
+    // graph: the walk that takes it skips the 12 kb of backbone under the band
+    // (s329875+ to s329885+ in release 2.1, eleven segments from 32,517,416 to
+    // 32,529,437 against the band's 32,529,438). Through release 2.0 the ring
+    // sat on the one 12 kb reference node that stretch was, s101145+; 2.1 has
+    // no single node there worth ringing, the longest being 4.3 kb.
     //
     // The band and the ring are joined by an ARROW rather than by a sentence
     // (review: "just draw arrow from highlight to circle, no text annotation or
@@ -2431,7 +2459,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'circle',
-        anchor: { view: 1, graphNode: 's101145+' },
+        anchor: { view: 1, graphNode: HPRC_ALLELE },
         radius: 26,
         strokeWidth: 3,
       },
@@ -2444,13 +2472,13 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           fracY: 1,
           dy: -8,
         },
-        anchor: { view: 1, graphNode: 's101145+', dx: -30, dy: -30 },
+        anchor: { view: 1, graphNode: HPRC_ALLELE, dx: -30, dy: -30 },
         strokeWidth: 3,
       },
       {
         type: 'text',
-        // no length in the words: the 12.3 kb allele sits beside this node and
-        // labels itself, so "12 kb" in a callout would read as that one
+        // no length in the words: the graph labels its longer nodes itself,
+        // so a length in a callout would read as one of those
         text: 'the same deletion, in the graph',
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
@@ -2505,7 +2533,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         timeout: 180000,
       },
       // 1.8 kb to ~28 kb, so the allele sits among the haplotype's own genes
-      ...launchedZoomOut(4),
+      ...launchedZoomOut(6),
       { type: 'delay', ms: 3000 },
     ],
     annotations: [
@@ -2556,7 +2584,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     // off the run's own reports: 1070 was right while the launch handed back two
     // bare rulers, and the panels carry the graph's own segments lane now
-    viewportHeight: 1270,
+    viewportHeight: 1460,
     hideTooltip: true,
     actions: [
       {

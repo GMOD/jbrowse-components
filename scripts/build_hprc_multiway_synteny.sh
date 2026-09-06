@@ -39,7 +39,7 @@
 #           (TAFFY=/path/to/taffy to point at a build)
 # Usage:    bash scripts/build_hprc_multiway_synteny.sh [outdir]
 #           SOURCE=taf JOBS=8 CAT_JOBS=4 bash scripts/build_hprc_multiway_synteny.sh
-#           GFA=/data/hprc-v2.0-mc-grch38.gfa.gz bash scripts/build_hprc_multiway_synteny.sh
+#           GFA=/data/hprc-v2.1-mc-grch38.gfa.gz bash scripts/build_hprc_multiway_synteny.sh
 #           UPLOAD=1 bash scripts/build_hprc_multiway_synteny.sh   # sync the new
 #             PIF and chrom.sizes to s3://jbrowse.org/demos/hprc_multiway/,
 #             never overwriting an object already there; config.json goes
@@ -56,7 +56,7 @@
 # 90 MB/s).
 #
 # Writes into ./hprc_multiway_build/ (names by route: gfa / taf):
-#   hprc-v2.0-mc-grch38.gfa.gz         the graph (63 GB, reused; or GFA=...)
+#   hprc-v2.1-mc-grch38.gfa.gz         the graph (64 GB, reused; or GFA=..., GFA_URL=...)
 #   hprc-v2.0-mc-grch38.full.taf.gz{,.tai}  the graph alignment (6 GB, reused)
 #   parts/<chr>.paf                    taf: one chromosome each, log beside
 #   hprc_multiway_gfa.paf / hprc_multiway_graph.paf   the PAF, PanSN names
@@ -98,7 +98,7 @@ esac
 REL=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2
 TAF_URL=$REL/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
 TAF=$(basename "$TAF_URL")
-GFA_URL=$REL/minigraph-cactus/hprc-v2.0-mc-grch38.gfa.gz
+GFA_URL="${GFA_URL:-$REL/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz}"
 GFA="${GFA:-$(basename "$GFA_URL")}"
 HG38_SIZES=https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 CAT_INDEX=https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
