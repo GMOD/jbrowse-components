@@ -1474,6 +1474,65 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 860,
   },
 
+  // THE SAME EIGHT LANES READ FROM THE GRAPH, for pangenome_hprc.md's walks
+  // section: no PAF, no gene table, no offline step. hprc_v2_1_gbz_lanes is
+  // GbzBaseSyntenyAdapter over HPRC's published release 2.1 gbz-base database
+  // and our companion haplotype index, both read by range request at capture
+  // time (the CFH window is about 8 s hosted, GBZ_HANDOFF.md in the plugin has
+  // the table). The display's `lanes` slot in the hosted config is what makes
+  // it eight lanes and not 464; `rowOrder` here matches the gene-table stack
+  // above so the two figures read lane for lane. What the graph states is the
+  // walk, one CIGAR per haplotype against hg38; the gene models each lane
+  // draws over it are the session's CAT annotation of that assembly, which the
+  // display picks up per lane, so the frame reads like the gene-table stack
+  // with the alignment underneath it coming from the graph. The records'
+  // CIGARs are checked against upstream gbz-base's own query output in the
+  // reader's test suite (test/oracle.test.ts there).
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_gbz_cfhr_lanes',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:196,640,000-196,900,000',
+            tracks: [
+              {
+                trackId: 'hg38_ncbiRefSeq_ucsc',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'hprc_v2_1_gbz_lanes',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: [
+                  'HG00097.1',
+                  'HG00099.1',
+                  'HG00128.1',
+                  'HG00133.1',
+                  'HG01109.1',
+                  'HG01123.1',
+                  'HG01960.1',
+                  'HG02055.1',
+                ],
+                height: 460,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    // the graph read is a chain of range requests against two hosted files
+    readyTimeout: 240000,
+    settleMs: 15000,
+    viewportHeight: 860,
+  },
+
   // The alignment-level case of the same track: the E. coli all-vs-all PAF as
   // lanes over the paa-operon island, under the pggb graph-depth wiggle. The
   // depth drop names how many genomes carry the island; the lanes name WHICH

@@ -1579,13 +1579,18 @@ all 464. **Choose lanes...** on the track menu lists every haplotype the graph
 names, grouped by sample, so any other set is a tick away, and **Every lane** is
 the whole cohort.
 
+<Figure caption="The CFH cluster's eight lanes read from the graph at load time, in the same lane order as the gene-table stack above, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+
 `GbzBaseSyntenyAdapter` answers a window rather than reading a file. It locates
 the window on GRCh38's own path through the graph, reads the subgraph over it,
-and emits one record per haplotype fragment, in that haplotype's contig
-coordinates and carrying the fragment's CIGAR, which is the record a
+and emits one record per haplotype walk, in that haplotype's contig coordinates
+and carrying the walk's CIGAR (a walk that leaves the window's nodes and comes
+back is joined, the private stretch its insertion and the reference it skipped
+its deletion), which is the record a
 [multi-way synteny](#every-haplotype-in-its-own-coordinates) lane is drawn from.
-No aligner is in the loop here either, and no offline step at all: the lanes are
-the graph's own walks.
+The reader's test suite checks those CIGARs against upstream gbz-base's own
+query output. No aligner is in the loop here either, and no offline step at all:
+the lanes are the graph's own walks.
 
 `haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
 haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so the
