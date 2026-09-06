@@ -13,6 +13,7 @@ import type { AppSession } from './types.ts'
 interface FakeView {
   showLoading?: boolean
   initialized?: boolean
+  error?: unknown
   assemblyNames?: string[]
   tracks?: { trackId?: string; displays?: { displayPhase?: string }[] }[]
   views?: FakeView[]
@@ -52,6 +53,21 @@ test('a view resolving its assembly is loading', () => {
 
 test('an uninitialized view is loading', () => {
   expect(phaseOf([{ initialized: false }])).toBe('loading')
+})
+
+// A view whose assembly was never found stays uninitialized forever and paints
+// the error; finished, like a display's terminal phase, or the app never reads
+// ready again while it is open.
+test('a view that failed to initialize is ready, not loading', () => {
+  expect(
+    phaseOf([{ initialized: false, error: 'Assembly volvix not found' }]),
+  ).toBe('ready')
+})
+
+test('a view that errored while loading is ready, not loading', () => {
+  expect(
+    phaseOf([{ showLoading: true, error: 'Assembly volvix not found' }]),
+  ).toBe('ready')
 })
 
 test('a display mid-fetch is loading', () => {

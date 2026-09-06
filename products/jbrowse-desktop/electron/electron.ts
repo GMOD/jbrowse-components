@@ -270,6 +270,17 @@ function runApp() {
   // the claim if another install took the scheme over.
   app.setAsDefaultProtocolClient(JBROWSE_PROTOCOL)
 
+  // Chromium stops rendering a window another window fully covers: the
+  // document reads hidden, ResizeObserver never delivers, and a view a spec
+  // just created never measures its width. An agent driving the app over MCP
+  // has its own window in front, so a two-second spec load took thirty behind
+  // it, or never finished. The renderer's background throttling is a separate
+  // knob and was not enough. Off with the endpoint, since the endpoint is what
+  // makes an unwatched window one that is still in use.
+  if (!process.env.JBROWSE_DISABLE_MCP) {
+    app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+  }
+
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
       app.quit()

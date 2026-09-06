@@ -333,6 +333,19 @@ function makeConfigurationSchemaModel<
                   .join(', ')}`,
           )
         }
+        // MST skips its own type check in a production build, and a value the
+        // slot's union cannot take is then dropped with no throw: the write
+        // reported success and the slot kept its old value. `is` still runs
+        // there, so the guard holds in both builds.
+        if (!modelDefinition[slotName].is(value)) {
+          const declared = schemaDefinition[slotName]
+          const slotType = isSlotDefinitionEntry(declared)
+            ? declared.type
+            : 'value'
+          throw new Error(
+            `${modelName}.${slotName} is a ${slotType} slot and cannot take ${JSON.stringify(value)}`,
+          )
+        }
         self[slotName] = value
       },
     }))

@@ -23,6 +23,7 @@ import type {
 interface ViewFlags {
   showLoading?: boolean
   initialized?: boolean
+  error?: unknown
 }
 interface DisplayLike {
   displayPhase?: string
@@ -32,9 +33,16 @@ function trackLoading(track: AbstractTrackModel) {
   return track.displays.some(d => (d as DisplayLike).displayPhase === 'loading')
 }
 
+// A view whose init failed (its assembly was never found) stays uninitialized
+// for good and paints its error, so like a display's terminal phase it is
+// finished, not pending: without this the whole app read `loading` for as long
+// as that view was open, and every settle answered false with no reason.
 function viewLoading(view: AbstractViewModel) {
   const flags = view as ViewFlags
-  return flags.showLoading === true || flags.initialized === false
+  return (
+    flags.error === undefined &&
+    (flags.showLoading === true || flags.initialized === false)
+  )
 }
 
 /**

@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import net from 'node:net'
+import path from 'node:path'
 import readline from 'node:readline'
 
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
@@ -92,6 +93,20 @@ export function startMcpBridge({
   // A page load tears the subscription down without telling anyone, so the
   // bridge has to notice for itself or it would keep trusting the outgoing
   // page's announcement. Attached per window, once.
+  // A window in the background has its timers throttled to one tick a second,
+  // which is the rate the settle poll and the rAF that publishes a view's
+  // width then run at. An app with an agent on the socket is in use whichever
+  // window is in front, so throttling is off for as long as a client is
+  // connected. This is the timer half only: a window another window fully
+  // covers stops rendering altogether, and that is the
+  // disable-backgrounding-occluded-windows switch in electron.ts. The
+  // screenshot path below still toggles throttling around a capture for a
+  // client that connected before a window existed.
+  let connectedClients = 0
+  function applyThrottling() {
+    getWindow()?.webContents.setBackgroundThrottling(connectedClients === 0)
+  }
+
   let watchedContents: number | undefined
   function watchWindow() {
     const win = getWindow()
@@ -99,6 +114,7 @@ export function startMcpBridge({
       return
     }
     watchedContents = win.webContents.id
+    applyThrottling()
     // did-start-navigation, not did-start-loading: the latter also toggles for
     // load activity that leaves the subscription intact, and clearing on it
     // made every relay pay the ready wait on a busy page
@@ -242,6 +258,11 @@ export function startMcpBridge({
     }
     if (/^https?:\/\//.test(target)) {
       return openAndWait({ type: 'link', url: target }, target)
+    }
+    if (!path.isAbsolute(target)) {
+      return {
+        error: `"${target}" is a relative path, which would resolve against the app's working directory (${process.cwd()}), not yours — pass an absolute path or a URL`,
+      }
     }
     if (!fs.existsSync(target)) {
       return { error: `No such file: ${target}` }
@@ -477,6 +498,12 @@ export function startMcpBridge({
   }
 
   const server = net.createServer(socket => {
+    connectedClients += 1
+    applyThrottling()
+    socket.on('close', () => {
+      connectedClients -= 1
+      applyThrottling()
+    })
     const rl = readline.createInterface({ input: socket })
     // Everything in here runs in the MAIN process, where an uncaught throw
     // takes the app down with the user's unsaved session — so nothing off the

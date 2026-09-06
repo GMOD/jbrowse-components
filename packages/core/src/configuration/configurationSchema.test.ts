@@ -2,6 +2,7 @@ import {
   getSnapshot,
   getType,
   isStateTreeNode,
+  setTypeChecking,
   types,
 } from '@jbrowse/mobx-state-tree'
 
@@ -689,6 +690,32 @@ describe('setSlot', () => {
       node.setSlot('cuont', 2)
     }).toThrow(/WithScalar has no config slot "cuont"/)
     expect(readConfObject(node, 'count')).toBe(1)
+  })
+
+  // With MST's own check off, as it is in a production build, a value the
+  // slot's union cannot take was dropped without a throw: applyDisplaySettings
+  // reported `height: 'big'` as applied and the display stayed at 100.
+  test('refuses a value the slot type cannot take, with type checking off', () => {
+    const schema = ConfigurationSchema('Typed', {
+      height: { type: 'number', defaultValue: 100 },
+      showLabels: { type: 'boolean', defaultValue: true },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    setTypeChecking(false)
+    try {
+      expect(() => {
+        node.setSlot('height', 'big')
+      }).toThrow(/Typed.height is a number slot and cannot take "big"/)
+      expect(() => {
+        node.setSlot('showLabels', 'false')
+      }).toThrow(/Typed.showLabels is a boolean slot/)
+      node.setSlot('height', 250)
+      node.setSlot('showLabels', 'jexl:1 > 2')
+    } finally {
+      setTypeChecking(undefined)
+    }
+    expect(readConfObject(node, 'height')).toBe(250)
+    expect(readConfObject(node, 'showLabels')).toBe(false)
   })
 
   test('the error names the valid slots', () => {

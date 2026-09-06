@@ -1,4 +1,6 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import * as configuration from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import * as getFeatureAdapter from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import * as util from '@jbrowse/core/util'
 import * as stopToken from '@jbrowse/core/util/stopToken'
@@ -13,7 +15,6 @@ import {
   waitReady,
 } from './jbApi.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
 describe('safeJson', () => {
@@ -128,6 +129,53 @@ describe('waitReady', () => {
     })
   })
 
+  // A view whose assembly was never found paints its error in place of a
+  // genome and raises no toast; it used to hold the app "loading" for good, so
+  // every settle answered false with nothing said.
+  it('names a view that failed to initialize, beside the tracks', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const failed = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          initialized: false,
+          error: 'Assembly volvix not found',
+          get visibleRegions(): unknown {
+            throw new Error('width undefined')
+          },
+          ownViews: [],
+          ownTracks: [],
+        },
+        {
+          id: 'v2',
+          type: 'LinearGenomeView',
+          initialized: false,
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, failed)).toMatchObject({
+      settled: true,
+      notReady: [
+        { viewId: 'v1', error: 'Assembly volvix not found' },
+        { viewId: 'v2', phase: 'initializing' },
+      ],
+    })
+    const jb = createJbApi({
+      rootModel: { session: failed },
+    } as unknown as PluginManager)
+    expect(jb.sessionSummary().views[0]).toMatchObject({
+      id: 'v1',
+      error: 'Assembly volvix not found',
+    })
+    await expect(jb.visibleRegions('v1')).rejects.toThrow(
+      /View v1 failed to initialize: Assembly volvix not found/,
+    )
+  })
+
   it('delivers each toast once, with its level, and never a stale one twice', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     const toasts = [{ message: 'track x failed', level: 'error' }]
@@ -174,6 +222,18 @@ describe('addTrack in a browser', () => {
     await expect(
       createJbApi(pluginManager).addTrack({ location: '/data/x.bam' }),
     ).rejects.toThrow(/local path/)
+  })
+
+  // a relative path resolves against the app's own working directory, which
+  // under a packaged app is "/", so the track reports its failure only at
+  // first fetch, through the display
+  it('refuses a relative path before anything else', async () => {
+    await expect(
+      createJbApi(pluginManager).addTrack({ location: 'data/x.bam' }),
+    ).rejects.toThrow(/"data\/x.bam" is relative/)
+    await expect(
+      createJbApi(pluginManager).addTrack({ location: '~/x.bam' }),
+    ).rejects.toThrow(/is relative/)
   })
 
   it('stacks a list of bigWig URLs into one MultiQuantitativeTrack', async () => {
@@ -269,7 +329,14 @@ describe('a name that several views could answer', () => {
   })
   const jbOver = (views: unknown[]) =>
     createJbApi({
-      rootModel: { session: { views, assemblyNames: ['volvox'] } },
+      rootModel: {
+        session: {
+          views,
+          assemblyNames: ['volvox'],
+          getTrackById: (id: string) =>
+            ['genes', 'variants'].includes(id) ? { trackId: id } : undefined,
+        },
+      },
     } as unknown as PluginManager)
 
   it('names both views when a track is shown twice', () => {
@@ -289,8 +356,22 @@ describe('a name that several views could answer', () => {
       lgv('v1', 'ctgA:1-100', ['genes']),
       lgv('v2', 'ctgA:5000-5100', ['variants']),
     ])
-    expect(jb.trackModel('genes')?.configuration.trackId).toBe('genes')
-    expect(jb.trackModel('missing')).toBeUndefined()
+    expect(jb.trackModel('genes').configuration.trackId).toBe('genes')
+  })
+
+  // undefined was followed by ".activeDisplay" on the agent's next line, and
+  // the TypeError there named neither of the two causes
+  it('says whether a missing track is unknown or merely not shown', () => {
+    const jb = jbOver([lgv('v1', 'ctgA:1-100', ['genes'])])
+    expect(() => jb.trackModel('missing')).toThrow(
+      /No track with trackId "missing"/,
+    )
+    expect(() => jb.trackModel('variants')).toThrow(
+      /"variants" is not shown in any open view — view.showTrack\("variants"\)/,
+    )
+    expect(() => jb.trackModel('variants', 'v1')).toThrow(
+      /not shown in view v1/,
+    )
   })
 
   it('jb.view is the open view, and asks when there are several', () => {
@@ -312,6 +393,91 @@ describe('a name that several views could answer', () => {
     )
     expect(await jb.visibleRegions('v2')).toEqual([
       { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+    ])
+  })
+})
+
+// The config keeps each assembly's sequence track under the assembly, so no
+// track list holds it; an agent that wanted bases had no trackId to ask for.
+describe('listTracks', () => {
+  const pluginManager = new PluginManager([]).createPluggableElements()
+  pluginManager.configure()
+  const adapter = ConfigurationSchema('Adapter', {
+    type: { type: 'string', defaultValue: '' },
+  })
+  const featureTrack = ConfigurationSchema(
+    'FeatureTrack',
+    {
+      name: { type: 'string', defaultValue: '' },
+      assemblyNames: { type: 'stringArray', defaultValue: [] },
+      adapter,
+    },
+    { explicitlyTyped: true, explicitIdentifier: 'trackId' },
+  )
+  const sequenceTrack = ConfigurationSchema(
+    'ReferenceSequenceTrack',
+    { name: { type: 'string', defaultValue: '' }, adapter },
+    { explicitlyTyped: true, explicitIdentifier: 'trackId' },
+  )
+  const assembly = ConfigurationSchema('Assembly', {
+    name: { type: 'string', defaultValue: '' },
+    sequence: sequenceTrack,
+  })
+  const env = { pluginManager }
+  const session = {
+    tracks: [
+      featureTrack.create(
+        {
+          type: 'FeatureTrack',
+          trackId: 'genes',
+          name: 'genes',
+          assemblyNames: ['volvox'],
+          adapter: { type: 'BigBedAdapter' },
+        },
+        env,
+      ),
+    ],
+    assemblyManager: {
+      assemblyList: [
+        assembly.create(
+          {
+            name: 'volvox',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'volvox_refseq',
+              name: 'volvox sequence',
+              adapter: { type: 'IndexedFastaAdapter' },
+            },
+          },
+          env,
+        ),
+      ],
+    },
+  } as unknown as AbstractSessionModel
+  const jb = createJbApi({
+    rootModel: { session },
+  } as unknown as PluginManager)
+
+  it('lists each assembly sequence track beside the catalog', () => {
+    expect(jb.listTracks()).toMatchObject({
+      total: 2,
+      tracks: [
+        {
+          trackId: 'genes',
+          type: 'FeatureTrack',
+          adapterType: 'BigBedAdapter',
+          assemblyNames: ['volvox'],
+        },
+        {
+          trackId: 'volvox_refseq',
+          type: 'ReferenceSequenceTrack',
+          adapterType: 'IndexedFastaAdapter',
+          assemblyNames: ['volvox'],
+        },
+      ],
+    })
+    expect(jb.listTracks('refseq').tracks.map(t => t.trackId)).toEqual([
+      'volvox_refseq',
     ])
   })
 })
@@ -360,6 +526,7 @@ describe('getFeatures reads through the RPC', () => {
         isValidRefName: (n: string) => n === 'ctgA',
         regions: [],
       }),
+      getCanonicalAssemblyName: (n: string) => (n === 'vvx' ? 'volvox' : n),
     },
     assemblyNames: ['volvox'],
   } as unknown as AbstractSessionModel
@@ -407,6 +574,18 @@ describe('getFeatures reads through the RPC', () => {
     expect(calls[0]?.[2]).toMatchObject({
       regions: [{ refName: 'ctgA', start: 0, end: 100 }],
     })
+  })
+
+  // the wrong assembly renames the region against the wrong alias set and the
+  // file answers with the wrong coordinates, or nothing; an alias of the right
+  // one is the right one
+  it('refuses an assembly the track is not on, and takes an alias of its own', async () => {
+    await expect(
+      jb.getFeatures('genes', 'ctgA:1-100', { assembly: 'hg38' }),
+    ).rejects.toThrow(/Track "genes" is on volvox, not "hg38"/)
+    expect(calls).toHaveLength(0)
+    await jb.getFeatures('genes', 'ctgA:1-100', { assembly: 'vvx' })
+    expect(calls).toHaveLength(2)
   })
 })
 

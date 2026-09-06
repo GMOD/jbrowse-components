@@ -25,13 +25,10 @@ the last expression. In scope either way:
 
 ## The helper library
 
-The rule for what is in `jb` and what is not: a helper exists where the raw
-model answers wrong **silently**, and turns that into a thrown error or a
-report. A refName the file spells differently, a settings key the display does
-not know, a display that replaced its own subtree without a toast, an action
-`Object.keys` cannot see, a name that several views could answer. Anything the
-model merely answers verbosely is done with the model, and the lower-level
-re-exports at the end are frozen at what shipped.
+A helper exists where the raw model answers wrong **silently** (a refName the
+file spells differently, a display that replaced its subtree without a toast, a
+name several views could answer) and turns that into a throw or a report.
+Everything else is done with the model; the re-exports at the end are frozen.
 
 Orientation and building:
 
@@ -39,70 +36,66 @@ Orientation and building:
   display type and render phase, assemblies, visible regions.
 - `jb.inspect(path?, maxBytes?)` walks the live model by dot path (`'views.0'`)
   and answers with the value, its getters, **the actions it takes** and its
-  `modelType`. Reach for it before deciding a model cannot do something: MST
-  attaches actions as non-enumerable properties, so `Object.keys(view)` lists
-  none of them. An action's signature is under
+  `modelType`. MST actions are non-enumerable, so `Object.keys` lists none of
+  them. An action's signature is under
   `docs topic:"model:<modelType>" section:"Actions"`, config slots by type under
   `docs topic:"config:BamAdapter"`, every name under `docs topic:"types"`.
 - `jb.listTracks(search?, limit?)` is the track catalog with trackIds,
-  connection and hub tracks included, capped at 100 by default. It answers
-  `{ total, tracks }`.
+  connection and hub tracks and each assembly's reference sequence track
+  included, capped at 100 by default. It answers `{ total, tracks }`.
 - `jb.loadSessionSpec(spec, settleMs?)` builds views declaratively from the spec
   on `docs topic:"session-spec"`, settles for `settleMs` (default 30000)
   reporting what is still not ready, and returns the summary. It **replaces the
   session**: the `session` argument you were given is a dead node afterwards.
   Every `jb` helper re-reads the live one, and `jb.session` is it if you need to
   rebind. A spec `layout` indexes the spec's own `views` array.
-- `session.layoutViews(spec)` arranges the views already open into panels,
-  without replacing the session. Same tree as a spec `layout` — a leaf carries
-  `views`, a container `children` and a `direction` — but a leaf here names view
-  ids (from `jb.sessionSummary()`) or indexes into `session.views`. It turns
-  workspaces mode on for this session, applies the stated top-to-bottom order
-  and returns the ids it seated; the lower-level `session.applyLayoutSpec` does
-  neither, and the views stay stacked down the page with nothing said. `viewIds`
-  is not a key: a node carrying one throws and names it. Stacked views are also
-  how a session grows taller than the window, which `jb.waitReady` reports as an
-  `offscreen` note.
+- `session.layoutViews(spec)` arranges the views already open into panels
+  without replacing the session: the same tree as a spec `layout` (a leaf
+  carries `views`, a container `children` and a `direction`), with a leaf naming
+  view ids from `jb.sessionSummary()` or indexes into `session.views`. It turns
+  workspaces on, applies the stated order and returns the ids it seated; the
+  lower-level `session.applyLayoutSpec` does neither and leaves the views
+  stacked down the page, which is how a session grows taller than the window
+  (`jb.waitReady`'s `offscreen`). `viewIds` is not a key; a node carrying one
+  throws.
 - `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
-  adds a local path or URL, with the format inferred from the extension, shows
-  it and settles. `settleMs: 0` skips the settle, for several adds followed by
+  adds an absolute local path or a URL (a relative path is refused), infers the
+  format from the extension, shows it and settles; an unreadable file reports in
+  the settle's `notReady`. `settleMs: 0` skips the settle, for several adds and
   one `jb.waitReady`.
-- `jb.view(viewId?)` is the open view. With several open and no `viewId`, it
-  throws naming each one rather than picking the first, and so do
-  `jb.trackModel`, `jb.visibleRegions` and `jb.addTrack` when more than one view
-  could answer: two linear views of one assembly at two loci both "show the
-  track", and restyling or reading the first one while the settle reports both
-  is the silent kind of wrong. `viewId` comes from `jb.sessionSummary()`.
-  Synteny and breakpoint views nest, and every helper counts the nested views as
-  open.
-- `jb.trackModel(trackId, viewId?)` is the shown track's live model, or
-  undefined.
+- `jb.view(viewId?)` is the open view. With several open and no `viewId` it
+  throws naming each one, as do `jb.trackModel`, `jb.visibleRegions` and
+  `jb.addTrack` when more than one view could answer. `viewId` comes from
+  `jb.sessionSummary()`; nested synteny and breakpoint views count as open.
+- `jb.trackModel(trackId, viewId?)` is the shown track's live model. It throws
+  when no view shows the track, saying whether the id is unknown or the track is
+  not shown.
 - `track.applyDisplaySettings(settings)` styles the track's `activeDisplay` in
-  place and returns `{ applied, unapplied, failed }`. `failed` means a key the
-  display knows and could not set; `unapplied` lists keys that are not config
-  slots, misspellings included.
+  place and returns `{ applied, unapplied, failed }`: `failed` is a key the
+  display knows and could not set (a wrongly typed value included), `unapplied`
+  a key that is not a config slot, misspellings included.
 - `jb.describeSlots(confNode)` lists every slot the node's schema defines, with
-  type, description and default. An unknown settings key is not an error, only
-  an `unapplied` entry in the report, so introspect before writing:
+  type, description and default. Introspect before writing:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`.
 
 Reading:
 
 - `jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? })`,
   or `jb.getFeatures(trackId, loc?, { assembly?, viewId?, byteLimit? })`, is the
-  track's data as live Feature objects, over the visible region by default. See
-  [Reading data directly](#reading-data-directly-fast-path).
+  track's data as live Feature objects, over the visible region by default.
+  `assembly` is for a track that names none; a wrong one, or a visible region
+  from a view on another assembly, throws rather than reading the wrong
+  coordinates. See [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
   (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
   reads by default, for binning or recomputing over exactly what is on screen.
-- `jb.waitReady(timeoutMs)` resolves when tracks finish loading and drawing. Its
-  result carries `notifications`, the session's error toasts, `notReady`: tracks
-  whose display settled without drawing anything, each with its `phase`
-  (`tooLarge`, `error`, `renderError`, `loading`), and `offscreen`: views taller
-  than the window, naming what a viewport screenshot would cut off. A display
-  over the fetch-size gate raises no toast and replaces its own subtree, so this
-  is the only way to tell it from a track that drew. The screenshot looks fine
-  either way.
+- `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
+  drawing (default 30000). Its result carries `notifications` (the session's
+  error toasts), `notReady` (views that failed to initialize or are still
+  `initializing`, and tracks whose display settled without drawing, with the
+  `phase`: `tooLarge`, `error`, `renderError`, `loading`) and `offscreen` (views
+  taller than the window). Neither a gated display nor a failed view raises a
+  toast, and both look plausible in a screenshot; this report is what tells.
 
 Lower level, frozen at what shipped:
 
@@ -123,17 +116,15 @@ Lower level, frozen at what shipped:
   own helpers on `globalThis` and reuse them.
 - `session` can be replaced by the `open` tool or `jb.loadSessionSpec`, so
   re-read it per call and never cache it on `globalThis`.
-- The `open` tool with no session open (the start screen) loads a new page, and
-  `globalThis` starts empty on it. With a session open it swaps in place and
-  your helpers survive.
+- `open` from the start screen loads a new page and `globalThis` starts empty;
+  with a session open it swaps in place and your helpers survive.
 
 Besides `value`, a call answers with:
 
 - `logs`, everything the code passed to `console.log`, `info`, `warn`, `error`
   or `debug`, in order. Print intermediate state instead of returning it.
 - `notifications`, toasts the session raised since the previous call, each with
-  its `level`. A toast is reported once, on the first call after it fired, so an
-  error from a track you added two calls ago arrives on this one.
+  its `level`, each reported once, on the first call after it fired.
 - a thrown error as its message plus `at code line L, column C`, counted in your
   code, followed by the console output printed before it. A compile error has no
   line, because V8 gives none for a function body: look for an unbalanced
@@ -204,7 +195,9 @@ await view.launchTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
 view.hideTrack('mytrack')
 // a shown track's live display model (getters are rich) — find by trackId,
 // view.tracks is every shown track; activeDisplay is the one being drawn
-const display = jb.trackModel('mytrack')?.activeDisplay
+const display = jb.trackModel('mytrack').activeDisplay
+// open the feature-details panel on a feature you read, as a click would
+display.selectFeature(feature)
 // the same track drawn by another of its display types (read arcs instead of
 // the pileup): display ids are `<trackId>-<DisplayType>`, and the track's
 // config lists the ones it has
@@ -268,6 +261,10 @@ return {
 - A base-level quantitative track is one feature per base, so a 160 kb window is
   about 160k of them. Reduce with a loop, never `Math.max(...scores)`, which
   blows the call stack on an array that size.
+- The reference sequence is a track too: `jb.listTracks` lists each assembly's
+  as a `ReferenceSequenceTrack`, and `jb.getFeatures` on its trackId answers one
+  feature per region whose `seq` holds the bases.
+
 - Never `return` thousands of raw features: aggregate, slice, or put them on
   screen as a track.
 

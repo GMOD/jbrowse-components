@@ -96,6 +96,7 @@ interface ViewSelf {
   coarseVisibleLocStrings?: string
   height?: number
   initialized?: boolean
+  error?: unknown
   // read only by viewSummary, whose output mirrors the nesting for the reader;
   // ENUMERATION goes through the census helpers (openViews/openTracks) below
   views?: AbstractViewModel[]
@@ -164,11 +165,24 @@ export function sessionOf(pluginManager: PluginManager | undefined) {
   )?.session
 }
 
+// A view whose init failed (its assembly was never found) paints the error in
+// place of a genome and raises no toast, and stays uninitialized: without
+// this, a spec with "volvix" for "volvox" settled false with nothing said.
+function viewState(v: ViewSelf) {
+  return {
+    ...(v.error === undefined ? {} : { error: String(v.error) }),
+    ...(v.error === undefined && v.initialized === false
+      ? { phase: 'initializing' }
+      : {}),
+  }
+}
+
 function viewSummary(view: AbstractViewModel): Record<string, unknown> {
   const v = viewSelf(view)
   return {
     id: v.id,
     type: v.type,
+    ...viewState(v),
     ...(v.displayName ? { displayName: v.displayName } : {}),
     ...(v.assemblyNames?.length ? { assemblyNames: v.assemblyNames } : {}),
     ...(v.coarseVisibleLocStrings
@@ -405,9 +419,18 @@ export async function waitReady(
   // replaces its own subtree instead of raising a snackbar, so notifications
   // alone report a clean settle over a browser with a blank track in it.
   const notReady = session
-    ? allTracks(session)
-        .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
-        .filter(t => 'phase' in t || 'error' in t)
+    ? [
+        ...openViews(session)
+          .map(v => ({
+            viewId: v.id,
+            type: v.type,
+            ...viewState(viewSelf(v)),
+          }))
+          .filter(v => 'phase' in v || 'error' in v),
+        ...allTracks(session)
+          .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
+          .filter(t => 'phase' in t || 'error' in t),
+      ]
     : []
   const offscreen = session ? offscreenViews(session, root) : undefined
   return {
@@ -462,8 +485,17 @@ function trackEntry(conf: BaseTrackConfig) {
     name: readConfObject(conf, 'name'),
     type: conf.type,
     ...(adapter.type ? { adapterType: adapter.type } : {}),
-    assemblyNames: readConfObject(conf, 'assemblyNames'),
+    // getConfAssemblyNamesOrNone, not the slot: an assembly's sequence track
+    // has no assemblyNames slot and answers through its parent assembly
+    assemblyNames: getConfAssemblyNamesOrNone(conf),
   }
+}
+
+// Each assembly's own sequence track, which no track list holds: the config
+// keeps it under the assembly as `sequence`, so `jb.getFeatures` on its
+// trackId reads bases while `listTracks` never named it.
+function sequenceTracks(session: AbstractSessionModel) {
+  return session.assemblyManager.assemblyList.map(asm => asm.sequence)
 }
 
 function listTracks(
@@ -476,7 +508,7 @@ function listTracks(
   // allSessionTracks, not session.tracks: connection-supplied tracks (hubs,
   // registries) are absent from the session lists but fully showable — a
   // hand-rolled union here hid them from agents entirely
-  const matches = allSessionTracks(session)
+  const matches = [...allSessionTracks(session), ...sequenceTracks(session)]
     .map(c => trackEntry(c))
     .filter(
       t =>
@@ -625,7 +657,18 @@ function shownTrackModel(
       `"${trackId}" is shown in ${shown.length} views: ${where.join('; ')} — pass viewId to say which`,
     )
   }
-  return shown[0]
+  const [track] = shown
+  // undefined here was followed by ".activeDisplay" on the next line of every
+  // agent's code, and a TypeError says nothing about which of the two causes
+  // it was
+  if (!track) {
+    throw new Error(
+      session.getTrackById(trackId)
+        ? `"${trackId}" is not shown in ${viewId === undefined ? 'any open view' : `view ${viewId}`} — view.showTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
+        : `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
+    )
+  }
+  return track
 }
 
 async function locToRegion(
@@ -636,9 +679,23 @@ async function locToRegion(
 ): Promise<JbRegion> {
   // getConfAssemblyNamesOrNone, not the assemblyNames slot: an assembly's own
   // sequence track has no such slot and answers through its parent assembly
-  const assemblyName = assemblyArg ?? getConfAssemblyNamesOrNone(conf)[0]
+  const trackAssemblies = getConfAssemblyNamesOrNone(conf)
+  const assemblyName = assemblyArg ?? trackAssemblies[0]
   if (assemblyName === undefined) {
     throw new Error('The track names no assembly; pass assembly explicitly')
+  }
+  // a named assembly the track is not on renames the region against the wrong
+  // alias set and answers with the wrong assembly's coordinates, or nothing
+  if (
+    assemblyArg !== undefined &&
+    trackAssemblies.length &&
+    !trackAssemblies.some(name =>
+      isSameAssemblyName(name, assemblyArg, session.assemblyManager),
+    )
+  ) {
+    throw new Error(
+      `Track "${conf.trackId}" is on ${trackAssemblies.join(', ')}, not "${assemblyArg}"`,
+    )
   }
   const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
@@ -661,18 +718,37 @@ async function visibleRegionsOf(
   session: AbstractSessionModel,
   viewId: string | undefined,
   preferTrackId?: string,
+  trackAssemblies: string[] = [],
 ): Promise<JbRegion[]> {
   // `in`, not evaluation: visibleRegions is a getter that THROWS ("width
   // undefined") until the view's component mounts and sets a width — a
   // freshly spec-loaded view stays in that state briefly even after the
   // app-phase marker reads ready, since a view with no width has no display
   // fetching anything.
-  const candidates = openViews(session).filter(
+  const regionBearing = openViews(session).filter(
     v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
   )
-  if (!candidates.length) {
+  if (!regionBearing.length) {
     throw new Error(
       'No view that shows a region — pass loc, or open a linear view first',
+    )
+  }
+  // a view on another assembly than the track would hand its region to a file
+  // that has no such sequence, which answers nothing, silently
+  const candidates = trackAssemblies.length
+    ? regionBearing.filter(
+        v =>
+          !viewSelf(v).assemblyNames?.length ||
+          viewSelf(v).assemblyNames!.some(name =>
+            trackAssemblies.some(t =>
+              isSameAssemblyName(name, t, session.assemblyManager),
+            ),
+          ),
+      )
+    : regionBearing
+  if (!candidates.length) {
+    throw new Error(
+      `No open view is on ${trackAssemblies.join(', ')} (open views: ${regionBearing.map(v => describeView(v)).join('; ')}) — pass loc, or open a view on that assembly`,
     )
   }
   // among region-bearing views, the ones actually showing the track — two
@@ -689,6 +765,11 @@ async function visibleRegionsOf(
   const deadline = Date.now() + 10_000
   let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
   while (visible === undefined) {
+    if (view.error !== undefined) {
+      throw new Error(
+        `View ${view.id} failed to initialize: ${String(view.error)} — pass loc with assembly, or open a view that loads`,
+      )
+    }
     if (view.initialized !== false) {
       try {
         visible = view.visibleRegions
@@ -793,6 +874,14 @@ async function fetchFeatures(
 function fileLocation(spec: string): FileLocation {
   if (/^https?:\/\//.test(spec)) {
     return { uri: spec, locationType: 'UriLocation' }
+  }
+  // The app's working directory is not the agent's, and a relative path
+  // resolves against the app's: under a packaged app that is "/", so the read
+  // fails at the first fetch and reports through the display, not here.
+  if (!/^(?:\/|[a-zA-Z]:[\\/]|\\\\)/.test(spec)) {
+    throw new Error(
+      `jb.addTrack needs an absolute local path or a URL: "${spec}" is relative and would resolve against the app's working directory, not yours.`,
+    )
   }
   if (!isElectron) {
     throw new Error(
@@ -899,7 +988,7 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }); read data with await jb.getFeatures({ trackId, loc?, assembly?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
 Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions() and jb.addTrack throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
 
@@ -943,7 +1032,9 @@ export function createJbApi(pluginManager: PluginManager) {
     renameRegionsIfNeeded,
     createStopToken,
     stopStopToken,
-    waitReady: (timeoutMs: number) => waitReady(timeoutMs, live()),
+    // a default because an omitted number made the deadline NaN, and a view
+    // that never readied then held the call open to the relay's own timeout
+    waitReady: (timeoutMs = 30_000) => waitReady(timeoutMs, live()),
     sessionSummary: () => sessionSummary(live()),
     inspect: (path?: string, maxInspectBytes?: number) =>
       inspectSession(live(), { path, maxBytes: maxInspectBytes }),
@@ -1014,6 +1105,7 @@ export function createJbApi(pluginManager: PluginManager) {
               session,
               fetchArgs.viewId,
               fetchArgs.trackId,
+              getConfAssemblyNamesOrNone(conf),
             ))
       return fetchFeatures(
         session,
@@ -1042,7 +1134,9 @@ async function addTrack(
   }
   const location = locationsOf(args.location)
   if (!location.length) {
-    throw new Error('jb.addTrack needs a location (local path or URL)')
+    throw new Error(
+      'jb.addTrack needs a location (an absolute local path or a URL)',
+    )
   }
   const requested =
     typeof args.assembly === 'string' ? args.assembly : session.assemblyNames[0]
