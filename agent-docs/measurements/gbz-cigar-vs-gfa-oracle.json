@@ -1,0 +1,30 @@
+{
+  "id": "gbz-cigar-vs-gfa-oracle",
+  "measured": "2026-09-06",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "Reader @gmod/gbz-base 2.5.0 (`npx -p @gmod/gbz-base@2.5.0 gbz-base-query ecoli.gbz.db --haplotype-index ecoli.haplotype-index.db --sample K12 --contig chr --interval A..B --context 1000 --snarls --alignments --cigar`) against `scripts/gfa_to_pairwise_paf.py ecoli.gfa.gz --reference K12#0 --queries Sakai#0,CFT073#0,NCTC86#0`, both over the four-strain minigraph-cactus graph in ecoli_cactus_build/mc (ecoli.gfa.gz and ecoli.gbz are the same graph: 525,146 nodes, 14 W lines, K12 318,884 steps). The database was built on the lab machine from that ecoli.gbz with vg 1.76.1 (`vg index -j`, `vg chains`; vg 1.69.0 refuses the v2 GBZ) and gbz-base 0.6.1 (`gbz-base construct --chains`), the haplotype index with the reader's own tool at --interval 4096. Ten 20 kb windows across K12 (400 kb, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.4 and 4.6 Mb); at every reference point on a 250 bp grid inside the window, for every `+` record, the haplotype coordinate read off the reader's CIGAR (refStart/hapStart, M both, I haplotype, D reference) is compared with the one read off the script's `cg:Z:` for the row covering that point (target K12, query the haplotype; =/X both, I query, D target). The comparison script is not committed; the numbers reproduce from the two commands above.",
+    "notes": "DOES THE READER'S CIGAR PLACE A HAPLOTYPE BASE WHERE THE OFFLINE ORACLE DOES. The oracle is the converter PANGENOME_GRAPHS.md validated against halSynteny and minimap2 (every `=` column identical to the FASTAs, 99.7-99.97% agreement with minimap2 at sampled points); the reader is what GbzBaseSyntenyAdapter draws a lane from. Each window answers three records, one per other strain; NCTC86 is assembled in the other orientation and every one of its records is `-`, so the `+` records are Sakai's and CFT073's, two per window, twenty in all.\n\n1,544 of 1,552 sampled points agree exactly. The eight that do not are one stretch of CFT073 at K12 chr:2,010,750-2,012,500, and they are the predicted kind and no other: the reader scores the divergent block as 4131I then 2048D, the script writes it as X columns then the remainder as I, so a reference point inside the reader's D maps to the haplotype position at the deletion's start while the script's X carries it one-for-one, and the two answers differ by 2,145-3,895 bp across the block. Neither is wrong about the alignment - the graph put 4.1 kb of CFT073 where K12 has 2.0 kb, and both say so - they disagree about where inside that block a haplotype base sits, which no CIGAR without realignment can decide. Outside such a block the two agree to the base, on every `+` record and every window sampled."
+  },
+  "columns": [
+    { "key": "window", "label": "K12 window", "format": "text", "align": "left" },
+    { "key": "records", "label": "records", "format": "int", "align": "right" },
+    { "key": "plusRecords", "label": "+ records", "format": "int", "align": "right" },
+    { "key": "agree", "label": "points agree", "format": "int", "align": "right" },
+    { "key": "disagree", "label": "points disagree", "format": "int", "align": "right" },
+    { "key": "kind", "label": "disagreement", "format": "text", "align": "left" }
+  ],
+  "rows": [
+    { "values": { "window": "chr:400,000-420,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:1,000,000-1,020,000", "records": 3, "plusRecords": 2, "agree": 112, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:1,500,000-1,520,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:2,000,000-2,020,000", "records": 3, "plusRecords": 2, "agree": 152, "disagree": 8, "kind": "reader 4131I 2048D where the script writes X: 2,145-3,895 bp apart inside the block" } },
+    { "values": { "window": "chr:2,500,000-2,520,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:3,000,000-3,020,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:3,500,000-3,520,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:4,000,000-4,020,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:4,400,000-4,420,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } },
+    { "values": { "window": "chr:4,600,000-4,620,000", "records": 3, "plusRecords": 2, "agree": 160, "disagree": 0, "kind": "" } }
+  ]
+}

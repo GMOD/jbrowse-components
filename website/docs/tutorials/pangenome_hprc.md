@@ -1589,7 +1589,12 @@ back is joined, the private stretch its insertion and the reference it skipped
 its deletion), which is the record a
 [multi-way synteny](#every-haplotype-in-its-own-coordinates) lane is drawn from.
 The reader's test suite checks those CIGARs against upstream gbz-base's own
-query output. No aligner is in the loop here either, and no offline step at all:
+query output, and on the E. coli graph they were read against the offline
+converter the [E. coli tutorial](/docs/tutorials/pangenome_ecoli)'s alignments
+come from: at 1,552 reference points across ten windows, 1,544 put a haplotype
+base at the same coordinate, and the eight that differ are one divergent block
+the reader scores as an insertion then a deletion where the converter writes
+mismatches. No aligner is in the loop here either, and no offline step at all:
 the lanes are the graph's own walks.
 
 `haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
