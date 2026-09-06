@@ -1,4 +1,4 @@
-import { useTooltipTableStyles } from '@jbrowse/alignments-core'
+import { useTooltipTableStyles } from '@jbrowse/alignments-core/CoverageTooltipTables'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import { describeMafStatus } from '../../util/mafStatus.ts'

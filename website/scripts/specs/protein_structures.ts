@@ -61,7 +61,7 @@ const READY = {
   hideSelectors: ['.msp-background-tasks'],
   // measured: 990 clipped 515 css px, the whole molstar canvas
   viewportHeight: 1520,
-} as const
+}
 
 export const proteinStructuresSpecs: ScreenshotSpec[] = [
   {

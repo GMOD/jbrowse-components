@@ -1,8 +1,8 @@
+import { formatBandLocation } from '@jbrowse/alignments-core'
 import {
   CoverageTooltipTable,
   InterbaseTooltipTable,
-  formatBandLocation,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/alignments-core/CoverageTooltipTables'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'

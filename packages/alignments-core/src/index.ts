@@ -100,17 +100,17 @@ export type {
   CoverageBandRegion,
   CoverageBandState,
 } from './coverageBandMarks.ts'
+// The tables themselves are a subpath (./CoverageTooltipTables), not a barrel
+// export: node's type-stripping refuses .tsx, and the website's figure scripts
+// reach this barrel through a worker-side fixture.
 export {
-  CoverageTooltipTable,
-  InterbaseTooltipTable,
   countOfTotal,
   coverageRows,
   formatBandLocation,
   formatLenRange,
   pct,
-  useTooltipTableStyles,
-} from './coverageBandTooltip.tsx'
-export type { CoverageRow, CoverageRowsBin } from './coverageBandTooltip.tsx'
+} from './coverageBandTooltip.ts'
+export type { CoverageRow, CoverageRowsBin } from './coverageBandTooltip.ts'
 export {
   densityBinSize,
   densityToUniformBins,

@@ -371,6 +371,20 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'multiway_synteny/primate_tp53_lanes.png',
     band: [0.22, 0.75],
   },
+  hg38_vertebrates_synteny: {
+    // The anchor lane and the mammal lanes under it, past the app chrome and
+    // the gene track, where the composed liftOver ribbons run.
+    src: 'multiway_synteny/hg38_vertebrates_tp53.png',
+    band: [0.29, 0.86],
+    position: 'left',
+  },
+  hprc_multiway_synteny: {
+    // The haplotype stack at CFH, framed the same way as the liftOver card
+    // above it so the two multi-lane pages read as one shape.
+    src: 'multiway_synteny/hprc_cfh_haplotypes.png',
+    band: [0.29, 0.86],
+    position: 'left',
+  },
   ecoli_orthologs_synteny: {
     // The top of the 44-lane stack at the atp operon, where the ortholog
     // colour columns run straight down.

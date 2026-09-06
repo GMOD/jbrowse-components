@@ -1,9 +1,9 @@
+import { formatBandLocation } from '@jbrowse/alignments-core'
 import {
   CoverageTooltipTable,
   InterbaseTooltipTable,
-  formatBandLocation,
   useTooltipTableStyles,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/alignments-core/CoverageTooltipTables'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'

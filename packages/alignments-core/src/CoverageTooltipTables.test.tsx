@@ -5,9 +5,9 @@ import { render } from '@testing-library/react'
 import {
   CoverageTooltipTable,
   InterbaseTooltipTable,
-} from './coverageBandTooltip.tsx'
+} from './CoverageTooltipTables.tsx'
 
-import type { CoverageRowsBin } from './coverageBandTooltip.tsx'
+import type { CoverageRowsBin } from './coverageBandTooltip.ts'
 
 const SWATCH: Record<string, string> = { C: 'rgb(0,0,255)', A: 'rgb(0,255,0)' }
 
