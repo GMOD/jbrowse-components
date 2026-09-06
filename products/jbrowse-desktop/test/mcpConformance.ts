@@ -522,9 +522,12 @@ try {
   )
 
   // the viewport is what capturePage sees; the document is what the session
-  // occupies, and every filmed take had the second taller than the first
+  // occupies, and every filmed take had the second taller than the first. The
+  // PNGs are in device pixels and the reported page box in CSS pixels, so the
+  // viewport is compared in CSS pixels too — on a 2x display the two differ
   const pngHeight = (data: string | undefined) =>
     data === undefined ? 0 : Buffer.from(data, 'base64').readUInt32BE(20)
+  const innerHeight = (await run('return window.innerHeight')).value as number
   const whole = await client.callAll('screenshot', { fullPage: true })
   const wholeImage = whole.find(c => c.type === 'image')
   const wholeText = JSON.parse(whole.find(c => c.type === 'text')?.text ?? '{}')
@@ -532,8 +535,8 @@ try {
     'a fullPage screenshot captures the laid-out document and says how big it is',
     wholeImage !== undefined &&
       pngHeight(wholeImage.data) >= pngHeight(shotImage?.data) &&
-      wholeText.page?.height >= pngHeight(shotImage?.data),
-    { viewport: pngHeight(shotImage?.data), page: wholeText.page },
+      wholeText.page?.height >= innerHeight,
+    { viewportCss: innerHeight, page: wholeText.page },
   )
   const wholeCropped = await client.callAll('screenshot', {
     fullPage: true,
