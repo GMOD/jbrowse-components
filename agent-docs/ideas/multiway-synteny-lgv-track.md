@@ -215,8 +215,9 @@ at 10 kb/px a genome-wide fine fetch, the regime
 [SYNTENY_LOD.md](../reference/SYNTENY_LOD.md) costs out; the display now has
 LGVSyntenyDisplay's machinery whole (`lodMode`, `LodTierInfoMixin`, `lodTier`
 off the settled zoom in `viewSignature`, the tier on both RPCs, the shared
-"Level of detail" submenu gated on `trackHasLodTiers`, so a gene table sees
-none of it). Bridging walked every nameless group down to the next lane that
+"Level of detail" submenu gated on `trackHasLodTiers` and withdrawn once the
+header's `hasCoarseTier` reads false, so a gene table sees none of it and a
+star of headerless PIFs stops offering a switch that switches nothing). Bridging walked every nameless group down to the next lane that
 placed it, and a one-record alignment has exactly one mate, so on an all-vs-all
 file every anchor record whose mate was not lane 1 fanned across the gutters
 over the direct links the pairs fetch for themselves; a bridge now needs a

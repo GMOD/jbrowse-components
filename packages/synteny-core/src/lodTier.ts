@@ -250,13 +250,15 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
   {
     label: 'Alignment blocks only',
     value: 'coarse',
-    // The fallback is named here because the menu cannot avoid offering this:
-    // `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed PIF
-    // adapters declare whether or not the file they open carries the tier. So a
-    // file built with `--no-coarse` gets the full submenu and `resolveLodTier`
-    // quietly resolves fine once the tier info lands, which is the right
-    // behaviour (the alternative is no data) and the wrong thing to say nothing
-    // about.
+    // The fallback is named here because the menu cannot always avoid offering
+    // this: `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed
+    // PIF adapters declare whether or not the file they open carries the tier.
+    // A display carrying the header's tier info drops the whole submenu once
+    // `hasCoarseTier` reads false; a view over several tracks, and any display
+    // before its header lands, still offers this row for a file built with
+    // `--no-coarse`, and `resolveLodTier` quietly resolves fine for it, which
+    // is the right behaviour (the alternative is no data) and the wrong thing
+    // to say nothing about.
     helpText:
       'Skip base-level detail for speed — only large indels are colored, no ' +
       'mismatches. A ' +
@@ -267,17 +269,24 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
 
 /**
  * The "Level of detail" radio submenu, shared by every surface that draws a
- * tiered synteny track (synteny view, dotplot, LGV synteny display) so the three
- * cannot offer different wording for the same setting. Returns [] when nothing on
- * the surface has tiered storage — PAFAdapter and BlastTabularAdapter have
- * nothing to switch between.
+ * tiered synteny track (synteny view, dotplot, LGV synteny display, multiway
+ * display) so they cannot offer different wording for the same setting.
+ * Returns [] when nothing on the surface has tiered storage — PAFAdapter and
+ * BlastTabularAdapter have nothing to switch between — and, on a surface that
+ * carries its adapter's header (`LodTierInfoMixin`), once that header says
+ * the file has no coarse tier: the slot alone would offer a switch that
+ * cannot switch, since `resolveLodTier` serves fine under every mode for such
+ * a file. The slot stays the threshold; the header only says whether there is
+ * a second tier to reach at it.
  */
 export function lodMenuItems(model: {
   hasLodCapableAdapter: boolean
+  lodTierInfo?: LodTierInfo
   lodMode: LodMode
   setLodMode: (arg: LodMode) => void
 }): MenuItem[] {
-  return model.hasLodCapableAdapter
+  return model.hasLodCapableAdapter &&
+    model.lodTierInfo?.hasCoarseTier !== false
     ? [
         {
           label: 'Level of detail',

@@ -1,6 +1,7 @@
 import {
   coarseWalkIsApproximate,
   effectiveCoarseThreshold,
+  lodMenuItems,
   readLodTierInfo,
   resolveLodTier,
 } from './lodTier.ts'
@@ -208,5 +209,36 @@ describe('readLodTierInfo', () => {
     expect(readLodTierInfo(null)).toBeUndefined()
     expect(readLodTierInfo('##fileformat=VCFv4.2')).toBeUndefined()
     expect(readLodTierInfo({ coarseGap: 1000 })).toBeUndefined()
+  })
+})
+
+// The threshold slot says an adapter CAN tier; the header says whether the
+// file it opened did. A star whose children lack a coarse tier declares the
+// slot all the same, so gating on the slot alone offered a switch that could
+// not switch.
+describe('lodMenuItems', () => {
+  const menu = (
+    lodTierInfo: LodTierInfo | undefined,
+    hasLodCapableAdapter = true,
+  ) =>
+    lodMenuItems({
+      hasLodCapableAdapter,
+      lodTierInfo,
+      lodMode: 'auto',
+      setLodMode: () => {},
+    }).map(item => ('label' in item ? item.label : undefined))
+
+  test('offered on a tiered adapter before its header lands, and once the header confirms the tier', () => {
+    expect(menu(undefined)).toEqual(['Level of detail'])
+    expect(menu(twoTier)).toEqual(['Level of detail'])
+  })
+
+  test('withdrawn once the header says the file has no coarse tier', () => {
+    expect(menu(singleTier)).toEqual([])
+  })
+
+  test('never offered on an adapter with no threshold slot', () => {
+    expect(menu(undefined, false)).toEqual([])
+    expect(menu(twoTier, false)).toEqual([])
   })
 })

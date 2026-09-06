@@ -75,10 +75,13 @@ Consumers: `LinearSyntenyDisplay.lodTier` → `currentFetchKey`,
 `rpcProps`. All three read the threshold with `getCoarseBpPerPxThreshold`, which
 goes through the **slot path** — `adapterConfig` is a snapshot carrying only
 explicitly-set keys, so it reads `undefined` for the ~all tracks at the default
-and the tier was never resolved. The presence of that slot is also the single
-gate for the "Level of detail" menu (`trackHasLodTiers`); the old `'lod'`
-`adapterCapabilities` string was a second signal that could disagree with it and
-is gone.
+and the tier was never resolved. The presence of that slot is also the gate
+for the "Level of detail" menu (`trackHasLodTiers`), tightened on a display
+that carries its header (`LodTierInfoMixin`) by `hasCoarseTier`: once the
+header says the file has no coarse tier, `lodMenuItems` withdraws the submenu
+rather than offering a switch `resolveLodTier` would ignore. The old `'lod'`
+`adapterCapabilities` string was a second signal that could disagree with the
+slot and is gone.
 
 The two synteny/dotplot surfaces feed `min` of both axes, because CIGAR detail is
 worth drawing when the band is wide on either axis (`MIN_CIGAR_PX_WIDTH` uses
