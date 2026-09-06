@@ -83,7 +83,7 @@ export function configSchemaFactory() {
           'identity',
         ]),
         description:
-          "what colors a ribbon: `default` is ribbonColor; `strand` reads whether the ribbon is crossed — the lower placement runs the other way from the upper one — so an inversion relative to the lane above stands out, in the synteny view's strand colors; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor. Every mode keeps ribbonColor's opacity",
+          "what colors a ribbon: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor. Every mode keeps ribbonColor's opacity",
         defaultValue: 'default',
       },
       /**
