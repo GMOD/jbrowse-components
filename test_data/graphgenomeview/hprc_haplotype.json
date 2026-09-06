@@ -45,7 +45,7 @@
       "assemblyNames": ["hg38", "HG01433.2"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
         "assemblyNameToPanSN": { "hg38": "GRCh38" }
       },
       "displayDefaults": {
