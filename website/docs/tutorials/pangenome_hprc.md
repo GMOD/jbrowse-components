@@ -26,13 +26,20 @@ welcome your [feedback](/contact).
   every graph below on a typed region or a whole chromosome. This page is the
   route for loading the files into your own JBrowse, or rebuilding them
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin), for the tracks that
-  use `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; every other track here is
-  a URL you can paste
+  use `RgfaTabixAdapter`, `MinigraphBubbleAdapter` and `GbzBaseSyntenyAdapter`;
+  every other track here is a URL you can paste
 - to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`),
   for the graph indexes and the bubble file
 - [`gfatools`](https://github.com/lh3/gfatools), for the graph indexes and the
   bubble file
 - `bedtools`, for the repeat-density lanes
+- [`gbz-base`](https://github.com/jltsiren/gbz-base) and `vg`, to turn a `.gbz`
+  of your own into the database the
+  [haplotype-walk track](#walks-from-the-graph) reads. HPRC publishes one, so
+  neither is needed to open what this page shows
+- `gbz-haplotype-index`, from
+  [`@gmod/gbz-base`](https://github.com/GMOD/gbz-base-js), to name the
+  haplotypes in any such database, including one somebody else published
 - UCSC's `bedGraphToBigWig`, for the repeat-density lanes
 - UCSC's `bigBedToBed`, for the repeat-density lanes
 
@@ -71,6 +78,14 @@ straight off S3 or through small tabix projections we host beside them.
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz
 - hs1's RepeatMasker annotation, the same lanes' other assembly:
   https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
+- release 2.1's Minigraph-Cactus graph as a gbz-base database, 10 GB, read by
+  range request and never downloaded:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+- the `.gbz` that database was built from, which is also what names its
+  haplotypes:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
+- our companion haplotype index for that database, which HPRC does not publish:
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db
 - our own rGFA, bubble and repeat-density projections, with the exact build
   recorded beside them: https://jbrowse.org/demos/hprc/README.txt
 - hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
@@ -205,8 +220,8 @@ empty.
 The plugin needs a JBrowse 5 build. It reads two things core first exported in
 v5.0.0-beta.1, the MUI icon factory its menu items draw with and the shared
 **Launch** submenu, so on a JBrowse 4 host it does not load, and a config naming
-it opens with no graph view and neither adapter. The released 4.x web builds and
-Desktop are such hosts; the 5.0 betas and the `main` build the
+it opens with no graph view and none of its adapters. The released 4.x web
+builds and Desktop are such hosts; the 5.0 betas and the `main` build the
 [hosted HPRC page](/docs/tutorials/genomes_pangenome) launches into are not.
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
@@ -444,8 +459,9 @@ of the file:
 `gfatools bubble` and the rGFA tags state the distinct sequence a bubble can
 hold, so length is the proxy for copy number here. The `.gbz` beside them
 carries a walk per haplotype, which is a copy count at KIV-2 or _AMY1_, and
-reading it is a vg job. Release 2 strips the `AT` (allele traversal) field from
-the wave VCF, recorded in its own header as `bcftools annotate -x INFO/AT`.
+[reading it is a query](#walks-from-the-graph) once the graph is in a gbz-base
+database. Release 2 strips the `AT` (allele traversal) field from the wave VCF,
+recorded in its own header as `bcftools annotate -x INFO/AT`.
 
 ### The Layout dropdown
 
@@ -539,10 +555,11 @@ an rGFA records no traversals. Load a GFA that carries `P` or `W` lines, as the
 [graph genome view guide](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 does, and the view anchors on those paths: `carriedBy` then lists every sample
 through the node and **Sample rows** becomes carriage rather than attribution.
-At HPRC scale the answer is a published file:
+At HPRC scale there are two answers, both published files:
 [carriage at the graph's own granularity](#carriage-at-the-graphs-own-granularity)
 is one record per snarl with a genotype per haplotype, so the site under the
-node you clicked states who walks it.
+node you clicked states who walks it, and the `.gbz` states the walks
+themselves, which is [the route below](#walks-from-the-graph).
 
 That route is drawn in the [layout figure above](#the-layout-dropdown): its left
 half has the menu open on a 1.8 kb HG01433.2 allele, the black node ringed
@@ -1466,6 +1483,135 @@ control on that reading.
 
 <Figure caption="The complement factor H cluster on chr1 over 500 kb: hg38 genes over a lane per HPRC haplotype, the ones homozygous reference at the CFHR3/CFHR1 site above the ones homozygous for the deletion, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
 
+## Every haplotype's walk, straight from the graph {#walks-from-the-graph}
+
+The lanes above were assembled before the session opened: one slice of the
+release's PAF per haplotype, one CAT annotation each, and a genotype step to
+choose the eight. The graph states the same thing already. A `.gbz` holds one
+walk per haplotype, and release 2.1 publishes that graph as a **gbz-base
+database**, which is the graph in SQLite with its tables laid out so a window is
+a handful of range requests rather than a 10 GB download.
+
+That is release **2.1**, where everything above it is release 2.0. GRCh38
+coordinates are the same in both, so the tracks sit over each other, but node
+ids are not, so match a record to a bubble by interval rather than by id.
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "hprc_v2_1_gbz_lanes",
+  "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "GbzBaseSyntenyAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
+    "haplotypeIndexLocation": {
+      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db"
+    },
+    "assemblyNames": ["hg38"],
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
+    "context": 1000,
+    "nodeLimit": 50000
+  },
+  "displays": [
+    {
+      "type": "MultiWaySyntenyDisplay",
+      "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
+      "height": 600
+    }
+  ]
+}
+```
+
+`GbzBaseSyntenyAdapter` answers a window rather than reading a file. It locates
+the window on GRCh38's own path through the graph, reads the subgraph over it,
+and emits one record per haplotype fragment, in that haplotype's contig
+coordinates and carrying the fragment's CIGAR, which is the record a
+[multi-way synteny](#every-haplotype-in-its-own-coordinates) lane is drawn from.
+No aligner is in the loop here either, and no offline step at all: the lanes are
+the graph's own walks.
+
+`haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
+haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so the
+companion file holds two side tables that place a GBWT position every 16 kb
+along every path and give each path its length. It sits beside the database and
+leaves it untouched, which is what lets a database somebody else published get
+haplotype names.
+
+### What a window costs {#gbz-window-cost}
+
+`context` is the slot that decides how many records a window becomes, and it is
+worth setting before anything else. At 0 a haplotype is cut wherever it leaves
+the window's nodes, which on a human graph is every private bubble it passes
+through: the C4 window below comes back as 8,082 records at `context: 0` and 463
+at `context: 1000`, one per haplotype, from the same 60 kb. The measurements
+here are all at 1000, contained snarls, reading the published database over
+HTTP:
+
+| Locus        | Window                         | Nodes  | Records | Time   |
+| ------------ | ------------------------------ | ------ | ------- | ------ |
+| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 4.5 s  |
+| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 4.8 s  |
+| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 10.8 s |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14.0 s |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 23.0 s |
+| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 95.5 s |
+
+Every fragment is named in all six. The first row is the floor: a 10 kb window
+and a 60 kb one cost the same, because most of those seconds are the one-time
+scan of the path table that every later window reuses.
+
+_AMY1_ is the row to read twice. It has a third of MHC class II's nodes and
+takes four times as long, because the amylase repeat sends each haplotype out of
+the window's nodes and back several times, so 464 haplotypes arrive as 1,912
+records and the per-record alignment against the reference is what the time goes
+on. Records, not window width, are the thing to watch.
+
+`nodeLimit` is the guard on the other end. It fails a window rather than letting
+the display sit on a whole chromosome, so it has to clear the largest window you
+mean to open: 12,000 is enough for C4 and refuses MHC class II. It does not
+bound the time, as the _AMY1_ row shows.
+
+### Preparing a graph of your own {#preparing-a-gbz-base-database}
+
+Three commands stand between a `.gbz` of your own and the track above, none of
+them JBrowse. The chains come first, because a query that reaches the variation
+around a window rather than only the reference walk through it needs the snarl
+decomposition, and gbz-base stores it as links on the boundary nodes:
+
+```bash
+# vg 1.69.0 or newer reads the chains out of a distance index. A top-level
+# index (vg index --no-nested-distance) is enough; the nested one is not needed
+# and is far more expensive on a human graph.
+vg chains graph.gbz graph.dist > graph.chains
+
+# the database itself: one row per node and per path, plus those chains.
+# Without --chains it still builds and a window comes back as the reference
+# walk alone.
+gbz-base construct --chains graph.chains graph.gbz
+```
+
+`gbz-base` is `cargo install gbz-base`, and writes `graph.gbz.db` beside the
+input. Then name the haplotypes:
+
+<!-- from: scripts/build_hprc_gbz_index.sh -->
+
+```bash
+# --interval is how often a GBWT position is recorded along each path, in bp.
+# Denser means a bigger file and a shorter walk at query time to identify a
+# haplotype. 16384 over the 464 haplotypes of the HPRC graph is 159M recorded
+# positions and a 7.0 GB companion, written in about 70 minutes on 14 cores.
+# --output writes a companion file instead of adding the tables to the
+# database, which is the form to use on a database you did not build.
+gbz-haplotype-index --interval 16384 \
+  --output graph.haplotype-index.db graph.gbz
+```
+
+Both files go somewhere that serves range requests, and their two URLs are the
+`uri` and the `haplotypeIndexLocation` of the track config above. The companion
+records the graph's path count, and the reader refuses one built for a different
+graph.
+
 ## Comparing the graph with the callset
 
 The graph and the callset are the same object at two resolutions. minigraph
@@ -1580,6 +1726,19 @@ It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
 prints the per-class table the section above quotes, so the numbers come out of
 the same run that builds the lanes. The first run downloads ~500 MB and
 re-running skips what is already built, so an interrupted run resumes.
+
+The [haplotype-walk lanes](#walks-from-the-graph) need one file HPRC does not
+publish, the companion index that names the walks in its gbz-base database:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh
+bash build_hprc_gbz_index.sh out
+```
+
+It downloads the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and
+runs the one command [the section above](#preparing-a-gbz-base-database) shows,
+which takes about an hour on 14 cores. The database it accompanies is read
+straight from HPRC's bucket and never downloaded.
 
 The other two both read release 2's published all-vs-GRCh38 PAF:
 
