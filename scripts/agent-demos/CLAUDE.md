@@ -5,15 +5,104 @@ Films a real Claude client driving JBrowse, for the clips
 cannot make, because there is no url to load, no steps to run and no live
 session to hand a reader. The session is one an agent built during the take.
 
-**We record on Linux.** `recordDemoTui.mjs` records the WHOLE GNOME/Wayland
-screen, so the actual Claude session — the real TUI, in a terminal beside the
-app — is in frame. That is the current path for any new clip;
+**A clip shows the client.** `recordDemoMac.mjs` (macOS) and `recordDemoTui.mjs`
+(GNOME/Wayland) both film the real Claude Code TUI in a terminal beside the app,
+so the session that drove JBrowse is on screen next to JBrowse. `demoCore.mjs`
+is what they share — serving the build, the bridge calls, the tmux driving, the
+cue sheet — and each file holds only its own platform's half.
 `recordDemoLinux.mjs` is the same idea one iteration back, filming a formatted
-`claude -p` stream rather than the TUI. The macOS harness (`agentDemo.mjs` and
-the rest below) is the older one: it filmed only the JBrowse WINDOW through a
-screenshot loop and painted a caption strip with what Claude said, and the
-published `externalClips` came from it — kept for its accumulated notes, not
-because a clip needs a Mac. Neither runs in CI; both are run by hand.
+`claude -p` stream rather than the TUI. `agentDemo.mjs` is the oldest: it filmed
+only the JBrowse WINDOW through a screenshot loop and painted a caption strip
+with what Claude said, and the published `externalClips` came from it — kept for
+its accumulated notes and its takes. None run in CI; all are run by hand.
+
+**The released app has no MCP.** JBrowse Desktop 4.3.0 — what
+`/Applications/JBrowse 2.app` auto-updates itself to — contains no `--mcp`, no
+`--version` and no CLI handling at all: `resolveLaunchMode` ships in
+5.0.0-beta.2. So the install snippet in `website/docs/agents.md`, which points a
+client at the app binary with `--mcp`, silently LAUNCHES THE GUI on any build a
+reader can download today, and the client waits forever on a server that never
+speaks. That is correct for docs shipping alongside v5 and wrong before it. A
+take therefore films the repo's own build, with `build/mcpServer.js` as the
+client's server — the plain-node entry from `electron/mcp/standalone.ts`.
+
+## macOS: `recordDemoMac.mjs`
+
+`node scripts/agent-demos/recordDemoMac.mjs <outdir> [takes/<name>.mjs]` writes
+`<outdir>/demo.mp4` and a 3x `demo-3x.mp4`, plus `panes.log` — the TUI pane
+after each turn, which is the transcript a reviewer wants and is faster to read
+than scrubbing the video. Take modules are the shared `TURNS`/`SHELL`/`SYSTEM`
+shape; `STEPS` (a prompt with the sentence that narrates it) is this harness's
+own variant.
+
+Placement is deterministic here, so none of the Linux harness's workspace,
+tiling-extension and seat0 apparatus is needed: System Events sets both window
+frames outright. What does bite:
+
+- **Terminal's font size must be set BEFORE its bounds.** Terminal answers a
+  font change by resizing the WINDOW to preserve its column count, so bounds set
+  first are silently undone. And the size belongs to the shared settings set
+  (`Basic`), not the window, so the harness saves it and puts it back — leaving
+  it changed edits the user's Terminal for good. 11pt renders about 7px per
+  character once a Retina-sized crop is scaled to 1920; 16pt gives 79 columns
+  that can be read.
+- **The crop is the union of the two measured window frames**, in points times
+  the backing scale, which the harness derives by comparing a `screencapture`
+  probe against the desktop bounds rather than assuming 2. Nothing is read off
+  the screen: the layout is confirmed by asking the app its own
+  `window.innerWidth` over the bridge, once the first turn has opened a session.
+- **`libx264` cannot keep up** with a 3584x2000 crop — it runs at 0.88x and
+  drops frames for the rest of the take. `h264_videotoolbox` does keep up.
+- **No burnt-in captions.** This ffmpeg (brew 9.0.1) has neither libass nor
+  libfreetype, so `ass=` and `drawtext` both fail; the cue sheet is written as a
+  sidecar. With the TUI in frame the narration is largely redundant anyway — the
+  viewer reads the real conversation.
+- **A crashed take leaves the bridge socket file behind.** Existence is not the
+  question, so the guard connect-tests it and removes a stale one; a socket that
+  answers means a JBrowse is genuinely running and the take refuses.
+
+### What the TUI actually does, and how a harness knows
+
+Both these cost a take, and both are version-sensitive enough to check again
+when Claude Code updates:
+
+- **Claude Code opens on a chooser whenever anything about the session is new**,
+  and a take meets more than one: the fresh directory brings "Is this a project
+  you created or one you trust?", and a machine with the Chrome extension
+  installed brings "Claude in Chrome extension detected". Everything typed goes
+  into whichever is up, and the Enter ending the first prompt picks the
+  highlighted option — "No, exit" for the trust one — after which the rest of
+  the sentence falls through to the shell, which is how a take once filmed vim
+  editing a file called `human`. `STARTUP_DIALOGS` in `demoCore.mjs` is the
+  table; a new one shows up as "the TUI never reached its prompt", and the pane
+  is saved to `<outdir>/tui-stuck.txt` so the next one takes a minute to add.
+- **`❯` is not a readiness marker.** It is the cursor in those very choosers,
+  and it is a common shell prompt (`❯❯❯` here), so matching it declares the TUI
+  ready before it exists. Match `bypass permissions`, `N tokens` or
+  `? for shortcuts` instead.
+- **The invocation goes in a script, not down the wire.** A take's system prompt
+  runs past a thousand characters, and zsh's line editor never submits a
+  `send-keys` line that long — it redraws it, echoes it truncated and sits
+  there, which reads exactly like a hung TUI. `<outdir>/cwd/start-session.sh`
+  holds the command and the pane shows `./start-session.sh`, which is also the
+  better thing to have on camera.
+- **A turn past a minute reads as idle** unless the spinner pattern matches the
+  unit. The counter goes `(49s ·` then `(1m 32s ·`, so a regex anchored on
+  digits-then-`s` stops matching exactly when a turn is long enough to matter,
+  and the take declares it done mid-thought and stops the camera over a working
+  agent.
+- **Drive the app by coordinates, never by gene name.** A name goes through the
+  text index: more than one hit opens a results picker _over_ the app, and a hit
+  launches whichever track answered it, adding a gene track the take never asked
+  for. Both are `showHitTrack` working as designed, and both wreck a frame.
+- **The working marker has moved.** 2.1.263 draws
+  `✽ Newspapering… (5s · ↓ 186 tokens)` and never says `esc to interrupt`, which
+  older builds did and which `recordDemoTui.mjs` still keys on. The
+  elapsed-seconds counter is the stable part; the finished line
+  (`Cooked for 19s · done`) has no parenthesis, so it does not read as still
+  working. Turn detection waits for the spinner to APPEAR before accepting a
+  settled pane — a pane changes the instant a prompt is typed, so settling alone
+  declares a turn finished before the model has started it.
 
 ## Linux: `recordDemoTui.mjs`
 

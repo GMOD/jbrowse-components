@@ -86,6 +86,13 @@ export interface ExternalClip {
 
 export const externalClips: ExternalClip[] = [
   {
+    name: 'mcp/agent_geo_ratio_take1',
+    width: 1920,
+    height: 1028,
+    description:
+      'Claude Code over the Desktop MCP socket with the terminal in frame and no shell: four GEO ATAC-seq bigWigs streamed into hg38 at CDKN1A, a deepTools-style log2 nutlin-over-vehicle track derived in the app, then CDKN1A laid beside GAPDH and a gene desert to test whether the gain is a normalization artifact',
+  },
+  {
     name: 'mcp/agent_protein_take1',
     width: 1920,
     height: 1222,

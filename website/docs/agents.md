@@ -12,7 +12,16 @@ screenshot the result in the app you already have open.
 
 ## What it looks like
 
-Three real Claude Code sessions driving JBrowse Desktop with a shell beside it.
+A real Claude Code session driving JBrowse Desktop over the four MCP tools and
+nothing else — no shell, no files. The terminal is in frame, so what was asked
+and what the agent ran are both on screen. The bigWigs stream from GEO by range
+request, and the ratio is computed against the live session the way deepTools
+`bigwigCompare` would: depth-normalized, finely binned, smoothed over a window
+several bins wide.
+
+<Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="Asked to open hg38 at CDKN1A, add four GEO ATAC-seq bigWigs comparing nutlin against a vehicle control, derive a log2 nutlin-over-vehicle track, and test whether the gain is a normalization artifact. The agent put CDKN1A beside GAPDH and a gene desert: only CDKN1A holds a one-sided signal." />
+
+Three more with a shell beside the app, filmed against only the JBrowse window.
 The captions are what the agent said and sent; only the questions were written
 in advance.
 

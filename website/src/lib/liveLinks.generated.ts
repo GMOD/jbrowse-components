@@ -798,6 +798,10 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 520
   },
+  "mcp/agent_geo_ratio_take1": {
+    "width": 1920,
+    "height": 1028
+  },
   "mcp/agent_protein_take1": {
     "width": 1920,
     "height": 1222
