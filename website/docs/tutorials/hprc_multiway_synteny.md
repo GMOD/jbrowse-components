@@ -216,10 +216,10 @@ one side and _CFHR4_ onward on the other, place in every lane.
 
 <Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing its own CAT gene models on its own contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
-The four carriers also sort together at the top of the stack. Lane order is
-densest first over the fetched window, and a lane whose alignment skips the
-cluster places less of it, so the order the display chooses on its own is the
-genotype.
+The four carriers also sort together, at the bottom of the stack. Lane order is
+densest first over the fetched window, weighed by how much of the reference each
+lane's alignment places, and a lane whose alignment skips the cluster places
+less of it, so the order the display chooses on its own is the genotype.
 
 ## The whole chromosome
 

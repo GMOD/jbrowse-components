@@ -191,7 +191,11 @@ export function groupSpansLanes(group: MultiWayGroup) {
 
 // Mate assemblies densest-first over the anchor-sorted groups: a ribbon
 // connects ADJACENT lanes only, so a near-empty lane sitting mid-stack cuts the
-// chains of every denser lane below it. Density is counted over the whole
+// chains of every denser lane below it. Density is the summed group weight of
+// a lane's placements — one per gene on a named table, anchor bp on an
+// alignment source — so a haplotype whose one alignment runs through the
+// window outranks one whose alignment breaks into two shorter records, where a
+// count of placements had put the broken one on top. Weighed over the whole
 // fetched block set rather than the viewport, so the order holds still across
 // the pans that keep one fetch. `preferred` (the display's rowOrder) pins the
 // lanes it names to the top, in its order — through `isSameName`, because a
@@ -203,21 +207,22 @@ export function rowAssembliesOf(
   isSameName: (a: string, b: string) => boolean,
 ) {
   const appearance = new Map<string, number>()
-  const placementCount = new Map<string, number>()
+  const placedWeight = new Map<string, number>()
   for (const group of groups) {
     for (const [assemblyName, placements] of group.mates) {
       if (!appearance.has(assemblyName)) {
         appearance.set(assemblyName, appearance.size)
       }
-      placementCount.set(
+      placedWeight.set(
         assemblyName,
-        (placementCount.get(assemblyName) ?? 0) + placements.length,
+        (placedWeight.get(assemblyName) ?? 0) +
+          placements.length * group.weight,
       )
     }
   }
   const present = [...appearance.keys()].sort(
     (a, b) =>
-      placementCount.get(b)! - placementCount.get(a)! ||
+      placedWeight.get(b)! - placedWeight.get(a)! ||
       appearance.get(a)! - appearance.get(b)!,
   )
   const pinned: string[] = []

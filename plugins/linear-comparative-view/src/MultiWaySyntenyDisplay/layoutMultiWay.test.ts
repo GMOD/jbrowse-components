@@ -298,6 +298,37 @@ test('a sparse lane sorts below a denser one that appears after it', () => {
   ])
 })
 
+// An alignment source makes every record its own group with one placement, so
+// a lane whose alignment BREAKS in the window holds more placements than one
+// that runs through it. Counting placements sorted the broken lane on top; the
+// group weight is anchor bp for a nameless record, and summing it puts the lane
+// that explains more of the window first.
+test('a lane placing two short alignment records sorts below one placing a single record over more anchor bp', () => {
+  const brokenAboveWhole = [
+    pairFeature({
+      uniqueId: 'broken-left',
+      start: 100,
+      end: 300,
+      mate: { assemblyName: 'broken', refName: 'B1', start: 100, end: 300 },
+    }),
+    pairFeature({
+      uniqueId: 'broken-right',
+      start: 600,
+      end: 800,
+      mate: { assemblyName: 'broken', refName: 'B1', start: 5000, end: 5200 },
+    }),
+    pairFeature({
+      uniqueId: 'whole',
+      start: 100,
+      end: 800,
+      mate: { assemblyName: 'whole', refName: 'W1', start: 100, end: 800 },
+    }),
+  ]
+  const groups = groupFeatures(brokenAboveWhole)
+  expect(groups.map(g => g.mates.get('broken')?.length ?? 0)).toEqual([1, 0, 1])
+  expect(rowAssembliesOf(groups, [], exactName)).toEqual(['whole', 'broken'])
+})
+
 test('a lane frame snaps to a multiple of the anchor span', () => {
   const groups = groupFeatures(features)
   const frame = computeRowFrame(groups, 'peach', 1000)!

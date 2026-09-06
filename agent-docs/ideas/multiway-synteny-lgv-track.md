@@ -145,9 +145,11 @@ own resize causes because the click stores the group KEY rather than an index
 **Launch → Linear synteny view (visible region)** — the
 `syntenyRegionMenuItems` dialog seeded from this track alone, which is the
 "lane you want to drive independently" handoff. Lane order is
-densest-first by default (`rowAssembliesOf` counts placements over the fetched
-block set, not the viewport, so it holds still across a pan), which is what the
-tutorial used to tell a reader to hand-author `rowOrder` for.
+densest-first by default (`rowAssembliesOf` sums the placed group weight — one
+per gene on a named table, anchor bp on an alignment source, so a lane whose
+alignment breaks into two records does not outrank one that runs through —
+over the fetched block set, not the viewport, so it holds still across a pan),
+which is what the tutorial used to tell a reader to hand-author `rowOrder` for.
 
 `rowOrder` has a UI as of 2026-08-26: **Lanes** on the track menu, a row per
 lane with Move up/Move down/Hide lane, a Show row per hidden lane and a reset,
