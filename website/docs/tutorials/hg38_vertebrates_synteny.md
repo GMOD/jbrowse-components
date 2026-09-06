@@ -85,7 +85,7 @@ coarse tier's sequence names are the upper-case ones.
 
 ```bash
 # the #pif header, if the file was built recently enough to carry one
-tabix -H https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | head -1
+tabix -H https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | awk 'NR==1'
 # how many coarse-tier sequences the index holds; zero means one tier
 tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep -c '^[TQ]'
 ```
