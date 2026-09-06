@@ -1544,33 +1544,47 @@ haplotype names.
 worth setting before anything else. At 0 a haplotype is cut wherever it leaves
 the window's nodes, which on a human graph is every private bubble it passes
 through: the C4 window below comes back as 8,082 records at `context: 0` and 463
-at `context: 1000`, one per haplotype, from the same 60 kb. The measurements
-here are all at 1000, contained snarls, reading the published database over
-HTTP:
+at `context: 1000`, one per haplotype, from the same 60 kb. These are all at
+1000, contained snarls, reading both files over HTTP, the database from HPRC's
+bucket and the companion from ours:
 
 | Locus        | Window                         | Nodes  | Records | Time   |
 | ------------ | ------------------------------ | ------ | ------- | ------ |
-| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 4.5 s  |
-| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 4.8 s  |
-| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 10.8 s |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14.0 s |
-| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 23.0 s |
-| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 95.5 s |
+| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 5.4 s  |
+| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 7.1 s  |
+| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 16.4 s |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 20.7 s |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 31.1 s |
+| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 283 s  |
 
-Every fragment is named in all six. The first row is the floor: a 10 kb window
-and a 60 kb one cost the same, because most of those seconds are the one-time
-scan of the path table that every later window reuses.
+Every fragment is named in all six, and the first five are the shape to expect:
+one record per haplotype, and a time that tracks how many nodes the window
+covers.
 
-_AMY1_ is the row to read twice. It has a third of MHC class II's nodes and
-takes four times as long, because the amylase repeat sends each haplotype out of
-the window's nodes and back several times, so 464 haplotypes arrive as 1,912
-records and the per-record alignment against the reference is what the time goes
-on. Records, not window width, are the thing to watch.
+The 10 kb window is the exception among them, and says something about the
+companion. It is smaller than the 16 kb the index samples at, so some fragments
+in it hold no recorded position and have to be walked to one, 3,937 steps in
+all, where the 60 kb window needs none. A window below the sampling interval
+pays for it.
+
+_AMY1_ is the row that breaks the pattern, and it is the locus a copy-number
+question would start from. It has a third of MHC class II's nodes and takes nine
+times as long. The amylase repeat sends each haplotype out of the window's nodes
+and back, so 464 haplotypes arrive as 1,912 fragments, most of them shorter than
+the sampling interval: 78,506 identification steps against zero at every other
+locus here. The alignment is not what costs, and neither is fetching, since this
+is the same 37 requests as everywhere else.
+
+The usual repair makes it worse. `context` 5000, `context` 20000 and
+`overlapping` snarls each pull in enough of the repeat to exhaust a 4 GB heap
+before returning anything, so the window that most wants a wider read is the one
+that cannot afford it.
 
 `nodeLimit` is the guard on the other end. It fails a window rather than letting
 the display sit on a whole chromosome, so it has to clear the largest window you
 mean to open: 12,000 is enough for C4 and refuses MHC class II. It does not
-bound the time, as the _AMY1_ row shows.
+bound the time, and it does not catch _AMY1_ at all, whose 12,240 nodes are
+under any limit that lets the other loci through.
 
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
