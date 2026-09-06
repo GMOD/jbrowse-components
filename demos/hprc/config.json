@@ -146,7 +146,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MinigraphBubbleAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz",
         "assemblyNameToPanSN": {
           "hg38": "GRCh38"
         }
@@ -162,7 +162,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz"
       }
     },
     {
@@ -172,7 +172,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz"
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz"
       },
       "displays": [
         {
@@ -189,7 +189,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz"
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz"
       },
       "displays": [
         {
@@ -206,7 +206,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
         "assemblyNameToPanSN": {
           "hg38": "GRCh38"
         }
@@ -484,7 +484,17 @@
       "type": "SyntenyTrack",
       "trackId": "hprc_v2_1_gbz_lanes",
       "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": [
+        "hg38",
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1"
+      ],
       "adapter": {
         "type": "GbzBaseSyntenyAdapter",
         "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
@@ -492,8 +502,28 @@
           "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db",
           "locationType": "UriLocation"
         },
-        "assemblyNames": ["hg38"],
-        "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
+        "assemblyNames": [
+          "hg38",
+          "HG00097.1",
+          "HG00099.1",
+          "HG00128.1",
+          "HG00133.1",
+          "HG01109.1",
+          "HG01123.1",
+          "HG01960.1",
+          "HG02055.1"
+        ],
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38#0",
+          "HG00097.1": "HG00097#1",
+          "HG00099.1": "HG00099#1",
+          "HG00128.1": "HG00128#1",
+          "HG00133.1": "HG00133#1",
+          "HG01109.1": "HG01109#1",
+          "HG01123.1": "HG01123#1",
+          "HG01960.1": "HG01960#1",
+          "HG02055.1": "HG02055#1"
+        },
         "context": 1000,
         "nodeLimit": 50000
       },
@@ -501,7 +531,17 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
-          "height": 600
+          "height": 600,
+          "lanes": [
+            "HG00097.1",
+            "HG00099.1",
+            "HG00128.1",
+            "HG00133.1",
+            "HG01109.1",
+            "HG01123.1",
+            "HG01960.1",
+            "HG02055.1"
+          ]
         }
       ]
     }

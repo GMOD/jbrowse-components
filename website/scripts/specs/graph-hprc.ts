@@ -108,11 +108,11 @@ const CFHR_REGION = {
 // The deleted span, from the allele inventory's own row (-84,683 at this
 // position), used both as the in-app highlight and as the box that names what is
 // inside it, so the two cannot part company.
-const CFHR_DELETED = { refName: 'chr1', start: 196753088, end: 196837771 }
+const CFHR_DELETED = { refName: 'chr1', start: 196759450, end: 196844134 }
 const CFHR_DELETED_LOCUS = `chr1:${CFHR_DELETED.start + 1}-${CFHR_DELETED.end}`
 
-// The inversion figure, at 1q21.1. `hprc-v2.0-mc-grch38.bubbles.bed.gz` flags
-// this bubble as an inversion (246 of its 130,510 rows carry that column), and
+// The inversion figure, at 1q21.1. `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags
+// this bubble as an inversion (245 of its 129,611 rows carry that column), and
 // the links index states the breakpoints as three mixed-orientation rank-0
 // links, bracketing chr1:144,419,292-144,572,458.
 //
@@ -202,7 +202,7 @@ const windowStart = (loc: string) => loc.split('-')[0]!
 //
 // The node is the largest CHM13-only segment in the graph that touches GRCh38 at
 // all, found by scanning `tabix links.bed.gz CHM13#0#chr<n>` for rows with a
-// GRCh38 endpoint: 142,227 bp of CHM13 chr17 hanging off a 75 bp GRCh38 anchor,
+// GRCh38 endpoint: 141,710 bp of CHM13 chr17 hanging off a GRCh38 anchor,
 // one link in and one link out. Subtelomeric, which is where T2T has sequence and
 // GRCh38 has none.
 const CHM13_WINDOW = 'chr17:83,010,000-83,040,000'
@@ -212,13 +212,14 @@ const CHM13_REGION = {
   start: 83010000,
   end: 83040000,
 }
-const CHM13_NODE = 's504955'
-// The bubble the node is the long allele of: 34 segments over a 1,023 bp
-// reference span, longest allele 146,023 bp (`tabix bubbles.bed.gz
-// 'GRCh38#0#chr17:83,022,000-83,024,000'`).
-const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
+const CHM13_NODE = 's460574'
+// The bubble the node is the long allele of: 28 segments over a 928 bp
+// reference span, longest allele 145,411 bp (`tabix bubbles.bed.gz
+// 'GRCh38#0#chr17:83,022,000-83,024,000'`; release 2.0 had it as 34 segments
+// over 1,023 bp with a 146,023 bp allele).
+const CHM13_BUBBLE = { refName: 'chr17', start: 83022324, end: 83023252 }
 // The node's own span on CHM13, from its `SN`/`SO` tags.
-const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
+const CHM13_ALLELE = { refName: 'chr17', start: 83899717, end: 84041427 }
 // The node's own span padded to a round window, and it STAYS this tight
 // (review: "ideally we would zoom out the lineargenomeview even more to show
 // how these L1 transposons are more frequent here than elsewhere"). Widening it
@@ -237,7 +238,7 @@ const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
 // The amylase locus, framed on the inversion-flagged bubble the scan over
-// hprc-v2.0-mc-grch38.bubbles.bed.gz turns up at chr1:103,611,080-103,732,636,
+// hprc-v2.1-mc-grch38.bubbles.bed.gz turns up at chr1:103,620,901-103,732,636,
 // with a little room either side so its flanks are on screen. 34 backbone
 // segments and 113 links here, pulling 101 distinct nodes.
 const AMY_WINDOW = 'chr1:103,500,000-103,850,000'
@@ -249,7 +250,7 @@ const AMY_REGION = {
 }
 
 // C4, for the launch figure, from the tutorial's own table of loci worth a look.
-// `tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
+// `tabix hprc-v2.1-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
 // gives 13 rank-0 backbone segments and 21 links out to non-reference segments
 // with ranks up to 165, which is C4A/C4B copy number and the HERV insertion as
 // the graph records them.
@@ -313,7 +314,7 @@ const MHC_CLASSII_REGION = {
 // The one event pangenome/hprc_graph_vs_callset marks in both products: a
 // 14,596 bp deletion, the largest record in the window that more than one donor
 // carries. From the callset itself —
-// `tabix hprc-v2.0-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
+// `tabix hprc-v2.1-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
 // among the records the SV filter keeps.
 const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
 
@@ -733,7 +734,7 @@ export const HPRC_SEGMENTS_TRACK_JSON = `{
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
@@ -814,7 +815,7 @@ export const hprcClusterFixtures = {
 // whole-chromosome figure and the chromosome tour.
 //
 // The tier is one node per BUBBLE (scripts/build_bubble_tier.sh over the
-// `gfatools bubble` decomposition, hosted as hprc-v2.0-mc-grch38.tier10000.*),
+// `gfatools bubble` decomposition, hosted as hprc-v2.1-mc-grch38.tier10000.*),
 // which is what makes a whole chromosome drawable at all: 474 nodes for chr1
 // against ~751k segments in the graph.
 const HPRC_TIER_SESSION_TRACK = {
@@ -824,7 +825,7 @@ const HPRC_TIER_SESSION_TRACK = {
   assemblyNames: ['hg38'],
   adapter: {
     type: 'RgfaTabixAdapter',
-    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
+    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
     assemblyNameToPanSN: { hg38: 'GRCh38' },
   },
 }
@@ -843,7 +844,7 @@ const HPRC_BUBBLE_SCORE_SESSION_TRACK = {
   assemblyNames: ['hg38'],
   adapter: {
     type: 'MinigraphBubbleAdapter',
-    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz',
+    uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz',
     assemblyNameToPanSN: { hg38: 'GRCh38' },
   },
 }
@@ -969,11 +970,12 @@ const MHC_TIER_REGION = {
 const MHC_TIER_WINDOW = 'chr6:31,500,001-33,500,000'
 const MHC_TIER_LGV = 'hprc_mhc_tier_lgv'
 const MHC_TIER_GRAPH = 'hprc_mhc_tier_graph'
-// The MHC class II bubble in the tier, chr6:32,486,309-32,550,924
+// The MHC class II bubble in the tier, chr6:32,486,309-32,575,299
 // (`tabix …tier10000.segs.bed.gz 'GRCh38#0#chr6:32,400,000-32,600,000'`):
-// 91 segments and a 78 kb longest allele, and the window every MHC figure on
-// the page is cut inside.
-const MHC_TIER_BUBBLE = 's101110'
+// 254 segments and a 205 kb longest allele (release 2.0 had 91 and 78 kb over
+// chr6:32,486,309-32,550,924), and the window every MHC figure on the page is
+// cut inside.
+const MHC_TIER_BUBBLE = 's329829'
 
 // No fine segments lane in the view. Over 2 Mb it is not gated, it draws, and
 // a thousand segments packed into rows under `heightMode: 'grow'` took the
@@ -1060,7 +1062,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   //
   // The tier is one node per BUBBLE rather than one per segment
   // (scripts/build_bubble_tier.sh over the `gfatools bubble` decomposition HPRC
-  // publishes, hosted as hprc-v2.0-mc-grch38.tier10000.*). Measured off that
+  // publishes, hosted as hprc-v2.1-mc-grch38.tier10000.*). Measured off that
   // file: 474 nodes for all of chr1, against ~751k segments in the graph and
   // 3,034 for 5 Mb of the FINE index, which is already undrawable. So this is
   // not the same picture zoomed out — it is a different granularity of the same
@@ -1810,8 +1812,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // view fetches this 350 kb window out of two tabix indexes and draws 126
   // nodes, so nothing about the chromosome's size reaches the drawing. It is
   // also the locus where the graph's own bubble index disagrees with the
-  // tutorial's prose: `hprc-v2.0-mc-grch38.bubbles.bed.gz` reports the bubble at
-  // chr1:103,611,080-103,732,636 as 95 segments, alleles from 26,889 to 316,616
+  // tutorial's prose: `hprc-v2.1-mc-grch38.bubbles.bed.gz` reports the bubble at
+  // chr1:103,620,901-103,732,636 as 108 segments, alleles from 17,531 to 300,264
   // bp, **and inversion-flagged** — 246 of the graph's 130,510 bubbles carry
   // that flag and this is one of the largest.
   //
@@ -2164,7 +2166,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // insertion at its real magnitude, and the warning that a row is not a
   // haplotype. What it no longer carries is a picture of it.
   // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
-  // locus list. Every record in hprc-v2.0-mc-grch38.bubbles.bed.gz, ranked for a
+  // locus list. Every record in hprc-v2.1-mc-grch38.bubbles.bed.gz, ranked for a
   // bubble that is deeply traversed and still few enough segments to follow:
   // GRCh38 chr6:160,606,991-160,639,012 is 33 segments and 584 recorded paths,
   // and its alleles reach 176,236 bp against the 32 kb of reference they replace.
@@ -2238,7 +2240,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // is the reason anyone measures LPA, and nothing in a chain of loops says
     // so. On review the figure read as an arbitrary tangle.
     //
-    // Anchored on s110051+, the first node of the GRCh38 walk (12,567 bp at
+    // Anchored on s338849+, the first node of the GRCh38 walk (12,567 bp at
     // chr6:160,508,381), and dropped below it into the part of the canvas the
     // force layout leaves empty. A graph node rather than a viewport
     // coordinate, so re-running the layout carries the pill with the drawing.
@@ -2260,7 +2262,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // still wraps at maxWidth on its own, so authored line ends land in the
         // middle of the pill
         maxWidth: 420,
-        anchor: { view: 1, graphNode: 's110051+', dx: 20, dy: 320 },
+        anchor: { view: 1, graphNode: 's338849+', dx: 20, dy: 320 },
       },
       // WHERE it is, which the pill above never said (review: "the term
       // 'KIV-2' is not visible in the screenshot, may be useful if there was a

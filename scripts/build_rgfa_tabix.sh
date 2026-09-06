@@ -13,7 +13,10 @@
 # `hprc-v2.0-mc-grch38.sv.gfa.gz` IS rGFA (it is the minigraph stage), while the
 # `hprc-v2.0-mc-grch38.gfa.gz` beside it is base-level and is not.
 #
-# Requires: gfatools, awk, sort, bgzip, tabix
+# Requires: gfatools, gawk (as `awk`; macOS's BSD awk builds the same links
+#           table in hours rather than seconds, its hash tables being what they
+#           are at 760k keys: brew install gawk and put its gnubin first on PATH),
+#           sort, bgzip, tabix
 # Usage:    bash scripts/build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]
 #
 # Produces <prefix>.segs.bed.gz{,.tbi} and <prefix>.links.bed.gz{,.tbi}. Runs on

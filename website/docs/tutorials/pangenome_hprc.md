@@ -55,11 +55,11 @@ straight off S3 or through small tabix projections we host beside them.
 
 - the SV-resolution graph (`sv.gfa`), the minigraph backbone our rGFA tabix
   projections are built from:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.sv.gfa.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
 - the decomposed variant callset, 464 haplotypes, read straight off S3:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
 - the undecomposed, snarl-level carriage file, 462 haplotypes:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
 - the multiple alignment the graph and the callset are both derived from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
 - the release's all-vs-GRCh38 alignment, sliced for the CFHR and inversion
@@ -247,10 +247,13 @@ projections of the graph (below). Release 3 is the verkko assembly and QC
 release, and publishes no graphs.
 
 Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
-fuller per-build set. The alignment the graph and the callset are derived from
-is only there: `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9
-GB with a `.tai` index, which [the last section](#the-alignment-underneath-both)
-opens.
+fuller per-build set, and everything on this page reads the `v2.1/` build: its
+`sv.gfa`, its callsets, and its gbz-base database, so node ids agree across the
+page. The one file only `v2.0/` has is the alignment the graph and the callset
+are derived from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`,
+5.9 GB with a `.tai` index, which
+[the last section](#the-alignment-underneath-both) opens; v2.1 publishes its MAF
+only, 53 GB and unindexed.
 
 Every file above is published twice, once per reference, and this page uses the
 GRCh38 build. Both build scripts run on the CHM13 files unchanged, with one
@@ -309,7 +312,7 @@ view; the adapter resolves `<uri>.segs.bed.gz`, `<uri>.links.bed.gz`, and both
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
@@ -366,7 +369,7 @@ colors, so a block above and its node below are the same color:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
@@ -436,7 +439,7 @@ over HTTP without the browser. The bubble spanning _AMY1A_ and _AMY1B_ is the
 first row:
 
 ```bash
-tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz \
+tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz \
   'GRCh38#0#chr1:103,690,000-103,780,000' | cut -f1-8 | head -1
 # GRCh38#0#chr1  103611080  103732636  95  269401  1  26889  316616
 ```
@@ -496,7 +499,7 @@ What the graph holds in one of them is one query against the
 the haplotype the allele was first seen in:
 
 ```bash
-tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz \
+tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz \
   chr6:32,510,000-32,600,000 | cut -f1-3,10,11,16
 ```
 
@@ -667,7 +670,7 @@ assembly:
   "assemblyNames": ["hg38", "HG01433.2"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
@@ -751,7 +754,7 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
   "assemblyNames": ["hg38", "hs1"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38", "hs1": "CHM13" }
   },
   "displayDefaults": {
@@ -776,13 +779,13 @@ does here.
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph late, after most of the other haplotypes, so little is
-credited to it: `tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns a
+credited to it: `tabix hprc-v2.1-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns a
 short list for the whole of chr1, most of it attaching only to other donors.
 Finding one that touches GRCh38, like the node above, means scanning the links
 index for CHM13 rows with a GRCh38 endpoint:
 
 ```bash
-tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
+tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.links.bed.gz \
   'CHM13#0#chr17' |
   awk -F'\t' '$6 ~ /^GRCh38/ || $10 ~ /^GRCh38/'
 ```
@@ -916,7 +919,7 @@ the graph varies and by how much, in one file:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MinigraphBubbleAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   }
 }
@@ -942,8 +945,8 @@ does that in one pass over the file you already have:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
-bash build_bubble_tier.sh hprc-v2.0-mc-grch38.bubbles.bed.gz \
-  hprc-v2.0-mc-grch38.tier10000 10000
+bash build_bubble_tier.sh hprc-v2.1-mc-grch38.bubbles.bed.gz \
+  hprc-v2.1-mc-grch38.tier10000 10000
 ```
 
 The threshold is on **content**, the larger of the reference span and the
@@ -962,7 +965,7 @@ so choosing a level of detail is choosing a file:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   }
 }
@@ -987,7 +990,7 @@ offering no wiggle display to pick:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MinigraphBubbleAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   }
 }
@@ -1051,7 +1054,7 @@ segments, which makes them readable without the graph:
 So the test is: both ends on the backbone, and the two signs disagree.
 
 ```bash
-tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
+tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.links.bed.gz \
   'GRCh38#0#chr1:144,400,000-144,600,000' |
   awk -F'\t' -v OFS='\t' '
     { dup = seen[$4 $5]++ }                  # count every row, so a repeat prints once
@@ -1115,7 +1118,7 @@ from the two indexes above.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz"
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz"
   }
 }
 ```
@@ -1132,7 +1135,7 @@ kb anchor nothing turns on it; over a CFHR-scale span the marker is placed
 rather than located.
 
 The lane's rows are the display packing overlapping alleles, not a set of
-haplotypes. The one event worth looking at over this window, the 84,683 bp
+haplotypes. The one event worth looking at over this window, the 84,684 bp
 deletion between _CFHR3_ and _CFHR1_, is
 [drawn on the same coordinates by the graph](#insertions-deletions-and-their-sizes).
 
@@ -1166,7 +1169,7 @@ are viewing out of the 2.3 GB file. The S3 URL is the whole of the adapter, on a
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz"
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz"
   },
   "displays": [
     {
@@ -1256,9 +1259,9 @@ the graph the same alleles came out of.
 
 The callset above is decomposed, so one graph bubble arrives as many records and
 a column is a primitive variant rather than an allele of the graph. Release 2
-also publishes the undecomposed form, one record per **snarl**, in the
-`hprc_v2.0_mc_grch38_index` submission. Read it when the question is who carries
-a given bubble: its rows and the graph's alleles are the same objects.
+also publishes the undecomposed form, one record per **snarl**, as the
+`pgbi.vcf.gz` beside each build. Read it when the question is who carries a
+given bubble: its rows and the graph's alleles are the same objects.
 
 ```json addtrack
 {
@@ -1268,7 +1271,7 @@ a given bubble: its rows and the graph's alleles are the same objects.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz"
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz"
   },
   "displays": [
     { "type": "LinearMultiSampleVariantDisplay", "renderingMode": "phased" }
@@ -1492,9 +1495,10 @@ walk per haplotype, and release 2.1 publishes that graph as a **gbz-base
 database**, which is the graph in SQLite with its tables laid out so a window is
 a handful of range requests rather than a 10 GB download.
 
-That is release **2.1**, where everything above it is release 2.0. GRCh38
-coordinates are the same in both, so the tracks sit over each other, but node
-ids are not, so match a record to a bubble by interval rather than by id.
+Every graph-derived track on this page reads release **2.1**, so a segment id in
+the rGFA tracks and a node id in this database are the same graph's; only the
+alignment underneath, the TAF, is release 2.0, which
+[the last section](#the-alignment-underneath-both) says why.
 
 ```json addtrack
 {
@@ -1723,7 +1727,7 @@ them.
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
-bash build_rgfa_tabix.sh hprc-v2.0-mc-grch38.sv.gfa.gz out
+bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz out
 bash build_rgfa_alleles.sh out
 ```
 
@@ -1742,7 +1746,7 @@ The [bubble track](#the-bubble-track) is neither script but one gfatools call
 over the same graph:
 
 ```bash
-gzip -dc hprc-v2.0-mc-grch38.sv.gfa.gz | gfatools bubble - \
+gzip -dc hprc-v2.1-mc-grch38.sv.gfa.gz | gfatools bubble - \
   | sort -k1,1 -k2,2n | bgzip > out.bubbles.bed.gz
 tabix -p bed out.bubbles.bed.gz
 ```
@@ -1772,7 +1776,7 @@ a bubble is the allele every other sample's path is compared against.
 
 `build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
 sample, and writes a second index pair keyed only under that sample's sequences
-(`hprc-v2.0-mc-grch38.ref.*`, also hosted). It is a fraction of the full pair's
+(`hprc-v2.1-mc-grch38.ref.*`, also hosted). It is a fraction of the full pair's
 index size, returns byte-identical rows, and is for a segments track drawn on
 GRCh38. Do not point the graph cut at it: **Graph context** defaults to 1 hop, a
 hop follows an allele's interior segments, and those are indexed under the donor
