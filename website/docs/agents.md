@@ -106,6 +106,10 @@ jb.trackModel(trackId).applyDisplaySettings(s) // restyle, and report what lande
 jb.waitReady(ms) // wait for drawing, and report what did not draw
 ```
 
+Each helper is there because the raw model gets that answer wrong silently: a
+refName the file spells differently, a settings key the display drops, a track
+that settled without drawing. Everything else is the model itself.
+
 - [](/docs/agents_live_model) is the reference the agent reads.
 - [](/docs/agents_recipes) is a verified snippet per ask.
 - [](/docs/agents_hosted_data) is every UCSC and GenArk genome as a ready

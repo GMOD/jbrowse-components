@@ -177,7 +177,7 @@ rather than `Math.max(...scores)`, which overflows the call stack on a
 base-resolution track, then navigate to what you found:
 
 ```js
-const view = session.views[0]
+const view = jb.view()
 const feats = await jb.getFeatures({
   trackId: 'volvox_microarray',
   loc: 'ctgA:1-50,000',
@@ -271,7 +271,7 @@ session.addSessionTrackConf({
     })),
   },
 })
-await session.views[0].launchTrack(trackId)
+await jb.view().launchTrack(trackId)
 return {
   trackId,
   bins: counts.length,
@@ -337,7 +337,7 @@ none of them and `jb.inspect` is how to see what a view can do. The move actions
 take the track model's own `id`, not its `trackId`:
 
 ```js
-const view = session.views[0]
+const view = jb.view()
 const track = view.tracks.find(
   t => t.configuration.trackId === 'volvox_test_vcf',
 )
@@ -354,7 +354,7 @@ A display that refuses to draw replaces its own subtree and raises no toast, so
 a screenshot of it looks fine. The settle report is where it shows:
 
 ```js
-await session.views[0].launchTrack('volvox_bigwig_nonexist')
+await jb.view().launchTrack('volvox_bigwig_nonexist')
 return jb.waitReady(20000)
 ```
 
@@ -387,7 +387,7 @@ cropped screenshot after each. The settle call returns the view's element box so
 `rect` or `selector` can crop to it:
 
 ```js
-const view = session.views[0]
+const view = jb.view()
 await view.navToLocString('ctgA:5,000-15,000')
 const settle = await jb.waitReady(30000)
 const el = document.querySelector(`[data-testid="view-container-${view.id}"]`)

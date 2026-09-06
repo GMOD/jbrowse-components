@@ -1,3 +1,10 @@
+import * as configuration from '@jbrowse/core/configuration'
+import * as getFeatureAdapter from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import * as util from '@jbrowse/core/util'
+import * as stopToken from '@jbrowse/core/util/stopToken'
+import * as mst from '@jbrowse/mobx-state-tree'
+import * as mobx from 'mobx'
+
 import {
   agentByteLimit,
   createJbApi,
@@ -206,6 +213,107 @@ describe('addTrack in a browser', () => {
       }),
     ).rejects.toThrow(/not bigWig: https:\/\/x.org\/b.bam/)
   })
+
+  // no ready marker is in the document, so a settle here would run to its
+  // timeout: settleMs 0 is what lets three adds pay for one wait
+  it('shows the track and skips the settle when settleMs is 0', async () => {
+    const shown: string[] = []
+    const view = {
+      id: 'v1',
+      type: 'LinearGenomeView',
+      assemblyNames: ['volvox'],
+      ownViews: [],
+      ownTracks: [],
+      showTrack: (trackId: string) => {
+        shown.push(trackId)
+      },
+    }
+    const showing = {
+      ...session,
+      views: [view],
+      addSessionTrackConf: () => {},
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi({
+      rootModel: { session: showing },
+      trackTypes: new Map([['MultiQuantitativeTrack', {}]]),
+      getTrackType: () => ({ displayTypes: [{ name: 'D' }] }),
+      getViewType: () => ({ displayTypes: [{ name: 'D' }] }),
+    } as unknown as PluginManager)
+    const result = await jb.addTrack({
+      location: ['https://x.org/a.bw'],
+      settleMs: 0,
+    })
+    expect(result).toMatchObject({ shownInView: 'v1' })
+    expect(result).not.toHaveProperty('settled')
+    expect(shown).toEqual([result.trackId])
+  })
+})
+
+// A name over a nested session has no right first answer. The named-but-missing
+// case already threw and listed the open views; the unnamed-and-plural case
+// does the same instead of taking the first, which restyled one row while the
+// settle reported both.
+describe('a name that several views could answer', () => {
+  const track = (trackId: string) => ({ configuration: { trackId } })
+  const lgv = (id: string, loc: string, trackIds: string[]) => ({
+    id,
+    type: 'LinearGenomeView',
+    assemblyNames: ['volvox'],
+    coarseVisibleLocStrings: loc,
+    initialized: true,
+    visibleRegions: [
+      { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+    ],
+    ownViews: [],
+    ownTracks: trackIds.map(track),
+  })
+  const jbOver = (views: unknown[]) =>
+    createJbApi({
+      rootModel: { session: { views, assemblyNames: ['volvox'] } },
+    } as unknown as PluginManager)
+
+  it('names both views when a track is shown twice', () => {
+    const jb = jbOver([
+      lgv('v1', 'ctgA:1-100', ['genes']),
+      lgv('v2', 'ctgA:5000-5100', ['genes']),
+    ])
+    expect(() => jb.trackModel('genes')).toThrow(
+      /shown in 2 views: v1 \(LinearGenomeView on volvox at ctgA:1-100\); v2 .*pass viewId/,
+    )
+    expect(jb.trackModel('genes', 'v2')).toBe(jb.view('v2').ownTracks[0])
+    expect(() => jb.trackModel('genes', 'nope')).toThrow(/No view with id/)
+  })
+
+  it('answers plainly when one view shows it', () => {
+    const jb = jbOver([
+      lgv('v1', 'ctgA:1-100', ['genes']),
+      lgv('v2', 'ctgA:5000-5100', ['variants']),
+    ])
+    expect(jb.trackModel('genes')?.configuration.trackId).toBe('genes')
+    expect(jb.trackModel('missing')).toBeUndefined()
+  })
+
+  it('jb.view is the open view, and asks when there are several', () => {
+    const one = jbOver([lgv('v1', 'ctgA:1-100', [])])
+    expect(one.view().id).toBe('v1')
+    const two = jbOver([lgv('v1', 'ctgA:1-100', []), lgv('v2', 'ctgB', [])])
+    expect(() => two.view()).toThrow(/2 views are open: v1 .*; v2 .*viewId/)
+    expect(two.view('v2').id).toBe('v2')
+    expect(() => jbOver([]).view()).toThrow(/No view is open/)
+  })
+
+  it('reads the region of the view showing the track, else asks', async () => {
+    const jb = jbOver([
+      lgv('v1', 'ctgA:1-100', ['genes']),
+      lgv('v2', 'ctgA:5000-5100', ['variants']),
+    ])
+    await expect(jb.visibleRegions()).rejects.toThrow(
+      /2 views show a region: .*pass viewId/,
+    )
+    expect(await jb.visibleRegions('v2')).toEqual([
+      { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+    ])
+  })
 })
 
 describe('getFeatures', () => {
@@ -227,14 +335,23 @@ describe('getFeatures', () => {
 // as `window.jb` and JBrowse Desktop hands the same one to `run_javascript`, so
 // a rename or a removal breaks agent code nobody in this repo can see — the
 // same reason pluginFacingSessionApi.test.ts pins the shape reached through
-// `window.JBrowseSession`, and the same rule as the plugin ABI: a member may be
-// ADDED freely, and this list updated, but taking one away is a breaking change
-// that has to be a decision rather than a refactor's side effect.
+// `window.JBrowseSession`. Taking a member away is a breaking change that has
+// to be a decision rather than a refactor's side effect.
+//
+// Adding one is gated too. A helper earns its place by turning an answer the
+// raw model gets wrong SILENTLY into a thrown error or a report (refNames
+// unrenamed, a settings key dropped, a display that replaced its subtree
+// without a toast, an action Object.keys cannot see). "The raw model is
+// verbose" does not qualify: that is what jb.require and the model's own
+// actions are for. The re-exports below are frozen at what shipped — a recipe
+// teaches one and the browser agent has only jb.help — and no new member may
+// be another core export handed through under a second name.
 describe('the jb roster', () => {
-  it('is the documented 24 members', () => {
-    const jb = createJbApi({
-      rootModel: {},
-    } as unknown as PluginManager)
+  const jb = createJbApi({
+    rootModel: {},
+  } as unknown as PluginManager)
+
+  it('is the documented 26 members', () => {
     expect(Object.keys(jb).sort()).toEqual([
       'addTrack',
       'createStopToken',
@@ -259,8 +376,38 @@ describe('the jb roster', () => {
       'sessionSummary',
       'stopStopToken',
       'trackModel',
+      'view',
       'visibleRegions',
       'waitReady',
     ])
+  })
+
+  it('hands through no core export beyond the frozen re-exports', () => {
+    const frozen = new Set([
+      'createStopToken',
+      'getConf',
+      'getFeatureAdapterOrThrow',
+      'getRpcSessionId',
+      'mobx',
+      'mst',
+      'parseLocString',
+      'readConfObject',
+      'renameRegionsIfNeeded',
+      'stopStopToken',
+    ])
+    const coreExports = new Set<unknown>(
+      [configuration, getFeatureAdapter, util, stopToken].flatMap(m =>
+        Object.values(m),
+      ),
+    )
+    coreExports.add(mst).add(mobx)
+    const handedThrough = Object.entries(
+      Object.getOwnPropertyDescriptors(jb),
+    ).flatMap(([name, desc]) =>
+      !frozen.has(name) && 'value' in desc && coreExports.has(desc.value)
+        ? [name]
+        : [],
+    )
+    expect(handedThrough).toEqual([])
   })
 })

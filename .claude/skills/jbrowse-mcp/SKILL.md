@@ -47,6 +47,10 @@ discipline for using it.
 - Settings keys come from the display itself:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An unknown
   key is **dropped silently** — that is this format's known failure mode.
+- The view is `jb.view(viewId?)`, not `session.views[0]`: views nest and several
+  can be open, and with more than one candidate `jb.view()`, `jb.trackModel`,
+  `jb.visibleRegions` and `jb.addTrack` throw naming them — pass the `viewId`
+  from `jb.sessionSummary()`.
 - What a live view can answer comes from `jb.inspect('views.0')` — the `getters`
   list names things (visibleLocStrings, totalBp, ...) that session snapshots
   filter out. How to call an action it lists:

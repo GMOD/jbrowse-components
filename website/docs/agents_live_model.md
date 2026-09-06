@@ -25,6 +25,14 @@ the last expression. In scope either way:
 
 ## The helper library
 
+The rule for what is in `jb` and what is not: a helper exists where the raw
+model answers wrong **silently**, and turns that into a thrown error or a
+report. A refName the file spells differently, a settings key the display does
+not know, a display that replaced its own subtree without a toast, an action
+`Object.keys` cannot see, a name that several views could answer. Anything the
+model merely answers verbosely is done with the model, and the lower-level
+re-exports at the end are frozen at what shipped.
+
 Orientation and building:
 
 - `jb.sessionSummary()` is the orientation call: views, tracks with their
@@ -45,12 +53,28 @@ Orientation and building:
   session**: the `session` argument you were given is a dead node afterwards.
   Every `jb` helper re-reads the live one, and `jb.session` is it if you need to
   rebind. A spec `layout` indexes the spec's own `views` array; the live action
-  `session.applyLayoutSpec` takes the same tree with `viewIds` in place of
-  `views`, and accepts the wrong key silently, collapsing the workspace into one
-  tab.
-- `jb.addTrack({ location, index?, assembly?, name?, show?, viewId? })` adds a
-  local path or URL, with the format inferred from the extension, and shows it.
-- `jb.trackModel(trackId)` is the shown track's live model, or undefined.
+  `session.applyLayoutSpec` takes the same tree, and its leaves are `views`
+  there too — view ids rather than indexes. `viewIds` is not a key: a node
+  carrying one throws and names it, rather than collapsing the workspace into
+  one blank tab the way it once did. A layout only renders in a workspace, so
+  `session.setUseWorkspaces(true)` comes first — `applyLayoutSpec` does not turn
+  it on, and without it the tree is rebuilt and the views stay stacked down the
+  page. Stacked views are also how a session grows taller than the window, which
+  `jb.waitReady` reports as an `offscreen` note.
+- `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
+  adds a local path or URL, with the format inferred from the extension, shows
+  it and settles. `settleMs: 0` skips the settle, for several adds followed by
+  one `jb.waitReady`.
+- `jb.view(viewId?)` is the open view. With several open and no `viewId`, it
+  throws naming each one rather than picking the first, and so do
+  `jb.trackModel`, `jb.visibleRegions` and `jb.addTrack` when more than one view
+  could answer: two linear views of one assembly at two loci both "show the
+  track", and restyling or reading the first one while the settle reports both
+  is the silent kind of wrong. `viewId` comes from `jb.sessionSummary()`.
+  Synteny and breakpoint views nest, and every helper counts the nested views as
+  open.
+- `jb.trackModel(trackId, viewId?)` is the shown track's live model, or
+  undefined.
 - `track.applyDisplaySettings(settings)` styles the track's `activeDisplay` in
   place and returns `{ applied, unapplied, failed }`. `failed` means a key the
   display knows and could not set; `unapplied` lists keys that are not config
@@ -62,8 +86,9 @@ Orientation and building:
 
 Reading:
 
-- `jb.getFeatures({ trackId, loc?, regions?, byteLimit? })` is the track's data
-  as live Feature objects, over the visible region by default. See
+- `jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? })`,
+  or `jb.getFeatures(trackId, loc?)`, is the track's data as live Feature
+  objects, over the visible region by default. See
   [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
   (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
@@ -77,7 +102,7 @@ Reading:
   is the only way to tell it from a track that drew. The screenshot looks fine
   either way.
 
-Lower level:
+Lower level, frozen at what shipped:
 
 - `jb.require(name)` is the module registry plugins link against, by the same
   names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`). In
@@ -165,7 +190,9 @@ The Claude in Chrome extension changes the calling convention:
 ```js
 // what is open
 session.views.map(v => ({ id: v.id, type: v.type }))
-const view = session.views[0]
+// the open view; with several open, jb.view() throws naming them and
+// jb.view(id) picks one
+const view = jb.view()
 
 // a LinearGenomeView (check v.type — other view types differ)
 view.visibleLocStrings // getter: what region is on screen
@@ -291,7 +318,7 @@ session.addSessionTrackConf({
     })),
   },
 })
-await session.views[0].launchTrack('nutlin-log2')
+await jb.view().launchTrack('nutlin-log2')
 return jb.waitReady(60000)
 ```
 
@@ -318,7 +345,7 @@ session.addSessionTrackConf({
   ...conf,
   adapter: { ...conf.adapter, adapterId: `nutlin-log2-${Date.now()}` },
 })
-await session.views[0].launchTrack('nutlin-log2')
+await jb.view().launchTrack('nutlin-log2')
 ```
 
 ## Waiting on the app

@@ -63,12 +63,12 @@ than checked:
 | --- | --- | --- |
 | pending census | the DOM, `[data-display-drawn="false"]` | the session model |
 | sees `tooLarge` / `renderError` | no — they replace the subtree and publish no attribute | yes |
-| displays per track | all that publish the attribute | `displays[0]` only |
-| nested views | recurses to any depth | flattens exactly one level |
+| displays per track | all that publish the attribute | `activeDisplay` only |
+| nested views | recurses to any depth | recurses to any depth, through `openViews` (since 40bdf53aa9; it flattened one level before) |
 | scope | document-wide | a `root`, because react-app2 mounts two apps |
 
 Neither is a bug in the other. If `jb.waitReady` is ever wanted as the strict
-superset, the last three rows are where it is not.
+superset, the displays and scope rows are where it is not.
 
 The seam that already keeps the *session walk* honest across this boundary is
 `products/jbrowse-web/src/tests/pluginFacingSessionApi.test.ts`, which pins the

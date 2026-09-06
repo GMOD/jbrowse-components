@@ -83,7 +83,7 @@ interface DisplaySelf {
 interface TrackSelf extends IStateTreeNode {
   type: string
   configuration: AnyConfigurationModel & { trackId: string }
-  displays?: (Record<string, unknown> & DisplaySelf)[]
+  activeDisplay?: Record<string, unknown> & DisplaySelf
 }
 
 interface ViewSelf {
@@ -134,7 +134,7 @@ function allTracks(session: AbstractSessionModel): TrackSelf[] {
 // subtree rather than raising a snackbar, so a settle reporting only
 // notifications calls them ready.
 function displayState(track: TrackSelf) {
-  const display = track.displays?.[0]
+  const display = track.activeDisplay
   if (!display) {
     return {}
   }
@@ -552,7 +552,49 @@ function pickView(
       `No open view can display a ${wants!.trackType} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
     )
   }
-  return canDisplay[0]!
+  return onlyView(canDisplay, 'could take this')
+}
+
+function describeView(view: AbstractViewModel) {
+  const v = viewSelf(view)
+  const on = v.assemblyNames?.length ? ` on ${v.assemblyNames.join(', ')}` : ''
+  const at = v.coarseVisibleLocStrings ? ` at ${v.coarseVisibleLocStrings}` : ''
+  return `${v.id} (${v.type}${on}${at})`
+}
+
+// A name that matches several views has no right first answer: two linear
+// views of one assembly at two loci both "show the track", and taking the
+// first restyles one row or reads one region while the settle reports both.
+// The named-but-missing case already throws and lists the open views, so the
+// unnamed-and-plural case does the same.
+function onlyView(candidates: AbstractViewModel[], relation: string) {
+  const [first, ...rest] = candidates
+  if (!first) {
+    throw new Error('No open view')
+  }
+  if (rest.length) {
+    throw new Error(
+      `${candidates.length} views ${relation}: ${candidates.map(v => describeView(v)).join('; ')} — pass viewId to say which`,
+    )
+  }
+  return first
+}
+
+function viewById(session: AbstractSessionModel, viewId?: string) {
+  const candidates = openViews(session)
+  if (viewId !== undefined) {
+    const named = candidates.find(v => v.id === viewId)
+    if (!named) {
+      throw new Error(
+        `No view with id "${viewId}". Open views: ${candidates.map(v => describeView(v)).join('; ') || 'none'}`,
+      )
+    }
+    return named
+  }
+  if (!candidates.length) {
+    throw new Error('No view is open — jb.loadSessionSpec can open one')
+  }
+  return onlyView(candidates, 'are open')
 }
 
 interface JbRegion {
@@ -562,8 +604,25 @@ interface JbRegion {
   assemblyName: string
 }
 
-function shownTrackModel(session: AbstractSessionModel, trackId: string) {
-  return allTracks(session).find(t => t.configuration.trackId === trackId)
+function shownTrackModel(
+  session: AbstractSessionModel,
+  trackId: string,
+  viewId?: string,
+) {
+  const pool =
+    viewId === undefined
+      ? allTracks(session)
+      : viewTracks(viewById(session, viewId))
+  const shown = pool.filter(t => t.configuration.trackId === trackId)
+  if (shown.length > 1) {
+    const where = openViews(session)
+      .filter(v => viewTracks(v).some(t => t.configuration.trackId === trackId))
+      .map(v => describeView(v))
+    throw new Error(
+      `"${trackId}" is shown in ${shown.length} views: ${where.join('; ')} — pass viewId to say which`,
+    )
+  }
+  return shown[0]
 }
 
 async function locToRegion(
@@ -608,18 +667,21 @@ async function visibleRegionsOf(
   const candidates = openViews(session).filter(
     v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
   )
-  // among region-bearing views, the one actually showing the track wins — two
-  // views on two assemblies would otherwise send the first view's namespace to
-  // the second view's file, which answers nothing, silently
-  const chosen =
-    candidates.find(v =>
-      viewTracks(v).some(t => t.configuration.trackId === preferTrackId),
-    ) ?? candidates[0]
-  if (!chosen) {
+  if (!candidates.length) {
     throw new Error(
       'No view that shows a region — pass loc, or open a linear view first',
     )
   }
+  // among region-bearing views, the ones actually showing the track — two
+  // views on two assemblies would otherwise send the first view's namespace to
+  // the second view's file, which answers nothing, silently
+  const showing = candidates.filter(v =>
+    viewTracks(v).some(t => t.configuration.trackId === preferTrackId),
+  )
+  const chosen = onlyView(
+    showing.length ? showing : candidates,
+    showing.length ? `show "${preferTrackId}"` : 'show a region',
+  )
   const view = viewSelf(chosen)
   const deadline = Date.now() + 10_000
   let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
@@ -675,7 +737,10 @@ async function fetchFeatures(
       `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
-  const trackModel = shownTrackModel(session, trackId)
+  // any shown copy will do here: the same adapter cache is warm behind each
+  const trackModel = allTracks(session).find(
+    t => t.configuration.trackId === trackId,
+  )
   const sessionId = trackModel
     ? getRpcSessionId(trackModel)
     : (session.id ?? 'mcp')
@@ -852,7 +917,9 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?) for trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is dropped SILENTLY; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); add data with jb.addTrack({ location }); read data with await jb.getFeatures(trackId, loc?), which renames refNames ("chr1" vs "1") so the file answers — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); add data with jb.addTrack({ location }); read data with await jb.getFeatures({ trackId, loc? }) (or jb.getFeatures(trackId, loc?)), which renames refNames ("chr1" vs "1") so the file answers — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+
+Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions() and jb.addTrack throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
 
 Full guide: https://jbrowse.org/jb2/docs/agents_live_model (JBrowse Desktop serves the same guide offline through its MCP docs tool — Help menu, "Connect an AI agent...").`
 
@@ -900,12 +967,21 @@ export function createJbApi(pluginManager: PluginManager) {
       inspectSession(live(), { path, maxBytes: maxInspectBytes }),
     listTracks: (search?: string, limit?: number) =>
       listTracks(live(), search, limit),
-    trackModel: (trackId: string) => shownTrackModel(live(), trackId),
+    view: (viewId?: string) => viewById(live(), viewId),
+    trackModel: (trackId: string, viewId?: string) =>
+      shownTrackModel(live(), trackId, viewId),
     visibleRegions: (viewId?: string) => visibleRegionsOf(live(), viewId),
     loadSessionSpec: (spec: Record<string, unknown>, settleMs?: number) =>
       loadSpec(pluginManager, { spec, settleMs }),
-    addTrack: (opts: Record<string, unknown>) =>
-      addTrack(pluginManager, live(), opts),
+    addTrack: (opts: {
+      location: string | string[]
+      index?: string
+      assembly?: string
+      name?: string
+      show?: boolean
+      viewId?: string
+      settleMs?: number
+    }) => addTrack(pluginManager, live(), opts),
     // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
     // turn to "No track with trackId undefined" — so the positional form is
     // simply accepted alongside the object it was documented as.
@@ -962,6 +1038,10 @@ export function createJbApi(pluginManager: PluginManager) {
 
 export type JbApi = ReturnType<typeof createJbApi>
 
+// a spec load on a busy machine passed 30s and answered settled:false over
+// views that were fine; the wait exits the moment they are ready
+const ADD_TRACK_SETTLE_MS = 60_000
+
 async function addTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
@@ -1016,10 +1096,13 @@ async function addTrack(
     pluginManager,
   })
   viewSelf(view).showTrack!(conf.trackId)
-  // a spec load on a busy machine passed 30s and answered settled:false over
-  // views that were fine; the wait exits the moment they are ready
-  const settle = await waitReady(60_000, session)
-  return { ...summary, ...settle, shownInView: view.id }
+  const shown = { ...summary, shownInView: view.id }
+  // 0 skips the settle, so several adds can share one jb.waitReady
+  const settleMs =
+    typeof args.settleMs === 'number' ? args.settleMs : ADD_TRACK_SETTLE_MS
+  return settleMs > 0
+    ? { ...shown, ...(await waitReady(settleMs, session)) }
+    : shown
 }
 
 // Under the 45 s one evaluation gets from the Claude in Chrome extension: a
