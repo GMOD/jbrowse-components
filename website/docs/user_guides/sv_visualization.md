@@ -445,7 +445,6 @@ this through with the HG008 phased tumor assembly.
 - [](/docs/user_guides/circular_view)
 - [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
-- [Gallery: structural variant examples](/gallery/#sv)
 
 [^mad]:
     The band is `median ± 3·1.4826·MAD` rather than `mean ± 3σ`, because the

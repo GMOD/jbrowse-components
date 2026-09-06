@@ -3,7 +3,7 @@ import type { KeyInput } from 'puppeteer'
 // The callout vocabulary is shared with the desktop selenium harness (which
 // draws the same SVG overlay over the packaged Electron app), so it is defined
 // once next to the drawing code rather than here. Deep import: the package
-// barrel pulls in puppeteer, and gallery link generation imports this module.
+// barrel pulls in puppeteer, and live link generation imports this module.
 export type {
   Annotation,
   AnnotationAnchor,
@@ -149,9 +149,9 @@ export interface BaseSpecFields {
   // spec reproduces fine but pulls so much remote data that a routine regen is
   // more likely to time out than to produce a new image. Skipped in an
   // unfiltered run; still rendered when named in --filter, so it stays
-  // regenerable on purpose rather than by luck. No spec sets it today —
-  // gallery/hg002_dipcall was the last one, and rehosting a slice of the two
-  // 1GB dipcall BAMs was the better fix than skipping it.
+  // regenerable on purpose rather than by luck. No spec sets it today: where it
+  // has been reached for, rehosting a slice of the oversized input was the
+  // better fix than skipping the spec.
   heavyNetwork?: boolean
   // spec renders correctly only against a real GPU. Headless falls back to
   // swiftshader, and software-rasterizing a large WebGL display (a density

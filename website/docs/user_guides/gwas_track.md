@@ -156,4 +156,3 @@ as the index; right-click any point or use the track menu to change it.
 - [](/docs/tutorials/bxd_qtl)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [GWASAdapter config schema](/docs/config/gwasadapter)
-- [Gallery: variants and populations](/gallery/#variants)

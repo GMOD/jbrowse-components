@@ -44,4 +44,3 @@ together.
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)
-- [Gallery: structural variant examples](/gallery/#sv)

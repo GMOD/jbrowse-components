@@ -83,4 +83,3 @@ automatically.
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/k562_fusions)
 - [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples)
-- [Gallery: structural variant examples](/gallery/#sv)

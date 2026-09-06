@@ -179,8 +179,8 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
 export const displayReady = displaySettled
 
 // Deliberately carries NO `renderer=` pin, though the figure corpus needs one.
-// These urls have a second consumer: `gen-gallery-links.ts` bakes them into
-// `galleryLinks.generated.ts`, which is what a website visitor clicks to open a
+// These urls have a second consumer: `gen-live-links.ts` bakes them into
+// `liveLinks.generated.ts`, which is what a website visitor clicks to open a
 // demo. Pinning here reached those links too, so a visitor on a software
 // rasterizer would have been forced onto WebGL — the exact machine the ladder in
 // `createHal.ts` exists to route away from it. The pin belongs at capture time

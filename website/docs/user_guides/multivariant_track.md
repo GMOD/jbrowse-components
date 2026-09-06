@@ -189,4 +189,3 @@ dendrogram shows haplotype-level relationships.
 - [](/docs/tutorials/ld_human)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [](/docs/config_guides/customizing_feature_colors)
-- [Gallery: variants and populations](/gallery/#variants)

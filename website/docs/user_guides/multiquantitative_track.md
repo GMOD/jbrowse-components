@@ -88,4 +88,3 @@ fields.
 - [Methylation tutorial](/docs/tutorials/methylation)
 - [Single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk)
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#coverage)

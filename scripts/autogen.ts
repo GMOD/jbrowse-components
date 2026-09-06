@@ -6,7 +6,7 @@
 //   pnpm autogen --check                  verify everything (CI)
 //   pnpm autogen --fix-stale              verify everything, then rewrite only
 //                                         what the verify found stale (the hooks)
-//   pnpm autogen gallery                  only generators whose name contains 'gallery'
+//   pnpm autogen links                    only generators whose name contains 'links'
 //   pnpm autogen --skip-figure-dependent  drop the generators that read the
 //                                         figure corpus or figures.lock
 //   pnpm autogen --skip-whole-repo-program drop the generators that build a
@@ -165,12 +165,7 @@ const GENERATORS: Generator[] = [
   },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
-  // Both write one file under website/src/lib and read no doc.
-  {
-    name: 'gallery links',
-    argv: web('gen-gallery-links.ts'),
-    independent: true,
-  },
+  // Writes one file under website/src/lib and reads no doc.
   { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
   {
     // Rendered from tracked sources (wordmark outlines, logo paths) into the

@@ -378,7 +378,6 @@ read visits one locus repeatedly.
 - [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay)
-- [Gallery: alignments and long reads](/gallery/#alignments)
 - [MODIFICATION_TAGS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MODIFICATION_TAGS.md)
   — how this repo reads MM/ML base-modification tags, checked line by line
   against htslib, and the one place it deliberately differs

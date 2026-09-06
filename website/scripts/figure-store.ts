@@ -110,8 +110,7 @@ export const figureContentTypes: Record<string, string> = {
 // old picture, `autogen --check` reddened main a push later, and the fix was
 // always the mechanical regenerate-and-push. Three separate pushes on
 // 2026-08-13 alone. Nothing derived can go stale against its source if no copy
-// of it is kept, which is the argument gen-gallery-thumbs.ts had already made
-// for its own output and is now the rule for all of them.
+// of it is kept, and is the rule for all of them.
 //
 // The prefixes are directories the generators own outright. The two loose names
 // are gen-home-images.ts's, whose output sits beside its sources because the
@@ -119,9 +118,7 @@ export const figureContentTypes: Record<string, string> = {
 // generator asserts every path it writes is named here, so a new one cannot
 // quietly become a stored figure.
 const derivedFigureDirs = [
-  'gallery-thumbs/',
   'tutorial-thumbs/',
-  'home-gallery/',
   // drawn from committed reads by gen-segment-maps.ts, no capture involved
   'segment-maps/',
 ]
@@ -303,7 +300,7 @@ export function figureNames(paths: string[]): string[] {
 // `.png` is not a simplification. Every source a card can come from produces
 // PNG: a generate-screenshots spec, the desktop capture list, and the doc
 // scanner, whose regex only matches `/img/<name>.png`. The other 51 figures
-// under this root (.webp, .jpg, .ico, .svg) are home-gallery art and derived
+// under this root (.webp, .jpg, .ico, .svg) are site art and derived
 // copies that never become cards. If a spec ever emits something else, this is
 // the line that has to learn about it.
 export function figurePath(name: string): string {

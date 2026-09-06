@@ -1698,8 +1698,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // genotypes RECOVERS the size classes, which grouping by size assumes rather
   // than shows, and it is no more legible at card size, because the toy/giant
   // contrast here is a frequency shift (|Δ| alt AF ≈ 0.5 over 41.44-41.58 Mb,
-  // ≈ 0.05-0.2 outside) rather than a fixed difference. The Fst scan above states
-  // the result in a shape, and is what the gallery card carries.
+  // ≈ 0.05-0.2 outside) rather than a fixed difference. The Fst scan above
+  // states the result in a shape, and is what this page's card carries.
   {
     mode: 'url',
     name: 'dog10k-igf1-haplotype',

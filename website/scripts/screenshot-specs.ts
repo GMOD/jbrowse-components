@@ -24,7 +24,6 @@ import { dog10kSpecs } from './specs/dog10k.ts'
 import { dtuSpecs } from './specs/dtu.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
-import { gallerySpecs } from './specs/gallery.ts'
 import { geneDensitySpecs } from './specs/gene_density.ts'
 import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
@@ -87,7 +86,6 @@ export const specs: ScreenshotSpec[] = [
   ...qtlSpecs,
   ...trioSpecs,
   ...dog10kSpecs,
-  ...gallerySpecs,
   ...mafSpecs,
   ...msaSpecs,
   ...pangenomeSpecs,

@@ -1,6 +1,6 @@
 // Deep import, not the package barrel: the barrel re-exports the puppeteer
 // harness, and `screenshot-spec-types.ts` re-exports these types for consumers
-// (gallery link generation) that must not pull puppeteer in.
+// (live link generation) that must not pull puppeteer in.
 import {
   ANNOTATION_OVERLAY_ID,
   drawAnnotationOverlay,

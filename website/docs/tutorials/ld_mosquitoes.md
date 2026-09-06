@@ -226,7 +226,6 @@ track for an 11 Mb Drosophila inversion.
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/variant_track)
 - [](/docs/config_guides/variant_track)
-- [Gallery: variants and populations](/gallery/#variants)
 
 ## References
 

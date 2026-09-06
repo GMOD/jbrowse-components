@@ -4,7 +4,7 @@
 //
 // IMPORTING THIS PARSES process.argv, and `--help` exits the process. That is
 // fine for the generator and its own modules, which are only ever loaded by a
-// run — but it is why nothing else (check-specs.ts, the gallery link builder)
+// run — but it is why nothing else (check-specs.ts, the live link builder)
 // should import it. Those read `screenshot-specs.ts` instead.
 import os from 'node:os'
 import path from 'node:path'

@@ -111,7 +111,7 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
   // The recipe dialog beside a figure, its Copy buttons, and the backdrop
   // light-dismiss this dialog also relies on, all live in
   // components/SpecDialog.astro, which BaseLayout mounts on every page — the
-  // gallery renders the same recipe dialog and cannot reach a docs-only
+  // a bare markdown page renders the same recipe dialog and cannot reach a docs-only
   // listener.
   document.addEventListener('click', event => {
     const target = event.target
@@ -206,7 +206,7 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
     /* Every heading is a jump target — the TOC links the h2s and h3s, and
        rehype-heading-links hangs a "#" off each one — and the site nav is
        sticky over the top 60px, so one landed on sits under it. Same 5rem
-       MarkdownLayout and the gallery already use. */
+       MarkdownLayout already uses. */
     .docs-content :global(:is(h2, h3, h4, h5, h6)) {
       scroll-margin-top: 5rem;
     }

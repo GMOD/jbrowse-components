@@ -118,7 +118,7 @@ export const hasRunProblem = (s: SpecEntry) =>
     s.run.flaky !== undefined ||
     s.run.suppressed !== undefined)
 
-// Most spec names are namespaced with '/' (gallery/x, multiway_synteny/x); only
+// Most spec names are namespaced with '/' (alignments/x, multiway_synteny/x); only
 // the hand-listed desktop-* names use a hyphen instead. Grouping only on '-'
 // left ~85% of names in a singleton group of their own.
 export const nameGroup = (name: string) =>

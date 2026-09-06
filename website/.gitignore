@@ -24,9 +24,7 @@ static/pagefind/
 # revisions in three months), and a stored copy of a crop is a copy that goes
 # stale the next time its source moves. figure-store.ts's isDerivedFigure is the
 # half of this rule the store reads; these lines are the half git reads.
-static/img/gallery-thumbs/
 static/img/tutorial-thumbs/
-static/img/home-gallery/
 static/img/segment-maps/
 static/img/screenshot.webp
 static/img/desktop-available-genomes.webp

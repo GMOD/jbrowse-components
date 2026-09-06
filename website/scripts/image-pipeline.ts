@@ -132,7 +132,7 @@ export async function imageSize(file: string) {
 // and content that only shifts the mean by less than the tolerance is not
 // something a reader would see either.
 //
-// In-process via sharp (already a website dependency, for the gallery thumbs)
+// In-process via sharp (already a website dependency, for the card thumbs)
 // rather than the `magick … txt:-` dump this used to parse. That version piped
 // one text line per image row back through a 64 MB buffer and regexed it, which
 // is a lot of machinery to compute an average. It also measured the mean of a

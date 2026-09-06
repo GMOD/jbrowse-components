@@ -47,7 +47,7 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 // 4. Every hand-written segment of a click path has to name a row the app
 //    renders. `check-menu-labels.ts` asks this of docs prose and reads
 //    `website/docs/**` only, so the recipes — which walk a reader through the
-//    same menus beside every figure and every gallery card — had nothing
+//    same menus beside every figure — had nothing
 //    checking them, and three segments named rows that do not exist ("Gene
 //    glyph mode" for "Gene glyph", "Arcs"/"Read cloud" for "Show read
 //    arcs"/"Show read cloud"). Which segments count as hand-written comes from

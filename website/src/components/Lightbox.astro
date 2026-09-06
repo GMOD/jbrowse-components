@@ -1,12 +1,12 @@
 ---
 // One site-wide image lightbox, mounted by BaseLayout so every page has it.
 // Any image the reader can enlarge is wrapped in a `.lightbox-trigger` button
-// (gallery cards author theirs; doc figures get one from remark-figure, other
+// (doc figures get one from remark-figure, other
 // markdown images from rehype-lightbox), and this dialog shows whichever was
 // clicked. The trigger carries the figure's destinations, which become links in
 // the lightbox caption — so clicking an image never navigates away from the
 // page it illustrates. A doc figure names its live view with
-// `data-href`/`data-open-label`; a gallery card offers its tutorial and its
+// `data-href`/`data-open-label`; a multi-link figure offers each of its
 // live view both, as a `data-links` JSON array in the order the card lists
 // them, so enlarging a card doesn't lead somewhere the card didn't.
 //
@@ -52,7 +52,7 @@
     label: string
   }
 
-  // `data-links` (a gallery card, several destinations) else the single
+  // `data-links` (a figure with several destinations) else the single
   // `data-href` a doc figure carries.
   function linksFor(trigger: HTMLElement): FigureLink[] {
     const { links, href, openLabel } = trigger.dataset
@@ -113,7 +113,7 @@
       const trigger = target.closest('.lightbox-trigger')
       const img = trigger?.querySelector('img')
       if (trigger instanceof HTMLElement && img instanceof HTMLImageElement) {
-        // A gallery card paints a downscaled thumbnail, so enlarging it has to
+        // A card paints a downscaled thumbnail, so enlarging it has to
         // load the full-resolution figure the trigger names rather than the
         // thumbnail the card is showing — that one would just be upscaled.
         // Triggers with no thumbnail (doc figures, rehype-lightbox images)

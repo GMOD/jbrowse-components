@@ -402,8 +402,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   },
 
   // The result of the two clicks the section describes, declared as a session
-  // rather than clicked together: the figure the tutorial reads, and the one the
-  // gallery card is cut from.
+  // rather than clicked together: the figure the tutorial reads, and the one
+  // its card is cut from.
   //
   // There is no figure of the drawer itself. One existed twice -- the filter box
   // narrowed to `phyloP` beside the same drawer with the checkbox ticked -- and

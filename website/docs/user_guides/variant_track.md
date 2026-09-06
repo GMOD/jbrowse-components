@@ -76,4 +76,3 @@ helpers for minor allele frequency, missingness and consequence impact; see
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [](/docs/config_guides/customizing_feature_colors)
-- [Gallery: variants and populations](/gallery/#variants)

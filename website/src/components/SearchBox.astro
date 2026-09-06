@@ -66,7 +66,7 @@ const searchPrefixes = buildSearchCategoryPrefixes(await getCollection('docs'))
   // small fragment fetch, and only for the results we actually rank.
   const WINDOW = 24
 
-  // shortPath is hoisted; a non-docs page (gallery, features) has no "docs/"
+  // shortPath is hoisted; a non-docs page (features, plugin_store) has no "docs/"
   // prefix to strip, finds no bucket, and is never reference — which is right.
   function isReference(url) {
     const path = shortPath(url)

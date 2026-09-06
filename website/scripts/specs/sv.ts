@@ -445,7 +445,7 @@ const CHORDS_DRAWN =
   '[data-testid="structuralVariantChordRenderer"] [data-testid^="chord-"]'
 
 export const svSpecs: ScreenshotSpec[] = [
-  // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
+  // sv_visualization.md screenshots (live sessions from jbrowse.org)
 
   {
     mode: 'url',
@@ -777,8 +777,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // the discordant pairs spanning the 1.3kb duplication.
               readConnectionsHeight: 200,
               // COMPACT READS (reviewer: "show reads compact"), which is the
-              // COMPACTNESS_PRESETS 'compact' height and the same one the
-              // gallery card below already takes. It was 9 -- raised so the
+              // COMPACTNESS_PRESETS 'compact' height. It was 9 -- raised so the
               // minority LL/RR pairs read as bars rather than slivers -- and
               // 114 rows at that pitch is 1,140 px of pileup for a signal that
               // lives in the bottom fifth of it. At 3 the same rows are ~340,
@@ -887,103 +886,6 @@ export const svSpecs: ScreenshotSpec[] = [
         maxWidth: 920,
       },
     ],
-  },
-
-  // Gallery card for the same locus. The doc figure above is built to be read
-  // beside prose — normal read height so the minority LL/RR pairs are legible,
-  // the variant's INFO fields open, callouts naming each line of evidence. All
-  // three work against a gallery card: the drawer is ~26% of the width and
-  // overflows below the app frame, and the result is a 3000x4000 portrait PNG
-  // where the informative discordant cluster is the bottom sixth.
-  //
-  // So: no drawer and no callouts. But NOT a shrunken read — the card is a
-  // picture of read ORIENTATION, and orientation lives in a read's arrowhead.
-  //
-  // Normal reads (reviewer: "we just want to go back to normal instead of
-  // compact"), which is the 7px COMPACTNESS_PRESETS entry, 1px apart. Only the
-  // height is set: the gap is a pure function of it (`featureSpacingForHeight`,
-  // >3 -> 1), so there is no separate spacing to ask for. This card spent a
-  // long time trying to be short — Compact (3, gap 0), then 5 — on the theory
-  // that a landscape card mattered more than the reads in it, and both of those
-  // flatten the arrowhead that says which way a mate points. At 7 the green LL
-  // and navy RR clusters are unmistakably two directions rather than two
-  // colors, which is the entire subject.
-  //
-  // heightMode 'grow' rather than a guessed `height`: the discordant reads land
-  // at the BOTTOM of the pileup layout, so a track too short by any amount
-  // scrolls away exactly the thing being shown. Rows are packed by genomic
-  // overlap, not by height, so the row count is fixed at ~122 and the pitch
-  // sets the pileup's height outright: 8px of pitch is ~980px of pileup, well
-  // past the 800px GROW_MAX_HEIGHT default, which would clamp the track and
-  // scroll away the cluster grow exists to keep. Hence growMaxHeight below; it
-  // is the grow ceiling only, NOT the `maxHeight` layout cap.
-  {
-    mode: 'url',
-    name: 'gallery/inverted_duplication',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:39,658,200-39,661,800',
-          trackLabels: 'offset',
-          tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            {
-              trackId: 'HG02768.final',
-              type: 'LinearAlignmentsDisplay',
-              linkedReads: 'normal',
-              readConnections: 'arc',
-              readConnectionsDown: true,
-              // An arc's apex is its genomic span in px, clamped to the band,
-              // so the band only has to clear the pairs whose apex carries
-              // meaning. The card is 0.41 px/bp, where a concordant ~400bp pair
-              // domes to ~165px and everything spanning the 1.3kb duplication
-              // is over the ceiling either way, so most of the band was already
-              // one clamped mass. 150 (reviewer: decrease it) still resolves a
-              // pair up to ~370bp below the ceiling, which is where this
-              // library's concordant inserts sit.
-              readConnectionsHeight: 150,
-              heightMode: 'grow',
-              // the ceiling `grow` sizes to; see the note above. Sized to clear
-              // the 8px pitch, not tuned for looks — the figure's height is
-              // still set by viewportHeight against the grown track.
-              growMaxHeight: 1400,
-              coverageHeight: 120,
-              featureHeight: 7,
-              // THE SAME SCHEME THE ARCS USE (reviewer: "there are red arcs,
-              // but shouldnt the read pairs that are associated with those arcs
-              // also be colored red in the pileup chains"). They should, and
-              // they were not: `arcColorByType` defaults to
-              // insertSizeAndOrientation while the reads were on
-              // pairOrientation, so a long-insert pair drew a red arc over a
-              // grey read and the two halves of the same frame keyed the same
-              // pair differently.
-              //
-              // Moving the READS to match rather than the arcs, because this
-              // scheme is a superset of the one they were on: short insert wins
-              // outright, then abnormal orientation, then insert size. So LL
-              // green, RR navy and the magenta split reads all still paint --
-              // the whole subject of the card is untouched -- and the pairs
-              // spanning the duplication pick up the red their arcs already
-              // had. Coloring the arcs by orientation instead would have
-              // reconciled them by deleting the long-insert signal.
-              colorBy: { type: 'insertSizeAndOrientation' },
-              // the legend is what makes a compact card's colors readable
-              showLegend: true,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG02768',
-    readyTimeout: 60000,
-    // must clear the grown track, else the capture crops exactly the discordant
-    // cluster at the bottom of the layout — measured against the rendered app
-    // rather than guessed, so there is no trailing whitespace. Tracks the pitch:
-    // 1010 at 4px, 1390 at 6, this at 8.
-    viewportHeight: 1635,
-    settleMs: 30000,
   },
 
   // The same INVdup as one band per pair orientation, which is what the track

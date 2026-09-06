@@ -31,10 +31,10 @@
 //
 // SCOPE, so nobody reads a green run as more than it is: hand-written <Figure>
 // tags under website/docs, which is the same corpus check-captions.ts and
-// audit-figures.ts walk. The gallery and the home page name figures through a
-// spec rather than a path (src/lib/gallery.ts), and their images are generated
-// into gitignored directories the store excludes. That is a different question,
-// and gen-gallery-thumbs --check already asks it.
+// audit-figures.ts walk. The tutorial cards and the home page derive their
+// images into gitignored directories the store excludes, from sources named in
+// their own generators rather than by a doc path. That is a different question,
+// and those generators ask it themselves.
 import { readFileSync } from 'node:fs'
 
 import { docFiles, reportProblems } from './check-utils.ts'

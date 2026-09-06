@@ -4,12 +4,12 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Figure for the single-cell ATAC pseudobulk tutorial (scatac_pseudobulk.md).
 //
-// One, not three. The CATlas atlas subset had two of its own (an INS gallery
-// card and an ALB hepatocyte row), and the reviewer's read of the set was that
-// they are the same picture: "other single cell images we have are quite
-// similar", plus a gallery ask for per-CELL heatmaps, which the gallery already
-// answers with scrna/percell_lyz. So the CATlas pair is gone and what is left is
-// the figure the tutorial's own build script produces.
+// One, not three. The CATlas atlas subset had two of its own (an INS frame and
+// an ALB hepatocyte row), and the reviewer's read of the set was that they are
+// the same picture: "other single cell images we have are quite similar", plus
+// an ask for per-CELL heatmaps, which scrna/percell_lyz already answers. So the
+// CATlas pair is gone and what is left is the figure the tutorial's own build
+// script produces.
 export const scatacSpecs: ScreenshotSpec[] = [
   // The output of scripts/build_scatac_pseudobulk.sh, hosted: SnapATAC2's
   // annotated 5k PBMC dataset pseudobulked to 12 per-cell-type BigWigs, with

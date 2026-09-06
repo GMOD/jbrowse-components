@@ -195,4 +195,3 @@ is a relabelling.
 - [](/docs/tutorials/hic_structural_variants)
 - [](/docs/user_guides/sv_visualization)
 - [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks)
-- [Gallery: coverage and contact maps](/gallery/#coverage)

@@ -9,7 +9,7 @@
 //
 // The loud half is the voice rule in website/docs/CLAUDE.md ("dry and
 // scientific ... no rhetorical framing of a method"), which listed captions,
-// gallery descriptions and headings and not the surface with the most instances.
+// descriptions and headings and not the surface with the most instances.
 // A sweep in Aug 2026 found four TL;DRs closing on a superlative instead of a
 // fact — "It is the best way to see translocations ... at a glance", "It is the
 // one-click way to share a hub", "and more" — and fixing those took the corpus

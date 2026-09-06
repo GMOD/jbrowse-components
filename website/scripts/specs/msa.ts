@@ -297,9 +297,9 @@ export const msaSpecs: ScreenshotSpec[] = [
     // same picture at whole-protein zoom.
     //
     // Single frame rather than a fourth stage on the spec above: a stack is
-    // unusable as a gallery card (gen-gallery-thumbs fits inside 1200x600, so a
-    // 3000x4600 stack paints as a 170px-wide sliver), and this is the figure
-    // the gallery card is cut from.
+    // unusable as a card (a thumb fits inside 1200x600, so a 3000x4600 stack
+    // paints as a 170px-wide sliver), and this is the figure its card is cut
+    // from.
     //
     // Declarative, and the whole point of it being so is that the columns are
     // aimed rather than accepted. The dialog-driven version of this spec drove

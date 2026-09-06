@@ -285,4 +285,3 @@ the callback compares against `'1'` rather than `1`.
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/gene_track)
 - [](/docs/jbrowse_anywidget)
-- [Gallery: alignments and long reads](/gallery/#alignments)

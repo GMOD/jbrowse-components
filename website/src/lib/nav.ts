@@ -8,6 +8,5 @@ export const navLinks = [
   { path: 'docs/tutorials', label: 'Tutorials' },
   { path: 'blog', label: 'Blog' },
   { path: 'download', label: 'Download' },
-  { path: 'gallery', label: 'Gallery' },
   { path: 'contact', label: 'Contact' },
 ]

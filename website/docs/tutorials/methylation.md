@@ -170,4 +170,3 @@ positions driving them.
 - [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/multiquantitative_track)
 - [modkit documentation](https://nanoporetech.github.io/modkit/)
-- [Gallery: methylation and base modifications](/gallery/#alignments)

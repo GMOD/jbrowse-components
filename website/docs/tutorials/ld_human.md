@@ -293,7 +293,6 @@ that way over a 22 Mb inversion.
 - [](/docs/user_guides/variant_track)
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
-- [Gallery: variants and populations](/gallery/#variants)
 
 ## References
 

@@ -11,7 +11,7 @@ the desktop, and embedded in your own app. Data is organized into
 [assemblies](/docs/config_guides/assemblies) (reference genomes) and
 [tracks](/docs/config_guides/tracks) layered on top of them.
 
-See the [visualization gallery](/gallery/), or hosted genomes at
+See the [tutorials](/docs/tutorials/), or hosted genomes at
 [Genome Hubs](https://genomes.jbrowse.org/).
 
 ## Run JBrowse

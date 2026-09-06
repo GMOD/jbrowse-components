@@ -85,4 +85,3 @@ every dip or spike is a copy-number change.
 - [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs)
 - [Quantitative track configuration](/docs/config_guides/quantitative_track)
 - [LinearWiggleDisplay config schema](/docs/config/linearwiggledisplay)
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#coverage)

@@ -80,4 +80,4 @@ opened with `config=none` shows only the tracks its own assemblies cover.
   CLI, or a config
 - [URL parameter API](/docs/urlparams#huburl) - the full list of launch
   parameters, including `&hubURL=`
-- [Live demo: UCSC GenArk hub import](/gallery/#hubs)
+- [Live demo: a GenArk hub with no config](https://jbrowse.org/code/jb2/latest/?config=none&hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt)

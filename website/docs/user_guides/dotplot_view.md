@@ -137,4 +137,3 @@ tracks.
 - [](/docs/tutorials/genomes_synteny)
 - [Synteny/dotplot configuration](/docs/config_guides/synteny_track)
 - [DotplotDisplay config schema](/docs/config/dotplotdisplay)
-- [Gallery: synteny examples](/gallery/#synteny)

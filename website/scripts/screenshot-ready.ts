@@ -190,8 +190,8 @@ export async function waitForReady(
  * Moving the corpus to another backend should be a deliberate edit here.
  *
  * **Applied at capture, never in the url builder.** `sessionSpec` builds these
- * same urls and has a second consumer — `gen-gallery-links.ts` bakes them into
- * the website gallery, where a pin would force WebGL on the very visitors the
+ * same urls and has a second consumer — `gen-live-links.ts` bakes them into
+ * the doc figures, where a pin would force WebGL on the very visitors the
  * ladder exists to route away from it. That is not hypothetical: it shipped, to
  * 251 links, and took two commits to undo.
  */

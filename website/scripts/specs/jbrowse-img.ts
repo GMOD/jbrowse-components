@@ -352,7 +352,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
 
   // color:methylation paints per-base CpG calls from a modified-base CRAM.
   // COLO829 nanopore (hg38) over the chr20:18.50-18.51Mb CpG islands (the same
-  // islands the modifications/gallery figures use — a region with real
+  // islands the modifications figures use — a region with real
   // methylation signal, not the prior featureless window). The UCSC CpG-island
   // BED on top (reviewer ask) marks the island boundaries, so the methylated
   // (red) flanks vs the unmethylated (blue) island cores read against the

@@ -10,7 +10,7 @@
 // them put that whole tree in the site's module graph: ~290ms of node startup on
 // every build, Vite transforming two workspace packages' TypeScript to get
 // there, and `vite:import-analysis` warning about the runtime `import()` calls
-// in browser-test-utils. Same reason gallery.ts reads galleryLinks.generated.ts.
+// in browser-test-utils.
 //
 // The urls here are the specs' own, BEFORE CODE_BASE: a `JBROWSE_CODE_BASE`
 // build has to retarget links this file was written without, so the remark

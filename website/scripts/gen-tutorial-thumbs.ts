@@ -11,7 +11,7 @@ import { TUTORIAL_NO_THUMB } from '../src/lib/guide-categories.ts'
 // tutorials themselves show, so a card can't drift from its tutorial. Each card
 // is a 5:3 cover-crop; frame a figure with `band`/`position` when a plain
 // top-crop isn't the flattering part. Prefer a clean render as the source — the
-// card is a gallery surface, so avoid figures carrying hand-added callout paint.
+// card is a showcase surface, so avoid figures carrying hand-added callout paint.
 //
 // Every card is managed here — there are no hand-made thumbs left. The ones
 // this replaced were full-window captures scaled to card size, which read as
@@ -89,8 +89,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   // All three Dog10K cards come off the DENSE figure on their page rather than
-  // the single-variant one, which is the same call gallery.ts made for the
-  // gallery tile and for the same measured reason: a genotype column is a thin
+  // the single-variant one, for a measured reason: a genotype column is a thin
   // band in a mostly empty frame, and at card size the empty frame is what a
   // reader sees. The lof card used to crop dog10k-cyp1a2-nonsense through its
   // callout ("Arg37…", "metabol…") and the svs card kept the 85% of the NHEJ1
@@ -105,10 +104,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.05, 1],
   },
   dog10k_selection: {
-    // the Manhattan scan rather than the IGF1 matrix. gallery.ts:311 rejected the
-    // matrix for this exact surface ("looks cool but is not a very clear
-    // message") and the tutorial card should not disagree with the gallery tile
-    // about the page's own picture.
+    // the Manhattan scan rather than the IGF1 matrix, which was rejected for
+    // this exact surface ("looks cool but is not a very clear message").
+    // The scan states the same result in a shape that reads at card size.
     // the scan half on its own, not the composed two-panel figure: cropping that
     // one to 5:3 leaves the Manhattan a sliver above a second full app window.
     // band drops the chrome, and center keeps the two labelled peaks.
@@ -145,7 +143,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   methylation: {
     // hg002 5mC at SNRPN. Not alignments/modifications2.png, which carries
-    // hand-added callout boxes — the card is a gallery surface.
+    // hand-added callout boxes — the card is a showcase surface.
     src: 'methylation/hg002_snrpn_combined.png',
     band: [0.25, 1],
   },
@@ -249,8 +247,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   sv_visualization_cgiab: {
-    // depth over BAF genome-wide; the translocation split view is the gallery
-    // card, so the tutorial card takes the other half of the tutorial
+    // depth over BAF genome-wide, the half of the tutorial its translocation
+    // split view does not cover
     src: 'sv_cgiab/cnv_depth_baf.png',
     band: [0.25, 1],
   },
@@ -270,10 +268,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   hic_structural_variants: {
     // Same split as sv_visualization_cgiab above: the translocation comparison
-    // is this tutorial's gallery card, so the tutorial card takes its other
-    // half. That figure is also the one carrying the callout arrow and pills,
-    // and this one is a clean render — the arcs over the contact matrix, with
-    // the gene lane cropped off the top.
+    // carries the callout arrow and pills, and this one is a clean render — the
+    // arcs over the contact matrix, with the gene lane cropped off the top.
     src: 'hic/loops_and_domains.png',
     band: [0.27, 1],
   },
@@ -403,7 +399,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   pangenome_ecoli: {
     // Per-strain presence/absence, the projection that replaced the genotype
-    // matrix on this card (see gallery.ts). Framed past the app chrome and
+    // matrix on this card. Framed past the app chrome and
     // coordinate ruler, row labels kept on the left. The source figure now
     // carries the aggregate depth curve above those rows, and the band takes in
     // the bottom of it: a dark curve over four blue rows is a card with a shape,
@@ -416,7 +412,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // chr21 whole as a graph, which is the page's own headline: the linear
     // tracks and the anchored bubble tier under them, on one card. The MHC
     // figure is the better picture and carries a hand-added "1.5 kb deletion"
-    // callout, which a gallery surface should not.
+    // callout, which a showcase surface should not.
     src: 'pangenome/genomes_hprc_chr21_tier.png',
     // below the app header, down to the last graph row — the bottom fifth of
     // the graph panel is empty canvas
@@ -434,9 +430,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.28, 0.95],
   },
   genomes_basics: {
-    // The finished phyloP-over-TP53 view, which is also this page's gallery
-    // card. The click-path figure above it on the page is two frames of app
-    // chrome with a track drawer down one side, unreadable at card size.
+    // The finished phyloP-over-TP53 view. The click-path figure above it on
+    // the page is two frames of app chrome with a track drawer down one side,
+    // unreadable at card size.
     src: 'genomes_basics/phylop_tp53.png',
     // the stacked transcript rows and the phyloP band under them, which is the
     // pairing the page is about, starting below the app header and the ruler

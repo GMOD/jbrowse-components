@@ -408,8 +408,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // jbrowse.org/ucsc/hg38 hub gene track has unlabeled
             // pseudogene/silent_region entries upstream of GAPDH in this
             // window, so this uses the already-local, cleanly labeled RefSeq
-            // track instead (same one gallery/fiberseq_gapdh uses at this
-            // same locus).
+            // track instead.
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
               type: 'LinearBasicDisplay',

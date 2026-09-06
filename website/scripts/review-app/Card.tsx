@@ -100,9 +100,7 @@ function Usages({ spec }: { spec: SpecEntry }) {
       ))}
     </div>
   ) : (
-    <div className="noref">
-      ⚠ not referenced in any doc / blog / gallery page
-    </div>
+    <div className="noref">⚠ not referenced in any doc / blog page</div>
   )
 }
 

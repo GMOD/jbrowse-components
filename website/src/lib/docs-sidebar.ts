@@ -383,11 +383,11 @@ export function sidebarSections(
   return sections
 }
 
-// The "showcase" pages (Features / Plugins / Gallery) hang off the same sidebar
-// as the docs, so navigation is identical everywhere on the site. They're
-// grouped under one "Showcase" category rather than sitting as three top-level
-// links. No `overview`: there is no page that introduces the three, and the
-// category is a pure toggle for that reason.
+// The "showcase" pages (Features / Plugins) hang off the same sidebar as the
+// docs, so navigation is identical everywhere on the site. They're grouped
+// under one "Showcase" category rather than sitting as top-level links. No
+// `overview`: there is no page that introduces the two, and the category is a
+// pure toggle for that reason.
 export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
   const pageUrl = (path: string) => `${baseUrl}/${path}/`
   return [
@@ -406,12 +406,6 @@ export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
           label: 'Plugins',
           href: pageUrl('plugin_store'),
           slug: 'plugin_store',
-        },
-        {
-          type: 'link',
-          label: 'Gallery',
-          href: pageUrl('gallery'),
-          slug: 'gallery',
         },
       ],
     },

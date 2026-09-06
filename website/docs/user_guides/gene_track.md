@@ -192,4 +192,3 @@ the [gene density tutorial](/docs/tutorials/gene_density).
 - [](/docs/user_guides/feature_sequence)
 - [RNA-seq tutorial](/docs/tutorials/rnaseq)
 - [Track configuration](/docs/config_guides/tracks)
-- [Gallery: genes and proteins](/gallery/#genes)
