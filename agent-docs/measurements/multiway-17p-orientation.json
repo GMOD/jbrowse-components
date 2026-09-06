@@ -1,0 +1,186 @@
+{
+  "id": "multiway-17p-orientation",
+  "measured": "2026-09-06",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/orient17p.mjs plugins/linear-comparative-view/benches/multiwayOrientation17p.probe.ts && node /tmp/orient17p.mjs, from the repo root (it rewrites this file) - the eight hosted hg38 liftOver PIFs of demos/hg38_vertebrates read through MultiPairwiseSyntenyAdapter over hg38 chr17:15,200,014-16,400,014 with the display's own fetch options (clip to the window, split at 10 kb indels), decided by `decideLaneFrames` with no incumbent at 1500 px.",
+    "notes": "WHETHER EACH [rev] AT THE 17p FIGURE IS WHAT THE RAW ALIGNMENTS SAY. `drawn` is the lane's orientation on a fresh load, which is the figure's; `fallback` is the anchor-order sign sum the lane falls back on where the vote abstains; `shared` is how many groups the lane shares with the lane above - on a pairwise source every group for the top lane and none for any lane below it, so only the top lane is ever voted and every other lane is its fallback. The two vote columns are the share of paired evidence reading backwards under the rule that ships (every pair, product of group weights) and under the rule it replaced on 2026-09-06 (neighbours, lighter run). The bp columns are the anchor bp of the lane's placements on the drawn contig by record strand, and `majority` names the heavier strand and its share: a share near 0.5 is a lane where the choice is arbitrary and hysteresis, not the data, holds it."
+  },
+  "columns": [
+    {
+      "key": "lane",
+      "label": "lane",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "contig",
+      "label": "contig",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "drawn",
+      "label": "drawn",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "fallback",
+      "label": "fallback",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "shared",
+      "label": "shared groups",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "allPairsBackwards",
+      "label": "all-pairs bwd",
+      "format": "text",
+      "align": "right"
+    },
+    {
+      "key": "neighbourBackwards",
+      "label": "neighbour bwd",
+      "format": "text",
+      "align": "right"
+    },
+    {
+      "key": "forwardBp",
+      "label": "+ bp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "reverseBp",
+      "label": "- bp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "majority",
+      "label": "majority",
+      "format": "text",
+      "align": "left"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "lane": "calJac4",
+        "contig": "chr5",
+        "drawn": "forward",
+        "fallback": "[rev]",
+        "shared": 46,
+        "allPairsBackwards": "0.019",
+        "neighbourBackwards": "0.688",
+        "forwardBp": 582085,
+        "reverseBp": 597199,
+        "majority": "- 0.506"
+      }
+    },
+    {
+      "values": {
+        "lane": "panTro6",
+        "contig": "chr17",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 27123,
+        "reverseBp": 1168258,
+        "majority": "- 0.977"
+      }
+    },
+    {
+      "values": {
+        "lane": "gorGor6",
+        "contig": "chr5",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 0,
+        "reverseBp": 644668,
+        "majority": "- 1.000"
+      }
+    },
+    {
+      "values": {
+        "lane": "ponAbe3",
+        "contig": "chr17",
+        "drawn": "forward",
+        "fallback": "forward",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 1147002,
+        "reverseBp": 22332,
+        "majority": "+ 0.981"
+      }
+    },
+    {
+      "values": {
+        "lane": "rheMac10",
+        "contig": "chr16",
+        "drawn": "forward",
+        "fallback": "forward",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 583055,
+        "reverseBp": 593900,
+        "majority": "- 0.505"
+      }
+    },
+    {
+      "values": {
+        "lane": "canFam6",
+        "contig": "chr5",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 527509,
+        "reverseBp": 576664,
+        "majority": "- 0.522"
+      }
+    },
+    {
+      "values": {
+        "lane": "bosTau9",
+        "contig": "chr19",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 480205,
+        "reverseBp": 523228,
+        "majority": "- 0.521"
+      }
+    },
+    {
+      "values": {
+        "lane": "mm39",
+        "contig": "chr11",
+        "drawn": "forward",
+        "fallback": "forward",
+        "shared": 0,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 440288,
+        "reverseBp": 487063,
+        "majority": "- 0.525"
+      }
+    }
+  ]
+}

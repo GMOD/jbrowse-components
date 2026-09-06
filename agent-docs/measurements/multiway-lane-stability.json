@@ -1,11 +1,11 @@
 {
   "id": "multiway-lane-stability",
-  "measured": "2026-08-26",
+  "measured": "2026-09-06",
   "published": false,
   "source": {
     "kind": "bench",
     "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/lanestab.mjs plugins/linear-comparative-view/benches/multiwayLaneStability.probe.ts && node /tmp/lanestab.mjs, from the repo root (it rewrites this file) - the deployed demos/grape_peach_cacao MCScan blocks track over the network, grape chr1 (NC_081805.1), a 2Mb window walked in 100kb steps, 259 steps, 1280px, each step's decision carried into the next the way the display carries a settle's into the next settle.",
-    "notes": "WHICH OF A LANE'S PER-SETTLE CHOICES HOLD STILL WHILE THE ANCHOR PANS. `decideLaneFrames` decides four things per settle - contig, orientation, ladder rung and placement - and every one now has an incumbent: the contig by `preferIncumbent`'s switch margin, the cluster the fit is centred on by the same rule (`keepNearMedian` takes the incumbent centre), the rung by a shrink room, the orientation by the follow's NEARLY_ALL deadband over at least five shared groups and carried across a contig change, the placement by coverage of the placed weight.\n\nA CHANGE IS NOT A FLICKER, and the two are counted apart: a lane moving from one syntenic block to the next changes once and stays, which is the data; a lane on a near-tie leaves a value and comes back. `osc` counts only the second, within a fifth of a window.\n\nEVERY OSC COLUMN IS ZERO. The stateless version of the same walk (2026-08-26, earlier the same day) had contig oscillations only on arabidopsis (3 of 12 changes), drawn flip changes of 10-21 per lane with 1-7 oscillations, and rungs that swung between 1 and 3 on consecutive steps on cacao as `keepNearMedian`'s median hopped between two paleo-blocks. Flip changes are 3-8 now; `fallback` is the anchor-order sign sum a fresh lane falls back on, kept as the control and never applied over an incumbent.\n\nWHAT THE DEADBAND ALONE DID NOT CLOSE: a contig change used to reset the orientation to that fallback, which the vote then corrected a step later (poplar, tomato); three reversed genes could mirror a whole lane (tomato at a 26kb fit); and the rung oscillated because the cluster the fit keeps is a discrete choice too. Each got its own incumbent.\n\n`empty` is windows where the lane places nothing at all - a low-synteny stretch of grape chr1, the same 33 for every lane."
+    "notes": "WHICH OF A LANE'S PER-SETTLE CHOICES HOLD STILL WHILE THE ANCHOR PANS. `decideLaneFrames` decides four things per settle - contig, orientation, ladder rung and placement - and every one now has an incumbent: the contig by `preferIncumbent`'s switch margin, the cluster the fit is centred on by the same rule (`keepNearMedian` takes the incumbent centre), the rung by a shrink room, the orientation by the follow's NEARLY_ALL deadband over at least five shared groups and carried across a contig change, the placement by coverage of the placed weight.\n\nA CHANGE IS NOT A FLICKER, and the two are counted apart: a lane moving from one syntenic block to the next changes once and stays, which is the data; a lane on a near-tie leaves a value and comes back. `osc` counts only the second, within a fifth of a window.\n\nRE-MEASURED 2026-09-06 after `orientationVote` changed from neighbour pairs weighed by the lighter run to every pair weighed by the product of group weights: the same bundle with the old rule patched back reproduces the 2026-09-02 table exactly (drawn flip changes 3/4/5/7/8/2, every osc 0), and the new rule is worse on every lane - drawn flip changes 5/7/12/9/14/9 and drawn flip oscillations 0/0/3/2/2/2 (peach, citrus, cacao, poplar, tomato, arabidopsis). Contig, rung and fallback columns are unchanged; the slip columns moved because fewer steps sit on one orientation. On a gene table every group weighs one, so the product vote is a plain concordance over every pair of shared genes, and a paleopolyploid lane holding two interleaved blocks reads close to even under it where the neighbour rule read the runs.\n\nTHE 2026-09-02 TABLE, before the vote change: EVERY OSC COLUMN WAS ZERO. The stateless version of the same walk (2026-08-26, earlier the same day) had contig oscillations only on arabidopsis (3 of 12 changes), drawn flip changes of 10-21 per lane with 1-7 oscillations, and rungs that swung between 1 and 3 on consecutive steps on cacao as `keepNearMedian`'s median hopped between two paleo-blocks. Flip changes are 3-8 now; `fallback` is the anchor-order sign sum a fresh lane falls back on, kept as the control and never applied over an incumbent.\n\nWHAT THE DEADBAND ALONE DID NOT CLOSE: a contig change used to reset the orientation to that fallback, which the vote then corrected a step later (poplar, tomato); three reversed genes could mirror a whole lane (tomato at a 26kb fit); and the rung oscillated because the cluster the fit keeps is a discrete choice too. Each got its own incumbent.\n\n`empty` is windows where the lane places nothing at all - a low-synteny stretch of grape chr1, the same 33 for every lane."
   },
   "columns": [
     {
@@ -100,15 +100,15 @@
         "contigs": 2,
         "contigChanges": 3,
         "contigOsc": 0,
-        "drawnFlipChanges": 3,
+        "drawnFlipChanges": 5,
         "drawnFlipOsc": 0,
         "fallbackFlipChanges": 10,
         "fallbackFlipOsc": 2,
         "empty": 33,
         "rungChanges": 7,
         "rungOsc": 0,
-        "slipSteps": 30,
-        "medianSlipPx": 261,
+        "slipSteps": 23,
+        "medianSlipPx": 298,
         "maxSlipPx": 4705
       }
     },
@@ -118,16 +118,16 @@
         "contigs": 3,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 4,
+        "drawnFlipChanges": 7,
         "drawnFlipOsc": 0,
         "fallbackFlipChanges": 13,
         "fallbackFlipOsc": 3,
         "empty": 33,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 25,
-        "medianSlipPx": 364,
-        "maxSlipPx": 1194
+        "slipSteps": 22,
+        "medianSlipPx": 148,
+        "maxSlipPx": 607
       }
     },
     {
@@ -136,15 +136,15 @@
         "contigs": 2,
         "contigChanges": 4,
         "contigOsc": 0,
-        "drawnFlipChanges": 5,
-        "drawnFlipOsc": 0,
+        "drawnFlipChanges": 12,
+        "drawnFlipOsc": 3,
         "fallbackFlipChanges": 17,
         "fallbackFlipOsc": 2,
         "empty": 33,
         "rungChanges": 13,
         "rungOsc": 0,
-        "slipSteps": 91,
-        "medianSlipPx": 79,
+        "slipSteps": 64,
+        "medianSlipPx": 64,
         "maxSlipPx": 24234
       }
     },
@@ -154,15 +154,15 @@
         "contigs": 5,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 7,
-        "drawnFlipOsc": 0,
+        "drawnFlipChanges": 9,
+        "drawnFlipOsc": 2,
         "fallbackFlipChanges": 14,
         "fallbackFlipOsc": 3,
         "empty": 33,
         "rungChanges": 4,
         "rungOsc": 0,
-        "slipSteps": 59,
-        "medianSlipPx": 128,
+        "slipSteps": 60,
+        "medianSlipPx": 64,
         "maxSlipPx": 3596
       }
     },
@@ -172,16 +172,16 @@
         "contigs": 4,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 8,
-        "drawnFlipOsc": 0,
+        "drawnFlipChanges": 14,
+        "drawnFlipOsc": 2,
         "fallbackFlipChanges": 12,
         "fallbackFlipOsc": 3,
         "empty": 33,
         "rungChanges": 7,
         "rungOsc": 0,
-        "slipSteps": 74,
-        "medianSlipPx": 66,
-        "maxSlipPx": 4280
+        "slipSteps": 42,
+        "medianSlipPx": 80,
+        "maxSlipPx": 852
       }
     },
     {
@@ -190,16 +190,16 @@
         "contigs": 4,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 2,
-        "drawnFlipOsc": 0,
+        "drawnFlipChanges": 9,
+        "drawnFlipOsc": 2,
         "fallbackFlipChanges": 15,
         "fallbackFlipOsc": 5,
         "empty": 34,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 53,
-        "medianSlipPx": 130,
-        "maxSlipPx": 13215
+        "slipSteps": 61,
+        "medianSlipPx": 64,
+        "maxSlipPx": 640
       }
     }
   ]
