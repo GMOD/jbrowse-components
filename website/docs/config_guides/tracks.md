@@ -173,7 +173,7 @@ load**.
 
 ### Raising the feature limit
 
-[`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
+[`maxFeatureScreenDensity`](/docs/config/linearcanvasbasedisplay/#slot-maxfeaturescreendensity)
 is features per pixel of track width, so the budget grows with the window:
 
 ```json addtrack
