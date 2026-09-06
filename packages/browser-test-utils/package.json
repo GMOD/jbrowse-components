@@ -15,14 +15,14 @@
   "dependencies": {
     "@jbrowse/capture": "workspace:^",
     "esbuild": "^0.28.2",
-    "puppeteer": "^25.9.0",
+    "puppeteer": "^25.10.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "serve-handler": "^6.1.7"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/react-dom": "^19.2.7",
     "@types/serve-handler": "^6.1.4"
   }
 }
