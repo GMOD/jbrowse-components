@@ -95,14 +95,23 @@ purposeful case — the display would read WHICH column a placement came from,
 which the `mate` object does not currently say.
 
 **HPRC at scale: lane selection.** Two haplotypes are a figure; 464 are not a
-lane stack. The removed `884a126861` display had the right concepts to
-resurrect — `GenomeSubsetSelector` and the cluster-identity-matrix RPC that
-ordered genomes by similarity over the visible window — and the shipped
-`TreeSidebarMixin` (used by MAF/variants/wiggle) is probably the modern home:
-lanes as `sources`, cluster-by-identity as the `run` callback. Prerequisite is
-nothing in the display; it is a placement source that answers "which haplotypes
-differ here" cheaply, which is the wave VCF's genotype matrix, not the
-alignment.
+lane stack. The selection half landed 2026-09-06 as display state and a dialog
+rather than as `TreeSidebarMixin`: `selectedLanes` (a session property, so a
+shared session carries it; the config's `lanes` slot is what a hosted track
+opens on) narrows `rowAssemblies` locally, without a refetch, since a graph
+adapter has to identify every walk before it knows whose it is and a filter
+sent with the fetch could save nothing. The universe the picker offers is the
+header's `lanes` (an adapter declaring `adapterCapabilities: ['headerLanes']`
+has its `CoreGetInfo` read even without a tier slot; `GbzBaseSyntenyAdapter`
+names every haplotype, grouped by sample and labelled by PanSN prefix) plus any
+lane the window places. What stays parked is the sidebar itself: the removed
+`884a126861` display had `GenomeSubsetSelector` and the cluster-identity-matrix
+RPC that ordered genomes by similarity over the visible window, and the shipped
+`TreeSidebarMixin` (MAF/variants/wiggle) is where lanes-as-`sources` with
+cluster-by-identity as the `run` callback would go, once a placement source
+answers "which haplotypes differ here" cheaply — the wave VCF's genotype
+matrix, not the alignment. The lane stack has its own geometry and headers, so
+that is a larger fit than the picker was.
 
 The ORDER of whatever set that picks is its own file —
 [ordering-synteny-lanes-by-similarity](ordering-synteny-lanes-by-similarity.md),

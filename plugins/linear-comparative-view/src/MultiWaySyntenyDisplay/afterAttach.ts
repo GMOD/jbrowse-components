@@ -12,7 +12,7 @@ import { autorun, untracked } from 'mobx'
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
-import { staleLaneSpecs, starAnchorOf } from './model.ts'
+import { declaredLanesOf, staleLaneSpecs, starAnchorOf } from './model.ts'
 
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type {
@@ -263,9 +263,13 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWayClearHoverOnLaneRelayout',
   })
   installLaneFrameDecision(self)
+  // the header is also read for an untiered adapter that declares its lanes,
+  // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {
+    alsoWhen: () => self.adapterDeclaresLanes,
     onHeader: header => {
       self.setStarAnchor(starAnchorOf(header))
+      self.setDeclaredLanes(declaredLanesOf(header))
     },
   })
   installGlobalFetchAutorun(self, {

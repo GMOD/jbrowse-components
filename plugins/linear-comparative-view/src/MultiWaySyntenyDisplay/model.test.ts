@@ -1,10 +1,12 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
-import { staleLaneSpecs } from './model.ts'
+import { declaredLanesOf, staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
@@ -892,4 +894,131 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     display.setLaneLinks(new Map([[pair, { key: 'k', links: [direct] }]]))
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
   })
+})
+
+// A pangenome graph holds hundreds of haplotypes, and the display learnt its
+// lanes from the fetched window alone, so the picker had nothing to offer
+// until every lane had been placed at least once. An adapter that declares its
+// lanes in its header is read once, like a tiered file's tiers, and its whole
+// universe is on offer before any fetch lands; the anchor is never a lane.
+test('an adapter declaring its lanes has its header read once, and the universe lists them before any is placed', async () => {
+  const calls: { name: string; args: Record<string, unknown> }[] = []
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    rpc: async (name, args) => {
+      calls.push({ name, args })
+      return name === 'CoreGetInfo'
+        ? {
+            hasCoarseTier: false,
+            anchorAssemblyName: 'volvox',
+            lanes: [
+              { name: 'HG1#1', label: 'HG1#1', group: 'HG1' },
+              { name: 'HG1#2', group: 'HG1' },
+              { name: 'volvox', group: 'volvox' },
+              { name: 'HG1#1', group: 'again' },
+              { notALane: true },
+            ],
+          }
+        : []
+    },
+  })
+  await when(() => display.declaredLanes !== undefined, { timeout: 5000 })
+  expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
+  expect(display.starAnchor).toBe('volvox')
+  expect(display.laneUniverse).toEqual([
+    { name: 'HG1#1', label: 'HG1#1', group: 'HG1', placed: false },
+    { name: 'HG1#2', label: undefined, group: 'HG1', placed: false },
+  ])
+  expect(display.rowAssemblies).toEqual([])
+
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    mateRecord('r1', 'HG1#2'),
+    mateRecord('r2', 'sample#1#undeclared'),
+  ])
+  expect(display.laneUniverse.map(l => [l.name, l.placed])).toEqual([
+    ['HG1#1', false],
+    ['HG1#2', true],
+    ['sample#1#undeclared', true],
+  ])
+  expect(display.rowAssemblies).toEqual(['HG1#2', 'sample#1#undeclared'])
+})
+
+test('an adapter that neither tiers nor declares lanes is never asked for a header', async () => {
+  const calls: string[] = []
+  const { display } = createDisplayWithSession({
+    rpc: async name => {
+      calls.push(name)
+      return []
+    },
+  })
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  expect(calls).not.toContain('CoreGetInfo')
+  expect(display.declaredLanes).toBeUndefined()
+  expect(display.laneUniverse).toEqual([])
+})
+
+// The selection is the reader's picture, so it is display state: it narrows
+// the stack the same way after every refetch, a snapshot carries it, and the
+// config's `lanes` is what a hosted track opens on until the reader chooses.
+test('a lane selection narrows the stack, survives a refetch, and is what the config opens on', () => {
+  const display = createDisplay()
+  const window = () => [
+    mateRecord('r1', 'volvox_random'),
+    mateRecord('r2', 'sample#1#a'),
+    mateRecord('r3', 'sample#1#b'),
+  ]
+  display.setFeatures(window())
+  expect(display.rowAssemblies).toEqual([
+    'volvox_random',
+    'sample#1#a',
+    'sample#1#b',
+  ])
+  expect(display.laneSelection).toBeUndefined()
+
+  setConf(display, 'lanes', ['sample#1#b', 'not#placed'])
+  expect(display.laneSelection).toEqual(['sample#1#b', 'not#placed'])
+  expect(display.rowAssemblies).toEqual(['sample#1#b'])
+
+  display.setSelectedLanes(['sample#1#a', 'volvox_random'])
+  expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
+  display.setFeatures(window())
+  expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
+  expect(getSnapshot(display).selectedLanes).toEqual([
+    'sample#1#a',
+    'volvox_random',
+  ])
+  // pins and hides still apply inside the selection
+  display.setRowOrder(['sample#1#a'])
+  expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
+  display.setHiddenLanes(['volvox_random'])
+  expect(display.rowAssemblies).toEqual(['sample#1#a'])
+
+  display.setSelectedLanes(undefined)
+  expect(display.laneSelection).toEqual(['sample#1#b', 'not#placed'])
+  expect(getSnapshot(display).selectedLanes).toBeUndefined()
+})
+
+test('the track menu offers the picker once there is a choice, and the way back out of a selection', () => {
+  const display = createDisplay()
+  const labels = () =>
+    display.trackMenuItems().map(i => ('label' in i ? i.label : '—'))
+  display.setFeatures([mateRecord('r1', 'volvox_random')])
+  expect(labels()).not.toContain('Choose lanes...')
+  display.setFeatures([
+    mateRecord('r1', 'volvox_random'),
+    mateRecord('r2', 'sample#1#a'),
+  ])
+  expect(labels()).toContain('Choose lanes...')
+  display.setSelectedLanes(['sample#1#a'])
+  expect(labels()).toContain('Every lane (1 chosen)')
+})
+
+test('declaredLanesOf reads a header that names lanes and nothing else', () => {
+  expect(declaredLanesOf(null)).toEqual([])
+  expect(declaredLanesOf({ hasCoarseTier: true })).toEqual([])
+  expect(declaredLanesOf({ lanes: 'HG1' })).toEqual([])
+  expect(
+    declaredLanesOf({ lanes: [{ name: 'HG1#1', label: 3, group: 'HG1' }] }),
+  ).toEqual([{ name: 'HG1#1', label: undefined, group: 'HG1' }])
 })

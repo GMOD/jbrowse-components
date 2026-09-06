@@ -5,6 +5,7 @@ import {
   laneLocString,
   laneOrderMenuItem,
   laneRowMenuItems,
+  laneSelectionMenuItems,
   mergeRowOrder,
   moveLane,
 } from './menus.ts'
@@ -320,4 +321,29 @@ test('the anchor lane header only opens the view region elsewhere', () => {
   expect(labelsOf(items)).toEqual(['Open grape in a new view'])
   click(items[0])
   expect(calls).toEqual(['open grape chr1:1-1,000'])
+})
+
+test('the picker is offered once there are lanes to choose among, and a selection offers its undo', () => {
+  const calls: string[] = []
+  const model = (universe: number, selection?: string[]) => ({
+    laneUniverse: Array.from({ length: universe }, (_, i) => ({
+      name: `lane${i}`,
+      placed: true,
+    })),
+    laneSelection: selection,
+    setSelectedLanes: (names: string[] | undefined) => {
+      calls.push(`select ${names === undefined ? 'every' : names.join(',')}`)
+    },
+    openLaneSelection: () => {
+      calls.push('open')
+    },
+  })
+  expect(laneSelectionMenuItems(model(1))).toEqual([])
+  const two = laneSelectionMenuItems(model(2))
+  expect(labelsOf(two)).toEqual(['Choose lanes...'])
+  click(two[0])
+  const chosen = laneSelectionMenuItems(model(1, ['lane0']))
+  expect(labelsOf(chosen)).toEqual(['Choose lanes...', 'Every lane (1 chosen)'])
+  click(chosen[1])
+  expect(calls).toEqual(['open', 'select every'])
 })

@@ -75,14 +75,22 @@ export function createDisplayWithSession({
   // unregistered one reads back as an empty config rather than failing. The
   // indexed PAF adapter declares the threshold slot `trackHasLodTiers` tests
   // for, which is the whole of what makes a track tiered to the display
-  const adapterSlots: Record<string, ConfigurationSchemaDefinition> = {
-    MCScanBlocksAdapter: {},
-    Gff3TabixAdapter: {},
+  // The graph adapter declares its lanes in its header, the other way a track
+  // earns a header read
+  const adapterSlots: Record<
+    string,
+    { slots: ConfigurationSchemaDefinition; capabilities?: string[] }
+  > = {
+    MCScanBlocksAdapter: { slots: {} },
+    Gff3TabixAdapter: { slots: {} },
     PairwiseIndexedPAFAdapter: {
-      coarseBpPerPxThreshold: { type: 'number', defaultValue: 10000 },
+      slots: {
+        coarseBpPerPxThreshold: { type: 'number', defaultValue: 10000 },
+      },
     },
+    GbzBaseSyntenyAdapter: { slots: {}, capabilities: ['headerLanes'] },
   }
-  for (const [name, slots] of Object.entries(adapterSlots)) {
+  for (const [name, { slots, capabilities }] of Object.entries(adapterSlots)) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -90,6 +98,7 @@ export function createDisplayWithSession({
           configSchema: ConfigurationSchema(name, slots, {
             explicitlyTyped: true,
           }),
+          adapterCapabilities: capabilities,
           getAdapterClass: () => {
             throw new Error(`${name} is config-only in tests`)
           },

@@ -32,6 +32,27 @@ export type HeaderLane = Pick<
   'assemblyName' | 'isAnchor' | 'frame' | 'canon'
 >
 
+/**
+ * One lane the picker offers: declared by the adapter's header, placed in the
+ * fetched window, or both. `label` is the source's own name for it where that
+ * differs from the assembly name (a haplotype's PanSN prefix against the
+ * assembly it is loaded as) and `group` gathers lanes that belong together
+ * (a diploid sample's two haplotypes)
+ */
+export interface LaneChoice {
+  name: string
+  label?: string
+  group?: string
+  placed: boolean
+}
+
+export interface LaneSelectionModel {
+  laneUniverse: LaneChoice[]
+  laneSelection: readonly string[] | undefined
+  setSelectedLanes: (names: string[] | undefined) => void
+  openLaneSelection: () => void
+}
+
 export interface LaneSettingsModel {
   ribbonColorBy: MultiWayRibbonColorBy
   setRibbonColorBy: (mode: MultiWayRibbonColorBy) => void
@@ -268,6 +289,38 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
         },
       ],
     },
+  ]
+}
+
+/**
+ * The picker's entry and its undo. Offered only when there is a choice to
+ * make: two or more lanes to choose among, or a selection already narrowing
+ * the stack that the reader may want back out of.
+ */
+export function laneSelectionMenuItems(model: LaneSelectionModel): MenuItem[] {
+  const selection = model.laneSelection
+  if (model.laneUniverse.length < 2 && selection === undefined) {
+    return []
+  }
+  return [
+    {
+      label: 'Choose lanes...',
+      helpText:
+        'Pick which of the lanes the source offers to draw. A source that declares its lanes up front (a pangenome graph naming every haplotype) is listed whole, before any of them has been placed in the window.',
+      onClick: () => {
+        model.openLaneSelection()
+      },
+    },
+    ...(selection === undefined
+      ? []
+      : [
+          {
+            label: `Every lane (${selection.length} chosen)`,
+            onClick: () => {
+              model.setSelectedLanes(undefined)
+            },
+          },
+        ]),
   ]
 }
 

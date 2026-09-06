@@ -22,7 +22,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
@@ -42,6 +42,7 @@ import {
 import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
+import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
@@ -54,6 +55,7 @@ import {
 } from './layoutMultiWay.ts'
 import {
   laneOrderMenuItem,
+  laneSelectionMenuItems,
   laneSettingsMenuItems,
   mergeRowOrder,
 } from './menus.ts'
@@ -75,6 +77,7 @@ import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { LaneChoice } from './menus.ts'
 import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
@@ -156,6 +159,50 @@ export function starAnchorOf(header: unknown) {
     : undefined
 }
 
+export interface DeclaredLane {
+  name: string
+  label?: string
+  group?: string
+}
+
+function optionalString(value: unknown) {
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * The lanes an adapter declares in its `CoreGetInfo` header (`lanes`, each
+ * with the assembly name its features' mates carry, and optionally the
+ * source's own label and a grouping key); an empty list for a header that
+ * declares none. A source that knows its lane universe up front, the way a
+ * pangenome graph names every haplotype it holds, lets the picker offer the
+ * whole of it before a fetch has placed any lane.
+ */
+export function declaredLanesOf(header: unknown): DeclaredLane[] {
+  const lanes =
+    typeof header === 'object' &&
+    header !== null &&
+    'lanes' in header &&
+    Array.isArray(header.lanes)
+      ? (header.lanes as unknown[])
+      : []
+  const out: DeclaredLane[] = []
+  for (const lane of lanes) {
+    if (
+      typeof lane === 'object' &&
+      lane !== null &&
+      'name' in lane &&
+      typeof lane.name === 'string'
+    ) {
+      out.push({
+        name: lane.name,
+        label: 'label' in lane ? optionalString(lane.label) : undefined,
+        group: 'group' in lane ? optionalString(lane.group) : undefined,
+      })
+    }
+  }
+  return out
+}
+
 /** the specs whose lane holds nothing fetched under their key */
 export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   specs: Spec[],
@@ -223,6 +270,16 @@ export function stateModelFactory(
          * in the region of interest stops holding a slot between two that do
          */
         hiddenLanes: types.array(types.string),
+        /**
+         * #property
+         * the lanes the reader chose from the picker, by assembly name, and
+         * the only lanes the stack then draws; undefined is every lane the
+         * source places, or the config's `lanes` where that names some. Held
+         * here rather than in the adapter's config because it is a choice
+         * about this session's picture, made in front of it, and one a
+         * shared session should carry
+         */
+        selectedLanes: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -258,6 +315,13 @@ export function stateModelFactory(
        * each beside the region key it was fetched under, merged per pair
        */
       laneLinks: undefined as Map<string, HeldLaneLinks> | undefined,
+      /**
+       * #volatile
+       * the lanes the source's header declares, read once with the tier info;
+       * undefined until the header lands or when the adapter is one whose
+       * header is never asked for
+       */
+      declaredLanes: undefined as DeclaredLane[] | undefined,
       /**
        * #volatile
        * the anchor a star source announces in its header. A star of pairwise
@@ -409,6 +473,19 @@ export function stateModelFactory(
          */
         setHiddenLanes(names: string[]) {
           self.hiddenLanes.replace(names)
+        },
+        /**
+         * #action
+         */
+        setDeclaredLanes(lanes: DeclaredLane[]) {
+          self.declaredLanes = lanes
+        },
+        /**
+         * #action
+         * undefined puts the choice back to every lane the source places
+         */
+        setSelectedLanes(names: string[] | undefined) {
+          self.selectedLanes = names === undefined ? undefined : cast(names)
         },
         /**
          * #action
@@ -633,6 +710,34 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * whether the adapter type says its header declares the lane universe
+       * (`adapterCapabilities: ['headerLanes']`), which is what earns an
+       * untiered adapter a header read
+       */
+      get adapterDeclaresLanes(): boolean {
+        const type = self.adapterConfig.type
+        return (
+          typeof type === 'string' &&
+          getEnv(self)
+            .pluginManager.getAdapterType(type)
+            .adapterCapabilities.includes('headerLanes')
+        )
+      },
+      /**
+       * #getter
+       * the lanes in force: the reader's choice, else the config's `lanes`
+       * where it names any, else undefined for every lane the source places
+       */
+      get laneSelection(): readonly string[] | undefined {
+        const configured: string[] = readConfObject(self.configuration, 'lanes')
+        return (
+          self.selectedLanes ?? (configured.length ? configured : undefined)
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)
@@ -660,15 +765,52 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * every lane the picker can offer: the header's declared lanes, in the
+       * order the source gave them, then any lane the fetched window places
+       * that the header did not name. The anchor is never a lane. Exact names
+       * throughout, since the header and the features are one adapter's
+       * spelling of the same lanes
+       */
+      get laneUniverse(): LaneChoice[] {
+        const { assemblyManager } = getSession(self)
+        const anchor = self.anchorAssemblyName
+        const placed = new Set(
+          rowAssembliesOf(self.groups, [], (a, b) =>
+            isSameAssemblyName(a, b, assemblyManager),
+          ).filter(name => !isSameAssemblyName(name, anchor, assemblyManager)),
+        )
+        const out: LaneChoice[] = []
+        const named = new Set<string>()
+        for (const lane of self.declaredLanes ?? []) {
+          if (
+            !named.has(lane.name) &&
+            !isSameAssemblyName(lane.name, anchor, assemblyManager)
+          ) {
+            named.add(lane.name)
+            out.push({ ...lane, placed: placed.has(lane.name) })
+          }
+        }
+        for (const name of placed) {
+          if (!named.has(name)) {
+            named.add(name)
+            out.push({ name, placed: true })
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
        * mate assemblies densest-first, one lane each below the anchor lane,
-       * with any `rowOrder` lanes pinned above them. A paralogy record's mate
-       * is the anchor assembly itself; those draw on the anchor's own axis
-       * rather than as a lane
+       * with any `rowOrder` lanes pinned above them, narrowed to the lane
+       * selection where one is in force. A paralogy record's mate is the
+       * anchor assembly itself; those draw on the anchor's own axis rather
+       * than as a lane
        */
       get rowAssemblies() {
         const { assemblyManager } = getSession(self)
         const sameName = (a: string, b: string) =>
           isSameAssemblyName(a, b, assemblyManager)
+        const selection = self.laneSelection
         return rowAssembliesOf(
           self.groups,
           [...self.rowOrder],
@@ -676,7 +818,9 @@ export function stateModelFactory(
         ).filter(
           assemblyName =>
             !sameName(assemblyName, self.anchorAssemblyName) &&
-            !self.hiddenLanes.some(hidden => sameName(hidden, assemblyName)),
+            !self.hiddenLanes.some(hidden => sameName(hidden, assemblyName)) &&
+            (selection === undefined ||
+              selection.some(chosen => sameName(chosen, assemblyName))),
         )
       },
       /**
@@ -685,6 +829,18 @@ export function stateModelFactory(
       get visibleBpSpan() {
         const view = self.lgv
         return view.initialized ? view.width * view.bpPerPx : 0
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * the lane picker, over `laneUniverse`
+       */
+      openLaneSelection() {
+        getSession(self).queueDialog(handleClose => [
+          LaneSelectionDialog,
+          { model: self, handleClose },
+        ])
       },
     }))
     .views(self => ({
@@ -1382,6 +1538,7 @@ export function stateModelFactory(
             { type: 'divider' },
             ...laneSettingsMenuItems(self),
             ...lodMenuItems(self),
+            ...laneSelectionMenuItems(self),
             ...laneOrderMenuItem(self),
           ]
         },

@@ -115,6 +115,15 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
+       */
+      lanes: {
+        type: 'stringArray',
+        description:
+          'the mate lanes to draw, by assembly name, until the reader chooses a set from the lane picker; empty draws every lane the source places. The way a hosted config points this display at a graph of hundreds of haplotypes and opens on the eight it means to show',
+        defaultValue: [],
+      },
+      /**
+       * #slot
        * overrides the base schema's 100, which divides into a lane stack at
        * the glyph-height floor with the headers colliding into the glyphs
        */
