@@ -1,3 +1,8 @@
+---
+name: multiway-synteny-analysis-2026-09-06
+description: A verified 2026-09-06 reading of MultiWaySyntenyDisplay against its code and hosted data — what the lane stack is, how the E. coli and hg38 tutorials use it, where it is incorrect (affine placement of alignment records, strand semantics, densest-first on a nameless source, the star launch), its cost per lane, and a ranked list of fixes with the graph route's tie-ins. Read before changing the display's placement, ordering, LOD gating or launch route.
+---
+
 # MultiWaySyntenyDisplay: suitability and scalability
 
 Read against the code on 2026-09-06. Paths: `JC/` is `~/src/jbrowse-components`,

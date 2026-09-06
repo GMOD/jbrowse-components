@@ -27,8 +27,8 @@ own repository.
   (`website/scripts/api-docs/generateConfigDocs.ts`, blank Description cells
   for the three adapters' `location` slot). More may follow: the coverage-gaps
   lists, the `#example` gaps, `writeSpecKeyDocs`. Exempt each for
-  `isExternalSource` the same way, then check
-  `website/docs/models/Protein3dViewPlugin.md` and
+  `isExternalSource` the same way, then check the `Protein3dViewPlugin` page
+  the model docs generator would write under `website/docs/models/` and
   `products/jbrowse-desktop/electron/mcp/docs/typeDocs.generated.json`.
 - The plugin's tag is `#stateModel Protein3dViewPlugin`
   (`src/ProteinView/model.ts`), not `ProteinView`, so `model:ProteinView` misses
