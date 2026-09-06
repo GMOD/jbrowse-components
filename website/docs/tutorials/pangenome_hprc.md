@@ -1652,6 +1652,44 @@ fit, so it has to clear the largest window you mean to open: 12,000 is enough
 for C4 and refuses MHC class II. It bounds nodes, not time, and _AMY1_'s 12,240
 nodes are under any limit that lets the other loci through.
 
+### The graph view from the GBZ, for a chosen set {#gbz-graph-cut}
+
+The same track feeds the graph view: **Launch → Graph genome view (this
+region)** on a GBZ lane track cuts the window from the database, and the cut
+carries one W line per haplotype walk, named through the companion. That is what
+the rGFA cut cannot say: an rGFA segment names the one assembly that contributed
+it, a GBZ cut says which haplotypes walk every node. The cost is the same as a
+lane fetch, since the walks have to be named before anyone knows whose they are,
+and at KIV-2 that is every one of the 464 walks (21,721 base-level nodes, 12 s
+against the two hosted files) for a Sample rows layout of 232 donors.
+
+For a figure of a chosen set, cut once and load the file. `gbz-base-query`, the
+reader's command line, takes `--keep` for each haplotype and writes the
+reference walk, the kept walks and only the nodes those walks visit:
+
+```bash
+npx -p @gmod/gbz-base gbz-base-query \
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
+  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db \
+  --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
+  --context 1000 --snarls --format gfa \
+  --keep HG00097#1 --keep HG00099#1 --keep HG00128#1 --keep HG00133#1 \
+  --keep HG01109#1 --keep HG01123#1 --keep HG01960#1 --keep HG02055#1 \
+  > hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
+```
+
+That is the KIV-2 bubble, 15,808 nodes and nine walks in 1.6 MB after 8 s, and
+the graph view opens it as a file (**Add → Graph genome view**, then the file's
+URL in the load form, or a session with `gfaLocation`), in Sample rows with
+`GRCh38` as the reference path:
+
+<Figure caption="The KIV-2 array cut from the GBZ for the eight haplotypes, in Sample rows over the same window as the rGFA segments lane. Each row is a haplotype of the eight; an allele is drawn in the row of the first of them to walk it, so a row holds what that haplotype is the first to carry, and the hover on any node lists every haplotype that walks it." src="/img/pangenome/hprc_kiv2_gbz_walks.png" />
+
+One step short of carriage, and said plainly: the layout places each node once,
+so an allele two of the eight share is drawn in the earlier row only. A layout
+that draws a node in every row that walks it is what would turn this into the
+carriage figure, and it is the graph view's next change on this route.
+
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
 Three commands stand between a `.gbz` of your own and the track above, none of

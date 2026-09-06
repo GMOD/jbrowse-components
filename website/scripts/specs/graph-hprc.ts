@@ -295,6 +295,19 @@ const LPA_REGION = {
   start: 160525000,
   end: 160655000,
 }
+// The KIV-2 bubble itself, release 2.1's record in the bubbles index, and the
+// window pangenome/hprc_kiv2_gbz_walks is cut on.
+const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
+const KIV2_BUBBLE_REGION = {
+  refName: 'chr6',
+  assemblyName: 'hg38',
+  start: 160616002,
+  end: 160646753,
+}
+// The eight-haplotype GBZ cut of that window; how it is made is in the spec
+// comment below and in the tutorial.
+const KIV2_GBZ_WALKS_GFA =
+  'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa'
 
 // The whole of chr1, for the figure that loads a subgraph over all of it. One
 // constant for both views there: the graph's loadedRegion IS the domain of the
@@ -2320,6 +2333,83 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+  // The same array read off the GBZ rather than the rGFA, for the tutorial's
+  // eight haplotypes. An rGFA segment names the one assembly that contributed
+  // it and nothing else; a GBZ cut carries every haplotype's W line, so each
+  // row here is a haplotype of the eight and the graph knows which of them walk
+  // every node (`samples` on the node, in the hover).
+  //
+  // WHAT THE ROWS SHOW, precisely: the sample-rows layout places each
+  // off-reference node once, in the row of the first of the eight walks that
+  // visits it (pathAnchoring.ts, first visit wins), so a row holds the alleles
+  // that haplotype is the first to walk, and an allele two haplotypes share is
+  // drawn in the earlier row only. That is attribution by first visit among the
+  // eight, one step short of carriage; a layout that places a node in every
+  // carrying row is the plugin change that would make this a carriage figure,
+  // and the caption must not claim carriage until it exists.
+  //
+  // A static cut, not a live read. The graph view can cut this window from the
+  // hosted GBZ track, but the cut is every one of the 464 haplotypes (21,721
+  // base-level nodes, 12 s against the hosted pair) and the layout would draw
+  // 232 rows. `gbz-base-query --keep` narrows the cut to the tutorial's eight
+  // haplotypes and the nodes their walks visit (15,808 nodes, 1.6 MB, 8 s), and
+  // the view loads that file through `gfaLocation` the way the E. coli figures
+  // load theirs. The command is in the tutorial beside the figure, so the file
+  // reproduces from the hosted graph and companion; see
+  // agent-docs/HAPLOTYPE_WALKS_VISION.md in the plugin for why a live read
+  // cannot yet price a chosen set.
+  //
+  // The window is the bubble's own (chr6:160,616,002-160,646,753), not the
+  // 130 kb LPA_REGION of the force figure: the wider cut is 19,920 nodes,
+  // inside the view's 20,000 budget by 80, and the extra 100 kb is flanking
+  // sequence every haplotype walks identically.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_kiv2_gbz_walks',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: KIV2_BUBBLE_WINDOW,
+          tracks: [
+            hg38GeneLane(70),
+            {
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              height: 80,
+            },
+            hprcSegmentsLane(KIV2_BUBBLE_REGION),
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          displayName: 'KIV-2 from the GBZ, eight haplotypes',
+          gfaLocation: { uri: KIV2_GBZ_WALKS_GFA },
+          layoutMode: 'samplerows',
+          // the W line the cut writes first, and the sample its coordinates
+          // are on; the file's own `RS:Z:GRCh38` header says the same
+          referencePath: 'GRCh38',
+          colorScheme: 'reference-position',
+          // the linear lane and the graph paint one ramp over the window
+          colorDomain: KIV2_BUBBLE_REGION,
+        },
+      ],
+    }),
+    // row labels, not the toolbar: the layout runs after the file loads
+    readySelector:
+      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
+    readyTimeout: 180000,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // the linear stack plus the graph pane sized to its nine rows; the first
+    // render at 1330 reported 381 px of blank below the last row
+    viewportHeight: 950,
+    hideTooltip: true,
+    // No pill: the row labels are the reading, and every placement tried (top
+    // left, bottom left, mid-left) covered some row's alleles, since the nine
+    // rows fill the pane edge to edge. What the rows mean is the caption's job.
   },
   // The two products at one locus, which is the argument the HPRC tutorial
   // closes on ("the matrix for base-level variation across haplotypes, the
