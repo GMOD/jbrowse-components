@@ -1609,23 +1609,32 @@ nodes read against pieces joined. The C4 window below is 8,083 pieces at
 `context: 0` and 463 walks at 1000, for the same 463 records; MHC class II sits
 inside a snarl far larger than the window, so it is 1.1 million pieces at 0 and
 takes three times as long as at 1000. The default is 1000. These are all at
-1000, contained snarls, `@gmod/gbz-base` 2.3.0, reading both files over HTTP,
+1000, contained snarls, `@gmod/gbz-base` 2.5.0, reading both files over HTTP,
 the database from HPRC's bucket and the companion from ours, timed around the
-whole command:
+whole command, two runs each on 2026-09-06 and the median:
 
-| Locus        | Window                         | Nodes  | Records | Companion read | Time   |
-| ------------ | ------------------------------ | ------ | ------- | -------------- | ------ |
-| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 7.5 s  |
-| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 5.0 s  |
-| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 8.1 s  |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 8.5 s  |
-| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 12.7 s |
-| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 12.8 s |
+| Locus                 | Window                         | Nodes  | Records | Companion read | Time   |
+| --------------------- | ------------------------------ | ------ | ------- | -------------- | ------ |
+| C4                    | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 17.8 s |
+| C4                    | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 31.5 s |
+| CFH cluster           | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 31.9 s |
+| LPA KIV-2             | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 33.8 s |
+| MHC class II          | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 31.7 s |
+| AMY1                  | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 30.3 s |
+| LPA KIV-2, `--keep` 8 | `chr6:160,525,000-160,655,000` | 19,920 | 8       | 14 req, 0.9 MB | 20.8 s |
 
-Every record is named in all six, the time tracks how many nodes the window
-covers with a floor of a few seconds of request latency, and the companion is
-barely touched, a megabyte and a half at most out of its 7 GB. The first five
-are one record per haplotype.
+Every record is named in all six, and the companion is barely touched, a
+megabyte and a half at most out of its 7 GB. The first five are one record per
+haplotype. The times are set by the network the command was timed from rather
+than by the window: on the day of this table one 64 kB range request to the
+bucket took 0.4-0.8 s, every window came back in about half a minute whatever
+its node count, and 2.3.0 timed the same as 2.5.0 on the same connection (15.0
+and 15.4 s against 14.9 and 15.4 s at the small C4 window), so the 5-13 s an
+earlier run of this table showed were that day's network and not a reader that
+has since slowed. The last row is the same KIV-2 window cut to the tutorial's
+eight haplotypes with `--keep`: the companion is read exactly as much, since
+every walk has to be named before the reader knows whose it is, and what the
+chosen set saves is the 456 alignments it does not build, 13 s of 34 here.
 
 _AMY1_ is the row with more records than haplotypes, and it is the locus a
 copy-number question would start from. The amylase repeat sends each haplotype
