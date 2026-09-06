@@ -19,18 +19,41 @@ export interface MatePanelRow extends ResolvedPanel {
 
 export type PanelRow = AnchorPanelRow | MatePanelRow
 
+// Two mates put the anchor BETWEEN them. A band is drawn between adjacent
+// panels only, and a reference-anchored dataset — an MCScan blocks table, a
+// star of pairwise alignments — states each mate against the anchor and
+// nothing between two mates, so with the anchor on top the second band was
+// blank. One mate is a pair either way; three or more lead with the anchor,
+// and the dialog says which bands that leaves empty or repeats it.
 export function toPanelRows(
   anchorAssembly: string,
   panels: ResolvedPanel[],
 ): PanelRow[] {
-  return [
-    { kind: 'anchor', assemblyName: anchorAssembly },
-    ...panels.map(panel => ({
-      ...panel,
-      kind: 'mate' as const,
-      checked: true,
-    })),
-  ]
+  const anchor: PanelRow = { kind: 'anchor', assemblyName: anchorAssembly }
+  const mates = panels.map(panel => ({
+    ...panel,
+    kind: 'mate' as const,
+    checked: true,
+  }))
+  return mates.length === 2
+    ? [mates[0]!, anchor, mates[1]!]
+    : [anchor, ...mates]
+}
+
+// The adjacent pairs of the launched stack that put two mates together, with
+// no anchor on either side — the bands a dataset that only states each mate
+// against the anchor cannot draw.
+export function mateOnlyLevels(rows: PanelRow[]) {
+  const kept = rows.filter(row => row.kind === 'anchor' || row.checked)
+  const levels: [string, string][] = []
+  for (let i = 0; i + 1 < kept.length; i++) {
+    const upper = kept[i]!
+    const lower = kept[i + 1]!
+    if (upper.kind === 'mate' && lower.kind === 'mate') {
+      levels.push([upper.assemblyName, lower.assemblyName])
+    }
+  }
+  return levels
 }
 
 // Move one row by one position. Order is not cosmetic here: a LinearSyntenyView

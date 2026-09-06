@@ -8,6 +8,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import { makeMateDiscovery } from './discoverMates.ts'
 
 import type { LaunchableTrack } from './LaunchSyntenyViewForRegionDialog.tsx'
+import type { MateDiscovery } from './discoverMates.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -132,6 +133,8 @@ export function syntenyRegionMenuItems({
   openTracks,
   anchorTracks,
   sourceView,
+  discoverMatesFor,
+  starAnchor,
 }: {
   label: string
   region: Region | undefined
@@ -143,6 +146,14 @@ export function syntenyRegionMenuItems({
   anchorTracks: TrackInit[]
   // the launching view, which the dialog offers to swap for the launched one
   sourceView?: AbstractViewModel
+  // the panels, from a caller that already knows them — the multiway display
+  // hands over its lanes in their order — in place of the discovery RPC over
+  // the whole dataset, which forgets the lanes the reader chose and, on a
+  // graph source, is a second full-cohort fetch
+  discoverMatesFor?: (trackId: string, region: Region) => MateDiscovery
+  // the assembly every alignment is stated against, when the caller knows
+  // the dataset is a star — see the dialog
+  starAnchor?: string
 }): MenuItem[] {
   const roi = region ? toWholeBpRegion(region) : undefined
   const tracks = roi
@@ -163,12 +174,15 @@ export function syntenyRegionMenuItems({
                 anchorTracks,
                 sourceView,
                 discoverMatesFor: (trackId: string) =>
-                  makeMateDiscovery({
-                    session,
-                    track: tracks.find(track => track.trackId === trackId)!
-                      .conf,
-                    region: roi,
-                  }),
+                  discoverMatesFor
+                    ? discoverMatesFor(trackId, roi)
+                    : makeMateDiscovery({
+                        session,
+                        track: tracks.find(track => track.trackId === trackId)!
+                          .conf,
+                        region: roi,
+                      }),
+                starAnchor,
                 handleClose,
               },
             ])

@@ -80,8 +80,42 @@ function dialogProps(queued: unknown[][]) {
   return queued[0]![1] as {
     region: Region
     tracks: { trackId: string; name: string }[]
+    starAnchor?: string
+    discoverMatesFor: (trackId: string) => () => Promise<unknown>
   }
 }
+
+// The multiway display hands the dialog its lanes as the panels, in their
+// order, rather than a discovery over the dataset that forgets what the reader
+// chose; and it says when the dataset is a star, which the dialog acts on
+test('a caller may supply the panels and name the star anchor, and both reach the dialog', async () => {
+  const t1 = track('t1', ['volvox', 'volvox_ins'])
+  const { session, queued } = makeSession([t1])
+  const seen: { trackId: string; region: Region }[] = []
+  const items = syntenyRegionMenuItems({
+    label: 'Launch',
+    region,
+    session,
+    openTracks: [t1],
+    anchorTracks: [],
+    discoverMatesFor: (trackId, roi) => {
+      seen.push({ trackId, region: roi })
+      return async () => ({ mates: [], unconfigured: ['from-lanes'] })
+    },
+    starAnchor: 'volvox',
+  })
+  if (!('onClick' in items[0]!)) {
+    throw new Error('expected a flat item')
+  }
+  items[0].onClick()
+  const props = dialogProps(queued)
+  expect(props.starAnchor).toBe('volvox')
+  expect(await props.discoverMatesFor('t1')()).toEqual({
+    mates: [],
+    unconfigured: ['from-lanes'],
+  })
+  expect(seen).toEqual([{ trackId: 't1', region }])
+})
 
 test('an open dataset for another assembly pair means no menu item', () => {
   const other = track('t1', ['other', 'other2'])

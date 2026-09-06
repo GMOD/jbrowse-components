@@ -28,6 +28,11 @@ export interface BuildSyntenyViewSpecArgs {
   // direct pairs: on top, only the first is; in the middle, the two either side
   // of it are. The launch dialog exposes it as a draggable row.
   anchorIndex?: number
+  // Open the anchor panel between every two mates rather than once, so on a
+  // dataset that states each mate against the anchor and nothing between
+  // mates — a star of pairwise alignments — every band is a direct pair, at
+  // 2N-1 rows for N mates. `anchorIndex` is moot when set.
+  repeatAnchor?: boolean
   windowSize: number
   trackId: string
   // Open a mate panel reversed when its alignment is on the minus strand, so its
@@ -55,6 +60,7 @@ export function buildSyntenyViewSpec({
   anchorAssembly,
   anchorRefName,
   anchorIndex = 0,
+  repeatAnchor = false,
   windowSize,
   trackId,
   flipReversedMates,
@@ -89,17 +95,21 @@ export function buildSyntenyViewSpec({
     }),
   }))
 
+  const views =
+    repeatAnchor && mateViews.length > 1
+      ? mateViews.flatMap((view, i) => (i === 0 ? [view] : [anchorView, view]))
+      : [
+          ...mateViews.slice(0, anchorIndex),
+          anchorView,
+          ...mateViews.slice(anchorIndex),
+        ]
   return {
     collapseEmptyRows: collapseEmptyRows ?? panels.length > 1,
-    views: [
-      ...mateViews.slice(0, anchorIndex),
-      anchorView,
-      ...mateViews.slice(anchorIndex),
-    ],
+    views,
     // One synteny strip per gap between panels. The same track serves every
     // level: the view passes each level's two assemblies down to the adapter,
     // and an all-vs-all adapter resolves the pair from them.
-    tracks: panels.map(() => [trackId]),
+    tracks: views.slice(1).map(() => [trackId]),
   }
 }
 

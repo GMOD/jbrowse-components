@@ -172,6 +172,24 @@ export function FlipInvertedTargetsCheckbox(props: LaunchOptionProps) {
 // that just opened blank — but it is a checkbox rather than unconditional
 // because the copy costs a second fetch of everything open, which is a real
 // price when what's open is a BAM.
+// A star of pairwise alignments states each mate against its anchor and
+// nothing between two mates, so a band between two mate panels is blank.
+// Repeating the anchor makes every band a direct pair, at the cost of a row
+// between each two mates. Offered only when the launch knows it is a star and
+// has three or more mates — with two, the anchor sits between them already.
+export function RepeatAnchorCheckbox({
+  anchor,
+  ...props
+}: LaunchOptionProps & { anchor: string }) {
+  return (
+    <LaunchCheckbox
+      {...props}
+      label={`Repeat ${anchor} between panels`}
+      help={`This dataset aligns each genome to ${anchor} only, so a band between two other genomes would be empty. Repeating ${anchor} between every two panels makes each band a direct comparison, one more row per pair.`}
+    />
+  )
+}
+
 export function CopySourceTracksCheckbox(props: LaunchOptionProps) {
   return (
     <LaunchCheckbox

@@ -1,5 +1,6 @@
 import {
   launchOrder,
+  mateOnlyLevels,
   movePanel,
   setAllPanelsChecked,
   setPanelChecked,
@@ -37,6 +38,42 @@ function spanOf(list: PanelRow[], assemblyName: string) {
 test('the anchor leads the list and every discovered mate starts checked', () => {
   expect(names(rows)).toEqual(['K12', 'Sakai', 'CFT073', 'IAI39'])
   expect(rows.filter(r => r.kind === 'mate').every(r => r.checked)).toBe(true)
+})
+
+// A band is drawn between adjacent panels only, and a reference-anchored
+// dataset states nothing between two mates: with the anchor on top of two
+// mates the second band was blank, so two mates take the anchor between them
+test('two mates take the anchor between them, one and three or more lead with it', () => {
+  expect(names(toPanelRows('K12', panels('Sakai', 'CFT073')))).toEqual([
+    'Sakai',
+    'K12',
+    'CFT073',
+  ])
+  expect(launchOrder(toPanelRows('K12', panels('Sakai', 'CFT073')))).toEqual({
+    anchorIndex: 1,
+    mates: expect.arrayContaining([
+      expect.objectContaining({ assemblyName: 'Sakai' }),
+      expect.objectContaining({ assemblyName: 'CFT073' }),
+    ]),
+  })
+  expect(names(toPanelRows('K12', panels('Sakai')))).toEqual(['K12', 'Sakai'])
+  expect(names(rows)).toEqual(['K12', 'Sakai', 'CFT073', 'IAI39'])
+})
+
+test('the levels that put two mates together are named, over the checked rows', () => {
+  expect(mateOnlyLevels(rows)).toEqual([
+    ['Sakai', 'CFT073'],
+    ['CFT073', 'IAI39'],
+  ])
+  expect(mateOnlyLevels(movePanel(movePanel(rows, 0, 1), 1, 1))).toEqual([
+    ['Sakai', 'CFT073'],
+  ])
+  expect(mateOnlyLevels(setPanelChecked(rows, 2, false))).toEqual([
+    ['Sakai', 'IAI39'],
+  ])
+  expect(mateOnlyLevels(toPanelRows('K12', panels('Sakai', 'CFT073')))).toEqual(
+    [],
+  )
 })
 
 // The row IS where its panel opens — the worker resolved it, and reordering or

@@ -176,6 +176,15 @@ alignment breaks into two records does not outrank one that runs through —
 over the fetched block set, not the viewport, so it holds still across a pan),
 which is what the tutorial used to tell a reader to hand-author `rowOrder` for.
 
+Since 2026-09-06 that launch seeds its panels from the display itself
+(`lanePanelsForRegion`: one panel per lane in `rowAssemblies` order, framed on
+what the lane places of the visible region on the contig its decision chose)
+rather than the `SyntenyDiscoverMates` RPC over the dataset, and hands the
+dialog `starAnchor` when the header named one: two mates take the anchor
+between them, and a star with more offers **Repeat ⟨anchor⟩ between panels**
+(on by default, 2N-1 rows, every band a direct pair) or names the bands that
+will be empty without it.
+
 `rowOrder` has a UI as of 2026-08-26: **Lanes** on the track menu, a row per
 lane with Move up/Move down/Hide lane, a Show row per hidden lane and a reset,
 beside toggles for `drawCurves`, `bridgeSkippedLanes` and `showLaneTicks`

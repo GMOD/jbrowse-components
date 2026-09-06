@@ -96,7 +96,12 @@ function renderDialogFor(
   {
     session = {} as AbstractSessionModel,
     sourceView,
-  }: { session?: AbstractSessionModel; sourceView?: AbstractViewModel } = {},
+    starAnchor,
+  }: {
+    session?: AbstractSessionModel
+    sourceView?: AbstractViewModel
+    starAnchor?: string
+  } = {},
 ) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -106,6 +111,7 @@ function renderDialogFor(
         tracks={tracks}
         sourceView={sourceView}
         discoverMatesFor={discoverMatesFor}
+        starAnchor={starAnchor}
         handleClose={() => {}}
       />
     </ThemeProvider>,
@@ -172,11 +178,61 @@ test('a failed discovery can be retried in place', async () => {
 // is measured against, and took its name out of the tab order while leaving its
 // own move buttons in it.
 test('the anchor is listed first, as a mark rather than a dead checkbox', async () => {
-  renderDialog(() => Promise.resolve(mates('volvox_ins', 'volvox_del')))
+  renderDialog(() =>
+    Promise.resolve(mates('volvox_ins', 'volvox_del', 'volvox_dup')),
+  )
   expect(await screen.findByText('volvox (your selection)')).toBeTruthy()
   expect(screen.queryByLabelText(/volvox \(your selection\)/)).toBeNull()
   expect(screen.getByLabelText('Move volvox (panel 1) up')).toBeDisabled()
   expect(screen.getByLabelText('Move volvox (panel 1) down')).toBeEnabled()
+})
+
+// with the anchor on top of two mates the second band compared the two
+// mates, which a reference-anchored dataset states nothing about
+test('two mates take the anchor between them', async () => {
+  renderDialog(() => Promise.resolve(mates('volvox_ins', 'volvox_del')))
+  expect(await screen.findByText('volvox (your selection)')).toBeTruthy()
+  expect(screen.getByLabelText('Move volvox (panel 2) up')).toBeEnabled()
+  expect(screen.getByLabelText('Move volvox (panel 2) down')).toBeEnabled()
+})
+
+describe('a star of pairwise alignments', () => {
+  const three = () =>
+    Promise.resolve(mates('volvox_ins', 'volvox_del', 'volvox_dup'))
+
+  test('offers to repeat the anchor between panels, on by default, and says which bands go empty without it', async () => {
+    renderDialogFor([{ trackId: 't1', name: 'star' }], () => three, {
+      starAnchor: 'volvox',
+    })
+    const repeat = await screen.findByLabelText(/Repeat volvox between panels/)
+    expect(repeat).toBeChecked()
+    expect(screen.queryByText(/will be empty/)).toBeNull()
+
+    fireEvent.click(repeat)
+    expect(
+      screen.getByText(
+        /The bands between volvox_ins and volvox_del, volvox_del and volvox_dup will be empty/,
+      ),
+    ).toBeTruthy()
+  })
+
+  test('with two mates the anchor already sits between them, so nothing is offered or warned', async () => {
+    renderDialogFor(
+      [{ trackId: 't1', name: 'star' }],
+      () => () => Promise.resolve(mates('volvox_ins', 'volvox_del')),
+      { starAnchor: 'volvox' },
+    )
+    await screen.findByText('volvox (your selection)')
+    expect(screen.queryByLabelText(/Repeat volvox/)).toBeNull()
+    expect(screen.queryByText(/will be empty/)).toBeNull()
+  })
+
+  test('a dataset not known to be a star gets neither', async () => {
+    renderDialog(three)
+    await screen.findByText('volvox (your selection)')
+    expect(screen.queryByLabelText(/Repeat volvox/)).toBeNull()
+    expect(screen.queryByText(/will be empty/)).toBeNull()
+  })
 })
 
 test('select none leaves the anchor in the stack and disables submit', async () => {

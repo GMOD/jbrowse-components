@@ -25,9 +25,10 @@ import {
   CollapsePanelsCheckbox,
   CopySourceTracksCheckbox,
   FlipInvertedTargetsCheckbox,
+  RepeatAnchorCheckbox,
   WindowSizeField,
 } from './launchOptionFields.tsx'
-import { launchOrder } from './panelOrder.ts'
+import { launchOrder, mateOnlyLevels } from './panelOrder.ts'
 import { useMateDiscovery } from './useMateDiscovery.ts'
 
 import type { MateDiscovery } from './discoverMates.ts'
@@ -204,6 +205,27 @@ function DiscoveryStatus({
   return null
 }
 
+// The bands a launch will leave blank, named before the click: a star states
+// nothing between two mates, and a stacked view draws a band between adjacent
+// panels only, so every mate-to-mate gap is a level with nothing in it.
+function EmptyLevelsNote({
+  levels,
+  anchor,
+}: {
+  levels: [string, string][]
+  anchor: string
+}) {
+  return levels.length > 0 ? (
+    <Typography variant="body2">
+      {levels.length === 1
+        ? `The band between ${levels[0]![0]} and ${levels[0]![1]} will be empty`
+        : `The bands between ${levels.map(([upper, lower]) => `${upper} and ${lower}`).join(', ')} will be empty`}
+      : this dataset aligns each genome to {anchor} only. Move {anchor} between
+      two panels to compare them, or repeat it below.
+    </Typography>
+  ) : null
+}
+
 export default function LaunchSyntenyViewForRegionDialog({
   session,
   region,
@@ -211,6 +233,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   anchorTracks = [],
   sourceView,
   discoverMatesFor,
+  starAnchor,
   handleClose,
 }: {
   session: AbstractViewContainer & NotificationSink
@@ -222,6 +245,10 @@ export default function LaunchSyntenyViewForRegionDialog({
   // place of
   sourceView?: AbstractViewModel
   discoverMatesFor: (trackId: string) => MateDiscovery
+  // the one assembly every alignment in the dataset is stated against, when
+  // the launch knows it is such a star: a band between two mates is then
+  // empty, and the dialog says so or repeats the anchor between them
+  starAnchor?: string
   handleClose: () => void
 }) {
   const panelsLabelId = useId()
@@ -229,6 +256,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   const [flipReversedMates, setFlipReversedMates] = useState(true)
   const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
   const [copySourceTracks, setCopySourceTracks] = useState(true)
+  const [repeatAnchor, setRepeatAnchor] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
@@ -240,6 +268,8 @@ export default function LaunchSyntenyViewForRegionDialog({
       region,
     })
   const { anchorIndex, mates } = launchOrder(rows ?? [])
+  const offerRepeat = starAnchor !== undefined && mates.length > 2
+  const repeating = offerRepeat && repeatAnchor
   // What the DISCOVERY found. `mates` above is what is still ticked, which is
   // what launches — but the two messages below are about the dataset rather
   // than about the choices made in it, and reading the ticked list for them
@@ -266,6 +296,7 @@ export default function LaunchSyntenyViewForRegionDialog({
           anchorAssembly: region.assemblyName,
           anchorRefName: region.refName,
           anchorIndex,
+          repeatAnchor: repeating,
           anchorTracks: copySourceTracks ? anchorTracks : undefined,
           windowSize,
           flipReversedMates,
@@ -303,6 +334,9 @@ export default function LaunchSyntenyViewForRegionDialog({
           labelledBy={panelsLabelId}
         />
       ) : null}
+      {rows && starAnchor !== undefined && !repeating ? (
+        <EmptyLevelsNote levels={mateOnlyLevels(rows)} anchor={starAnchor} />
+      ) : null}
       {/* Why the list is shorter than the lanes drawn in the track this was
        launched from: an all-vs-all file carries every sample it was built with,
        and only the ones the track declares an assembly for can be a panel. */}
@@ -315,6 +349,13 @@ export default function LaunchSyntenyViewForRegionDialog({
       {/* Everything below the panel list is folded away, and the list is what
        the dialog is for — see AdvancedLaunchOptions for why these four and not
        the pairwise dialog's. */}
+      {offerRepeat ? (
+        <RepeatAnchorCheckbox
+          anchor={starAnchor}
+          checked={repeatAnchor}
+          onChange={setRepeatAnchor}
+        />
+      ) : null}
       <AdvancedLaunchOptions>
         <FlipInvertedTargetsCheckbox
           checked={flipReversedMates}

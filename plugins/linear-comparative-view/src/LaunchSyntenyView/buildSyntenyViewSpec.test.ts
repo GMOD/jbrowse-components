@@ -326,6 +326,43 @@ test('the anchor opens where the dialog put it', () => {
   expect(spec.tracks).toEqual([['t1'], ['t1']])
 })
 
+// A star states each mate against the anchor and nothing between mates, so a
+// level between two mate rows draws nothing. Repeating the anchor makes every
+// level a direct pair, one row between each two mates
+test('repeating the anchor puts it between every two mates, one level per gap', () => {
+  const built = buildFrom({
+    features: [
+      makeFeature({ mateAssembly: 'a' }),
+      makeFeature({ mateAssembly: 'b' }),
+      makeFeature({ mateAssembly: 'c' }),
+    ],
+    anchorAssembly: 'volvox',
+    anchorIndex: 2,
+    repeatAnchor: true,
+    windowSize: 0,
+    trackId: 't',
+    flipReversedMates: false,
+  })
+  expect(built.views.map(v => v.assembly)).toEqual([
+    'a',
+    'volvox',
+    'b',
+    'volvox',
+    'c',
+  ])
+  expect(built.tracks).toHaveLength(4)
+  const single = buildFrom({
+    features: [makeFeature({ mateAssembly: 'a' })],
+    anchorAssembly: 'volvox',
+    repeatAnchor: true,
+    windowSize: 0,
+    trackId: 't',
+    flipReversedMates: false,
+  })
+  expect(single.views.map(v => v.assembly)).toEqual(['volvox', 'a'])
+  expect(single.tracks).toHaveLength(1)
+})
+
 test('an anchor index past the last mate puts it at the bottom', () => {
   const spec = buildFrom({
     features: [makeFeature({ mateAssembly: 'volvox2' })],

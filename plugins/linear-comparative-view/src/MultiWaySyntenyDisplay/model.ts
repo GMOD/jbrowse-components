@@ -46,6 +46,7 @@ import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
+import { lanePanelsForRegion } from './lanePanels.ts'
 import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
 import {
   groupFeatures,
@@ -1530,6 +1531,22 @@ export function stateModelFactory(
             openTracks: [self.parentTrack.configuration],
             anchorTracks: anchorPanelTracks(view.tracks),
             sourceView: containingPanelStack(view) ?? view,
+            // the panels are the lanes on screen, in the stack's order,
+            // rather than a discovery over the dataset that forgets the lanes
+            // the reader chose and, on a graph source, fetches every
+            // haplotype the window places a second time
+            discoverMatesFor: (_trackId, region) => async () =>
+              lanePanelsForRegion({
+                groups: self.groups,
+                rowAssemblies: self.rowAssemblies,
+                laneDecisions: self.laneDecisions,
+                region,
+                trackAssemblyNames: readConfObject(
+                  self.parentTrack.configuration,
+                  'assemblyNames',
+                ) as string[],
+              }),
+            starAnchor: self.starAnchor,
           })) {
             pushLaunchViewMenuItem(items, item)
           }
