@@ -1545,35 +1545,34 @@ worth setting before anything else. At 0 a haplotype is cut wherever it leaves
 the window's nodes, which on a human graph is every private bubble it passes
 through: the C4 window below comes back as 8,082 records at `context: 0` and 463
 at `context: 1000`, one per haplotype, from the same 60 kb. These are all at
-1000, contained snarls, reading both files over HTTP, the database from HPRC's
-bucket and the companion from ours:
+1000, contained snarls, `@gmod/gbz-base` 2.1.0, reading both files over HTTP,
+the database from HPRC's bucket and the companion from ours:
 
-| Locus        | Window                         | Nodes  | Records | Time   |
-| ------------ | ------------------------------ | ------ | ------- | ------ |
-| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 5.4 s  |
-| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 7.1 s  |
-| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 16.4 s |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 20.7 s |
-| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 31.1 s |
-| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 283 s  |
+| Locus        | Window                         | Nodes  | Records | Companion read    | Time   |
+| ------------ | ------------------------------ | ------ | ------- | ----------------- | ------ |
+| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB     | 5.1 s  |
+| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB     | 5.8 s  |
+| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB    | 12.3 s |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB    | 15.5 s |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB    | 25.2 s |
+| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,912   | 5,202 req, 325 MB | 234 s  |
 
 Every fragment is named in all six, and the first five are the shape to expect:
-one record per haplotype, and a time that tracks how many nodes the window
-covers.
-
-The 10 kb window is the exception among them, and says something about the
-companion. It is smaller than the 16 kb the index samples at, so some fragments
-in it hold no recorded position and have to be walked to one, 3,937 steps in
-all, where the 60 kb window needs none. A window below the sampling interval
-pays for it.
+one record per haplotype, a time that tracks how many nodes the window covers,
+and a companion that is barely touched, a megabyte at most out of its 7 GB.
 
 _AMY1_ is the row that breaks the pattern, and it is the locus a copy-number
 question would start from. It has a third of MHC class II's nodes and takes nine
-times as long. The amylase repeat sends each haplotype out of the window's nodes
-and back, so 464 haplotypes arrive as 1,912 fragments, most of them shorter than
-the sampling interval: 78,506 identification steps against zero at every other
-locus here. The alignment is not what costs, and neither is fetching, since this
-is the same 37 requests as everywhere else.
+times as long, and the last column is why. The amylase repeat sends each
+haplotype out of the window's nodes and back, so 464 haplotypes arrive as 1,912
+fragments; a fragment shorter than the 16 kb the companion samples at holds no
+recorded position and has to be walked to one, 78,506 steps against zero at
+every other locus here. Those steps land on 464 different haplotypes at
+scattered positions, so the companion is read 325 MB deep instead of one.
+
+Steps alone are not the cost, which the 10 kb C4 window shows: it is smaller
+than the sampling interval too and takes 3,937 steps, but they stay in one
+neighbourhood and cost 8 requests. Scatter is the cost.
 
 The usual repair makes it worse. `context` 5000, `context` 20000 and
 `overlapping` snarls each pull in enough of the repeat to exhaust a 4 GB heap
