@@ -107,12 +107,21 @@ function setup(
   } = {},
 ) {
   const views: StubView[] = []
+  // The composite the real WorkspaceLayoutMixin.layoutViews is, over the three
+  // stubs below, so the assertions on each of them keep meaning what they say.
+  const layoutViews = jest.fn((spec: LayoutSpecNode) => {
+    session.setUseWorkspaces!(true)
+    const ids = session.applyLayoutSpec!(spec)
+    session.orderViews!(ids)
+    return ids
+  })
   const session = {
     views,
     notifyError: jest.fn(),
     notify: jest.fn(),
     ...(workspaces
       ? {
+          layoutViews,
           setUseWorkspaces: jest.fn(),
           // Returns what the real action returns — the view ids the spec names,
           // in the order it states — because that return value is the whole

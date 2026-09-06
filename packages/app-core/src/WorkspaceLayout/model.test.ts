@@ -521,6 +521,56 @@ test('applyLayoutSpec counts a leaf index into session.views, beside ids', () =>
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v3', 'v1'], ['v2']])
 })
 
+// The composite a spec `layout` and a live re-layout both call: workspaces on,
+// the tree replaced, and `session.views` put in the order the spec states —
+// each of which, alone, changes nothing visible and says nothing.
+describe('layoutViews', () => {
+  const order: string[] = []
+  const HostSession = ViewsSession.actions(() => ({
+    setUseWorkspaces(on: boolean) {
+      order.push(`workspaces:${on}`)
+    },
+    orderViews(ids: string[]) {
+      order.push(`order:${ids.join(',')}`)
+    },
+  }))
+
+  beforeEach(() => {
+    order.length = 0
+  })
+
+  test('turns workspaces on, applies the spec and orders the views', () => {
+    const session = HostSession.create({
+      views: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }],
+    })
+    session.homeUnassignedViews(['v1', 'v2', 'v3'])
+    const seated = session.layoutViews({
+      direction: 'horizontal',
+      children: [{ views: ['v2'] }, { views: [0, 'v3'] }],
+    })
+    expect(seated).toEqual(['v2', 'v1', 'v3'])
+    expect(order).toEqual(['workspaces:true', 'order:v2,v1,v3'])
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+      ['v2'],
+      ['v1', 'v3'],
+    ])
+  })
+
+  test('a layout seating no view throws rather than leaving a blank tab', () => {
+    const session = HostSession.create({ views: [{ id: 'v1' }] })
+    expect(() => session.layoutViews({ children: [] })).toThrow(
+      /seats no views/,
+    )
+  })
+
+  test('a host with no view list says so', () => {
+    const session = createViewsSession()
+    expect(() => session.layoutViews({ views: ['v1'] })).toThrow(
+      /composed with MultipleViewsSessionMixin/,
+    )
+  })
+})
+
 // The wrong shapes an untyped caller (the MCP run_javascript tool) can hand
 // the action, hence the cast: the point is what the runtime says to them.
 test.each([

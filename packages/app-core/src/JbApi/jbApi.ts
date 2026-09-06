@@ -5,11 +5,13 @@ import {
   isSlotDefinitionEntry,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
-  adapterByteLimit,
-  measureRegionBytes,
-} from '@jbrowse/core/rpc/byteBudget'
+  releaseAdapterSession,
+  retainAdapterSession,
+} from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { adapterByteLimit } from '@jbrowse/core/rpc/byteBudget'
 import {
   getRpcSessionId,
   isElectron,
@@ -446,8 +448,9 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
     ? {
         pageHeight,
         windowHeight,
+        scrollY: Math.round(win.scrollY),
         views,
-        note: 'the session is taller than the window; a viewport screenshot cuts these views off — shrink track heights, or screenshot with fullPage: true',
+        note: 'the session is taller than the window; a viewport screenshot cuts these views off — shrink track heights, or screenshot with fullPage: true. A view with a negative top is scrolled out above the viewport (scrollY says by how much), not missing',
       }
     : undefined
 }
@@ -714,18 +717,16 @@ async function visibleRegionsOf(
   }))
 }
 
-// Main-thread adapter, not the CoreGetFeatures RPC: the RPC serializes every
-// feature in the region across the worker boundary before any limit can
-// apply. Here the features stay objects. The shown track's own rpcSessionId,
-// so this shares the adapter instance — parsed indexes and chunk caches
-// included — that the display already warmed (rpcSessionId lives on track
-// models, so the walk cannot start at the session; session.id is the
-// cold-namespace fallback for un-shown tracks). Regions are renamed the same
-// way the RPC base class renames them: they arrive carrying the assembly's
-// canonical refNames, and a file spelling them differently would otherwise
-// answer nothing, silently.
+// The same RPCs the track's display issues, on the same worker: the sessionId
+// is `adapterConfigCacheKey` of the adapter config, which is exactly what
+// `BaseTrackModel.rpcSessionId` derives, so a shown track's parsed index and
+// chunk cache are reused rather than rebuilt in a main-thread twin that nothing
+// ever freed. Retained and released like a track does, so an un-shown track's
+// worker cache is dropped once this read is done. Regions are renamed to the
+// file's own refNames during serialization (RpcMethodTypeWithRenameRegions),
+// and the features come back rebuilt as SimpleFeature. What crosses the worker
+// boundary is bounded by the byte gate that runs first.
 async function fetchFeatures(
-  pluginManager: PluginManager,
   session: AbstractSessionModel,
   trackId: string,
   regions: JbRegion[],
@@ -737,24 +738,8 @@ async function fetchFeatures(
       `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
-  // any shown copy will do here: the same adapter cache is warm behind each
-  const trackModel = allTracks(session).find(
-    t => t.configuration.trackId === trackId,
-  )
-  const sessionId = trackModel
-    ? getRpcSessionId(trackModel)
-    : (session.id ?? 'mcp')
-  const renamed = await renameRegionsIfNeeded(session.assemblyManager, {
-    regions,
-    adapterConfig: readConfObject(conf, 'adapter'),
-    sessionId,
-  })
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig: renamed.adapterConfig,
-    sequenceAdapter: renamed.sequenceAdapter,
-  })
+  const adapterConfig = readConfObject(conf, 'adapter')
+  const sessionId = adapterConfigCacheKey(adapterConfig)
   // The adapter's own declared limit where it has one, so this does not quietly
   // disagree with the size the track's display already refuses to render —
   // the reasoning BaseTrackModel.exportByteLimit spells out for "Save track
@@ -764,44 +749,41 @@ async function fetchFeatures(
     readConfObject(conf, ['adapter', 'fetchSizeLimit']),
     requestedByteLimit,
   )
+  const { rpcManager } = session
   const stopToken = createStopToken()
   // desktop's MCP relay gives up at 150s, so the read must not outlive it —
   // and an agent-triggered read of a dense region wants a ceiling either way
   const stopTimer = setTimeout(() => {
     stopStopToken(stopToken)
   }, 120_000)
-  // The agent's "region too large". A display refuses to fetch over its own
-  // gate and paints the reason; this path has no display, so without the same
-  // question asked here an agent that names a whole chromosome pulls it — over
-  // someone else's data host, onto the main thread, in the page it is about to
-  // screenshot. Same index-only estimate the gated RPC takes first, and a
-  // refusal rather than a truncation: a short answer that looked like the whole
-  // answer is the failure this surface exists to prevent.
-  const { tooLarge, bytes } = await measureRegionBytes({
-    dataAdapter,
-    regions: renamed.regions,
-    byteLimit,
-    stopToken,
-  })
-  if (tooLarge) {
-    clearTimeout(stopTimer)
-    throw new Error(
-      `region too large for jb.getFeatures: the largest region is ~${bytes} bytes against a limit of ${byteLimit}. Narrow the region, or pass an explicit byteLimit if you mean to pull this much.`,
-    )
-  }
-  // one array per region, flattened once at the end: a dense region returns
-  // hundreds of thousands of features, so neither push(...array) — a
-  // RangeError on the argument list — nor a concat per region is available
-  const perRegion: Awaited<ReturnType<typeof dataAdapter.getFeaturesArray>>[] =
-    []
+  retainAdapterSession(rpcManager, sessionId)
   try {
-    for (const region of renamed.regions) {
-      perRegion.push(await dataAdapter.getFeaturesArray(region, { stopToken }))
+    // The agent's "region too large". A display refuses to fetch over its own
+    // gate and paints the reason; this path has no display, so without the
+    // same question asked here an agent that names a whole chromosome pulls it
+    // — over someone else's data host, into the page it is about to
+    // screenshot. Same index-only estimate the gated RPC takes first, and a
+    // refusal rather than a truncation: a short answer that looked like the
+    // whole answer is the failure this surface exists to prevent.
+    const bytes = await rpcManager.call(
+      sessionId,
+      'CoreGetRegionByteEstimate',
+      { adapterConfig, regions, scope: 'largestRegion', stopToken },
+    )
+    if (bytes !== undefined && bytes > byteLimit) {
+      throw new Error(
+        `region too large for jb.getFeatures: the largest region is ~${bytes} bytes against a limit of ${byteLimit}. Narrow the region, or pass an explicit byteLimit if you mean to pull this much.`,
+      )
     }
+    return await rpcManager.call(sessionId, 'CoreGetFeatures', {
+      adapterConfig,
+      regions,
+      stopToken,
+    })
   } finally {
     clearTimeout(stopTimer)
+    void releaseAdapterSession(rpcManager, sessionId)
   }
-  return perRegion.flat()
 }
 
 // A LocalPathLocation only reads under Electron: in a browser openLocation
@@ -873,7 +855,7 @@ interface SlotDescription {
 
 // Vocabulary introspection: every config slot a live config node's schema
 // defines, so code never has to guess which settings keys exist — an unknown
-// key is otherwise dropped silently, which is this format's known failure mode.
+// key is not an error, only an entry in applyDisplaySettings' `unapplied` list.
 function describeSlots(
   conf: AnyConfigurationModel,
 ): Record<string, SlotDescription> {
@@ -915,9 +897,9 @@ export async function ensureReExports() {
 // contract from.
 const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a browser; the same object is the "jb" argument of JBrowse Desktop's run_javascript MCP tool).
 
-Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?) for trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is dropped SILENTLY; jb.inspect('views.0') for a live node's getters, actions and modelType.
+Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); add data with jb.addTrack({ location }); read data with await jb.getFeatures({ trackId, loc? }) (or jb.getFeatures(trackId, loc?)), which renames refNames ("chr1" vs "1") so the file answers — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }); read data with await jb.getFeatures({ trackId, loc?, assembly?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
 Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions() and jb.addTrack throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
 
@@ -983,8 +965,10 @@ export function createJbApi(pluginManager: PluginManager) {
       settleMs?: number
     }) => addTrack(pluginManager, live(), opts),
     // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
-    // turn to "No track with trackId undefined" — so the positional form is
-    // simply accepted alongside the object it was documented as.
+    // turn to "No track with trackId undefined", and a third wrote
+    // jb.getFeatures('trackId', loc, { assembly }) and had the options
+    // silently ignored — so the positional form is accepted alongside the
+    // object it was documented as, options third.
     getFeatures: async (
       args:
         | string
@@ -998,9 +982,16 @@ export function createJbApi(pluginManager: PluginManager) {
             byteLimit?: number
           },
       positionalLoc?: string,
+      positionalOpts?: {
+        assembly?: string
+        viewId?: string
+        byteLimit?: number
+      },
     ) => {
       const fetchArgs =
-        typeof args === 'string' ? { trackId: args, loc: positionalLoc } : args
+        typeof args === 'string'
+          ? { trackId: args, loc: positionalLoc, ...positionalOpts }
+          : args
       const session = live()
       const conf = session.getTrackById(fetchArgs.trackId)
       if (!conf) {
@@ -1025,7 +1016,6 @@ export function createJbApi(pluginManager: PluginManager) {
               fetchArgs.trackId,
             ))
       return fetchFeatures(
-        pluginManager,
         session,
         fetchArgs.trackId,
         regions,

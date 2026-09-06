@@ -107,6 +107,17 @@ is the worked example, under
 [the LaunchView points](/docs/developer_guides/extension_points#launchview-points)
 covers what the launcher is handed and which spec keys never reach it.
 
+## Telling the app when the view is ready
+
+The app's ready marker, which screenshots, the capture tools and an agent's
+`jb.waitReady` all wait on, reads two optional flags off every open view:
+`initialized === false` and `showLoading === true` both count as still loading.
+Neither is part of the base view model. A view whose content arrives
+asynchronously (a structure viewer, a remote layout) should expose `showLoading`
+as a getter that is true until the content has drawn; otherwise the app reports
+ready while the view is blank, and an agent driving it falls back to guessing
+sleeps.
+
 ## Reference implementations in this repo
 
 - `plugins/linear-genome-view/src/LinearGenomeView` - the canonical genomic

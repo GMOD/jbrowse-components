@@ -53,9 +53,14 @@ import type {
  */
 interface LayoutHostSelf extends IStateTreeNode {
   views?: { id: string }[]
+  setUseWorkspaces?: (useWorkspaces: boolean) => void
+  orderViews?: (ids: string[]) => void
 }
 function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
+}
+function layoutHost(self: LayoutHostSelf) {
+  return self
 }
 
 /**
@@ -668,6 +673,34 @@ export function WorkspaceLayoutMixin() {
           self.applyLayoutSpec(
             tileLayoutSpec(liveViewIds(self, allViewIds), mode),
           )
+        },
+        /**
+         * #action
+         * Arrange the session's views into panels: `applyLayoutSpec` plus the
+         * two things it does not do on its own, each of which fails silently
+         * without it — turning workspaces mode on for this session (a layout
+         * renders nowhere else) and ordering `session.views` to the spec's
+         * top-to-bottom statement, which is where a tab reads its order from.
+         * Leaves take view ids or indexes into `session.views`; a layout that
+         * seats no view throws rather than leaving a blank tab. What a session
+         * spec's `layout` and an agent's live re-layout both call.
+         */
+        layoutViews(spec: LayoutSpecNode) {
+          const host = layoutHost(self)
+          if (!host.setUseWorkspaces || !host.orderViews) {
+            throw new Error(
+              'This session has no view list to arrange: layoutViews needs a host composed with MultipleViewsSessionMixin',
+            )
+          }
+          host.setUseWorkspaces(true)
+          const ids = self.applyLayoutSpec(spec)
+          if (ids.length === 0) {
+            throw new Error(
+              'The layout seats no views: a leaf names its views with "views" (view ids, or indexes into session.views) and a container nests "children"',
+            )
+          }
+          host.orderViews(ids)
+          return ids
         },
       }))
   )

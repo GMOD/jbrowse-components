@@ -331,6 +331,85 @@ describe('getFeatures', () => {
   })
 })
 
+// The read is the display's own RPCs on the display's own worker: the
+// sessionId is the adapter config's cache key, which is what a shown track's
+// rpcSessionId is, so an index the display parsed is the one this reuses and
+// a main-thread twin is never built. The synteny take wrote the options third
+// and had them ignored, so that form is accepted too.
+describe('getFeatures reads through the RPC', () => {
+  const adapter = { type: 'BigBedAdapter', adapterId: 'genes-adapter' }
+  const conf = {
+    trackId: 'genes',
+    adapter,
+    assemblyNames: ['volvox'],
+  }
+  const calls: unknown[][] = []
+  const rpcManager = {
+    call: async (...args: unknown[]) => {
+      calls.push(args)
+      return args[1] === 'CoreGetRegionByteEstimate' ? 10 : []
+    },
+    freeSession: async () => {},
+  }
+  const session = {
+    rpcManager,
+    getTrackById: (id: string) => (id === 'genes' ? conf : undefined),
+    assemblyManager: {
+      waitForAssembly: async () => ({
+        getCanonicalRefName: (n: string) => n,
+        isValidRefName: (n: string) => n === 'ctgA',
+        regions: [],
+      }),
+    },
+    assemblyNames: ['volvox'],
+  } as unknown as AbstractSessionModel
+  const jb = createJbApi({
+    rootModel: { session },
+  } as unknown as PluginManager)
+  const adapterSpy = jest.spyOn(getFeatureAdapter, 'getFeatureAdapterOrThrow')
+
+  beforeEach(() => {
+    calls.length = 0
+    adapterSpy.mockClear()
+  })
+
+  it('gates and reads on the worker the track display uses', async () => {
+    await jb.getFeatures({
+      trackId: 'genes',
+      regions: [
+        { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+      ],
+    })
+    expect(calls.map(c => c.slice(0, 2))).toEqual([
+      ['genes-adapter', 'CoreGetRegionByteEstimate'],
+      ['genes-adapter', 'CoreGetFeatures'],
+    ])
+    expect(adapterSpy).not.toHaveBeenCalled()
+  })
+
+  it('refuses a region over the gate before fetching it', async () => {
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        regions: [
+          { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+        ],
+        byteLimit: 5,
+      }),
+    ).rejects.toThrow(/region too large/)
+    expect(calls).toHaveLength(1)
+  })
+
+  it('takes the options third in the positional form', async () => {
+    await expect(
+      jb.getFeatures('genes', 'ctgA:1-100', { byteLimit: 5 }),
+    ).rejects.toThrow(/region too large/)
+    expect(calls[0]?.[2]).toMatchObject({
+      regions: [{ refName: 'ctgA', start: 0, end: 100 }],
+    })
+  })
+})
+
 // The roster is as public as the members are. jbrowse-web publishes this object
 // as `window.jb` and JBrowse Desktop hands the same one to `run_javascript`, so
 // a rename or a removal breaks agent code nobody in this repo can see — the

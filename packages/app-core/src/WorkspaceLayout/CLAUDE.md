@@ -111,9 +111,10 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 
 ## Three surfaces that will not fail to compile
 
-`setPendingMove` and `applyLayoutSpec` are duck-typed behind `in` guards
-(protein3d, `loadSessionSpec`), and **a menu item** deleted compiles and passes
-every model test. `WorkspacePanelActions.test.tsx` asserts labels;
+`setPendingMove`, `applyLayoutSpec` and `layoutViews` are duck-typed behind `in`
+guards (protein3d, `loadSessionSpec`), `layoutViews` is what the agent docs name
+for a live re-layout, and **a menu item** deleted compiles and passes every
+model test. `WorkspacePanelActions.test.tsx` asserts labels;
 `pluginFacingSessionApi.test.ts` performs protein3d's call. **The signature is
 as public as the name** — add arguments optional, never required.
 

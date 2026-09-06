@@ -27,18 +27,12 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // false and every spec layout is silently declined. That is exactly how
 // `setPendingMove` broke once already; see app-core/src/WorkspaceLayout/CLAUDE.md.
 interface SessionWithWorkspaceLayout {
-  setUseWorkspaces: (useWorkspaces: boolean) => void
-  applyLayoutSpec: (spec: LayoutSpecNode) => string[]
-  orderViews: (ids: string[]) => void
+  layoutViews: (spec: LayoutSpecNode) => string[]
 }
 function isSessionWithWorkspaceLayout(
   session: AbstractSessionModel,
 ): session is AbstractSessionModel & SessionWithWorkspaceLayout {
-  return (
-    'applyLayoutSpec' in session &&
-    'setUseWorkspaces' in session &&
-    'orderViews' in session
-  )
+  return 'layoutViews' in session
 }
 
 // A spec `sessionConnections` needs a session that can both register a
@@ -515,33 +509,19 @@ export async function loadSessionSpec(
         )
       }
       if (isSessionWithWorkspaceLayout(session)) {
-        // Enable workspaces mode for this session only — a spec URL shouldn't
-        // rewrite the visitor's own preference
-        session.setUseWorkspaces(true)
-        // A tab's `viewIds` is membership, not order: a tab renders its views
-        // in `session.views` order (WorkspaceContainer's `viewsOf`, and
-        // `viewIdsForTab`). So the top-to-bottom order a spec panel states —
-        // `viewIds` is documented as "the views to stack vertically in one tab"
-        // — only takes effect if it is applied to `session.views`, which is
-        // what `applyLayoutSpec`'s return value is for. Drop this call and the
-        // stated order is silently ignored: the tree holds it, nothing reads
-        // it, and the views come back in launch order with no diagnostic.
         // Its own try/catch, the same reasoning as the per-view one above: the
         // resolver throws for a layout it will not arrange, and this is the
         // LAST thing the spec does — so an unarrangeable layout used to take
-        // the whole load's catch, after `setUseWorkspaces(true)` had already
-        // run, and report itself as the session's error with the views left
-        // unordered. The layout is one statement in the spec; losing it should
-        // cost the spec its layout and nothing else.
+        // the whole load's catch and report itself as the session's error. The
+        // layout is one statement in the spec; losing it should cost the spec
+        // its layout and nothing else.
         try {
-          session.orderViews(
-            session.applyLayoutSpec(
-              convertLayoutNode(
-                layout,
-                createdViewIds,
-                knownIds,
-                new Set(pinnedLayoutIds(layout, knownIds)),
-              ),
+          session.layoutViews(
+            convertLayoutNode(
+              layout,
+              createdViewIds,
+              knownIds,
+              new Set(pinnedLayoutIds(layout, knownIds)),
             ),
           )
         } catch (e) {

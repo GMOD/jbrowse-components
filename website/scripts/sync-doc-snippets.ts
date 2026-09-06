@@ -155,7 +155,7 @@ const stale: string[] = []
 // the shape a plugin author writes, not a region we ship. A migration guide's
 // pair is the case this baseline's own instruction calls "genuinely can't be" —
 // but it is still debt, and it is the only kind that should raise this number.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '37')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '40')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {

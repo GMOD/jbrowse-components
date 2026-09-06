@@ -428,6 +428,27 @@ return { ...added, valuesInView: values.length }
 - In JBrowse Web the location must be a URL the host serves with CORS headers; a
   local path is refused before anything is added.
 
+## The same data under another display
+
+The display types a track can take are the ones registered for its track type,
+and `showTrack` picks one by name. Read arcs over an alignments track, where the
+default would be the pileup:
+
+```js
+const view = jb.view()
+const conf = session.getTrackById('volvox_cram')
+const displayTypes = pluginManager
+  .getDisplayElements()
+  .filter(d => d.trackType === conf.type)
+  .map(d => d.name)
+view.hideTrack('volvox_cram')
+await view.showTrack('volvox_cram', {}, { type: 'LinearReadArcsDisplay' })
+return { displayTypes, ...(await jb.waitReady(30000)) }
+```
+
+To show both at once, add the same file a second time with `jb.addTrack` under
+another name; a trackId is shown once per view.
+
 ## A second view without replacing the session
 
 `jb.loadSessionSpec` replaces the whole session. To keep what is open and add a
@@ -448,6 +469,30 @@ return {
 
 `jb.sessionSummary()` then lists both views with their ids, and every helper
 that takes a `viewId` can be pointed at either.
+
+## Side by side
+
+Views stack down the page until the session is arranged into panels.
+`session.layoutViews` takes the same tree a session spec's `layout` does, with
+view ids (or indexes into `session.views`) in its leaves, turns workspaces mode
+on, and applies the order the leaves state. One panel per open view, left to
+right:
+
+```js
+const seated = session.layoutViews({
+  direction: 'horizontal',
+  children: session.views.map(v => ({ views: [v.id] })),
+})
+return { seated, ...(await jb.waitReady(30000)) }
+```
+
+- A `size` on each child divides the space (`{ views: [id], size: 70 }`).
+  `direction: "vertical"` stacks the panels; `"tabs"` puts the children in one
+  cell as tabs; a leaf with several ids stacks those views in one tab.
+- A leaf spelled with any other key throws naming it, and a layout that seats no
+  view throws rather than leaving a blank tab.
+- Calling `session.applyLayoutSpec` directly does neither of the two things
+  `session.layoutViews` adds, and the views stay stacked with nothing said.
 
 ## See also
 

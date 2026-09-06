@@ -46,7 +46,9 @@ discipline for using it.
 - trackIds come from `jb.listTracks()`, not from memory of similar configs.
 - Settings keys come from the display itself:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An unknown
-  key is **dropped silently** — that is this format's known failure mode.
+  key is not an error: `applyDisplaySettings` lists it under `unapplied` in its
+  report, and `failed` is a key the display knows and could not set. Read the
+  report.
 - The view is `jb.view(viewId?)`, not `session.views[0]`: views nest and several
   can be open, and with more than one candidate `jb.view()`, `jb.trackModel`,
   `jb.visibleRegions` and `jb.addTrack` throw naming them — pass the `viewId`

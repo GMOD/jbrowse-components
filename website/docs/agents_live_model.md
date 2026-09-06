@@ -52,15 +52,17 @@ Orientation and building:
   reporting what is still not ready, and returns the summary. It **replaces the
   session**: the `session` argument you were given is a dead node afterwards.
   Every `jb` helper re-reads the live one, and `jb.session` is it if you need to
-  rebind. A spec `layout` indexes the spec's own `views` array; the live action
-  `session.applyLayoutSpec` takes the same tree, and its leaves are `views`
-  there too — view ids rather than indexes. `viewIds` is not a key: a node
-  carrying one throws and names it, rather than collapsing the workspace into
-  one blank tab the way it once did. A layout only renders in a workspace, so
-  `session.setUseWorkspaces(true)` comes first — `applyLayoutSpec` does not turn
-  it on, and without it the tree is rebuilt and the views stay stacked down the
-  page. Stacked views are also how a session grows taller than the window, which
-  `jb.waitReady` reports as an `offscreen` note.
+  rebind. A spec `layout` indexes the spec's own `views` array.
+- `session.layoutViews(spec)` arranges the views already open into panels,
+  without replacing the session. Same tree as a spec `layout` — a leaf carries
+  `views`, a container `children` and a `direction` — but a leaf here names view
+  ids (from `jb.sessionSummary()`) or indexes into `session.views`. It turns
+  workspaces mode on for this session, applies the stated top-to-bottom order
+  and returns the ids it seated; the lower-level `session.applyLayoutSpec` does
+  neither, and the views stay stacked down the page with nothing said. `viewIds`
+  is not a key: a node carrying one throws and names it. Stacked views are also
+  how a session grows taller than the window, which `jb.waitReady` reports as an
+  `offscreen` note.
 - `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
   adds a local path or URL, with the format inferred from the extension, shows
   it and settles. `settleMs: 0` skips the settle, for several adds followed by
@@ -80,15 +82,15 @@ Orientation and building:
   display knows and could not set; `unapplied` lists keys that are not config
   slots, misspellings included.
 - `jb.describeSlots(confNode)` lists every slot the node's schema defines, with
-  type, description and default. An unknown settings key is dropped silently, so
-  introspect before writing:
+  type, description and default. An unknown settings key is not an error, only
+  an `unapplied` entry in the report, so introspect before writing:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`.
 
 Reading:
 
 - `jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? })`,
-  or `jb.getFeatures(trackId, loc?)`, is the track's data as live Feature
-  objects, over the visible region by default. See
+  or `jb.getFeatures(trackId, loc?, { assembly?, viewId?, byteLimit? })`, is the
+  track's data as live Feature objects, over the visible region by default. See
   [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
   (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
@@ -243,8 +245,9 @@ return jb.waitReady(30000)
 
 ## Reading data directly (fast path)
 
-Adapters run on the main thread here, with no worker round trip, so features
-stay as objects. Reduce and filter in place and return only what you need:
+`jb.getFeatures` asks the same worker the track's display uses, so a shown
+track's parsed index is reused, and the features come back as Feature objects.
+Reduce and filter in place and return only what you need:
 
 ```js
 // visible region by default; pass loc for an arbitrary region
@@ -269,8 +272,9 @@ return {
   screen as a track.
 
 **To find out what a remote file holds before adding it as a track, build its
-adapter and ask.** An adapter needs no track and no session, so this answers
-"which assembly is this bigWig on" in one call:
+adapter and ask.** The helper is async and returns the adapter. `getRefNames()`
+is on every feature adapter; `getHeader()` answers for formats with one (BAM,
+CRAM, VCF, BED, GFF3) and `null` for a bigWig:
 
 ```js
 const adapter = await jb.getFeatureAdapterOrThrow({
@@ -281,18 +285,37 @@ const adapter = await jb.getFeatureAdapterOrThrow({
     bigWigLocation: { uri: url, locationType: 'UriLocation' },
   },
 })
-return (await adapter.getRefNames()).slice(0, 5)
+return {
+  refNames: (await adapter.getRefNames()).slice(0, 5),
+  header: await adapter.getHeader(),
+}
 ```
 
-`jb.getFeatures` does two things raw adapter code gets wrong silently, so if you
-drop to `jb.getFeatureAdapterOrThrow` yourself, do both by hand:
+The probe's adapter lives on the main thread under the `sessionId` you gave it,
+for the life of the page: fine for a header, not for features. `jb.getFeatures`
+does two things raw adapter code gets wrong silently:
 
-- Translate canonical refNames into the file's own spelling with
-  `jb.renameRegionsIfNeeded`. "ctgA" against a file saying "contigA" matches
+- It renames canonical refNames to the file's spelling with
+  `jb.renameRegionsIfNeeded`; "ctgA" against a file saying "contigA" matches
   nothing and reads as "no data here".
-- Derive the adapter-cache `sessionId` from the shown track
-  (`jb.getRpcSessionId(jb.trackModel(trackId))`) so you share the parsed indexes
-  the display already warmed.
+- It reads on the worker the track's display uses, so the index that display
+  parsed is reused. A main-thread adapter for the same file is a second copy.
+
+**An action's argument shape, when the docs have no page for it** (a view from a
+plugin outside this tree): open a throwaway view, call the action with `{}` so
+the model materializes its defaults, inspect what it created, remove the view:
+
+```js
+const probe = session.addView('ProteinView', {})
+probe.addStructure({})
+const shape = jb.inspect(`views.${session.views.length - 1}.structures.0`)
+session.removeView(probe)
+return shape
+```
+
+**Saving.** Desktop writes the session to its `.jbrowse` file about a second
+after every change; `rootModel.flushSession()` forces it. Web has no save from
+`jb`: the spec you loaded is the record.
 
 ## Showing something you derived
 

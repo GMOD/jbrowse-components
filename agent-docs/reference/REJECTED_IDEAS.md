@@ -3013,3 +3013,36 @@ re-attempt without genuinely new data.
   contract is shared and now pinned by `scripts/readinessContract.test.ts`.
   Reasoning, and the table of what deliberately differs, in
   [ADR-101](../architecture-decision-records/adr-101-readiness-is-answered-three-times-on-purpose.md).
+
+- **`jb.fitToWindow(viewId?)`, a helper that shrinks tracks until the session
+  fits and scrolls the view into frame** — declined 2026-09-06 in the review of
+  the plan drawn from the five filmed MCP takes. Every take spent turns on
+  set-height, screenshot, adjust, so it looked like the biggest lever. But a
+  fit needs per-view-type height knowledge (the linear view has no `setHeight`,
+  a synteny stack resizes levels, a dotplot sets one height), it overwrites
+  heights the user chose, and the gap the transcripts actually show is not
+  knowing the view was offscreen — which `jb.waitReady`'s `offscreen` report
+  now answers, with `scrollY` beside the page and window heights.
+
+- **`jb.views()` / `jb.view(index)`, so an agent stops writing
+  `session.views[0]`** — declined 2026-09-06, same review. `jb.sessionSummary()`
+  already returns every open view with its id, type, name, assemblies and
+  height; a second list of the same is what the roster rule in `jbApi.test.ts`
+  refuses ("the raw model is verbose" does not admit a member), and no
+  transcript lost a turn to the index form.
+
+- **`jb.setTrackFeatures(trackId, features)` to update a computed
+  `FromConfigAdapter` track in place, and a `notReady` entry for a track whose
+  features cover less than the visible region** — declined 2026-09-06, same
+  review. Swapping the features slot under the same `adapterId` leaves the
+  worker's adapter cache serving the old array, which is why the derived-track
+  recipe mints a fresh `trackId` and `adapterId` per computation. The coverage
+  heuristic is wrong on its face: the GEO take's own audit found a RefSeq track
+  covering about half its window and correctly called it fine. The recipe now
+  says to write a bedGraph or bigWig for anything the agent will pan.
+
+- **A `jb`-visible "which worker owns this track" handle for
+  `jb.getFeatures`** — declined 2026-09-06. The id is derivable: a track's
+  `rpcSessionId` is `adapterConfigCacheKey(adapterConfig)`, a pure function of
+  the track config, so `jb.getFeatures` computes it and lands on the display's
+  worker whether or not the track is shown. Nothing needs to name the worker.

@@ -824,6 +824,17 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Set every synteny band to one height in px. `resizeAllLevelHeights`
+       * moves each band by a delta and keeps their differences; this is the
+       * absolute form an agent or a spec reaches for.
+       */
+      setAllLevelHeights(height: number) {
+        for (const level of self.levels) {
+          level.setHeight(height)
+        }
+      },
+      /**
+       * #action
        */
       autoScaleLevelHeights() {
         const numLevels = self.levels.length
