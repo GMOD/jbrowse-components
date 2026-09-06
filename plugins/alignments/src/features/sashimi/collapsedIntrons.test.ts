@@ -1,6 +1,7 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { computeSashimiArcs } from './computeOverlay.ts'
 import { downJunctionKeys, mergeJunctions } from './junctions.ts'
+import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
@@ -53,13 +54,28 @@ const FLIPPED_EXONS: TestRegion[] = [...EXONS]
   .reverse()
 
 // The worker emits one entry per junction per region, in absolute genomic bp.
-function junctions(specs: [number, number, number][]): PileupDataResult {
+// `ends` says which of the junction's two dinucleotides this region's sequence
+// window reached, which for a collapsed view is the interesting variable: a
+// padded exon holds the donor of the junction leaving it and the acceptor of the
+// one arriving, never both ends of the same junction.
+function junctions(
+  specs: [number, number, number][],
+  ends: 'neither' | 'donor' | 'acceptor' | 'both' = 'neither',
+): PileupDataResult {
+  const donor = ends === 'donor' || ends === 'both'
+  const acceptor = ends === 'acceptor' || ends === 'both'
   return makePileupDataResult({
     sashimiX1: new Uint32Array(specs.map(s => s[0])),
     sashimiX2: new Uint32Array(specs.map(s => s[1])),
     sashimiCounts: new Uint32Array(specs.map(s => s[2])),
-    sashimiStrands: new Int8Array(specs.length),
-    sashimiMotifs: new Uint8Array(specs.length),
+    sashimiFwd: new Uint32Array(specs.length),
+    sashimiRev: new Uint32Array(specs.length),
+    sashimiDonors: new Uint8Array(
+      specs.map(() => (donor ? encodeDinucleotide('GT') : 0)),
+    ),
+    sashimiAcceptors: new Uint8Array(
+      specs.map(() => (acceptor ? encodeDinucleotide('AG') : 0)),
+    ),
   })
 }
 
@@ -122,6 +138,32 @@ test('every region re-emits the gene’s junctions; each draws exactly once', ()
   expect(new Set(arcs.map(a => `${a.start}-${a.end}`))).toEqual(
     new Set(['1200-2000', '2000-3000', '1200-3000']),
   )
+})
+
+test('a junction split across two regions is still classified and tinted', () => {
+  // THE collapsed-intron motif case. Each padded exon is its own displayed
+  // region with its own fetched sequence window, so the donor of [1200,2000) is
+  // in region 0's window and its acceptor in region 1's, and neither region can
+  // name the pair. Classified per region, every arc in a collapsed view came
+  // back with no motif at all however much sequence was on screen; the two
+  // halves merge separately so the pair resolves once both regions report.
+  const arcs = computeSashimiArcs(
+    collapsedOpts([
+      junctions([ADJACENT_A], 'donor'),
+      junctions([ADJACENT_A], 'acceptor'),
+      junctions([ADJACENT_A]),
+    ]),
+  )
+  expect(spliceMotifLabel(arcs[0]!.motif)).toBe('GT-AG (canonical)')
+  // and an untagged junction takes the strand that motif implies
+  expect(arcs[0]!.strand).toBe(1)
+})
+
+test('a junction no region could read either end of stays unlabelled', () => {
+  const arcs = computeSashimiArcs(
+    collapsedOpts([junctions([ADJACENT_A]), junctions([ADJACENT_A])]),
+  )
+  expect(spliceMotifLabel(arcs[0]!.motif)).toBeUndefined()
 })
 
 test('a collapsed intron leaves its junction a narrow arc, not a zero-width spike', () => {

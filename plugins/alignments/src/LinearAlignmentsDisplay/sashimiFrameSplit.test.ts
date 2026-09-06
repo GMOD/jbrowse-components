@@ -1,5 +1,6 @@
 import { autorun } from 'mobx'
 
+import { encodeDinucleotide } from '../features/sashimi/motif.ts'
 import {
   createTestAlignmentsDisplay,
   makeEmptyPileupData,
@@ -37,8 +38,10 @@ function seedJunctions(display: LinearAlignmentsDisplayModel) {
     ...makeEmptyPileupData(),
     sashimiX1: new Uint32Array([1000, 3000]),
     sashimiX2: new Uint32Array([2000, 5000]),
-    sashimiStrands: new Int8Array([1, -1]),
-    sashimiMotifs: new Uint8Array([1, 1]),
+    sashimiFwd: new Uint32Array([40, 0]),
+    sashimiRev: new Uint32Array([0, 12]),
+    sashimiDonors: new Uint8Array([encodeDinucleotide('GT'), 0]),
+    sashimiAcceptors: new Uint8Array([encodeDinucleotide('AG'), 0]),
     sashimiCounts: new Uint32Array([40, 12]),
   }
   display.setRpcData(

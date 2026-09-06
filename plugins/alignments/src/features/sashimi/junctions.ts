@@ -21,7 +21,12 @@
 // screen-space assignment would decide, and it doesn't flip an arc between bands
 // as regions scroll in and out of view.
 
-import { isNonCanonicalSpliceMotif, SPLICE_MOTIF_UNKNOWN } from './motif.ts'
+import {
+  classifyEncodedSpliceMotif,
+  DINUCLEOTIDE_UNKNOWN,
+  isNonCanonicalSpliceMotif,
+  spliceMotifStrand,
+} from './motif.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -58,6 +63,41 @@ export interface MergedJunction {
   motif: number
 }
 
+// The same junction mid-merge, before the two motif halves are a motif and the
+// strand votes are a strand. Neither can be settled per region: see
+// `computeSashimiJunctions`.
+interface JunctionAccumulator {
+  key: string
+  refName: string
+  start: number
+  end: number
+  count: number
+  fwd: number
+  rev: number
+  donor: number
+  acceptor: number
+}
+
+// Which strand tints a junction whose reads disagree. Only tagged reads vote:
+// `unknown` is "no strand tag", i.e. an abstention, not a third competing
+// strand — 3 forward-tagged + 3 untagged reads is a forward junction, not an
+// ambiguous one. A junction with no votes at all (fwd === rev === 0) falls back
+// to the strand its splice motif implies, which is what an aligner's XS tag was
+// derived from anyway; contradictory votes (fwd === rev > 0, e.g. overlapping
+// antisense genes) are genuinely ambiguous and stay 0.
+//
+// The result is a plain +1/-1/0 strand — the same vocabulary as
+// `getEffectiveStrand`, `SashimiArc.strand`, the tooltip, and the detail widget.
+function junctionStrand(fwd: number, rev: number, motif: number) {
+  return fwd > rev
+    ? 1
+    : rev > fwd
+      ? -1
+      : fwd === 0
+        ? spliceMotifStrand(motif)
+        : 0
+}
+
 // What the merge drops: junctions under the read-support floor, and — when the
 // display asks — the ones whose splice motif is none of GT-AG / GC-AG / AT-AC.
 // A junction whose motif was never looked up is kept either way; only a known
@@ -75,8 +115,10 @@ export type SashimiFields = Pick<
   | 'sashimiX1'
   | 'sashimiX2'
   | 'sashimiCounts'
-  | 'sashimiStrands'
-  | 'sashimiMotifs'
+  | 'sashimiFwd'
+  | 'sashimiRev'
+  | 'sashimiDonors'
+  | 'sashimiAcceptors'
 >
 
 export interface RegionJunctions {
@@ -104,31 +146,35 @@ export interface RegionJunctions {
 // junction only an off-screen region reported shouldn't draw at all). Loaded is
 // a superset of visible, so every drawn junction is one the layout also saw.
 //
-// MERGE FIRST, FILTER AFTER, and the order is the whole reason this is two loops.
-// Both filters test a property of the JUNCTION and the merge is what resolves it:
-// the count is the max over the copies, and the motif is whichever copy managed
-// to look it up. Dropping a copy on the way in threw its answer away with it — a
-// junction reported non-canonical/40 by the region whose sequence window covers
-// the intron and unknown/3 by one whose window stops short survived, under
-// "Hide non-canonical junctions", as a 3-read untinted arc. Order-independent,
-// so neither copy arriving first made it visible.
-export function mergeJunctions(
-  regions: Iterable<RegionJunctions>,
-  filter: JunctionFilter,
-) {
-  const { minSashimiScore, hideNonCanonicalJunctions } = filter
-  const out = new Map<string, MergedJunction>()
+// MERGE FIRST, CLASSIFY, FILTER AFTER, and the order is the whole reason this is
+// two loops. Both filters test a property of the JUNCTION and the merge is what
+// resolves it: the count is the max over the copies, and each motif half is
+// whichever copy managed to read it. Dropping a copy on the way in threw its
+// answer away with it — a junction reported non-canonical/40 by the region whose
+// sequence window covers the intron and unknown/3 by one whose window stops
+// short survived, under "Hide non-canonical junctions", as a 3-read untinted
+// arc. Order-independent, so neither copy arriving first made it visible.
+//
+// The halves merge SEPARATELY, which is what makes the motif resolvable at all
+// when no single region holds both ends — the collapsed-intron layout, where
+// every junction spans two displayed regions by construction, and any intron
+// longer than a block's sequence window in an ordinary view.
+function accumulateJunctions(regions: Iterable<RegionJunctions>) {
+  const out = new Map<string, JunctionAccumulator>()
   for (const { refName, data } of regions) {
     const {
       sashimiX1,
       sashimiX2,
       sashimiCounts,
-      sashimiStrands,
-      sashimiMotifs,
+      sashimiFwd,
+      sashimiRev,
+      sashimiDonors,
+      sashimiAcceptors,
     } = data
     for (let i = 0; i < sashimiX1.length; i++) {
       const count = sashimiCounts[i]!
-      const motif = sashimiMotifs[i]!
+      const donor = sashimiDonors[i]!
+      const acceptor = sashimiAcceptors[i]!
       const start = sashimiX1[i]!
       const end = sashimiX2[i]!
       const key = junctionKey(refName, start, end)
@@ -140,29 +186,63 @@ export function mergeJunctions(
           start,
           end,
           count,
-          strand: sashimiStrands[i]!,
-          motif,
+          fwd: sashimiFwd[i]!,
+          rev: sashimiRev[i]!,
+          donor,
+          acceptor,
         })
       } else {
-        // The motif is a property of the coordinates, so every copy that
-        // looked it up agrees; a copy whose end fell outside its region's
-        // sequence reports unknown, and any other copy's answer fills that in.
-        if (prev.motif === SPLICE_MOTIF_UNKNOWN) {
-          prev.motif = motif
+        // A dinucleotide is a property of the coordinate, so every copy that
+        // read it agrees; a copy whose end fell outside its region's sequence
+        // reports unknown, and any other copy's answer fills that end in.
+        if (prev.donor === DINUCLEOTIDE_UNKNOWN) {
+          prev.donor = donor
+        }
+        if (prev.acceptor === DINUCLEOTIDE_UNKNOWN) {
+          prev.acceptor = acceptor
         }
         if (count > prev.count) {
           prev.count = count
-          prev.strand = sashimiStrands[i]!
+          prev.fwd = sashimiFwd[i]!
+          prev.rev = sashimiRev[i]!
         }
       }
     }
   }
-  for (const [key, j] of out) {
+  return out
+}
+
+export function mergeJunctions(
+  regions: Iterable<RegionJunctions>,
+  filter: JunctionFilter,
+) {
+  const { minSashimiScore, hideNonCanonicalJunctions } = filter
+  const out = new Map<string, MergedJunction>()
+  for (const {
+    key,
+    refName,
+    start,
+    end,
+    count,
+    fwd,
+    rev,
+    donor,
+    acceptor,
+  } of accumulateJunctions(regions).values()) {
+    const motif = classifyEncodedSpliceMotif(donor, acceptor)
     if (
-      j.count < minSashimiScore ||
-      (hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(j.motif))
+      count >= minSashimiScore &&
+      !(hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(motif))
     ) {
-      out.delete(key)
+      out.set(key, {
+        key,
+        refName,
+        start,
+        end,
+        count,
+        strand: junctionStrand(fwd, rev, motif),
+        motif,
+      })
     }
   }
   return out

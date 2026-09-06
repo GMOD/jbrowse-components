@@ -44,6 +44,7 @@ import {
   projectSashimiArcs,
 } from '../src/features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../src/features/sashimi/junctions.ts'
+import { encodeDinucleotide } from '../src/features/sashimi/motif.ts'
 
 import type { WorkerPileupData } from '../src/RenderAlignmentDataRPC/types.ts'
 import type { SashimiArc } from '../src/features/sashimi/computeOverlay.ts'
@@ -87,31 +88,37 @@ async function loadFixture(): Promise<Junction[]> {
     })
 }
 
-// The worker's output shape for one region: five parallel arrays, one entry per
+// The worker's output shape for one region: seven parallel arrays, one entry per
 // distinct junction. Only the sashimi fields are read, so the rest is absent.
 function regionData(junctions: Junction[]) {
   const n = junctions.length
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
   const sashimiCounts = new Uint32Array(n)
-  const sashimiStrands = new Int8Array(n)
-  const sashimiMotifs = new Uint8Array(n)
+  const sashimiFwd = new Uint32Array(n)
+  const sashimiRev = new Uint32Array(n)
+  const sashimiDonors = new Uint8Array(n)
+  const sashimiAcceptors = new Uint8Array(n)
   for (let i = 0; i < n; i++) {
     const j = junctions[i]!
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
     sashimiCounts[i] = j.count
-    sashimiStrands[i] = i % 2 === 0 ? 1 : -1
-    // 1 is GT-AG in motif.ts — a canonical junction, so nothing is filtered on
-    // the motif and both arms carry every junction through.
-    sashimiMotifs[i] = 1
+    sashimiFwd[i] = i % 2 === 0 ? j.count : 0
+    sashimiRev[i] = i % 2 === 0 ? 0 : j.count
+    // GT / AG — a canonical junction, so nothing is filtered on the motif and
+    // both arms carry every junction through.
+    sashimiDonors[i] = encodeDinucleotide('GT')
+    sashimiAcceptors[i] = encodeDinucleotide('AG')
   }
   return {
     sashimiX1,
     sashimiX2,
     sashimiCounts,
-    sashimiStrands,
-    sashimiMotifs,
+    sashimiFwd,
+    sashimiRev,
+    sashimiDonors,
+    sashimiAcceptors,
   } as unknown as WorkerPileupData
 }
 

@@ -258,9 +258,11 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
     sashimi: {
       sashimiX1: new Uint32Array(0),
       sashimiX2: new Uint32Array(0),
-      sashimiStrands: new Int8Array(0),
       sashimiCounts: new Uint32Array(0),
-      sashimiMotifs: new Uint8Array(0),
+      sashimiFwd: new Uint32Array(0),
+      sashimiRev: new Uint32Array(0),
+      sashimiDonors: new Uint8Array(0),
+      sashimiAcceptors: new Uint8Array(0),
     },
     coverageAreaPacked: {
       coverageBinSize: 1,

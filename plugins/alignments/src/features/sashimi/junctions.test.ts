@@ -1,28 +1,46 @@
 import { downJunctionKeys, junctionKey, mergeJunctions } from './junctions.ts'
-import { SPLICE_MOTIF_NON_CANONICAL, SPLICE_MOTIF_UNKNOWN } from './motif.ts'
+import {
+  DINUCLEOTIDE_UNKNOWN,
+  encodeDinucleotide,
+  SPLICE_MOTIF_NON_CANONICAL,
+} from './motif.ts'
 
 import type { RegionJunctions, SashimiArcsMode } from './junctions.ts'
 
-// [start, end, count] per junction, optionally with a strand and a motif code.
-type Spec =
-  | [number, number, number]
-  | [number, number, number, number]
-  | [number, number, number, number, number]
+// [start, end, count] per junction, plus whatever this test cares about of the
+// raw strand votes and the two motif halves. An absent dinucleotide is an end
+// this region's sequence window did not cover.
+interface JunctionDetail {
+  fwd?: number
+  rev?: number
+  donor?: string
+  acceptor?: string
+}
+type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
 const keep = (minSashimiScore = 0, hideNonCanonicalJunctions = false) => ({
   minSashimiScore,
   hideNonCanonicalJunctions,
 })
 
+function dinucleotide(bases: string | undefined) {
+  return bases === undefined ? DINUCLEOTIDE_UNKNOWN : encodeDinucleotide(bases)
+}
+
 function region(refName: string, junctions: Spec[]): RegionJunctions {
+  const details = junctions.map(j => j[3] ?? {})
   return {
     refName,
     data: {
       sashimiX1: new Uint32Array(junctions.map(j => j[0])),
       sashimiX2: new Uint32Array(junctions.map(j => j[1])),
       sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
-      sashimiStrands: new Int8Array(junctions.map(j => j[3] ?? 0)),
-      sashimiMotifs: new Uint8Array(junctions.map(j => j[4] ?? 0)),
+      sashimiFwd: new Uint32Array(details.map(d => d.fwd ?? 0)),
+      sashimiRev: new Uint32Array(details.map(d => d.rev ?? 0)),
+      sashimiDonors: new Uint8Array(details.map(d => dinucleotide(d.donor))),
+      sashimiAcceptors: new Uint8Array(
+        details.map(d => dinucleotide(d.acceptor)),
+      ),
     },
   }
 }
@@ -45,9 +63,9 @@ describe('mergeJunctions', () => {
     // max is the best available estimate and the heavier copy wins the tint.
     const merged = mergeJunctions(
       [
-        region('chr1', [[100, 1100, 5, -1]]),
-        region('chr1', [[100, 1100, 8, 1]]),
-        region('chr1', [[100, 1100, 3, -1]]),
+        region('chr1', [[100, 1100, 5, { rev: 5 }]]),
+        region('chr1', [[100, 1100, 8, { fwd: 8 }]]),
+        region('chr1', [[100, 1100, 3, { rev: 3 }]]),
       ],
       keep(),
     )
@@ -88,9 +106,9 @@ describe('mergeJunctions', () => {
   test('hides a non-canonical junction only when asked, never an unread one', () => {
     const regions = [
       region('chr1', [
-        [100, 500, 9, 0, SPLICE_MOTIF_NON_CANONICAL],
-        [200, 900, 9, 0, 1],
-        [300, 700, 9, 0, SPLICE_MOTIF_UNKNOWN],
+        [100, 500, 9, { donor: 'AA', acceptor: 'CC' }],
+        [200, 900, 9, { donor: 'GT', acceptor: 'AG' }],
+        [300, 700, 9],
       ]),
     ]
     expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([
@@ -111,9 +129,9 @@ describe('mergeJunctions', () => {
   // non-canonical.
   test('hiding non-canonical uses the merged motif, not one region s view', () => {
     const classified = region('chr1', [
-      [100, 1100, 40, 0, SPLICE_MOTIF_NON_CANONICAL],
+      [100, 1100, 40, { donor: 'AA', acceptor: 'CC' }],
     ])
-    const unread = region('chr1', [[100, 1100, 3, 0, SPLICE_MOTIF_UNKNOWN]])
+    const unread = region('chr1', [[100, 1100, 3]])
     for (const regions of [
       [classified, unread],
       [unread, classified],
@@ -137,14 +155,44 @@ describe('mergeJunctions', () => {
   test('a copy that read the motif fills in one that could not', () => {
     // A region whose sequence stops short of the far end reports unknown; the
     // region holding that end reports the motif. Either order.
-    const read = region('chr1', [[100, 1100, 30, 0, 3]])
-    const unread = region('chr1', [[100, 1100, 1, 0, SPLICE_MOTIF_UNKNOWN]])
+    const read = region('chr1', [
+      [100, 1100, 30, { donor: 'GC', acceptor: 'AG' }],
+    ])
+    const unread = region('chr1', [[100, 1100, 1]])
     for (const regions of [
       [read, unread],
       [unread, read],
     ]) {
       expect([...mergeJunctions(regions, keep()).values()][0]!.motif).toBe(3)
     }
+  })
+
+  // The collapsed-intron layout (one padded exon per displayed region) puts a
+  // junction's two ends in DIFFERENT regions by construction, so neither copy
+  // can classify the pair and a per-junction motif left every arc in the view
+  // unlabelled. The halves merge separately for exactly this.
+  test('two regions holding one end each still classify the junction', () => {
+    const donorSide = region('chr1', [[100, 1100, 30, { donor: 'GT' }]])
+    const acceptorSide = region('chr1', [[100, 1100, 12, { acceptor: 'AG' }]])
+    for (const regions of [
+      [donorSide, acceptorSide],
+      [acceptorSide, donorSide],
+    ]) {
+      const merged = [...mergeJunctions(regions, keep()).values()][0]!
+      expect(merged.motif).toBe(1)
+      // and the motif the merge resolved is what tints an untagged junction
+      expect(merged.strand).toBe(1)
+    }
+  })
+
+  test('the heavier copy s strand votes win, the motif only breaking a tie', () => {
+    const tagged = region('chr1', [
+      [100, 1100, 30, { rev: 30, donor: 'GT', acceptor: 'AG' }],
+    ])
+    const untagged = region('chr1', [[100, 1100, 4]])
+    expect(
+      [...mergeJunctions([tagged, untagged], keep()).values()][0]!.strand,
+    ).toBe(-1)
   })
 
   test('a region reporting only a clipped count cannot lower the merged one', () => {

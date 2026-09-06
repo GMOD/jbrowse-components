@@ -480,8 +480,10 @@ function junctionData(junctions: [number, number, number][]): PileupDataResult {
     sashimiX1: new Uint32Array(junctions.map(j => j[0])),
     sashimiX2: new Uint32Array(junctions.map(j => j[1])),
     sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
-    sashimiStrands: new Int8Array(junctions.length),
-    sashimiMotifs: new Uint8Array(junctions.length),
+    sashimiFwd: new Uint32Array(junctions.length),
+    sashimiRev: new Uint32Array(junctions.length),
+    sashimiDonors: new Uint8Array(junctions.length),
+    sashimiAcceptors: new Uint8Array(junctions.length),
   })
 }
 

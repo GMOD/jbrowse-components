@@ -1,31 +1,6 @@
-import {
-  SPLICE_MOTIF_UNKNOWN,
-  spliceMotifAt,
-  spliceMotifStrand,
-} from './motif.ts'
+import { DINUCLEOTIDE_UNKNOWN, spliceMotifDinucleotides } from './motif.ts'
 
 import type { CoverageGap } from '@jbrowse/alignments-core'
-
-// Which strand tints a junction whose reads disagree. Only tagged reads vote:
-// `unknown` is "no strand tag", i.e. an abstention, not a third competing
-// strand — 3 forward-tagged + 3 untagged reads is a forward junction, not an
-// ambiguous one. A junction with no votes at all (fwd === rev === 0) falls back
-// to the strand its splice motif implies, which is what an aligner's XS tag was
-// derived from anyway; contradictory votes (fwd === rev > 0, e.g. overlapping
-// antisense genes) are genuinely ambiguous and stay 0.
-//
-// The result is a plain +1/-1/0 strand — the same vocabulary as
-// `getEffectiveStrand`, `SashimiArc.strand`, the tooltip, and the detail widget
-// — so it crosses the worker boundary as-is.
-function junctionStrand(fwd: number, rev: number, motif: number) {
-  return fwd > rev
-    ? 1
-    : rev > fwd
-      ? -1
-      : fwd === 0
-        ? spliceMotifStrand(motif)
-        : 0
-}
 
 // The reference bases the junction motifs are read from, absent when the
 // assembly has no sequence adapter or the fetch was skipped.
@@ -35,9 +10,9 @@ export interface JunctionReference {
 }
 
 // Bucket skip-gaps by (start,end) and emit one arc per junction, counting every
-// supporting read and tinting by the dominant strand. The junction Map is keyed
-// by string concat — gap counts are typically small, so the string-key cost is
-// negligible vs needing two parallel maps.
+// supporting read. The junction Map is keyed by string concat — gap counts are
+// typically small, so the string-key cost is negligible vs needing two parallel
+// maps.
 //
 // One arc per *junction*, not per (junction, strand): the arc's geometry in
 // `computeOverlay.ts` derives purely from start/end, so a per-strand split drew
@@ -49,6 +24,11 @@ export interface JunctionReference {
 // returns 0 for any read without an XS/TS/ts tag, so a merged BAM, or minimap2
 // emitting `ts` only for recognized motifs, routinely yields tagged and untagged
 // reads on the same junction.
+//
+// The per-strand read tallies and the two motif halves ship RAW: the strand a
+// junction is tinted by depends on its motif, and the motif on both ends being
+// resolved, and a region holding only one end can settle neither. Both decisions
+// are `mergeJunctions`', once every region has contributed what it saw.
 //
 // Worker-side compute. SVG-overlay geometry (`projectSashimiArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
@@ -86,28 +66,39 @@ export function computeSashimiJunctions(
   const n = junctions.size
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
-  const sashimiStrands = new Int8Array(n)
   const sashimiCounts = new Uint32Array(n)
-  const sashimiMotifs = new Uint8Array(n)
+  const sashimiFwd = new Uint32Array(n)
+  const sashimiRev = new Uint32Array(n)
+  const sashimiDonors = new Uint8Array(n)
+  const sashimiAcceptors = new Uint8Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
-    const motif = reference
-      ? spliceMotifAt(j.start, j.end, reference.sequence, reference.start)
-      : SPLICE_MOTIF_UNKNOWN
+    const { donor, acceptor } = reference
+      ? spliceMotifDinucleotides(
+          j.start,
+          j.end,
+          reference.sequence,
+          reference.start,
+        )
+      : { donor: DINUCLEOTIDE_UNKNOWN, acceptor: DINUCLEOTIDE_UNKNOWN }
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
-    sashimiStrands[i] = junctionStrand(j.fwd, j.rev, motif)
     sashimiCounts[i] = j.total
-    sashimiMotifs[i] = motif
+    sashimiFwd[i] = j.fwd
+    sashimiRev[i] = j.rev
+    sashimiDonors[i] = donor
+    sashimiAcceptors[i] = acceptor
     i++
   }
 
   return {
     sashimiX1,
     sashimiX2,
-    sashimiStrands,
     sashimiCounts,
-    sashimiMotifs,
+    sashimiFwd,
+    sashimiRev,
+    sashimiDonors,
+    sashimiAcceptors,
   }
 }

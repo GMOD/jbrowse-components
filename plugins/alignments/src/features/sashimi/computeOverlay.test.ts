@@ -27,8 +27,10 @@ function makeData(counts: number[]): PileupDataResult {
     sashimiX1,
     sashimiX2,
     sashimiCounts: new Uint32Array(counts),
-    sashimiStrands: new Int8Array(n),
-    sashimiMotifs: new Uint8Array(n),
+    sashimiFwd: new Uint32Array(n),
+    sashimiRev: new Uint32Array(n),
+    sashimiDonors: new Uint8Array(n),
+    sashimiAcceptors: new Uint8Array(n),
   })
 }
 
@@ -93,8 +95,10 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
     sashimiX1: new Uint32Array([100, 100, 100]),
     sashimiX2: new Uint32Array([150, 300, 1100]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiStrands: new Int8Array([0, 0, 0]),
-    sashimiMotifs: new Uint8Array(3),
+    sashimiFwd: new Uint32Array([0, 0, 0]),
+    sashimiRev: new Uint32Array([0, 0, 0]),
+    sashimiDonors: new Uint8Array([0, 0, 0]),
+    sashimiAcceptors: new Uint8Array([0, 0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   // up-mode: a taller arc rises further, so its apex labelY is smaller.
@@ -111,8 +115,10 @@ const deepestDownArc = () => {
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([100_100]),
     sashimiCounts: new Uint32Array([5]),
-    sashimiStrands: new Int8Array([0]),
-    sashimiMotifs: new Uint8Array(1),
+    sashimiFwd: new Uint32Array([0]),
+    sashimiRev: new Uint32Array([0]),
+    sashimiDonors: new Uint8Array([0]),
+    sashimiAcceptors: new Uint8Array([0]),
   })
   return computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -145,8 +151,10 @@ test('the up band spends its whole height on the arc, clearance-free', () => {
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([100_100]),
     sashimiCounts: new Uint32Array([5]),
-    sashimiStrands: new Int8Array([0]),
-    sashimiMotifs: new Uint8Array(1),
+    sashimiFwd: new Uint32Array([0]),
+    sashimiRev: new Uint32Array([0]),
+    sashimiDonors: new Uint8Array([0]),
+    sashimiAcceptors: new Uint8Array([0]),
   })
   const arc = computeSashimiArcs(baseOpts(data, 0))[0]!
   // baseline is the histogram's own zero line at effectiveHeight (100 - 2*5),
@@ -183,8 +191,10 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
     sashimiX1: new Uint32Array([100, 100]),
     sashimiX2: new Uint32Array([105, 400]),
     sashimiCounts: new Uint32Array([5, 5]),
-    sashimiStrands: new Int8Array([0, 0]),
-    sashimiMotifs: new Uint8Array(2),
+    sashimiFwd: new Uint32Array([0, 0]),
+    sashimiRev: new Uint32Array([0, 0]),
+    sashimiDonors: new Uint8Array([0, 0]),
+    sashimiAcceptors: new Uint8Array([0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.showLabel).toBe(false)
@@ -198,8 +208,10 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
     sashimiX1: new Uint32Array([100, 500]),
     sashimiX2: new Uint32Array([130, 530]),
     sashimiCounts: new Uint32Array([5, 12345]),
-    sashimiStrands: new Int8Array([0, 0]),
-    sashimiMotifs: new Uint8Array(2),
+    sashimiFwd: new Uint32Array([0, 0]),
+    sashimiRev: new Uint32Array([0, 0]),
+    sashimiDonors: new Uint8Array([0, 0]),
+    sashimiAcceptors: new Uint8Array([0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const showByStart = new Map(arcs.map(a => [a.start, a.showLabel]))
@@ -214,8 +226,10 @@ test('tints arcs with the read-alignment strand colors', () => {
     sashimiX1: new Uint32Array([100, 300, 500]),
     sashimiX2: new Uint32Array([200, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiStrands: new Int8Array([1, -1, 0]),
-    sashimiMotifs: new Uint8Array(3),
+    sashimiFwd: new Uint32Array([5, 0, 0]),
+    sashimiRev: new Uint32Array([0, 5, 0]),
+    sashimiDonors: new Uint8Array([0, 0, 0]),
+    sashimiAcceptors: new Uint8Array([0, 0, 0]),
   })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
@@ -229,8 +243,10 @@ test('places each arc on the side its junction key was assigned', () => {
     sashimiX1: new Uint32Array([100, 200, 500]),
     sashimiX2: new Uint32Array([300, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiStrands: new Int8Array([0, 0, 0]),
-    sashimiMotifs: new Uint8Array(3),
+    sashimiFwd: new Uint32Array([0, 0, 0]),
+    sashimiRev: new Uint32Array([0, 0, 0]),
+    sashimiDonors: new Uint8Array([0, 0, 0]),
+    sashimiAcceptors: new Uint8Array([0, 0, 0]),
   })
   const arcs = computeSashimiArcs({
     ...baseOpts(data, 0),
@@ -267,15 +283,19 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([5]),
-    sashimiStrands: new Int8Array([0]),
-    sashimiMotifs: new Uint8Array(1),
+    sashimiFwd: new Uint32Array([0]),
+    sashimiRev: new Uint32Array([0]),
+    sashimiDonors: new Uint8Array([0]),
+    sashimiAcceptors: new Uint8Array([0]),
   })
   const region1 = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([8]),
-    sashimiStrands: new Int8Array([0]),
-    sashimiMotifs: new Uint8Array(1),
+    sashimiFwd: new Uint32Array([0]),
+    sashimiRev: new Uint32Array([0]),
+    sashimiDonors: new Uint8Array([0]),
+    sashimiAcceptors: new Uint8Array([0]),
   })
   const arcs = computeSashimiArcs({
     ...baseOpts(region0, 0),
@@ -303,8 +323,10 @@ test('a shared junction whose copies disagree on strand still renders once', () 
       sashimiX1: new Uint32Array([100]),
       sashimiX2: new Uint32Array([1100]),
       sashimiCounts: new Uint32Array([count]),
-      sashimiStrands: new Int8Array([strand]),
-      sashimiMotifs: new Uint8Array(1),
+      sashimiFwd: new Uint32Array([strand === 1 ? count : 0]),
+      sashimiRev: new Uint32Array([strand === -1 ? count : 0]),
+      sashimiDonors: new Uint8Array([0]),
+      sashimiAcceptors: new Uint8Array([0]),
     })
   const arcs = computeSashimiArcs({
     ...baseOpts(region(5, -1), 0),
@@ -351,8 +373,10 @@ describe('junctions with no pixel in the box are culled', () => {
       sashimiX1: new Uint32Array([x1]),
       sashimiX2: new Uint32Array([x2]),
       sashimiCounts: new Uint32Array([count]),
-      sashimiStrands: new Int8Array([0]),
-      sashimiMotifs: new Uint8Array(1),
+      sashimiFwd: new Uint32Array([0]),
+      sashimiRev: new Uint32Array([0]),
+      sashimiDonors: new Uint8Array([0]),
+      sashimiAcceptors: new Uint8Array([0]),
     })
 
   // `bpToScreenX` is the identity here, so a bp IS a screen x.

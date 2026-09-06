@@ -86,7 +86,8 @@ export interface SashimiTooltipPayload {
   score: number
   strand: string
   refName: string
-  // 'GT-AG' / 'GC-AG' / 'AT-AC' / 'non-canonical'; absent when never looked up
+  // 'GT-AG (canonical)' / 'GC-AG (canonical)' / 'AT-AC (canonical)' /
+  // 'non-canonical'; absent when neither end was ever read off the reference
   motif?: string
 }
 

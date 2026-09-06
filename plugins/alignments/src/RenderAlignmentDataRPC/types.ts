@@ -281,12 +281,16 @@ export interface WorkerPileupData {
   modCovPackedBuffer: ArrayBuffer
 
   // Sashimi arc data (splice junctions from skip gaps). One entry per junction,
-  // parallel across all four arrays.
+  // parallel across all seven arrays. Strand votes and motif halves ship raw
+  // because a region holding one end of a junction can settle neither — both are
+  // resolved by mergeJunctions (features/sashimi/junctions.ts).
   sashimiX1: Uint32Array // absolute genomic bp (junction start)
   sashimiX2: Uint32Array // absolute genomic bp (junction end)
-  sashimiStrands: Int8Array // dominant strand: +1 forward, -1 reverse, 0 unknown
   sashimiCounts: Uint32Array // supporting reads per junction, all strands
-  sashimiMotifs: Uint8Array // splice-site motif code (features/sashimi/motif.ts)
+  sashimiFwd: Uint32Array // of those, reads tagged forward-strand
+  sashimiRev: Uint32Array // of those, reads tagged reverse-strand
+  sashimiDonors: Uint8Array // encoded donor dinucleotide (features/sashimi/motif.ts)
+  sashimiAcceptors: Uint8Array // encoded acceptor dinucleotide
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
