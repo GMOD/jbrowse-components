@@ -82,7 +82,7 @@ Turn on **Rendering mode → Phased** from the track menu:
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="Both picks in one pass, on the track the figures above are of: the multi-sample matrix display, then the phased rendering mode splitting each trio member into its two haplotype rows in place. The last move zooms out to the window the rest of the page works in." />
 
 That last move is wider than the default display will draw: it stops above its
-[feature-density limit](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity),
+[feature-density limit](/docs/config/linearcanvasbasedisplay/#slot-maxfeaturescreendensity),
 where the matrix keeps going because a column is a variant rather than a
 position.
 
