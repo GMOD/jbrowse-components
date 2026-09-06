@@ -24,9 +24,12 @@ files `make-pif` wrote from a PAF that a script unpacked from the graph ahead of
 time:
 
 - `CoreGetFeatures` on the anchor with no target, `mateShape: 'grouped'`,
-  `clipToRegion: true`, `lodMode`: every haplotype's alignment to the anchor
-  over the requested window, each record already clipped to the window with
-  its CIGAR dropped, PanSN names, one feature per record.
+  `clipToRegion: true`, `splitAtGapBp: 10000`, `lodMode`: every haplotype's
+  alignment to the anchor over the requested window, each record already
+  clipped to the window and cut at every indel of 10 kb or more into one
+  feature per gap-free run (ids and `syntenyId` numbered per run, so each run
+  is its own group and its own placement), with its CIGAR dropped, PanSN
+  names.
 - `CoreGetFeatures` on an upper mate lane's window with `targetAssemblyName`
   set to the lower lane: the direct records between two mates, or nothing,
   in which case `composeLaneLinks` projects the pair through the anchor.

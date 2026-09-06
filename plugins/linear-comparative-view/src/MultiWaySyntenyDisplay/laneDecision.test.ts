@@ -330,6 +330,56 @@ describe('the orientation', () => {
     expect(settle(fewBackwards, previous).flipped).toBe(false)
   })
 
+  // An alignment cut into runs at its large indels: four heavy forward runs
+  // of one chain with small reversed repeat hits between them. Paired only
+  // with its neighbours, every pair was weighed by the hit and the chain read
+  // backwards on a few hundred bp
+  test('heavy forward runs are not outvoted by the small reversed hits between them', () => {
+    const chainRun = (i: number, start: number) =>
+      new SimpleFeature({
+        uniqueId: `chain/${i}`,
+        syntenyId: `chain/${i}`,
+        refName: 'chr1',
+        start,
+        end: start + 100,
+        strand: 1,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500_000 + start,
+          end: 500_000 + start + 100,
+        },
+      })
+    const hit = (i: number, start: number, mateStart: number) =>
+      new SimpleFeature({
+        uniqueId: `hit/${i}`,
+        syntenyId: `hit/${i}`,
+        refName: 'chr1',
+        start,
+        end: start + 2,
+        strand: -1,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: mateStart,
+          end: mateStart + 2,
+        },
+      })
+    const interleaved = groupFeatures([
+      chainRun(0, 100),
+      hit(0, 210, 500_900),
+      chainRun(1, 300),
+      hit(1, 410, 500_050),
+      chainRun(2, 500),
+      hit(2, 610, 500_950),
+      chainRun(3, 700),
+      hit(3, 810, 500_020),
+    ])
+    expect(settle(interleaved).flipped).toBe(false)
+  })
+
   test('carries across a contig change rather than re-guessing', () => {
     const previous = new Map([['peach', settle(backwards)]])
     const mixed = [250, 100, 400, 550, 850, 700]

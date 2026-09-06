@@ -40,6 +40,13 @@ export interface BaseOptions {
   // by the comparative adapters' `getFeaturesInMultipleRegions`, for records
   // that ARE alignments — a gene-pair table's rows are genes and stay whole.
   clipToRegion?: boolean
+  // With `clipToRegion`, each clipped record is further cut at every insertion
+  // or deletion of this many bp or more, into one record per gap-free run —
+  // ids and `syntenyId` suffixed per run — so a display that draws a record as
+  // one straight placement draws the runs the alignment actually has rather
+  // than a ribbon across a 25 kb indel. Read off the alignment string the clip
+  // walks anyway; a record with none is one run.
+  splitAtGapBp?: number
   // Which level-of-detail tier to read, for adapters that expose more than one
   // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
   // fine tier is served; adapters without tiering ignore it entirely.

@@ -214,6 +214,90 @@ export function clipSyntenyFeature(
   }
 }
 
+function isGapOp(op: number) {
+  return op === CIGAR_I || op === CIGAR_D || op === CIGAR_N
+}
+
+/**
+ * The gap-free runs of a block: the block cut at every insertion or deletion
+ * of `gapBp` or more, each run re-anchored on both axes with its own ops, in
+ * the shape {@link clipSyntenyFeature} answers with so a run can then be
+ * clipped to a window like any block. Cut BEFORE the clip rather than after
+ * it, because a clip trims a gap straddling the window edge to the part
+ * inside, and a 25 kb deletion 9 kb of which is in view is still a gap. The
+ * walk is the clip's own — query forward, target down for a - strand block
+ * from `mateEnd` — and a run's `mateStart`/`mateEnd` are its target extent
+ * in ascending order. A run is only what aligned: one holding no match or
+ * coarse-run op (a stretch that is deletions alone) is dropped, and a gap at
+ * either edge of the block leaves no empty run behind it.
+ *
+ * Wanted by a display that draws a clipped record as one straight placement
+ * and has no CIGAR left to consult: a chain carrying a 25 kb indel inside the
+ * window drew as one ribbon, and what it draws now is one placement per run.
+ * The coarse tier keeps every indel longer than half its bound as its own op,
+ * so a `gapBp` at that bound splits the same way on either tier.
+ */
+export function splitSyntenyFeatureAtGaps(
+  cigar: Uint32Array,
+  start: number,
+  mateStart: number,
+  mateEnd: number,
+  strand: number,
+  gapBp: number,
+): ClippedSyntenyFeature[] {
+  const revTarget = strand === -1 ? -1 : 1
+  const runs: ClippedSyntenyFeature[] = []
+  let bp1 = start
+  let bp2 = strand === -1 ? mateEnd : mateStart
+  let run:
+    | { qLo: number; qHi: number; tLo: number; tHi: number; ops: number[] }
+    | undefined
+  let aligned = false
+  const close = () => {
+    if (run !== undefined && aligned && run.qHi > run.qLo) {
+      runs.push({
+        start: run.qLo,
+        end: run.qHi,
+        mateStart: run.tLo,
+        mateEnd: run.tHi,
+        cigar: Uint32Array.from(run.ops),
+      })
+    }
+    run = undefined
+    aligned = false
+  }
+  for (let k = 0; k < cigar.length; k++) {
+    const packed = cigar[k]!
+    const len = packed >>> 4
+    const op = packed & 0xf
+    const isRun = op === CIGAR_RUN
+    const second = isRun ? cigar[++k]! : undefined
+    const qAdv = isRun || consumesQuery(op) ? len : 0
+    const tAdv =
+      second !== undefined ? second >>> 4 : consumesTarget(op) ? len : 0
+    const bp2Next = bp2 + tAdv * revTarget
+    if (isGapOp(op) && len >= gapBp) {
+      close()
+    } else if (qAdv > 0 || tAdv > 0) {
+      if (run === undefined) {
+        run = { qLo: bp1, qHi: bp1, tLo: bp2, tHi: bp2, ops: [] }
+      }
+      run.qHi = bp1 + qAdv
+      run.tLo = Math.min(run.tLo, bp2, bp2Next)
+      run.tHi = Math.max(run.tHi, bp2, bp2Next)
+      run.ops.push(packed)
+      if (second !== undefined) {
+        run.ops.push(second)
+      }
+      aligned = aligned || isRun || isMatchOp(op)
+    }
+    bp1 += qAdv
+    bp2 = bp2Next
+  }
+  close()
+  return runs
+}
+
 // Worker glue over clipSyntenyFeature: gate on size + resolve the v1 region the
 // fetch window is over, convert the window to that region's local bp, parse
 // the CIGAR (or the coarse tier's fold of it) and clip. Returns undefined

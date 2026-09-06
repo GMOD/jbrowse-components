@@ -329,6 +329,40 @@ test('a lane placing two short alignment records sorts below one placing a singl
   expect(rowAssembliesOf(groups, [], exactName)).toEqual(['whole', 'broken'])
 })
 
+// The clip cuts a record at every large indel into runs numbered after the
+// window on both ids, so each run is its own group with its own anchor and
+// mate intervals — the shape every ribbon and composed link reads — and the
+// lane's weight is what the runs cover, not the gap between them.
+test('the runs of one clipped record are sibling groups, weighed by the anchor bp they cover', () => {
+  const run = (i: number, anchor: [number, number], mate: [number, number]) =>
+    new SimpleFeature({
+      uniqueId: `r1:0-100000/${i}`,
+      syntenyId: `7:0-100000/${i}`,
+      refName: 'chr1',
+      start: anchor[0],
+      end: anchor[1],
+      strand: 1,
+      assemblyName: 'anchor',
+      mate: {
+        assemblyName: 'mouse',
+        refName: 'M1',
+        start: mate[0],
+        end: mate[1],
+      },
+    })
+  const groups = groupFeatures([
+    run(0, [1000, 2000], [5000, 6000]),
+    run(1, [27_000, 28_000], [6000, 7000]),
+  ])
+  expect(groups.map(g => g.key)).toEqual(['7:0-100000/0', '7:0-100000/1'])
+  expect(groups.map(g => [g.anchor.start, g.anchor.end])).toEqual([
+    [1000, 2000],
+    [27_000, 28_000],
+  ])
+  expect(groups.map(g => g.mates.get('mouse')![0]!.start)).toEqual([5000, 6000])
+  expect(groups.reduce((sum, g) => sum + g.weight, 0)).toBe(2000)
+})
+
 test('a lane frame snaps to a multiple of the anchor span', () => {
   const groups = groupFeatures(features)
   const frame = computeRowFrame(groups, 'peach', 1000)!

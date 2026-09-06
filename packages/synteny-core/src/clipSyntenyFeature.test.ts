@@ -12,6 +12,7 @@ import { buildBpRegionIndex } from './bpRegionIndex.ts'
 import {
   clipLargeBlockToWindow,
   clipSyntenyFeature,
+  splitSyntenyFeatureAtGaps,
 } from './clipSyntenyFeature.ts'
 
 import type { ClippedSyntenyFeature } from './clipSyntenyFeature.ts'
@@ -582,5 +583,156 @@ test('clipLargeBlockToWindow clips a coarse fold through its run', () => {
     mateStart: 500,
     mateEnd: 550,
     cigar: cig([100, CIGAR_RUN], [50, CIGAR_RUN]),
+  })
+})
+
+// A block clipped to the window is still one straight placement to a display
+// that keeps no alignment string, so a large indel inside the window drew as
+// a ribbon across it. The runs are the block cut at every I/D/N of the bound
+// or more, each re-anchored on both axes, before any window clips them.
+describe('splitSyntenyFeatureAtGaps', () => {
+  const runsOf = (c: ClippedSyntenyFeature[]) =>
+    c.map(({ start, end, mateStart, mateEnd }) => [
+      start,
+      end,
+      mateStart,
+      mateEnd,
+    ])
+
+  test('+ strand: a deletion of the bound splits the block, a smaller one is kept inside a run', () => {
+    const runs = splitSyntenyFeatureAtGaps(
+      cig(
+        [1000, CIGAR_M],
+        [25000, CIGAR_D],
+        [1000, CIGAR_M],
+        [200, CIGAR_D],
+        [500, CIGAR_M],
+      ),
+      100_000,
+      5000,
+      7500,
+      1,
+      10_000,
+    )
+    expect(runsOf(runs)).toEqual([
+      [100_000, 101_000, 5000, 6000],
+      [126_000, 127_700, 6000, 7500],
+    ])
+    expect([...runs[1]!.cigar]).toEqual([
+      pack(1000, CIGAR_M),
+      pack(200, CIGAR_D),
+      pack(500, CIGAR_M),
+    ])
+  })
+
+  test('an insertion of the bound splits the mate axis and leaves the query contiguous', () => {
+    expect(
+      runsOf(
+        splitSyntenyFeatureAtGaps(
+          cig([1000, CIGAR_M], [12_000, CIGAR_I], [1000, CIGAR_M]),
+          0,
+          0,
+          14_000,
+          1,
+          10_000,
+        ),
+      ),
+    ).toEqual([
+      [0, 1000, 0, 1000],
+      [1000, 2000, 13_000, 14_000],
+    ])
+  })
+
+  test('- strand: the runs walk the mate down from its far end', () => {
+    expect(
+      runsOf(
+        splitSyntenyFeatureAtGaps(
+          cig([1000, CIGAR_M], [25_000, CIGAR_D], [1000, CIGAR_M]),
+          0,
+          0,
+          2000,
+          -1,
+          10_000,
+        ),
+      ),
+    ).toEqual([
+      [0, 1000, 1000, 2000],
+      [26_000, 27_000, 0, 1000],
+    ])
+  })
+
+  test('a coarse fold splits at the indel ops it kept and a run pair is never a gap', () => {
+    expect(
+      runsOf(
+        splitSyntenyFeatureAtGaps(
+          Uint32Array.from([
+            pack(1000, CIGAR_RUN),
+            pack(2000, CIGAR_RUN),
+            pack(30_000, CIGAR_D),
+            pack(1000, CIGAR_RUN),
+            pack(500, CIGAR_RUN),
+          ]),
+          0,
+          0,
+          2500,
+          1,
+          10_000,
+        ),
+      ),
+    ).toEqual([
+      [0, 1000, 0, 2000],
+      [31_000, 32_000, 2000, 2500],
+    ])
+  })
+
+  test('a block with no gap of the bound is one run, and gaps at its edges leave none', () => {
+    expect(
+      runsOf(
+        splitSyntenyFeatureAtGaps(
+          cig([1000, CIGAR_M], [50, CIGAR_D], [1000, CIGAR_M]),
+          0,
+          0,
+          2000,
+          1,
+          10_000,
+        ),
+      ),
+    ).toEqual([[0, 2050, 0, 2000]])
+    expect(
+      runsOf(
+        splitSyntenyFeatureAtGaps(
+          cig([20_000, CIGAR_D], [1000, CIGAR_M], [20_000, CIGAR_I]),
+          0,
+          0,
+          21_000,
+          1,
+          10_000,
+        ),
+      ),
+    ).toEqual([[20_000, 21_000, 0, 1000]])
+  })
+
+  test('a run clips to a window like any block, and a gap the window cuts through is still a gap', () => {
+    const runs = splitSyntenyFeatureAtGaps(
+      cig([1000, CIGAR_M], [25_000, CIGAR_D], [1000, CIGAR_M]),
+      100_000,
+      5000,
+      7000,
+      1,
+      10_000,
+    )
+    const inWindow = runs.flatMap(run => {
+      const c = clipSyntenyFeature(
+        run.cigar,
+        run.start,
+        run.mateStart,
+        run.mateEnd,
+        1,
+        100_500,
+        110_000,
+      )
+      return c === undefined ? [] : [c]
+    })
+    expect(runsOf(inWindow)).toEqual([[100_500, 101_000, 5500, 6000]])
   })
 })

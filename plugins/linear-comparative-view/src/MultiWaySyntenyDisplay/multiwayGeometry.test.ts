@@ -79,9 +79,11 @@ const cacaoFrame: RowFrame = { ...peachFrame, refName: 'Tc1' }
 function stack({
   features,
   assemblyNames = ['grape', 'peach'],
+  peach = peachFrame,
 }: {
   features: Feature[]
   assemblyNames?: string[]
+  peach?: RowFrame
 }) {
   const groups = groupFeatures(features)
   return buildLanes({
@@ -94,7 +96,7 @@ function stack({
       ]),
     ),
     rowFrames: new Map([
-      ['peach', peachFrame],
+      ['peach', peach],
       ['cacao', cacaoFrame],
     ]),
     laneGeneAdapters: new Map([['grape', {}]]),
@@ -298,6 +300,36 @@ describe('the ribbons', () => {
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
   })
 
+  // A lane whose placements are inverted is drawn flipped, which straightens
+  // its ribbons on screen: the color still says what the record is. g2 is an
+  // inversion drawn uncrossed and takes the reverse color; g1 runs forward,
+  // is drawn crossed under the flipped frame, and takes the forward color
+  test('color by strand reads the record, not the drawn twist, on a flipped lane', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { strand: -1 }),
+      ],
+      peach: { ...peachFrame, flipped: true },
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColorBy: 'strand',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    const crossed = (i: number) =>
+      Math.sign(data.bp2[i]! - data.bp1[i]!) !==
+      Math.sign(data.bp3[i]! - data.bp4[i]!)
+    expect([crossed(0), crossed(1)]).toEqual([true, false])
+    const alpha = Math.round(0.4 * 255)
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#f00'), alpha))
+    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
+  })
+
   test('color by identity ramps the pair’s attribute and leaves a pair without one at the slot color', () => {
     const s = stack({
       features: [
@@ -367,6 +399,49 @@ describe('the ribbons', () => {
     expect(targets[data.instanceFeatureIdx[1]!]!.feature).toBe(link)
     expect(targets[data.instanceFeatureIdx[1]!]!.label).toContain('peach')
   })
+})
+
+// One alignment record cut at a 25 kb indel arrives as two runs keyed by the
+// same syntenyId numbered per run, and the gutter draws one ribbon per run
+// rather than one across the gap
+test('the runs of one clipped record draw one ribbon each', () => {
+  const run = (i: number, anchor: [number, number], mate: [number, number]) =>
+    new SimpleFeature({
+      uniqueId: `r1:0-1000/${i}`,
+      syntenyId: `7:0-1000/${i}`,
+      refName: 'chr1',
+      start: anchor[0],
+      end: anchor[1],
+      strand: 1,
+      assemblyName: 'grape',
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: mate[0],
+        end: mate[1],
+      },
+    })
+  const s = stack({
+    features: [
+      run(0, [100, 200], [1100, 1200]),
+      run(1, [300, 400], [1200, 1300]),
+    ],
+  })
+  const { cells } = buildRibbonGeometry({
+    stack: s,
+    laneLinks: undefined,
+    ribbonColor: 'rgba(130,130,130,0.3)',
+    drawCurves: false,
+    bridgeSkippedLanes: false,
+  })
+  const data = ribbonData(cells, 'ribbons:0')
+  expect(data.instanceCount).toBe(2)
+  expect([data.bp1[0], data.bp2[0], data.bp4[0], data.bp3[0]]).toEqual([
+    80, 160, 80, 160,
+  ])
+  expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
+    240, 320, 160, 240,
+  ])
 })
 
 test('the ticks are zero-width markers in each framed lane’s band', () => {

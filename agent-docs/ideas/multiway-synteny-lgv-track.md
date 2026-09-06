@@ -33,6 +33,31 @@ follow-snap-grid refetch entry in [synteny-comparative](synteny-comparative.md)
 for how that cost behaves). Treat it as a fourth backend consumer of the
 synteny GPU stack, not as a change to this display.
 
+**What a placement is, since 2026-09-06.** The display still reads no CIGAR,
+but the clip that cuts a record to the window (`clipFeatureToRegion`, under
+`clipToRegion`) now also cuts it at every insertion or deletion of
+`splitAtGapBp` or more (`splitSyntenyFeatureAtGaps` in synteny-core; the
+display asks for 10 kb, the coarse tier's default bound, so the cut is the
+same on either tier). Each gap-free run is its own feature, its `uniqueId`
+and `syntenyId` numbered after the window suffix, so on a nameless source
+each run is its own group with its own anchor and mate intervals — the shape
+`anchorSpans`, `groupRunSpansOnRow`, the ribbons and `composeLaneLinks` all
+read, so a ribbon subdivides at the gap and a composed link interpolates
+within a run rather than across it. Runs were NOT made placements of one
+group: a group carries one anchor interval and the gutter draws every anchor
+span against every mate span of a group, so two runs in one group would draw
+a cross product. At TP53 the mouse chain carries a 25 kb interior indel that
+drew as one straight ribbon before this; the tutorial's caption said so as
+conservation. The orientation vote changed with it: paired run-by-neighbour
+and weighed by the lighter run, a chain cut into heavy forward runs with
+small reversed repeat hits between them read backwards on the hits' say
+(calJac4 at the 17p figure, 0.555 backwards over 36 kb of paired weight while
+700 kb of chain ran forwards), so `orientationVote` now pairs every shared
+run with every other and weighs a pair by the product of the two groups'
+`weight` — a count of concordant gene pairs on a named table, anchor bp
+squared on an alignment. The deadband and the hold are as they were; the
+stability table above was not re-measured after this.
+
 **The demo corpus, and what a new one costs now.** As of 2026-08-24 the display
 has a case per kingdom, and every one of them is a table some other pipeline was
 already producing: plants (grape's seven-genome MCScan blocks, the five grasses,
@@ -303,11 +328,16 @@ user-guide section for the lanes UI, since the Lanes menu, the label drag and
 they can hide the Shigella lanes. Ribbon color modes shipped
 2026-08-27 as `ribbonColorBy` (`default`/`strand`/`identity`, **Color ribbons
 by** on the track menu): a main-thread recolor off the synteny view's own
-scheme and ramp, no refetch. Strand reads the DRAWN twist rather than a
-record's strand — the spans are ordered pairs, so a crossed ribbon is an
-inversion relative to the lane above and two lanes both reversed against the
-anchor come out straight between themselves, which a per-record strand would
-get wrong. Identity reads the group feature's `identity` (a pair without one keeps the slot color — the synteny view's missing-value red would read as a value here), which on an
+scheme and ramp, no refetch. Strand reads the RECORD — the two runs'
+orientations against the anchor multiplied out, so between the anchor and
+the first lane it is the record's strand and between two mate lanes it is
+their relative strand — and not the drawn twist: a lane whose every placement
+is inverted is drawn flipped, so its ribbons run straight on screen while
+every one of them is an inversion, and the color says so where the twist
+cannot (`ribbonColorer` in `multiwayGeometry.ts`; the flipped-lane case is
+pinned in `multiwayGeometry.test.ts`). The 2026-08-27 entry here said the
+opposite, and the slot doc and the hg38 tutorial repeated it, until
+2026-09-06. Identity reads the group feature's `identity` (a pair without one keeps the slot color — the synteny view's missing-value red would read as a value here), which on an
 N-genome MCScan table is the row's (`attributeColumns`) and so one value per
 group; an all-vs-all PAF's is per pair only on the direct-record ribbons, since
 a group keeps its first pairwise feature. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the

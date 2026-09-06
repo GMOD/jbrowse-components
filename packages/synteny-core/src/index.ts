@@ -23,6 +23,7 @@ export { clampBlockToRegions } from './clampBlockToRegions.ts'
 export {
   clipLargeBlockToWindow,
   clipSyntenyFeature,
+  splitSyntenyFeatureAtGaps,
 } from './clipSyntenyFeature.ts'
 export type { ClippedSyntenyFeature } from './clipSyntenyFeature.ts'
 export {

@@ -40,13 +40,13 @@ export abstract class ComparativeAdapterBase<
   }
 
   /**
-   * `clipToRegion` is honoured here and nowhere below: `getFeatures` never sees
-   * it, so an adapter composed of others (the star) clips its children's
-   * records once, after its own re-keying, rather than once per child and once
-   * for itself.
+   * `clipToRegion` and `splitAtGapBp` are honoured here and nowhere below:
+   * `getFeatures` never sees them, so an adapter composed of others (the star)
+   * clips its children's records once, after its own re-keying, rather than
+   * once per child and once for itself.
    */
   getFeaturesInMultipleRegions(regions: Region[], opts: BaseOptions = {}) {
-    const { clipToRegion, ...rest } = opts
+    const { clipToRegion, splitAtGapBp, ...rest } = opts
     const slot = createStatusFanOut(rest.statusCallback)
     return clipToRegion && this.recordsAreAlignments
       ? merge(
@@ -55,10 +55,9 @@ export abstract class ComparativeAdapterBase<
               ...rest,
               statusCallback: slot(),
             }).pipe(
-              mergeMap((feature): Feature[] => {
-                const clipped = clipFeatureToRegion(feature, region)
-                return clipped === undefined ? [] : [clipped]
-              }),
+              mergeMap((feature): Feature[] =>
+                clipFeatureToRegion(feature, region, splitAtGapBp),
+              ),
             ),
           ),
         )

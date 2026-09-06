@@ -1,4 +1,8 @@
-import { clipSyntenyFeature, getAlignmentOps } from '@jbrowse/synteny-core'
+import {
+  clipSyntenyFeature,
+  getAlignmentOps,
+  splitSyntenyFeatureAtGaps,
+} from '@jbrowse/synteny-core'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 
@@ -59,28 +63,49 @@ function interpolateClip(
     : undefined
 }
 
+// A record inside the window is its own clip, and skips parsing its
+// alignment string — unless the runs are wanted, which only the string knows.
 function clipIntervals(
   feature: Feature,
   mate: Interval,
   window: Interval,
-): ClippedIntervals | undefined {
+  splitAtGapBp: number | undefined,
+): ClippedIntervals[] {
   const own = { start: feature.get('start'), end: feature.get('end') }
   const strand = feature.get('strand') === -1 ? -1 : 1
   const inside = own.start >= window.start && own.end <= window.end
-  const ops = inside ? undefined : getAlignmentOps(feature)
-  return inside
-    ? { ...own, mateStart: mate.start, mateEnd: mate.end }
-    : ops === undefined
-      ? interpolateClip(own, mate, strand, window)
-      : clipSyntenyFeature(
-          ops,
-          own.start,
-          mate.start,
-          mate.end,
-          strand,
-          window.start,
-          window.end,
-        )
+  const ops =
+    inside && splitAtGapBp === undefined ? undefined : getAlignmentOps(feature)
+  if (ops === undefined) {
+    const clipped = inside
+      ? { ...own, mateStart: mate.start, mateEnd: mate.end }
+      : interpolateClip(own, mate, strand, window)
+    return clipped === undefined ? [] : [clipped]
+  } else {
+    const runs =
+      splitAtGapBp === undefined
+        ? [{ ...own, mateStart: mate.start, mateEnd: mate.end, cigar: ops }]
+        : splitSyntenyFeatureAtGaps(
+            ops,
+            own.start,
+            mate.start,
+            mate.end,
+            strand,
+            splitAtGapBp,
+          )
+    return runs.flatMap(run => {
+      const clipped = clipSyntenyFeature(
+        run.cigar,
+        run.start,
+        run.mateStart,
+        run.mateEnd,
+        strand,
+        window.start,
+        window.end,
+      )
+      return clipped === undefined ? [] : [clipped]
+    })
+  }
 }
 
 function clippedFeature(
@@ -88,8 +113,9 @@ function clippedFeature(
   mate: SerializedMate,
   clipped: ClippedIntervals,
   window: Interval,
+  run: string,
 ) {
-  const suffix = `:${window.start}-${window.end}`
+  const suffix = `:${window.start}-${window.end}${run}`
   const source = feature.toJSON()
   const data: SimpleFeatureSerialized = {
     ...source,
@@ -108,20 +134,36 @@ function clippedFeature(
 }
 
 /**
- * The piece of one pairwise record inside `window`, on both axes, or undefined
- * when none of it is. The piece keeps every field of the record except the
- * alignment strings, which are what made the whole record expensive to ship,
- * and its ids name the window so the pieces one record leaves in two regions
- * stay two features. A feature with no `mate` is not a pairwise record and
- * passes through whole.
+ * The pieces of one pairwise record inside `window`, on both axes: none when
+ * the record misses the window, one otherwise, and with `splitAtGapBp` one per
+ * gap-free run of its alignment. A piece keeps every field of the record
+ * except the alignment strings, which are what made the whole record
+ * expensive to ship, and its ids name the window so the pieces one record
+ * leaves in two regions stay two features; the runs of one window are
+ * numbered after it, so each is its own feature and — since `syntenyId`
+ * carries the same suffix — its own group to a display grouping on it, which
+ * is what draws each run as its own placement rather than one ribbon across
+ * the gap. A feature with no `mate` is not a pairwise record and passes
+ * through whole.
  */
-export function clipFeatureToRegion(feature: Feature, window: Interval) {
+export function clipFeatureToRegion(
+  feature: Feature,
+  window: Interval,
+  splitAtGapBp?: number,
+): Feature[] {
   const mate = mateOf(feature)
-  const clipped =
-    mate === undefined ? undefined : clipIntervals(feature, mate, window)
-  return mate === undefined
-    ? feature
-    : clipped === undefined
-      ? undefined
-      : clippedFeature(feature, mate, clipped, window)
+  if (mate === undefined) {
+    return [feature]
+  } else {
+    const pieces = clipIntervals(feature, mate, window, splitAtGapBp)
+    return pieces.map((piece, i) =>
+      clippedFeature(
+        feature,
+        mate,
+        piece,
+        window,
+        pieces.length > 1 ? `/${i}` : '',
+      ),
+    )
+  }
 }

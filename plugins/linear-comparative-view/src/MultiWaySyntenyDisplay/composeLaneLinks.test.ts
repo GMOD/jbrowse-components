@@ -231,3 +231,41 @@ describe('composeLaneLinks', () => {
     expect(elapsed).toBeLessThan(3000)
   })
 })
+
+// A record cut at a large indel reaches the composer as one placement per
+// run, each with its own anchor interval, so a link is interpolated within a
+// run and nothing is composed across the gap the record skips.
+test('runs of one record compose within themselves and never across the gap', () => {
+  const upper = [
+    record('u/0', [1000, 2000], ['B1', 5000, 6000]),
+    record('u/1', [27_000, 28_000], ['B1', 6000, 7000]),
+  ]
+  const lower = [record('l', [0, 30_000], ['C1', 100_000, 130_000])]
+  const links = compose(upper, lower).map(shape)
+  expect(links).toEqual([
+    {
+      refName: 'B1',
+      start: 5000,
+      end: 6000,
+      strand: 1,
+      mate: {
+        assemblyName: 'genomeC',
+        refName: 'C1',
+        start: 101_000,
+        end: 102_000,
+      },
+    },
+    {
+      refName: 'B1',
+      start: 6000,
+      end: 7000,
+      strand: 1,
+      mate: {
+        assemblyName: 'genomeC',
+        refName: 'C1',
+        start: 127_000,
+        end: 128_000,
+      },
+    },
+  ])
+})

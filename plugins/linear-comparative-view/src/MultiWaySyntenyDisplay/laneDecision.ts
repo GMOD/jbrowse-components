@@ -291,10 +291,22 @@ function lanePlacementXs(
   )
 }
 
-// how the lane's shared groups run against the lane above: the share of the
-// paired weight reading backwards, and the majority it makes. Undefined on
-// fewer than three shared groups, or a tie. Two runs of one group share an
-// x above and say nothing about order between them
+// how the lane's shared groups run against the lane above: over every pair
+// of shared runs, the share of the paired evidence whose order on this lane
+// reads backwards from its order above, and the majority it makes. Undefined
+// on fewer than three shared groups, or a tie. Two runs of one group share an
+// x above and say nothing about order between them.
+//
+// EVERY pair, weighed by the product of the two groups' vote evidence, rather
+// than each run against its neighbour weighed by the lighter of the two. The
+// neighbour rule let a tiny record decide a lane: an alignment cut into runs
+// at its large indels arrives as several heavy forward groups with small
+// repeat hits between them, and pairing each run only with its neighbour
+// weighed every pair by the hit, so a 700 kb chain read backwards on the say
+// of a few kb. Paired all-ways, the heavy runs vote with each other, and the
+// evidence is the contig vote's own — one per gene on a named table, so a
+// gene table's vote is a plain count of concordant pairs, and anchor bp on
+// an alignment, so a block outweighs the hits inside it
 function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
     .filter(p => upperX.has(p.key))
@@ -305,14 +317,16 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   }
   let backwards = 0
   let total = 0
-  for (let i = 1; i < shared.length; i++) {
-    const a = shared[i - 1]!
-    const b = shared[i]!
-    if (a.key !== b.key) {
-      const w = Math.min(a.weight, b.weight)
-      total += w
-      if (b.center < a.center) {
-        backwards += w
+  for (let i = 0; i < shared.length; i++) {
+    const a = shared[i]!
+    for (let j = i + 1; j < shared.length; j++) {
+      const b = shared[j]!
+      if (a.key !== b.key) {
+        const w = a.group.weight * b.group.weight
+        total += w
+        if (b.center < a.center) {
+          backwards += w
+        }
       }
     }
   }

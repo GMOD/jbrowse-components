@@ -640,6 +640,7 @@ describe('the level-of-detail tier', () => {
       mateShape: 'grouped',
       lodMode: 'fine',
       clipToRegion: true,
+      splitAtGapBp: 10000,
     })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },

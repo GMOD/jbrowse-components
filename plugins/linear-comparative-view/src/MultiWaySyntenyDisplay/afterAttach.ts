@@ -32,6 +32,17 @@ interface MultiWayFetchArgs {
 
 const DEPENDENT_FETCH_DELAY = 500
 
+/**
+ * The indel size at which a clipped record is cut into separate placements.
+ * The display draws a placement as one straight ribbon and keeps no alignment
+ * string to draw within it, so an indel this size or larger inside the window
+ * would otherwise vanish into a ribbon that says the two sides run straight
+ * through. The coarse tier's default bound (`make-pif --coarse`, 10 kb): that
+ * tier keeps every indel past half its bound as its own op, so the cut lands
+ * the same on either tier.
+ */
+export const SPLIT_AT_GAP_BP = 10_000
+
 function fetchPhases(
   self: MultiWaySyntenyDisplayModel,
 ): GlobalFetchPhases<MultiWayFetchArgs, Feature[]> {
@@ -50,13 +61,19 @@ function fetchPhases(
     // unaffected. The tier is the one the key was issued at, so an indexed
     // PIF at a whole-chromosome window serves its coarse rows. `clipToRegion`
     // cuts each alignment record to the window on both axes before it crosses
-    // the RPC: a lane fitted to whole liftOver chains sat at 80x the window
+    // the RPC: a lane fitted to whole liftOver chains sat at 80x the window.
+    // `splitAtGapBp` cuts it again at every large indel, one placement per run
     run: async ({ regions, lodTier }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
           adapterConfig: self.adapterConfig,
-          opts: { mateShape: 'grouped', lodMode: lodTier, clipToRegion: true },
+          opts: {
+            mateShape: 'grouped',
+            lodMode: lodTier,
+            clipToRegion: true,
+            splitAtGapBp: SPLIT_AT_GAP_BP,
+          },
         }),
         r => r.id(),
       ),
@@ -321,6 +338,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
           targetAssemblyName: spec.lowerAssembly,
           lodMode: spec.lodTier,
           clipToRegion: true,
+          splitAtGapBp: SPLIT_AT_GAP_BP,
         },
       })
       return { key: spec.key, links }

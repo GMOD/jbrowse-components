@@ -14,8 +14,9 @@ alignments that already exist. UCSC publishes a liftOver chain from hg38 to
 every genome it hosts, and jbrowse.org keeps each of those chains as an indexed
 alignment file, so one track composes eight of them into a lane per genome under
 the human view, each lane drawing that genome's own RefSeq gene models from its
-UCSC hub. The primate lanes come out nearly straight; mouse, dog and cow are
-where the chain breaks, reverses and skips, and the page ends there.
+UCSC hub. At _TP53_ the ape lanes come out nearly continuous and mouse, dog and
+cow show where their chains gap; eight megabases away every lane breaks and most
+reverse, and the page ends there.
 
 ## Prerequisites
 
@@ -177,30 +178,45 @@ genomes placing the most of the window sit at the top.
 }
 ```
 
-Around _TP53_ every lane reads as the human axis drawn again: one chain block
-across the window, the same genes in the same order, ribbons running straight
-down through all eight. The header of each lane says which chromosome that is in
-the genome and how far the lane's frame reaches, and the lanes stack densest
-first, so a genome that placed less of the window would sit lower. Here none
-does; this is a neighbourhood conserved across the mammals, and the picture says
-so by having nothing to point at.
+Around _TP53_ every lane places the whole window from one chain, with the same
+genes in the same order, and the ribbons say where that chain is not continuous.
+A liftOver chain carries its insertions and deletions inside one record, and the
+track cuts each record at every indel of 10 kb or more, so a ribbon is drawn per
+gap-free run and the white wedges between runs are the stretches one genome has
+and the other lacks: at 300 kb the mouse chain holds some 3,400 indels totalling
+146 kb of insertion and 168 kb of deletion, the largest 25 kb, and the cow chain
+an 89 kb gap near _SLC35G6_, and those are what the wedges in the lower lanes
+are. The apes' chains carry gaps under the cut and draw as near-continuous
+ribbons. The header of each lane says which chromosome that is in the genome and
+how far the lane's frame reaches, with `[rev]` on the mouse lane, whose chain
+runs the other way against hg38 here. The lanes stack densest first, by how much
+of the window each places.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane places the window as one straight block." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane places the window from one chain; the white wedges in the ribbons are that chain's indels of 10 kb or more, few in the apes and many in mouse, cow and dog, and the mouse lane is reversed." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
-Eight megabases toward the centromere the same stack looks different. The mouse,
-dog and cow chains change orientation partway across the window, so those lanes
-carry `[rev]` in their headers and the ribbons reaching them cross, while the
-primate lanes still run straight. Two of the ape lanes name a second contig in
-their headers, a random or unplaced scaffold that also places part of this
-window: the region is a segmental-duplication hotspot, and the header is how a
-lane says the frame it drew is not the whole story. **Show … in this lane** on
-that lane's header menu pins it onto the other contig.
+Eight megabases toward the centromere the same stack looks different. No chain
+runs the window through: the region is a segmental-duplication hotspot, every
+genome places it as several blocks, and most of those blocks run the other way
+against their neighbours, so five of the eight lanes carry `[rev]` in their
+headers and the ribbons reaching them cross. The marmoset lane is the clearest
+case: its chain covers the left third of the window forwards and then skips 2.4
+Mb of hg38, and the rest of the window is placed by a reversed block eight
+megabases away on the same chromosome, so the lane is drawn reversed and the
+forward third crosses into it. A gorilla lane names a second contig in its
+header, a scaffold that also places part of this window, which is how a lane
+says the frame it drew is not the whole story. **Show … in this lane** on that
+lane's header menu pins it onto the other contig.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. The primate lanes run straight through; the mouse, dog and cow lanes reverse partway across, with crossed ribbons and a reversed marker in their headers, and two ape lanes name a second contig that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes are reversed, with crossed ribbons and a reversed marker in their headers, and the gorilla lane names a second contig that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
-**Color ribbons by → Strand** on the track menu paints a ribbon that crosses,
-which is a block running the other way relative to the lane above it, so a
-lane's `[rev]` and the ribbons reaching it agree.
+**Color ribbons by → Strand** on the track menu colors each ribbon by the
+record's strand — between the anchor and the first lane the alignment's own
+strand, between two mate lanes the two alignments' strands multiplied out —
+rather than by whether the ribbon is drawn crossed. A lane whose alignments all
+run the other way is drawn flipped, with `[rev]` in its header, so its ribbons
+come out straight on screen; the strand color still marks every one of them as
+an inversion, and a single crossed ribbon into an unflipped lane is one block
+running against its neighbours.
 
 ## Reading the stack
 
