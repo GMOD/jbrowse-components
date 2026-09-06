@@ -841,8 +841,9 @@ exports[`every registered schema slot default 1`] = `
     "lanes": "stringArray = []",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "ribbonColor": "color = "rgba(130,130,130,0.3)"",
-    "ribbonColorBy": "stringEnum = "default" of ["default","strand","identity"]",
+    "ribbonColorBy": "string = "default"",
     "showLaneTicks": "boolean = true",
+    "showLegend": "maybeBoolean promotedBase true",
     "utrColor": "color = "#357089"",
   },
   "text search adapter: JBrowse1TextSearchAdapter": {

@@ -154,10 +154,15 @@ stack, so the figure below shows every lane at once:
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
 K-12 axis. Every gene is colored by its symbol, so a conserved gene is one color
 running down the whole stack, and a lane's header names its chromosome, where it
-is looking and `[rev]` where the strain's chromosome reads the other way. Lanes
-stack densest first, so the genomes placing the most of the window sit at the
-top and the reduced Shigella genomes fall toward the bottom without anything
-naming them.
+is looking and `[rev]` where the strain's chromosome reads the other way. The
+color is a hash of the symbol and holds nothing else: two genes share a color
+because they share a name, never because they are in a family together. What
+turns one back into a name is the key in the top right, which lists the symbols
+the K-12 lane draws in the window, left to right, and which _Show legend_ on the
+track menu puts away. It stands down where it would be a list rather than a key,
+which is any window holding more than thirty colors. Lanes stack densest first,
+so the genomes placing the most of the window sit at the top and the reduced
+Shigella genomes fall toward the bottom without anything naming them.
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {

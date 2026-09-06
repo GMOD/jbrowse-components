@@ -135,6 +135,7 @@ the alignments ones) offers only the rows it lists.
 | VariantTrack | [](/docs/config/linearvariantdisplay) | [`displayDirectionalChevrons`](/docs/config/linearvariantdisplay/#slot-displaydirectionalchevrons), [`displayMode`](/docs/config/linearvariantdisplay/#slot-displaymode), [`heightMode`](/docs/config/linearvariantdisplay/#slot-heightmode), [`showLabels`](/docs/config/linearvariantdisplay/#slot-showlabels), [`showLegend`](/docs/config/linearvariantdisplay/#slot-showlegend), [`subfeatureLabels`](/docs/config/linearvariantdisplay/#slot-subfeaturelabels) |
 | QuantitativeTrack | [](/docs/config/linearwiggledisplay) | [`lineWidth`](/docs/config/linearwiggledisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/linearwiggledisplay/#slot-scatterpointsize) |
 | MultiQuantitativeTrack | [](/docs/config/multilinearwiggledisplay) | [`lineWidth`](/docs/config/multilinearwiggledisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/multilinearwiggledisplay/#slot-scatterpointsize), [`showLegend`](/docs/config/multilinearwiggledisplay/#slot-showlegend) |
+| SyntenyTrack | [](/docs/config/multiwaysyntenydisplay) | [`showLegend`](/docs/config/multiwaysyntenydisplay/#slot-showlegend) |
 
 <!-- PROMOTABLE_SLOTS END -->
 

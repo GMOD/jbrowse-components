@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config MultiWaySyntenyDisplay
@@ -76,14 +75,9 @@ export function configSchemaFactory() {
        * #slot
        */
       ribbonColorBy: {
-        type: 'stringEnum',
-        model: types.enumeration('ribbonColorBy', [
-          'default',
-          'strand',
-          'identity',
-        ]),
+        type: 'string',
         description:
-          "what colors a ribbon: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor. Every mode keeps ribbonColor's opacity",
+          "what colors a ribbon: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor; `attribute:<column>` reads a text column the table declares in attributeColumns (an ancestral linkage group, an orthogroup) and paints one color per distinct label, or the color a `color` column put beside it, in the order labels were first seen so a pan does not recolor; a row without one keeps ribbonColor. Every mode keeps ribbonColor's opacity",
         defaultValue: 'default',
       },
       /**
@@ -103,6 +97,17 @@ export function configSchemaFactory() {
         description:
           'join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it',
         defaultValue: true,
+      },
+      /**
+       * #slot
+       */
+      showLegend: {
+        type: 'maybeBoolean',
+        description:
+          "show the color key naming the anchor lane's drawn colors, and the ribbon strand colors where `ribbonColorBy` paints them. Derived from what is on screen, so it draws nothing until the `color` slot resolves to more than one color — a flat default color has nothing to key. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track",
+        // Promotable: read through LegendMixin's resolved `showLegend` getter,
+        // never raw.
+        promotedBase: true,
       },
       /**
        * #slot

@@ -9,6 +9,23 @@ import { MIN_LANE_PITCH } from './laneStack.ts'
 import { declaredLanesOf, staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
+const namedGene = (
+  uniqueId: string,
+  name: string,
+  start: number,
+  end: number,
+) =>
+  new LaneGene(
+    new SimpleFeature({
+      uniqueId,
+      name,
+      refName: 'ctgA',
+      start,
+      end,
+      type: 'gene',
+    }),
+  )
+
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
 // fetch that draws the placement boxes.
 //
@@ -158,6 +175,91 @@ test('the stacked-synteny launcher is under Launch on the track menu, over the i
   expect(subMenu.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Linear synteny view (visible region)',
   ])
+})
+
+// Nothing on screen says what a glyph color means: the display draws no labels,
+// and the ecoli stack is forty-four lanes of them. The color is the CONFIG's
+// encoding — `randomColor(feature.name)` over an ortholog table puts one color
+// on one gene symbol — so the key reads the vocabulary back off the drawing
+// rather than claiming one of its own.
+test('the key names the anchor lane genes a name-hashed color slot draws', () => {
+  const display = createDisplay()
+  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  display.setLaneGenes(
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: [
+            namedGene('g1', 'atpA', 100, 300),
+            namedGene('g2', 'atpB', 400, 600),
+          ],
+        },
+      ],
+    ]),
+    undefined,
+  )
+  expect(display.geneLegend.map(i => i.label)).toEqual(['atpA', 'atpB'])
+  expect(new Set(display.geneLegend.map(i => i.color)).size).toBe(2)
+  expect(display.legendSections.map(s => s.id)).toEqual(['genes'])
+  expect(display.hasLegendKey).toBe(true)
+  expect(
+    display.trackMenuItems().map(i => ('label' in i ? i.label : undefined)),
+  ).toContain('Show legend')
+})
+
+// The default `color` slot is one color for every gene, which keys nothing: a
+// box of identical swatches spends the reader's attention to say the display
+// has a color. The row is off the track menu with it.
+test('a flat color slot has nothing to key', () => {
+  const display = createDisplay()
+  display.setLaneGenes(
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: [
+            namedGene('g1', 'atpA', 100, 300),
+            namedGene('g2', 'atpB', 400, 600),
+          ],
+        },
+      ],
+    ]),
+    undefined,
+  )
+  expect(display.geneLegend).toEqual([])
+  expect(display.hasLegendKey).toBe(false)
+  expect(
+    display.trackMenuItems().map(i => ('label' in i ? i.label : undefined)),
+  ).not.toContain('Show legend')
+})
+
+// The ribbons are the other color vocabulary, and only `strand` gives it rows:
+// a section of its own, so the connector colors are not read as glyph fills.
+test('the strand ribbon mode adds its own section', () => {
+  const display = createDisplay()
+  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  display.setLaneGenes(
+    new Map([
+      [
+        'volvox',
+        {
+          key: display.laneGenesFetchSpecs[0]!.key,
+          genes: [
+            namedGene('g1', 'atpA', 100, 300),
+            namedGene('g2', 'atpB', 400, 600),
+          ],
+        },
+      ],
+    ]),
+    undefined,
+  )
+  expect(display.legendSections.map(s => s.id)).toEqual(['genes'])
+
+  display.setRibbonColorBy('strand')
+  expect(display.legendSections.map(s => s.id)).toEqual(['genes', 'ribbons'])
 })
 
 // The two drawing settings were config-only, and a menu toggle that writes
@@ -1022,4 +1124,49 @@ test('declaredLanesOf reads a header that names lanes and nothing else', () => {
   expect(
     declaredLanesOf({ lanes: [{ name: 'HG1#1', label: 3, group: 'HG1' }] }),
   ).toEqual([{ name: 'HG1#1', label: undefined, group: 'HG1' }])
+})
+
+// The label table an `attribute:` ribbon mode paints from accumulates across
+// fetches in first-seen order, so a pan that brings new labels appends them
+// and recolors nothing; picking the mode again re-keys from what is loaded.
+test('the ribbon label table accumulates across fetches and resets on a mode pick', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group', 'color'],
+    },
+  })
+  const row = (id: string, group: string, color?: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      name: id,
+      group,
+      ...(color ? { color } : {}),
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    })
+  display.setRibbonColorBy('attribute:group')
+  expect(display.ribbonColorAttributes).toEqual(['group', 'color'])
+  display.setFeatures([row('f1', 'B1'), row('f2', 'A1a', '#4DB5E3')])
+  expect(display.ribbonLabels).toEqual({
+    attribute: 'group',
+    labels: ['B1', 'A1a'],
+    colors: { A1a: '#4DB5E3' },
+  })
+  display.setFeatures([row('f3', 'C1'), row('f2', 'A1a')])
+  expect(display.ribbonLabels?.labels).toEqual(['B1', 'A1a', 'C1'])
+  display.setRibbonColorBy('attribute:group')
+  expect(display.ribbonLabels).toBeUndefined()
+  display.setFeatures([row('f3', 'C1')])
+  expect(display.ribbonLabels?.labels).toEqual(['C1'])
+  display.setRibbonColorBy('strand')
+  expect(display.ribbonLabels).toBeUndefined()
 })

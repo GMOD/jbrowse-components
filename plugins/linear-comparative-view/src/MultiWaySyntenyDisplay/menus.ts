@@ -1,12 +1,14 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
+import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
 import { frameStartBp } from './layoutMultiWay.ts'
-import { RIBBON_COLOR_MODES } from './ribbonColorModes.ts'
+import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface LaneOrderModel {
@@ -56,12 +58,19 @@ export interface LaneSelectionModel {
 export interface LaneSettingsModel {
   ribbonColorBy: MultiWayRibbonColorBy
   setRibbonColorBy: (mode: MultiWayRibbonColorBy) => void
+  /** the columns the track declares, each offered as its own ribbon mode */
+  ribbonColorAttributes: readonly string[]
   drawCurves: boolean
   setDrawCurves: (flag: boolean) => void
   bridgeSkippedLanes: boolean
   setBridgeSkippedLanes: (flag: boolean) => void
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
+  showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
+  setShowLegend: (flag: boolean) => void
+  /** whether the drawn colors key anything; false leaves the row out */
+  hasLegendKey: boolean
 }
 
 /**
@@ -335,9 +344,9 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
       label: 'Color ribbons by',
       value: model.ribbonColorBy,
       onChange: model.setRibbonColorBy,
-      options: RIBBON_COLOR_MODES,
+      options: ribbonColorModeOptions(model.ribbonColorAttributes),
       helpText:
-        "Default is the ribbon color. Strand colors a crossed ribbon — an inversion relative to the lane above — in the synteny view's reverse color and the rest in its forward color. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, and leaves a pair without one at the ribbon color.",
+        "Default is the ribbon color. Strand reads each record's strand against the lane above, in the synteny view's forward and reverse colors: it is the record's strand, not the drawn twist, so a lane drawn flipped shows straight ribbons that are all inversions. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, and leaves a pair without one at the ribbon color. A column the track declares paints one color per distinct label, or the color the file put beside it, and leaves a pair without one at the ribbon color.",
     }),
     toggleItem('Draw curved ribbons', model.drawCurves, model.setDrawCurves, {
       helpText:
@@ -356,5 +365,6 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
       helpText:
         "Each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out.",
     }),
+    ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
   ]
 }

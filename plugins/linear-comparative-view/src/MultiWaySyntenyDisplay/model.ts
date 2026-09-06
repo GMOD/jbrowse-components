@@ -5,7 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
+import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import {
   doesIntersect2,
   getPaletteHost,
@@ -14,6 +14,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
+import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
   allSessionTracks,
   annotationTrackIds,
@@ -21,16 +22,20 @@ import {
   openAssemblyInLinearView,
 } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
-  LodTierInfoMixin,
   bandGroundColor,
+  declaredAttributes,
   lodMenuItems,
   lodTierAt,
+  LodTierInfoMixin,
+  resolveCategoricalMode,
   trackHasLodTiers,
+  widenAttributeRanges,
 } from '@jbrowse/synteny-core'
 
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
@@ -54,6 +59,7 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
+import { laneColorKey, ribbonColorKey } from './legend.ts'
 import {
   laneOrderMenuItem,
   laneSelectionMenuItems,
@@ -70,6 +76,7 @@ import {
   glyphHitAt,
   glyphsKey,
 } from './multiwayGeometry.ts'
+import { coerceRibbonColorBy, featureLabelTable } from './ribbonColorModes.ts'
 
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
@@ -87,11 +94,16 @@ import type {
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem, MouseState } from '@jbrowse/core/ui'
+import type {
+  LegendItem,
+  LegendSection,
+  MenuItem,
+  MouseState,
+} from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LodMode, LodTier } from '@jbrowse/synteny-core'
+import type { AttributeRange, LodMode, LodTier } from '@jbrowse/synteny-core'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -234,6 +246,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       GlobalFetchMixin(),
+      LegendMixin(),
       LodTierInfoMixin(),
       types.model({
         /**
@@ -288,6 +301,12 @@ export function stateModelFactory(
        * #volatile
        */
       features: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       * per declared column, the labels every fetch since the ribbon mode was
+       * picked has carried, in first-seen order; see `ribbonLabels`
+       */
+      seenRibbonLabels: {} as Record<string, AttributeRange>,
       /**
        * #volatile
        * per lane, the gene models fetched from that assembly's own gene track,
@@ -383,6 +402,10 @@ export function stateModelFactory(
          */
         setFeatures(f: Feature[]) {
           self.features = f
+          self.seenRibbonLabels = widenAttributeRanges(
+            self.seenRibbonLabels,
+            featureLabelTable(f, declaredAttributes(self.adapterConfig)),
+          )
           dropDirectLinkClick()
         },
         /**
@@ -499,6 +522,9 @@ export function stateModelFactory(
          */
         setRibbonColorBy(mode: MultiWayRibbonColorBy) {
           setConf(self, 'ribbonColorBy', mode)
+          // the way back from a label order one window fixed: the ribbons in
+          // hand re-key from what is loaded
+          self.seenRibbonLabels = {}
         },
         /**
          * #action
@@ -614,7 +640,29 @@ export function stateModelFactory(
        * #getter
        */
       get ribbonColorBy(): MultiWayRibbonColorBy {
-        return getConf(self, 'ribbonColorBy')
+        return coerceRibbonColorBy(getConf(self, 'ribbonColorBy'))
+      },
+      /**
+       * #getter
+       * the columns the track declares, each offered as its own ribbon mode.
+       * From the config rather than the data, so the menu is right before the
+       * first fetch
+       */
+      get ribbonColorAttributes(): string[] {
+        return declaredAttributes(self.adapterConfig)
+      },
+      /**
+       * #getter
+       * the label table an `attribute:` ribbon mode paints from: every label
+       * seen in any fetch since the mode was picked, in first-seen order, so
+       * a pan adds labels at the end and recolors nothing. Undefined for the
+       * fixed modes, and for a column no loaded row carries as text
+       */
+      get ribbonLabels() {
+        return resolveCategoricalMode(
+          getConf(self, 'ribbonColorBy'),
+          self.seenRibbonLabels,
+        )
       },
       /**
        * #getter
@@ -1252,6 +1300,7 @@ export function stateModelFactory(
           laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
           ribbonColorBy: self.ribbonColorBy,
+          ribbonLabels: self.ribbonLabels,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
         })
@@ -1320,6 +1369,69 @@ export function stateModelFactory(
           out.set(glyphsKey(row), { kind: 'glyphs', data: glyphs })
         })
         return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The key for the glyph colors, read off the anchor lane: it is the one
+       * lane whose color for a group runs down every chain the stack draws, and
+       * keying every lane instead would spend a row on each strain's private
+       * genes and blow the bound on the window where the chains are the point.
+       *
+       * `MAX_LEGEND_ENTRIES` rather than `legendIsReadable`'s own default,
+       * because this is a derived key and that is the bound a derived key stops
+       * being one at.
+       */
+      get geneLegend(): LegendItem[] {
+        const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
+          const cell = self.laneGlyphCells.get(key)
+          return cell?.kind === 'glyphs' ? cell.data.hits : []
+        })
+        const items = laneColorKey(
+          hits,
+          [-self.dragOffsetPx, self.canvasWidth - self.dragOffsetPx],
+          feature => self.glyphColors.color.get(feature.id()),
+        )
+        return legendIsReadable(items, MAX_LEGEND_ENTRIES) ? items : []
+      },
+      /**
+       * #getter
+       * what the ribbons' own colors mean, which is the strand pair or nothing:
+       * one flat color keys nothing and the identity ramp is not a row list
+       */
+      get ribbonLegend(): LegendItem[] {
+        return ribbonColorKey(
+          self.ribbonColorBy,
+          self.drawCurves,
+          self.ribbonLabels,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the two color vocabularies as their own sections, so each is titled and
+       * dismissed on its own, and neither claims the other's marks. Empty
+       * sections are dropped here rather than by the two renderers, so
+       * `hasLegendKey` and the box agree about whether there is a key
+       */
+      get legendSections(): LegendSection[] {
+        return [
+          { id: 'genes', title: 'Gene colors', items: self.geneLegend },
+          { id: 'ribbons', title: 'Ribbon colors', items: self.ribbonLegend },
+        ].filter(section => section.items.length > 0)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * whether there is a key at all, which is what "Show legend" is offered
+       * on: the colors here are the config's to encode, and a track that paints
+       * one flat color has nothing for a key to say
+       */
+      get hasLegendKey() {
+        return self.legendSections.length > 0
       },
     }))
     .views(self => ({

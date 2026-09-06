@@ -2,6 +2,7 @@ import {
   displayTypesWithPromotableSlots,
   promotableSlotsWithoutPin,
 } from '@jbrowse/core/ui'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
 import { syntenySettingsMenuItems } from '../../../../plugins/linear-comparative-view/src/LinearComparativeView/components/syntenySettingsMenuItems.ts'
@@ -192,6 +193,18 @@ const FIXTURES: Fixture[] = [
   },
   { displayType: 'LDDisplay', trackId: 'volvox multi-sample sv' },
   {
+    // The key is derived from what the anchor lane draws, so the row exists
+    // only once the display has colors that key something: the ortholog records
+    // supply the placements and the `color` slot the vocabulary. Seeded rather
+    // than fetched, like the two canvas displays above — the PAF behind this
+    // track is a coordinate alignment, which names nothing for a key.
+    displayType: 'MultiWaySyntenyDisplay',
+    trackId: 'volvox_fake_synteny',
+    open: openMultiWayDisplay,
+    states: [seedMultiWayGroups],
+    settle: multiWayFetchesLanded,
+  },
+  {
     // The one display in the list with no track menu of its own. Its two ribbon
     // slots are pinned on the *view's* settings menu, because that is where a
     // reader sets them — the view owns the ribbons, and a per-track copy of
@@ -294,6 +307,80 @@ async function openSyntenyDisplay() {
     )
   }
   return display as OpenedDisplay
+}
+
+// The stack lays out against the view's own axis, so its lane autoruns need a
+// view with a width and a region — which the session's default view does not
+// have here. Launched like the synteny one above, and for the same reason.
+async function openMultiWayDisplay() {
+  const { rootModel } = await getPluginManager()
+  const view = rootModel.session!.addView('LinearGenomeView', {
+    assembly: 'volvox',
+    loc: 'ctgA:1-800',
+  }) as unknown as TestView & {
+    initialized: boolean
+    setWidth: (arg: number) => void
+  }
+  view.setWidth(800)
+  // the lanes lay out against the view's axis, so the stack is empty until the
+  // assembly is loaded and the axis exists
+  await waitFor(() => {
+    expect(view.initialized).toBe(true)
+  })
+  await view.launchTrack(
+    'volvox_fake_synteny',
+    {},
+    {
+      type: 'MultiWaySyntenyDisplay',
+      color: "jexl:randomColor(get(feature,'name'))",
+    },
+  )
+  const display = view.tracks
+    .flatMap(t => t.displays)
+    .find(d => d.type === 'MultiWaySyntenyDisplay')
+  if (!display) {
+    throw new Error(
+      'MultiWaySyntenyDisplay did not open on "volvox_fake_synteny" — the fixture is stale',
+    )
+  }
+  return display
+}
+
+// Both of the stack's fetches load their adapters lazily on the RPC side — the
+// PAF for the records, and the session's own gene track per lane — so a test
+// that returned first left those imports to land on a torn-down registry.
+async function multiWayFetchesLanded(d: any) {
+  await waitFor(
+    () => {
+      expect(d.laneGenes !== undefined && !d.isLoading).toBe(true)
+    },
+    { timeout: 20000 },
+  )
+}
+
+// The multiway key names the colors the anchor lane draws, and this test never
+// fetches. `setFeatures` is what the landed ortholog fetch calls, and two named
+// groups over the opened region are the smallest painting the key can read.
+function seedMultiWayGroups(d: any) {
+  d.setFeatures(
+    ['galF', 'wzzB'].map(
+      (name, i) =>
+        new SimpleFeature({
+          uniqueId: name,
+          name,
+          refName: 'ctgA',
+          start: 100 + 300 * i,
+          end: 200 + 300 * i,
+          strand: 1,
+          mate: {
+            assemblyName: 'volvox',
+            refName: 'ctgB',
+            start: 100 + 300 * i,
+            end: 200 + 300 * i,
+          },
+        }),
+    ),
+  )
 }
 
 // LinearVariantDisplay overrides `colorLegend` instead of reading the `legend`

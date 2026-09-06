@@ -3717,7 +3717,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ribbonColorBy",
-          "type": "(JexlString | ribbonColorBy)"
+          "type": "(JexlString | string)"
         },
         {
           "name": "drawCurves",
@@ -3726,6 +3726,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "bridgeSkippedLanes",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "showLaneTicks",

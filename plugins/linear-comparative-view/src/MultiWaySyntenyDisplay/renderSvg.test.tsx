@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 import { when } from 'mobx'
@@ -51,5 +52,43 @@ test('the SVG export carries no hover; the on-screen overlay does', async () => 
   const { queryAllByTestId } = render(<MultiWayOverlay model={display} />)
   expect(queryAllByTestId('multiway-hover-outline')).toHaveLength(
     display.hoveredGroupOutlines.length,
+  )
+})
+
+// A figure of the stack draws no labels at all, so what the exported picture
+// says about its colors is the key or nothing.
+test('the export carries the color key where the colors key something', async () => {
+  const display = createDisplay()
+  setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures(
+    ['galF', 'wzzB'].map(
+      (name, i) =>
+        new SimpleFeature({
+          uniqueId: name,
+          name,
+          refName: 'ctgA',
+          start: 100 + 300 * i,
+          end: 200 + 300 * i,
+          strand: 1,
+          mate: {
+            assemblyName: 'volvox_random',
+            refName: 'ctgB',
+            start: 100 + 300 * i,
+            end: 200 + 300 * i,
+          },
+        }),
+    ),
+  )
+  await when(() => display.svgReady, { timeout: 5000 })
+
+  const svg = renderToString(<svg>{await display.renderSvg()}</svg>)
+  expect(svg).toContain('multiway-color-legend')
+  expect(svg).toContain('galF')
+  expect(svg).toContain('wzzB')
+
+  display.setShowLegend(false)
+  expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
+    'multiway-color-legend',
   )
 })

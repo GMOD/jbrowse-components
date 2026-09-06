@@ -144,7 +144,10 @@ has to exist under the lane's assembly name.
 One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table's columns, in the order the
 helper printed. The display colors a gene by its symbol, so a conserved gene is
-one color down the whole stack and a lane missing it breaks the column:
+one color down the whole stack and a lane missing it breaks the column. The
+color is a hash of the symbol rather than any grouping of genes, and the key in
+the top right names the symbols the human lane draws wherever there are few
+enough of them to name:
 
 ```json addtrack
 {
