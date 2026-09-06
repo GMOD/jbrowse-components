@@ -1,7 +1,10 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
-import { syntenyFetchRegions } from '@jbrowse/synteny-core'
+import {
+  syntenyFetchRegions,
+  widenAttributeRanges,
+} from '@jbrowse/synteny-core'
 
 import { executeSyntenyFeaturesAndPositions } from './executeSyntenyFeaturesAndPositions.ts'
 import { computeSyntenyColors } from './syntenyColors.ts'
@@ -185,23 +188,6 @@ function paintOrder(fetched: Fetched) {
   return order
 }
 
-function widen(
-  into: Record<string, AttributeRange>,
-  ranges: Record<string, AttributeRange>,
-) {
-  const out = { ...into }
-  for (const [name, range] of Object.entries(ranges)) {
-    const prev = out[name]
-    out[name] = prev
-      ? {
-          min: Math.min(prev.min, range.min),
-          max: Math.max(prev.max, range.max),
-        }
-      : range
-  }
-  return out
-}
-
 // A pan of one grid cell, four times over: each step refetches against a window
 // that has rolled over, while still overlapping the one before it.
 const OFFSETS = [0, 1, 2, 3, 4].map(i => (i * GRID_BP) / BP_PER_PX)
@@ -218,7 +204,7 @@ describe('a ribbon keeps its color and its place in the stack across a pan', () 
       // instead re-maps every feature each time a pan rolls the window over,
       // and the ribbon a reader is looking at changes color under them.
       const ranges = fetches.reduce<Record<string, AttributeRange>>(
-        (acc, f) => widen(acc, f.attributeRanges),
+        (acc, f) => widenAttributeRanges(acc, f.attributeRanges),
         {},
       )
       const maps = fetches.map(f => colorsById(f, colorBy, ranges))

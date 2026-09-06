@@ -854,3 +854,35 @@ describe('mateShape: grouped', () => {
     expect(shapes.grouped.length).toBeLessThan(shapes.pairwise.length)
   })
 })
+
+// A text column is a label per row, an ancestral linkage group say, and the
+// file may put a color beside it. Both have to reach the feature as the strings
+// they are; the numeric rule above must not swallow them.
+describe('a text attribute column', () => {
+  const labelFeats = () =>
+    firstValueFrom(
+      new Adapter(
+        configSchema.create({
+          mcscanBlocksLocation: bed('grape_peach_labels.blocks'),
+          blockAssemblies: ['grape', 'peach'],
+          bedLocations: [bed('grape.bed'), bed('peach.bed')],
+          assemblyNames: ['grape', 'peach'],
+          attributeColumns: ['group', 'color'],
+        }),
+      )
+        .getFeatures({
+          refName: 'chr1',
+          start: 0,
+          end: 1000,
+          assemblyName: 'grape',
+        })
+        .pipe(toArray()),
+    )
+
+  test('lands on the feature as text, with the file color beside it', async () => {
+    const fa = await labelFeats()
+    expect(fa.map(f => f.get('group'))).toEqual(['A1a', 'B1', 'A1a'])
+    expect(fa[0]!.get('color')).toBe('#4DB5E3')
+    expect(fa[1]!.get('color')).toBeUndefined()
+  })
+})

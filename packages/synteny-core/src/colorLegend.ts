@@ -1,4 +1,7 @@
-import { resolveContinuousMode } from './colorRamps.ts'
+import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
+
+import { categoricalColor } from './colorFunctions.ts'
+import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
 import { colorByAttributeName, colorSchemes } from './colorUtils.ts'
 
 import type { AttributeRange, Rgb } from './colorRamps.ts'
@@ -202,6 +205,21 @@ export function getColorBySwatch(
   const continuous = resolveContinuousMode(colorBy, attributeRanges)
   if (continuous) {
     return ramp(continuous.toRgb, continuous.minLabel, continuous.maxLabel)
+  }
+  const categorical = resolveCategoricalMode(colorBy, attributeRanges)
+  if (categorical) {
+    const shown = categorical.labels.slice(0, MAX_LEGEND_ENTRIES)
+    const rest = categorical.labels.length - shown.length
+    return {
+      kind: 'chips',
+      chips: [
+        ...shown.map(label => ({
+          color: categoricalColor(categorical, label),
+          label,
+        })),
+        ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
+      ],
+    }
   }
   switch (colorBy) {
     case 'strand':

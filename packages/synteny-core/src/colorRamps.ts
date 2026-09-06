@@ -190,10 +190,54 @@ export const continuousRampConfig: Record<
   },
 }
 
-/** The observed span of one attribute across the features in hand. */
-export interface AttributeRange {
+/** The observed span of one numeric attribute across the features in hand. */
+export interface AttributeSpan {
   min: number
   max: number
+}
+
+/**
+ * The distinct labels of one text attribute, in first-seen order, plus any
+ * color the file itself put beside a label (a `color` attribute on the same
+ * row). A fetch's own list doubles as its dictionary: a feature's channel value
+ * is an index into `labels`.
+ */
+export interface AttributeLabels {
+  labels: string[]
+  colors: Record<string, string>
+}
+
+export type AttributeRange = AttributeSpan | AttributeLabels
+
+export function isAttributeLabels(
+  range: AttributeRange,
+): range is AttributeLabels {
+  return 'labels' in range
+}
+
+export interface CategoricalMode {
+  attribute: string
+  labels: string[]
+  colors: Record<string, string>
+}
+
+/**
+ * The mode an `attribute:<name>` colorBy paints with when that column carries
+ * text: one color per distinct label, ordinal by the order the labels were
+ * first seen across the view, so a label keeps its color as the window moves.
+ */
+export function resolveCategoricalMode(
+  colorBy: string,
+  ranges?: Record<string, AttributeRange>,
+): CategoricalMode | undefined {
+  if (!colorBy.startsWith(ATTRIBUTE_PREFIX)) {
+    return undefined
+  }
+  const attribute = colorBy.slice(ATTRIBUTE_PREFIX.length)
+  const range = ranges?.[attribute]
+  return range && isAttributeLabels(range)
+    ? { attribute, labels: range.labels, colors: range.colors }
+    : undefined
 }
 
 // Enough significant figures to tell two legend ends apart without printing a
@@ -227,6 +271,9 @@ export function resolveContinuousMode(
   }
   const attribute = colorBy.slice(ATTRIBUTE_PREFIX.length)
   const range = ranges?.[attribute]
+  if (range && isAttributeLabels(range)) {
+    return undefined
+  }
   // no data yet, or an attribute nothing carried: a flat domain would divide by
   // zero, and rampNorm answers 0 for it, so the ribbons stay at the ramp's
   // bottom rather than painting garbage

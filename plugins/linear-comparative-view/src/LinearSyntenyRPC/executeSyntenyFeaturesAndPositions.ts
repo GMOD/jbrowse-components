@@ -19,7 +19,7 @@ import {
   dnDsRatio,
   findRegionEntry,
   makeStringDict,
-  readAttribute,
+  writeFeatureAttribute,
   regionsCumBpSpan,
   writeAttribute,
 } from '@jbrowse/synteny-core'
@@ -606,11 +606,11 @@ export async function executeSyntenyFeaturesAndPositions({
     for (const channel of channelList) {
       // dnds is the one derived channel: it is a ratio of two attributes, not
       // an attribute, so nothing on the feature answers to the name
-      writeAttribute(
-        channel,
-        validCount,
-        channel.name === 'dnds' ? dnDsRatio(f) : readAttribute(f, channel.name),
-      )
+      if (channel.name === 'dnds') {
+        writeAttribute(channel, validCount, dnDsRatio(f))
+      } else {
+        writeFeatureAttribute(channel, validCount, f)
+      }
     }
 
     mateStartsArray[validCount] = mate.start

@@ -93,3 +93,44 @@ describe('the domain accumulated across fetches', () => {
     expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 1 } })
   })
 })
+
+// A text column's domain is its label list. It widens the way a span does, by
+// first-seen order, so a label keeps its palette slot when a later window adds
+// labels around it.
+describe('a categorical column', () => {
+  it('unions label lists in first-seen order and keeps the first file color', () => {
+    const view = viewWith([])
+    view.observeAttributeRanges({
+      group: { labels: ['B1', 'A1a'], colors: { B1: '#111111' } },
+    })
+    view.observeAttributeRanges({
+      group: {
+        labels: ['A1a', 'C1'],
+        colors: { B1: '#222222', C1: '#333333' },
+      },
+    })
+    expect(view.attributeRanges).toEqual({
+      group: {
+        labels: ['B1', 'A1a', 'C1'],
+        colors: { B1: '#111111', C1: '#333333' },
+      },
+    })
+  })
+
+  it('is the SAME OBJECT after a fetch of labels already seen', () => {
+    const view = viewWith([])
+    view.observeAttributeRanges({ group: { labels: ['B1'], colors: {} } })
+    const first = view.seenAttributeRanges
+    view.observeAttributeRanges({ group: { labels: ['B1'], colors: {} } })
+    expect(view.seenAttributeRanges).toBe(first)
+  })
+
+  it('takes over a numeric span under the same name', () => {
+    const view = viewWith([])
+    view.observeAttributeRanges({ group: { min: 3, max: 7 } })
+    view.observeAttributeRanges({ group: { labels: ['7', 'x'], colors: {} } })
+    expect(view.attributeRanges).toEqual({
+      group: { labels: ['7', 'x'], colors: {} },
+    })
+  })
+})

@@ -34,7 +34,7 @@ export interface BlockRow {
   // config — `identity`, `dn`/`ds`, `goc_score`. They ride onto the feature so a
   // colorBy mode or the detail panel can read them; the format itself is only
   // gene ids, so a table with none is the ordinary case.
-  attrs?: Record<string, number> | undefined
+  attrs?: Record<string, number | string> | undefined
 }
 
 // The two BED sides of a link joined by name, or undefined when either gene is
@@ -263,7 +263,7 @@ export interface GroupedRow {
   anchor: BareFeature
   anchorCol: number
   rowNum: number
-  attrs: Record<string, number> | undefined
+  attrs: Record<string, number | string> | undefined
   mates: GroupedMate[]
 }
 

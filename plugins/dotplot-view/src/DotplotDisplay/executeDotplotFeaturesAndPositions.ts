@@ -13,7 +13,7 @@ import {
   dnDsRatio,
   findRegionEntry,
   makeStringDict,
-  readAttribute,
+  writeFeatureAttribute,
   writeAttribute,
 } from '@jbrowse/synteny-core'
 
@@ -277,11 +277,11 @@ export async function executeDotplotFeaturesAndPositions({
     alignmentLengths[n] = Math.abs(end - start)
     for (const channel of channelList) {
       // dnds is derived from two attributes, so nothing answers to its name
-      writeAttribute(
-        channel,
-        n,
-        channel.name === 'dnds' ? dnDsRatio(f) : readAttribute(f, channel.name),
-      )
+      if (channel.name === 'dnds') {
+        writeAttribute(channel, n, dnDsRatio(f))
+      } else {
+        writeFeatureAttribute(channel, n, f)
+      }
     }
     refNameIds[n] = hDict.idFor(refName)
     mateRefNameIds[n] = vDict.idFor(mateRefName)

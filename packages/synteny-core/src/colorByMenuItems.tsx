@@ -139,7 +139,7 @@ function visibleModes({
     ...attributes.map(attribute => ({
       label: attribute,
       value: attributeColorBy(attribute),
-      helpText: `Color by the ${attribute} column this track carries, on a viridis scale spanning the values in view. A relative scale: unlike the named modes above it has no declared domain, so the legend labels it with the actual numbers.`,
+      helpText: `Color by the ${attribute} column this track carries. A numeric column paints a viridis scale spanning the values seen, labelled with the actual numbers since nothing declares its domain. A text column paints one color per distinct label, or the color the file put beside it in a color column.`,
     })),
   ]
 }

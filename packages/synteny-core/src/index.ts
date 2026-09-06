@@ -128,7 +128,7 @@ export {
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
 export { bandGroundColor } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
-export { TrackColorsMixin } from './TrackColorsMixin.ts'
+export { TrackColorsMixin, widenAttributeRanges } from './TrackColorsMixin.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems, colorByMenuTargetFor } from './colorByMenuItems.tsx'
 export type {
@@ -146,6 +146,7 @@ export {
   declaredAttributes,
   readAttribute,
   writeAttribute,
+  writeFeatureAttribute,
 } from './attributeChannels.ts'
 export type { AttributeChannel } from './attributeChannels.ts'
 export {
@@ -158,13 +159,24 @@ export {
   ATTRIBUTE_PREFIX,
   continuousRampConfig,
   dnDsRatio,
+  isAttributeLabels,
   rampNorm,
+  resolveCategoricalMode,
   resolveContinuousMode,
 } from './colorRamps.ts'
-export type { AttributeRange, ContinuousMode, Rgb } from './colorRamps.ts'
+export type {
+  AttributeLabels,
+  AttributeRange,
+  AttributeSpan,
+  CategoricalMode,
+  ContinuousMode,
+  Rgb,
+} from './colorRamps.ts'
 export {
   MISSING_VALUE_COLOR,
+  categoricalColor,
   createComparativeColorFunction,
+  makeCategoricalColorFunction,
   makeContinuousColorFunction,
   makeNameColorFunction,
   nameColorCss,

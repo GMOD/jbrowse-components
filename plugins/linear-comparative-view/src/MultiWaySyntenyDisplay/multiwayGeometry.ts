@@ -2,6 +2,8 @@ import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
 import {
+  ATTRIBUTE_PREFIX,
+  categoricalColor,
   colorSchemes,
   continuousRampConfig,
   makeContinuousColorFunction,
@@ -25,6 +27,7 @@ import type {
 } from './multiwayRenderTypes.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { CategoricalMode } from '@jbrowse/synteny-core'
 
 // ribbons narrower than this on both ends are clutter at alignment-record
 // density; the boxes they connect are still drawn in the lanes
@@ -127,11 +130,39 @@ export type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
  * them is an inversion. `identity` is the pair feature's own attribute on the
  * synteny view's ramp, and a pair without one keeps the slot color — the
  * synteny view paints missing data in its match red, which on a grey-ribbon
- * stack would read as a value. Every mode keeps the slot color's alpha, since
- * the modes' colors are opaque.
+ * stack would read as a value. An `attribute:` mode reads a text column off
+ * the pair, one color per label as the display accumulated them, and a pair
+ * whose label is not in the table keeps the slot color the same way. Every
+ * mode keeps the slot color's alpha, since the modes' colors are opaque.
  */
-function ribbonColorer(mode: MultiWayRibbonColorBy, slotColor: number) {
+function ribbonColorer(
+  mode: MultiWayRibbonColorBy,
+  slotColor: number,
+  labels: CategoricalMode | undefined,
+) {
   const alpha = slotColor >>> 24
+  if (mode.startsWith(ATTRIBUTE_PREFIX)) {
+    if (!labels) {
+      return () => slotColor
+    }
+    const { attribute } = labels
+    const lut = new Map(
+      labels.labels.map(label => [
+        label,
+        withAbgrAlpha(cssColorToABGR(categoricalColor(labels, label)), alpha),
+      ]),
+    )
+    return (_strand: number, feature: Feature) => {
+      const value: unknown = feature.get(attribute)
+      const label =
+        typeof value === 'string'
+          ? value
+          : typeof value === 'number'
+            ? String(value)
+            : undefined
+      return label === undefined ? slotColor : (lut.get(label) ?? slotColor)
+    }
+  }
   if (mode === 'strand') {
     const pos = withAbgrAlpha(
       cssColorToABGR(colorSchemes.strand.posColor),
@@ -179,6 +210,7 @@ export function buildRibbonGeometry({
   laneLinks,
   ribbonColor,
   ribbonColorBy = 'default',
+  ribbonLabels,
   drawCurves,
   bridgeSkippedLanes,
 }: {
@@ -187,6 +219,8 @@ export function buildRibbonGeometry({
   laneLinks: ReadonlyMap<string, { links: Feature[] }> | undefined
   ribbonColor: string
   ribbonColorBy?: MultiWayRibbonColorBy
+  /** the label table an `attribute:` mode paints from; see the model's `ribbonLabels` */
+  ribbonLabels?: CategoricalMode
   drawCurves: boolean
   /**
    * join a group across a lane that does not place it, to the next lane down
@@ -196,7 +230,7 @@ export function buildRibbonGeometry({
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
-  const colorOf = ribbonColorer(ribbonColorBy, color)
+  const colorOf = ribbonColorer(ribbonColorBy, color, ribbonLabels)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []

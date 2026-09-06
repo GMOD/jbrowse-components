@@ -1,6 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { trackLegendChips } from './colorLegend.ts'
+import { isAttributeLabels } from './colorRamps.ts'
 import { coerceColorBy } from './colorUtils.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
@@ -9,28 +10,48 @@ import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
+// A label list only ever gains labels, in the order they were first seen, and
+// a label's file color is whichever was seen first. A text column meeting a
+// span from an earlier fetch takes over: the column is categorical.
+function widenOne(prev: AttributeRange, range: AttributeRange) {
+  if (isAttributeLabels(range)) {
+    const prevLabels = isAttributeLabels(prev) ? prev : undefined
+    const seen = new Set(prevLabels?.labels)
+    const added = range.labels.filter(l => !seen.has(l))
+    const newColors = Object.entries(range.colors).filter(
+      ([l]) => prevLabels?.colors[l] === undefined,
+    )
+    return prevLabels && added.length === 0 && newColors.length === 0
+      ? undefined
+      : {
+          labels: [...(prevLabels?.labels ?? []), ...added],
+          colors: {
+            ...prevLabels?.colors,
+            ...Object.fromEntries(newColors),
+          },
+        }
+  }
+  return isAttributeLabels(prev)
+    ? undefined
+    : range.min < prev.min || range.max > prev.max
+      ? {
+          min: Math.min(prev.min, range.min),
+          max: Math.max(prev.max, range.max),
+        }
+      : undefined
+}
+
 // Widen `into` by `ranges`, returning `into` ITSELF when nothing moved: this is
 // read through a computed on every recolor, and a fresh object per fetch that
 // told it nothing new would re-run every downstream color pass.
-function widenRanges(
+export function widenAttributeRanges(
   into: Record<string, AttributeRange>,
   ranges: Record<string, AttributeRange>,
 ) {
   const grown = Object.entries(ranges).flatMap(([name, range]) => {
     const prev = into[name]
-    return prev
-      ? range.min < prev.min || range.max > prev.max
-        ? ([
-            [
-              name,
-              {
-                min: Math.min(prev.min, range.min),
-                max: Math.max(prev.max, range.max),
-              },
-            ],
-          ] as const)
-        : []
-      : ([[name, range]] as const)
+    const next = prev ? widenOne(prev, range) : range
+    return next ? ([[name, next]] as const) : []
   })
   return grown.length === 0 ? into : { ...into, ...Object.fromEntries(grown) }
 }
@@ -162,7 +183,7 @@ export function TrackColorsMixin() {
       get attributeRanges(): Record<string, AttributeRange> {
         return self
           .loadedAttributeRanges()
-          .reduce(widenRanges, self.seenAttributeRanges)
+          .reduce(widenAttributeRanges, self.seenAttributeRanges)
       },
       /**
        * #getter
@@ -245,7 +266,7 @@ export function TrackColorsMixin() {
       },
     }))
     .actions(self => {
-      // Identity-preserving, like `widenRanges`: a recolor reads the domain
+      // Identity-preserving, like `widenAttributeRanges`: a recolor reads the domain
       // through a computed, and a fresh empty object per mode pick would re-run
       // every color pass behind a reset that reset nothing.
       function forgetSeenRanges() {
@@ -263,7 +284,7 @@ export function TrackColorsMixin() {
          * the moment the next one commits.
          */
         observeAttributeRanges(ranges: Record<string, AttributeRange>) {
-          self.seenAttributeRanges = widenRanges(
+          self.seenAttributeRanges = widenAttributeRanges(
             self.seenAttributeRanges,
             ranges,
           )

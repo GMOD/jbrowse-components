@@ -140,3 +140,31 @@ describe('trackLegendChips', () => {
     expect(trackLegendChips(tracks, 'strand')).toEqual([])
   })
 })
+
+// A text column keys one chip per label, the file color where the file gave
+// one, and past the readable cap it says how many it left out.
+test('a categorical attribute lists a chip per label', () => {
+  const swatch = getColorBySwatch('attribute:group', {
+    attributeRanges: {
+      group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
+    },
+  })
+  expect(swatch?.kind).toBe('chips')
+  if (swatch?.kind === 'chips') {
+    expect(swatch.chips.map(c => c.label)).toEqual(['B1', 'A1a'])
+    expect(swatch.chips[1]!.color).toBe('#4DB5E3')
+    expect(swatch.chips[0]!.color).toBeDefined()
+  }
+  const many = getColorBySwatch('attribute:group', {
+    attributeRanges: {
+      group: {
+        labels: Array.from({ length: 35 }, (_, i) => `L${i}`),
+        colors: {},
+      },
+    },
+  })
+  if (many?.kind === 'chips') {
+    expect(many.chips.length).toBe(31)
+    expect(many.chips[30]).toEqual({ label: '+5 more' })
+  }
+})

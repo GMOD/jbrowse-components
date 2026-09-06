@@ -81,7 +81,9 @@ export function createDisplayWithSession({
     string,
     { slots: ConfigurationSchemaDefinition; capabilities?: string[] }
   > = {
-    MCScanBlocksAdapter: { slots: {} },
+    MCScanBlocksAdapter: {
+      slots: { attributeColumns: { type: 'stringArray', defaultValue: [] } },
+    },
     Gff3TabixAdapter: { slots: {} },
     PairwiseIndexedPAFAdapter: {
       slots: {

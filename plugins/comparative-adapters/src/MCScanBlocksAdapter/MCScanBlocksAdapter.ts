@@ -147,15 +147,13 @@ function parseRowAttrs(
   firstColumn: number,
   attributeColumns: string[],
 ) {
-  let attrs: Record<string, number> | undefined
+  let attrs: Record<string, number | string> | undefined
   for (let i = 0; i < attributeColumns.length; i++) {
     const raw = cols[firstColumn + i]?.trim()
     if (raw && raw !== '.' && raw !== 'NA' && raw !== 'NULL') {
       const value = Number(raw)
-      if (Number.isFinite(value)) {
-        attrs ??= {}
-        attrs[attributeColumns[i]!] = value
-      }
+      attrs ??= {}
+      attrs[attributeColumns[i]!] = Number.isFinite(value) ? value : raw
     }
   }
   return attrs

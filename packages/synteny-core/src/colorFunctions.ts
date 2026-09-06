@@ -1,10 +1,19 @@
 import { refNameColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { rampNorm, resolveContinuousMode } from './colorRamps.ts'
+import {
+  rampNorm,
+  resolveCategoricalMode,
+  resolveContinuousMode,
+} from './colorRamps.ts'
 import { colorSchemes } from './colorUtils.ts'
 
-import type { AttributeRange, ContinuousMode, Rgb } from './colorRamps.ts'
+import type {
+  AttributeRange,
+  CategoricalMode,
+  ContinuousMode,
+  Rgb,
+} from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 /**
@@ -154,6 +163,42 @@ export function makeContinuousColorFunction(
   }
 }
 
+/**
+ * The color a label paints: the file's own if the row carried one, else the
+ * palette slot of the label's position in the VIEW's first-seen order, so the
+ * same label is the same color in every fetch and every overlaid track.
+ */
+export function categoricalColor(mode: CategoricalMode, label: string) {
+  const own = mode.colors[label]
+  return own === undefined
+    ? refNameColor(label, mode.labels.indexOf(label))
+    : own
+}
+
+/**
+ * One color per distinct label of a text column. The fetch's own label list is
+ * the dictionary its channel indexes; the view-wide mode decides the colors.
+ */
+export function makeCategoricalColorFunction(
+  mode: CategoricalMode,
+  attributes: Record<string, Float32Array>,
+  fetchRanges: Record<string, AttributeRange>,
+) {
+  const values = attributes[mode.attribute]
+  const fetchRange = fetchRanges[mode.attribute]
+  const dict =
+    fetchRange && 'labels' in fetchRange ? fetchRange.labels : mode.labels
+  const lut = Uint32Array.from(dict, label =>
+    cssColorToABGR(categoricalColor(mode, label)),
+  )
+  return (index: number) => {
+    const value = values?.[index]
+    return value === undefined || value < 0
+      ? MISSING_VALUE_COLOR
+      : (lut[value] ?? MISSING_VALUE_COLOR)
+  }
+}
+
 /** The payload lanes a color function reads, common to both views' fetches. */
 export interface ColorFunctionInputs {
   strands: Int8Array
@@ -161,9 +206,12 @@ export interface ColorFunctionInputs {
   refNameIds: Uint32Array
   mateRefNameDict: readonly string[]
   mateRefNameIds: Uint32Array
-  // every numeric per-feature channel by name, which is what a continuous mode
+  // every per-feature channel by name, which is what an attribute mode
   // indexes. The named presets are aliases into this, not separate arrays.
   attributes: Record<string, Float32Array>
+  // this fetch's own span or label list per channel: a text column's values
+  // above index into its `labels`
+  attributeRanges: Record<string, AttributeRange>
 }
 
 /**
@@ -209,6 +257,14 @@ export function createComparativeColorFunction({
   const continuous = resolveContinuousMode(colorBy, attributeRanges)
   if (continuous) {
     return makeContinuousColorFunction(continuous, data.attributes)
+  }
+  const categorical = resolveCategoricalMode(colorBy, attributeRanges)
+  if (categorical) {
+    return makeCategoricalColorFunction(
+      categorical,
+      data.attributes,
+      data.attributeRanges,
+    )
   }
   switch (colorBy) {
     // One flat color for every alignment in this track, so overlaid tracks are

@@ -1,3 +1,4 @@
+import { refNameColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
   abgrAlpha,
@@ -353,6 +354,46 @@ describe('the ribbons', () => {
     expect(abgrAlpha(data.colors[0]!)).toBe(alpha)
     expect(data.colors[1]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
     expect(data.colors[0]).not.toBe(data.colors[1])
+  })
+
+  // A text column paints one color per label from the table the display
+  // accumulated, the file's own color where it gave one, and a row whose label
+  // is not in the table keeps the slot color like a pair without identity does.
+  test('color by a text column reads the label table, at the slot color’s alpha', () => {
+    const s = stack({
+      features: [
+        new SimpleFeature({
+          ...pairFeature('g1', 100, 200).toJSON(),
+          group: 'A1a',
+          color: '#4DB5E3',
+        }),
+        new SimpleFeature({
+          ...pairFeature('g2', 300, 400).toJSON(),
+          group: 'B1',
+        }),
+        pairFeature('g3', 500, 600),
+      ],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColorBy: 'attribute:group',
+      ribbonLabels: {
+        attribute: 'group',
+        labels: ['B1', 'A1a'],
+        colors: { A1a: '#4DB5E3' },
+      },
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    const alpha = Math.round(0.4 * 255)
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#4DB5E3'), alpha))
+    expect(data.colors[1]).toBe(
+      withAbgrAlpha(cssColorToABGR(refNameColor('B1', 0)), alpha),
+    )
+    expect(data.colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
   })
 
   test('leave out a pair too thin to read on both ends', () => {

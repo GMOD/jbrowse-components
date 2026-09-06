@@ -1,4 +1,5 @@
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { refNameColor } from '@jbrowse/core/ui/colors'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   MISSING_VALUE_COLOR,
@@ -17,6 +18,7 @@ function inputs(over: Partial<ColorFunctionInputs> = {}): ColorFunctionInputs {
     mateRefNameDict: ['chr1'],
     mateRefNameIds: new Uint32Array([0]),
     attributes: {},
+    attributeRanges: {},
     ...over,
   }
 }
@@ -209,5 +211,46 @@ describe('createComparativeColorFunction', () => {
     expect(
       createComparativeColorFunction({ ...args, colorBy: 'reference' })(0),
     ).toBe(createComparativeColorFunction({ ...args, colorBy: 'query' })(0))
+  })
+})
+
+// A text column paints one color per label: the file's own where the row put
+// one beside it, else the palette slot of the label's position in the VIEW's
+// first-seen order, which is what keeps a label one color across fetches.
+describe('a categorical attribute', () => {
+  const fetchLabels = { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } }
+  const data = inputs({
+    attributes: { group: new Float32Array([0, 1, -1]) },
+    attributeRanges: { group: fetchLabels },
+  })
+
+  test('paints the palette by view order and the file color where given', () => {
+    const fn = createComparativeColorFunction({
+      colorBy: 'attribute:group',
+      data,
+      trackColor: '#000',
+      defaultColor: 0,
+      attributeRanges: {
+        group: { labels: ['C1', 'B1', 'A1a'], colors: fetchLabels.colors },
+      },
+    })
+    expect(fn(0)).toBe(cssColorToABGR(refNameColor('B1', 1)))
+    expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
+    expect(fn(2)).toBe(MISSING_VALUE_COLOR)
+  })
+
+  test('a numeric column under the same mode string still ramps', () => {
+    const fn = createComparativeColorFunction({
+      colorBy: 'attribute:group',
+      data: inputs({
+        attributes: { group: new Float32Array([0, 10]) },
+        attributeRanges: { group: { min: 0, max: 10 } },
+      }),
+      trackColor: '#000',
+      defaultColor: 0,
+      attributeRanges: { group: { min: 0, max: 10 } },
+    })
+    expect(fn(0)).not.toBe(fn(1))
+    expect(fn(0)).not.toBe(MISSING_VALUE_COLOR)
   })
 })
