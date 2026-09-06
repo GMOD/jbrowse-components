@@ -107,12 +107,31 @@ function setup(
   } = {},
 ) {
   const views: StubView[] = []
+  const setUseWorkspaces = jest.fn()
+  // Returns what the real action returns — the view ids the spec names,
+  // in the order it states — because that return value is the whole
+  // input to `orderViews`, and a stub returning `[]` cannot tell a
+  // wired-up ordering from a dropped one.
+  //
+  // It also RESOLVES first, as the real action does. A stub that only
+  // read ids off the converted spec could not see it produce a spec the
+  // real resolver refuses, which is how a duplicate seat and an empty
+  // node both got past this suite.
+  const applyLayoutSpec = jest.fn((spec: LayoutSpecNode) =>
+    viewIdsInSpec(
+      resolveLayoutSpec(
+        spec,
+        views.map(v => v.id),
+      ),
+    ),
+  )
+  const orderViews = jest.fn()
   // The composite the real WorkspaceLayoutMixin.layoutViews is, over the three
-  // stubs below, so the assertions on each of them keep meaning what they say.
+  // stubs above, so the assertions on each of them keep meaning what they say.
   const layoutViews = jest.fn((spec: LayoutSpecNode) => {
-    session.setUseWorkspaces!(true)
-    const ids = session.applyLayoutSpec!(spec)
-    session.orderViews!(ids)
+    setUseWorkspaces(true)
+    const ids = applyLayoutSpec(spec)
+    orderViews(ids)
     return ids
   })
   const session = {
@@ -120,28 +139,7 @@ function setup(
     notifyError: jest.fn(),
     notify: jest.fn(),
     ...(workspaces
-      ? {
-          layoutViews,
-          setUseWorkspaces: jest.fn(),
-          // Returns what the real action returns — the view ids the spec names,
-          // in the order it states — because that return value is the whole
-          // input to `orderViews`, and a stub returning `[]` cannot tell a
-          // wired-up ordering from a dropped one.
-          //
-          // It also RESOLVES first, as the real action does. A stub that only
-          // read ids off the converted spec could not see it produce a spec the
-          // real resolver refuses, which is how a duplicate seat and an empty
-          // node both got past this suite.
-          applyLayoutSpec: jest.fn((spec: LayoutSpecNode) =>
-            viewIdsInSpec(
-              resolveLayoutSpec(
-                spec,
-                views.map(v => v.id),
-              ),
-            ),
-          ),
-          orderViews: jest.fn(),
-        }
+      ? { layoutViews, setUseWorkspaces, applyLayoutSpec, orderViews }
       : undefined),
     ...connections?.session,
   }

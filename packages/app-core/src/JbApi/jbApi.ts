@@ -849,6 +849,7 @@ async function fetchFeatures(
     const bytes = await rpcManager.call(
       sessionId,
       'CoreGetRegionByteEstimate',
+      // eslint-disable-next-line no-restricted-syntax -- reports nothing: an agent awaits the returned features and no display or dialog exists to show a phase label or bar
       { adapterConfig, regions, scope: 'largestRegion', stopToken },
     )
     if (bytes !== undefined && bytes > byteLimit) {
@@ -856,6 +857,7 @@ async function fetchFeatures(
         `region too large for jb.getFeatures: the largest region is ~${bytes} bytes against a limit of ${byteLimit}. Narrow the region, or pass an explicit byteLimit if you mean to pull this much.`,
       )
     }
+    // eslint-disable-next-line no-restricted-syntax -- reports nothing: see the estimate above
     return await rpcManager.call(sessionId, 'CoreGetFeatures', {
       adapterConfig,
       regions,
