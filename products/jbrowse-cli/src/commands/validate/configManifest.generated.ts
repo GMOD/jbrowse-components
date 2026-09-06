@@ -3730,6 +3730,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLaneTicks",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "lanes",
+          "type": "(JexlString | string[])"
         }
       ],
       "stateModelProps": [
@@ -3738,7 +3742,8 @@ export const configManifest: ConfigManifest = {
         "configuration",
         "lodMode",
         "rowOrder",
-        "hiddenLanes"
+        "hiddenLanes",
+        "selectedLanes"
       ]
     },
     "LinearReferenceSequenceDisplay": {
