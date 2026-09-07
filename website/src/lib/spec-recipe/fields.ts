@@ -24,7 +24,10 @@ import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arc
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import { RIBBON_COLOR_MODES } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorModes.ts'
-import { COLOR_MODES } from '../../../../packages/synteny-core/src/colorModes.ts'
+import {
+  COLOR_MODES,
+  VALUE_MODES_LABEL,
+} from '../../../../packages/synteny-core/src/colorModes.ts'
 import { OFFSCREEN_MATE_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/offscreenMateModes.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
@@ -265,7 +268,10 @@ function groupByStep(value: unknown): FieldStep | undefined {
 // like the same table and is not: it titles the floating legend, where these
 // read 'Query name' and 'Reference name'.
 const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
-  COLOR_MODES.map(m => [m.value, m.label]),
+  COLOR_MODES.map(m => [
+    m.value,
+    m.kind === 'value' ? `${VALUE_MODES_LABEL} → ${m.label}` : m.label,
+  ]),
 )
 
 // `attribute:<column>` is the open arm of the mode list: a track's declared
@@ -1660,7 +1666,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       typeof value === 'string'
         ? (SYNTENY_COLOR_MODES[value] ??
           (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
-            ? value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)
+            ? `${VALUE_MODES_LABEL} → ${value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)}`
             : undefined))
         : undefined
     // Both comparative views carry the same palette button; only the header it

@@ -192,21 +192,24 @@ carries a **Show color legend** toggle:
   telling contigs apart when one maps across several
 - Reference - color every level of a stacked view by the shared reference's
   chromosome names, so a region keeps one color as it is traced down the stack
-- Identity - per-alignment sequence identity on a viridis ramp. It needs the
-  `=`/`X` CIGAR that `minimap2 --eqx` writes
-- Mean query identity - length-weighted identity across all alignments of a
-  query/target pair, which smooths a contig split into many hits
-- Mapping quality - per-alignment PAF MAPQ on a cividis ramp
-- dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
-  diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
-  purifying selection, red above it positive selection, clamped at 2. It needs
-  an [ortholog table](/docs/tutorials/homoeolog_synteny) carrying `dn` and `ds`
-  per link
-- Any column the table declares - an ortholog table's `attributeColumns` each
-  become a mode named after the column. A numeric column paints a viridis ramp
-  labelled with the values seen; a text column, an ancestral linkage group or an
-  orthogroup say, paints one color per distinct label, or the color the table
-  put beside it in a `color` column, with a legend row per label
+- Color by value - a submenu of the numbers an alignment can carry, each painted
+  on a color ramp. The row names whichever is in use.
+  - Identity - per-alignment sequence identity on a viridis ramp. It needs the
+    `=`/`X` CIGAR that `minimap2 --eqx` writes
+  - Mean query identity - length-weighted identity across all alignments of a
+    query/target pair, which smooths a contig split into many hits
+  - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
+  - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
+    diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
+    purifying selection, red above it positive selection, clamped at 2. It needs
+    an [ortholog table](/docs/tutorials/homoeolog_synteny) carrying `dn` and
+    `ds` per link
+  - Any column the table declares - an ortholog table's `attributeColumns` each
+    become an entry named after the column. A numeric column paints a viridis
+    ramp labelled with the values seen; a text column, an ancestral linkage
+    group or an orthogroup say, paints one color per distinct label, or the
+    color the table put beside it in a `color` column, with a legend row per
+    label
 
 A mode whose number a track does not carry leaves every ribbon the default
 color.

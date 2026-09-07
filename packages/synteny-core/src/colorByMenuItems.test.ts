@@ -1,6 +1,7 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { colorByMenuItems } from './colorByMenuItems.tsx'
+import { VALUE_MODES_LABEL } from './colorModes.ts'
 
 import type {
   ColorByMenuTarget,
@@ -25,6 +26,12 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   uniformColorBy: 'default',
   tracks: [track(0), track(1)],
   attributes: [],
+  attributeRanges: {
+    identity: { min: 0.5, max: 1 },
+    meanIdentity: { min: 0.5, max: 1 },
+    mappingQual: { min: 0, max: 60 },
+    dnds: { min: 0, max: 2 },
+  },
   pointBased: false,
   showReference: false,
   showColorLegend: false,
@@ -43,9 +50,15 @@ function findSubMenu(
   items: ReturnType<typeof colorByMenuItems>,
   label: string,
 ) {
-  const found = items.find(i => 'label' in i && i.label === label)
+  const found = items.find(
+    i =>
+      'label' in i && typeof i.label === 'string' && i.label.startsWith(label),
+  )
   return found && 'subMenu' in found ? resolveSubMenu(found) : undefined
 }
+
+const valueModes = (items: ReturnType<typeof colorByMenuItems>) =>
+  findSubMenu(items, VALUE_MODES_LABEL)!
 
 // The view-wide radios come first and are the primary control; per-track is a
 // secondary override below them. Locking the order in keeps that hierarchy from
@@ -96,7 +109,25 @@ test('each track submenu offers "Use view setting" plus the same modes', () => {
   const inner = first.map(i => ('label' in i ? i.label : `<${i.type}>`))
   expect(inner[0]).toBe('Use view setting')
   expect(inner).toContain('Strand')
+  expect(labels(valueModes(first))).toContain('Identity')
   expect(inner.at(-1)).toBe('Reset color to automatic')
+})
+
+// The measurements sit one hop in, so a plain PAF's user meets five radios
+// rather than ten, and the row that opens them names the one in use.
+test('value modes live in one submenu whose row names the active one', () => {
+  const top = labels(colorByMenuItems(target()))
+  expect(top).not.toContain('Identity')
+  expect(top).not.toContain('dN/dS')
+  expect(top).toContain(VALUE_MODES_LABEL)
+  expect(labels(valueModes(colorByMenuItems(target())))).toEqual([
+    'Identity',
+    'Mean query identity',
+    'Mapping quality',
+    'dN/dS',
+  ])
+  const active = labels(colorByMenuItems(target({ uniformColorBy: 'dnds' })))
+  expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
 })
 
 test('reset rows are disabled until something is actually overridden', () => {
@@ -215,6 +246,29 @@ describe('per-track "Use view setting"', () => {
   })
 })
 
+// A measurement the loaded alignments never carried is a row that paints every
+// ribbon the missing-data color, so it is offered disabled with the reason.
+test('a value mode is disabled until the data has carried it', () => {
+  const rows = valueModes(
+    colorByMenuItems(
+      target({ attributeRanges: { identity: { min: 0, max: 1 } } }),
+    ),
+  )
+  const state = Object.fromEntries(
+    rows.map(r => ['label' in r ? r.label : '', 'disabled' in r && r.disabled]),
+  )
+  expect(state).toEqual({
+    Identity: false,
+    'Mean query identity': true,
+    'Mapping quality': true,
+    'dN/dS': true,
+  })
+  const dnds = rows.find(r => 'label' in r && r.label === 'dN/dS')!
+  expect('disabledHelpText' in dnds && dnds.disabledHelpText).toBe(
+    'The loaded alignments carry no dN/dS',
+  )
+})
+
 // The declared columns appear as modes of their own, which is what keeps the
 // named list above from gaining a member per measurement anyone wants to see.
 test('a declared numeric column is offered as its own mode', () => {
@@ -227,10 +281,10 @@ test('a declared numeric column is offered as its own mode', () => {
       },
     }),
   )
-  const labels = items.map(i => ('label' in i ? i.label : undefined))
-  expect(labels).toContain('dn')
-  expect(labels).toContain('goc_score')
-  const goc = items.find(i => 'label' in i && i.label === 'goc_score')!
+  const values = valueModes(items)
+  expect(labels(values)).toContain('dn')
+  expect(labels(values)).toContain('goc_score')
+  const goc = values.find(i => 'label' in i && i.label === 'goc_score')!
   ;(goc as { onClick: () => void }).onClick()
   expect(picked).toEqual(['attribute:goc_score'])
 })
@@ -245,6 +299,7 @@ test('an attribute mode checks like a preset', () => {
       uniformColorBy: 'attribute:dn',
     }),
   )
-  const dn = items.find(i => 'label' in i && i.label === 'dn')!
+  const dn = valueModes(items).find(i => 'label' in i && i.label === 'dn')!
   expect((dn as { checked: boolean }).checked).toBe(true)
+  expect(labels(items)).toContain(`${VALUE_MODES_LABEL} — dn`)
 })

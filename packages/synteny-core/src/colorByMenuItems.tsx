@@ -1,8 +1,11 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
+import { withHint } from '@jbrowse/core/ui/menuItems'
 
-import { COLOR_MODES } from './colorModes.ts'
+import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
+import { continuousRampConfig } from './colorRamps.ts'
 import { attributeColorBy } from './colorUtils.ts'
 
+import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -43,6 +46,7 @@ export function colorByMenuTargetFor(
   return {
     uniformColorBy: model.uniformColorBy,
     attributes: model.colorableAttributes,
+    attributeRanges: model.attributeRanges,
     tracks: model.colorableTracks.map(({ trackId, name, color }) => ({
       trackId,
       name,
@@ -78,6 +82,7 @@ export function colorByMenuTargetFor(
 export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
+  attributeRanges: Record<string, AttributeRange>
   uniformColorBy: SyntenyColorBy | undefined
   showColorLegend: boolean
   trackColorBy: { has: (trackId: string) => boolean }
@@ -100,6 +105,13 @@ export interface ColorByMenuTarget {
    * before anything has loaded.
    */
   attributes: string[]
+  /**
+   * the span each channel has been seen to cover. A preset measurement is
+   * offered only once the loaded data has carried one value of it: a plain
+   * PAF has no dN/dS, and a CIGAR-less one no identity, so the row says so
+   * rather than painting every ribbon the missing-data color.
+   */
+  attributeRanges: Record<string, AttributeRange>
   /** dotplots draw flat points and have no 'reference' anchor */
   pointBased: boolean
   /** 'reference' is meaningless below two stacked levels */
@@ -112,35 +124,100 @@ export interface ColorByMenuTarget {
   setShowColorLegend: (value: boolean) => void
 }
 
-// The named presets, then one entry per numeric column the tracks declare.
-//
-// The second list is why the first one stops growing. A preset earns its name by
-// carrying domain knowledge a column name cannot — identity is a fraction, MAPQ
-// tops out at 60, dN/dS is read against 1 — and every other measurement is
-// reachable without a new enum member, menu entry, legend arm, LUT, typed array
-// and RPC transfer slot.
-function visibleModes({
+interface ModeEntry {
+  value: SyntenyColorBy
+  label: string
+  helpText: string
+  disabledHelpText?: string
+}
+
+const presetRamps: Record<string, { attribute: string } | undefined> =
+  continuousRampConfig
+
+function structuralModes({
   pointBased,
   showReference,
   tracks,
+}: ColorByMenuTarget): ModeEntry[] {
+  return COLOR_MODES.filter(
+    m =>
+      m.kind === 'structural' &&
+      (m.value !== 'reference' || showReference) &&
+      // one track has nothing to be told apart from
+      (m.value !== 'track' || tracks.length > 1),
+  ).map(m => ({
+    value: m.value,
+    label: m.label,
+    helpText:
+      pointBased && m.pointBasedHelpText ? m.pointBasedHelpText : m.helpText,
+  }))
+}
+
+// The named measurements, then one entry per column the tracks declare. The
+// second list is why the first one stops growing: a preset earns its name by
+// carrying domain knowledge a column name cannot — identity is a fraction, MAPQ
+// tops out at 60, dN/dS is read against 1.
+function valueModes({
   attributes,
-}: ColorByMenuTarget) {
+  attributeRanges,
+}: ColorByMenuTarget): ModeEntry[] {
   return [
-    ...COLOR_MODES.filter(
-      m =>
-        (m.value !== 'reference' || showReference) &&
-        // one track has nothing to be told apart from
-        (m.value !== 'track' || tracks.length > 1),
-    ).map(m => ({
-      ...m,
-      helpText:
-        pointBased && m.pointBasedHelpText ? m.pointBasedHelpText : m.helpText,
-    })),
+    ...COLOR_MODES.filter(m => m.kind === 'value').map(m => {
+      const channel = presetRamps[m.value]?.attribute
+      const seen = channel !== undefined && channel in attributeRanges
+      return {
+        ...m,
+        disabledHelpText: seen
+          ? undefined
+          : `The loaded alignments carry no ${m.label[0]!.toLowerCase()}${m.label.slice(1)}`,
+      }
+    }),
     ...attributes.map(attribute => ({
       label: attribute,
       value: attributeColorBy(attribute),
       helpText: `Color by the ${attribute} column this track carries. A numeric column paints a viridis scale spanning the values seen, labelled with the actual numbers since nothing declares its domain. A text column paints one color per distinct label, or the color the file put beside it in a color column.`,
     })),
+  ]
+}
+
+function radios(
+  modes: ModeEntry[],
+  isChecked: (value: SyntenyColorBy) => boolean,
+  pick: (value: SyntenyColorBy) => void,
+): MenuItem[] {
+  return modes.map(({ label, value, helpText, disabledHelpText }) => ({
+    label,
+    type: 'radio' as const,
+    checked: isChecked(value),
+    helpText,
+    disabled: disabledHelpText !== undefined,
+    disabledHelpText,
+    onClick: () => {
+      pick(value)
+    },
+  }))
+}
+
+// The structural radios at the top, then the measurements one hop in. The
+// submenu row names the active measurement as its hint, so a value mode still
+// reads as picked from the top level.
+function modeItems(
+  target: ColorByMenuTarget,
+  isChecked: (value: SyntenyColorBy) => boolean,
+  pick: (value: SyntenyColorBy) => void,
+): MenuItem[] {
+  const values = valueModes(target)
+  return [
+    ...radios(structuralModes(target), isChecked, pick),
+    {
+      label: withHint(
+        VALUE_MODES_LABEL,
+        values.find(m => isChecked(m.value))?.label,
+      ),
+      helpText:
+        'Paint each alignment by a number it carries, on a color ramp the legend labels.',
+      subMenu: radios(values, isChecked, pick),
+    },
   ]
 }
 
@@ -158,15 +235,13 @@ function perTrackSubMenu(
       },
     },
     { type: 'divider' },
-    ...visibleModes(target).map(({ label, value, helpText }) => ({
-      label,
-      type: 'radio' as const,
-      checked: track.overridden && track.colorBy === value,
-      helpText,
-      onClick: () => {
+    ...modeItems(
+      target,
+      value => track.overridden && track.colorBy === value,
+      value => {
         target.setTrackColorBy(track.trackId, value)
       },
-    })),
+    ),
     { type: 'divider' },
     {
       label: 'Reset color to automatic',
@@ -188,15 +263,13 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
   const { uniformColorBy, tracks, showColorLegend } = target
   const anyOverride = uniformColorBy === undefined || tracks.some(t => t.pinned)
   return [
-    ...visibleModes(target).map(({ label, value, helpText }) => ({
-      label,
-      type: 'radio' as const,
-      checked: uniformColorBy === value,
-      helpText,
-      onClick: () => {
+    ...modeItems(
+      target,
+      value => uniformColorBy === value,
+      value => {
         target.setColorBy(value)
       },
-    })),
+    ),
     ...(tracks.length > 1
       ? [
           { type: 'divider' as const },
