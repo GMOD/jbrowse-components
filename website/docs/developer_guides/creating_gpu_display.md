@@ -251,6 +251,7 @@ re-exports the other two modules, so the table below is the union of all three:
 | `COVERAGE` | 'analytic' when the shader declares that its fragments compute their own coverage, so a display registering only such passes allocates no MSAA target |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |
+| `WORKGROUP_SIZE_Y` | the compute workgroup height, for a kernel dispatched over a 2D grid |
 | `UNIFORMS_SIZE_BYTES` | size of the uniform block; `slangPass` carries it onto the descriptor |
 | `UNIFORM_OFFSET_F32 / _U32 / _I32` | per-field indices into the uniform scratch buffer, one map per view |
 | `UNIFORM_SLOT_ARRAYS` | element counts for array-valued uniform slots |
