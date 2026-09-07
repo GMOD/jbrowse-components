@@ -208,7 +208,15 @@ const STARTUP_DIALOGS = [
   },
 ]
 
-const TUI_READY = /\d+\s+tokens|bypass permissions|\? for shortcuts/
+// Readiness markers, newest first. These are the status line, so they move
+// whenever Claude Code restyles it: 2.1.263 draws
+// `claude | cwd-4e | Sonnet 5 | medium | 0/1M 0% | $0.00` over
+// `⏵⏵ auto mode on (shift+tab to cycle) · ← for agents`, which carries none of
+// the three older markers. Keep the old ones: a stale alternative costs
+// nothing, and a missing one costs a take with "never reached its prompt" over
+// a TUI that is plainly sitting at its prompt.
+const TUI_READY =
+  /shift\+tab to cycle|\d+\/\d+[KM]\b|\d+\s+tokens|bypass permissions|\? for shortcuts/
 
 export async function waitTuiReady(session, timeoutMs = 120_000) {
   const deadline = Date.now() + timeoutMs

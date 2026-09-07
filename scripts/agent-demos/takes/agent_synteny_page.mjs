@@ -11,11 +11,15 @@ export const SHELL = true
 
 export const SYSTEM =
   cwd => `You are driving JBrowse Desktop over its MCP tools and you also have a shell
-with minimap2, jq and the jbrowse CLI on PATH. Your working directory is ${cwd}.
-Every file you create goes there, and the alignment runs in the shell, outside
-the app. The two genome FASTAs are already in ${cwd} as sim.fa.gz (D. simulans
-GCF_016746395.2) and mau.fa.gz (D. mauritiana GCF_004382145.1); their hosted
-JBrowse configs are at jbrowse.org under hubs/genark, and merging those two is
+with minimap2, jq, curl and the jbrowse CLI on PATH. Your working directory is
+${cwd}; every file you create goes there, and the alignment runs in the shell,
+outside the app. Both genomes are on the UCSC GenArk hub, whose files and hosted
+JBrowse config for an accession live under
+hgdownload.soe.ucsc.edu/hubs/<GCF|GCA>/<3>/<3>/<3>/<acc>/ and
+jbrowse.org/hubs/genark/... respectively. The hub's <acc>.2bit is the same
+sequence the browser reads; ./twoBitToFa in your working directory converts it
+to FASTA for the aligner. The hosted configs already describe
+the sequence, the chromAlias file and the gene track, so merging the two is
 shorter than declaring either assembly by hand. Be direct: do what each message
 asks with as few tool calls as possible, then answer in one plain-English
 sentence with the numbers behind it. After every change to the app, screenshot
@@ -37,7 +41,7 @@ export const STEPS = [
   // collapses the wait, and the TUI in frame shows the polling.
   {
     prompt:
-      'Align D. simulans GCF_016746395.2 against D. mauritiana GCF_004382145.1 with minimap2: sim.fa.gz and mau.fa.gz are already here. Run it in the background and poll it, and when it is done index it and open both genomes in JBrowse side by side, with their gene tracks and the alignment between them.',
+      'Download the D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 genomes from the UCSC GenArk hub and align them with minimap2. Run the aligner in the background and poll it, and when it is done index it and open both genomes in JBrowse side by side, with their gene tracks and the alignment between them.',
     say: 'One sentence for the whole pipeline. The aligner runs in the background so the tool call does not time out.',
   },
   {

@@ -76,6 +76,14 @@ when Claude Code updates:
   editing a file called `human`. `STARTUP_DIALOGS` in `demoCore.mjs` is the
   table; a new one shows up as "the TUI never reached its prompt", and the pane
   is saved to `<outdir>/tui-stuck.txt` so the next one takes a minute to add.
+- **The readiness markers are the status line, so they rot.** 2.1.263 draws
+  `claude | cwd-4e | Sonnet 5 | medium | 0/1M 0% | $0.00` over
+  `⏵⏵ auto mode on (shift+tab to cycle) · ← for agents`, and carries none of
+  `bypass permissions`, `N tokens` or `? for shortcuts` — the three `TUI_READY`
+  matched until 2026-09-07. The symptom is a take that dies with "never reached
+  its prompt" over a `tui-stuck.txt` showing a TUI plainly sitting at its
+  prompt. Add the new marker, keep the old ones; a stale alternative costs
+  nothing.
 - **`❯` is not a readiness marker.** It is the cursor in those very choosers,
   and it is a common shell prompt (`❯❯❯` here), so matching it declares the TUI
   ready before it exists. Match `bypass permissions`, `N tokens` or
