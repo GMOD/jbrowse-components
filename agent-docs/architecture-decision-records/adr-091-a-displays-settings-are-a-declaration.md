@@ -19,18 +19,21 @@ landed in the narrow form
 [ADR-096](adr-096-a-bands-contract-is-a-type-its-allocator-is-a-function.md)
 records — the band contract as a type, the allocators still functions.
 
-**The port and the settings table were measured on a working branch that no
-longer exists.** This ADR cited `worktree-manhattan-lazy-spike` (29 commits) as
-"the record"; `git for-each-ref` finds no branch, remote or tag under that name,
-and `agent-docs/measurements/` had no entry. So there is no record to consult.
+**The port and the settings table were measured on a working branch this ADR
+once reported as gone.** It cited `worktree-manhattan-lazy-spike` (29 commits)
+as "the record" and a later pass, finding no ref under that name, concluded
+there was nothing to consult. The branch was live the whole time as an
+unregistered worktree, and is kept at the tag `archive/manhattan-lazy-spike`
+(2026-09-07). `agent-docs/measurements/` still has no entry.
 
 The eager closure is re-derived below from the commits that did land, and is the
-one figure here a reader can check. Every other measurement is marked
-**branch-only** where it appears: it describes code that existed only on that
-branch, so it stands as the reasoning of the person who took it and cannot be
-audited from this tree. None of them is the load-bearing one — the decision
-turns on the shape of what the port needed, which the surviving `defineDisplay`
-at `f0d8cf4e39` still half shows, and on the eager closure.
+one figure here a reader can check without checking the tag out. Every other
+measurement is marked **branch-only** where it appears: it describes code that
+exists only under that tag, so it stands as the reasoning of the person who
+took it until someone reads it back off the tag. None of them is the
+load-bearing one — the decision turns on the shape of what the port needed,
+which the surviving `defineDisplay` at `f0d8cf4e39` still half shows, and on the
+eager closure.
 
 ## Context
 
