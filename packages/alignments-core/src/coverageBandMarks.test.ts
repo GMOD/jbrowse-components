@@ -2,11 +2,15 @@ import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { COVERAGE_BAND_LAYER_ORDER } from '@jbrowse/render-core/coverageBand'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
+import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageBar'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
 import { interbaseBarHeightPx } from './coverageBandBox.ts'
-import { coverageBandMarks } from './coverageBandMarks.ts'
+import {
+  coverageBandMarks,
+  coverageInterbaseShape,
+} from './coverageBandMarks.ts'
 import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
 import { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
 import { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
@@ -14,6 +18,7 @@ import { packInstances as packModCovInstances } from './modCoverageLayout.genera
 import { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 
 import type {
+  CoverageBandParams,
   CoverageBandRegion,
   CoverageBandState,
 } from './coverageBandMarks.ts'
@@ -274,4 +279,94 @@ test('a reversed block writes the low bp and a positive length, flipped by the f
   expect(u[UNIFORM_OFFSET_F32.bpHi]! + u[UNIFORM_OFFSET_F32.bpLo]!).toBe(START)
   expect(u[UNIFORM_OFFSET_F32.bpLen]).toBe(100)
   expect(u[UNIFORM_OFFSET_F32.reversed]).toBe(1)
+})
+
+const SWEEP_FRAME = { canvasWidth: 200, canvasHeight: 300 }
+
+interface Segment {
+  position: number
+  yOffset: number
+  segHeight: number
+  colorType: number
+}
+
+function interbaseChannels(segments: Segment[]) {
+  return {
+    interbasePackedBuffer: packInterbaseInstances(
+      {
+        position: segments.map(s => s.position),
+        yOffset: segments.map(s => s.yOffset),
+        segHeight: segments.map(s => s.segHeight),
+        colorType: segments.map(s => s.colorType),
+      },
+      segments.length,
+    ),
+    count: segments.length,
+  }
+}
+
+const interbaseParams = (
+  over: Partial<CoverageBandParams> = {},
+): CoverageBandParams => ({
+  ...state().band,
+  regionMaxDepth: DOMAIN_MAX,
+  coverageBinSize: 1,
+  // Tall enough that a stack's snapped edges differ, where the region
+  // fixture's 4 collapses them all onto one pixel.
+  interbaseMaxCount: 40,
+  ...over,
+})
+
+// A stack of all three segment types at one position, a lone bar and a
+// full-scale one. Every segment is inside the block and inside the band, so
+// every candidate paints its rect and the sweep's rect-per-instance check
+// holds; `top` is 0 because the recording context has no `translate`.
+const SWEEP_SEGMENTS: Segment[] = [
+  { position: START + 2, yOffset: 0, segHeight: 0.2, colorType: 1 },
+  { position: START + 2, yOffset: 0.2, segHeight: 0.3, colorType: 2 },
+  { position: START + 2, yOffset: 0.5, segHeight: 0.25, colorType: 3 },
+  { position: START + 20, yOffset: 0, segHeight: 0.6, colorType: 1 },
+  { position: START + 61, yOffset: 0, segHeight: 1, colorType: 2 },
+]
+
+test.each([false, true])(
+  'interbase: every drawn bar answers its own hit, reversed=%s',
+  reversed => {
+    expect(
+      sweepDrawAgainstHit(
+        coverageInterbaseShape,
+        interbaseChannels(SWEEP_SEGMENTS),
+        { ...block, reversed },
+        SWEEP_FRAME,
+        interbaseParams(),
+        { maxDistSq: Number.MIN_VALUE },
+      ),
+    ).toEqual([])
+  },
+)
+
+// The sweep cannot cover this pair: the painter draws the whole bar and leaves
+// the band clip to the backend, so a bar overhanging the band is ink the hit
+// deliberately does not claim, and `top` reaches the painter as a `translate`
+// the recorder does not implement.
+test('a bar taller than the band stops at the band bottom, and the band top moves both its edges', () => {
+  const channels = interbaseChannels([
+    { position: START + 2, yOffset: 0, segHeight: 0.8, colorType: 1 },
+  ])
+  // 200/50 of the half-band is a 180px bar, which ends 49px below a band that
+  // starts at 40 and is 100 tall.
+  const p = interbaseParams({ top: 40, interbaseMaxCount: 200 })
+  const hitAt = (yPx: number) =>
+    coverageInterbaseShape.hitNearest!(
+      channels,
+      block,
+      SWEEP_FRAME,
+      p,
+      4,
+      yPx,
+      [0],
+      1e6,
+    )
+  expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 140, distSq: 160 ** 2 })
+  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 45, distSq: 45 ** 2 })
 })
