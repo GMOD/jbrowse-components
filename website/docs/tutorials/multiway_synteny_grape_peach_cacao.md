@@ -117,8 +117,8 @@ grape03	.	.
 ```
 
 Name that column `peach` in `blockAssemblies` with `peach.bed` beside it, and
-both are drawn. `assemblyNames` lists the genomes the track can render, so peach
-appears there once.
+both are drawn. A genome holding several columns is still one genome to the
+track, so the track's own `assemblyNames` names peach once.
 
 The other convention is a copy per row, repeating the grape id:
 
@@ -228,7 +228,6 @@ the adapter's `attributeColumns` names:
       { "uri": "peach.bed" },
       { "uri": "cacao.bed" }
     ],
-    "assemblyNames": ["grape", "peach", "cacao"],
     "attributeColumns": ["score"]
   }
 }
@@ -328,9 +327,10 @@ Grape, peach and cacao each become an assembly (`jbrowse add-assembly`, in the
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
-One track backs every band of the stack. `assemblyNames` lists the genomes,
-`blockAssemblies` names every column in order, and `bedLocations` gives the
-matching BED per column:
+One track backs every band of the stack. `blockAssemblies` names every column in
+order and `bedLocations` gives the matching BED per column; the track can draw
+every genome they name, so the adapter needs no `assemblyNames` unless you mean
+to narrow it to fewer:
 
 ```json addtrack
 {
@@ -346,8 +346,7 @@ matching BED per column:
       { "uri": "grape.bed.gz" },
       { "uri": "peach.bed.gz" },
       { "uri": "cacao.bed.gz" }
-    ],
-    "assemblyNames": ["grape", "peach", "cacao"]
+    ]
   }
 }
 ```

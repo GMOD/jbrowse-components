@@ -143,8 +143,8 @@ return any ratio at all.
 
 The output is a two-column pair table with the two rates after it, which is the
 `.blocks` shape [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track)
-reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
-`assemblyNames`, and in both entries of `bedLocations`:
+reads. A self-comparison names one assembly twice, in `blockAssemblies`, in the
+track's `assemblyNames`, and in both entries of `bedLocations`:
 
 ```json addtrack
 {
@@ -157,7 +157,6 @@ reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
     "uri": "oat.homoeologs.blocks.gz",
     "blockAssemblies": ["oat", "oat"],
     "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
-    "assemblyNames": ["oat", "oat"],
     "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }

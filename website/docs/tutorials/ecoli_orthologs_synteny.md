@@ -135,8 +135,7 @@ stack, so the figure below shows every lane at once:
       { "uri": "Sakai.bed.gz" },
       { "uri": "CFT073.bed.gz" },
       { "uri": "Sflexneri_301.bed.gz" }
-    ],
-    "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"]
+    ]
   },
   "displays": [
     {

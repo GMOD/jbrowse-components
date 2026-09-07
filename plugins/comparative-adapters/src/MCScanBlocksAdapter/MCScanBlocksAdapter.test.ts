@@ -627,6 +627,31 @@ test('a self-comparison draws the two columns, not one against itself', async ()
   ).resolves.toBeDefined()
 })
 
+// The homoeolog tutorial's track omits assemblyNames, so the fallback has to
+// survive the case where "every other assembly" is empty: one genome in both
+// columns still mates with itself rather than answering nothing.
+test('a self-comparison with no assemblyNames still mates with itself', async () => {
+  const selfAdapter = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('grape_self.blocks'),
+      blockAssemblies: ['grape', 'grape'],
+      bedLocations: [bed('grape.bed'), bed('grape.bed')],
+    }),
+  )
+  await expect(
+    firstValueFrom(
+      selfAdapter
+        .getFeatures({
+          refName: 'chr1',
+          start: 0,
+          end: 1000,
+          assemblyName: 'grape',
+        })
+        .pipe(toArray()),
+    ),
+  ).resolves.toBeDefined()
+})
+
 // An assembly in none of the file's columns has the same answer whatever the
 // rows say, and the columns are config. This used to download and parse the
 // blocks table and every BED to return []; locations that cannot be opened are

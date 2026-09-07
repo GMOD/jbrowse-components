@@ -466,23 +466,16 @@ One track backs every band of the stack, the same as the
       { "uri": "timopheevii.bed.gz" },
       { "uri": "urartu.bed.gz" },
       { "uri": "wheat.bed.gz" }
-    ],
-    "assemblyNames": [
-      "tauschii",
-      "wheat",
-      "durum",
-      "emmer",
-      "urartu",
-      "timopheevii"
     ]
   }
 }
 ```
 
 `blockAssemblies` and `bedLocations` follow the table's columns (OrthoFinder's
-proteome scan, alphabetical here), while `assemblyNames` is the order the stack
-draws. Take the column order from what the conversion printed; a mismatch is
-reported as a track error naming both lists.
+proteome scan, alphabetical here), and the track draws every genome they name.
+What order it draws them in is the display's `rowOrder`, densest-first where
+that is unset. Take the column order from what the conversion printed; a
+mismatch is reported as a track error naming both lists.
 
 An orthogroup is a set, so any two filled columns are a direct statement about
 that pair and row order in the stack is free, unlike a

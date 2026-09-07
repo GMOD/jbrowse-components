@@ -190,16 +190,6 @@ the way at the windows below:
       { "uri": "bornean.bed.gz" },
       { "uri": "siamang.bed.gz" },
       { "uri": "macaque.bed.gz" }
-    ],
-    "assemblyNames": [
-      "human",
-      "chimp",
-      "bonobo",
-      "gorilla",
-      "sumatran",
-      "bornean",
-      "siamang",
-      "macaque"
     ]
   },
   "displays": [

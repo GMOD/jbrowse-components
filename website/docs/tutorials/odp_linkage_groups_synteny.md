@@ -126,7 +126,6 @@ mode of its own.
       { "uri": "RES_EMU.RES.bed.gz" },
       { "uri": "RES_EMU.EMU.bed.gz" }
     ],
-    "assemblyNames": ["RES", "EMU"],
     "attributeColumns": ["gene_group", "color"]
   }
 }
