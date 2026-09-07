@@ -13,12 +13,10 @@ import { AssemblyNotInAdapterError } from '../PairwiseAdapterBase.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { MultiPairwiseSyntenyAdapterConfig } from './configSchema.ts'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 import type { LodTierInfo } from '@jbrowse/synteny-core'
 
 export interface StarChild<T = BaseFeatureDataAdapter> {
@@ -183,7 +181,7 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     },
   })
 
-  async getHeader(opts: BaseOptions = {}) {
+  async getHeader(opts: ComparativeOptions = {}) {
     const star = await this.star(opts)
     const tiers = await Promise.all(
       star.children.map(async child =>
@@ -202,7 +200,7 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     return info
   }
 
-  async getRefNames(opts: BaseOptions = {}) {
+  async getRefNames(opts: ComparativeOptions = {}) {
     const { assemblyName } = opts
     const star = await this.star(opts)
     const holders =
@@ -217,7 +215,7 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     return [...new Set(names.flat())]
   }
 
-  getFeatures(region: Region, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: ComparativeOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const star = await this.star(opts)
       const children = childrenFor(

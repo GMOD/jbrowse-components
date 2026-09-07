@@ -13,6 +13,7 @@ import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 // PIF indexes each line by perspective: a 'q' prefix means indexed by query
 // coordinates (drawn when viewing the query), 't' means indexed by target
@@ -38,11 +39,11 @@ export function pickPifPrefix({
 export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<PairwiseIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
 
-  getHeader(opts?: BaseOptions) {
+  getHeader(opts?: ComparativeOptions) {
     return this.pif.info(opts)
   }
 
-  async getRefNames(opts: BaseOptions = {}) {
+  async getRefNames(opts: ComparativeOptions = {}) {
     const sides = this.facingSides(opts.assemblyName)
     if (sides.length === 0) {
       return []
@@ -60,7 +61,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
     ]
   }
 
-  getFeatures(query: Region, opts: BaseOptions = {}) {
+  getFeatures(query: Region, opts: ComparativeOptions = {}) {
     const { statusCallback, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query

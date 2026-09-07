@@ -6,9 +6,9 @@ import { mergeMap } from 'rxjs/operators'
 import { clipFeatureToRegion } from './clipFeatureToRegion.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 /**
  * What every adapter in this plugin answers the same way.
@@ -45,7 +45,10 @@ export abstract class ComparativeAdapterBase<
    * clips its children's records once, after its own re-keying, rather than
    * once per child and once for itself.
    */
-  getFeaturesInMultipleRegions(regions: Region[], opts: BaseOptions = {}) {
+  getFeaturesInMultipleRegions(
+    regions: Region[],
+    opts: ComparativeOptions = {},
+  ) {
     const { clipToRegion, splitAtGapBp, ...rest } = opts
     const slot = createStatusFanOut(rest.statusCallback)
     return clipToRegion && this.recordsAreAlignments

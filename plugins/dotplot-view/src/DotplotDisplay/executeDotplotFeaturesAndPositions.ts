@@ -23,7 +23,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { AttributeRange, BpIndexViewSnap } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  BpIndexViewSnap,
+  ComparativeOptions,
+} from '@jbrowse/synteny-core'
 
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
 // without losing per-base precision. Hi/lo splitting happens at the GPU upload
@@ -121,24 +125,25 @@ export async function executeDotplotFeaturesAndPositions({
     adapterConfig,
   })
 
+  const fetchOpts: ComparativeOptions = {
+    stopToken,
+    bpPerPx: hViewSnap.bpPerPx,
+    lodMode,
+    statusCallback,
+    // The assembly on the vertical axis. A multi-genome adapter
+    // (MCScanBlocksAdapter, MultiGenomePAFAdapter) draws N-1 pairs from one
+    // track, so the fetch must name which pair this dotplot is — otherwise
+    // the adapter defaults the mate to the first *other* assembly in
+    // assemblyNames and returns another pair's alignments, whose refNames
+    // match no vViewSnap region, leaving an empty plot behind the
+    // "could not be mapped" warning. Mirrors the synteny render path's
+    // `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`; renaming
+    // rewrites refName but not assemblyName, so this stays canonical.
+    targetAssemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
+  }
   const rawFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
     regions,
-    {
-      stopToken,
-      bpPerPx: hViewSnap.bpPerPx,
-      lodMode,
-      statusCallback,
-      // The assembly on the vertical axis. A multi-genome adapter
-      // (MCScanBlocksAdapter, MultiGenomePAFAdapter) draws N-1 pairs from one
-      // track, so the fetch must name which pair this dotplot is — otherwise
-      // the adapter defaults the mate to the first *other* assembly in
-      // assemblyNames and returns another pair's alignments, whose refNames
-      // match no vViewSnap region, leaving an empty plot behind the
-      // "could not be mapped" warning. Mirrors the synteny render path's
-      // `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`; renaming
-      // rewrites refName but not assemblyName, so this stays canonical.
-      targetAssemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
-    },
+    fetchOpts,
   )
   // Give the synchronous prepare/projection work its own labels. Without them
   // the bar held whatever the fetch phase last wrote for the entire CPU pass —

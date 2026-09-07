@@ -5,6 +5,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { extractAlignmentData } from './extractAlignmentData.ts'
 
+import type { ComparativeOptions } from './comparativeOptions.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
@@ -120,14 +121,18 @@ export async function executeDiagonalize(
       sessionId,
       adapterConfig,
     })
+    const fetchOpts: ComparativeOptions = {
+      sessionId,
+      stopToken,
+      bpPerPx,
+      statusCallback,
+      targetAssemblyName,
+    }
     const feats = dedupe(
-      await dataAdapter.getFeaturesInMultipleRegionsArray(fetchRegions, {
-        sessionId,
-        stopToken,
-        bpPerPx,
-        statusCallback,
-        targetAssemblyName,
-      }),
+      await dataAdapter.getFeaturesInMultipleRegionsArray(
+        fetchRegions,
+        fetchOpts,
+      ),
       f => f.id(),
     )
     // Labelled because it is a distinct pass over hundreds of thousands of

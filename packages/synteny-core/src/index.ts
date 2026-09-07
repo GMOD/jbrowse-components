@@ -63,6 +63,7 @@ export {
   installLodTierInfoFetch,
 } from './LodTierInfoMixin.ts'
 export type { LodTierInfoHost } from './LodTierInfoMixin.ts'
+export type { ComparativeOptions } from './comparativeOptions.ts'
 export { extractAlignmentData } from './extractAlignmentData.ts'
 // Promoted to core (a pure signature compare, no synteny deps); re-exported here
 // so the comparative-view consumers keep importing it from @jbrowse/synteny-core.

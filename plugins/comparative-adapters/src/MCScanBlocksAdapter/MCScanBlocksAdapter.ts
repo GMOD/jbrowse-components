@@ -19,8 +19,8 @@ import type {
   GroupedRow,
 } from '../mcscanUtil.ts'
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 // Per column: how many cells name a gene, and how many of those its BED places.
 // Both come out of one pass, and the two numbers are what tells apart the two
@@ -211,9 +211,11 @@ function columnPairs(
 export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBlocksAdapterConfig> {
   protected override readonly recordsAreAlignments = false
 
-  setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
+  setup = cachedSetup({
+    setup: (opts: ComparativeOptions) => this.setupPre(opts),
+  })
 
-  async setupPre(opts: BaseOptions) {
+  async setupPre(opts: ComparativeOptions) {
     const blockAssemblies = this.getConf('blockAssemblies')
     const bedLocations = this.getConf('bedLocations') as FileLocation[]
     // one BED per column, all present: caught here so a misconfigured track
@@ -338,7 +340,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     return others.length ? others : names.slice(0, 1)
   }
 
-  async getRefNames(opts: BaseOptions = {}) {
+  async getRefNames(opts: ComparativeOptions = {}) {
     const { assemblyName, targetAssemblyName } = opts
     // An assembly in none of the file's columns has the same answer whatever
     // the rows say, and the columns are config. Answered before the setup
@@ -382,7 +384,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     return [...set]
   }
 
-  getFeatures(region: Region, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: ComparativeOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const setup = await this.setup(opts)
       const { blockAssemblies } = setup

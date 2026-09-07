@@ -1,13 +1,16 @@
 import { executeDotplotFeaturesAndPositions } from './executeDotplotFeaturesAndPositions.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 // jest.mock's factory is hoisted, so the spy it closes over must be
 // `mock`-prefixed to be allowed out of scope.
 const mockGetFeatures = jest.fn(
-  async (_regions: Region[], _opts: BaseOptions): Promise<Feature[]> => [],
+  async (
+    _regions: Region[],
+    _opts: ComparativeOptions,
+  ): Promise<Feature[]> => [],
 )
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({

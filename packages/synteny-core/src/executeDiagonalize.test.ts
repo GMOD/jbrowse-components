@@ -3,8 +3,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { executeDiagonalize } from './executeDiagonalize.ts'
 
+import type { ComparativeOptions } from './comparativeOptions.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
@@ -97,7 +97,7 @@ test('fetches with the renamed regions, whose assemblyName still anchors the pai
 
   const [regions, opts] = getFeaturesInMultipleRegionsArray.mock.calls[0] as [
     Region[],
-    BaseOptions,
+    ComparativeOptions,
   ]
   // adapter-space refNames reach getFeatures...
   expect(regions.map(r => r.refName)).toEqual(['NC_p1', 'NC_p2'])

@@ -46,6 +46,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 const EMPTY_CIGAR = new Uint32Array(0)
 
@@ -155,16 +156,26 @@ export async function executeSyntenyFeaturesAndPositions({
   // otherwise fight over one determinate progress bar, and for the in-memory
   // adapters they share one `cachedSetup` download anyway, so the second
   // is a walk over records the first already parsed.
+  const queryFetchOpts: ComparativeOptions = {
+    stopToken,
+    bpPerPx: v1.bpPerPx,
+    lodMode,
+    statusCallback,
+    // the assembly on the other side of this band; a multi-genome adapter
+    // (MultiGenomePAFAdapter) uses it to keep only this pair's records
+    targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
+  }
+  const targetFetchOpts: ComparativeOptions = {
+    stopToken,
+    bpPerPx: v2.bpPerPx,
+    lodMode,
+    targetAssemblyName: v1.displayedRegions[0]?.assemblyName,
+  }
   const [allFeatures, targetAxisFeatures] = await Promise.all([
-    dataAdapter.getFeaturesInMultipleRegionsArray(v1.fetchRegions, {
-      stopToken,
-      bpPerPx: v1.bpPerPx,
-      lodMode,
-      statusCallback,
-      // the assembly on the other side of this band; a multi-genome adapter
-      // (MultiGenomePAFAdapter) uses it to keep only this pair's records
-      targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
-    }),
+    dataAdapter.getFeaturesInMultipleRegionsArray(
+      v1.fetchRegions,
+      queryFetchOpts,
+    ),
     // Anchored on v2, so the pair's OTHER assembly is v1's — and the regions
     // carry v2's own assemblyName, which is what tells a pairwise adapter which
     // side of the file to index (`PairwiseAdapterBase.facingSides`). Every pairwise
@@ -172,12 +183,10 @@ export async function executeSyntenyFeaturesAndPositions({
     // the axis asked about, so nothing here has to know which column the file
     // put this genome in.
     v2.fetchRegions
-      ? dataAdapter.getFeaturesInMultipleRegionsArray(v2.fetchRegions, {
-          stopToken,
-          bpPerPx: v2.bpPerPx,
-          lodMode,
-          targetAssemblyName: v1.displayedRegions[0]?.assemblyName,
-        })
+      ? dataAdapter.getFeaturesInMultipleRegionsArray(
+          v2.fetchRegions,
+          targetFetchOpts,
+        )
       : undefined,
   ])
   // Build the cumBp region indexes first: their refName-keyed maps double as the

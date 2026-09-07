@@ -292,8 +292,9 @@ the track and the assembly already agree. To read it, type the parameter
 exactly this.
 
 The options parameter is `BaseOptions` (from
-`@jbrowse/core/data_adapters/BaseAdapter`). Most of it exists for a specific
-kind of adapter and is ignored by the rest:
+`@jbrowse/core/data_adapters/BaseAdapter`). `stopToken`, `signal`, `headers` and
+`statusCallback` are the ones a typical adapter forwards; `topLevelOnly` and
+`lodMode` are requests an adapter may honour or ignore:
 
 <!-- include: packages/core/src/data_adapters/BaseAdapter/types.ts#baseOptions -->
 
@@ -302,7 +303,6 @@ export interface BaseOptions {
   stopToken?: StopToken
   bpPerPx?: number
   sessionId?: string
-  trackInstanceId?: string
   // unused in-tree but kept so BaseOptions is structurally assignable to the
   // `Options { signal? }` interfaces in @gmod/tabix, @gmod/bbi-js, etc. that
   // adapters forward opts to
@@ -315,33 +315,9 @@ export interface BaseOptions {
   statusCallback?: StatusCallback
   headers?: Record<string, string>
   statsEstimationMode?: boolean
-  // Used by synteny/comparative adapters in getRefNames to pick which side of
-  // the pairing to return refnames for. Single-assembly adapters ignore it.
+  // Which side of a pairing to answer getRefNames for; single-assembly
+  // adapters ignore it.
   assemblyName?: string
-  // The assembly on the *other* side of a synteny band, set by the synteny
-  // render RPC from the target view. Lets a multi-genome adapter (e.g.
-  // MultiGenomePAFAdapter) whose config lists all N assemblies isolate the exact
-  // pair a band draws — `assemblyName` alone can't, since one file backs every
-  // pair. Pairwise adapters (which already know their pair) ignore it.
-  targetAssemblyName?: string
-  // A multi-genome adapter answering a no-target query folds the pairs
-  // anchored on one query feature into one feature carrying `mates: [...]`,
-  // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
-  // feature per pair.
-  mateShape?: 'grouped'
-  // Each alignment record comes back cut to the region that fetched it, on both
-  // axes, with its alignment string dropped: a liftOver chain spans tens of Mb,
-  // and a display fitting a lane to whole records saw 80x the window. Honoured
-  // by the comparative adapters' `getFeaturesInMultipleRegions`, for records
-  // that ARE alignments — a gene-pair table's rows are genes and stay whole.
-  clipToRegion?: boolean
-  // With `clipToRegion`, each clipped record is further cut at every insertion
-  // or deletion of this many bp or more, into one record per gap-free run —
-  // ids and `syntenyId` suffixed per run — so a display that draws a record as
-  // one straight placement draws the runs the alignment actually has rather
-  // than a ribbon across a 25 kb indel. Read off the alignment string the clip
-  // walks anyway; a record with none is one run.
-  splitAtGapBp?: number
   // Which level-of-detail tier to read, for adapters that expose more than one
   // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
   // fine tier is served; adapters without tiering ignore it entirely.
@@ -349,8 +325,8 @@ export interface BaseOptions {
   // This is a *resolved* tier, never the user's 'auto' setting: resolving auto
   // needs a zoom, and it happens on the main thread in a display getter that
   // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
-  // Resolving it here instead hides a fetch input from that key, which is how a
-  // zoom across the threshold came to leave a view holding the wrong tier.
+  // Resolving it here instead hides a fetch input from that key, which is how
+  // a zoom across the threshold came to leave a view holding the wrong tier.
   lodMode?: 'fine' | 'coarse'
   // "I read only top-level features", so an adapter may skip work that exists
   // to complete SUBFEATURE lists. A request, not an instruction: only the
@@ -365,17 +341,45 @@ export interface BaseOptions {
 }
 ```
 
-The ones a typical adapter reads:
+Any `rpcProps()` the display model defines are spread in at the RPC call site,
+so a display's user-facing settings reach the adapter under their own names. A
+family of adapters that shares such settings declares its own options type
+extending `BaseOptions`, as the comparative adapters do with
+`ComparativeOptions` from `@jbrowse/synteny-core`:
 
-- `bpPerPx` - resolution of the genome browser when features were fetched
-- `stopToken` - a JBrowse cancellation token; pass it to `ObservableCreate` and
-  to downstream readers so an obsolete fetch aborts
-- `signal` - an `AbortSignal` for APIs (like `fetch`) that take one
-- `headers` - HTTP headers as a plain object
-- `statusCallback` - report load progress to the UI (see
-  [](/docs/developer_guides/rpc_workers))
-- any `rpcProps()` the display model defines are spread in at the RPC call site,
-  so a display's user-facing settings reach the adapter under their own names
+<!-- include: packages/synteny-core/src/comparativeOptions.ts#comparativeOptions -->
+
+```typescript
+export interface ComparativeOptions extends BaseOptions {
+  // The assembly on the *other* side of a synteny band, set by the synteny
+  // render RPC from the target view. Lets a multi-genome adapter (e.g.
+  // MultiGenomePAFAdapter) whose config lists all N assemblies isolate the exact
+  // pair a band draws — `assemblyName` alone can't, since one file backs every
+  // pair. Pairwise adapters (which already know their pair) ignore it.
+  targetAssemblyName?: string
+  // A multi-genome adapter answering a no-target query folds the pairs
+  // anchored on one query feature into one feature carrying `mates: [...]`,
+  // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying
+  // feature per pair.
+  mateShape?: 'grouped'
+  // Each alignment record comes back cut to the region that fetched it, on both
+  // axes, with its alignment string dropped: a liftOver chain spans tens of Mb,
+  // and a display fitting a lane to whole records saw 80x the window. Honoured
+  // by `ComparativeAdapterBase.getFeaturesInMultipleRegions`, for records that
+  // ARE alignments — a gene-pair table's rows are genes and stay whole.
+  clipToRegion?: boolean
+  // With `clipToRegion`, each clipped record is further cut at every insertion
+  // or deletion of this many bp or more, into one record per gap-free run —
+  // ids and `syntenyId` suffixed per run — so a display that draws a record as
+  // one straight placement draws the runs the alignment actually has rather
+  // than a ribbon across a 25 kb indel. Read off the alignment string the clip
+  // walks anyway; a record with none is one run.
+  splitAtGapBp?: number
+}
+```
+
+`statusCallback` is how an adapter reports load progress to the UI (see
+[](/docs/developer_guides/rpc_workers)).
 
 Returns an rxjs `Observable`. Emit features with
 `observer.next(new SimpleFeature(...))` and finish with `observer.complete()`.

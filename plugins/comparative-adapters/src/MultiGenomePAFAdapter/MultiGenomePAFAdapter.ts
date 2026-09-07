@@ -26,9 +26,9 @@ import {
 
 import type { AlignedSide } from '../util.ts'
 import type { MultiGenomePAFAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 /**
  * One side of one PAF record, resolved to the locus it draws at and kept that
@@ -47,7 +47,9 @@ interface IndexedSide extends AlignedSide {
 }
 
 export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiGenomePAFAdapterConfig> {
-  setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
+  setup = cachedSetup({
+    setup: (opts: ComparativeOptions) => this.setupPre(opts),
+  })
 
   /**
    * Everything that does not depend on the query, done once per file load and
@@ -60,7 +62,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
    * region, per band, per pan/zoom — an answer that is a property of the file.
    * What is left at query time is a bounded walk of one bucket.
    */
-  async setupPre(opts?: BaseOptions) {
+  async setupPre(opts?: ComparativeOptions) {
     const records = await loadPafRecords({
       file: openLocation(this.getConf('pafLocation'), this.pluginManager),
       parse: parsePafBuffer,
@@ -131,7 +133,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
   // over the same index, so a contig is reported iff some side filed under it
   // draws. Answering it from the index rather than a fresh scan also lets each
   // contig stop at its first drawing side.
-  async getRefNames(opts: BaseOptions = {}) {
+  async getRefNames(opts: ComparativeOptions = {}) {
     const { sides, index } = await this.setup(opts)
     const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
     const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
@@ -144,7 +146,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
       .map(([contig]) => contig)
   }
 
-  getFeatures(query: Region, opts: BaseOptions = {}) {
+  getFeatures(query: Region, opts: ComparativeOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { records, sides, index, matesByPrefix, panSN } =
         await this.setup(opts)

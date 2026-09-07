@@ -23,9 +23,9 @@ import {
 
 import type { AlignedSide, PifLine } from '../util.ts'
 import type { MultiGenomeIndexedPAFAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 // A PIF row read as one all-vs-all side. make-pif already oriented the row to
 // the perspective it is indexed under, so this is a rename rather than a
@@ -72,18 +72,18 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     },
   })
 
-  getHeader(opts?: BaseOptions) {
+  getHeader(opts?: ComparativeOptions) {
     return this.pif.info(opts)
   }
 
   // What the file holds, for the message a query naming an unknown assembly
   // raises. The tier letter (t/q/T/Q) is not part of a name.
-  private async inventory(opts?: BaseOptions) {
+  private async inventory(opts?: ComparativeOptions) {
     const names = await this.pif.refSeqNames(opts)
     return panSNInventory(names.map(n => n.slice(1)))
   }
 
-  async getRefNames(opts: BaseOptions = {}) {
+  async getRefNames(opts: ComparativeOptions = {}) {
     // Report every anchor-side contig present in the file. Unlike the in-memory
     // adapter this does not pre-cull contigs whose only mate is the same sample
     // (that needs a range scan); hasDataForRefName stays true and getFeatures
@@ -96,7 +96,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     return byContig === undefined ? [] : [...byContig.keys()]
   }
 
-  getFeatures(query: Region, opts: BaseOptions = {}) {
+  getFeatures(query: Region, opts: ComparativeOptions = {}) {
     const { statusCallback, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query

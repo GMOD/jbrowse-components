@@ -9,9 +9,9 @@ import blocksConfigSchema from './MCScanBlocksAdapter/configSchema.ts'
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { clipFeatureToRegion } from './clipFeatureToRegion.ts'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 // own axis 400 bp (M100 D50 M100 M150), mate axis 400 bp (M100 M100 I50 M150):
 // D advances the record's own axis only, I the mate's only
@@ -210,13 +210,13 @@ test('splitAtGapBp: a record with no alignment string is one run', () => {
 const stubConfigSchema = ConfigurationSchema('StubAdapter', {})
 
 class StubAdapter extends ComparativeAdapterBase {
-  regionsSeen: BaseOptions[] = []
+  regionsSeen: ComparativeOptions[] = []
 
   async getRefNames() {
     return ['chr1']
   }
 
-  getFeatures(_region: Region, opts: BaseOptions = {}) {
+  getFeatures(_region: Region, opts: ComparativeOptions = {}) {
     this.regionsSeen.push(opts)
     return ObservableCreate<Feature>(observer => {
       observer.next(record({ CIGAR }))
@@ -226,7 +226,7 @@ class StubAdapter extends ComparativeAdapterBase {
 }
 
 class GapStubAdapter extends StubAdapter {
-  override getFeatures(_region: Region, opts: BaseOptions = {}) {
+  override getFeatures(_region: Region, opts: ComparativeOptions = {}) {
     this.regionsSeen.push(opts)
     return ObservableCreate<Feature>(observer => {
       observer.next(gapped())
@@ -246,7 +246,7 @@ const regions: Region[] = [
 
 function fetchAll(
   adapter: ComparativeAdapterBase,
-  opts: BaseOptions,
+  opts: ComparativeOptions,
   over = regions,
 ) {
   return firstValueFrom(
@@ -315,7 +315,7 @@ test('MCScanBlocksAdapter: a window cutting through a gene returns the gene whol
   const cutting: Region[] = [
     { assemblyName: 'grape', refName: 'chr1', start: 150, end: 350 },
   ]
-  const fetch = (opts: BaseOptions) =>
+  const fetch = (opts: ComparativeOptions) =>
     firstValueFrom(
       adapter.getFeaturesInMultipleRegions(cutting, opts).pipe(toArray()),
     )

@@ -45,6 +45,7 @@ import {
 
 import type { RowFrame } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 class PifOnly extends Plugin {
   name = 'PifOnly'
@@ -96,16 +97,17 @@ const { dataAdapter } = await getAdapter(
 // which is where the clip and the split are honoured, serialised across the
 // RPC and rebuilt as SimpleFeature — a live SyntenyFeature answers `name` with
 // its mate's contig, which would key every record on one contig into one group
+const fetchOpts: ComparativeOptions = {
+  clipToRegion: true,
+  splitAtGapBp: SPLIT_AT_GAP_BP,
+  mateShape: 'grouped',
+}
 const features = (
   await firstValueFrom(
     (dataAdapter as BaseFeatureDataAdapter)
       .getFeaturesInMultipleRegions(
         [{ refName: REF, start: START, end: END, assemblyName: ANCHOR }],
-        {
-          clipToRegion: true,
-          splitAtGapBp: SPLIT_AT_GAP_BP,
-          mateShape: 'grouped',
-        },
+        fetchOpts,
       )
       .pipe(toArray()),
   )
