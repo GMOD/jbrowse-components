@@ -218,7 +218,7 @@ const comparativeOptionDefs: OptionDef[] = [
   },
   {
     name: 'colorBy',
-    description: `Color synteny ribbons (e.g. "query" tints by query chromosome): ${orList(syntenyColorByModes)}`,
+    description: `Color synteny ribbons by: ${orList(syntenyColorByModes)}. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file`,
   },
   {
     name: 'alpha',
@@ -234,7 +234,7 @@ const comparativeOptionDefs: OptionDef[] = [
   {
     name: 'cigarMode',
     description:
-      "CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]",
+      "CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]",
     modes: ['synteny'],
   },
 ]
