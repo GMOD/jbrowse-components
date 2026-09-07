@@ -11,29 +11,19 @@ export const SHELL = true
 
 export const SYSTEM =
   cwd => `You are driving JBrowse Desktop over its MCP tools and you also have a shell
-with minimap2, jq, curl and the jbrowse CLI on PATH. Your working directory is
-${cwd}; every file you create goes there, and the alignment runs in the shell,
-outside the app. Both genomes are on the UCSC GenArk hub, whose files and hosted
-JBrowse config for an accession live under
-hgdownload.soe.ucsc.edu/hubs/<GCF|GCA>/<3>/<3>/<3>/<acc>/ and
-jbrowse.org/hubs/genark/... respectively. The hub's <acc>.2bit is the same
-sequence the browser reads; ./twoBitToFa in your working directory converts it
-to FASTA for the aligner. The hosted configs already describe
-the sequence, the chromAlias file and the gene track, so merging the two is
-shorter than declaring either assembly by hand. Align with minimap2 -x asm10, which is the preset for the divergence
-between these two species; asm5 is for closer genomes and takes far longer.
-A shell command that takes minutes must run in the background so a tool call
-does not time out over it, but keep polling it within the same turn until it
-finishes: never end a turn with work still running. Open nothing in JBrowse
-until the alignment is indexed, and make sure the comparison is on screen
-before you answer. Hide the track selector once tracks are on, so the genome
-fills the window.
-When asked where the genomes disagree, total the alignment file rather than
-describing the plot, and say the numbers before you navigate. Be direct: do what
-each message asks with as few tool calls as possible, then answer in one plain-English
-sentence with the numbers behind it. After every change to the app, screenshot
-and read the image, and fix anything the settle report lists as not ready rather
-than describing it. Navigate by explicit coordinates, never by gene name.`
+with jq, curl and the jbrowse CLI on PATH. Your working directory is ${cwd}.
+sim_vs_mau.paf there is a finished minimap2 asm10 alignment of D. simulans
+GCF_016746395.2 (query) against D. mauritiana GCF_004382145.1 (target). Both
+assemblies have hosted JBrowse configs under jbrowse.org/hubs/genark/, which
+already describe the sequence, the chromAlias file and the gene track, so
+merging those two is shorter than declaring either assembly by hand. Be direct:
+do what each message asks with as few tool calls as possible, then answer in one
+plain-English sentence with the numbers behind it. After every change to the
+app, screenshot and read the image, and fix anything the settle report lists as
+not ready rather than describing it. Hide the track selector once tracks are on,
+so the genome fills the window. Navigate by explicit coordinates, never by gene
+name. When asked where the genomes disagree, total the alignment file rather
+than describing the plot, and say the numbers before you navigate.`
 
 // Each step is the page's prompt plus the sentence a viewer needs to know why
 // it is being asked. The page's section headings are the `say` lines.
@@ -50,8 +40,8 @@ export const STEPS = [
   // collapses the wait, and the TUI in frame shows the polling.
   {
     prompt:
-      'Get D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 from the GenArk hub, align them, and open both side by side with the alignment between them.',
-    say: 'One sentence for the whole pipeline. The aligner runs in the background so the tool call does not time out.',
+      'sim_vs_mau.paf here aligns D. simulans GCF_016746395.2 to D. mauritiana GCF_004382145.1. Index it and open both genomes side by side with the alignment between them.',
+    say: 'One sentence: index the alignment, merge the two hosted configs, open the comparison.',
   },
   {
     prompt: 'Add a dotplot underneath, restricted to the six chromosome arms.',
