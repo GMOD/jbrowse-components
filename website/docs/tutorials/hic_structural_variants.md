@@ -272,5 +272,6 @@ which coerce, rather than `==`.
 - [](/docs/config_guides/hic_track)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/cancer_sv)
+- [](/docs/tutorials/k562_fusions)
 - [](/docs/user_guides/sv_visualization)
 - [HiGlass](https://higlass.io/)

@@ -2592,6 +2592,100 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // THE DNA SIDE OF BOTH FUSIONS, in one chr9 window, off two assays that never
+  // saw a read of each other: DepMap's WGS copy-number segmentation and the 10X
+  // linked-read breakend calls, with the STAR-Fusion junctions over them. No
+  // arcs and no reads (the deleted k562_cn_amplicon, below, died on both): what
+  // the frame shows is COORDINATES agreeing. A DNA break stands under the
+  // copy-number step at each end of the amplified block; the two RNA junctions
+  // sit at exon edges, one 122 kb right of its break and one on top of it; and
+  // the right-hand break reaches chr13, where nothing is transcribed, so no
+  // fusion caller could report it. That last one is the negative.
+  //
+  // Paired-arc displays for both call tracks rather than the variant display's
+  // 1 bp boxes: at 400 bp/px a breakpoint is under a pixel, and the arc
+  // display's mate tick draws the same record as a 20 px arm pointing at the
+  // side the derivative keeps.
+  //
+  // The bands are the three DNA breaks, 4 kb wide so they survive the scale.
+  {
+    mode: 'url',
+    name: 'cancer_sv/k562_amplicon_dna',
+    viewportHeight: 620,
+    viewportWidth: 1600,
+    url: lgvSession(CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr9:130,690,000-131,320,000',
+      highlight: [
+        { refName: 'chr9', start: 130_729_760, end: 130_733_760 },
+        { refName: 'chr9', start: 131_197_198, end: 131_201_198 },
+        { refName: 'chr9', start: 131_278_138, end: 131_282_138 },
+      ],
+      tracks: [
+        GENE_TRACK,
+        {
+          trackId: 'K562_star_fusion',
+          type: 'LinearPairedArcDisplay',
+          height: 50,
+        },
+        {
+          trackId: 'K562_10x_sv',
+          type: 'LinearPairedArcDisplay',
+          height: 50,
+        },
+        {
+          trackId: 'K562_cn',
+          height: 130,
+          minScore: 0,
+          maxScore: 8,
+        },
+      ],
+    }),
+    readyText: 'K562 copy-number segments (DepMap WGS)',
+    readyTimeout: 120000,
+    settleMs: 8000,
+    annotations: [
+      {
+        type: 'text',
+        text: 'reaches chr13: no gene at either end, no fusion call',
+        fontSize: 17,
+        maxWidth: 260,
+        textAlign: 'end',
+        anchor: {
+          track: 'K562_cn',
+          locus: 'chr9:131,276,000',
+          fracY: 0.15,
+          dx: -12,
+        },
+      },
+      {
+        type: 'text',
+        text: 'DNA break and RNA junction meet at the NUP214 exon',
+        fontSize: 17,
+        maxWidth: 240,
+        textAlign: 'end',
+        anchor: {
+          track: 'K562_cn',
+          locus: 'chr9:131,197,000',
+          fracY: 0.6,
+          dx: -12,
+        },
+      },
+      {
+        type: 'text',
+        text: 'the BCR-ABL1 junction sits at ABL1 exon 2, well right of its DNA break',
+        fontSize: 17,
+        maxWidth: 300,
+        anchor: {
+          track: 'K562_cn',
+          locus: 'chr9:130,856,000',
+          fracY: 0.45,
+          dx: 12,
+        },
+      },
+    ],
+  },
+
   // cancer_sv/k562_cn_amplicon WAS HERE and is DELETED, after four review
   // rounds on it (final verdict: "this is not a very strong figure. the arcs
   // from dna failed to clarify, the arcs just end up in the middle of copy

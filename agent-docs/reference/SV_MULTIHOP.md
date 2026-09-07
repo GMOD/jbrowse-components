@@ -26,7 +26,7 @@ ideas that used to sit at the bottom of this file are in
 | `scripts/build_cancer_sv_demo.sh` | end-to-end rebuild of the hosted demo |
 | `website/scripts/upload-cancer-sv-demo.sh` | upload guard, `EXPECTED` manifest, `copy` not `sync` |
 | `website/docs/tutorials/cancer_sv.md` | the COLO829 tutorial, 7 figures |
-| `website/docs/tutorials/k562_fusions.md` | the K562 tutorial, 2 figures over 5 images |
+| `website/docs/tutorials/k562_fusions.md` | the K562 tutorial, 3 figures over 6 images |
 | `website/scripts/specs/cancer_sv.ts` | the figure specs for both |
 | `https://jbrowse.org/demos/cancer_sv/` | hosted data, 2.3 GB, 18 files |
 
@@ -64,11 +64,33 @@ Supporting evidence, all measured rather than eyeballed:
 - 0 of the 29 primary alignments clip at any of the four junctions once
   realigned to the derivative; depth holds flat at 28 across all of them
 
-**K562** `BCR--ABL1` is called by DepMap's STAR-Fusion at
+**K562** `BCR--ABL1` is called by DepMap's STAR-Fusion (short-read RNA-seq) at
 `chr22:23,290,413 -> chr9:130,854,064`, and an ENCODE Iso-Seq read splits at
-exactly `chr9:130,854,064`. The amplified segment `chr9:130,731,327-131,152,326`
-(CN 6.8 against flanking ~1.0) is bounded by the `BCR--ABL1` and `NUP214--XKR3`
-junctions.
+exactly `chr9:130,854,064`. `NUP214--XKR3` (`chr9:131,199,015 -> chr22:16,808,083`)
+is a second junction of the same amplicon, not the reciprocal of the first: its
+chr22 partner is 6.5 Mb from BCR.
+
+The DNA side, measured off the hosted `K562.10x-large-sv.vcf.gz` (lifted) and
+`K562_cn.bw` on 2026-09-07:
+
+| junction | RNA junction (exon edge) | 10X DNA break | apart |
+| --- | --- | --- | --- |
+| BCR donor | chr22:23,290,413 (end of exon 14) | chr22:23,290,556 | 143 bp into intron 14 |
+| ABL1 acceptor | chr9:130,854,064 (start of exon 2) | chr9:130,731,760 | 122 kb, in intron 1 |
+| NUP214 donor | chr9:131,199,015 (end of exon 29) | chr9:131,199,198 | 183 bp into intron 29 |
+| XKR3 acceptor | chr22:16,808,083 (start of exon 3) | chr22:16,819,350 | 11 kb, in intron 2 |
+| (none) | no fusion call | chr9:131,280,138 <-> chr13:108,009,064 | no RefSeq gene at either end |
+
+Copy number on chr9 steps 1.0 -> 6.8 at 130,731,326, 6.8 -> 4.6 at
+131,152,326 and 4.6 -> 0.9 at 131,280,326; chr22 16,386,068-16,820,068 sits at
+3.9 and no segment covers BCR. So the two ends of the amplified block each carry
+a DNA break (BCR-ABL1 on the left, the chr13 junction on the right), the middle
+step has no breakend call, and the NUP214 break's copy-number step is on its
+chr22 side. The ABL1 junction is in the 6.8 segment and the NUP214 junction in
+the 4.6 one; the page used to say both were at "roughly seven copies" with the
+chr22 partners "at one", which the bigWig contradicts. `cancer_sv/k562_amplicon_dna`
+is the figure; Zhou et al. 2019 (Genome Research, 10.1101/gr.234948.118) is the
+linked-read paper behind the ENCODE run.
 
 ## sv_multihop design notes
 

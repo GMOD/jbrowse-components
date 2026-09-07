@@ -2,18 +2,19 @@
 title: Gene fusion calls and the DNA behind them
 sidebar_label: SVs (gene fusion calls)
 description:
-  Triage a fusion caller's output against the long RNA reads it was called from,
-  then find the DNA break the transcript junction does not sit on
+  Triage a fusion caller's short-read calls against long RNA reads from the same
+  cells, then find the DNA breaks the transcript junctions do not sit on
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
 **TL;DR:** a fusion caller hands you a table of gene pairs and a junction
-coordinate, and nothing about the DNA event underneath. Load STAR-Fusion's table
-beside the long RNA reads it was called from, count the molecules that cross
-each junction, then find where the chromosome actually broke: for K562's
-BCR-ABL1 that is 122 kb away from the junction the caller reports, inside
-_ABL1_'s first intron.
+coordinate, and nothing about the DNA event underneath. Load STAR-Fusion's
+short-read calls beside long RNA reads from the same cell line, count the
+molecules that cross each junction, then find where the chromosome actually
+broke: K562's BCR-ABL1 breaks 122 kb before the junction the caller reports,
+inside _ABL1_'s first intron, and the other junction of the same amplicon breaks
+on top of its own.
 
 ## Prerequisites
 
@@ -99,18 +100,22 @@ the output VCF and a scratch directory.
 ## Triaging the calls
 
 The SV inspector opens the STAR-Fusion table beside a circular view of it, one
-chord per row. **Add → SV inspector**, then a File Type of STAR-Fusion, which
-the wizard cannot infer from a `.tsv` extension.
+chord per row. **Add → SV inspector**, then the file: the import form reads the
+File Type off a STAR-Fusion filename or the table's own header line, and the
+menu sets it by hand for a file named some other way.
 
-Searching the table narrows both halves. `chr9` leaves `BCR--ABL1` and
-`NUP214--XKR3`, one junction seen from both sides, with more junction reads than
-anything else in the file.
+Searching the table narrows both halves. `chrM` collects the rows that pair a
+gene with a mitochondrial transcript, the usual chimeric-read artefacts, and
+`Mitelman` leaves the two rows the fusion databases already know. `chr9` leaves
+the same two, `BCR--ABL1` and `NUP214--XKR3`: two junctions between chr9 and
+chr22 whose chr22 partners are 6.5 Mb apart, which the rest of the page shows to
+be the two ends of one amplified segment.
 
-Each row's caret menu has **Open in linear genome view**, which goes to its
-breakpoint. Type the partner's window into the location box after it to hold
-both side by side, then turn on **Read connections → View as pairs** to merge
-each molecule's two alignments onto one row. Flip the chr22 region (`[rev]`),
-since _XKR3_ is on the minus strand.
+Each row's caret menu has **Open in linear genome view**, which puts the row's
+two breakpoints side by side as two regions of one view, each turned so the
+fusion transcript reads left to right across the join. _XKR3_ is on the minus
+strand, so its region arrives reversed (`[rev]`). Turn on **Read connections →
+View as pairs** to merge each molecule's two alignments onto one row.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
@@ -152,20 +157,66 @@ _ABL1_ alignment lands in neither window.
 
 ## Where the DNA broke
 
-BCR-ABL1 is amplified as well as expressed. Both chr9 breakpoints fall inside a
-segment at roughly seven copies while the chr22 partners sit at one. DepMap's
-segmentation covers no interval over _BCR_ itself, so that window has an arc but
-no copy-number step.
+A fusion caller only reports transcribed junctions, so both of its breakpoints
+sit on exon edges and say nothing about where the chromosome broke or how much
+of it is amplified. Two DNA assays on the same cells answer that: ENCODE's 10X
+Chromium linked-read run on K562 (ENCSR053AXS,
+[Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) called the breakends,
+and DepMap's WGS segmentation gives the copy number. The build script lifts the
+breakends to hg38 and adds both as tracks:
 
-A fusion caller only reports transcribed junctions, so its arcs land on exon
-boundaries and cannot say where the amplified block begins. ENCODE's 10X
-Chromium linked-read run on K562 (ENCSR053AXS) puts the chr9 DNA breakpoint at
-130,731,760, and DepMap's copy-number segmentation steps up at 130,731,326. The
-transcript junction is 122 kb to the right of both, inside _ABL1_'s first
-intron: the amplicon boundary is a DNA break, and the transcript is spliced from
-it to the nearest exon.
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "K562_10x_sv",
+  "name": "K562 DNA breakpoints (10X linked reads, lifted to hg38)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "vcfGzLocation": { "uri": "K562.10x-large-sv.vcf.gz" },
+    "index": { "location": { "uri": "K562.10x-large-sv.vcf.gz.tbi" } }
+  }
+}
+```
 
-SplitThreader applied the same reasoning to the _ERBB2_ amplicon in SK-BR-3
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "K562_cn",
+  "name": "K562 copy-number segments (DepMap WGS)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "K562_cn.bw"
+  }
+}
+```
+
+Open chr9 from _ABL1_ to past _NUP214_ with the copy-number track under both
+call tracks, each switched to **Display types → Variant display arcs**. A call
+whose partner is on another chromosome draws a stem at its breakpoint with a
+tick toward the sequence it keeps.
+
+<Figure caption="chr9 from ABL1 to past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, with the three DNA breaks banded. Copy number steps at the outer two breaks. The BCR-ABL1 junction sits well right of its break, the NUP214-XKR3 junction on top of its own, and the right-hand break reaches chr13, where nothing is transcribed." src="/img/cancer_sv/k562_amplicon_dna.png" />
+
+Both donors break a few hundred bases into the intron after their last retained
+exon. Both acceptors break upstream of the exon the transcript lands on, and the
+transcript is spliced from the break to that exon: a short hop for _XKR3_, a
+long one across _ABL1_'s first intron.
+
+| Junction        | RNA junction (STAR-Fusion)        | DNA break (10X)           | Apart                 |
+| --------------- | --------------------------------- | ------------------------- | --------------------- |
+| _BCR_ donor     | chr22:23,290,413, end of exon 14  | chr22:23,290,556          | 143 bp into intron 14 |
+| _ABL1_ acceptor | chr9:130,854,064, start of exon 2 | chr9:130,731,760          | 122 kb, in intron 1   |
+| _NUP214_ donor  | chr9:131,199,015, end of exon 29  | chr9:131,199,198          | 183 bp into intron 29 |
+| _XKR3_ acceptor | chr22:16,808,083, start of exon 3 | chr22:16,819,350          | 11 kb, in intron 2    |
+| none            | no call                           | chr9:131,280,138 to chr13 | no gene at either end |
+
+The amplified block on chr9 ends where the DNA breaks do, and the right-hand
+break, whose partner on chr13 is not inside any gene, is the one a fusion caller
+cannot see. DepMap's segmentation covers no interval over _BCR_ itself, so the
+donor's own window shows an arc but no copy-number step. SplitThreader applied
+the same reasoning to the _ERBB2_ amplicon in SK-BR-3
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)): copy-number
 steps and breakpoints describing the same interval are evidence of one event.
 
@@ -188,6 +239,7 @@ breakpoints onto hg38. The same run builds the COLO829 half of the demo, which
 ## See also
 
 - [](/docs/tutorials/cancer_sv)
+- [](/docs/tutorials/hic_structural_variants)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/tutorials/sv_visualization_cgiab)
@@ -197,3 +249,6 @@ breakpoints onto hg38. The same run builds the COLO829 half of the demo, which
 - Nattestad M, et al. Complex rearrangements and oncogene amplifications
   revealed by long-read DNA and RNA sequencing of a breast cancer cell line.
   _Genome Research_ (2018). https://doi.org/10.1101/gr.231100.117
+- Zhou B, et al. Comprehensive, integrated, and phased whole-genome analysis of
+  the primary ENCODE cell line K562. _Genome Research_ (2019).
+  https://doi.org/10.1101/gr.234948.118
