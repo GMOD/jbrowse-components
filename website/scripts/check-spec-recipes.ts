@@ -168,7 +168,7 @@ for (const [field, count] of unmapped) {
   console.log(`  ${String(count).padStart(3)}  ${field}`)
 }
 
-const graphSrc = join(pluginCheckout('graphgenomeview'), 'src')
+const graphSrc = join(pluginCheckout('graphgenomeviewer'), 'src')
 if (existsSync(graphSrc)) {
   const rendered = new Set([...sourceLabels([graphSrc])].map(norm))
   if (rendered.size === 0) {

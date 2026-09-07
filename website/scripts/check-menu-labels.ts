@@ -78,11 +78,11 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
     'tutorials/alphagenome.md',
     [LIBRARY_SRC('alphagenome_browser', 'plugin', 'src')],
   ],
-  ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeview')]],
-  ['tutorials/genomes_pangenome.md', [PLUGIN_SRC('graphgenomeview')]],
-  ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeview')]],
-  ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeview')]],
-  ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeview')]],
+  ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['tutorials/genomes_pangenome.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeviewer')]],
   [
     'tutorials/genomes_proteins.md',
     [
