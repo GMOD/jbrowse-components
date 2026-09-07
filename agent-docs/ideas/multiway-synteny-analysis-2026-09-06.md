@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-analysis-2026-09-06
-description: A verified 2026-09-06 reading of MultiWaySyntenyDisplay against its code and hosted data — what the lane stack is, how the E. coli and hg38 tutorials use it, where it is incorrect (affine placement of alignment records, strand semantics, densest-first on a nameless source, the star launch), its cost per lane, and a ranked list of fixes with the graph route's tie-ins. Read before changing the display's placement, ordering, LOD gating or launch route.
+description: A verified 2026-09-06 reading of MultiWaySyntenyDisplay against its code and hosted data — what the lane stack is, how the tutorials use it, where it is incorrect, its cost per lane, and a ranked list of fixes with the graph route's tie-ins. A block at the top says which findings have since landed (affine placement, strand semantics, densest-first, the LOD gate) so they are not re-fixed, and 4.10 and 4.11 are what a 2026-09-07 re-read added: lane order is not reproducible from the config, and an uncapped alsoOn overflows an exported figure. Read before changing the display's placement, ordering, LOD gating or launch route.
 ---
 
 # MultiWaySyntenyDisplay: suitability and scalability
@@ -11,6 +11,34 @@ Read against the code on 2026-09-06. Paths: `JC/` is `~/src/jbrowse-components`,
 `JC/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/`, abbreviated
 `MW/` below. Every measurement in this document was either taken today
 against the hosted data or is cited to the file that records it.
+
+## What has landed since (2026-09-07)
+
+Re-checked against the code and every tutorial the display appears in. These
+are FIXED — do not re-fix them:
+
+- **4.1**, alignment records drawn as affine blocks. `SPLIT_AT_GAP_BP = 10_000`
+  (`MW/afterAttach.ts:44`) rides both the anchor fetch and the pair fetch and is
+  honoured through `clipFeatureToRegion`, so a record is cut at every large
+  indel and the hg38 page documents the cut rather than the artefact.
+- **4.2**, the two strand semantics. `configSchema.ts`, the `Color ribbons by`
+  help text and `multiwayGeometry.ts` now all say the record's strand and not
+  the drawn twist; the four tutorials that stated the crossing were corrected
+  on 2026-09-07.
+- **4.3**, densest-first rewarding fragmentation. `rowAssembliesOf` weights by
+  `placements.length * group.weight`.
+- **2.2**, the LOD menu on a source with no coarse tier. The gate withdraws the
+  entry off the header, pinned by `lodMenuGate.test.ts`.
+- **4.8** in part: the grape page's "no GFF3", the HPRC page's Lanes submenu and
+  the figure-manifest gap are all closed. `user_guide.md` still has no multiway
+  section, and `GbzBaseSyntenyAdapter` still has no config page (it is
+  out-of-repo, and nothing the pangenome pages document about it is wrong).
+
+Still open and re-confirmed: **4.4** (the star launch), **4.5** (the pair
+fetch's tier and window), **4.7** (the serialisation boundary no test names),
+**4.9** (what the tests do not pin).
+
+The pass added 4.10 and 4.11 below.
 
 ## The verdict in one paragraph
 
@@ -547,6 +575,32 @@ interior gap; the picker above ~10 lanes; anything at 44 or 464 lanes beyond the
 height assertion. The handoff also lists a hung lane fetch holding the
 first-load phase at `loading` with no deadline
 (`multiway-graph-native.md`, "Smaller items").
+
+### 4.10 Lane order is not reproducible from the config
+
+Two figure specs on the same track at the same locus —
+`pangenome/hprc_cfh_haplotypes` and `multiway_synteny/hprc_lane_menu`, both
+`chr1:196,700,000-197,000,000`, differing only in a RefSeq track and a viewport
+height — captured the eight haplotypes in inverted group order, carriers at the
+bottom in one and on top in the other, with the within-group order differing
+too. `rowAssembliesOf` sorts by summed weight and tie-breaks on `appearance`,
+the first-seen index over the fetched groups, so two settles that fetch in a
+different order can rank near-equal lanes differently. A caption cannot lean on
+the sort, and the HPRC tutorial's "the order the display chooses on its own is
+the genotype" was corrected on 2026-09-07. Pin `rowOrder` in any spec whose
+picture depends on the order.
+
+### 4.11 A long `alsoOn` overflows an exported figure
+
+`pickContig` keeps every contig at `ALSO_ON_SHARE` (0.2) of the chosen one's
+evidence, uncapped (`MW/laneDecision.ts:127`). On a chromosome assembly that is
+one or two; on a fragmented one, ten scaffolds each clear the bar against every
+other. `LaneHeaders.tsx` is HTML so the label ellipsizes, and
+`SvgLaneHeaders.tsx:28-37` draws `row.label` as a bare `<text>` at x=2 with no
+clip, so the export's header runs under and past its own scale label — the two
+presenters saying different things, which `laneHeader.ts:57-64` says the shared
+derivation exists to prevent. Cap at the source: the header, the SVG and the
+`Show <contig> in this lane` menu all read that one list.
 
 ## 5. Suitability for graph pangenomes
 
