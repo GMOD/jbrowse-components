@@ -501,7 +501,8 @@ letting the display sit on a whole chromosome, and the failure names a zoom that
 would fit, so it has to clear the largest window you mean to open.
 
 What that track then does with the lanes, and what a window costs to read, is
-[the HPRC page's](/docs/tutorials/pangenome_hprc#walks-from-the-graph) subject.
+[the HPRC page's](/docs/tutorials/pangenome_hprc_part2#walks-from-the-graph)
+subject.
 
 ## Reproduce it end to end
 
@@ -547,6 +548,7 @@ bash build_hprc_gbz_index.sh out
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/user_guides/graph_genome_view)

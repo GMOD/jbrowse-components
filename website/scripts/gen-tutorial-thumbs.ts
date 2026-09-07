@@ -455,6 +455,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/hprc_c4_subgraph.png',
     band: [0.49, 1],
   },
+  pangenome_hprc_part2: {
+    // The deletion band running down from the genes, through the rank-colored
+    // segments, into the 464-haplotype matrix, which is the question this half
+    // answers. Deliberately not the force drawing, which is part 1's card.
+    // Stops above the graph pane because the arrow and the callout into it are
+    // hand-added paint.
+    src: 'pangenome/hprc_graph_vs_callset.png',
+    band: [0.11, 0.51],
+  },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
   // per strain, under the K12 gene lane. It used to be this tutorial's variant
   // matrix, deliberately echoing the pggb card — but the two cards then read as

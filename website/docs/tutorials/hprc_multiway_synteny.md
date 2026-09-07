@@ -67,7 +67,7 @@ draw is the graph.
 
 The consortium also publishes a separate all-vs-GRCh38 PAF of the same
 haplotypes, produced by a different aligner, and the
-[CFH panel on the pangenome page](/docs/tutorials/pangenome_hprc#every-haplotype-in-its-own-coordinates)
+[CFH panel on the pangenome page](/docs/tutorials/pangenome_hprc_part2#every-haplotype-in-its-own-coordinates)
 slices its lanes out of that file. This page does not use it. One input is what
 makes the build reproducible: the graph, read as published, with no aligner run
 and no choice of aligner settings to record.
@@ -173,7 +173,7 @@ reference coordinates both share.
 ## The CFH cluster, eight haplotypes
 
 The eight are the panel the
-[pangenome page](/docs/tutorials/pangenome_hprc#every-haplotype-in-its-own-coordinates)
+[pangenome page](/docs/tutorials/pangenome_hprc_part2#every-haplotype-in-its-own-coordinates)
 picks out of the release's callset at the CFHR3/CFHR1 deletion: samples
 homozygous for the deletion and samples homozygous reference, kept only where
 the haplotype's own CAT annotation agrees with the genotype it was picked on.
@@ -272,6 +272,7 @@ bash build_hprc_multiway_synteny.sh
 
 - [](/docs/tutorials/hg38_vertebrates_synteny)
 - [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
