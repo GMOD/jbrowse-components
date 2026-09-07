@@ -229,3 +229,32 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     expect(svInspectorView.showCircularView).toBe(filteredFeatures.length > 0)
   })
 }, 60000)
+
+// A search restored with the view — a saved session, a spec link — is pushed
+// into the grid by the effect that also publishes `filteredRowsSet`, and a
+// subscription made after it missed the event: two rows on screen under a chip
+// saying every row was shown, and a circle drawing the whole callset.
+test('a search the view is launched with narrows visibleRows and the circle', async () => {
+  await mockConsoleWarn(async () => {
+    const { session } = await createView(config)
+    await session.launchView('SvInspectorView', {
+      assembly: 'volvox',
+      uri: 'volvox.dup.renamed.vcf.gz',
+      filterText: 'bnd_W',
+    })
+    const svInspectorView = session.views.find(
+      (v: any) => v.type === 'SvInspectorView',
+    ) as SvInspectorViewModel
+    await waitFor(() => {
+      expect(
+        svInspectorView.spreadsheetView.spreadsheet?.rows?.length,
+      ).toBeGreaterThan(1)
+    }, delay)
+    const spreadsheet = svInspectorView.spreadsheetView.spreadsheet!
+    await waitFor(() => {
+      expect(spreadsheet.visibleRows).toHaveLength(1)
+    }, delay)
+    expect(spreadsheet.filterText).toBe('bnd_W')
+    expect(svInspectorView.features).toHaveLength(1)
+  })
+}, 60000)

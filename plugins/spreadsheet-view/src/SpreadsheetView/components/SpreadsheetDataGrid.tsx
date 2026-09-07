@@ -56,6 +56,62 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   // once the grid mounts
   const gridReady = !!(rows && dataGridColumns)
 
+  // GRID -> MODEL stays a pair of event subscriptions, which is a lifecycle and
+  // is what an effect is for. Neither body takes its observables from the
+  // closure — they are read off `model` when the event fires — so this depends
+  // on the grid being mounted and nothing else, and a changing tally cannot
+  // tear the subscriptions down and rebuild them.
+  //
+  // Declared before the model -> grid effect, which pushes a restored search
+  // into the grid and publishes `filteredRowsSet` synchronously: a subscription
+  // made after it missed the event and `visibleRows` stayed at every row.
+  useEffect(() => {
+    const api = apiRef.current
+    if (!gridReady || !api) {
+      return undefined
+    }
+    const syncVisibleRows = () => {
+      model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
+    }
+    syncVisibleRows()
+    return disposeAll([
+      // The visible-rows lookup is recomputed by the filter pipeline, which
+      // fires `filteredRowsSet` only AFTER `filterModelChange`. Reading the
+      // lookup inside the latter therefore returns the prior filter's result,
+      // so anything downstream of visibleRows lagged a filter behind — or never
+      // updated on the first one.
+      api.subscribeEvent('filteredRowsSet', syncVisibleRows),
+      api.subscribeEvent('filterModelChange', filterModel => {
+        model.setFilterText(
+          filterModel.quickFilterValues?.join(' ') || undefined,
+        )
+        // the same direction for the SV-type dropdown: it owns one item in the
+        // grid's filter model, but the grid's own filter panel can edit or
+        // delete that item, and the dropdown then went on naming a filter
+        // nothing was applying
+        const { svTypeColumnField, svTypeOptions } = model
+        if (svTypeColumnField) {
+          const item = filterModel.items.find(
+            i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
+          )
+          // the item's value is the class's raw tokens; map it back to the
+          // class the dropdown names. An edit that no longer matches a class
+          // clears the dropdown rather than leaving it naming something else
+          const tokens = Array.isArray(item?.value)
+            ? (item.value as string[])
+            : []
+          model.setSvTypeFilter(
+            svTypeOptions.find(
+              o =>
+                o.tokens.length === tokens.length &&
+                o.tokens.every(t => tokens.includes(t)),
+            )?.type,
+          )
+        }
+      }),
+    ])
+  }, [apiRef, model, gridReady])
+
   // Two directions, two mechanisms, and what separates them is what each can
   // track.
   //
@@ -76,7 +132,7 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     }
     return disposeAll([
       // Driven through the grid's own filter pipeline rather than a parallel
-      // row filter, so the `filteredRowsSet` handler below keeps everything
+      // row filter, so the `filteredRowsSet` handler above keeps everything
       // downstream (the SV inspector's circle) in sync, and it composes with
       // the user's column filters and quick search instead of replacing them.
       autorun(() => {
@@ -131,56 +187,6 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           if (rowIndex >= 0) {
             api.scrollToIndexes({ rowIndex })
           }
-        }
-      }),
-    ])
-  }, [apiRef, model, gridReady])
-
-  // GRID -> MODEL stays a pair of event subscriptions, which is a lifecycle and
-  // is what an effect is for. Neither body takes its observables from the
-  // closure — they are read off `model` when the event fires — so this depends
-  // on the grid being mounted and nothing else, and a changing tally cannot
-  // tear the subscriptions down and rebuild them.
-  useEffect(() => {
-    const api = apiRef.current
-    if (!gridReady || !api) {
-      return undefined
-    }
-    return disposeAll([
-      // The visible-rows lookup is recomputed by the filter pipeline, which
-      // fires `filteredRowsSet` only AFTER `filterModelChange`. Reading the
-      // lookup inside the latter therefore returns the prior filter's result,
-      // so anything downstream of visibleRows lagged a filter behind — or never
-      // updated on the first one.
-      api.subscribeEvent('filteredRowsSet', () => {
-        model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
-      }),
-      api.subscribeEvent('filterModelChange', filterModel => {
-        model.setFilterText(
-          filterModel.quickFilterValues?.join(' ') || undefined,
-        )
-        // the same direction for the SV-type dropdown: it owns one item in the
-        // grid's filter model, but the grid's own filter panel can edit or
-        // delete that item, and the dropdown then went on naming a filter
-        // nothing was applying
-        const { svTypeColumnField, svTypeOptions } = model
-        if (svTypeColumnField) {
-          const item = filterModel.items.find(
-            i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
-          )
-          // the item's value is the class's raw tokens; map it back to the
-          // class the dropdown names. An edit that no longer matches a class
-          // clears the dropdown rather than leaving it naming something else
-          const tokens = Array.isArray(item?.value)
-            ? (item.value as string[])
-            : []
-          model.setSvTypeFilter(
-            svTypeOptions.find(
-              o =>
-                o.tokens.length === tokens.length &&
-                o.tokens.every(t => tokens.includes(t)),
-            )?.type,
-          )
         }
       }),
     ])
