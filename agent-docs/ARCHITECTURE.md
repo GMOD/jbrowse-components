@@ -495,8 +495,8 @@ first installs its autoruns for every display that composes it — one
 the other two each display installs its own via `installGlobalFetchAutorun` /
 `installComparativeFetchAutorun`, both declarations over the same
 `installFetch` skeleton ([reference/FETCH_SKELETON.md](reference/FETCH_SKELETON.md)).
-The comparative shape — keyed uploads, `sharedBackendKey(self.id)`, an
-unconditional render callback, readiness as a required prop — is
+The comparative shape — uploads keyed by `sharedBackendKey(self.id)`, an
+unconditional repaint, readiness as a required prop — is
 [reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md).
 
 Circular view's `ChordVariantDisplay` is a fourth shape, off this axis: it

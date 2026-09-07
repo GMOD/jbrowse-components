@@ -81,11 +81,14 @@ turned out to have no other reader. The scope below is unchanged.) It does
 dotplot and the synteny level (ARCHITECTURE.md, "the empty frame is
 load-bearing"). There, nothing but the container ever repaints the canvas, so a
 render that returns early rather than painting is how a hidden track's pixels
-survive. Their backends' `render` returns `void` and repaints unconditionally,
-and `canvasDrawn` means "painted at least once". That is safe because neither
-view drives a scrim off it: both `settled` getters carry data-readiness
-separately via `displaysSettled`. Don't port the predicate below into that
-family — it caused the bug in both of them.
+survive. That is the half to keep: the repaint is unconditional either way.
+Synteny's backend `render` returns `void` with it, so its `canvasDrawn` means
+"painted at least once", which is safe because it drives no scrim — `settled`
+carries data-readiness separately via `displaysSettled`. Dotplot draws through
+`renderBlocks` since the 2026-09 mark port and so does answer the predicate
+below; what it does not do is skip the frame, and the case the predicate reads
+as "nothing drawn" and the view means as "nothing to draw" is separated by
+`paintInert` rather than by a `true` the backend does not believe.
 
 ## Invariants
 

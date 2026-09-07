@@ -87,10 +87,12 @@ startRenderingBackend(backend: RenderingBackend) {
 ```
 
 That is the shape for a display that owns its canvas. The two views whose canvas
-is **shared by several displays** (dotplot, the synteny level) invert the gate:
-their `render` repaints unconditionally and returns `true`, because nothing else
-repaints that canvas and an empty frame is what erases a hidden track. See
-ADR-009's scope clause and
+is **shared by several displays** (dotplot, the synteny level) repaint
+unconditionally, because nothing else repaints that canvas and an empty frame is
+what erases a hidden track. Synteny's `render` inverts the gate outright and
+returns `true`; dotplot's frame scaffold clears the same way and still answers
+off the blocks it drew, saying "a plot with no tracks has finished" through
+`paintInert` instead. See ADR-009's scope clause and
 [SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md#the-empty-frame-is-load-bearing).
 
 ## What the mixin owns
@@ -614,9 +616,9 @@ no per-region display uses it today. MAF used to — its upload carried a
 pre-encoded buffer and the render side re-read `rpcDataMap` — until the rows
 became `span` channels both backends draw from.
 
-Whole-map synced (alignments, multi-LGV synteny) and keyed (dotplot) plugins
-define their own backend interfaces because their upload shapes differ — see
-"Upload patterns." The whole-view displays (HiC, LD, the variant matrix) are
+Whole-map synced (alignments) and keyed (multi-LGV synteny) plugins define
+their own backend interfaces because their upload shapes differ — see "Upload
+patterns." The whole-view displays (HiC, LD, the variant matrix) and dotplot are
 per-region backends over a single canvas-wide block, which is what lets them
 declare marks.
 
@@ -1660,8 +1662,10 @@ displayedRegion can produce multiple render blocks that share one GPU buffer and
 draw with different scissor clips.
 
 The join key across `model.rpcDataMap`, `hal.uploadBuffer(regionKey, ...)`, and
-`RenderBlock.displayedRegionIndex`. Multi-LGV displays (dotplot, synteny) key on a
-tuple of two displayedRegion indices.
+`RenderBlock.displayedRegionIndex`. A comparative display keys on
+`sharedBackendKey(self.id)` instead, and dotplot rides that hash on the block's
+`displayedRegionIndex` — the field is the key a block was uploaded under, not
+always an index into `displayedRegions`.
 
 ## What this architecture deliberately does not have
 
