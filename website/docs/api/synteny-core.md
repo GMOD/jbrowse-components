@@ -84,8 +84,9 @@ to rather than over an assumed white.
 
 Coerce a persisted colorBy string (stored as plain `types.string` for
 snapshot-compat) to a valid `SyntenyColorBy`. Unknown values fall back to
-'default'; the retired 'identityDiverging' mode maps to 'identity' so old
-saved sessions keep rendering instead of hitting an unhandled switch case.
+'default'; the retired 'identityDiverging' and 'meanQueryIdentity' modes map
+to 'identity' so old saved sessions keep rendering instead of hitting an
+unhandled switch case.
 
 ```js
 // type signature
@@ -109,8 +110,8 @@ with nothing after it never reaches here — coerceColorBy rejects it.
 ## colorByMenuItems
 
 The palette-button menu shared by the dotplot and linear-synteny headers: the
-view-wide mode radios, a per-track section once more than one track is
-overlaid, and the legend toggle.
+structural mode radios, the measurements one hop in, and the per-track
+swatches once more than one track is overlaid.
 
 ```js
 // type signature
@@ -124,7 +125,7 @@ overlaid, and the legend toggle.
 Project a view carrying `TrackColorsMixin` onto the menu builder's input.
 Both palette menus were building this by hand, walking the model's tracks a
 third time (after `colorableTracks` and the legend) and repeating the same
-five setter lambdas.
+setter lambdas.
 
 ```js
 // type signature
@@ -233,23 +234,3 @@ drift this module exists to prevent — see the header.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
-
-## trackLegendChips
-
-The legend rows that name the overlaid tracks. Two cases produce them, and
-both views build them the same way so the on-screen and exported legends
-can't diverge:
-
-- every track on `'track'`: one chip per track, its palette color and name.
-- tracks on different modes: one row per track naming its mode, with a swatch
-  only where the track has a single color to show (a track on an identity
-  ramp has none).
-
-Any other uniform mode has a fixed legend of its own and returns nothing.
-
-```js
-// type signature
-(tracks: readonly { name: string; colorBy: SyntenyColorBy; trackColor: string; }[], uniformColorBy: SyntenyColorBy | undefined) => ColorChip[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
