@@ -299,11 +299,14 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     await findByText('volvox_del', ...opts)
     fireEvent.click(await findByText('Open in new view'))
 
+    // two mates seat the anchor BETWEEN them, so both bands are anchor-to-mate:
+    // volvox_all_vs_all states each mate against volvox and nothing between the
+    // two mates, and with the anchor on top the second band would be blank
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.views.map(f => f.assemblyNames[0])).toEqual([
-        'volvox',
         'volvox_ins',
+        'volvox',
         'volvox_del',
       ])
     }, delay)

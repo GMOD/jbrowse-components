@@ -34,14 +34,13 @@ interface SyntenyView {
   levels: {
     level: number
     linearSyntenyDisplays: { featureData?: unknown }[]
-    showOffscreenMateContig: (
-      refName: string,
-      row: number,
-      mate?: {
-        locus: { start: number; end: number }
-        mateCumBp?: { start: number; end: number }
-      },
-    ) => void
+    showOffscreenMateContig: (hit: {
+      refName: string
+      navRow: number
+      side: 'top' | 'bottom'
+      locus: { start: number; end: number }
+      mateCumBp?: { start: number; end: number }
+    }) => void
   }[]
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
@@ -99,7 +98,10 @@ async function followingSwap() {
 test('a mark on a followed row shows its contig, and is not undone by the follow', async () => {
   const { view, row1 } = await followingSwap()
 
-  view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
+  view.levels[0]!.showOffscreenMateContig({
+    refName: 'ctgB',
+    navRow: 1,
+    side: 'top',
     locus: { start: 0, end: 6079 },
   })
   await waitFor(() => {
@@ -121,7 +123,10 @@ test('...and the undo puts the anchor back with the regions', async () => {
     snackbarMessages: { message: string; actions?: { onClick: () => void }[] }[]
   }
 
-  view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
+  view.levels[0]!.showOffscreenMateContig({
+    refName: 'ctgB',
+    navRow: 1,
+    side: 'top',
     locus: { start: 0, end: 6079 },
   })
   await waitFor(() => {
@@ -129,7 +134,7 @@ test('...and the undo puts the anchor back with the regions', async () => {
   }, timeout)
 
   const [message] = session.snackbarMessages
-  expect(message!.message).toContain('following this row')
+  expect(message!.message).toContain('following this panel')
   message!.actions![0]!.onClick()
 
   expect(view.followAnchorIndex).toBe(0)
@@ -144,7 +149,10 @@ test('a mark on the anchor row leaves the anchor alone', async () => {
     snackbarMessages: { message: string }[]
   }
 
-  view.levels[0]!.showOffscreenMateContig('ctgA', 0, {
+  view.levels[0]!.showOffscreenMateContig({
+    refName: 'ctgA',
+    navRow: 0,
+    side: 'top',
     locus: { start: 0, end: 6079 },
   })
   await waitFor(() => {
