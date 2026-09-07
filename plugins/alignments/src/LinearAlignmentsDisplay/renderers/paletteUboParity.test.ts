@@ -107,10 +107,10 @@ function frameUniforms() {
   const arc = hal.uniformsOf(hal.draws().find(d => d.passId === 'arc')!)!
   const pileup = hal.uniformsOf(hal.draws().find(d => d.passId === 'read')!)!
   return {
-    u32: new Uint32Array(pileup.buffer),
+    u32: new Uint32Array(pileup.buffer, pileup.byteOffset, pileup.length),
     f32: pileup,
     arcF32: arc,
-    arcU32: new Uint32Array(arc.buffer),
+    arcU32: new Uint32Array(arc.buffer, arc.byteOffset, arc.length),
   }
 }
 
