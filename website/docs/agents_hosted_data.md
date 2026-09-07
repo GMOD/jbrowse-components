@@ -120,6 +120,11 @@ curl -s https://jbrowse.org/ucsc/hg38/config.json |
 - In JBrowse Desktop the `open` MCP tool takes the config URL directly, and
   JBrowse Web takes it as `?config=`. A session spec then builds the view, and a
   `loc` that is a gene name goes through the config's text index.
+- "The genes" on a UCSC hub is the RefSeq Curated track
+  (`hg38-ncbiRefSeqCurated`; `<db>-ncbiRefSeqCurated` on the others). RefSeq All
+  adds predicted models, and the twenty other tracks with RefSeq in the name
+  (NMD escape, Historical, Diffs, liftOvers) are not gene annotation, so a track
+  search for "RefSeq" is a list to read, not a pick.
 - As a link, `?config=` plus the [URL parameters](/docs/urlparams) is a complete
   view with nothing authored. `&tracks=` adds to the hub's own default session
   rather than replacing it, so the view opens with the tracks you named plus

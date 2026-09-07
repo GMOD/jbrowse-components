@@ -190,7 +190,8 @@ const view = jb.view()
 // a LinearGenomeView (check v.type — other view types differ)
 view.visibleLocStrings // getter: what region is on screen
 view.assemblyNames
-view.navToLocString('BRCA1') // async; gene names go through text search
+view.navToLocString('BRCA1') // async; a gene name goes through text search and
+// SHOWS the track whose index answered — 4th arg { showHitTrack: false } stops that
 await view.launchTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
 view.hideTrack('mytrack')
 // a shown track's live display model (getters are rich) — find by trackId,
