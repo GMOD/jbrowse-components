@@ -1,6 +1,7 @@
 import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
-import type { Region } from '../../util/types/index.ts'
+
+export type LodTier = 'fine' | 'coarse'
 
 // #region baseOptions
 export interface BaseOptions {
@@ -18,7 +19,6 @@ export interface BaseOptions {
   // index reader (@gmod/tabix, @gmod/bam, @gmod/cram) into this object form.
   statusCallback?: StatusCallback
   headers?: Record<string, string>
-  statsEstimationMode?: boolean
   // Which side of a pairing to answer getRefNames for; single-assembly
   // adapters ignore it.
   assemblyName?: string
@@ -31,7 +31,7 @@ export interface BaseOptions {
   // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
   // Resolving it here instead hides a fetch input from that key, which is how
   // a zoom across the threshold came to leave a view holding the wrong tier.
-  lodMode?: 'fine' | 'coarse'
+  lodMode?: LodTier
   // "I read only top-level features", so an adapter may skip work that exists
   // to complete SUBFEATURE lists. A request, not an instruction: only the
   // adapter knows whether its format's top-level set is even a function of the
@@ -44,10 +44,6 @@ export interface BaseOptions {
   topLevelOnly?: boolean
 }
 // #endregion
-
-export interface BaseOptionsWithRegions extends BaseOptions {
-  regions?: Region[]
-}
 
 // #region textSearchArgs
 export type SearchType = 'full' | 'prefix' | 'exact'

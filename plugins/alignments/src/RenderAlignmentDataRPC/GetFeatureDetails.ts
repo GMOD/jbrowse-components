@@ -1,7 +1,7 @@
 import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
@@ -15,7 +15,7 @@ interface GetFeatureDetailsArgs {
   // The detail tier the pileup was fetched at. Feature ids are only comparable
   // within one tier (a tiered PIF adapter numbers its coarse and fine rows from
   // different file offsets), so the lookup has to ask for the same one.
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

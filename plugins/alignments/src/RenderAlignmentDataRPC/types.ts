@@ -10,7 +10,7 @@
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKeys } from '../shared/readIdentity.ts'
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
@@ -55,7 +55,7 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // rather than an `rpcProps()` field, like `perBaseBinBp` below: it swings
   // with zoom, and the display spells it as its `zoomFetchKey`, so a tier flip
   // refetches the regions on screen and leaves the rest alone.
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
   linkedReads?: 'off' | 'normal'
   /**
    * `subPixelBinBp` off the display's debounced zoom: genomic bp one per-base
@@ -521,5 +521,5 @@ export interface GroupedAlignmentsResult {
    * tiered adapter numbers its coarse and fine rows from different file
    * offsets, and the region on screen may predate a tier flip.
    */
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }

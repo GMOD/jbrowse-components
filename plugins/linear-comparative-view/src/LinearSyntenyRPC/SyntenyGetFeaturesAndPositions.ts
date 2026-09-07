@@ -5,7 +5,7 @@ import type {
   SyntenyRpcResult,
   SyntenyTargetViewSnap,
 } from './executeSyntenyFeaturesAndPositions.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
@@ -26,7 +26,7 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   // they gate the CIGAR parse.
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

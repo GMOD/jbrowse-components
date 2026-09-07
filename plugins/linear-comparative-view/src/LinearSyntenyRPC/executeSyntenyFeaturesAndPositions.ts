@@ -43,7 +43,7 @@ import type { SyntenyMate } from '../syntenyMate.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { DrawOrderKey } from './syntenyDrawOrder.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ComparativeOptions } from '@jbrowse/synteny-core'
@@ -126,7 +126,7 @@ export async function executeSyntenyFeaturesAndPositions({
   stopToken?: StopToken
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
   statusCallback?: StatusCallback
 }) {
   const dataAdapter = await getFeatureAdapterOrThrow({

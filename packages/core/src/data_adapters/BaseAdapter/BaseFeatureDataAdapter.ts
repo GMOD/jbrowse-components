@@ -147,10 +147,7 @@ export abstract class BaseFeatureDataAdapter<
    * features over a region, primarily used for quantitative tracks
    */
   public async getRegionQuantitativeStats(region: Region, opts?: BaseOptions) {
-    const feats = this.getFeatures(region, {
-      ...opts,
-      statsEstimationMode: true,
-    })
+    const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }
   /**

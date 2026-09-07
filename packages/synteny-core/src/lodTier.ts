@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
@@ -17,7 +18,7 @@ export type LodMode = 'auto' | 'fine' | 'coarse'
  * refetch key is computed. Keeping the two as separate types is what stops the
  * resolution from drifting back into the adapter (see {@link resolveLodTier}).
  */
-export type LodTier = 'fine' | 'coarse'
+export type { LodTier }
 
 /**
  * What a tiered adapter reports about the file it opened, read once per display

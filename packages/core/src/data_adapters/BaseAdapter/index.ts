@@ -13,8 +13,8 @@ export {
 } from './util.ts'
 export type {
   BaseOptions,
-  BaseOptionsWithRegions,
   BaseTextSearchArgs,
+  LodTier,
   SearchType,
 } from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'

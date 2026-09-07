@@ -20,7 +20,7 @@ import {
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
@@ -116,7 +116,7 @@ export async function executeDotplotFeaturesAndPositions({
   hViewSnap: BpIndexViewSnap
   vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
   statusCallback?: StatusCallback
 }) {
   const dataAdapter = await getFeatureAdapterOrThrow({

@@ -9,6 +9,7 @@ import type { BareFeature } from './mcscanUtil.ts'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
+  LodTier,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -1030,7 +1031,7 @@ export function resolveCoarseTier({
   lodMode,
 }: {
   hasCoarseTier: boolean
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }) {
   return hasCoarseTier && lodMode === 'coarse'
 }

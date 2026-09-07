@@ -2,7 +2,7 @@ import { SimpleFeature, getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
 import type { RenderAlignmentDataArgs } from '../RenderAlignmentDataRPC/types.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
@@ -20,7 +20,7 @@ export interface FetchFeatureDetailsSelf {
         assemblyName: string
         start: number
         end: number
-        lodMode: BaseOptions['lodMode']
+        lodMode: LodTier | undefined
       }
     | undefined
 }
@@ -104,7 +104,7 @@ export interface FetchFeaturesSelf {
   perBaseBinBp: number
   // The detail tier, at the call site for the same reason — undefined where the
   // adapter has one tier to serve.
-  lodTier: BaseOptions['lodMode']
+  lodTier: LodTier | undefined
 }
 
 // One RPC for both pileup and chain modes; the worker branches on `linkedReads`

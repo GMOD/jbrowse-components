@@ -10,7 +10,7 @@ import {
 } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ComparativeOptions } from '@jbrowse/synteny-core'
@@ -28,7 +28,7 @@ export function pickPifPrefix({
 }: {
   flip: boolean
   hasCoarseTier: boolean
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }) {
   const fineLetter = flip ? 'q' : 't'
   return resolveCoarseTier({ hasCoarseTier, lodMode })

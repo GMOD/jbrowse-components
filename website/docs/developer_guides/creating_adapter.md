@@ -314,7 +314,6 @@ export interface BaseOptions {
   // index reader (@gmod/tabix, @gmod/bam, @gmod/cram) into this object form.
   statusCallback?: StatusCallback
   headers?: Record<string, string>
-  statsEstimationMode?: boolean
   // Which side of a pairing to answer getRefNames for; single-assembly
   // adapters ignore it.
   assemblyName?: string
@@ -327,7 +326,7 @@ export interface BaseOptions {
   // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
   // Resolving it here instead hides a fetch input from that key, which is how
   // a zoom across the threshold came to leave a view holding the wrong tier.
-  lodMode?: 'fine' | 'coarse'
+  lodMode?: LodTier
   // "I read only top-level features", so an adapter may skip work that exists
   // to complete SUBFEATURE lists. A request, not an instruction: only the
   // adapter knows whether its format's top-level set is even a function of the

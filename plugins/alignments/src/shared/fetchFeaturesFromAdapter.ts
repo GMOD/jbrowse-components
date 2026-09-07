@@ -8,7 +8,10 @@ import { toArray } from 'rxjs/operators'
 
 import type { FilterBy } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  LodTier,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -37,7 +40,7 @@ export async function fetchFeaturesFromAdapter({
   filterBy?: FilterBy
   // Which detail tier a tiered adapter should serve. Only the synteny displays
   // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
   // Required key, nullable value, on purpose: a caller with no status channel
   // has to say `statusCallback: undefined` rather than leave the property out,
   // so forwarding one is a decision instead of something to remember. And

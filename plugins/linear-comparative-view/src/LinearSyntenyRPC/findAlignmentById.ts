@@ -1,7 +1,7 @@
 import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
@@ -24,7 +24,7 @@ export interface AlignmentLookupArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   featureId: string
-  lodMode?: BaseOptions['lodMode']
+  lodMode?: LodTier
 }
 
 /**

@@ -199,7 +199,7 @@ import type {
   BelowCoverageBandsSettings,
   SectionsLayout,
 } from './sectionLayout.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
@@ -2951,7 +2951,7 @@ export default function stateModelFactory(
          * adapters. A `zoomFetchKey` term and a call-site RPC argument rather
          * than an `rpcProps` field, for the reason `perBaseBinBp` below is.
          */
-        get lodTier(): BaseOptions['lodMode'] {
+        get lodTier(): LodTier | undefined {
           return undefined
         },
 
@@ -2961,7 +2961,7 @@ export default function stateModelFactory(
          * `dataSuperseded` alone — see `livePerBaseBinBp` for the window it
          * covers.
          */
-        get liveLodTier(): BaseOptions['lodMode'] {
+        get liveLodTier(): LodTier | undefined {
           return undefined
         },
 
