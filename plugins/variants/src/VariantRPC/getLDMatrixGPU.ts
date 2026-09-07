@@ -5,7 +5,8 @@ import {
   calculateLDStatsPhasedBits,
   packDosages,
 } from '@jbrowse/ld-core'
-import { getGpuDevice, onDeviceLost } from '@jbrowse/render-core/gpuDevice'
+import { makeComputePipelineCache } from '@jbrowse/render-core/computePipeline'
+import { getGpuDevice } from '@jbrowse/render-core/gpuDevice'
 
 import * as ldCompute from '../LDDisplay/components/shaders/ldCompute.generated.ts'
 import * as ldPhasedCompute from '../LDDisplay/components/shaders/ldPhasedCompute.generated.ts'
@@ -45,90 +46,12 @@ function assertSpotCheck(
   }
 }
 
-interface ComputeState {
-  device: GPUDevice
-  pipeline: GPUComputePipeline
-  bindGroupLayout: GPUBindGroupLayout
-  // Carried alongside the layout it was built from, so the bind group is
-  // written against the same reflected indices.
-  bindings: readonly ShaderBinding[]
-}
-
-// Built from the kernel's own reflected binding table rather than restated
-// here. This was three hardcoded entries — 0 read-only-storage, 1 storage, 2
-// uniform — which is exactly what `ldCompute.slang`'s `[[vk::binding]]`
-// attributes say, transcribed by hand into the one place a mismatch shows up as
-// a validation failure at pipeline creation. `BINDINGS` is the same fact,
-// reflected.
-function makeBindGroupLayout(
-  device: GPUDevice,
-  bindings: readonly ShaderBinding[],
-) {
-  return device.createBindGroupLayout({
-    entries: bindings.map(b => {
-      if (b.kind === 'texture' || b.kind === 'sampler') {
-        // A compute kernel here binds buffers only; the codegen can describe a
-        // sampler, and this driver has no case for one.
-        throw new Error(
-          `LD compute: binding ${b.index} ('${b.name}') is a ${b.kind}, which ` +
-            `this dispatch does not bind`,
-        )
-      }
-      return {
-        binding: b.index,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: b.kind },
-      }
-    }),
-  })
-}
-
-// Both LD kernels differ only in source + entry point, so one cache factory
-// serves both. They also happen to share a binding table — asserted rather than
-// assumed, since each now carries its own. The cache is invalidated on device
-// loss so the next call rebuilds against a freshly acquired device.
-function makePipelineCache(
-  code: string,
-  entryPoint: string,
-  bindings: readonly ShaderBinding[],
-) {
-  let state: ComputeState | null = null
-  // Serializes concurrent callers during async pipeline creation.
-  let statePromise: Promise<ComputeState> | null = null
-  onDeviceLost(() => {
-    state = null
-    statePromise = null
-  })
-  return async function ensurePipeline(device: GPUDevice) {
-    if (state?.device === device) {
-      return state
-    }
-    if (statePromise) {
-      return statePromise
-    }
-    statePromise = (async () => {
-      const module = device.createShaderModule({ code })
-      const bindGroupLayout = makeBindGroupLayout(device, bindings)
-      const pipeline = await device.createComputePipelineAsync({
-        layout: device.createPipelineLayout({
-          bindGroupLayouts: [bindGroupLayout],
-        }),
-        compute: { module, entryPoint },
-      })
-      state = { device, pipeline, bindGroupLayout, bindings }
-      statePromise = null
-      return state
-    })()
-    return statePromise
-  }
-}
-
-const ensureUnphasedPipeline = makePipelineCache(
+const ensureUnphasedPipeline = makeComputePipelineCache(
   ldCompute.WGSL_SOURCE,
   ldCompute.COMPUTE_ENTRY_POINT,
   ldCompute.BINDINGS,
 )
-const ensurePhasedPipeline = makePipelineCache(
+const ensurePhasedPipeline = makeComputePipelineCache(
   ldPhasedCompute.WGSL_SOURCE,
   ldPhasedCompute.COMPUTE_ENTRY_POINT,
   ldPhasedCompute.BINDINGS,

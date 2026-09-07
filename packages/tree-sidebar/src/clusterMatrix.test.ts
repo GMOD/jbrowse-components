@@ -2,8 +2,13 @@ import { toNewick } from '@gmod/hclust'
 import { parseNewick } from '@gmod/newick'
 
 import { clusterMatrix } from './clusterMatrix.ts'
+import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 
 import type { NewickNode } from '@gmod/newick'
+
+jest.mock('./gpuDistanceMatrix.ts', () => ({
+  gpuDistanceMatrix: jest.fn(() => Promise.resolve(null)),
+}))
 
 function leafNames(node: NewickNode): string[] {
   return node.children?.length ? node.children.flatMap(leafNames) : [node.name!]
@@ -87,4 +92,46 @@ test('refuses a matrix with fewer than two rows', async () => {
   await expect(clusterMatrix({ data: new Map() })).rejects.toThrow(
     /at least 2 rows, got 0/,
   )
+})
+
+// Three rows where the rows say A is near B, and a hand-built distance matrix
+// that says A is near C. Which tree comes back is which input hclust saw.
+const rowsNearAB = new Map<string, number[]>([
+  ['A', [0, 0]],
+  ['B', [1, 0]],
+  ['C', [9, 0]],
+])
+const matrixNearAC = new Float32Array([0, 9, 1, 0, 0, 8, 0, 0, 0])
+
+test('clusters the GPU distance matrix when one comes back', async () => {
+  jest.mocked(gpuDistanceMatrix).mockResolvedValueOnce(matrixNearAC)
+  const { order } = await clusterMatrix({ data: rowsNearAB })
+  expect(order.map(i => [...rowsNearAB.keys()][i])).toEqual(['B', 'A', 'C'])
+})
+
+test('falls back to the rows when the GPU declines or fails', async () => {
+  jest.mocked(gpuDistanceMatrix).mockResolvedValueOnce(null)
+  const declined = await clusterMatrix({ data: rowsNearAB })
+  expect(declined.order.map(i => [...rowsNearAB.keys()][i])).toEqual([
+    'C',
+    'A',
+    'B',
+  ])
+
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  jest
+    .mocked(gpuDistanceMatrix)
+    .mockRejectedValueOnce(new Error('dispatch failed'))
+  const failed = await clusterMatrix({ data: rowsNearAB })
+  expect(failed.order).toEqual(declined.order)
+  expect(warn).toHaveBeenCalledWith(
+    'GPU distance matrix failed, falling back to hclust',
+    expect.any(Error),
+  )
+  warn.mockRestore()
+})
+
+test('a cancellation during the GPU build is not a fallback', async () => {
+  jest.mocked(gpuDistanceMatrix).mockRejectedValueOnce(new Error('aborted'))
+  await expect(clusterMatrix({ data: rowsNearAB })).rejects.toThrow('aborted')
 })

@@ -13,6 +13,8 @@ export const COMPUTE_ENTRY_POINT = "computeLD"
 
 export const WORKGROUP_SIZE_X = 64
 
+export const WORKGROUP_SIZE_Y = 1
+
 export const UNIFORMS_SIZE_BYTES = 32
 
 // Word indices into a Uint32Array view over the uniform buffer.

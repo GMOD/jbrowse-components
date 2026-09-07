@@ -302,6 +302,7 @@ describe('emitInterface compute', () => {
   test('emits entry point + workgroup size so TS dispatch tracks [numthreads]', () => {
     expect(out).toContain('export const COMPUTE_ENTRY_POINT = "computeLD"')
     expect(out).toContain('export const WORKGROUP_SIZE_X = 64')
+    expect(out).toContain('export const WORKGROUP_SIZE_Y = 1')
   })
 
   test('emits uniform layout but no instance layout', () => {

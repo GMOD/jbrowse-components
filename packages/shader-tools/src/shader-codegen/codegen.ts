@@ -925,7 +925,7 @@ export function emitInterface(inputs: CodegenInputs) {
     lines.push(`export const COVERAGE = '${coverage}' as const`, '')
   }
 
-  // Compute entry point + its [numthreads] X dimension. Both come from the
+  // Compute entry point + its [numthreads] dimensions. Both come from the
   // shader's own declaration, so the dispatch count a TS caller computes
   // (ceil(work / WORKGROUP_SIZE_X)) can't drift from the workgroup the kernel
   // actually declares, and the entry-point name can't drift from the function.
@@ -939,6 +939,8 @@ export function emitInterface(inputs: CodegenInputs) {
     if (cs.threadGroupSize) {
       // #shaderExport WORKGROUP_SIZE_X | the compute workgroup width
       lines.push(`export const WORKGROUP_SIZE_X = ${cs.threadGroupSize[0]}`, '')
+      // #shaderExport WORKGROUP_SIZE_Y | the compute workgroup height, for a kernel dispatched over a 2D grid
+      lines.push(`export const WORKGROUP_SIZE_Y = ${cs.threadGroupSize[1]}`, '')
     }
   }
 

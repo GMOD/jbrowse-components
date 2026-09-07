@@ -5,11 +5,16 @@ description: "Cluster by genotype" on a population panel is almost entirely hclu
 
 # A GPU sample distance matrix for clustering
 
-Nothing here is committed work. It is the measured case for one compute-shader
-feature, written down so the paper and the next session start from numbers
-rather than from the intuition that in-browser analysis is a bad idea. That
-intuition is right for almost everything, and the first section says why the
-clustering workflow is the exception.
+The distance build shipped (September 2026): `clusterMatrix` dispatches
+`packages/tree-sidebar/src/gpuDistanceMatrix.ts` and hands hclust the matrix
+through `clusterData({ distances })`, with the wasm build as the fallback.
+`reference/CLUSTERING_WORKFLOW.md` describes what runs. What stays here is
+the measured case for it, the criterion that says which in-browser compute is
+worth doing at all, and the candidates that pass it, written down so the
+paper and the next session start from numbers rather than from the intuition
+that in-browser analysis is a bad idea. That intuition is right for almost
+everything, and the first section says why the clustering workflow is the
+exception.
 
 ## The criterion
 
@@ -91,28 +96,28 @@ dog10k (167 dogs, 611 columns) clusters in 16 ms on the CPU and the GPU dispatch
 takes 18 ms. A small cohort has nothing to gain; the population panel is the
 case.
 
-## What integrating it takes
+## What integrating it took, and what is still open
 
-- **hclust needs an entry that takes a precomputed distance matrix.**
-  `ClusterOptions` accepts only `data`; the C already separates the distance
-  phase from the merge loop, so this is an API addition, not a rewrite. The
-  worker's dosage rows stay the fallback and the parity oracle.
-- **Same gate and parity pattern as LD.** `getLDMatrixGPU.ts` has `MIN_WORK`
-  and `ldStatsParity.test.ts`; the distance kernel gets the same, with the wasm
-  as the reference. Below the gate (dog10k) the wasm runs.
-- **Accumulation precision goes in the parity test, not in an assumption.** For
-  0/1/2 dosages the f32 partial sums are exact, which is why the check came out
-  at zero. With site-mean imputation the values are fractional; a long V wants
-  the promote-every-16 pattern the wasm now uses, or compensated summation, in
-  the kernel.
-- **Three visuals from one dispatch.** With the matrix on the GPU, a few power
-  iterations give PC1 and an ordering by it (local PCA, whose whole point is
-  that the answer differs per window), and one row of the matrix gives
-  compare-to-selected shading (click a sample, every other row shades by
-  distance in the window; the sample analog of the LD index-SNP view). Neither
-  needs another kernel.
+- **hclust 5.2.0 takes a precomputed distance matrix.** `clusterData({
+  distances })` runs only the merge loop, reading the upper triangle, which is
+  the half the kernel writes. Its per-merge body is its own wasm function so
+  the first call in a worker tiers up, the way the distance build already did.
+- **Same gate and fallback pattern as LD.** `MIN_WORK` of 10^9 pair-elements,
+  a dispatch plan that refuses what the device cannot bind, a validation
+  error scope, and a spot check against f64 for the truncated dispatch that
+  raises no error. The parity oracle is the probe in headed Chrome, since
+  jest has no GPU: identical trees on the 1000 Genomes windows.
+- **Accumulation precision is in the kernel.** Squares are summed in blocks
+  of 16 with Kahan compensation; `--fractional` on the probe is the check.
+- **Still open: three visuals from one dispatch.** With the matrix on the
+  GPU, a few power iterations give PC1 and an ordering by it (local PCA,
+  whose whole point is that the answer differs per window), and one row of
+  the matrix gives compare-to-selected shading (click a sample, every other
+  row shades by distance in the window; the sample analog of the LD index-SNP
+  view). Neither needs another kernel. The matrix currently comes back to the
+  worker and goes to hclust; keeping it resident is the next step.
 - **WebGPU only, by construction.** Storage buffers have no GLSL ES 3.0 target
-  (`reference/GPU_RENDERING.md`), so the worker path is not optional.
+  (`reference/GPU_RENDERING.md`), so the wasm path is not optional.
 
 ## Row ordering at MAF scale: the cap, not the kernel
 
@@ -188,8 +193,9 @@ better experience).
 ## Reproducing
 
 `products/jbrowse-web/browser-tests/probe-gpu-distance-matrix.ts [N] [V]`
-runs the kernel and `clusterMatrix` on one synthetic dosage matrix and prints
-both, with the GPU checked against an f64 reference. Synthetic dosages run at
-the same per-pair-element rate as the real matrices, which is why the probe
-does not carry a VCF; `pnpm bench:real` in the hclust repo is the real-data
-run. Headed Chrome, because headless has no WebGPU.
+bundles the shipped `gpuDistanceMatrix` into headed Chrome and runs it on one
+synthetic dosage matrix, checks it against an f64 reference, then runs
+hclust's merge on the matrix that came back and `clusterMatrix` on the rows,
+and reports whether the two trees agree. `--matrix=<file.bin>` reads a dump
+from `pnpm bench:real --dump` in the hclust repo instead. Headed Chrome,
+because headless has no WebGPU.

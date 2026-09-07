@@ -1,8 +1,11 @@
 import { clusterData, toNewick } from '@gmod/hclust'
+import { isAbortException } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
+import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 
+import type { ClusterProgress } from '@gmod/hclust'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
@@ -44,6 +47,11 @@ export const MIN_CLUSTER_ROWS = 2
  * the tree as newick. What differs between the multi-sample-variant, multi-wiggle
  * and multi-row-feature RPCs is only how the matrix is built.
  *
+ * At population-panel sizes the run is the sample-by-sample distance build, so
+ * that goes to a WebGPU kernel first and hclust gets the matrix; below the work
+ * gate, without a device, or if the dispatch fails or reads back wrong, hclust
+ * builds it itself. `ideas/gpu-sample-distance-matrix.md` has the numbers.
+ *
  * `order` is indices into the matrix's key order, which is what
  * `buildClusteredLayout` maps back through — so a caller must build `data` in
  * its own row order. A Map because that is the only container that keeps it: see
@@ -70,21 +78,33 @@ export async function clusterMatrix({
   }
   // hclust takes parallel arrays, so the map is walked once into both rather
   // than spread twice. This is the only place the two are ever separated.
-  const rows: ArrayLike<number>[] = []
+  const rows: NumericRow[] = []
   const sampleLabels: string[] = []
   for (const [name, row] of data) {
     sampleLabels.push(name)
     rows.push(row)
   }
-  const result = await clusterData({
-    data: rows,
+  let distances: Float32Array | undefined
+  try {
+    statusCallback?.('Computing distance matrix')
+    distances = (await gpuDistanceMatrix(rows, stopTokenCheck)) ?? undefined
+  } catch (e) {
+    if (isAbortException(e)) {
+      throw e
+    }
+    console.warn('GPU distance matrix failed, falling back to hclust', e)
+  }
+  const common = {
     sampleLabels,
-    onProgress: p => {
+    onProgress: (p: ClusterProgress) => {
       statusCallback?.(clusterProgressStatus(p))
     },
     checkCancellation: () => {
       checkStopTokenThrottled(stopTokenCheck)
     },
-  })
+  }
+  const result = await (distances
+    ? clusterData({ distances, ...common })
+    : clusterData({ data: rows, ...common }))
   return { order: result.order, tree: toNewick(result.tree) }
 }
