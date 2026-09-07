@@ -1,6 +1,7 @@
 ---
 name: gpu-context-budget
-description: The WebGL2 context ceiling is 16 and what reaches it — the "many-view freeze" and its 2026-06-19 fix, the shapes still exposed (one view with 17 GPU tracks, a multi-panel workspace), the software-rendering cost crossover, the headless/SwiftShader measurement trap, and the harness. Read before touching view windowing or proposing a fix for GPU-context churn.
+description: The WebGL2 context ceiling is 16 and what reaches it — the many-view freeze, the shapes still exposed, the software-rendering crossover, and the headless measurement trap. Read before touching view windowing or GPU-context churn.
+kind: measurement
 ---
 
 # The WebGL2 context budget

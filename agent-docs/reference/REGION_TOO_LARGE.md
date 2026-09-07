@@ -1,6 +1,7 @@
 ---
 name: region-too-large
 description: The byte/density gate that raises the "region too large" banner and holds off the fetch — one measurement inside every gated fetch, one derived verdict, one boolean for force-load. Read when touching fetch gating or the too-large banner.
+kind: spec
 ---
 
 # The region-too-large gate
@@ -25,8 +26,7 @@ parts, `gateTruthTable.test.ts` for every getter against boundary values
 (16,800 rows collapse to 7 banner-facing states, listed at the top of its golden
 file), a `derivedRegionTooLarge.test.ts` per gated display bar arc, whose
 equivalent is `fetchArcFeatures.test.ts`, and the fetch runners' own files for
-the commit and the refusal skip. History, and the bugs each rule closed:
-[HISTORICAL.md](HISTORICAL.md).
+the commit and the refusal skip.
 
 ![What one gated fetch decides, and what the first refusal does to the batch](diagrams/region-too-large-gate.svg)
 
@@ -255,7 +255,7 @@ that same chunk list, so the two agree unless the line scan early-returns before
 consuming it (`tabixIndexedFile.ts` — "offers 7 chunks and reads 1" on a sparse
 file). Measured against actual bytes read on the hosted RefSeq GFF3: 1.00x at
 1 kb, 100 kb, 6.18 Mb and whole-chromosome. The 3.57x in
-[REJECTED_IDEAS.md](REJECTED_IDEAS.md) is the gap to `@gmod/bam`'s tighter *cut*
+[rejected-ideas/](../rejected-ideas/README.md) is the gap to `@gmod/bam`'s tighter *cut*
 forecast on a file where that early return fires, not an over-report of this
 file's download — chr1 really does cost 5,542,779 bytes against its 5 Mb
 budget.

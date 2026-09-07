@@ -14,7 +14,7 @@ is filed:
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the
   thread lands.
-- Tried and declined → `reference/REJECTED_IDEAS.md`.
+- Tried and declined → `agent-docs/rejected-ideas/`.
 - Work **v5.0.0 turns on** → a file in `todo/`, which `TODO.md`'s tables are
   generated from: write the doc with `metadata.category`, `area`, `first_move`
   and `order`, then `pnpm autogen`. Work someone intends to do after it —
@@ -101,26 +101,65 @@ set at a higher altitude and has no generator reaching it: three copies of a
 number is two chances to be the stale one, and it was — the CRAM arena figure
 sat at a pre-ADR-0010 value there while `cram-js` had moved on.
 
+## Public developer guides mirror ARCHITECTURE.md
+
+The hand-written walkthroughs in `website/docs/developer_guides/` —
+[creating_display.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_display.md)
+(which foundation to compose),
+[plotting_features.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
+(Canvas2D),
+[creating_gpu_display.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
+(GPU), and
+[data_fetching.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/data_fetching.md)
+— turn ARCHITECTURE.md's sections into step-by-step tutorials and link back to them. When
+the lifecycle, mixins, or upload patterns here change, update those guides in
+the same pass. `pnpm check-docs` (which runs
+`website/scripts/check-doc-imports.ts`) validates the cross-links both ways but
+not the prose.
+
+**Two of those pages are public counterparts to `reference/` rather than to
+ARCHITECTURE.md**, and they are where a measurement recorded in `reference/` becomes something an
+outside reader can act on:
+
+- [dataflow.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/dataflow.md)
+  is ARCHITECTURE.md's overview pipeline as one figure, with the worker,
+  the wasm, the three cache layers and the two autoruns located on it.
+  `website/diagrams/dataflow.dot` is the source.
+- [optimizations.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/optimizations.md)
+  is the public digest of the measured work in `reference/` — the three clocks,
+  the number each optimization moved, and the ones measured as losses. **A new
+  measurement lands in its `reference/` doc first**; that doc stays the record,
+  and the public page cites it. Keep the two agreeing, and keep the public page
+  agreeing with the v5 manuscript's strategy table, which states the same set at
+  a higher altitude.
+
+The marker pairs that bracket a generated block, which generator writes each
+one, and the generated index of every block in the tree:
+[reference/GENERATED_DOC_BLOCKS.md](reference/GENERATED_DOC_BLOCKS.md). Nothing
+between a marker pair is hand-editable, here or under `website/docs`.
+
+
 ## Frontmatter and generated tables
 
 - **Every doc outside `architecture-decision-records/` carries `name:` /
   `description:` frontmatter** — `pnpm autogen --check` fails without it. Find
   docs through [reference/README.md](reference/README.md),
   [mechanisms/README.md](mechanisms/README.md),
-  [ideas/README.md](ideas/README.md) and
+  [ideas/README.md](ideas/README.md),
+  [rejected-ideas/README.md](rejected-ideas/README.md) and
   [handoffs/README.md](handoffs/README.md), not `ls`.
-- **Those four indexes and `TODO.md` are GENERATED, and so is every
+- **Those five indexes and `TODO.md` are GENERATED, and so is every
   `<!-- NAME START/END -->` block in any doc.** `pnpm autogen` rewrites
   everything between the markers and `pnpm autogen --check` fails CI on a stale
   one, so an edit made between them is gone by the next run — change what the
-  block is derived from instead. The four indexes come from each doc's
+  block is derived from instead. The five indexes come from each doc's
   `description:` (`website/scripts/generate-doc-indexes.ts`); `TODO.md`'s three
   tables and the count sentence in its preamble come from the frontmatter of the
   entries under `todo/` (`generate-todo-index.ts`), which is where a row's area,
   first move and position live.
 - **If a sentence tells the reader to go look at a file, generate the table
   under it from that file.**
-- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/` and
+- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/`, `rejected-ideas/` and
   `mechanisms/` by filename — grep before renaming.
 - **A diagram is a `.dot` in a `diagrams/` directory with its `.svg` committed
   beside it** — `pnpm diagrams` renders it, `pnpm diagrams:check` fails on a

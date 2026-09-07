@@ -206,7 +206,7 @@ for its own sake — and it is harder than the type table makes it look:
   `connectionEndpointBps`.
 - There is a **measured precedent going the other way**. The layer directly
   underneath — one shared `groupReadsByName` — was extracted, priced at 1.4–1.9x
-  over 200k reads, and declined; see `reference/REJECTED_IDEAS.md`, "One shared
+  over 200k reads, and declined; see `agent-docs/rejected-ideas/`, "One shared
   `groupReadsByName`". The per-entry accessors are what did share, and that is
   the shape to aim at: share the layer with no per-read allocation in it.
 

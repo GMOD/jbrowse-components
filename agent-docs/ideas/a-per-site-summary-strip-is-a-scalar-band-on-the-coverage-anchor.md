@@ -1,6 +1,6 @@
 ---
 name: a-per-site-summary-strip-is-a-scalar-band-on-the-coverage-anchor
-description: A strip above the genotype rows showing carrier count, allele frequency or call rate per site — the "which sites matter" read the multi-sample displays lack. Every input is already on the wire, so it is render-tier like the variant lane; it is a third Band in the variants fold; and it is a scalar banded against a baseline with reserved insets, which is the exact shape REJECTED_IDEAS names as the trigger for giving the coverage y anchor its second consumer. Read before building it as its own painter, or before proposing any other sharing of that anchor.
+description: A strip above the genotype rows showing carrier count, allele frequency or call rate per site — the "which sites matter" read the multi-sample displays lack. Every input is already on the wire, so it is render-tier like the variant lane; it is a third Band in the variants fold; and it is a scalar banded against a baseline with reserved insets, which is the exact shape agent-docs/rejected-ideas/ names as the trigger for giving the coverage y anchor its second consumer. Read before building it as its own painter, or before proposing any other sharing of that anchor.
 ---
 
 # A per-site summary strip is a scalar band on the coverage anchor
@@ -76,8 +76,7 @@ ends: a label offset at the top (the y-axis ticks) and a floor at the bottom
 band's y anchor — `covEffectiveHeightPx` / `covBottomOffsetPx` /
 `normalizeDepthScalar` in `packages/render-core/src/shaders/coverageBand.slang`,
 with the CPU twins generated from them (ADR-051) — and it is the shape
-[REJECTED_IDEAS](../reference/REJECTED_IDEAS.md) §"Compose a second consumer
-onto the shared y scale" names as the reopen condition: _"a second display
+[compose-a-second-consumer-onto-the-shared-y-scale-the](../rejected-ideas/compose-a-second-consumer-onto-the-shared-y-scale-the.md) names as the reopen condition: _"a second display
 banding a scalar against a baseline with reserved insets at both ends is the
 shape to watch for, since that would give the coverage anchor its second
 consumer."_

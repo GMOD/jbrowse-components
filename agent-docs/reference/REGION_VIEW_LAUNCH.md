@@ -1,6 +1,7 @@
 ---
 name: region-view-launch
 description: Launching another view type on a locus (synteny stack, graph subgraph) from a linear view. The shared convention, where the two launchers diverge, and what is still open. Read before adding a "open view X for this region" entry point.
+kind: spec
 ---
 
 # Launching a view on a region

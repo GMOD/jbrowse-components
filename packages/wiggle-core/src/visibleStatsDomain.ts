@@ -20,7 +20,7 @@ export interface VisibleEntry<T> {
  * `coarseDynamicBlocks`: over the empty initial coarse list every walker below
  * yields no entries, and no entries is not a stale domain but the caller's
  * `[0, 1]` fallback — a bigwig line track drew blank and a density track solid.
- * ARCHITECTURE.md, "Every fetch autorun runs on the leading edge".
+ * reference/FETCH_SKELETON.md, "Every fetch autorun runs on the leading edge".
  */
 export interface SettledBlocksView {
   initialized: boolean

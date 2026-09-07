@@ -15,7 +15,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 //
 // With the term folded one level lower — into `viewportWithinLoadedData` — the
 // loading scrim would rise on every zoom instead, which is the trade
-// REJECTED_IDEAS.md "Folding content staleness into `displayPhase`" turned
+// rejected-ideas/folding-content-staleness-into-displayphase.md turned
 // down. So each test below pins one side, and a change that satisfies only one
 // of them is the bug the other describes.
 

@@ -53,7 +53,7 @@ reader most needs the chip — that wants a comparison against annotated gene
 strand, and a display cannot assume an annotation track is loaded.
 
 **Mirrored ± coverage band — declined**, and recorded in
-[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) with what a
+[rejected-ideas/](../rejected-ideas/README.md) with what a
 re-proposal has to beat.
 
 The thread's one unfinished build item is a figure, not a feature:

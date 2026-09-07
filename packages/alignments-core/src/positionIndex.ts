@@ -26,7 +26,7 @@
  * - **8 bytes an entry**, measured exactly, retained for as long as the array —
  *   7.6 MB per 1M-entry array, per region, per stacked track, behind a call that
  *   read as a lookup. The bench that measured it is gone with the memo; the
- *   numbers are in REJECTED_IDEAS.md.
+ *   numbers are in agent-docs/rejected-ideas/.
  * - **An invalidation invariant nothing enforced.** It was correct only because a
  *   refetch replaces the array wholesale; anything mutating a positions array in
  *   place would have gotten a silently stale index.

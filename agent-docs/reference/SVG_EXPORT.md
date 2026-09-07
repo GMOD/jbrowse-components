@@ -1,6 +1,7 @@
 ---
 name: svg-export
 description: SVG export pipeline covering the renderSvg shape, the svgReady/settled readiness gates, paintLayer, and clip ids. Read when touching a display's renderSvg or export readiness.
+kind: spec
 ---
 
 # SVG export pipeline
@@ -364,6 +365,58 @@ Three shapes have shipped this bug:
   export hung with the dialog's spinner up. Its `extraTerminal` is now
   `!view.displayedRegions.length`. The gate need not be on the display: read
   what the fetch autorun *reads*.
+
+### The four resting-state traps, worked
+
+**`awaitSvgReady`'s only bound is a half-hour backstop, so every resting state
+that never fetches must be terminal.** A correct `dataCurrent` says whether held
+data is current; it cannot say whether data will ever arrive. So read a display's fetch gate and ask
+what leaves it false indefinitely — a user toggle inside it (LD's
+`showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
+`effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
+(sequence). Each such state has to reach `svgReady` through `error`,
+`regionTooLarge`, `fetchCanceled` or `fetchInert`, or one track hangs the whole
+view's export with the dialog spinner up and nothing said. A standing user
+cancel is such a state — durable until Retry or a viewport change, and an
+export causes neither — so `computeSvgReady` takes it as a required terminal
+and `awaitSvgReady` fails the export on it the way it fails on `error`,
+matching the "Loading canceled / Retry" the user is looking at. Two cases are already
+handled for you: minimized tracks, which `SVGLinearGenomeView` filters out, and
+the viewport holding no content block at all (`showAllRegions` on a
+scaffold-level assembly, where every region elides — the only way in), which
+both LGV foundations answer through `viewportEmpty`. No display in the view can
+fetch there, so it was every one of them hanging the export at once rather than
+one.
+
+**Enumerate every way the prerequisite fails, not just the throw.** HiC's
+header read (a secondary `installFetch`) `setError`s on a thrown `CoreGetInfo`
+— but one that *resolves* carrying no binsize list leaves
+`effectiveResolution` undefined just as thoroughly, with no exception to
+catch, so the empty list needs its own `setError` in the commit. A gate on a
+fetched value has as many resting states as that value has empty shapes.
+
+**The on-screen twin: the same states are terminal for the loading overlay.** A
+first-load overlay is `!fetchLanded && !error`, and `fetchLanded` means "a fetch
+landed" — so
+a resting state that never fetches spins it forever, for the same reason and with
+less excuse than the export, since the user is looking at it. Answer it once and
+read that one getter everywhere, as `LinearSyntenyDisplay.fetchInert`
+(`isMinimized || !connectedViews`) does for its fetch autorun's gate, its
+`loading`, and its `svgReady` `extraTerminal`. Deriving the export's terminal set
+separately from the overlay's is how they drift: synteny's `svgReady` named both
+states while `loading` named neither.
+
+**The reader you will forget is the one outside the display.** Those three are
+all display-local, so a fourth — `displaysSettled` (`@jbrowse/synteny-core`),
+which both comparative views' `settled` gate and so their `*_canvas_done` testid
+run through — went on demanding `dataCurrent` from a display whose
+`loadedFetchKey` can never be set. That is why `fetchInert` is an overridable
+hook on `FetchMixin` (default `false`) rather than a getter each
+display invents: a cross-display consumer can only read a name the mixin
+declares. Default `false` is the strict answer, so a display that grows an inert
+state and forgets to declare it hangs (diagnosable) rather than reporting done
+with nothing drawn.
+
 
 ### The view geometry is measured after the displays' waits, never before
 

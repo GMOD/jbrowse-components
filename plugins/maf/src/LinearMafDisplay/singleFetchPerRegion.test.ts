@@ -209,7 +209,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
   // fetch. The cache key is a JSON string though, so an unsorted array put the
   // order back in — re-picking the same clade after a re-cluster hands
   // `setSubtreeFilter` the same names in the tree's new leaf order and
-  // refetched every loaded region for identical data. ARCHITECTURE.md, "Row
+  // refetched every loaded region for identical data. reference/FETCH_KEYS.md, "Row
   // order is not a fetch input".
   it('keys the subtree filter on the set, not the order it was picked in', async () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({

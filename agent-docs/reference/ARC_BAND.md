@@ -1,7 +1,8 @@
 ---
 name: arc-band
-description: The alignments arc band draws two mark families — curved/flat arcs and interchromosomal connector ticks — into one rect, one Y scale and one palette, so paint order, hit-test priority, support floors and the tick's stroke are all one subsystem rather than per-mark choices. Also holds why an interchromosomal arc is the only arc with breakend feet, and the two producers that disagree on which direction a foot points. Read before adding a mark to this band, changing what hides an arc, or re-deriving an arc's geometry at a call site.
+description: The alignments arc band draws arcs and interchromosomal connector ticks into one rect, one Y scale and one palette, so paint order, hit-test priority and support floors are one subsystem. Read before adding a mark to it.
 audience: internal
+kind: spec
 ---
 
 # The alignments arc band

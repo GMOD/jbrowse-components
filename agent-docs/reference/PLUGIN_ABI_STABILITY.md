@@ -1,6 +1,7 @@
 ---
 name: plugin-abi-stability
 description: Why plugin exports ossify into permanent ABI, and the fixes. Read when removing or renaming a plugin export.
+kind: spec
 ---
 
 # Plugin ABI stability & architecture ossification
@@ -372,8 +373,7 @@ drift.**
 > hard-enough forcing function (a whole-pipeline rewrite) overrode it. The
 > analysis below still holds for every export *not* worth a rewrite to shed; read
 > it as "the cost of keeping," with the block stack as the case where the cost of
-> keeping finally lost. See `reference/HISTORICAL.md` §"The old block-based
-> (server-side) rendering system".
+> keeping finally lost.
 
 The pre-rip situation, and the graceful path we *didn't* take:
 

@@ -436,7 +436,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // Scoped to developer_guides plus agent-docs/ARCHITECTURE.md: the tutorials and
 // FAQ are full of gene symbols (`CDKN2A`), accession IDs, and third-party type
 // names that legitimately don't appear in this repo. The rest of agent-docs is
-// exempt because HISTORICAL.md and the ADRs deliberately record superseded
+// exempt because the ADRs deliberately record superseded
 // names — but ARCHITECTURE.md declares itself the canonical *current* spec, so
 // that exemption is the opposite of what it wants. It named `renderProps` as
 // the live precedent for the `rpcProps()`/`gpuProps()` super-capture pattern
@@ -529,7 +529,7 @@ const PLACEHOLDER = /^My[A-Z]|Xxx/
 // Keep each entry pinned to the sentence that needs it — if that sentence goes,
 // so does the entry.
 const DOC_ABSENT_ON_PURPOSE = new Set([
-  // ARCHITECTURE.md §"Theme-derived render inputs are session getters": the
+  // reference/FETCH_KEYS.md §"Theme-derived render inputs are session getters": the
   // volatile-plus-useEffect shape it rules out, contrasted with the getter.
   'setColorPalette',
   // ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern": names the removed
@@ -599,7 +599,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
 // identifier is the evidence, because a reader checking the claim has to find
 // it in node_modules.
 const DOC_THIRD_PARTY = new Set([
-  // agent-docs/reference/REJECTED_IDEAS.md: a rolldown config key, named
+  // agent-docs/rejected-ideas/: a rolldown config key, named
   // because that entry records what happened when the lever was pulled (104 KB
   // a page worse) so nobody pulls it again. Naming the option is the whole
   // point of the note, and it is not ours to define.
@@ -1026,6 +1026,7 @@ function isPointInTimeDoc(file: string) {
     // was `name === 'OTHER_IDEAS.md'` until that file was exploded into one doc
     // per proposal; the exemption follows the directory
     file.includes('/agent-docs/ideas/') ||
+    file.includes('/agent-docs/rejected-ideas/') ||
     name.endsWith('_PLAN.md')
   )
 }

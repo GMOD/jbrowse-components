@@ -482,7 +482,7 @@ function stripGeometry({
 // The one place a mark's geometry is decided, so the array the canvas paints and
 // the scan the pointer runs cannot describe different rectangles. It ALLOCATES
 // per alignment, deliberately — a scratch object halved the strip hover and cost
-// the repaint 25%, which is the every-pan path: `REJECTED_IDEAS.md`.
+// the repaint 25%, which is the every-pan path: `agent-docs/rejected-ideas/`.
 function offscreenMateRectAt(
   {
     bpPerPx,

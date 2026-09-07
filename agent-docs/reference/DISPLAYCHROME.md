@@ -1,6 +1,7 @@
 ---
 name: displaychrome
 description: The shared display status chrome that owns loading, error, and retry UI, plus its adoption map. Read when touching loading/error/retry UI on a display.
+kind: spec
 ---
 
 # DisplayChrome — the shared display status chrome
@@ -649,7 +650,7 @@ distinct reasons, not to be conflated:
   banner carries a `Retry` tspan (`chord_retry`) calling the display's own
   `reload()`, which bumps the `reloadCounter` the autorun reads above every
   gate. Same rule as the LGV families' — ARCHITECTURE.md "[the trigger
-  list](../ARCHITECTURE.md#the-global-fetch-trigger-list-must-be-read-unconditionally)".
+  list](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally)".
 
 ## One element per display: testid, id, phase, drawn
 
@@ -1141,5 +1142,52 @@ restated in the `DisplayChrome.tsx` comment block.
   since `DisplayChromeBaseInner` took `'use no memo'` —
   [COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
 
-Full "why" for the tree-shape rule: ARCHITECTURE.md §"Terminal states early-return
+Full "why" for the tree-shape rule: DISPLAYCHROME.md §"Terminal states early-return
 their own root". Don't duplicate it here.
+
+## Terminal states early-return their own root
+
+The chrome branches on `model.displayPhase` (`renderError` in
+`DisplayChromeBase`, `tooLarge` one level down in `DisplayStatusChromeBase` —
+the split is about which banner needs the backend hook's `retry()`, not about
+the tree shape, which is identical for both). For either banner it
+early-`return`s it as the component's *entire* output,
+replacing the display subtree, rather than keeping the container `<div>` mounted
+and swapping the banner in beside the canvas. The caller's
+`className`/`ref`/mouse handlers are absent in those two states. Two of those
+three are free — a too-large region has no canvas to interact with, and the ref
+re-attaches on force-load. **The mouse handlers are not**, and the chrome pays
+for them explicitly; see the pointer bullet below. What makes it the right
+shape:
+
+- **Clean GPU dispose/re-init.** Early-`return` unmounts the canvas subtree,
+  which fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
+  `stopRenderingBackend()`; force-load remounts and re-inits via the callback
+  ref. Nesting the banner beside a still-mounted canvas would skip that cycle.
+  Unmounting is safe precisely because that full dispose→re-init cycle runs.
+- **The loading term stays lazy.** `computeDisplayPhase(self, loading)` takes
+  `loading` as a thunk and calls it only after ruling out the terminal flags, so
+  when a banner is up the chrome's observer tracks only that flag, not the
+  view's churning `visibleRegions`/`loadedRegions`.
+- **The chrome drops the pointer measurement itself**, which is the price of the
+  shape rather than a bonus. `mouseleave` cannot fire on an element unmounted
+  under the cursor, so without a compensating effect the tracker goes on
+  publishing the position the pointer had when the banner went up — invisible
+  while the banner is there, then read by the body on its **first** render after
+  Force load or Retry, drawing a crosshair where the cursor is not.
+  `DisplayChromeBaseInner` runs `handleMouseLeave()` on the transition for
+  exactly this, and `DisplayChrome.test.tsx` pins it ("the pointer measurement
+  drops when the container is replaced", whose third case is the negative
+  control: an *overlay* phase keeps the position, because the container is still
+  there). A container that owns a pointer measurement and can unmount its own
+  subtree owes the same clear.
+- **React Compiler opt-out.** `DisplayChromeBaseInner` carries `'use no memo'`,
+  so babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read
+  on `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
+  a style choice: what stays load-bearing is *replacing the subtree*, not how the
+  replacement is spelled. Full analysis:
+  [reference/COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
+
+The rest of the shared chrome — the phase precedence, the retry affordances, the
+overlay components — is in
+[reference/DISPLAYCHROME.md](DISPLAYCHROME.md).

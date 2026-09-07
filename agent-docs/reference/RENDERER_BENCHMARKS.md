@@ -1,6 +1,7 @@
 ---
 name: renderer-benchmarks
 description: What the whole-app benchmarks in the sibling jb2bench checkout measure, which of their tables are publishable, and the zoom-in result imported from them. Read before quoting a render or interaction figure against a released JBrowse.
+kind: measurement
 ---
 
 # Whole-app renderer benchmarks

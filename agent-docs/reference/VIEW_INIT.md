@@ -4,6 +4,7 @@ description:
   The launch input a view takes on the view object, the partition that captures
   it, and the launch state machine. Read when touching view launch, URL params,
   or createViewState.
+kind: spec
 ---
 
 # View launch input

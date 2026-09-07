@@ -2,6 +2,7 @@
 name: generated-doc-blocks
 description: The marker pairs that bracket a generated markdown block, which generator writes each one, and the generated index of every block in the tree. Read before hand-editing a table in a doc, or when adding a generator.
 audience: internal
+kind: operations
 ---
 
 # Generated doc blocks
@@ -22,7 +23,7 @@ is hand-written:
 | `CROSS_CUTTING_MIXINS` | which displays compose which cross-cutting mixin ([Cross-cutting mixins](../ARCHITECTURE.md#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); the same block renders in `creating_display.md` | the `#crossCuttingMixin` tags, plus every `types.compose(...)` in the tree — no consumer-side tag |
 | `FETCH_AUTORUNS` | the fetch-lifecycle autoruns ([Data fetching pipeline](../ARCHITECTURE.md#data-fetching-pipeline)) | the install sites in `MultiRegionDisplayMixin.ts` and their `#autorun` tags |
 | `DISPLAY_STATE_CENSUS` | how many slots, properties and volatiles each display declares ([Where a display's state lives](../ARCHITECTURE.md#where-a-displays-state-lives)) | the `#slot` / `#property` / `#volatile` tags in each display directory, the set of directories being those whose `index.ts` calls `pluginManager.addDisplayType` |
-| `DISPLAY_HOOK_OVERRIDES` | which display overrides which hook, and what the default does for one that doesn't ([The hooks](../ARCHITECTURE.md#the-hooks-and-who-is-sitting-on-a-default)) | the override sites, scanned and attributed by directory. The hook list and its default text are a curated `HOOKS` array in the generator — no scan can find them — whose `owner` file is asserted to still declare the default |
+| `DISPLAY_HOOK_OVERRIDES` | which display overrides which hook, and what the default does for one that doesn't ([The hooks](DISPLAY_HOOKS.md#display-hooks-and-their-defaults)) | the override sites, scanned and attributed by directory. The hook list and its default text are a curated `HOOKS` array in the generator — no scan can find them — whose `owner` file is asserted to still declare the default |
 | `DISPLAY_CHROME_ADOPTION` | which displays render the shared chrome, on screen and on export (in [DISPLAYCHROME.md](DISPLAYCHROME.md), not here) | each LGV display registration: `ReactComponent` for the on-screen column, the state model's `renderSvg` for the export one |
 | `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |

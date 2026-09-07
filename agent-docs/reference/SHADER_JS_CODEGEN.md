@@ -2,6 +2,7 @@
 name: shader-js-codegen
 description: How to add a function to the `//! js-export` set, retire its hand-written twin, and bump SLANG_VERSION safely — plus the emitter facts that cost a session each to establish. Read before adding an export or extending wgslToJs.ts.
 audience: internal
+kind: spec
 ---
 
 # Shader → JS codegen: the operating manual

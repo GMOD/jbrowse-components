@@ -105,7 +105,7 @@
 //
 // A 1.4-1.8x on half the reads of one phase is not worth a heuristic whose wrong
 // answer is 4.5x slower, on a function that took three optimizations the same
-// day. Filed in REJECTED_IDEAS.md. What would revive it is a cheap exact bound on
+// day. Filed in agent-docs/rejected-ideas/. What would revive it is a cheap exact bound on
 // occurrence count — the adapter knows the read's base composition if anything
 // does, and 4-bit packed BAM sequence could be popcounted for it.
 import { readFileSync } from 'node:fs'

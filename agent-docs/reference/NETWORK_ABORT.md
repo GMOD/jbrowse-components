@@ -1,6 +1,7 @@
 ---
 name: network-abort
-description: How cancellation actually reaches the socket — the two mechanisms behind one stop token, which adapters are wired and which two readers cannot be, the shared-fetch coalescing trap, and the measured bandwidth a cancel saves. Read before touching stopToken, an adapter's read path, or proposing an abort protocol.
+description: How cancellation reaches the socket — the two mechanisms behind one stop token, which adapters are wired and which two readers cannot be, and the shared-fetch coalescing trap. Read before touching stopToken or an adapter's read path.
+kind: spec
 ---
 
 # Aborting in-flight network requests

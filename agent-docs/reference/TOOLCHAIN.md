@@ -1,7 +1,8 @@
 ---
 name: toolchain
-description: Why we deliberately run TypeScript 6.x for lint and an aliased typescript7 for typecheck and build:esm, why unifying them breaks the eslint backstop, plus the project-reference, module-augmentation and clean-tree rules that follow. Read before changing a TypeScript version, a tsconfig references array, or a package entry point.
+description: Why TypeScript 6.x lints and an aliased typescript7 typechecks and builds, why unifying them breaks the eslint backstop, and the project-reference and clean-tree rules that follow. Read before changing a TypeScript version or a tsconfig references array.
 audience: internal
+kind: operations
 ---
 
 # Toolchain: TypeScript 6 vs 7 split

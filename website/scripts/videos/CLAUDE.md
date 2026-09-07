@@ -117,7 +117,7 @@ refilm and none of which the run reports.
   true with it. The repair is in the FENCE or nowhere: `displayDefaults` reaches
   a slot a reader would sensibly set (`showLabels` off over a segment index
   whose names are GFA ids), and a ramp over the tour's own window is not one of
-  those. `REJECTED_IDEAS.md` carries what that cost on the pggb page.
+  those. `agent-docs/rejected-ideas/` carries what that cost on the pggb page.
 - **A display over its density gate still reports `ready`.** It is refusing to
   fetch, not failing to paint, so a tour that navigates from a gated window into
   a drawable one and waits on `displayReady(...)` carries on with the banner

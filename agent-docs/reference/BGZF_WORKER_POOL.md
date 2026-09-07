@@ -1,6 +1,7 @@
 ---
 name: bgzf-worker-pool
 description: What the BGZF inflate pool is worth, measured per format, and the benchmark traps that produce fake numbers. Read before quoting a speedup for it or benchmarking it again.
+kind: measurement
 ---
 
 # The BGZF worker pool, measured

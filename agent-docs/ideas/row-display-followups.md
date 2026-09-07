@@ -61,7 +61,7 @@ could declare `sourcesWithoutLayout` as an overridable stub the way
 `RowHeightMixin` declares `autoRowHeight`, and derive `editableSources` — the
 variant displays would still override both (phased expansion, `getSources`'
 sampleName-keyed coverage). Priced at ~10 lines saved per display against a
-`sources` getter each display genuinely owns; REJECTED_IDEAS' entry on sharing
+`sources` getter each display genuinely owns; agent-docs/rejected-ideas/' entry on sharing
 `hierarchy` is the argument in the other direction.
 
 **A metadata filter dialog.** `focusRows` from a legend swatch covers "show

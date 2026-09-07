@@ -34,5 +34,5 @@ Use D ops only — an N op is a splice, and every RNA-seq read would become a
 route.
 
 If the numbers say no, this belongs in
-[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) with them, which is worth as
+[rejected-ideas/](../rejected-ideas/README.md) with them, which is worth as
 much as shipping it.

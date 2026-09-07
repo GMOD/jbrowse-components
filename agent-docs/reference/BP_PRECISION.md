@@ -1,6 +1,7 @@
 ---
 name: bp-precision
 description: The absolute-uint32 coordinate convention, the three coordinate families the GPU renderers use, and genome-size limits. Read when writing a Slang shader or a CPU instance packer.
+kind: spec
 ---
 
 # BP precision & coordinate conventions
@@ -156,7 +157,7 @@ captured when the geometry is built):
   dotplot's `cumBp − base`), and each exports that loop as `interleaveInstances`
   plus the `InstanceCacheOpts` descriptor naming its geometry token and color
   lane, which `createInstanceCache` drives — see [the recolor fast
-  path](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
+  path](FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
   Offsets and stride always come from the shader's generated interface, so only
   the loop is local.
 
@@ -461,6 +462,3 @@ lands a hair inside the previous base, and no cursor ever takes that value.
   (`instanceInterleave.ts`) is a Float32, exact only to 2²⁴ ≈ 16.7M *rendered
   instances* — a density limit on a single whole-genome PAF, not a coordinate
   limit. Overview-zoom culling keeps counts well below it.
-
-The window-relative scheme retired a former ~68.7 Gbp ceiling; see
-[HISTORICAL.md](HISTORICAL.md).

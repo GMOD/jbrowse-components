@@ -1,4 +1,4 @@
-// Generates ARCHITECTURE.md's display-hook table: which displays override which
+// Generates reference/DISPLAY_HOOKS.md's display-hook table: which displays override which
 // hook, and therefore which are sitting on a default. The foundations and
 // cross-cutting tables answer what a display COMPOSED; a wrong foundation breaks
 // the display, while every hook here has a default that keeps working and does
@@ -28,7 +28,7 @@ import {
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
-const docPath = join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')
+const docPath = join(repoRoot, 'agent-docs', 'reference', 'DISPLAY_HOOKS.md')
 
 interface Hook {
   /** Member name, as a display declares it. */

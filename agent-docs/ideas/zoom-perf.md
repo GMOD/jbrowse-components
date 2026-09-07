@@ -64,7 +64,7 @@ stop-token path and cutting the per-frame component count.
 - **createObjectURL is not the mint.** A 20-frame zoom over four tracks mints 8
   stop tokens, counted two ways, which puts a registry insert nowhere near the
   ~91ms booked here. Declined in
-  [reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md); the count is
+  [rejected-ideas/](../rejected-ideas/README.md); the count is
   `products/jbrowse-web/src/tests/ZoomStopTokenMints.test.tsx`. Whatever the
   sampler is folding into that frame — plausibly the revoke or the GC of revoked
   entries — is unattributed, and the design that was written against it buys

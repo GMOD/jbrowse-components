@@ -1,7 +1,8 @@
 ---
 name: cram-stack-integration
-description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the four non-integrations that are deliberate, which seams closed and how, the two BAM optimizations that do not transfer, and the @gmod/cram 14 adoption (recordClass, the byte-weighed slice cache) with its measurement. Read before adding a CRAM read-path optimization.
+description: The vertical audit of CramAdapter x @gmod/cram — every lever, the deliberate non-integrations, the BAM optimizations that do not transfer, and the @gmod/cram 14 adoption with its measurement. Read before adding a CRAM read-path optimization.
 audience: internal
+kind: measurement
 ---
 
 # The CRAM stack, layer by layer

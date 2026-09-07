@@ -2,6 +2,7 @@
 name: clustering-workflow
 description: In-app hierarchical clustering for wiggle and variants. Read when touching cluster dialogs, dendrograms, or the TreeSidebar.
 audience: internal
+kind: spec
 ---
 
 # In-App Clustering Workflow
@@ -161,7 +162,7 @@ old order while the tree already showed the new one.
 
 **Row order stopped being a fetch input**, so that window closed — the worker
 names its rows and `rowRemap` places them onto screen rows, re-derived from
-`sources` the moment `layout` changes (ARCHITECTURE.md, "Row order is not a
+`sources` the moment `layout` changes (FETCH_KEYS.md, "Row order is not a
 fetch input"). Deferring anyway then meant the tree waited on a refetch that no
 longer happens, and a `runClustering: true` display drew no dendrogram at all.
 Layout and tree now land together, immediately, on both plugins.

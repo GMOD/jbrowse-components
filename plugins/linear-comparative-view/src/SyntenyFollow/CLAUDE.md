@@ -523,8 +523,8 @@ It stays a **separate settle-only scan** and is not folded into
 `followWindowsMapping`'s loop, which now visits the same blocks and computes the
 same overlap. The two run on different clocks, so the fold moves work from the
 rare caller into the per-frame one — costed at +15ms/s to save 7ms/s in
-`agent-docs/reference/REJECTED_IDEAS.md`, along with why a `mixed` anchor is
-declined rather than resolved to one of its regions.
+`agent-docs/rejected-ideas/`, along with why a `mixed` anchor is declined rather
+than resolved to one of its regions.
 
 **Applied once per key, not once per settle.** `orientedKey` is whatever placed
 the row — the block id, or the contig the envelope answered on — the wanted

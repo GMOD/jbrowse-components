@@ -189,7 +189,7 @@ export interface MafCoverageResult {
  * time put the single largest item in `alignedBaseUpper`'s bound test — a
  * kernel without it is 1.8x the one with it, on both a 26x7 and a 447x200
  * shape — which is why the ALU-level rewrites (hoisting `refKnown`, a per-block
- * `isRefRow` byte) measured 0.89-1.00x and are in REJECTED_IDEAS.md. Hoisting
+ * `isRefRow` byte) measured 0.89-1.00x and are in agent-docs/rejected-ideas/. Hoisting
  * the bound to the per-block `uniformRows` scan below is 1.13-1.24x on the
  * whole function across six shapes, against a byte-identical control copy
  * scoring 0.97-1.04x on the same runs — `benches/mafCoverage.bench.ts`, whose

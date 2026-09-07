@@ -1,6 +1,7 @@
 ---
 name: gpu-rendering
 description: The GPU render lifecycle in depth — RenderLifecycleMixin, the upload/render autoruns, per-plugin backends, the four upload patterns, the HAL, and Slang shaders. Read when touching a rendering backend, an upload path, or a shader.
+kind: spec
 ---
 
 # GPU rendering architecture
@@ -78,7 +79,7 @@ startRenderingBackend(backend: RenderingBackend) {
     // that gated on nothing used to flip canvasDrawn over a blank canvas.
     // Add a guard only for something the backend genuinely cannot see, and say
     // what that is (alignments' zero-group grouped fetch, MAF's "no fetch has
-    // landed yet" first-paint gate — see HISTORICAL.md).
+    // landed yet" first-paint gate).
     render: (b, dataMap) =>
       b.renderBlocks(self.renderBlocks, dataMap, self.renderState),
   })
@@ -451,7 +452,7 @@ touching either path, preserve whichever of these the display uses:
   entry is free to be a shim calling two functions, or one call with a different
   sixth argument. What a shared list buys is that a layer cannot exist in one
   backend and not the other — and that gap costs correctness, since the missing
-  half is also the SVG export. REJECTED_IDEAS.md has the decline and its
+  half is also the SVG export. agent-docs/rejected-ideas/ has the decline and its
   overturn.
 
   **A pass that is drawn but never uploaded fails silently and on the GPU
@@ -654,7 +655,7 @@ The one sub-region exception is the **recolor**, and it rides on a narrower fact
 (`cloneWithLayout`) and the color tier spreads over the result without touching
 it. Same bytes everywhere but the two per-read color arrays ⇒ skip the region
 and rewrite the read pass alone. Same split as
-`GpuSyntenyRenderer.getInterleaved`'s geometry/color token (ARCHITECTURE.md,
+`GpuSyntenyRenderer.getInterleaved`'s geometry/color token (FETCH_KEYS.md,
 "`gpuProps()` and derived region maps"). It requires the model to keep the color bake in its own
 computed downstream of layout — the `laidOutByGroupUncolored` →
 `laidOutByGroupFramed` → `laidOutByGroup` chain.
@@ -883,7 +884,7 @@ palette is a separate main-thread pass wants the same. The
 model-side half of this split — why the colors array is fresh in the first place,
 and why opacity is *not* in it — is
 [ARCHITECTURE.md § gpuProps and derived region
-maps](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
+maps](../reference/FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
 
 ## HAL (Hardware Abstraction Layer)
 
@@ -1668,7 +1669,7 @@ a table — was declined 2026-06 and has since been overturned for both of those
 bands, which is a narrower thing than a frame graph and worth not confusing with
 one: a shared list of layer ids carrying z-order and gates, plus a
 `Record<LayerId, …>` per backend. No dependencies between passes, no targets, no
-scheduling. See REJECTED_IDEAS.md for what the decline got wrong and what of it
+scheduling. See agent-docs/rejected-ideas/ for what the decline got wrong and what of it
 survives.
 
 **Indirect drawing (`drawIndirect`).** Indirect draws exist to remove a CPU
@@ -1686,7 +1687,7 @@ and this entry is the one to reopen for that pass. Nothing is on that path (see
 declined twice: for dotplot (quads are a few px, so the rasterizer discards them
 about as cheaply as a vertex test would) and for hi-C contacts by distance from
 the diagonal (2026-08-13). Synteny's `isCulled` is the case that *does* earn its
-place, because its quads span the track. Both declines are in REJECTED_IDEAS.md
+place, because its quads span the track. Both declines are in agent-docs/rejected-ideas/
 with their numbers.
 
 **Storage buffers (SSBO) in the render path.** Every render pass feeds

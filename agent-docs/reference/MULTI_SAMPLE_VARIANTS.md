@@ -1,6 +1,7 @@
 ---
 name: multi-sample-variants
-description: How a VCF's genotypes reach the multi-sample variant cell loops — the interned-code pipeline that replaced a per-feature name-keyed record, what each half of it measured, and the two encodings (packed genotype key, header remap) that only make sense together. Read before adding a consumer of genotype data, before reintroducing anything keyed by sample name on the per-cell path, or before re-evaluating either optimization on its own.
+description: How a VCF's genotypes reach the multi-sample variant cell loops — the interned-code pipeline, what each half measured, and the two encodings that only make sense together. Read before adding a consumer of genotype data or reintroducing a name-keyed per-cell path.
+kind: spec
 ---
 
 # Multi-sample variant genotypes: the code pipeline

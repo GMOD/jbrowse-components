@@ -1,7 +1,8 @@
 ---
 name: figure-capture
-description: The four ways a committed figure disagrees with what you meant — a callout that landed somewhere else, an empty capture from the generator's readiness race, a blank or chrome-banded one from el.screenshot()'s own capture path, and a render that takes minutes because it is software-rasterized. One harness, and in every case the app was not the thing that was wrong. Read before placing a callout, diagnosing an "empty painting" as a data bug, or "optimizing" a slow figure.
+description: The four ways a committed figure disagrees with what you meant — a misplaced callout, an empty capture from a readiness race, a blank or chrome-banded screenshot, a software-rasterized minutes-long render. Read before diagnosing an empty figure as a data bug.
 audience: internal
+kind: operations
 ---
 
 # Capturing a figure

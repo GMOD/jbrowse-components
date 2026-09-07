@@ -1,7 +1,8 @@
 ---
 name: gpu-portability
-description: What this codebase requires of a GPU against what the WebGPU and WebGL2 specs guarantee everywhere — which limits the code queries at runtime, which it hardcodes, and how much headroom each in-tree shader has over the floor. Read before trusting a GPU number measured on one machine, or when triaging a report from hardware nobody here owns.
+description: What this codebase requires of a GPU against what WebGPU and WebGL2 guarantee everywhere — which limits are queried, which are hardcoded, and each shader's headroom over the floor. Read before trusting a GPU number measured on one machine.
 audience: internal
+kind: spec
 ---
 
 # GPU portability: what is guaranteed, and what is one laptop

@@ -23,7 +23,7 @@ that outlives its thread is a stale copy of one:
 | a worked proposal, not yet started | [ideas/](../ideas/README.md), one file each |
 | work someone intends to do | [TODO.md](../TODO.md) |
 | a measurement, or how a subsystem works | [reference/](../reference/README.md) |
-| tried and declined | [reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) |
+| tried and declined | [rejected-ideas/](../rejected-ideas/README.md) |
 | what a session did, and which commits | git already holds it |
 
 So a thread is closed by filing its remainder into those and removing the file,

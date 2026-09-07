@@ -26,7 +26,7 @@ function namesOf(name: string | readonly string[]) {
  * item to `LinearGenomeView`. Pass an array to extend several at once, which is
  * how a contribution reaches a family: the tree spells a display family as a
  * shared mixin set rather than a chain, so there is no parent to name — see
- * `reference/REJECTED_IDEAS.md`, "Give a pluggable element an `extendsType`".
+ * `agent-docs/rejected-ideas/`, "Give a pluggable element an `extendsType`".
  *
  * `Core-extendPluggableElement` fires for every pluggable element there is —
  * adapters, widgets, RPC methods, all of them — so a callback written against

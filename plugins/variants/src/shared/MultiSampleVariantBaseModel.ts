@@ -1120,7 +1120,7 @@ export default function MultiSampleVariantBaseModelF(
          * `sourcesBase` keep their `undefined`, because there it is genuinely
          * load-bearing: `sampleFilter` and `fetchNeeded` both read
          * `sourcesBase`, and its `undefined` → list transition is what wakes the
-         * fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list must
+         * fetch autorun (reference/FETCH_SKELETON.md §"The global-fetch trigger list must
          * be read unconditionally"). Nothing reads
          * *this* getter for that — every consumer immediately collapsed the
          * absent case with `?.length`, `?? []` or `?? 0`, so the option was
@@ -1208,7 +1208,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Which samples the worker should emit rows for, as a **set** — sorted
          * and deduped, so only a membership change can move it. Row order is not
-         * a fetch input here; ARCHITECTURE.md §"Row order is not a fetch input",
+         * a fetch input here; reference/FETCH_KEYS.md §"Row order is not a fetch input",
          * has the why and how the three row displays each do it.
          *
          * Two local rules:

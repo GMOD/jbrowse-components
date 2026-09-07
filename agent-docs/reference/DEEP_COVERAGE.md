@@ -1,6 +1,7 @@
 ---
 name: deep-coverage
-description: Measured on HG002 300x — what the alignments defaults do when there is nothing to find. The insert-size band's ±3 MAD cut flags ~1% of any sample however deep, so a tight library's own tail painted red; interchromosomal ticks are genuinely scattered mismapping, but a support floor still has to count over a window or it deletes real translocations with them; and the same floor on same-chromosome arcs is a density filter in disguise. Read before adding a threshold to this plugin, or before assuming a default that looks fine at 30x still works at 300x.
+description: Measured on HG002 300x: the insert-size ±3 MAD cut flags ~1% of any sample, and a support floor must count over a window or it deletes real translocations. Read before adding a threshold to the alignments plugin.
+kind: measurement
 ---
 
 # Deep-coverage short reads: what the defaults get wrong, and why
@@ -95,7 +96,7 @@ pairs per window and single-linkage chains them.
 So a support threshold there is a density filter wearing an evidence filter's
 costume, and it gets *more* aggressive exactly where coverage is deepest. The
 insert-size floor is the control for that family; stacking support on top would
-count the same noise twice. See REJECTED_IDEAS.
+count the same noise twice. See `agent-docs/rejected-ideas/`.
 
 ## The coverage band's SNP colours: a floor, and a reading
 

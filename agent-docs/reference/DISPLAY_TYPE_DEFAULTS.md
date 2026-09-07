@@ -1,6 +1,7 @@
 ---
 name: display-type-defaults
 description: Session-wide per-display-type slot defaults via promotable slots and CSS-cascade resolution. Read when adding a make-default-for-all-tracks setting, touching getConf / promotable slots, or serializing a session for sharing/export/worker.
+kind: spec
 ---
 
 # Display-type defaults (promotable config slots)

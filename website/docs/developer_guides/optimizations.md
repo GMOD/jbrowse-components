@@ -581,7 +581,7 @@ where the next attempt starts.
   what is left is staggering it or making the repaint cheaper
   ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md),
   and the suppression direction is closed in
-  [REJECTED_IDEAS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REJECTED_IDEAS.md)).
+  [rejected-ideas/](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/rejected-ideas/README.md)).
 - **One track's parse is single-threaded.** Worker assignment is sticky per
   adapter, which is what makes the inflate pool worth having and is also a
   ceiling.

@@ -1,6 +1,7 @@
 ---
 name: eager-bundle
-description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, the six pins that were making it pay for far more, and the measured census of what still holds Material UI there. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
+description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the measured census of what still holds Material UI there. Read before touching a plugin `exports` object or a state model's imports.
+kind: measurement
 ---
 
 # The eager bundle

@@ -1,6 +1,7 @@
 ---
 name: interaction-perf
-description: 'Measured: interaction is main-thread React re-render bound, the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom rather than the alignments overlays, and the p99 during a multi-track pan is periodic on the 500 ms coarse tick — with the two traps that make that period look absent (testing it against the wall clock) and its size look meaningful (a loaded box, where the profile goes 83% program). Then measured again on a PRODUCTION build, which reorders that list: the ruler is 12ms and the canvas marker overlays are the top cost, because any canvas text op (ctx.font or fillText, not fillRect) flushes the whole document style recalc from inside a passive effect. Then a third instrument that needs no browser at all: a mobx.spy render census in jsdom, which agrees with the production ranking, finds the PaddingBlocks pooling bug neither profile could see, and shows ZoomTransform topping the list only because its parents re-render. Read before optimizing the wrong component, before profiling a dev build, or before quoting a frame spike measured on this machine.'
+description: Measured: interaction cost is main-thread React re-render, the ruler's tick divs in dev and the canvas text ops in production, plus a jsdom mobx.spy render census that needs no browser. Read before optimizing a component or quoting a frame spike.
+kind: measurement
 ---
 
 # Interaction perf: which components re-render per frame
@@ -184,7 +185,7 @@ blocks update only once the view has moved far enough to warrant it, so a new
 coarse window covers different data and min/max/mean move with it. A stationary
 view does not tick at all — MobX caches the computed and nothing invalidates it —
 so there is no third state in which the values repeat. Filed in
-[REJECTED_IDEAS.md](REJECTED_IDEAS.md).
+[rejected-ideas/](../rejected-ideas/README.md).
 
 **So the per-tick recompute and repaint are WARRANTED work, not redundant work**,
 and that closes the suppression direction entirely. What is left for this tick is
@@ -519,4 +520,4 @@ rate is per fetch round rather than per frame, so jsdom's round count is not a
 browser's — but nothing in the plausible range rescues it, since even a few
 hundred mints a gesture would put a registry insert at 0.3ms a call. Whatever
 that frame contains, attribute it before designing against it;
-[REJECTED_IDEAS.md](REJECTED_IDEAS.md) carries the declined design.
+[rejected-ideas/](../rejected-ideas/README.md) carries the declined design.

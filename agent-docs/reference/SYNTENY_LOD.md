@@ -1,6 +1,7 @@
 ---
 name: synteny-lod
 description: The two PIF tiers (fine/coarse), the profiled cost model, and why read-time binning is capped at ~1.5x. Read before touching make-pif, the indexed PIF adapters, or the synteny fetch RPC.
+kind: spec
 ---
 
 # Synteny level-of-detail (PIF tiers) and the density problem

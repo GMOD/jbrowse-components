@@ -1,6 +1,7 @@
 ---
 name: maf-large-blocks
 description: Why a MAF-tabix track with very long alignment blocks is slow and can crash, why "clip to the visible region" is the wrong fix, and the three options that are not. Read before touching MafTabixAdapter fetch cost or proposing block clipping.
+kind: measurement
 ---
 
 # MAF-tabix and megabase alignment blocks
@@ -80,8 +81,7 @@ the byte axis in the same pass, replaced below 20kb by a raised budget rather
 than an off-switch, so the gate is now on duty at every zoom. The measurements
 and the two obvious fixes that were wrong are in
 [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"Measurement follows the viewport"
-and §"The sub-floor budget tier"; the closed story is in
-[HISTORICAL.md](HISTORICAL.md) §"The byte estimate was a rate".
+and §"The sub-floor budget tier".
 
 **Block-quantized files are now the case the gate handles best**, which is worth
 saying because this doc spent its first version arguing the opposite. A megabase

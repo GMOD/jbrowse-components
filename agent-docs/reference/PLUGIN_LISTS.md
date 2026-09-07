@@ -1,6 +1,7 @@
 ---
 name: plugin-lists
-description: The four lists a plugin can be in, the two that survive a session (Desktop's global plugins, jbrowse-web's permanent plugins) and the one crash-marker state machine behind both safe modes, plus the app rebuild that any install triggers. Read before touching globalPlugins.ts, permanentPlugins.ts, the plugin store widget, or anything that compares two plugin definitions.
+description: The four lists a plugin can be in, the two that survive a session, the crash-marker state machine behind both safe modes, and the app rebuild any install triggers. Read before touching globalPlugins.ts, permanentPlugins.ts or the plugin store.
+kind: spec
 ---
 
 # Plugin lists

@@ -1,6 +1,7 @@
 ---
 name: config-pattern
 description: How display config reaches the renderer, from config to MST snapshot to plain object to RPC payload. Read when touching config, JEXL callbacks, or RPC payloads.
+kind: spec
 ---
 
 # Display Config Pattern
@@ -206,8 +207,6 @@ spelling.
 Don't "fix" `readSlot` to return a defaults-included clone: it returns the cached
 `getSnapshot` deliberately (stable identity, so downstream computeds memoize), and
 a per-read built object was a measured perf and spurious-recomputation regression.
-The story is in [HISTORICAL.md](HISTORICAL.md) §"A config snapshot was a legal
-input to `readConfObject`".
 
 ## Forwarding a callback slot: read it raw, don't resolve it
 

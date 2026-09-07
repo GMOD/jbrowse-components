@@ -168,8 +168,7 @@ export function splitColorType(s1: number, s2: number) {
 // straight-line emitter and the bezier-curve emitter.
 //
 // The arc path has the twin of this loop over its own entry type. Sharing them
-// was tried and measured back out — see REJECTED_IDEAS, "One shared
-// groupReadsByName".
+// was tried and measured back out — see rejected-ideas/one-shared-groupreadsbyname.md.
 //
 // A nameless feature is skipped rather than bucketed under '': the PAF/synteny
 // blocks LGVSyntenyDisplay pushes through this pipeline carry no QNAME, so one

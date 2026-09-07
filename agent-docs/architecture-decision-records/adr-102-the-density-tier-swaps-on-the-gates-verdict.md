@@ -23,9 +23,8 @@ at the 20 kb force-load floor. `produce-and-host-the-hprc-summary-tier.md`
 records what that costs: the tutorial's own figure is drawn at 83 kb, where a
 detail read is ~1.2 MB against a 5 Mb budget, so wiring the summary there
 silently replaces the per-haplotype rows the figure exists to show. Span is a
-proxy for cost, and a bad one — the gate's whole history
-(`HISTORICAL.md § The byte estimate was a rate`) is the discovery that bytes do
-not follow span.
+proxy for cost, and a bad one: bytes do not follow span, which is the whole
+reason the gate measures bytes.
 
 Two earlier tiers also put their tier choice in `rpcProps()`, where crossing
 the threshold mid-gesture fired `SettingsInvalidate` and dropped every loaded

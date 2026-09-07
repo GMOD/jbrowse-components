@@ -352,7 +352,7 @@ const delay = (ms: number) =>
 // navigation reads the pre-navigation frame as finished. Same reasoning and
 // same constant as `waitForAppSettled` in products/jbrowse-capture/src/waits.ts
 // (APP_SETTLED_HOLD_MS) — reached independently there, and measured; see
-// REJECTED_IDEAS under "Waiting out a screenshot action's work".
+// rejected-ideas/waiting-out-a-screenshot-action-s-work-by-watching-the.md.
 const READY_HOLD_MS = 1000
 
 interface SnackbarEntry {

@@ -1,7 +1,8 @@
 ---
 name: hprc-release2
-description: What HPRC release 2 publishes and which artifacts JBrowse can open — why the tutorial reads a v2.0 TAF rather than the v2.1 MAF, how pairwise PAF is unpacked from the graph itself (gfa_to_pairwise_paf.py off the GFA's walks, the default; maf_to_pairwise_paf.py off the TAF; their chaining, their agreement with each other and with impg, and the taffy index bug that refuses chr1/chr2), and the four measurements not to re-derive (impg's PAF is projections not compositions, the vs-GRCh38 PAF is a star so 741 of 780 sample pairs are unstated, the per-chromosome pggb graphs do not fit in memory, and the published MAF is tab-separated). Read before touching the pangenome MAF or synteny path, or before cutting a slice of one of these files.
+description: What HPRC release 2 publishes and which artifacts JBrowse opens — the v2.0 TAF, pairwise PAF unpacked from the graph's walks, and the measurements not to re-derive. Read before touching the pangenome MAF or synteny path.
 audience: internal
+kind: dataset
 ---
 
 # HPRC release 2 in JBrowse

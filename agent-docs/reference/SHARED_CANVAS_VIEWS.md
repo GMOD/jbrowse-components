@@ -1,6 +1,7 @@
 ---
 name: shared-canvas-views
-description: The comparative views (synteny, dotplot) — how their fetch composes KeyedFetchMixin rather than either LGV foundation, how one canvas owned by a container model is shared by several displays, why the key must be sharedBackendKey and the empty frame must still paint, and how readiness is published as a required prop rather than a selector list. Read before touching a synteny or dotplot fetch, a shared backend's keyed upload, or a container that lays out a canvas for its children.
+description: The comparative views (synteny, dotplot): fetch on KeyedFetchMixin, one canvas owned by a container and shared by several displays, `sharedBackendKey`, the empty frame that must paint, readiness as a required prop. Read before touching either view or building a shared canvas.
+kind: spec
 ---
 
 # Shared-canvas comparative views
@@ -88,7 +89,7 @@ recomputes the same key and nothing refires the autorun — which is why clearin
 the error was not enough and the banner's Retry was inert on both views. Same
 law, and the same one-line fix, as the global family's `reloadCounter`; see
 [ARCHITECTURE.md § the trigger
-list](../ARCHITECTURE.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
+list](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
 `installComparativeFetchAutorun.test.ts` ("reload() refires the fetch with no
 input change") pins it.
 

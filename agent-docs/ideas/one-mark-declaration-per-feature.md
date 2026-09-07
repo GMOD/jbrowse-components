@@ -386,7 +386,7 @@ of nine files into the one place that applies them.
 
 The fold into render-core's shapes was measured the same day and declined:
 the blocker is the shared uniform block thirteen passes read off one write, not
-the geometry. `REJECTED_IDEAS.md` has the entry.
+the geometry. `agent-docs/rejected-ideas/` has the entry.
 
 ## Where this sits
 
@@ -395,7 +395,7 @@ the geometry. `REJECTED_IDEAS.md` has the entry.
 MAF's cells have no per-instance index space (run-merged GPU encode, arithmetic
 hit test) and variants resolves everything once in the worker so every consumer
 already reads one array set — the member-by-member table is in
-[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) §Rendering and
+[rejected-ideas/](../rejected-ideas/README.md) §Rendering and
 displays, with the reopen condition.
 
 Last of the render-path simplifications, and incrementally — one alignments

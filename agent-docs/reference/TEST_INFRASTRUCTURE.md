@@ -2,6 +2,7 @@
 name: test-infrastructure
 description: Browser and unit tests and WebGPU CI. Read when running or writing tests, or validating RPC.
 audience: internal
+kind: operations
 ---
 
 # Test Infrastructure
@@ -259,7 +260,7 @@ six copies of each shape so the numbers are medians rather than a first run:
 
 **The floor is 31ms** — the jsdom environment, the ten `setupFiles`, the
 `setupFilesAfterEnv` and teardown. Times 1980 suites that is ~61s, and it is why
-the jsdom-to-`node` sweep buys nothing (REJECTED_IDEAS.md, "Tooling, tests and
+the jsdom-to-`node` sweep buys nothing (agent-docs/rejected-ideas/, "Tooling, tests and
 docs").
 
 **Everything above it is the import graph, re-executed per test FILE.** Jest

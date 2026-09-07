@@ -1,6 +1,7 @@
 ---
 name: pangenome-graphs
-description: How a graph reaches JBrowse — what rGFA and plain GFA can and cannot say about coordinates and carriage, the one-node-per-bubble level of detail, ceilings measured on the hosted HPRC index, how pairwise alignments are unpacked from a GFA's walks (gfa_to_pairwise_paf.py, measured against halSynteny and minimap2 on E. coli and streamed over the 63 GB HPRC graph), and the decisions that look like bugs and are not. Read before touching a graph adapter, a pangenome figure, or a linearized-variation lane.
+description: How a graph reaches JBrowse — what rGFA and GFA can say about coordinates and carriage, the one-node-per-bubble detail level, measured ceilings on the HPRC index, and pairwise PAF from a graph's walks. Read before touching a graph adapter or pangenome figure.
+kind: spec
 ---
 
 # Pangenome graphs

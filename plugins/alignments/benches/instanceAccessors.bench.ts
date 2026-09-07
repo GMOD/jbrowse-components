@@ -74,7 +74,7 @@
 // of records — is to write the loop over the generated offset maps, not to
 // reach for a generated per-record form. `packCoverageBinsForGpu` and
 // `computeInterbaseCoverage` are both that case. Written up in
-// `agent-docs/reference/REJECTED_IDEAS.md`.
+// `agent-docs/rejected-ideas/`.
 
 import {
   INSTANCE_OFFSET_F32 as SEG_F32,

@@ -29,7 +29,7 @@ order of how often someone has wanted them:
 - the LGV header and its search box
 - the import form, per view type
 - the hierarchical selector's row — `TrackSelector-trackRowAdornment` was a
-  half-measure at this and has since been removed (see REJECTED_IDEAS.md,
+  half-measure at this and has since been removed (see agent-docs/rejected-ideas/,
   "Comparative and pangenome"); a seam here would be the component, not another
   accumulated data shape
 - the drawer widget header

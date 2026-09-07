@@ -358,7 +358,7 @@ tutorial already there.
 
 **A comparative-genomics chooser: declined by Colin, 2026-08-09**, and filed
 under "Tooling, tests and docs" in
-[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) — including the
+[rejected-ideas/](../rejected-ideas/README.md) — including the
 general rule it produced about navigation aids that route on a key the reader
 can already see.
 

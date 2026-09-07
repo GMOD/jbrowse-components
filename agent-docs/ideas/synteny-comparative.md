@@ -265,7 +265,7 @@ which cancels the genome-scale magnitude outright, so 100+ Gbp assemblies
 (*Tmesipteris oblanceolata* ~160 Gbp, *Paris japonica* ~148 Gbp, some lungfish
 ~130 Gbp) render correctly with no cap to widen. If you find a writeup
 proposing the 2¹²→2¹⁴ bucket widening in `writeHiLo` / `HP_LOW_MASK`, it is
-stale — none of those symbols survive. See `agent-docs/reference/HISTORICAL.md`.
+stale — none of those symbols survive.
 
 The **per-reference uint32 cap** (4.29 Gbp per chromosome, on the local
 `starts/ends/mateStarts/mateEnds` arrays) is untouched by that and is still the

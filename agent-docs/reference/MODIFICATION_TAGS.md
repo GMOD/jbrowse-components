@@ -1,6 +1,7 @@
 ---
 name: modification-tags
-description: How this repo reads MM/ML base-modification tags, checked line by line against htslib's sam_mods.c — the two things we do the same way and should keep doing, the one place we deliberately differ and why, and the structural difference (htslib walks the read once for every modification type at once, we walk it once per type's canonical base) that gates two open optimizations. Read before touching getModPositions, forEachMaxProbMod, or proposing anything about multi-type reads.
+description: How this repo reads MM/ML base-modification tags, checked against htslib's sam_mods.c — what matches, the one deliberate difference, and the per-type walk that gates two optimizations. Read before touching getModPositions or forEachMaxProbMod.
+kind: spec
 ---
 
 # MM/ML tags: us and htslib

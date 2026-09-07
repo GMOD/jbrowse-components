@@ -1,6 +1,7 @@
 ---
 name: shader-shape-library
-description: The shared `.slang` shape modules in render-core — what each one draws, who imports it, and the two splits that keep them from becoming a framework: a cap-agnostic frame shared where the cap is not, and one named coverage per cap style rather than a cap-style flag. Read before adding a shape module, before pointing a second consumer at an existing one, or when a shader comment claims something is shared.
+description: The shared `.slang` shape modules in render-core — what each draws, who imports it, and the two splits that keep them from becoming a framework. Read before adding a shape module or pointing a second consumer at one.
+kind: spec
 ---
 
 # The shader shape library

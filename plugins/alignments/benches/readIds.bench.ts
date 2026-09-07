@@ -23,7 +23,7 @@
 //
 // Two reasons to suspect it. `dedupeById` used to build the same string per
 // read and dropping it took the dedupe from 12.5% to 5.9% of worker busy time,
-// so the construction is not free at depth. And REJECTED_IDEAS' feature-details
+// so the construction is not free at depth. And agent-docs/rejected-ideas/' feature-details
 // entry measured structured clone as priced by object COUNT, not bytes — 153,677
 // strings is 153,677 objects to clone, against one transferable for a typed
 // array.

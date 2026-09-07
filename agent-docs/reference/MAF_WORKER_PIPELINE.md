@@ -1,6 +1,7 @@
 ---
 name: maf-worker-pipeline
-description: Where the time goes in LinearMafGetAlignmentData, stage by stage, after the columnar wire made postMessage free — the current profile, the fixture recipe that reproduces it, and the two optimizations that look obvious and measure worse (the coverage transpose, and exact-semantics SWAR). Read before optimizing anything in the MAF worker, or before believing a 4.5x from a kernel that changed what counts as a base.
+description: Where the time goes in LinearMafGetAlignmentData stage by stage, the fixture that reproduces it, and the two optimizations that look obvious and measure worse. Read before optimizing anything in the MAF worker.
+kind: measurement
 ---
 
 # The MAF worker pipeline

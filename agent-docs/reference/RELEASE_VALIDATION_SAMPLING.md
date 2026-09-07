@@ -1,7 +1,8 @@
 ---
 name: release-validation-sampling
-description: How the v5 release is being validated — a churn-proportional sample of directories rather than a review of 12,714 commits, with a fixed per-unit protocol and two committed scripts. The pre-registered draw and its verdicts, and what the mutation sweep cost to learn: a green baseline or every mutant reads as caught, one sweep per worktree, and a worktree that has run one is dirty until proven otherwise.
+description: How the v5 release is validated — a churn-proportional sample of directories with a fixed per-unit protocol and two committed scripts, and what the mutation sweep taught about green baselines and dirty worktrees.
 audience: internal
+kind: measurement
 ---
 
 # Release validation by sampling

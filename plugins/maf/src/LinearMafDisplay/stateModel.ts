@@ -804,7 +804,7 @@ export default function stateModelFactory(
          * unobservable to the fetch but would still move the key. Re-picking the
          * same clade after a re-cluster hands `setSubtreeFilter` the same names
          * in the tree's new leaf order, which refetched every loaded region for
-         * identical data. ARCHITECTURE.md §"Row order is not a fetch input".
+         * identical data. reference/FETCH_KEYS.md §"Row order is not a fetch input".
          *
          * Copied out of the MST node for the same reason: the key is a JSON
          * string and an MST node's serialization is not this module's to depend
@@ -1534,7 +1534,7 @@ export default function stateModelFactory(
          * until the first fetch lands and defined after flips the key on every
          * track load, and `SettingsInvalidate` then throws away the region that
          * just arrived — a measured 2 × `LinearMafGetAlignmentData` per region.
-         * Loop-safe but not free, which is exactly the case ARCHITECTURE.md's
+         * Loop-safe but not free, which is exactly the case reference/FETCH_KEYS.md's
          * "`rpcProps()` loop trap and how to break it" is about. Pinned by
          * `singleFetchPerRegion.test.ts`.
          */

@@ -481,8 +481,7 @@ export default function MultiRegionDisplayMixin() {
          *
          * False on a zoom by construction: `LoadedRegion.settingsKey` is the
          * key minus its zoom axis, so a moved `zoomFetchKey` raises no scrim.
-         * That is the whole distance from the fold REJECTED_IDEAS.md "Folding
-         * content staleness into `displayPhase`" declines, which compared the
+         * That is the whole distance from the fold rejected-ideas/folding-content-staleness-into-displayphase.md declines, which compared the
          * whole key and put the overlay 250 ms into every zoom.
          */
         get staleSettingsDrawn(): boolean {
@@ -517,8 +516,7 @@ export default function MultiRegionDisplayMixin() {
          * painted bins the worker computed for the previous zoom. `displayPhase`
          * takes `dataSuperseded` but NOT this term: folding a moved
          * `fetchInputs` into the phase raises the loading scrim into every
-         * zoom, which is the trade REJECTED_IDEAS.md "Folding content staleness
-         * into `displayPhase`" turned down and this does not take.
+         * zoom, which is the trade rejected-ideas/folding-content-staleness-into-displayphase.md turned down and this does not take.
          *
          * The term cannot latch, and the reason is structural rather than a case
          * list: a block reaches `fetchNeeded` unless `planRegionFetch` finds it
@@ -570,8 +568,7 @@ export default function MultiRegionDisplayMixin() {
          * The loading scrim's staleness argument: what is drawn answers for
          * what is on screen. Spatial coverage, `dataSuperseded` and
          * `staleSettingsDrawn`; NOT `isCacheValid`, which is `dataCurrent`'s
-         * and would scrim every zoom (REJECTED_IDEAS.md "Folding content
-         * staleness into `displayPhase`"). `displayPhase` reads it, and so
+         * and would scrim every zoom (rejected-ideas/folding-content-staleness-into-displayphase.md). `displayPhase` reads it, and so
          * does a stand-in phase (`coarseTierDisplayPhase`) — one predicate,
          * so a term added here reaches both.
          */

@@ -1,7 +1,8 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, the seven seams that remain, and the profile that ranks them (inflate dominates; the per-read work every seam here is about is under a tenth of a query). Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever, whether the adapter reaches it, the deliberate non-integrations, and the profile showing inflate dominates. Read before adding a BAM read-path optimization.
 audience: internal
+kind: measurement
 ---
 
 # The BAM stack, layer by layer
@@ -177,7 +178,7 @@ its cached bytes. The caches work; their scope is what is wrong.
 context, so `5 x min(hardwareConcurrency, 4)` = **20 inflate workers** on any
 machine with six or more cores, plus the RPC workers themselves. Each runs its
 own copy of the inlined wasm bundle, so each carries an independent
-`WebAssembly.Memory` — and that memory is grow-only, which REJECTED_IDEAS.md
+`WebAssembly.Memory` — and that memory is grow-only, which agent-docs/rejected-ideas/
 already names as the root cause of the transient RPC-worker peaks (deep CRAM,
 ~997 MB down to 7 MB after GC). Those heaps used to outlive the last bgzip
 track; `@gmod/bgzf-filehandle` 6.6.0 reaps a pool's workers after 3 minutes
@@ -947,7 +948,7 @@ Stated so the next audit does not re-derive them.
   `200x.longread.mod.bam`, against 56ms of mismatch walking. Reading the base out
   of `NUMERIC_SEQ`'s nibbles instead is the obvious answer and measures at
   **parity** — see the `+packedSEQ` arm in `benches/readBaseCounts.bench.ts` and
-  the REJECTED_IDEAS entry. What is left is sharing the one decoded string
+  the agent-docs/rejected-ideas/ entry. What is left is sharing the one decoded string
   between the two consumers, which is a worker-pipeline change rather than a
   library one: they are in different phases of `executeRenderAlignmentData`.
 - **Cancellation reaches the socket.** `withStopTokenSignal` on the chunk reads,

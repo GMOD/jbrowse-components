@@ -174,4 +174,4 @@ reader, and the throw lands at the `postMessage`, nowhere near the cause.
 Nothing shares a buffer across regions, because `processFeaturesFromArrays`
 copies its inputs. Keep it that way: aliasing the adapter's arrays instead looks
 free and retains 20 bytes a feature on the main thread where copying retains 12
-— costed in `agent-docs/reference/REJECTED_IDEAS.md`.
+— costed in `agent-docs/rejected-ideas/`.

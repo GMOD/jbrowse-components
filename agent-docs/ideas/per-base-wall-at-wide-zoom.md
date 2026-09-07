@@ -104,5 +104,4 @@ these two go, that gap is why the bin shipped believing a claim nothing could
 have failed. Closing it with two gate scenes was built, measured and declined
 the same day — on the cost of carrying an 18% override, not on the finding —
 so the gap stands deliberately:
-[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) §"Gate the two per-base
-colour modes against the other backend".
+[gate-the-two-per-base-colour-modes-against-the-other](../rejected-ideas/gate-the-two-per-base-colour-modes-against-the-other.md).

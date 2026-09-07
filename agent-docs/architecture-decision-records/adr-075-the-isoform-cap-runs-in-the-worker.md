@@ -20,7 +20,7 @@ mechanism it describes was `collapseIsoforms` in
 
 A parked proposal designed this feature before it was built and recommended the
 opposite placement (`agent-docs/ideas/canvas-glyph-system.md`, since retired
-into [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md)): **"the cap belongs on the main
+into [rejected-ideas/](../rejected-ideas/README.md)): **"the cap belongs on the main
 thread, not in `layoutSubfeatures`"**, with the worker emitting every isoform
 carrying a rank and the main thread summing only the visible ones. Its objection
 was the RPC cache key — `rpcProps()` invalidates on every field it carries, and

@@ -148,7 +148,7 @@ function globalFetchPlan<TArgs, TResult>(
  *   banner, and `gateSkipsMeasuredViewport` (whose own reads move with the
  *   viewport) is what keeps that to one. Each gate term is an observable that
  *   flips on the transition to wake on, which is what makes a gated decline
- *   safe — see ARCHITECTURE.md §"The global-fetch trigger list must be read
+ *   safe — see reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
  *   unconditionally". Liveness is not a term here: `installFetch` checks it
  *   above every gate, because `host` is a parent walk and so is nearly every
  *   other gate in the tree.
@@ -177,7 +177,7 @@ function globalFetchPlan<TArgs, TResult>(
  * refetch), a slow network thrash rather than a synchronous freeze, so a
  * within-tick counter cannot distinguish it from legitimate rapid interaction.
  * The invariant is the same: `rpcProps()` must return only user-controlled
- * settings, never fetched data (see ARCHITECTURE.md §"rpcProps() loop trap").
+ * settings, never fetched data (see reference/FETCH_KEYS.md §"rpcProps() loop trap").
  */
 export function installGlobalFetchAutorun<TArgs, TResult>(
   self: GlobalFetchAutorunHost,

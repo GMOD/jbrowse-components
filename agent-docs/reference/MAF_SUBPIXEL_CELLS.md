@@ -1,7 +1,8 @@
 ---
 name: maf-subpixel-cells
-description: MAF draws sub-pixel cells at their natural width and floors nothing, on both backends — what that rule is, the supersampled ground truth that settled it against the two flooring candidates, and why alignments' `sizeAlpha` is not the analogue. Read before adding a min-width floor to a tiling display or re-opening the MAF/multi-row asymmetry.
+description: MAF draws sub-pixel cells at their natural width and floors nothing, on both backends — the supersampled ground truth that settled it, and why alignments' `sizeAlpha` is not the analogue. Read before adding a min-width floor to a tiling display.
 audience: internal
+kind: spec
 ---
 
 # What a sub-pixel MAF cell looks like

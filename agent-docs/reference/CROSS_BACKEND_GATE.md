@@ -1,7 +1,8 @@
 ---
 name: cross-backend-gate
-description: The canvas2d-vs-GPU render gate that blocks CI — what is in its scope and why, the measured drift distribution behind the 1.5% threshold, the measured baselines to check an alignments render change against, and the methodology that made it blockable (a threshold override is a testable claim, tested with --real-gpu since omitting --swiftshader does not give you one; a whole-suite A/B cannot resolve an effect this size). Read before widening CI_GATE_SUITES, changing the threshold, adding an override, or re-opening the blank-capture question.
+description: The canvas2d-vs-GPU render gate that blocks CI — its scope, the measured drift behind the 1.5% threshold, and the methodology that made a threshold override a testable claim. Read before widening CI_GATE_SUITES or adding an override.
 audience: internal
+kind: operations
 ---
 
 # The cross-backend render gate

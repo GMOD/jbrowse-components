@@ -24,7 +24,7 @@ product-core and plugins. That 36 is the real size of the job.
 and `types.compose`'s overloads are declared over `IModelType<P, O, FC, FS>`, so
 a model arriving as a naked type parameter has nothing to infer those four from
 and the result degrades. Same limitation as the embedded session factory in
-[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md#config-and-mst) —
+[rejected-ideas/](../rejected-ideas/README.md#config-and-mst) —
 twice now, on unrelated models, which is what makes it a property of `compose`
 rather than of either attempt.
 

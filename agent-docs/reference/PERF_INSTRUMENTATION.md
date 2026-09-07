@@ -1,6 +1,7 @@
 ---
 name: perf-instrumentation
-description: Instrumentation patterns for GPU render and scroll jank, and the one question that needs no browser at all — a mobx.spy render census in jsdom answers "which components re-render per frame" in integers. Read when diagnosing a perf regression, and before reaching for a CPU profile to count renders.
+description: Instrumentation for GPU render and scroll jank, and a mobx.spy render census in jsdom that answers which components re-render per frame with no browser. Read when diagnosing a perf regression, before reaching for a CPU profile.
+kind: operations
 ---
 
 # Perf instrumentation patterns

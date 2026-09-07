@@ -1,6 +1,7 @@
 ---
 name: display-hover
 description: Why a stored hover is a volatile the viewport can invalidate, which mixin clears it on which axes, and the `hoveredFeature` hook every display publishes it through. Read before storing a hit in a display or a view that owns a shared canvas.
+kind: spec
 ---
 
 # A stored hover is a volatile the viewport can invalidate

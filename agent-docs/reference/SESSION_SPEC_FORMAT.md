@@ -1,7 +1,8 @@
 ---
 name: session-spec-format
 audience: internal
-description: What the session spec is (a view's launch keys plus track entries that carry display config slots inline), a census of what the 330-figure corpus actually writes into it, and the assessment against Gosling and GenomeSpy that follows — keep the flat format-typed form, publish one JSON Schema from the manifest generator, decline an encoding block, scale objects and view combinators, and why a grammar is not a mechanism for this codebase's complexity.
+description: What the session spec is, a census of what the figure corpus writes into it, and the assessment against Gosling and GenomeSpy: keep the flat format-typed form, publish one JSON Schema, decline a grammar. Read before extending the spec.
+kind: spec
 ---
 
 # The session spec, measured, and the grammar-of-graphics question

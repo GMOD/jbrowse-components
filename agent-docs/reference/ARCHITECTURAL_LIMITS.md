@@ -1,6 +1,7 @@
 ---
 name: architectural-limits
-description: Live register of the architecture's resource ceilings, accepted couplings, and correctness surfaces nothing mechanical protects. Each entry carries its mitigation state and the condition that retires it. Read before scaling work (many tracks, many views, whole-genome), or when a symptom looks like a product bug but is a ceiling.
+description: Live register of the architecture's resource ceilings, accepted couplings, and correctness surfaces nothing mechanical protects, each with its mitigation and retire condition. Read before scaling work, or when a symptom looks like a ceiling.
+kind: spec
 ---
 
 # Architectural limits and weak points
@@ -13,8 +14,7 @@ Keeping it honest:
 - **Cite symbols and files, not line numbers.** Line numbers rot faster than
   limits do.
 - **Delete an entry when its retire condition is met.** If the story shaped a
-  design, move a paragraph to [HISTORICAL.md](HISTORICAL.md). Never leave a
-  "fixed" entry here.
+  design, an ADR records it. Never leave a "fixed" entry here.
 - **Statuses:** Mitigated (a mechanism bounds it, root cause remains),
   Accepted (a cost we chose, with the reason), Open (unbuilt, and we would
   take a fix).
@@ -444,8 +444,7 @@ Three code paths have such a dependency. Only the first is outside the helper,
 so only it is untouched by ADR-078:
 
 - **`LinearAlignmentsDisplay`** reads the store directly (`hasRegionData`,
-  for the zero-group grouped-fetch reason in [HISTORICAL.md](HISTORICAL.md)
-  §"Each display asserted its own 'did we paint?'") **and** transitively:
+  because a grouped fetch with zero groups lands no region) **and** transitively:
   `renderState.sections` is `buildSectionRenders(self.sections, …)`, and
   `sections` reaches `groupOrder` / `laidOutByGroup` through `drawnLanes` →
   `lanes` → `buildLanes`, both of them derived from `rpcDataMap` (`groupOrder`
@@ -1030,7 +1029,7 @@ Data freshness is still computed two ways — spatial coverage
 (`viewportWithinLoadedData`, per-region mixins) and signature compare
 (`isDataCurrent`, arc / HiC / LD / dotplot / synteny) — and each has
 independently shipped a stale-capture bug
-([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness").
+([SVG_EXPORT.md](SVG_EXPORT.md)).
 
 What changed: both now answer under the single name **`dataCurrent`**, and
 every consumer reads that name. `svgReady` — five hand-written copies of
@@ -1275,7 +1274,7 @@ only on a real violation):
 
 - **A fetch installer's triggers must be read above its gate.** MobX rebuilds
   the dep set per run, so a read under the gate drops out of it. Arc shipped a
-  dead `reload()` from exactly this (ARCHITECTURE.md §"The global-fetch trigger
+  dead `reload()` from exactly this (FETCH_SKELETON.md §"The global-fetch trigger
   list must be read unconditionally"). This one is a *shape*, not a state, so no
   attach-time read can see it.
 

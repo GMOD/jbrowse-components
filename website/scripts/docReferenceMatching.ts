@@ -198,7 +198,7 @@ const BOLD_LEAD = /^[ \t]*(?:[-*+][ \t]+)?\*\*([\s\S]{1,200}?)\*\*/gm
  * Every piece of a doc a citation may name, normalized.
  *
  * Headings alone counted, and that put the citations most worth checking out of
- * reach of the check: REJECTED_IDEAS.md holds 155 entries and not one heading
+ * reach of the check: the rejected-ideas file held 155 entries and not one heading
  * among them, so the two dozen source comments saying "this was declined, here
  * is where" named text the checker could never find — and the same went for
  * every doc marking a sub-point with a bolded lead rather than a fourth-level

@@ -9,7 +9,7 @@ What shipped 2026-08-22 (`MultiWaySyntenyDisplay`, plugins/linear-comparative-vi
 one lane per genome inside a plain LGV, the anchor lane on the view's axis and
 every other lane in its own local coordinate frame — the non-anchored move that
 clears the "projecting the graph onto the reference axis" rejection in
-[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), because nothing is
+[rejected-ideas/](../rejected-ideas/README.md), because nothing is
 projected: the ribbons carry the correspondence. Sources are anything whose
 features carry a `mate` per other assembly (MCScan blocks tables, all-vs-all
 PAF); lanes draw gene models from each assembly's own GFF3 track; an

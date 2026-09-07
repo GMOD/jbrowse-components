@@ -49,16 +49,42 @@ import { repoRoot } from './paths.ts'
 // its own right, so it does not list itself.
 const SELF = 'README.md'
 
-const AUDIENCE_GROUPS = [
-  {
-    title: 'Citeable: behaviour a user or plugin author can hit',
-    match: (doc: Doc) => doc.audience !== 'internal',
-  },
-  {
-    title: 'Internal: the harnesses, gates and audits behind it',
-    match: (doc: Doc) => doc.audience === 'internal',
-  },
-]
+// `reference/` groups on `kind:`, which is what a reader picking a doc for a
+// task needs to know first: a subsystem spec, a measurement record, the data
+// behind a figure, or how to operate a harness. `audience: internal` is the
+// separate decision `check-reference-citations.ts` enforces (an internal doc
+// needs no website link) and is shown per row rather than as a table, so the
+// two fields stay two fields.
+const KIND_GROUPS = [
+  ['spec', 'Specs: how a subsystem works'],
+  ['measurement', 'Measurements: numbers taken, and what they settled'],
+  ['dataset', 'Datasets: the data behind the demos, figures and tutorials'],
+  ['operations', 'Operations: harnesses, gates and toolchain'],
+].map(([kind, title]) => ({
+  title: title!,
+  match: (doc: Doc) => doc.kind === kind,
+}))
+
+// A description is the row a reader picks a doc by, and the index is read
+// whole; past this it is an abstract, and the abstract belongs in the doc's
+// first paragraph.
+const MAX_DESCRIPTION_WORDS = 45
+
+const AREA_GROUPS = [
+  ['rendering-and-displays', 'Rendering and displays'],
+  ['config-and-mst', 'Config and MST'],
+  ['performance-and-measurement', 'Performance and measurement'],
+  ['comparative-and-pangenome', 'Comparative and pangenome'],
+  ['data-and-demos', 'Data and demos'],
+  [
+    'figures-that-were-attempted-and-cannot-be-made',
+    'Figures that were attempted and cannot be made',
+  ],
+  ['tooling-tests-and-docs', 'Tooling, tests and docs'],
+].map(([area, title]) => ({
+  title: title!,
+  match: (doc: Doc) => doc.area === area,
+}))
 
 const INDEXES = [
   {
@@ -66,7 +92,8 @@ const INDEXES = [
     marker: 'REFERENCE INDEX',
     label: 'Reference index',
     heading: 'Read when',
-    groups: AUDIENCE_GROUPS,
+    groups: KIND_GROUPS,
+    maxDescriptionWords: MAX_DESCRIPTION_WORDS,
   },
   {
     dir: 'ideas',
@@ -91,6 +118,17 @@ const INDEXES = [
     slugFilenames: true,
   },
   {
+    // One file per declined idea, grouped by the `area:` each carries; an area
+    // outside AREA_GROUPS is an error, so a typo cannot drop an entry from the
+    // page.
+    dir: 'rejected-ideas',
+    marker: 'REJECTED IDEAS INDEX',
+    label: 'Rejected ideas index',
+    heading: 'The idea',
+    slugFilenames: true,
+    groups: AREA_GROUPS,
+  },
+  {
     // `handoffs/` was the one directory here you had to `ls`, which is the
     // state agent-docs/CLAUDE.md tells everyone else not to be in. It is also
     // the directory that most needs the discipline: a handoff's subject is
@@ -108,9 +146,15 @@ interface Doc {
   name: string
   description: string
   audience: string | undefined
+  area: string | undefined
+  kind: string | undefined
 }
 
-function collectDocs(dir: string, slugFilenames = false): Doc[] {
+function collectDocs(
+  dir: string,
+  slugFilenames = false,
+  maxDescriptionWords?: number,
+): Doc[] {
   const docsDir = join(repoRoot, 'agent-docs', dir)
   const docs: Doc[] = []
   const unindexable: string[] = []
@@ -134,8 +178,22 @@ function collectDocs(dir: string, slugFilenames = false): Doc[] {
       unindexable.push(
         `${file} (\`name: ${name}\` wants the filename ${name}.md)`,
       )
+    } else if (
+      maxDescriptionWords !== undefined &&
+      description.split(' ').length > maxDescriptionWords
+    ) {
+      unindexable.push(
+        `${file} (description is ${description.split(' ').length} words, over ${maxDescriptionWords}: keep the row to what a reader picks the doc by and move the rest into its first paragraph)`,
+      )
     } else {
-      docs.push({ file, name, description, audience: fm.audience?.trim() })
+      docs.push({
+        file,
+        name,
+        description,
+        audience: fm.audience?.trim(),
+        area: fm.area?.trim(),
+        kind: fm.kind?.trim(),
+      })
     }
   }
   if (unindexable.length) {
@@ -151,13 +209,32 @@ function collectDocs(dir: string, slugFilenames = false): Doc[] {
 const tableFor = (docs: Doc[], heading: string) =>
   markdownTableLines(
     ['Doc', heading],
-    docs.map(d => `| [${d.name}](${d.file}) | ${d.description} |`),
+    docs.map(
+      d =>
+        `| [${d.name}](${d.file})${d.audience === 'internal' ? ' (internal)' : ''} | ${d.description} |`,
+    ),
   )
 
-for (const { dir, marker, label, heading, slugFilenames, groups } of INDEXES) {
+for (const {
+  dir,
+  marker,
+  label,
+  heading,
+  slugFilenames,
+  groups,
+  maxDescriptionWords,
+} of INDEXES) {
   const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
-  const docs = collectDocs(dir, slugFilenames)
+  const docs = collectDocs(dir, slugFilenames, maxDescriptionWords)
   const filled = groups?.filter(g => docs.some(g.match))
+  const ungrouped = groups
+    ? docs.filter(d => !groups.some(g => g.match(d)))
+    : []
+  if (ungrouped.length) {
+    throw new Error(
+      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs the frontmatter field the groups split on (\`kind:\` in reference/, \`area:\` in rejected-ideas/), set to one of the values in website/scripts/generate-doc-indexes.ts`,
+    )
+  }
   checkOrWrite({
     path: indexPath,
     content: spliceGeneratedBlock({

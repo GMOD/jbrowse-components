@@ -1,6 +1,7 @@
 ---
 name: progress-reporting
 description: The worker to UI status channel via statusCallback, determinate bars, concurrent-fetch aggregation, and cancel. Read when touching a progress bar or download loop.
+kind: spec
 ---
 
 # Status / progress reporting

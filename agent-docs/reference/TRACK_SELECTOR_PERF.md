@@ -5,6 +5,7 @@ description:
   rebuilding the model), which three model-side optimizations were measured and
   rejected, and how to benchmark it without fooling yourself. Read before
   "optimizing" the track tree.
+kind: measurement
 ---
 
 # The track selector's cost is per-row rendering, not the model

@@ -17,7 +17,7 @@ depth/early-Z, draw-call merging, persistent staging, buffer pooling, GPU
 picking, runtime shader generation, nested render scopes) and §"Keeping the two
 backends in parity" (a hit test is a consumer of shader scalars too), in
 `measurements/buffer-churn-pan.json`, and in
-[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) (LUT-indexed
+[rejected-ideas/](../rejected-ideas/README.md) (LUT-indexed
 colour, compute-driven packing). The handoff itself is closed.
 
 Vocabulary is the handoff's. **A** — transliterable functions only; the painter

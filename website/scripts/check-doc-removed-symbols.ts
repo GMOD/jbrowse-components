@@ -48,12 +48,8 @@ const isSource = (name: string) =>
   /\.(tsx?|jsx?|mjs|cjs|slang|sh|py)$/.test(name)
 
 // Docs whose subject is what is gone, exempt as documents rather than one entry
-// per name.
-const ABSENCE_DOCS = new Set([
-  'HISTORICAL.md',
-  'REJECTED_IDEAS.md',
-  'PLUGIN_ABI_STABILITY.md',
-])
+// per name. rejected-ideas/ is outside DOC_DIRS for the same reason.
+const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md'])
 
 // A name a doc means to say is gone, or that left for another repo. The entry
 // asserts the sentence around it is still true.

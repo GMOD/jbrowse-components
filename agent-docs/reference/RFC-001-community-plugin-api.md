@@ -1,7 +1,8 @@
 ---
 name: rfc-001-community-plugin-api
-description: The 2026-07 community-plugin-API proposal, reduced to what outlived it — the RFC-to-shipped name mapping, the non-goals that are still decisions, and the six sections other docs and source comments cite by number (§3a, §5b, §7, §9, §12b, §13a-c). Read when doing plugin API design, or when a comment sends you to an RFC-001 section.
+description: The 2026-07 community-plugin-API proposal reduced to what outlived it — the RFC-to-shipped name mapping, the non-goals that are still decisions, and the sections other docs cite by number. Read when a comment sends you to an RFC-001 section.
 audience: internal
+kind: spec
 ---
 
 # RFC-001: Community plugin API for the WebGPU/WebGL2/Canvas2D era
@@ -139,10 +140,8 @@ arc and variants/LD migrated off them, and the `ReExports` entries went with
 them. The one live reference is
 `packages/core/src/pluggableElementTypes/index.ts`, whose comment points here.
 
-The removed classes stay documented in
-[HISTORICAL.md](HISTORICAL.md) §"The old block-based (server-side) rendering
-system", which is where to read what they did and why the block path can still
-be rebuilt as an external compat plugin.
+The removed classes are in git history; the block path can still be rebuilt
+as an external compat plugin.
 
 ---
 

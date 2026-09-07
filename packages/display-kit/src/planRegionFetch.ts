@@ -286,7 +286,7 @@ export function planRegionFetch({
     // variants before `sourcesBase` arrives) are woken by `view.visibleRegions`
     // and by `SettingsInvalidate` respectively. A new early return in a
     // `fetchNeeded` override has to satisfy that or the display wedges: see
-    // ARCHITECTURE.md §"The global-fetch trigger list must be read
+    // reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
     // unconditionally".
     //
     // The retry check watches half of that rather than leaving it to this

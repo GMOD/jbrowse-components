@@ -1,6 +1,7 @@
 ---
 name: ORTHOLOG_TABLES
-description: What a .blocks ortholog table can and cannot express - MCScanBlocksAdapter pairs any two columns, so all-vs-all is a question about the producer (jcvi MCScan anchors on one genome, OrthoFinder does not) and not about the format. Also the NCBI-datasets recipe behind the grape/peach/cacao demo, and the rule that a refName rename needs a chromosome-length check first because a name mismatch is usually two different assemblies. Read before adding an ortholog format, before touching demos/grape_peach_cacao, or before renaming a refName to make a track resolve.
+description: What a .blocks ortholog table can express — MCScanBlocksAdapter pairs any two columns, so all-vs-all is a question about the producer — the grape/peach/cacao recipe, and why a refName rename needs a length check first. Read before adding an ortholog format.
+kind: dataset
 ---
 
 # Ortholog tables and the NCBI demo pipeline

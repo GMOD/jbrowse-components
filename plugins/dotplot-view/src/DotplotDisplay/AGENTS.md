@@ -95,7 +95,8 @@
   pointing at, and the v-axis flip is the half a fourth copy would get wrong.
   The scalar-primitive shape is not a style choice — a transform-object helper
   costs the Canvas2D loop 1.45x and a projector closure 3.5x, both measured in
-  `benches/cumBpProjection.bench.ts` and written up in `REJECTED_IDEAS.md`.
+  `benches/cumBpProjection.bench.ts` and written up in
+  `agent-docs/rejected-ideas/`.
 - **The pick's tie-break needs `>`, not `<=`.** Flatbush hands candidates back
   in Hilbert order past `nodeSize` items, so an equidistant EARLIER segment can
   arrive last and take a hit that belongs to the one drawn on top. At or under

@@ -199,7 +199,7 @@ test('a method the model does not have is a compile error', () => {
 
 // One registration, several types: the shape a contribution belonging to a
 // family takes, since the tree spells a family as a shared mixin set rather
-// than a chain there is no parent to name — `reference/REJECTED_IDEAS.md`,
+// than a chain there is no parent to name — `agent-docs/rejected-ideas/`,
 // "Give a pluggable element an `extendsType`".
 test('one call naming several types reaches each of them and nothing else', () => {
   const pm = new PluginManager([])

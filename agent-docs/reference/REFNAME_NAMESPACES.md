@@ -1,6 +1,7 @@
 ---
 name: refname-namespaces
-description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Also the same defect in ASSEMBLY names one field over, and the other thing the rename derives for free: the sequence adapter config a BAM/CRAM decodes against. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName or decodes against the reference.
+description: Why `refName` means two different things either side of the RPC boundary, which side may canonicalize, the same defect in assembly names, and the sequence adapter the rename derives. Read before comparing a fetched refName or adding an RPC that returns one.
+kind: spec
 ---
 
 # The two refName namespaces
@@ -123,7 +124,7 @@ one instance twice with two different configs, and the first wins. That is
 harmless rather than fixed — the adapters fetched across two assemblies are the
 comparative ones, which never read the field. Both the compound cache key and a
 loud conflict were costed and declined; see
-[REJECTED_IDEAS.md](REJECTED_IDEAS.md).
+[rejected-ideas/](../rejected-ideas/README.md).
 
 ## Six plugins hit it; six invented a different fix
 

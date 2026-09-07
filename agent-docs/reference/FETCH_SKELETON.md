@@ -1,7 +1,8 @@
 ---
 name: fetch-skeleton
-description: The one latest-wins fetch machine every fetch in the tree runs on — `installFetch` / `runFetchOnce`, the token rotation, the phase contract, the error rule — and the test for which of an autorun's reads are tracked. Read before writing a fetch installer or reaching for `untracked`.
+description: The one latest-wins fetch machine every fetch runs on — `installFetch` / `runFetchOnce`, the leading edge, the unconditional trigger reads, the durable cancel, and which of an autorun's reads are tracked. Read before writing a fetch installer or reaching for `untracked`.
 audience: internal
+kind: spec
 ---
 
 # The fetch skeleton
@@ -52,7 +53,7 @@ ported, not shared**: the per-region family reaches its gates through
 `autorunOnReadyView` rather than through the skeleton, so the check sits there
 too — which is also what covers the other three autoruns that family installs.
 A rule the skeleton grows next is owed the same two lines, and that is cheaper
-than the conversion `REJECTED_IDEAS.md` declines.
+than the conversion `agent-docs/rejected-ideas/` declines.
 
 The narrower move — one preamble helper holding the counter read, the cancel
 read and the liveness skip, called by both hand-rolled bodies — declines for its
@@ -65,7 +66,7 @@ where it covers four autoruns rather than one. A preamble would hand back three
 values for the second caller to use one of, which is a read order shared, not a
 rule. What keeps both honest is a pin: `installFetch.test.ts` re-runs a body
 that declined, and `installPerRegionFetchAutoruns.test.ts` asserts the whole
-dependency set per state (ARCHITECTURE.md §"The global-fetch trigger list must
+dependency set per state (FETCH_SKELETON.md §"The global-fetch trigger list must
 be read unconditionally").
 
 And **`FetchMixin`'s begin/end/error trio is `fetchMixinLifecycle`**, one
@@ -137,3 +138,213 @@ callback returns. Which set depends on the mode: regular mode takes
 `visibleRegions` only — its columns lay out by feature *index* across the visible
 width, so a buffered feature would be crammed into the viewport and draw a
 connector to an off-screen position.
+
+## Which reads the per-region autorun tracks
+
+**What the autorun decides and what it merely wires are separate files, and the
+split is what either half can be tested against.** `planRegionFetch` answers
+"given these inputs, what should happen" as a value — fetch this region set,
+raise this assembly mismatch, or do nothing for this reason — and is pure, so
+its precedence and its buffered-region substitution need no tree.
+`installPerRegionFetchAutoruns` owns what no pure function can state: which
+reads MobX tracks and which sit behind a thunk so a run that bails early does
+not subscribe to the viewport. The plan's thunk parameters are the only thing it
+says about that, the way `computeDisplayPhase` takes its `loading` term as one.
+Two test files, one per half; a third (`fetchRegions.test.ts`) covers the commit
+ordering — a test that transcribes an autorun stays green when the autorun's
+behaviour is deleted, which is what the split guards against.
+
+**The dependency set is itself a value, and the wiring test states it.** Every
+installer builds its reaction through `namedAutorun`
+(`@jbrowse/render-core/namedReactions`), which records it against the node as
+well as disposing it with one — a bare `autorun` beside an `addDisposer` would
+opt that reaction's set out of the tests below and nothing would fail, so there
+is one spelling and no second half to forget. `reactionDependencies(node, name)`
+answers, as sorted leaf names, what that reaction subscribed to on its last run
+— MobX rebuilds the set every run, so the answer is per state. The mutate-and-
+count tests above pin one observable each, and only the ones someone thought to
+write; the "dependency set is the contract" blocks in
+`installPerRegionFetchAutoruns.test.ts` and `RenderLifecycleMixin.test.ts` pin
+the whole list per state instead: the two pure signals present in every state,
+the viewport present only while the display can act on it, the in-flight and
+coverage reads tracked rather than guarded. A read that moves in or out of a body
+— a trigger dropped under a gate, a guard that stopped being `untracked`, a dev
+check leaking a read — changes the list, whichever observable it was.
+
+## Every fetch autorun runs on the leading edge
+
+Every fetch installer schedules through `leadingEdgeAutorun`
+(`@jbrowse/core/util/leadingEdgeAutorun`), and so does the dotplot view's region
+autorun. MobX's own `autorun(fn, { delay })` is trailing-edge only — it schedules
+the *first* run through `setTimeout` too — so a cold open spent the whole delay
+waiting for no interaction to coalesce, and that latency landed on first paint.
+Display creation to first `fetchNeeded` measures **683 ms** under
+`{ delay: 600 }` and **112 ms** on the leading edge.
+
+Two properties make it safe:
+
+- **The body reports whether it started work, and only that arms the debounce.**
+  A run that bails on a guard — a view not measured, a minimized track, a gate
+  shut — returns nothing and stays on the leading edge. A return value cannot
+  be forgotten the way an imperative `prime()` call could.
+- **The leading edge is one microtask, not the install call.** A model is
+  routinely built and then configured in the same synchronous block, and a fetch
+  issued between those two lines is issued against the un-configured state,
+  invalidated by the setting that follows, and reissued. Yielding once collapses
+  that pair back into one run while still starting three orders of magnitude
+  sooner than the timer did. A change arriving after an `await` is a later
+  decision and correctly costs a refetch.
+
+**The coupling a slow fetch hides.** A fetch that cannot land inside another
+debounce's first window is a coupling nobody had to state. The LGV's coarse blocks are on a 500 ms trailing-edge autorun, and two
+displays clip a per-bp scan to them so it does not recompute per animation frame
+— wiggle's autoscale domain and the alignments coverage scale. Over the *empty*
+initial block list both yield no entries, and no entries is not a stale domain
+but the fallback one, `[0,1]`: a bigwig line track drew blank and a density
+track solid. `settledDynamicBlocks` is the fix and the rule in one place — the
+coarse blocks once the view has settled once, the live ones before that — but
+the general lesson is the one to carry: **anything downstream of a fetch that
+was only ever correct because the fetch was slower than it is a coupling, and
+the empty-versus-stale distinction is where it bites.**
+
+**Install order does not matter, because of the microtask.** With the first
+run at the install call, the three autoruns installed before `FetchVisibleRegions`
+each fired once and two of them called `clearAllRpcData`, so a fetch issued
+first was cancelled by `SettingsInvalidate`'s first pass and reissued with
+identical arguments — one duplicate RPC per track on every open, visible only
+to a call count. **A fourth installer owes nothing to install order; it owes
+its first run to a microtask.**
+
+## The global-fetch trigger list must be read unconditionally
+
+The skeleton (`installFetch`, which `installGlobalFetchAutorun` is a
+declaration over) reads `reloadCounter` and `fetchCanceled` unconditionally at
+the top of its body, above every gate, and that ordering is load-bearing. MobX
+rebuilds the dependency set on every run, so a read placed inside the gate drops
+out of it on any run that decides not to fetch — and can then never wake the
+autorun again. Arc is the shape that exposed this: its `prepare` declines while
+`dataCurrent`, which goes true on every successful fetch, so with
+`reloadCounter` read under the gate `reload()` was silently dead. The viewport
+and the `rpcProps()` cache key (`FetchMixin.rpcPropsCacheKey`, for the reason
+in "the cache key is the return value, not the reads") are the global family's
+other two trigger axes, and both ride `currentFetchKey`, which `prepare` and the
+freshness gate read on every run the gates let through — so any state that can
+decline for a signature-shaped reason keeps a signature read that wakes it.
+
+**`prepare` returning `undefined` is the display's gate**, and it is one
+function rather than a predicate plus a bail-out prefix inside the fetch — the
+two used to answer the same question in two places, one of them tracked and one
+not. It runs synchronously in the autorun body, so whatever it read to decline
+stays in the dependency set and the autorun rewakes on it; and the skeleton's
+`gate` already declines while `view.initialized` is false, so a `prepare`
+restating it is restating the skeleton. What it must not do is move a trigger
+read of its own under a bail-out, which is the failure this section exists for.
+
+The general rule, which the other fetch autoruns already satisfy: **a gated
+trigger read is safe only if the gate is itself an observable that flips on the
+transition you want to wake up on.** `if (self.isMinimized) return` above the
+tracked deps (synteny, tree-sidebar, the variant sources autorun) is fine —
+un-minimizing re-runs the body and re-reads everything. A pure signal like
+`reloadCounter`, whose only job is to say "go again" and which no gate consults,
+is the dangerous case: nothing else will ever re-run the body on its behalf.
+`installGlobalFetchAutorun.test.ts` pins this for the skeleton, and
+`installPerRegionFetchAutoruns.test.ts` for the one family that hand-rolls its
+own body — the whole dependency set asserted per state, so `reloadCounter`,
+`fetchCanceled` and `alive` are visible in the declining states (minimized,
+errored) where a gated read would have dropped out.
+
+A gate on a freshness signal must also be invalidated by `reload()` — bumping
+`reloadCounter` alone re-runs the autorun but leaves the gate declining. On the
+global family that pairing is the skeleton's now: the freshness gate is
+`installFetch`'s `fetchKey` (`currentFetchKey` against the stamped
+`loadedFetchKey`), and a run whose `reloadCounter` has advanced since the
+run that last issued a fetch ignores it — including against a fetch that
+commits mid-reload and re-stamps the very signature the reload dropped, a race
+the family's hand-rolled gate lost. `GlobalFetchMixin.reload()` still drops
+`loadedFetchKey`, but for the overlay: `dataCurrent` goes false, so the
+refetch shows as loading while the display's data stays on screen under it.
+
+**The shared skeleton owns the same pairing, for the fetches no check covers.**
+A gate on committed state is `installFetch`'s `fetchKey`, not a compare in
+`prepare`: the skeleton stamps the key at commit and declines on it, and a run whose `reloadCounter` has
+advanced since the run that last *issued* a fetch ignores it, so a reload
+refetches with nothing to clear. The split matters because only one of the two
+declines can strand a display — `prepare` returning `undefined` is "nothing to
+fetch" (an empty viewport, no annotation track configured), a legitimate decline
+forever that no retry should change, while the key gate is "I have exactly
+this", which a retry must override. The stamp is observable — the skeleton's
+own `observable.box`, or the host's `loadedFetchKey` where a keyed foundation
+already keeps one — because a commit landing after the inputs moved back is
+what has to wake the declined run; a closure variable leaves the late commit's
+data under the earlier viewport. Both keyed installers gate on
+`KeyedFetchMixin.currentFetchKey` — the display's `viewSignature` plus the
+settings and adapter axes, since neither comparative display's signature
+carries an adapter term and an adapter edit would otherwise wake the autorun
+into a decline — and `dataCurrent` compares the same getter against the same
+stamp, so the gate and the export gate cannot disagree on an axis. This exists
+because a **secondary** fetch
+passes no `contract` and so installs no `makeRetryContractCheck` (one ledger per
+node, one `lastCounter` per check — two would each demand a fetch from one
+bump), and the multi-way synteny display's two dependent fetches shipped the
+dead Retry in that blind spot: a committed key compared by hand in `prepare`,
+with no `reload()` override to match. Pinned in `installFetch.test.ts`, which is
+where a rule belongs once the skeleton holds it rather than each display.
+
+**The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
+something `FetchVisibleRegions` already tracks.** That autorun tests
+`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits, so on a run
+where the block is uncovered `isCacheValid`'s observables register no
+dependency. It's safe only because an uncovered block always reaches
+`fetchNeeded`, and a fetch bumps `fetchGeneration` — which the autorun tracks. An
+override returning early **without** fetching breaks that chain and must supply
+its own wake path from the existing dependency set. Both in-tree cases do:
+sequence's `zoomedOut` moves with `bpPerPx`, so `visibleRegions` re-fires it;
+multi-sample variant's `!sourcesBase` refetches through `SettingsInvalidate`,
+because `rpcProps().sampleFilter` is derived from `sourcesBase` and goes from
+`undefined` to a list the moment it arrives. That is also why `sampleFilter`
+spells the unfiltered case out in full rather than reusing `undefined` for it:
+collapsing the two would leave the key unchanged when sources landed, and the
+display would wedge with nothing drawn. Same failure mode as the global rule
+above — the autorun settles into a state nothing will wake it from.
+
+**The comparative twin, and why this is a law rather than one installer's
+quirk.** `installComparativeFetchAutorun` reads `reloadCounter` above its
+`prepare()` bail-outs for exactly the reason arc does, and it was added the same
+way — by finding both non-LGV views unable to recover from a fetch error,
+because after a failure every fetch input is unchanged and clearing the error
+alone refires nothing. So every fetch in the tree now carries the same pure
+signal, read unconditionally, each pinned by its installer's test:
+
+| family | installer | the pure signal | a user cancel lapses on | pinned by |
+| --- | --- | --- | --- | --- |
+| per-region | `installPerRegionFetchAutoruns` | `fetchGeneration` | a viewport change, or Retry | `installPerRegionFetchAutoruns.test.ts` |
+| global | `installGlobalFetchAutorun` | `reloadCounter` | a viewport change, or Retry | `installGlobalFetchAutorun.test.ts` |
+| comparative | `installComparativeFetchAutorun` | `reloadCounter` | Retry | `installComparativeFetchAutorun.test.ts` |
+| everything else | `installFetch` (`@jbrowse/core/util/installFetch`) | `reloadCounter` | Retry, where the host has a cancel at all | `installFetch.test.ts` |
+
+Read the table as the checklist for a fifth: if you add a fetch skeleton with a
+gate, it needs a signal the gate never consults, read above the gate, and a test
+that fails when the read is deleted. The fourth row is the general one — the
+prerequisite reads (HiC's header, the multi-sample sample list), the circular
+view's chord fetch and the breakpoint split view's overlay fetch all run on it,
+and it reads the signal for them. The three prerequisite reads (HiC's header,
+the sample list, the tiered alignment file's LOD header) share one declaration
+over it, `installPrerequisiteFetch` (`@jbrowse/core/util`): one RPC about the
+adapter itself, tracked on the adapter config and keyed on it, gated on
+minimized, reporting where the caller says. They are on three different fetch
+foundations, which is why that declaration sits in core beside none of them.
+
+**A cancel is durable, and one rule now says how durable.** No fetch trigger
+un-cancels it — the skeleton reads `fetchCanceled` tracked, under the counter
+and above every gate, so the two gestures that reopen it are in the dependency
+set of the run they closed. Those two are Retry and, on the LGV families, the
+viewport moving: the thing the user stopped is no longer the thing they are
+looking at. The comparative family has the gate and not the lapse, because its
+viewport **is** its fetch input: the same clear there would un-cancel on every
+trigger, which is exactly the durability this rule rejects.
+
+**`reloadCounter` is one declaration for all three families.** It lives on
+`FetchMixin`, the one mixin every fetch foundation composes — the argument that
+already put `fetchInert` there. Chord
+and the breakpoint view declare their own, because neither composes
+`FetchMixin`.

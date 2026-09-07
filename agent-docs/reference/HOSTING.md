@@ -1,7 +1,8 @@
 ---
 name: hosting
-description: Where JBrowse's own hosted assets live and how they are published — the jbrowse.org bucket and its CloudFront distribution, the content-addressed figure and media stores, hosted genome and PIF assets and which of them carry a coarse tier, the three plugins served off jbrowse.org rather than npm, and the drift between a hosted demo file and the script that claims to build it. Read before uploading, overwriting, or citing a hosted URL.
+description: Where JBrowse's hosted assets live and how they are published — the jbrowse.org bucket and CloudFront, the content-addressed figure store, hosted genomes and PIF tiers, the three plugins served off jbrowse.org. Read before uploading or citing a hosted URL.
 audience: internal
+kind: operations
 ---
 
 # Hosted assets and how they are published

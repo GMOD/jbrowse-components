@@ -26,7 +26,7 @@ interface MinEntry {
 
 // The QNAME grouping that produces the lists every rule below consumes lives in
 // the two CONSUMERS, not here, and that is measured rather than accidental — see
-// REJECTED_IDEAS, "One shared groupReadsByName". Both loops are eight lines
+// rejected-ideas/one-shared-groupreadsbyname.md. Both loops are eight lines
 // keying on `readNames[i]`; what differs is the entry each builds, and every
 // mechanism for varying that (a spread, a factory callback) costs 1.4-1.9x on a
 // 200k-read path this sits on. The accessors below ARE shared, which is where

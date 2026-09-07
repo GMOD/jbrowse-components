@@ -43,7 +43,7 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    * gets a dead Retry button — see there.
    *
    * What it must **not** do is move a trigger read of its own under a bail-out.
-   * See ARCHITECTURE.md §"The global-fetch trigger list must be read
+   * See reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
    * unconditionally".
    */
   prepare: () => TArgs | undefined

@@ -1,7 +1,8 @@
 ---
 name: examples-sites
-description: The rule the four embeddable-product examples sites are built on — every shown example is one complete copy-pasteable file, so shared setup may not be factored out — plus the prose caps, generated artifacts and CI wiring all four share. Read before adding a page, or before "tidying up" the duplication in one.
+description: The rule the four embeddable-product examples sites are built on — every example is one complete copy-pasteable file, so shared setup may not be factored out — plus their prose caps and CI wiring. Read before adding a page or tidying the duplication.
 audience: internal
+kind: operations
 ---
 
 # Examples sites

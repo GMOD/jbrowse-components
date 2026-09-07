@@ -1,7 +1,8 @@
 ---
 name: duplicate-sweeps
-description: What repo-wide duplicate sweeps actually turn up — both the same-named-export scan and the structural clone scan, their different false-positive classes, the four mechanisms this repo uses to hold a legitimate copy in step, and the case where deleting a duplicate cost 12 KB of eager bundle. Read before deleting a copy that looks accidental.
+description: What repo-wide duplicate sweeps turn up, their false-positive classes, the four mechanisms that hold a legitimate copy in step, and the deletion that cost 12 KB of eager bundle. Read before deleting a copy that looks accidental.
 audience: internal
+kind: measurement
 ---
 
 # Sweeping for duplicates
@@ -40,7 +41,7 @@ Check these before opening anything, in roughly descending volume:
    you get is typing, not taste**: passing a model type as a generic to
    `types.compose` degrades the result to `any`, silently. See the
    `createEmbeddedSessionModel` entry in
-   [REJECTED_IDEAS.md](REJECTED_IDEAS.md#config-and-mst).
+   [rejected-ideas/](../rejected-ideas/README.md#config-and-mst).
 3. **`export default`.** The name is local to the module, so it never collides
    at an import site. `SetRowArrangementDialog`, `ReorderChromosomesDialog`,
    `GetFeatureDetails`, `f`. For RPC classes the identity that matters is the

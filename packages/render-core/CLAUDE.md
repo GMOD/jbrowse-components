@@ -102,7 +102,7 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   work — MAF's payload carries coverage buffers beside its cells, and the lens
   is what lets one payload feed several marks. The seven ways the 2026-09-05
   review proposed moving one of those three across a boundary are one entry in
-  `reference/REJECTED_IDEAS.md`.
+  `agent-docs/rejected-ideas/`.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
 - **A cell is a payload, and absence is absence.** `regionDataMap` checks a

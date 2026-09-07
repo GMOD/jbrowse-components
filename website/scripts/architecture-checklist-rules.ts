@@ -67,15 +67,12 @@ export function checklistEntries(doc: string) {
 // Keyed by heading slug so a rename fails loudly rather than silently exempting
 // a new section that happens to reuse a title.
 export const STATES_NO_RULES: Record<string, string> = {
-  tldr: 'the mental model in eight bullets; every rule it touches is indexed from the section that argues it',
-  overview: 'the pipeline in one figure and one paragraph',
+  overview: 'the pipeline in one paragraph',
   vocabulary: 'definitions',
   'display-stacks':
     'which mixins exist and what composes them, off two generated tables; its one ordering rule is indexed',
   'data-fetching-pipeline':
-    'the autorun table and what installs it; the rules are in the subsections below it',
-  'one-latest-wins-machine-one-phase-contract-one-skeleton':
-    'what the shared skeleton is made of. What a NEW installer owes is the trigger list, which is indexed',
+    'the autorun table and what installs it; the rules are in the reference docs it links',
 }
 
 export interface ArchitectureDocInput {

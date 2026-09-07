@@ -76,8 +76,7 @@ anyway, since a corner is cumBp rather than chromosome-local bp.
 
 ## Consequences
 
-- No whole-assembly size ceiling; the former ~68.7 Gbp cap is gone
-  (`reference/HISTORICAL.md`).
+- No whole-assembly size ceiling.
 - 4 bytes per corner. `padTop`/`padBottom`, the `viewPad0`/`viewPad1` uniforms
   and `hpmath.slang`'s `hpCornerScreenX` are all gone. The LGV
   `hpSplitUint`/`hpToClipX` path is untouched.

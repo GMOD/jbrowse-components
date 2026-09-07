@@ -1,6 +1,7 @@
 ---
 name: synteny-picking
-description: How synteny hover/click picking actually performs, measured. The pick index is a 1D hull index, so its cost is governed by hull WIDTH rather than instance count — which makes it near-free on two related genomes and useless on all-vs-all data at any zoom past whole-genome. Read before quoting the "<0.01ms hover" figure or re-tuning MAX_PAN_SKEW_PX.
+description: Synteny hover/click picking, measured: the pick index is a 1D hull index, so its cost follows hull width, near-free on two related genomes and useless on all-vs-all data. Read before quoting the hover figure or re-tuning MAX_PAN_SKEW_PX.
+kind: measurement
 ---
 
 # Synteny picking, measured

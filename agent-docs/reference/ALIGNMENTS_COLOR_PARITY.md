@@ -1,7 +1,8 @@
 ---
 name: alignments-color-parity
-description: How a pileup's three colour vocabularies (read fills, arc / read-cloud overlays, linked-read connectors) are kept saying the same thing, why they are derived from one table rather than tested against each other, and the one meaning still split between them. Read before touching arc colour, the connector palette, or the alignments legend.
+description: How a pileup's three colour vocabularies (read fills, arc overlays, linked-read connectors) are derived from one table rather than tested against each other, and the one meaning still split. Read before touching arc colour or the alignments legend.
 audience: internal
+kind: spec
 ---
 
 # Alignments colour parity
@@ -183,7 +184,7 @@ neither `> upper` nor inside `(0, lower)`), so those arcs went red over reads
 that stayed grey.
 
 Both sides read TLEN now, and nothing reads the span for colour. `absrad`
-survives only as arc *height*, which is geometry. See REJECTED_IDEAS for the
+survives only as arc *height*, which is geometry. See agent-docs/rejected-ideas/ for the
 capability that was given up with it.
 
 `readInsertSizes` is already `Math.abs(template_length)` — set at extraction in

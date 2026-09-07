@@ -1,6 +1,7 @@
 ---
 name: benchmarking
 description: How to build a benchmark whose number is real, and the catalogue of traps that have produced fake ones in this repo — each with the bogus figure it actually reported. Read before writing a bench or quoting a speedup.
+kind: operations
 ---
 
 # Benchmarking, and the traps that fake it
