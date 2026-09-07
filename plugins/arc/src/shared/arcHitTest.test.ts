@@ -86,6 +86,24 @@ test('a direction tick is hoverable, and reaches past its own foot', () => {
   expect(hitTestArcs(140, 1.5, [a], VIEW_W)).toBeUndefined()
 })
 
+// A record whose mate is off the view lays out as a stem down from its
+// breakpoint and a tick off the stem's foot; both are ink, and hoverable.
+test('a one-ended breakend is hoverable along its stem and its tick', () => {
+  const ticks: ArcTick[] = [
+    { x1: 300, x2: 300, y: 0, y2: 12 },
+    { x1: 300, x2: 320, y: 12 },
+  ]
+  const a = arc(
+    'a',
+    { kind: 'bezier', left: 300, right: 300, height: 0 },
+    2,
+    ticks,
+  )
+  expect(hitTestArcs(300, 6, [a], VIEW_W)?.key).toBe('a')
+  expect(hitTestArcs(318, 12, [a], VIEW_W)?.key).toBe('a')
+  expect(hitTestArcs(300, 40, [a], VIEW_W)).toBeUndefined()
+})
+
 test('two arcs on the same ink: the later-painted one wins', () => {
   const under = arc('under', dome(0, 400))
   const over = arc('over', dome(0, 400))

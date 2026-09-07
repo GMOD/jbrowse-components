@@ -107,6 +107,23 @@ test("a direction tick strokes at the arc's own width and color", () => {
   expect(calls).toEqual(['stroke darkblue @3', 'stroke darkblue @3'])
 })
 
+test('a stem tick strokes down to its second y', () => {
+  const a = arc(
+    'a',
+    { kind: 'bezier', left: 100, right: 100, height: 0 },
+    {
+      strokeWidth: 2,
+      ticks: [{ x1: 100, x2: 100, y: 0, y2: 12 }],
+    },
+  )
+  const { ctx, calls } = recorder()
+  const lineTo = jest.fn()
+  Object.assign(ctx, { lineTo })
+  drawArcs(ctx, [a], OPTS)
+  expect(lineTo).toHaveBeenCalledWith(100, 12)
+  expect(calls).toEqual(['stroke darkblue @2', 'stroke darkblue @2'])
+})
+
 // The ordering the DOM used to give for free: as one `<g>` per arc inside one
 // `<svg>`, every label was painted after every curve before it. Interleaved on a
 // canvas, a later arc's stroke crosses an earlier arc's label.

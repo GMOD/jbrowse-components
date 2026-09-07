@@ -45,7 +45,7 @@ export function hitTestArcs(
 function arcInkDistancePx(arc: LaidOutArc, x: number, y: number) {
   let best = arcDistancePx(arc.shape, x, y)
   for (const t of arc.ticks ?? []) {
-    const d = segmentDistancePx(t.x1, t.y, t.x2, t.y, x, y)
+    const d = segmentDistancePx(t.x1, t.y, t.x2, t.y2 ?? t.y, x, y)
     if (d < best) {
       best = d
     }

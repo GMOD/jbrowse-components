@@ -16,6 +16,9 @@ export interface ArcTick {
   x1: number
   x2: number
   y: number
+  // a tick is horizontal at `y` unless it names a second y, which makes it the
+  // stem a one-ended breakend is drawn as
+  y2?: number
 }
 
 export interface LaidOutArc {

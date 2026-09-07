@@ -28,6 +28,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 const TICK_PX = 20
 // the ticks sit just inside the baseline, so their outer half is not clipped
 const TICK_Y = 1.5
+// how far a one-ended breakend's stem drops below the baseline before its tick
+const STEM_PX = 12
 
 // One breakend's direction tick, or nothing when the record states no
 // direction. A list so the two feet spread into one array with no branch.
@@ -169,25 +171,53 @@ export function stateModelFactory(
           const p1 = place(k1.refName, k1.start)
           const p2 = place(k2.refName, k2.start)
           const absrad = p1 && p2 ? Math.abs((p2.x - p1.x) / 2) : 0
-          return p1 && p2 && absrad > 1
-            ? {
-                feature,
-                key: `${feature.id()}-${alt ?? ''}`,
-                shape: {
-                  kind: 'bezier',
-                  left: p1.x,
-                  right: p2.x,
-                  height: Math.min(height, absrad),
-                },
-                color,
-                strokeWidth: lineWidth,
-                ticks: [
-                  ...mateTick(p1, k1.mateDirection),
-                  ...mateTick(p2, k2.mateDirection),
-                ],
-                caption,
-              }
-            : undefined
+          const key = `${feature.id()}-${alt ?? ''}`
+          // one end in view and the other on a chromosome or region the view
+          // does not show: a stem down from the breakpoint, then the mate tick
+          // pointing at the side the record keeps, the way the alignments arc
+          // band marks a translocation it cannot draw as an arc
+          const oneEnded = (p: ArcPoint, keepsDir: number | undefined) => ({
+            feature,
+            key,
+            shape: {
+              kind: 'bezier' as const,
+              left: p.x,
+              right: p.x,
+              height: 0,
+            },
+            color,
+            strokeWidth: lineWidth,
+            ticks: [
+              { x1: p.x, x2: p.x, y: 0, y2: STEM_PX },
+              ...mateTick(p, keepsDir).map(t => ({ ...t, y: STEM_PX })),
+            ],
+            caption,
+          })
+          return p1 && p2
+            ? absrad > 1
+              ? {
+                  feature,
+                  key,
+                  shape: {
+                    kind: 'bezier',
+                    left: p1.x,
+                    right: p2.x,
+                    height: Math.min(height, absrad),
+                  },
+                  color,
+                  strokeWidth: lineWidth,
+                  ticks: [
+                    ...mateTick(p1, k1.mateDirection),
+                    ...mateTick(p2, k2.mateDirection),
+                  ],
+                  caption,
+                }
+              : undefined
+            : p1
+              ? oneEnded(p1, k1.mateDirection)
+              : p2
+                ? oneEnded(p2, k2.mateDirection)
+                : undefined
         })
       },
     }))

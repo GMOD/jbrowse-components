@@ -131,7 +131,7 @@ export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
             x1={t.x1}
             x2={t.x2}
             y1={t.y}
-            y2={t.y}
+            y2={t.y2 ?? t.y}
           />
         ))}
         {arc.label ? <ArcLabel arc={arc} /> : null}

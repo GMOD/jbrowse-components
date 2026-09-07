@@ -57,7 +57,7 @@ function strokeTicks(
   ctx.beginPath()
   for (const t of ticks) {
     ctx.moveTo(t.x1, t.y)
-    ctx.lineTo(t.x2, t.y)
+    ctx.lineTo(t.x2, t.y2 ?? t.y)
   }
   ctx.stroke()
 }
