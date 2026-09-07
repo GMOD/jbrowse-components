@@ -43,6 +43,14 @@ Clicking a filled pin clears the default. It does not undo the values the pin
 wrote: those tracks keep what you applied, and only the tracks you open from
 then on go back to JBrowse's built-in value.
 
+## Checkbox rows
+
+Beside a checkbox the pin is that checkbox for every open track of the type. It
+fills and empties with the box, and clicking it turns the setting on, or off,
+everywhere at once and then offers the new state as the default. Setting the
+default back to JBrowse's built-in value clears it, so an on/off setting never
+carries a default that changes nothing.
+
 Defaults are keyed to the **type of display** rather than to all tracks at once.
 A read height default applies to your alignments tracks, a feature height
 default to your gene and feature tracks. Two track types that happen to share a
