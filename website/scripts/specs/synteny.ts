@@ -1075,11 +1075,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
-  // block (grape 11 / peach G7 / cacao IX) where 10 consecutive orthologous
-  // genes step monotonically across all three genomes. showOnlyGenes collapses
-  // each locus to its gene glyph, and compact displayMode packs the rows so the
-  // synteny ribbons connect individual orthologs one-to-one. All three run in
-  // the same (forward) orientation, so no [rev] flips are needed.
+  // block (grape 11 / peach G7 / cacao IX). showOnlyGenes collapses each locus
+  // to its gene glyph and compact displayMode packs the rows, so the ribbons
+  // read one ortholog at a time. All three run in the same (forward)
+  // orientation, so no [rev] flips are needed. The fan at the right of the
+  // frame is the finding, and the annotation below says why.
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao_gene_orthologs',

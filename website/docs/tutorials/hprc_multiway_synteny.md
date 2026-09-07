@@ -216,10 +216,12 @@ one side and _CFHR4_ onward on the other, place in every lane.
 
 <Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing its own CAT gene models on its own contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
-The four carriers also sort together, at the bottom of the stack. Lane order is
+The four carriers also sort together, at the bottom of this stack. Lane order is
 densest first over the fetched window, weighed by how much of the reference each
 lane's alignment places, and a lane whose alignment skips the cluster places
-less of it, so the order the display chooses on its own is the genotype.
+less of it — so the two genotypes separate, though which of them sits on top is
+the window's business and not a readout. Pin `rowOrder` where an order has to
+hold.
 
 ## The whole chromosome
 
@@ -247,7 +249,8 @@ stack. Each lane's header carries a menu: re-anchor the whole view on that
 haplotype, so it becomes the top lane and hg38 drops into the stack; open the
 haplotype at the matching region in a view of its own, with this track and its
 CAT annotation along; or move and hide the lane, the same controls the track
-menu's **Lanes** entry offers for every lane at once.
+menu's **Lanes** entry offers for every lane at once, alongside **Show all
+lanes** and **Reset lane order**.
 
 <Figure caption="The header menu of one haplotype lane: re-anchor the view on it, open it at the matching region in its own view, or move and hide the lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
 

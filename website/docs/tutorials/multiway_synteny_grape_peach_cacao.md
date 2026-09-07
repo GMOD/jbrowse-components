@@ -403,7 +403,7 @@ its mate fills, and peach-cacao falls short by whatever grape lost.
 Zoom to one block with grape in the middle, and turn on each genome's gene track
 with **Show only genes**.
 
-<Figure caption="Gene-level view of the same block: ten consecutive orthologs run in the same order across grape, peach, and cacao, so each synteny ribbon links one gene to its ortholog in the row above and below." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="Gene-level view of the same block, peach over grape over cacao with each genome's gene track on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One locus against all seven genomes
 
@@ -415,7 +415,7 @@ draws every mate at once:
   blocks)**, which renders as an `LGVSyntenyDisplay`: every mate in one pileup.
 - Pick **Group by... → Mate assembly** for a lane per genome.
 
-<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, arabidopsis a scattered few, and tomato, the one asterid, a single gene." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, while arabidopsis and tomato, the one asterid, keep a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Each genome in its own coordinates
 
@@ -468,7 +468,7 @@ The same thing as a `defaultSession`:
 }
 ```
 
-<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a ribbon chain stops at the first lane missing the ortholog." src="/img/multiway_synteny/lgv_track_lanes.png" />
+<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 ### What a lane header says
 
@@ -483,8 +483,9 @@ Each lane has its own scale, so each lane states it:
   far out for ticks draws none
 - **The view's gridlines stop at the grape lane**, the only lane they are true
   for
-- **A lane with no GFF3 track** outlines the table's gene spans and says
-  `no annotation`, which is the four `BLOCKS_ONLY_SPECIES` lanes here
+- **A lane with no gene track the session can read** — GFF3, GTF, BigBed or BED
+  — outlines the table's gene spans and says `no annotation`, which is the four
+  `BLOCKS_ONLY_SPECIES` lanes here
 
 ### Ordering the lanes
 
