@@ -16,22 +16,39 @@ export interface RecordedRect {
  * `moveTo`/`lineTo` and filled records its bounding box, which is what a
  * shape whose hit test answers a polygon's box (the variant inversion
  * triangle) is held to.
+ *
+ * A **stroked** path records one rect per `moveTo`/`lineTo` edge, each the
+ * edge's bounding box widened by half the current `lineWidth` — the extent a
+ * round cap reaches on all four sides. Per edge rather than per `stroke()`,
+ * because a painter that batches a colour run into one path (dotplot's) would
+ * otherwise record the run's hull as a single instance. `fillStyle` on such a
+ * record is the `strokeStyle` it went down in; the field is the colour of the
+ * ink either way.
  */
 export function recordingContext() {
   const calls: RecordedRect[] = []
   const points: [number, number][] = []
+  const edges: [number, number, number, number][] = []
   const ctx = {
     fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    lineCap: 'butt' as CanvasLineCap,
     save() {},
     restore() {},
     beginPath() {
       points.length = 0
+      edges.length = 0
     },
     clip() {},
     moveTo(x: number, y: number) {
       points.push([x, y])
     },
     lineTo(x: number, y: number) {
+      const from = points.at(-1)
+      if (from) {
+        edges.push([from[0], from[1], x, y])
+      }
       points.push([x, y])
     },
     arc() {},
@@ -50,7 +67,24 @@ export function recordingContext() {
           fillStyle: this.fillStyle,
         })
         points.length = 0
+        edges.length = 0
       }
+    },
+    stroke() {
+      const half = this.lineWidth / 2
+      for (const [ax, ay, bx, by] of edges) {
+        const x = Math.min(ax, bx) - half
+        const y = Math.min(ay, by) - half
+        calls.push({
+          x,
+          y,
+          w: Math.max(ax, bx) + half - x,
+          h: Math.max(ay, by) + half - y,
+          fillStyle: this.strokeStyle,
+        })
+      }
+      points.length = 0
+      edges.length = 0
     },
     rect(x: number, y: number, w: number, h: number) {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })

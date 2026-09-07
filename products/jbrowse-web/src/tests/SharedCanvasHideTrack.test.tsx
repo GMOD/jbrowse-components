@@ -10,9 +10,12 @@ import { getPluginManager, setup } from './util.tsx'
 // Dotplot and synteny both hang one canvas above several displays, so hiding a
 // track cannot unmount anything — the container has to repaint, or the departed
 // track's pixels stay up. Both keep the same shape (resolved render state, keys
-// hashed per display, unconditional repaint); these are the tests that hold
-// them to it. See agent-docs/reference/SHARED_CANVAS_VIEWS.md §"The empty frame
-// is load-bearing".
+// hashed per display, a repaint that always covers the whole canvas); these are
+// the tests that hold them to it. What each frame names its per-display list is
+// where they differ: synteny hands the backend one `perTrack` map, dotplot one
+// canvas-wide block per display keyed by the same hash. See
+// agent-docs/reference/SHARED_CANVAS_VIEWS.md §"The empty frame is
+// load-bearing".
 
 setup()
 
@@ -25,20 +28,21 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(grapePeachGetFile)
 
-// the slices of each view's render state these tests assert on
-interface DotplotState {
-  displayKeys: readonly number[]
-}
+// the slice of synteny's render state these tests assert on
 interface SyntenyState {
   perTrack: Map<number, unknown>
 }
 
-function fakeBackend<State>() {
-  const calls = {
+function fakeCalls<Frame>() {
+  return {
     uploaded: [] as number[],
     deleted: [] as number[],
-    rendered: [] as State[],
+    rendered: [] as Frame[],
   }
+}
+
+function fakeSyntenyBackend() {
+  const calls = fakeCalls<SyntenyState>()
   return {
     calls,
     backend: {
@@ -49,11 +53,34 @@ function fakeBackend<State>() {
       release(key: number) {
         calls.deleted.push(key)
       },
-      render(state: State) {
+      render(state: SyntenyState) {
         calls.rendered.push(state)
       },
       pick() {
         return undefined
+      },
+      dispose() {},
+    },
+  }
+}
+
+// Dotplot draws through the per-region contract, so the per-display list a
+// frame carries is its block list — one canvas-wide block per display, keyed
+// by the same hash the upload used.
+function fakeDotplotBackend() {
+  const calls = fakeCalls<number[]>()
+  return {
+    calls,
+    backend: {
+      upload(key: number) {
+        calls.uploaded.push(key)
+      },
+      release(key: number) {
+        calls.deleted.push(key)
+      },
+      renderBlocks(blocks: { displayedRegionIndex: number }[]) {
+        calls.rendered.push(blocks.map(b => b.displayedRegionIndex))
+        return blocks.length > 0
       },
       dispose() {},
     },
@@ -80,14 +107,14 @@ async function loadedDotplot(tracks: string[]) {
     },
     { timeout: 30000 },
   )
-  const { calls, backend } = fakeBackend<DotplotState>()
+  const { calls, backend } = fakeDotplotBackend()
   view.startRenderingBackend(backend)
   // settle before measuring: a late geometry commit would otherwise land in the
   // upload counts these tests attribute to the hide
   await waitFor(
     () => {
       expect(view.settled).toBe(true)
-      expect(calls.rendered.at(-1)?.displayKeys.length).toBe(tracks.length)
+      expect(calls.rendered.at(-1)?.length).toBe(tracks.length)
     },
     { timeout: 30000 },
   )
@@ -112,7 +139,7 @@ async function loadedSynteny(tracks: string[]) {
     { timeout: 30000 },
   )
   const level = view.levels[0]
-  const { calls, backend } = fakeBackend<SyntenyState>()
+  const { calls, backend } = fakeSyntenyBackend()
   level.startRenderingBackend(backend)
   await waitFor(
     () => {
@@ -138,7 +165,10 @@ test('dotplot: hiding the last track repaints the canvas empty', async () => {
   })
   // the last frame drawn must not be the one with the track still in it
   expect(calls.rendered.length).toBeGreaterThan(rendersBefore)
-  expect(calls.rendered.at(-1)?.displayKeys).toStrictEqual([])
+  expect(calls.rendered.at(-1)).toStrictEqual([])
+  // and the view still reports finished over the canvas it just wiped —
+  // `paintInert` is what says a plot with no tracks has nothing coming
+  expect(view.painted).toBe(true)
 }, 45000)
 
 // keys are hashed per display, so hiding one evicts exactly its slot and the
@@ -156,7 +186,7 @@ test('dotplot: hiding one of two leaves the survivor drawn under its own key', a
   view.hideTrack('subset')
 
   await waitFor(() => {
-    expect(calls.rendered.at(-1)?.displayKeys).toStrictEqual([survivorKey])
+    expect(calls.rendered.at(-1)).toStrictEqual([survivorKey])
   })
   expect(calls.deleted).toStrictEqual([hiddenKey])
   expect(view.dotplotDisplays[0].displayKey).toBe(survivorKey)

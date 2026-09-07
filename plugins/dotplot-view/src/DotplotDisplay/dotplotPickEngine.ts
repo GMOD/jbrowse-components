@@ -1,25 +1,13 @@
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { capsuleDistPx } from '@jbrowse/render-core/shaders/capsule'
-import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
 
-import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
+import { DOTPLOT_MARKS, dotplotMarkBlock } from './dotplotMarks.ts'
 
-import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
-
-// The screen transform a pick is answered against: `DotplotView.plotTransform`
-// itself, which is the same reconstruction `drawDotplotInstances` and the shader
-// run on. Held as the INVERSE bpPerPx, which is the form the exact test below
-// needs (cumBp -> px, the direction that has to agree with the draw); the two
-// divisions that turn the cursor's px back into bp are once per pick, against a
-// segment loop.
-export interface DotplotPickTransform {
-  viewBpH: number
-  viewBpV: number
-  bpPerPxHInv: number
-  bpPerPxVInv: number
-  viewHeight: number
-}
+import type {
+  DotplotGeometryData,
+  DotplotInstanceData,
+  DotplotRenderState,
+} from './dotplotRenderingBackendTypes.ts'
 
 // One box per FEATURE, in absolute cumBp, over the hull of all of that feature's
 // segments. `featureIdx[boxId]` is the feature the box belongs to — a feature
@@ -146,7 +134,7 @@ export function buildDotplotPickIndex(
 
 // Built lazily on the first pick and keyed on the coordinate array's identity —
 // `buildLineSegments` replaces every coordinate array atomically, so `x1` is the
-// geometry token, the same one `DOTPLOT_INSTANCE_CACHE` keys its packed bytes
+// geometry token, the same one `dotplotInstanceCache` keys its packed bytes
 // on. A WeakMap rather than display state for two reasons: nothing reactive
 // should observe an index this size, and a geometry that has been replaced takes
 // its index with it instead of being explicitly evicted.
@@ -165,28 +153,39 @@ function getPickIndex(data: DotplotInstanceData) {
   return indexCache.get(data.x1)
 }
 
-// Px distance from (px, py) to the segment (ax,ay)-(bx,by): the cursor taken
-// into the segment's own frame (capsule.slang's `capsuleFrame`, with its guard
-// for the zero-length dots a whole-genome plot is mostly made of) and measured
-// by the shader's own capsule distance, so the pick is the ink's end caps
-// included.
-function pointSegmentDistPx(
-  px: number,
-  py: number,
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
+const SEGMENT_MARK = DOTPLOT_MARKS[0]!
+
+// The segments the shape is asked to measure, LATER FIRST: `hitNearest` only
+// replaces its best on a strictly nearer candidate, so a tie goes to whoever
+// was offered first, and the one drawn on top is the later one. Feature runs
+// are contiguous and disjoint, so sorting the runs by their start descending
+// and walking each backwards is a globally descending segment order — which is
+// what a whole-genome plot needs, where repeats collapse to dots at identical
+// cumBp and Flatbush hands the boxes back in Hilbert order past `nodeSize`.
+//
+// A segment painted at zero alpha (a row `hideUnlabelled` hid) is left out
+// rather than measured: nothing is on screen there, and which instances were
+// painted at all is the caller's half of the split.
+function* visibleSegments(
+  index: DotplotPickIndex,
+  data: DotplotGeometryData,
+  boxIds: ArrayLike<number>,
 ) {
-  const dx = bx - ax
-  const dy = by - ay
-  const len = Math.hypot(dx, dy)
-  const degenerate = len <= CAPSULE_MIN_LEN_PX
-  const tx = degenerate ? 1 : dx / len
-  const ty = degenerate ? 0 : dy / len
-  const rx = px - (ax + bx) / 2
-  const ry = py - (ay + by) / 2
-  return capsuleDistPx(rx * tx + ry * ty, ry * tx - rx * ty, len / 2)
+  const { instanceFeatureIdx, instanceCount, colors } = data
+  const runs = Array.from(boxIds, boxId =>
+    featureSegmentRange(
+      instanceFeatureIdx,
+      instanceCount,
+      index.featureIdx[boxId]!,
+    ),
+  ).sort((a, b) => b[0] - a[0])
+  for (const [start, end] of runs) {
+    for (let s = end - 1; s >= start; s--) {
+      if (abgrAlpha(colors[s]!) !== 0) {
+        yield s
+      }
+    }
+  }
 }
 
 /**
@@ -196,82 +195,70 @@ function pointSegmentDistPx(
  * opaque fill, so "which one is on top" is what the user sees and the only
  * defensible answer; a dotplot is thin lines over each other, where the nearest
  * is what the cursor is pointing at. Ties go to the later segment, which is the
- * one drawn on top.
+ * one drawn on top — see `visibleSegments`.
  *
  * The exact test measures in PX, not bp. The two axes are independently scaled
  * (and routinely differ by orders of magnitude on a read-vs-ref plot), so a bp
  * distance would pick a feature far away on the compressed axis over one under
- * the cursor.
+ * the cursor. It is the mark shape's own measurement: this narrows the
+ * candidates the index answered and applies the display's tolerance, and where
+ * the ink is comes from the same object that packs and paints it.
  */
 export function pickDotplotFeature({
   data,
-  colors,
+  state,
   x,
   y,
-  transform,
   tolerancePx,
 }: {
-  data: DotplotInstanceData
-  // the packed color per segment; one at zero alpha was never painted (a
-  // hidden unlabelled row) and cannot be under the cursor
-  colors?: Uint32Array
+  data: DotplotGeometryData
   // component px, y measured downward from the top of the plot
   x: number
   y: number
-  transform: DotplotPickTransform
+  state: DotplotRenderState
   tolerancePx: number
 }): DotplotPickHit | undefined {
   const index = getPickIndex(data)
   if (!index) {
     return undefined
   }
-  const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, viewHeight } = transform
+  const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, canvasHeight } = state
   const bpPerPxH = 1 / bpPerPxHInv
   const bpPerPxV = 1 / bpPerPxVInv
   const cursorBpH = viewBpH + x * bpPerPxH
-  const cursorBpV = viewBpV + (viewHeight - y) * bpPerPxV
+  const cursorBpV = viewBpV + (canvasHeight - y) * bpPerPxV
   // The tolerance is a px radius, so it is a different bp distance on each axis.
   const tolH = tolerancePx * bpPerPxH
   const tolV = tolerancePx * bpPerPxV
-  const candidates = index.flatbush.search(
+  const boxIds = index.flatbush.search(
     cursorBpH - tolH,
     cursorBpV - tolV,
     cursorBpH + tolH,
     cursorBpV + tolV,
   )
-  const { x1, y1, x2, y2, instanceFeatureIdx, instanceCount } = data
-  let best: DotplotPickHit | undefined
-  let bestDistPx = Infinity
-  for (const boxId of candidates) {
-    const feature = index.featureIdx[boxId]!
-    const [start, end] = featureSegmentRange(
-      instanceFeatureIdx,
-      instanceCount,
-      feature,
-    )
-    for (let s = start; s < end; s++) {
-      if (colors && abgrAlpha(colors[s]!) === 0) {
-        continue
-      }
-      // The shared reconstruction, so a hit means the cursor is within
-      // tolerance of pixels `drawDotplotInstances` actually painted.
-      const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
-      const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
-      const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
-      const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
-      const distPx = pointSegmentDistPx(x, y, sx1, sy1, sx2, sy2)
-      // A tie goes to the later segment, the one drawn on top. `<=` alone would
-      // not give that: Flatbush hands candidates back in tree order, so an
-      // equidistant earlier segment can arrive last — which a whole-genome plot
-      // reaches routinely, where repeats collapse to dots at identical cumBp.
-      const better =
-        distPx < bestDistPx ||
-        (distPx === bestDistPx && s > (best?.segmentIdx ?? -1))
-      if (distPx <= tolerancePx && better) {
-        bestDistPx = distPx
-        best = { segmentIdx: s, featureIdx: feature, distancePx: distPx }
-      }
-    }
+  // The block is the one the display draws with, minus the key nobody asks for
+  // here: the shape places its ink from the payload and the frame, never from
+  // the block's bp span. The bound is unbounded and the tolerance applied
+  // after, so the answer is the nearest ink and then whether it is close
+  // enough — inclusively, the way it has always been.
+  const hit = SEGMENT_MARK.hitNearest!(
+    data,
+    dotplotMarkBlock(0, state.canvasWidth),
+    state,
+    x,
+    y,
+    visibleSegments(index, data, boxIds),
+    Number.POSITIVE_INFINITY,
+  )
+  if (hit === undefined) {
+    return undefined
   }
-  return best
+  const distancePx = Math.sqrt(hit.distSq)
+  return distancePx <= tolerancePx
+    ? {
+        segmentIdx: hit.index,
+        featureIdx: data.instanceFeatureIdx[hit.index]!,
+        distancePx,
+      }
+    : undefined
 }

@@ -1,14 +1,7 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
-import { DOTPLOT_PASSES, GpuDotplotRenderer } from './GpuDotplotRenderer.ts'
-
-import type { DotplotRenderingBackend } from './dotplotRenderingBackendTypes.ts'
+import { DOTPLOT_MARKS } from './dotplotMarks.ts'
 
 export function createDotplotRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<DotplotRenderingBackend>(canvas, {
-    passes: DOTPLOT_PASSES,
-    createGpuBackend: hal => new GpuDotplotRenderer(hal),
-    createCanvas2DBackend: canvas => new Canvas2DDotplotRenderer(canvas),
-  })
+  return createMarkBackend(canvas, DOTPLOT_MARKS)
 }

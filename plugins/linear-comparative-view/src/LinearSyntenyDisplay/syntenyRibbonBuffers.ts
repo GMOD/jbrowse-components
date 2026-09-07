@@ -65,7 +65,7 @@ export class SyntenyRibbonBuffers {
     this.hal.uploadBuffer(
       key,
       passId,
-      this.interleaveCache.get(key, data),
+      this.interleaveCache.get(data),
       data.instanceCount,
     )
     this.uploadedPass.set(key, passId)
@@ -105,7 +105,7 @@ export class SyntenyRibbonBuffers {
     const { buf, count } = packClickedOutlineInstances(
       data,
       featureId,
-      this.interleaveCache.get(key, data),
+      this.interleaveCache.get(data),
     )
     this.hal.uploadBuffer(key, passId, buf, count)
     this.outlineBuffers.set(key, {
@@ -136,12 +136,10 @@ export class SyntenyRibbonBuffers {
   release(key: number) {
     this.uploadedPass.delete(key)
     this.outlineBuffers.delete(key)
-    this.interleaveCache.delete(key)
   }
 
   clear() {
     this.uploadedPass.clear()
     this.outlineBuffers.clear()
-    this.interleaveCache.clear()
   }
 }

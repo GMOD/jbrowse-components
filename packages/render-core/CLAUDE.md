@@ -73,11 +73,12 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   keeps the first call's callbacks, so state allocated outside it is rebuilt and
   dropped on every context-loss recovery — silently, because the original copy
   is still doing the work.
-- **`createInstanceCache` for a buffer reused across recolors.** Declare its
-  options beside the `interleave` whose lanes they name, not in the renderer —
-  the one way this breaks is a patch landing in a different lane than the pack.
-  Its geometry token must be a **coordinate** array (replaced atomically on
-  refetch); a color array would never invalidate.
+- **`createInstanceCache` for a buffer reused across recolors.** Its options go
+  beside the `interleave` whose lanes they name, not in the renderer — the one
+  way this breaks is a patch landing in a different lane than the pack. Its
+  geometry token must be a **coordinate** array (replaced atomically on
+  refetch); a color array would never invalidate. The token is also the key, so
+  nothing evicts and one cache is safe inside a module-level mark's `pack`.
 - **An `installUpload` declares a narrow `inputs` getter (`gpuProps()`), never
   the display's `renderState`.** Its identity re-encodes _every_ region, and a
   `renderState` carries the canvas box and row geometry, which move on each

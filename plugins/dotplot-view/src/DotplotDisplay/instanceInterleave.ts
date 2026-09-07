@@ -1,3 +1,5 @@
+import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
+
 import {
   INSTANCE_OFFSET_F32,
   INSTANCE_OFFSET_U32,
@@ -6,7 +8,6 @@ import {
 } from './shaders/dotplot.iface.generated.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
-import type { InstanceCacheOpts } from '@jbrowse/render-core/instanceCache'
 
 // The GPU-side twin of linear-comparative-view's
 // LinearSyntenyDisplay/instanceInterleave.ts — same reason: both comparative
@@ -42,7 +43,7 @@ export function interleaveInstances(data: DotplotGeometryData) {
   return buf
 }
 
-// How the renderer caches the buffer above and recolors it: a colorBy or
+// How the mark's pack caches the buffer above and recolors it: a colorBy or
 // track-color change produces new `colors` over unchanged geometry, and
 // patching the single 4-byte lane skips re-packing the four coordinate lanes.
 // The GPU re-upload still happens (the HAL has no partial-buffer update), but
@@ -54,10 +55,14 @@ export function interleaveInstances(data: DotplotGeometryData) {
 // goes wrong, and reading both off the same generated constants is what stops
 // it. `x1` is the geometry token because buildLineSegments replaces every
 // coordinate array atomically — a color array would never invalidate.
-export const DOTPLOT_INSTANCE_CACHE: InstanceCacheOpts<DotplotGeometryData> = {
+//
+// Module-level, and the token keying is what makes that safe: the mark list is
+// module-level too, so a cache keyed by display would be one map shared by
+// every plot on the page — while two displays never hold one `x1`.
+export const dotplotInstanceCache = createInstanceCache<DotplotGeometryData>({
   geomToken: d => d.x1,
   colors: d => d.colors,
   interleave: interleaveInstances,
   strideWords: INSTANCE_STRIDE_WORDS,
   colorOffsetWords: INSTANCE_OFFSET_U32.color,
-}
+})

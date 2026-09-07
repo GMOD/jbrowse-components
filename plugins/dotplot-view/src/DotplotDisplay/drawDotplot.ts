@@ -8,7 +8,7 @@ import {
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 export interface DotplotDrawParams {
   viewBpH: number
@@ -25,7 +25,7 @@ export interface DotplotDrawParams {
 }
 
 export function drawDotplotInstances(
-  ctx: Ctx2D,
+  ctx: MarkContext2D,
   geometry: DotplotGeometryData,
   params: DotplotDrawParams,
 ) {

@@ -24,9 +24,20 @@
   export target, doesn't implement it). Baking it in made one drag frame
   recompute the colors array, re-pack every instance and re-upload the buffer.
   Same split as the synteny renderer's `fillShade`.
-- `instanceInterleave.ts` owns the pack loop and declares the recolor fast path
-  (`DOTPLOT_INSTANCE_CACHE`, which `createInstanceCache` runs), keyed on
-  `(x1 identity, colors identity)`. It is deliberately the twin of
+- **The display draws through `DOTPLOT_MARKS`, one mark over `dotplot.slang`, on
+  the per-region mark backend.** The view hands it one canvas-wide block per
+  display keyed by `sharedBackendKey` (`dotplotMarkBlocks`) and its
+  `geometryByDisplayKey` map: a dotplot's x is the payload's own absolute cumBp
+  through the shader's `panPx` fold, so the block's bp span is an identity clip
+  and the per-region frame is the whole of what a keyed one was. `baseH`/`baseV`
+  ride the payload and the projection rides the frame, and
+  `params(state, region)` is where they meet — which is what puts each display's
+  own base in its own `panPx`.
+- `instanceInterleave.ts` owns the pack loop and the recolor fast path beside it
+  (`dotplotInstanceCache`, which the mark's `pack` calls), keyed on `x1`'s
+  identity. Keyed on the geometry rather than on the display, because the mark
+  list is module-level and shared by every plot on the page — two displays never
+  hold one `x1`. It is deliberately the twin of
   `LinearSyntenyDisplay/instanceInterleave.ts` — same two exports, same reason
   for not using the generated `packInstances` (both apply a per-element
   transform: here `cumBp - base`, there `instanceFeatureIdx + 1`).
@@ -44,18 +55,18 @@
   and let the factory say the rest.
 - **The hover pick is on the model, and its Flatbush needs no invalidation.**
   `dotplotPickEngine` indexes FEATURE hulls in absolute cumBp, keyed in a
-  WeakMap on `instanceData.x1` — the same geometry token
-  `DOTPLOT_INSTANCE_CACHE` uses. A pan doesn't rebuild dotplot geometry and a
-  zoom does, so nothing here needs `syntenyPickEngine`'s `isIndexUsable` /
-  `MAX_PAN_SKEW_PX`; the pan enters through the query transform instead. Two
-  further deliberate differences from that twin: it answers **nearest**, not
-  topmost (thin lines, not opaque fills), and its exact test measures in **px**,
-  because the two axes are independently scaled. Nothing calls into a rendering
-  backend, so it answers with none attached — before the first paint, through an
-  unrecovered context loss, and in a test with no canvas. (Synteny's hover is
-  not GPU-only either, `gpuRenderingBackend`'s name notwithstanding: that getter
-  holds whichever backend is attached and both implement `pick`. The differences
-  are that it needs one attached, and that each backend builds its own index.)
+  WeakMap on `instanceData.x1` — the same geometry token `dotplotInstanceCache`
+  uses. A pan doesn't rebuild dotplot geometry and a zoom does, so nothing here
+  needs `syntenyPickEngine`'s `isIndexUsable` / `MAX_PAN_SKEW_PX`; the pan
+  enters through the query transform instead. Two further deliberate differences
+  from that twin: it answers **nearest**, not topmost (thin lines, not opaque
+  fills), and its exact test measures in **px**, because the two axes are
+  independently scaled. Nothing calls into a rendering backend, so it answers
+  with none attached — before the first paint, through an unrecovered context
+  loss, and in a test with no canvas. (Synteny's hover is not GPU-only either,
+  `gpuRenderingBackend`'s name notwithstanding: that getter holds whichever
+  backend is attached and both implement `pick`. The differences are that it
+  needs one attached, and that each backend builds its own index.)
 - **Hover shading is `hoveredFeatureHighlight` + `DotplotHoverHighlight`, not a
   shader uniform.** Restroking the one hovered feature over the canvas is
   backend-agnostic by construction — it never asks which backend painted — where
@@ -86,21 +97,26 @@
   `dotplotProject.ts` is where the arithmetic lives.** Read `plotTransform`
   rather than `dotplotRenderState` unless you also want `alpha` and `lineWidth`
   — the hover highlight took the latter and rebuilt its path once a frame under
-  an opacity drag. `viewHeight` is one of them, so the pick takes the whole
-  object and the clear-on-move reaction covers a resize; `dotplotRenderState`
-  names the four it wants instead of spreading, because a backend already has
-  the plot height from `resize`. Then project with `cumBpToPxH` / `cumBpToPxV`
-  rather than writing `viewHeight - (…)` again: draw and pick have to agree
-  pixel for pixel or the cursor picks an alignment other than the one it is
-  pointing at, and the v-axis flip is the half a fourth copy would get wrong.
-  The scalar-primitive shape is not a style choice — a transform-object helper
-  costs the Canvas2D loop 1.45x and a projector closure 3.5x, both measured in
+  an opacity drag. `viewHeight` is one of them, so the clear-on-move reaction
+  covers a resize; `dotplotRenderState` names the four it wants and adds the
+  canvas box, which is what a mark frame measures a block clip and the v-axis
+  flip against — so the pick, which asks the mark shape where the ink is, takes
+  that one. Then project with `cumBpToPxH` / `cumBpToPxV` rather than writing
+  `viewHeight - (…)` again: draw and pick have to agree pixel for pixel or the
+  cursor picks an alignment other than the one it is pointing at, and the v-axis
+  flip is the half a fourth copy would get wrong. The scalar-primitive shape is
+  not a style choice — a transform-object helper costs the Canvas2D loop 1.45x
+  and a projector closure 3.5x, both measured in
   `benches/cumBpProjection.bench.ts` and declined.
-- **The pick's tie-break needs `>`, not `<=`.** Flatbush hands candidates back
-  in Hilbert order past `nodeSize` items, so an equidistant EARLIER segment can
-  arrive last and take a hit that belongs to the one drawn on top. At or under
-  `nodeSize` the sort is skipped and insertion order survives, which is why a
-  two-feature fixture cannot see this — `dotplotPickEngine.test.ts` pads to 24.
+- **The pick's tie-break is the ORDER it offers candidates in.** Where the ink
+  is belongs to `segmentMark.hitNearest`, and a mark replaces its best only on a
+  strictly nearer candidate, so a tie goes to whoever was offered first — hence
+  `visibleSegments` walks the candidate features' runs later-segment-first.
+  Flatbush hands boxes back in Hilbert order past `nodeSize` items, so an
+  equidistant EARLIER segment can arrive first out of the index and take a hit
+  that belongs to the one drawn on top. At or under `nodeSize` the sort is
+  skipped and insertion order survives, which is why a two-feature fixture
+  cannot see this — `dotplotPickEngine.test.ts` pads to 24.
 - **A coordinate read back out of a cumBp round trip is `Math.round`ed off
   `pxToBp`'s `offset`, never `coord0`.** `coord0` floors, which is right for
   what it is for (naming the base under a pixel, including pixels past the end

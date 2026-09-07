@@ -48,11 +48,11 @@ describe('SYNTENY_INSTANCE_CACHE', () => {
     )
     const newColors = Uint32Array.from([0xaabbccdd, 0x01020304, 0xfffefdfc])
 
-    const packed = cache.get(0, data)
+    const packed = cache.get(data)
     // Same geometry arrays, new colors: this must patch in place, and the
     // identity check is what says the fast path ran rather than a re-pack
     // trivially satisfying the byte comparison below.
-    const patched = cache.get(0, { ...data, colors: newColors })
+    const patched = cache.get({ ...data, colors: newColors })
     expect(patched).toBe(packed)
 
     const fullReinterleave = interleaveInstances({ ...data, colors: newColors })
@@ -62,8 +62,8 @@ describe('SYNTENY_INSTANCE_CACHE', () => {
   test('new geometry re-packs rather than reusing the buffer', () => {
     const cache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
     const colors = Uint32Array.from([0x11111111, 0x22222222, 0x33333333])
-    const first = cache.get(0, makeData(colors))
-    expect(cache.get(0, makeData(colors))).not.toBe(first)
+    const first = cache.get(makeData(colors))
+    expect(cache.get(makeData(colors))).not.toBe(first)
   })
 })
 

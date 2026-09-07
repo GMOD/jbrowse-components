@@ -15,9 +15,8 @@ export interface InstanceCacheOpts<TData> {
 }
 
 /**
- * A per-key cache of packed instance bytes with a geometry/color split: a
- * recolor patches the one color lane in place instead of re-packing every
- * other one.
+ * A cache of packed instance bytes with a geometry/color split: a recolor
+ * patches the one color lane in place instead of re-packing every other one.
  *
  * The split is worth having because the two inputs move on completely
  * different schedules — geometry on an RPC refetch, colors on a `colorBy`
@@ -33,22 +32,25 @@ export interface InstanceCacheOpts<TData> {
  * problem. `installUpload` exists for the same reason one
  * layer up — an upload memo is not a hand-rolled `let`.
  *
+ * **The geometry token is the key**, so nothing has to evict: a payload whose
+ * coordinates were replaced takes its bytes with it, and a cache shared by
+ * several displays cannot hand one display another's buffer — two displays
+ * never hold one coordinate array. That is also what lets a mark's `pack`
+ * hold one of these, a mark list being module-level and shared.
+ *
  * The GPU re-upload still happens on a recolor (no HAL does partial buffer
  * updates); what is skipped is the dominant CPU interleave.
  */
 export function createInstanceCache<TData>(opts: InstanceCacheOpts<TData>) {
   const { geomToken, colors, interleave, strideWords, colorOffsetWords } = opts
-  const cache = new Map<
-    number,
-    { geom: object; colors: Uint32Array; buf: ArrayBuffer }
-  >()
+  const cache = new WeakMap<object, { colors: Uint32Array; buf: ArrayBuffer }>()
   return {
-    /** Packed bytes for `key`, re-packing or re-coloring only as needed. */
-    get(key: number, data: TData) {
+    /** Packed bytes for `data`, re-packing or re-coloring only as needed. */
+    get(data: TData) {
       const geom = geomToken(data)
       const cols = colors(data)
-      const hit = cache.get(key)
-      if (hit?.geom === geom) {
+      const hit = cache.get(geom)
+      if (hit) {
         if (hit.colors !== cols) {
           const u32 = new Uint32Array(hit.buf)
           for (let i = 0, n = cols.length; i < n; i++) {
@@ -59,14 +61,8 @@ export function createInstanceCache<TData>(opts: InstanceCacheOpts<TData>) {
         return hit.buf
       }
       const buf = interleave(data)
-      cache.set(key, { geom, colors: cols, buf })
+      cache.set(geom, { colors: cols, buf })
       return buf
-    },
-    delete(key: number) {
-      cache.delete(key)
-    },
-    clear() {
-      cache.clear()
     },
   }
 }

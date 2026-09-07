@@ -46,14 +46,14 @@ const data = (colors: number[]): Data => ({
 test('identical data re-packs nothing', () => {
   const { cache, packs } = makeCache()
   const d = data([1, 2])
-  expect(cache.get(0, d)).toBe(cache.get(0, d))
+  expect(cache.get(d)).toBe(cache.get(d))
   expect(packs()).toBe(1)
 })
 
 test('a recolor patches the colour lane in place, leaving geometry alone', () => {
   const { cache, packs } = makeCache()
-  const first = cache.get(0, data([1, 2]))
-  const patched = cache.get(0, data([7, 8]))
+  const first = cache.get(data([1, 2]))
+  const patched = cache.get(data([7, 8]))
 
   expect(patched).toBe(first)
   expect(packs()).toBe(1)
@@ -62,8 +62,8 @@ test('a recolor patches the colour lane in place, leaving geometry alone', () =>
 
 test('new geometry re-packs', () => {
   const { cache, packs } = makeCache()
-  const first = cache.get(0, data([1, 2]))
-  const repacked = cache.get(0, {
+  const first = cache.get(data([1, 2]))
+  const repacked = cache.get({
     geom: Float32Array.from([30, 40]),
     colors: Uint32Array.from([1, 2]),
   })
@@ -78,32 +78,30 @@ test('new geometry re-packs', () => {
 // forever.
 test('a repeated recolor patches once', () => {
   const { cache } = makeCache()
-  cache.get(0, data([1, 2]))
+  cache.get(data([1, 2]))
   const recolored = data([7, 8])
-  cache.get(0, recolored)
-  const buf = cache.get(0, recolored)
+  cache.get(recolored)
+  const buf = cache.get(recolored)
   // Corrupt the lane behind the cache's back: a second patch would rewrite it.
   new Uint32Array(buf)[COLOR_WORD] = 0xdead
-  expect([...new Uint32Array(cache.get(0, recolored))]).toEqual([
+  expect([...new Uint32Array(cache.get(recolored))]).toEqual([
     10, 0, 0xdead, 20, 0, 8,
   ])
 })
 
-test('keys are independent, and delete drops only its own', () => {
+// The token IS the key, so two payloads over different coordinate arrays are
+// independent and neither has to be evicted when its display goes: the entry
+// leaves with the arrays it was keyed on. That is what lets one cache sit
+// inside a module-level mark's `pack`, where a display key is not in scope.
+test('payloads over different geometry are independent', () => {
   const { cache, packs } = makeCache()
-  const a = cache.get(0, data([1, 2]))
-  const b = cache.get(1, data([3, 4]))
+  const a = cache.get(data([1, 2]))
+  const b = cache.get({
+    geom: Float32Array.from([30, 40]),
+    colors: Uint32Array.from([3, 4]),
+  })
+
   expect(a).not.toBe(b)
-
-  cache.delete(0)
-  expect(cache.get(1, data([3, 4]))).toBe(b)
-  expect(cache.get(0, data([1, 2]))).not.toBe(a)
-  expect(packs()).toBe(3)
-})
-
-test('clear drops every key', () => {
-  const { cache } = makeCache()
-  const a = cache.get(0, data([1, 2]))
-  cache.clear()
-  expect(cache.get(0, data([1, 2]))).not.toBe(a)
+  expect(cache.get(data([1, 2]))).toBe(a)
+  expect(packs()).toBe(2)
 })

@@ -1,8 +1,9 @@
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { drawDotplotInstances } from './drawDotplot.ts'
+import { DOTPLOT_MARKS, dotplotMarkBlocks } from './dotplotMarks.ts'
 
 import type { DotplotRenderState } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRenderModel } from './types.ts'
@@ -43,18 +44,19 @@ export async function renderSvg(
       height={viewHeight}
       opts={opts}
       paint={ctx => {
-        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth, alpha } =
-          dotplotRenderState
-        drawDotplotInstances(ctx, geometry, {
-          viewBpH,
-          bpPerPxHInv,
-          viewBpV,
-          bpPerPxVInv,
-          viewWidth,
-          viewHeight,
-          lineWidth,
-          alpha,
-        })
+        // The view's own render state, so the export can't drift from what is
+        // on screen, with the canvas box taken from the layer this paints into.
+        paintMarkBlocks(
+          ctx,
+          DOTPLOT_MARKS,
+          new Map([[0, geometry]]),
+          dotplotMarkBlocks([0], viewWidth),
+          {
+            ...dotplotRenderState,
+            canvasWidth: viewWidth,
+            canvasHeight: viewHeight,
+          },
+        )
       }}
     />
   ) : null

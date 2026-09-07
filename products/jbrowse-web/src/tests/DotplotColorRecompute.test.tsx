@@ -116,7 +116,11 @@ test('a track shown after a settings change inherits them', async () => {
   // the key is present is what makes that more than a re-read of `view.alpha`.
   expect(view.alpha).toBe(0.5)
   expect(view.dotplotRenderState.alpha).toBe(0.5)
-  expect(view.dotplotRenderState.displayKeys).toContain(added.displayKey)
+  expect(
+    view.dotplotBlocks.map(
+      (b: { displayedRegionIndex: number }) => b.displayedRegionIndex,
+    ),
+  ).toContain(added.displayKey)
   // and it is a uniform, not a byte, on this display too
   expect(added.geometry.colors[0]! >>> 24).toBe(255)
 }, 45000)

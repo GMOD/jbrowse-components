@@ -733,8 +733,9 @@ display is **what its map is keyed by**:
 | Key | Contract | Render | Use when | Examples |
 |---|---|---|---|---|
 | `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, multi-wiggle, MAF, manhattan, sequence, multi-variant |
-| a sibling display's `sharedBackendKey` | `KeyedRenderingBackend` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+| a sibling display's `sharedBackendKey` | `KeyedRenderingBackend` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | multi-LGV synteny (key per level) |
 | a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
+| a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display, keyed by it) |
 
 **Release is per key, never an active-set prune.** The diff knows exactly which
 keys departed, so a per-key release does the same job on a display's own map as
@@ -758,12 +759,18 @@ true, which is the answer an empty-but-finished matrix needs — the cleared
 canvas is its whole picture and nothing later will upload bytes for it, so
 `canvasDrawn` has to flip or the scrim never lifts.
 
-The keyed table row keeps getting misfiled: dotplot and synteny are keyed, and
-keyed is neither neighbour — a whole-view display carries one constant key, and
-per-region hands the model's data map back at render time instead of the
-backend owning it. `KeyedRenderingBackend` is an interface with no abstract
-class under it: the base classes are the shared state, and there is no shared
-behavior on top because the two render loops genuinely differ.
+Synteny is the last keyed display, and keyed is neither neighbour — a
+whole-view display carries one constant key, and per-region hands the model's
+data map back at render time instead of the backend owning it.
+`KeyedRenderingBackend` is an interface with no abstract class under it: the
+base classes are the shared state, and there is no shared behavior on top.
+
+Dotplot was keyed and is now the row under it. Its x axis is not a block's bp
+span — every segment's screen x comes from the payload's own absolute cumBp
+through a `panPx` fold — so a canvas-wide block per display is an identity clip,
+and what is left is exactly the map-plus-blocks a per-region frame takes. The
+key stays `sharedBackendKey(self.id)`; it rides on `displayedRegionIndex`, which
+is what a block calls the key it was uploaded under.
 
 MAF is **per-region**, not whole-map: its blocks are independent, with no
 main-thread Y-layout coupling adjacent regions, so each region's upload
@@ -783,7 +790,7 @@ the display's `renderError`, which is what raises the "too much data to render
 on this GPU — zoom in" banner instead of leaving a blank canvas.
 
 Three backends used to implement their interfaces standalone: **alignments,
-dotplot and multi-LGV synteny**. None declared `setErrorHandler`, and
+dotplot and multi-LGV synteny** (dotplot's is a mark list now). None declared `setErrorHandler`, and
 `useRenderingBackend` called it as `r.setErrorHandler?.()` — so the three largest
 vertex-buffer allocators in the app were exactly the three whose OOMs reached
 nobody. The HAL reported, `OomReporter`'s handler was null, the console got a

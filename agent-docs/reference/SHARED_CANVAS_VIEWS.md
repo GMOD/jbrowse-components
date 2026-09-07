@@ -162,15 +162,21 @@ plugins' backends clear before drawing, so painting zero displays *is* the wipe.
 One shape, in both:
 
 - `renderState` is a **resolved getter**, never `undefined`; an empty
-  `displayKeys` / `perTrack` is a real frame.
+  `displayKeys` / `perTrack` / block list is a real frame.
 - `canRender` carries the "view isn't measured yet" precondition
   (`view.initialized`), so the autorun pair idles instead of the state going
   nullable.
-- `backend.render(state)` returns `void` and always repaints the whole canvas:
-  clear, then draw every key it holds geometry for.
-- The callback returns `true` — the canvas now reflects the model, which is what
-  lets `canvasDrawn`, and so `settled` and the `*_done` testid, resolve on a view
-  or level that legitimately has nothing to show.
+- The render always repaints the whole canvas: clear, then draw every key it
+  holds geometry for. Synteny's `backend.render(state)` returns `void`; dotplot
+  draws through `renderBlocks`, whose frame scaffold clears whether or not a
+  block survives.
+- A view or level that legitimately has nothing to show still resolves
+  `canvasDrawn`, and so `settled` and the `*_done` testid. Synteny's callback
+  returns `true` outright. Dotplot returns what `renderBlocks` answered — no
+  block drew, so nothing reached the canvas — and says the other half through
+  `paintInert`, `RenderLifecycleMixin`'s hook for a display that will not paint
+  its way out of where it is. The distinction is worth the hook: a track still
+  fetching leaves the map empty too, and only one of those two is finished.
 
 `products/jbrowse-web/src/tests/SharedCanvasHideTrack.test.tsx` holds both views
 to this.
@@ -194,8 +200,8 @@ cross-cutting check would otherwise be a list someone has to remember to append
 to — it is the same move as `fetchInert` being a mixin hook rather than a getter
 each display invents.
 
-`canvasDrawn` therefore means "painted at least once" here rather than "real
-content reached the canvas"
+`canvasDrawn` therefore means "painted at least once" on synteny rather than
+"real content reached the canvas"
 ([ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md),
 written for the per-region family, whose loading scrim reads it through
 `computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` term). Nothing is lost:

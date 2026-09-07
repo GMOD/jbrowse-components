@@ -140,7 +140,7 @@ captured when the geometry is built):
 - The vertex attribute is a single Float32 `bpRel = cumBp − base`. The shader
   reconstructs screen X as `bpRel * bpPerPxInv + panPx`, where `panPx = (base −
   viewBp) / bpPerPx` is folded on the CPU in float64 from a SMALL delta — the
-  pan since fetch (`GpuSyntenyRenderer` / `GpuDotplotRenderer`). The base
+  pan since fetch (`GpuSyntenyRenderer` / dotplot's `segmentMark`). The base
   cancels the genome-scale magnitude, so both terms stay sub-pixel in one
   Float32: no hi/lo pair, half the position bytes. Per-instance layout is the
   four corners (`bp{1..4}` / `x1,y1,x2,y2`) plus color etc.

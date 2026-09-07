@@ -47,6 +47,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
 
+import { dotplotMarkBlocks } from '../DotplotDisplay/dotplotMarks.ts'
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
@@ -66,6 +67,7 @@ import { DRAG_THRESHOLD_PX, HOVER_SLACK_PX, LS_CURSOR_MODE } from './types.ts'
 import type { DotplotPlotPickHit } from '../DotplotDisplay/dotplotPickEngine.ts'
 import type {
   DotplotGeometryData,
+  DotplotRenderState,
   DotplotRenderingBackend,
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
@@ -1100,21 +1102,28 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * One canvas-wide block per loaded display, in the map's insertion
+         * order, so tracks paint bottom-of-the-list last. An empty list is a
+         * real frame, not a skip: the backend clears before drawing, so
+         * painting zero displays is what wipes the plot when the last track is
+         * hidden.
+         */
+        get dotplotBlocks() {
+          return dotplotMarkBlocks(
+            this.geometryByDisplayKey.keys(),
+            this.viewWidth,
+          )
+        },
+        /**
+         * #getter
          * Aggregated per-frame render state — a resolved value, never
          * undefined; "the view isn't measured yet" is the `canRender`
          * precondition below.
-         *
-         * An empty `displayKeys` is a real frame, not a skip: both backends
-         * clear before drawing, so painting zero displays is what wipes the
-         * plot when the last track is hidden. Gating the render pass on it left
-         * the departed track's pixels on the canvas (its buffer was deleted,
-         * but nothing repainted).
          */
-        get dotplotRenderState() {
-          // Named rather than spread: `plotTransform`'s `viewHeight` is not a
-          // render input. A backend gets the plot height through `resize`, and
-          // shipping it twice in one frame is two numbers to disagree.
-          const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } =
+        get dotplotRenderState(): DotplotRenderState {
+          // Named rather than spread: `plotTransform` calls the plot height
+          // `viewHeight`, and a mark frame calls it `canvasHeight`.
+          const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, viewHeight } =
             this.plotTransform
           return {
             viewBpH,
@@ -1123,7 +1132,8 @@ export default function stateModelFactory(pm: PluginManager) {
             bpPerPxVInv,
             lineWidth: self.lineWidth,
             alpha: self.alpha,
-            displayKeys: [...this.geometryByDisplayKey.keys()],
+            canvasWidth: this.viewWidth,
+            canvasHeight: viewHeight,
           }
         },
         /**
@@ -1167,7 +1177,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * nearest where a ribbon answers topmost.
          */
         pickFeatureAt(x: number, y: number) {
-          const transform = this.plotTransform
+          const state = this.dotplotRenderState
           // Half the drawn line width, so anything painted under the cursor
           // hits, plus a fixed slack for the sub-pixel dots a whole-genome plot
           // is mostly made of — they are a couple of px across at most, and
@@ -1175,16 +1185,15 @@ export default function stateModelFactory(pm: PluginManager) {
           const tolerancePx = self.lineWidth / 2 + HOVER_SLACK_PX
           let best: DotplotPlotPickHit | undefined
           for (const display of this.dotplotDisplays) {
-            const { instanceData, computedColors } = display
-            if (!instanceData) {
+            const { geometry } = display
+            if (!geometry) {
               continue
             }
             const hit = pickDotplotFeature({
-              data: instanceData,
-              colors: computedColors,
+              data: geometry,
               x,
               y,
-              transform,
+              state,
               tolerancePx,
             })
             if (hit && (!best || hit.distancePx <= best.distancePx)) {
@@ -1205,6 +1214,23 @@ export default function stateModelFactory(pm: PluginManager) {
         get canRender() {
           return self.initialized
         },
+        /**
+         * #getter
+         * Overrides `RenderLifecycleMixin`'s hook: a measured plot with no
+         * tracks on it paints nothing this tick and nothing is coming, so it
+         * has finished rather than being pending. The backend answers "did
+         * content reach the canvas" off the blocks it drew, which is the right
+         * answer for a track still fetching and the wrong one for a canvas
+         * with nothing to draw on it.
+         *
+         * `initialized` is the other half and is not redundant with
+         * `canRender`: an import form has no tracks either, and it is *not*
+         * finished — `AppReadyMarkerComparative` pins that its `settled` stays
+         * false, and the marker asks its displays rather than this.
+         */
+        get paintInert() {
+          return self.initialized && self.dotplotDisplays.length === 0
+        },
       }))
       // One canvas on the view, shared by all displays. The view aggregates
       // per-display geometry from `geometryByDisplayKey` and runs both upload
@@ -1216,11 +1242,12 @@ export default function stateModelFactory(pm: PluginManager) {
           // reference: only the track that actually changed re-uploads.
           installUpload(self, backend, {
             cells: () => self.geometryByDisplayKey,
-            render: b => {
-              b.resize(self.viewWidth, self.viewHeight)
-              b.render(self.dotplotRenderState)
-              return true
-            },
+            render: b =>
+              b.renderBlocks(
+                self.dotplotBlocks,
+                self.geometryByDisplayKey,
+                self.dotplotRenderState,
+              ),
           })
         },
       }))

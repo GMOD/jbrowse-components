@@ -7,14 +7,18 @@ import {
 } from './dotplotPickEngine.ts'
 import { fakeDotplotInstanceData } from './testUtils.ts'
 
-import type { DotplotPickTransform } from './dotplotPickEngine.ts'
-import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
+import type {
+  DotplotGeometryData,
+  DotplotRenderState,
+} from './dotplotRenderingBackendTypes.ts'
 
 // Segments as [x1, y1, x2, y2, featureIdx], in absolute cumBp — the space the
-// display's geometry is actually in.
+// display's geometry is actually in. Opaque unless a test is about a hidden
+// row: a segment at zero alpha was never painted and is not a candidate.
 function makeData(
   segments: [number, number, number, number, number][],
-): DotplotInstanceData {
+  colors = new Uint32Array(segments.length).fill(0xffc8c8c8),
+): DotplotGeometryData {
   const data = fakeDotplotInstanceData(segments.length)
   segments.forEach(([x1, y1, x2, y2, f], i) => {
     data.x1[i] = x1
@@ -23,27 +27,30 @@ function makeData(
     data.y2[i] = y2
     data.instanceFeatureIdx[i] = f
   })
-  return data
+  return { ...data, colors }
 }
 
 // 1 bp per px on both axes, viewport at the origin, so cumBp and px agree on x
 // and y is flipped through the height — the simplest frame to reason in.
-const UNIT: DotplotPickTransform = {
+const UNIT: DotplotRenderState = {
   viewBpH: 0,
   viewBpV: 0,
   bpPerPxHInv: 1,
   bpPerPxVInv: 1,
-  viewHeight: 100,
+  lineWidth: 2,
+  alpha: 1,
+  canvasWidth: 100,
+  canvasHeight: 100,
 }
 
 function pick(
-  data: DotplotInstanceData,
+  data: DotplotGeometryData,
   x: number,
   y: number,
-  transform = UNIT,
+  state = UNIT,
   tolerancePx = 3,
 ) {
-  return pickDotplotFeature({ data, x, y, transform, tolerancePx })
+  return pickDotplotFeature({ data, x, y, state, tolerancePx })
 }
 
 describe('featureSegmentRange', () => {
@@ -73,21 +80,13 @@ describe('a hidden segment', () => {
   // hideUnlabelled paints a row at zero alpha; nothing is on screen there, so
   // the cursor over it is over the next visible thing or nothing
   test('is never the hit', () => {
-    const data = makeData([
+    const segments: [number, number, number, number, number][] = [
       [10, 10, 20, 20, 0],
       [10, 12, 20, 22, 1],
-    ])
-    const colors = new Uint32Array([0x00c8c8c8, 0xffc8c8c8])
-    const hit = pickDotplotFeature({
-      data,
-      colors,
-      x: 15,
-      y: 100 - 15,
-      transform: UNIT,
-      tolerancePx: 3,
-    })
-    expect(hit?.featureIdx).toBe(1)
-    expect(pick(data, 15, 100 - 15)?.featureIdx).toBe(0)
+    ]
+    const hidden = makeData(segments, new Uint32Array([0x00c8c8c8, 0xffc8c8c8]))
+    expect(pick(hidden, 15, 100 - 15)?.featureIdx).toBe(1)
+    expect(pick(makeData(segments), 15, 100 - 15)?.featureIdx).toBe(0)
   })
 })
 
@@ -195,7 +194,7 @@ describe('pickDotplotFeature', () => {
   // whichever feature is nearest in the compressed axis' units, which is not
   // the one under the cursor.
   test('distance is measured in px, not bp', () => {
-    const anisotropic: DotplotPickTransform = { ...UNIT, bpPerPxVInv: 1 / 100 }
+    const anisotropic: DotplotRenderState = { ...UNIT, bpPerPxVInv: 1 / 100 }
     // Cursor at px (20, 50), i.e. cumBp (20, 5000). Feature 0 is 2 bp away
     // along h, which is 2px; feature 1 is 100 bp away along v, which is 1px.
     // So px says 1 and bp says 0.

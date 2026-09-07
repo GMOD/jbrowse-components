@@ -30,7 +30,8 @@ const view: {
     bpPerPxVInv: 1,
     lineWidth: 2,
     alpha: 1,
-    displayKeys: [0],
+    canvasWidth: 100,
+    canvasHeight: 100,
   },
 }
 
@@ -67,13 +68,13 @@ function model(overrides: Partial<DotplotRenderModel> = {}) {
   }
 }
 
+// Every line the export drew, across every <path> in the document. The block
+// clip `paintMarkBlocks` brackets each block with emits a `<clipPath>` path of
+// its own, and that one is `M..h..v..Z` — no `L`, so it matches nothing here.
 function drawnSegments(html: string) {
-  const d = /<path d="([^"]*)"/.exec(html)
-  return d
-    ? [...d[1]!.matchAll(/M([\d.-]+),([\d.-]+)L([\d.-]+),([\d.-]+)/g)].map(m =>
-        m.slice(1).map(Number),
-      )
-    : []
+  return [...html.matchAll(/M([\d.-]+),([\d.-]+)L([\d.-]+),([\d.-]+)/g)].map(
+    m => m.slice(1).map(Number),
+  )
 }
 
 // A display that reached its terminal with nothing to draw is not a failure: an

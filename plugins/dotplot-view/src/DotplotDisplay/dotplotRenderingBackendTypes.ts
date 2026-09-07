@@ -1,4 +1,4 @@
-import type { KeyedRenderingBackend } from '@jbrowse/render-core/keyedRenderingBackend'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 // Per-segment line geometry, in SoA form, with no color in it. Coordinates are
 // absolute genomic cumBp (Float64Array); the CPU/SVG renderers consume them
 // directly. The GPU renderer stores each coord window-relative (cumBp - base) as
@@ -37,6 +37,10 @@ export interface DotplotGeometryData extends DotplotInstanceData {
   colors: Uint32Array
 }
 
+// The frame every display on the shared canvas is drawn in. `canvasWidth` and
+// `canvasHeight` are the plot rect, which the mark backend's block clip and the
+// v-axis flip both measure against; the SVG export overrides them with its own
+// layer's.
 export interface DotplotRenderState {
   // Absolute genomic cumBp position of the left/top edge of the view.
   viewBpH: number
@@ -49,11 +53,15 @@ export interface DotplotRenderState {
   // and re-upload every instance per frame). Mirrors synteny's
   // `SyntenyTrackRenderParams.alpha`.
   alpha: number
-  displayKeys: readonly number[]
+  canvasWidth: number
+  canvasHeight: number
 }
 
-// A keyed shared-canvas backend: one canvas, a key per display in the view.
-export type DotplotRenderingBackend = KeyedRenderingBackend<
+// One canvas shared by every display in the view, each drawn as its own block
+// keyed by `sharedBackendKey`. The per-region backend, not the keyed one: a
+// block whose bp span is the identity map is a no-op clip, and what is left is
+// exactly the map-plus-blocks a per-region frame already takes.
+export type DotplotRenderingBackend = PerRegionRenderingBackend<
   DotplotGeometryData,
   DotplotRenderState
 >
