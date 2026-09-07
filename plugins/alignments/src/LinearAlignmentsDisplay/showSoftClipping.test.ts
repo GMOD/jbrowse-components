@@ -184,8 +184,14 @@ describe('alignments showSoftClipping session default', () => {
       ).toBe(true)
     })
 
-    it('flips a checked row off and offers off as the default', () => {
+    // off is the slot's base, so the offer clears rather than stores
+    it('flips a checked row off and offers off, which clears the default', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
+      session.setDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'showSoftClipping',
+        true,
+      )
       expect(display.softClippingDisplayTypeDefault.active).toBe(true)
 
       display.softClippingDisplayTypeDefault.toggle()
@@ -196,7 +202,7 @@ describe('alignments showSoftClipping session default', () => {
           'LinearAlignmentsDisplay',
           'showSoftClipping',
         ),
-      ).toBe(false)
+      ).toBeUndefined()
     })
   })
 
@@ -1094,38 +1100,37 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     expect(display.linkedReads).toBe('off')
   })
 
+  // The row is a checkbox over a two-member enum, so its pin is the toggle
+  // kind: fill mirrors the row, a click flips 'off'/'normal' on the open
+  // tracks, and the offer stores the new state — or clears, when that state
+  // is the base.
   describe('pairsDisplayTypeDefault', () => {
-    it('promotes view-as-pairs as the session default', () => {
-      const { session, display } = createDisplay({ linkedReads: 'normal' })
+    it('mirrors the row and applies pairs to the track', () => {
+      const { session, display } = createDisplay()
+      expect(display.linkedReads).toBe('off')
       expect(display.pairsDisplayTypeDefault.active).toBe(false)
 
       display.pairsDisplayTypeDefault.toggle()
-      promote(session)
-      expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
-      ).toBe('normal')
-      expect(display.pairsDisplayTypeDefault.active).toBe(true)
-    })
-
-    it('promotes pairs even when this track has them off (per-value)', () => {
-      const { session, display } = createDisplay()
-      expect(display.linkedReads).toBe('off')
-      display.pairsDisplayTypeDefault.toggle()
-      promote(session)
-      expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
-      ).toBe('normal')
-      // the click wrote the track, so it shows pairs either way
       expect(display.linkedReads).toBe('normal')
+      expect(display.pairsDisplayTypeDefault.active).toBe(true)
+      promote(session)
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
+      ).toBe('normal')
     })
 
-    it('clears the session default when toggled off', () => {
+    it('flipping pairs off offers the base, which clears the default', () => {
       const { session, display } = createDisplay({ linkedReads: 'normal' })
-      display.pairsDisplayTypeDefault.toggle()
-      promote(session)
+      session.setDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'linkedReads',
+        'normal',
+      )
       expect(display.pairsDisplayTypeDefault.active).toBe(true)
 
       display.pairsDisplayTypeDefault.toggle()
+      expect(display.linkedReads).toBe('off')
+      promote(session)
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBeUndefined()
@@ -1169,9 +1174,12 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the arcs pin promotes arc and clears it (per-value)', () => {
-    const { session, display } = createDisplay({ readConnections: 'arc' })
+  // The arcs pin toggles 'arc'/'off' on the shared slot: flipping on stores
+  // arc, flipping back offers off, the base, which clears.
+  it('the arcs pin toggles arc on and off, storing then clearing', () => {
+    const { session, display } = createDisplay()
     display.arcsDisplayTypeDefault.toggle()
+    expect(display.readConnections).toBe('arc')
     promote(session)
     expect(
       session.getDisplayTypeDefault(
@@ -1179,8 +1187,12 @@ describe('alignments readConnections (arcs) session default', () => {
         'readConnections',
       ),
     ).toBe('arc')
+    expect(display.arcsDisplayTypeDefault.active).toBe(true)
+    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
 
     display.arcsDisplayTypeDefault.toggle()
+    expect(display.readConnections).toBe('off')
+    promote(session)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',

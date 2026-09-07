@@ -97,10 +97,18 @@ describe('Manhattan showLdLegend', () => {
 
     display.showLdLegendDisplayTypeDefault.toggle()
     expect(display.showLdLegend).toBe(true)
+    // on is the slot's base, so the offer clears rather than stores
     takeSnackbarAction(session)
     expect(
       session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
-    ).toBe(true)
+    ).toBeUndefined()
+
+    display.showLdLegendDisplayTypeDefault.toggle()
+    expect(display.showLdLegend).toBe(false)
+    takeSnackbarAction(session)
+    expect(
+      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
+    ).toBe(false)
   })
 
   // The row is greyed out without LD coloring, but it is still built and still
