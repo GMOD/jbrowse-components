@@ -39,25 +39,21 @@ The colorBy string that paints a named feature attribute.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-## bandGroundColor
+## BAND_GROUND_COLOR
 
 The colour a comparative band is painted on, for every surface that has to
-agree about it.
+agree about it: the two backends' clear, the pre-blended indel wedges, every
+mark, tick, label halo and outline (`getContrastText` of it), the legend
+chips and the SVG export.
 
-`background.paper` rather than `background.default`: the band is a sheet the
-views sit on, the same slot the multi-way lane bands already use.
-
-ONE decision in one place because the band's ground is not a background — the
-renderers BAKE it into the pixels. An indel wedge is pre-blended against it
-and written opaque so it agrees with the base ribbon composited beside it, and
-every mark, tick, label halo and outline is `getContrastText` of it. A surface
-that resolves its own ink off the theme while the clear says something else is
-the bug that shipped the off-screen-mate strip invisible under a dark theme.
-`LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` is the arithmetic.
+Light in every theme. The ribbons are translucent colour that reads as tint
+over a light ground and as murk over a dark one, so a dark theme's paper made
+a whole-genome band nearly unreadable. The band is the one sheet in the app
+that keeps its own ground.
 
 ```js
 // type signature
-(node: IAnyStateTreeNode) => string
+"#fff"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)

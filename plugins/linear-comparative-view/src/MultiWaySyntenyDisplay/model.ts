@@ -1524,7 +1524,7 @@ export function stateModelFactory(
           scrollTopPx: self.scrollTop,
           hoveredFeatureId: self.hoveredFeatureId,
           clickedFeatureId: self.clickedFeatureId,
-          groundColor: bandGroundColor(self),
+          groundColor: bandGroundColor(),
           layers: self.renderLayers,
         }
       },

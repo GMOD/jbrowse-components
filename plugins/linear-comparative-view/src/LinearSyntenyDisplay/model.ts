@@ -560,6 +560,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           groundColor: this.groundColor,
           nameOrder: this.paintedChromosomeOrder,
           attributeRanges: this.view.attributeRanges,
+          hideUnlabelled: this.view.hideUnlabelled,
         })
       },
       /**
@@ -570,7 +571,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * `renderSvg` without a level to ask.
        */
       get groundColor() {
-        return bandGroundColor(self)
+        return bandGroundColor()
       },
       /**
        * #getter

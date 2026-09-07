@@ -365,7 +365,7 @@ export function linearSyntenyViewHelperModelFactory(
        * its SVG export all take it from one place.
        */
       get groundColor() {
-        return bandGroundColor(self)
+        return bandGroundColor()
       },
       /**
        * #getter

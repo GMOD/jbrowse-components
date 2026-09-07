@@ -1,7 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton, Tooltip, useTheme } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 
+import { bandGroundColor } from './bandGround.ts'
 import {
   colorByFallbackNote,
   colorByShortLabel,
@@ -137,11 +138,8 @@ export function ColorByLegend({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  // The ground the chips are blended over: the same `background.paper` the
-  // synteny band is cleared to (`bandGroundColor`), which is what the chips are
-  // matching. Read here rather than passed in — the legend floats over that band
-  // in both views that mount it.
-  const groundColor = useTheme().palette.background.paper
+  // the ground the chips are blended over: the band's own, in every theme
+  const groundColor = bandGroundColor()
   const swatch = getColorBySwatch(colorBy, {
     pointBased,
     cigarOps,
