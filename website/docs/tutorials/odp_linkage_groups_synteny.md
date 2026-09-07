@@ -59,12 +59,14 @@ proteome it is given against them, and writes the group each ortholog landed in
 beside the ortholog. That assignment is a column, and a column is something a
 synteny track can carry.
 
-The four genomes here are a jellyfish (`RES`, _Rhopilema esculentum_), a
-freshwater sponge (`EMU`, _Ephydatia muelleri_), a comb jelly (`HCA`,
-_Hormiphora californensis_) and _Capsaspora owczarzaki_ (`COW`), a single-celled
-holozoan that sits outside animals altogether. odp compares genomes two at a
-time, so the deposit holds one table per pair. Each is every reciprocal best
-protein hit between the two, and a pair keeps several times the orthologs a
+The dotplots use a jellyfish (`RES`, _Rhopilema esculentum_), a freshwater
+sponge (`EMU`, _Ephydatia muelleri_), a comb jelly (`HCA`, _Hormiphora
+californensis_) and _Capsaspora owczarzaki_ (`COW`), a single-celled holozoan
+that sits outside animals altogether. The stack at the end adds a second comb
+jelly (`BIN`, _Bolinopsis microptera_), amphioxus (`BFL`, _Branchiostoma
+floridae_) and a second sponge (`CLAa`, a cladorhizid). odp compares genomes two
+at a time, so the deposit holds one table per pair. Each is every reciprocal
+best protein hit between the two, and a pair keeps several times the orthologs a
 table requiring a gene in all four genomes at once would, which is what keeps
 the plots dense enough to show a pattern.
 
@@ -130,9 +132,9 @@ mode of its own.
 }
 ```
 
-The build script adds one such track per pair: jellyfish against each of the
-other three, and sponge against comb jelly and comb jelly against _Capsaspora_
-for the stack at the end.
+The build script adds one such track per pair: the jellyfish against each of the
+three genomes the dotplots compare it with, then the neighbouring pairs of the
+six-genome stack at the end.
 
 ## One block per linkage group
 
@@ -191,41 +193,62 @@ the shape of the argument Schultz et al. make for the comb jellies branching off
 before the sponges did, and the outgroup frame is what the other two are read
 against.
 
-## Four genomes stacked
+## Six genomes stacked
 
-The ribbon diagram odp draws is the same tables stacked: one row per genome, the
+The paper's first figure is the same tables stacked: one row per genome, the
 ribbons between neighbours colored by group, each row's chromosomes sorted
 against the row above. The linear synteny view does that with one pair's track
-per band, and `autoDiagonalize` sorts every row. The fade a whole-genome view
-applies to sub-pixel ribbons is turned off here, since it is the ribbons' color
-that carries the figure.
+per band. The build script loads the pairs for the paper's own order, two comb
+jellies over the jellyfish, amphioxus and two sponges, and the session below
+sets what the figure needs: `autoDiagonalize` sorts every row against the one
+above it, **Hide unlabelled rows** on the palette menu (`hideUnlabelled`) draws
+only the orthologs in a group, `drawCurves` bundles the ribbons, and the fade a
+whole-genome view applies to sub-pixel ribbons is off, since the ribbons' color
+is the figure.
 
 ```json session
 {
   "defaultSession": {
-    "name": "Ancestral linkage groups",
+    "name": "Ancestral linkage groups, six genomes",
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "Rhopilema / Ephydatia / Hormiphora / Capsaspora",
+        "displayName": "Bolinopsis / Hormiphora / Rhopilema / Branchiostoma / Ephydatia / Cladorhizid",
         "views": [
-          { "assembly": "RES" },
+          { "assembly": "BIN", "displayedRegionNames": ["BIN*"] },
+          { "assembly": "HCA", "displayedRegionNames": ["HCA*"] },
+          { "assembly": "RES", "displayedRegionNames": ["RES*"] },
+          { "assembly": "BFL", "displayedRegionNames": ["BFL*"] },
           { "assembly": "EMU", "displayedRegionNames": ["EMU*"] },
-          { "assembly": "HCA" },
-          { "assembly": "COW" }
+          { "assembly": "CLAa", "displayedRegionNames": ["CLA*_hapA"] }
         ],
-        "tracks": [["RES_EMU"], ["EMU_HCA"], ["HCA_COW"]],
+        "tracks": [
+          ["BIN_HCA"],
+          ["RES_HCA"],
+          ["RES_BFL"],
+          ["BFL_EMU"],
+          ["EMU_CLAa"]
+        ],
         "colorBy": "attribute:gene_group",
+        "hideUnlabelled": true,
         "autoDiagonalize": true,
+        "drawCurves": true,
         "fadeThinAlignmentsMode": "off",
-        "alpha": 0.5
+        "alpha": 0.45,
+        "levelHeights": [130, 130, 130, 130, 130],
+        "collapseEmptyRows": true
       }
     ]
   }
 }
 ```
 
-<Figure caption="The four genomes stacked, ribbons colored by linkage group. Between the jellyfish and the sponge each group is one bundle from one chromosome to one chromosome. Below that the bundles fan out: a comb jelly chromosome takes its orthologs from several sponge chromosomes, and Capsaspora's take theirs from everywhere." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes stacked in the order of the paper's figure 1d, ribbons colored by linkage group and only the grouped orthologs drawn. Between the two comb jellies each chromosome pairs with one chromosome. Between the comb jelly and the jellyfish every comb jelly chromosome fans out over several jellyfish chromosomes. From the jellyfish down through amphioxus and the two sponges the groups travel as bundles, one chromosome to one chromosome." src="/img/linkage_groups/alg_stack.png" />
+
+The band to read is the second one. The comb jelly chromosomes are each a
+mixture of groups, and the mixture is different from the one any jellyfish
+chromosome carries, so the ribbons cross. Every band below it is bundles, and
+the two comb jellies agree with each other in the band above.
 
 ## Checking it against the table
 
@@ -267,7 +290,7 @@ the table as a whole.
 Download `genomes.tar.gz` and `supplementary_information.tar.gz` from
 [the Dryad page](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47) into
 `~/Downloads` first, since Dryad has no direct download URL. The script fetches
-everything else, converts the five tables, and writes a config with the four
+everything else, converts the seven tables, and writes a config with the seven
 assemblies and a default session; see [Prerequisites](#prerequisites).
 
 ```bash

@@ -19,7 +19,8 @@ paints as missing rather than as a group of its own.
 **Gene intervals come from the `.chrom`, not from `_pos`.** `_pos` is one
 coordinate per gene, and a BED made from it alone is a 1 bp feature the
 browser cannot show as a gene. odp's `.chrom` (protein, scaffold, strand,
-start, stop; 1-based inclusive) has the real interval, so `--chrom SP=FILE`
+start, stop; 1-based inclusive, and some annotations write a minus-strand gene's
+stop before its start) has the real interval, so `--chrom SP=FILE`
 writes that species' BED from it and reports what share of the table's ids it
 resolved. A species with no `.chrom` falls back to the 1 bp `_pos` interval,
 and says so. A column that resolves none of its ids against its `.chrom` is an
@@ -64,7 +65,8 @@ def read_chrom(path):
             fields = line.rstrip("\r\n").split("\t")
             if len(fields) >= 5 and fields[0]:
                 protein, scaffold, strand, start, stop = fields[:5]
-                genes[protein] = (scaffold, int(start) - 1, int(stop), strand)
+                lo, hi = sorted((int(start), int(stop)))
+                genes[protein] = (scaffold, lo - 1, hi, strand)
     return genes
 
 

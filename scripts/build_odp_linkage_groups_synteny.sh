@@ -49,14 +49,22 @@ RES rhopilema_li
 EMU ephydatia
 HCA hormiphora
 COW capsaspora/capsasporaA
+BIN bolinopsis
+BFL branchiostoma
+CLAa cladorhizid_v0.6_hapA
 '
-# The pairs to load, and the order they stack in the four-genome view.
+# The pairs to load: the jellyfish against each of the three genomes the
+# dotplots compare it with, then the neighbours of the six-genome stack, which
+# is the order of the paper's figure 1d (comb jellies, jellyfish, amphioxus,
+# sponges).
 PAIRS='
 RES EMU
 RES HCA
 RES COW
-EMU HCA
-HCA COW
+BIN HCA
+RES BFL
+BFL EMU
+EMU CLAa
 '
 # GNU tar matches an include pattern literally unless --wildcards precedes it;
 # the bsdtar macOS ships globs by default and exits on the flag.
