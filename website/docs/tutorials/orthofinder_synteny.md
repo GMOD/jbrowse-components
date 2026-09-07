@@ -123,9 +123,12 @@ own coordinates.
 }
 ```
 
-The human _HOXD_ cluster is one block every one of the four keeps.
+The human _HOXD_ cluster is where the table stops. Every HOX gene has paralogs
+in every one of these genomes, so its orthogroup is over `--max-copies` and
+contributes no row, and what chains across the stack is the single-copy
+neighbourhood on either side of the cluster.
 
-<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. Every lane draws its own genes across the cluster and the ribbons there are scattered slivers; the solid chains sit to the right of it, on the single-copy genes the orthogroup table could resolve." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
 ## Wheat: six genomes of one polyploid history {#wheat}
 
@@ -254,7 +257,7 @@ low best-partner share. Its genes are spread over thousands of sequences, of
 which the build keeps the densest, so the row draws the share that fell on
 those.
 
-### One locus, five lanes, five scales
+### One locus, five lanes
 
 A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
@@ -295,7 +298,7 @@ Every genome keeps the two dozen genes in this tomato window. Pepper and _N.
 attenuata_ need several times the anchor's span for them, the intergenic
 expansion arriving as a number in a lane header.
 
-<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. The potato and coffee lanes hold the block at the anchor's own scale; the pepper and N. attenuata lanes need several times it for the same genes, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
+<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. Every lane opens up more of its own genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
 
 Every lane's genes stay in the anchor's order; the coffee lane is `[rev]`.
 
@@ -347,7 +350,7 @@ under rice's gene track:
 
 A lane carries one refName, so the maize lane shows one of the two copies.
 
-<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows the better-kept of maize's two duplicated copies." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows whichever of maize's two duplicated copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
 Both maize copies at once is the stacked view's job. **Launch → Linear synteny
 view (visible region)** in the lane track's menu offers a full row per grass
@@ -385,7 +388,9 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
 The table is named after one genome by convention only. The script prints the
 column order off the header row, which is what `blockAssemblies` has to be. A
 column is named after its proteome file minus extensions;
-`--assembly COLUMN=NAME` renames one, and a key matching no column is an error.
+`--assembly COLUMN=NAME` renames one, and a key matching no column simply never
+fires, so a typo leaves the column under its file's name. A `--bed` key matching
+no column is an error.
 
 ### What to do with a duplicated gene
 

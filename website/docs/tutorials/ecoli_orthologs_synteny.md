@@ -186,7 +186,7 @@ Shigella genomes fall toward the bottom without anything naming them.
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models. Every gene's color runs the full stack; the lanes reading the operon reversed are the ones whose chromosome was deposited the other way round." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models. Every gene's color runs the full stack; the lanes marked [rev] are the ones running this window's genes in the opposite order to K-12, which the display then mirrors so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
 ## Where the join stops
 
