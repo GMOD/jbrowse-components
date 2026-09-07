@@ -120,9 +120,7 @@ export function ColorByLegend({
   trackChips,
   onClose,
 }: {
-  // undefined when overlaid tracks are on different modes; the legend then
-  // titles itself "Mixed" and lists the tracks rather than naming one mode
-  colorBy: SyntenyColorBy | undefined
+  colorBy: SyntenyColorBy
   // dotplot draws flat points, never CIGAR ops
   pointBased?: boolean
   // bitmask of indel ops actually drawn on screen; the ribbon view passes its
@@ -144,16 +142,13 @@ export function ColorByLegend({
   // matching. Read here rather than passed in — the legend floats over that band
   // in both views that mount it.
   const groundColor = useTheme().palette.background.paper
-  const swatch =
-    colorBy === undefined
-      ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
-      : getColorBySwatch(colorBy, {
-          pointBased,
-          cigarOps,
-          trackChips,
-          attributeRanges,
-        })
-  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel(colorBy)
+  const swatch = getColorBySwatch(colorBy, {
+    pointBased,
+    cigarOps,
+    trackChips,
+    attributeRanges,
+  })
+  const title = colorByShortLabel(colorBy)
   return (
     <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>
@@ -201,7 +196,7 @@ export function ColorByLegend({
           ))}
         </div>
       ) : null}
-      {swatch || colorBy === undefined ? null : (
+      {swatch ? null : (
         <div className={classes.note}>{colorByFallbackNote(colorBy)}</div>
       )}
     </div>

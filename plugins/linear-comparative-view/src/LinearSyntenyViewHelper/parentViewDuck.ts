@@ -71,9 +71,8 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   // pan does not re-scale the colors under the reader.
   attributeRanges: Record<string, AttributeRange>
   observeAttributeRanges: (ranges: Record<string, AttributeRange>) => void
-  // The per-track half of the color state: a track's own pinned mode and its
-  // slot in the view's palette, both keyed by trackId.
-  resolveColorBy: (trackId: string) => SyntenyColorBy
+  colorByMode: SyntenyColorBy
+  // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string
   // The follow state (`FollowHost`) is read by the off-screen mate click,
   // which navigates a row: a row the follow MOVES is re-asserted onto the

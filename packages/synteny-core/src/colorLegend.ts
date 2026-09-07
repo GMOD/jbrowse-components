@@ -129,38 +129,6 @@ export function colorByShortLabel(colorBy: SyntenyColorBy) {
   return PRESET_LABELS[colorBy] ?? colorByAttributeName(colorBy) ?? colorBy
 }
 
-/**
- * #api
- * The legend rows that name the overlaid tracks. Two cases produce them, and
- * both views build them the same way so the on-screen and exported legends
- * can't diverge:
- *
- * - every track on `'track'`: one chip per track, its palette color and name.
- * - tracks on different modes: one row per track naming its mode, with a swatch
- *   only where the track has a single color to show (a track on an identity
- *   ramp has none).
- *
- * Any other uniform mode has a fixed legend of its own and returns nothing.
- */
-export function trackLegendChips(
-  tracks: readonly {
-    name: string
-    colorBy: SyntenyColorBy
-    trackColor: string
-  }[],
-  uniformColorBy: SyntenyColorBy | undefined,
-): ColorChip[] {
-  if (uniformColorBy === 'track') {
-    return tracks.map(t => ({ color: t.trackColor, label: t.name }))
-  }
-  return uniformColorBy === undefined
-    ? tracks.map(t => ({
-        color: t.colorBy === 'track' ? t.trackColor : undefined,
-        label: `${t.name} — ${colorByShortLabel(t.colorBy)}`,
-      }))
-    : []
-}
-
 // What a mode with no swatch spec is doing instead. Lives here rather than
 // inline in each legend so the HTML and SVG legends can't say different things
 // — the same rule this file already applies to chip colors and ramp stops.

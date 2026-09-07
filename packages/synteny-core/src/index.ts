@@ -197,7 +197,6 @@ export {
   colorByFallbackNote,
   colorByShortLabel,
   getColorBySwatch,
-  trackLegendChips,
 } from './colorLegend.ts'
 export type {
   CigarOpMask,

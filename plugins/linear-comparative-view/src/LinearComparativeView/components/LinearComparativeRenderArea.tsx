@@ -152,7 +152,7 @@ const LevelSection = observer(function LevelSection({
         </div>
         {legendModel ? (
           <ColorByLegend
-            colorBy={legendModel.uniformColorBy}
+            colorBy={legendModel.colorByMode}
             trackChips={legendModel.colorLegendChips}
             cigarOps={legendModel.presentCigarKinds}
             attributeRanges={legendModel.attributeRanges}

@@ -212,10 +212,9 @@ carries a **Show color legend** toggle:
 A mode whose number a track does not carry leaves every ribbon the default
 color.
 
-**Customize per track** at the bottom of that menu overrides the choice above
-for one track at a time: each track can take its own mode, and its automatic
-palette color can be pinned to one you pick. Choosing any mode above clears
-those overrides.
+**Track colors**, offered once a view has more than one track, lists each track
+with the swatch it draws in under Distinct color per track. Pick a color there
+to pin it, or reset a track to its automatic palette slot.
 
 The settings button beside it has **Identity fade**, which modulates ribbon
 opacity by identity independently of the color mode, so low-identity blocks fade

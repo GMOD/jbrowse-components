@@ -206,11 +206,10 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The mode this track renders with: its own override if the user set one,
-       * else the plot-wide mode.
+       * The plot-wide mode, coerced.
        */
       get colorBy(): SyntenyColorBy {
-        return this.view.resolveColorBy(this.trackId)
+        return this.view.colorByMode
       },
       /**
        * #getter

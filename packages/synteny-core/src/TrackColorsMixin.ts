@@ -1,6 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { trackLegendChips } from './colorLegend.ts'
 import { isAttributeLabels } from './colorRamps.ts'
 import { coerceColorBy } from './colorUtils.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
@@ -60,8 +59,8 @@ export function widenAttributeRanges(
  * #stateModel TrackColorsMixin
  *
  * The color-by state shared by every view that can draw more than one synteny
- * track at once: the view-wide mode, the per-track overrides, and the palette
- * that tells overlaid tracks apart.
+ * track at once: the view-wide mode and the palette that tells overlaid tracks
+ * apart.
  *
  * A view supplies only `colorableTrackConfigs` — the dotplot walks its flat
  * `tracks`, a linear synteny view flattens `levels`. Everything downstream of
@@ -73,16 +72,9 @@ export function TrackColorsMixin() {
     .model({
       /**
        * #property
-       * The color-by mode the whole view renders with, unless a track overrides
-       * it in `trackColorBy`.
+       * The color-by mode every track in the view renders with.
        */
       colorBy: types.stripDefault(types.string, 'default'),
-      /**
-       * #property
-       * trackId -> color-by mode for that track alone. Absent means the track
-       * follows the view-wide `colorBy`.
-       */
-      trackColorBy: types.map(types.string),
       /**
        * #property
        * trackId -> explicit color under `colorBy: 'track'`. Absent means the
@@ -211,12 +203,12 @@ export function TrackColorsMixin() {
         return assignTrackColors(self.colorableTracks)
       },
       /**
-       * #method
-       * The mode one track renders with: its own override, else the view-wide
-       * mode.
+       * #getter
+       * `colorBy` coerced to a mode the renderers know, since the property is a
+       * plain string for snapshot-compat.
        */
-      resolveColorBy(trackId: string): SyntenyColorBy {
-        return coerceColorBy(self.trackColorBy.get(trackId) ?? self.colorBy)
+      get colorByMode(): SyntenyColorBy {
+        return coerceColorBy(self.colorBy)
       },
     }))
     .views(self => ({
@@ -231,38 +223,17 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * The mode to report as "the view's mode" — undefined when tracks
-       * disagree, so the menu shows nothing checked and the legend says so
-       * instead of picking one track's answer for everyone.
-       */
-      get uniformColorBy(): SyntenyColorBy | undefined {
-        const [first, ...rest] = [
-          ...new Set(
-            self.colorableTracks.map(t => self.resolveColorBy(t.trackId)),
-          ),
-        ]
-        if (rest.length > 0) {
-          return undefined
-        }
-        // no tracks yet: the view-wide mode is the only answer there is
-        return first === undefined ? coerceColorBy(self.colorBy) : first
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Legend rows naming the overlaid tracks — non-empty only when they are
-       * colored by track, or by different modes.
+       * Legend rows naming the overlaid tracks — one per track with its palette
+       * color, and only under `colorBy: 'track'`, since every other mode has a
+       * fixed legend of its own.
        */
       get colorLegendChips(): ColorChip[] {
-        return trackLegendChips(
-          self.colorableTracks.map(t => ({
-            name: t.name,
-            colorBy: self.resolveColorBy(t.trackId),
-            trackColor: self.trackColorFor(t.trackId),
-          })),
-          self.uniformColorBy,
-        )
+        return self.colorByMode === 'track'
+          ? self.colorableTracks.map(t => ({
+              color: this.trackColorFor(t.trackId),
+              label: t.name,
+            }))
+          : []
       },
     }))
     .actions(self => {
@@ -306,26 +277,11 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
-         * Set the view-wide mode. Clears every per-track override, so picking a
-         * mode from the top level of the palette menu really does mean "all
-         * tracks" — and rescales the ramp, which is the only way back from a
-         * domain one outlying window widened.
+         * Set the view-wide mode, and rescale the ramp, which is the only way
+         * back from a domain one outlying window widened.
          */
         setColorBy(value: SyntenyColorBy) {
           self.colorBy = value
-          self.trackColorBy.clear()
-          forgetSeenRanges()
-        },
-        /**
-         * #action
-         * Point one track at its own mode, or back at the view-wide one.
-         */
-        setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
-          if (value === undefined) {
-            self.trackColorBy.delete(trackId)
-          } else {
-            self.trackColorBy.set(trackId, value)
-          }
           forgetSeenRanges()
         },
         /**
@@ -343,8 +299,7 @@ export function TrackColorsMixin() {
         /**
          * #action
          */
-        clearTrackColorSettings() {
-          self.trackColorBy.clear()
+        clearTrackColors() {
           self.trackColors.clear()
         },
         /**

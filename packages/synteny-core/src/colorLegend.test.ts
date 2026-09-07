@@ -5,7 +5,6 @@ import {
   NO_CIGAR_OPS,
   colorByFallbackNote,
   getColorBySwatch,
-  trackLegendChips,
 } from './colorLegend.ts'
 
 test('continuous modes get a gradient ramp with bounded domain labels', () => {
@@ -108,37 +107,6 @@ test("colorBy:'track' renders the chips the view supplies, or nothing", () => {
 test('the fallback note names what the mode is actually doing', () => {
   expect(colorByFallbackNote('track')).toBe('Distinct color per track')
   expect(colorByFallbackNote('query')).toBe('Distinct color per sequence')
-})
-
-describe('trackLegendChips', () => {
-  const tracks = [
-    { name: 'a', colorBy: 'track' as const, trackColor: '#111111' },
-    { name: 'b', colorBy: 'identity' as const, trackColor: '#222222' },
-  ]
-
-  test('uniform track mode lists every track with its color', () => {
-    const uniform = [
-      tracks[0]!,
-      { name: 'b', colorBy: 'track' as const, trackColor: '#222222' },
-    ]
-    expect(trackLegendChips(uniform, 'track')).toEqual([
-      { color: '#111111', label: 'a' },
-      { color: '#222222', label: 'b' },
-    ])
-  })
-
-  // A track on a ramp has no single color to show, so its row names the mode
-  // and leaves the swatch empty rather than inventing a representative color.
-  test('mixed modes name each track and only swatch the flat ones', () => {
-    expect(trackLegendChips(tracks, undefined)).toEqual([
-      { color: '#111111', label: 'a — Track' },
-      { color: undefined, label: 'b — Identity' },
-    ])
-  })
-
-  test('any other uniform mode has its own legend and adds no rows', () => {
-    expect(trackLegendChips(tracks, 'strand')).toEqual([])
-  })
 })
 
 // A text column keys one chip per label, the file color where the file gave

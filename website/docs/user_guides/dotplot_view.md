@@ -36,9 +36,9 @@ below uses the second:
   numbers an alignment carries, identity and mapping quality among them, sit
   under **Color by value**. Each option carries a description of what it colors.
   With more than one alignment file plotted together, **Distinct color per
-  track** gives each its own color, and **Customize per track** below it
-  overrides the mode or pins the color for one track at a time. On a plot whose
-  blocks are all a single pixel wide, reach for **Min length** first.
+  track** gives each its own color, and **Track colors** below it pins the color
+  for one track at a time. On a plot whose blocks are all a single pixel wide,
+  reach for **Min length** first.
 - **Min length**, in the settings menu, drops alignments shorter than the slider
   value. Divergent genomes align in many short fragments, and hiding them is
   usually what makes the syntenic blocks visible.

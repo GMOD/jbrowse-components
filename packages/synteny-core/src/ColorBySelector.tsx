@@ -32,15 +32,10 @@ const ColorBySelector = observer(function ColorBySelector({
   pointBased: boolean
   showReference: boolean
 }) {
-  const { uniformColorBy } = model
   return (
     <CascadingMenuButton
       data-testid="color_by_menu"
-      tooltip={
-        uniformColorBy
-          ? `Color by: ${colorByShortLabel(uniformColorBy)}`
-          : 'Color by: mixed'
-      }
+      tooltip={`Color by: ${colorByShortLabel(model.colorByMode)}`}
       menuItems={colorByMenuItems(
         colorByMenuTargetFor(model, { pointBased, showReference }),
       )}

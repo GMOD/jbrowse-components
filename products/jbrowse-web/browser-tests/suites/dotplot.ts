@@ -57,27 +57,6 @@ async function clickMenuRow(page: Page, label: string, deepest = false) {
   await delay(400)
 }
 
-// Submenu labels are unique across the whole menu tree (unlike a mode name like
-// "Strand", which appears both view-wide and inside every track), so this looks
-// document-wide rather than in one panel — with several panels open the target
-// is usually not the innermost one.
-async function hoverSubmenu(page: Page, label: string) {
-  const testId = rowTestId('submenu', label)
-  const box = await page.evaluate(id => {
-    const li = document.querySelector(`[data-testid="${CSS.escape(id)}"]`)
-    if (!li) {
-      return null
-    }
-    const r = li.getBoundingClientRect()
-    return { x: r.x + 20, y: r.y + r.height / 2 }
-  }, testId)
-  if (!box) {
-    throw new Error(`no submenu row "${label}"`)
-  }
-  await page.mouse.move(box.x, box.y)
-  await delay(600)
-}
-
 // Radios render as MUI icons rather than inputs, so checked state is read off
 // the RadioButtonChecked glyph's inner-dot subpath.
 const CHECKED_GLYPH = 'M12 7c-2.76 0'
@@ -277,58 +256,6 @@ const suite: TestSuite = {
         })
         if (!labels.includes('Grape vs Peach (PAF)')) {
           throw new Error(`legend does not name the tracks: "${labels}"`)
-        }
-      },
-    },
-    {
-      // Regression: checked state used to compare the track's RESOLVED mode to
-      // the view's, so a track pinned to the mode the view already used showed
-      // two checked radios and "Use view setting" appeared to do nothing.
-      name: 'a per-track override round-trips back to "Use view setting"',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          TWO_TRACK_SESSION,
-          'test_data/config_dotplot.json',
-        )
-        await page.waitForSelector(displayPainted('dotplot_webgl_canvas'), {
-          timeout: 60000,
-        })
-
-        await openPaletteMenu(page)
-        // put the VIEW on Strand first — the case where an override equals it
-        await clickMenuRow(page, 'Strand')
-
-        const openTrackSubmenu = async () => {
-          await openPaletteMenu(page)
-          await hoverSubmenu(page, 'Customize per track')
-          await hoverSubmenu(page, 'Grape vs Peach (PAF)')
-          return readRadios(page)
-        }
-        const checkedIn = (rows: { label?: string; checked: boolean }[]) =>
-          rows.filter(r => r.checked).map(r => r.label)
-
-        const before = await openTrackSubmenu()
-        if (checkedIn(before).join(',') !== 'Use view setting') {
-          throw new Error(
-            `expected only "Use view setting" checked, got: ${checkedIn(before).join(', ')}`,
-          )
-        }
-
-        await clickMenuRow(page, 'Strand', true)
-        const overridden = await openTrackSubmenu()
-        if (checkedIn(overridden).join(',') !== 'Strand') {
-          throw new Error(
-            `expected only "Strand" checked after overriding, got: ${checkedIn(overridden).join(', ')}`,
-          )
-        }
-
-        await clickMenuRow(page, 'Use view setting', true)
-        const restored = await openTrackSubmenu()
-        if (checkedIn(restored).join(',') !== 'Use view setting') {
-          throw new Error(
-            `"Use view setting" did not take effect, checked: ${checkedIn(restored).join(', ')}`,
-          )
         }
       },
     },

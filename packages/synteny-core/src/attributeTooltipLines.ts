@@ -8,15 +8,17 @@ import type { SyntenyColorBy } from './colorUtils.ts'
 // Channel name -> the label the legend already uses for the mode that paints
 // it, so a tooltip and a legend can't name the same number two ways. Derived
 // from `continuousRampConfig` rather than hand-listed, since that is where the
-// mode/channel pairing is decided. A channel no preset paints — a column an
-// MCScan table declared — is printed under the name its author gave it, which
-// is the point of declaring one.
-const CHANNEL_LABELS = new Map(
-  Object.entries(continuousRampConfig).map(([mode, { attribute }]) => [
-    attribute,
-    colorByShortLabel(mode as SyntenyColorBy),
-  ]),
-)
+// mode/channel pairing is decided. The PAF adapter's per-query mean identity
+// is a channel no mode paints any more and still worth a line. A channel no
+// preset names — a column an MCScan table declared — is printed under the name
+// its author gave it, which is the point of declaring one.
+const CHANNEL_LABELS = new Map([
+  ...Object.entries(continuousRampConfig).map(
+    ([mode, { attribute }]) =>
+      [attribute, colorByShortLabel(mode as SyntenyColorBy)] as const,
+  ),
+  ['meanIdentity', 'Mean query identity'] as const,
+])
 
 // Integers (mapping quality, a declared count) read better unabbreviated;
 // ratios (identity, dn/ds) need their significant digits and not 17 of them.

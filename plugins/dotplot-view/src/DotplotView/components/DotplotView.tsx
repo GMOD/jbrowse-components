@@ -138,7 +138,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
       <div className={classes.root}>
         {model.showColorLegend ? (
           <ColorByLegend
-            colorBy={model.uniformColorBy}
+            colorBy={model.colorByMode}
             trackChips={model.colorLegendChips}
             pointBased
             alpha={model.alpha}

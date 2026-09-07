@@ -178,7 +178,7 @@ export async function renderToSvg(
                 legend={
                   i === 0 && model.showColorLegend ? (
                     <SVGColorByLegend
-                      colorBy={model.uniformColorBy}
+                      colorBy={model.colorByMode}
                       trackChips={model.colorLegendChips}
                       viewWidth={width}
                       maxHeight={level.height}

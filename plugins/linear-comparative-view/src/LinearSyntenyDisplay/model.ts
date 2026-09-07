@@ -611,14 +611,13 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The mode this track renders with, before the per-level 'reference'
-       * remap: its own override if the user set one, else the view-wide mode.
-       * This is the user-facing answer — menus and the legend title read it, so
-       * a uniform 'reference' view reports 'reference' rather than the
-       * query/target each level resolved it to.
+       * The view's mode, before the per-level 'reference' remap. This is the
+       * user-facing answer — the legend title reads it, so a 'reference' view
+       * reports 'reference' rather than the query/target each level resolved
+       * it to.
        */
       get colorByMode(): SyntenyColorBy {
-        return this.view.resolveColorBy(this.trackId)
+        return this.view.colorByMode
       },
       /**
        * #getter

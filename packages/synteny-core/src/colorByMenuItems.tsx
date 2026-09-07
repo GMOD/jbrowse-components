@@ -13,16 +13,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 export interface ColorByMenuTrack {
   trackId: string
   name: string
-  /** the mode this track currently draws with */
-  colorBy: SyntenyColorBy
-  /**
-   * whether `colorBy` came from a per-track override rather than the view.
-   * Checked state has to key on this, not on whether `colorBy` happens to equal
-   * the view's mode — otherwise a track pinned to the mode the view already
-   * uses shows both "Use view setting" and that mode checked, and clearing the
-   * override changes nothing on screen.
-   */
-  overridden: boolean
   /** the color it draws under `colorBy: 'track'` */
   trackColor: string
   /** whether that color was pinned by hand rather than taken from the palette */
@@ -34,7 +24,7 @@ export interface ColorByMenuTrack {
  * Project a view carrying `TrackColorsMixin` onto the menu builder's input.
  * Both palette menus were building this by hand, walking the model's tracks a
  * third time (after `colorableTracks` and the legend) and repeating the same
- * five setter lambdas.
+ * setter lambdas.
  */
 export function colorByMenuTargetFor(
   model: TrackColorsModel,
@@ -44,14 +34,12 @@ export function colorByMenuTargetFor(
   }: { pointBased: boolean; showReference: boolean },
 ): ColorByMenuTarget {
   return {
-    uniformColorBy: model.uniformColorBy,
+    colorBy: model.colorByMode,
     attributes: model.colorableAttributes,
     attributeRanges: model.attributeRanges,
     tracks: model.colorableTracks.map(({ trackId, name, color }) => ({
       trackId,
       name,
-      colorBy: model.resolveColorBy(trackId),
-      overridden: model.trackColorBy.has(trackId),
       trackColor: model.trackColorFor(trackId),
       pinned: color !== undefined,
     })),
@@ -61,14 +49,11 @@ export function colorByMenuTargetFor(
     setColorBy: value => {
       model.setColorBy(value)
     },
-    setTrackColorBy: (trackId, value) => {
-      model.setTrackColorBy(trackId, value)
-    },
     setTrackColor: (trackId, value) => {
       model.setTrackColor(trackId, value)
     },
-    clearTrackColorSettings: () => {
-      model.clearTrackColorSettings()
+    clearTrackColors: () => {
+      model.clearTrackColors()
     },
     setShowColorLegend: value => {
       model.setShowColorLegend(value)
@@ -83,21 +68,17 @@ export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
-  uniformColorBy: SyntenyColorBy | undefined
+  colorByMode: SyntenyColorBy
   showColorLegend: boolean
-  trackColorBy: { has: (trackId: string) => boolean }
-  resolveColorBy: (trackId: string) => SyntenyColorBy
   trackColorFor: (trackId: string) => string
   setColorBy: (value: SyntenyColorBy) => void
-  setTrackColorBy: (trackId: string, value: SyntenyColorBy | undefined) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
-  clearTrackColorSettings: () => void
+  clearTrackColors: () => void
   setShowColorLegend: (value: boolean) => void
 }
 
 export interface ColorByMenuTarget {
-  /** the view-wide mode, or undefined when tracks disagree */
-  uniformColorBy: SyntenyColorBy | undefined
+  colorBy: SyntenyColorBy
   tracks: ColorByMenuTrack[]
   /**
    * numeric columns the overlaid tracks declare, each offered as its own mode.
@@ -118,9 +99,8 @@ export interface ColorByMenuTarget {
   showReference: boolean
   showColorLegend: boolean
   setColorBy: (value: SyntenyColorBy) => void
-  setTrackColorBy: (trackId: string, value: SyntenyColorBy | undefined) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
-  clearTrackColorSettings: () => void
+  clearTrackColors: () => void
   setShowColorLegend: (value: boolean) => void
 }
 
@@ -180,75 +160,69 @@ function valueModes({
   ]
 }
 
-function radios(
-  modes: ModeEntry[],
-  isChecked: (value: SyntenyColorBy) => boolean,
-  pick: (value: SyntenyColorBy) => void,
-): MenuItem[] {
+function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
   return modes.map(({ label, value, helpText, disabledHelpText }) => ({
     label,
     type: 'radio' as const,
-    checked: isChecked(value),
+    checked: target.colorBy === value,
     helpText,
     disabled: disabledHelpText !== undefined,
     disabledHelpText,
     onClick: () => {
-      pick(value)
+      target.setColorBy(value)
     },
   }))
 }
 
-// The structural radios at the top, then the measurements one hop in. The
-// submenu row names the active measurement as its hint, so a value mode still
-// reads as picked from the top level.
-function modeItems(
-  target: ColorByMenuTarget,
-  isChecked: (value: SyntenyColorBy) => boolean,
-  pick: (value: SyntenyColorBy) => void,
-): MenuItem[] {
-  const values = valueModes(target)
+// One row per overlaid track carrying its palette swatch, so a color can be
+// pinned for `colorBy: 'track'`; the row's own submenu is the way back.
+function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
+  const { tracks } = target
   return [
-    ...radios(structuralModes(target), isChecked, pick),
     {
-      label: withHint(
-        VALUE_MODES_LABEL,
-        values.find(m => isChecked(m.value))?.label,
-      ),
+      label: 'Track colors',
       helpText:
-        'Paint each alignment by a number it carries, on a color ramp the legend labels.',
-      subMenu: radios(values, isChecked, pick),
-    },
-  ]
-}
-
-function perTrackSubMenu(
-  target: ColorByMenuTarget,
-  track: ColorByMenuTrack,
-): MenuItem[] {
-  return [
-    {
-      label: 'Use view setting',
-      type: 'radio',
-      checked: !track.overridden,
-      onClick: () => {
-        target.setTrackColorBy(track.trackId, undefined)
-      },
-    },
-    { type: 'divider' },
-    ...modeItems(
-      target,
-      value => track.overridden && track.colorBy === value,
-      value => {
-        target.setTrackColorBy(track.trackId, value)
-      },
-    ),
-    { type: 'divider' },
-    {
-      label: 'Reset color to automatic',
-      disabled: !track.pinned,
-      onClick: () => {
-        target.setTrackColor(track.trackId, undefined)
-      },
+        'The color each track draws in under "Distinct color per track". Pick one with its swatch to pin it; a track without one takes an automatic slot from the palette.',
+      subMenu: [
+        ...tracks.map(track => ({
+          label: track.name,
+          subMenu: [
+            {
+              label: 'Reset color to automatic',
+              disabled: !track.pinned,
+              onClick: () => {
+                target.setTrackColor(track.trackId, undefined)
+              },
+            },
+          ],
+          // the swatch sits on a submenu row, so its click has to stop short
+          // of the row or picking a color also opens the submenu
+          endAdornment: (
+            <span
+              data-testid={`color_by_track_swatch-${track.trackId}`}
+              onClick={event => {
+                event.stopPropagation()
+              }}
+            >
+              <PopoverPicker
+                color={track.trackColor}
+                unset={!track.pinned}
+                onChange={value => {
+                  target.setTrackColor(track.trackId, value)
+                }}
+              />
+            </span>
+          ),
+        })),
+        { type: 'divider' as const },
+        {
+          label: 'Reset all to automatic',
+          disabled: !tracks.some(t => t.pinned),
+          onClick: () => {
+            target.clearTrackColors()
+          },
+        },
+      ],
     },
   ]
 }
@@ -256,58 +230,25 @@ function perTrackSubMenu(
 /**
  * #api
  * The palette-button menu shared by the dotplot and linear-synteny headers: the
- * view-wide mode radios, a per-track section once more than one track is
- * overlaid, and the legend toggle.
+ * structural mode radios, the measurements one hop in, the per-track swatches
+ * once more than one track is overlaid, and the legend toggle.
  */
 export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
-  const { uniformColorBy, tracks, showColorLegend } = target
-  const anyOverride = uniformColorBy === undefined || tracks.some(t => t.pinned)
+  const { tracks, showColorLegend } = target
+  const values = valueModes(target)
   return [
-    ...modeItems(
-      target,
-      value => uniformColorBy === value,
-      value => {
-        target.setColorBy(value)
-      },
-    ),
+    ...radios(target, structuralModes(target)),
+    {
+      label: withHint(
+        VALUE_MODES_LABEL,
+        values.find(m => m.value === target.colorBy)?.label,
+      ),
+      helpText:
+        'Paint each alignment by a number it carries, on a color ramp the legend labels.',
+      subMenu: radios(target, values),
+    },
     ...(tracks.length > 1
-      ? [
-          { type: 'divider' as const },
-          {
-            label: 'Customize per track',
-            helpText:
-              'Advanced: override the setting above for one track at a time. Each track can take its own color-by mode, and its automatic palette color can be pinned to one you choose. Picking any mode above clears these overrides.',
-            subMenu: tracks.map(track => ({
-              label: track.name,
-              subMenu: perTrackSubMenu(target, track),
-              // the swatch sits on a submenu row, so its click has to stop
-              // short of the row or picking a color also opens the submenu
-              endAdornment: (
-                <span
-                  data-testid={`color_by_track_swatch-${track.trackId}`}
-                  onClick={event => {
-                    event.stopPropagation()
-                  }}
-                >
-                  <PopoverPicker
-                    color={track.trackColor}
-                    unset={!track.pinned}
-                    onChange={value => {
-                      target.setTrackColor(track.trackId, value)
-                    }}
-                  />
-                </span>
-              ),
-            })),
-          },
-          {
-            label: 'Reset per-track colors',
-            disabled: !anyOverride,
-            onClick: () => {
-              target.clearTrackColorSettings()
-            },
-          },
-        ]
+      ? [{ type: 'divider' as const }, ...trackColorItems(target)]
       : []),
     { type: 'divider' },
     {

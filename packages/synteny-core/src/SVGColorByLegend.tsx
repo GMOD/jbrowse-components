@@ -51,9 +51,7 @@ export function SVGColorByLegend({
   attributeRanges,
   trackChips,
 }: {
-  // undefined when overlaid tracks are on different modes; the legend then
-  // titles itself "Mixed" and lists the tracks rather than naming one mode
-  colorBy: SyntenyColorBy | undefined
+  colorBy: SyntenyColorBy
   viewWidth: number
   // height of the plot the box floats over. Only the chip list can outgrow it —
   // one chip per overlaid track, so a many-track colorBy:'track' export would
@@ -73,19 +71,16 @@ export function SVGColorByLegend({
   trackChips?: ColorChip[]
 }) {
   const theme = useTheme()
-  const swatch =
-    colorBy === undefined
-      ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
-      : getColorBySwatch(colorBy, {
-          pointBased,
-          cigarOps,
-          trackChips,
-          attributeRanges,
-        })
-  const note = colorBy === undefined ? '' : colorByFallbackNote(colorBy)
-  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel(colorBy)
+  const swatch = getColorBySwatch(colorBy, {
+    pointBased,
+    cigarOps,
+    trackChips,
+    attributeRanges,
+  })
+  const note = colorByFallbackNote(colorBy)
+  const title = colorByShortLabel(colorBy)
   const text = stripAlpha(theme.palette.text.primary)
-  const gradientId = `colorby-ramp-${colorBy ?? 'mixed'}`
+  const gradientId = `colorby-ramp-${colorBy}`
 
   const rampRow =
     swatch?.kind === 'ramp'

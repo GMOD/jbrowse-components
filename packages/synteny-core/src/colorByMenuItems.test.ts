@@ -7,23 +7,20 @@ import type {
   ColorByMenuTarget,
   ColorByMenuTrack,
 } from './colorByMenuItems.tsx'
-import type { MenuItem } from '@jbrowse/core/ui'
 
 const track = (n: number, over: Partial<ColorByMenuTrack> = {}) =>
   ({
     trackId: `t${n}`,
     name: `track ${n}`,
-    colorBy: 'default',
     trackColor: '#4e79a7',
     pinned: false,
-    overridden: false,
     ...over,
   }) satisfies ColorByMenuTrack
 
 const noop = () => {}
 
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
-  uniformColorBy: 'default',
+  colorBy: 'default',
   tracks: [track(0), track(1)],
   attributes: [],
   attributeRanges: {
@@ -35,9 +32,8 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   showReference: false,
   showColorLegend: false,
   setColorBy: noop,
-  setTrackColorBy: noop,
   setTrackColor: noop,
-  clearTrackColorSettings: noop,
+  clearTrackColors: noop,
   setShowColorLegend: noop,
   ...over,
 })
@@ -59,26 +55,25 @@ function findSubMenu(
 const valueModes = (items: ReturnType<typeof colorByMenuItems>) =>
   findSubMenu(items, VALUE_MODES_LABEL)!
 
-// The view-wide radios come first and are the primary control; per-track is a
-// secondary override below them. Locking the order in keeps that hierarchy from
-// inverting under a later edit.
-test('view-wide modes lead, per-track follows as an override section', () => {
-  const items = colorByMenuItems(target())
-  const got = labels(items)
+// The view-wide radios come first and are the primary control; the per-track
+// swatches are a secondary section below them. Locking the order in keeps that
+// hierarchy from inverting under a later edit.
+test('view-wide modes lead, track colors follow, the legend toggle closes', () => {
+  const got = labels(colorByMenuItems(target()))
   expect(got.slice(0, 3)).toEqual([
     'Default',
     'Strand',
     'Distinct color per track',
   ])
-  expect(got.indexOf('Customize per track')).toBeGreaterThan(
-    got.indexOf('Distinct color per track'),
+  expect(got.indexOf('Track colors')).toBeGreaterThan(
+    got.indexOf(VALUE_MODES_LABEL),
   )
   expect(got.at(-1)).toBe('Show color legend')
 })
 
-test('a single track gets no per-track section and no Track mode', () => {
+test('a single track gets no track colors section and no Track mode', () => {
   const got = labels(colorByMenuItems(target({ tracks: [track(0)] })))
-  expect(got).not.toContain('Customize per track')
+  expect(got).not.toContain('Track colors')
   // one track has nothing to be told apart from
   expect(got).not.toContain('Distinct color per track')
 })
@@ -97,21 +92,6 @@ test('the dotplot gets point-based help text for Default', () => {
   expect('helpText' in dotplot && dotplot.helpText).toContain('black')
 })
 
-test('each track submenu offers "Use view setting" plus the same modes', () => {
-  const items = colorByMenuItems(target())
-  const perTrack = findSubMenu(items, 'Customize per track')!
-  expect(perTrack.map(i => ('label' in i ? i.label : ''))).toEqual([
-    'track 0',
-    'track 1',
-  ])
-  const first = findSubMenu(perTrack, 'track 0')!
-  const inner = first.map(i => ('label' in i ? i.label : `<${i.type}>`))
-  expect(inner[0]).toBe('Use view setting')
-  expect(inner).toContain('Strand')
-  expect(labels(valueModes(first))).toContain('Identity')
-  expect(inner.at(-1)).toBe('Reset color to automatic')
-})
-
 // The measurements sit one hop in, so a plain PAF's user meets five radios
 // rather than ten, and the row that opens them names the one in use.
 test('value modes live in one submenu whose row names the active one', () => {
@@ -124,124 +104,8 @@ test('value modes live in one submenu whose row names the active one', () => {
     'Mapping quality',
     'dN/dS',
   ])
-  const active = labels(colorByMenuItems(target({ uniformColorBy: 'dnds' })))
+  const active = labels(colorByMenuItems(target({ colorBy: 'dnds' })))
   expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
-})
-
-test('reset rows are disabled until something is actually overridden', () => {
-  const clean = colorByMenuItems(target())
-  const reset = clean.find(
-    i => 'label' in i && i.label === 'Reset per-track colors',
-  )
-  expect(reset && 'disabled' in reset && reset.disabled).toBe(true)
-
-  const dirty = colorByMenuItems(
-    target({ tracks: [track(0, { pinned: true }), track(1)] }),
-  )
-  const resetDirty = dirty.find(
-    i => 'label' in i && i.label === 'Reset per-track colors',
-  )
-  expect(resetDirty && 'disabled' in resetDirty && resetDirty.disabled).toBe(
-    false,
-  )
-})
-
-test('mixed modes leave every view-wide radio unchecked', () => {
-  const items = colorByMenuItems(target({ uniformColorBy: undefined }))
-  const radios = items.filter(i => 'type' in i && i.type === 'radio')
-  expect(radios.length).toBeGreaterThan(0)
-  expect(radios.every(r => 'checked' in r && !r.checked)).toBe(true)
-})
-
-// Regression: "Use view setting" used to be checked whenever the track's
-// RESOLVED mode equalled the view's, so a track explicitly pinned to the same
-// mode the view already used showed two checked radios, and clicking "Use view
-// setting" cleared the override with nothing visibly changing. Checked state
-// has to follow whether an override EXISTS, not what it resolves to.
-describe('per-track "Use view setting"', () => {
-  const submenuFor = (t: ColorByMenuTarget, name: string) => {
-    const items = colorByMenuItems(t)
-    const perTrack = items.find(
-      i => 'label' in i && i.label === 'Customize per track',
-    )
-    const list =
-      perTrack && 'subMenu' in perTrack ? resolveSubMenu(perTrack) : []
-    const row = list.find(i => 'label' in i && i.label === name)
-    return row && 'subMenu' in row ? resolveSubMenu(row) : []
-  }
-  const checkedOf = (items: MenuItem[], label: string) => {
-    const row = items.find(i => 'label' in i && i.label === label)
-    return row && 'checked' in row ? row.checked : undefined
-  }
-
-  test('an override equal to the view mode still reads as an override', () => {
-    const sub = submenuFor(
-      target({
-        uniformColorBy: 'strand',
-        tracks: [
-          track(0, { colorBy: 'strand', overridden: true }),
-          track(1, { colorBy: 'strand' }),
-        ],
-      }),
-      'track 0',
-    )
-    expect(checkedOf(sub, 'Use view setting')).toBe(false)
-    expect(checkedOf(sub, 'Strand')).toBe(true)
-  })
-
-  test('exactly one radio is checked in a track submenu', () => {
-    for (const t of [
-      target(),
-      target({
-        tracks: [track(0, { colorBy: 'strand', overridden: true }), track(1)],
-      }),
-      target({
-        uniformColorBy: 'strand',
-        tracks: [
-          track(0, { colorBy: 'strand', overridden: true }),
-          track(1, { colorBy: 'strand' }),
-        ],
-      }),
-    ]) {
-      const sub = submenuFor(t, 'track 0')
-      const checked = sub.filter(i => 'checked' in i && i.checked)
-      expect(checked).toHaveLength(1)
-    }
-  })
-
-  test('clearing an override rechecks "Use view setting"', () => {
-    const overrides = new Map<string, string>([['t0', 'strand']])
-    const build = () =>
-      target({
-        uniformColorBy: overrides.size ? undefined : 'default',
-        tracks: [
-          track(0, {
-            colorBy: (overrides.get('t0') ?? 'default') as 'strand' | 'default',
-            overridden: overrides.has('t0'),
-          }),
-          track(1),
-        ],
-        setTrackColorBy: (id, value) => {
-          if (value === undefined) {
-            overrides.delete(id)
-          } else {
-            overrides.set(id, value)
-          }
-        },
-      })
-
-    expect(checkedOf(submenuFor(build(), 'track 0'), 'Use view setting')).toBe(
-      false,
-    )
-    const row = submenuFor(build(), 'track 0').find(
-      i => 'label' in i && i.label === 'Use view setting',
-    )!
-    ;(row as { onClick: () => void }).onClick()
-    expect(overrides.has('t0')).toBe(false)
-    expect(checkedOf(submenuFor(build(), 'track 0'), 'Use view setting')).toBe(
-      true,
-    )
-  })
 })
 
 // A measurement the loaded alignments never carried is a row that paints every
@@ -266,6 +130,36 @@ test('a value mode is disabled until the data has carried it', () => {
   )
 })
 
+test('each track row carries its swatch and a way back to automatic', () => {
+  const colors = findSubMenu(colorByMenuItems(target()), 'Track colors')!
+  expect(labels(colors)).toEqual([
+    'track 0',
+    'track 1',
+    '<divider>',
+    'Reset all to automatic',
+  ])
+  const first = colors[0]!
+  expect('endAdornment' in first && first.endAdornment).toBeTruthy()
+  const reset = findSubMenu(colors, 'track 0')![0]!
+  expect('label' in reset && reset.label).toBe('Reset color to automatic')
+  expect('disabled' in reset && reset.disabled).toBe(true)
+})
+
+test('reset rows are disabled until a color is actually pinned', () => {
+  const clean = findSubMenu(colorByMenuItems(target()), 'Track colors')!
+  const reset = clean.at(-1)!
+  expect('disabled' in reset && reset.disabled).toBe(true)
+
+  const dirty = findSubMenu(
+    colorByMenuItems(
+      target({ tracks: [track(0, { pinned: true }), track(1)] }),
+    ),
+    'Track colors',
+  )!
+  const resetAll = dirty.at(-1)!
+  expect('disabled' in resetAll && resetAll.disabled).toBe(false)
+})
+
 // The declared columns appear as modes of their own, which is what keeps the
 // named list above from gaining a member per measurement anyone wants to see.
 test('a declared numeric column is offered as its own mode', () => {
@@ -286,14 +180,13 @@ test('a declared numeric column is offered as its own mode', () => {
   expect(picked).toEqual(['attribute:goc_score'])
 })
 
-// A track pinned to an attribute mode has to show as checked, the same as a
-// preset — the mode is one string either way, which is the point of encoding it
-// in the string rather than in a sibling property.
+// An attribute mode has to show as checked the same as a preset — the mode is
+// one string either way, which is the point of encoding it in the string.
 test('an attribute mode checks like a preset', () => {
   const items = colorByMenuItems(
     target({
       attributes: ['dn'],
-      uniformColorBy: 'attribute:dn',
+      colorBy: 'attribute:dn',
     }),
   )
   const dn = valueModes(items).find(i => 'label' in i && i.label === 'dn')!

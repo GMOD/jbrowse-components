@@ -170,31 +170,6 @@ test('overlaid tracks get distinct colors, and a pin displaces its sibling', asy
   expect(view.trackColorFor(a)).toBe(wanted)
   expect(view.trackColorFor(b)).not.toBe(wanted)
 
-  view.clearTrackColorSettings()
+  view.clearTrackColors()
   expect(view.trackColorFor(a)).not.toBe(wanted)
-}, 45000)
-
-test('a per-track mode overrides the plot-wide one until a plot-wide pick', async () => {
-  const view = await twoOverlaidTracks()
-  const [a, b] = view.tracks.map(
-    (t: { configuration: { trackId: string } }) => t.configuration.trackId,
-  )
-
-  view.setColorBy('strand')
-  expect(view.uniformColorBy).toBe('strand')
-
-  view.setTrackColorBy(a, 'identity')
-  expect(view.resolveColorBy(a)).toBe('identity')
-  expect(view.resolveColorBy(b)).toBe('strand')
-  // tracks disagree, so there is no single mode to report
-  expect(view.uniformColorBy).toBeUndefined()
-  expect(view.colorLegendChips.map((c: { label: string }) => c.label)).toEqual([
-    expect.stringContaining('— Identity'),
-    expect.stringContaining('— Strand'),
-  ])
-
-  // a plot-wide pick has to mean all tracks, not "all except the pinned ones"
-  view.setColorBy('query')
-  expect(view.resolveColorBy(a)).toBe('query')
-  expect(view.uniformColorBy).toBe('query')
 }, 45000)

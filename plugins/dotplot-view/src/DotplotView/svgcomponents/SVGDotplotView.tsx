@@ -79,7 +79,7 @@ export async function renderToSvg(
           </SvgClipRect>
           {model.showColorLegend ? (
             <SVGColorByLegend
-              colorBy={model.uniformColorBy}
+              colorBy={model.colorByMode}
               trackChips={model.colorLegendChips}
               viewWidth={viewWidth}
               maxHeight={viewHeight}
