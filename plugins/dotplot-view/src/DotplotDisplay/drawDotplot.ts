@@ -65,8 +65,8 @@ export function drawDotplotInstances(
   // One CSS string per distinct color instead of one per color *change*. The
   // batching above only pays off when consecutive segments share a color, which
   // the chromosome-painting modes give and the ramp modes (identity,
-  // meanQueryIdentity, mappingQuality) do not — there, neighbouring features
-  // land on different LUT entries and every segment used to allocate its own
+  // mappingQuality) do not — there, neighbouring features land on different
+  // LUT entries and every segment used to allocate its own
   // `rgba(...)`. A ramp is a 256-entry LUT, so this cache holds a few hundred
   // strings at most; per call rather than module-level, because the STRING (not
   // the packed color, which is always opaque) carries `alpha` — keyed on abgr

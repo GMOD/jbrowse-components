@@ -82,7 +82,6 @@ const syntenyColorByValues = [
   'target',
   'reference',
   'identity',
-  'meanQueryIdentity',
   'mappingQuality',
   'dnds',
   'track',
@@ -134,11 +133,12 @@ export function colorByAttributeName(colorBy: SyntenyColorBy) {
  * #api
  * Coerce a persisted colorBy string (stored as plain `types.string` for
  * snapshot-compat) to a valid `SyntenyColorBy`. Unknown values fall back to
- * 'default'; the retired 'identityDiverging' mode maps to 'identity' so old
- * saved sessions keep rendering instead of hitting an unhandled switch case.
+ * 'default'; the retired 'identityDiverging' and 'meanQueryIdentity' modes map
+ * to 'identity' so old saved sessions keep rendering instead of hitting an
+ * unhandled switch case.
  */
 export function coerceColorBy(value: string | undefined): SyntenyColorBy {
-  if (value === 'identityDiverging') {
+  if (value === 'identityDiverging' || value === 'meanQueryIdentity') {
     return 'identity'
   }
   return value !== undefined && isSyntenyColorBy(value) ? value : 'default'

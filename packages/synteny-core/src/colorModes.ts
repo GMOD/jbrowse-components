@@ -69,13 +69,6 @@ export const COLOR_MODES: {
       'Color by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs conserved regions.',
   },
   {
-    value: 'meanQueryIdentity',
-    kind: 'value',
-    label: 'Mean query identity',
-    helpText:
-      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). Smooths local noise — e.g. a contig split into many hits is colored by its overall identity to the target.',
-  },
-  {
     value: 'mappingQuality',
     kind: 'value',
     label: 'Mapping quality',

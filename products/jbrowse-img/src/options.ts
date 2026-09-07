@@ -66,7 +66,6 @@ const syntenyColorByModes = [
   'target',
   'reference',
   'identity',
-  'meanQueryIdentity',
   'mappingQuality',
   'dnds',
   'track',

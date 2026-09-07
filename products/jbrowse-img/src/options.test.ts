@@ -71,9 +71,7 @@ test('validates colorBy, which the view would silently coerce to default', () =>
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
     expect(getColorBy(parse('--colorBy query'))).toBe('query')
-    expect(getColorBy(parse('--colorBy meanQueryIdentity'))).toBe(
-      'meanQueryIdentity',
-    )
+    expect(getColorBy(parse('--colorBy mappingQuality'))).toBe('mappingQuality')
     expect(warn).not.toHaveBeenCalled()
 
     expect(getColorBy(parse('--colorBy quary'))).toBeUndefined()

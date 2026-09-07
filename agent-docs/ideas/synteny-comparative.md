@@ -289,7 +289,7 @@ all-vs-all PAF work rather than doing it speculatively.
 Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
 current stack. The overriding conclusion is that **the render/model/color surface is
 already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
-reference·identity·meanQueryIdentity·mappingQuality`, plus `opacityByIdentity`,
+reference·identity·mappingQuality·dnds`, plus `opacityByIdentity`,
 `fadeThinAlignments`, N-way stacked views, `colorBy:'reference'` chromosome-painting,
 and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
 file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each

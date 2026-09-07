@@ -9,11 +9,12 @@ import {
 
 test('coerceColorBy passes through valid modes', () => {
   expect(coerceColorBy('strand')).toBe('strand')
-  expect(coerceColorBy('meanQueryIdentity')).toBe('meanQueryIdentity')
+  expect(coerceColorBy('mappingQuality')).toBe('mappingQuality')
 })
 
-test('coerceColorBy maps retired identityDiverging to identity', () => {
+test('coerceColorBy maps the retired identity variants to identity', () => {
   expect(coerceColorBy('identityDiverging')).toBe('identity')
+  expect(coerceColorBy('meanQueryIdentity')).toBe('identity')
 })
 
 test('coerceColorBy falls back to default for unknown/undefined', () => {

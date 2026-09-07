@@ -28,7 +28,6 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   attributes: [],
   attributeRanges: {
     identity: { min: 0.5, max: 1 },
-    meanIdentity: { min: 0.5, max: 1 },
     mappingQual: { min: 0, max: 60 },
     dnds: { min: 0, max: 2 },
   },
@@ -122,7 +121,6 @@ test('value modes live in one submenu whose row names the active one', () => {
   expect(top).toContain(VALUE_MODES_LABEL)
   expect(labels(valueModes(colorByMenuItems(target())))).toEqual([
     'Identity',
-    'Mean query identity',
     'Mapping quality',
     'dN/dS',
   ])
@@ -259,7 +257,6 @@ test('a value mode is disabled until the data has carried it', () => {
   )
   expect(state).toEqual({
     Identity: false,
-    'Mean query identity': true,
     'Mapping quality': true,
     'dN/dS': true,
   })

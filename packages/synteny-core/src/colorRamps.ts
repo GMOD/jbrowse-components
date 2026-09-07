@@ -156,18 +156,11 @@ export interface ContinuousMode {
 // presets stay named — a generic mode scaled to the data would put dN/dS's
 // pivot wherever the visible range happened to fall.
 export const continuousRampConfig: Record<
-  'identity' | 'meanQueryIdentity' | 'mappingQuality' | 'dnds',
+  'identity' | 'mappingQuality' | 'dnds',
   ContinuousMode
 > = {
   identity: {
     attribute: 'identity',
-    toRgb: viridisRgb,
-    maxValue: 1,
-    minLabel: '0%',
-    maxLabel: '100%',
-  },
-  meanQueryIdentity: {
-    attribute: 'meanIdentity',
     toRgb: viridisRgb,
     maxValue: 1,
     minLabel: '0%',

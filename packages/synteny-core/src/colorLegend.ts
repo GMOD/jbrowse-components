@@ -114,7 +114,6 @@ const PRESET_LABELS: Record<string, string> = {
   target: 'Target name',
   reference: 'Reference name',
   identity: 'Identity',
-  meanQueryIdentity: 'Mean query identity',
   mappingQuality: 'Mapping quality',
   dnds: 'dN/dS',
   track: 'Track',

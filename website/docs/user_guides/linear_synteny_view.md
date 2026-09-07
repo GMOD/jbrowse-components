@@ -196,8 +196,6 @@ carries a **Show color legend** toggle:
   on a color ramp. The row names whichever is in use.
   - Identity - per-alignment sequence identity on a viridis ramp. It needs the
     `=`/`X` CIGAR that `minimap2 --eqx` writes
-  - Mean query identity - length-weighted identity across all alignments of a
-    query/target pair, which smooths a contig split into many hits
   - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
   - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
     diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
