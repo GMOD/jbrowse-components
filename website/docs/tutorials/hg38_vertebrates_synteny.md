@@ -142,10 +142,10 @@ itself.
 }
 ```
 
-The track menu is the one a pairwise synteny track has. Its **Level of detail**
-entry, which picks the stored tier a zoom reads, is offered once every child
-carries a coarse tier, and the `tabix -l` line above is how to tell whether a
-file does.
+The track menu carries the pairwise synteny track's **Level of detail** entry
+beside the lane controls. It picks the stored tier a zoom reads, is offered once
+every child carries a coarse tier, and the `tabix -l` line above is how to tell
+whether a file does.
 
 ## One locus, nine genomes
 
@@ -198,16 +198,17 @@ Eight megabases toward the centromere the same stack looks different. No chain
 runs the window through: the region is a segmental-duplication hotspot, every
 genome places it as several blocks, and most of those blocks run the other way
 against their neighbours, so five of the eight lanes carry `[rev]` in their
-headers and the ribbons reaching them cross. The marmoset lane is the clearest
-case: its chain covers the left third of the window forwards and then skips 2.4
-Mb of hg38, and the rest of the window is placed by a reversed block eight
-megabases away on the same chromosome, so the lane is drawn reversed and the
-forward third crosses into it. A gorilla lane names a second contig in its
-header, a scaffold that also places part of this window, which is how a lane
-says the frame it drew is not the whole story. **Show … in this lane** on that
-lane's header menu pins it onto the other contig.
+headers. The crossings are a separate fact from the marker: a mirrored lane
+draws its inversions straight, and a ribbon crosses where one block runs against
+its neighbour inside a lane. The marmoset lane is the clearest case: its chain
+covers the left of the window forwards and then stops, the rest of the window is
+placed by a reversed block far down the same chromosome, and the lane is drawn
+reversed. The gorilla lane names chr17 in its header beside the chr5 frame it
+drew — the homologous chromosome, also placing part of this window, which is how
+a lane says the frame it drew is not the whole story. **Show … in this lane** on
+that lane's header menu pins it onto the other contig.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes are reversed, with crossed ribbons and a reversed marker in their headers, and the gorilla lane names a second contig that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes carry a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color ribbons by → Strand** on the track menu colors each ribbon by the
 record's strand — between the anchor and the first lane the alignment's own
@@ -223,9 +224,9 @@ running against its neighbours.
 Each lane is one genome in its own coordinates, fitted to wherever its alignment
 places the anchor window, so the number at a lane's right edge is the span that
 lane shows and the multiple after it is how much wider than the anchor window
-that is. A lane that has to show twice the anchor's span to cover the same genes
-is telling you the alignment there is stretched or broken. Ribbons join a lane
-to the lane directly above it, and where a source holds no alignment between two
+that is: how much of that genome the lane had to open up to hold everything the
+window placed in it, rounded to a short ladder of rungs. Ribbons join a lane to
+the lane directly above it, and where a source holds no alignment between two
 mates, as this star does not, the ribbon between them is composed through the
 anchor. Hovering a ribbon lights the same alignment in every lane it reaches;
 dragging a lane's label reorders the stack; the header menu on a lane re-anchors

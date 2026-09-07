@@ -296,9 +296,9 @@ a block came from:
    Collapse groups to one row** to stack every lane, or expand one from its
    label.
 2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
-   are viewing. `minimap2 -X` skipped each genome's own diagonal, so a K-12 lane
-   filling with K-12 says the PAF was built wrong. The figures below have it
-   ticked.
+   are viewing. `minimap2 -X` skipped each genome's own diagonal, so that lane
+   holds K-12's own internal repeats rather than its diagonal. The figures below
+   have it ticked.
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. The rest of that menu is the one from alignments tracks.
 
@@ -380,7 +380,7 @@ Drag-select a region and pick **Launch → Linear synteny view**. With the
 all-vs-all track as the dialog's dataset, JBrowse finds every assembly aligning
 to that region and opens a row for each. The dialog lists them top to bottom and
 lets you reorder them; ribbons are drawn between neighbouring rows only, which
-is why IAI39 sits directly below K-12 in the figure above.
+is why IAI39 sits directly below K-12 in the whole-genome figure above.
 
 Right-clicking a single alignment offers three routes. **Linear synteny view
 with Sakai** (or whichever strain the alignment names) opens the one pair that
@@ -393,9 +393,10 @@ offers.
 <Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or that strain on its own, under one Launch heading." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
 A launched view is a few kilobases wide, where the CIGAR `minimap2 -c` wrote
-matters: each insertion and deletion is drawn where it falls. **Show color
-legend** on the palette button names the colors, and **CIGAR indels** in the
-settings menu switches between colored, transparent and none.
+matters: each insertion and deletion is drawn where it falls. The color key
+appears by itself for the modes that have one and closes from its own button,
+and **CIGAR indels** in the settings menu switches between colored, transparent
+and none.
 
 <Figure caption="Rubberband-select a window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
