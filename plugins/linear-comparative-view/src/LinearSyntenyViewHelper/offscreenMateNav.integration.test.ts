@@ -779,5 +779,7 @@ test('a reversed region places the destination the way the row draws it', async 
   })
 
   expect(row.pxToBp(row.width / 2).coord0).toBe(250_000)
-  expect(session.snackbarMessages[0]!.message).toBe('Showing ctgB:250,001')
+  expect(session.snackbarMessages[0]!.message).toBe(
+    'Showing ctgB:249,501..250,500',
+  )
 }, 20000)

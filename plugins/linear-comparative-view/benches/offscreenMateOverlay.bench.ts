@@ -59,7 +59,7 @@ import {
   offscreenMateSpanAt,
 } from '../src/LinearSyntenyDisplay/drawOffscreenMates.ts'
 
-import type { OffscreenMateLayout } from '../src/LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type { OffscreenMateLane } from '../src/LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../src/LinearSyntenyRPC/collectOffscreenMates.ts'
 
 const args = process.argv.slice(2)
@@ -107,7 +107,7 @@ const FIXTURES = [
   { name: 'stress-250k', data: fixture(250_000, 200) },
 ].filter(f => !ONLY || f.name.includes(ONLY))
 
-function layoutFor(data: OffscreenMateData): OffscreenMateLayout {
+function layoutFor(data: OffscreenMateData): OffscreenMateLane {
   return {
     datasets: [data],
     bpPerPx: GENOME_BP / WIDTH,
@@ -124,7 +124,7 @@ function layoutFor(data: OffscreenMateData): OffscreenMateLayout {
 // and every arm pays for it (BENCHMARKING.md).
 const MARK_H = 6
 const MIN_W = 1.5
-function hitOld(layout: OffscreenMateLayout, x: number, y: number) {
+function hitOld(layout: OffscreenMateLane, x: number, y: number) {
   const { bpPerPx, offsetPx, width, height } = layout
   const data = layout.datasets[0]!
   if (width <= 0 || height <= 0) {
@@ -157,7 +157,7 @@ function hitOld(layout: OffscreenMateLayout, x: number, y: number) {
 
 // The control: the same code as hitOld, declared a second time so it gets its own
 // inline caches. Sharing the source text would put them back together.
-function hitControl(layout: OffscreenMateLayout, x: number, y: number) {
+function hitControl(layout: OffscreenMateLane, x: number, y: number) {
   const { bpPerPx, offsetPx, width, height } = layout
   const data = layout.datasets[0]!
   if (width <= 0 || height <= 0) {
@@ -220,14 +220,14 @@ const IDENTITY_Y = [
   6.5,
   -0.5,
 ]
-function checkIdentity(layout: OffscreenMateLayout, name: string) {
+function checkIdentity(layout: OffscreenMateLane, name: string) {
   // the sweep is O(y * x * n), so the stress fixtures get the boundary rows only
   const n = layout.datasets[0]!.starts.length
   const ys = n > 10_000 ? [0, 3, 5.9, 6, 6.1, 60] : IDENTITY_Y
   const step = n > 10_000 ? 97 : 7
   for (const y of ys) {
     for (let x = -20; x <= WIDTH + 20; x += step) {
-      const a = offscreenMateAt(layout, x, y)
+      const a = offscreenMateAt(layout, x, y)?.refName
       const b = hitOld(layout, x, y)
       if (a !== b) {
         const msg = `${name}: hit differs at (${x}, ${y}): ships ${a}, old ${b}`
@@ -274,7 +274,7 @@ for (const { name, data } of FIXTURES) {
   for (let round = 0; round < ROUNDS; round++) {
     let t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 60))
+      keep(offscreenMateAt(layout, i % WIDTH, 60)?.refName)
     }
     best.hoverRibbons = Math.min(best.hoverRibbons, performance.now() - t)
 
@@ -292,7 +292,7 @@ for (const { name, data } of FIXTURES) {
 
     t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 3))
+      keep(offscreenMateAt(layout, i % WIDTH, 3)?.refName)
     }
     best.hoverStrip = Math.min(best.hoverStrip, performance.now() - t)
 
@@ -303,12 +303,12 @@ for (const { name, data } of FIXTURES) {
     best.clickStrip = Math.min(best.clickStrip, performance.now() - t)
 
     t = performance.now()
-    drawOffscreenMates(ctx, [layout], { ...layout, ...COLORS })
+    drawOffscreenMates(ctx, [layout], COLORS)
     best.draw = Math.min(best.draw, performance.now() - t)
   }
 
   const svg = new SvgCanvas()
-  drawOffscreenMates(svg, [layout], { ...layout, ...COLORS })
+  drawOffscreenMates(svg, [layout], COLORS)
   const svgKb = svg.getSerializedSvg().length / 1024
 
   console.log(

@@ -8,7 +8,7 @@ import { offscreenMateStrips } from './offscreenMateStrip.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
 function level({ width = 800, height = 100, show = true } = {}) {
-  return {
+  const source = {
     level: 0,
     height,
     groundColor: '#fff',
@@ -22,19 +22,23 @@ function level({ width = 800, height = 100, show = true } = {}) {
             ends: Float64Array.from([1000]),
             mateRefNameIds: Uint32Array.from([0]),
             lengths: Float32Array.from([1000]),
+            mateStarts: Float64Array.from([0]),
+            mateEnds: Float64Array.from([1000]),
           },
         },
       },
     ],
     parentView: {
       width,
-      offscreenMateMode: show ? 'query' : 'off',
+      offscreenMateMode: show ? ('query' as const) : ('off' as const),
       minAlignmentLength: 0,
+      overdrawPx: 1000,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
-    get offscreenMateStrips() {
-      return offscreenMateStrips(this)
-    },
+  }
+  return {
+    ...source,
+    offscreenMateStrips: offscreenMateStrips(source),
   } as unknown as LinearSyntenyViewHelperModel
 }
 

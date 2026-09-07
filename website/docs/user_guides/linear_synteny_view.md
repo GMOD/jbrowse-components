@@ -310,12 +310,12 @@ Where the mate sits on the facing panel is a live question, so the marks answer
 it live. Scroll that panel onto the mate and the mark becomes the ribbon it
 stood in for. **Overdraw** is the edge it is measured against.
 
-**Off-screen mates** in the settings menu is where **Mark them on the upper
-panel** turns the marks on, and it is on by default. Each mark sits where the
-alignment is on the panel it does have, stopping short of the ribbons so it
-cannot be read as an alignment to whatever is directly below. A run of marks to
-one contig carries that contig's name; where several contigs cover the same
-stretch, their names stack.
+**Off-screen mates** in the settings menu is where **Upper panel** turns the
+marks on, and it is on by default. Each mark sits where the alignment is on the
+panel it does have, stopping short of the ribbons so it cannot be read as an
+alignment to whatever is directly below. A run of marks to one contig carries
+that contig's name; where several contigs cover the same stretch, their names
+stack.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,
@@ -346,12 +346,13 @@ Clicking a mark shows that mate on the facing panel. A contig the panel is
 already displaying is scrolled to, so the rest of what it was showing stays.
 That matters most in a stack of whole genomes, where replacing the panel's
 regions would throw away every other chromosome. A contig it is not displaying
-has to replace them, and there the click navigates to the mate's own locus
+is added to the panel's regions, and the click navigates to the mate's own locus
 rather than to the whole contig, close enough to show the alignments the mark
 stands for. The window is widened around that locus, to at least 20kb and a
 little past its ends, so a single small anchor arrives with context around it to
 place the alignment against. The click turns those marks into ribbons, and the
-hover says what it will do beforehand.
+hover says which of the two it will do beforehand. Right-clicking a mark offers
+the same navigation and copies the contig's name.
 
 Either way the click raises a notification carrying an **Undo** that puts back
 the row's regions, its zoom and its scroll position. The replacing kind discards
@@ -373,8 +374,8 @@ alignment anchored on a contig the lower panel is showing — whose other end is
 somewhere the upper panel is not — is never asked for at all. The same two
 genomes therefore report differently depending on which one you stacked on top.
 
-**Query the lower panel too, and mark it as well** — the last step of that same
-submenu — adds that second query, and with it the strip along the bottom edge.
+**Both panels (second query)** — the last step of that same submenu — adds that
+second query, and with it the strip along the bottom edge.
 
 What comes back splits two ways. An alignment whose other end is on a contig the
 upper panel is not displaying at all has no second endpoint, so it becomes a

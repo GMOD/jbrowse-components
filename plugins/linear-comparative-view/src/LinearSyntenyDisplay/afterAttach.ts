@@ -187,7 +187,6 @@ export function doAfterAttach(
           result.targetOffscreenMates,
           queryCanonical,
         ),
-        targetQueried: queried,
       }
     },
     commit: ({ instanceData, ...featureData }) => {

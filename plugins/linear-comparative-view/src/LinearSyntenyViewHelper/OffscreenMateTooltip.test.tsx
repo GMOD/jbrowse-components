@@ -42,7 +42,14 @@ function draw(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, side, displayed, clientX: 40, clientY: 12 }}
+        hover={{
+          refName,
+          side,
+          displayed,
+          navRow: 1,
+          clientX: 40,
+          clientY: 12,
+        }}
       />
     </ThemeProvider>,
   )

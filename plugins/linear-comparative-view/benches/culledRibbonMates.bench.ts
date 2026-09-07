@@ -134,8 +134,6 @@ function min(fn: () => void) {
 }
 
 const band = {
-  width: WIDTH,
-  height: HEIGHT,
   markColor: '#000',
   labelColor: '#000',
   haloColor: '#fff',
@@ -145,6 +143,8 @@ const lane = {
   offsetPx: 0,
   side: 'top' as const,
   minAlignmentLength: 0,
+  width: WIDTH,
+  height: HEIGHT,
 }
 
 console.log(
@@ -186,13 +186,7 @@ for (const count of [10_000, 50_000, 100_000, 250_000, 500_000]) {
 
   const hover = min(() => {
     offscreenMateAt(
-      {
-        ...lane,
-        datasets: [data],
-        mateBand: clear,
-        width: WIDTH,
-        height: HEIGHT,
-      },
+      { ...lane, datasets: [data], mateBand: clear },
       700,
       HEIGHT / 2,
     )

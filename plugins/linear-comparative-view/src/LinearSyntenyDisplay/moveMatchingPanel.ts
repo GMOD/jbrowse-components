@@ -9,8 +9,8 @@ import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
 
 import {
   captureStackViewports,
+  notifyStackMove,
   takeFollowAnchor,
-  undoStackMoveAction,
 } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 
 import type {
@@ -159,12 +159,13 @@ export async function movePanelsToSpan({
   }
   if (outcomes.some(outcome => outcome !== 'unmoved')) {
     if (anchor.taken || outcomes.includes('replaced')) {
-      const loc = assembleLocString(clampedSpan(span))
-      session.notify(
-        anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
-        'info',
-        undoStackMoveAction(restore, anchor),
-      )
+      notifyStackMove({
+        session,
+        loc: assembleLocString(clampedSpan(span)),
+        anchor,
+        restore,
+        followNote,
+      })
     }
   } else {
     anchor.release()

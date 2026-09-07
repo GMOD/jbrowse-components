@@ -689,6 +689,7 @@ export async function executeSyntenyFeaturesAndPositions({
     hasCigar,
     offscreenMates: offscreenMates.finish(),
     targetOffscreenMates: targetOffscreenMates.finish(),
+    targetQueried: targetAxisFeatures !== undefined,
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

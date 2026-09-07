@@ -11,7 +11,11 @@ import type {
   OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
-import type { AnimationMode, Region } from '@jbrowse/core/util'
+import type {
+  AnimationMode,
+  NotificationSink,
+  Region,
+} from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -94,21 +98,36 @@ export function takeFollowAnchor(
   }
 }
 
-// One transaction, so the follow sees the settled pre-click state rather than
-// a half-restored one
-export function undoStackMoveAction(
-  restore: () => void,
-  anchor: { release: () => void },
-) {
-  return {
-    name: 'Undo',
-    onClick: () => {
-      runInAction(() => {
-        restore()
-        anchor.release()
-      })
+// The snackbar every stack-moving navigation posts, with the Undo that puts
+// every row's viewport back and gives the anchor back in one transaction, so
+// the follow sees the settled pre-click state rather than a half-restored one
+export function notifyStackMove({
+  session,
+  loc,
+  anchor,
+  restore,
+  followNote,
+}: {
+  session: NotificationSink
+  loc: string
+  anchor: FollowAnchorTake
+  restore: () => void
+  // how the snackbar names the row the anchor went to
+  followNote: string
+}) {
+  session.notify(
+    anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
+    'info',
+    {
+      name: 'Undo',
+      onClick: () => {
+        runInAction(() => {
+          restore()
+          anchor.release()
+        })
+      },
     },
-  }
+  )
 }
 
 // `linkViews` holds the rows together in pixels and `installLinkedViewSync`

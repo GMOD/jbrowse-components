@@ -273,7 +273,7 @@ reports nothing.
   count is shown: the hamburger item that used to carry it in its label is gone,
   and the control is a fixed-label radio submenu, so nothing states a live
   number twice.
-- **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
+- **Whether the figure carries them.** Settled: yes. `offscreenMateMode` is a
   menu setting, so the same rule the color-by legend follows applies — an export
   taken with it on has to have it, or the figure of a view reporting what it
   cannot draw is the figure that does not draw it. `SVGOffscreenMates` is one
@@ -427,8 +427,8 @@ the mirror and wait for the second query — B because it is never requested, D
 because it is requested only in part. `laneData` enforces it in one place, which
 is the place draw, hit test, tooltip count and SVG export all read.
 
-The labels went back to naming rows, in the words the rule gives them: "Mark
-them on the upper panel" and "Query the lower panel too, and mark it as well".
+The labels name the panels the rule is about: "Upper panel" and "Both panels
+(second query)"; the help text carries the rest.
 The 8,004 device px the lower strip painted at the middle step was measuring the
 ring, and goes with it.
 

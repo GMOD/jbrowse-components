@@ -172,6 +172,12 @@ export const SYNTENY_LANES = [
     axis: 'mate',
     doc: 'The mirror tally from the second fetch; its mate contigs name the QUERY assembly. Renamed by `renameOffscreenMates`, like `offscreenMates`.',
   },
+  {
+    kind: 'opaque',
+    name: 'targetQueried',
+    axis: 'neither',
+    doc: 'Whether this payload queried the lower row too, which is what lets its off-screen mate strip be drawn: from one fetch that strip would stop at the fetch window rather than at the data.',
+  },
 ] as const satisfies readonly SyntenyLaneSpec[]
 
 export type SyntenyLane = (typeof SYNTENY_LANES)[number]

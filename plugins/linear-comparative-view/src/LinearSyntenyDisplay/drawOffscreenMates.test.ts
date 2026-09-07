@@ -10,9 +10,9 @@ import {
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type {
-  OffscreenMateBand,
   OffscreenMateDataset,
   OffscreenMateLane,
+  OffscreenMatePaint,
 } from './drawOffscreenMates.ts'
 
 interface Rect {
@@ -120,11 +120,11 @@ const params = {
 function draw(
   ctx: CanvasRenderingContext2D,
   lanes: (Partial<OffscreenMateLane> & { datasets: OffscreenMateDataset[] })[],
-  over: Partial<OffscreenMateBand> = {},
+  over: Partial<OffscreenMateLane & OffscreenMatePaint> = {},
 ) {
   drawOffscreenMates(
     ctx,
-    lanes.map(lane => ({ ...params, ...lane })),
+    lanes.map(lane => ({ ...params, ...over, ...lane })),
     { ...params, ...over },
   )
 }
@@ -327,7 +327,7 @@ test('a stretch with only a sliver in view goes unlabelled', () => {
 
 test('the hit test answers the contig under the pointer', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
 })
 
 // Draw and hit test read one layout, so this is the shape the bug cannot take —
@@ -425,7 +425,7 @@ test('where two overlap, the hit is the one drawn on top', () => {
       ),
     ],
   }
-  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
 })
 
 // The merge is per stretch, not per contig: grape chr5 syntenic to two separate
@@ -495,8 +495,8 @@ test('the same draw emits marks and labels through SvgCanvas', () => {
   const svg = new SvgCanvas()
   drawOffscreenMates(
     svg,
-    [{ ...params, datasets: [data([[0, 1000]], ['ctgB'])] }],
-    { ...params, width: 1000 },
+    [{ ...params, width: 1000, datasets: [data([[0, 1000]], ['ctgB'])] }],
+    params,
   )
   const out = svg.getSerializedSvg()
   // one path for the whole strip, not a <rect> per alignment
@@ -514,8 +514,8 @@ test('a measure passed in decides the SvgCanvas labels, not the table', () => {
   const svg = new SvgCanvas()
   drawOffscreenMates(
     svg,
-    [{ ...params, datasets: [data([[0, 1000]], ['ctgB'])] }],
-    { ...params, width: 1000, measure: () => 5000 },
+    [{ ...params, width: 1000, datasets: [data([[0, 1000]], ['ctgB'])] }],
+    { ...params, measure: () => 5000 },
   )
   expect(svg.getSerializedSvg()).not.toContain('<text')
 })
@@ -607,7 +607,7 @@ test('where two displays overlap, the hit is the one drawn on top', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB']), data([[150, 350]], ['ctgC'])],
   }
-  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
 })
 
 // A band with no room for the first baseline gets no labels rather than a row
@@ -712,7 +712,7 @@ test('the hit test answers inside the bottom strip and not above it', () => {
     side: 'bottom' as const,
     datasets: [data([[100, 400]], ['ctgB'])],
   }
-  expect(offscreenMateAt(layout, 20, params.height - 1)).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, params.height - 1)?.refName).toBe('ctgB')
   expect(
     offscreenMateAt(layout, 20, params.height - OFFSCREEN_MATE_HEIGHT_PX - 2),
   ).toBeUndefined()

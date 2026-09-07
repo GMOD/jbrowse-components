@@ -22,8 +22,8 @@ import {
   captureStackViewports,
   mateFlightAllowed,
   mateNavDestination,
+  notifyStackMove,
   takeFollowAnchor,
-  undoStackMoveAction,
 } from './offscreenMateNav.ts'
 import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
@@ -445,13 +445,13 @@ export function linearSyntenyViewHelperModelFactory(
           // screen between the two
           view.showRegions(dest.regions, dest.location)
         }
-        session.notify(
-          anchor.taken
-            ? `Showing ${dest.loc}, and following this panel`
-            : `Showing ${dest.loc}`,
-          'info',
-          undoStackMoveAction(restoreStack, anchor),
-        )
+        notifyStackMove({
+          session,
+          loc: dest.loc,
+          anchor,
+          restore: restoreStack,
+          followNote: 'and following this panel',
+        })
       },
       /**
        * #action

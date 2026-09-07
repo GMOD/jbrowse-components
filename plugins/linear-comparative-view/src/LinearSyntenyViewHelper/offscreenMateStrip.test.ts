@@ -6,6 +6,7 @@ import {
 } from './offscreenMateStrip.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import type { OffscreenMateSource } from './offscreenMateStrip.ts'
 
 function mates(n: number): OffscreenMateData {
   return {
@@ -29,7 +30,7 @@ const QUERY_ROW = { bpPerPx: 2, offsetPx: 10 }
 // wrong one lands somewhere no assertion below could mistake for right.
 const TARGET_ROW = { bpPerPx: 99, offsetPx: 999 }
 
-function source(over: Record<string, unknown> = {}) {
+function source(over: Record<string, unknown> = {}): OffscreenMateSource {
   return {
     level: 0,
     height: 100,
@@ -48,7 +49,7 @@ function source(over: Record<string, unknown> = {}) {
 // The mirror: alignments anchored on the row BELOW, whose query end is on a
 // contig the row above is not displaying. Only a payload that queried the
 // lower row carries these, and the lower strip is drawn only from one that did.
-function bothSides(over: Record<string, unknown> = {}) {
+function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
   return {
     level: 0,
     height: 100,
@@ -72,11 +73,11 @@ function bothSides(over: Record<string, unknown> = {}) {
   }
 }
 
-function hit(model: ReturnType<typeof source>, x: number, y: number) {
+function hit(model: OffscreenMateSource, x: number, y: number) {
   return offscreenMateHit(offscreenMateStrips(model), x, y)
 }
 
-function navHit(model: ReturnType<typeof source>, x: number, y: number) {
+function navHit(model: OffscreenMateSource, x: number, y: number) {
   return offscreenMateNavHit(offscreenMateStrips(model), x, y)
 }
 
