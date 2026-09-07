@@ -69,6 +69,8 @@ function createMockCanvas() {
     strokeRect: jest.fn(),
     translate: jest.fn(),
     closePath: jest.fn(),
+    ellipse: jest.fn(),
+    setLineDash: jest.fn(),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
