@@ -81,9 +81,10 @@ export interface ScrollZoomToggleModel {
  * of this button pulse with it, which is the preference being session-wide made
  * visible.
  *
- * `iconOnly` is for a header where this sits inside a run of icon buttons (the
- * comparative views), where a single labelled button reads as a mistake rather
- * than as emphasis. The tooltip carries the same words either way.
+ * `iconOnly` is for a header with no room for the words, or one where this sits
+ * inside a run of icon buttons with nothing else labelled — a single labelled
+ * button there reads as a mistake rather than as emphasis. The tooltip carries
+ * the same words either way.
  */
 const ScrollZoomToggle = observer(function ScrollZoomToggle({
   model,

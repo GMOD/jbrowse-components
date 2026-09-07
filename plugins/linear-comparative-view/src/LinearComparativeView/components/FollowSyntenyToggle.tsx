@@ -10,17 +10,23 @@ import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 // No height, and `fontSize="small"` on the icons below: this is the same MUI
-// ToggleButton as ScrollZoomToggle beside it, which reaches 31px square — the
-// size of every other button in the bar — from `size="small"` and a small icon.
-// A pinned 44 and a default-size glyph made this the one control standing 13px
-// taller than its neighbours and 6px above their top edge, which reads as a
+// ToggleButton as ScrollZoomToggle beside it, which reaches the 31px height of
+// every other button in the bar from `size="small"` and a small icon. A pinned
+// 44 and a default-size glyph made this the one control standing 13px taller
+// than its neighbours and 6px above their top edge, which reads as a
 // misalignment rather than as emphasis.
 const useStyles = makeStyles()({
   button: {
     border: 'none',
     textTransform: 'none',
+    whiteSpace: 'nowrap',
+    gap: 4,
   },
 })
+
+// The word the mode goes by in the Sync rows menu, so the header and the menu
+// name one thing.
+const FOLLOW_LABEL = 'Follow'
 
 /**
  * The tooltip, given the state. Pure so the wording is testable without a
@@ -105,8 +111,10 @@ export function followToggleTitle({
  */
 const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model,
+  iconOnly,
 }: {
   model: LinearComparativeViewModel
+  iconOnly?: boolean
 }) {
   const { classes } = useStyles()
   const { followSynteny, followReport, views, followAnchorIndex } = model
@@ -117,6 +125,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
     followSynteny && (followReport.unaligned || followReport.noSyntenyTrack)
   return (
     <Tooltip
+      describeChild={!iconOnly}
       title={followToggleTitle({
         followSynteny,
         ...followReport,
@@ -145,6 +154,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
           ) : (
             <SyncAltIcon fontSize="small" />
           )}
+          {iconOnly ? null : FOLLOW_LABEL}
         </ToggleButton>
       </span>
     </Tooltip>

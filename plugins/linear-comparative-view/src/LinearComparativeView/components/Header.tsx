@@ -1,5 +1,6 @@
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import {
   HeaderSearchBoxRow,
   useSearchBoxPrefs,
@@ -8,6 +9,7 @@ import { ColorBySelector } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/asSyntenyModel.ts'
+import { showsHeaderLabels } from '../headerLabels.ts'
 import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
 import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
@@ -38,13 +40,22 @@ const Header = observer(function Header({
   const { classes } = useStyles()
   const prefs = useSearchBoxPrefs('lcv', model.views.length)
   const syntenyModel = asSyntenyModel(model)
+  const [ref, { width }] = useMeasure('width')
+  const labels = showsHeaderLabels({
+    width,
+    searchRows: prefs.showSearchBoxes
+      ? prefs.sideBySide
+        ? model.views.length
+        : 1
+      : 0,
+  })
 
   return (
-    <div className={classes.headerBar}>
+    <div className={classes.headerBar} ref={ref}>
       <TrackSelectorMenuButton model={model} />
       <ViewOptionsMenuButton model={model} prefs={prefs} />
-      <ScrollZoomToggle model={model} iconOnly />
-      <FollowSyntenyToggle model={model} />
+      <ScrollZoomToggle model={model} iconOnly={!labels} />
+      <FollowSyntenyToggle model={model} iconOnly={!labels} />
 
       {syntenyModel ? (
         <>
