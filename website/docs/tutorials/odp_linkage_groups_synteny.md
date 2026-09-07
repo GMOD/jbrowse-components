@@ -14,9 +14,9 @@ data: pipeline
 before animals existed, and those sets have names. We take a published table
 that says which set each gene belongs to, load it over four genomes at once, and
 paint every ortholog with its set's color. In a sponge the colors land in one
-tight block per chromosome; in a comb jelly the same colors smear over many
-contigs; in a single-celled relative of animals they scatter. The color mode is
-the ortholog table's own column, so any label a table carries can drive it.
+tight block per chromosome; in a comb jelly they still lean toward particular
+contigs; in a single-celled relative of animals the lean is gone. The color mode
+is the ortholog table's own column, so any label a table carries can drive it.
 
 ## Prerequisites
 
@@ -161,7 +161,9 @@ are free. Swapping the vertical genome is the whole change.
 The outgroup frame is the one to check first, because it is where the method
 could have manufactured a pattern out of nothing. The banding is gone there,
 which is what says the banding in the other two frames is coming from the data
-and not from the way the groups were assigned.
+and not from the way the groups were assigned. The sponge holding the groups
+whole while the comb jelly holds them loosely is the shape of the argument
+Schultz et al. make for the comb jellies branching off before the sponges did.
 
 ## One chromosome, four lanes
 
