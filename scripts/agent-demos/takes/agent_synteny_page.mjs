@@ -25,14 +25,20 @@ than describing it. Navigate by explicit coordinates, never by gene name.`
 // Each step is the page's prompt plus the sentence a viewer needs to know why
 // it is being asked. The page's section headings are the `say` lines.
 export const STEPS = [
+  // Turn 1 has to leave a session OPEN, and not only because it films better
+  // than eight minutes of start screen: the harness verifies its own window
+  // layout after this turn by asking the app window.innerWidth over the
+  // bridge, and that call needs a session. The first take of this said
+  // "align, then open", the agent correctly backgrounded the aligner and
+  // ended its turn with nothing loaded, and the harness died on the check.
   {
     prompt:
-      'Align D. simulans GCF_016746395.2 against D. mauritiana GCF_004382145.1, then open both genomes in JBrowse side by side with their genes and the alignment between them. Run anything that takes minutes in the background and poll it.',
-    say: 'One sentence for the whole pipeline: align, index, merge the two hosted configs, open.',
+      'Open D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 side by side with their gene tracks, from their hosted GenArk configs. There is no alignment between them, so start one in the background with minimap2 while I look: sim.fa.gz and mau.fa.gz are already here.',
+    say: 'Both genomes on screen in seconds, and the aligner running behind them.',
   },
   {
     prompt:
-      'Add a dotplot of the same two assemblies underneath. Restrict both axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX, and tell me how much that drops.',
+      'Is the alignment done? If it is, index it and add it as a synteny track between the two genomes, then put a dotplot of the same two assemblies underneath. Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX, and tell me how much that drops.',
     say: 'The axes have to name the arms, or a few hundred unplaced scaffolds interleave them.',
   },
   {
