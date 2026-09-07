@@ -12,6 +12,7 @@ export type {
   MarkFrame,
   MarkHit,
   MarkShape,
+  StagedUniforms,
 } from './types.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'

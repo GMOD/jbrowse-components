@@ -85,13 +85,17 @@ export interface MarkShape<TChannels, TParams> {
     params: TParams,
   ): void
   /**
-   * Whether the shape has any ink on this block at all, decided from the
-   * block's place in the frame rather than its instances. Both backends skip
-   * the block when it says no. Optional: a shape whose every block can carry
-   * ink leaves it off. The canvas continuation marker is the one that needs
-   * it — it exists only where a block meets a canvas edge, and an interior
-   * block would otherwise shade a whole pileup's worth of vertices to draw
-   * nothing.
+   * The shape's draw predicate over (block, frame, params) — not over its
+   * instances, which it is never handed. Both backends skip the block when it
+   * says no. Optional: a shape whose every block can carry ink leaves it off.
+   *
+   * Placement is one use: the canvas continuation marker exists only where a
+   * block meets a canvas edge, and an interior block would otherwise shade a
+   * whole pileup's worth of vertices to draw nothing. Settings are the other,
+   * and the general one: the coverage band's layers read `hasDomain` off
+   * `params` so an unresolved autoscale draws no depth-scaled layer rather
+   * than bars of arbitrary height, and `showInterbase` off it so the histogram
+   * and its triangles turn off together.
    */
   paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
   /**
@@ -127,6 +131,29 @@ export interface MarkShape<TChannels, TParams> {
 }
 
 /**
+ * Which uniform struct is standing in the HAL's current slot, so the next mark
+ * of the SAME block can draw off it instead of packing and staging the same
+ * bytes again. Compared by reference and never called or read for its values:
+ * one writer plus one `params` lens is one struct, because `writeUniforms` sees
+ * nothing but the block, the clip, the frame and what that lens returned.
+ *
+ * A display declaring several marks over one writer and one lens is the common
+ * shape, not an edge case — the coverage band is five, the feature glyphs are
+ * five — and every mark after the first was restating the previous one's write.
+ *
+ * **The caller owns one of these per block and hands the same one to every mark
+ * of that block.** A stale one drawn against the next block's clip is silently
+ * the wrong geometry, so it is a fresh object per block rather than a field
+ * that has to be remembered to reset. A caller that writes uniforms of its own
+ * between marks (alignments' per-section pileup write) starts a new one after
+ * it, or hands none at all.
+ */
+export interface StagedUniforms {
+  writer: unknown
+  params: unknown
+}
+
+/**
  * A shape bound to one display's region payload and render state — what
  * `defineMark` returns and what a display actually holds.
  *
@@ -155,6 +182,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     region: TRegion,
     state: TState,
     regionKey: number,
+    staged?: StagedUniforms,
   ): void
   paintBlock(
     ctx: MarkContext2D,
@@ -224,7 +252,7 @@ export function defineMark<
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     bufferOf,
-    drawRegion(hal, scratch, block, clip, region, state, regionKey) {
+    drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
       const strip = band?.(state)
       const scissor = strip
         ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
@@ -239,8 +267,14 @@ export function defineMark<
       if (scissor) {
         hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
       }
-      shape.writeUniforms(scratch, clip, block, state, p)
-      hal.writeUniforms(scratch)
+      if (staged?.writer !== shape.writeUniforms || staged.params !== params) {
+        shape.writeUniforms(scratch, clip, block, state, p)
+        hal.writeUniforms(scratch)
+        if (staged) {
+          staged.writer = shape.writeUniforms
+          staged.params = params
+        }
+      }
       hal.drawPass(shape.pass.id, regionKey, bufferOf)
       if (scissor) {
         hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)

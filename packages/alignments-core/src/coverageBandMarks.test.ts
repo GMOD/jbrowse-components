@@ -196,6 +196,14 @@ test('the five layers are the band order, and the fourth list leaves out the mod
   )
 })
 
+test('the band stages one uniform write per block, not one per layer', () => {
+  const hal = render(FIVE)
+  // The five layers read `writeBandUniforms` through one `params` lens, so the
+  // four after the first draw off the slot the first staged.
+  expect(hal.getUniformWritesF32()).toHaveLength(1)
+  expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0, 0, 0, 0])
+})
+
 test('every layer paints, and no two paint the same ink', () => {
   const signatures = FIVE.map(m => paintOne(m).join('|'))
   for (const s of signatures) {

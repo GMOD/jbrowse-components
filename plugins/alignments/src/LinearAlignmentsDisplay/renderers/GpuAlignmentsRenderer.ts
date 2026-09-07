@@ -931,11 +931,12 @@ export class GpuAlignmentsRenderer
     const sectionState = sectionRenderState(state, sec)
     this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
 
-    // The coverage band goes FIRST, and that ordering is load-bearing: each of
-    // its marks writes its own uniform struct, so the pileup's write has to be
-    // the later one. `hal.writeUniforms` stages one ring slot and every
-    // `drawPass` after it reads that slot, which is exactly the handoff the arc
-    // band below relies on as well.
+    // The coverage band goes FIRST, and that ordering is load-bearing: the band
+    // writes its own uniform struct, so the pileup's write has to be the later
+    // one. `hal.writeUniforms` stages one ring slot and every `drawPass` after
+    // it reads that slot, which is exactly the handoff the arc band below
+    // relies on as well — and, within the band, what lets its five marks share
+    // one write per section (`StagedUniforms`).
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
     if (state.coverageHeight > 0 && cov.height > 0) {
       this.hal.setScissor(clip.pxX, cov.top, clip.pxW, cov.height)

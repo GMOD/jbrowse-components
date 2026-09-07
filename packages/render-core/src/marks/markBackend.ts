@@ -13,7 +13,7 @@ import type { InstancePass } from '../instancePass.ts'
 import type { PerRegionRenderingBackend } from '../perRegionRenderingBackend.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
-import type { Mark } from './types.ts'
+import type { Mark, StagedUniforms } from './types.ts'
 
 /**
  * Pack and upload one region's buffers for a mark list — every mark that owns
@@ -55,8 +55,10 @@ export function drawMarks<TRegion, TState extends FrameDimensions>(
   regionKey: number,
 ) {
   hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
+  // One call is one block, which is exactly the life of a `StagedUniforms`
+  const staged: StagedUniforms = { writer: undefined, params: undefined }
   for (const mark of marks) {
-    mark.drawRegion(hal, scratch, block, clip, region, state, regionKey)
+    mark.drawRegion(hal, scratch, block, clip, region, state, regionKey, staged)
   }
 }
 
@@ -139,7 +141,9 @@ class Canvas2DMarkBackend<
  *
  * One uniform buffer serves every mark because each writes its own layout into
  * the scratch immediately before its own `drawPass`, which is what the HAL's
- * write-then-draw ordering already guarantees for a multi-pass renderer.
+ * write-then-draw ordering already guarantees for a multi-pass renderer — or
+ * draws off the struct the previous mark of the same block already staged, per
+ * `StagedUniforms`.
  */
 export function createMarkBackend<TRegion, TState extends FrameDimensions>(
   canvas: HTMLCanvasElement,

@@ -123,6 +123,16 @@ describe('draw passes', () => {
     ])
   })
 
+  it('stages one uniform write for the block, not one per pass', () => {
+    const { hal, renderer } = setup()
+    renderer.upload(REGION, regionData(2))
+    renderer.renderBlocks([block()], new Map([[REGION, regionData(2)]]), STATE)
+    // All five marks read `writeFeatureGlyphUniforms` through one `params`
+    // lens, so the four after the first draw off the slot the first staged.
+    expect(callsTo(hal, 'writeUniforms')).toHaveLength(1)
+    expect(hal.draws().map(d => d.uniformWrite)).toStrictEqual([0, 0, 0, 0, 0])
+  })
+
   it('draws every pass it registers', () => {
     const { hal, renderer } = setup()
     // Every glyph family populated and a block on both canvas edges, so nothing
