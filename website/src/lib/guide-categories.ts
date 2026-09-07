@@ -125,6 +125,7 @@ export const TUTORIAL_ORDER = [
   'pangenome_ecoli',
   'pangenome_cactus',
   'pangenome_hprc',
+  'pangenome_prepare_graph',
   'sv_visualization_cgiab',
   'sv_multisamples',
   'population_genomics',
@@ -154,6 +155,10 @@ export const TUTORIAL_ORDER = [
 // - embedding_examples links out to the Storybook. Nothing in the repo is a
 //   capture of that site, and any doc figure would be a picture of something
 //   else.
+// - pangenome_prepare_graph is the build page behind the pangenome graph
+//   tracks: every picture of its output lives on the pages that read the files
+//   it writes, so a card here would crop one of theirs and name the wrong
+//   tutorial.
 //
 // Shared with the generator rather than kept next to the <img>, because the two
 // halves of "does this card have a thumbnail" have to be the same list. They
@@ -161,7 +166,11 @@ export const TUTORIAL_ORDER = [
 // the generator only checked that its own specs still had pages. A new tutorial
 // with no spec therefore linked a webp nobody had generated, and the first thing
 // to notice was the website link checker.
-export const TUTORIAL_NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
+export const TUTORIAL_NO_THUMB = new Set([
+  'cli_desktop',
+  'embedding_examples',
+  'pangenome_prepare_graph',
+])
 
 // Curated lead pages within a `guide_category`, by slug — the same idea as
 // TUTORIAL_ORDER above, for the same reason. A category sorted purely

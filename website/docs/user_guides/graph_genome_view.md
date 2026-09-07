@@ -580,6 +580,7 @@ lacked the sequence. Use the per-strain route when you have the assemblies.
 
 ## See also
 
+- [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/alignments_track)

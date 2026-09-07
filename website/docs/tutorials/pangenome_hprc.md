@@ -24,28 +24,23 @@ welcome your [feedback](/contact).
 - nothing at all, to open what this page builds: the
   [HPRC page on genomes.jbrowse.org](/docs/tutorials/genomes_pangenome) launches
   every graph below on a typed region or a whole chromosome. This page is the
-  route for loading the files into your own JBrowse, or rebuilding them
+  route for loading the files into your own JBrowse
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin), for the tracks that
   use `RgfaTabixAdapter`, `MinigraphBubbleAdapter` and `GbzBaseSyntenyAdapter`;
   every other track here is a URL you can paste
-- to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`),
-  for the graph indexes and the bubble file
-- [`gfatools`](https://github.com/lh3/gfatools), for the graph indexes and the
-  bubble file
+- htslib (`bgzip`, `tabix`), to query the hosted indexes from the command line
+  as the sections below do
 - `bedtools`, for the repeat-density lanes
-- [`gbz-base`](https://github.com/jltsiren/gbz-base) and `vg`, to turn a `.gbz`
-  of your own into the database the
-  [haplotype-walk track](#walks-from-the-graph) reads. HPRC publishes one, so
-  neither is needed to open what this page shows
-- `gbz-haplotype-index`, from
-  [`@gmod/gbz-base`](https://github.com/GMOD/gbz-base-js), to name the
-  haplotypes in any such database, including one somebody else published
 - UCSC's `bedGraphToBigWig`, for the repeat-density lanes
 - UCSC's `bigBedToBed`, for the repeat-density lanes
 
 Both UCSC binaries are
 [single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and
 `build_repeat_density.sh`'s header carries the curl line for each.
+
+Nothing here builds a graph file.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) is the page
+that does, and it lists what that takes.
 
 ## Where the data comes from
 
@@ -260,32 +255,16 @@ GRCh38 build. Both build scripts run on the CHM13 files unchanged, with one
 config change, the PanSN prefix: `{ "chm13": "CHM13" }` in place of
 `{ "hg38": "GRCh38" }`.
 
-## Regular GFA vs rGFA
-
-Whether a graph opens by locus straight from the file depends on whether its
-segments carry coordinates, which is
-[what the two formats differ on](/docs/user_guides/graph_genome_view#where-a-segments-coordinates-come-from).
-An **rGFA** (what minigraph emits) tags every segment with three fields, the
-whole of the [spec](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md):
-
-```
-S  s3  TTGCAA  LN:i:6  SN:Z:GRCh38#0#chr1  SO:i:10621  SR:i:0
-```
-
-- `SN` is the stable sequence the segment sits on
-- `SO` is its offset there
-- `SR` is its rank, `0` on the reference backbone
-
-So the file itself states where each segment sits and which segments are the
-reference, and JBrowse opens any locus with no extraction step. A **regular
-GFA** states the same thing only inside its P/W path lines, so it takes a walk
-first, or a window cut offline with `odgi extract` as in the
-[E. coli tutorial](/docs/tutorials/pangenome_ecoli#a-window-as-a-file).
+## Why this graph opens by locus {#regular-gfa-vs-rgfa}
 
 Release 2 labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
-Minigraph-Cactus build, so its segments already carry these tags. The base-level
-`gfa.gz` beside it does not, and neither do pggb graphs, which keep the
-`odgi extract` route.
+Minigraph-Cactus build, so every segment in it carries the `SN`/`SO`/`SR` tags
+that state where the segment sits and which segments are the reference. That is
+what lets JBrowse open any locus with no extraction step, and it is the whole
+reason this page reads `sv.gfa` rather than the base-level `gfa.gz` beside it,
+which states the same thing only inside its path lines.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#what-your-graph-can-produce)
+sets out both formats and which builder each one takes.
 
 A PanSN name has two halves, and only the first needs configuring:
 
@@ -944,20 +923,10 @@ hundred kilobases is more nodes than anything can lay out.
 
 The bubble file is also a level of detail. Collapsing each bubble to a single
 node, with the invariant reference between bubbles as backbone, turns the same
-graph into something that fits on a screen.
-[`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
-does that in one pass over the file you already have:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
-bash build_bubble_tier.sh hprc-v2.1-mc-grch38.bubbles.bed.gz \
-  hprc-v2.1-mc-grch38.tier10000 10000
-```
-
-The threshold is on **content**, the larger of the reference span and the
-longest allele. A pure insertion is an alternative to nothing, so a large share
-of the bubbles are zero-length on GRCh38, and a threshold on `end - start` would
-drop every one of them, the graph's largest insertions among them.
+graph into something that fits on a screen. We host that tier beside the fine
+index, built from the bubble file in one pass by
+[`build_bubble_tier.sh`](/docs/tutorials/pangenome_prepare_graph#a-whole-chromosome-the-bubble-tier)
+at a threshold of 10,000.
 
 The result reads through the same adapter as the fine index. A tier is a prefix,
 so choosing a level of detail is choosing a file:
@@ -1708,48 +1677,15 @@ carriage figure, and it is the graph view's next change on this route.
 
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
-Three commands stand between a `.gbz` of your own and the track above, none of
-them JBrowse. The chains come first, because a query that reaches the variation
-around a window rather than only the reference walk through it needs the snarl
-decomposition, and gbz-base stores it as links on the boundary nodes:
+HPRC publishes the database this track reads, so nothing above builds one. For a
+`.gbz` of your own, three commands stand between it and the same track, none of
+them JBrowse: `vg chains` for the snarl decomposition, `gbz-base construct` for
+the database, and `gbz-haplotype-index` for the companion that names the walks.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
+shows all three, and the same page builds every other file this one reads.
 
-```bash
-# vg 1.69.0 or newer reads the chains out of a distance index. A top-level
-# index (vg index --no-nested-distance) is enough; the nested one is not needed
-# and is far more expensive on a human graph.
-vg chains graph.gbz graph.dist > graph.chains
-
-# the database itself: one row per node and per path, plus those chains.
-# Without --chains it still builds and a window comes back as the reference
-# walk alone.
-gbz-base construct --chains graph.chains graph.gbz
-```
-
-`gbz-base` is `cargo install gbz-base`, and writes `graph.gbz.db` beside the
-input. Then name the haplotypes:
-
-<!-- from: scripts/build_hprc_gbz_index.sh -->
-
-```bash
-# --interval is how often a GBWT position is recorded along each path, in bp.
-# Denser means a bigger file and a shorter walk at query time to identify a
-# haplotype. 16384 over the 464 haplotypes of the HPRC graph, with the anchor
-# rows below, is 178.5M recorded positions and a 7.9 GB companion, written in
-# about 13 minutes on 24 cores.
-# --anchor-spacing is how often an anchor node is chosen along each reference
-# path, the node most haplotypes pass in the half spacing before each multiple;
-# every haplotype's visit through it is recorded, which is what lets a window
-# for a chosen set of lanes walk only those haplotypes. 131072 is the default.
-# --output writes a companion file instead of adding the tables to the
-# database, which is the form to use on a database you did not build.
-gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
-  --output graph.haplotype-index.db graph.gbz
-```
-
-Both files go somewhere that serves range requests, and their two URLs are the
-`uri` and the `haplotypeIndexLocation` of the track config above. The companion
-records the graph's path count, and the reader refuses one built for a different
-graph.
+The companion HPRC does not publish is the one exception, and it has a script of
+its own under [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## Comparing the graph with the callset
 
@@ -1787,72 +1723,27 @@ hue as the segments above it.
 
 ## Reproduce it end to end
 
-Two scripts and one gfatools call rebuild the hosted files, or build the same
-set for a different graph, with the tools listed under
-[Prerequisites](#prerequisites). Their provenance (source, size, exact commands,
-build date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
-them.
+Every graph-derived file this page reads is built by
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph), which runs
+the same commands on any rGFA: the two tabix indexes behind
+[the graph track](#load-the-graph), the [bubble file](#the-bubble-track) and its
+[coarse tier](#a-whole-chromosome-as-a-graph), the
+[allele inventory](#the-allele-inventory), and the companion index behind the
+[haplotype-walk lanes](#walks-from-the-graph). Point it at
+`hprc-v2.1-mc-grch38.sv.gfa.gz` and it writes what we host. Their provenance
+(source, size, exact commands, build date) is in
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
 
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
-bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz out
-bash build_rgfa_alleles.sh out
-```
-
-- [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-  writes the two tabix indexes `RgfaTabixAdapter` reads, straight from the
-  gzipped rGFA (nothing to unpack), using gfatools for the segment projection.
-  It needs an **rGFA**: `sv.gfa.gz` is one, the `.gfa.gz` beside it is not (see
-  [Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
-- [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-  reads only those two indexes and never the graph, so the allele inventory
-  takes seconds off the small index pair rather than the 842 MB download they
-  came from, and works with no assemblies loaded, the normal situation with
-  someone else's graph.
-
-The [bubble track](#the-bubble-track) is neither script but one gfatools call
-over the same graph:
-
-```bash
-gzip -dc hprc-v2.1-mc-grch38.sv.gfa.gz | gfatools bubble - \
-  | sort -k1,1 -k2,2n | bgzip > out.bubbles.bed.gz
-tabix -p bed out.bubbles.bed.gz
-```
-
-Carriage is already [a published file](#carriage-at-the-graphs-own-granularity),
-tabix-indexed like the callset. The route that rebuilds it,
+Carriage is not rebuilt at all here: it is
+[a published file](#carriage-at-the-graphs-own-granularity), tabix-indexed like
+the callset. The route that rebuilds it,
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh),
-writes one row per haplotype per bubble for the guide's
-[per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
-lane, at the cost of a 464-assembly download and a mapping run. One call per
-sample is the whole of it:
+costs a 464-assembly download and a mapping run, and
+[the same page](/docs/tutorials/pangenome_prepare_graph#who-carries-what) shows
+the one call it makes per sample.
 
-<!-- from: scripts/build_minigraph_paths.sh -->
-
-```bash
-# --call asks for the path each sample takes through every bubble rather than an
-# alignment. It emits one line per `gfatools bubble` line above, in the same
-# order for every sample, so line N of one sample and line N of another are the
-# same bubble and can be joined on line number alone.
-# -xasm is the assembly-to-graph preset, and -c asks for the base-level
-# alignment the call is read off.
-minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
-```
-
-Run it once per assembly, with the reference first: the reference's path through
-a bubble is the allele every other sample's path is compared against.
-
-`build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
-sample, and writes a second index pair keyed only under that sample's sequences
-(`hprc-v2.1-mc-grch38.ref.*`, also hosted). It is a fraction of the full pair's
-index size, returns byte-identical rows, and is for a segments track drawn on
-GRCh38. Do not point the graph cut at it: **Graph context** defaults to 1 hop, a
-hop follows an allele's interior segments, and those are indexed under the donor
-contig the small pair drops, so the graph comes back as though the setting were
-**None**.
-
-Three figures have a script of their own. The
+The figures are what is left, and three of them have a script of their own, with
+the tools listed under [Prerequisites](#prerequisites). The
 [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) come from one
 that bins UCSC's RepeatMasker for both assemblies:
 
@@ -1875,9 +1766,10 @@ bash build_hprc_gbz_index.sh out
 ```
 
 It downloads the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and
-runs the one command [the section above](#preparing-a-gbz-base-database) shows,
-which takes about a quarter of an hour on 24 cores. The database it accompanies
-is read straight from HPRC's bucket and never downloaded.
+runs the one command
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
+shows, which takes about a quarter of an hour on 24 cores. The database it
+accompanies is read straight from HPRC's bucket and never downloaded.
 
 The other two both read release 2's published all-vs-GRCh38 PAF:
 
@@ -1899,6 +1791,7 @@ the split it finds before slicing out one haplotype of each kind.
 
 ## See also
 
+- [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/mappability_qc)
