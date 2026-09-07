@@ -2,21 +2,25 @@
 title: Synteny by ancestral linkage group (sponge, comb jelly, jellyfish)
 sidebar_label: Synteny (ancestral linkage groups)
 description:
-  Color an ortholog table by the ancestral linkage group each gene belongs to,
-  and watch the groups hold across three animals and come apart in a
-  single-celled outgroup
+  Load the ortholog tables odp colors by ancestral linkage group, sort each
+  genome's chromosomes against the other's, and watch the groups hold across
+  three animals and come apart in a single-celled outgroup
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
 **TL;DR:** certain sets of genes have ridden the same chromosome together since
-before animals existed, and those sets have names. We take a published table
-that says which set each gene belongs to, load it over four genomes at once, and
-paint every ortholog with its set's color. In a sponge the colors land in one
-tight block per chromosome; in a comb jelly they still lean toward particular
-contigs; in a single-celled relative of animals the lean is gone. The color mode
-is the ortholog table's own column, so any label a table carries can drive it.
+before animals existed, and those sets have names.
+[odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
+compares, a table of their orthologs with the set each one belongs to and a
+color for it. JBrowse loads that table as a synteny track, paints every ortholog
+with its set's color, and sorts one genome's chromosomes by where their
+orthologs land on the other. In a sponge the colors fall in one block per
+chromosome along a diagonal; in a comb jelly each group is spread over several
+chromosomes; in a single-celled relative of animals the spread is everywhere.
+The color mode is a column of the table, so any label a pipeline puts beside an
+ortholog can drive it.
 
 ## Prerequisites
 
@@ -30,67 +34,73 @@ is the ortholog table's own column, so any label a table carries can drive it.
 
 ## Where the data comes from
 
-The genomes and the four-way ortholog table are the Dryad deposit behind Schultz
-et al. 2023, released CC0. Dryad serves its files only to a browser, so the two
+The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
+2023, released CC0. Dryad serves its files only to a browser, so the two
 tarballs are downloaded by hand and the [build script](#reproduce-it-end-to-end)
-extracts what it needs from them. The linkage groups themselves, with the colors
-the papers draw them in, ship with [odp](https://github.com/conchoecia/odp).
+extracts what it needs from them.
 
 - Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
   https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47
-- The BCnS linkage group table, from odp's own database:
-  https://raw.githubusercontent.com/conchoecia/odp/main/LG_db/BCnSSimakov2022.tar.gz
 - The _Ephydatia_ assembly, which the deposit does not redistribute and its own
   script fetches:
   https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz
+
+The tables are the ones odp plotted for the paper's own dot plots, and a run of
+odp over any two genomes writes the same files, so everything from the
+conversion on works unchanged on your own species.
 
 ## A label that rides in the ortholog table
 
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups, after
 the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave
 each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
-none. That assignment is a column, and a column is something an ortholog table
-can carry beside its gene ids.
+none. odp ships the groups as a database of protein models, searches every
+proteome it is given against them, and writes the group each ortholog landed in
+beside the ortholog. That assignment is a column, and a column is something a
+synteny track can carry.
 
 The four genomes here are a jellyfish (`RES`, _Rhopilema esculentum_), a
 freshwater sponge (`EMU`, _Ephydatia muelleri_), a comb jelly (`HCA`,
 _Hormiphora californensis_) and _Capsaspora owczarzaki_ (`COW`), a single-celled
-holozoan that sits outside animals altogether. The deposit's four-way table is
-one row per ortholog present in all four, which makes the last of them the
-control this page needs: whatever the linkage groups do in the three animals,
-`COW` is where they should stop doing it.
+holozoan that sits outside animals altogether. odp compares genomes two at a
+time, so the deposit holds one table per pair. Each is every reciprocal best
+protein hit between the two, and a pair keeps several times the orthologs a
+table requiring a gene in all four genomes at once would, which is what keeps
+the plots dense enough to show a pattern.
 
-The two tables share no linkage group column, so the group is joined onto the
-four-way table through the jellyfish gene ids both spell the same way. Gene
-intervals come from odp's `.chrom` files rather than from the table's own
+A table's row is the gene pair, the group, where each gene sits, and the color:
+
+```
+rbh                    EMU_gene      RES_gene       gene_group  EMU_scaf  EMU_pos  RES_scaf  RES_pos   ...  color
+rbh2way_EMU_RES_964    Em0019g38a    mRNA.RE04286   A1a         EMU19     180964   RES2      13815510  ...  #C23D51
+rbh2way_EMU_RES_4123   Em0019g57a    mRNA.RE14076   None        EMU19     290216   RES8      13037026  ...  #000000
+```
+
+Gene intervals come from odp's `.chrom` files rather than from the table's own
 position column, which is one coordinate per gene and would make every feature
 one base long:
 
 <!-- from: scripts/build_odp_linkage_groups_synteny.sh -->
 
 ```bash
-# --alg takes the group and its published color off the BCnS table, matched on
-# the gene ids of the species named by --alg-species (the four-way table spells
-# Rhopilema RESLi, the BCnS table spells it RES)
-# --chrom gives each species' genes their real start and stop
 # --species sets the column order, anchor first, which the track then follows
-python3 rbh_to_blocks.py COW_EMU_HCA_RESLi_reciprocal_best_hits.rbh \
-  -o alg.blocks --bed-dir beds \
-  --species RESLi EMU HCA COW \
-  --chrom RESLi=RES.chrom EMU=EMU.chrom HCA=HCA.chrom COW=COW.chrom \
-  --alg BCnSSimakov2022.rbh --alg-species RESLi=RES
+# --chrom gives each species' genes their real start and stop
+# gene_group and color pass through as the attribute columns
+python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
+  -o RES_EMU.blocks --bed-dir RES_EMU \
+  --species RES EMU --chrom RES=RES.chrom EMU=EMU.chrom
 ```
 
-The helper prints what it resolved and what it joined. Every row of the four-way
-table carries all four genes, and rather fewer of them carry a linkage group:
+The helper prints what it resolved. Roughly half the orthologs carry a group:
 the BCnS table covers the gene families it covers, and an ortholog outside them
-gets `.`, which the browser draws as missing rather than as a group of its own.
+gets `.`, which the browser draws in a recessive grey.
 
-A `.blocks` row is the gene ids across the genomes, then the attribute columns:
+A `.blocks` row is the gene ids across the two genomes, then the attribute
+columns:
 
 ```
-mRNA.RE13036  Em0001g1025a  Hcv1.av93.c2.g244.i1  XP_004348979.2  Ea  #AB7E26
-mRNA.RE06677  Em0001g1007a  Hcv1.av93.c8.g835.i1  XP_004349859.1  .   .
+mRNA.RE04286  Em0019g38a  A1a  #C23D51
+mRNA.RE14076  Em0019g57a  .    #000000
 ```
 
 ## Loading it as a synteny track
@@ -103,45 +113,64 @@ mode of its own.
 ```json addtrack
 {
   "type": "SyntenyTrack",
-  "trackId": "alg_blocks",
-  "name": "Orthologs by ancestral linkage group (BCnS)",
-  "assemblyNames": ["RES", "EMU", "HCA", "COW"],
+  "trackId": "RES_EMU",
+  "name": "RES vs EMU orthologs, colored by BCnS linkage group",
+  "assemblyNames": ["RES", "EMU"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "uri": "alg.blocks.gz",
-    "blockAssemblies": ["RES", "EMU", "HCA", "COW"],
+    "uri": "RES_EMU.blocks.gz",
+    "blockAssemblies": ["RES", "EMU"],
     "bedLocations": [
-      { "uri": "RES.bed.gz" },
-      { "uri": "EMU.bed.gz" },
-      { "uri": "HCA.bed.gz" },
-      { "uri": "COW.bed.gz" }
+      { "uri": "RES_EMU.RES.bed.gz" },
+      { "uri": "RES_EMU.EMU.bed.gz" }
     ],
-    "assemblyNames": ["RES", "EMU", "HCA", "COW"],
+    "assemblyNames": ["RES", "EMU"],
     "attributeColumns": ["gene_group", "color"]
-  },
-  "displays": [
-    {
-      "type": "MultiWaySyntenyDisplay",
-      "displayId": "alg_blocks-MultiWaySyntenyDisplay",
-      "ribbonColorBy": "attribute:gene_group"
-    }
-  ]
+  }
 }
 ```
 
-## One color per linkage group
+The build script adds one such track per pair: jellyfish against each of the
+other three, and sponge against comb jelly and comb jelly against _Capsaspora_
+for the stack at the end.
 
-Open the table as a dotplot with the jellyfish on one axis and the sponge on the
-other, then pick **gene_group** from the palette button in the view header. Each
-group takes the color the file gave it, and **Show color legend** at the bottom
-of that menu keys them.
+## One block per linkage group
 
-<Figure caption="The four-way ortholog table as a Rhopilema against Ephydatia dotplot, every ortholog colored by the BCnS linkage group its gene family belongs to. Each group falls in one block where a jellyfish chromosome meets a sponge chromosome; the red points are the orthologs the BCnS table assigns to no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
+Open the jellyfish-against-sponge table as a dotplot, pick **gene_group** from
+the palette button in the view header, and **Show color legend** at the bottom
+of that menu. Then **Reorder chromosomes** on the view menu: it sorts the
+vertical genome's chromosomes by where their orthologs land along the horizontal
+one, which is what turns one block per group into a diagonal. The same view as a
+session, with the sponge's unplaced scaffolds left off its axis:
 
-The blocks are the whole claim. A linkage group is not a run of genes in an
-order that has been preserved, and inside a block the points fill the square
-rather than following a diagonal: gene order has been shuffled thoroughly, while
-the membership of the chromosome has not.
+```json session
+{
+  "defaultSession": {
+    "name": "Ancestral linkage groups",
+    "views": [
+      {
+        "type": "DotplotView",
+        "displayName": "Rhopilema (jellyfish) vs Ephydatia (sponge)",
+        "views": [
+          { "assembly": "RES" },
+          { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
+        ],
+        "tracks": ["RES_EMU"],
+        "colorBy": "attribute:gene_group",
+        "showColorLegend": true,
+        "autoDiagonalize": true,
+        "lineWidth": 3
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="Rhopilema against Ephydatia, every ortholog colored by the BCnS linkage group odp assigned it and the sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish chromosome meets a sponge chromosome, and the blocks run down the diagonal. The grey points are the orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
+
+The blocks are the whole claim. Inside a block the points fill the square: gene
+order has been shuffled thoroughly, while the membership of the chromosome has
+not, and that membership is what a linkage group is.
 
 Two things in the frame are worth knowing before reading too much into it. The
 column structure is true by construction, since the BCnS groups were defined so
@@ -154,77 +183,103 @@ to disagree, and they largely do not.
 The comb jelly and _Capsaspora_ are in neither table's definition, so both axes
 are free. Swapping the vertical genome is the whole change.
 
-<Figure caption="The same table and the same coloring against Hormiphora. The groups still favor particular comb jelly contigs, but each one is spread over several of them rather than held in a single block." src="/img/linkage_groups/alg_dotplot_res_hca.png" />
+<Figure caption="The jellyfish against Hormiphora, sorted and colored the same way. The groups still favor particular comb jelly chromosomes, and each one is spread over several of them." src="/img/linkage_groups/alg_dotplot_res_hca.png" />
 
-<Figure caption="The same table and coloring again, against Capsaspora. Every group runs the full height of the plot: the vertical banding of the two frames above is gone, and only the definitional column structure is left." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
+<Figure caption="The jellyfish against Capsaspora. The column structure the groups were defined by is still there; the rows have nothing to hold it, and the grey outnumbers every color." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
 
-The outgroup frame is the one to check first, because it is where the method
-could have manufactured a pattern out of nothing. The banding is gone there,
-which is what says the banding in the other two frames is coming from the data
-and not from the way the groups were assigned. The sponge holding the groups
-whole while the comb jelly holds them loosely is the shape of the argument
-Schultz et al. make for the comb jellies branching off before the sponges did.
+The sponge holding the groups whole while the comb jelly holds them loosely is
+the shape of the argument Schultz et al. make for the comb jellies branching off
+before the sponges did, and the outgroup frame is what the other two are read
+against.
 
-## One chromosome, four lanes
+## Four genomes stacked
 
-The lane stack asks the same question from the other side: take one jellyfish
-chromosome, and see how many contigs of each other genome its orthologs land on.
-Open `RES2` in a linear genome view, add the track as a **Multi-way synteny
-display**, and set **Color ribbons by** to **gene_group** on the track menu.
+The ribbon diagram odp draws is the same tables stacked: one row per genome, the
+ribbons between neighbours colored by group, each row's chromosomes sorted
+against the row above. The linear synteny view does that with one pair's track
+per band, and `autoDiagonalize` sorts every row. The fade a whole-genome view
+applies to sub-pixel ribbons is turned off here, since it is the ribbons' color
+that carries the figure.
 
-<Figure caption="RES2 over sponge, comb jelly and Capsaspora lanes, the ribbons colored by linkage group. The legend keys the single group RES2 carries. Each lane header names the contig it framed and lists the others the same orthologs also landed on." src="/img/linkage_groups/alg_multiway_res2.png" />
+```json session
+{
+  "defaultSession": {
+    "name": "Ancestral linkage groups",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Rhopilema / Ephydatia / Hormiphora / Capsaspora",
+        "views": [
+          { "assembly": "RES" },
+          { "assembly": "EMU", "displayedRegionNames": ["EMU*"] },
+          { "assembly": "HCA" },
+          { "assembly": "COW" }
+        ],
+        "tracks": [["RES_EMU"], ["EMU_HCA"], ["HCA_COW"]],
+        "colorBy": "attribute:gene_group",
+        "showColorLegend": true,
+        "autoDiagonalize": true,
+        "fadeThinAlignmentsMode": "off",
+        "alpha": 0.5
+      }
+    ]
+  }
+}
+```
 
-Each lane frames one contig, and the header says which others it had to leave
-out. The sponge lane names one and nothing else. The comb jelly lane and the
-_Capsaspora_ lane both carry a list, which is the dotplot's vertical smear
-written as text.
+<Figure caption="The four genomes stacked, ribbons colored by linkage group. Between the jellyfish and the sponge each group is one bundle from one chromosome to one chromosome. Below that the bundles fan out: a comb jelly chromosome takes its orthologs from several sponge chromosomes, and Capsaspora's take theirs from everywhere." src="/img/linkage_groups/alg_stack.png" />
 
 ## Checking it against the table
 
-The pictures are the `.blocks` file and the BEDs, so the counts behind them come
-out of the same two files with no browser involved. For one group, take its
-orthologs' gene ids in a genome and tally the scaffolds they sit on:
+The pictures are the tables, so the counts behind them come out of the tables
+with no browser involved. For one group, tally the chromosomes its orthologs sit
+on in the other genome:
 
 ```bash
-# column 5 of alg.blocks is gene_group; columns 1-4 are the gene ids in
-# --species order, so $2 is the sponge gene and $3 the comb jelly one
-# column 4 of a BED is the gene id, column 1 the scaffold
-awk -F'\t' 'NR==FNR {if ($5=="A1a") want[$2]; next} $4 in want {print $1}' \
-  alg.blocks beds/EMU.bed | sort | uniq -c | sort -rn
+# gene_group is column 4 and EMU_scaf column 5 of the EMU-RES table
+awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
+  EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
+  | sort | uniq -c | sort -rn
 ```
 
-Running that over the six largest groups, and over each genome's BED in turn,
-gives how many of a group's orthologs sit on the one scaffold that holds most of
-them:
+Running that over the six largest groups, in each of the three jellyfish tables,
+gives how many of a group's orthologs there are and how many sit on the one
+chromosome that holds most of them:
 
-| group | orthologs | sponge | comb jelly | _Capsaspora_ |
-| ----- | --------- | ------ | ---------- | ------------ |
-| A1a   | 74        | 64     | 21         | 23           |
-| D     | 68        | 64     | 21         | 13           |
-| H     | 48        | 41     | 15         | 18           |
-| C1    | 47        | 40     | 17         | 12           |
-| G     | 46        | 42     | 15         | 9            |
-| K     | 40        | 33     | 20         | 10           |
+| group | sponge    | comb jelly | _Capsaspora_ |
+| ----- | --------- | ---------- | ------------ |
+| A1a   | 229 / 229 | 48 / 176   | 43 / 160     |
+| D     | 205 / 205 | 44 / 162   | 22 / 150     |
+| G     | 201 / 201 | 58 / 160   | 20 / 124     |
+| H     | 189 / 189 | 56 / 148   | 36 / 119     |
+| F     | 162 / 162 | 25 / 116   | 20 / 97      |
+| M     | 152 / 152 | 26 / 122   | 22 / 101     |
 
-The sponge column settles the first figure: whichever group you take, most of it
-is on one chromosome. The other two columns are the ones to be careful with. The
-comb jelly leads _Capsaspora_ in four of these six groups and trails it in the
-other two, so the difference the second and third figures show is a property of
-the table as a whole rather than something any one group demonstrates. A group
-at a time, the comb jelly and the outgroup are hard to tell apart.
+The sponge column settles the first figure, and says why: the group database was
+built with the sponge in it, so an ortholog it assigns to a group is on that
+group's sponge chromosome by definition. The other two columns are the ones the
+figures are about. In both, the chromosome holding most of a group holds a
+minority of it, and the comb jelly leads _Capsaspora_ by a margin that varies
+from group to group. A group at a time, the comb jelly and the outgroup are hard
+to tell apart; the difference the second and third figures show is a property of
+the table as a whole.
 
 ## Reproduce it end to end
 
 Download `genomes.tar.gz` and `supplementary_information.tar.gz` from
 [the Dryad page](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47) into
 `~/Downloads` first, since Dryad has no direct download URL. The script fetches
-everything else, builds the table and the BEDs, and writes a config with the
-four assemblies and a default session; see [Prerequisites](#prerequisites).
+everything else, converts the five tables, and writes a config with the four
+assemblies and a default session; see [Prerequisites](#prerequisites).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh
 DRYAD_DIR=~/Downloads bash build_odp_linkage_groups_synteny.sh
 ```
+
+For your own genomes, run odp with `plot_LGs: True` and point the conversion at
+the tables it writes under
+`synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/`.
 
 ## See also
 

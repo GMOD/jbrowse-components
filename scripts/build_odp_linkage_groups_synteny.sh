@@ -4,12 +4,17 @@
 # website/docs/tutorials/odp_linkage_groups_synteny.md, then wire up a runnable
 # JBrowse.
 #
-# The genomes and the four-way ortholog table are the Dryad deposit behind
-# Schultz et al. 2023 (10.5061/dryad.dncjsxm47, CC0). Dryad serves its files
-# only to a browser, so the two tarballs are downloaded by hand into
-# $DRYAD_DIR (default ~/Downloads) and this script extracts just what it needs.
-# The ancestral linkage groups themselves, with the paper's colors, are the
-# BCnS table odp ships (Simakov et al. 2022), fetched from GitHub.
+# The genomes and the ortholog tables are the Dryad deposit behind Schultz et
+# al. 2023 (10.5061/dryad.dncjsxm47, CC0). Dryad serves its files only to a
+# browser, so the two tarballs are downloaded by hand into $DRYAD_DIR (default
+# ~/Downloads) and this script extracts just what it needs.
+#
+# The tables are the ones odp plotted for the paper: one per species pair, every
+# reciprocal best hit between the two proteomes, each row carrying the BCnS
+# linkage group odp's HMM search assigned it and the color the paper draws that
+# group in. A run of odp over any two genomes writes the same files under
+# synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/, so the JBrowse
+# half below works unchanged on your own species.
 #
 # Requires: python3, samtools, curl, tar, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
@@ -37,25 +42,30 @@ for f in genomes.tar.gz supplementary_information.tar.gz; do
   }
 done
 
-# Species table: odp three-letter code, its directory in genomes.tar.gz, and
-# the code the four-way table uses for it (the paper's RES is the Li et al.
-# annotation, which its tables spell RESLi). The first row is the anchor.
+# Species table: odp three-letter code and its directory in genomes.tar.gz.
+# The first row is the anchor every dotplot puts on its horizontal axis.
 SPECIES='
-RES rhopilema_li           RESLi
-EMU ephydatia              EMU
-HCA hormiphora             HCA
-COW capsaspora/capsasporaA COW
+RES rhopilema_li
+EMU ephydatia
+HCA hormiphora
+COW capsaspora/capsasporaA
+'
+# The pairs to load, and the order they stack in the four-genome view.
+PAIRS='
+RES EMU
+RES HCA
+RES COW
+EMU HCA
+HCA COW
 '
 # GNU tar matches an include pattern literally unless --wildcards precedes it;
 # the bsdtar macOS ships globs by default and exits on the flag.
 WILDCARDS=
 case "$(tar --version 2>&1)" in *'GNU tar'*) WILDCARDS=--wildcards ;; esac
 
-names_of() { awk 'NF {print $1}' <<<"$SPECIES"; }
 CODES=()
-while IFS= read -r line; do CODES+=("$line"); done < <(names_of)
+while IFS= read -r line; do CODES+=("$line"); done < <(awk 'NF {print $1}' <<<"$SPECIES")
 
-FOURWAY=COW_EMU_HCA_RESLi_reciprocal_best_hits.rbh
 if [ ! -d genomes ]; then
   DIRS=()
   while IFS= read -r line; do DIRS+=("$line"); done \
@@ -72,15 +82,24 @@ if [ ! -d genomes ]; then
   rm -rf genomes
   mv for_odp_lifted genomes
 fi
-if [ ! -f "$FOURWAY" ]; then
-  tar xzf "$DRYAD_DIR/supplementary_information.tar.gz" $WILDCARDS "*/$FOURWAY"
-  find . -name "$FOURWAY" -not -path "./$FOURWAY" -exec mv {} . \;
-fi
-if [ ! -f BCnSSimakov2022.rbh ]; then
-  curl -fsSL -o bcns.tar.gz \
-    https://raw.githubusercontent.com/conchoecia/odp/main/LG_db/BCnSSimakov2022.tar.gz
-  tar xzf bcns.tar.gz BCnSSimakov2022/BCnSSimakov2022.rbh
-  mv BCnSSimakov2022/BCnSSimakov2022.rbh .
+
+# odp names a pair's files with the two codes in alphabetical order
+table_of() {
+  local a=$1 b=$2
+  [[ "$a" < "$b" ]] || { local t=$a; a=$b; b=$t; }
+  echo "${a}_${b}_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh"
+}
+if [ ! -d tables ]; then
+  PATTERNS=()
+  while read -r a b; do
+    [ -z "$a" ] && continue
+    PATTERNS+=("*/synteny_coloredby_BCnS_LGs/$(table_of "$a" "$b")")
+  done <<<"$PAIRS"
+  tar xzf "$DRYAD_DIR/supplementary_information.tar.gz" $WILDCARDS "${PATTERNS[@]}"
+  mkdir -p tables
+  find . -path ./tables -prune -o -name '*.plotted.rbh' -print \
+    | while read -r f; do mv "$f" tables/; done
+  rm -rf supplementary_information
 fi
 
 # Ephydatia is not redistributed in the tarball. Its directory holds odp's own
@@ -101,7 +120,7 @@ if [ ! -s "$EMU_DIR/EMU.fasta" ]; then
   rm -f "$EMU_DIR/Emu_genome_v1.fa.gz" "$EMU_DIR/rename.sed"
 fi
 
-while read -r code dir _; do
+while read -r code dir; do
   [ -z "$code" ] && continue
   d="genomes/$dir"
   fa=$(ls "$d"/*.fasta | head -1)
@@ -110,27 +129,18 @@ while read -r code dir _; do
   [ -f "$code.chrom" ] || ln -sf "$(ls "$d"/*.chrom | head -1)" "$code.chrom"
 done <<<"$SPECIES"
 
-# The four-way table has no linkage-group column, so the BCnS table's is joined
-# on the Rhopilema gene ids the two share. The .chrom files give each gene its
-# real interval; _pos alone would be one base.
-if [ ! -f alg.blocks ]; then
-  CHROMS=()
-  while IFS= read -r line; do CHROMS+=("$line"); done \
-    < <(awk 'NF {print $3 "=" $1 ".chrom"}' <<<"$SPECIES")
-  TABLE_CODES=()
-  while IFS= read -r line; do TABLE_CODES+=("$line"); done \
-    < <(awk 'NF {print $3}' <<<"$SPECIES")
-  python3 "$SCRIPT_DIR/rbh_to_blocks.py" "$FOURWAY" -o alg.blocks --bed-dir beds \
-    --species "${TABLE_CODES[@]}" --chrom "${CHROMS[@]}" \
-    --alg BCnSSimakov2022.rbh --alg-species RESLi=RES
-  for i in "${!CODES[@]}"; do
-    mv "beds/${TABLE_CODES[$i]}.bed" "beds/${CODES[$i]}.bed"
-  done
-fi
-gzip -kf alg.blocks
-for code in "${CODES[@]}"; do
-  gzip -kf "beds/$code.bed"
-done
+# One .blocks per pair, the gene_group and color columns carried through. The
+# .chrom files give each gene its real interval; _pos alone would be one base.
+mkdir -p blocks
+while read -r a b; do
+  [ -z "$a" ] && continue
+  pair="${a}_${b}"
+  [ -s "blocks/$pair.blocks" ] || python3 "$SCRIPT_DIR/rbh_to_blocks.py" \
+    "tables/$(table_of "$a" "$b")" -o "blocks/$pair.blocks" --bed-dir "blocks/$pair" \
+    --species "$a" "$b" --chrom "$a=$a.chrom" "$b=$b.chrom"
+  gzip -kf "blocks/$pair.blocks"
+  gzip -kf "blocks/$pair/$a.bed" "blocks/$pair/$b.bed"
+done <<<"$PAIRS"
 
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
@@ -139,48 +149,44 @@ else
 fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
-cp alg.blocks.gz "$APP"/
 for code in "${CODES[@]}"; do
-  cp "beds/$code.bed.gz" "$APP/$code.bed.gz"
   jb add-assembly "$code.fa" --name "$code" --load copy --force --out "$APP"
 done
 
-python3 - "${CODES[*]}" > blocks_track.json <<'PY'
+while read -r a b; do
+  [ -z "$a" ] && continue
+  pair="${a}_${b}"
+  cp "blocks/$pair.blocks.gz" "$APP/$pair.blocks.gz"
+  cp "blocks/$pair/$a.bed.gz" "$APP/$pair.$a.bed.gz"
+  cp "blocks/$pair/$b.bed.gz" "$APP/$pair.$b.bed.gz"
+  python3 - "$a" "$b" > "$pair.track.json" <<'PY'
 import json, sys
-names = sys.argv[1].split()
+a, b = sys.argv[1:3]
+pair = f"{a}_{b}"
 print(json.dumps({
     'type': 'SyntenyTrack',
-    'trackId': 'alg_blocks',
-    'name': 'Orthologs by ancestral linkage group (BCnS)',
-    'assemblyNames': names,
+    'trackId': pair,
+    'name': f'{a} vs {b} orthologs, colored by BCnS linkage group',
+    'assemblyNames': [a, b],
     'adapter': {
         'type': 'MCScanBlocksAdapter',
-        'uri': 'alg.blocks.gz',
-        'blockAssemblies': names,
-        'bedLocations': [{'uri': '%s.bed.gz' % n} for n in names],
-        'assemblyNames': names,
+        'uri': f'{pair}.blocks.gz',
+        'blockAssemblies': [a, b],
+        'bedLocations': [{'uri': f'{pair}.{a}.bed.gz'}, {'uri': f'{pair}.{b}.bed.gz'}],
+        'assemblyNames': [a, b],
         # the label column and the color odp put beside it: what
         # Color by -> gene_group paints
         'attributeColumns': ['gene_group', 'color'],
     },
-    # the lane stack reads the same column. Its ribbonColor default is a
-    # translucent grey, so an ortholog BCnS assigns no group to recedes
-    # instead of taking the synteny view's match red.
-    'displays': [
-        {
-            'type': 'MultiWaySyntenyDisplay',
-            'displayId': 'alg_blocks-MultiWaySyntenyDisplay',
-            'ribbonColorBy': 'attribute:gene_group',
-        },
-    ],
 }, indent=2))
 PY
-jb add-track-json blocks_track.json --update --out "$APP"
+  jb add-track-json "$pair.track.json" --update --out "$APP"
+done <<<"$PAIRS"
 
-# A dotplot rather than the stacked synteny view: at whole-genome scale a lane
-# stack draws every ortholog as a chord across the whole width, and the ~59% the
-# BCnS table assigns no group to paint the synteny view's missing-data red over
-# the rest. On two axes the same rows separate into one block per linkage group.
+# autoDiagonalize sorts the sponge chromosomes by where their orthologs land on
+# the jellyfish, which is what turns one block per linkage group into a
+# diagonal. Only the chromosomes with orthologs are drawn: the sponge's
+# unplaced scaffolds would otherwise take a fifth of the axis.
 cat > session.json <<'JSON'
 {
   "name": "Ancestral linkage groups: Rhopilema vs Ephydatia",
@@ -188,10 +194,14 @@ cat > session.json <<'JSON'
     {
       "type": "DotplotView",
       "displayName": "Rhopilema (jellyfish) vs Ephydatia (sponge)",
-      "views": [{ "assembly": "RES" }, { "assembly": "EMU" }],
-      "tracks": ["alg_blocks"],
+      "views": [
+        { "assembly": "RES" },
+        { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
+      ],
+      "tracks": ["RES_EMU"],
       "colorBy": "attribute:gene_group",
       "showColorLegend": true,
+      "autoDiagonalize": true,
       "lineWidth": 3,
       "height": 940
     }
@@ -201,7 +211,7 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, the ortholog table"
-echo "carrying its linkage groups, and a default dotplot session colored by them."
-echo "Serve it and open in a browser, e.g.:"
+echo "Built $APP/config.json with the four assemblies, one ortholog table per"
+echo "species pair carrying its linkage groups, and a default dotplot session"
+echo "colored by them. Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
