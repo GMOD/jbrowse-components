@@ -1455,6 +1455,77 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 1176,
     hideTooltip: true,
   },
+  // The same cut, named. pangenome_hprc opens on a clip, and a reader who has
+  // never seen a graph drawn cannot follow a route through parts they have no
+  // word for -- "bubble" was used twenty times on that page before it was
+  // defined. This is the still that goes above the clip, so backbone and allele
+  // are named on a picture before the clip moves through them.
+  //
+  // It is a SEPARATE figure rather than annotations on hprc_c4_subgraph above,
+  // which is the same session: that one is part 1's card source, and a card is
+  // a showcase surface that must carry no callout paint.
+  //
+  // Both anchors come from `node scripts/probe-graph-nodes.ts
+  // pangenome/hprc_c4_subgraph` rather than off the PNG -- s329764+ is 14.3 kb
+  // of GRCh38 mid-chain, and s352179+ is NA18948's 21 kb allele, the largest
+  // off-reference node in the cut and the one furthest clear of the backbone.
+  // Labels hang LEFT of both, into the open half of the pane; `leader` measures
+  // its own tail, so neither pill has to be placed against a measured width.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_graph_anatomy',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: C4_WINDOW,
+          tracks: [hg38GeneLane(70), hprcSegmentsLane(C4_REGION)],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: C4_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    // Bare names, not glosses. The first pass said "allele: what one haplotype
+    // carries instead" and the pill ran off the left edge of the pane -- and a
+    // diagram's labels are names anyway, with the prose above the figure
+    // carrying what each one means. Neither deletion gets a callout: the
+    // renderer already writes "32.7 kb deletion" across the arc itself.
+    annotations: [
+      {
+        type: 'text',
+        text: 'backbone',
+        leader: true,
+        fontSize: 20,
+        anchor: { view: 1, graphNode: 's329764+' },
+        dx: -200,
+        dy: 40,
+      },
+      {
+        type: 'text',
+        text: 'allele',
+        leader: true,
+        fontSize: 20,
+        anchor: { view: 1, graphNode: 's352179+' },
+        dx: -160,
+        dy: -60,
+      },
+    ],
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    allowUnsettled: true,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // 1176 in the first run left 86 css px of blank under the pane, which the
+    // run's own below-the-fold report named.
+    viewportHeight: 1090,
+    hideTooltip: true,
+  },
   // CFHR3/CFHR1: the deletion figure, and the locus this spec file used to say
   // could not be drawn. The note is still in hprc_lpa_kiv2 below -- "sample rows
   // gives a carrier an empty row (a deletion contributes no segment), the

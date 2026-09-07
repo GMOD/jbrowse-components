@@ -76,13 +76,18 @@ it came from to see what the swap did to the genes there.
 - [load the haplotype that contributed it](#loading-a-haplotype-as-an-assembly)
   and read that haplotype's own annotation at the same place
 
-The clip below runs the first four steps. Three things in it are worth naming
-first, because the rest of the page rests on all three. The chain of segments
-running across the drawing is the **backbone**, which is GRCh38's own path
-through the graph. Each place that chain opens out and closes again is a
-**bubble**, one locus where the haplotypes disagree. Each loop inside a bubble
-is an **allele**, a stretch of sequence some haplotype carries in place of the
-reference's.
+Three things are worth naming before any of that, because the rest of the page
+rests on all three. The chain of segments running across the drawing is the
+**backbone**, which is GRCh38's own path through the graph. Each place that
+chain opens out and closes again is a **bubble**, one locus where the haplotypes
+disagree. Each loop inside a bubble is an **allele**, a stretch of sequence some
+haplotype carries in place of the reference's. A deletion is none of those: it
+is an **edge**, a dashed arc from one backbone segment to another that skips
+what lies between.
+
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph, allele marks a node one haplotype carries where the reference has something else, and the dashed arcs are deletions, each drawn with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
+
+The clip below runs the first four steps on the MHC class II window.
 
 <Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's GRCh38 interval marked in the linear view above it." />
 
@@ -240,12 +245,24 @@ your own:
 Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
 reference and the graph is queryable by locus.
 
-The two files here are ours: we ran HPRC's `sv.gfa.gz` through
+The two files here are ours, and the first of them is one command over any rGFA.
+`gfa2bed -m` reads the `SN`/`SO`/`SR` tags, which is what puts each segment at a
+reference coordinate:
+
+<!-- from: scripts/build_rgfa_tabix.sh -->
+
+```bash
+# one row per segment: stableName, start, end, segmentId, rank
+gfatools gfa2bed -m your-graph.gfa.gz | sort -k1,1 -k2,2n | bgzip > your-graph.segs.bed.gz
+tabix -f -p bed your-graph.segs.bed.gz
+```
+
+The links index beside it comes from the same script's second pass over the
+L-lines.
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-and put the output on `jbrowse.org`.
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) runs the
-same command on a graph of your own, and writes every other file this page
-reads.
+is what we ran on HPRC's `sv.gfa.gz`, and
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) walks it and
+every other file these two pages read.
 
 ## Open a locus as a graph
 
