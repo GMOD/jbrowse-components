@@ -1,11 +1,11 @@
 {
   "id": "offscreen-mate-overlay",
-  "measured": "2026-08-20",
+  "measured": "2026-09-07",
   "published": false,
   "source": {
     "kind": "bench",
     "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 - min of rounds, control 0.96-1.11. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
-    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao \u2014 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost.\n\nRE-MEASURED 2026-08-20 on a LOADED machine, and the whole table moved with it: `hover, before` is code this change did not touch and it reads 12% (demo) to 26% (250k) above the 2026-08-19 run. Read the repaint column against that column, not against the old absolute numbers. The 250k repaint is the row to distrust: it spread 23.2-38.9ms across samples where every other cell held within a few percent. An A/B on that row (three samples each way, one fixture per process so the others' heap is not in it) could not separate reading a third typed array per mark from not reading it - 23.2 against 25.3 on the mins, in either order - so nothing in this table is fine-grained enough to justify a branch. Re-measure it on a quiet machine before believing any change to it.\n\nRE-MEASURED AGAIN 2026-08-20 for the `click in the strip` column, and every row is that one run so the columns stay comparable within a row - the absolute numbers moved again against the run above (`hover, before` is untouched code and reads 8.27ms on the 250k row against 7.54ms), which is the machine, not the code. The click column is what a CLICK on a mark resolves: `offscreenMateSpanAt`, which unions the mate spans of every alignment stacked under the pointer and so cannot take the hover's early exit. It runs once per navigation, not per pointer move, which is why the tooltip names the locus without coordinates rather than resolving one on hover. Two independent runs put it within 3% of each other on all three rows.\n\nRE-MEASURED 2026-09-07 as an interleaved A/B, old draw against the flat-array draw that replaced the rect-per-mark layout (`forEachMark` writing parallel Float64Arrays, one walk shared by the draw and both hit tests): demo 0.34 -> 0.41ms, 50k 4.95 -> 4.69ms, 250k 28.6 -> 28.7ms, controls 0.94-1.05, load 6-8. The allocation the 2026-08-20 note blamed is not where the repaint goes; the flat arrays stay for the shared walk, not for speed, and the table above is still the 2026-08-20 run. What the 250k repaint spends its time on is unmeasured."
+    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao \u2014 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost.\n\nRE-MEASURED 2026-08-20 on a LOADED machine, and the whole table moved with it: `hover, before` is code this change did not touch and it reads 12% (demo) to 26% (250k) above the 2026-08-19 run. Read the repaint column against that column, not against the old absolute numbers. The 250k repaint is the row to distrust: it spread 23.2-38.9ms across samples where every other cell held within a few percent. An A/B on that row (three samples each way, one fixture per process so the others' heap is not in it) could not separate reading a third typed array per mark from not reading it - 23.2 against 25.3 on the mins, in either order - so nothing in this table is fine-grained enough to justify a branch. Re-measure it on a quiet machine before believing any change to it.\n\nRE-MEASURED AGAIN 2026-08-20 for the `click in the strip` column, and every row is that one run so the columns stay comparable within a row - the absolute numbers moved again against the run above (`hover, before` is untouched code and reads 8.27ms on the 250k row against 7.54ms), which is the machine, not the code. The click column is what a CLICK on a mark resolves: `offscreenMateSpanAt`, which unions the mate spans of every alignment stacked under the pointer and so cannot take the hover's early exit. It runs once per navigation, not per pointer move, which is why the tooltip names the locus without coordinates rather than resolving one on hover. Two independent runs put it within 3% of each other on all three rows.\n\nRE-MEASURED 2026-09-07, and the rows are that run (15 rounds, load 5-7). The repaint was profiled first: the rect-per-mark layout's cost was not the rect allocation the 2026-08-20 note blamed but what read the rects after it, an object per mark to group the fills by color and a comparator sort of every mark per contig for the labels. The draw now keeps a lane's marks as parallel typed arrays, fills an uncolored lane straight from them, resolves a contig name once per (dataset, id) rather than once per mark, and finds label stretches by walking the touched pixel columns in order instead of sorting, which makes the same merges since every mark in a column is within a pixel of the first and the merge gap is never under one. Interleaved against the old draw on a quiet machine (load 4.7, two runs, controls 0.97-1.07): 250k 27.2 -> 10.9ms, 50k 5.1 -> 2.2ms, demo 0.26 -> 0.49ms. The demo row is slower by a quarter of a millisecond of fixed setup per repaint, two width-sized column arrays and a per-dataset id table, and stays that way on purpose: the 250k row is the one that was over a frame."
   },
   "columns": [
     {
@@ -56,33 +56,33 @@
       "values": {
         "marks": 2767,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 0.039,
-        "hoverStrip": 0.038,
-        "repaint": 0.351,
+        "hoverBefore": 0.043,
+        "hoverStrip": 0.022,
+        "repaint": 0.433,
         "svgKb": 90,
-        "clickStrip": 0.046
+        "clickStrip": 0.044
       }
     },
     {
       "values": {
         "marks": 50000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 1.33,
-        "hoverStrip": 0.64,
-        "repaint": 5.86,
+        "hoverBefore": 1.34,
+        "hoverStrip": 0.848,
+        "repaint": 2.888,
         "svgKb": 1303,
-        "clickStrip": 0.75
+        "clickStrip": 0.824
       }
     },
     {
       "values": {
         "marks": 250000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 8.27,
-        "hoverStrip": 3.37,
-        "repaint": 35.1,
+        "hoverBefore": 9.061,
+        "hoverStrip": 4.326,
+        "repaint": 17.435,
         "svgKb": 6624,
-        "clickStrip": 4.11
+        "clickStrip": 4.52
       },
       "emphasize": [
         "repaint"

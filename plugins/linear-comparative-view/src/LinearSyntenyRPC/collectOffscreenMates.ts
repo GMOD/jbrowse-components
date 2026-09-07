@@ -25,9 +25,10 @@ export interface OffscreenMateData {
   // `minAlignmentLength` cull reads, as the ribbons' `alignmentLengths` does
   lengths: Float32Array
   // where it lands on the contig it names, in that contig's own bp: there is
-  // no ruler on this side to make a cumBp against
-  mateStarts: Float64Array
-  mateEnds: Float64Array
+  // no ruler on this side to make a cumBp against. ArrayLike because the
+  // culled lane hands the feature table's own uint32 lanes here.
+  mateStarts: ArrayLike<number>
+  mateEnds: ArrayLike<number>
 }
 
 // A collector rather than a second pass, so a whole-genome PAF does not hold

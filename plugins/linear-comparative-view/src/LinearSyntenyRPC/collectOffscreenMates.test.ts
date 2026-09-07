@@ -34,8 +34,8 @@ test('keeps the mate coordinates, in the mate contig own bp', () => {
   const c = createOffscreenMateCollector(index)
   c.add('chr1', 100, 200, 'grapeA', 4000, 4100)
   const out = c.finish()
-  expect([...out.mateStarts]).toEqual([4000])
-  expect([...out.mateEnds]).toEqual([4100])
+  expect(Array.from(out.mateStarts)).toEqual([4000])
+  expect(Array.from(out.mateEnds)).toEqual([4100])
 })
 
 // Same reason `starts`/`ends` are ordered: a PAF row for a reverse-strand
@@ -45,8 +45,8 @@ test('...ordered, whichever way the alignment is spelled', () => {
   const c = createOffscreenMateCollector(index)
   c.add('chr1', 100, 200, 'grapeA', 4100, 4000)
   const out = c.finish()
-  expect([...out.mateStarts]).toEqual([4000])
-  expect([...out.mateEnds]).toEqual([4100])
+  expect(Array.from(out.mateStarts)).toEqual([4000])
+  expect(Array.from(out.mateEnds)).toEqual([4100])
 })
 
 // cumBp is whole-view cumulative, so the second region's coordinates sit past

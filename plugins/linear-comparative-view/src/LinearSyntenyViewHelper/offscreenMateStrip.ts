@@ -16,8 +16,7 @@ import type {
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { OffscreenMateMode } from '../LinearSyntenyView/offscreenMateModes.ts'
-import type { MarkColorSource } from './offscreenMateMarkColors.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { MarkColorDisplay } from './offscreenMateMarkColors.ts'
 
 export interface OffscreenMateStrip extends OffscreenMateLane {
   // the row a click on one of these marks navigates: the one not displaying
@@ -27,19 +26,17 @@ export interface OffscreenMateStrip extends OffscreenMateLane {
 
 // The structural slice the overlay, the hit tests and the SVG export read, so
 // where a mark lands is checkable without a canvas
-export interface OffscreenMateSource extends MarkColorSource {
+export interface OffscreenMateSource {
   level: number
   height: number
-  linearSyntenyDisplays: {
+  linearSyntenyDisplays: (MarkColorDisplay & {
     featureData?: {
       offscreenMates: OffscreenMateData
       targetOffscreenMates?: OffscreenMateData
       targetQueried?: boolean
     }
     culledRibbonMates?: CulledRibbonMates
-    effectiveColorBy?: SyntenyColorBy
-    paintedChromosomeOrder?: readonly string[]
-  }[]
+  })[]
   parentView: {
     offscreenMateMode: OffscreenMateMode
     minAlignmentLength: number
@@ -132,7 +129,10 @@ export function offscreenMateStrips(
             minAlignmentLength,
             side,
             navRow,
-            markColorFor: offscreenMateMarkColorFor(model, side),
+            markColorFor: offscreenMateMarkColorFor(
+              model.linearSyntenyDisplays,
+              side,
+            ),
             width,
             height,
           },

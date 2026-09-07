@@ -8,12 +8,10 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 const ORDER = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7']
 
 function level(...modes: SyntenyColorBy[]) {
-  return {
-    linearSyntenyDisplays: modes.map(effectiveColorBy => ({
-      effectiveColorBy,
-      paintedChromosomeOrder: ORDER,
-    })),
-  }
+  return modes.map(effectiveColorBy => ({
+    effectiveColorBy,
+    paintedChromosomeOrder: ORDER,
+  }))
 }
 
 // A top-strip mark sits on the query row and names a TARGET contig, so it is

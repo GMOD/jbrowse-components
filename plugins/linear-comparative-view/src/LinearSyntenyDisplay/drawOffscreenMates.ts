@@ -60,12 +60,7 @@ export interface MateBand {
 // Without `mateAxis` every entry is a mark: the worker found no place on the
 // facing axis for it. With it the entry has a place, and whether it is a mark
 // depends on where the facing row currently sits (`culledRibbonMates`).
-export interface OffscreenMateDataset extends Omit<
-  OffscreenMateData,
-  'mateStarts' | 'mateEnds'
-> {
-  mateStarts: ArrayLike<number>
-  mateEnds: ArrayLike<number>
+export interface OffscreenMateDataset extends OffscreenMateData {
   mateAxis?: MateAxisPlacement
 }
 
@@ -176,10 +171,16 @@ function stripGeometry({
 // read, since reading that sentinel as a position would call it hidden.
 function forEachMark(
   lane: OffscreenMateLane,
-  visit: (data: OffscreenMateDataset, i: number, x: number, w: number) => void,
+  visit: (
+    data: OffscreenMateDataset,
+    datasetIndex: number,
+    i: number,
+    x: number,
+    w: number,
+  ) => void,
 ) {
   const { bpPerPx, offsetPx, width, minAlignmentLength, mateBand } = lane
-  for (const data of lane.datasets) {
+  for (const [d, data] of lane.datasets.entries()) {
     const { starts, ends, lengths, mateAxis } = data
     for (let i = 0; i < starts.length; i++) {
       const x1 = starts[i]! / bpPerPx - offsetPx
@@ -190,7 +191,7 @@ function forEachMark(
         x1 <= width &&
         !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))
       ) {
-        visit(data, i, x1, Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1))
+        visit(data, d, i, x1, Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1))
       }
     }
   }
@@ -219,7 +220,7 @@ export function offscreenMateAt(
     return undefined
   }
   let hit: OffscreenMateMark | undefined
-  forEachMark(lane, (data, i, mx, w) => {
+  forEachMark(lane, (data, _d, i, mx, w) => {
     if (x >= mx && x <= mx + w) {
       hit = {
         refName: offscreenMateRefName(data, i),
@@ -261,7 +262,7 @@ export function offscreenMateSpanAt(
   const spans = new Map<string, OffscreenMateLocus>()
   const drawn = new Map<string, OffscreenMateLocus>()
   let top: string | undefined
-  forEachMark(lane, (data, i, mx, w) => {
+  forEachMark(lane, (data, _d, i, mx, w) => {
     if (x >= mx && x <= mx + w) {
       const refName = offscreenMateRefName(data, i)
       top = refName
@@ -292,15 +293,17 @@ function extendSpan(
   }
 }
 
-// One lane's marks as parallel arrays: an object per mark was the repaint's
-// dominant cost (`agent-docs/measurements/offscreen-mate-overlay.json`)
+// One lane's marks as parallel arrays. Nothing per mark is an object or a
+// string: the contig is reached through the dataset's dictionary id, and the
+// two readers below resolve a name once per contig rather than once per mark.
 interface LaneMarks {
   lane: OffscreenMateLane
   strip: StripGeometry
   count: number
   xs: Float64Array
   widths: Float64Array
-  refNames: string[]
+  dataset: Uint32Array
+  entry: Uint32Array
 }
 
 function laneMarks(lane: OffscreenMateLane): LaneMarks | undefined {
@@ -314,15 +317,53 @@ function laneMarks(lane: OffscreenMateLane): LaneMarks | undefined {
   }
   const xs = new Float64Array(capacity)
   const widths = new Float64Array(capacity)
-  const refNames: string[] = []
+  const dataset = new Uint32Array(capacity)
+  const entry = new Uint32Array(capacity)
   let count = 0
-  forEachMark(lane, (data, i, x, w) => {
+  forEachMark(lane, (_data, d, i, x, w) => {
     xs[count] = x
     widths[count] = w
-    refNames.push(offscreenMateRefName(data, i))
+    dataset[count] = d
+    entry[count] = i
     count++
   })
-  return { lane, strip, count, xs, widths, refNames }
+  return { lane, strip, count, xs, widths, dataset, entry }
+}
+
+// The marks of a lane grouped by a key resolved once per contig: group
+// membership is an integer read per mark, and `keyFor` runs once per
+// (dataset, contig id), which is what keeps a 250k-mark repaint off the
+// string path.
+function groupMarks<K>(
+  { lane, count, dataset, entry }: LaneMarks,
+  keyFor: (refName: string) => K,
+) {
+  const groups: { key: K; refName: string; marks: number[] }[] = []
+  const groupByKey = new Map<K, number>()
+  const groupById = lane.datasets.map(d =>
+    new Int32Array(d.mateRefNameDict.length).fill(-1),
+  )
+  for (let i = 0; i < count; i++) {
+    const d = dataset[i]!
+    const data = lane.datasets[d]!
+    const id = data.mateRefNameIds[entry[i]!]!
+    let g = groupById[d]![id]!
+    if (g === -1) {
+      const refName = data.mateRefNameDict[id]!
+      const key = keyFor(refName)
+      const known = groupByKey.get(key)
+      if (known === undefined) {
+        g = groups.length
+        groups.push({ key, refName, marks: [] })
+        groupByKey.set(key, g)
+      } else {
+        g = known
+      }
+      groupById[d]![id] = g
+    }
+    groups[g]!.marks.push(i)
+  }
+  return groups
 }
 
 interface LabelRun {
@@ -334,36 +375,44 @@ interface LabelRun {
 
 // Each contig's marks joined where they sit closer than a reader could tell
 // apart, so a block of anchors is one label and a contig in two separate
-// places is still named twice
-function labelRuns(
-  { count, xs, widths, refNames }: LaneMarks,
-  measure: (text: string) => number,
-): LabelRun[] {
-  const byContig = new Map<string, number[]>()
-  for (let i = 0; i < count; i++) {
-    const refName = refNames[i]!
-    let list = byContig.get(refName)
-    if (!list) {
-      list = []
-      byContig.set(refName, list)
-    }
-    list.push(i)
-  }
+// places is still named twice.
+//
+// Marks are visited by pixel column rather than sorted by x: a column holds
+// the leftmost x and rightmost end of the marks that start in it, and walking
+// the touched columns in order makes the same merge decisions a sort would,
+// since every mark in a column is within a pixel of the first and the merge
+// gap is never under one.
+function labelRuns(marks: LaneMarks, measure: (text: string) => number) {
+  const { lane, xs, widths } = marks
+  const { width } = lane
+  const colX = new Float64Array(width + 1).fill(Infinity)
+  const colEnd = new Float64Array(width + 1).fill(-Infinity)
   const runs: LabelRun[] = []
-  for (const [refName, list] of byContig) {
-    const textWidth = measure(refName)
-    const mergeGap = textWidth * LABEL_MERGE_GAP_LABELS
-    list.sort((a, b) => xs[a]! - xs[b]!)
-    let run: LabelRun | undefined
+  for (const { refName, marks: list } of groupMarks(marks, name => name)) {
+    const touched: number[] = []
     for (const i of list) {
       const x = xs[i]!
-      const end = x + widths[i]!
+      const c = Math.min(width, Math.max(0, Math.floor(x)))
+      if (colX[c] === Infinity) {
+        touched.push(c)
+      }
+      colX[c] = Math.min(colX[c]!, x)
+      colEnd[c] = Math.max(colEnd[c]!, x + widths[i]!)
+    }
+    const textWidth = measure(refName)
+    const mergeGap = textWidth * LABEL_MERGE_GAP_LABELS
+    let run: LabelRun | undefined
+    for (const c of Int32Array.from(touched).sort()) {
+      const x = colX[c]!
+      const end = colEnd[c]!
       if (run && x - run.end <= mergeGap) {
         run.end = Math.max(run.end, end)
       } else {
         run = { refName, x, end, textWidth }
         runs.push(run)
       }
+      colX[c] = Infinity
+      colEnd[c] = -Infinity
     }
   }
   return runs
@@ -460,26 +509,38 @@ function placeLabels(
 // One path per color rather than a fill per mark: the color carries alpha, so
 // marks filled separately composite against each other and a dense strip
 // saturates to a solid bar. Marks of different colors do composite, which is
-// honest.
+// honest. An uncolored lane, the common one, is rected straight from its
+// arrays with no grouping at all.
 function fillMarks(ctx: Ctx2D, marks: LaneMarks[], markColor: string) {
-  const byColor = new Map<string, { marks: LaneMarks; i: number }[]>()
-  for (const lane of marks) {
-    const colorFor = lane.lane.markColorFor
-    for (let i = 0; i < lane.count; i++) {
-      const color = colorFor ? colorFor(lane.refNames[i]!) : markColor
-      let group = byColor.get(color)
+  const byColor = new Map<string, { marks: LaneMarks; list?: number[] }[]>()
+  for (const m of marks) {
+    const colorFor = m.lane.markColorFor
+    const groups = colorFor
+      ? groupMarks(m, colorFor).map(g => ({ key: g.key, list: g.marks }))
+      : [{ key: markColor, list: undefined }]
+    for (const { key, list } of groups) {
+      let group = byColor.get(key)
       if (!group) {
         group = []
-        byColor.set(color, group)
+        byColor.set(key, group)
       }
-      group.push({ marks: lane, i })
+      group.push({ marks: m, list })
     }
   }
   for (const [fillStyle, group] of byColor) {
     ctx.fillStyle = fillStyle
     ctx.beginPath()
-    for (const { marks: m, i } of group) {
-      ctx.rect(m.xs[i]!, m.strip.markY, m.widths[i]!, m.strip.markHeight)
+    for (const { marks: m, list } of group) {
+      const { xs, widths, strip, count } = m
+      if (list) {
+        for (const i of list) {
+          ctx.rect(xs[i]!, strip.markY, widths[i]!, strip.markHeight)
+        }
+      } else {
+        for (let i = 0; i < count; i++) {
+          ctx.rect(xs[i]!, strip.markY, widths[i]!, strip.markHeight)
+        }
+      }
     }
     ctx.fill()
   }
