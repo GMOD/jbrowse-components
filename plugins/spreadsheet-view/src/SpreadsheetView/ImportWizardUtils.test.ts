@@ -1,4 +1,8 @@
-import { detectFileType, getFileSourceName } from './ImportWizard.ts'
+import {
+  detectFileType,
+  getFileSourceName,
+  sniffFileType,
+} from './ImportWizard.ts'
 
 import type { FileLocation } from '@jbrowse/core/util'
 
@@ -21,6 +25,17 @@ describe('detectFileType', () => {
 
   test('detects STAR-Fusion', () => {
     expect(detectFileType('foo.star-fusion')).toBe('STAR-Fusion')
+    expect(detectFileType('K562.star-fusion.tsv')).toBe('STAR-Fusion')
+    expect(detectFileType('star-fusion.fusion_predictions.abridged.tsv')).toBe(
+      'STAR-Fusion',
+    )
+    expect(detectFileType('https://x/y/StarFusion_out.tsv?sig=1')).toBe(
+      'STAR-Fusion',
+    )
+  })
+
+  test('an extension the list knows wins over a STAR-Fusion-looking name', () => {
+    expect(detectFileType('fusion_predictions.bedpe')).toBe('BEDPE')
   })
 
   test('returns undefined for unrecognized extensions', () => {
@@ -57,5 +72,26 @@ describe('getFileSourceName', () => {
       locationType: 'LocalPathLocation',
     } as FileLocation
     expect(getFileSourceName(loc)).toBe('/path/to/file.vcf')
+  })
+})
+
+describe('sniffFileType', () => {
+  const enc = (s: string) => new TextEncoder().encode(s)
+
+  test('reads a STAR-Fusion header off the first line', () => {
+    expect(
+      sniffFileType(enc('#FusionName\tJunctionReadCount\tLeftBreakpoint\n')),
+    ).toBe('STAR-Fusion')
+    expect(sniffFileType(enc('FusionName\tLeftBreakpoint\nA--B\t...'))).toBe(
+      'STAR-Fusion',
+    )
+  })
+
+  test('says nothing about a file it does not recognise', () => {
+    expect(sniffFileType(enc('##fileformat=VCFv4.2\n#CHROM\tPOS\n'))).toBe(
+      undefined,
+    )
+    expect(sniffFileType(enc('chr1\t100\t200\n'))).toBe(undefined)
+    expect(sniffFileType(enc(''))).toBe(undefined)
   })
 })

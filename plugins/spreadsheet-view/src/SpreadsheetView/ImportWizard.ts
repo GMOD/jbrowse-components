@@ -98,12 +98,33 @@ export function getFileSourceName(src: FileLocation): string | undefined {
 // to the end: a presigned URL (`.../calls.bed?X-Amz-Signature=...`) matched
 // nothing, so an "open file from URL" of anything but a VCF silently kept the
 // VCF default and parsed the file as the wrong format
+//
+// STAR-Fusion output is a `.tsv`, so its extension says nothing; the tool's own
+// filenames (`star-fusion.fusion_predictions.abridged.tsv`, and the DepMap
+// export spelled `K562.star-fusion.tsv`) are what name it.
+const starFusionNameRegexp = /star[-_]?fusion|fusion_predictions/i
+
 export function detectFileType(
   name: string,
 ): (typeof fileTypes)[number] | undefined {
   const path = name.split(/[?#]/)[0]!
   const match = fileTypesRegexp.exec(path)?.[1]?.toLowerCase()
-  return match ? fileTypes.find(t => t.toLowerCase() === match) : undefined
+  const byExtension = match
+    ? fileTypes.find(t => t.toLowerCase() === match)
+    : undefined
+  return byExtension === undefined && starFusionNameRegexp.test(path)
+    ? 'STAR-Fusion'
+    : byExtension
+}
+
+// The header line says what the file is when the name could not: STAR-Fusion
+// leads with `#FusionName`, whatever the file was renamed to.
+export function sniffFileType(
+  data: Uint8Array,
+): (typeof fileTypes)[number] | undefined {
+  const head = new TextDecoder().decode(data.subarray(0, 4096))
+  const firstLine = head.split('\n')[0]!
+  return /^#?FusionName\t/.test(firstLine) ? 'STAR-Fusion' : undefined
 }
 
 /**
@@ -381,7 +402,6 @@ export default function stateModelFactory() {
           // import failure, rather than as a snackbar from loadSpreadsheet.
           self.setLoading(true)
           try {
-            const typeParser = await fileTypeParsers[self.fileType]()
             // every await here is a place the user can close the view, and
             // every write past one lands on a node MST has torn down. Under the
             // default livelinessChecking that does not throw — it logs three
@@ -415,6 +435,17 @@ export default function stateModelFactory() {
                 self.setCachedFileLocation(src)
               }
               const data = await fetchAndMaybeUnzip(filehandle)
+              if (!isAlive(self)) {
+                return undefined
+              }
+              const sniffed = sniffFileType(data)
+              if (sniffed !== undefined && sniffed !== self.fileType) {
+                self.setFileType(sniffed)
+              }
+              const typeParser = await fileTypeParsers[self.fileType]()
+              if (!isAlive(self)) {
+                return undefined
+              }
               result = {
                 ...typeParser(data),
                 assemblyName,

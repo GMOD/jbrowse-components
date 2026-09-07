@@ -20,9 +20,11 @@ The following formats are supported:
 - BED, BEDPE
 - STAR-fusion result file
 
-The import form cannot infer STAR-Fusion from a `.tsv` extension, so that one
-needs its File Type set by hand; [](/docs/tutorials/k562_fusions) walks a
-caller's output through the inspector and out to the reads behind each call.
+A STAR-Fusion table is a `.tsv`, so the import form reads its File Type off the
+filename (`star-fusion`, `fusion_predictions`) or the `#FusionName` header line,
+and the menu sets it by hand for a file named some other way;
+[](/docs/tutorials/k562_fusions) walks a caller's output through the inspector
+and out to the reads behind each call.
 
 ## Record types and compatible callers
 
