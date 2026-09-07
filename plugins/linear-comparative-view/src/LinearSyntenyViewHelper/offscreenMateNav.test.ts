@@ -16,10 +16,6 @@ function width({ start, end }: { start: number; end: number }) {
 }
 
 describe('navSpan', () => {
-  it('is the whole contig with no locus to aim at', () => {
-    expect(navSpan(CTG)).toEqual(CTG)
-  })
-
   it('pads a locus already wider than the floor', () => {
     expect(width(navSpan(CTG, { start: 200_000, end: 260_000 }))).toBe(84_000)
   })

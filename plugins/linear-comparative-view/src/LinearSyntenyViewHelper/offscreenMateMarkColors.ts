@@ -6,44 +6,23 @@ import { MARK_ALPHA } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
-// What a lane needs to know about the ribbons drawn beside it. Declared rather
-// than taken off the model so a test can drive this with two fields instead of
-// a level: the display model it would otherwise name imports this package's
-// view, which is the cycle `parentViewDuck.ts` exists to keep cut.
+// Declared rather than taken off the display model, which would import this
+// package's view: the cycle `parentViewDuck.ts` keeps cut
 export interface MarkColorSource {
   linearSyntenyDisplays: {
-    // the mode this display actually paints with, 'reference' already resolved
-    // to the axis it means for this level
+    // the mode this display paints with, 'reference' already resolved
     effectiveColorBy?: SyntenyColorBy
-    // that mode's chromosome order, which is the facing row's assembly for
-    // 'target' and this row's for 'query'
     paintedChromosomeOrder?: readonly string[]
   }[]
 }
 
-// A mark hangs off the axis it HAS and names a contig on the axis it does not:
-// a top-strip mark sits on the query row and names a target contig, and the
-// bottom strip is the mirror.
+// a top-strip mark sits on the query row and names a target contig
 const NAMED_AXIS = { top: 'target', bottom: 'query' } as const
 
-/**
- * The color a lane paints its marks, or undefined to leave them the band's grey.
- *
- * COLORED ONLY WHEN THE RIBBONS ARE KEYED THE SAME WAY, which is the whole
- * point rather than a caution. A mark says "this alignment goes to chr7, which
- * you are not showing"; painting it chr7's color says it in the same language
- * the ribbons are already speaking, so a reader watching a followed row move can
- * see that ribbons did not vanish, they became marks. Against a level painting
- * by identity or strand the same palette would be a key the reader has no way to
- * read — a green mark next to a green ribbon, meaning nothing in common — and
- * against a level painting by the axis the mark SITS on rather than the one it
- * names, it is the same palette keyed to the other genome, which is worse than
- * grey because it looks like it matches.
- *
- * All displays on the level or none: the strip is one object across them, and a
- * band whose marks were colored for one track and grey for its neighbour reads
- * as two kinds of mark.
- */
+// Marks are colored by the contig they name only when every display on the
+// level keys its ribbons by that same axis, so the mark speaks the language
+// the ribbons already speak. Against any other palette the same color would
+// be a key the reader cannot read, or worse, one that looks like it matches.
 export function offscreenMateMarkColorFor(
   model: MarkColorSource,
   side: OffscreenMateSide,
@@ -52,9 +31,7 @@ export function offscreenMateMarkColorFor(
   const axis = NAMED_AXIS[side]
   const keyed =
     displays.length > 0 && displays.every(d => d.effectiveColorBy === axis)
-  // Memoized because the draw asks once per MARK and there are thousands of
-  // them, while `nameColorCss` scans the assembly's refName list — which on a
-  // scaffold-heavy assembly is the same list, thousands long, every time.
+  // asked once per mark, and `nameColorCss` scans the assembly's refName list
   const cache = new Map<string, string>()
   const nameOrder = displays[0]?.paintedChromosomeOrder
   return keyed

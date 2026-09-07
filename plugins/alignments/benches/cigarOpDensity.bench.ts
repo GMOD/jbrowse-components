@@ -69,7 +69,7 @@
 // same `best[ref]` slots. Only the scan differs, and the scan is the minority of
 // the phase — which is why removing 99.99% of the op iterations moves the total by
 // about 5%. The same conclusion as this repo's `stackBar` scratch-array entry in
-// agent-docs/rejected-ideas/, arrived at on a different path: what scales here is per-call
+// agent-docs/architecture-decision-records/, arrived at on a different path: what scales here is per-call
 // work, and a shape that only changes the traversal has a low ceiling.
 //
 // So the cursor walk is worth ~1.1-1.18x and that is the whole of it, at any op

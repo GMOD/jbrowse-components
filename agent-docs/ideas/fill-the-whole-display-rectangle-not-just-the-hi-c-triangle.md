@@ -1,6 +1,6 @@
 ---
 name: fill-the-whole-display-rectangle-not-just-the-hi-c-triangle
-description: The hi-C display's two bottom corners want contacts half a visible span past the edge, so filling the box means a 2x fetch window against today's 1.5x — and the cost is already measured at 609,913 vertices against the visible span's 318,024, i.e. 60 fps to ~37 while panning on WebGL2. That makes it the direct opposite of agent-docs/rejected-ideas/' parked *smaller* fetch quantum: whichever is built kills the other. The call underneath is what y means once the apex stops bounding it.
+description: The hi-C display's two bottom corners want contacts half a visible span past the edge, so filling the box means a 2x fetch window against today's 1.5x — and the cost is already measured at 609,913 vertices against the visible span's 318,024, i.e. 60 fps to ~37 while panning on WebGL2. That makes it the direct opposite of agent-docs/architecture-decision-records/' parked *smaller* fetch quantum: whichever is built kills the other. The call underneath is what y means once the apex stops bounding it.
 ---
 
 # Fill the whole display rectangle, not just the hi-C triangle
@@ -23,8 +23,8 @@ fetch window of 2x the visible span against today's static blocks at ~1.5x.
 culled: the triangle apex and `yScalar` already bound it"), and the GPU path
 lets the rasterizer discard — so every fetched contact landing in the rectangle
 is drawn, and the buffered fetch already puts some of the corner population
-there. Those are the same contacts measured as vertex cost in
-[a-finer-fetch-quantum-for-hi-c-s-buffered-static](../rejected-ideas/a-finer-fetch-quantum-for-hi-c-s-buffered-static.md): 609,913 against the visible
+there. Those are the same contacts measured as vertex cost when a finer
+fetch quantum was declined: 609,913 against the visible
 span's 318,024 at a 50 Mb span on a deep map, which is vsync on WebGPU and
 27 ms — 60 fps to ~37 while panning — on the WebGL2 rung. That is the closest
 thing to a price tag this idea has, and it makes that entry's parked lever (a

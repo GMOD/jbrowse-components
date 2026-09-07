@@ -166,7 +166,7 @@ export async function renderToSvg(
                 rendering={renderings[i]!}
                 offscreenMates={
                   <SVGOffscreenMates
-                    level={level}
+                    strips={level.offscreenMateStrips}
                     width={width}
                     height={level.height}
                     groundColor={level.groundColor}

@@ -452,7 +452,7 @@ touching either path, preserve whichever of these the display uses:
   entry is free to be a shim calling two functions, or one call with a different
   sixth argument. What a shared list buys is that a layer cannot exist in one
   backend and not the other — and that gap costs correctness, since the missing
-  half is also the SVG export. agent-docs/rejected-ideas/ has the decline and its
+  half is also the SVG export. agent-docs/architecture-decision-records/ has the decline and its
   overturn.
 
   **A pass that is drawn but never uploaded fails silently and on the GPU
@@ -1669,7 +1669,7 @@ a table — was declined 2026-06 and has since been overturned for both of those
 bands, which is a narrower thing than a frame graph and worth not confusing with
 one: a shared list of layer ids carrying z-order and gates, plus a
 `Record<LayerId, …>` per backend. No dependencies between passes, no targets, no
-scheduling. See agent-docs/rejected-ideas/ for what the decline got wrong and what of it
+scheduling. See agent-docs/architecture-decision-records/ for what the decline got wrong and what of it
 survives.
 
 **Indirect drawing (`drawIndirect`).** Indirect draws exist to remove a CPU
@@ -1687,7 +1687,7 @@ and this entry is the one to reopen for that pass. Nothing is on that path (see
 declined twice: for dotplot (quads are a few px, so the rasterizer discards them
 about as cheaply as a vertex test would) and for hi-C contacts by distance from
 the diagonal (2026-08-13). Synteny's `isCulled` is the case that *does* earn its
-place, because its quads span the track. Both declines are in agent-docs/rejected-ideas/
+place, because its quads span the track. Both declines are in agent-docs/architecture-decision-records/
 with their numbers.
 
 **Storage buffers (SSBO) in the render path.** Every render pass feeds

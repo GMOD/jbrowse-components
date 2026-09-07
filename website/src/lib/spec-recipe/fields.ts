@@ -1617,29 +1617,13 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  // One control over two properties, so both fields point at the same submenu
-  // and differ only in which step they name. The per-contig numbers are on the marks
-  // themselves — hover one and it names the contig and how many alignments on
-  // this band go there — rather than on the control that turns them on.
-  showOffscreenMates: (value, { viewType }) => {
+  offscreenMateMode: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Off-screen mates')
-    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
+    const label = typeof value === 'string' ? OFFSCREEN_MATE_STEPS[value] : undefined
+    return label && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} → ${OFFSCREEN_MATE_STEPS[value ? 'query' : 'off']}`,
-          note: 'On by default. A locus syntenic to a contig the facing row is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
-        }
-      : undefined
-  },
-  // The one setting here that changes what is FETCHED rather than what is drawn,
-  // which is why it is the last step of the same submenu rather than a control
-  // of its own: what a reader picks there is how hard to look, and only this step
-  // costs a query.
-  bidirectionalFetch: (value, { viewType }) => {
-    const path = settingsPath(viewType, 'Off-screen mates')
-    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
-      ? {
-          path: `${path} → ${OFFSCREEN_MATE_STEPS[value ? 'both' : 'query']}`,
-          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair, and it is the only thing that puts a strip along the bottom edge: a mark down there stands for an alignment the upper row has scrolled off, and one query holds only the part of that inside its pan buffer, so the strip would stop at the edge of the fetch rather than at the edge of the data.',
+          path: `${path} → ${label}`,
+          note: "'query' is the default: a locus syntenic to a contig the facing panel is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing. 'both' is the one step that changes what is fetched, a second query per panel pair from the lower panel, and the only thing that puts a strip along the bottom edge.",
         }
       : undefined
   },

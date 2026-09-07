@@ -580,8 +580,7 @@ where the next attempt starts.
   a new coarse window covers different data, so the stats genuinely change — so
   what is left is staggering it or making the repaint cheaper
   ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md),
-  and the suppression direction is closed in
-  [rejected-ideas/](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/rejected-ideas/README.md)).
+  and the suppression direction is closed in the declined ideas).
 - **One track's parse is single-threaded.** Worker assignment is sticky per
   adapter, which is what makes the inflate pool worth having and is also a
   ceiling.

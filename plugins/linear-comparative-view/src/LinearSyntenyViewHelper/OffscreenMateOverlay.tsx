@@ -5,72 +5,30 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
-/**
- * The alignments this level cannot draw a ribbon for, marked on the query axis.
- *
- * ITS OWN CANVAS, over the level's. The level's canvas belongs to the rendering
- * backend and may be a WebGPU or WebGL surface, and a canvas has one context
- * type — so there is no "draw a few boxes afterwards" on it. Stacking a 2D
- * canvas is what a non-instance element costs, and it is cheap: these are
- * thousands of rects, not the millions the instance path exists for.
- *
- * NO MARKS, NO CANVAS, and the setting going ON by default is what made that
- * load-bearing rather than tidy: mounted unconditionally this is a band-sized
- * DPR-scaled backing store on every level of every synteny view, for a strip
- * that is empty in all the ones hiding nothing. The SVG export is gated the
- * same way.
- *
- * ONE CALL FOR BOTH STRIPS, not one per strip: the band is the drawing unit.
- * Its two strips share a fill and, more to the point, share the vertical room
- * their labels stack into — drawn a strip at a time they overprinted each other
- * on any band short enough for the two to meet (`placeLabels`).
- *
- * `OverlayCanvas` rather than a `<canvas>` of its own, which is what this was
- * and is what got it wrong: a canvas is a REPLACED element, so `inset: 0` does
- * not stretch it the way it stretches a div — with no CSS width it takes its
- * intrinsic size, which `prepareCanvas` has just set to the DPR-scaled backing
- * store. On a retina display that is twice the band, so every mark and label
- * drew at twice its x and the right half of the level fell off the edge. It
- * looked plausible: a strip of marks spanning the axis, just the wrong marks.
- *
- * `pointerEvents: none`, so every hit test still reaches the level's canvas
- * underneath. A mark IS clickable, and that hit test lives in the level's own
- * pointer handlers (`offscreenMateHit`) rather than here: two hit paths over one
- * band is how a click comes to mean different things depending on which element
- * received it. That also means the pointer used the level's geometry while the
- * paint used the overlay's, so the bug above put the mark a reader saw and the
- * mark their click resolved in different places.
- *
- * The SVG export runs the same draw through `SVGOffscreenMates`, sized from the
- * export's own width rather than from a canvas, so it was right throughout.
- */
+// A 2D canvas over the level's, which may be a WebGPU or WebGL surface. Both
+// strips go in one draw, since their labels share the band's vertical room.
+// Mounted only with something to mark: the setting is on by default, and an
+// empty band-sized backing store on every level is what that would otherwise
+// cost. `pointerEvents: none`, so the hit test stays with the level's own
+// handlers and one band has one hit path.
 const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   model,
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
   const colors = offscreenMateColors(model.groundColor)
-  const width = model.parentView.width
-  const height = model.height
-  // read here rather than inside the draw: this is an observer, so what the
-  // component reads while rendering is what re-renders it, and the draw closure
-  // then changes identity exactly when the marks do
-  const strips = offscreenMateStrips(model)
-
-  // ONE CANVAS FOR BOTH STRIPS, not one each: they are two edges of one band,
-  // and a second stacked canvas would be a second DPR-scaled backing store for
-  // a few pixels of marks.
+  const { width } = model.parentView
+  const { height, offscreenMateStrips: strips } = model
   return strips.length > 0 ? (
     <OverlayCanvas
       data-testid="offscreen_mate_overlay"
       width={width}
       height={height}
       draw={ctx => {
-        drawOffscreenMates(ctx, strips, { width, height, ...colors })
+        drawOffscreenMates(ctx, strips, colors)
       }}
     />
   ) : null

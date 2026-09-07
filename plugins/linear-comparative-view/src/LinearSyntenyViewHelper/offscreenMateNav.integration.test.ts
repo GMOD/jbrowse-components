@@ -57,6 +57,25 @@ async function setup() {
   return { session, view, level: view.levels[0]! }
 }
 
+// A clicked mark as the level's pointer handler resolves it. The side is what
+// the tooltip reads and does not steer the navigation; the row does.
+function mark(
+  refName: string,
+  navRow: number,
+  span: {
+    locus?: { start: number; end: number }
+    mateCumBp?: { start: number; end: number }
+  } = {},
+) {
+  return {
+    refName,
+    navRow,
+    side: 'top' as const,
+    locus: span.locus ?? { start: 200_000, end: 201_000 },
+    mateCumBp: span.mateCumBp,
+  }
+}
+
 function refNames(view: LinearSyntenyViewModel, row: number) {
   return view.views[row]!.displayedRegions.map(r => r.refName)
 }
@@ -64,7 +83,7 @@ function refNames(view: LinearSyntenyViewModel, row: number) {
 test('a mark ADDS its contig to the row below the level', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1)
+  level.showOffscreenMateContig(mark('ctgB', level.level + 1))
   await when(() => refNames(view, 1).join(',') === 'ctgA,ctgB', {
     timeout: 5000,
   })
@@ -82,7 +101,7 @@ test('a mark ADDS its contig to the row below the level', async () => {
 test('...and keeps everything that row was already showing', async () => {
   const { session, view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1)
+  level.showOffscreenMateContig(mark('ctgB', level.level + 1))
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
@@ -97,7 +116,7 @@ test('...and keeps everything that row was already showing', async () => {
 test('...at the end, leaving the regions before it where they were', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1)
+  level.showOffscreenMateContig(mark('ctgB', level.level + 1))
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   const [first] = view.views[1]!.displayedRegions
@@ -111,9 +130,9 @@ test('...at the end, leaving the regions before it where they were', async () =>
 test('...and does not add the same contig twice', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1)
+  level.showOffscreenMateContig(mark('ctgB', level.level + 1))
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
-  level.showOffscreenMateContig('ctgB', level.level + 1)
+  level.showOffscreenMateContig(mark('ctgB', level.level + 1))
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
@@ -126,10 +145,12 @@ test('...and does not add the same contig twice', async () => {
 test('the scrolling click does not ask', async () => {
   const { session, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -144,7 +165,7 @@ test('the scrolling click does not ask', async () => {
 test('a target-axis mark shows its contig on the row above the level', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level)
+  level.showOffscreenMateContig(mark('ctgB', level.level))
   await when(() => refNames(view, 0).includes('ctgB'), { timeout: 5000 })
 
   expect(refNames(view, 0)).toEqual(['ctgA', 'ctgB'])
@@ -163,7 +184,7 @@ test('a target-axis mark shows its contig on the row above the level', async () 
 test('a contig the row cannot resolve is reported, not thrown', async () => {
   const { session, view, level } = await setup()
 
-  level.showOffscreenMateContig('nope', level.level + 1)
+  level.showOffscreenMateContig(mark('nope', level.level + 1))
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.message).toContain('nope')
@@ -178,7 +199,7 @@ test('a contig the row cannot resolve is reported, not thrown', async () => {
 test('a partial mate name is reported, and opens no picker', async () => {
   const { session, view, level } = await setup()
 
-  level.showOffscreenMateContig('ctg', level.level + 1)
+  level.showOffscreenMateContig(mark('ctg', level.level + 1))
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA'])
@@ -192,9 +213,11 @@ test('a partial mate name is reported, and opens no picker', async () => {
 test('a mark with a mate locus shows that locus, not the whole contig', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', level.level + 1, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   // the row DISPLAYS the whole contig, having gained it — so what has to be
@@ -211,9 +234,11 @@ test('a mark with a mate locus shows that locus, not the whole contig', async ()
 test('a locus narrower than the floor is widened around itself', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', level.level + 1, {
-    locus: { start: 200_000, end: 200_500 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', level.level + 1, {
+      locus: { start: 200_000, end: 200_500 },
+    }),
+  )
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
@@ -230,9 +255,11 @@ test('the navigation offers an undo that restores what the row was showing', asy
   const { session, view, level } = await setup()
   const before = view.views[1]!.bpPerPx
 
-  level.showOffscreenMateContig('ctgB', level.level + 1, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', level.level + 1, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   const [action] = session.snackbarMessages[0]!.actions!
@@ -260,9 +287,11 @@ test('with the follow off, the undo leaves the anchor row alone', async () => {
   // row 1, which is not the anchor — so an undo that wrote the anchor back
   // unconditionally would have to write something, and the only thing it had
   // was the row it just navigated
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   view.setFollowAnchorIndex(1)
@@ -281,9 +310,11 @@ test('with the follow on, the undo gives back the anchor the click took', async 
   view.setRowSyncMode('follow')
   view.setFollowAnchorIndex(1)
 
-  level.showOffscreenMateContig('ctgB', 0, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 0, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   expect(view.followAnchorIndex).toBe(0)
 
@@ -305,9 +336,11 @@ test('a navigation that fails takes no anchor to begin with', async () => {
   view.setRowSyncMode('follow')
   expect(view.followAnchorIndex).toBe(0)
 
-  level.showOffscreenMateContig('nope', 1, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('nope', 1, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('warning')
@@ -335,10 +368,12 @@ const MATE_CENTER_BP = BP + 200_500
 test('a contig the row already displays is scrolled to, not navigated to', async () => {
   const { view, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -363,10 +398,12 @@ const DRAWN_CENTER_BP = BP + 350_000
 test('a scrolling click goes to the drawn span, not the block extent', async () => {
   const { view, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 0, end: BP },
-    mateCumBp: { start: DRAWN_CENTER_BP - 500, end: DRAWN_CENTER_BP + 500 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 0, end: BP },
+      mateCumBp: { start: DRAWN_CENTER_BP - 500, end: DRAWN_CENTER_BP + 500 },
+    }),
+  )
   await when(
     () => row.windowStartBp === DRAWN_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -385,10 +422,12 @@ test('the destination does not move with where the row already is', async () => 
   const { level, row } = await scrollableSetup()
   row.setWindow(40_000, 300_000)
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 0, end: BP },
-    mateCumBp: { start: MATE_CENTER_BP - 500, end: MATE_CENTER_BP + 500 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 0, end: BP },
+      mateCumBp: { start: MATE_CENTER_BP - 500, end: MATE_CENTER_BP + 500 },
+    }),
+  )
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -407,10 +446,12 @@ test('a drawn span that lands on another contig moves nothing', async () => {
   const { level, row } = await scrollableSetup()
   const before = row.windowStartBp
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: 100_000, end: 101_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: 100_000, end: 101_000 },
+    }),
+  )
   await new Promise(resolve => {
     setTimeout(resolve, 500)
   })
@@ -426,10 +467,12 @@ test('a drawn span this row cannot show moves nothing', async () => {
   const { level, row } = await scrollableSetup()
   const before = row.windowStartBp
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: 5_000_000, end: 5_001_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: 5_000_000, end: 5_001_000 },
+    }),
+  )
   await new Promise(resolve => {
     setTimeout(resolve, 500)
   })
@@ -444,10 +487,12 @@ test('a drawn span this row cannot show moves nothing', async () => {
 test('the row travels to it rather than appearing there', async () => {
   const { level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(() => row.windowWidthBp > 40_000, { timeout: 5000 })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
@@ -463,10 +508,12 @@ test('with animation off the row is simply placed there', async () => {
   const { session, level, row } = await scrollableSetup()
   session.setPreferenceOverride('animationMode', 'disabled')
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
 
   expect(row.windowStartBp).toBe(MATE_CENTER_BP - 40_000 / 2)
 })
@@ -481,10 +528,12 @@ test('the flight survives the follow it just became the anchor of', async () => 
   view.setRowSyncMode('follow')
   expect(view.followAnchorIndex).toBe(0)
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -501,10 +550,12 @@ test('the flight survives the follow it just became the anchor of', async () => 
 test('the undo wins against a flight still in the air', async () => {
   const { session, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   await when(() => row.windowStartBp !== 0, { timeout: 5000 })
   const [action] = session.snackbarMessages[0]!.actions!
@@ -525,7 +576,9 @@ test('the undo wins against a flight still in the air', async () => {
 test('a locus at the start of its contig still gets the whole floor', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', 1, { locus: { start: 100, end: 600 } })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 100, end: 600 } }),
+  )
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
@@ -547,9 +600,9 @@ test('a row showing a slice of the contig gains the region the window needs', as
   ])
 
   expect(() => {
-    level.showOffscreenMateContig('ctgB', 1, {
-      locus: { start: 300_000, end: 301_000 },
-    })
+    level.showOffscreenMateContig(
+      mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } }),
+    )
   }).not.toThrow()
 
   // the slice could not reach the window, so the whole contig replaced it —
@@ -566,13 +619,15 @@ test('a row showing a slice of the contig gains the region the window needs', as
 test('...and keeps the region it has when that region reaches the window', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 300_000, end: 301_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } }),
+  )
   await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 100_000, end: 101_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 100_000, end: 101_000 },
+    }),
+  )
 
   expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
 }, 20000)
@@ -589,9 +644,11 @@ test('an aliased region spelling is replaced rather than duplicated', async () =
     { assemblyName: 'volvox2', refName: 'CTGB', start: 0, end: BP },
   ])
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+    }),
+  )
 
   expect(refNames(view, 1)).toEqual(['ctgB'])
   const [visible] = row.dynamicBlocks.contentBlocks
@@ -610,10 +667,12 @@ test('an aliased region spelling still scrolls', async () => {
   ])
   row.setWindow(40_000, 0)
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: 200_000, end: 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: 200_000, end: 201_000 },
+    }),
+  )
   await when(() => row.windowStartBp === 200_500 - row.windowWidthBp / 2, {
     timeout: 5000,
   })
@@ -627,16 +686,20 @@ test('an aliased region spelling still scrolls', async () => {
 test('the snackbar names the position in the same convention as the location box', async () => {
   const { session, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
   )
 
-  expect(session.snackbarMessages[0]!.message).toBe('Showing ctgB:200,501')
+  expect(session.snackbarMessages[0]!.message).toBe(
+    'Showing ctgB:200,001..201,000',
+  )
   expect(row.pxToBp(row.width / 2).coord).toBe(200_501)
 }, 20000)
 
@@ -647,10 +710,12 @@ test('a click that resolves nothing is reported', async () => {
   const { session, level, row } = await scrollableSetup()
   const before = row.windowStartBp
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: 5_000_000, end: 5_001_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: 5_000_000, end: 5_001_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('warning')
@@ -668,10 +733,12 @@ test('the undo puts back every row, not only the clicked one', async () => {
   other.setWindow(40_000, 0)
   const before = { start: other.windowStartBp, width: other.windowWidthBp }
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 200_000, end: 201_000 },
-    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   other.setWindow(80_000, 120_000)
 
@@ -701,10 +768,12 @@ test('a reversed region places the destination the way the row draws it', async 
   ])
   row.setWindow(40_000, 0)
 
-  level.showOffscreenMateContig('ctgB', 1, {
-    locus: { start: 0, end: BP },
-    mateCumBp: { start: 149_500, end: 150_500 },
-  })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 0, end: BP },
+      mateCumBp: { start: 149_500, end: 150_500 },
+    }),
+  )
   await when(() => row.windowStartBp === 150_000 - row.windowWidthBp / 2, {
     timeout: 5000,
   })

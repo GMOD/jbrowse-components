@@ -7,8 +7,8 @@ import { join } from 'node:path'
 // declares inside itself" — its own source says so three times — and it is a
 // published CLI whose single runtime dependency is puppeteer, so it cannot
 // import an app package without inverting the one lib→product edge
-// `workspaceLayering.test.ts` allows. `agent-docs/rejected-ideas/` carries the
-// full reasoning under "Consolidating the three implementations".
+// `workspaceLayering.test.ts` allows, which is why consolidating the three
+// implementations was declined.
 //
 // What they CAN share is the contract: two attribute selectors, published by
 // AppReadyMarker and LoadingOverlay and read by both. Those are plain strings

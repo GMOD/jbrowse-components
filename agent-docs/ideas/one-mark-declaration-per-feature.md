@@ -386,7 +386,7 @@ of nine files into the one place that applies them.
 
 The fold into render-core's shapes was measured the same day and declined:
 the blocker is the shared uniform block thirteen passes read off one write, not
-the geometry. `agent-docs/rejected-ideas/` has the entry.
+the geometry.
 
 ## Where this sits
 
@@ -394,9 +394,8 @@ the geometry. `agent-docs/rejected-ideas/` has the entry.
 `PileupMark` to a second display type was censused and declined 2026-08-29 —
 MAF's cells have no per-instance index space (run-merged GPU encode, arithmetic
 hit test) and variants resolves everything once in the worker so every consumer
-already reads one array set — the member-by-member table is in
-[rejected-ideas/](../rejected-ideas/README.md) §Rendering and
-displays, with the reopen condition.
+already reads one array set — the member-by-member table was
+recorded with the decline.
 
 Last of the render-path simplifications, and incrementally — one alignments
 feature at a time behind the parity suite, because it is the one that touches 46

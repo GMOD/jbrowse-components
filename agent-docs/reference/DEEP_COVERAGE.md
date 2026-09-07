@@ -96,7 +96,7 @@ pairs per window and single-linkage chains them.
 So a support threshold there is a density filter wearing an evidence filter's
 costume, and it gets *more* aggressive exactly where coverage is deepest. The
 insert-size floor is the control for that family; stacking support on top would
-count the same noise twice. See `agent-docs/rejected-ideas/`.
+count the same noise twice.
 
 ## The coverage band's SNP colours: a floor, and a reading
 

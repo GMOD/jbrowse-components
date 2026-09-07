@@ -123,8 +123,7 @@ the field and refuses to replace it. A multi-assembly fetch can therefore prime
 one instance twice with two different configs, and the first wins. That is
 harmless rather than fixed — the adapters fetched across two assemblies are the
 comparative ones, which never read the field. Both the compound cache key and a
-loud conflict were costed and declined; see
-[rejected-ideas/](../rejected-ideas/README.md).
+loud conflict were costed and declined.
 
 ## Six plugins hit it; six invented a different fix
 

@@ -46,9 +46,7 @@ the same placement, which means the solver output is layout data, not a paint-ti
 decision. The main thread's `packRef` (`LinearBasicDisplay/layout.ts`) is where it
 belongs for the same reason the compact subfeature-label reservation does — the
 mode and `labelFontPx` are known there and the worker is deliberately
-mode-agnostic. See
-[rejected-ideas/](../rejected-ideas/README.md)'s canvas-glyph entry for
-that boundary. The height side of the same problem has since been settled:
+mode-agnostic. The height side of the same problem has since been settled:
 `TrackHeightMixin` stores the display height directly on the `height` config
 slot, so there is no `heightOverride` to reconcile a label reservation against.
 

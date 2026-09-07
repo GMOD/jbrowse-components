@@ -14,7 +14,8 @@ is filed:
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the
   thread lands.
-- Tried and declined → `agent-docs/rejected-ideas/`.
+- Tried and declined → a sentence at the site that would re-try it, with the
+  number. There is no rejected-ideas shelf.
 - Work **v5.0.0 turns on** → a file in `todo/`, which `TODO.md`'s tables are
   generated from: write the doc with `metadata.category`, `area`, `first_move`
   and `order`, then `pnpm autogen`. Work someone intends to do after it —
@@ -145,21 +146,20 @@ between a marker pair is hand-editable, here or under `website/docs`.
   `description:` frontmatter** — `pnpm autogen --check` fails without it. Find
   docs through [reference/README.md](reference/README.md),
   [mechanisms/README.md](mechanisms/README.md),
-  [ideas/README.md](ideas/README.md),
-  [rejected-ideas/README.md](rejected-ideas/README.md) and
+  [ideas/README.md](ideas/README.md) and
   [handoffs/README.md](handoffs/README.md), not `ls`.
-- **Those five indexes and `TODO.md` are GENERATED, and so is every
+- **Those four indexes and `TODO.md` are GENERATED, and so is every
   `<!-- NAME START/END -->` block in any doc.** `pnpm autogen` rewrites
   everything between the markers and `pnpm autogen --check` fails CI on a stale
   one, so an edit made between them is gone by the next run — change what the
-  block is derived from instead. The five indexes come from each doc's
+  block is derived from instead. The four indexes come from each doc's
   `description:` (`website/scripts/generate-doc-indexes.ts`); `TODO.md`'s three
   tables and the count sentence in its preamble come from the frontmatter of the
   entries under `todo/` (`generate-todo-index.ts`), which is where a row's area,
   first move and position live.
 - **If a sentence tells the reader to go look at a file, generate the table
   under it from that file.**
-- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/`, `rejected-ideas/` and
+- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/` and
   `mechanisms/` by filename — grep before renaming.
 - **A diagram is a `.dot` in a `diagrams/` directory with its `.svg` committed
   beside it** — `pnpm diagrams` renders it, `pnpm diagrams:check` fails on a

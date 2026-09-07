@@ -10,6 +10,7 @@ function source(counts: Record<string, number>) {
   const dict = Object.keys(counts)
   return {
     level: 0,
+    height: 100,
     linearSyntenyDisplays: [
       {
         featureData: {
@@ -24,10 +25,7 @@ function source(counts: Record<string, number>) {
       },
     ],
     parentView: {
-      showOffscreenMates: true,
-      // a hover on the lower edge implies it: that strip exists only for a row
-      // the fetch went and asked about
-      bidirectionalFetch: true,
+      offscreenMateMode: 'both',
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
@@ -38,12 +36,13 @@ function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
+  displayed = false,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, side, clientX: 40, clientY: 12 }}
+        hover={{ refName, side, displayed, clientX: 40, clientY: 12 }}
       />
     </ThemeProvider>,
   )
@@ -65,22 +64,27 @@ test('and how many alignments go to it', () => {
 })
 
 // The mark is often unlabelled and the click is the only other way to find out
-// where it goes, so the hover says what clicking does. ONE sentence for both
-// classes: a contig the facing panel has is scrolled to, one it lacks is added
-// to it, and neither discards anything the reader would want warned about.
+// where it goes, so the hover says what clicking does, and which of the two
+// things it does: a contig the facing panel lacks is added to its regions,
+// one it has merely scrolled off is scrolled to.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Click to show it on the panel below',
+    'Not on the panel below. Click to add it',
+  )
+})
+
+test('a mark for a contig the panel has scrolled off says so', () => {
+  expect(draw(source({ ctgB: 1 }), 'ctgB', 'top', true)).toContain(
+    'The panel below has scrolled off it. Click to scroll there',
   )
 })
 
 // ...and WHICH panel, because the band has a strip on each edge once the view
 // fetches both rows. A mark on the lower edge names a contig the panel ABOVE is
-// not showing, and a tooltip promising the one below describes a click that
-// then rewrites the other panel's regions.
+// not showing.
 test('a mark on the target axis names the panel above instead', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
-    'Click to show it on the panel above',
+    'Not on the panel above. Click to add it',
   )
 })
 
@@ -91,6 +95,7 @@ test('a mark on the target axis names the panel above instead', () => {
 function bothLanes() {
   return {
     level: 0,
+    height: 100,
     linearSyntenyDisplays: [
       {
         featureData: {
@@ -108,14 +113,12 @@ function bothLanes() {
             ends: Float64Array.from([10]),
             mateRefNameIds: new Uint32Array(1),
           },
+          targetQueried: true,
         },
       },
     ],
     parentView: {
-      showOffscreenMates: true,
-      // a hover on the lower edge implies it: that strip exists only for a row
-      // the fetch went and asked about
-      bidirectionalFetch: true,
+      offscreenMateMode: 'both',
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },

@@ -53,8 +53,8 @@ gate until the tier's read lands.
 `MultiRegionDisplayMixin` hands `foundationDisplayPhase` a
 `viewportWithinLoadedData` thunk and reads `dataCurrent` nowhere, so the loading
 scrim still stays down through a zoom inside the buffer. Folding staleness into
-the phase is a different fold and still rejected —
-[folding-content-staleness-into-displayphase](../rejected-ideas/folding-content-staleness-into-displayphase.md).
+the phase is a different fold and still rejected: it raises the scrim 250 ms
+into every zoom.
 
 **That conjunct cannot latch, and the reason is structural rather than a case
 list.** `planRegionFetch` refetches a block on

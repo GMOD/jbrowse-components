@@ -48,7 +48,7 @@ const isSource = (name: string) =>
   /\.(tsx?|jsx?|mjs|cjs|slang|sh|py)$/.test(name)
 
 // Docs whose subject is what is gone, exempt as documents rather than one entry
-// per name. rejected-ideas/ is outside DOC_DIRS for the same reason.
+// per name.
 const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md'])
 
 // A name a doc means to say is gone, or that left for another repo. The entry

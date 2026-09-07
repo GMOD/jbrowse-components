@@ -106,8 +106,7 @@ it held 1024 MB for 4 refills where the split held 773 MB for 16.
 
 - **RSS moves less than retention.** 1442 → 989 MB held is 31%; 2250 → 1984 MB
   RSS is 12%. The rest is transient, `@gmod/bgzf-filehandle`'s grow-only
-  module-global wasm memory among it — see `agent-docs/rejected-ideas/`, which already
-  identifies that as the source of the hundreds-of-MB peaks. No cache budget
+  module-global wasm memory among it — which is the source of the hundreds-of-MB peaks. No cache budget
   touches it, and it is the next thing to look at if crashes persist.
 
 - **Members are held weakly.** `SharedBudget` keeps a `WeakRef` per member, so

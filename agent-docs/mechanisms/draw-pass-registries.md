@@ -46,7 +46,7 @@ marks — and the most transferable idea here.**
 
 ## A registry is two maps over one list, never a table of uniform rows
 
-The 2026-06 decline of this idea (`agent-docs/rejected-ideas/`) read: the layers aren't
+The 2026-06 decline of this idea read: the layers aren't
 1:1 across backends, so uniform rows need shims that add back what the table
 removes. Every clause was true and none was the question. The list is shared;
 each backend's `Record` resolves an id to whatever that backend needs, including
@@ -103,7 +103,7 @@ consumer**, whatever the draw mechanism. Not about GPU passes.
 
 ## Where it stops
 
-[rejected-ideas/](../rejected-ideas/README.md) rejects a
+A declined proposal was a
 `Record<GlyphType, {layout, emit}>` registry for the canvas plugin's glyphs, and
 those grounds hold. They are a
 different argument, worth keeping distinct: that one is about **co-locating two

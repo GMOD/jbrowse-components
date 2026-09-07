@@ -310,6 +310,7 @@ export function bpToOffset({
   refName,
   coord,
   displayedRegions,
+  displayedRegionIndex,
 }: {
   refName: string
   coord: number
@@ -319,9 +320,15 @@ export function bpToOffset({
     end: number
     reversed?: boolean
   }[]
+  displayedRegionIndex?: number
 }): BpOffset | undefined {
   for (const [index, r] of displayedRegions.entries()) {
-    if (refName === r.refName && coord >= r.start && coord <= r.end) {
+    if (
+      refName === r.refName &&
+      coord >= r.start &&
+      coord <= r.end &&
+      (displayedRegionIndex === undefined || displayedRegionIndex === index)
+    ) {
       return { refName, index, offset: bpOffsetInRegion(r, coord) }
     }
   }
@@ -346,6 +353,7 @@ export function bpToLinearBp({
   refName,
   coord,
   displayedRegions,
+  displayedRegionIndex,
 }: {
   refName: string
   coord: number
@@ -355,8 +363,14 @@ export function bpToLinearBp({
     end: number
     reversed?: boolean
   }[]
+  displayedRegionIndex?: number
 }) {
-  const at = bpToOffset({ refName, coord, displayedRegions })
+  const at = bpToOffset({
+    refName,
+    coord,
+    displayedRegions,
+    displayedRegionIndex,
+  })
   return at ? cumulativeBp(displayedRegions, at.index, at.offset) : undefined
 }
 

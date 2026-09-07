@@ -351,8 +351,7 @@ const delay = (ms: number) =>
 // ~600ms FetchVisibleRegions debounce, or one sample taken right after a
 // navigation reads the pre-navigation frame as finished. Same reasoning and
 // same constant as `waitForAppSettled` in products/jbrowse-capture/src/waits.ts
-// (APP_SETTLED_HOLD_MS) — reached independently there, and measured; see
-// rejected-ideas/waiting-out-a-screenshot-action-s-work-by-watching-the.md.
+// (APP_SETTLED_HOLD_MS) — reached independently there, and measured.
 const READY_HOLD_MS = 1000
 
 interface SnackbarEntry {

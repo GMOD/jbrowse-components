@@ -14,8 +14,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // wiggle's bins, the variant matrix's columns, canvas's amino-acid wall.
 //
 // With the term folded one level lower — into `viewportWithinLoadedData` — the
-// loading scrim would rise on every zoom instead, which is the trade
-// rejected-ideas/folding-content-staleness-into-displayphase.md turned
+// loading scrim would rise on every zoom instead, which is the trade turned
 // down. So each test below pins one side, and a change that satisfies only one
 // of them is the bug the other describes.
 

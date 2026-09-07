@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A per-instance scalar's vertical position is a shared scale and a per-consumer anchor, stated over the six live shader arms that plot one. The scale half already factored — scoreScale.slang has three importers and its JS twin is the oracle two parity suites sweep against — and the anchor half does not: four candidate unifications each trip a measured kill condition, including a Manhattan degenerate domain that moves a pinned cross-backend value by the full canvas height. Describes what the tree does and proposes nothing; the declined composition step is the agent-docs/rejected-ideas/ entry this links"
+summary: "A per-instance scalar's vertical position is a shared scale and a per-consumer anchor, stated over the six live shader arms that plot one. The scale half already factored — scoreScale.slang has three importers and its JS twin is the oracle two parity suites sweep against — and the anchor half does not: four candidate unifications each trip a measured kill condition, including a Manhattan degenerate domain that moves a pinned cross-backend value by the full canvas height. Describes what the tree does and proposes nothing; the declined composition step is the agent-docs/architecture-decision-records/ entry this links"
 ---
 
 # ADR-097: The y channel shares its scale and not its anchor
@@ -10,9 +10,7 @@ summary: "A per-instance scalar's vertical position is a shared scale and a per-
 Accepted (2026-08-29). This ADR describes what six live shader arms already do;
 it proposes nothing and carries no gate — a description of the tree cannot fail.
 The composition step the census was run to justify was declined on measurement,
-and its entry is in
-[rejected-ideas/](../rejected-ideas/README.md) §"Rendering and
-displays".
+and it was declined.
 
 It is the y-axis counterpart to
 [ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md), which
@@ -105,8 +103,7 @@ range, they disagree in exactly the corner one of them exists to handle.
 
 Four unifications the census put on the table. All four were measured and all
 four trip a kill condition; the numbers, the reopen conditions and the
-one-paragraph verdicts are in
-[rejected-ideas/](../rejected-ideas/README.md).
+one-paragraph verdicts were recorded and later dropped.
 
 - **Manhattan onto `scoreScale`** trips two independently. Its degenerate-domain
   answer is pinned as a cross-backend fix, not an accident: `scoreToYPx(0.5, 0, 0, 100)`

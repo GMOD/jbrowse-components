@@ -176,8 +176,7 @@ Removed from the tree, by reverting `992f912ace` (ADR-089) and `f7471500e0`
   nothing for it. The tag was added afterwards and the page exists now, which
   also puts the display back into the display-foundation census the ADR notes a
   spec form fell out of.
-- `ideas/a-track-type-is-five-primitives`, the proposal behind all three, filed
-  under `agent-docs/rejected-ideas/`.
+- `ideas/a-track-type-is-five-primitives`, the proposal behind all three, since declined.
 
 Salvaged onto main from the branch, each independent of the declaration and
 each found there by a check rather than a bug report:

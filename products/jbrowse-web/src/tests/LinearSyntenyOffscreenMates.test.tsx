@@ -24,8 +24,6 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
-  showOffscreenMates: boolean
-  bidirectionalFetch: boolean
   offscreenMateMode: 'off' | 'query' | 'both'
   setWidth: (n: number) => void
   setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
@@ -68,7 +66,7 @@ async function openSyntenyView() {
 // changes the views that WERE hiding something.
 test('both rows showing every contig hides nothing', async () => {
   const view = await openSyntenyView()
-  expect(view.showOffscreenMates).toBe(true)
+  expect(view.offscreenMateMode).toBe('query')
   expect(strips(view)).toEqual([])
 })
 
@@ -100,22 +98,6 @@ test('and marks them by default', async () => {
   }, timeout)
 
   expect(view.offscreenMateMode).toBe('query')
-})
-
-// The step that costs a QUERY stays opt-in, and it is the same control: the
-// three modes are one question about how hard to look, and only the last one
-// goes back to the adapter.
-test('searching the other row is a step further in, not the default', async () => {
-  const view = await openSyntenyView()
-  expect(view.bidirectionalFetch).toBe(false)
-
-  view.setOffscreenMateMode('both')
-  expect(view.showOffscreenMates).toBe(true)
-  expect(view.bidirectionalFetch).toBe(true)
-
-  view.setOffscreenMateMode('off')
-  expect(view.showOffscreenMates).toBe(false)
-  expect(view.bidirectionalFetch).toBe(false)
 })
 
 // THE OTHER HALF, and the one stacked whole assemblies are made of. Both rows

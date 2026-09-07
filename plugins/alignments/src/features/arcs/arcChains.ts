@@ -45,7 +45,7 @@ import type {
 // out and every entry gets its region's refName.
 //
 // The bezier overlay has the twin of this loop over its own entry type. Sharing
-// them was tried and measured back out — see rejected-ideas/one-shared-groupreadsbyname.md; the object build is the hot part and every way of varying
+// them was tried and measured back out; the object build is the hot part and every way of varying
 // it generically costs more than the eight lines are worth.
 //
 // A nameless feature is skipped, the same rule and for the same reason as the

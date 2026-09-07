@@ -53,7 +53,8 @@ ported, not shared**: the per-region family reaches its gates through
 `autorunOnReadyView` rather than through the skeleton, so the check sits there
 too — which is also what covers the other three autoruns that family installs.
 A rule the skeleton grows next is owed the same two lines, and that is cheaper
-than the conversion `agent-docs/rejected-ideas/` declines.
+than declaring the per-region trigger over `installFetch` too, which was
+declined.
 
 The narrower move — one preamble helper holding the counter read, the cancel
 read and the liveness skip, called by both hand-rolled bodies — declines for its

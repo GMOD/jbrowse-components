@@ -33,6 +33,7 @@ import {
   rowMenuItems,
   rowViewMenuItems,
 } from './menus.ts'
+import { OFFSCREEN_MATE_MODE_VALUES } from './offscreenMateModes.ts'
 
 import type { OffscreenMateMode } from './offscreenMateModes.ts'
 import type {
@@ -115,39 +116,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * Mark, on the query axis, the alignments whose mate is on a contig the
-         * facing row is not displaying — real synteny a ribbon has nowhere to
-         * land, which the view otherwise draws nothing for.
+         * How much of what the view cannot draw a ribbon for it goes and
+         * finds. 'off' draws no marks. 'query' marks the upper panel of each
+         * pair from the fetch it already runs, so it is a repaint. 'both' also
+         * queries the file from the lower panel and marks it too, which is a
+         * fetch input and a second query per pair.
          */
-        // A PROPERTY, NOT A FETCH INPUT. The worker counts and places these
-        // whichever way this sits, so toggling repaints and never refetches;
-        // `drawLocationMarkers` above is in the fetch key's history for exactly
-        // the mistake this avoids.
-        //
-        // ON BY DEFAULT, on the asymmetry between being wrong in each
-        // direction. Marked when a reader did not want it costs a few pixels of
-        // band and one menu click. NOT marked when they did costs a conclusion:
-        // a locus syntenic to a chromosome they did not stack looks exactly
-        // like a locus syntenic to nothing, which on the demo this repo ships
-        // is 73% of peach chr1's anchors. A view with nothing hidden mounts no
-        // strip at all, so this changes only the views that were hiding
-        // something.
-        showOffscreenMates: types.stripDefault(types.boolean, true),
-        /**
-         * #property
-         * Ask each level's adapter for the alignments anchored on its LOWER row
-         * as well as its upper one.
-         *
-         * A synteny band queries its query axis — the upper row of the pair — so
-         * an alignment anchored on a lower-row contig whose other end is
-         * somewhere the upper row is not showing is never requested, and nothing
-         * downstream can recover it. Which genome a user stacked on top
-         * therefore decided what the view was able to report.
-         *
-         * A FETCH INPUT, unlike `showOffscreenMates` above, and off by default
-         * because it is a second query per level.
-         */
-        bidirectionalFetch: types.stripDefault(types.boolean, false),
+        offscreenMateMode: types.stripDefault(
+          types.enumeration(OFFSCREEN_MATE_MODE_VALUES),
+          'query',
+        ),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still
@@ -342,20 +320,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasCigarData() {
         return self.allSyntenyDisplays.some(displayCanShowCigar)
-      },
-      /**
-       * #getter
-       * Which of the three steps the two properties are in. `both` implies
-       * marking, so a hand-written snapshot that fetches the lower row without
-       * drawing it reads as the mode it behaves like — the fetch is happening,
-       * and the marks are the half of it that shows.
-       */
-      get offscreenMateMode(): OffscreenMateMode {
-        return self.bidirectionalFetch
-          ? 'both'
-          : self.showOffscreenMates
-            ? 'query'
-            : 'off'
       },
       /**
        * #getter
@@ -645,23 +609,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setBidirectionalFetch(arg: boolean) {
-        self.bidirectionalFetch = arg
-      },
-      /**
-       * #action
-       * The two properties above as the one question a reader is actually
-       * answering — how much of what this view cannot draw to go and find.
-       *
-       * They stay two properties because they are two KINDS: marking is a
-       * repaint of what the worker already counted, and the second query is a
-       * fetch input. One control over both is what keeps the free half from
-       * costing a round trip, and it closes the combination nothing wanted —
-       * fetching the lower row and then not drawing what came back.
-       */
       setOffscreenMateMode(mode: OffscreenMateMode) {
-        self.showOffscreenMates = mode !== 'off'
-        self.bidirectionalFetch = mode === 'both'
+        self.offscreenMateMode = mode
       },
       /**
        * #action

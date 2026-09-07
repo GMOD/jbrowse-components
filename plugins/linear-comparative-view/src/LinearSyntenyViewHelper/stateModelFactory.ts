@@ -25,8 +25,8 @@ import {
   takeFollowAnchor,
   undoStackMoveAction,
 } from './offscreenMateNav.ts'
+import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
-import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
   SyntenyPickResult,
@@ -35,6 +35,7 @@ import type {
   SyntenyTrackRenderParams,
 } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { OffscreenMateNavHit } from './offscreenMateStrip.ts'
 import type { ParentViewDuck } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
@@ -366,6 +367,15 @@ export function linearSyntenyViewHelperModelFactory(
       get groundColor() {
         return bandGroundColor(self)
       },
+      /**
+       * #getter
+       * The off-screen mate strips this band draws, hit-tests and exports:
+       * one computed value for the overlay, the pointer handlers, the tooltip
+       * and the SVG export.
+       */
+      get offscreenMateStrips() {
+        return offscreenMateStrips(self)
+      },
     }))
     .views(self => ({
       /**
@@ -397,60 +407,47 @@ export function linearSyntenyViewHelperModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Show the contig an off-screen mate mark points at, on the row that is
-       * not displaying it — what clicking a mark does.
-       *
-       * `row` rather than `level + 1`: a level has a strip on each edge, so a
-       * mark on the query axis names a contig the row BELOW is not showing and
-       * one on the target axis names a contig the row ABOVE is not. The caller
-       * resolved which strip it hit. `mate` carries the mark's two coordinates
-       * as one argument, so they cannot come apart from each other or from the
-       * class they decide; omitted means the whole contig.
-       *
-       * A contig the row has is scrolled to and one it does not is added to its
-       * regions — neither discards what the row was showing. The click takes the
-       * follow anchor too, and the Undo gives back the anchor and every row's
-       * viewport together. `agent-docs/ideas/offscreen-synteny-mates.md` is the
-       * case for all of it.
+       * What clicking a mark does: show the contig it names on the row that
+       * is not displaying it. A contig the row has is scrolled to and one it
+       * lacks is added to its regions; neither discards what the row was
+       * showing. The click takes the follow anchor, and the Undo gives back
+       * the anchor and every row's viewport together.
        */
-      showOffscreenMateContig(
-        refName: string,
-        row: number,
-        mate?: { locus: OffscreenMateLocus; mateCumBp?: OffscreenMateLocus },
-      ) {
+      showOffscreenMateContig(hit: OffscreenMateNavHit) {
         const { parentView } = self
-        const view = parentView.views[row]
+        const view = parentView.views[hit.navRow]
         if (!view) {
           return
         }
         const session = getSession(self)
-        const dest = mateNavDestination({ node: self, view, refName, mate })
+        const dest = mateNavDestination({ node: self, view, mate: hit })
         if (dest.kind === 'none') {
           session.notify(dest.reason, 'warning')
           return
         }
-        // Captured before the take, which already re-places the other rows.
+        // captured before the take, which already re-places the other rows
         const restoreStack = captureStackViewports([...parentView.views])
-        const anchor = takeFollowAnchor(parentView, row)
+        const anchor = takeFollowAnchor(parentView, hit.navRow)
         if (dest.kind === 'scroll') {
-          // Flown rather than jumped where the reader wants motion: this class
-          // arises over stacked whole assemblies, so it is a jump of a
-          // chromosome or more. The destination is the same either way, and the
-          // flight reads back what it wrote each frame, so the Undo below ends
-          // it rather than being overwritten by its next frame.
+          // the flight reads back what it wrote each frame, so the Undo below
+          // ends it rather than being overwritten by its next frame
           if (mateFlightAllowed(parentView, session.animationMode)) {
-            view.flyToCenter(dest.coord0, dest.refName)
+            view.flyToCenter(
+              dest.coord0,
+              dest.refName,
+              dest.displayedRegionIndex,
+            )
           } else {
-            view.centerAt(dest.coord0, dest.refName)
+            view.centerAt(dest.coord0, dest.refName, dest.displayedRegionIndex)
           }
         } else {
-          // One transaction: called apart, the two publish a viewport in
-          // between and a per-bp consumer scans a window never on screen.
+          // one transaction, or a per-bp consumer scans a window never on
+          // screen between the two
           view.showRegions(dest.regions, dest.location)
         }
         session.notify(
           anchor.taken
-            ? `Showing ${dest.loc}, and following this row`
+            ? `Showing ${dest.loc}, and following this panel`
             : `Showing ${dest.loc}`,
           'info',
           undoStackMoveAction(restoreStack, anchor),

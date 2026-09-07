@@ -181,9 +181,8 @@ parity test built on fractional input. All on an AMD gcn-4 box, Chrome 151.
   anyway: WhatsHap does it properly and writes HP tags, and "they did not want
   to run it" is not a value proposition.
 
-Declined, with the test they fail: coverage and pileup on the GPU (linear, and
-`agent-docs/rejected-ideas/` records a coverage GPU pass that compiled clean and cost
-correctness); per-site population statistics (linear; Fst between user-chosen
+Declined, with the test they fail: coverage and pileup on the GPU (linear, and a
+coverage GPU pass that compiled clean cost correctness); per-site population statistics (linear; Fst between user-chosen
 groups is a worker feature, the partition being a runtime choice); genome-wide
 sequence search (`local-sequence-search.md` lands it as bandwidth-bound on
 fetching the FASTA); Hi-C balancing (elementwise, files ship normalization

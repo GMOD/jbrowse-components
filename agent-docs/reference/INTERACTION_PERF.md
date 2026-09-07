@@ -184,8 +184,7 @@ That is not a near miss, and in hindsight it is what the tick *is*. The coarse
 blocks update only once the view has moved far enough to warrant it, so a new
 coarse window covers different data and min/max/mean move with it. A stationary
 view does not tick at all — MobX caches the computed and nothing invalidates it —
-so there is no third state in which the values repeat. Filed in
-[rejected-ideas/](../rejected-ideas/README.md).
+so there is no third state in which the values repeat.
 
 **So the per-tick recompute and repaint are WARRANTED work, not redundant work**,
 and that closes the suppression direction entirely. What is left for this tick is
@@ -519,5 +518,4 @@ because jsdom has none and every token under jest is otherwise a `nanoid`). The
 rate is per fetch round rather than per frame, so jsdom's round count is not a
 browser's — but nothing in the plausible range rescues it, since even a few
 hundred mints a gesture would put a registry insert at 0.3ms a call. Whatever
-that frame contains, attribute it before designing against it;
-[rejected-ideas/](../rejected-ideas/README.md) carries the declined design.
+that frame contains, attribute it before designing against it.

@@ -148,5 +148,3 @@ docstring says as much.
 
 - ADR-083 (the capped mean, and why the decision is stable enough for this to be
   a snap nobody sees), ADR-033 (the fade itself, and why indels stay solid)
-- `agent-docs/rejected-ideas/` (the three statistics tried instead of capping,
-  and a pointer back here)

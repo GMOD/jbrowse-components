@@ -385,7 +385,7 @@ function instanceLayoutLines(attrs: InstanceAttr[]) {
 // fields) is the only generated shape that is free, at 1.00-1.37x, and it was
 // designed and declined on the gain — 0.630ms against 0.632ms at a typical
 // pileup. `plugins/alignments/benches/instancePackDescriptor.bench.ts` has the
-// table; agent-docs/rejected-ideas/ has the reasoning. Don't re-derive it.
+// table; agent-docs/architecture-decision-records/ has the reasoning. Don't re-derive it.
 function instancePackerLines(attrs: InstanceAttr[]) {
   const lines = [
     // #shaderExport InstanceArrays | one input array per instance field, the argument `packInstances` takes

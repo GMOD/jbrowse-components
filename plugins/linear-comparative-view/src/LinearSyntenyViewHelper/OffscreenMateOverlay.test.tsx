@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
+import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
@@ -27,9 +28,12 @@ function level({ width = 800, height = 100, show = true } = {}) {
     ],
     parentView: {
       width,
-      showOffscreenMates: show,
+      offscreenMateMode: show ? 'query' : 'off',
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
+    },
+    get offscreenMateStrips() {
+      return offscreenMateStrips(this)
     },
   } as unknown as LinearSyntenyViewHelperModel
 }

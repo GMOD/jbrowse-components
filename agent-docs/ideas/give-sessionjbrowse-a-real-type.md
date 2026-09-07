@@ -23,8 +23,7 @@ product-core and plugins. That 36 is the real size of the job.
 `root.jbrowse` exactly as `any`: every product composes the factory's result,
 and `types.compose`'s overloads are declared over `IModelType<P, O, FC, FS>`, so
 a model arriving as a naked type parameter has nothing to infer those four from
-and the result degrades. Same limitation as the embedded session factory in
-[rejected-ideas/](../rejected-ideas/README.md#config-and-mst) —
+and the result degrades. Same limitation as the declined embedded session factory —
 twice now, on unrelated models, which is what makes it a property of `compose`
 rather than of either attempt.
 

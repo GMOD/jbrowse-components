@@ -16,8 +16,7 @@
 // span intersects the VISIBLE span, against the group's laid-out `maxY`. Their
 // difference times the row height is scroll extent that reveals nothing.
 //
-// ANSWERED 2026-08-16 — declined, and `agent-docs/rejected-ideas/` carries the
-// reasoning; this is the harness and the raw numbers:
+// ANSWERED 2026-08-16 — declined; this is the harness and the raw numbers:
 //
 //   track/locus                                 laidOut  visible  wastedPx  reads
 //   volvox_alignments ctgA:1-50,000                  37       37         0  9596/9596

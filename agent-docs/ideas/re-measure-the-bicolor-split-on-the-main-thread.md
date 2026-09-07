@@ -25,5 +25,4 @@ Whiskers and min/max already re-derive the split on the main thread
 
 **First move: measure on a 1000-source multiwiggle.** ADR-016 was implemented
 and reverted on a measurement once; the premise has changed, the number has
-not been taken again. `agent-docs/rejected-ideas/` lists the idea as ADR-settled on the
-old premise and should point here.
+not been taken again.

@@ -599,7 +599,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
 // identifier is the evidence, because a reader checking the claim has to find
 // it in node_modules.
 const DOC_THIRD_PARTY = new Set([
-  // agent-docs/rejected-ideas/: a rolldown config key, named
+  // adr rejected-idea entry: a rolldown config key, named
   // because that entry records what happened when the lever was pulled (104 KB
   // a page worse) so nobody pulls it again. Naming the option is the whole
   // point of the note, and it is not ours to define.
@@ -1026,7 +1026,7 @@ function isPointInTimeDoc(file: string) {
     // was `name === 'OTHER_IDEAS.md'` until that file was exploded into one doc
     // per proposal; the exemption follows the directory
     file.includes('/agent-docs/ideas/') ||
-    file.includes('/agent-docs/rejected-ideas/') ||
+    file.includes('/agent-docs/architecture-decision-records/') ||
     name.endsWith('_PLAN.md')
   )
 }

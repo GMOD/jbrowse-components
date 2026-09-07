@@ -137,9 +137,8 @@ clock.
 
 Identify which clock a change lands on, measure it against the code it would
 replace, and publish the number even when it comes out a loss.
-[](/docs/developer_guides/optimizations) carries those beside the wins, and
-[rejected-ideas/](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/rejected-ideas/README.md)
-is the longer list. If a library now clears the three constraints at the top,
-that is a measurement worth taking —
+[](/docs/developer_guides/optimizations) carries those beside the wins, and each
+declined idea is noted at the site that would re-try it. If a library now clears
+the three constraints at the top, that is a measurement worth taking —
 [BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md)
 is how to take one that holds up.

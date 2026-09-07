@@ -14,7 +14,7 @@ import type { WiggleDataResult } from './dataTypes.ts'
 // per-result Set would list a shared buffer twice.
 //
 // Aliasing the adapter's own arrays here as well, rather than copying them, is
-// costed and declined in agent-docs/rejected-ideas/: it retains 20
+// costed and declined in agent-docs/architecture-decision-records/: it retains 20
 // bytes a feature on the main thread where copying retains 12.
 export function collectWiggleTransferables(
   results: WiggleDataResult[],

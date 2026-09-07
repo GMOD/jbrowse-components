@@ -357,8 +357,7 @@ Cheaper than any new tutorial, and some of them raise the value of every
 tutorial already there.
 
 **A comparative-genomics chooser: declined by Colin, 2026-08-09**, and filed
-under "Tooling, tests and docs" in
-[rejected-ideas/](../rejected-ideas/README.md) — including the
+declined — including the
 general rule it produced about navigation aids that route on a key the reader
 can already see.
 

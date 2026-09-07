@@ -3,126 +3,63 @@ import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-// A MARK is one short tick at the top of the band, standing for an alignment
-// the level cannot draw a ribbon for. The STRIP is the row of them across the
-// query axis, which is the whole of what this file paints — marks, plus a
-// contig name over each run of them. Same words the user guide uses.
+// A mark is a short tick hanging off one edge of the band for an alignment the
+// level cannot draw a ribbon for; a strip is the row of them along one edge.
 
-// Tall enough to see against a scalebar, short enough that it visibly STOPS.
-// The whole risk in drawing these is that a mark spanning the band reads as an
-// alignment to the locus directly below it, which is the one thing they must
-// not say — so a mark goes a fixed few pixels down whatever the band's height,
-// and the gap under it is the message.
+// Short enough to visibly stop: a mark spanning the band would read as an
+// alignment to whatever sits directly across from it.
 export const OFFSCREEN_MATE_HEIGHT_PX = 6
 
-// A sub-pixel alignment still has to be a mark. The ribbons fade thin ones
-// instead, but a mark carries no width information a reader could act on — it
-// is a tick saying "something here goes elsewhere" — so it gets a floor.
 export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 
-// At most a third of a short band, so a compact level does not turn into a
-// solid bar with the ribbons hidden under it.
 const MAX_BAND_FRACTION = 1 / 3
 
-// Below this a label is a smudge, and the mark alone says "something here goes
-// elsewhere" perfectly well. Measured against the drawn text, not guessed from
-// the character count, since a scaffold name is not a fixed width.
 const MIN_LABEL_PADDING_PX = 6
 
 const LABEL_FONT = '10px sans-serif'
 
-// The label sits BELOW the mark, over whatever the renderer drew — a ribbon, a
-// pale fill, the empty band — so it is grey-on-anything and needs the halo the
-// rest of the app's over-plot text uses.
 const LABEL_HALO_PX = 3
 
-// Clear of the mark and the ribbons, measured from whichever band edge the
-// strip hangs off. Tight, because the band between two rows is the one place in
-// this view with no vertical room to spare.
-//
-// TWO NUMBERS RATHER THAN ONE MIRRORED. The top strip's label sits BELOW its
-// marks and the bottom strip's sits ABOVE them, so the second is the mark height
-// plus its clearance from the edge, not `height - 16`.
+// The top strip's labels sit below its marks and the bottom strip's above them
 const LABEL_BASELINE_PX = 16
 const LABEL_BASELINE_FROM_BOTTOM_PX = 10
 
-// Marks to one contig closer together than this many of its own names are one
-// stretch as far as a label is concerned. MEASURED IN LABELS, NOT PIXELS: a
-// break too small to hold a second name is not a break a reader can see, and a
-// block of anchors spreads with the zoom, so a fixed 20px fragmented one block
-// into fifteen unlabellable slivers at exactly the zoom where a reader asks
-// what they are looking at.
+// Marks to one contig closer than this many of its own name are one stretch:
+// a break too small to hold a second name is not one a reader can see
 const LABEL_MERGE_GAP_LABELS = 2
 
 const LABEL_ROW_PX = 12
 
-// How far a label reaches ABOVE its own baseline, which is what decides whether
-// a row fits: a baseline is a bottom edge, so the row that has to clear the band
-// edge and the marks is `y - this`. Approximated from the font size rather than
-// measured, because `measureText` reports ascent per STRING and a row is
-// reserved for whatever lands on it.
 const LABEL_ASCENT_PX = 8
 
-// The case this feature exists for is one query segment with SEVERAL
-// counterparts — peach chr1 has about three grape chromosomes over each of its
-// segments — so those stretches overlap in x by construction and one row of
-// labels can only ever name one of them. Three rows names the paleohexaploid
-// case; past that the band is a wall of grey text over the ribbons.
+// three names the paleohexaploid case; past that the band is a wall of text
 const MAX_LABEL_ROWS = 3
 
-// The marks are the BACKGROUND and the labels are the finding, so the marks are
-// washed out to roughly the weight of the ribbons they sit over. Alpha rather
-// than a lighter grey, so the strip recedes into the band.
-//
-// Exported because a lane painting its marks by contig
-// (`offscreenMateMarkColorFor`) has to reach the same weight through a different
-// palette.
 export const MARK_ALPHA = 0.35
 
-// The label's weight against the band, where MARK_ALPHA is the marks'. Alpha,
-// not a lighter grey, so one number covers a light band and a dark one — and
-// each is the FINAL alpha, not a factor on the ink's own.
 const LABEL_ALPHA = 0.6
 
-// Derived from the band's own ground, not read off the theme independently:
-// `Canvas2DSyntenyRenderer.clear` is why the band is a known colour at all, and
-// `markerColor` makes the same choice for the location ticks.
-//
-// Reading `text.secondary` and `background.paper` straight off the theme is what
-// this replaces, and it broke the moment the two came apart — a dark theme
-// resolved the first to `rgba(255,255,255,0.7)` over a band still cleared white,
-// so the marks went to white at 0.35 alpha on white and vanished, and the labels
-// to near-white text under a `#121212` halo. Off one ground both move together
-// or neither does.
-//
-// One source for both surfaces: the screen overlay and the SVG export run the
-// same draw, and a figure whose marks are a different grey from the ones the
-// user turned on is a difference nothing would report.
+// Both greys come off the band's own ground rather than the theme: a dark theme
+// once resolved the text color white over a band still cleared white
 export function offscreenMateColors(groundColor: string) {
   const ink = getContrastText(groundColor)
   return {
     markColor: alpha(ink, MARK_ALPHA),
-    // full strength, unlike the marks: the label is the actionable half, it is
-    // haloed rather than tinted, and there is one of them per stretch
     labelColor: alpha(ink, LABEL_ALPHA),
-    // the band's own ground, so a label over a ribbon stays readable
     haloColor: groundColor,
   }
 }
 
-// Which band edge a strip hangs off — the top for marks on the query axis, the
-// bottom for the target axis's. The two never overlap in y, which is what lets
-// one hit test answer for both without deciding between them.
 export type OffscreenMateSide = 'top' | 'bottom'
 
-/**
- * A dataset the strip draws from.
- *
- * TWO KINDS, one shape. Without `mateAxis` every entry is a mark by
- * construction — the worker found no place on the facing axis for it at all.
- * With them the entry HAS a place, and whether it is a mark is a question about
- * where that place currently sits: see `culledRibbonMates`.
- */
+export interface MateBand {
+  lo: number
+  hi: number
+}
+
+// Without `mateAxis` every entry is a mark: the worker found no place on the
+// facing axis for it. With it the entry has a place, and whether it is a mark
+// depends on where the facing row currently sits (`culledRibbonMates`).
 export interface OffscreenMateDataset extends Omit<
   OffscreenMateData,
   'mateStarts' | 'mateEnds'
@@ -132,76 +69,39 @@ export interface OffscreenMateDataset extends Omit<
   mateAxis?: MateAxisPlacement
 }
 
-/**
- * Where a dataset's entries sit on the FACING axis, in its cumBp.
- *
- * ONE OPTIONAL OBJECT rather than optional lanes beside optional bounds: the
- * four are present together or not at all, so narrowing on the object is what
- * lets every reader reach the extent without asserting a shape the type does
- * not carry.
- */
+// Where a dataset's entries sit on the facing axis, in its cumBp, with the
+// extent over all of them
 export interface MateAxisPlacement {
   starts: Float64Array
   ends: Float64Array
-  // The extent over both lanes: a facing row whose band already spans it is
-  // hiding none of these, and the whole dataset then leaves the lane unwalked.
   lo: number
   hi: number
 }
 
-// One strip's worth of input: what to mark and the ruler to mark it against.
-// A band has at most two, and they are NOT interchangeable — see
-// `offscreenMateStrips`, which is what builds them.
+// One strip's input: what to mark, the ruler to mark it against, and the box
+// it is drawn in. A band has at most two, and they are not interchangeable
+// (`offscreenMateStrips`).
 export interface OffscreenMateLane {
-  // one per synteny display on the level, drawn and hit-tested as one strip:
-  // they share a band, so labels that avoid each other within a display have to
-  // avoid the neighbouring display's too
   datasets: OffscreenMateDataset[]
-  // The facing axis's drawable span in ITS cumBp — the overdraw band
-  // `isRibbonCulled` keeps a ribbon for, restated in bp so a mark and the
-  // ribbon it stands in for cannot disagree about the edge. Read only by
-  // datasets carrying `mateAxis`, and required by them: a dataset that
-  // knows where its mates are and is handed no band marks nothing, rather than
-  // marking alignments the band is drawing.
-  mateBand?: { lo: number; hi: number }
-  // the axis these are placed against, which is the only axis they have — the
-  // query row for a top strip, the target row for a bottom one
+  // the facing axis's drawable span in its cumBp, the same band
+  // `isRibbonCulled` keeps a ribbon for; read only by datasets with `mateAxis`
+  mateBand?: MateBand
   bpPerPx: number
   offsetPx: number
-  // which band edge the marks hang off
   side: OffscreenMateSide
-  // The view-wide alignment-length floor, applied here for the same reason the
-  // shader applies it to ribbons: a whole-genome hairball filtered down to its
-  // real blocks should not keep a fringe of marks for the noise it just hid.
   minAlignmentLength: number
-  // The color for the contig a mark NAMES, or absent to leave this lane's marks
-  // in the band's grey.
-  //
-  // PER LANE, because the two lanes hold contigs of different assemblies — and
-  // because only one of them is usually keyed the same way the ribbons are. See
-  // `offscreenMateMarkColors`, which is where the decision lives; this file only
-  // paints what it is handed.
+  // the color for the contig a mark names, or absent for the band's grey
   markColorFor?: (refName: string) => string
-}
-
-// One lane against the band it is drawn in — what the geometry needs, and what
-// the hit test is asked about.
-export type OffscreenMateLayout = OffscreenMateLane & {
   width: number
   height: number
 }
 
-// The band every lane shares: its box, and the greys both surfaces paint in.
-export interface OffscreenMateBand {
-  width: number
-  height: number
+export interface OffscreenMatePaint {
   markColor: string
   labelColor: string
   haloColor: string
-  // Label width in px at LABEL_FONT. Defaults to the draw context's own
-  // measureText, which on an SvgCanvas is an advance table rather than the
-  // browser's font: the vector export passes `canvasLabelMeasurer()` so it
-  // merges and fits the same labels the screen and the raster export do.
+  // label width at LABEL_FONT; defaults to the context's own measureText,
+  // which on an SvgCanvas is an advance table rather than the browser's font
   measure?: (text: string) => number
 }
 
@@ -214,49 +114,254 @@ export function canvasLabelMeasurer() {
   return (text: string) => ctx.measureText(text).width
 }
 
+// A dataset with an extent already inside the band hides nothing, so the
+// strip need not walk it. No extent means the worker placed nothing on the
+// facing axis, so everything is a mark; an extent with no band means there is
+// no facing row to have scrolled away, so nothing is.
+export function datasetMayHide(
+  data: OffscreenMateDataset,
+  band: MateBand | undefined,
+) {
+  const { mateAxis } = data
+  return mateAxis === undefined
+    ? true
+    : band !== undefined && (mateAxis.lo < band.lo || mateAxis.hi > band.hi)
+}
+
+function ribbonDrawn(
+  mateAxis: MateAxisPlacement,
+  i: number,
+  band: MateBand | undefined,
+) {
+  return (
+    band === undefined ||
+    (mateAxis.ends[i]! >= band.lo && mateAxis.starts[i]! <= band.hi)
+  )
+}
+
+function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
+  return data.mateRefNameDict[data.mateRefNameIds[i]!]!
+}
+
+function offscreenMateMarkHeight(height: number) {
+  return Math.max(
+    1,
+    Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),
+  )
+}
+
+interface StripGeometry {
+  markY: number
+  markHeight: number
+}
+
+function stripGeometry({
+  width,
+  height,
+  side,
+}: OffscreenMateLane): StripGeometry | undefined {
+  if (width <= 0 || height <= 0) {
+    return undefined
+  }
+  const markHeight = offscreenMateMarkHeight(height)
+  return {
+    markY: side === 'bottom' ? height - markHeight : 0,
+    markHeight,
+  }
+}
+
+// The one place a mark's x is decided, so the draw and the two hit tests
+// cannot disagree. Entries whose instances all fell off screen keep a sentinel
+// span (`starts` above `ends`) that the x test drops before `mateAxis` is
+// read, since reading that sentinel as a position would call it hidden.
+function forEachMark(
+  lane: OffscreenMateLane,
+  visit: (data: OffscreenMateDataset, i: number, x: number, w: number) => void,
+) {
+  const { bpPerPx, offsetPx, width, minAlignmentLength, mateBand } = lane
+  for (const data of lane.datasets) {
+    const { starts, ends, lengths, mateAxis } = data
+    for (let i = 0; i < starts.length; i++) {
+      const x1 = starts[i]! / bpPerPx - offsetPx
+      const x2 = ends[i]! / bpPerPx - offsetPx
+      if (
+        lengths[i]! >= minAlignmentLength &&
+        x2 >= 0 &&
+        x1 <= width &&
+        !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))
+      ) {
+        visit(data, i, x1, Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1))
+      }
+    }
+  }
+}
+
+function pointerOnStrip(strip: StripGeometry, y: number) {
+  return y >= strip.markY && y <= strip.markY + strip.markHeight
+}
+
+export interface OffscreenMateMark {
+  refName: string
+  // the facing row displays this contig and has scrolled off it, as opposed to
+  // not displaying it at all
+  displayed: boolean
+}
+
+// The mark under a point, or undefined. Where marks overlap the one drawn
+// last wins, which is the one on top.
+export function offscreenMateAt(
+  lane: OffscreenMateLane,
+  x: number,
+  y: number,
+): OffscreenMateMark | undefined {
+  const strip = stripGeometry(lane)
+  if (!strip || !pointerOnStrip(strip, y)) {
+    return undefined
+  }
+  let hit: OffscreenMateMark | undefined
+  forEachMark(lane, (data, i, mx, w) => {
+    if (x >= mx && x <= mx + w) {
+      hit = {
+        refName: offscreenMateRefName(data, i),
+        displayed: data.mateAxis !== undefined,
+      }
+    }
+  })
+  return hit
+}
+
+export interface OffscreenMateLocus {
+  start: number
+  end: number
+}
+
+// What a click on a mark resolves to. `mateCumBp` present means the facing
+// row displays the contig and the click scrolls to where the alignments are
+// drawn; absent means the row has to gain the contig first, and `locus` frames
+// the window inside it.
+export interface OffscreenMateSpan {
+  refName: string
+  // the blocks' untrimmed extent in the contig's own bp
+  locus: OffscreenMateLocus
+  // where the alignments are drawn on the facing axis, in that row's cumBp
+  mateCumBp?: OffscreenMateLocus
+}
+
+// The union of every alignment under the point, since a mark is a column of
+// them, and the contig of the one on top
+export function offscreenMateSpanAt(
+  lane: OffscreenMateLane,
+  x: number,
+  y: number,
+): OffscreenMateSpan | undefined {
+  const strip = stripGeometry(lane)
+  if (!strip || !pointerOnStrip(strip, y)) {
+    return undefined
+  }
+  const spans = new Map<string, OffscreenMateLocus>()
+  const drawn = new Map<string, OffscreenMateLocus>()
+  let top: string | undefined
+  forEachMark(lane, (data, i, mx, w) => {
+    if (x >= mx && x <= mx + w) {
+      const refName = offscreenMateRefName(data, i)
+      top = refName
+      extendSpan(spans, refName, data.mateStarts[i]!, data.mateEnds[i]!)
+      const { mateAxis } = data
+      if (mateAxis) {
+        extendSpan(drawn, refName, mateAxis.starts[i]!, mateAxis.ends[i]!)
+      }
+    }
+  })
+  return top
+    ? { refName: top, locus: spans.get(top)!, mateCumBp: drawn.get(top) }
+    : undefined
+}
+
+function extendSpan(
+  spans: Map<string, OffscreenMateLocus>,
+  refName: string,
+  start: number,
+  end: number,
+) {
+  const span = spans.get(refName)
+  if (span) {
+    span.start = Math.min(span.start, start)
+    span.end = Math.max(span.end, end)
+  } else {
+    spans.set(refName, { start, end })
+  }
+}
+
+// One lane's marks as parallel arrays: an object per mark was the repaint's
+// dominant cost (`agent-docs/measurements/offscreen-mate-overlay.json`)
+interface LaneMarks {
+  lane: OffscreenMateLane
+  strip: StripGeometry
+  count: number
+  xs: Float64Array
+  widths: Float64Array
+  refNames: string[]
+}
+
+function laneMarks(lane: OffscreenMateLane): LaneMarks | undefined {
+  const strip = stripGeometry(lane)
+  if (!strip) {
+    return undefined
+  }
+  let capacity = 0
+  for (const data of lane.datasets) {
+    capacity += data.starts.length
+  }
+  const xs = new Float64Array(capacity)
+  const widths = new Float64Array(capacity)
+  const refNames: string[] = []
+  let count = 0
+  forEachMark(lane, (data, i, x, w) => {
+    xs[count] = x
+    widths[count] = w
+    refNames.push(offscreenMateRefName(data, i))
+    count++
+  })
+  return { lane, strip, count, xs, widths, refNames }
+}
+
 interface LabelRun {
   refName: string
   x: number
   end: number
-  // measured once per contig here, and read again by the fit test and the
-  // centring, so the gap the merge tolerates and the name it tolerates it for
-  // are the same number
   textWidth: number
 }
 
-/**
- * The stretches worth naming: each contig's marks, joined where they sit closer
- * together than a reader could tell apart, so a block of anchors to one contig
- * is one label rather than one per anchor — and a contig appearing in two
- * genuinely separate places is still named twice, which naming each contig once
- * would lose.
- */
+// Each contig's marks joined where they sit closer than a reader could tell
+// apart, so a block of anchors is one label and a contig in two separate
+// places is still named twice
 function labelRuns(
-  rects: OffscreenMateRect[],
+  { count, xs, widths, refNames }: LaneMarks,
   measure: (text: string) => number,
 ): LabelRun[] {
-  const byContig = new Map<string, OffscreenMateRect[]>()
-  for (const r of rects) {
-    const refName = offscreenMateRefName(r.data, r.index)
+  const byContig = new Map<string, number[]>()
+  for (let i = 0; i < count; i++) {
+    const refName = refNames[i]!
     let list = byContig.get(refName)
     if (!list) {
       list = []
       byContig.set(refName, list)
     }
-    list.push(r)
+    list.push(i)
   }
   const runs: LabelRun[] = []
   for (const [refName, list] of byContig) {
     const textWidth = measure(refName)
     const mergeGap = textWidth * LABEL_MERGE_GAP_LABELS
-    // by x, since draw order is the adapter's and says nothing about position
-    list.sort((a, b) => a.x - b.x)
+    list.sort((a, b) => xs[a]! - xs[b]!)
     let run: LabelRun | undefined
-    for (const r of list) {
-      if (run && r.x - run.end <= mergeGap) {
-        run.end = Math.max(run.end, r.x + r.width)
+    for (const i of list) {
+      const x = xs[i]!
+      const end = x + widths[i]!
+      if (run && x - run.end <= mergeGap) {
+        run.end = Math.max(run.end, end)
       } else {
-        run = { refName, x: r.x, end: r.x + r.width, textWidth }
+        run = { refName, x, end, textWidth }
         runs.push(run)
       }
     }
@@ -275,31 +380,8 @@ interface BandSpan {
   to: number
 }
 
-// The strip's own top edge: 0 for a top strip, the band height less the mark
-// height for a bottom one.
-function markTop(side: OffscreenMateSide, height: number, markHeight: number) {
-  return side === 'bottom' ? height - markHeight : 0
-}
-
-// The pixels one lane's marks occupy. Reserved against LABELS — every lane's,
-// not just its own — because a name printed over the marks is a name over the
-// thing it is naming.
-function markZone(
-  side: OffscreenMateSide,
-  height: number,
-  markHeight: number,
-): BandSpan {
-  const from = markTop(side, height, markHeight)
-  return { from, to: from + markHeight }
-}
-
-/**
- * The baselines this lane may put a name on, nearest its own edge first.
- *
- * EACH SIDE MEASURES FROM ITS OWN EDGE — the top strip's rows step down and the
- * bottom strip's step up — so a row count derived from one is wrong for the
- * other in both directions.
- */
+// The baselines a lane may put a name on, nearest its own edge first, clear
+// of every lane's marks
 function labelBaselines(
   side: OffscreenMateSide,
   height: number,
@@ -320,40 +402,22 @@ function labelBaselines(
   return out
 }
 
-// A row of the band, as the placement builds it up: every label already on that
-// baseline, so the next one can find out whether it would land on top of one.
 interface LabelSlot {
   y: number
   boxes: BandSpan[]
 }
 
-/**
- * Where each stretch's name goes, on the first baseline it does not collide on.
- * A stretch with no free row goes unlabelled rather than over another name.
- *
- * EVERY LANE AT ONCE, which is why this takes a list. The two strips' MARKS hang
- * off opposite edges and cannot collide, but their labels stack INWARD and meet
- * in the middle. One rule covers both that and two stretches of one lane
- * overlapping: a name may not share a baseline, or come within `LABEL_ROW_PX` of
- * one, with an overlapping name already placed.
- *
- * A STRETCH IS MEASURED BY THE PART IN VIEW. One wider than the window has its
- * midpoint off the edge, so both the centring and the fit test read a width
- * nothing can show — and the one contig the whole window maps to was the one
- * contig never named.
- */
+// Every lane at once, because the two strips' labels stack inward and meet in
+// the middle. Candidates go left to right, interleaving one from each lane
+// before a second from either, so where both lanes cover the same pixels the
+// top strip does not take every row. A stretch is measured by the part in
+// view, so one wider than the window can still be named.
 function placeLabels(
   lanes: { runs: LabelRun[]; baselines: number[] }[],
   width: number,
 ): PlacedLabel[] {
   const slots: LabelSlot[] = []
   const placed: PlacedLabel[] = []
-  // Left to right, so placement does not depend on the adapter's order — and
-  // between stretches at the same x, ONE FROM EACH LANE BEFORE A SECOND FROM
-  // EITHER. Sorted by x alone the lanes ran in order, so where both lanes cover
-  // the same pixels the top strip took every row a 50px band has and the bottom
-  // strip's marks went permanently unnamed. `rank` is a stretch's place from the
-  // left within its own lane, so the interleave only decides ties.
   const candidates = lanes
     .flatMap(({ runs, baselines }) =>
       [...runs]
@@ -365,420 +429,77 @@ function placeLabels(
     const from = Math.max(run.x, 0)
     const to = Math.min(run.end, width)
     const { textWidth } = run
-    if (textWidth + MIN_LABEL_PADDING_PX > to - from) {
-      continue
-    }
-    const x = from + (to - from - textWidth) / 2
-    // the padding is the gap between neighbours as well as the fit test, so a
-    // row's labels never touch
-    const box = {
-      from: x - MIN_LABEL_PADDING_PX / 2,
-      to: x + textWidth + MIN_LABEL_PADDING_PX / 2,
-    }
-    const y = baselines.find(
-      candidate =>
-        !slots.some(
-          s =>
-            Math.abs(s.y - candidate) < LABEL_ROW_PX &&
-            s.boxes.some(b => box.from < b.to && b.from < box.to),
-        ),
-    )
-    if (y !== undefined) {
-      let slot = slots.find(s => s.y === y)
-      if (!slot) {
-        slot = { y, boxes: [] }
-        slots.push(slot)
+    if (textWidth + MIN_LABEL_PADDING_PX <= to - from) {
+      const x = from + (to - from - textWidth) / 2
+      const box = {
+        from: x - MIN_LABEL_PADDING_PX / 2,
+        to: x + textWidth + MIN_LABEL_PADDING_PX / 2,
       }
-      slot.boxes.push(box)
-      placed.push({ refName: run.refName, x, y })
+      const y = baselines.find(
+        candidate =>
+          !slots.some(
+            s =>
+              Math.abs(s.y - candidate) < LABEL_ROW_PX &&
+              s.boxes.some(b => box.from < b.to && b.from < box.to),
+          ),
+      )
+      if (y !== undefined) {
+        let slot = slots.find(s => s.y === y)
+        if (!slot) {
+          slot = { y, boxes: [] }
+          slots.push(slot)
+        }
+        slot.boxes.push(box)
+        placed.push({ refName: run.refName, x, y })
+      }
     }
   }
   return placed
 }
 
-interface OffscreenMateRect {
-  // the dataset and lane index it came from, rather than the contig name it
-  // points at: the hover scan builds one of these per candidate and reads the
-  // name only for the one it answers with
-  data: OffscreenMateDataset
-  index: number
-  x: number
-  // the strip's own top edge: 0 for a top strip, and the band height less the
-  // mark height for a bottom one. Carried per rect rather than recomputed by
-  // each reader, for the same reason `x` is — draw and hit test cannot disagree
-  // about a number neither of them derives.
-  y: number
-  width: number
-  height: number
-}
-
-function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
-  return data.mateRefNameDict[data.mateRefNameIds[i]!]!
-}
-
-// Same expression the ribbons project with, written out rather than reused:
-// `projectCorners` works in window-relative bp against the geometry's fetch-time
-// base (ADR-067), and these never reach a shader. Absolute cumBp in Float64 on
-// the main thread is the same number with the base folded back in.
-function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
-  return cumBp / bpPerPx - offsetPx
-}
-
-/**
- * Where each mark lands on screen, in the order it is drawn.
- *
- * ONE FUNCTION BECAUSE DRAW AND HIT TEST HAVE TO AGREE. The ribbons keep that
- * agreement under test (`syntenyPickRenderAgreement.test.ts`) precisely because
- * their two paths are separate code; these have one path, so a mark the eye can
- * see and the pointer cannot is not a shape this can take.
- */
-function offscreenMateRects(layout: OffscreenMateLayout): OffscreenMateRect[] {
-  const strip = stripGeometry(layout)
-  if (!strip) {
-    return []
-  }
-  const out: OffscreenMateRect[] = []
-  for (const data of layout.datasets) {
-    for (let i = 0; i < data.starts.length; i++) {
-      const rect = offscreenMateRectAt(layout, data, i, strip)
-      if (rect) {
-        out.push(rect)
-      }
-    }
-  }
-  return out
-}
-
-// Every mark in a level is the same height, so the strip is a constant the hit
-// test can reject a whole pointer position against before it looks at any
-// alignment.
-function offscreenMateMarkHeight(height: number) {
-  return Math.max(
-    1,
-    Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),
-  )
-}
-
-// The strip's box in the band — the half of a mark's geometry every mark in a
-// lane shares, resolved once so the draw and the hit test cannot place their
-// marks a pixel apart, and undefined for a band with no pixels to draw in.
-interface StripGeometry {
-  markY: number
-  markHeight: number
-}
-
-function stripGeometry({
-  width,
-  height,
-  side,
-}: OffscreenMateLayout): StripGeometry | undefined {
-  if (width <= 0 || height <= 0) {
-    return undefined
-  }
-  const markHeight = offscreenMateMarkHeight(height)
-  return { markY: markTop(side, height, markHeight), markHeight }
-}
-
-// The one place a mark's geometry is decided, so the array the canvas paints and
-// the scan the pointer runs cannot describe different rectangles. It ALLOCATES
-// per alignment, deliberately — a scratch object halved the strip hover and cost
-// the repaint 25%, which is the every-pan path: `agent-docs/rejected-ideas/`.
-function offscreenMateRectAt(
-  {
-    bpPerPx,
-    offsetPx,
-    width,
-    minAlignmentLength,
-    mateBand,
-  }: OffscreenMateLayout,
-  data: OffscreenMateDataset,
-  i: number,
-  { markY, markHeight }: StripGeometry,
-): OffscreenMateRect | undefined {
-  // the block's own length, NOT `ends - starts`: those are clamped to the
-  // displayed region, and the ribbons' own cull reads the unclamped extent
-  // (`alignmentLengths`), so measuring the clamp here hid a mark whose ribbon
-  // the same setting kept
-  if (data.lengths[i]! < minAlignmentLength) {
-    return undefined
-  }
-  const x1 = screenX(data.starts[i]!, bpPerPx, offsetPx)
-  const x2 = screenX(data.ends[i]!, bpPerPx, offsetPx)
-  if (x2 < 0 || x1 > width) {
-    return undefined
-  }
-  // AFTER the span tests, not before: an entry whose instances were all emitted
-  // off-screen keeps its sentinel mate span, and reading that as a position
-  // would call it hidden. It is the x test above that drops it.
-  const { mateAxis } = data
-  if (mateAxis) {
-    const drawn =
-      mateBand === undefined ||
-      (mateAxis.ends[i]! >= mateBand.lo && mateAxis.starts[i]! <= mateBand.hi)
-    if (drawn) {
-      return undefined
-    }
-  }
-  return {
-    data,
-    index: i,
-    x: x1,
-    y: markY,
-    width: Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
-    height: markHeight,
-  }
-}
-
-// The strip's hit test, so the hover and the click cannot disagree about what
-// "under the pointer" means. Both spelled these comparisons out, and one of the
-// two widened is a click that navigates where no tooltip ever appeared.
-function pointerOnStrip(strip: StripGeometry, y: number) {
-  return y >= strip.markY && y <= strip.markY + strip.markHeight
-}
-
-function pointerOnMark(rect: { x: number; width: number }, x: number) {
-  return x >= rect.x && x <= rect.x + rect.width
-}
-
-/**
- * The contig the mark under a point stands for, or undefined.
- *
- * LAST MATCH WINS: the scan runs backwards over the datasets the canvas paints
- * forwards, so where two marks overlap it answers with the one on top. Marks of
- * two COLORS composite at `MARK_ALPHA` with neither on top, so there is no "on
- * top" there to disagree with — what the two hit tests must not differ on is the
- * order between THEM, and both take it off the datasets.
- *
- * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS: it is a few pixels of a band ~100
- * tall, so one comparison answers most pointer positions and a hover over the
- * ribbons costs nothing whatever the level fetched.
- */
-export function offscreenMateAt(
-  layout: OffscreenMateLayout,
-  x: number,
-  y: number,
-) {
-  const strip = stripGeometry(layout)
-  if (!strip || !pointerOnStrip(strip, y)) {
-    return undefined
-  }
-  const { datasets } = layout
-  for (let d = datasets.length - 1; d >= 0; d--) {
-    const data = datasets[d]!
-    for (let i = data.starts.length - 1; i >= 0; i--) {
-      const rect = offscreenMateRectAt(layout, data, i, strip)
-      if (rect && pointerOnMark(rect, x)) {
-        return offscreenMateRefName(data, i)
-      }
-    }
-  }
-  return undefined
-}
-
-// Where on the contig it names the alignments under one point actually land.
-export interface OffscreenMateLocus {
-  // the contig's own bp, half-open like everything else on this side
-  start: number
-  end: number
-}
-
-/**
- * What a CLICK on a mark resolves to: which contig, and the two coordinates the
- * caller's two branches take.
- *
- * `mateCumBp` PRESENT IS THE SCROLL CLASS — the facing row already has this
- * contig and has merely scrolled off it, and this is where to scroll. Absent is
- * the other one, where the row has to gain a region for the contig first and
- * `locus` frames the window inside it.
- *
- * Carrying the destination itself, rather than a `displayed` boolean beside it,
- * makes "displayed with nowhere to scroll to" unrepresentable rather than merely
- * documented — the two came apart, and the click navigated somewhere the mark
- * was never about.
- */
-export interface OffscreenMateSpan {
-  refName: string
-  // The contig's own bp: the BLOCKS' extent, untrimmed, which is what a click
-  // on a contig the facing row lacks frames once it has added it, and what a
-  // label can name.
-  locus: OffscreenMateLocus
-  /**
-   * Where the alignments under the mark are DRAWN on the facing axis, in that
-   * row's cumBp — and, by being present at all, that the row displays this
-   * contig and the click may SCROLL rather than change its regions.
-   *
-   * WHERE THE RIBBONS ARE, not where the block is: `locus` is the untrimmed
-   * extent and `clipLargeBlockToWindow` re-anchors a chain to its visible slice,
-   * so on chimp chr19 vs hg38 chr17 a mark drawn at chr17:42.6-43.3Mb navigated
-   * to the centre of the chromosome, wherever the row already was.
-   *
-   * ANY placed dataset under the pointer gives the mark one, not the last one
-   * scanned: a contig can be in a worker lane and a culled lane at once, and one
-   * placed alignment is enough to scroll to.
-   *
-   * cumBp rather than the contig's own bp because that is what `mateAxis` holds,
-   * and which region a coordinate falls in is the facing view's question.
-   */
-  mateCumBp?: OffscreenMateLocus
-}
-
-/**
- * The contig a click on a mark should show, and where on it.
- *
- * THE UNION OF EVERY ALIGNMENT UNDER THE POINT, because a mark is not one
- * alignment — `MIN_OFFSCREEN_MATE_WIDTH_PX` makes even a sub-pixel one a mark,
- * so they pile up in a column and picking one among them would send the same
- * visible mark to two places at two window widths. The union collapses to the
- * single alignment exactly when the mark is one.
- *
- * ONE LANE, because the two strips hold contigs of DIFFERENT assemblies and a
- * name matched across them would union coordinates from two genomes.
- *
- * ONE FORWARD PASS, unlike the hover's backwards early exit: it answers with the
- * last contig the scan meets, which is `offscreenMateAt`'s rule read forwards,
- * and the same walk that accumulates the spans already knows it. For the SHAPE
- * rather than for speed — asking the hit test for the name and scanning again
- * for its coordinates is two traversals that have to agree on which contig won.
- */
-export function offscreenMateSpanAt(
-  layout: OffscreenMateLayout,
-  x: number,
-  y: number,
-): OffscreenMateSpan | undefined {
-  const strip = stripGeometry(layout)
-  if (!strip || !pointerOnStrip(strip, y)) {
-    return undefined
-  }
-  const spans = new Map<string, OffscreenMateLocus>()
-  // The same union in the facing row's cumBp, and only from the datasets that
-  // have one. Kept apart rather than folded into `spans`: a contig can be in
-  // both a worker lane and a culled one, and the two carry coordinates in
-  // different spaces, so one map would union a contig bp with a cumBp.
-  const drawn = new Map<string, OffscreenMateLocus>()
-  let top: string | undefined
-  for (const data of layout.datasets) {
-    const { mateAxis } = data
-    for (let i = 0; i < data.starts.length; i++) {
-      const rect = offscreenMateRectAt(layout, data, i, strip)
-      if (rect && pointerOnMark(rect, x)) {
-        const refName = offscreenMateRefName(data, i)
-        top = refName
-        extendSpan(spans, refName, data.mateStarts[i]!, data.mateEnds[i]!)
-        if (mateAxis) {
-          extendSpan(drawn, refName, mateAxis.starts[i]!, mateAxis.ends[i]!)
-        }
-      }
-    }
-  }
-  if (!top) {
-    return undefined
-  }
-  // A DEGENERATE SPAN IS STILL A PLACE. It used to be dropped and the click fell
-  // back to the whole contig, which is the answer these coordinates were added
-  // to stop — and on a mark whose contig the facing row already displays, that
-  // fallback is the other class's navigation, which this one must never take.
-  // `OFFSCREEN_MATE_NAV_MIN_BP` frames a zero-width locus the same way it
-  // frames a 500bp one.
-  return { refName: top, locus: spans.get(top)!, mateCumBp: drawn.get(top) }
-}
-
-function extendSpan(
-  spans: Map<string, OffscreenMateLocus>,
-  refName: string,
-  start: number,
-  end: number,
-) {
-  const span = spans.get(refName)
-  if (span) {
-    span.start = Math.min(span.start, start)
-    span.end = Math.max(span.end, end)
-  } else {
-    spans.set(refName, { start, end })
-  }
-}
-
-// The strip's marks grouped into one path per fill, in a stable order: a lane
-// with no `markColorFor` contributes every rect to the band's grey, so the
-// uncolored case is one group and one fill exactly as it was.
-function markPathsByColor(
-  laneRects: OffscreenMateRect[][],
-  lanes: OffscreenMateLane[],
-  markColor: string,
-) {
-  const byColor = new Map<string, OffscreenMateRect[]>()
-  for (const [i, rects] of laneRects.entries()) {
-    const colorFor = lanes[i]!.markColorFor
-    for (const r of rects) {
-      const color = colorFor
-        ? colorFor(offscreenMateRefName(r.data, r.index))
-        : markColor
+// One path per color rather than a fill per mark: the color carries alpha, so
+// marks filled separately composite against each other and a dense strip
+// saturates to a solid bar. Marks of different colors do composite, which is
+// honest.
+function fillMarks(ctx: Ctx2D, marks: LaneMarks[], markColor: string) {
+  const byColor = new Map<string, { marks: LaneMarks; i: number }[]>()
+  for (const lane of marks) {
+    const colorFor = lane.lane.markColorFor
+    for (let i = 0; i < lane.count; i++) {
+      const color = colorFor ? colorFor(lane.refNames[i]!) : markColor
       let group = byColor.get(color)
       if (!group) {
         group = []
         byColor.set(color, group)
       }
-      group.push(r)
+      group.push({ marks: lane, i })
     }
   }
-  return byColor
-}
-
-/**
- * Mark, on the edges of one band, the alignments its level fetched and cannot
- * draw.
- *
- * These are real alignments whose mate is on a contig the facing row is not
- * displaying, so there is no second endpoint to run a ribbon to. Drawn as a
- * mark hanging off the axis they DO have rather than as a degenerate ribbon
- * with both bottom corners equal, which draws a full-height vertical band and
- * asserts an alignment to whatever sits directly below.
- *
- * A SEPARATE OVERLAY RATHER THAN AN INSTANCE KIND. The shader interpolates an
- * instance vertically over the full band by construction, so a mark that
- * descends part way is a new kind with a clamp in `.slang` and a matching one in
- * `syntenyRibbonPath.ts`. These need none of what that buys — no pick index, no
- * CIGAR tiling, no alpha compositing — and there are thousands of them, not
- * millions. See `agent-docs/ideas/offscreen-synteny-mates.md`.
- *
- * EVERY LANE IN ONE CALL, not one per strip: the band's two strips share a fill
- * and the vertical room their labels stack into (`placeLabels`).
- *
- * THE LABEL IS THE ACTIONABLE HALF, and it names a STRETCH rather than a mark.
- * It goes on wherever it fits rather than under a count threshold — fitting is
- * what "too many to label" means, and a run too narrow for its contig name is
- * exactly the one whose neighbours would have overprinted it.
- */
-export function drawOffscreenMates(
-  ctx: Ctx2D,
-  lanes: OffscreenMateLane[],
-  band: OffscreenMateBand,
-) {
-  const { width, height, markColor, labelColor, haloColor } = band
-  const measure = band.measure ?? (text => ctx.measureText(text).width)
-  const laneRects = lanes.map(lane =>
-    offscreenMateRects({ ...lane, width, height }),
-  )
-  if (laneRects.every(rects => rects.length === 0)) {
-    return
-  }
-  // ONE PATH PER COLOR, NOT A FILL EACH. The mark color carries alpha, so marks
-  // of one color filled separately composite against each other and the strip
-  // saturates to near-black at whole-chromosome zoom, reading as a solid
-  // ideogram. Filled as one path they take the color once, and the SVG export
-  // gets one `<path>` per contig. Marks of DIFFERENT colors do composite, which
-  // is honest — they are alignments to different places.
-  for (const [fillStyle, rects] of markPathsByColor(
-    laneRects,
-    lanes,
-    markColor,
-  )) {
+  for (const [fillStyle, group] of byColor) {
     ctx.fillStyle = fillStyle
     ctx.beginPath()
-    for (const r of rects) {
-      ctx.rect(r.x, r.y, r.width, r.height)
+    for (const { marks: m, i } of group) {
+      ctx.rect(m.xs[i]!, m.strip.markY, m.widths[i]!, m.strip.markHeight)
     }
     ctx.fill()
   }
+}
+
+// Every lane in one call: the band's two strips share the vertical room their
+// labels stack into. A label names a stretch and goes on wherever it fits;
+// fitting is what "too many to label" means.
+export function drawOffscreenMates(
+  ctx: Ctx2D,
+  lanes: OffscreenMateLane[],
+  paint: OffscreenMatePaint,
+) {
+  const { markColor, labelColor, haloColor } = paint
+  const measure = paint.measure ?? (text => ctx.measureText(text).width)
+  const marks = lanes.map(lane => laneMarks(lane)).filter(m => m !== undefined)
+  if (marks.every(m => m.count === 0)) {
+    return
+  }
+  fillMarks(ctx, marks, markColor)
 
   ctx.font = LABEL_FONT
   ctx.textBaseline = 'alphabetic'
@@ -786,14 +507,16 @@ export function drawOffscreenMates(
   ctx.lineJoin = 'round'
   ctx.strokeStyle = haloColor
   ctx.fillStyle = labelColor
-  const markHeight = offscreenMateMarkHeight(height)
-  const zones = lanes.map(lane => markZone(lane.side, height, markHeight))
+  const zones = marks.map(({ strip }) => ({
+    from: strip.markY,
+    to: strip.markY + strip.markHeight,
+  }))
   const labels = placeLabels(
-    lanes.map((lane, i) => ({
-      runs: labelRuns(laneRects[i]!, measure),
-      baselines: labelBaselines(lane.side, height, zones),
+    marks.map(m => ({
+      runs: labelRuns(m, measure),
+      baselines: labelBaselines(m.lane.side, m.lane.height, zones),
     })),
-    width,
+    marks[0]!.lane.width,
   )
   for (const { refName, x, y } of labels) {
     ctx.strokeText(refName, x, y)

@@ -73,8 +73,7 @@
 // field — it scales on the way in, computes a field, or emits a variable number
 // of records — is to write the loop over the generated offset maps, not to
 // reach for a generated per-record form. `packCoverageBinsForGpu` and
-// `computeInterbaseCoverage` are both that case. Written up in
-// `agent-docs/rejected-ideas/`.
+// `computeInterbaseCoverage` are both that case. Declined.
 
 import {
   INSTANCE_OFFSET_F32 as SEG_F32,

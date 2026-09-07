@@ -70,22 +70,6 @@ const KIND_GROUPS = [
 // first paragraph.
 const MAX_DESCRIPTION_WORDS = 45
 
-const AREA_GROUPS = [
-  ['rendering-and-displays', 'Rendering and displays'],
-  ['config-and-mst', 'Config and MST'],
-  ['performance-and-measurement', 'Performance and measurement'],
-  ['comparative-and-pangenome', 'Comparative and pangenome'],
-  ['data-and-demos', 'Data and demos'],
-  [
-    'figures-that-were-attempted-and-cannot-be-made',
-    'Figures that were attempted and cannot be made',
-  ],
-  ['tooling-tests-and-docs', 'Tooling, tests and docs'],
-].map(([area, title]) => ({
-  title: title!,
-  match: (doc: Doc) => doc.area === area,
-}))
-
 const INDEXES = [
   {
     dir: 'reference',
@@ -118,17 +102,6 @@ const INDEXES = [
     slugFilenames: true,
   },
   {
-    // One file per declined idea, grouped by the `area:` each carries; an area
-    // outside AREA_GROUPS is an error, so a typo cannot drop an entry from the
-    // page.
-    dir: 'rejected-ideas',
-    marker: 'REJECTED IDEAS INDEX',
-    label: 'Rejected ideas index',
-    heading: 'The idea',
-    slugFilenames: true,
-    groups: AREA_GROUPS,
-  },
-  {
     // `handoffs/` was the one directory here you had to `ls`, which is the
     // state agent-docs/CLAUDE.md tells everyone else not to be in. It is also
     // the directory that most needs the discipline: a handoff's subject is
@@ -146,7 +119,6 @@ interface Doc {
   name: string
   description: string
   audience: string | undefined
-  area: string | undefined
   kind: string | undefined
 }
 
@@ -191,7 +163,6 @@ function collectDocs(
         name,
         description,
         audience: fm.audience?.trim(),
-        area: fm.area?.trim(),
         kind: fm.kind?.trim(),
       })
     }
@@ -232,7 +203,7 @@ for (const {
     : []
   if (ungrouped.length) {
     throw new Error(
-      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs the frontmatter field the groups split on (\`kind:\` in reference/, \`area:\` in rejected-ideas/), set to one of the values in website/scripts/generate-doc-indexes.ts`,
+      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs the frontmatter field the groups split on (\`kind:\` in reference/), set to one of the values in website/scripts/generate-doc-indexes.ts`,
     )
   }
   checkOrWrite({

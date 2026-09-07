@@ -20,7 +20,7 @@
 //
 // Read that last arm's ABSOLUTES loosely and its ratio strictly: it runs last
 // and absorbs the earlier arms' GC, which moved it 2x across runs (the trap the
-// sequential-timing entry in agent-docs/rejected-ideas/ describes). The `in`-to-walk ratio
+// sequential-timing entry in agent-docs/architecture-decision-records/ describes). The `in`-to-walk ratio
 // held at ~1% throughout, which is the claim it is here to settle.
 //
 // WHAT IS MODELLED: the walk and the memo, over a tree with the real SHAPE —

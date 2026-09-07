@@ -25,8 +25,7 @@ function namesOf(name: string | readonly string[]) {
  * Replace a view type's state model with an extended one, e.g. to add a menu
  * item to `LinearGenomeView`. Pass an array to extend several at once, which is
  * how a contribution reaches a family: the tree spells a display family as a
- * shared mixin set rather than a chain, so there is no parent to name — see
- * `agent-docs/rejected-ideas/`, "Give a pluggable element an `extendsType`".
+ * shared mixin set rather than a chain, so there is no parent to name, which is why an `extendsType` was declined.
  *
  * `Core-extendPluggableElement` fires for every pluggable element there is —
  * adapters, widgets, RPC methods, all of them — so a callback written against

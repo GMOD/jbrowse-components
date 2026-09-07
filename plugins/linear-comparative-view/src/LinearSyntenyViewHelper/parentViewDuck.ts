@@ -1,3 +1,4 @@
+import type { OffscreenMateMode } from '../LinearSyntenyView/offscreenMateModes.ts'
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -48,12 +49,7 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   // is nested inside; a view below the fold has no canvas, so it will never
   // paint (see ComparativeSurface.hostMounted)
   effectiveBodyMounted: boolean
-  // paint the marks for alignments whose mate is on a contig the facing row is
-  // not displaying — a repaint, never a refetch
-  showOffscreenMates: boolean
-  // whether the file was queried from the LOWER row as well, which is what says
-  // the lower row's mark strip can be complete — see `laneData`
-  bidirectionalFetch: boolean
+  offscreenMateMode: OffscreenMateMode
   // the same floor the ribbons are culled by, applied to the marks so filtering
   // a hairball down does not leave a fringe of marks for what it hid
   minAlignmentLength: number

@@ -57,7 +57,7 @@ export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
  * Keying on the node is safe because nothing re-parents one — both `detach`
  * call sites hand the node straight to `scheduleDetachedDestroy` (ADR-069), so
  * a cached ancestor can only go stale by dying, which the `isAlive` check
- * catches. That is the difference from the three memos agent-docs/rejected-ideas/ records
+ * catches. That is the difference from the three memos agent-docs/architecture-decision-records/ records
  * removing: each keyed on something its caller had just allocated.
  */
 export function cachedParent<T>(

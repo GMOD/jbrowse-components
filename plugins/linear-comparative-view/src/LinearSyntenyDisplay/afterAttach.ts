@@ -98,7 +98,7 @@ export function doAfterAttach(
               offsetPx: v1.offsetPx,
               displayedRegions: v1.displayedRegions,
               windowRegions: self.targetWindowRegions,
-              queried: view.bidirectionalFetch,
+              queried: view.offscreenMateMode === 'both',
             },
           }
         })
@@ -187,6 +187,7 @@ export function doAfterAttach(
           result.targetOffscreenMates,
           queryCanonical,
         ),
+        targetQueried: queried,
       }
     },
     commit: ({ instanceData, ...featureData }) => {

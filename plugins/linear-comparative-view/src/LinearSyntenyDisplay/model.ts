@@ -81,6 +81,10 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // never requests these, so this is the one class the view cannot report from
   // one fetch. Placed on the TARGET axis.
   targetOffscreenMates: OffscreenMateData
+  // whether the lower row was queried for this payload, which is what lets its
+  // strip be drawn: from one fetch the lower row's culled lane holds only what
+  // fell inside the upper row's pan buffer
+  targetQueried: boolean
 }
 
 export interface FeatPos {
@@ -304,24 +308,11 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Every alignment this display drew geometry for, placed on both axes, so
-       * either strip can mark the ones the band is currently culling — the
-       * facing end is on a contig that row displays and has scrolled off, which
-       * no fetch-time tally can answer. ONE PER ROW, because culling is
-       * symmetric: an alignment can be undrawable with its query end off screen
-       * and its target end in plain sight, and marking it on the query axis
-       * puts it at an x the layout rejects. See `culledRibbonMates`.
-       *
-       * LAZY BY CONSTRUCTION rather than gated on the setting:
-       * `offscreenMateStrips` reads `showOffscreenMates` before it reads this,
-       * so with the marks off nothing observes it and the pass never runs.
-       *
-       * BOTH PERSPECTIVES ARE BUILT WHATEVER THE FETCH IS, because they are one
-       * walk — the query span is what says whether the target span is a mate at
-       * all — and whether the lower row's is DRAWN is a separate question that
-       * `laneData` answers: a row gets a strip only if the file was queried
-       * from it, or the strip stops at the fetch window's edge rather than at
-       * the data's.
+       * Every alignment this display drew geometry for, placed on both axes,
+       * so either strip can mark the ones the band is currently culling. One
+       * per row, since culling is symmetric. Lazy by construction: with the
+       * marks off nothing observes it. Both perspectives are one walk; whether
+       * the lower row's is drawn is `laneData`'s question.
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self
@@ -462,9 +453,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
-          // a second query per level, so it belongs here for the same reason the
-          // CIGAR options do: it changes what comes back, not how it is drawn
-          view.bidirectionalFetch,
+          view.offscreenMateMode === 'both',
           // the resolved tier, not view.lodMode: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
           this.lodTier,

@@ -255,7 +255,7 @@ long-lived, higher-privilege refresh token that can regenerate it gets
 
 "Nothing anywhere" would be too strong: Apollo3 has an "Apollo → Log out" menu
 item that opens a dialog and calls `removeToken()` on the account picked
-(`menus/topLevelMenu.ts:51`, `components/LogOut.tsx`). agent-docs/rejected-ideas/ already
+(`menus/topLevelMenu.ts:51`, `components/LogOut.tsx`). agent-docs/architecture-decision-records/ already
 weighed that and ruled it evidence about Apollo rather than demand here, so this
 is not a reason to reopen the menu item. Two mechanics from it are still worth
 having in hand: their handler follows the call with `globalThis.location.reload()`,
@@ -266,8 +266,7 @@ already revokes.
 
 ## Declined: a global sign-out menu item
 
-Built and backed out (2026-08), filed under "Config and MST" in
-[rejected-ideas/](../rejected-ideas/README.md) with the
+Built and backed out (2026-08), keeping the
 `signOut()` refresh-token detail that is worth keeping if it ever returns.
 
 ## Already landed, so don't re-derive it

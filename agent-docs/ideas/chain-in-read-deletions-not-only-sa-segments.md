@@ -33,6 +33,6 @@ BAM; COLO829 also needs the local files under `/home/cdiesh/fusion_demo_build`).
 Use D ops only — an N op is a splice, and every RNA-seq read would become a
 route.
 
-If the numbers say no, this belongs in
-[rejected-ideas/](../rejected-ideas/README.md) with them, which is worth as
+If the numbers say no, this becomes a
+Rejected ADR with them, which is worth as
 much as shipping it.

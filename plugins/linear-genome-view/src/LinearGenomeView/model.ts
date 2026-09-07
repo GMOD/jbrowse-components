@@ -3236,7 +3236,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * `centerAt`'s animated twin: the same destination, reached along the
          * arc instead of jumped to, at the zoom the view is already on.
          */
-        flyToCenter(coord: number, refName: string) {
+        flyToCenter(
+          coord: number,
+          refName: string,
+          displayedRegionIndex?: number,
+        ) {
           // `bpToLinearBp` rather than `bpToPx`, which rounds to a whole pixel
           // at the current zoom: mid-flight that zoom is a point on somebody
           // else's arc, and a destination quantized against it moves with it.
@@ -3244,6 +3248,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             refName,
             coord,
             displayedRegions: self.displayedRegions,
+            displayedRegionIndex,
           })
           if (centerBp !== undefined) {
             flyTo(

@@ -40,8 +40,7 @@ Check these before opening anything, in roughly descending volume:
    members reading a concrete view type. **The constraint that decides how far
    you get is typing, not taste**: passing a model type as a generic to
    `types.compose` degrades the result to `any`, silently. See the
-   `createEmbeddedSessionModel` entry in
-   [rejected-ideas/](../rejected-ideas/README.md#config-and-mst).
+   declined `createEmbeddedSessionModel` factory.
 3. **`export default`.** The name is local to the module, so it never collides
    at an import site. `SetRowArrangementDialog`, `ReorderChromosomesDialog`,
    `GetFeatureDetails`, `f`. For RPC classes the identity that matters is the

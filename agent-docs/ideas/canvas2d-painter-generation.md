@@ -16,9 +16,8 @@ architecture deliberately does not have" (indirect drawing, storage buffers,
 depth/early-Z, draw-call merging, persistent staging, buffer pooling, GPU
 picking, runtime shader generation, nested render scopes) and §"Keeping the two
 backends in parity" (a hit test is a consumer of shader scalars too), in
-`measurements/buffer-churn-pan.json`, and in
-[rejected-ideas/](../rejected-ideas/README.md) (LUT-indexed
-colour, compute-driven packing). The handoff itself is closed.
+`measurements/buffer-churn-pan.json`; LUT-indexed colour and compute-driven
+packing were declined. The handoff itself is closed.
 
 Vocabulary is the handoff's. **A** — transliterable functions only; the painter
 calls `//! js-export`ed scalars and hand-writes the drawing. **B** —

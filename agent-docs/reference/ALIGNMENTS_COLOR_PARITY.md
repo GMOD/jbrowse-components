@@ -184,7 +184,7 @@ neither `> upper` nor inside `(0, lower)`), so those arcs went red over reads
 that stayed grey.
 
 Both sides read TLEN now, and nothing reads the span for colour. `absrad`
-survives only as arc *height*, which is geometry. See agent-docs/rejected-ideas/ for the
+survives only as arc *height*, which is geometry. See agent-docs/architecture-decision-records/ for the
 capability that was given up with it.
 
 `readInsertSizes` is already `Math.abs(template_length)` — set at extraction in

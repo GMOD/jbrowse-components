@@ -74,7 +74,7 @@ interface SyntenyView {
   followUnaligned: boolean
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
-  setBidirectionalFetch: (arg: boolean) => void
+  setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
 }
 
 async function openWith(
@@ -206,7 +206,7 @@ test('the target axis is canonicalized against its own assembly', async () => {
 test('the off-screen mate contigs are canonicalized, each against its own row', async () => {
   const view = await openWith(OFFSCREEN_ALIAS, ['volvox_del', 'volvox'])
   const [del, volvox] = view.views
-  view.setBidirectionalFetch(true)
+  view.setOffscreenMateMode('both')
   await del!.navToLocString('ctgA', 'volvox_del')
   await volvox!.navToLocString('ctgA', 'volvox')
 

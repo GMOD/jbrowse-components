@@ -25,7 +25,7 @@ the bottom of the box grows as the mode gets denser:
 
 In superCompact the label more than covers the transcript under it. Measured
 2026-08-11 while evaluating overlay as a compaction for `below` (it was rejected
-for this reason — see agent-docs/rejected-ideas/).
+for this reason — see agent-docs/architecture-decision-records/).
 
 **The call to make: is this a bug or the contract?** Reserving a row for overlay
 in compact modes is now cheap — the `labelRowsAbove` channel exists and the main

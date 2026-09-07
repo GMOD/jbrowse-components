@@ -74,5 +74,5 @@ correctly under a moved viewport.
 Count the RPCs a slow one-screen drag issues on an LD track and on a variant
 matrix, against the same drag on a wiggle track for the buffered baseline.
 `reference/INTERACTION_PERF.md` has the harness conventions. If the count is
-already near one, the granularity argument is wrong and this belongs in
-`agent-docs/rejected-ideas/` with the numbers.
+already near one, the granularity argument is wrong and this becomes a
+Rejected ADR with the numbers.

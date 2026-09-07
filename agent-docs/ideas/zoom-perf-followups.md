@@ -12,8 +12,7 @@ instrument caveats there are load-bearing for everything below: the top-self
 list shows 22 of ~920 sampled frames, so every self-time figure quoted here is a
 floor.
 
-Three things this file used to propose are now in
-[rejected-ideas/](../rejected-ideas/README.md): the MAF overlay
+Three things this file used to propose are declined: the MAF overlay
 flush, moving MAF's packing to the worker, and folding content staleness into
 `displayPhase`.
 
@@ -164,8 +163,7 @@ Pool where the gesture changes every key.
 
 ## Retire the stop-token blob URL — dead, and the count is why
 
-**Moved to [rejected-ideas/](../rejected-ideas/README.md)
-2026-08-30.** This section ended with "do first, before any of the work: count
+**Declined 2026-08-30.** This section ended with "do first, before any of the work: count
 the mints", and that was the right instinct: a 20-frame zoom over four tracks
 mints **8**. Even extrapolated generously to a few hundred a gesture, the ~100ms
 frame would put `URL.createObjectURL` at 0.3ms a call, and a registry insert is
@@ -280,5 +278,5 @@ price worth paying, and only then write the plumbing.
 - **Three overlays set `ctx.font` ungated** —
   `drawVariantInsertionGlyphs.ts:147`, `drawMultiRowIndelGlyphs.ts:113`,
   `drawOffscreenMates.ts:763`. Same bug MAF already fixed. Hygiene only: per
-  agent-docs/rejected-ideas/ they would win nothing, only change whose name is in the
+  agent-docs/architecture-decision-records/ they would win nothing, only change whose name is in the
   profile.

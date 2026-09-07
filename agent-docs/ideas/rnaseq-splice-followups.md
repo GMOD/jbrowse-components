@@ -52,9 +52,8 @@ established is what to do when none of the three is present, which is when a
 reader most needs the chip — that wants a comparison against annotated gene
 strand, and a display cannot assume an annotation track is loaded.
 
-**Mirrored ± coverage band — declined**, and recorded in
-[rejected-ideas/](../rejected-ideas/README.md) with what a
-re-proposal has to beat.
+**Mirrored ± coverage band — declined**; a re-proposal has to beat the
+measured version.
 
 The thread's one unfinished build item is a figure, not a feature:
 [capture-a-figure-for-the-junction-bed-tutorial-section.md](capture-a-figure-for-the-junction-bed-tutorial-section.md).

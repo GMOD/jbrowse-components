@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
+import { ContextMenu, ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -18,6 +18,7 @@ import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { OffscreenMateHover } from './OffscreenMateTooltip.tsx'
+import type { OffscreenMateNavHit } from './offscreenMateStrip.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -75,6 +76,27 @@ function openSyntenyFeatureWidget(
   })
 }
 
+function markMenuItems(
+  model: LinearSyntenyViewHelperModel,
+  hit: OffscreenMateNavHit,
+) {
+  const panel = hit.side === 'top' ? 'panel below' : 'panel above'
+  return [
+    {
+      label: `Show ${hit.refName} on the ${panel}`,
+      onClick: () => {
+        model.showOffscreenMateContig(hit)
+      },
+    },
+    {
+      label: 'Copy contig name',
+      onClick: () => {
+        navigator.clipboard.writeText(hit.refName).catch(() => {})
+      },
+    },
+  ]
+}
+
 const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   model,
 }: {
@@ -96,48 +118,35 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const dragRef = useRef<
     { startX: number; lastX: number; panned: boolean } | undefined
   >(undefined)
-  // The contig under the pointer's mark and the pointer that found it, or
-  // undefined. Local rather than on the model beside `hoveredFeature`: nothing
-  // outside this canvas reads it, and a mark is not a feature — putting it there
-  // would mean every consumer of the hovered feature learning to expect
-  // something with no feature id.
-  const [hoveredContig, setHoveredContig] = useState<
+  // The mark under the pointer, stamped with the band transform it was picked
+  // under: the band moving under a stationary cursor fires no pointer event,
+  // so a hover is valid only for the transform that produced it. Local rather
+  // than on the model beside `hoveredFeature`, since a mark is not a feature.
+  const [hoveredMark, setHoveredMark] = useState<
     (OffscreenMateHover & { bandTransformKey: string }) | undefined
   >(undefined)
-  // The other axis of a stored hover's invalidation: the band moving under a
-  // stationary cursor, which fires no pointer event — a wheel-zoom, or the pan
-  // half of a drag. The level's own hover has `installClearHoverOnBandMove` for
-  // this; the contig is local state, so without it the tooltip goes on naming
-  // the contig the cursor used to be over.
-  //
-  // STAMPED AND COMPARED, not cleared by an effect. The hover is only ever
-  // valid for the transform it was picked under, so that is a property OF the
-  // stored value rather than a second piece of state to keep in step with it —
-  // an effect would render the stale name once and take it back on the commit
-  // after, which is the "you might not need an effect" case exactly.
+  const [markMenu, setMarkMenu] = useState<
+    { hit: OffscreenMateNavHit; clientX: number; clientY: number } | undefined
+  >(undefined)
   const { bandTransformKey } = model
   const hover =
-    hoveredContig?.bandTransformKey === bandTransformKey
-      ? hoveredContig
-      : undefined
+    hoveredMark?.bandTransformKey === bandTransformKey ? hoveredMark : undefined
   // One pick per frame: a pick is under 0.1ms on collinear data but ~12.5ms on
   // an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse reporting faster
   // than the display would otherwise spend the whole frame budget on hovers
   // nothing draws.
   const { queue: queueHover, cancel: cancelHover } =
     useCoalescedPointer<CanvasPoint>(at => {
-      const mate = offscreenMateHit(model, at.x, at.y)
-      setHoveredContig(
+      const mate = offscreenMateHit(model.offscreenMateStrips, at.x, at.y)
+      setHoveredMark(
         mate && {
-          refName: mate.refName,
-          side: mate.side,
+          ...mate,
           clientX: at.clientX,
           clientY: at.clientY,
           bandTransformKey: model.bandTransformKey,
         },
       )
-      // a mark hovered is not a ribbon hovered, and leaving the old one lit
-      // says the pointer is somewhere it is not
+      // a mark hovered is not a ribbon hovered
       model.setHoveredFeature(mate ? undefined : pickAt(at))
     })
 
@@ -223,7 +232,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   // out), and ends at whatever pointerup it gets.
   function handlePointerLeave() {
     cancelHover()
-    setHoveredContig(undefined)
+    setHoveredMark(undefined)
     model.setHoveredFeature(undefined)
   }
 
@@ -264,12 +273,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     // The mark strip first, in the few pixels above every ribbon. A mark is not
-    // a feature — it stands for alignments this level cannot draw at all — so it
-    // answers with a navigation rather than a selection, and must not fall
-    // through to clear the clicked feature on its way.
-    const mate = offscreenMateNavHit(model, coords.x, coords.y)
+    // a feature, so it answers with a navigation rather than a selection, and
+    // must not fall through to clear the clicked feature on its way.
+    const mate = offscreenMateNavHit(
+      model.offscreenMateStrips,
+      coords.x,
+      coords.y,
+    )
     if (mate) {
-      model.showOffscreenMateContig(mate.refName, mate.navRow, mate)
+      model.showOffscreenMateContig(mate)
       return
     }
     // A release outside the band answers no hit (the pick engine rejects a y
@@ -294,11 +306,19 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
-    // The mark strip first, as in the move and release handlers. The strip is
-    // NOT clear of the ribbons — the pick engine accepts any y inside the
-    // track height — so without this a right-click on a mark opened the menu
-    // for whatever ribbon happened to run beneath it, and outlined it too.
-    if (offscreenMateHit(model, coords.x, coords.y)) {
+    // The mark strip first, as in the move and release handlers: the pick
+    // engine accepts any y inside the track height, so a right-click on a mark
+    // would otherwise open the menu for whatever ribbon runs beneath it.
+    const mate = offscreenMateNavHit(
+      model.offscreenMateStrips,
+      coords.x,
+      coords.y,
+    )
+    if (mate) {
+      event.preventDefault()
+      cancelHover()
+      setHoveredMark(undefined)
+      setMarkMenu({ hit: mate, clientX: event.clientX, clientY: event.clientY })
       return
     }
     const hit = pickAt(coords)
@@ -352,6 +372,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       />
       <OffscreenMateOverlay model={model} />
       {hover ? <OffscreenMateTooltip model={model} hover={hover} /> : null}
+      {markMenu ? (
+        <ContextMenu
+          anchor={markMenu}
+          menuItems={markMenuItems(model, markMenu.hit)}
+          onClose={() => {
+            setMarkMenu(undefined)
+          }}
+        />
+      ) : null}
       {combinedError ? (
         // One banner stacks the GPU error and every display's fetch error, so
         // Retry has to undo whichever are present: `retry()` re-inits the

@@ -32,10 +32,10 @@ const TARGET_ROW = { bpPerPx: 99, offsetPx: 999 }
 function source(over: Record<string, unknown> = {}) {
   return {
     level: 0,
+    height: 100,
     linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
     parentView: {
-      showOffscreenMates: true,
-      bidirectionalFetch: false,
+      offscreenMateMode: 'query' as const,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -46,24 +46,23 @@ function source(over: Record<string, unknown> = {}) {
 }
 
 // The mirror: alignments anchored on the row BELOW, whose query end is on a
-// contig the row above is not displaying. Only a bidirectional fetch produces
-// these, and they are placed against the lower row's own ruler — so the flag is
-// part of the fixture rather than incidental to it: the lower strip is drawn
-// only for a row the fetch went and asked about.
+// contig the row above is not displaying. Only a payload that queried the
+// lower row carries these, and the lower strip is drawn only from one that did.
 function bothSides(over: Record<string, unknown> = {}) {
   return {
     level: 0,
+    height: 100,
     linearSyntenyDisplays: [
       {
         featureData: {
           offscreenMates: named('fromQuery'),
           targetOffscreenMates: named('fromTarget'),
+          targetQueried: true,
         },
       },
     ],
     parentView: {
-      showOffscreenMates: true,
-      bidirectionalFetch: true,
+      offscreenMateMode: 'both' as const,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -73,8 +72,12 @@ function bothSides(over: Record<string, unknown> = {}) {
   }
 }
 
-function withBand(model: ReturnType<typeof source>, width = 800, height = 100) {
-  return { ...model, height, parentView: { ...model.parentView, width } }
+function hit(model: ReturnType<typeof source>, x: number, y: number) {
+  return offscreenMateHit(offscreenMateStrips(model), x, y)
+}
+
+function navHit(model: ReturnType<typeof source>, x: number, y: number) {
+  return offscreenMateNavHit(offscreenMateStrips(model), x, y)
 }
 
 // The one mistake here that draws something plausible instead of nothing: these
@@ -92,7 +95,7 @@ test('an interior level reads its own upper row', () => {
       source({
         level: 1,
         parentView: {
-          showOffscreenMates: true,
+          offscreenMateMode: 'query',
           minAlignmentLength: 0,
           views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
         },
@@ -106,7 +109,7 @@ test('the toggle off draws nothing', () => {
     offscreenMateStrips(
       source({
         parentView: {
-          showOffscreenMates: false,
+          offscreenMateMode: 'off',
           minAlignmentLength: 0,
           views: [QUERY_ROW, TARGET_ROW],
         },
@@ -149,7 +152,7 @@ test('a level whose row is gone draws nothing rather than throwing', () => {
     offscreenMateStrips(
       source({
         parentView: {
-          showOffscreenMates: true,
+          offscreenMateMode: 'query',
           minAlignmentLength: 0,
           views: [],
         },
@@ -196,22 +199,22 @@ test('an empty mirror lane is not a second strip', () => {
 // `offscreenMateAt` owns the geometry; what this adds is reading it across every
 // display on the level and against the level's width and height.
 test('a pointer in the strip answers the contig that mark points at', () => {
-  expect(offscreenMateHit(withBand(source()), 1, 1)?.refName).toBe('other')
+  expect(hit(source(), 1, 1)?.refName).toBe('other')
 })
 
 test('below the strip answers nothing, leaving the ribbons to the pick engine', () => {
-  expect(offscreenMateHit(withBand(source()), 1, 50)).toBeUndefined()
+  expect(hit(source(), 1, 50)).toBeUndefined()
 })
 
 test('with the toggle off nothing is hittable, since nothing is drawn', () => {
   const s = source({
     parentView: {
-      showOffscreenMates: false,
+      offscreenMateMode: 'off',
       minAlignmentLength: 0,
       views: [QUERY_ROW, TARGET_ROW],
     },
   })
-  expect(offscreenMateHit(withBand(s), 1, 1)).toBeUndefined()
+  expect(hit(s, 1, 1)).toBeUndefined()
 })
 
 test('a second display on the level is asked too', () => {
@@ -221,29 +224,31 @@ test('a second display on the level is asked too', () => {
       { featureData: { offscreenMates: named('ctgQ') } },
     ],
   })
-  expect(offscreenMateHit(withBand(s), 1, 1)?.refName).toBe('ctgQ')
+  expect(hit(s, 1, 1)?.refName).toBe('ctgQ')
 })
 
 // The two strips are at opposite edges of the band, so which one a pointer is
 // in decides both what it names and which row a click on it moves.
 test('a pointer at the bottom edge answers the target axis, and the row above', () => {
-  expect(offscreenMateHit(withBand(bothSides()), 1, 99)).toEqual({
+  expect(hit(bothSides(), 1, 99)).toEqual({
     refName: 'fromTarget',
+    displayed: false,
     navRow: 0,
     side: 'bottom',
   })
 })
 
 test('a pointer at the top edge still answers the query axis', () => {
-  expect(offscreenMateHit(withBand(bothSides()), 1, 1)).toEqual({
+  expect(hit(bothSides(), 1, 1)).toEqual({
     refName: 'fromQuery',
+    displayed: false,
     navRow: 1,
     side: 'top',
   })
 })
 
 test('the band between the two strips is neither', () => {
-  expect(offscreenMateHit(withBand(bothSides()), 1, 50)).toBeUndefined()
+  expect(hit(bothSides(), 1, 50)).toBeUndefined()
 })
 
 // The number the hover reads, and the one the hamburger item reports for the
@@ -288,7 +293,7 @@ test('a display that has not fetched counts nothing rather than throwing', () =>
 // have to be the same ones or a click lands on a different axis from the mark
 // the pointer was over.
 test('a click resolves the same strip and row, plus the mate locus', () => {
-  expect(offscreenMateNavHit(withBand(bothSides()), 1, 99)).toEqual({
+  expect(navHit(bothSides(), 1, 99)).toEqual({
     refName: 'fromTarget',
     navRow: 0,
     side: 'bottom',
@@ -326,6 +331,7 @@ test('the bottom strip marks the ribbons the row above culled', () => {
         featureData: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
+          targetQueried: true,
         },
         culledRibbonMates: {
           onQueryAxis: culled('inBand', [0, 50]),
@@ -337,7 +343,10 @@ test('the bottom strip marks the ribbons the row above culled', () => {
   expect(offscreenMateStrips(model)).toMatchObject([
     { side: 'bottom', navRow: 0 },
   ])
-  expect(offscreenMateHit(withBand(model), 1, 99)?.refName).toBe('scrolledAway')
+  expect(hit(model, 1, 99)).toMatchObject({
+    refName: 'scrolledAway',
+    displayed: true,
+  })
 })
 
 // The same test the top strip's culled lane runs, on the other row's band: an
@@ -352,6 +361,7 @@ test('an alignment the row above is still showing is no mark down there', () => 
             featureData: {
               offscreenMates: mates(0),
               targetOffscreenMates: mates(0),
+              targetQueried: true,
             },
             culledRibbonMates: {
               onQueryAxis: culled('inBand', [0, 50]),
@@ -375,6 +385,7 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
         featureData: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
+          targetQueried: true,
         },
         culledRibbonMates: {
           onQueryAxis: culled('inBand', [0, 50]),
@@ -383,7 +394,7 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
       },
     ],
   })
-  expect(offscreenMateNavHit(withBand(model), 1, 99)).toMatchObject({
+  expect(navHit(model, 1, 99)).toMatchObject({
     refName: 'scrolledAway',
     navRow: 0,
     side: 'bottom',
@@ -409,6 +420,7 @@ test('a mark whose mate span collapses still resolves to a place', () => {
         featureData: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
+          targetQueried: true,
         },
         culledRibbonMates: {
           onQueryAxis: culled('inBand', [0, 50]),
@@ -417,34 +429,26 @@ test('a mark whose mate span collapses still resolves to a place', () => {
       },
     ],
   })
-  expect(offscreenMateNavHit(withBand(model), 1, 99)).toMatchObject({
+  expect(navHit(model, 1, 99)).toMatchObject({
     refName: 'scrolledAway',
     locus: { start: 7_000, end: 7_000 },
     mateCumBp: { start: 100_000, end: 100_050 },
   })
 })
 
-// The ring, and why the lower strip waits. A culled target-axis mark is an
-// alignment whose query end is off the row above, so a single fetch holds only
-// the ones inside its pan buffer — the strip would stop at the fetch window's
-// edge rather than at the data's, and step there as the upper row pans. The
-// same model with the second query on draws it (above); with the query off it
-// draws nothing rather than a fraction.
-test('without the second query the lower strip draws nothing at all', () => {
+// A culled target-axis mark is an alignment whose query end is off the row
+// above, so a single fetch holds only the ones inside its pan buffer: the strip
+// would stop at the fetch window's edge rather than at the data's. The gate is
+// the payload, not the live setting, so switching the second query on does not
+// draw the previous fetch's fraction for the round trip it takes to land.
+test('a payload that did not query the lower row draws no lower strip', () => {
   const model = bothSides({
-    parentView: {
-      showOffscreenMates: true,
-      bidirectionalFetch: false,
-      minAlignmentLength: 0,
-      overdrawPx: 1000,
-      width: 800,
-      views: [QUERY_ROW, QUERY_ROW],
-    },
     linearSyntenyDisplays: [
       {
         featureData: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
+          targetQueried: false,
         },
         culledRibbonMates: {
           onQueryAxis: culled('inBand', [0, 50]),
@@ -454,7 +458,7 @@ test('without the second query the lower strip draws nothing at all', () => {
     ],
   })
   expect(offscreenMateStrips(model)).toEqual([])
-  expect(offscreenMateHit(withBand(model), 1, 99)).toBeUndefined()
+  expect(hit(model, 1, 99)).toBeUndefined()
 })
 
 // The count is the half of it that would be a wrong NUMBER rather than a
@@ -464,14 +468,15 @@ test('an ungated lower lane is not counted either', () => {
   expect(
     offscreenMateCount(
       bothSides({
-        parentView: {
-          showOffscreenMates: true,
-          bidirectionalFetch: false,
-          minAlignmentLength: 0,
-          overdrawPx: 1000,
-          width: 800,
-          views: [QUERY_ROW, QUERY_ROW],
-        },
+        linearSyntenyDisplays: [
+          {
+            featureData: {
+              offscreenMates: named('fromQuery'),
+              targetOffscreenMates: named('fromTarget'),
+              targetQueried: false,
+            },
+          },
+        ],
       }),
       'fromTarget',
       'bottom',

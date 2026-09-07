@@ -178,7 +178,7 @@ its cached bytes. The caches work; their scope is what is wrong.
 context, so `5 x min(hardwareConcurrency, 4)` = **20 inflate workers** on any
 machine with six or more cores, plus the RPC workers themselves. Each runs its
 own copy of the inlined wasm bundle, so each carries an independent
-`WebAssembly.Memory` — and that memory is grow-only, which agent-docs/rejected-ideas/
+`WebAssembly.Memory` — and that memory is grow-only, which agent-docs/architecture-decision-records/
 already names as the root cause of the transient RPC-worker peaks (deep CRAM,
 ~997 MB down to 7 MB after GC). Those heaps used to outlive the last bgzip
 track; `@gmod/bgzf-filehandle` 6.6.0 reaps a pool's workers after 3 minutes
@@ -948,7 +948,7 @@ Stated so the next audit does not re-derive them.
   `200x.longread.mod.bam`, against 56ms of mismatch walking. Reading the base out
   of `NUMERIC_SEQ`'s nibbles instead is the obvious answer and measures at
   **parity** — see the `+packedSEQ` arm in `benches/readBaseCounts.bench.ts` and
-  the agent-docs/rejected-ideas/ entry. What is left is sharing the one decoded string
+  the agent-docs/architecture-decision-records/ entry. What is left is sharing the one decoded string
   between the two consumers, which is a worker-pipeline change rather than a
   library one: they are in different phases of `executeRenderAlignmentData`.
 - **Cancellation reaches the socket.** `withStopTokenSignal` on the chunk reads,

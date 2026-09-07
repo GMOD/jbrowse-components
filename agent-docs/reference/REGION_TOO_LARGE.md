@@ -254,8 +254,7 @@ way to ask a cheap question of a chunk-granular reader.
 that same chunk list, so the two agree unless the line scan early-returns before
 consuming it (`tabixIndexedFile.ts` — "offers 7 chunks and reads 1" on a sparse
 file). Measured against actual bytes read on the hosted RefSeq GFF3: 1.00x at
-1 kb, 100 kb, 6.18 Mb and whole-chromosome. The 3.57x in
-[rejected-ideas/](../rejected-ideas/README.md) is the gap to `@gmod/bam`'s tighter *cut*
+1 kb, 100 kb, 6.18 Mb and whole-chromosome. The 3.57x measured for a tabix chunk forecast is the gap to `@gmod/bam`'s tighter *cut*
 forecast on a file where that early return fires, not an over-report of this
 file's download — chr1 really does cost 5,542,779 bytes against its 5 Mb
 budget.

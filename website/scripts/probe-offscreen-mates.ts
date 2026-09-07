@@ -96,7 +96,7 @@ try {
   if (process.env.BIDIRECTIONAL) {
     const before = await ribbons()
     await page.evaluate(() => {
-      ;(window as any).JBrowseSession.views[0].setBidirectionalFetch(true)
+      ;(window as any).JBrowseSession.views[0].setOffscreenMateMode('both')
     })
     await waitForAppSettled(page)
     // the ribbon half of the second fetch: alignments anchored on the target
