@@ -20,11 +20,14 @@ jbrowse.org/hubs/genark/... respectively. The hub's <acc>.2bit is the same
 sequence the browser reads; ./twoBitToFa in your working directory converts it
 to FASTA for the aligner. The hosted configs already describe
 the sequence, the chromAlias file and the gene track, so merging the two is
-shorter than declaring either assembly by hand. A shell command that takes minutes must run in the background so a tool call
+shorter than declaring either assembly by hand. Align with minimap2 -x asm10, which is the preset for the divergence
+between these two species; asm5 is for closer genomes and takes far longer.
+A shell command that takes minutes must run in the background so a tool call
 does not time out over it, but keep polling it within the same turn until it
 finishes: never end a turn with work still running. Open nothing in JBrowse
 until the alignment is indexed, and make sure the comparison is on screen
-before you answer.
+before you answer. Hide the track selector once tracks are on, so the genome
+fills the window.
 When asked where the genomes disagree, total the alignment file rather than
 describing the plot, and say the numbers before you navigate. Be direct: do what
 each message asks with as few tool calls as possible, then answer in one plain-English
