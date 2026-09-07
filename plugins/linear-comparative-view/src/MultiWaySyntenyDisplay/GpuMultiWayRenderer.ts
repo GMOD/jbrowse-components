@@ -1,6 +1,6 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
-import { uploadPass } from '@jbrowse/render-core/instancePass'
+import { drawMarks, uploadMarks } from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import {
@@ -66,11 +66,7 @@ export class GpuMultiWayRenderer
     if (cell.kind === 'ribbons') {
       this.ribbons.set(key, cell.data)
     } else {
-      for (const mark of MULTIWAY_GLYPH_MARKS) {
-        if (!mark.bufferOf) {
-          uploadPass(this.hal, id, mark.pass, cell.data)
-        }
-      }
+      uploadMarks(this.hal, id, MULTIWAY_GLYPH_MARKS, cell.data)
     }
   }
 
@@ -96,6 +92,7 @@ export class GpuMultiWayRenderer
         this.drawGlyphs(layer, cell.data, state, scale)
       }
     }
+    this.hal.clearViewport()
     this.hal.endFrame()
     return true
   }
@@ -144,18 +141,16 @@ export class GpuMultiWayRenderer
     const block = glyphBlock(layer, state, id)
     const clip = clipBlock(block, state.width, state.height, scale)
     if (clip) {
-      const frame = glyphFrame(state)
-      for (const mark of MULTIWAY_GLYPH_MARKS) {
-        mark.drawRegion(
-          this.hal,
-          this.uniformData,
-          block,
-          clip,
-          data,
-          frame,
-          id,
-        )
-      }
+      drawMarks(
+        this.hal,
+        this.uniformData,
+        MULTIWAY_GLYPH_MARKS,
+        block,
+        clip,
+        data,
+        glyphFrame(state),
+        id,
+      )
     }
   }
 

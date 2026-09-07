@@ -9,6 +9,7 @@ import {
   COVERAGE_BAR_PASS,
 } from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
+import { drawMarks, uploadMarks } from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -773,9 +774,7 @@ export class GpuAlignmentsRenderer
         for (const pass of Object.values(GPU_PILEUP_PASS)) {
           uploadPass(this.hal, idx, pass, data)
         }
-        for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
-          uploadPass(this.hal, idx, mark.pass, data)
-        }
+        uploadMarks(this.hal, idx, ALIGNMENTS_COVERAGE_MARKS, data)
       }
       // The arc band packs from its own input — a separate RPC result, absent
       // whenever the band is off, plus the configured line width. The wipe above
@@ -940,17 +939,16 @@ export class GpuAlignmentsRenderer
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
     if (state.coverageHeight > 0 && cov.height > 0) {
       this.hal.setScissor(clip.pxX, cov.top, clip.pxW, cov.height)
-      for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
-        mark.drawRegion(
-          this.hal,
-          this.uCoverage,
-          block,
-          clip,
-          region,
-          sectionState,
-          regionKey,
-        )
-      }
+      drawMarks(
+        this.hal,
+        this.uCoverage,
+        ALIGNMENTS_COVERAGE_MARKS,
+        block,
+        clip,
+        region,
+        sectionState,
+        regionKey,
+      )
     }
 
     this.writeUniforms(sectionState, frame)

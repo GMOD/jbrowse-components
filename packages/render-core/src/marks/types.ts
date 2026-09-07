@@ -145,6 +145,8 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   readonly bufferOf?: string
   // `regionKey` is the HAL key the caller uploaded this region's passes under;
   // a stacked alignments section's is not its block's displayedRegionIndex.
+  // Draw through `marks/backend`'s `drawMarks`: the viewport must already be
+  // the block's clip column and the scissor whatever the caller wants kept.
   drawRegion(
     hal: GpuHal,
     scratch: ArrayBuffer,

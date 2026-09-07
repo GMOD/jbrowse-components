@@ -1,4 +1,5 @@
 import { createRenderingBackend } from '../createRenderingBackend.ts'
+import { uploadPass } from '../instancePass.ts'
 import {
   Canvas2DPerRegionRenderingBackend,
   GpuPerRegionRenderingBackend,
@@ -8,10 +9,56 @@ import { paintMarkBlocks } from './markPaint.ts'
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
 import type { SampleCount } from '../hal/types.ts'
+import type { InstancePass } from '../instancePass.ts'
 import type { PerRegionRenderingBackend } from '../perRegionRenderingBackend.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { Mark } from './types.ts'
+
+/**
+ * Pack and upload one region's buffers for a mark list — every mark that owns
+ * one, which is the whole list minus those drawing off another's (`bufferOf`).
+ * That skip is the reason a display's upload is this call rather than a loop:
+ * uploading to a borrowed pass is silent, and its buffer is the lender's.
+ */
+export function uploadMarks<TRegion, TState extends FrameDimensions>(
+  hal: GpuHal,
+  regionKey: number,
+  marks: readonly Mark<TRegion, TState>[],
+  data: TRegion,
+) {
+  for (const mark of marks) {
+    if (!mark.bufferOf) {
+      uploadPass(hal, regionKey, mark.pass, data)
+    }
+  }
+}
+
+/**
+ * Draw one already-clipped block through a mark list.
+ *
+ * **The viewport is this helper's, the scissor is the caller's.** Every shape
+ * maps bp across the block column, so nobody wants a viewport narrower than the
+ * clip; a caller does want a narrower scissor, which is how alignments clips a
+ * coverage strip inside the column it hands over. `GpuPerRegionRenderingBackend`
+ * sets both per block already, so for a backend on that scaffold the viewport
+ * set here is the same rect twice.
+ */
+export function drawMarks<TRegion, TState extends FrameDimensions>(
+  hal: GpuHal,
+  scratch: ArrayBuffer,
+  marks: readonly Mark<TRegion, TState>[],
+  block: RenderBlock,
+  clip: BlockClipResult,
+  region: TRegion,
+  state: TState,
+  regionKey: number,
+) {
+  hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
+  for (const mark of marks) {
+    mark.drawRegion(hal, scratch, block, clip, region, state, regionKey)
+  }
+}
 
 /**
  * The HAL-side half of `createMarkBackend`, exported so a display's mark list
@@ -22,15 +69,19 @@ export class GpuMarkBackend<
   TRegion,
   TState extends FrameDimensions,
 > extends GpuPerRegionRenderingBackend<TRegion, TState> {
-  protected regionPasses
+  // `upload` runs `uploadMarks` in place of the base's loop, so nothing reads
+  // this — the `bufferOf` skip is stated once, there
+  protected regionPasses: InstancePass<TRegion>[] = []
 
   constructor(
     hal: GpuHal,
     private marks: readonly Mark<TRegion, TState>[],
   ) {
     super(hal)
-    // a mark drawing off another's buffer is registered but never uploaded to
-    this.regionPasses = marks.filter(m => !m.bufferOf).map(m => m.pass)
+  }
+
+  override upload(regionKey: number, data: TRegion) {
+    uploadMarks(this.hal, regionKey, this.marks, data)
   }
 
   protected drawRegion(
@@ -39,17 +90,16 @@ export class GpuMarkBackend<
     region: TRegion,
     state: TState,
   ) {
-    for (const mark of this.marks) {
-      mark.drawRegion(
-        this.hal,
-        this.uniformData,
-        block,
-        clip,
-        region,
-        state,
-        block.displayedRegionIndex,
-      )
-    }
+    drawMarks(
+      this.hal,
+      this.uniformData,
+      this.marks,
+      block,
+      clip,
+      region,
+      state,
+      block.displayedRegionIndex,
+    )
   }
 }
 
