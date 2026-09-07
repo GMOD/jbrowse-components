@@ -336,6 +336,11 @@ const baseThemeOptions: ThemeOptions = {
     MuiFormLabel: {
       styleOverrides: darkModeContrastOverride(['&.Mui-focused']),
     },
+    // the rail, track and thumb are all `currentColor` off the root, so a
+    // midnight root paints the whole control dark-on-dark
+    MuiSlider: {
+      styleOverrides: darkModeContrastOverride(),
+    },
     MuiAccordionSummary: {
       styleOverrides: {
         root: ({ theme: t }: { theme: Theme }) => ({
