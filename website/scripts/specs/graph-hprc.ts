@@ -1502,9 +1502,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         text: 'backbone',
         leader: true,
         fontSize: 20,
-        anchor: { view: 1, graphNode: 's329764+' },
-        dx: -200,
-        dy: 40,
+        // s329772+ (10.8 kb) rather than s329764+ (14.3 kb), which is where
+        // this first pointed. The ramp paints the window's start red, so the
+        // 52 kb backbone node running to the lower left IS red -- and a leader
+        // into the middle of the drawing lay collinear with it, so the callout
+        // and a piece of the graph read as one arrow. This node is up on the
+        // blue-to-magenta end, where nothing in the data is annotation-red.
+        anchor: { view: 1, graphNode: 's329772+' },
+        dx: -70,
+        dy: -130,
       },
       {
         type: 'text',
