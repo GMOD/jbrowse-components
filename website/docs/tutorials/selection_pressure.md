@@ -136,8 +136,9 @@ is the `.blocks` shape
 ```
 
 `attributeColumns` names the columns after the two gene columns, and each
-becomes a feature attribute in the detail panel. `dn` and `ds` drive **Color
-by... → dN/dS**, whose ramp has 1 at its middle and 2 at its top.
+becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
+button's **Color by value → dN/dS**, whose ramp has 1 at its middle and 2 at its
+top.
 
 Two `LinearSyntenyView` properties matter for a view this sparse: `alpha`
 defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the

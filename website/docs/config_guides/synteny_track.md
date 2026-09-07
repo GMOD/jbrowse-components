@@ -109,19 +109,24 @@ Each adapter's config page lists its slots. Across all of them:
 
 - **`assemblyNames` on a pairwise adapter** is exactly `[query, target]`. Most
   also take `queryAssembly`/`targetAssembly`, which cannot be read in the wrong
-  order; the MCScan adapters take only `assemblyNames`. On an all-vs-all adapter
-  it is the full list of genomes in the file, in any order
-- **Every adapter except `PairwiseIndexedPAFAdapter` and
-  `MultiGenomeIndexedPAFAdapter` reads the whole file into memory.** Convert a
-  large alignment to PIF and use one of those
+  order; the MCScan anchors adapters take only `assemblyNames`. On an all-vs-all
+  adapter it is the full list of genomes in the file, in any order, and on
+  `MCScanBlocksAdapter` it is an optional narrowing of `blockAssemblies` rather
+  than an ordered pair
+- **Every adapter except the two indexed PAF adapters reads the whole file into
+  memory.** Convert a large alignment to PIF and use `PairwiseIndexedPAFAdapter`
+  or `MultiGenomeIndexedPAFAdapter`; `MultiPairwiseSyntenyAdapter` reads no file
+  itself and inherits whichever behaviour its children have
 - **The two compressions are not interchangeable.** A whole-file adapter takes
   plain `gzip`, so `.paf.gz` works with no index. The two indexed adapters need
   bgzip plus a tabix index, which is what `jbrowse make-pif` writes; a plain
   `gzip` file has no blocks to seek into and fails outright. `csi: true` selects
   a `.csi` index over `.tbi`
-- **The MCScan adapters take one BED per assembly** (`bed1`, `bed2`),
+- **The MCScan anchors adapters take one BED per assembly** (`bed1`, `bed2`),
   intermediate outputs of the
-  [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
+  [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
+  `MCScanBlocksAdapter` describes N genomes, so its BEDs are `bedLocations`, an
+  array positional against the table's columns
 
 ### Gene id matching in the MCScan adapters {#gene-ids-are-the-join-in-the-mcscan-adapters}
 

@@ -66,7 +66,7 @@ minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_26695.fa > 26695_vs_j99.paf
 - `-c` emits the base-level CIGAR the linear synteny view draws from.
 - `--eqx` splits CIGAR matches (`=`) from mismatches (`X`), so the same track
   opened in a plain linear genome view draws per-base mismatches.
-  [Color by → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
+  [Color by value → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
   reads the PAF's divergence tag or match counts.
 
 JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
@@ -92,10 +92,10 @@ The `-a` order is `query,target`, the reverse of the minimap2 argument order:
 ## Reading the whole genome in a dotplot
 
 **Add → Dotplot view** opens the import form in **Quick start**: pick the track
-just added and click **Launch**. **Swap** transposes the axes. **Manual** picks
+just added and click **Launch**. **Swap?** transposes the axes. **Manual** picks
 each axis and a synteny file by hand.
 
-<Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
+<Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file in any of the formats it accepts." src="/img/sv_synteny/dotplot_import.png" />
 
 <Figure caption="The 26695 vs J99 alignment, 26695 on the X-axis and J99 on the Y-axis. The backbone runs anti-diagonal because the two assemblies were deposited in opposite orientations, and the pieces sitting off it are the rearrangements between the strains." src="/img/sv_synteny/dotplot.png" />
 
@@ -126,7 +126,7 @@ Open each strain's gene track from its own track selector.
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from that row's own track selector." />
 
-<Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as fliR, cbf2, efp, and lysS line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
+<Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as prfB, fliR, cbf2 and efp line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 Each panel is a full linear genome view with its own search box, zoom and track
 selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options and
@@ -179,7 +179,7 @@ jbrowse add-track alignment.pif.gz -a query,target --load copy
 load whether the top row's chromosome names belong to that assembly, and a
 warning in the view header names the remedy when they belong to the other row.
 
-<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the header warning reports the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
+<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
 A view that scatters its blocks randomly comes from a preset too tight for the
 divergence, which leaves only short spurious anchors. Raise it, and check

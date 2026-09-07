@@ -218,7 +218,7 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, one ortholog table per"
+echo "Built $APP/config.json with every assembly above, one ortholog table per"
 echo "species pair carrying its linkage groups, and a default dotplot session"
 echo "colored by them. Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"

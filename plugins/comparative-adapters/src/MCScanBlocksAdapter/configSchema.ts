@@ -131,10 +131,10 @@ const MCScanBlocksAdapter = ConfigurationSchema(
      * no place for: `["identity", "dn", "ds", "goc_score"]` reads column N as
      * `identity` where N is `blockAssemblies.length`. Each becomes a feature
      * attribute, so it shows in the detail panel, and `dn`/`ds` are what the
-     * synteny view's `Color by → dN/dS` reads. A cell of `.`, `NA`, `NULL` or
+     * synteny view's `Color by value → dN/dS` reads. A cell of `.`, `NA`, `NULL` or
      * empty is a missing value rather than a zero. A column of text, an
      * ancestral linkage group or an orthogroup label say, is kept as text and
-     * `Color by → <column>` paints one color per distinct label; a column
+     * `Color by value → <column>` paints one color per distinct label; a column
      * named `color` holding CSS colors is what that mode paints a label with
      * when the file carries one.
      *

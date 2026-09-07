@@ -222,7 +222,7 @@ is one point and a block a run of them. The axes start in index order;
 
 <Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's own index order, and then re-sorted: the reorder is a dialog off the dotplot header's overflow menu, and it reports how many grape chromosomes it moved and how many it flipped." />
 
-<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
+<Figure caption="Peach against grape after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
 
 Reordering puts each peach chromosome's strongest grape partner on the diagonal,
 and its other partners stay off it. The [script](#reproduce-it-end-to-end)

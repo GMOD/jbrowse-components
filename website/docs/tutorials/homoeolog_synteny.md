@@ -175,7 +175,7 @@ Every point off the diagonal is a gene paired with its copy on another
 chromosome. Oat is on the right below and bread wheat on the left, both
 hexaploid self-alignments over the same three homoeologous groups.
 
-<Figure caption="Left, the bread wheat self-alignment; right, the oat one. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's groups stay in their own blocks; oat pairs across groups throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
+<Figure caption="Left, the bread wheat self-alignment; right, the oat one. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's cross-group pairs are the two 4A translocations the callout marks; oat's segments leave their group throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
 The wheat panel comes from Ensembl Compara's own homoeolog calls
 ([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),

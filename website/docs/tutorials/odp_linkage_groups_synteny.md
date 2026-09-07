@@ -139,7 +139,7 @@ six-genome stack at the end.
 
 Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
 under **Color by value** on the palette button in the view header; the legend
-comes up with it. Then **Reorder chromosomes** on the view menu: it sorts the
+comes up with it. Then **Re-order chromosomes** on the view menu: it sorts the
 vertical genome's chromosomes by where their orthologs land along the horizontal
 one, which is what turns one block per group into a diagonal. The same view as a
 session, with the sponge's unplaced scaffolds left off its axis:
@@ -180,8 +180,9 @@ to disagree, and they largely do not.
 
 ## Outside the genomes the groups were built on
 
-The comb jelly and _Capsaspora_ are in neither table's definition, so both axes
-are free. Swapping the vertical genome is the whole change.
+The comb jelly and _Capsaspora_ are in neither table's definition, so the
+vertical axis is free; the columns are still the jellyfish's. Swapping the
+vertical genome is the whole change.
 
 <Figure caption="The jellyfish against Hormiphora, sorted and colored the same way. The groups still favor particular comb jelly chromosomes, and each one is spread over several of them." src="/img/linkage_groups/alg_dotplot_res_hca.png" />
 
