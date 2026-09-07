@@ -26,7 +26,6 @@ import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
  *       { uri: 'peach.bed' },
  *       { uri: 'cacao.bed' },
  *     ],
- *     assemblyNames: ['grape', 'peach', 'cacao'],
  *   },
  *   displays: [
  *     {

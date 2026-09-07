@@ -124,6 +124,36 @@ test('full-list track with no target draws every pair', async () => {
   expect(new Set(fa.map(f => f.id())).size).toBe(6)
 })
 
+// Unset assemblyNames is every column the table has, which is what a config
+// naming all of them was writing out by hand. It used to leave the track with
+// no mate at all, so the omission failed rather than defaulting.
+test('an unset assemblyNames draws every genome the table names', async () => {
+  const fa = await feats([], {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  })
+  expect(
+    [
+      ...new Set(
+        fa.map(f => (f.get('mate') as { assemblyName: string }).assemblyName),
+      ),
+    ].sort(),
+  ).toEqual(['cacao', 'peach'])
+  expect(fa.length).toBe(6)
+})
+
+test('an unset assemblyNames still lets the view pick a band', async () => {
+  const fa = await feats(
+    [],
+    { refName: 'chr1', start: 0, end: 1000, assemblyName: 'grape' },
+    { targetAssemblyName: 'cacao' },
+  )
+  expect(fa.length).toBe(3)
+  expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'cacao' })
+})
+
 test('a pair-pinned track is unaffected by the no-target fan-out', async () => {
   const fa = await feats(['grape', 'peach'], {
     refName: 'chr1',

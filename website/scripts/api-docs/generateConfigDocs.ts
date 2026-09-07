@@ -451,17 +451,22 @@ function adapterValueLines(code: string) {
 
 // A synteny track spans the assemblies its adapter names. Keep the track's
 // assemblyNames consistent with the adapter snapshot it wraps: reuse the
-// adapter's own query/target (or assemblyNames) rather than a generic
+// adapter's own query/target (or the assemblies it lists) rather than a generic
 // placeholder that would contradict it. A composite adapter's example names a
-// pair per child, so every `assemblyNames` in the snapshot is unioned.
+// pair per child, so every list in the snapshot is unioned. `blockAssemblies`
+// counts as one of those lists: an MCScan blocks adapter names its genomes
+// there, and its own `assemblyNames` is an optional narrowing that an example
+// showing the whole table has no reason to write.
 function syntenyAssemblyNames(adapterCode: string) {
   const query = /queryAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
   const target = /targetAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
   const names = [
     ...new Set(
-      [...adapterCode.matchAll(/assemblyNames:\s*\[([^\]]*)\]/g)].flatMap(m =>
-        [...m[1]!.matchAll(/['"]([^'"]*)['"]/g)].map(n => n[1]!),
-      ),
+      [
+        ...adapterCode.matchAll(
+          /(?:assemblyNames|blockAssemblies):\s*\[([^\]]*)\]/g,
+        ),
+      ].flatMap(m => [...m[1]!.matchAll(/['"]([^'"]*)['"]/g)].map(n => n[1]!)),
     ),
   ]
   return query && target

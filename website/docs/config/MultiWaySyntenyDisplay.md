@@ -29,7 +29,6 @@ placements between adjacent lanes:
       { uri: 'peach.bed' },
       { uri: 'cacao.bed' },
     ],
-    assemblyNames: ['grape', 'peach', 'cacao'],
   },
   displays: [
     {

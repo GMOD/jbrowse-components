@@ -25,7 +25,6 @@ Auto-generated config schema for the current JBrowse release — see the [config
       { uri: 'peach.bed' },
       { uri: 'cacao.bed' },
     ],
-    assemblyNames: ['grape', 'peach', 'cacao'],
   },
 }
 ```
@@ -44,11 +43,12 @@ column is that gene's ortholog in another genome (`.` = no ortholog),
 produced by `jcvi.compara.synteny mcscan` + `jcvi.formats.base join`.
 
 A `.blocks` file describes N genomes at once, so one track backs every band of
-a multi-way view: list all the genomes in `assemblyNames` and the synteny view
-tells the adapter which pair each band draws, deriving that pair's gene links
-from the two matching columns. When neither column is the reference the link
-is transitive (both orthologous to the same reference gene) rather than a
-direct alignment. Listing just two assemblies pins the track to that pair.
+a multi-way view: the synteny view tells the adapter which pair each band
+draws, deriving that pair's gene links from the two matching columns. When
+neither column is the reference the link is transitive (both orthologous to
+the same reference gene) rather than a direct alignment. Every genome
+`blockAssemblies` names is available that way unless `assemblyNames` narrows
+it, and listing just two assemblies there pins the track to that pair.
 
 Somewhere that names no pair, such as the track shown in a plain linear
 genome view or the "Linear synteny view" launcher asking what a
@@ -83,5 +83,5 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "MCScanBlocks
 | <span id="slot-mcscanblockslocation">**mcscanBlocksLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }</code> | location of the `.blocks` table: column 0 is a reference gene and each further column is that gene's ortholog in another genome, `.` where there is none. `blockAssemblies` names the columns and `bedLocations` resolves each column's gene names to coordinates. |
 | <span id="slot-blockassemblies">**blockAssemblies**</span><br>`stringArray` = <code>[]</code> | one assembly name per column of the blocks file, in column order (column 0 is the reference). A genome may hold several columns, which is what `jcvi mcscan` writes above `--iter=1` (a column per chain of synteny blocks, so a duplicated region is a further column of the same genome) and what a self-comparison is; every column of a genome is drawn, so a gene with two copies in its mate draws a link to each |
 | <span id="slot-bedlocations">**bedLocations**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. Every entry must appear in blockAssemblies. A genome spanning several columns is named once here, not once per column |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | the assemblies this track can render, to narrow it below what the table describes: two entries pin it to a single pair. Unset (the default) is every genome `blockAssemblies` names, so one track backs every band of a multi-way view and the view picks each band's pair. Every entry must appear in blockAssemblies. A genome spanning several columns is named once here, not once per column |
 | <span id="slot-attributecolumns">**attributeColumns**</span><br>`stringArray` = <code>[]</code> | names for the extra columns that follow the gene columns, in order, so an ortholog table can carry per-link measurements the format itself has no place for: `["identity", "dn", "ds", "goc_score"]` reads column N as `identity` where N is `blockAssemblies.length`. Each becomes a feature attribute, so it shows in the detail panel, and `dn`/`ds` are what the synteny view's `Color by → dN/dS` reads. A cell of `.`, `NA`, `NULL` or empty is a missing value rather than a zero. A column of text, an ancestral linkage group or an orthogroup label say, is kept as text and `Color by → <column>` paints one color per distinct label; a column named `color` holding CSS colors is what that mode paints a label with when the file carries one.<br><br>These describe the ROW. On a two-genome table a row is one link, which is what makes a per-link measurement meaningful; on an N-genome table a row is an orthogroup spanning several pairs, so only a value that describes the whole group belongs there |

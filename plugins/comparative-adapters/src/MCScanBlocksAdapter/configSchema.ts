@@ -23,11 +23,12 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * produced by `jcvi.compara.synteny mcscan` + `jcvi.formats.base join`.
  *
  * A `.blocks` file describes N genomes at once, so one track backs every band of
- * a multi-way view: list all the genomes in `assemblyNames` and the synteny view
- * tells the adapter which pair each band draws, deriving that pair's gene links
- * from the two matching columns. When neither column is the reference the link
- * is transitive (both orthologous to the same reference gene) rather than a
- * direct alignment. Listing just two assemblies pins the track to that pair.
+ * a multi-way view: the synteny view tells the adapter which pair each band
+ * draws, deriving that pair's gene links from the two matching columns. When
+ * neither column is the reference the link is transitive (both orthologous to
+ * the same reference gene) rather than a direct alignment. Every genome
+ * `blockAssemblies` names is available that way unless `assemblyNames` narrows
+ * it, and listing just two assemblies there pins the track to that pair.
  *
  * Somewhere that names no pair, such as the track shown in a plain linear
  * genome view or the "Linear synteny view" launcher asking what a
@@ -68,7 +69,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  *     { uri: 'peach.bed' },
  *     { uri: 'cacao.bed' },
  *   ],
- *   assemblyNames: ['grape', 'peach', 'cacao'],
  * }
  * ```
  */
@@ -113,11 +113,12 @@ const MCScanBlocksAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * the assemblies this track can render; list all of blockAssemblies to let
-     * one track back every band of a multi-way view (the view picks each band's
-     * pair), or just two to pin it to a single pair. Every entry must appear in
-     * blockAssemblies. A genome spanning several columns is named once here,
-     * not once per column
+     * the assemblies this track can render, to narrow it below what the table
+     * describes: two entries pin it to a single pair. Unset (the default) is
+     * every genome `blockAssemblies` names, so one track backs every band of a
+     * multi-way view and the view picks each band's pair. Every entry must
+     * appear in blockAssemblies. A genome spanning several columns is named
+     * once here, not once per column
      */
     assemblyNames: {
       type: 'stringArray',

@@ -331,7 +331,12 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     if (targetAssemblyName !== undefined) {
       return [targetAssemblyName]
     }
-    const names = this.getConf('assemblyNames')
+    // Unset is every genome the table has a column for, which is what a config
+    // listing all of them was spelling out by hand — and getting wrong silently,
+    // since an empty list left the track with no mate to draw at all. Naming a
+    // subset is still how a track pins itself to one pair.
+    const declared = this.getConf('assemblyNames')
+    const names = declared.length ? declared : this.getConf('blockAssemblies')
     // deduped, because a genome in several columns is free to be listed once per
     // column here too, and each name is drawn against all of its columns already
     const others = [...new Set(names.filter(n => n !== queryAssembly))]
@@ -398,7 +403,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
         !mateAssemblies.length
       ) {
         throw new Error(
-          `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain ${queryAssembly}, and assemblyNames must name another assembly to draw it against`,
+          `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain ${queryAssembly} and one other assembly to draw it against; a non-empty assemblyNames narrows that further`,
         )
       }
       const grouped =
