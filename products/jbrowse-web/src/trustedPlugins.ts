@@ -56,13 +56,8 @@ export function arePluginsRemembered(defs: PluginDefinition[]) {
   })
 }
 
-// The plugin URLs currently trusted on this origin, for the UI that revokes
-// them. Sorted so the list doesn't reshuffle as approvals accumulate.
-export function listTrustedPlugins() {
-  return [...readTrusted()].sort((a, b) => a.localeCompare(b))
-}
-
-// Revokes every remembered plugin approval on this origin.
+// Revokes every remembered plugin approval on this origin. No UI reaches this —
+// the set is only ever read by the gate above — so it is the tests' reset.
 export function forgetTrustedPlugins() {
   localStorageRemoveItem(STORAGE_KEY)
 }

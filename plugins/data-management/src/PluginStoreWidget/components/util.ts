@@ -131,8 +131,27 @@ export function canInstallPermanently(session: AbstractSessionModel) {
   return (
     !session.adminMode &&
     isSessionWithPermanentPlugins(session) &&
-    !session.permanentPluginsSkipped
+    session.permanentPluginsSafeMode === undefined
   )
+}
+
+/**
+ * The kept entries no loaded plugin came from — switched off, skipped by safe
+ * mode, shadowed by a config naming the same plugin at another url, or simply
+ * failed to load. They are the rows the Installed list would otherwise not
+ * have, and the only place such an entry can be switched back on or taken out.
+ */
+export function unloadedPermanentPlugins(session: AbstractSessionModel) {
+  if (isSessionWithPermanentPlugins(session)) {
+    const { pluginManager } = getEnv(session)
+    const loaded = pluginManager.plugins
+      .filter(p => pluginHome(p, session) === 'permanent')
+      .map(p => loadedDefinition(p, session))
+    return session.permanentPlugins.filter(
+      entry => !loaded.some(d => d !== undefined && holdsLoaded(entry, d)),
+    )
+  }
+  return []
 }
 
 /**

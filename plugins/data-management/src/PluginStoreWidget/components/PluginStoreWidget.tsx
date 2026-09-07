@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, installablePlugins, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isSessionWithPermanentPlugins } from '@jbrowse/core/util/types'
 import { useFetchPlugins } from '@jbrowse/core/util/useFetchPlugins'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -18,6 +19,7 @@ import { observer } from 'mobx-react'
 
 import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
+import PermanentPluginSafeModeAlert from './PermanentPluginSafeModeAlert.tsx'
 import PluginCard from './PluginCard.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
@@ -87,6 +89,9 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
 
   return (
     <div>
+      {isSessionWithPermanentPlugins(session) ? (
+        <PermanentPluginSafeModeAlert session={session} />
+      ) : null}
       {adminMode && (
         <>
           {!isElectron && (

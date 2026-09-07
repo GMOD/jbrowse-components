@@ -131,14 +131,6 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "label": "Permanent plugins...",
-        "onClick": [Function],
-      },
-      {
-        "label": "Trusted plugins...",
-        "onClick": [Function],
-      },
-      {
         "icon": [Function],
         "label": "Assembly manager",
         "onClick": [Function],
@@ -304,14 +296,6 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Plugin store",
-        "onClick": [Function],
-      },
-      {
-        "label": "Permanent plugins...",
-        "onClick": [Function],
-      },
-      {
-        "label": "Trusted plugins...",
         "onClick": [Function],
       },
       {

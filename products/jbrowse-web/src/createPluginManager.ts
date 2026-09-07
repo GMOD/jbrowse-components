@@ -131,7 +131,7 @@ function notifyPermanentPluginSafeMode(rootModel: WebRootModel) {
         ? 'Permanently installed plugins were skipped because the last load of this JBrowse did not finish.'
         : 'Permanently installed plugins were skipped because this URL asks for safe mode.',
       suspects.length ? `Loading: ${suspects.join(', ')}.` : '',
-      'Tools → Permanent plugins to switch one off or turn them back on.',
+      'Tools → Plugin store to switch one off or turn them back on.',
     ]
       .filter(Boolean)
       .join(' '),

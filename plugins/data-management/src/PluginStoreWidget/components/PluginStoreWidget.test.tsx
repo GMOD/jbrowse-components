@@ -184,6 +184,86 @@ test('the keep toggle moves a plugin between the session and the permanent list'
   localStorage.clear()
 })
 
+// The permanent list used to be a Tools-menu dialog of its own. It is the same
+// list as the pin above, so it belongs here: an entry no loaded plugin came from
+// — switched off, or skipped because safe mode is on — is a row with a switch,
+// which is what makes a plugin that crashed the app findable without
+// reinstalling the innocent ones. Safe mode itself is decided when the web
+// permanentPlugins module is first imported, so the banner's two forms stay
+// pinned where that decision is made (permanentPlugins.test.ts).
+test('a kept plugin that did not load is a row that can be switched off and taken out', async () => {
+  const user = userEvent.setup()
+  localStorage.clear()
+  const definition = { name: 'GWAS', url: 'https://example.com/gwas.js' }
+  // no runtimePlugins, so nothing loaded from this definition
+  const session = createTestSession({})
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+  session.addPermanentPlugin(definition)
+
+  const { findByText, findByRole, findByTestId, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+  await findByText('GWAS')
+
+  // switching off keeps the entry, so the innocent ones need no reinstall
+  await user.click(await findByRole('switch', { name: 'Keep loading GWAS' }))
+  await waitFor(() => {
+    expect(session.permanentPlugins).toEqual([
+      { ...definition, disabled: true },
+    ])
+  })
+
+  await user.click(await findByTestId('removeKeptPlugin-GWAS'))
+  await waitFor(() => {
+    expect(session.permanentPlugins).toEqual([])
+  })
+  expect(queryByText('GWAS')).toBeNull()
+  localStorage.clear()
+})
+
+// The pin is the row's own control for a plugin that did load, so the same
+// plugin must not also appear as a kept-but-not-loaded row underneath it.
+test('a kept plugin that loaded is one row, not two', async () => {
+  localStorage.clear()
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+  session.addPermanentPlugin(definition)
+
+  const { findByTestId, queryByRole } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+  // the pin reads back as filled, and there is no second row with a switch
+  await findByTestId('keepPlugin-MsaView')
+  expect(queryByRole('switch')).toBeNull()
+  localStorage.clear()
+})
+
 test('plugin store admin - adds a custom plugin correctly', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   const { findByText, findByLabelText } = render(

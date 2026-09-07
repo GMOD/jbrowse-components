@@ -102,9 +102,10 @@ or in a session.
 | `products/jbrowse-web/src/permanentPlugins.ts` | the whole contract: the key, the list, safe mode, the crash marker |
 | `.../SessionLoader.ts` `loadConfigAndPlugins` | merges the list in beside the config's own plugins |
 | `.../createPluginManager.ts` | clears the marker, and says out loud when safe mode is on |
-| `.../sessionModel/index.ts` | the session's mirror of the list, and the two actions the store widget calls |
-| `.../components/PermanentPluginsDialog.tsx` | the list as a surface: switch one off, take one out |
+| `.../sessionModel/index.ts` | the session's mirror of the list, and the actions the store widget calls |
 | `plugins/data-management/.../InstalledPlugin.tsx` | the pin beside an installed plugin, which is how one gets in |
+| `.../UnloadedPermanentPlugin.tsx` | a kept entry no loaded plugin came from: switch it off, take it out |
+| `.../PermanentPluginSafeModeAlert.tsx` | the banner, and the way back out of safe mode |
 
 ### The key is the resolved config url
 
@@ -177,10 +178,18 @@ the plugin loads whatever session is open.
 So the rungs are, in order: the fatal error dialog's **Reload without permanent
 plugins** (`FatalErrorDialog`'s `extraActions`, which exists for exactly this),
 the notification `createPluginManager` raises when a boot comes up in safe mode,
-and the dialog under Tools, where an entry can be switched off without being
-removed. A `disabled` entry is what makes the safe-mode banner actionable: a
-user with three installed can find the culprit without reinstalling the innocent
-two.
+and the plugin store, where an entry can be switched off without being removed.
+A `disabled` entry is what makes the safe-mode banner actionable: a user with
+three installed can find the culprit without reinstalling the innocent two.
+
+**The plugin store is the whole surface.** Two Tools-menu dialogs used to carry
+this — one for the permanent list, one for the trust store — and neither was a
+Tools-menu thing: the store already owned the pin that writes the list. The
+permanent half folded into it (`unloadedPermanentPlugins` decides which entries
+the Installed list would otherwise not have, and the banner sits above the
+search field), and the trust store's list-and-revoke was deleted rather than
+moved. `forgetTrustedPlugins` survives as the tests' reset; nothing revokes a
+remembered cross-origin approval from the UI any more.
 
 ### The session's mirror
 
@@ -193,10 +202,10 @@ the list for the life of the tab. Volatile rather than a property, because the
 list belongs to the browser — a shared or exported session must carry none of
 it.
 
-The change callback exists because the dialog writes the list without going
-through the session at all. One subscriber, so it is a plain callback set: a
-`storage` event is the general form and reports another tab's writes but never
-this tab's, which is the half that matters.
+The change callback exists because the module is what every write goes through,
+including the ones no action here mirrors by hand. One subscriber, so it is a
+plain callback set: a `storage` event is the general form and reports another
+tab's writes but never this tab's, which is the half that matters.
 
 ### Where a plugin goes, and which list wins
 
@@ -207,9 +216,10 @@ session-plugin dedupe in `loadSession` and Desktop's merge order.
 `pluginHome` (`PluginStoreWidget/components/util.ts`) asks the lists in that
 same order, so it names the list the **loaded** copy came from: session, then
 config, then permanent. A permanent entry the config shadows is deliberately not
-offered for uninstall in the store — the click would visibly change nothing,
-since the config still carries it — and the dialog is where that entry can be
-taken out.
+offered for uninstall on the loaded plugin's own row — the click would visibly
+change nothing, since the config still carries it. It is instead one of the
+entries `unloadedPermanentPlugins` returns, as a row of its own underneath, which
+is where it can be taken out.
 
 The pin moves a plugin between the session list and this one rather than copying
 it. Two lists naming one plugin is a duplicate `PluginManager.addPlugin` refuses
@@ -423,10 +433,10 @@ Web:
 - **An entry naming no loader is dropped on read.** It can never load, and
   `samePlugin` matches nothing against it, so it could only accumulate as a row
   nothing is able to remove.
-- **The dialog's edits do not reload the app**, unlike the store's. They take
-  effect on the next load, which is what the dialog says and what its Reload
-  button is for; a full app rebuild per switch-toggle is not what a user hunting
-  a culprit wants.
+- **A switch toggle does not reload the app**, unlike the pin beside it. It takes
+  effect on the next load, which is what the row says; a full app rebuild per
+  toggle is not what a user hunting a culprit wants, and under safe mode the
+  rebuild would skip the list all over again anyway.
 - **`markPermanentPluginLoadSucceeded` runs on the plugin-install rebuild too**,
   which re-arms and re-clears the marker. That is the same load, done twice, and
   the second pass is the one that counts.

@@ -603,24 +603,34 @@ export function isSessionWithSessionPlugins(
   return isSessionModel(thing) && 'sessionPlugins' in thing
 }
 
+export interface PermanentPluginsSafeMode {
+  reason: 'requested' | 'previousLaunchFailed'
+  /** what was loading when the launch that failed did not finish */
+  suspects: string[]
+}
+
 /**
  * A session whose product keeps a plugin list of its own, outside both the
  * config and the session — jbrowse-web's permanent plugins, stored in the
  * browser against the config being viewed, so an install survives a new session
  * and the next visit.
  *
- * The list is not MST state, so `permanentPlugins` re-reads storage on each
- * call and nothing observes it. That is enough for its two readers, both of
- * which run in response to a click: adding or removing one asks for the whole-
- * app reload every plugin change needs anyway.
+ * The plugin store is the whole surface: the pin beside an installed plugin
+ * writes the list, and an entry the load skipped is a row there with a switch
+ * on it, which is what makes the safe mode below something a user can act on.
  */
 export interface SessionWithPermanentPlugins extends AbstractSessionModel {
-  permanentPlugins: PluginDefinition[]
-  // true while the list is being skipped (safe mode), when adding to it would
+  permanentPlugins: (PluginDefinition & { disabled?: boolean })[]
+  // set while the list is being skipped (safe mode), when adding to it would
   // take a plugin out of the session and load it nowhere
-  permanentPluginsSkipped: boolean
+  permanentPluginsSafeMode: PermanentPluginsSafeMode | undefined
   addPermanentPlugin: (plugin: PluginDefinition) => void
   removePermanentPlugin: (plugin: PluginDefinition) => void
+  setPermanentPluginDisabled: (
+    plugin: PluginDefinition,
+    disabled: boolean,
+  ) => void
+  reloadWithPermanentPlugins: () => void
 }
 export function isSessionWithPermanentPlugins(
   thing: unknown,

@@ -1,7 +1,6 @@
 import {
   arePluginsRemembered,
   forgetTrustedPlugins,
-  listTrustedPlugins,
   rememberPlugins,
 } from './trustedPlugins.ts'
 
@@ -53,7 +52,6 @@ test('forget revokes prior approvals', () => {
 test('approving a definition that names no loader trusts nothing', () => {
   const broken = {} as PluginDefinition
   rememberPlugins([broken])
-  expect(listTrustedPlugins()).toEqual([])
   expect(arePluginsRemembered([broken])).toBe(false)
   expect(arePluginsRemembered([{} as PluginDefinition])).toBe(false)
 })
@@ -61,14 +59,4 @@ test('approving a definition that names no loader trusts nothing', () => {
 test('a definition that names no loader is never remembered alongside real ones', () => {
   rememberPlugins([apollo])
   expect(arePluginsRemembered([apollo, {} as PluginDefinition])).toBe(false)
-})
-
-test('lists what is trusted, sorted, so the revoke UI can show it', () => {
-  rememberPlugins([other, apollo])
-  expect(listTrustedPlugins()).toEqual([
-    'http://localhost:9000/dist/jbrowse-plugin-apollo.umd.development.js',
-    'http://localhost:9000/dist/other.umd.js',
-  ])
-  forgetTrustedPlugins()
-  expect(listTrustedPlugins()).toEqual([])
 })

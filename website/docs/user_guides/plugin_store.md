@@ -39,8 +39,8 @@ you open it in this browser.
   another demo, or on another version of the app.
 - It lives in this browser and nowhere else. A session you share carries none of
   it, and neither does the same JBrowse opened on another machine.
-- **Tools → Permanent plugins...** is the list itself, where one can be switched
-  off without being removed, or taken out for good.
+- A kept plugin that did not load this visit — switched off, or skipped after a
+  crash — is still a row in **Installed plugins**, with a switch beside it.
 - An admin editing `config.json` is installing for every visitor instead, so the
   pin does not appear in admin mode.
 
@@ -50,8 +50,9 @@ Two things stop that:
 
 - The fatal error dialog offers **Reload without permanent plugins**.
 - A load that never finishes turns them off by itself next time, and says which
-  ones were loading. **Tools → Permanent plugins...** turns them back on once
-  the culprit is switched off.
+  ones were loading. The plugin store then shows a banner naming them, with a
+  switch per plugin and a **Turn back on and reload** button once the culprit is
+  switched off.
 
 Adding `?safeMode` to the URL does the same thing deliberately, and accuses
 nobody.

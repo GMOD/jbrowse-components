@@ -9,8 +9,11 @@ import {
   addPermanentPlugin,
   onPermanentPluginsChanged,
   permanentPluginSafeMode,
+  permanentPluginSafeModeSuspects,
   readPermanentPlugins,
+  reloadWithPermanentPlugins,
   removePermanentPlugin,
+  setPermanentPluginDisabled,
 } from '../permanentPlugins.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -25,6 +28,16 @@ import type {
 } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
+
+// undefined when the permanent plugins loaded normally. The module decides this
+// once, when it is first imported, so every session in this load reads the same
+// answer — including one created by the plugin-install rebuild.
+function safeMode() {
+  const reason = permanentPluginSafeMode()
+  return reason
+    ? { reason, suspects: permanentPluginSafeModeSuspects() }
+    : undefined
+}
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -63,9 +76,10 @@ export default function sessionModelFactory({
         permanentPlugins: readPermanentPlugins(),
         /**
          * #volatile
-         * whether this load skipped the list (safe mode), decided once at boot
+         * why this load skipped the list, or undefined when it loaded them,
+         * decided once at boot
          */
-        permanentPluginsSkipped: permanentPluginSafeMode() !== undefined,
+        permanentPluginsSafeMode: safeMode(),
       }))
       .actions(self => ({
         /**
@@ -80,8 +94,8 @@ export default function sessionModelFactory({
       .actions(self => ({
         afterAttach() {
           // every write to the list goes through the module, including the
-          // ones the dialog makes without touching the session, so the mirror
-          // is refreshed from there rather than at each call site
+          // ones that do not go through an action here, so the mirror is
+          // refreshed from there rather than at each call site
           addDisposer(
             self,
             onPermanentPluginsChanged(() => {
@@ -104,6 +118,26 @@ export default function sessionModelFactory({
         removePermanentPlugin(plugin: PluginDefinition) {
           removePermanentPlugin(plugin)
           self.root.setPluginsUpdated()
+        },
+        /**
+         * #action
+         * switches a kept plugin off without taking it out of the list, so a
+         * user hunting one that crashed the app can keep the innocent ones.
+         * No reload is asked for: the entry is one the load already skipped,
+         * and rebuilding the app per switch is not what hunting a culprit wants
+         */
+        setPermanentPluginDisabled(
+          plugin: PluginDefinition,
+          disabled: boolean,
+        ) {
+          setPermanentPluginDisabled(plugin, disabled)
+        },
+        /**
+         * #action
+         * leaves safe mode: clears the crash marker and reloads the page
+         */
+        reloadWithPermanentPlugins() {
+          reloadWithPermanentPlugins()
         },
       })),
   )
