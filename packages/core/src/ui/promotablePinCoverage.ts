@@ -59,7 +59,8 @@ export function displayTypesWithPromotableSlots(
  * Reads `pin.control.slot` and nothing else. A raw `endAdornment` is
  * deliberately not counted: it is an arbitrary element (synteny's colour
  * swatch), so it cannot say which slot it promotes, and a pin built by hand
- * rather than through `makePin` is a thing to find, not to accept.
+ * rather than through `makePin`/`makeTogglePin` is a thing to find, not to
+ * accept.
  */
 export function pinnedSlots(items: MenuItem[]): Set<string> {
   const found = new Set<string>()
@@ -67,6 +68,44 @@ export function pinnedSlots(items: MenuItem[]): Set<string> {
     for (const item of list) {
       if ('pin' in item && item.pin) {
         found.add(item.pin.control.slot)
+      }
+      if ('subMenu' in item) {
+        walk(resolveSubMenu(item))
+      }
+    }
+  }
+  walk(items)
+  return found
+}
+
+/**
+ * Rows whose pin is the wrong kind for the row, submenus included: a checkbox
+ * row carrying a value pin, or a radio row carrying a toggle pin. Empty is the
+ * healthy answer.
+ *
+ * The row builders type the option so this cannot happen through them; this
+ * is for a `pin` written by hand as a literal, which the type system lets
+ * through as the union. A checkbox row's pin has to be the toggle kind because
+ * that is what a click beside a checkbox is read as — "turn this on for all" —
+ * and a value pin there applies the row's *current* state instead, which
+ * beside an unchecked box is a visible no-op. That shipped once (2026-09-07)
+ * and was caught in a live session, not by a test; this is the test.
+ */
+export function misKindedPins(items: MenuItem[]): string[] {
+  const found: string[] = []
+  const walk = (list: MenuItem[]) => {
+    for (const item of list) {
+      if ('pin' in item && item.pin && 'type' in item) {
+        const { kind } = item.pin.control
+        const wanted =
+          item.type === 'checkbox'
+            ? 'toggle'
+            : item.type === 'radio'
+              ? 'value'
+              : undefined
+        if (wanted && kind !== wanted) {
+          found.push(`${item.pin.label}: ${kind} pin on a ${item.type} row`)
+        }
       }
       if ('subMenu' in item) {
         walk(resolveSubMenu(item))

@@ -5,14 +5,15 @@ import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { GroupBy } from '../../shared/types.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 
 // stateful stand-in for a Pin (the menu builder and the promote
 // path only touch active/toggle; `slot` is what a built menu is later asked for
 // by promotableSlotsWithoutPin, and `onValue` what PinAdornment words itself
 // from — neither is read here)
-function control(slot: string, onValue: unknown = false): Pin {
+function control(slot: string, onValue: unknown = false): TogglePin {
   return {
+    kind: 'toggle',
     slot,
     onValue,
     active: false,

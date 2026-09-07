@@ -1,4 +1,4 @@
-import type { Pin } from '../configuration/promotablePin.ts'
+import type { TogglePin, ValuePin } from '../configuration/promotablePin.ts'
 import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 
 // Neither helper sets `keepMenuOpen`: `CascadingMenu` keeps a checkbox/radio row
@@ -32,34 +32,34 @@ export interface SettingRowOptions {
   keepMenuOpen?: boolean
 }
 
-// A row over a promotable slot carries the pin `makePin` built for the row's
-// state; the builder names that state in the pin's label, which is what the
-// tooltip and aria-label read. `pinLabel` replaces that derived label where it
-// would under-describe the write — an unticked "Show read arcs" pin writes
-// `readConnections: 'off'`, which switches the read cloud off as well.
-export interface PinnableRowOptions extends SettingRowOptions {
-  pin?: Pin
-  pinLabel?: string
+// The pin a checkbox row carries is the row's own checkbox over every open
+// track of the display type, so it is the toggle kind by construction; a radio
+// row stands for one value, so its pin is the value kind. Typing the option
+// per row kind is what makes a checkbox row over a value pin a compile error
+// rather than a pin that fills for one reason and clears for another.
+export interface CheckboxRowOptions extends SettingRowOptions {
+  pin?: TogglePin
 }
 
-function withPin<T extends object>(
+export interface RadioRowOptions extends SettingRowOptions {
+  pin?: ValuePin
+}
+
+function withPin<T extends { label: string }>(
   row: T,
-  pin: Pin | undefined,
-  label: string,
+  pin: TogglePin | ValuePin | undefined,
 ) {
-  return pin ? { ...row, pin: { control: pin, label } } : row
+  return pin ? { ...row, pin: { control: pin, label: row.label } } : row
 }
 
-// The pin's label carries the checked state, since the row's label alone
-// ("Show legend") does not say which state the pin applies.
-/** #menuBuilder checkboxItem | one checkbox setting row, with a pin over its state when the setting is promotable */
+/** #menuBuilder checkboxItem | one checkbox setting row, with a toggle pin when the setting is promotable */
 export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts: PinnableRowOptions = {},
+  opts: CheckboxRowOptions = {},
 ): CheckboxMenuItem {
-  const { pin, pinLabel, ...rest } = opts
+  const { pin, ...rest } = opts
   return withPin(
     {
       label,
@@ -69,7 +69,6 @@ export function checkboxItem(
       ...rest,
     },
     pin,
-    pinLabel ?? `${label}: ${checked ? 'on' : 'off'}`,
   )
 }
 
@@ -93,7 +92,7 @@ export function toggleItem(
   label: string,
   value: boolean,
   setValue: (value: boolean) => void,
-  opts?: PinnableRowOptions,
+  opts?: CheckboxRowOptions,
 ): CheckboxMenuItem {
   return checkboxItem(
     label,
@@ -117,9 +116,9 @@ export function radioItem(
   label: string,
   checked: boolean,
   onClick: () => void,
-  opts: PinnableRowOptions = {},
+  opts: RadioRowOptions = {},
 ): RadioMenuItem {
-  const { pin, pinLabel, ...rest } = opts
+  const { pin, ...rest } = opts
   return withPin(
     {
       label,
@@ -129,7 +128,6 @@ export function radioItem(
       ...rest,
     },
     pin,
-    pinLabel ?? label,
   )
 }
 
@@ -149,12 +147,12 @@ export interface RadioOption<T extends string> extends SettingRowOptions {
 // unpinnable precisely because each row had been named by hand. Pass
 // `value => makePin(self, slot, value)`, or a model member of that shape where
 // the menu module is handed a duck-typed model (alignments).
-/** #menuBuilder radioItems | a radio group, one row per option, with a pin per option when the setting is promotable */
+/** #menuBuilder radioItems | a radio group, one row per option, with a value pin per option when the setting is promotable */
 export function radioItems<T extends string>(
   options: readonly RadioOption<T>[],
   current: T | undefined,
   setMode: (m: T) => void,
-  pin?: (value: T) => Pin,
+  pin?: (value: T) => ValuePin,
 ): RadioMenuItem[] {
   return options.map(({ value, label, ...opts }) =>
     radioItem(

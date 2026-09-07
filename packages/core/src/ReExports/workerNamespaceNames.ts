@@ -240,6 +240,7 @@ export const CORE_UI_NAMES = [
   'measureLegendText',
   'methylated5hmC',
   'methylated5mC',
+  'misKindedPins',
   'nonEmptyLegendSections',
   'promotableSlotsWithoutPin',
   'pushIntoSubMenu',

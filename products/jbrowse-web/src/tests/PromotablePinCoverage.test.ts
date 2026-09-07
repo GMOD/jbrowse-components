@@ -1,5 +1,6 @@
 import {
   displayTypesWithPromotableSlots,
+  misKindedPins,
   promotableSlotsWithoutPin,
 } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
@@ -468,6 +469,9 @@ test.each(FIXTURES.map(f => [f.displayType, f] as const))(
     expect(promotableSlotsWithoutPin(display, menuItems)).toEqual(
       KNOWN_UNPINNED[displayType] ?? [],
     )
+    // every checkbox row's pin turns the setting on or off for all, every
+    // radio row's pin promotes its option: the two kinds are not interchangeable
+    expect(misKindedPins(menuItems)).toEqual([])
     await fixture.settle?.(display)
   },
   30000,

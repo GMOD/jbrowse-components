@@ -5,7 +5,13 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
-import { getConf, readConfObject, resolveConf, setConf } from './index.ts'
+import {
+  getConf,
+  makeTogglePin,
+  readConfObject,
+  resolveConf,
+  setConf,
+} from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
@@ -304,6 +310,20 @@ describe('getConf slot-value type narrowing', () => {
       getConf(model, 'notASlot')
       // @ts-expect-error -- 'notASlot' is not in the schema
       setConf(model, 'notASlot', 1)
+    }
+    void check
+    expect(true).toBe(true)
+  })
+
+  // A toggle pin flips a boolean, so a slot resolving to anything else is a
+  // compile error at the call rather than a throw the first time the menu opens.
+  test('makeTogglePin takes only a slot that resolves to a boolean', () => {
+    const check = (model: Instance<typeof PromotableContainer>) => {
+      makeTogglePin(model, 'chevrons')
+      // @ts-expect-error -- 'mode' resolves to a string enum
+      makeTogglePin(model, 'mode')
+      // @ts-expect-error -- 'size' resolves to a number
+      makeTogglePin(model, 'size')
     }
     void check
     expect(true).toBe(true)

@@ -154,6 +154,7 @@ export { PinAdornment } from './PinAdornment.tsx'
 // to mean anything.
 export {
   displayTypesWithPromotableSlots,
+  misKindedPins,
   promotableSlotsWithoutPin,
 } from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28

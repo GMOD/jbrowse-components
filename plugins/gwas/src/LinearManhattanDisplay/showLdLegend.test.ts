@@ -25,9 +25,7 @@ describe('Manhattan showLdLegend', () => {
   it('is on by default, from promotedBase rather than a volatile initializer', () => {
     const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
     expect(display.showLdLegend).toBe(true)
-    // the pin carries the row state; nothing is promoted, so it is outline
-    expect(display.showLdLegendDisplayTypeDefault.onValue).toBe(true)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
+    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
   })
 
   // The whole point of the volatile -> config move. A volatile write was lost
@@ -53,8 +51,7 @@ describe('Manhattan showLdLegend', () => {
       false,
     )
     expect(display.showLdLegend).toBe(false)
-    // the row follows the promoted off, so its pin is filled
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
+    expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
   })
 
   // A `maybeBoolean` sentinel slot, so an explicit value wins in EITHER
@@ -90,7 +87,7 @@ describe('Manhattan showLdLegend', () => {
 
   // The pin's click applies the value to the open tracks; the toast's one
   // action is what makes it the display type's default (ADR-048).
-  it('the menu row carries the pin, and it promotes then clears the key state', () => {
+  it('the menu row carries the pin, and it flips the key', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
@@ -99,17 +96,19 @@ describe('Manhattan showLdLegend', () => {
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()
 
     display.showLdLegendDisplayTypeDefault.toggle()
+    expect(display.showLdLegend).toBe(true)
+    // on is the slot's base, so the offer clears rather than stores
+    takeSnackbarAction(session)
+    expect(
+      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
+    ).toBeUndefined()
+
+    display.showLdLegendDisplayTypeDefault.toggle()
     expect(display.showLdLegend).toBe(false)
     takeSnackbarAction(session)
     expect(
       session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
     ).toBe(false)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
-
-    display.showLdLegendDisplayTypeDefault.toggle()
-    expect(
-      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
-    ).toBeUndefined()
   })
 
   // The row is greyed out without LD coloring, but it is still built and still

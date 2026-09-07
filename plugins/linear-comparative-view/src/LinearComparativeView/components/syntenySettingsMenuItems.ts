@@ -1,4 +1,4 @@
-import { makePin } from '@jbrowse/core/configuration'
+import { makeTogglePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
@@ -26,9 +26,9 @@ import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
  *
  * The checkbox and the pin write the same promotable config slot, exactly as
  * any other promotable setting's row: the checkbox writes this view's synteny
- * displays (every level — `setDrawCurves` fans out), the pin applies the
- * checkbox's current state to every open display of the type and offers it as
- * the session-wide default, or clears that default once it is one.
+ * displays (every level — `setDrawCurves` fans out), the pin is that checkbox
+ * over every open display of the type and offers the new state as the
+ * session-wide default.
  *
  * `display` is the level the pin writes through — any one of them, since a
  * promoted default is keyed by display type rather than by track. A view with
@@ -53,7 +53,7 @@ function ribbonToggle({
   return display
     ? toggleItem(label, value, setValue, {
         ...opts,
-        pin: makePin(display, slot),
+        pin: makeTogglePin(display, slot),
       })
     : toggleItem(label, value, setValue, {
         ...opts,

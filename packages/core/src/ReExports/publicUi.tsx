@@ -146,6 +146,7 @@ export {
   measureLegendText,
   methylated5hmC,
   methylated5mC,
+  misKindedPins,
   nonEmptyLegendSections,
   promotableSlotsWithoutPin,
   pushIntoSubMenu,

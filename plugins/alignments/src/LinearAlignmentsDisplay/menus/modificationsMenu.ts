@@ -11,7 +11,7 @@ import {
 } from '../../shared/types.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -130,7 +130,7 @@ export function modificationsMenu(
   // The per-value session-default pin factory, absent for a display whose
   // colorBy slot isn't promotable. Spelled out rather than reached back for from
   // colorBy.ts's options bag, which would make the import cycle.
-  pin: ((colorBy: ColorBy) => Pin) | undefined,
+  pin: ((colorBy: ColorBy) => ValuePin) | undefined,
 ): MenuItem {
   const mods = currentMods(model)
   const isActive = model.colorBy.type === 'modifications'

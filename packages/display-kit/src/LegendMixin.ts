@@ -1,12 +1,16 @@
-import { makePin, resolveConf, setConf } from '@jbrowse/core/configuration'
+import {
+  makeTogglePin,
+  resolveConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type {
   ConfigModelForFields,
-  Pin,
   ResolvableDisplay,
+  TogglePin,
 } from '@jbrowse/core/configuration'
 
 /**
@@ -77,12 +81,11 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * The pin over the legend checkbox's state: filled when that state is
-       * this display type's default. `showLegendCheckboxItem` takes it as its
-       * `pin`.
+       * The legend checkbox over every open track of this type.
+       * `showLegendCheckboxItem` takes this as its `pin`.
        */
       get showLegendDisplayTypeDefault() {
-        return makePin(confNode(self), 'showLegend')
+        return makeTogglePin(confNode(self), 'showLegend')
       },
     }))
     .actions(self => ({
@@ -115,7 +118,7 @@ export function gradientSvgLegendWidth(self: { showLegend: boolean }) {
  */
 export function legendCheckboxItem(self: {
   showLegend: boolean
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (arg: boolean) => void
 }) {
   return showLegendCheckboxItem(

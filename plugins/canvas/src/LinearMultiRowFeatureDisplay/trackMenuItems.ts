@@ -23,7 +23,7 @@ import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -48,7 +48,7 @@ interface MultiRowMenuSelf
     MultiRowClusterDialogModel {
   showTree: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   showRowSeparators: boolean
   showRowLabels: boolean
   setShowRowLabels: (f: boolean) => void

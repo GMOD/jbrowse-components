@@ -19,11 +19,10 @@ touches the view has to dismiss it first.
 the barrel put ~80 Material components in every host's first paint.
 
 - A promotable row is the plain builder **plus a `pin` option** — there is no
-  promotable twin of a builder, since twins drifted twice. The pin is `makePin`
-  over the row's state and means the same thing on every row kind: filled = that
-  state is the display-type default, click = apply it to the open tracks or
-  clear it. `checkboxItem` appends the checked state to the pin's label.
-  `SettingRowOptions` is the one bag every row takes — a builder that
+  promotable twin of a builder, since twins drifted twice. A checkbox row's
+  `pin` is a `TogglePin` and a radio row's a `ValuePin`; the type is what stops
+  a checkbox row from carrying a pin that fills for one reason and clears for
+  another. `SettingRowOptions` is the one bag every row takes — a builder that
   hand-narrows it drops fields silently, which is what MAF's local `toggle`
   wrapper had done to three of the five.
 - **`toggleItem`, not `checkboxItem`, for a checkbox over a setter.** It hands

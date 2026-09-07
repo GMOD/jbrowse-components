@@ -8,13 +8,13 @@ import type {
   CollapseGroupRowsModel,
   HiddenGroupsModel,
 } from './groupByMenu.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean
@@ -23,13 +23,13 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  softClippingDisplayTypeDefault: Pin
+  softClippingDisplayTypeDefault: TogglePin
   isChainMode: boolean
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
-  mismatchAlphaDisplayTypeDefault: Pin
+  mismatchAlphaDisplayTypeDefault: TogglePin
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live

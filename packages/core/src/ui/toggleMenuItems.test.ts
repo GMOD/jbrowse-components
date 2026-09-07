@@ -5,41 +5,48 @@ import {
   toggleItem,
 } from './toggleMenuItems.ts'
 
-import type { Pin } from '../configuration/promotablePin.ts'
+import type { TogglePin, ValuePin } from '../configuration/promotablePin.ts'
 
-function pin(onValue: unknown): Pin {
-  return { slot: 'setting', onValue, active: false, toggle: () => {} }
+function togglePin(onValue: boolean): TogglePin {
+  return {
+    kind: 'toggle',
+    slot: 'setting',
+    onValue,
+    active: false,
+    toggle: () => {},
+  }
 }
 
-// The pin's label is what the tooltip and aria-label read, and a checkbox
-// row's label alone ("Show legend") does not say which state the pin applies.
-test('a checkbox row names the pin after its checked state', () => {
-  const off = pin(false)
+function valuePin(onValue: string): ValuePin {
+  return {
+    kind: 'value',
+    slot: 'setting',
+    onValue,
+    active: false,
+    toggle: () => {},
+  }
+}
+
+// A row describes its pin as `{ control, label }` and the label is the row's
+// own, which is what the adornment's tooltip and aria-label read.
+test('a checkbox row carries its toggle pin under the row label', () => {
+  const pin = togglePin(true)
+  expect(checkboxItem('Show legend', false, () => {}, { pin }).pin).toEqual({
+    control: pin,
+    label: 'Show legend',
+  })
   expect(
-    checkboxItem('Show legend', false, () => {}, { pin: off }).pin,
-  ).toEqual({ control: off, label: 'Show legend: off' })
-  expect(
-    toggleItem('Show legend', true, () => {}, { pin: pin(true) }).pin?.label,
-  ).toBe('Show legend: on')
+    toggleItem('Show legend', true, () => {}, { pin: togglePin(false) }).pin
+      ?.label,
+  ).toBe('Show legend')
 })
 
-test('a radio row names the pin after its option', () => {
-  const compact = pin('compact')
-  expect(radioItem('Compact', false, () => {}, { pin: compact }).pin).toEqual({
-    control: compact,
+test('a radio row carries its value pin under the option label', () => {
+  const pin = valuePin('compact')
+  expect(radioItem('Compact', false, () => {}, { pin }).pin).toEqual({
+    control: pin,
     label: 'Compact',
   })
-})
-
-// An unticked "Show read arcs" pin writes the whole shared slot, so its row
-// says so rather than naming only itself.
-test('pinLabel replaces the derived label', () => {
-  expect(
-    checkboxItem('Show read arcs', false, () => {}, {
-      pin: pin('off'),
-      pinLabel: 'Read connections: off',
-    }).pin?.label,
-  ).toBe('Read connections: off')
 })
 
 test('a row without a pin declares none', () => {
@@ -48,7 +55,7 @@ test('a row without a pin declares none', () => {
 })
 
 test('radioItems hands every option its own pin', () => {
-  const pins = { normal: pin('normal'), compact: pin('compact') }
+  const pins = { normal: valuePin('normal'), compact: valuePin('compact') }
   const rows = radioItems(
     [
       { value: 'normal', label: 'Normal' },

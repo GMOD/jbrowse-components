@@ -205,10 +205,10 @@ the Material UI barrel into every host that installs the plugin.
 <!-- prettier-ignore -->
 | Builder | Description |
 | --- | --- |
-| `checkboxItem` | one checkbox setting row, with a pin over its state when the setting is promotable |
+| `checkboxItem` | one checkbox setting row, with a toggle pin when the setting is promotable |
 | `makeRadioSubMenu` | a radio group wrapped in a submenu row |
 | `radioItem` | one radio setting row; the singular of `radioItems` |
-| `radioItems` | a radio group, one row per option, with a pin per option when the setting is promotable |
+| `radioItems` | a radio group, one row per option, with a value pin per option when the setting is promotable |
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
 | `toggleItem` | a checkbox row whose setter takes the new value |
 | `withHint` | a row label carrying an aside that is only sometimes there |

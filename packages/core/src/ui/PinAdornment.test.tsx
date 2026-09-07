@@ -8,11 +8,15 @@ import type { Pin } from '../configuration/promotableDefaults.ts'
 
 const theme = createJBrowseTheme()
 
-// test double: the pin reads `active` and calls `toggle` on click — never
-// `slot`, which only a menu-wide pin-coverage walk reads, nor `onValue`, which
-// the copy takes from the row's label instead
-function fakeControl(active: boolean, toggle: () => void = () => {}): Pin {
-  return { slot: 'unused', onValue: 'compact', active, toggle }
+// test double: the pin reads `kind` and `active`, and calls `toggle` on
+// click — never `slot`, which only a menu-wide pin-coverage walk reads, nor
+// `onValue`, which the copy no longer dispatches on
+function fakeControl(
+  active: boolean,
+  toggle: () => void = () => {},
+  kind: Pin['kind'] = 'value',
+): Pin {
+  return { kind, slot: 'unused', onValue: 'compact', active, toggle }
 }
 
 function renderAdornment(control: Pin, label = 'this') {
@@ -66,16 +70,30 @@ describe('PinAdornment', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  // A checkbox row's builder folds the state into the label, so the same
-  // value-shaped copy names what the click applies.
-  it('names a checkbox state the way a radio value is named', () => {
+  // A toggle pin's copy names the state the click applies rather than the
+  // value-shaped "apply Show legend" a value pin gets, and a filled one (row
+  // checked) still names a click, not a clear. The kind is what decides it: a
+  // value pin over a boolean slot used to read as a toggle by its on-value.
+  it('names the state a toggle pin applies, not just the setting', () => {
     const { getByRole } = renderAdornment(
-      fakeControl(false),
-      'Show legend: off',
+      fakeControl(false, () => {}, 'toggle'),
+      'Show legend',
     )
     expect(
       getByRole('button', {
-        name: 'apply Show legend: off to all open tracks of this type',
+        name: 'turn Show legend on for all open tracks of this type',
+      }),
+    ).toBeTruthy()
+  })
+
+  it('a filled toggle pin offers the flip, not a clear', () => {
+    const { getByRole } = renderAdornment(
+      fakeControl(true, () => {}, 'toggle'),
+      'Show legend',
+    )
+    expect(
+      getByRole('button', {
+        name: 'turn Show legend off for all open tracks of this type',
       }),
     ).toBeTruthy()
   })

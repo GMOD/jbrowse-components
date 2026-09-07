@@ -7,20 +7,20 @@ import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
-  pairsDisplayTypeDefault: Pin
+  pairsDisplayTypeDefault: TogglePin
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  arcsDisplayTypeDefault: Pin
-  readCloudDisplayTypeDefault: Pin
+  arcsDisplayTypeDefault: TogglePin
+  readCloudDisplayTypeDefault: TogglePin
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  readConnectionsDownDisplayTypeDefault: Pin
+  readConnectionsDownDisplayTypeDefault: TogglePin
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
@@ -64,8 +64,6 @@ export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
   const linked = model.linkedReads !== 'off'
-  const arcsOn = model.readConnections === 'arc'
-  const cloudOn = model.readConnections === 'cloud'
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
     // Value checkbox + a trailing "default for all" pin, in one row.
@@ -80,31 +78,27 @@ export function getReadConnectionsMenuItem(
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
     // overlays are mutually exclusive — enabling one disables the other. Each
-    // pin carries its own member of the shared readConnections slot ('arc' or
-    // 'cloud' while ticked), so the two stay independent; an unticked row's
-    // pin carries 'off', which is the whole slot and not only this row, and
-    // its label says so.
+    // pin toggles its own member of the shared readConnections slot against
+    // 'off' ('arc' vs 'cloud'), so the two stay independent.
     checkboxItem(
       'Show read arcs',
-      arcsOn,
+      model.readConnections === 'arc',
       () => {
-        model.setReadConnections(arcsOn ? 'off' : 'arc')
+        model.setReadConnections(
+          model.readConnections === 'arc' ? 'off' : 'arc',
+        )
       },
-      {
-        pin: model.arcsDisplayTypeDefault,
-        pinLabel: arcsOn ? 'Show read arcs: on' : 'Read connections: off',
-      },
+      { pin: model.arcsDisplayTypeDefault },
     ),
     checkboxItem(
       'Show read cloud',
-      cloudOn,
+      model.readConnections === 'cloud',
       () => {
-        model.setReadConnections(cloudOn ? 'off' : 'cloud')
+        model.setReadConnections(
+          model.readConnections === 'cloud' ? 'off' : 'cloud',
+        )
       },
-      {
-        pin: model.readCloudDisplayTypeDefault,
-        pinLabel: cloudOn ? 'Show read cloud: on' : 'Read connections: off',
-      },
+      { pin: model.readCloudDisplayTypeDefault },
     ),
     getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup

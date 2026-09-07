@@ -1,7 +1,6 @@
 import {
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
-  setConf,
 } from '@jbrowse/core/configuration'
 
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
@@ -168,17 +167,14 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.showSoftClipping).toBe(false)
   })
 
-  // The pin carries the row's state: outline until that state is the
-  // display-type default, a click applies it to the open tracks and offers it,
-  // and a click on a filled pin clears the default.
   describe('softClippingDisplayTypeDefault', () => {
-    it('applies the row state, offers it as the default, then clears it', () => {
-      const { session, display } = createDisplay({ showSoftClipping: true })
-      expect(display.softClippingDisplayTypeDefault.onValue).toBe(true)
+    it('is the checkbox over the open tracks: fill mirrors the row, a click flips it', () => {
+      const { session, display } = createDisplay()
       expect(display.softClippingDisplayTypeDefault.active).toBe(false)
 
       display.softClippingDisplayTypeDefault.toggle()
       expect(display.showSoftClipping).toBe(true)
+      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
       promote(session)
       expect(
         session.getDisplayTypeDefault(
@@ -186,31 +182,20 @@ describe('alignments showSoftClipping session default', () => {
           'showSoftClipping',
         ),
       ).toBe(true)
-      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
-
-      display.softClippingDisplayTypeDefault.toggle()
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'showSoftClipping',
-        ),
-      ).toBeUndefined()
-      expect(display.showSoftClipping).toBe(true)
     })
 
-    // off is the slot's base, so offering it clears rather than stores
-    it('an unticked row offers off, which clears the default', () => {
-      const { session, display } = createDisplay()
+    // off is the slot's base, so the offer clears rather than stores
+    it('flips a checked row off and offers off, which clears the default', () => {
+      const { session, display } = createDisplay({ showSoftClipping: true })
       session.setDisplayTypeDefault(
         'LinearAlignmentsDisplay',
         'showSoftClipping',
         true,
       )
-      expect(display.showSoftClipping).toBe(true)
-      setConf(display, 'showSoftClipping', false)
-      expect(display.softClippingDisplayTypeDefault.active).toBe(false)
+      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
 
       display.softClippingDisplayTypeDefault.toggle()
+      expect(display.showSoftClipping).toBe(false)
       promote(session)
       expect(
         session.getDisplayTypeDefault(
@@ -641,17 +626,15 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     expect(display.mismatchAlpha).toBe(false)
   })
 
-  it('the pin applies the row state across the open tracks and offers it', () => {
+  it('the pin flips the row across the open tracks and offers the new state', () => {
     const { session, display } = createDisplay()
-    display.setMismatchAlpha(true)
-    expect(display.mismatchAlphaDisplayTypeDefault.active).toBe(false)
+    display.setMismatchAlpha(false)
     display.mismatchAlphaDisplayTypeDefault.toggle()
     expect(display.mismatchAlpha).toBe(true)
     promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'mismatchAlpha'),
     ).toBe(true)
-    expect(display.mismatchAlphaDisplayTypeDefault.active).toBe(true)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -705,9 +688,9 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin offers a checked row as the on default', () => {
+  it('the pin flips labels on from an unchecked row', () => {
     const { session, display } = createDisplay()
-    display.setShowSashimiLabels(true)
+    display.setShowSashimiLabels(false)
     display.showSashimiLabelsDisplayTypeDefault.toggle()
     expect(display.showSashimiLabels).toBe(true)
     promote(session)
@@ -766,10 +749,9 @@ describe('alignments showLegend (color-scheme key)', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  it('the pin offers a checked row as the on default', () => {
+  it('the pin flips the legend on from an unchecked row', () => {
     const { session, display } = createDisplay()
-    display.setShowLegend(true)
-    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
+    display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()
     expect(display.showLegend).toBe(true)
     promote(session)
@@ -791,7 +773,6 @@ describe('alignments showLegend (color-scheme key)', () => {
 
   it('the Show menu row carries the pin', () => {
     const { session, display } = createDisplay()
-    display.setShowLegend(true)
     const row = findMenuItem(
       menuSubItems(display.trackMenuItems(), 'Show...'),
       'Show legend',
@@ -1119,37 +1100,33 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     expect(display.linkedReads).toBe('off')
   })
 
-  // The row is a checkbox over a two-member enum, so its pin carries the
-  // member the row shows: 'normal' when ticked, 'off' when not. The offer
-  // stores that member, or clears when it is the base.
+  // The row is a checkbox over a two-member enum, so its pin is the toggle
+  // kind: fill mirrors the row, a click flips 'off'/'normal' on the open
+  // tracks, and the offer stores the new state — or clears, when that state
+  // is the base.
   describe('pairsDisplayTypeDefault', () => {
-    it('carries the row state and promotes it', () => {
-      const { session, display } = createDisplay({ linkedReads: 'normal' })
-      expect(display.pairsDisplayTypeDefault.onValue).toBe('normal')
+    it('mirrors the row and applies pairs to the track', () => {
+      const { session, display } = createDisplay()
+      expect(display.linkedReads).toBe('off')
       expect(display.pairsDisplayTypeDefault.active).toBe(false)
 
       display.pairsDisplayTypeDefault.toggle()
+      expect(display.linkedReads).toBe('normal')
+      expect(display.pairsDisplayTypeDefault.active).toBe(true)
       promote(session)
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
-      expect(display.pairsDisplayTypeDefault.active).toBe(true)
-
-      display.pairsDisplayTypeDefault.toggle()
-      expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
-      ).toBeUndefined()
     })
 
-    it('an unticked row applies off everywhere and its offer clears', () => {
-      const { session, display } = createDisplay({ linkedReads: 'off' })
+    it('flipping pairs off offers the base, which clears the default', () => {
+      const { session, display } = createDisplay({ linkedReads: 'normal' })
       session.setDisplayTypeDefault(
         'LinearAlignmentsDisplay',
         'linkedReads',
         'normal',
       )
-      expect(display.pairsDisplayTypeDefault.onValue).toBe('off')
-      expect(display.pairsDisplayTypeDefault.active).toBe(false)
+      expect(display.pairsDisplayTypeDefault.active).toBe(true)
 
       display.pairsDisplayTypeDefault.toggle()
       expect(display.linkedReads).toBe('off')
@@ -1197,15 +1174,12 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  // The arcs pin carries 'arc' while the row is ticked and 'off' otherwise,
-  // so a ticked row promotes arc and a filled pin clears it; the read-cloud
-  // pin over the same slot reads its own member and stays outline.
-  it('the arcs pin promotes arc and clears it', () => {
-    const { session, display } = createDisplay({ readConnections: 'arc' })
-    expect(display.arcsDisplayTypeDefault.onValue).toBe('arc')
-    expect(display.readCloudDisplayTypeDefault.onValue).toBe('off')
-
+  // The arcs pin toggles 'arc'/'off' on the shared slot: flipping on stores
+  // arc, flipping back offers off, the base, which clears.
+  it('the arcs pin toggles arc on and off, storing then clearing', () => {
+    const { session, display } = createDisplay()
     display.arcsDisplayTypeDefault.toggle()
+    expect(display.readConnections).toBe('arc')
     promote(session)
     expect(
       session.getDisplayTypeDefault(
@@ -1217,7 +1191,8 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(display.readCloudDisplayTypeDefault.active).toBe(false)
 
     display.arcsDisplayTypeDefault.toggle()
-    expect(display.readConnections).toBe('arc')
+    expect(display.readConnections).toBe('off')
+    promote(session)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',

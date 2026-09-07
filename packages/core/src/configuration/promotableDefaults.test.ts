@@ -15,6 +15,7 @@ import {
   isPromotableDefault,
   isSlotCustomized,
   makePin,
+  makeTogglePin,
   openTracksOfType,
   getConfigSnapshotWithPromotables,
 } from './promotableDefaults.ts'
@@ -590,39 +591,55 @@ describe('promotable maybeBoolean slot', () => {
     expect(resolveConf(display, 'chevrons')).toBe(true)
   })
 
-  // A checkbox row's pin is the value-omitted form: its on-value is the row's
-  // current state, its fill says that state is the promoted default, and its
-  // click applies the state everywhere or, when filled, clears the default.
-  // The same pin a radio row carries, with the row's state standing in for
-  // the option's value.
-  test('a checkbox pin carries the row state, fills when it is the default, and clears', () => {
+  // Flipping back to the base and taking the offer used to store the base;
+  // now it clears, so a toggle pin's two offers are "promote the non-base
+  // state" and "clear", and the inventory never lists a no-op.
+  test('a toggle pin offering the base state clears the default', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    const pin = makePin(display, 'chevrons')
-    expect(pin.onValue).toBe(false)
-    expect(pin.active).toBe(false)
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
 
-    pin.toggle()
-    expect(resolveConf(display, 'chevrons')).toBe(false)
+    makeTogglePin(display, 'chevrons').toggle()
     soleAction(session.lastNotify).onClick()
-    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
-    expect(makePin(display, 'chevrons').active).toBe(true)
 
-    makePin(display, 'chevrons').toggle()
+    expect(resolveConf(display, 'chevrons')).toBe(true)
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
     ).toBeUndefined()
+  })
+
+  test('toggle pin mirrors the row, flips it, and offers the new state', () => {
+    const { session, display } = createDisplay(configSchema, {
+      chevrons: false,
+    })
+    const pin = makeTogglePin(display, 'chevrons')
+    expect(pin.active).toBe(false)
+    expect(pin.onValue).toBe(true)
+
+    pin.toggle()
+    expect(resolveConf(display, 'chevrons')).toBe(true)
+    expect(makeTogglePin(display, 'chevrons').active).toBe(true)
+    // `true` is the base, so the offer clears rather than stores
+    soleAction(session.lastNotify).onClick()
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
+    ).toBeUndefined()
+
+    makeTogglePin(display, 'chevrons').toggle()
     expect(resolveConf(display, 'chevrons')).toBe(false)
+    soleAction(session.lastNotify).onClick()
+    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
   })
 })
 
-// A checkbox row over a multi-valued slot stands for one member of it, so its
-// pin carries `'arc'` when the box is ticked and `'off'` when it is not
-// (alignments' "Show read arcs" / "Show read cloud" over `readConnections`).
-// Two rows sharing one slot stay independent because each names its own
-// member, and offering `'off'` clears since it is the base.
-describe('checkbox pins over one shared enum slot', () => {
+// A checkbox row over a multi-valued slot stands for one member of it, and
+// its pin toggles that member against the off member. This is what lets two
+// checkbox rows share one slot (alignments' "Show read arcs" / "Show read
+// cloud" over `readConnections`) while carrying the same toggle pin every
+// other checkbox row does, instead of a value pin that filled for a different
+// reason and cleared on its second click.
+describe('toggle pin over a two-state enum', () => {
   const configSchema = ConfigurationSchema('ConnectionsDisplay', {
     connections: {
       type: 'maybeStringEnum',
@@ -631,49 +648,47 @@ describe('checkbox pins over one shared enum slot', () => {
       promotedBase: 'off',
     },
   })
-  const arcsPin = (display: ResolvableDisplay<Instance<typeof configSchema>>) =>
-    makePin(
-      display,
-      'connections',
-      resolveConf(display, 'connections') === 'arc' ? 'arc' : 'off',
-    )
-  const cloudPin = (
-    display: ResolvableDisplay<Instance<typeof configSchema>>,
-  ) =>
-    makePin(
-      display,
-      'connections',
-      resolveConf(display, 'connections') === 'cloud' ? 'cloud' : 'off',
-    )
+  const arcs = { on: 'arc', off: 'off' } as const
+  const cloud = { on: 'cloud', off: 'off' } as const
 
-  test('each row promotes its own member', () => {
-    const { session, display } = createDisplay(configSchema, {
-      connections: 'arc',
-    })
-    expect(arcsPin(display).onValue).toBe('arc')
-    expect(cloudPin(display).onValue).toBe('off')
+  test('mirrors the row and applies the other state', () => {
+    const { display } = createDisplay(configSchema, { connections: 'arc' })
+    const pin = makeTogglePin(display, 'connections', arcs)
+    expect(pin.kind).toBe('toggle')
+    expect(pin.active).toBe(true)
+    expect(pin.onValue).toBe('off')
 
-    arcsPin(display).toggle()
-    soleAction(session.lastNotify).onClick()
-    expect(session.getDisplayTypeDefault('TestDisplay', 'connections')).toBe(
-      'arc',
-    )
-    expect(arcsPin(display).active).toBe(true)
-    expect(cloudPin(display).active).toBe(false)
+    pin.toggle()
+    expect(resolveConf(display, 'connections')).toBe('off')
+    expect(makeTogglePin(display, 'connections', arcs).onValue).toBe('arc')
   })
 
-  test('the unticked row applies off, and offering off clears', () => {
-    const { session, display } = createDisplay(configSchema, {
-      connections: 'arc',
-    })
-    session.setDisplayTypeDefault('TestDisplay', 'connections', 'arc')
+  test('two rows over one slot stay independent', () => {
+    const { display } = createDisplay(configSchema, { connections: 'arc' })
+    expect(makeTogglePin(display, 'connections', cloud).active).toBe(false)
 
-    cloudPin(display).toggle()
-    expect(resolveConf(display, 'connections')).toBe('off')
-    soleAction(session.lastNotify).onClick()
-    expect(
-      session.getDisplayTypeDefault('TestDisplay', 'connections'),
-    ).toBeUndefined()
+    makeTogglePin(display, 'connections', cloud).toggle()
+    expect(resolveConf(display, 'connections')).toBe('cloud')
+    expect(makeTogglePin(display, 'connections', arcs).active).toBe(false)
+  })
+
+  test('refuses a state outside the slot vocabulary', () => {
+    const { display } = createDisplay(configSchema)
+    expect(() =>
+      makeTogglePin(display, 'connections', {
+        on: 'arc',
+        // @ts-expect-error not a member of the enumeration
+        off: 'none',
+      }),
+    ).toThrow(/refuses it/)
+  })
+
+  test('a non-boolean slot needs its states named', () => {
+    const { display } = createDisplay(configSchema)
+    expect(() =>
+      // @ts-expect-error the states are required for a non-boolean slot
+      makeTogglePin(display, 'connections'),
+    ).toThrow(/on\/off states/)
   })
 })
 

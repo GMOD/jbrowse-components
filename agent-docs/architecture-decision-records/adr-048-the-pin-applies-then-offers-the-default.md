@@ -14,29 +14,47 @@ because its failure mode is real and the new shape has to answer for it.
 Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
 §"UI surface".
 
-**Amended 2026-09-02 and reversed 2026-09-07.** The amendment gave checkbox
-rows a pin of their own: fill mirrored the checkbox, a click flipped the state
-on every open track, and it never cleared a default. It was reversed because
-the fill then duplicated the row's own glyph and said nothing new, the menu had
-no way to show or clear a promoted default on a checkbox row, and the alignments
-menu carried both pin meanings within a few rows of each other. The one
-meaning below now holds on every row kind: the pin carries the row's state (a
-radio's option, a slider's value, a checkbox's checked state), it fills when
-that state is the display type's default, an outline click applies the state
-to the open tracks and offers it, and a filled click clears. `checkboxItem`
-folds the state into the pin's label ("Show legend: off") so the copy names
-what the click applies. The amendment's objection — a pin beside an unchecked
-box "applies off everywhere and visibly does nothing" when every track is
-already off — is the same no-op a radio pin performs on the selected row, and
-is what the copy says it does.
+**Amended 2026-09-02** for checkbox rows: their pin is the row's own checkbox
+over every open track of the type (`makeTogglePin`). Its fill mirrors the row, a
+click flips the state on every open track and offers the new state as the
+default, and it never clears a default — flipping back and taking the offer
+promotes the other value. The "filled means promoted, click to clear" reading
+below now holds only for the value pins on radio and size rows. What prompted
+it: the symmetric pin carried the row's current state, so beside an unchecked
+"Show legend" it applied *off* everywhere and visibly did nothing.
 
-**Amended 2026-09-07: promoting the slot's base value clears the default.** The
-cascade resolves a promoted base and nothing promoted identically, but the store
-did not: the Preferences inventory listed a row reading "from X to X" and the
-base option's radio pin drew filled. "Set as the default" now compares against
-`promotedBase` and writes `undefined` on a match, so taking the base row's offer
-is the per-value undo of a promoted default, and a filled pin only ever means a
-non-base value is promoted.
+**Tried and reversed the same day, 2026-09-07:** one pin meaning on every row,
+where a checkbox row's pin carried the row's *current* state and filled when
+that state was the default. It deleted the toggle kind and let the menu clear a
+default on a checkbox row, and it failed the first live test: the pin beside an
+unchecked "View as pairs" applied *off* to every open track and visibly did
+nothing, which is the objection above stated exactly. A pin beside a checkbox
+is read as "turn this on for all", and that is what a toggle pin does.
+`products/jbrowse-web/src/tests/PromotablePinClick.test.tsx` is the canary:
+it clicks the rendered pin by its accessible name beside an unchecked "View
+as pairs" and asserts the track switched, which none of the unit tests could
+have said. `misKindedPins` (checked over every promotable display in
+`PromotablePinCoverage.test.ts`) refuses a value pin on a checkbox row.
+
+**Amended 2026-09-07**, twice:
+
+- **Every checkbox row carries a toggle pin, and the row builders type it so.**
+  `Pin` is a union discriminated on `kind`, `checkboxItem`'s `pin` option takes
+  a `TogglePin` and `radioItem`'s a `ValuePin`. A checkbox row over one member
+  of a multi-valued slot names its two states, `makeTogglePin(self,
+  'readConnections', { on: 'arc', off: 'off' })`, so the alignments arcs and
+  read-cloud rows toggle like every other checkbox instead of carrying value
+  pins that filled when their value was promoted and cleared on a second
+  click, one submenu away from a toggle pin that filled when the box was
+  ticked. The copy used to tell the two apart by `typeof onValue ===
+  'boolean'`, which a value pin over a boolean slot passed.
+- **Promoting the slot's base value clears the default.** The cascade resolves
+  a promoted base and nothing promoted identically, but the store did not: the
+  Preferences inventory listed a row reading "from X to X" and the base
+  option's radio pin drew filled. "Set as the default" now compares against
+  `promotedBase` and writes `undefined` on a match, so taking the base row's
+  offer is the per-value undo of a promoted default, and a filled value pin
+  only ever means a non-base value is promoted.
 
 ## Context
 

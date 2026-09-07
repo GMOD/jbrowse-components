@@ -6,7 +6,7 @@ import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -32,9 +32,10 @@ type Model = ReturnType<typeof makeModel>
 // colorBy value — mirrors makePin over the colorBy
 // slot.
 function fakePinFactory(model: Model) {
-  return (colorBy: ColorBy): Pin => {
+  return (colorBy: ColorBy): ValuePin => {
     const key = JSON.stringify(colorBy)
     return {
+      kind: 'value',
       slot: 'colorBy',
       onValue: colorBy,
       active: model.pinned.has(key),

@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import {
+  misKindedPins,
   pinnedSlots,
   promotableSlotsWithoutPin,
 } from './promotablePinCoverage.ts'
@@ -10,6 +11,7 @@ import type { MenuItem } from './MenuTypes.ts'
 
 function pin(slot: string): Pin {
   return {
+    kind: 'toggle',
     slot,
     onValue: true,
     active: false,
@@ -102,4 +104,70 @@ test('a fully pinned menu reports nothing, and plain slots never count', () => {
       pinnedRow('Soft clipping', 'softClip'),
     ]),
   ).toEqual([])
+})
+
+describe('misKindedPins', () => {
+  const toggle: Pin = {
+    kind: 'toggle',
+    slot: 'x',
+    onValue: true,
+    active: false,
+    toggle: () => {},
+  }
+  const value: Pin = { ...toggle, kind: 'value', onValue: 'a' }
+
+  test('a checkbox row wants a toggle pin and a radio row a value pin', () => {
+    expect(
+      misKindedPins([
+        {
+          label: 'Show x',
+          type: 'checkbox',
+          checked: false,
+          onClick: () => {},
+          pin: { control: toggle, label: 'Show x' },
+        },
+        {
+          label: 'Mode',
+          subMenu: [
+            {
+              label: 'A',
+              type: 'radio',
+              checked: true,
+              onClick: () => {},
+              pin: { control: value, label: 'A' },
+            },
+          ],
+        },
+      ]),
+    ).toEqual([])
+  })
+
+  test('names the rows whose pin is the other kind, submenus included', () => {
+    expect(
+      misKindedPins([
+        {
+          label: 'Show x',
+          type: 'checkbox',
+          checked: false,
+          onClick: () => {},
+          pin: { control: value, label: 'Show x' },
+        },
+        {
+          label: 'Mode',
+          subMenu: [
+            {
+              label: 'A',
+              type: 'radio',
+              checked: true,
+              onClick: () => {},
+              pin: { control: toggle, label: 'A' },
+            },
+          ],
+        },
+      ]),
+    ).toEqual([
+      'Show x: value pin on a checkbox row',
+      'A: toggle pin on a radio row',
+    ])
+  })
 })

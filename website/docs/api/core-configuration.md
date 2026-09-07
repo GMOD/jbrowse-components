@@ -160,32 +160,57 @@ non-promotable one throws in `resolveSlotIn`.
 
 ## makePin
 
-The pin for one row: "apply this row's state to every open track of this
-display type", and — via the snackbar it raises — "keep it as the default
-for the ones opened later". Filled when that state is already the default,
-and a click on a filled pin clears the default.
+The pin on a radio or slider row: "apply this value to every open track of
+this display type", and — via the snackbar it raises — "keep it as the
+default for the ones opened later".
 
-`value` is the row's state, and the two spellings are the same pin:
+`value` chooses between the subsystem's two meanings, which are otherwise
+identical:
 
-- **Give it** where the row stands for one fixed value — a radio option
-  ("make *compact* the default"), or a checkbox row over one member of a
-  shared enum (`readConnections`: the arcs row's state is `'arc'` or
-  `'off'`). Two rows sharing one slot stay independent because each names
-  its own value.
-- **Omit it** for "whatever this track shows", resolved through the
-  cascade: a checkbox over a `maybeBoolean` slot, or a continuous setting
-  with no fixed on-value (wiggle point size, arc line width).
+- **Give it** for a per-value pin — "make *compact* the default" —
+  independent of what the track currently shows. Use on an always-visible pin
+  so it can never promote a meaningless value, and so two rows sharing one
+  slot (sashimi `'down'` vs `'auto'`) stay independent.
+- **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
+  a continuous setting where no fixed on-value makes sense (wiggle point size,
+  arc line width).
+
+A checkbox row takes neither: makeTogglePin.
 
 One function with an optional argument, rather than the two exported builders
 it replaces — a per-value one and a `…CurrentValue…` one, the second of which
-was exactly the first applied to `resolveSlot(self, slot).value`. A third,
-`makeTogglePin`, whose fill mirrored a checkbox row and whose click flipped
-it, went the same way: it duplicated the row's own glyph, and left the menu
-with no way to show or clear a promoted default on a checkbox row.
+was exactly the first applied to `resolveSlot(self, slot).value`. The pair was
+one function plus a doc section explaining which name to reach for; omitting
+the argument now says what the longer name said.
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => Pin
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => ValuePin
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+## makeTogglePin
+
+The pin on a checkbox row: the row's own checkbox, acting on every open track
+of the display type. `active` mirrors the row, so the pin draws filled
+exactly when the box is ticked; a click flips the row's state on every open
+track and offers the new state as the display type's default. It never
+clears a default the way makePin's filled pin does — flipping back
+and taking the offer promotes the other value, and promoting the base value
+clears the default (`applyAndOfferDefault`).
+
+Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
+row's current state: beside an unchecked box that applied *off* everywhere
+and visibly did nothing. It also replaces the per-value `makePin` a checkbox
+row over a shared enum slot used to carry, which gave two checkbox rows in
+one submenu two different pins: one filled when its value was promoted and
+clearing on a second click, the other filled when the box was ticked and
+flipping. With `states`, a checkbox row is always the toggle kind.
+
+```js
+// type signature
+<…>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...states: ConfigurationSlotValueResolved<...> extends boolean ? [] | [...] : [...]) => TogglePin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -193,38 +218,13 @@ with no way to show or clear a promoted default on a checkbox row.
 ## Pin
 
 The "apply this to every open track of this type" affordance on a menu row —
-the trailing `PushPin`, bundled so the row consumes it as one prop. Built by
-makePin.
+the trailing `PushPin`, bundled so the row consumes it as one prop.
 
-One meaning on every row kind. `onValue` is the row's own state: the option
-a radio row stands for, the slider's current value, a checkbox's current
-checked state. `active` = that state is the display type's promoted default
-(a filled pin), which is the *state*, not the click. `toggle` on an outline
-pin applies the state to every open track of the display type and raises a
-snackbar whose one action promotes it to the display type's default; on a
-filled pin it clears that default instead, touching no track
-(`applyAndOfferDefault` / `clearDefault`). So the row's glyph shows what
-this track does, the pin's fill shows what the display type defaults to, and
-the menu is where a default is both set and undone.
-
-**`toggle` rather than an `apply`/`clear` pair**, which was tried and dropped:
-the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly
-"flip", so splitting it adds a member *and* a branch at the one call site that
-never needed one. `active` is already public for a caller that wants to state
-a direction.
-
-`slot` is here so a *built menu* can be asked which promotable slots it offers
-a pin for, which is the only way that question has an answer: declaring
-`promotedBase` is a schema fact and the pin is a menu fact, and a display that
-inherits the slot but never builds a row has a slot nothing can ever promote,
-silently (`promotableSlotsWithoutPin`, guarded by
-`products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
-
-Lives here, alone and with no imports, rather than beside `makePin` in
-`promotableDefaults.ts`: the menu types describe a pin without building one,
-and `MenuTypes.ts` taking this from that module gave a React-free type file a
-type closure of 374 files. See `agent-docs/ideas/barrels-block-extraction.md`
-and `scripts/moduleClosure.ts`.
+`kind` is what the adornment words itself from and what the row builders
+check: a checkbox row takes a TogglePin, a radio or slider row a
+ValuePin. The two used to be told apart by `typeof onValue ===
+'boolean'`, which let a value pin over a boolean slot compile and read as a
+toggle while clearing on its second click.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
 
@@ -357,6 +357,16 @@ promotable slot, which the declared slot value type doesn't include.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
 
+## TogglePin
+
+The pin on a checkbox row, built by makeTogglePin: the row's own
+checkbox over every open track of the display type. `active` mirrors the row,
+`onValue` is the state a click applies (the row's opposite), and `toggle`
+applies it everywhere and offers it as the default. It never clears a default
+on its own — promoting the slot's base value is what clears one.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
+
 ## TrackConfigWithPromotables
 
 A track config snapshot with every display's `promotable` slots resolved, plus
@@ -388,3 +398,13 @@ reader has promoted in their own browser. Pinned by
 `products/jbrowse-web/src/tests/CopyConfigPromotedDefaults.test.ts`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+## ValuePin
+
+The pin on a radio or slider row, built by makePin: `onValue` is the
+row's own value, `active` means that value is the display type's promoted
+default, and `toggle` on an outline pin applies the value to every open track
+and offers it as the default, while on a filled pin it clears that default
+and touches no track (`applyAndOfferDefault` / `clearDefault`).
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
