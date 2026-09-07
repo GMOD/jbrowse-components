@@ -16,7 +16,7 @@ import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { arcMark } from './mark.ts'
-import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
+import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './shapes.ts'
 
 import type { DrawBlock } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -185,11 +185,13 @@ export function drawArcDomes(
   const { cssPalette } = opts
   ctx.setLineDash([])
   for (let i = 0; i < data.numArcs; i++) {
-    const mark = arcMark(data, i, opts)
-    if (mark.kind === 'dome') {
-      strokeWidthAt(ctx, data, i, opts.lineWidth)
-      ctx.strokeStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
-      strokeArcMark(ctx, mark)
+    if (!isFlatArcShape(data.arcShapeTypes[i]!)) {
+      const mark = arcMark(data, i, opts)
+      if (mark.kind === 'dome') {
+        strokeWidthAt(ctx, data, i, opts.lineWidth)
+        ctx.strokeStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
+        strokeArcMark(ctx, mark)
+      }
     }
   }
 }
@@ -210,15 +212,17 @@ export function drawArcBars(
 ) {
   ctx.strokeStyle = opts.flatLineCss
   for (let i = 0; i < data.numArcs; i++) {
-    const mark = arcMark(data, i, opts)
-    if (mark.kind === 'bar') {
-      strokeWidthAt(ctx, data, i, opts.lineWidth)
-      const dashed = data.arcShapeTypes[i] === ARC_SHAPE_FLAT_SPLIT
-      ctx.setLineDash(dashed ? [ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX] : [])
-      ctx.beginPath()
-      ctx.moveTo(mark.mid - mark.halfPx, mark.markY)
-      ctx.lineTo(mark.mid + mark.halfPx, mark.markY)
-      ctx.stroke()
+    if (isFlatArcShape(data.arcShapeTypes[i]!)) {
+      const mark = arcMark(data, i, opts)
+      if (mark.kind === 'bar') {
+        strokeWidthAt(ctx, data, i, opts.lineWidth)
+        const dashed = data.arcShapeTypes[i] === ARC_SHAPE_FLAT_SPLIT
+        ctx.setLineDash(dashed ? [ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX] : [])
+        ctx.beginPath()
+        ctx.moveTo(mark.mid - mark.halfPx, mark.markY)
+        ctx.lineTo(mark.mid + mark.halfPx, mark.markY)
+        ctx.stroke()
+      }
     }
   }
   ctx.setLineDash([])
@@ -249,12 +253,14 @@ export function drawArcMarkers(
   const { cssPalette } = opts
   const m = ARC_MARKER_PX
   for (let i = 0; i < data.numArcs; i++) {
-    const mark = arcMark(data, i, opts)
-    if (mark.kind === 'bar') {
-      const { sx1, sx2, markY } = mark
-      ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
-      ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
-      ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
+    if (isFlatArcShape(data.arcShapeTypes[i]!)) {
+      const mark = arcMark(data, i, opts)
+      if (mark.kind === 'bar') {
+        const { sx1, sx2, markY } = mark
+        ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
+        ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
+        ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
+      }
     }
   }
 }

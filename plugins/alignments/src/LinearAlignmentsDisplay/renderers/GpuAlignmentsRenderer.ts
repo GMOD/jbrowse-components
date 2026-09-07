@@ -65,6 +65,7 @@ import type {
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
+import type { StagedUniforms } from '@jbrowse/render-core/marks'
 
 // Shader strides — every pileup pass shares the same Uniforms struct (see
 // shaders/slang/alignmentsUniforms.slang) so we use any module's offsets.
@@ -903,10 +904,11 @@ export class GpuAlignmentsRenderer
     if (scissor.height > 0) {
       this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
       this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-      // In ARC_BAND_MARKS order, which is the paint order and says why. Each
-      // mark writes `ArcBandUniforms` into the band's own scratch before its
-      // draw, so `uData` still holds what every other pass needs.
+      // In ARC_BAND_MARKS order, which is the paint order and says why. The
+      // first mark writes `ArcBandUniforms` into the band's own scratch and the
+      // rest draw off it, so `uData` still holds what every other pass needs.
       const arcState = { ...state, arcBand: band, screenWidthPx: clip.scissorW }
+      const staged: StagedUniforms = { writer: undefined, params: undefined }
       for (const mark of ARC_BAND_MARKS) {
         mark.drawRegion(
           this.hal,
@@ -916,6 +918,7 @@ export class GpuAlignmentsRenderer
           region.arcPack,
           arcState,
           regionKey,
+          staged,
         )
       }
     }

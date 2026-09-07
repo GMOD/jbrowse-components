@@ -91,17 +91,29 @@ function frameWrites() {
       readConnectionsHeight: 20,
     }),
   )
-  return { f32: hal.getUniformWritesF32(), u32: hal.getUniformWritesU32() }
+  return {
+    f32: hal.getUniformWritesF32(),
+    u32: hal.getUniformWritesU32(),
+    draws: hal.draws(),
+  }
 }
 
 describe('the arc band writes its own uniforms', () => {
-  it('costs one write per section plus one per band mark, and no more', () => {
-    // Two sections, each a pileup write then one per `ARC_BAND_MARKS` entry.
-    // Four identical band writes rather than one is what declaring the band as
-    // marks costs: `defineMark` writes a mark's uniforms before its draw, and
-    // all four arc passes read one `ArcBandUniforms`. The coverage band above
-    // pays the same five times.
-    expect(frameWrites().f32).toHaveLength(2 + 2 * ARC_BAND_MARKS.length)
+  it('costs one pileup write and one band write per section, and no more', () => {
+    // All four arc passes read one `ArcBandUniforms` through one writer, so
+    // the first mark stages it and the other three draw off it.
+    expect(frameWrites().f32).toHaveLength(4)
+  })
+
+  it('draws every band pass off the band write of its own section', () => {
+    const ids = new Set(ARC_BAND_MARKS.map(m => m.pass.id))
+    const reads = frameWrites()
+      .draws.filter(d => ids.has(d.passId))
+      .map(d => d.uniformWrite)
+    expect(reads).toEqual([
+      ...ARC_BAND_MARKS.map(() => 1),
+      ...ARC_BAND_MARKS.map(() => 3),
+    ])
   })
 
   it('alternates the two blocks, so neither is the other patched', () => {
@@ -109,35 +121,28 @@ describe('the arc band writes its own uniforms', () => {
     // statement that the band is not writing a copy of the pileup's.
     expect(frameWrites().f32.map(w => w.byteLength)).toEqual([
       UNIFORMS_SIZE_BYTES,
-      ...ARC_BAND_MARKS.map(() => ARC_UNIFORMS_SIZE_BYTES),
+      ARC_UNIFORMS_SIZE_BYTES,
       UNIFORMS_SIZE_BYTES,
-      ...ARC_BAND_MARKS.map(() => ARC_UNIFORMS_SIZE_BYTES),
+      ARC_UNIFORMS_SIZE_BYTES,
     ])
   })
 
-  // Writes are [section 0 pileup, section 0's four band marks, section 1
-  // pileup, …]. `covOffset` is the pileup top on a section write and the arc
-  // anchor on a band write, so section 1's is what a leaked clobber would
-  // corrupt.
-  const PILEUP_WRITES = [0, 1 + ARC_BAND_MARKS.length]
+  // Writes are [section 0 pileup, section 0 band, section 1 pileup, section 1
+  // band]. `covOffset` is the pileup top on a section write and the arc anchor
+  // on a band write, so section 1's is what a leaked clobber would corrupt.
+  const PILEUP_WRITES = [0, 2]
 
   it('gives the second section its own pileup offset, not the arc band anchor', () => {
     const { f32 } = frameWrites()
     expect(f32[PILEUP_WRITES[1]!]![UNIFORM_OFFSET_F32.covOffset]).toBe(50)
   })
 
-  it('places the arc anchor on every band write of the section', () => {
+  it('places the arc anchor on the band write of each section', () => {
     const { f32 } = frameWrites()
     // Up mode anchors at the band bottom: section 0's band is [0, 20] and
     // section 1's is [40, 20].
-    const anchors = (first: number) =>
-      ARC_BAND_MARKS.map(
-        (_m, i) => f32[first + i]![ARC_UNIFORM_OFFSET_F32.covOffset],
-      )
-    expect(anchors(1)).toEqual(ARC_BAND_MARKS.map(() => 20))
-    expect(anchors(2 + ARC_BAND_MARKS.length)).toEqual(
-      ARC_BAND_MARKS.map(() => 60),
-    )
+    expect(f32[1]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(20)
+    expect(f32[3]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(60)
     expect(f32[1]![ARC_UNIFORM_OFFSET_F32.arcBandH]).toBe(20)
   })
 

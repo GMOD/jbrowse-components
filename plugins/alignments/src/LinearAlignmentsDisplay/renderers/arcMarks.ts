@@ -19,7 +19,13 @@ import { writeArcBandUniforms } from './arcBandUniforms.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ArcBand, RenderState } from './rendererTypes.ts'
-import type { Mark, MarkContext2D, MarkShape } from '@jbrowse/render-core/marks'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type {
+  Mark,
+  MarkContext2D,
+  MarkFrame,
+  MarkShape,
+} from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
@@ -58,6 +64,37 @@ function arcBandParams(state: ArcMarkState): ArcBandParams {
   }
 }
 
+// One writer for all four shapes by reference, which is what lets a section's
+// block stage the struct once and draw every layer off it.
+function writeArcMarkUniforms(
+  scratch: ArrayBuffer,
+  clip: BlockClipResult,
+  block: RenderBlock,
+  frame: MarkFrame,
+  p: ArcBandParams,
+) {
+  writeArcBandUniforms(scratch, {
+    bpHi: clip.bpStartHi,
+    bpLo: clip.bpStartLo,
+    // The BLOCK's span, not the clipped one: an arc's foot may be
+    // extrapolated well outside the block, and `blockStartPx`/`blockWidth`
+    // are what carry that.
+    bpLen: block.end - block.start,
+    canvasW: clip.scissorW,
+    canvasH: frame.canvasHeight,
+    reversed: block.reversed,
+    arcAnchorPx: arcAnchorY(p.band.top, p.band.height, p.band.down),
+    arcBandH: p.band.height,
+    blockStartPx: block.screenStartPx - clip.scissorX,
+    blockWidth: block.screenEndPx - block.screenStartPx,
+    lineWidthPx: p.lineWidth,
+    down: p.band.down,
+    arcsYDomainBp: p.arcsYDomainBp,
+    dpr: clip.scaleY,
+    colors: p.colors,
+  })
+}
+
 type ArcPainter = (
   ctx: MarkContext2D,
   data: ArcsUploadData,
@@ -80,28 +117,7 @@ function arcLayerShape(
   return {
     id: pass.id,
     pass,
-    writeUniforms(scratch, clip, block, frame, p) {
-      writeArcBandUniforms(scratch, {
-        bpHi: clip.bpStartHi,
-        bpLo: clip.bpStartLo,
-        // The BLOCK's span, not the clipped one: an arc's foot may be
-        // extrapolated well outside the block, and `blockStartPx`/`blockWidth`
-        // are what carry that.
-        bpLen: block.end - block.start,
-        canvasW: clip.scissorW,
-        canvasH: frame.canvasHeight,
-        reversed: block.reversed,
-        arcAnchorPx: arcAnchorY(p.band.top, p.band.height, p.band.down),
-        arcBandH: p.band.height,
-        blockStartPx: block.screenStartPx - clip.scissorX,
-        blockWidth: block.screenEndPx - block.screenStartPx,
-        lineWidthPx: p.lineWidth,
-        down: p.band.down,
-        arcsYDomainBp: p.arcsYDomainBp,
-        dpr: clip.scaleY,
-        colors: p.colors,
-      })
-    },
+    writeUniforms: writeArcMarkUniforms,
     // A band with no room draws nothing on either backend, and the GPU would
     // otherwise shade a whole feed's worth of vertices to produce no pixel.
     paintsBlock: (_block, _frame, p) => p.band.height > 0,
