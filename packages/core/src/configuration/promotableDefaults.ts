@@ -350,7 +350,7 @@ function applyAndOfferDefault(
 }
 
 /**
- * A value pin's click when its value is already the promoted default: clear
+ * A pin's click when its value is already the promoted default: clear
  * it, touching no track. The open tracks hold their values because the user
  * applied them, so reverting them here would make a toggle into a bulk discard.
  */
@@ -479,9 +479,9 @@ export function getDisplayTypeDefaultChanges(
  *
  * **`slots` is required, and an all-slots default is not the convenience it
  * looks like.** It reaches further than any list a dialog can have shown: a
- * promoted default the track *customized* over, or one promoted to a value
- * equal to `promotedBase`, is `inherited: false` and so appears in no row, yet
- * still governs sibling tracks — so clearing it from a dialog that never showed
+ * promoted default the track *customized* over is `inherited: false` and so
+ * appears in no row, yet still governs sibling tracks — so clearing it from a
+ * dialog that never showed
  * it moves tracks other than the one whose badge was clicked. Clearing every
  * promoted default at once is a preferences-scope action, and Preferences →
  * "Reset to defaults" is where it lives (`clearPreferenceOverrides`).

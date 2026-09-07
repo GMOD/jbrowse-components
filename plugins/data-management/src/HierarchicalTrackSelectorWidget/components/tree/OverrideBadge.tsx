@@ -84,8 +84,7 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
   )
   // clear exactly the slots the dialog listed, keeping the button's blast radius
   // equal to what the user is looking at — a promoted default this track
-  // customized over, or one equal to the base, appears in no row yet still
-  // governs sibling tracks
+  // customized over appears in no row yet still governs sibling tracks
   const onClearDefaults = () => {
     for (const { display, changes } of perDisplay) {
       clearPromotedDefaults(

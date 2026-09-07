@@ -17,8 +17,9 @@ import type { PinnableRowOptions } from './toggleMenuItems.ts'
  * values legitimately differ (a Hi-C color scale is off by default, a variant
  * genotype key on), and their descriptions describe genuinely different legends.
  * What they now share is being *promotable* — pass `opts.pin` and the row gains
- * the pin that toggles the legend on every open track of this display type,
- * offering the new state as the display-type default in its snackbar. Every
+ * the pin over the legend's current state: a click applies it to every open
+ * track of this display type and offers it as the display-type default, and a
+ * filled pin (the state already is the default) clears it. Every
  * display whose legend is backed by a config slot passes one, and gets it from
  * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling
  * `makePin` itself: the slot is the per-display half, the accessors over

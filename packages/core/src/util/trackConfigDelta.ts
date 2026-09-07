@@ -171,9 +171,9 @@ export function mergeTrackConfig(
 export interface TrackConfigChange {
   /**
    * Where the setting lives, and — for a row a UI can revert — its **address**:
-   * `resetPreferenceChange` parses a promoted display-type default's path back
-   * into the type and slot it clears. So a producer that wants a friendlier
-   * heading sets `label` and leaves this alone.
+   * product-core's `resetDisplayDefault` parses a promoted display-type
+   * default's path back into the type and slot it clears. So a producer that
+   * wants a friendlier heading sets `label` and leaves this alone.
    */
   path: string[]
   from: Json

@@ -64,6 +64,8 @@ export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
   const linked = model.linkedReads !== 'off'
+  const arcsOn = model.readConnections === 'arc'
+  const cloudOn = model.readConnections === 'cloud'
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
     // Value checkbox + a trailing "default for all" pin, in one row.
@@ -78,27 +80,31 @@ export function getReadConnectionsMenuItem(
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
     // overlays are mutually exclusive — enabling one disables the other. Each
-    // pin toggles its own member of the shared readConnections slot against
-    // 'off' ('arc' vs 'cloud'), so the two stay independent.
+    // pin carries its own member of the shared readConnections slot ('arc' or
+    // 'cloud' while ticked), so the two stay independent; an unticked row's
+    // pin carries 'off', which is the whole slot and not only this row, and
+    // its label says so.
     checkboxItem(
       'Show read arcs',
-      model.readConnections === 'arc',
+      arcsOn,
       () => {
-        model.setReadConnections(
-          model.readConnections === 'arc' ? 'off' : 'arc',
-        )
+        model.setReadConnections(arcsOn ? 'off' : 'arc')
       },
-      { pin: model.arcsDisplayTypeDefault },
+      {
+        pin: model.arcsDisplayTypeDefault,
+        pinLabel: arcsOn ? 'Show read arcs: on' : 'Read connections: off',
+      },
     ),
     checkboxItem(
       'Show read cloud',
-      model.readConnections === 'cloud',
+      cloudOn,
       () => {
-        model.setReadConnections(
-          model.readConnections === 'cloud' ? 'off' : 'cloud',
-        )
+        model.setReadConnections(cloudOn ? 'off' : 'cloud')
       },
-      { pin: model.readCloudDisplayTypeDefault },
+      {
+        pin: model.readCloudDisplayTypeDefault,
+        pinLabel: cloudOn ? 'Show read cloud: on' : 'Read connections: off',
+      },
     ),
     getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup

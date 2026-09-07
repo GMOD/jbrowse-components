@@ -49,7 +49,7 @@ read one section, read [The cascade](#the-cascade).
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Preferences inventory (`getDisplayTypeDefaults`, list + per-row clear) | `packages/product-core/src/{Session/BaseSession.ts,ui/DisplayDefaultsSection.tsx}` |
 | The `Pin` interface itself (imports nothing, so `MenuTypes.ts` stays React-free) | `packages/core/src/configuration/promotablePin.ts` |
-| Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts,legendMenuItem.ts}` |
+| Pin adornment + row builders (`pin` option on `checkboxItem` / `toggleItem` / `radioItem` / `radioItems`) | `packages/core/src/ui/{PinAdornment.tsx,toggleMenuItems.ts,legendMenuItem.ts}` |
 | Promotable slider row (`makePromotableSizeMenu`, its lazily-loaded drawn half) | `packages/core/src/ui/{makeSizeMenu.tsx,SizeSliderRow.tsx}` |
 | Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
 | `pin` / `endAdornment` menu-row primitives and the one place they resolve | `packages/core/src/ui/{MenuTypes.ts,menuItemAdornment.tsx,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
@@ -250,8 +250,8 @@ nothing registers — a docs-generator rule rather than a cascade one, and
 Every other adopter builds a pin where it builds the row — `makePin(self, slot)`
 inline, with nothing declared anywhere else. Alignments looks worse: its
 `menus/{reads,readConnections,sashimi}.ts` each declare one `Pin` member per slot
-on a duck-typed `…Model` interface, and `LinearAlignmentsDisplay/model.ts` exposes
-a matching getter to satisfy it — so every one of its pins is named twice.
+on a duck-typed `…Model` interface, and `LinearAlignmentsDisplay/configSlotViews.ts`
+exposes a matching getter to satisfy it — so every one of its pins is named twice.
 
 **Deleting them was tried, and reverted.** The obvious fix is to have those
 modules extend `ResolvableDisplay` and call `makePin` themselves, exactly as
@@ -625,7 +625,7 @@ cascade resolves a promoted base and nothing promoted identically, but a stored
 base was a third state the rest of the subsystem could see — an inventory row
 reading "from X to X", and the base option's radio pin drawing filled. Taking
 the base row's offer is therefore the per-value undo of a promoted default, and
-a filled value pin only ever means a non-base value is promoted.
+a filled pin only ever means a non-base value is promoted.
 
 **Unsetting a promotable slot is a removal, and a `trackConfigDeltas` track
 could not keep one.** `diffTrackConfig` records adds and changes but never
@@ -958,9 +958,8 @@ are the rows that reach this, gated row by row on `needsContent`.
 **Inventory** (`DisplayDefaultsSection.tsx`, Preferences dialog): every promoted
 default, what it overrides, and a per-row clear. The pin is easy to set and was
 hard to find again — the badge below shows one only on an **open** track it
-moves, so a default affecting nothing currently open, one promoted to a value
-equal to `promotedBase`, and one the gate refuses appeared nowhere but the
-"Reset preferences to defaults" confirmation. It asks the session for
+moves, so a default affecting nothing currently open, and one the gate refuses,
+appeared nowhere but the "Reset preferences to defaults" confirmation. It asks the session for
 `getDisplayTypeDefaults()` rather than filtering `getPreferenceChanges` on a path
 head, so the composite-key layout stays `BaseSession`'s.
 
@@ -980,9 +979,9 @@ non-empty — one badge, two reasons, with the tooltip and the dialog naming the
 actual source; click opens `TrackSettingsChangesDialog` with a "clear session
 default" action wired to `clearPromotedDefaults(display, listedSlots)`. It
 passes the slots the dialog **listed**, so the button clears exactly what the
-user is looking at: a promoted default this track customized over, or one
-promoted to a value equal to `promotedBase`, is `inherited: false` and appears
-in no row, yet clearing it would move every *sibling* track.
+user is looking at: a promoted default this track customized over is
+`inherited: false` and appears in no row, yet clearing it would move every
+*sibling* track.
 
 The badge calls those two core functions **directly on the display**, not through
 per-display MST hooks. Both are total — a schema with no promotable slot yields no

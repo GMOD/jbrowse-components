@@ -159,12 +159,12 @@ bytes: it is what stops the barrel becoming a pipe again.
 
 Three parts:
 
-- **`@jbrowse/core/ui/menuItems`**, a React-free entry holding the four builders
-  eager code needs (`checkboxItem`, `radioItems`, `promotableRadioItem`,
-  `promotableToggleItem`) plus the menu types. 23 call sites repointed. The rule
-  is *menu builders from here, components from `@jbrowse/core/ui`*.
-- **`endAdornment` → `pin` for the promotable pin.** The two
-  `promotable*Item` builders returned a `<PinAdornment>` **element**,
+- **`@jbrowse/core/ui/menuItems`**, a React-free entry holding the row builders
+  eager code needs (`checkboxItem`, `toggleItem`, `radioItem`, `radioItems`,
+  each taking a `pin` option) plus the menu types. 23 call sites repointed. The
+  rule is *menu builders from here, components from `@jbrowse/core/ui`*.
+- **`endAdornment` → `pin` for the promotable pin.** The promotable builders of
+  the time returned a `<PinAdornment>` **element**,
   so the module — and every state model calling it — pulled MUI's `ToggleButton`,
   `Tooltip` and two icons. The row now carries a *description*
   (`MenuItemPin`) and `menuItemAdornment.tsx` builds the element where

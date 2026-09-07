@@ -34,9 +34,12 @@ export interface SettingRowOptions {
 
 // A row over a promotable slot carries the pin `makePin` built for the row's
 // state; the builder names that state in the pin's label, which is what the
-// tooltip and aria-label read.
+// tooltip and aria-label read. `pinLabel` replaces that derived label where it
+// would under-describe the write — an unticked "Show read arcs" pin writes
+// `readConnections: 'off'`, which switches the read cloud off as well.
 export interface PinnableRowOptions extends SettingRowOptions {
   pin?: Pin
+  pinLabel?: string
 }
 
 function withPin<T extends object>(
@@ -56,7 +59,7 @@ export function checkboxItem(
   onToggle: () => void,
   opts: PinnableRowOptions = {},
 ): CheckboxMenuItem {
-  const { pin, ...rest } = opts
+  const { pin, pinLabel, ...rest } = opts
   return withPin(
     {
       label,
@@ -66,7 +69,7 @@ export function checkboxItem(
       ...rest,
     },
     pin,
-    `${label}: ${checked ? 'on' : 'off'}`,
+    pinLabel ?? `${label}: ${checked ? 'on' : 'off'}`,
   )
 }
 
@@ -116,7 +119,7 @@ export function radioItem(
   onClick: () => void,
   opts: PinnableRowOptions = {},
 ): RadioMenuItem {
-  const { pin, ...rest } = opts
+  const { pin, pinLabel, ...rest } = opts
   return withPin(
     {
       label,
@@ -126,7 +129,7 @@ export function radioItem(
       ...rest,
     },
     pin,
-    label,
+    pinLabel ?? label,
   )
 }
 

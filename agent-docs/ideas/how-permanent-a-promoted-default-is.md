@@ -109,9 +109,9 @@ promotable display reads one in its `rpcProps`. One key per tracked entry is wha
 keeps that from coming back.
 
 Then delete, in the same file: `DISPLAY_TYPE_DEFAULT_PREFIX`,
-`parseDisplayTypeDefaultKey`, `DISPLAY_TYPE_DEFAULTS_PATH_HEAD`, the
-promoted-default branch in `getPreferenceChanges`, and the branch in
-`resetPreferenceChange`. About 80 lines.
+`parseDisplayTypeDefaultKey` and the prefix skip in `getPreferenceChanges`.
+`getDisplayTypeDefaults` stays, since product-core's `displayDefaultChanges`
+lists the Preferences rows through it.
 
 **2. Delete the share bake** (`shareableSnapshot.ts`). Remove
 `bakePromotedDefaultsIntoSnapshot`, the `Bake` interface, `ownTrackConfig` and
@@ -226,9 +226,9 @@ the decision, and what the reversal gave up (the pin is no longer symmetric):
 
 Placement stayed on the snackbar rather than a menu row. The gesture is
 per-value, and a row per value doubles a menu that already carries a pin on every
-row; `promotableRadioItems` could have taken one trailing row per group, but the
-checkbox rows (`promotableToggleItem`, most of alignments) have no group to hang
-it on and would have been left out. Every promotable row already raises this
+row; `radioItems` could have taken one trailing row per group, but the checkbox
+rows (`checkboxItem` with a pin, most of alignments) have no group to hang it on
+and would have been left out. Every promotable row already raises this
 toast, so the snackbar reaches both shapes and adds no rows anywhere.
 
 **This closes the third axis for the common case**, which is what the question
