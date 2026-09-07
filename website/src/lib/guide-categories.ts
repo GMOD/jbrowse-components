@@ -167,6 +167,7 @@ export const TUTORIAL_ORDER = [
 // with no spec therefore linked a webp nobody had generated, and the first thing
 // to notice was the website link checker.
 export const TUTORIAL_NO_THUMB = new Set([
+  'agent_synteny',
   'cli_desktop',
   'embedding_examples',
   'pangenome_prepare_graph',
