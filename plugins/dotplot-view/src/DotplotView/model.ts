@@ -1168,12 +1168,13 @@ export default function stateModelFactory(pm: PluginManager) {
           const tolerancePx = self.lineWidth / 2 + HOVER_SLACK_PX
           let best: DotplotPlotPickHit | undefined
           for (const display of this.dotplotDisplays) {
-            const { instanceData } = display
+            const { instanceData, computedColors } = display
             if (!instanceData) {
               continue
             }
             const hit = pickDotplotFeature({
               data: instanceData,
+              colors: computedColors,
               x,
               y,
               transform,

@@ -69,6 +69,28 @@ describe('featureSegmentRange', () => {
   })
 })
 
+describe('a hidden segment', () => {
+  // hideUnlabelled paints a row at zero alpha; nothing is on screen there, so
+  // the cursor over it is over the next visible thing or nothing
+  test('is never the hit', () => {
+    const data = makeData([
+      [10, 10, 20, 20, 0],
+      [10, 12, 20, 22, 1],
+    ])
+    const colors = new Uint32Array([0x00c8c8c8, 0xffc8c8c8])
+    const hit = pickDotplotFeature({
+      data,
+      colors,
+      x: 15,
+      y: 100 - 15,
+      transform: UNIT,
+      tolerancePx: 3,
+    })
+    expect(hit?.featureIdx).toBe(1)
+    expect(pick(data, 15, 100 - 15)?.featureIdx).toBe(0)
+  })
+})
+
 describe('buildDotplotPickIndex', () => {
   test('one box per feature, not per segment', () => {
     const data = makeData([

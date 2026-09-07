@@ -1,3 +1,4 @@
+import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { capsuleDistPx } from '@jbrowse/render-core/shaders/capsule'
 import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
@@ -204,12 +205,16 @@ function pointSegmentDistPx(
  */
 export function pickDotplotFeature({
   data,
+  colors,
   x,
   y,
   transform,
   tolerancePx,
 }: {
   data: DotplotInstanceData
+  // the packed color per segment; one at zero alpha was never painted (a
+  // hidden unlabelled row) and cannot be under the cursor
+  colors?: Uint32Array
   // component px, y measured downward from the top of the plot
   x: number
   y: number
@@ -245,6 +250,9 @@ export function pickDotplotFeature({
       feature,
     )
     for (let s = start; s < end; s++) {
+      if (colors && abgrAlpha(colors[s]!) === 0) {
+        continue
+      }
       // The shared reconstruction, so a hit means the cursor is within
       // tolerance of pixels `drawDotplotInstances` actually painted.
       const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
