@@ -1,13 +1,20 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { checkboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  radioItems,
+  toggleItem,
+} from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
+import {
+  DEFAULT_MIN_INTERCHROM_SUPPORT,
+  READ_CONNECTIONS_OPTIONS,
+} from '../constants.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
@@ -16,8 +23,7 @@ interface ReadConnectionsModel {
   pairsDisplayTypeDefault: TogglePin
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  arcsDisplayTypeDefault: TogglePin
-  readCloudDisplayTypeDefault: TogglePin
+  readConnectionsDisplayTypeDefault: (mode: ReadConnectionsMode) => ValuePin
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
   readConnectionsDownDisplayTypeDefault: TogglePin
@@ -55,11 +61,11 @@ declare const process: { env: { NODE_ENV?: string } }
 // until an overlay is active, so the settings are discoverable instead of
 // vanishing.
 //
-// The SV-channel row sits here too, under the two overlay modes it builds on.
+// The SV-channel row sits here too, under the overlay radio it builds on.
 // It spent a day at the top of the track menu, where it was the one bare
 // checkbox in a column of submenus; three of the five settings it writes are
-// this menu's own, and the reader watching "Show read arcs" tick as they turn
-// it on is what says how the row and the switches relate.
+// this menu's own, and the reader watching "Read arcs" select as they turn it
+// on is what says how the row and the switches relate.
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
@@ -75,30 +81,21 @@ export function getReadConnectionsMenuItem(
       },
       { pin: model.pairsDisplayTypeDefault },
     ),
-    // Arcs and read cloud share one band and the read cloud repurposes the
-    // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
-    // overlays are mutually exclusive — enabling one disables the other. Each
-    // pin toggles its own member of the shared readConnections slot against
-    // 'off' ('arc' vs 'cloud'), so the two stay independent.
-    checkboxItem(
-      'Show read arcs',
-      model.readConnections === 'arc',
-      () => {
-        model.setReadConnections(
-          model.readConnections === 'arc' ? 'off' : 'arc',
-        )
+    // One radio over the `readConnections` slot rather than an arcs checkbox
+    // and a cloud checkbox: the two overlays share a band (the cloud repurposes
+    // its Y axis to |tlen|, insertSizeTicks/arcsYDomainBp), so they were
+    // mutually exclusive checkboxes, and the unticked one's pin wrote the
+    // whole slot — "arcs off" switched the cloud off too — under a label that
+    // named only its own row. A radio says the exclusion, and every option
+    // carries a pin over exactly the value its row selects, 'None' included.
+    { type: 'subHeader' as const, label: 'Connection overlay' },
+    ...radioItems(
+      READ_CONNECTIONS_OPTIONS,
+      model.readConnections,
+      mode => {
+        model.setReadConnections(mode)
       },
-      { pin: model.arcsDisplayTypeDefault },
-    ),
-    checkboxItem(
-      'Show read cloud',
-      model.readConnections === 'cloud',
-      () => {
-        model.setReadConnections(
-          model.readConnections === 'cloud' ? 'off' : 'cloud',
-        )
-      },
-      { pin: model.readCloudDisplayTypeDefault },
+      mode => model.readConnectionsDisplayTypeDefault(mode),
     ),
     getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
@@ -117,7 +114,7 @@ export function getReadConnectionsMenuItem(
     {
       label: 'Arc / read cloud band options',
       disabled: !overlayActive,
-      disabledHelpText: 'Enable "Show read arcs" or "Show read cloud" first',
+      disabledHelpText: 'Choose "Read arcs" or "Read cloud" first',
       subMenu: [
         toggleItem(
           'Draw arcs below coverage band',

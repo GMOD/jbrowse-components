@@ -42,11 +42,12 @@ have said. `misKindedPins` (checked over every promotable display in
   `Pin` is a union discriminated on `kind`, `checkboxItem`'s `pin` option takes
   a `TogglePin` and `radioItem`'s a `ValuePin`. A checkbox row over one member
   of a multi-valued slot names its two states, `makeTogglePin(self,
-  'readConnections', { on: 'arc', off: 'off' })`, so the alignments arcs and
-  read-cloud rows toggle like every other checkbox instead of carrying value
-  pins that filled when their value was promoted and cleared on a second
-  click, one submenu away from a toggle pin that filled when the box was
-  ticked. The copy used to tell the two apart by `typeof onValue ===
+  'linkedReads', { on: 'normal', off: 'off' })`, so the alignments pairs row
+  toggles like every other checkbox instead of carrying a value pin that
+  filled when its value was promoted and cleared on a second click, one
+  submenu away from a toggle pin that filled when the box was ticked. (The
+  arcs and read-cloud checkboxes over `readConnections` became the
+  "Connection overlay" radio group the same day, with a value pin per option.) The copy used to tell the two apart by `typeof onValue ===
   'boolean'`, which a value pin over a boolean slot passed.
 - **Promoting the slot's base value clears the default.** The cascade resolves
   a promoted base and nothing promoted identically, but the store did not: the

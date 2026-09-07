@@ -305,12 +305,12 @@ the long-range relationships behind structural variants.
 
 ### Read arcs
 
-_Show read arcs_ draws a bezier curve between the ends of each pair, so
-long-range and discordant pairs stand out from the short local arcs. A partner
-the view has not loaded draws as a large semicircle reaching toward it. A mate
-on another chromosome draws as an arc when that chromosome is on screen and as a
-vertical line at the breakpoint when it is not. Both can be toggled off, and
-dragging the track taller re-fits the arcs.
+**Read connections → Read arcs** draws a bezier curve between the ends of each
+pair, so long-range and discordant pairs stand out from the short local arcs. A
+partner the view has not loaded draws as a large semicircle reaching toward it.
+A mate on another chromosome draws as an arc when that chromosome is on screen
+and as a vertical line at the breakpoint when it is not. Both can be toggled
+off, and dragging the track taller re-fits the arcs.
 
 An arc whose ends are in different displayed regions spans them, so a second
 region either side of a breakpoint shows the connection as one curve.
@@ -327,13 +327,13 @@ Hovering an arc reports its location, the distance between the ends, the
 supporting read count and its colour bucket. In read-cloud mode it also gives
 the insert size.
 
-<Figure caption="Enabling 'Show read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
+<Figure caption="Choosing 'Read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
 ### Read cloud
 
-_Show read cloud_ lays pairs out on the Y axis by the **log distance between
-mates**, so the insert-size distribution is visible directly and short-insert
-(insertion-supporting) pairs lift away from the background.
+**Read connections → Read cloud** lays pairs out on the Y axis by the **log
+distance between mates**, so the insert-size distribution is visible directly
+and short-insert (insertion-supporting) pairs lift away from the background.
 
 <Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
 

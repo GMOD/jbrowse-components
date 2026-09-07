@@ -48,9 +48,9 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 //    renders. `check-menu-labels.ts` asks this of docs prose and reads
 //    `website/docs/**` only, so the recipes — which walk a reader through the
 //    same menus beside every figure — had nothing
-//    checking them, and three segments named rows that do not exist ("Gene
-//    glyph mode" for "Gene glyph", "Arcs"/"Read cloud" for "Show read
-//    arcs"/"Show read cloud"). Which segments count as hand-written comes from
+//    checking them, and three segments named rows that did not exist at the
+//    time ("Gene glyph mode" for "Gene glyph", "Arcs" for what was then "Show
+//    read arcs"). Which segments count as hand-written comes from
 //    the source: text between the backticks is the author's, text arriving
 //    through a `${...}` is the figure's, and only the first kind is a claim
 //    about the app. See recipe-path-labels.ts.

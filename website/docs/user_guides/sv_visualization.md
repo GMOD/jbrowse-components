@@ -156,9 +156,9 @@ usually the most informative single setting for a first scan.
 
 ### Read arcs
 
-**Read connections → Show read arcs** draws a bezier between the ends of each
-pair, in the color of the scheme in force. Concordant pairs make short local
-arcs, so a deletion reads as a bundle of long red arcs standing on the same two
+**Read connections → Read arcs** draws a bezier between the ends of each pair,
+in the color of the scheme in force. Concordant pairs make short local arcs, so
+a deletion reads as a bundle of long red arcs standing on the same two
 breakpoints, and a mate on another chromosome draws as a vertical line at the
 breakpoint. Reads describing the same connection draw as one arc thickened by
 how many there are, so the arcs count the support as well as locate it.

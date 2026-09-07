@@ -5,7 +5,7 @@ import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { GroupBy } from '../../shared/types.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
 
 // stateful stand-in for a Pin (the menu builder and the promote
 // path only touch active/toggle; `slot` is what a built menu is later asked for
@@ -14,6 +14,19 @@ import type { TogglePin } from '@jbrowse/core/configuration'
 function control(slot: string, onValue: unknown = false): TogglePin {
   return {
     kind: 'toggle',
+    slot,
+    onValue,
+    active: false,
+    toggle() {
+      this.active = !this.active
+    },
+  }
+}
+
+// the radio rows carry value pins, one per option
+function valueControl(slot: string, onValue: unknown): ValuePin {
+  return {
+    kind: 'value',
     slot,
     onValue,
     active: false,
@@ -36,8 +49,16 @@ function makeModel() {
     setReadConnections(mode?: 'off' | 'arc' | 'cloud') {
       this.readConnections = mode ?? 'off'
     },
-    arcsDisplayTypeDefault: control('readConnections'),
-    readCloudDisplayTypeDefault: control('readConnections'),
+    // one stateful control per radio option, so promoting one leaves the
+    // others untouched the way makePin's per-value pins do
+    readConnectionsPins: {
+      off: valueControl('readConnections', 'off'),
+      arc: valueControl('readConnections', 'arc'),
+      cloud: valueControl('readConnections', 'cloud'),
+    },
+    readConnectionsDisplayTypeDefault(mode: 'off' | 'arc' | 'cloud') {
+      return this.readConnectionsPins[mode]
+    },
     readConnectionsDown: false,
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
@@ -144,38 +165,31 @@ describe('read connections menu', () => {
     expect(model.linkedReads).toBe('off')
   })
 
-  test('"Show read arcs" row toggles arc mode on/off', () => {
+  // The overlay is one radio over the slot: arcs and the read cloud share a
+  // band, so they were mutually exclusive checkboxes, and a radio says so.
+  test('the "Connection overlay" radio selects the mode, None included', () => {
     const model = makeModel()
-    checkboxByLabel(model, 'Show read arcs').onClick()
-    expect(model.readConnections).toBe('arc')
-    checkboxByLabel(model, 'Show read arcs').onClick()
-    expect(model.readConnections).toBe('off')
+    for (const [label, mode] of [
+      ['Read arcs', 'arc'],
+      ['Read cloud', 'cloud'],
+      ['None', 'off'],
+    ] as const) {
+      checkboxByLabel(model, label).onClick()
+      expect(model.readConnections).toBe(mode)
+    }
   })
 
-  test('"Show read cloud" row toggles read cloud mode on/off', () => {
+  test('exactly one overlay row is checked, reflecting readConnections', () => {
     const model = makeModel()
-    checkboxByLabel(model, 'Show read cloud').onClick()
-    expect(model.readConnections).toBe('cloud')
-    checkboxByLabel(model, 'Show read cloud').onClick()
-    expect(model.readConnections).toBe('off')
-  })
-
-  test('arcs and read cloud are mutually exclusive', () => {
-    const model = makeModel()
-    checkboxByLabel(model, 'Show read arcs').onClick()
-    expect(model.readConnections).toBe('arc')
-    // enabling read cloud while arcs are on switches mode (turns arcs off)
-    checkboxByLabel(model, 'Show read cloud').onClick()
-    expect(model.readConnections).toBe('cloud')
-    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
-  })
-
-  test('row checked state reflects readConnections', () => {
-    const model = makeModel()
-    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
-    expect(checkboxByLabel(model, 'Show read cloud').checked).toBe(false)
+    const checked = () =>
+      (['None', 'Read arcs', 'Read cloud'] as const).filter(
+        label => checkboxByLabel(model, label).checked,
+      )
+    expect(checked()).toEqual(['None'])
     model.readConnections = 'arc'
-    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(true)
+    expect(checked()).toEqual(['Read arcs'])
+    model.readConnections = 'cloud'
+    expect(checked()).toEqual(['Read cloud'])
   })
 
   // WHERE it is, not just that it exists. svChannels.test.ts calls the builder
@@ -219,8 +233,11 @@ describe('promote-as-default (default for all) pin', () => {
   test('the pin is always shown, even while the mode is off', () => {
     const model = makeModel()
     expect(pinOfRow(model, pairs)).toBeDefined()
-    expect(pinOfRow(model, 'Show read arcs')).toBeDefined()
-    expect(pinOfRow(model, 'Show read cloud')).toBeDefined()
+    // every overlay option, the base 'None' included, so a promoted overlay
+    // can be undone from its own row
+    expect(pinOfRow(model, 'None')).toBeDefined()
+    expect(pinOfRow(model, 'Read arcs')).toBeDefined()
+    expect(pinOfRow(model, 'Read cloud')).toBeDefined()
   })
 
   test('the pin toggles the view-as-pairs session default', () => {
@@ -231,9 +248,10 @@ describe('promote-as-default (default for all) pin', () => {
 
   test('arcs and read cloud pins toggle independent session defaults', () => {
     const model = makeModel()
-    promoteDefaultForAll(model, 'Show read arcs')
-    expect(model.arcsDisplayTypeDefault.active).toBe(true)
-    expect(model.readCloudDisplayTypeDefault.active).toBe(false)
+    promoteDefaultForAll(model, 'Read arcs')
+    expect(model.readConnectionsPins.arc.active).toBe(true)
+    expect(model.readConnectionsPins.cloud.active).toBe(false)
+    expect(model.readConnectionsPins.off.active).toBe(false)
   })
 
   test('"Draw arcs below coverage band" also carries a pin, even while disabled', () => {

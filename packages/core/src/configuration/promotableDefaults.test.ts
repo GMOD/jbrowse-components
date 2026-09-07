@@ -635,10 +635,10 @@ describe('promotable maybeBoolean slot', () => {
 
 // A checkbox row over a multi-valued slot stands for one member of it, and
 // its pin toggles that member against the off member. This is what lets two
-// checkbox rows share one slot (alignments' "Show read arcs" / "Show read
-// cloud" over `readConnections`) while carrying the same toggle pin every
-// other checkbox row does, instead of a value pin that filled for a different
-// reason and cleared on its second click.
+// checkbox rows share one slot while carrying the same toggle pin every other
+// checkbox row does. Alignments' arcs and cloud checkboxes were the live case
+// until they became a radio; a two-member enum behind one checkbox
+// (`linkedReads`) is the shape that remains.
 describe('toggle pin over a two-state enum', () => {
   const configSchema = ConfigurationSchema('ConnectionsDisplay', {
     connections: {

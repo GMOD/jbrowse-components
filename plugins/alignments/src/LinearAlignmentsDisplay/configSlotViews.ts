@@ -139,20 +139,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get readConnections(): ReadConnectionsMode {
       return resolveConf(self, 'readConnections')
     },
-    /** #getter */
-    // the arcs checkbox over every open track of this type (pin). Independent
-    // of read cloud: both share the readConnections slot, and each toggles its
-    // own member against 'off'.
-    get arcsDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnections', { on: 'arc', off: 'off' })
-    },
-    /** #getter */
-    // the read cloud checkbox over every open track of this type (pin)
-    get readCloudDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnections', {
-        on: 'cloud',
-        off: 'off',
-      })
+    /**
+     * #method
+     * "apply this connection overlay to the open tracks" control (pin), one
+     * per option of the radio group — a method rather than a getter per
+     * value, like `sashimiArcsModeDisplayTypeDefault`, so the base 'off' is
+     * pinnable from its own row.
+     */
+    readConnectionsDisplayTypeDefault(mode: ReadConnectionsMode) {
+      return makePin(self, 'readConnections', mode)
     },
     /** #getter */
     // Resolved through the promotable-slot tiers (resolveConf): a

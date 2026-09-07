@@ -1557,18 +1557,18 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Read connections', 'Show read arcs']),
+          ...menuCascade(['Read connections', 'Read arcs']),
         ],
-        // box only the "Show read arcs" checkbox (this figure is
-        // specifically about enabling read arcs)
-        annotations: [{ type: 'box', anchor: { text: 'Show read arcs' } }],
+        // box only the "Read arcs" radio (this figure is specifically about
+        // enabling read arcs)
+        annotations: [{ type: 'box', anchor: { text: 'Read arcs' } }],
       },
       {
-        // tick the "Show read arcs" checkbox so the result frame shows arcs,
-        // then dismiss the menu — the checkbox stays open after a tick, and the
-        // result frame is about the arcs, not about the menu that enabled them
+        // pick the "Read arcs" radio so the result frame shows arcs, then
+        // dismiss the menu — a radio row keeps the menu open, and the result
+        // frame is about the arcs, not about the menu that enabled them
         actions: [
-          { type: 'click', text: 'Show read arcs' },
+          { type: 'click', text: 'Read arcs' },
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
           // the tick swaps the display, which fetches and draws again — the two

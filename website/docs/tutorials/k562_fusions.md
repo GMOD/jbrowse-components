@@ -147,9 +147,9 @@ alignment on chr9. **Read connections → Use curved connectors** draws a curve
 between the two across the region divider. **Filter by... → Split alignments →
 Only split alignments** drops every read that stays on one chromosome.
 
-Near-identical curves stack into one line. **Read connections → Show read arcs**
-adds a band under the coverage where each junction is drawn once, thickened by
-the reads behind it. An arc needs both ends in view, and each acceptor window
+Near-identical curves stack into one line. **Read connections → Read arcs** adds
+a band under the coverage where each junction is drawn once, thickened by the
+reads behind it. An arc needs both ends in view, and each acceptor window
 receives one. The vertical at the _BCR_ donor stands for the molecules whose
 _ABL1_ alignment lands in neither window.
 

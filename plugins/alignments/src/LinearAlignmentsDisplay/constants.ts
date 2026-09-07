@@ -77,8 +77,19 @@ export type LinkedReadsMode = (typeof LINKED_READS_MODES)[number]
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
 // 'cloud' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
-export const READ_CONNECTIONS_MODES = ['off', 'arc', 'cloud'] as const
-export type ReadConnectionsMode = (typeof READ_CONNECTIONS_MODES)[number]
+// One list for the schema enumeration and the "Connection overlay" radio
+// group, so the menu cannot offer a mode the slot refuses. The members are
+// mutually exclusive by construction — arcs and the read cloud share one band
+// and the cloud repurposes its Y axis to |tlen| — which is why this is a radio
+// and not two checkboxes over one slot.
+export const READ_CONNECTIONS_OPTIONS = [
+  { value: 'off', label: 'None' },
+  { value: 'arc', label: 'Read arcs' },
+  { value: 'cloud', label: 'Read cloud' },
+] as const
+export const READ_CONNECTIONS_MODES = READ_CONNECTIONS_OPTIONS.map(o => o.value)
+export type ReadConnectionsMode =
+  (typeof READ_CONNECTIONS_OPTIONS)[number]['value']
 
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
 // paired-end `readConnectionsDown`). Defined next to the side-assignment

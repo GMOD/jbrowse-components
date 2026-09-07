@@ -16,8 +16,8 @@ type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
 // 'stack' instead enable linked reads via the "View as pairs / link
 // supplementary alignments" checkbox, and differ only in the caller's snapshot.
 const MENU_PATHS: Record<DisplayMode, string[]> = {
-  arc: ['Read connections', 'Show read arcs'],
-  cloud: ['Read connections', 'Show read cloud'],
+  arc: ['Read connections', 'Read arcs'],
+  cloud: ['Read connections', 'Read cloud'],
   bezier: ['Read connections', 'Use curved connectors'],
   linked: ['Read connections', 'View as pairs / link supplementary alignments'],
   stack: ['Read connections', 'View as pairs / link supplementary alignments'],

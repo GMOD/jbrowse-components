@@ -448,9 +448,10 @@ export function makePin<
 /**
  * The two states a checkbox row moves a slot between. Omitted for a
  * `maybeBoolean` slot, where they are `true` and `false`; required for a
- * two-state enum, which is how a checkbox row over a multi-valued slot names
- * the member it stands for (`readConnections`: an "Arcs" row toggles
- * `'arc'`/`'off'`, a "Read cloud" row `'cloud'`/`'off'`).
+ * two-member enum (`linkedReads`: "View as pairs" toggles `'normal'`/`'off'`).
+ * A slot with three or more members is a radio group, not a checkbox per
+ * member — `readConnections` was two checkboxes over one slot, and the
+ * unticked one's pin wrote the whole slot under a label naming only itself.
  */
 export interface ToggleStates<T> {
   on: T

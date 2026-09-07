@@ -661,12 +661,12 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
   below: 'Below coverage',
 }
 
-// verified against getReadConnectionsMenuItem's own radios
-// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts).
-// Both rows lead with "Show", which the shorter spellings here dropped.
+// verified against READ_CONNECTIONS_OPTIONS, the "Connection overlay" radio
+// group in getReadConnectionsMenuItem
+// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
-  arc: 'Show read arcs',
-  cloud: 'Show read cloud',
+  arc: 'Read arcs',
+  cloud: 'Read cloud',
 }
 
 // verified against the inline radio list in makeSummaryScoreModeSubMenu

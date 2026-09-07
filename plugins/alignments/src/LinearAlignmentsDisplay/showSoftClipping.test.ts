@@ -1143,8 +1143,10 @@ describe('alignments readConnections (arcs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.readConnections).toBe('off')
-    expect(display.arcsDisplayTypeDefault.active).toBe(false)
-    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
+    expect(display.readConnectionsDisplayTypeDefault('arc').active).toBe(false)
+    expect(display.readConnectionsDisplayTypeDefault('cloud').active).toBe(
+      false,
+    )
   })
 
   it('follows a session-wide arc default when not customized', () => {
@@ -1155,9 +1157,11 @@ describe('alignments readConnections (arcs) session default', () => {
       'arc',
     )
     expect(display.readConnections).toBe('arc')
-    expect(display.arcsDisplayTypeDefault.active).toBe(true)
+    expect(display.readConnectionsDisplayTypeDefault('arc').active).toBe(true)
     // the read-cloud pin targets a different on-value, so it stays inactive
-    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
+    expect(display.readConnectionsDisplayTypeDefault('cloud').active).toBe(
+      false,
+    )
     expect(getDisplayTypeDefaultChanges(display)).toEqual([
       { path: ['readConnections'], from: 'off', to: 'arc' },
     ])
@@ -1174,11 +1178,12 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
   })
 
-  // The arcs pin toggles 'arc'/'off' on the shared slot: flipping on stores
-  // arc, flipping back offers off, the base, which clears.
-  it('the arcs pin toggles arc on and off, storing then clearing', () => {
+  // One value pin per radio option: the arcs pin applies arc everywhere and
+  // offers it, fills once promoted, and a click on the filled pin clears the
+  // default without touching the track; the cloud and None pins stay outline.
+  it('the arcs pin promotes arc, then clears it from its own row', () => {
     const { session, display } = createDisplay()
-    display.arcsDisplayTypeDefault.toggle()
+    display.readConnectionsDisplayTypeDefault('arc').toggle()
     expect(display.readConnections).toBe('arc')
     promote(session)
     expect(
@@ -1187,10 +1192,34 @@ describe('alignments readConnections (arcs) session default', () => {
         'readConnections',
       ),
     ).toBe('arc')
-    expect(display.arcsDisplayTypeDefault.active).toBe(true)
-    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
+    expect(display.readConnectionsDisplayTypeDefault('arc').active).toBe(true)
+    expect(display.readConnectionsDisplayTypeDefault('cloud').active).toBe(
+      false,
+    )
+    expect(display.readConnectionsDisplayTypeDefault('off').active).toBe(false)
 
-    display.arcsDisplayTypeDefault.toggle()
+    display.readConnectionsDisplayTypeDefault('arc').toggle()
+    expect(display.readConnections).toBe('arc')
+    expect(
+      session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'readConnections',
+      ),
+    ).toBeUndefined()
+  })
+
+  // The None row's pin is the per-value undo: applying off everywhere and
+  // taking the offer clears the promoted arc, since off is the base.
+  it('the None pin applies off everywhere and its offer clears the default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'readConnections',
+      'arc',
+    )
+    expect(display.readConnections).toBe('arc')
+
+    display.readConnectionsDisplayTypeDefault('off').toggle()
     expect(display.readConnections).toBe('off')
     promote(session)
     expect(

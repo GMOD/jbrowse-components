@@ -151,8 +151,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-drawlongrange">**drawLongRange**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-arccolorbytype">**arcColorByType**</span><br><code>"insertSize" &#124; "insertSizeAndOrientation" &#124; "orientation"</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-readconnections">**readConnections**</span><br><code>"arc" &#124; "cloud" &#124; "off"</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-arcsdisplaytypedefault">**arcsDisplayTypeDefault**</span><br><code>TogglePin</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-readclouddisplaytypedefault">**readCloudDisplayTypeDefault**</span><br><code>TogglePin</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-readconnectionsdown">**readConnectionsDown**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-readconnectionsdowndisplaytypedefault">**readConnectionsDownDisplayTypeDefault**</span><br><code>TogglePin</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showsashimiarcs">**showSashimiArcs**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
@@ -400,6 +398,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-readconnectionsdisplaytypedefault">**readConnectionsDisplayTypeDefault**</span><br><code>(mode: "arc" &#124; "cloud" &#124; "off") =&gt; ValuePin</code> | "apply this connection overlay to the open tracks" control (pin), one per option of the radio group — a method rather than a getter per value, like `sashimiArcsModeDisplayTypeDefault`, so the base 'off' is pinnable from its own row. | LinearAlignmentsDisplay |
 | <span id="method-sashimiarcsmodedisplaytypedefault">**sashimiArcsModeDisplayTypeDefault**</span><br><code>(mode: "auto" &#124; "down" &#124; "up") =&gt; ValuePin</code> | "apply this arc placement to the open tracks" control (pin), one per option of the radio group. A method rather than a getter per value: the options share one slot and differ only in the on-value, so naming each combination was what made the base value 'up' look unpinnable. | LinearAlignmentsDisplay |
 | <span id="method-legenditems">**legendItems**</span><br><code>() =&gt; LegendItem[]</code> |  | LinearAlignmentsDisplay |
 | <span id="method-arclegenditems">**arcLegendItems**</span><br><code>() =&gt; LegendItem[]</code> | Key for the paired-end arc / read-cloud colors. Empty when no overlay is drawn, or when it shares the reads' scheme and merged into their key — either way its legend section drops out of the box. A *partial* overlap is not resolved here: this stays the complete arc key, and `getAlignmentsLegendSections` folds it into one deduped list. | LinearAlignmentsDisplay |

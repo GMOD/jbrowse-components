@@ -574,7 +574,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
 | `makePin(self, slot, onValue)` | `ValuePin` `{ kind: 'value', slot, onValue, active, toggle }` on one fixed value — "make compact the default", independent of what the track shows, so two radio rows sharing a slot (sashimi `'down'` vs `'auto'`) stay independent | a radio row |
 | `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a continuous setting with no sensible fixed on-value (wiggle point size, arc line width) |
-| `makeTogglePin(self, slot, states?)` | `TogglePin` `{ kind: 'toggle', … }` whose `active` mirrors the row's checked state and whose click flips it on every open track, offering the new state as the default. `states` is `{ on, off }`, omitted for a `maybeBoolean` slot and required for a two-state enum (`readConnections`: `{ on: 'arc', off: 'off' }`) | every checkbox row |
+| `makeTogglePin(self, slot, states?)` | `TogglePin` `{ kind: 'toggle', … }` whose `active` mirrors the row's checked state and whose click flips it on every open track, offering the new state as the default. `states` is `{ on, off }`, omitted for a `maybeBoolean` slot and required for a two-member enum (`linkedReads`: `{ on: 'normal', off: 'off' }`) | every checkbox row |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots)` | clears the named promoted defaults for this display's type | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
@@ -901,10 +901,12 @@ originals twice and a change to what a row *is* then reached one form only:
   row (native hover/sizing/keyboard) for an on/off setting. The checkbox
   toggles the track's value; the pin is **that same checkbox over every open
   track of the type** — `makeTogglePin(self, slot)` for a `maybeBoolean` slot,
-  `makeTogglePin(self, slot, { on, off })` for a checkbox row that stands for
-  one member of a multi-valued slot (`readConnections` is one slot behind an
-  "Arcs" row toggling `'arc'`/`'off'` and a "Read cloud" row toggling
-  `'cloud'`/`'off'`, which stay independent because each names its own pair).
+  `makeTogglePin(self, slot, { on, off })` for a checkbox over a two-member
+  enum (`linkedReads`: "View as pairs" toggles `'normal'`/`'off'`). A slot
+  with three or more members is a radio group: `readConnections` was an arcs
+  checkbox and a cloud checkbox over one slot, and the unticked one's pin wrote
+  the whole slot under a label naming only itself; it is now the "Connection
+  overlay" radio (None / Read arcs / Read cloud).
   Its fill mirrors the row, a click flips the row's state on every open track,
   and the snackbar offers the new state as the default. It never clears a
   default by itself: flipping back and taking the offer promotes the other
