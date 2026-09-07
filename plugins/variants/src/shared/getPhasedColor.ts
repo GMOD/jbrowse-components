@@ -68,7 +68,8 @@ export function isPhasedOrHaploid(genotype: string) {
 // '.' (`.`, `./.`, `.|.`, `././.`). Written as a digit scan (no allocation) so
 // it's safe in the per-cell hot loops. A no-call is neither phased nor
 // unphased: its `/`|`|` separator is just formatting, so callers must not treat
-// it as unphased data (see detectPhased) nor render it as the "Unphased" fill.
+// it as unphased data (see isPhasedOrHaploid above) nor render it as the
+// "Unphased" fill.
 export function isNoCall(genotype: string) {
   for (let i = 0; i < genotype.length; i++) {
     const c = genotype.charCodeAt(i)

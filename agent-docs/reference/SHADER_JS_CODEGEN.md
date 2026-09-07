@@ -495,9 +495,10 @@ Three structural findings from that sweep, so it need not be redone:
 - **A `[shader("compute")]` pass is the highest-stakes case in the whole
   inventory** — its twin computes a number the user reads, not a pixel — so check
   compute shaders *first*, not last. The first sweep ranked shaders by "does it
-  have a Canvas2D twin" and read the LD compute shaders as GPU-only. They are
-  not: `ldCompute.slang`'s header says its fallback is the CPU path in `ld-core`,
-  which is how `ldUniforms.slang`'s `dprimeFinalize` was missed on pass one.
+  have a Canvas2D twin" and read the LD compute shaders as GPU-only. They were
+  not: their fallback was the CPU path in `ld-core`, and a finalize function on
+  the shared uniform module was missed on pass one because of it. The tree has
+  no compute pass now, so the next one to land is the first to be checked.
 
 ## Related
 

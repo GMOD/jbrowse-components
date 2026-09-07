@@ -262,8 +262,6 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'LinearMultiRowFeatureDisplay',
   'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
-  'plugins/variants/src/LDDisplay/shared.ts':
-    'VcfTabixAdapter declares 5 Mb; the PlinkLD adapters report no estimate',
   'plugins/variants/src/shared/MultiSampleVariantBaseModel.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
 }

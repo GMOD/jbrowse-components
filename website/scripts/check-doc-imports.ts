@@ -621,6 +621,11 @@ const DOC_THIRD_PARTY = new Set([
   // class an embedder would find in their bundle. The entry is about what
   // reaches an embedder's page, so the emitted class name is the evidence.
   'MuiLinearProgress',
+  // reference/GPU_GLOSSARY.md, the compute-dispatch row: the WebGPU limit a 2D
+  // workgroup grid exists to clear. The row says outright that the tree has no
+  // compute pass since the LD kernels went, so the limit is the browser's and
+  // naming it is what makes the row worth keeping for the next one.
+  'maxComputeWorkgroupsPerDimension',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per

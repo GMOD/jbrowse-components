@@ -324,8 +324,8 @@ for them.
 element**, so they share a `data-testid` base and are told apart only by
 `data-display-id`. Two pairs: the two GC content displays and the two arc
 displays. A third, `LDDisplay`/`LDTrackDisplay`, went when the genotype LD
-estimator did (d725f75263); the hand-written version of this section had missed
-it, which is why the table is generated now.
+estimator did; the hand-written version of this section had missed it, which is
+why the table is generated now.
 
 **The last two columns are the same question asked of the export**, resolved
 from the registration's `stateModel` rather than its `ReactComponent`: the model

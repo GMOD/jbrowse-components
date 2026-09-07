@@ -189,8 +189,10 @@ gzipped, 218 → 181 chunks**, for three import lines.
 
 Three state models named a dialog at module scope:
 
-- `plugins/variants/src/LDDisplay/shared.ts` → `LDFilterDialog` and
-  `JexlFilterDialog`, and through them `SubmitDialog` → `Dialog`
+- the LD display's model → its filter dialog and `JexlFilterDialog`, and
+  through them `SubmitDialog` → `Dialog`. That display reads a precomputed
+  file and has no genotypes to filter, so both it and its dialog are gone; the
+  route it established is what the entry is about
 - `plugins/authentication`'s `HTTPBasicModel/model.tsx` and
   `ExternalTokenModel/model.tsx` → their token-entry forms
 
@@ -209,7 +211,7 @@ the dialog through `session.queueDialog`, and `DialogQueue`
 
 One snag worth remembering: `lazy()` infers a type naming the component's props,
 so a props interface local to the dialog module fails the declaration emit with
-TS4023 (`LDFilterModel` here). Export the interface.
+TS4023. Export the interface.
 
 ### 6. Desktop's start screen holding the whole plugin graph
 

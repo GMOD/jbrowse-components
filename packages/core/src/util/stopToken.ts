@@ -37,11 +37,12 @@ import type { TimeGate } from './timeGate.ts'
  * either way over a 2000x BAM cancel burst) and that measurement was sound but
  * scoped: every loop on the alignments path is already chunked by awaits at
  * region granularity, so there was nothing there for an intra-loop probe to
- * interrupt. The counter-example is `getLDMatrix.ts`'s O(n²) Float32Array fill —
- * millions of pair computations with no await anywhere, where this probe is the
- * only thing that can stop the work, and which that bench never exercises. Any
- * future attempt to delete this needs a cancel measurement on an
- * await-free workload (LD or multi-sample-variant), not on a pileup.
+ * interrupt. The counter-example is the multi-sample-variant genotype matrix
+ * fill (`VariantRPC/getGenotypeMatrix.ts`) — millions of cells with no await
+ * anywhere, where this probe is the only thing that can stop the work, and
+ * which that bench never exercises. Any future attempt to delete this needs a
+ * cancel measurement on an await-free workload, not on a pileup. LD's O(n²)
+ * pair fill was the original example and went with the in-browser estimator.
  *
  * ## Which path runs where
  *

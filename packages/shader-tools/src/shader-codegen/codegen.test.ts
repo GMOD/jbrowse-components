@@ -272,7 +272,8 @@ describe('emitInterface instances', () => {
 
 // A compute kernel binds StructuredBuffer<uint>, whose resultType reflects as a
 // bare scalar — no fields to pack, unlike a vertex shader's
-// StructuredBuffer<Inst>. Mirrors the real ldCompute.slang reflection.
+// StructuredBuffer<Inst>. Synthetic: no in-tree shader has this shape since
+// the LD compute kernels went, and the emitter path still needs covering.
 const computeReflection = {
   parameters: [
     {

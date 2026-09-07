@@ -535,7 +535,7 @@ one `Float32Array` of `n*(n-1)/2` cells, which `RenderLDData` transfers whole to
 the main thread. The cost of a view is therefore quadratic in the SNP count, and
 **the ceiling is the output matrix**.
 
-Until d725f75263 the matrix was also *computed* here, from VCF genotypes, on a
+The matrix was once also *computed* here, from VCF genotypes, on a
 WebGPU kernel with a CPU fallback, and this section carried that path's
 storage-buffer ceilings (~8,193 SNPs at the 128 MiB spec floor), its 25-minute
 CPU fallback at 1000-Genomes scale, and the spot check that caught the kernel

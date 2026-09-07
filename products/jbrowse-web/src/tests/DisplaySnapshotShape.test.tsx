@@ -77,7 +77,8 @@ test('a pre-rename session resolves its display config by type', async () => {
 })
 
 // A display type nothing registers — a removed one (`LDDisplay`, which a config
-// written before d725f75263 still names on its VariantTrack), a plugin's that
+// written before the genotype estimator went still names on its VariantTrack),
+// a plugin's that
 // did not load, a typo — is dropped from the config rather than failing the
 // whole track. Dropped, but not silently: the track goes on to render its
 // default display, which is not the picture the config asked for, and the only

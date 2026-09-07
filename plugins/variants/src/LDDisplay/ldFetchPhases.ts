@@ -28,6 +28,10 @@ export interface LDFetchSelf extends IStateTreeNode {
   host: RegionHost
   adapterConfig: Record<string, unknown>
   rpcProps(): LDRpcProps
+  // `RegionTooLargeMixin`'s, which `GlobalFetchMixin` composes. This display
+  // declines the gate, so it resolves to undefined and `rpcArgs` passes no
+  // budget — the shape an ungated display is meant to have.
+  resolvedByteLimit(): number | undefined
   setRpcData(data: LDDataResult): void
 }
 
