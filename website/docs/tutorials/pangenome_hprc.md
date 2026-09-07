@@ -87,7 +87,8 @@ what lies between.
 
 <Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph and allele marks a node one haplotype carries where the reference has something else. bubble points into a pair of routes between the same two nodes: the reference path, and the dashed arc that skips it, which the drawing labels with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
 
-The clip below runs the first four steps on the MHC class II window.
+The clip below runs the first four steps on the MHC class II window, which holds
+too many nodes to label the way the figure above is labelled.
 
 <Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's GRCh38 interval marked in the linear view above it." />
 
@@ -149,60 +150,6 @@ view's layouts, colors and menus on a smaller graph than this one. Most of
 [part 2](/docs/tutorials/pangenome_hprc_part2) needs no plugin at all: the
 allele inventory and both callsets are ordinary tracks.
 
-## What release 2 publishes
-
-`pangenomes/freeze/release2/minigraph-cactus/` holds these per reference (a
-GRCh38 and a T2T-CHM13 build; everything below uses GRCh38):
-
-| File                | Size   | What it is                                   |
-| ------------------- | ------ | -------------------------------------------- |
-| `*.sv.gfa.gz`       | 842 MB | SV-resolution graph, and an rGFA             |
-| `*.gfa.gz`          | 63 GB  | the base-level graph                         |
-| `*.gbz`             | 5.4 GB | the same graph in vg's indexed format        |
-| `*.wave.vcf.gz`     | 2.3 GB | every variant, decomposed, **tabix-indexed** |
-| `*.wave.vcf.gz.tbi` | 2.2 MB | the index, published beside it               |
-
-The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
-downloading the whole file: the VCF ships its index, and we host small BED
-projections of the graph (below). Release 3 is the verkko assembly and QC
-release, and publishes no graphs.
-
-Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
-fuller per-build set. Both pages read the `v2.1/` build, its `sv.gfa`, its
-callsets and its gbz-base database, so node ids agree across the pair. The one
-file only `v2.0/` has is the alignment the graph and the callset are derived
-from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
-`.tai` index, which
-[part 2](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
-opens; v2.1 publishes its MAF only, 53 GB and unindexed.
-
-Every file above is published twice, once per reference, and this page uses the
-GRCh38 build. Both build scripts run on the CHM13 files unchanged, with one
-config change, the PanSN prefix: `{ "chm13": "CHM13" }` in place of
-`{ "hg38": "GRCh38" }`.
-
-## Why this graph opens by locus {#regular-gfa-vs-rgfa}
-
-Release 2 labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
-Minigraph-Cactus build, so every segment in it carries the `SN`/`SO`/`SR` tags
-that state where the segment sits and which segments are the reference. That is
-what lets JBrowse open any locus with no extraction step, and it is the whole
-reason this page reads `sv.gfa` rather than the base-level `gfa.gz` beside it,
-which states the same thing only inside its path lines.
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#what-your-graph-can-produce)
-sets out both formats and which builder each one takes.
-
-A PanSN name has two halves, and only the first needs configuring:
-
-- The **sample** half needs `assemblyNameToPanSN: { "hg38": "GRCh38" }`, tying
-  an `hg38` assembly to the graph's `GRCh38` prefix. The prefix disambiguates:
-  the same graph also carries `CHM13#0#chr1`.
-- The **contig** half is ordinary refName aliasing, which your assembly already
-  does, so an hg38 spelling chr6 as `6` needs no further configuration.
-- The variant callset in
-  [part 2](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) needs no
-  mapping at all: its contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
-
 ## Load the graph
 
 JBrowse reads two tabix-indexed BED projections of the graph. We host them, so a
@@ -263,6 +210,61 @@ L-lines.
 is what we ran on HPRC's `sv.gfa.gz`, and
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) walks it and
 every other file these two pages read.
+
+## Why this graph opens by locus {#regular-gfa-vs-rgfa}
+
+That the track answers a locus at all is a property of the file behind it.
+Release 2 labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
+Minigraph-Cactus build, so every segment in it carries the `SN`/`SO`/`SR` tags
+that state where the segment sits and which segments are the reference. That is
+what lets JBrowse open any locus with no extraction step, and it is the whole
+reason this page reads `sv.gfa` rather than the base-level `gfa.gz` beside it,
+which states the same thing only inside its path lines.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#what-your-graph-can-produce)
+sets out both formats and which builder each one takes.
+
+A PanSN name has two halves, and only the first needs configuring:
+
+- The **sample** half needs `assemblyNameToPanSN: { "hg38": "GRCh38" }`, tying
+  an `hg38` assembly to the graph's `GRCh38` prefix. The prefix disambiguates:
+  the same graph also carries `CHM13#0#chr1`.
+- The **contig** half is ordinary refName aliasing, which your assembly already
+  does, so an hg38 spelling chr6 as `6` needs no further configuration.
+- The variant callset in
+  [part 2](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) needs no
+  mapping at all: its contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
+
+## What release 2 publishes
+
+`pangenomes/freeze/release2/minigraph-cactus/` holds these per reference (a
+GRCh38 and a T2T-CHM13 build; everything below uses GRCh38):
+
+| File                | Size   | What it is                                   |
+| ------------------- | ------ | -------------------------------------------- |
+| `*.sv.gfa.gz`       | 842 MB | SV-resolution graph, and an rGFA             |
+| `*.gfa.gz`          | 63 GB  | the base-level graph                         |
+| `*.gbz`             | 5.4 GB | the same graph in vg's indexed format        |
+| `*.wave.vcf.gz`     | 2.3 GB | every variant, decomposed, **tabix-indexed** |
+| `*.wave.vcf.gz.tbi` | 2.2 MB | the index, published beside it               |
+
+The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
+downloading the whole file: the VCF ships its index, and we host small BED
+projections of the graph (below). Release 3 is the verkko assembly and QC
+release, and publishes no graphs.
+
+Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
+fuller per-build set. Both pages read the `v2.1/` build, its `sv.gfa`, its
+callsets and its gbz-base database, so node ids agree across the pair. The one
+file only `v2.0/` has is the alignment the graph and the callset are derived
+from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
+`.tai` index, which
+[part 2](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
+opens; v2.1 publishes its MAF only, 53 GB and unindexed.
+
+Every file above is published twice, once per reference, and this page uses the
+GRCh38 build. Both build scripts run on the CHM13 files unchanged, with one
+config change, the PanSN prefix: `{ "chm13": "CHM13" }` in place of
+`{ "hg38": "GRCh38" }`.
 
 ## Open a locus as a graph
 
