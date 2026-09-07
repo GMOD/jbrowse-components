@@ -1008,7 +1008,9 @@ export function createJbApi(pluginManager: PluginManager) {
   const live = () => {
     const current = sessionOf(pluginManager)
     if (!current) {
-      throw new Error('No session is open')
+      throw new Error(
+        'No session is open, so there is nothing for this helper to read. Build one with jb.loadSessionSpec({ views: [...] }), which needs no session of its own, or load a config with the open tool.',
+      )
     }
     return current
   }

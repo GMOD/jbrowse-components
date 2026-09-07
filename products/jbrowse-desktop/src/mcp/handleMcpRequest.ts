@@ -121,7 +121,7 @@ function compileCode(code: string) {
       'signal',
       `return (async () => {\n${code}\n})()`,
     ) as (
-      session: AbstractSessionModel,
+      session: AbstractSessionModel | undefined,
       rootModel: unknown,
       pluginManager: PluginManager,
       jbHelpers: ReturnType<typeof createJbApi>,
@@ -160,9 +160,13 @@ async function runWithTimeout<T>(
   }
 }
 
+// `session` is undefined on the start screen. The code still runs: jb.
+// loadSessionSpec builds a session out of the plugin manager alone, and
+// refusing to execute until one exists made the one helper that can bootstrap
+// a session the one thing you could not reach.
 async function evaluate(
   pluginManager: PluginManager,
-  session: AbstractSessionModel,
+  session: AbstractSessionModel | undefined,
   args: Record<string, unknown>,
 ) {
   await ensureReExports()
@@ -289,13 +293,25 @@ export async function handleMcpRequest(
     })
     return { hidden: document.hidden, painted }
   }
-  if (!pluginManager || !session) {
+  // The start screen installs no plugin manager at all (Loader's
+  // replacePluginManager: "undefined installs nothing"), so there is nothing
+  // for code to run against and `open` is the only way in. With a manager but
+  // no session — a load in flight, or one that failed — the code does run,
+  // because jb.loadSessionSpec builds a session out of the manager alone and
+  // gating on the session made the one helper that can bootstrap one
+  // unreachable.
+  if (!pluginManager) {
     throw new Error(
-      'No session is open. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
+      'No session is open, and the start screen has nothing to run code against. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
     )
   }
   if (tool === 'run_javascript') {
     return evaluate(pluginManager, session, args)
+  }
+  if (!session) {
+    throw new Error(
+      'No session is open. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
+    )
   }
   throw new Error(`Unknown tool: ${tool} — use run_javascript`)
 }

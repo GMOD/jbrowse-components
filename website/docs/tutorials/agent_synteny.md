@@ -66,20 +66,16 @@ the agent writing code against the session you are watching.
 The setup is in [](/docs/agents). Once the client lists your recent sessions,
 the path works.
 
-## Ask for the genomes, and start the alignment behind them
+## Ask for the comparison
 
-Both assemblies are hosted, so they are on screen in seconds. The alignment is
-minutes of work, so it starts in the background while you look at them:
+The first request is the whole pipeline, in one sentence:
 
 ```
-Open D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 side by
-side with their gene tracks. There is no alignment between them, so start
-one in the background with minimap2 while I look.
+Align D. simulans GCF_016746395.2 against D. mauritiana GCF_004382145.1 with
+minimap2. Run it in the background and poll it, and when it is done index it
+and open both genomes side by side, with their gene tracks and the alignment
+between them.
 ```
-
-Asking in that order matters for a reason beyond pacing: an agent told to align
-first has nothing to show until the aligner returns, and the browser sits on its
-start screen for the whole run.
 
 The aligner it runs:
 
@@ -97,17 +93,13 @@ memory, and produces 9,494 alignment records.
 **This is where a tool call outlives its budget.** A `run_javascript` call has
 about two minutes before it answers with a timeout while the app carries on
 working, and the alignment is longer than that. An agent that puts the aligner
-in the background handles it; one that waits for it inside a single call reports
-a failure that did not happen. The phrase "in the background" in the request
-above is what buys that.
+in the background and polls it handles this; one that waits for it inside a
+single call reports a failure that did not happen. The phrase "in the
+background" in the request above is what buys that.
 
-## Ask for the alignment, and the dotplot
-
-```
-Is the alignment done? If it is, index it and add it as a synteny track
-between the two genomes, then put a dotplot of the same two assemblies
-underneath.
-```
+It is worth having the alignment finish before anything opens. Two genomes side
+by side with nothing between them look like the finished comparison, and an
+alignment that appears afterwards reads as a correction rather than a step.
 
 Indexing the PAF lets the browser read a region out of it instead of parsing all
 of it:
@@ -137,6 +129,12 @@ adapter:
 Query first, target second, matching the `minimap2` argument order. Reversed, no
 chromosome name resolves and the synteny band draws empty, which at whole-genome
 zoom looks much like a genome pair with little in common.
+
+## Ask for the dotplot
+
+```
+Add a dotplot of the same two assemblies underneath.
+```
 
 Both assemblies carry a few hundred unplaced scaffolds, and a dotplot that draws
 them interleaves the axes with rows holding a handful of alignments each. Naming
@@ -228,9 +226,9 @@ band, and the genes on the two rows run in opposite directions through it.
 
 Three sentences, and each one is a failure that is quiet rather than loud:
 
-- **Start long work in the background.** Otherwise a tool call times out over an
-  aligner that is fine, and the agent reports a failure that did not happen. It
-  also leaves the browser empty until the aligner returns.
+- **Start long work in the background, and let it finish before opening
+  anything.** Otherwise a tool call times out over an aligner that is fine, and
+  the agent reports a failure that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
   scaffolds interleave both axes.
 - **Answer from the file, not the picture.** Otherwise you get a description of
