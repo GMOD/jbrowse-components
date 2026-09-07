@@ -1,20 +1,11 @@
-import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
-
-import { makeHicFillStyleLut } from './colorRamp.ts'
 import {
   getInstanceCount,
   getInstancePosition,
 } from './shaders/hic.iface.generated.ts'
 import { mapHicCount } from './shaders/hic.js.generated.ts'
 
-import type {
-  HicDrawState,
-  HicRenderState,
-  HicCellKey,
-  HicRenderingBackend,
-  HicUploadData,
-} from './hicRenderingBackendTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { HicDrawState, HicUploadData } from './hicRenderingBackendTypes.ts'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 /**
  * Pure draw entry point. Paints the hic contact-matrix as axis-aligned
@@ -34,7 +25,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * a layer of its own size.
  */
 export function drawHicBlocks(
-  ctx: Ctx2D,
+  ctx: MarkContext2D,
   data: HicUploadData,
   fillStyleLut: (t: number) => string | undefined,
   state: HicDrawState,
@@ -115,36 +106,4 @@ export function drawHicBlocks(
   }
 
   ctx.restore()
-}
-
-export class Canvas2DHicRenderer
-  extends Canvas2DGlobalRenderingBackend<
-    HicUploadData,
-    HicRenderState,
-    HicCellKey,
-    HicUploadData | Uint8Array
-  >
-  implements HicRenderingBackend
-{
-  private fillStyleLut: ((t: number) => string | undefined) | null = null
-
-  upload(_key: HicCellKey, cell: HicUploadData | Uint8Array) {
-    if (cell instanceof Uint8Array) {
-      this.uploadColorRamp(cell)
-    }
-  }
-
-  uploadColorRamp(colors: Uint8Array) {
-    this.fillStyleLut = makeHicFillStyleLut(colors)
-  }
-
-  // `prepareCanvas` is the base's (Canvas2DGlobalRenderingBackend), which is
-  // also what clears the canvas on the null-payload frame.
-  protected draw(data: HicUploadData, state: HicRenderState) {
-    if (!this.fillStyleLut) {
-      return false
-    }
-    drawHicBlocks(this.ctx, data, this.fillStyleLut, state, state.canvasWidth)
-    return true
-  }
 }

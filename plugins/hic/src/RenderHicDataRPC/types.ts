@@ -107,7 +107,7 @@ export interface HicDataResult {
    * Packed here rather than main-thread-side because this is the buffer the GPU
    * takes: `hal.uploadBuffer` accepts it as-is, so the payload transfers
    * zero-copy and is uploaded zero-copy. It used to arrive as parallel
-   * `positions`/`counts` arrays that `GpuHicRenderer` re-interleaved with the
+   * `positions`/`counts` arrays the hic mark re-interleaved with the
    * generated `packInstances` on every fetch — measured 2.5 ms and 3.6 MB at
    * 300k contacts, 39 ms and 54 MB at 4.5M, all of it on the main thread inside
    * the upload autorun.

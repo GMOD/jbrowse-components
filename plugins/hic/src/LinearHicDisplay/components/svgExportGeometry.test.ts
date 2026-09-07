@@ -2,7 +2,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { triangleDataToScreen } from '@jbrowse/display-kit/triangleTransform'
 
 import { packTestInstances } from '../../testInstances.ts'
-import { drawHicBlocks } from './Canvas2DHicRenderer.ts'
+import { drawHicBlocks } from './drawHicBlocks.ts'
 
 // `triangleDataToScreen` is hic.slang's vs_main, which the GPU and (via
 // ctx.rotate/scale) the Canvas2D path both implement: rotate the bin into the

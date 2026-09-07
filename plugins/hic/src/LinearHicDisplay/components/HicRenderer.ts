@@ -1,14 +1,7 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
-import { GpuHicRenderer, HIC_PASSES } from './GpuHicRenderer.ts'
-
-import type { HicRenderingBackend } from './hicRenderingBackendTypes.ts'
+import { HIC_MARKS } from './hicMarks.ts'
 
 export function HicRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<HicRenderingBackend>(canvas, {
-    passes: HIC_PASSES,
-    createGpuBackend: hal => new GpuHicRenderer(hal),
-    createCanvas2DBackend: c => new Canvas2DHicRenderer(c),
-  })
+  return createMarkBackend(canvas, HIC_MARKS)
 }

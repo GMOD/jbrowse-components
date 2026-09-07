@@ -19,10 +19,10 @@ import {
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { installUpload } from '@jbrowse/render-core/installUpload'
+import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
-import { generateColorRamp } from './components/colorRamp.ts'
+import { hicMarkBlocks } from './components/hicMarks.ts'
 import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
@@ -32,9 +32,9 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type {
-  HicCellKey,
   HicRenderState,
   HicRenderingBackend,
+  HicUploadData,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -452,9 +452,32 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
+          colorScheme: self.colorScheme,
           viewScale,
           viewOffsetX,
         }
+      },
+      /**
+       * #getter
+       * The contact matrix as the mark backend's region map: one payload under
+       * key 0, left out until the fetch lands so the backend answers "nothing
+       * drawn" and the loading scrim stays over a blank canvas.
+       *
+       * A matrix that fetched zero contacts keeps the key. The cleared canvas
+       * IS the picture there and nothing later will upload bytes for it, so
+       * leaving it out would hold the scrim over a channel that is simply empty
+       * in this window — an outward-pair track sat on "Loading" until the
+       * capture timed out.
+       */
+      get hicRegions(): ReadonlyMap<number, HicUploadData> {
+        return oneCell(0, self.rpcData)
+      },
+      /**
+       * #getter
+       * The one block the mark backend draws: the whole canvas.
+       */
+      get hicBlocks() {
+        return hicMarkBlocks(self.canvasWidth)
       },
 
       /**
@@ -484,23 +507,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       startRenderingBackend(backend: HicRenderingBackend) {
         installUpload(self, backend, {
-          // Two cells with independent inputs, the matrix from the RPC and the
-          // palette from a config slot, so a palette flip re-encodes and
-          // re-uploads the ramp alone and a new fetch leaves the ramp be.
-          cells: () => {
-            const cells = new Map<HicCellKey, HicDataResult | HicColorScheme>()
-            if (self.rpcData) {
-              cells.set('data', self.rpcData)
-            }
-            cells.set('colorRamp', self.colorScheme)
-            return cells
-          },
-          encode: cell =>
-            typeof cell === 'string' ? generateColorRamp(cell) : cell,
-          // The backend answers "did real content reach the canvas" — its own
-          // guard (an empty HAL buffer, a colour ramp that has not arrived) is
-          // narrower than anything this callback can see.
-          render: b => b.render(self.rpcData ?? null, self.renderState),
+          // One cell, the matrix from the RPC: the palette is the mark's
+          // `texture`, resolved per frame off the render state, so a scheme
+          // flip costs one 256-entry texture and no instance byte.
+          cells: () => self.hicRegions,
+          render: b =>
+            b.renderBlocks(self.hicBlocks, self.hicRegions, self.renderState),
         })
       },
       /**

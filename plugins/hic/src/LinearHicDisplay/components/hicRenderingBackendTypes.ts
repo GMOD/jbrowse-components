@@ -1,4 +1,5 @@
-import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+import type { HicColorScheme } from './colorRamp.ts'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 // What painting a bin actually depends on. Kept separate from the canvas dims
 // so `drawHicBlocks` can't be handed a mismatched pair — the SVG export draws
@@ -14,6 +15,10 @@ export interface HicDrawState {
 export interface HicRenderState extends HicDrawState {
   canvasWidth: number
   canvasHeight: number
+  // The palette, as the name of the scheme rather than its bytes: the mark
+  // resolves both the GPU's ramp texture and the painter's fillStyle LUT from
+  // it, and the table it resolves to is identity-stable.
+  colorScheme: HicColorScheme
 }
 
 // `binWidth` rides with the data, not the frame state: it's the px size the
@@ -22,7 +27,7 @@ export interface HicRenderState extends HicDrawState {
 // (a bare getter must never hand back undefined) with no data loaded.
 //
 // `instances` is already the shader's vertex-buffer layout — see
-// `HicDataResult.instances` — so the GPU backend hands it to the HAL untouched
+// `HicDataResult.instances` — so the mark's pack hands it to the HAL untouched
 // and the Canvas2D/SVG paths read it at stride.
 export interface HicUploadData {
   instances: Float32Array
@@ -30,16 +35,7 @@ export interface HicUploadData {
   binWidth: number
 }
 
-// Two cells: the contact matrix from the fetch, and the colour ramp texture
-// from a config slot. `upload` tells them apart by the cell's type, so a
-// palette flip re-pushes the ramp alone.
-export type HicCellKey = 'data' | 'colorRamp'
-
-export interface HicRenderingBackend extends GlobalRenderingBackend<
+export type HicRenderingBackend = PerRegionRenderingBackend<
   HicUploadData,
-  HicRenderState,
-  HicCellKey,
-  HicUploadData | Uint8Array
-> {
-  uploadColorRamp(colors: Uint8Array): void
-}
+  HicRenderState
+>

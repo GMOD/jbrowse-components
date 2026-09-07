@@ -154,7 +154,7 @@ The Hi-C / LD family is the interesting one, because it is not an oversight.
 GPU_RENDERING.md's own list of AA-width cases ends with "**Tiled cells** (hi-C
 bins): no per-quad AA at all, deliberately. Bins share exact edges after a linear
 transform, and antialiasing them individually produces seams", and
-`Canvas2DHicRenderer.ts`'s header records the same finding from the other
+hic's `drawHicBlocks.ts` header records the same finding from the other
 backend: "the path-based diamond approach left thin AA seams between neighboring
 bins". This is the classic conflation artifact, and MSAA is the thing that
 sidesteps it — sample coverage on a shared edge is exclusive between the two
@@ -574,7 +574,7 @@ compile leaves the stale `.generated.ts` and everything downstream passes off it
 
 ### 5. Do NOT give Hi-C or LD per-cell analytic AA
 
-Recorded as an option so it stays refused. `Canvas2DHicRenderer.ts` and
+Recorded as an option so it stays refused. hic's `drawHicBlocks.ts` and
 GPU_RENDERING.md both carry the finding, from independent attempts. A tiled
 diamond grid wants either exclusive sample coverage (MSAA) or hard edges; per
 fragment alpha on both sides of a shared edge gives 0.75 where 1.0 is right, and

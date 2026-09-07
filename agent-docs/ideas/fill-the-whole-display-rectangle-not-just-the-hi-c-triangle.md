@@ -19,7 +19,7 @@ edge, apex height — asks for data **half a visible span past the edge**, i.e. 
 fetch window of 2x the visible span against today's static blocks at ~1.5x.
 
 **Half of it is already happening.** Nothing culls on y —
-`Canvas2DHicRenderer`'s cull is the x axis alone ("height is deliberately not
+`drawHicBlocks`'s cull is the x axis alone ("height is deliberately not
 culled: the triangle apex and `yScalar` already bound it"), and the GPU path
 lets the rasterizer discard — so every fetched contact landing in the rectangle
 is drawn, and the buffered fetch already puts some of the corner population
