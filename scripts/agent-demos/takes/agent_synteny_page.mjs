@@ -20,8 +20,11 @@ jbrowse.org/hubs/genark/... respectively. The hub's <acc>.2bit is the same
 sequence the browser reads; ./twoBitToFa in your working directory converts it
 to FASTA for the aligner. The hosted configs already describe
 the sequence, the chromAlias file and the gene track, so merging the two is
-shorter than declaring either assembly by hand. Be direct: do what each message
-asks with as few tool calls as possible, then answer in one plain-English
+shorter than declaring either assembly by hand. Run anything that takes minutes in the shell in the background and poll it,
+and do not open anything in JBrowse until the alignment is indexed and ready.
+When asked where the genomes disagree, total the alignment file rather than
+describing the plot, and say the numbers before you navigate. Be direct: do what
+each message asks with as few tool calls as possible, then answer in one plain-English
 sentence with the numbers behind it. After every change to the app, screenshot
 and read the image, and fix anything the settle report lists as not ready rather
 than describing it. Navigate by explicit coordinates, never by gene name.`
@@ -41,22 +44,20 @@ export const STEPS = [
   // collapses the wait, and the TUI in frame shows the polling.
   {
     prompt:
-      'Download the D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 genomes from the UCSC GenArk hub and align them with minimap2. Run the aligner in the background and poll it, and when it is done index it and open both genomes in JBrowse side by side, with their gene tracks and the alignment between them.',
+      'Get D. simulans GCF_016746395.2 and D. mauritiana GCF_004382145.1 from the GenArk hub, align them, and open both side by side with the alignment between them.',
     say: 'One sentence for the whole pipeline. The aligner runs in the background so the tool call does not time out.',
   },
   {
-    prompt:
-      'Add a dotplot of the same two assemblies underneath. Restrict both axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX, and tell me how much that drops.',
+    prompt: 'Add a dotplot underneath, restricted to the six chromosome arms.',
     say: 'The axes have to name the arms, or a few hundred unplaced scaffolds interleave them.',
   },
   {
     prompt:
-      'Where do the two genomes run in opposite directions? Answer from the alignment file, not from the dotplot, and show me the numbers: aligned bases per arm split by strand.',
+      'Where do the two genomes run in opposite directions? Answer from the alignment file, not the dotplot, with the numbers.',
     say: 'The answer comes out of the PAF. A dotplot cannot resolve a block this size.',
   },
   {
-    prompt:
-      'Take the synteny view to the 2R region, with the gene tracks on. Say the coordinates before you navigate.',
+    prompt: 'Take me to the 2R region, coordinates first.',
     say: 'Numbers first, then the picture, so what is on screen is a claim you can check.',
   },
 ]

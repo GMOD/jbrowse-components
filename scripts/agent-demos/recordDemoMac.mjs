@@ -338,15 +338,25 @@ try {
     if (!(await waitTurnDone(SESSION, before, 900_000))) {
       console.error('  (turn did not settle before timeout; continuing)')
     }
+    // The window can only be measured through the app, which needs a session,
+    // and which turn opens one is the take's business rather than this
+    // harness's: a take that aligns two genomes before it opens anything has
+    // none for ten minutes. So this retries after each turn and only judges
+    // what it actually measured. It used to run once after turn one and let
+    // the bridge's "no session" rejection go unhandled, which killed the node
+    // process, and cleanup() then killed tmux — reported as "can't find
+    // session", three lines away from the real cause.
     if (!checked) {
-      const geom = await appViewport(socketPath)
-      if (!geom || geom.w > geom.screen * 0.65) {
-        fail(
-          `JBrowse is not tiled: its window is ${geom?.w}px of a ${geom?.screen}px screen`,
-        )
+      const geom = await appViewport(socketPath).catch(() => undefined)
+      if (geom) {
+        if (geom.w > geom.screen * 0.65) {
+          fail(
+            `JBrowse is not tiled: its window is ${geom.w}px of a ${geom.screen}px screen`,
+          )
+        }
+        console.log(`  layout confirmed by the app: ${geom.w}x${geom.h}`)
+        checked = true
       }
-      console.log(`  layout confirmed by the app: ${geom.w}x${geom.h}`)
-      checked = true
     }
     fs.appendFileSync(
       path.join(outDir, 'panes.log'),

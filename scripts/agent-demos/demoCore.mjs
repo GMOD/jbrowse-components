@@ -128,10 +128,17 @@ export function capture(session) {
   }
 }
 
+// A send-keys per character costs a process spawn, which on a busy machine is
+// ~300ms rather than the perCharMs below — a 340-character prompt then takes
+// most of two minutes, and typing is the one thing the encoder cannot collapse
+// because every frame differs. Small chunks keep the typed-out look and cut the
+// spawns by CHUNK.
+const CHUNK = 4
+
 export async function typePrompt(session, text, perCharMs = 28) {
-  for (const ch of text) {
-    tmux('send-keys', '-t', session, '-l', ch)
-    await delay(perCharMs)
+  for (let i = 0; i < text.length; i += CHUNK) {
+    tmux('send-keys', '-t', session, '-l', text.slice(i, i + CHUNK))
+    await delay(perCharMs * CHUNK)
   }
   await delay(400)
   tmux('send-keys', '-t', session, 'Enter')
@@ -156,7 +163,11 @@ const isWorking = pane =>
 // before the model has started it.
 export async function waitTurnDone(session, before, maxMs = 300_000) {
   const deadline = Date.now() + maxMs
-  const graceUntil = Date.now() + 25_000
+  // The escape hatch for a turn whose spinner never matched. It has to outlast
+  // the app's own startup on a loaded machine: at 25s it fired before the agent
+  // had begun, the caller took that as a finished turn, and the bridge call
+  // after it hit an app with no session yet.
+  const graceUntil = Date.now() + 90_000
   let sawWorking = false
   let stablePane = ''
   let stableCount = 0
