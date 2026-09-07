@@ -1,5 +1,9 @@
 import { refNameColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
-import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
+import {
+  cssColorToABGR,
+  packAbgr,
+  withAbgrAlpha,
+} from '@jbrowse/core/util/colorBits'
 
 import {
   rampNorm,
@@ -47,6 +51,7 @@ export const MISSING_VALUE_COLOR = cssColorToABGR(
 // a row a text column leaves unlabelled is "in no group", not "no data", and
 // recedes so the labelled rows carry the picture
 export const UNLABELLED_COLOR = cssColorToABGR('#c8c8c8')
+const HIDDEN_UNLABELLED_COLOR = withAbgrAlpha(UNLABELLED_COLOR, 0)
 
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
@@ -187,6 +192,7 @@ export function makeCategoricalColorFunction(
   mode: CategoricalMode,
   attributes: Record<string, Float32Array>,
   fetchRanges: Record<string, AttributeRange>,
+  unlabelledColor = UNLABELLED_COLOR,
 ) {
   const values = attributes[mode.attribute]
   const fetchRange = fetchRanges[mode.attribute]
@@ -198,8 +204,8 @@ export function makeCategoricalColorFunction(
   return (index: number) => {
     const value = values?.[index]
     return value === undefined || value < 0
-      ? UNLABELLED_COLOR
-      : (lut[value] ?? UNLABELLED_COLOR)
+      ? unlabelledColor
+      : (lut[value] ?? unlabelledColor)
   }
 }
 
@@ -235,6 +241,7 @@ export function createComparativeColorFunction({
   defaultColor,
   nameOrder,
   attributeRanges,
+  hideUnlabelled = false,
 }: {
   colorBy: SyntenyColorBy
   data: ColorFunctionInputs
@@ -255,6 +262,9 @@ export function createComparativeColorFunction({
   // (`TrackColorsMixin.attributeRanges`), which only ever widens, and hands it
   // down here. The named presets carry their own fixed domains and ignore this.
   attributeRanges: Record<string, AttributeRange>
+  // a text column's unlabelled rows drawn at zero alpha, so a categorical mode
+  // shows only the rows that carry a label
+  hideUnlabelled?: boolean
 }): (index: number) => number {
   // Every continuous mode in one arm, preset or attribute, so the switch below
   // does not grow per measurement.
@@ -268,6 +278,7 @@ export function createComparativeColorFunction({
       categorical,
       data.attributes,
       data.attributeRanges,
+      hideUnlabelled ? HIDDEN_UNLABELLED_COLOR : UNLABELLED_COLOR,
     )
   }
   switch (colorBy) {

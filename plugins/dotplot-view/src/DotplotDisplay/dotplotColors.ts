@@ -29,6 +29,7 @@ export function createDotplotColorFunction(
   trackColor: string,
   attributeRanges: Record<string, AttributeRange>,
   nameOrder?: readonly string[],
+  hideUnlabelled?: boolean,
 ) {
   return createComparativeColorFunction({
     colorBy,
@@ -36,6 +37,7 @@ export function createDotplotColorFunction(
     trackColor,
     nameOrder,
     attributeRanges,
+    hideUnlabelled,
     defaultColor: POINT_COLOR,
   })
 }
@@ -53,6 +55,7 @@ export function computeDotplotColors({
   trackColor,
   nameOrder,
   attributeRanges,
+  hideUnlabelled,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
@@ -65,6 +68,7 @@ export function computeDotplotColors({
   // The domain an `attribute:<name>` ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
+  hideUnlabelled?: boolean
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createDotplotColorFunction(
@@ -73,6 +77,7 @@ export function computeDotplotColors({
     trackColor,
     attributeRanges,
     nameOrder,
+    hideUnlabelled,
   )
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {

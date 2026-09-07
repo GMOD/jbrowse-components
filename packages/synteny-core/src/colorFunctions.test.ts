@@ -241,6 +241,20 @@ describe('a categorical attribute', () => {
     expect(fn(2)).not.toBe(MISSING_VALUE_COLOR)
   })
 
+  test('hideUnlabelled draws the unlabelled row at zero alpha and leaves the rest', () => {
+    const fn = createComparativeColorFunction({
+      colorBy: 'attribute:group',
+      data,
+      trackColor: '#000',
+      defaultColor: 0,
+      attributeRanges: { group: fetchLabels },
+      hideUnlabelled: true,
+    })
+    expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
+    expect(fn(2) >>> 24).toBe(0)
+    expect(fn(2) & 0xffffff).toBe(UNLABELLED_COLOR & 0xffffff)
+  })
+
   test('a numeric column under the same mode string still ramps', () => {
     const fn = createComparativeColorFunction({
       colorBy: 'attribute:group',

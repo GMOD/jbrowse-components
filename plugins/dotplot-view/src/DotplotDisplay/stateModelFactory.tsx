@@ -173,6 +173,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               trackColor: this.trackColor,
               nameOrder: this.paintedChromosomeOrder,
               attributeRanges: this.view.attributeRanges,
+              hideUnlabelled: this.view.hideUnlabelled,
             })
           : undefined
       },

@@ -81,6 +81,11 @@ export function TrackColorsMixin() {
        * track takes an automatic slot from the palette.
        */
       trackColors: types.map(types.string),
+      /**
+       * #property
+       * Under a text-column mode, draw only the rows that carry a label.
+       */
+      hideUnlabelled: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
       /**
@@ -295,6 +300,15 @@ export function TrackColorsMixin() {
          * #action
          * Set the view-wide mode, and rescale the ramp, which is the only way
          * back from a domain one outlying window widened.
+         */
+        /**
+         * #action
+         */
+        setHideUnlabelled(value: boolean) {
+          self.hideUnlabelled = value
+        },
+        /**
+         * #action
          */
         setColorBy(value: SyntenyColorBy) {
           self.colorBy = value

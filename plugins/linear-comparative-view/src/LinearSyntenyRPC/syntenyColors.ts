@@ -104,6 +104,7 @@ export function computeSyntenyColors({
   groundColor,
   nameOrder,
   attributeRanges,
+  hideUnlabelled,
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
@@ -127,6 +128,7 @@ export function computeSyntenyColors({
   // The domain an `attribute:<name>` ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
+  hideUnlabelled?: boolean
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createComparativeColorFunction({
@@ -135,6 +137,7 @@ export function computeSyntenyColors({
     trackColor,
     nameOrder,
     attributeRanges,
+    hideUnlabelled,
     // a ribbon's unpainted state is the red match block
     defaultColor: MISSING_VALUE_COLOR,
   })

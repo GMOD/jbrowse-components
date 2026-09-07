@@ -2,7 +2,7 @@ import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 
 import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
-import { continuousRampConfig } from './colorRamps.ts'
+import { continuousRampConfig, resolveCategoricalMode } from './colorRamps.ts'
 import { attributeColorBy } from './colorUtils.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
@@ -45,8 +45,15 @@ export function colorByMenuTargetFor(
     })),
     pointBased,
     showReference,
+    categorical:
+      resolveCategoricalMode(model.colorByMode, model.attributeRanges) !==
+      undefined,
+    hideUnlabelled: model.hideUnlabelled,
     setColorBy: value => {
       model.setColorBy(value)
+    },
+    setHideUnlabelled: value => {
+      model.setHideUnlabelled(value)
     },
     setTrackColor: (trackId, value) => {
       model.setTrackColor(trackId, value)
@@ -65,8 +72,10 @@ export interface TrackColorsModel {
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
   colorByMode: SyntenyColorBy
+  hideUnlabelled: boolean
   trackColorFor: (trackId: string) => string
   setColorBy: (value: SyntenyColorBy) => void
+  setHideUnlabelled: (value: boolean) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
@@ -91,7 +100,11 @@ export interface ColorByMenuTarget {
   pointBased: boolean
   /** 'reference' is meaningless below two stacked levels */
   showReference: boolean
+  /** whether the current mode paints a text column, which is when the unlabelled rows can be hidden */
+  categorical: boolean
+  hideUnlabelled: boolean
   setColorBy: (value: SyntenyColorBy) => void
+  setHideUnlabelled: (value: boolean) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
@@ -239,6 +252,20 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
         'Paint each alignment by a number it carries, on a color ramp the legend labels.',
       subMenu: radios(target, values),
     },
+    ...(target.categorical
+      ? [
+          {
+            label: 'Hide unlabelled rows',
+            type: 'checkbox' as const,
+            checked: target.hideUnlabelled,
+            helpText:
+              'Draw only the rows the text column labels, so the groups carry the picture on their own.',
+            onClick: () => {
+              target.setHideUnlabelled(!target.hideUnlabelled)
+            },
+          },
+        ]
+      : []),
     ...(tracks.length > 1
       ? [{ type: 'divider' as const }, ...trackColorItems(target)]
       : []),
