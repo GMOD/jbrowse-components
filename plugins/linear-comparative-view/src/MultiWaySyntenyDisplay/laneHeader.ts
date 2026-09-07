@@ -76,9 +76,14 @@ export function laneHeaderRows(
       : lane.frame &&
         `${lane.canon(lane.frame.refName)}:${toLocale(frameStartBp(lane.frame))}${lane.frame.flipped ? ' [rev]' : ''}`
     // the contigs the lane is NOT showing, named so the reader knows a second
-    // copy exists and can pin the lane onto it from its menu
+    // copy exists and can pin the lane onto it from its menu. The cap's
+    // remainder is counted rather than dropped, so a header on a fragmented
+    // assembly does not read as the whole list of what the window touched
+    const more = lane.frame?.alsoOnMore
+      ? ` and ${lane.frame.alsoOnMore} more`
+      : ''
     const alsoOn = lane.frame?.alsoOn.length
-      ? `· also on ${lane.frame.alsoOn.map(ref => lane.canon(ref)).join(', ')}`
+      ? `· also on ${lane.frame.alsoOn.map(ref => lane.canon(ref)).join(', ')}${more}`
       : undefined
     return {
       assemblyName: lane.assemblyName,

@@ -11,6 +11,7 @@ const frame: RowFrame = {
   fitMin: 0,
   fitMax: 1000,
   alsoOn: [],
+  alsoOnMore: 0,
 }
 
 function mateLane(
@@ -81,6 +82,13 @@ describe('the label', () => {
     expect(rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'] } })).label).toBe(
       'peach  Pp1:0  · also on Pp2, Pp5',
     )
+  })
+
+  test('counts the contigs the cap left out rather than dropping them', () => {
+    expect(
+      rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'], alsoOnMore: 6 } }))
+        .label,
+    ).toBe('peach  Pp1:0  · also on Pp2, Pp5 and 6 more')
   })
 
   test('says so when the session holds no annotation for the lane', () => {

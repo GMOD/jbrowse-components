@@ -96,8 +96,11 @@ export interface RowFrame {
   fitMax: number
   // the lane's other contigs explaining a comparable share of the anchor
   // window — a second homoeologous copy, most often — which the frame shows
-  // nothing of. Named so the reader can pin the lane onto one.
+  // nothing of. Named so the reader can pin the lane onto one. Capped, since
+  // a fragmented assembly has as many of these as it has scaffolds; the ones
+  // past the cap are counted rather than named.
   alsoOn: string[]
+  alsoOnMore: number
 }
 
 /**

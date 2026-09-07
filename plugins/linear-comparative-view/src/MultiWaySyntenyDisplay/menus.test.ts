@@ -224,6 +224,7 @@ const peach = {
     fitMin: 100,
     fitMax: 2000,
     alsoOn: [],
+    alsoOnMore: 0,
   },
   canon: (ref: string) => ref.replace('pp', 'Pp'),
 }

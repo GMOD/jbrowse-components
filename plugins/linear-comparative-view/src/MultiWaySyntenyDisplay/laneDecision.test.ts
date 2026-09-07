@@ -255,6 +255,28 @@ describe('the contig', () => {
     expect(settle(genesOn(12, 1)).alsoOn).toEqual([])
   })
 
+  // A fragmented assembly scatters one window over its scaffolds, and each of
+  // them clears the share against every other, so the uncapped list was as
+  // long as the assembly. The header draws unclipped in an SVG export and the
+  // menu offers one item per entry, so the list is capped and the rest counted
+  test('names only the strongest few of a window scattered over many scaffolds', () => {
+    let n = 0
+    const scattered = groupFeatures(
+      Array.from({ length: 10 }, (_, s) =>
+        Array.from({ length: 10 - s }, (_, i) =>
+          pair(`s${s}-${i}`, `s${s}-${i}`, 100 + 80 * n++, {
+            refName: `scaffold_${s}`,
+            start: 1000 + 80 * i,
+          }),
+        ),
+      ).flat(),
+    )
+    const decision = settle(scattered)
+    expect(decision.refName).toBe('scaffold_0')
+    expect(decision.alsoOn).toEqual(['scaffold_1', 'scaffold_2', 'scaffold_3'])
+    expect(decision.alsoOnMore).toBe(5)
+  })
+
   test('a pin outranks the vote while the window still places on it', () => {
     const pinned = new Map([['peach', 'Pp2']])
     const decision = decide(twoContigs(200, 30), { pinned }).get('peach')!

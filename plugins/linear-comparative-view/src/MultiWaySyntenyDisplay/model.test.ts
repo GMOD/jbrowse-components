@@ -120,6 +120,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     fitMin: 100,
     fitMax: 300,
     alsoOn: [],
+    alsoOnMore: 0,
     pinned: false,
   }
   display.setLaneFrames(
@@ -466,6 +467,7 @@ describe('the lane stack scrolls once lanes would crush', () => {
             fitMin: 100,
             fitMax: 300,
             alsoOn: [],
+            alsoOnMore: 0,
             pinned: false,
           },
         ],
@@ -602,6 +604,7 @@ const decisionOn = (refName: string, pivotLaneBp: number) => ({
   fitMin: pivotLaneBp - 100,
   fitMax: pivotLaneBp + 100,
   alsoOn: [],
+  alsoOnMore: 0,
   pinned: false,
 })
 

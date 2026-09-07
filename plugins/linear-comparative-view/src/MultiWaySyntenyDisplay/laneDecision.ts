@@ -37,6 +37,8 @@ export interface LaneDecision {
   fitMin: number
   fitMax: number
   alsoOn: string[]
+  /** how many further contigs cleared the share and were dropped by the cap */
+  alsoOnMore: number
   /**
    * the contig was the reader's pin rather than the vote's, so once the pin
    * is gone it is not an incumbent and the lane decides fresh
@@ -67,6 +69,15 @@ const MIN_SHARED_TO_SWITCH = 5
 // breakpoint is named for most of a window's walk across it while a lone
 // paralog among a dozen genes is not.
 const ALSO_ON_SHARE = 0.2
+// how many of those get named. The share alone is uncapped, and on a fragmented
+// assembly whose window scatters over a dozen scaffolds every one of them
+// clears 20% of every other, so the whole dozen lands in a header the SVG
+// export draws unclipped and in a menu of a dozen "Show X in this lane" offers.
+// Three is what both can carry: a polyploid's other copies are a couple, and
+// past three the list stops naming a second copy and becomes a scaffold dump
+// the reader cannot act on anyway. The rest are counted in the header rather
+// than dropped silently, so the caption never reads as the whole list.
+const ALSO_ON_MAX = 3
 // a lane keeps its placement while its frame still shows this much of the
 // placed weight: content that came in with the anchor is drawn where it
 // arrived, and the lane re-aligns only once what it should show has left it
@@ -120,18 +131,22 @@ function pickContig(
     pinned !== undefined && evidence.has(pinned)
       ? { refName: pinned, overlap: evidence.get(pinned)! }
       : preferIncumbent(best, held)
-  return (
-    chosen && {
-      refName: chosen.refName,
-      placements: byRef.get(chosen.refName)!,
-      alsoOn: [...evidence]
+  const named = chosen
+    ? [...evidence]
         .filter(
           ([refName, overlap]) =>
             refName !== chosen.refName &&
             overlap >= chosen.overlap * ALSO_ON_SHARE,
         )
         .sort((a, b) => b[1] - a[1])
-        .map(([refName]) => refName),
+        .map(([refName]) => refName)
+    : []
+  return (
+    chosen && {
+      refName: chosen.refName,
+      placements: byRef.get(chosen.refName)!,
+      alsoOn: named.slice(0, ALSO_ON_MAX),
+      alsoOnMore: Math.max(named.length - ALSO_ON_MAX, 0),
     }
   )
 }
@@ -240,6 +255,7 @@ function fitLane(
       fitMin: lo,
       fitMax: hi,
       alsoOn: contig.alsoOn,
+      alsoOnMore: contig.alsoOnMore,
     },
   }
 }
@@ -432,6 +448,7 @@ export function frameFromDecision(
     fitMin: d.fitMin,
     fitMax: d.fitMax,
     alsoOn: d.alsoOn,
+    alsoOnMore: d.alsoOnMore,
   }
 }
 
@@ -466,6 +483,7 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
     a.pivotAnchor.coord === b.pivotAnchor.coord &&
     a.fitMin === b.fitMin &&
     a.fitMax === b.fitMax &&
+    a.alsoOnMore === b.alsoOnMore &&
     a.alsoOn.length === b.alsoOn.length &&
     a.alsoOn.every((name, i) => name === b.alsoOn[i])
   )
@@ -546,6 +564,7 @@ export function decideLaneFrames({
         fitMin: aligned.fitMin,
         fitMax: aligned.fitMax,
         alsoOn: aligned.alsoOn,
+        alsoOnMore: aligned.alsoOnMore,
       }
       const heldFrame = frameFromDecision(
         carried,
@@ -581,6 +600,7 @@ export function decideLaneFrames({
           fitMin: aligned.fitMin,
           fitMax: aligned.fitMax,
           alsoOn: aligned.alsoOn,
+          alsoOnMore: aligned.alsoOnMore,
           pinned: onPin,
         }
         if (prev && sameDecision(prev, decision)) {
