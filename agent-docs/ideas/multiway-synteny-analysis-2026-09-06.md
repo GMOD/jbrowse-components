@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-analysis-2026-09-06
-description: A verified 2026-09-06 reading of MultiWaySyntenyDisplay against its code and hosted data — what the lane stack is, how the tutorials use it, where it is incorrect, its cost per lane, and a ranked list of fixes with the graph route's tie-ins. A block at the top says which findings have since landed (affine placement, strand semantics, densest-first, the LOD gate) so they are not re-fixed, and 4.10 and 4.11 are what a 2026-09-07 re-read added: lane order is not reproducible from the config, and an uncapped alsoOn overflows an exported figure. Read before changing the display's placement, ordering, LOD gating or launch route.
+description: A verified 2026-09-06 reading of MultiWaySyntenyDisplay against its code and hosted data — what the lane stack is, how the tutorials use it, where it is incorrect, its cost per lane, and a ranked list of fixes with the graph route's tie-ins. A block at the top says which findings have since landed (affine placement, strand semantics, densest-first, the LOD gate) so they are not re-fixed, and 4.10 and 4.11 are what a 2026-09-07 re-read added: what the lane sort's exact-tie/file-order behaviour really is (and which two figures are stale against a data rebuild rather than nondeterministic), and an uncapped alsoOn that overflowed an exported figure, since fixed. Read before changing the display's placement, ordering, LOD gating or launch route.
 ---
 
 # MultiWaySyntenyDisplay: suitability and scalability
@@ -38,7 +38,9 @@ Still open and re-confirmed: **4.4** (the star launch), **4.5** (the pair
 fetch's tier and window), **4.7** (the serialisation boundary no test names),
 **4.9** (what the tests do not pin).
 
-The pass added 4.10 and 4.11 below.
+The pass added 4.10 and 4.11 below. 4.10 replaces a wrong causal claim from
+its first draft: the lane sort is deterministic, and the figures that
+disagreed were shot against two different datasets.
 
 ## The verdict in one paragraph
 
@@ -576,19 +578,34 @@ height assertion. The handoff also lists a hung lane fetch holding the
 first-load phase at `loading` with no deadline
 (`multiway-graph-native.md`, "Smaller items").
 
-### 4.10 Lane order is not reproducible from the config
+### 4.10 The lane sort is exact, and its tie-break is file order
 
-Two figure specs on the same track at the same locus —
-`pangenome/hprc_cfh_haplotypes` and `multiway_synteny/hprc_lane_menu`, both
-`chr1:196,700,000-197,000,000`, differing only in a RefSeq track and a viewport
-height — captured the eight haplotypes in inverted group order, carriers at the
-bottom in one and on top in the other, with the within-group order differing
-too. `rowAssembliesOf` sorts by summed weight and tie-breaks on `appearance`,
-the first-seen index over the fetched groups, so two settles that fetch in a
-different order can rank near-equal lanes differently. A caption cannot lean on
-the sort, and the HPRC tutorial's "the order the display chooses on its own is
-the genotype" was corrected on 2026-09-07. Pin `rowOrder` in any spec whose
-picture depends on the order.
+`rowAssembliesOf` sorts lanes by summed weight and tie-breaks on `appearance`,
+the first-seen index over the anchor-sorted groups. The weights are integers —
+one per gene, or anchor bp for an alignment — so the sort is exact and
+independent of accumulation order: given the same feature list the lane order
+is fully determined.
+
+At the HPRC CFH window the tie-break decides everything. The four non-carrier
+haplotypes tie at exactly 300,000 anchor bp and the four carriers at exactly
+215,316, the 84,684 bp the CFHR3/CFHR1 deletion removes, so within each group
+the stack is simply PIF file order. `MultiGenomeIndexedPAFAdapter` sorts its
+concurrent reads by `fileOffset` precisely so that order is reproducible, and a
+single-region fetch is therefore deterministic.
+
+The exposure is `ComparativeAdapterBase.getFeaturesInMultipleRegions`, which
+`merge`s the per-region streams: on a multi-region view the arrival order varies
+run to run, and against ties this size that is enough to swap two lanes. It
+wants the file-order discipline the indexed PAF adapter already applies.
+
+The inverted lane order between the `pangenome/hprc_cfh_haplotypes` and
+`multiway_synteny/hprc_lane_menu` figures is **not** that bug, and an earlier
+version of this section was wrong to say it was. The hosted PIF was rebuilt from
+HPRC release 2.1 on 2026-09-06, between the two captures; `hprc_lane_menu` has
+not been reshot since 2026-09-05, so the two pictures are of two different
+datasets. Reshooting it is the fix. `multiway_synteny/hg38_vertebrates_17p_break`
+is stale the same way against `05ec50660e`: it draws the marmoset lane `[rev]`
+at `2.4Mbp 2x` where today's code decides forward at rung 3.
 
 ### 4.11 A long `alsoOn` overflows an exported figure
 
