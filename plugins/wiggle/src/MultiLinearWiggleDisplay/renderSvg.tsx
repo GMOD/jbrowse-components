@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
   SvgClusterProvenanceCaption,
   SvgTreePath,
@@ -8,13 +9,13 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 
-import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import {
   WiggleFamilySvgFrame,
   svgLegendRightPx,
   svgScalebarLeftPx,
 } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales, {
   scoreLegendReservedPx,
@@ -34,6 +35,7 @@ import type {
   ClusterProvenance,
 } from '@jbrowse/tree-sidebar'
 import type {
+  SourceRenderData,
   WiggleDataResult,
   WiggleGPURenderState,
   YScaleTicks,
@@ -137,15 +139,15 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       clipIdPrefix="wiggle"
       plotGeometry={model.plotGeometry}
       paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        drawWiggleToCtx(
-          ctx,
-          {
-            rpcDataMap,
-            encode: data => buildSourceRenderData(data, gpuProps),
-          },
-          renderBlocks,
-          { ...renderState, canvasWidth: w, canvasHeight: drawHeight },
-        )
+        const regions = new Map<number, SourceRenderData[]>()
+        for (const [idx, data] of rpcDataMap) {
+          regions.set(idx, buildSourceRenderData(data, gpuProps))
+        }
+        paintMarkBlocks(ctx, WIGGLE_MARKS, regions, renderBlocks, {
+          ...renderState,
+          canvasWidth: w,
+          canvasHeight: drawHeight,
+        })
       }}
       /* Row separators and per-row Y-scale cross-hatches, shared with the
          on-screen path so an exported SVG matches the track when either is

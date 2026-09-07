@@ -273,8 +273,8 @@ describe('packLineInstances center-line gap breaks', () => {
 
 // A region's layers feed exactly one packer, and the other returns empty — which
 // is how that pass releases its buffer, so only the layout being drawn stays
-// resident. This is also what makes GpuWiggleRenderer.drawRegion take the pass
-// off the layers rather than the render state: the two layouts are different
+// resident. This is also what makes each wiggle mark gate on the layers'
+// rendering rather than the render state's: the two layouts are different
 // sizes, so a pass reading the wrong one reads past the end of its records.
 describe('each packer serves only its own renderings', () => {
   const scores = [3, 7, 5]

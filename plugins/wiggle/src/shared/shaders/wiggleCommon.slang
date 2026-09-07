@@ -3,7 +3,7 @@
 // different per-instance layouts — `wiggle.slang` fills (xyplot, density,
 // scatter) and `wiggleLine.slang` strokes (line, linecenter) — while agreeing
 // exactly on where a score lands vertically and where a bp lands horizontally.
-// One UBO is written per block render (GpuWiggleRenderer.drawRegion) and read by
+// One UBO is written per block render (`writeWiggleUniforms`) and read by
 // whichever pass draws, so `Uniforms` must stay in lockstep with the offsets
 // generated from it.
 //

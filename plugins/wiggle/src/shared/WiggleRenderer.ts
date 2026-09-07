@@ -1,14 +1,10 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
-import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
+import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
-import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
-
+// Both wiggle-family components build their backend here rather than each
+// declaring its own factory: the mark list is the same one, and a second
+// factory would be a second place the display's passes are stated.
 export function WiggleRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<WiggleRenderingBackend>(canvas, {
-    passes: WIGGLE_PASSES,
-    createGpuBackend: hal => new GpuWiggleRenderer(hal),
-    createCanvas2DBackend: c => new Canvas2DWiggleRenderer(c),
-  })
+  return createMarkBackend(canvas, WIGGLE_MARKS)
 }

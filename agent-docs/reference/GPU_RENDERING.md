@@ -555,31 +555,29 @@ features visible and must stay in step.
 ### Shared per-region streamed contract
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
-specialize one generic type and inherit from one of two abstract base classes in
-`@jbrowse/render-core/perRegionRenderingBackend`:
+specialize one generic type and declare a **mark list**, which
+`createMarkBackend` turns into both backends — the passes are the marks' own and
+each backend walks the same list:
 
 ```ts
 // Plugin specializes the interface (used in model + React code):
 export type XxxRenderingBackend = PerRegionRenderingBackend<XxxUploadData, XxxRenderState>
 
-// Each pass carries the function that packs its instance buffer:
-export const XXX_PASSES = [
-  { ...slangPass({ id: PASS, mod: shader }), pack: (d: XxxUploadData) => … },
+// One mark per shape: its pass and packer, its uniform write, its painter:
+export const XXX_MARKS = [
+  defineMark({ shape: xxxShape, channels: d => …, params: s => … }),
 ]
 
-// GPU renderer declares its passes and implements drawRegion:
-export class GpuXxxRenderer extends GpuPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {
-  protected regionPasses = XXX_PASSES
-  constructor(hal: GpuHal) { super(hal) }
-  protected drawRegion(block, clip, region, state) { … }
-}
-
-// Canvas2D renderer implements draw only — never renderBlocks, which the base
-// owns (hi-DPI sizing via prepareCanvas, the painted answer):
-export class Canvas2DXxxRenderer extends Canvas2DPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {
-  protected draw(blocks, regions, state) { … }
-}
+// The component's factory, from `@jbrowse/render-core/marks/backend`:
+const createXxxBackend = (canvas: HTMLCanvasElement) =>
+  createMarkBackend(canvas, XXX_MARKS)
 ```
+
+Both halves `createMarkBackend` builds extend one of two abstract base classes
+in `@jbrowse/render-core/perRegionRenderingBackend`
+(`GpuPerRegionRenderingBackend`, `Canvas2DPerRegionRenderingBackend`), and a
+display writing one by hand is now the exception rather than the shape — the
+reference sequence's Canvas2D renderer is the last of them.
 
 The bases own everything that's truly shared:
 
@@ -595,8 +593,10 @@ The bases own everything that's truly shared:
   owns `upload`, over the `regionPasses` the subclass declares — six
   subclasses used to write that method, each restating an instance count the
   packed buffer already stated and each spelling the empty case differently. A
-  pass registered but never uploaded to — wiggle's line passes, canvas's chevron,
-  which draw off a sibling's buffer — is simply absent from `regionPasses`.
+  pass registered but never uploaded to — wiggle's density and center line,
+  canvas's chevron, which draw off a sibling's buffer — is simply absent from
+  `regionPasses`, which `createMarkBackend` derives from the marks that declare
+  no `bufferOf`.
 
 Two invariants keep the renderer implementations small and uniform:
 

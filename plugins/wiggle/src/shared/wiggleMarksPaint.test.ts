@@ -1,4 +1,5 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -14,15 +15,26 @@ import {
   getNiceDomain,
 } from '@jbrowse/wiggle-core'
 
-import {
-  Canvas2DWiggleRenderer,
-  drawWiggleToCtx,
-} from './Canvas2DWiggleRenderer.ts'
+import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   SourceRenderData,
+  WiggleGPURenderState,
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
+
+// The Canvas2D half of the mark list — the on-screen fallback and the SVG
+// export are this same call.
+function paintWiggle(
+  ctx: MarkContext2D,
+  regions: ReadonlyMap<number, SourceRenderData[]>,
+  blocks: RenderBlock[],
+  state: WiggleGPURenderState,
+) {
+  paintMarkBlocks(ctx, WIGGLE_MARKS, regions, blocks, state)
+}
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []
@@ -33,8 +45,6 @@ function createMockCanvas() {
   const strokeStyles: string[] = []
   const fillStyles: string[] = []
   const ctx = {
-    setTransform: jest.fn(),
-    clearRect: jest.fn(),
     fillRect: jest.fn((x: number, y: number, w: number, h: number) => {
       fillRectCalls.push([x, y, w, h])
     }),
@@ -56,19 +66,14 @@ function createMockCanvas() {
     stroke: jest.fn(() => {
       strokeStyles.push(ctx.strokeStyle)
     }),
+    strokeRect: jest.fn(),
+    translate: jest.fn(),
+    closePath: jest.fn(),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
-    lineJoin: '',
-    lineCap: '',
   }
-  const canvas = {
-    width: 0,
-    height: 0,
-    getContext: jest.fn(() => ctx),
-  } as unknown as HTMLCanvasElement
   return {
-    canvas,
     ctx,
     fillRectCalls,
     rectCalls,
@@ -106,16 +111,7 @@ function makeSource(
   }
 }
 
-describe('Canvas2DWiggleRenderer', () => {
-  test('constructor throws if 2d context unavailable', () => {
-    const canvas = {
-      getContext: jest.fn(() => null),
-    } as unknown as HTMLCanvasElement
-    expect(() => new Canvas2DWiggleRenderer(canvas)).toThrow(
-      'Canvas 2D context not available',
-    )
-  })
-
+describe('the wiggle painters', () => {
   const defaultBlock = {
     displayedRegionIndex: 0,
     start: 0,
@@ -137,24 +133,17 @@ describe('Canvas2DWiggleRenderer', () => {
     origin: 0,
   }
 
-  test('renderBlocks draws XY plot rectangles', () => {
-    const { canvas, ctx, fillRectCalls } = createMockCanvas()
+  test('draws XY plot rectangles', () => {
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5, 8], [0, 500], [500, 1000])
 
-    renderer.renderBlocks(
-      [defaultBlock],
-      new Map([[0, [source]]]),
-      defaultState,
-    )
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], defaultState)
 
-    expect(ctx.setTransform).toHaveBeenCalledWith(1, 0, 0, 1, 0, 0)
-    expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 800, 200)
     expect(ctx.save).toHaveBeenCalled()
     expect(ctx.clip).toHaveBeenCalled()
     expect(ctx.restore).toHaveBeenCalled()
@@ -162,19 +151,18 @@ describe('Canvas2DWiggleRenderer', () => {
   })
 
   test('bicolor pivot moves the bar baseline and flips growth direction', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     // domain [0,10], height 200 → scoreToY(s) = (1 - s/10) * 200. Pivot 5 puts
     // the baseline at y=100: score 8 grows up (top y=40, h=60), score 2 grows
     // down (top y=100, h=60).
     const source = makeSource([8, 2], [0, 500], [500, 1000])
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       origin: 5,
     })
@@ -186,34 +174,33 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(fillRectCalls[1]![3]).toBeCloseTo(60)
   })
 
-  test('renderBlocks skips regions with no data', () => {
-    const { canvas, ctx } = createMockCanvas()
+  test('skips regions with no data', () => {
+    const { ctx } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    renderer.renderBlocks(
-      [{ ...defaultBlock, displayedRegionIndex: 99 }],
+    paintWiggle(
+      ctx,
       new Map(),
+      [{ ...defaultBlock, displayedRegionIndex: 99 }],
       defaultState,
     )
 
     expect(ctx.save).not.toHaveBeenCalled()
   })
 
-  test('renderBlocks handles density rendering type', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
+  test('handles density rendering type', () => {
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [0], [1000], RENDERING_TYPE_DENSITY)
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_DENSITY,
     })
@@ -231,7 +218,7 @@ describe('Canvas2DWiggleRenderer', () => {
   // it; the painter drew the raw row height, so the two backends disagreed by
   // 2x on exactly the deep stacks density is for.
   test('a sub-pixel density row paints the shader band, floored and centered', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
@@ -239,13 +226,12 @@ describe('Canvas2DWiggleRenderer', () => {
 
     const numRows = 400
     const rowHeight = defaultState.canvasHeight / numRows
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = {
       ...makeSource([5], [0], [1000], RENDERING_TYPE_DENSITY),
       rowIndex: 10,
     }
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_DENSITY,
       numRows,
@@ -257,14 +243,13 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(y).toBe(rowHeight * 10 + rowBandOffsetPx(rowHeight, 1))
   })
 
-  test('renderBlocks handles line rendering type', () => {
-    const { canvas, ctx } = createMockCanvas()
+  test('handles line rendering type', () => {
+    const { ctx } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource(
       [5, 8],
       [0, 500],
@@ -272,7 +257,7 @@ describe('Canvas2DWiggleRenderer', () => {
       RENDERING_TYPE_LINE,
     )
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_LINE,
     })
@@ -281,20 +266,19 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
-  test('renderBlocks scatter draws a point for a wide bin, not a bar', () => {
-    const { canvas, rectCalls, arcCalls } = createMockCanvas()
+  test('scatter draws a point for a wide bin, not a bar', () => {
+    const { ctx, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     // 0..1000bp spans the whole 800px block, far wider than the 2px point, but
     // scatter always draws a point marker centered on the midpoint (bp 500 →
     // 400px), never a bar spanning the bin
     const source = makeSource([5], [0], [1000], RENDERING_TYPE_SCATTER)
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_SCATTER,
     })
@@ -311,19 +295,18 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(arcCalls.length).toBe(0)
   })
 
-  test('renderBlocks scatter draws a small square for tiny point-like bins', () => {
-    const { canvas, rectCalls, arcCalls } = createMockCanvas()
+  test('scatter draws a small square for tiny point-like bins', () => {
+    const { ctx, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     // a zero-width feature at bp 500 → x = 400px; the default 2px point is
     // below the small-point threshold, so a crisp square is drawn (not a disc)
     const source = makeSource([5], [500], [500], RENDERING_TYPE_SCATTER)
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_SCATTER,
     })
@@ -337,17 +320,16 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(squares[0]![0]).toBeCloseTo(399)
   })
 
-  test('renderBlocks scatter draws an AA disc for larger point sizes', () => {
-    const { canvas, rectCalls, arcCalls } = createMockCanvas()
+  test('scatter draws an AA disc for larger point sizes', () => {
+    const { ctx, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source = makeSource([5], [500], [500], RENDERING_TYPE_SCATTER)
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_SCATTER,
       scatterPointSize: 8,
@@ -377,18 +359,18 @@ describe('Canvas2DWiggleRenderer', () => {
   ])(
     'reversed block fills the full mirrored cell (%s)',
     (_name, renderingType) => {
-      const { canvas, fillRectCalls } = createMockCanvas()
+      const { ctx, fillRectCalls } = createMockCanvas()
       Object.defineProperty(window, 'devicePixelRatio', {
         value: 1,
         writable: true,
       })
 
-      const renderer = new Canvas2DWiggleRenderer(canvas)
       const source = makeSource([5], [0], [500], renderingType)
 
-      renderer.renderBlocks(
-        [{ ...defaultBlock, reversed: true }],
+      paintWiggle(
+        ctx,
         new Map([[0, [source]]]),
+        [{ ...defaultBlock, reversed: true }],
         { ...defaultState, renderingType },
       )
 
@@ -413,16 +395,16 @@ describe('Canvas2DWiggleRenderer', () => {
   ])(
     'sub-floor bin is floored away from its start edge (%s)',
     (_n, rev, x0) => {
-      const { canvas, fillRectCalls } = createMockCanvas()
+      const { ctx, fillRectCalls } = createMockCanvas()
       Object.defineProperty(window, 'devicePixelRatio', {
         value: 1,
         writable: true,
       })
 
-      const renderer = new Canvas2DWiggleRenderer(canvas)
-      renderer.renderBlocks(
-        [{ ...defaultBlock, end: 100000, reversed: rev }],
+      paintWiggle(
+        ctx,
         new Map([[0, [makeSource([5], [50000], [50001])]]]),
+        [{ ...defaultBlock, end: 100000, reversed: rev }],
         defaultState,
       )
 
@@ -434,19 +416,19 @@ describe('Canvas2DWiggleRenderer', () => {
   )
 
   test('reversed block centers a scatter point on the mirrored midpoint', () => {
-    const { canvas, rectCalls } = createMockCanvas()
+    const { ctx, rectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     // feature 0..500bp reversed: bp 0→800px, bp 500→400px, midpoint → 600px
     const source = makeSource([5], [0], [500], RENDERING_TYPE_SCATTER)
 
-    renderer.renderBlocks(
-      [{ ...defaultBlock, reversed: true }],
+    paintWiggle(
+      ctx,
       new Map([[0, [source]]]),
+      [{ ...defaultBlock, reversed: true }],
       { ...defaultState, renderingType: RENDERING_TYPE_SCATTER },
     )
 
@@ -459,17 +441,16 @@ describe('Canvas2DWiggleRenderer', () => {
   })
 
   test('multi-row sources render at correct vertical offsets', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     const source0 = { ...makeSource([5], [0], [1000]), rowIndex: 0 }
     const source1 = { ...makeSource([8], [0], [1000]), rowIndex: 1 }
 
-    renderer.renderBlocks([defaultBlock], new Map([[0, [source0, source1]]]), {
+    paintWiggle(ctx, new Map([[0, [source0, source1]]]), [defaultBlock], {
       ...defaultState,
       numRows: 2,
     })
@@ -511,14 +492,9 @@ const score8Y = (1 - 8 / 10) * 200
 describe('drawLine path commands', () => {
   test('isolated feature: rise at x1, horizontal, drop at x2', () => {
     const { ctx } = createMockCanvas()
-    drawWiggleToCtx(
-      ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
-          [0, [makeSource([5], [0], [100], RENDERING_TYPE_LINE)]],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+    paintWiggle(
+      ctx,
+      new Map([[0, [makeSource([5], [0], [100], RENDERING_TYPE_LINE)]]]),
       [lineBlock],
       lineState,
     )
@@ -537,14 +513,11 @@ describe('drawLine path commands', () => {
 
   test('adjacent pair: transition at junction, drop only at end', () => {
     const { ctx } = createMockCanvas()
-    drawWiggleToCtx(
-      ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
-          [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+    paintWiggle(
+      ctx,
+      new Map([
+        [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
+      ]),
       [lineBlock],
       lineState,
     )
@@ -573,14 +546,11 @@ describe('drawLine path commands', () => {
   test('non-adjacent features: each has its own rise from zero and drop to zero', () => {
     const { ctx } = createMockCanvas()
     // gap between bp 100 and 300
-    drawWiggleToCtx(
-      ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
-          [0, [makeSource([5, 8], [0, 300], [100, 400], RENDERING_TYPE_LINE)]],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+    paintWiggle(
+      ctx,
+      new Map([
+        [0, [makeSource([5, 8], [0, 300], [100, 400], RENDERING_TYPE_LINE)]],
+      ]),
       [lineBlock],
       lineState,
     )
@@ -615,20 +585,16 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
 
   function drawTwoTone(renderingType: WiggleRenderingType) {
     const mock = createMockCanvas()
+    const { ctx } = mock
     // adjacent so the step-line stays one run: only the color splits the batch
     const source = {
       ...makeSource([5, 8], [0, 100], [100, 200], renderingType),
       colorsAbgr: new Uint32Array([red, blue]),
     }
-    drawWiggleToCtx(
-      mock.ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([[0, [source]]]),
-        encode: (s: SourceRenderData[]) => s,
-      },
-      [lineBlock],
-      { ...lineState, renderingType },
-    )
+    paintWiggle(ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...lineState,
+      renderingType,
+    })
     return mock
   }
 
@@ -655,14 +621,11 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
   // color, so the common (non-whiskers) path keeps its single stroke/fill.
   test('a layer with no per-instance colors still draws in one batch', () => {
     const mock = createMockCanvas()
-    drawWiggleToCtx(
-      mock.ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
-          [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+    paintWiggle(
+      mock.ctx,
+      new Map([
+        [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
+      ]),
       [lineBlock],
       lineState,
     )
@@ -684,27 +647,24 @@ describe('drawLineCenter gap breaks', () => {
   // => 40, 120 and 560px. The last gap is 550bp, the first 100bp.
   function drawWithLimit(gapLimitBp?: number) {
     const mock = createMockCanvas()
-    drawWiggleToCtx(
-      mock.ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
+    paintWiggle(
+      mock.ctx,
+      new Map([
+        [
+          0,
           [
-            0,
-            [
-              {
-                ...makeSource(
-                  [5, 5, 5],
-                  [0, 100, 650],
-                  [100, 200, 750],
-                  RENDERING_TYPE_LINE_CENTER,
-                ),
-                gapLimitBp,
-              },
-            ],
+            {
+              ...makeSource(
+                [5, 5, 5],
+                [0, 100, 650],
+                [100, 200, 750],
+                RENDERING_TYPE_LINE_CENTER,
+              ),
+              gapLimitBp,
+            },
           ],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+        ],
+      ]),
       [lineBlock],
       centerState,
     )
@@ -767,23 +727,20 @@ describe('a log domain entirely under 1', () => {
   function barHeights(scores: number[]) {
     const { ctx } = createMockCanvas()
     const starts = scores.map((_, i) => i * 100)
-    drawWiggleToCtx(
-      ctx as unknown as CanvasRenderingContext2D,
-      {
-        rpcDataMap: new Map([
+    paintWiggle(
+      ctx,
+      new Map([
+        [
+          0,
           [
-            0,
-            [
-              makeSource(
-                scores,
-                starts,
-                starts.map(s => s + 100),
-              ),
-            ],
+            makeSource(
+              scores,
+              starts,
+              starts.map(s => s + 100),
+            ),
           ],
-        ]),
-        encode: (s: SourceRenderData[]) => s,
-      },
+        ],
+      ]),
       [lineBlock],
       logState,
     )
@@ -816,8 +773,8 @@ describe('a log domain entirely under 1', () => {
 
 // The one frame where the layer and the state disagree. Encode and render are
 // separate autoruns and render is registered first, so a plot-type switch shows
-// a state that has moved over a region that has not — and this backend has to
-// answer it the way `GpuWiggleRenderer` does, by drawing what the layers were
+// a state that has moved over a region that has not — and the painters have to
+// answer it the way the GPU passes do, by drawing what the layers were
 // encoded FOR. Reading `state` instead pairs the new painter with the old
 // layers, which is neither plot: the layer SET is chosen by the rendering
 // (`buildSourceRenderData`'s `filled` splits whiskers by sign) and so is
@@ -826,13 +783,12 @@ describe('a log domain entirely under 1', () => {
 // Only this test may build a source whose rendering differs from its state.
 describe('a plot-type switch mid-frame', () => {
   test('draws the plot its layers were encoded for, not the state’s', () => {
-    const { canvas, ctx, fillRectCalls } = createMockCanvas()
+    const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
     // Layers encoded for xyplot; the state has already moved to linecenter.
     const source = makeSource(
       [5, 8],
@@ -841,7 +797,7 @@ describe('a plot-type switch mid-frame', () => {
       RENDERING_TYPE_XYPLOT,
     )
 
-    renderer.renderBlocks([lineBlock], new Map([[0, [source]]]), {
+    paintWiggle(ctx, new Map([[0, [source]]]), [lineBlock], {
       ...lineState,
       renderingType: RENDERING_TYPE_LINE_CENTER,
     })

@@ -81,7 +81,7 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 | alignments SVG overlays | 3 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
 | canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `CANVAS_FEATURE_MARKS`, a mark list |
 | sequence rows | 3 kinds | yes | yes | painter, hover, height | `rowLayout` |
-| wiggle | 3 | mode-exclusive | n/a | GPU, Canvas2D | no |
+| wiggle | 4 | mode-exclusive | yes, by rendering family | GPU, Canvas2D, SVG | `WIGGLE_MARKS`, a mark list |
 | synteny | 4 | 2x2 mode grid | no | GPU | no |
 | dotplot, hic, maf, gwas, LD, variants x2, multi-row | 1-2 | — | — | 1 | no |
 

@@ -12,12 +12,14 @@ updates. Per-block draw call overhead is small relative to the data upload cost.
 
 The wiggle display has three rendering backends that must stay synchronized:
 
-1. **WebGPU / WebGL2** via `GpuWiggleRenderer.ts` — one Slang source
-   (`shaders/wiggle.slang`) is compiled to WGSL and GLSL ES 3.00 by
-   `pnpm gen:shaders`; the result lives in `shaders/wiggle.generated.ts`.
-2. **Canvas 2D** fallback (`Canvas2DWiggleRenderer.ts`). Selected by
-   `WiggleRenderer.ts` via `createRenderingBackend` when no GPU context is
-   available.
+Both halves are declared once, as `WIGGLE_MARKS` in `shared/wiggleMarks.ts`:
+
+1. **WebGPU / WebGL2** — one Slang source (`shaders/wiggle.slang`) is compiled
+   to WGSL and GLSL ES 3.00 by `pnpm gen:shaders`; the result lives in
+   `shaders/wiggle.generated.ts`.
+2. **Canvas 2D** fallback — each mark's painter, in `wiggleDrawFunctions.ts`.
+   Selected by `WiggleRenderer.ts` via `createMarkBackend` when no GPU context
+   is available.
 
 When changing rendering behavior (colors, whisker contrast, draw order, scale
 logic), apply the same change to the Slang shader and the Canvas 2D fallback,

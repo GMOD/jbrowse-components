@@ -19,13 +19,15 @@ which is a zoom ceiling rather than waste.
 fill record are shared, the **binding is not**, and each re-imports
 `colorPack`/`hpmath`. Density's colour parity across GPU / Canvas2D / SVG is
 swept by `densityColorParity.test.ts`; its autoscale-pan cost (one uniform
-write, zero buffer bytes) is pinned in `gpuWiggleRenderer.test.ts`.
+write, zero buffer bytes) is pinned in `wiggleMarks.test.ts`.
 
-**The pass, the buffer, the `renderingType` uniform and the Canvas2D painter all
-come off the encoded layers, never off `renderState`.** Encode and render are
-separate autoruns and render is registered first, so the frame after a plot-type
-switch sees a state that moved and a region that has not. Drawing the previous
-plot for one frame is the correct stale.
+**The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
+painter all come off the encoded layers, never off `renderState`** — each of the
+four marks in `WIGGLE_MARKS` declines a block through `paintsBlock` when the
+region's layers are not its family. Encode and render are separate autoruns and
+render is registered first, so the frame after a plot-type switch sees a state
+that moved and a region that has not. Drawing the previous plot for one frame is
+the correct stale.
 
 The consequence differs by backend and the rule does not: on the GPU the two
 record sizes mean a pass reading the wrong one reads past the end of its
@@ -86,7 +88,7 @@ mechanism, that matters.
 
 `canvasHeight` is CSS px and the shader mixes axes; device px halves the
 min-width floor at dpr 2, makes the step-line stroke half as wide as it is tall,
-and shears the capsule. `gpuWiggleRenderer.test.ts` pins it.
+and shears the capsule. `wiggleMarks.test.ts` pins it.
 
 ## Three separate decisions inside "how wide is a bar"
 

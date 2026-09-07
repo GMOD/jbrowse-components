@@ -2,7 +2,7 @@ import { appendGlyph } from '@jbrowse/render-core/marks/glyphPaint'
 import { SMALL_POINT_MAX_DIAMETER } from '@jbrowse/render-core/shaders/pointGlyphConsts'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 // At/below a 3px diameter an antialiased disc reads as a blurry blob, so scatter
 // points draw as a crisp filled square below this threshold and an AA disc
@@ -18,7 +18,7 @@ export const SMALL_POINT_MAX_DIAMETER_PX = SMALL_POINT_MAX_DIAMETER
 // reached at a name that predates it. The caller owns
 // ctx.beginPath()/ctx.fill() so many markers batch into one fill.
 export function appendPointMarker(
-  ctx: Ctx2D,
+  ctx: MarkContext2D,
   cx: number,
   y: number,
   diameter: number,

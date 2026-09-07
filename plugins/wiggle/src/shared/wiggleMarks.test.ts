@@ -1,4 +1,5 @@
 import { MockHal } from '@jbrowse/render-core/hal'
+import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -7,7 +8,6 @@ import {
   SCALE_TYPE_LOG,
 } from '@jbrowse/wiggle-core'
 
-import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import { densityRampLut } from './densityColorRamp.ts'
 import {
   INSTANCE_OFFSET_F32 as FILL_F32,
@@ -22,6 +22,7 @@ import {
   INSTANCE_OFFSET_U32 as F_U32,
   INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE,
 } from './shaders/wiggleLine.generated.ts'
+import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
@@ -69,17 +70,17 @@ const DEFAULT_STATE = {
   origin: 0,
 }
 
-describe('GpuWiggleRenderer', () => {
+describe('the wiggle mark list', () => {
   // A step-line layer, so every word this checks is one the encoding carries —
   // prevScore/nextScore are the step-line pass's, and they live in the line
   // shader's record, which is why this reads the 'line' buffer
   // (wiggleInstanceBuffer.test.ts covers which mode writes what).
   it('uploads region data as interleaved buffer', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
-    renderer.upload(0, [source])
+    backend.upload(0, [source])
 
     const buf = hal.getBuffer(0, 'line')
     expect(buf).toBeDefined()
@@ -104,10 +105,10 @@ describe('GpuWiggleRenderer', () => {
   // the point of the two shaders — so a fill region uploads the narrower buffer
   // and leaves the line pass without one.
   it('uploads the narrow record for a fill rendering, and no line buffer', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.upload(0, [makeSource({ renderingType: RENDERING_TYPE_XYPLOT })])
+    backend.upload(0, [makeSource({ renderingType: RENDERING_TYPE_XYPLOT })])
 
     const fill = hal.getBuffer(0, 'fill')
     expect(fill).toBeDefined()
@@ -118,25 +119,25 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('releases the buffer when uploading empty sources', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.upload(0, [makeSource()])
+    backend.upload(0, [makeSource()])
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
 
-    renderer.upload(0, [])
+    backend.upload(0, [])
     expect(hal.getBufferCount(0, 'fill')).toBe(0)
   })
 
   it('prunes inactive regions', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.upload(0, [makeSource()])
-    renderer.upload(1, [makeSource()])
-    renderer.upload(2, [makeSource()])
+    backend.upload(0, [makeSource()])
+    backend.upload(1, [makeSource()])
+    backend.upload(2, [makeSource()])
 
-    renderer.release(1)
+    backend.release(1)
 
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
     expect(hal.getBufferCount(1, 'fill')).toBe(0)
@@ -144,16 +145,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('renders blocks with correct frame lifecycle', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks(
-      [makeBlock()],
-      new Map([[0, [source]]]),
-      DEFAULT_STATE,
-    )
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const methods = hal.calls.map(c => c.method)
     expect(methods).toContain('resize')
@@ -178,16 +175,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('writes correct uniforms for XY plot', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks(
-      [makeBlock()],
-      new Map([[0, [source]]]),
-      DEFAULT_STATE,
-    )
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const f32 = hal.getLastUniformsF32()!
     const i32 = hal.getLastUniformsI32()!
@@ -204,12 +197,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('uses line pass for LINE rendering type', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
     })
@@ -218,8 +211,9 @@ describe('GpuWiggleRenderer', () => {
     expect(drawCalls.length).toBe(1)
     expect(drawCalls[0]!.args[0]).toBe('line')
     expect(drawCalls[0]!.args[1]).toBe(0)
-    // draws off the line record, which is the one it was packed into
-    expect(drawCalls[0]!.args[2]).toBe('line')
+    // no lender: the line mark owns the record it was packed into, and only
+    // the two marks that borrow one name a buffer pass
+    expect(drawCalls[0]!.args[2]).toBeUndefined()
   })
 
   // The buffer carries only the neighbor fields its own rendering reads, so the
@@ -229,12 +223,12 @@ describe('GpuWiggleRenderer', () => {
   // that has moved and a region that has not — drawing the previous plot once is
   // correct; drawing the line pass over a fill-encoded buffer is not.
   it('draws the pass the region was encoded for, not the one the state names', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const stale = makeSource({ renderingType: RENDERING_TYPE_XYPLOT })
 
-    renderer.upload(0, [stale])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [stale]]]), {
+    backend.upload(0, [stale])
+    backend.renderBlocks([makeBlock()], new Map([[0, [stale]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
     })
@@ -245,11 +239,11 @@ describe('GpuWiggleRenderer', () => {
   // Nothing to draw either way — an empty pack releases the pass's buffer — so
   // this is only pinning that the missing-layer lookup doesn't throw.
   it('falls back to the render state when a region has no layers', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.upload(0, [])
-    renderer.renderBlocks([makeBlock()], new Map([[0, []]]), {
+    backend.upload(0, [])
+    backend.renderBlocks([makeBlock()], new Map([[0, []]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
     })
@@ -261,14 +255,14 @@ describe('GpuWiggleRenderer', () => {
   // its own pass and pipeline, drawn off PASS_FILL's buffer because the two
   // entry shaders take the same shader-declared record.
   it('draws density through the composed pass, off the fill buffer', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
 
-    renderer.upload(0, [source])
+    backend.upload(0, [source])
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
 
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_DENSITY,
     })
@@ -287,8 +281,8 @@ describe('GpuWiggleRenderer', () => {
   // is a CPU-side colour resolve into the instance lane, which would re-pack
   // and re-upload the whole buffer whenever the domain moved.
   it('a pan that moves the autoscale domain uploads zero buffer bytes', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
     const state = {
       ...DEFAULT_STATE,
@@ -299,15 +293,15 @@ describe('GpuWiggleRenderer', () => {
         .callsOf('uploadBuffer')
         .reduce((total, c) => total + (c.args[2] as number), 0)
 
-    renderer.upload(0, [source])
+    backend.upload(0, [source])
     const loadBytes = uploadedBytes()
     expect(loadBytes).toBe(2 * FILL_INSTANCE_STRIDE * 4)
 
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
 
     // The pan: the block scrolls and autoscale re-resolves over the new
     // visible window, moving the domain.
-    renderer.renderBlocks(
+    backend.renderBlocks(
       [makeBlock({ start: 250, end: 1250 })],
       new Map([[0, [source]]]),
       { ...state, domainY: [0, 35] as [number, number] },
@@ -327,8 +321,8 @@ describe('GpuWiggleRenderer', () => {
   // cached table Canvas2D indexes too (densityColorParity.test.ts holds the
   // colour parity).
   it('a named density ramp is a uniform flag and one LUT texture upload', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
     const state = {
       ...DEFAULT_STATE,
@@ -336,13 +330,13 @@ describe('GpuWiggleRenderer', () => {
       densityColorRamp: 'viridis',
     }
 
-    renderer.upload(0, [source])
+    backend.upload(0, [source])
     const uploadedBufferBytes = () =>
       hal
         .callsOf('uploadBuffer')
         .reduce((total, c) => total + (c.args[2] as number), 0)
     const loadBytes = uploadedBufferBytes()
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
 
     const texCalls = hal.callsOf('uploadTexture')
     expect(texCalls.length).toBe(1)
@@ -354,7 +348,7 @@ describe('GpuWiggleRenderer', () => {
 
     // an autoscale pan in LUT mode is still one uniform write, zero buffer
     // bytes and zero texture re-uploads — the ramp memo holds across frames
-    renderer.renderBlocks(
+    backend.renderBlocks(
       [makeBlock({ start: 250, end: 1250 })],
       new Map([[0, [source]]]),
       { ...state, domainY: [0, 35] as [number, number] },
@@ -368,17 +362,17 @@ describe('GpuWiggleRenderer', () => {
   // sampler unconditionally, and a textured pass with no texture never draws on
   // the WebGPU HAL — while the uniform flag keeps it unsampled.
   it('default density binds an inert LUT once and leaves the flag off', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
     const state = {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_DENSITY,
     }
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
 
     const texCalls = hal.callsOf('uploadTexture')
     expect(texCalls.length).toBe(1)
@@ -386,7 +380,7 @@ describe('GpuWiggleRenderer', () => {
     expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(0)
 
     // flipping to a named ramp re-uploads exactly once and flips the flag
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...state,
       densityColorRamp: 'viridis',
     })
@@ -395,16 +389,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('uses fill pass for XY plot rendering type', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks(
-      [makeBlock()],
-      new Map([[0, [source]]]),
-      DEFAULT_STATE,
-    )
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), DEFAULT_STATE)
 
     const drawCalls = hal.callsOf('drawPass')
     expect(drawCalls.length).toBe(1)
@@ -412,10 +402,10 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('skips blocks with no region in the map', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.renderBlocks(
+    backend.renderBlocks(
       [makeBlock({ displayedRegionIndex: 99 })],
       new Map(),
       DEFAULT_STATE,
@@ -427,15 +417,15 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('renders multiple blocks in one frame', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const s0 = makeSource()
     const s1 = makeSource()
 
-    renderer.upload(0, [s0])
-    renderer.upload(1, [s1])
+    backend.upload(0, [s0])
+    backend.upload(1, [s1])
 
-    renderer.renderBlocks(
+    backend.renderBlocks(
       [
         makeBlock({
           displayedRegionIndex: 0,
@@ -465,12 +455,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('handles reversed blocks', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks(
+    backend.upload(0, [source])
+    backend.renderBlocks(
       [makeBlock({ reversed: true })],
       new Map([[0, [source]]]),
       DEFAULT_STATE,
@@ -482,8 +472,8 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('handles multiple sources with different row indices', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
     const source0 = makeSource({ rowIndex: 0 })
     const source1 = makeSource({
@@ -492,7 +482,7 @@ describe('GpuWiggleRenderer', () => {
       featureScores: new Float32Array([15, 20]),
     })
 
-    renderer.upload(0, [source0, source1])
+    backend.upload(0, [source0, source1])
 
     // default sources are xyplot, so this is the fill record
     const buf = hal.getBuffer(0, 'fill')
@@ -509,11 +499,11 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('disposes cleanly', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
 
-    renderer.upload(0, [makeSource()])
-    renderer.dispose()
+    backend.upload(0, [makeSource()])
+    backend.dispose()
 
     expect(hal.callsOf('dispose').length).toBe(1)
   })
@@ -527,12 +517,12 @@ describe('GpuWiggleRenderer', () => {
     const originalDpr = globalThis.devicePixelRatio
     try {
       globalThis.devicePixelRatio = 2
-      const hal = new MockHal(WIGGLE_PASSES)
-      const renderer = new GpuWiggleRenderer(hal)
+      const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+      const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
       const source = makeSource()
 
-      renderer.upload(0, [source])
-      renderer.renderBlocks(
+      backend.upload(0, [source])
+      backend.renderBlocks(
         [makeBlock({ screenStartPx: 0, screenEndPx: 800 })],
         new Map([[0, [source]]]),
         DEFAULT_STATE,
@@ -553,12 +543,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('writes the bicolor pivot into the origin uniform', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       origin: 5,
     })
@@ -568,12 +558,12 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('handles log scale type in uniforms', () => {
-    const hal = new MockHal(WIGGLE_PASSES)
-    const renderer = new GpuWiggleRenderer(hal)
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource()
 
-    renderer.upload(0, [source])
-    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       scaleType: SCALE_TYPE_LOG,
       symlogConstant: 1,

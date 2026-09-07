@@ -20,7 +20,7 @@ feature, so visual gaps look like missing data, not interpolation.
 
 Two render paths must agree:
 
-- **Canvas2D** (`Canvas2DWiggleRenderer.drawLine`) — used on machines without
+- **Canvas2D** (`wiggleDrawFunctions.drawLine`) — used on machines without
   GPU, in tests, and in SVG export.
 - **GPU shader** (`wiggle.slang`, `PASS_LINE` topology=line-list, fed by
   `wiggleInstanceBuffer.interleaveInstances`) — used on screen by default.
@@ -92,8 +92,8 @@ Both paths must agree that:
 | Gap right edge       | `lineTo(x2, zeroY)`                   | `nextScore=0` → `v4–v5` drops |
 | Last feature         | `lineTo(x2, zeroY)`                   | `nextScore=0` → `v4–v5` drops |
 
-Tests in `Canvas2DWiggleRenderer.test.ts` lock the Canvas behavior;
-`gpuWiggleRenderer.test.ts` (using the slang-codegen `INSTANCE_OFFSET_*` maps)
+Tests in `wiggleMarksPaint.test.ts` lock the Canvas behavior;
+`wiggleMarks.test.ts` (using the slang-codegen `INSTANCE_OFFSET_*` maps)
 locks the per-instance encoding.
 
 ## Why `nextScore = score` is intentional

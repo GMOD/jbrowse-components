@@ -12,15 +12,15 @@ import {
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
 
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleScaleType, SourceRenderData } from '@jbrowse/wiggle-core'
 
 // One source's features painted into one block's row. Shared by every render
 // mode; each mode adds its own color/size fields (see the per-fn args below).
 // Built once per source per block, so spreading into it isn't a hot path.
-interface RowDraw {
-  ctx: Ctx2D
+export interface RowDraw {
+  ctx: MarkContext2D
   source: SourceRenderData
   block: RenderBlock
   rowHeight: number

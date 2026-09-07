@@ -72,7 +72,7 @@ The three parts:
 ## The measured record
 
 The gates below are cited by name from the wiggle test suites
-(`gpuWiggleRenderer.test.ts`, `densityColorParity.test.ts`); this section is
+(`wiggleMarks.test.ts`, `densityColorParity.test.ts`); this section is
 their definition.
 
 - **Gate A — autoscale stays a uniform write, instrumented as bytes uploaded

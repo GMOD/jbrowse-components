@@ -8,7 +8,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 // `lazy()`, not a static import: this module is reachable from the plugin entry,
 // which every product's corePlugins imports at boot, and WiggleComponent reaches
-// WiggleRenderer → GpuWiggleRenderer → shaders/wiggle.generated.ts, i.e. ~20 KB
+// WiggleRenderer → WIGGLE_MARKS → shaders/wiggle.generated.ts, i.e. ~20 KB
 // of generated WGSL/GLSL source. A static import puts that in the always-loaded
 // chunk (and on Canvas2D users, who never compile it). The dynamic import is the
 // chunk boundary.

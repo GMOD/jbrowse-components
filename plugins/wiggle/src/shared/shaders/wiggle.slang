@@ -108,7 +108,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   } else {
     // The min-width floor, anchored at the bin's start so it grows the way the
     // Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
-    // GpuWiggleRenderer), which is what makes the floor the same 1.5 CSS px at
+    // wiggleMarks.ts), which is what makes the floor the same 1.5 CSS px at
     // every dpr rather than 1.5 device px.
     sx2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
     float2 q = quadLocal(vid);
