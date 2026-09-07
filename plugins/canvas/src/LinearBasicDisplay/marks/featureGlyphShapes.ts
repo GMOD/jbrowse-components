@@ -13,6 +13,7 @@ import {
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import {
   snapBoxCenterYPx,
   snapBoxHeightPx,
@@ -151,15 +152,16 @@ function centeredRowVisible(
   return rowVisible(scrollY, canvasHeight, centerY - heightPx * 0.5, heightPx)
 }
 
-// One CSS string per packed color per region: a gene track's intron lines arrive
-// thousands to a frame.
-function cssRgbaStyle(styles: Map<number, string>, c: number) {
-  let style = styles.get(c)
-  if (style === undefined) {
-    style = abgrToCssRgba(c)
-    styles.set(c, style)
+// `makeAbgrFill`'s stroke twin: the line glyphs are the one family whose runs
+// are a stroke color.
+function makeAbgrStroke(ctx: MarkContext2D) {
+  let last: number | undefined
+  return (abgr: number) => {
+    if (abgr !== last) {
+      last = abgr
+      ctx.strokeStyle = abgrToCssRgba(abgr)
+    }
   }
-  return style
 }
 
 // All five passes bind one `FeatureGlyphUniforms` block, so every shape writes
@@ -197,25 +199,19 @@ function canvasEdgesOf(block: RenderBlock, frame: MarkFrame) {
     : undefined
 }
 
-// Setting fillStyle re-parses the CSS string, and a pileup's rects arrive in
-// same-color runs, so this cache and the `!==` guard beside it collapse the parse
-// to once per run. Keyed by color and fade together, since the fade scales the
-// color's alpha.
-function rectFillStyle(
-  styles: Map<number, string>,
-  c: number,
-  fade: number | undefined,
-) {
-  const key = fade ? c + 0x1_0000_0000 : c
-  let style = styles.get(key)
-  if (style === undefined) {
-    // The fade folds into the color's alpha rather than globalAlpha, which
-    // SvgCanvas does not have, so the export path fades too.
-    const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
-    style = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
-    styles.set(key, style)
+// The fade folds into the color's alpha rather than globalAlpha, which SvgCanvas
+// does not have, so the export path fades too. It is part of the run's key as
+// well, since an 8-bit alpha cannot carry the multiplication exactly.
+function makeRectFill(ctx: MarkContext2D) {
+  let last: number | undefined
+  return (c: number, fade: number | undefined) => {
+    const key = fade ? c + 0x1_0000_0000 : c
+    if (key !== last) {
+      last = key
+      const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
+      ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
+    }
   }
-  return style
 }
 
 // `rectSpanPx` returns the shader's signed edge pair, which the GPU lerps between
@@ -240,8 +236,7 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
     const { scrollY, outlineColor } = params
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
-    const styles = new Map<number, string>()
-    let lastStyle: string | undefined
+    const setFill = makeRectFill(ctx)
     // outlineColor is per-region, so the stroke state hoists out of the loop
     // instead of being re-parsed on every outlined rect.
     const outlineStyle = outlineColor ? abgrToCssRgba(outlineColor) : undefined
@@ -260,11 +255,7 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
         startEnd[i * 2 + 1]!,
         toX,
       )
-      const style = rectFillStyle(styles, color[i]!, densityFade[i])
-      if (style !== lastStyle) {
-        ctx.fillStyle = style
-        lastStyle = style
-      }
+      setFill(color[i]!, densityFade[i])
       ctx.fillRect(xLeft, y, w, h)
       if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
         strokeRectInside(ctx, xLeft, y, w, h)
@@ -287,8 +278,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
     const { scrollY } = params
     const { canvasWidth, canvasHeight } = frame
     const toX = makeBpMapper(block)
-    const styles = new Map<number, string>()
-    let lastStyle: string | undefined
+    const setStroke = makeAbgrStroke(ctx)
     for (let i = 0; i < count; i++) {
       if (!centeredRowVisible(scrollY, canvasHeight, ys[i]!, height[i]!)) {
         continue
@@ -296,11 +286,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
       const x1 = toX(startEnd[i * 2]!)
       const x2 = toX(startEnd[i * 2 + 1]!)
       const y = snapBoxCenterYPx(ys[i]!, height[i]!, scrollY)
-      const style = cssRgbaStyle(styles, color[i]!)
-      if (style !== lastStyle) {
-        ctx.strokeStyle = style
-        lastStyle = style
-      }
+      setStroke(color[i]!)
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(x1, y)
@@ -372,8 +358,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     const { scrollY } = params
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
-    const styles = new Map<number, string>()
-    let lastStyle: string | undefined
+    const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
       if (!centeredRowVisible(scrollY, canvasHeight, ys[i]!, height[i]!)) {
         continue
@@ -391,11 +376,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       }
       const y = snapBoxCenterYPx(ys[i]!, height[i]!, scrollY)
       const dir = block.reversed ? -rawDir : rawDir
-      const style = cssRgbaStyle(styles, color[i]!)
-      if (style !== lastStyle) {
-        ctx.fillStyle = style
-        lastStyle = style
-      }
+      setFill(color[i]!)
 
       const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
       ctx.fillRect(
