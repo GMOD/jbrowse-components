@@ -173,7 +173,7 @@ callsets and its gbz-base database, so node ids agree across the pair. The one
 file only `v2.0/` has is the alignment the graph and the callset are derived
 from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
 `.tai` index, which
-[part 2](/docs/tutorials/pangenome_hprc_part2#the-alignment-underneath-both)
+[part 2](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
 opens; v2.1 publishes its MAF only, 53 GB and unindexed.
 
 Every file above is published twice, once per reference, and this page uses the
@@ -384,7 +384,7 @@ of the file:
 `gfatools bubble` and the rGFA tags state the distinct sequence a bubble can
 hold, so length is the proxy for copy number here. The `.gbz` beside them
 carries a walk per haplotype, which is a copy count at KIV-2 or _AMY1_, and
-[reading it is a query](/docs/tutorials/pangenome_hprc_part2#walks-from-the-graph)
+[reading it is a query](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph)
 once the graph is in a gbz-base database. Release 2 strips the `AT` (allele
 traversal) field from the wave VCF, recorded in its own header as
 `bcftools annotate -x INFO/AT`.
@@ -489,7 +489,7 @@ At HPRC scale there are two answers, both published files:
 is one record per snarl with a genotype per haplotype, so the site under the
 node you clicked states who walks it, and the `.gbz` states the walks
 themselves, which is
-[part 2's route through the graph](/docs/tutorials/pangenome_hprc_part2#walks-from-the-graph).
+[part 2's route through the graph](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph).
 
 That route is drawn in the [layout figure above](#the-layout-dropdown): its left
 half has the menu open on a 1.8 kb allele of NA20809 haplotype 2, the black node

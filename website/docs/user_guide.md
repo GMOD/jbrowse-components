@@ -81,6 +81,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/agent_synteny)
 - [](/docs/tutorials/pangenome_hprc_part2)
+- [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/selection_pressure)
 - [](/docs/tutorials/odp_linkage_groups_synteny)
 - [](/docs/tutorials/hprc_multiway_synteny)

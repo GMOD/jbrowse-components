@@ -455,6 +455,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/hprc_c4_subgraph.png',
     band: [0.49, 1],
   },
+  pangenome_hprc_part3: {
+    // The eight lanes with their own contig names and coordinates in the row
+    // labels, which is the whole of what this half is about. Cropped from the
+    // left so those labels survive the 5:3 cover-crop -- a centre crop keeps
+    // ribbons and loses the names.
+    src: 'pangenome/hprc_cfhr_lane_stack.png',
+    band: [0.34, 0.95],
+    position: 'left',
+  },
   pangenome_hprc_part2: {
     // The deletion band running down from the genes, through the rank-colored
     // segments, into the 464-haplotype matrix, which is the question this half
