@@ -237,19 +237,17 @@ export function trackHasLodTiers(track: {
  */
 const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
   {
-    label: 'Automatic (by zoom)',
+    label: 'Automatic',
     value: 'auto',
-    helpText:
-      'Show base-level detail when zoomed in, blocks-only when zoomed out.',
+    helpText: 'Full detail when zoomed in, blocks only when zoomed out.',
   },
   {
-    label: 'Indels + mismatches',
+    label: 'Full detail',
     value: 'fine',
-    helpText:
-      'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
+    helpText: 'Always load indels and mismatches. Slower when zoomed far out.',
   },
   {
-    label: 'Alignment blocks only',
+    label: 'Blocks only',
     value: 'coarse',
     // The fallback is named here because the menu cannot always avoid offering
     // this: `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed
@@ -261,10 +259,8 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
     // is the right behaviour (the alternative is no data) and the wrong thing
     // to say nothing about.
     helpText:
-      'Skip base-level detail for speed — only large indels are colored, no ' +
-      'mismatches. A ' +
-      'file built without the coarse tier (make-pif --no-coarse) has nothing ' +
-      'to switch to and keeps serving full detail.',
+      'Only large indels, no mismatches, for speed. A file built without a ' +
+      'coarse tier keeps serving full detail.',
   },
 ]
 
@@ -295,9 +291,8 @@ export function lodMenuItems(model: {
           // Without it the group is the one submenu in a settings menu with no
           // "?" at all, and a reader has to open it to learn what a tier is.
           helpText:
-            'Which stored tier of the alignment file is fetched. A tiered file ' +
-            'carries a coarse copy with no base-level detail, which draws far ' +
-            'faster when zoomed out.',
+            'Which stored tier of a tiered file is fetched; the coarse tier ' +
+            'draws far faster when zoomed out.',
           subMenu: LOD_MODES.map(({ label, value, helpText }) => ({
             helpText,
             label,

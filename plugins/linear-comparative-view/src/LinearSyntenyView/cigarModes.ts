@@ -24,7 +24,7 @@ export const CIGAR_MODE_OPTIONS = [
     value: 'off',
     label: "Off - don't draw CIGAR indels",
     helpText:
-      'Watch out for weird rendering of overlapping features. Each alignment is drawn as one solid block from its start to its end, so overlapping blocks run together with nothing to tell them apart, and a large insertion or deletion inside a block is painted as though it matched all the way across.',
+      'Each alignment is one solid block, so overlapping blocks run together and a large indel is painted as though it matched.',
   },
 ] as const
 

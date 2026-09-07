@@ -14,11 +14,9 @@
 // indels: the pieces are filtered as the separate blocks they are, so crossing
 // the tier threshold with this set can hide an alignment the fine tier shows.
 export const MIN_LENGTH_HELP =
-  'Hides alignments shorter than this many bp. Cuts whole-genome hairball ' +
-  'noise from short/spurious chains. Each drawn block is measured by its own ' +
-  'span, never grouped with others of the same name — so a level-of-detail ' +
-  'tier that splits a long alignment on its large indels is filtered piece by ' +
-  'piece.'
+  'Hide alignments shorter than this. Each drawn block is measured on its ' +
+  'own, so a tier that splits an alignment on its large indels is filtered ' +
+  'piece by piece.'
 
 // Where the log-scaled Min length slider tops out, in bp. Shared so the synteny
 // view and the dotplot cannot offer different ranges over the same setting.

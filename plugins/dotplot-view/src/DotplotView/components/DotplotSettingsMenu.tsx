@@ -25,11 +25,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // filters as shader uniforms over an instance buffer that carries no identity
 // lane, so it has no twin of this control to diverge from yet.
 const MIN_IDENTITY_HELP =
-  'Hides alignments whose sequence identity is below this percentage, the ' +
-  'same measurement the identity color mode paints. An alignment whose ' +
-  'adapter reported no identity at all is kept at every threshold, so a ' +
-  'track carrying none is left alone by this slider rather than emptied by ' +
-  'it.'
+  'Hide alignments below this sequence identity. One with no identity ' +
+  'reported is kept at every threshold.'
 
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
@@ -73,8 +70,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               model.setDrawCigar(flag)
             },
             {
-              helpText:
-                'Toggle detailed CIGAR string visualization showing matches, insertions, and deletions in alignments. Disable for a cleaner view that shows only broad syntenic blocks.',
+              helpText: 'Off draws each alignment as one straight segment.',
             },
           ),
           toggleItem(
@@ -90,14 +86,14 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             },
             {
               helpText:
-                "Carries each axis' ruler ticks across the plot as faint lines, in two weights, so a point can be read back to a coordinate without tracing to the axis. An axis with no room to number itself draws none at all, which at whole-genome zoom is both of them, and a tick already marked by a chromosome boundary is left to the boundary.",
+                "Carry each axis' ruler ticks across the plot. An axis with no room to number itself draws none.",
             },
           ),
           ...lodMenuItems(model),
           makeSizeSubMenu({
             label: 'opacity',
             title: 'Opacity',
-            help: 'Overall opacity of every plotted point. Lower values let dense overlapping alignments show through each other.',
+            help: 'Lower lets overlapping points show through each other.',
             min: 0,
             max: 1,
             step: 0.01,
@@ -117,7 +113,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
           makeSizeSubMenu({
             label: 'line width',
             title: 'Line width',
-            help: 'Screen-space thickness of each alignment, in pixels. Sub-pixel alignments render as dots, so a wider line makes a sparse whole-genome plot legible; a narrower one keeps a dense one from filling in.',
+            help: 'Thickness of each alignment in pixels. Wider makes a sparse plot legible, narrower keeps a dense one from filling in.',
             min: 0.5,
             max: 10,
             step: 0.5,

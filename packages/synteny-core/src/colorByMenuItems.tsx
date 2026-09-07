@@ -160,7 +160,7 @@ function valueModes({
     ...attributes.map(attribute => ({
       label: attribute,
       value: attributeColorBy(attribute),
-      helpText: `Color by the ${attribute} column this track carries. A numeric column paints a viridis scale spanning the values seen, labelled with the actual numbers since nothing declares its domain. A text column paints one color per distinct label, or the color the file put beside it in a color column.`,
+      helpText: `The ${attribute} column: a ramp over the values seen for numbers, a color per label for text.`,
     })),
   ]
 }
@@ -187,7 +187,7 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
     {
       label: 'Track colors',
       helpText:
-        'The color each track draws in under "Distinct color per track". Pick one with its swatch to pin it; a track without one takes an automatic slot from the palette.',
+        'Pin the color a track draws in under Distinct color per track.',
       subMenu: [
         ...tracks.map(track => ({
           label: track.name,
@@ -248,8 +248,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
         VALUE_MODES_LABEL,
         values.find(m => m.value === target.colorBy)?.label,
       ),
-      helpText:
-        'Paint each alignment by a number it carries, on a color ramp the legend labels.',
+      helpText: 'A number each alignment carries, on a ramp the legend labels.',
       subMenu: radios(target, values),
     },
     ...(target.categorical

@@ -115,7 +115,7 @@ export function syntenySettingsMenuItems(
       },
       {
         helpText:
-          'Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel.',
+          'Fade each ribbon by its sequence identity, whatever the color mode.',
       },
     ),
     ribbonToggle({
@@ -126,8 +126,6 @@ export function syntenySettingsMenuItems(
       setValue: v => {
         model.setDrawCurves(v)
       },
-      helpText:
-        'Draws each ribbon as a bezier curve rather than a straight chord. Reads much better at whole-genome scale, where straight crossings stack into noise.',
     }),
     ribbonToggle({
       display,
@@ -138,12 +136,12 @@ export function syntenySettingsMenuItems(
         model.setDrawLocationMarkers(v)
       },
       helpText:
-        "Continues the query row's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with.",
+        "Carry the upper row's scalebar ticks down through the ribbons to the coordinates they pair with.",
     }),
     makeSizeSubMenu({
       label: 'opacity',
       title: 'Opacity',
-      help: 'Overall opacity of all synteny ribbons. Lower values let dense overlapping alignments show through each other.',
+      help: 'Lower lets overlapping ribbons show through each other.',
       min: 0,
       max: 1,
       step: 0.01,
@@ -180,7 +178,7 @@ export function syntenySettingsMenuItems(
             {
               label: 'CIGAR indels',
               helpText:
-                'How per-base insertions and deletions inside each alignment are shown.',
+                'How insertions and deletions inside an alignment are drawn.',
               // Built here rather than with `radioItems` because one row
               // differs: 'off' is the mode that can mislead, and the icon
               // says so on the row instead of only in its help.
@@ -214,7 +212,7 @@ export function syntenySettingsMenuItems(
       },
       {
         helpText:
-          'Mark alignments whose other end is off screen or on a contig the facing panel is not showing, along the edges of each band. Costs a second query per panel pair on an indexed file.',
+          'Mark alignments whose other end is off screen or on a contig the facing panel is not showing. Costs a second query per panel pair on an indexed file.',
       },
     ),
     makeSizeSubMenu({
