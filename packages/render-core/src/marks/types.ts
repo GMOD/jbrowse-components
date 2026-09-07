@@ -25,7 +25,14 @@ export interface MarkContext2D extends ClipContext2D {
   lineJoin?: CanvasLineJoin
   fillRect(x: number, y: number, w: number, h: number): void
   strokeRect(x: number, y: number, w: number, h: number): void
+  // The transform stack, for a shape whose ink is axis-aligned in a frame that
+  // is not the canvas's: hic's contact bins are `fillRect`s in a -45° rotated,
+  // y-squashed space, and tile seamlessly there where a path-built diamond
+  // leaves AA seams. `SvgCanvas` composes its CTM the same way, which is what
+  // makes the export land on the diagonal too.
   translate(x: number, y: number): void
+  scale(x: number, y: number): void
+  rotate(angle: number): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
   arc(

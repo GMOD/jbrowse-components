@@ -33,6 +33,8 @@ function recordingCtx() {
     lineWidth: 1,
     strokeRect() {},
     stroke() {},
+    scale() {},
+    rotate() {},
   } satisfies MarkContext2D
   return { rects, ctx }
 }

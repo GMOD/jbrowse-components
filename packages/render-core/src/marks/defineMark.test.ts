@@ -366,6 +366,8 @@ function recordingCtx() {
     fill() {},
     stroke() {},
     strokeRect() {},
+    scale() {},
+    rotate() {},
   } satisfies MarkContext2D
   return { ctx, rects, clips }
 }
