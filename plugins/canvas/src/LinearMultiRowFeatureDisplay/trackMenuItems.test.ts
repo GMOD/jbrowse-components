@@ -20,7 +20,6 @@ function makeSelf(
     showTree: true,
     showLegend: true,
     showLegendDisplayTypeDefault: {
-      kind: 'toggle' as const,
       slot: 'showLegend',
       onValue: true,
       active: false,

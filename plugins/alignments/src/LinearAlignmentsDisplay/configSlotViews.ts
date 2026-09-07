@@ -1,9 +1,4 @@
-import {
-  getConf,
-  makePin,
-  makeTogglePin,
-  resolveConf,
-} from '@jbrowse/core/configuration'
+import { getConf, makePin, resolveConf } from '@jbrowse/core/configuration'
 
 import { normalizeColorBy } from '../shared/colorSchemes.ts'
 import { normalizeGroupBy } from '../shared/groupFeatures.ts'
@@ -60,9 +55,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'linkedReads')
     },
     /** #getter */
-    // the view-as-pairs checkbox over every open track of this type (pin)
+    // the pin over the view-as-pairs row's state, 'normal' or 'off'
     get pairsDisplayTypeDefault() {
-      return makeTogglePin(self, 'linkedReads', { on: 'normal', off: 'off' })
+      return makePin(self, 'linkedReads', resolveConf(self, 'linkedReads'))
     },
     /** #getter */
     get showBezierConnections(): boolean {
@@ -140,19 +135,22 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnections')
     },
     /** #getter */
-    // the arcs checkbox over every open track of this type (pin). Independent
-    // of read cloud: both share the readConnections slot, and each toggles its
-    // own member against 'off'.
+    // the pin over the arcs row's state: 'arc' when the row is checked, else
+    // 'off'. Read cloud shares the slot and reads its own member the same way,
+    // so the two rows stay independent while each names what its box shows.
     get arcsDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnections', { on: 'arc', off: 'off' })
+      const mode = resolveConf(self, 'readConnections')
+      return makePin(self, 'readConnections', mode === 'arc' ? 'arc' : 'off')
     },
     /** #getter */
-    // the read cloud checkbox over every open track of this type (pin)
+    // the pin over the read cloud row's state
     get readCloudDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnections', {
-        on: 'cloud',
-        off: 'off',
-      })
+      const mode = resolveConf(self, 'readConnections')
+      return makePin(
+        self,
+        'readConnections',
+        mode === 'cloud' ? 'cloud' : 'off',
+      )
     },
     /** #getter */
     // Resolved through the promotable-slot tiers (resolveConf): a
@@ -165,7 +163,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     // the arcs-below-coverage checkbox over every open track of this type (pin)
     get readConnectionsDownDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnectionsDown')
+      return makePin(self, 'readConnectionsDown')
     },
     /** #getter */
     // Sentinel promotable slot: a track pins arcs on/off explicitly, else
@@ -179,7 +177,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * (pin)
      */
     get showSashimiArcsDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSashimiArcs')
+      return makePin(self, 'showSashimiArcs')
     },
     /** #getter */
     // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -224,7 +222,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     // the soft-clipping checkbox over every open track of this type (pin)
     get softClippingDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSoftClipping')
+      return makePin(self, 'showSoftClipping')
     },
 
     /**
@@ -279,7 +277,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * the sashimi-labels checkbox over every open track of this type (pin)
      */
     get showSashimiLabelsDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSashimiLabels')
+      return makePin(self, 'showSashimiLabels')
     },
     /**
      * #getter
@@ -295,7 +293,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * type (pin)
      */
     get hideNonCanonicalJunctionsDisplayTypeDefault() {
-      return makeTogglePin(self, 'hideNonCanonicalJunctions')
+      return makePin(self, 'hideNonCanonicalJunctions')
     },
     /**
      * #getter
@@ -319,7 +317,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     // the fade-by-quality checkbox over every open track of this type (pin)
     get mismatchAlphaDisplayTypeDefault() {
-      return makeTogglePin(self, 'mismatchAlpha')
+      return makePin(self, 'mismatchAlpha')
     },
     /**
      * #getter

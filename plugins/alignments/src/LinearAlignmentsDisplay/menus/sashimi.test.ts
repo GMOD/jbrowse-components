@@ -4,14 +4,14 @@ import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // stateful stand-in for a Pin (the menu builder only touches
 // active/toggle; `slot` is what a built menu is later asked for by
-// promotableSlotsWithoutPin, and `kind` what PinAdornment words itself
-// from — neither is read here)
-function control(slot: string, onValue: unknown = false) {
+// promotableSlotsWithoutPin, and `onValue` what the click applies — neither
+// is read here)
+function control(slot: string, onValue: unknown = false): Pin {
   return {
     slot,
     onValue,
@@ -21,14 +21,6 @@ function control(slot: string, onValue: unknown = false) {
     },
   }
 }
-const toggleControl = (slot: string): TogglePin => ({
-  kind: 'toggle',
-  ...control(slot),
-})
-const valueControl = (slot: string, onValue: unknown): ValuePin => ({
-  kind: 'value',
-  ...control(slot, onValue),
-})
 
 function makeModel() {
   return {
@@ -36,23 +28,23 @@ function makeModel() {
     setShowSashimiArcs(v: boolean) {
       this.showSashimiArcs = v
     },
-    showSashimiArcsDisplayTypeDefault: toggleControl('showSashimiArcs'),
+    showSashimiArcsDisplayTypeDefault: control('showSashimiArcs'),
     showSashimiLabels: false,
     setShowSashimiLabels() {},
-    showSashimiLabelsDisplayTypeDefault: toggleControl('showSashimiLabels'),
+    showSashimiLabelsDisplayTypeDefault: control('showSashimiLabels'),
     sashimiArcsMode: 'auto' as SashimiArcsMode,
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
     sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) =>
-      valueControl('sashimiArcsMode', mode),
+      control('sashimiArcsMode', mode),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
     hideNonCanonicalJunctions: false,
     setHideNonCanonicalJunctions(v: boolean) {
       this.hideNonCanonicalJunctions = v
     },
-    hideNonCanonicalJunctionsDisplayTypeDefault: toggleControl(
+    hideNonCanonicalJunctionsDisplayTypeDefault: control(
       'hideNonCanonicalJunctions',
     ),
   }

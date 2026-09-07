@@ -21,7 +21,6 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     showLDTriangle: true,
     showLegend: false,
     showLegendDisplayTypeDefault: {
-      kind: 'toggle' as const,
       slot: 'showLegend',
       onValue: false,
       active: false,

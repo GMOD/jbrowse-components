@@ -14,7 +14,7 @@ import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 
 import type { LDMethod, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFilterModel } from '../shared/components/LDFilterDialog.tsx'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { JexlFilterModel } from '@jbrowse/core/util/jexlFilters'
@@ -41,7 +41,7 @@ export interface LDMenuSelf
   signedLD: boolean
   showLDTriangle: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
+  showLegendDisplayTypeDefault: Pin
   showLabels: boolean
   showVerticalGuides: boolean
   squashToHeight: boolean

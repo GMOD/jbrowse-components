@@ -15,7 +15,6 @@ function baseSelf() {
     useColorPercentile: true,
     showLegend: false,
     showLegendDisplayTypeDefault: {
-      kind: 'toggle' as const,
       slot: 'showLegend',
       onValue: false,
       active: false,

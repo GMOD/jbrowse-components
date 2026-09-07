@@ -10,7 +10,6 @@ import type { MenuItem } from './MenuTypes.ts'
 
 function pin(slot: string): Pin {
   return {
-    kind: 'toggle',
     slot,
     onValue: true,
     active: false,

@@ -15,14 +15,14 @@ import TuneIcon from '@mui/icons-material/Tune'
 import { HIC_COLOR_SCHEME_OPTIONS } from './components/colorRamp.ts'
 
 import type { HicColorScheme } from './components/colorRamp.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
+  showLegendDisplayTypeDefault: Pin
   showResolutionControls: boolean
   squashToHeight: boolean
   colorScheme: HicColorScheme

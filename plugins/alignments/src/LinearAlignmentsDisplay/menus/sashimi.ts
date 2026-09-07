@@ -5,7 +5,7 @@ import AltRouteIcon from '@mui/icons-material/AltRoute'
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Every option carries a pin, the base value 'up' included — once a non-base
@@ -21,18 +21,18 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
-  showSashimiArcsDisplayTypeDefault: TogglePin
+  showSashimiArcsDisplayTypeDefault: Pin
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
-  showSashimiLabelsDisplayTypeDefault: TogglePin
+  showSashimiLabelsDisplayTypeDefault: Pin
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => ValuePin
+  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => Pin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
   hideNonCanonicalJunctions: boolean
   setHideNonCanonicalJunctions: (hide: boolean) => void
-  hideNonCanonicalJunctionsDisplayTypeDefault: TogglePin
+  hideNonCanonicalJunctionsDisplayTypeDefault: Pin
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,

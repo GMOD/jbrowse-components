@@ -140,30 +140,31 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
 
   // The pin is what `showLegendCheckboxItem` puts on the row, and it names the
   // slot it promotes — the fact `promotableSlotsWithoutPin` audits.
-  it('the pin is over showLegend and its fill mirrors the row', () => {
+  it('the pin is over showLegend and carries the row state', () => {
     const { display } = makeSession({ promotedBase })
     expect(display.showLegendDisplayTypeDefault.slot).toBe('showLegend')
-    expect(display.showLegendDisplayTypeDefault.active).toBe(promotedBase)
+    expect(display.showLegendDisplayTypeDefault.onValue).toBe(promotedBase)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
   })
 
-  // The pin is the legend checkbox over the open tracks: a click flips the
-  // row's state, and the snackbar's one action is what makes the new state the
-  // display type's default.
-  it('the pin flips the legend and offers the new state as the default', () => {
+  // The pin applies the row's state to the open tracks, and the snackbar's
+  // one action is what makes that state the display type's default; once it
+  // is, the pin draws filled and a click clears it.
+  it('the pin applies the row state, offers it as the default, and clears it', () => {
     const { session, display } = makeSession({ promotedBase })
-    display.setShowLegend(promotedBase)
+    display.setShowLegend(!promotedBase)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
+
     display.showLegendDisplayTypeDefault.toggle()
     expect(display.showLegend).toBe(!promotedBase)
-    expect(display.showLegendDisplayTypeDefault.active).toBe(!promotedBase)
     session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
     ).toBe(!promotedBase)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
 
-    // flipping back offers the base state, which clears rather than stores
     display.showLegendDisplayTypeDefault.toggle()
-    expect(display.showLegend).toBe(promotedBase)
-    session.lastAction!.onClick()
+    expect(display.showLegend).toBe(!promotedBase)
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
     ).toBeUndefined()

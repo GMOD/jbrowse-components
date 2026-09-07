@@ -1,7 +1,7 @@
 import { checkboxItem } from './toggleMenuItems.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
-import type { CheckboxRowOptions } from './toggleMenuItems.ts'
+import type { PinnableRowOptions } from './toggleMenuItems.ts'
 
 /**
  * The "Show legend" checkbox, which seven displays build by hand — Hi-C, LD,
@@ -21,7 +21,7 @@ import type { CheckboxRowOptions } from './toggleMenuItems.ts'
  * offering the new state as the display-type default in its snackbar. Every
  * display whose legend is backed by a config slot passes one, and gets it from
  * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling
- * `makeTogglePin` itself: the slot is the per-display half, the accessors over
+ * `makePin` itself: the slot is the per-display half, the accessors over
  * it are not.
  *
  * `pin` is optional because two callers have no slot to promote: the Manhattan
@@ -35,7 +35,7 @@ import type { CheckboxRowOptions } from './toggleMenuItems.ts'
 export function showLegendCheckboxItem(
   checked: boolean,
   onToggle: () => void,
-  opts?: CheckboxRowOptions,
+  opts?: PinnableRowOptions,
 ): MenuItem {
   return checkboxItem('Show legend', checked, onToggle, opts)
 }

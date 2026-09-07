@@ -124,7 +124,6 @@ function makeShowModel(showCoverage: boolean) {
     showLegend: false,
     setShowLegend: jest.fn(),
     showLegendDisplayTypeDefault: {
-      kind: 'toggle' as const,
       slot: 'showLegend',
       onValue: false,
       active: false,

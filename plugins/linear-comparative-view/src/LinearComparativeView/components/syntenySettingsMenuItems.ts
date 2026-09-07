@@ -1,4 +1,4 @@
-import { makeTogglePin } from '@jbrowse/core/configuration'
+import { makePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
@@ -53,7 +53,7 @@ function ribbonToggle({
   return display
     ? toggleItem(label, value, setValue, {
         ...opts,
-        pin: makeTogglePin(display, slot),
+        pin: makePin(display, slot),
       })
     : toggleItem(label, value, setValue, {
         ...opts,

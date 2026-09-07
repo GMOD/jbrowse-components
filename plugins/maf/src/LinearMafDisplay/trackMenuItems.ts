@@ -26,7 +26,7 @@ import type { ConservationMode } from './conservationModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -69,7 +69,7 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   // this display has a key for them to be about.
   hasLegendKey: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
+  showLegendDisplayTypeDefault: Pin
   setShowLegend: (arg: boolean) => void
   showAllLetters: boolean
   mismatchRendering: boolean

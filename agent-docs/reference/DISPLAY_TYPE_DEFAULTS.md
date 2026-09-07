@@ -572,23 +572,21 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makePin(self, slot, onValue)` | `ValuePin` `{ kind: 'value', slot, onValue, active, toggle }` on one fixed value — "make compact the default", independent of what the track shows, so two radio rows sharing a slot (sashimi `'down'` vs `'auto'`) stay independent | a radio row |
-| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a continuous setting with no sensible fixed on-value (wiggle point size, arc line width) |
-| `makeTogglePin(self, slot, states?)` | `TogglePin` `{ kind: 'toggle', … }` whose `active` mirrors the row's checked state and whose click flips it on every open track, offering the new state as the default. `states` is `{ on, off }`, omitted for a `maybeBoolean` slot and required for a two-state enum (`readConnections`: `{ on: 'arc', off: 'off' }`) | every checkbox row |
+| `makePin(self, slot, onValue)` | `Pin` `{ slot, onValue, active, toggle }` on one fixed value — a radio option ("make compact the default"), or the member a checkbox row over a shared enum shows (`readConnections`: `'arc'` when ticked, `'off'` when not). Two rows sharing a slot stay independent because each names its own value | radio rows; checkbox rows over an enum |
+| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value: a checkbox's checked state, or a continuous setting with no fixed on-value | checkbox rows over a `maybeBoolean`; slider rows |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots)` | clears the named promoted defaults for this display's type | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 | `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
-`Pin` is `ValuePin | TogglePin`, discriminated on `kind`, over
-`{ slot: string; onValue: unknown; active: boolean; toggle: () => void }`. On a
-value pin `active` = this value is the current session default (filled pin),
-which is the *state*, not what clicking does; on a toggle pin it mirrors the
-row. There is no disabled state — a pin always has a value to apply (see
-[No callbacks](#no-callbacks-jexl)). `checkboxItem`'s `pin` option takes a
-`TogglePin` and `radioItem`'s a `ValuePin`, so a checkbox row cannot carry a
-pin that fills for one reason and clears for another; `PinAdornment` words
-itself from `kind`.
+`Pin` is `{ slot: string; onValue: unknown; active: boolean; toggle: () => void }`,
+and means one thing on every row kind: `onValue` is the row's state, `active` =
+that state is the current session default (filled pin), which is the *state*,
+not what clicking does. The row's glyph shows what this track does; the pin's
+fill shows what the display type defaults to. There is no disabled state — a
+pin always has a value to apply (see [No callbacks](#no-callbacks-jexl)).
+`checkboxItem` folds the checked state into the pin's label ("Show legend:
+off"), which is what `PinAdornment` words itself from.
 
 **`toggle` on an outline pin writes every open track of the display type** —
 `applySlotToOpenTracks` over `openTracksOfType` — and raises
@@ -897,28 +895,21 @@ The row builders in `toggleMenuItems.ts`, each taking the pin as an option —
 there is no promotable twin of a builder, since the twins drifted from the
 originals twice and a change to what a row *is* then reached one form only:
 
-- **`checkboxItem` / `toggleItem` with `pin: TogglePin`** — a `type:'checkbox'`
-  row (native hover/sizing/keyboard) for an on/off setting. The checkbox
-  toggles the track's value; the pin is **that same checkbox over every open
-  track of the type** — `makeTogglePin(self, slot)` for a `maybeBoolean` slot,
-  `makeTogglePin(self, slot, { on, off })` for a checkbox row that stands for
-  one member of a multi-valued slot (`readConnections` is one slot behind an
-  "Arcs" row toggling `'arc'`/`'off'` and a "Read cloud" row toggling
-  `'cloud'`/`'off'`, which stay independent because each names its own pair).
-  Its fill mirrors the row, a click flips the row's state on every open track,
-  and the snackbar offers the new state as the default. It never clears a
-  default by itself: flipping back and taking the offer promotes the other
-  value, and offering the base value clears. The value pins' "filled means
-  promoted, click to clear" reading is what these rows dropped — a symmetric
-  value-omitted `makePin` carried the row's current state, so the pin beside an
-  *unchecked* box, which reads as "turn this on everywhere", applied *off* to
-  every open track and changed nothing on screen. The option is typed
-  `TogglePin`, so a checkbox row cannot take a value pin: the arcs/cloud rows
-  used to, and sat one submenu away from a toggle pin with the opposite fill
-  and click.
+- **`checkboxItem` / `toggleItem` with `pin`** — a `type:'checkbox'` row
+  (native hover/sizing/keyboard) for an on/off setting. The checkbox toggles
+  the track's value; the pin is `makePin(self, slot)` over the row's state for
+  a `maybeBoolean` slot, or `makePin(self, slot, checked ? 'arc' : 'off')` for
+  a checkbox row that stands for one member of a multi-valued slot
+  (`readConnections` is one slot behind an "Arcs" row and a "Read cloud" row,
+  which stay independent because each names its own member). The builder
+  appends the checked state to the pin's label, so the tooltip reads "Apply
+  Show legend: off to all open tracks of this type". A pin that instead
+  mirrored the checkbox and flipped it on click was tried and reversed
+  (ADR-048): its fill duplicated the row's glyph, and the menu then had no way
+  to show or clear a promoted default on a checkbox row.
 - **`radioItems` with a `pin` factory** — a whole `type:'radio'` group over a
-  multi-value slot, and **the one to reach for**: one `ValuePin` per option,
-  supplied as `value => makePin(self, slot, value)` so it cannot be a row short.
+  multi-value slot, and **the one to reach for**: one pin per option, supplied
+  as `value => makePin(self, slot, value)` so it cannot be a row short.
   **Every option in a group gets a pin, the `promotedBase` value included** —
   once a non-base value is promoted, taking the base row's offer is the
   per-value way to undo it, and a radio group with one row silently missing its
@@ -929,7 +920,7 @@ originals twice and a change to what a row *is* then reached one form only:
   `sashimiArcsMode`. Canvas reaches it through `inlineRadioGroup`, which is
   `subHeader` + this — its `pin` factory is required, since a group with one
   caller and an optional pin is the row that goes missing.
-- **`radioItem` with `pin?: ValuePin`** — one row, the escape hatch for a group
+- **`radioItem` with `pin`** — one row, the escape hatch for a group
   the plural form can't express. Three cases have it: a row with no single
   value to promote yet (the colorBy "Tag..." row before a tag is picked), a
   display whose slot isn't promotable at all (the shared colorBy menu on
@@ -1084,7 +1075,7 @@ before starting.
    getter. `readConfObject` is the raw read from a bare config (the resolver
    itself uses it), and `getConf` is that same raw read through a state model's
    `.configuration`.
-3. Track menu: pass `makeTogglePin(self, slot)` as the `pin` option of a
+3. Track menu: pass `makePin(self, slot)` as the `pin` option of a
    `checkboxItem` / `toggleItem`, or hand `radioItems` the factory
    `value => makePin(self, slot, value)` for a whole radio group (the plural form
    is what keeps a group from being one pin short — see

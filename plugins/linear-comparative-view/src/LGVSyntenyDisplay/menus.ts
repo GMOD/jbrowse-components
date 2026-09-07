@@ -8,7 +8,7 @@ import {
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
 
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   CollapseGroupRowsModel,
@@ -85,7 +85,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
 interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
-  showLegendDisplayTypeDefault: TogglePin
+  showLegendDisplayTypeDefault: Pin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean

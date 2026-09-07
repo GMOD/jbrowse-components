@@ -224,7 +224,6 @@ describe('CascadingMenu endAdornment', () => {
           menuItems={() => [
             radioItem('Compact', false, () => {}, {
               pin: {
-                kind: 'value',
                 slot: 'displayMode',
                 onValue: 'compact',
                 active: promoted.get() === 'compact',

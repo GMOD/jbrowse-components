@@ -17,7 +17,7 @@ import { modificationsMenu } from './modificationsMenu.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
-import type { ValuePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -85,7 +85,7 @@ interface ColorByMenuOptions {
   // returns the pin control for making that exact scheme the session-wide
   // default, so each scheme radio carries its own pin (like every other
   // promotable setting) instead of a standalone mouthful checkbox.
-  pin?: (colorBy: ColorBy) => ValuePin
+  pin?: (colorBy: ColorBy) => Pin
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu

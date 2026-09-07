@@ -14,11 +14,7 @@ import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-import type {
-  ResolvableDisplay,
-  TogglePin,
-  ValuePin,
-} from '@jbrowse/core/configuration'
+import type { Pin, ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
@@ -40,7 +36,7 @@ export function inlineRadioGroup<T extends string>(
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
-  pin: (value: T) => ValuePin,
+  pin: (value: T) => Pin,
   hint?: (value: T) => string | undefined,
 ): MenuItem[] {
   return [
@@ -62,7 +58,7 @@ interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   labelsFitHint: string | undefined
   colorLegend: LegendItem[]
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
+  showLegendDisplayTypeDefault: Pin
   setShowLegend: (value: boolean) => void
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void

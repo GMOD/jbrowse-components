@@ -7,20 +7,20 @@ import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
-  pairsDisplayTypeDefault: TogglePin
+  pairsDisplayTypeDefault: Pin
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  arcsDisplayTypeDefault: TogglePin
-  readCloudDisplayTypeDefault: TogglePin
+  arcsDisplayTypeDefault: Pin
+  readCloudDisplayTypeDefault: Pin
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  readConnectionsDownDisplayTypeDefault: TogglePin
+  readConnectionsDownDisplayTypeDefault: Pin
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
