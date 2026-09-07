@@ -146,6 +146,22 @@ or split-view a mate must drop both rather than treat `<DEL>` as a refName.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+## pairedEndsLocString
+
+Both ends of a paired record as one loc string an LGV opens side by side,
+`windowBp` either side of each breakpoint. Each panel is turned so the
+sequence its end keeps reads left to right into the join: an end keeping the
+sequence to its right is reversed on the left panel, one keeping its left is
+reversed on the right. Two ends of one contig closer than a window collapse to
+the single span between them. `undefined` for a record with one end.
+
+```js
+// type signature
+(feature: Feature, windowBp: number) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ## parseSvAlt
 
 Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.

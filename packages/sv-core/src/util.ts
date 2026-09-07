@@ -1,5 +1,5 @@
 import { parseBreakend } from '@gmod/vcf'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { assembleLocString, getEnv, getSession } from '@jbrowse/core/util'
 
 import type { Breakend } from '@gmod/vcf'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -192,6 +192,58 @@ export function svMateLocus(feature: Feature) {
   return mate?.refName !== undefined && mate.start !== undefined
     ? { refName: mate.refName, pos: mate.start }
     : undefined
+}
+
+/**
+ * #api
+ * Both ends of a paired record as one loc string an LGV opens side by side,
+ * `windowBp` either side of each breakpoint. Each panel is turned so the
+ * sequence its end keeps reads left to right into the join: an end keeping the
+ * sequence to its right is reversed on the left panel, one keeping its left is
+ * reversed on the right. Two ends of one contig closer than a window collapse to
+ * the single span between them. `undefined` for a record with one end.
+ */
+export function pairedEndsLocString(feature: Feature, windowBp: number) {
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
+  const parsed = parseSvAlt(feature, alt)
+  const mate = feature.get('mate') as
+    | { refName: string; start: number; mateDirection?: number }
+    | undefined
+  const ownDirection = feature.get('mateDirection') as number | undefined
+  const here = {
+    refName: feature.get('refName'),
+    pos: feature.get('start'),
+    keeps: parsed?.joinDirection ?? ownDirection ?? 0,
+  }
+  const there = parsed
+    ? {
+        refName: parsed.mateRefName,
+        pos: parsed.matePos - 1,
+        keeps: parsed.mateDirection ?? 0,
+      }
+    : mate
+      ? {
+          refName: mate.refName,
+          pos: mate.start,
+          keeps: mate.mateDirection ?? 0,
+        }
+      : undefined
+  const window = (end: typeof here, reversed: boolean) =>
+    assembleLocString({
+      refName: end.refName,
+      start: Math.max(0, end.pos - windowBp),
+      end: end.pos + windowBp,
+    }) + (reversed ? '[rev]' : '')
+  return there === undefined
+    ? undefined
+    : here.refName === there.refName &&
+        Math.abs(here.pos - there.pos) < 2 * windowBp
+      ? assembleLocString({
+          refName: here.refName,
+          start: Math.max(0, Math.min(here.pos, there.pos) - windowBp),
+          end: Math.max(here.pos, there.pos) + windowBp,
+        })
+      : `${window(here, here.keeps === 1)} ${window(there, there.keeps === -1)}`
 }
 
 /**

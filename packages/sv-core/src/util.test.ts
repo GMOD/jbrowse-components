@@ -1,3 +1,4 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -6,6 +7,7 @@ import {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
+  pairedEndsLocString,
   parseSvAlt,
   readTranslocationMate,
   safeParseBreakend,
@@ -505,5 +507,116 @@ describe('readTranslocationMate keeps-directions', () => {
     expect(readTranslocationMate({ CHR2: ['chr2'], END: [100] })).toMatchObject(
       { myKeepsDir: 0, mateKeepsDir: 0 },
     )
+  })
+})
+
+describe('pairedEndsLocString', () => {
+  // K562's BCR--ABL1 as StarFusionAdapter emits it: both genes on +, the donor
+  // keeping its lower coordinates (-1) and the acceptor its higher ones (+1),
+  // so neither panel turns
+  test('a fusion on two + strand genes opens donor then acceptor, unturned', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr22',
+      start: 23_290_412,
+      end: 23_290_413,
+      mateDirection: -1,
+      mate: {
+        refName: 'chr9',
+        start: 130_854_063,
+        end: 130_854_064,
+        mateDirection: 1,
+      },
+    })
+    expect(pairedEndsLocString(f, 1000)).toBe(
+      'chr22:23,289,413..23,291,412 chr9:130,853,064..130,855,063',
+    )
+  })
+
+  // NUP214--XKR3: the acceptor is on -, so it keeps its LOWER coordinates and
+  // the right panel is reversed for the transcript to read across the seam
+  test('an acceptor keeping its left is reversed on the right panel', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr9',
+      start: 131_199_014,
+      end: 131_199_015,
+      mateDirection: -1,
+      mate: {
+        refName: 'chr22',
+        start: 16_808_082,
+        end: 16_808_083,
+        mateDirection: -1,
+      },
+    })
+    expect(pairedEndsLocString(f, 1000)).toBe(
+      'chr9:131,198,015..131,200,014 chr22:16,807,083..16,809,082[rev]',
+    )
+  })
+
+  test('a donor keeping its right is reversed on the left panel', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 10_000,
+      end: 10_001,
+      mateDirection: 1,
+      mate: { refName: 'chr2', start: 20_000, end: 20_001, mateDirection: 1 },
+    })
+    expect(pairedEndsLocString(f, 500)).toBe(
+      'chr1:9,501..10,500[rev] chr2:19,501..20,500',
+    )
+  })
+
+  test('a VCF breakend takes both ends and directions from its ALT', () => {
+    // N[chr2:2000[ keeps its left (-1) and the mate keeps its right (+1)
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 999,
+      end: 1_000,
+      ALT: ['N[chr2:2000['],
+    })
+    expect(pairedEndsLocString(f, 100)).toBe(
+      'chr1:900..1,099 chr2:1,900..2,099',
+    )
+  })
+
+  test('two ends of one contig within a window are one span', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 5000,
+      end: 5_001,
+      ALT: ['<DEL>'],
+      INFO: { END: [5600] },
+    })
+    expect(pairedEndsLocString(f, 1000)).toBe('chr1:4,001..6,599')
+  })
+
+  test('a record with one end has no pair to open', () => {
+    expect(
+      pairedEndsLocString(
+        new SimpleFeature({
+          uniqueId: 'f',
+          refName: 'chr1',
+          start: 5,
+          end: 6,
+          ALT: ['A'],
+        }),
+        100,
+      ),
+    ).toBeUndefined()
+  })
+
+  test('a window is clipped at the start of the contig', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 50,
+      end: 51,
+      mate: { refName: 'chr2', start: 5000, end: 5_001 },
+    })
+    expect(pairedEndsLocString(f, 1000)).toBe('chr1:1..1,050 chr2:4,001..6,000')
   })
 })

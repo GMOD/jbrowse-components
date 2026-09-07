@@ -14,6 +14,14 @@ function parseSTARFusionBreakpointString(str: string) {
   }
 }
 
+// which way the sequence a breakpoint keeps runs from it (1 = right, -1 =
+// left): the fusion transcript keeps the donor's 5' side and the acceptor's 3'
+// side, so on the strand each gene is transcribed from that is the donor's lower
+// coordinates and the acceptor's higher ones. StarFusionAdapter states the same
+function keepsDirection(strand: number | undefined, isDonor: boolean) {
+  return strand === undefined ? 0 : isDonor ? -strand : strand
+}
+
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
   const header = lines[0]
@@ -46,16 +54,25 @@ export function parseSTARFusionBuffer(buffer: Uint8Array) {
         const row = Object.fromEntries(
           columns.map((h, i) => [h, isNumber(cols[i]) ? +cols[i] : cols[i]!]),
         )
+        const donor = parseSTARFusionBreakpointString(
+          row.LeftBreakpoint as string,
+        )
+        const acceptor = parseSTARFusionBreakpointString(
+          row.RightBreakpoint as string,
+        )
         return {
           // what is displayed
           cellData: row,
           // an actual simplefeatureserialized
           feature: {
             uniqueId: `sf-${rowNumber}`,
-            ...parseSTARFusionBreakpointString(row.LeftBreakpoint as string),
-            mate: parseSTARFusionBreakpointString(
-              row.RightBreakpoint as string,
-            ),
+            type: 'fusion',
+            ...donor,
+            mateDirection: keepsDirection(donor.strand, true),
+            mate: {
+              ...acceptor,
+              mateDirection: keepsDirection(acceptor.strand, false),
+            },
           },
         }
       }),

@@ -17,6 +17,7 @@ export {
   hasBreakpointSplitView,
   makeTitle,
   navToLoc,
+  pairedEndsLocString,
   parseSvAlt,
   readTranslocationMate,
   safeParseBreakend,

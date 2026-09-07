@@ -4,6 +4,7 @@ import {
   breakpointSplitViewId,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
+  pairedEndsLocString,
 } from '@jbrowse/sv-core'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
@@ -14,6 +15,9 @@ import type {
   BreakpointSplitViewHost,
   FindJunctionsNear,
 } from '@jbrowse/sv-core'
+
+// either side of each breakpoint when a row's two ends open as one view
+const PAIRED_END_WINDOW_BP = 5000
 
 export default function FeatureMenu({
   assemblyName,
@@ -43,7 +47,11 @@ export default function FeatureMenu({
                 spreadsheetViewId,
                 assemblyName,
                 session,
-                locString: assembleLocStringRaw(feature),
+                locString:
+                  pairedEndsLocString(
+                    new SimpleFeature(feature),
+                    PAIRED_END_WINDOW_BP,
+                  ) ?? assembleLocStringRaw(feature),
                 trackId,
               })
             } catch (e) {
