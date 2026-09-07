@@ -85,7 +85,7 @@ straight off S3 or through small tabix projections we host beside them.
   haplotypes:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
 - our companion haplotype index for that database, which HPRC does not publish:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 - our own rGFA, bubble and repeat-density projections, with the exact build
   recorded beside them: https://jbrowse.org/demos/hprc/README.txt
 - hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
@@ -1525,7 +1525,7 @@ alignment underneath, the TAF, is release 2.0, which
     "type": "GbzBaseSyntenyAdapter",
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
     "haplotypeIndexLocation": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db"
+      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
     },
     "assemblyNames": [
       "hg38",
@@ -1599,10 +1599,13 @@ the lanes are the graph's own walks.
 
 `haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
 haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so the
-companion file holds two side tables that place a GBWT position every 16 kb
-along every path and give each path its length. It sits beside the database and
-leaves it untouched, which is what lets a database somebody else published get
-haplotype names.
+companion file holds side tables that place a GBWT position every 16 kb along
+every path and give each path its length. It also names an **anchor** every 128
+kb along GRCh38 and CHM13, the node in that stretch most haplotypes pass, with a
+row for every haplotype's visit through it, so a window asked for a chosen set
+of lanes walks those haplotypes from the anchor before it and never names the
+rest. It sits beside the database and leaves it untouched, which is what lets a
+database somebody else published get haplotype names.
 
 ### What a window costs {#gbz-window-cost}
 
@@ -1684,7 +1687,7 @@ reference walk, the kept walks and only the nodes those walks visit:
 ```bash
 npx -p @gmod/gbz-base gbz-base-query \
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
-  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.db \
+  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
   --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
   --context 1000 --snarls --format gfa \
   --keep HG00097#1 --keep HG00099#1 --keep HG00128#1 --keep HG00133#1 \
@@ -1731,11 +1734,16 @@ input. Then name the haplotypes:
 ```bash
 # --interval is how often a GBWT position is recorded along each path, in bp.
 # Denser means a bigger file and a shorter walk at query time to identify a
-# haplotype. 16384 over the 464 haplotypes of the HPRC graph is 159M recorded
-# positions and a 7.0 GB companion, written in about 70 minutes on 14 cores.
+# haplotype. 16384 over the 464 haplotypes of the HPRC graph, with the anchor
+# rows below, is 178.5M recorded positions and a 7.9 GB companion, written in
+# about 13 minutes on 24 cores.
+# --anchor-spacing is how often an anchor node is chosen along each reference
+# path, the node most haplotypes pass in the half spacing before each multiple;
+# every haplotype's visit through it is recorded, which is what lets a window
+# for a chosen set of lanes walk only those haplotypes. 131072 is the default.
 # --output writes a companion file instead of adding the tables to the
 # database, which is the form to use on a database you did not build.
-gbz-haplotype-index --interval 16384 \
+gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
   --output graph.haplotype-index.db graph.gbz
 ```
 

@@ -12,14 +12,16 @@
 # for a database somebody else hosts.
 #
 # Requires: cargo (Rust), curl, git. Measured on the release 2.1 GRCh38 graph
-# with 14 threads: 28 s to load the GBZ, 71 minutes of walking, 11 s to sort the
-# 158.7M recorded positions and 166 s to write them. The sort holds every
-# position in memory, so give it room. The 5.5 GB download is one-time and
-# resumable.
+# with 24 threads on a Linux box: 13 s to load the GBZ, 4 s to choose the
+# anchors, 11 minutes of walking, 7 s to sort the 178.5M recorded positions
+# and 95 s to write them, for a 7.9 GB companion. The sort holds every position
+# in memory, so give it room. The 5.5 GB download is one-time and resumable.
+# On a 16-thread Intel Mac (macOS 15) the walk aborted inside libmalloc's nano
+# zone; MallocNanoZone=0 or --threads 8 got past it, at over an hour of walking.
 #
 # Usage: bash scripts/build_hprc_gbz_index.sh [out-dir]
 #
-# Produces <out-dir>/hprc-v2.1-mc-grch38.haplotype-index.db.
+# Produces <out-dir>/hprc-v2.1-mc-grch38.haplotype-index.anchored.db.
 set -euo pipefail
 
 OUT="${1:-hprc_gbz_index_build}"
@@ -42,12 +44,17 @@ fi
 cargo build --release --manifest-path gbz-base-js/tools/haplotype-index/Cargo.toml
 
 # --interval is the bp spacing of the recorded GBWT positions. 16384 gives 159M
-# positions over this graph's 53,150 paths and a 7.0 GB companion; at 65536 it
-# is a quarter the size and a haplotype walks up to four times further to be
-# identified.
+# positions over this graph's 53,150 paths; at 65536 it is a quarter the size
+# and a haplotype walks up to four times further to be identified.
+# --anchor-spacing is the bp spacing of the anchors along GRCh38 and CHM13, the
+# node most haplotypes pass in the half spacing before each multiple, with every
+# haplotype's visit through it recorded; a window for a chosen set of lanes
+# walks those haplotypes from the anchor before it. 131072 over the 292
+# reference paths is 45,557 anchors.
 gbz-base-js/tools/haplotype-index/target/release/gbz-haplotype-index \
   --interval 16384 \
-  --output hprc-v2.1-mc-grch38.haplotype-index.db \
+  --anchor-spacing 131072 \
+  --output hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
   "$GBZ"
 
-echo "wrote $OUT/hprc-v2.1-mc-grch38.haplotype-index.db"
+echo "wrote $OUT/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
