@@ -1,6 +1,6 @@
 ---
 name: gpu-sample-distance-matrix
-description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than 5.1.0 on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it. Read the MAF section before proposing the obvious second application: at 464 haplotypes the kernel buys 1.7 to 2.2x where it buys 3.6x at 2504 samples, so what was capping that display's resolution was a mispriced bin cap and not the distance build — and the fractional rows it clusters do accumulate f32 error where the integer dosages hid it.
+description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than 5.1.0 on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it. Read the MAF section before proposing the obvious second application: at 464 haplotypes the kernel buys 1.7 to 2.2x where it buys 3.6x at 2504 samples, so what was capping that display's resolution was a mispriced bin cap and not the distance build — and the fractional rows it clusters do accumulate f32 error where the phase 3 panel's integer dosages hid it — and the variant path emits fractions too, at every imputed no-call. Read the heap prerequisite before wiring anything: the input crosses into hclust's 2 GB wasm heap, and no shipped config reaches the rows where the kernel wins.
 ---
 
 # A GPU sample distance matrix for clustering
@@ -96,19 +96,43 @@ dog10k (167 dogs, 611 columns) clusters in 16 ms on the CPU and the GPU dispatch
 takes 18 ms. A small cohort has nothing to gain; the population panel is the
 case.
 
+## What ships at this scale
+
+No shipped config reaches the table's large rows. The hosted 1000 Genomes
+genotype slice (`jbrowse.org/genomes/hg19/1000genomes/…HBB_5.2-5.3Mb.vcf.gz`,
+2,504 samples, 3,984 sites, 33 multiallelic, no no-calls) is the first row —
+2.7 s on the wasm, 0.42 s on the kernel — and the file ends at 100 kb. The
+3,202-sample 1KGP callset on `jbrowse.org/demos/1000g` is the SV ensemble
+callset, ~70 sites per Mb and all unphased: N is large and V is tiny, so what
+it costs is the merge loop's tie rescans (`reference/CLUSTERING_WORKFLOW.md`
+§"Where the time goes"), which a distance kernel does not touch. The large rows
+are a user pointing the app at a full phase 3 chromosome, the public URL
+`test_data/1000g_snpeff_chr1/README.md` builds from.
+
 ## What integrating it took, and what is still open
 
 - **hclust 5.2.0 takes a precomputed distance matrix.** `clusterData({
   distances })` runs only the merge loop, reading the upper triangle, which is
   the half the kernel writes. Its per-merge body is its own wasm function so
   the first call in a worker tiers up, the way the distance build already did.
+  That entry is also what moves the heap wall
+  (`reference/CLUSTERING_WORKFLOW.md` §"Where the memory goes"): handed
+  distances, the wasm never sees the N×V input at all. The fallback still does,
+  so the wall is the fallback's.
 - **Same gate and fallback pattern as LD.** `MIN_WORK` of 10^9 pair-elements,
   a dispatch plan that refuses what the device cannot bind, a validation
   error scope, and a spot check against f64 for the truncated dispatch that
   raises no error. The parity oracle is the probe in headed Chrome, since
   jest has no GPU: identical trees on the 1000 Genomes windows.
-- **Accumulation precision is in the kernel.** Squares are summed in blocks
-  of 16 with Kahan compensation; `--fractional` on the probe is the check.
+- **Accumulation precision is in the kernel, and the parity input has to be
+  fractional.** Squares are summed in blocks of 16 with Kahan compensation;
+  `--fractional` on the probe is the check, and it is the case that matters
+  because the variant path's dosages are not integers: `readAltDosages` writes
+  `2 × calls / called`, so a polyploid call is a fraction, and
+  `imputeMissingToSiteMean` runs unconditionally before hclust and writes a
+  site mean into every no-call — 15% of sites (0.7% of cells) on the hosted
+  3,202-sample 1KGP callset. The exact f64 match above is a property of the
+  phase 3 matrices, which carry no no-calls, not of the kernel.
 - **Still open: three visuals from one dispatch.** With the matrix on the
   GPU, a few power iterations give PC1 and an ordering by it (local PCA,
   whose whole point is that the answer differs per window), and one row of
@@ -164,10 +188,10 @@ and the MAF path does not have the N. The population panel still does.
 **The fractional case does drift, and dosages hid it.** With `--fractional` the
 max relative error against an f64 reference climbs with V — 7.7e-7 at 512,
 6.8e-6 at 5000, 3.6e-5 at 20,000 — where the 0/1/2 dosage matrices come back at
-exactly 0. So the "f32 partial sums are exact" result above is a property of
-integer dosages, not of the kernel, and any caller with fractional rows
-(identity fractions, imputed dosages) needs the promote-every-16 pattern and a
-parity test built on fractional input. All on an AMD gcn-4 box, Chrome 151.
+exactly 0. So the "f32 partial sums are exact" result above is a property of the
+phase 3 panel's integer dosages, not of the kernel, and every caller — identity
+fractions here, imputed dosages on the variant path — needs the
+promote-every-16 pattern and a parity test built on fractional input. All on an AMD gcn-4 box, Chrome 151.
 
 ## The other candidates that pass the criterion
 

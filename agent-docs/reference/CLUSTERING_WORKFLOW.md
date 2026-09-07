@@ -91,17 +91,26 @@ handful of small values where the two widths agree exactly.
 ### Variants — genotype matrix (`getGenotypeMatrix.ts`)
 
 - **Rows** = samples
-- **Columns** = variants passing `minorAlleleFrequencyFilter` + jexl filters
-- **Values** = dosage in `Int8Array`:
-  - `0` = homozygous ref
-  - `1` = heterozygous
-  - `2` = homozygous alt
-  - `-1` = missing / uncalled
+- **Columns** = one per ALT allele of every variant passing the MAF,
+  missingness and jexl filters, so a multiallelic site is several columns
+- **Values** = `Float32Array` dosage on a diploid scale,
+  `2 × (calls of that ALT) / (called alleles)`: 0, 1, 2 for a complete diploid
+  call, a fraction for a polyploid one, `NaN` for a no-call
+
+`genotypeMatrixEncoding.ts` says why a dosage and not a class, and why NaN is
+the only missing marker. The R/TSV export writes it as `NA`; the in-app path
+runs `imputeMissingToSiteMean` first, because hclust rejects non-finite input,
+so every no-call becomes its site's mean over the called samples — a fraction.
+On the hosted 3,202-sample 1KGP SV callset 15% of sites carry a no-call (0.7%
+of cells), so fractional rows are the norm on a real panel; the 1000 Genomes
+phase 3 slices carry none, which is why the measurements behind
+`ideas/gpu-sample-distance-matrix.md` saw integer dosages.
 
 ### Variants phased mode (`getPhasedGenotypeMatrix.ts`)
 
 `renderingMode === 'phased'`: one row per haplotype per sample (e.g. `HG001
-HP0`, `HG001 HP1`). Values are allele indices in `Int16Array`.
+HP0`, `HG001 HP1`). Values are a per-haplotype alt indicator in `Float32Array`,
+0 or 1, with `NaN` for a no-call or an unphased genotype, imputed the same way.
 
 The dialog commits a finished run through one `applyOrder(order)` callback,
 which calls `applyClusterOrder` (`plugins/variants/src/shared/`) and hands the
@@ -260,6 +269,40 @@ the shipped `gpuDistanceMatrix` into headed Chrome and times it, then times
 hclust's merge on the matrix that came back, against the wasm doing both;
 `--matrix` reads the dumps `pnpm bench:real --dump` writes in the hclust repo.
 `ideas/gpu-sample-distance-matrix.md` has the numbers.
+
+The other way the merge loop stops being noise is ties. hclust caches each
+cluster's nearest neighbour and rescans when that neighbour merges away, and on
+rows that are mostly identical every merge invalidates every cache: 3,202 rows
+carrying 9 distinct values took 27 s where 3,202 distinct rows took 0.36 s
+(5.1.0, node, 2026-09-07). That is the shape the hosted 1KGP SV callset
+(`jbrowse.org/demos/1000g`, 3,202 samples, ~70 sites per Mb, all unphased)
+presents in a window holding one or two SVs, so on that panel the freeze is in
+the merge loop, not the distance build, and a distance kernel would not touch
+it.
+
+## Where the memory goes
+
+The matrix crosses into hclust's wasm heap, and that heap is built with
+`MAXIMUM_MEMORY=2GB` — the one hard wall on the path. N×V×4 for the input and
+N²×4 for the distance matrix the C allocates have to share it; everything else
+is browser memory pressure. 5.1.0, which this tree pins, stages a flat
+`Float32Array` copy of the rows on the way in, so the input is live three times
+(the builder's `Map<string, Float32Array>`, the staging copy, the heap) while
+the distance build runs, and it checks no `_malloc` result — a data allocation
+the heap refuses comes back 0 and the matrix is written at address 0. On the
+shapes the idea doc measures:
+
+| window                    |     N |        V | rows + staging (JS) | heap: input + distances | in 2 GB |
+| ------------------------- | ----: | -------: | ------------------: | ----------------------: | ------- |
+| 1 Mb, MAF 0, samples      | 2,504 |   22,514 |              451 MB |           225 MB + 25 MB | yes     |
+| 1 Mb, MAF 0, haplotypes   | 5,008 |   22,383 |              897 MB |          448 MB + 100 MB | yes     |
+| 4.5 Mb, MAF 0, haplotypes | 5,008 | ~100,000 |              4.0 GB |          2.0 GB + 0.1 GB | no      |
+
+The time wall comes first: the 1 Mb haplotype row already takes 98 s, so the
+run that reaches the heap is a seven-minute one. Nothing in this tree weighs
+N against V; the dialog shows whatever `clusterMatrix` throws, and the next
+hclust (in `~/src/gmod/hclust`) throws before allocating, with both sizes in
+the message, drops the staging copy and checks every malloc.
 
 ## Key files
 
