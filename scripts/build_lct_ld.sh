@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the LCT linkage-disequilibrium slice that
-# website/docs/tutorials/ld_human.md and the two ld/lct_* figures read. Unlike
-# the mosquito page's precomputed PLINK tracks, no LD is precomputed here: the
-# slice is genotypes, and LDDisplay computes exact haplotypic r² from them in the
-# browser. This script only decides WHICH genotypes.
+# website/docs/tutorials/ld_human.md and the two ld/lct_* figures read: the
+# genotype slices, and the two PLINK r² tables the triangles are drawn from,
+# one per cohort. This script decides WHICH genotypes and correlates them.
 #
 # Two choices, both of which the script measures and prints rather than asserts:
 #
@@ -47,9 +46,10 @@
 # trailing whitespace on a few rows, which bcftools -S then silently skips
 # rather than failing: trim before use.
 #
-# Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl, awk,
-#           bedGraphToBigWig (UCSC), for the Fst track.
-#           plink2 (for the printed r² tables only)
+# Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix, bgzip),
+#           curl, awk, bedGraphToBigWig (UCSC), for the Fst track.
+#           plink2 (frequency filter, Fst) and plink 1.9 (the r² tables) — see
+#           the ld_human.md footnote for why both.
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
 set -euo pipefail
 
@@ -64,6 +64,10 @@ done
 
 OUTDIR="${1:-lct_ld_build}"
 PLINK="${PLINK:-plink2}"
+# The r² tables. plink2 only grew --r2-phased in its a6 alphas, and this script
+# should run on the plink2 that is actually installed, so the pairwise step is
+# PLINK 1.9's --r2, whose columns land at the same offsets under other names.
+PLINK19="${PLINK19:-plink}"
 COLLECTION=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage
 CHR2=$COLLECTION/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 # Populations and superpopulations for all 3202; the 2504-row index is what says
@@ -251,6 +255,42 @@ for vcf in "$OUT" "$POOLED"; do
        END {printf "  %-32s %.3f  (%d pairs)\n", f, s/n, n}' block.vcor
 done
 
+# ── The served r² tables ─────────────────────────────────────────────────────
+# One per cohort, and the pair is the point: r² is a within-population quantity,
+# so each side keeps the variants that are common in ITS OWN samples. Filtering
+# both on the pooled frequencies would answer a different question.
+#
+# The MAF floor is applied HERE rather than in the browser. That is the whole
+# difference from a genotype track: a precomputed table has no genotypes behind
+# it to re-filter, so the floor is a property of the file and the figure's claim
+# has to survive it. The block/anchor tables printed above are what check that.
+#
+# --ld-window and --ld-window-kb both have to be raised: PLINK 1.9 stops after
+# 10 variants OR 1 Mb, whichever comes first, and either default clips this
+# block. --ld-window-r2 0 keeps the uncorrelated pairs so white cells are drawn
+# as white rather than left absent, which is what makes the block's edges edges.
+ld_table() {
+  local vcf="$1" out="$2"
+  "$PLINK" --vcf "$(snvs "$vcf")" --double-id --allow-extra-chr \
+    --output-chr chrM --set-missing-var-ids @:# --maf "$MAF" --chr chr2 \
+    --write-snplist --out "$out.sel" > /dev/null
+  "$PLINK19" --vcf "$(snvs "$vcf")" --double-id --allow-extra-chr \
+    --output-chr chrM --set-missing-var-ids @:# --extract "$out.sel.snplist" \
+    --r2 dprime --ld-window 999999 --ld-window-kb 4000 --ld-window-r2 0 \
+    --out "$out" > /dev/null
+  # tabix needs real tabs and a commented header; plink pads its columns with
+  # spaces to align them, which is not the same thing.
+  awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' "$out.ld" \
+    | bgzip > "$out.ld.gz"
+  tabix -s 1 -b 2 -e 2 -f "$out.ld.gz"
+  echo "  $out.ld.gz  $(wc -l < "$out.ld") rows  $(du -h "$out.ld.gz" | cut -f1)"
+}
+
+echo
+echo "r² tables:"
+ld_table "$OUT" lct_1kg38_chr2_${PANEL_CODE,,}
+ld_table "$POOLED" lct_1kg38_chr2_pooled
+
 # ── JBrowse app ──────────────────────────────────────────────────────────────
 # Everything above is data; this turns it into something to open, the same shape
 # the other popgen build scripts end in. The assembly is the hosted UCSC hg38
@@ -285,34 +325,32 @@ cp "$OUT" "$OUT.tbi" "$POOLED" "$POOLED.tbi" "$FST_BW" "$HAP" "$HAP.tbi" "$APP"/
 python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
   hg38-ncbiRefSeqCurated hg38-clinvarMain hg38-recombAvg
 
-python3 - "$APP/config.json" "$OUT" "$POOLED" "$FST_BW" "$HAP" "$MAF" <<'PY'
+python3 - "$APP/config.json" "$FST_BW" "$HAP" "$MAF" \
+  "lct_1kg38_chr2_${PANEL_CODE,,}.ld.gz" lct_1kg38_chr2_pooled.ld.gz <<'PY'
 import json, sys
 
-path, panel, pooled, fst, hap, maf = sys.argv[1:7]
+path, fst, hap, maf, panel_ld, pooled_ld = sys.argv[1:7]
 maf = float(maf)
 cfg = json.load(open(path))
 
 
 def ld_track(track_id, name, uri):
     return {
-        'type': 'VariantTrack',
+        'type': 'LDTrack',
         'trackId': track_id,
         'name': name,
         'assemblyNames': ['hg38'],
         'adapter': {
-            'type': 'VcfTabixAdapter',
+            'type': 'PlinkLDTabixAdapter',
             'uri': uri,
         },
         'displays': [{
-            'type': 'LDDisplay',
-            'displayId': f'{track_id}-LDDisplay',
-            # The display correlates the genotypes themselves, so the whole
-            # window is fetched and the byte gate trips. forceLoad is the
-            # declarative half of that banner's FORCE LOAD button, scoped to
-            # this view; raising the adapter's fetchSizeLimit instead would move
-            # the ceiling for every window of the track.
-            'forceLoad': True,
-            'minorAlleleFrequencyFilter': maf,
+            'type': 'LDTrackDisplay',
+            'displayId': f'{track_id}-LDTrackDisplay',
+            # No forceLoad and no MAF slot: the table is already correlated and
+            # already filtered, so neither the byte gate nor a frequency floor
+            # has anything left to act on here. The floor that WAS applied is
+            # the one ld_table used, printed above.
             'useGenomicPositions': True,
             'height': 330,
         }],
@@ -320,8 +358,8 @@ def ld_track(track_id, name, uri):
 
 
 cfg['tracks'] += [
-    ld_track('kgp_lct_pooled', 'All panels pooled (r²)', pooled),
-    ld_track('kgp_lct_panel', 'One population panel (r²)', panel),
+    ld_track('kgp_lct_pooled', 'All panels pooled (r²)', pooled_ld),
+    ld_track('kgp_lct_panel', 'One population panel (r²)', panel_ld),
     {
         'type': 'QuantitativeTrack',
         'trackId': 'kgp_lct_fst',
@@ -357,8 +395,10 @@ cfg['tracks'] += [
             'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantMatrixDisplay',
             'renderingMode': 'phased',
             'colorBy': 'population',
+            # This lane still reads genotypes, so unlike the LD tracks above
+            # it keeps both: the floor is a control a reader can move, and the
+            # gate has a real byte estimate to trip on.
             'minorAlleleFrequencyFilter': maf,
-            # same reason as the LD lanes above
             'forceLoad': True,
             'height': 700,
         }],

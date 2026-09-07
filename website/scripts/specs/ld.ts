@@ -57,28 +57,23 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 // haplotype to high frequency in dairying populations, so a large block of SNPs
 // around LCT is inherited together — a long stretch of high r².
 const lctTrack = (name: string, height = 510) => ({
-  type: 'VariantTrack',
+  type: 'LDTrack',
   trackId: 'kgp_lct_ld',
   name,
   assemblyNames: ['hg38'],
   adapter: {
-    type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz',
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz',
   },
   displays: [
     {
-      type: 'LDDisplay',
+      type: 'LDTrackDisplay',
       showLDTriangle: true,
       showLegend: true,
-      // r² is computed from the genotypes themselves, so the whole window has
-      // to be fetched and the byte gate trips. `forceLoad` is the declarative
-      // half of that banner's own FORCE LOAD button, which is what it is for:
-      // a view nobody can click. A raised `fetchSizeLimit` would also get the
-      // figure drawn, and it is the worse instrument -- it moves a ceiling that
-      // protects every OTHER window of the same track, so a reader who opens
-      // the live link and pans somewhere dense downloads it with no warning.
-      forceLoad: true,
-      minorAlleleFrequencyFilter: 0.35,
+      // No forceLoad and no MAF filter: both were settings of the in-browser
+      // estimator this file replaced. The 0.35 floor is now applied by
+      // build_lct_ld.sh when it picks the variants to correlate, so it is a
+      // property of the file rather than a control a reader can move.
       // Cells sized by genomic distance, so the triangle shares the x axis of
       // the gene lane and the ruler above it (review: "consider also using
       // useGenomicPositions:true"). Off, x is SNP INDEX, and index density is
@@ -471,23 +466,23 @@ const LCT_FST_TRACK = {
 }
 
 const lctPanelTrack = (trackId: string, name: string, file: string) => ({
-  type: 'VariantTrack',
+  type: 'LDTrack',
   trackId,
   name,
   assemblyNames: ['hg38'],
   adapter: {
-    type: 'VcfTabixAdapter',
+    type: 'PlinkLDTabixAdapter',
     uri: `https://jbrowse.org/demos/popgen/${file}`,
   },
   displays: [
     {
-      type: 'LDDisplay',
+      type: 'LDTrackDisplay',
       showLDTriangle: true,
       showLegend: true,
-      // see lctTrack above: the gate is lifted for this view rather than raised
-      // for the track
-      forceLoad: true,
-      minorAlleleFrequencyFilter: 0.35,
+      // The MAF floor is per cohort and applied at build time, which is what
+      // makes this pair a fair comparison: each side keeps the variants that
+      // are common in ITS OWN samples, the same thing the estimator did when
+      // it filtered each track's genotypes.
       height: 330,
       // Cells sized by genomic distance (review: "potentially use 'proportional
       // sizing' for the ld blocks with useGenomicPositions:true"). This also
@@ -514,12 +509,12 @@ export const ldSpecs: ScreenshotSpec[] = [
         lctPanelTrack(
           'kgp_lct_pooled',
           'All 1000 Genomes populations pooled (r²)',
-          'lct_1kg38_chr2_pooled_wide.vcf.gz',
+          'lct_1kg38_chr2_pooled.ld.gz',
         ),
         lctPanelTrack(
           'kgp_lct_panel',
           'European panel only, where the sweep happened (r²)',
-          'lct_1kg38_chr2_eur_wide.vcf.gz',
+          'lct_1kg38_chr2_eur.ld.gz',
         ),
         LCT_FST_TRACK,
         DECODE_RECOMB_TRACK,
@@ -646,8 +641,8 @@ export const ldSpecs: ScreenshotSpec[] = [
               maxScore: 100,
               height: 100,
             },
-            { trackId: 'kgp_lct_pooled', type: 'LDDisplay', height: 250 },
-            { trackId: 'kgp_lct_panel', type: 'LDDisplay', height: 250 },
+            { trackId: 'kgp_lct_pooled', type: 'LDTrackDisplay', height: 250 },
+            { trackId: 'kgp_lct_panel', type: 'LDTrackDisplay', height: 250 },
           ],
         },
       ],
@@ -1271,7 +1266,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // The triangle directly above the matrix, on one x axis: a column
             // of the matrix and a corner of the triangle are the same variant,
             // and the block's edges land at the same coordinates in both.
-            { trackId: 'kgp_lct_ld', type: 'LDDisplay' },
+            { trackId: 'kgp_lct_ld', type: 'LDTrackDisplay' },
             {
               trackId: 'kgp_lct_haplotypes',
               type: 'LinearMultiSampleVariantMatrixDisplay',

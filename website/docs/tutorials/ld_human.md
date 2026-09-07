@@ -2,15 +2,16 @@
 title: LD at a selective sweep (human)
 sidebar_label: LD at a sweep (human)
 description:
-  Compute an LD triangle live from phased genotypes, and cut a window that shows
-  the block's edges
+  Precompute an LD triangle with PLINK, and cut a window that shows the block's
+  edges
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
 **TL;DR:** we look at linkage disequilibrium around the lactase gene, where
 selection for lactase persistence left one long block of correlated variants.
-JBrowse computes the r² triangle in the browser, straight from a phased VCF.
+PLINK correlates the phased genotypes and JBrowse draws the triangle from its
+output.
 
 ## Prerequisites
 
@@ -25,8 +26,9 @@ JBrowse computes the r² triangle in the browser, straight from a phased VCF.
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), for the Fst
   lane
-- [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/), for the Fst
-  lane[^plink19]
+- [PLINK 1.9](https://www.cog-genomics.org/plink/) for the r² tables and
+  [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst lane and the
+  frequency filter[^plink19]
 
 ## Where the data comes from
 
@@ -44,8 +46,11 @@ coordinates the figures use.
 - populations and superpopulations, narrowed to that unrelated set for
   `panel.samples` (EUR) and `rest.samples` (everything else):
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
-- the EUR slice the triangle is drawn from, rehosted so the figures and their
-  live links load without the EBI round trip:
+- the two r² tables the triangles are drawn from, one per cohort, as PLINK wrote
+  them: https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz and
+  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz
+- the EUR slice they were computed from, rehosted so the live links load without
+  the EBI round trip:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
 - the six-population slice the haplotype matrix reads:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
@@ -59,26 +64,24 @@ Red means two variants are almost always inherited together, white means they
 are independent. The triangle is a pairwise matrix turned on its corner, so the
 vertical axis is the distance between the two variants compared.
 
-To draw one, add an [`LDDisplay`](/docs/config/lddisplay/) to an ordinary
-`VariantTrack` in an hg38 session:
+To draw one, point an [`LDTrack`](/docs/config/ldtrack) at the r² table
+[PLINK wrote below](#correlate-the-variants-with-plink), in an hg38 session:
 
 ```json addtrack
 {
-  "type": "VariantTrack",
+  "type": "LDTrack",
   "trackId": "kgp_lct_ld",
   "name": "LCT lactase-persistence LD, 1000G European panel (r²)",
   "assemblyNames": ["hg38"],
   "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz"
+    "type": "PlinkLDTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz"
   },
   "displays": [
     {
-      "type": "LDDisplay",
-      "minorAlleleFrequencyFilter": 0.35,
+      "type": "LDTrackDisplay",
       "useGenomicPositions": true,
       "showLegend": true,
-      "forceLoad": true,
       "height": 360
     }
   ]
@@ -87,17 +90,17 @@ To draw one, add an [`LDDisplay`](/docs/config/lddisplay/) to an ordinary
 
 What each setting does:
 
-- [`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
-  thins a dense callset to the common, block-tagging variants
-- [`useGenomicPositions`](/docs/config/sharedlddisplay/#slot-usegenomicpositions)
+- [`useGenomicPositions`](/docs/config/ldtrackdisplay/#slot-usegenomicpositions)
   sizes each cell by genomic distance, so the block's edges land under their
   coordinates
-- [`forceLoad`](/docs/config/sharedlddisplay/#slot-forceload) presses the
-  **FORCE LOAD** button for you, since r² is computed from the genotypes and a
-  window this wide exceeds what a track fetches unasked. Set it where nobody is
-  there to click: a figure, an embed, a notebook
-- [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) raises
-  that ceiling for the whole track instead
+- [`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks which of the
+  file's columns to draw. This table carries both r² and D', so either reads; a
+  file without a `DP` column disables the D' row rather than drawing zeros
+
+The allele-frequency floor is not a display setting here. It is applied when the
+variants are picked for correlation, so it is a property of the file — which is
+also why the two cohorts below are a fair comparison rather than one filter
+applied twice.
 
 The block is a selective sweep: the allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants
@@ -110,7 +113,7 @@ entry and the per-population frequency table.
 The slice decides the picture: reach past both edges of the block, and cut the
 region twice, once over the whole release and once over the European panel the
 sweep happened in. r² is a correlation across every sample in the file, so the
-two files draw two different triangles.
+two files give two different triangles.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -129,9 +132,40 @@ tabix -p vcf panel.vcf.gz
 
 The [reproduce script](#reproduce-it-end-to-end) bins r² against the causal
 variant by position and prints where the correlation falls away, which is where
-this window's width comes from. The two files also draw different variants,
-since `minorAlleleFrequencyFilter` is a frequency in whatever samples the file
-holds.
+this window's width comes from.
+
+## Correlate the variants with PLINK
+
+Two steps per cohort: pick the common variants, then correlate every pair of
+them. The MAF floor is what keeps the table to a size a browser can draw — every
+pair is a row, so n variants cost n(n-1)/2 of them.
+
+<!-- from: scripts/build_lct_ld.sh -->
+
+```bash
+# 0.35 is high for a MAF floor and deliberately so: it keeps the variants that
+# tag the block rather than every rare one riding on it. Frequency is measured
+# in THIS file's samples, so each cohort keeps its own set.
+plink2 --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
+  --set-missing-var-ids @:# --maf 0.35 --chr chr2 --write-snplist --out sel
+
+# dprime adds D' beside r², which is the display's other metric.
+# --ld-window-r2 0 keeps the uncorrelated pairs, so white cells are drawn as
+# white rather than left absent, and the two window flags have to be raised
+# together — the defaults cut off after 10 variants or 1 Mb, whichever comes
+# first, which would clip this block at both.
+plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
+  --set-missing-var-ids @:# --extract sel.snplist \
+  --r2 dprime --ld-window 999999 --ld-window-kb 4000 --ld-window-r2 0 \
+  --out lct_1kg38_chr2_eur
+
+# tabix needs real tabs and a commented header. plink pads its columns with
+# spaces to align them, which is not the same thing, so squeeze the runs to
+# tabs and mark the header before indexing.
+awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
+  lct_1kg38_chr2_eur.ld | bgzip > lct_1kg38_chr2_eur.ld.gz
+tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
+```
 
 ## Compute Fst per variant
 
@@ -280,11 +314,11 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 ```
 
-## When the cohort is too large to correlate live
+## A bigger span
 
-An [`LDTrack`](/docs/config/ldtrack) reads r² PLINK has already computed, from
-plink2's `.vcor` or PLINK 1.9's `.ld`. [](/docs/tutorials/ld_mosquitoes) goes
-that way over a 22 Mb inversion.
+[](/docs/tutorials/ld_mosquitoes) draws the same track type over a 22 Mb
+inversion, where the variants have to be thinned to a grid before they are
+correlated rather than only filtered by frequency.
 
 ## See also
 
@@ -306,5 +340,10 @@ that way over a 22 Mb inversion.
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
 
 [^plink19]:
-    PLINK 1.9 does the same work under different spellings, and writes `.ld`
-    where plink2 writes `.vcor`. JBrowse reads either.
+    The two are separate programs, not versions to choose between, and this page
+    uses each where it is the simpler one. plink2 gained `--r2-phased`, which
+    writes the same table as a `.vcor` under column names of its own, in the a6
+    alphas; on an earlier plink2 the flag is simply absent, which is why the r²
+    step here is PLINK 1.9's. JBrowse's
+    [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads either
+    spelling — it resolves the columns from the header rather than by position.
