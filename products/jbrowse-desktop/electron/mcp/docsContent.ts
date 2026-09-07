@@ -7,6 +7,7 @@ import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
+import { searchDocs } from './docSearch.ts'
 import { readDocSection } from './docSections.ts'
 import typePages from './docs/typeDocs.generated.json'
 import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
@@ -41,11 +42,31 @@ const TOPICS: Record<string, { summary: string; text: string }> = {
   },
 }
 
+// Every markdown topic and every generated type page, as one flat list for the
+// search. The type pages carry their name separately because a name match is
+// what an agent usually means.
+function searchableDocs() {
+  return [
+    ...Object.entries(TOPICS).map(([topic, t]) => ({ topic, text: t.text })),
+    ...(['models', 'configs'] as const).flatMap(kind =>
+      Object.entries(typePages[kind]).map(([name, page]) => ({
+        topic: `${kind === 'models' ? 'model' : 'config'}:${name}`,
+        text: page.text,
+        name,
+      })),
+    ),
+  ]
+}
+
 export function docsToolResult(
   args: Record<string, unknown>,
 ): BridgeToolResult {
   const topic = typeof args.topic === 'string' ? args.topic : ''
   const section = typeof args.section === 'string' ? args.section : ''
+  const search = typeof args.search === 'string' ? args.search : ''
+  if (search) {
+    return searchDocs(searchableDocs(), search)
+  }
   const entry = TOPICS[topic]
   if (entry) {
     return readDocSection(entry.text, section)
@@ -62,6 +83,10 @@ export function docsToolResult(
     '- model:<Name> / config:<Name>: one type\'s runtime API (actions, getters, properties) or config slots, generated from the running version; "types" lists every name',
   ].join('\n')
   return topic
-    ? { error: `No topic "${topic}". Available:\n${listing}` }
-    : { text: `Pass topic to read one of:\n${listing}` }
+    ? {
+        error: `No topic "${topic}". Available:\n${listing}\n\nOr pass search to look inside every page at once.`,
+      }
+    : {
+        text: `Pass topic to read one of:\n${listing}\n\nOr pass search to look inside every page at once (e.g. search "colorBy").`,
+      }
 }

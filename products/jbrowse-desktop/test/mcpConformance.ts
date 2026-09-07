@@ -266,6 +266,18 @@ try {
     Boolean(guide?.text?.includes('renameRegionsIfNeeded')),
   )
 
+  // the corpus was reachable by type name only, so a question phrased as what
+  // the setting is called had nowhere to go
+  const found = await client.call('docs', { search: 'fetchSizeLimit' })
+  check(
+    'docs search answers with a topic and section to read next',
+    Boolean(
+      found?.text?.includes('topic:"model:') &&
+      found.text.includes('section:"'),
+    ),
+    found?.text?.slice(0, 200),
+  )
+
   async function run(code: string) {
     return client.callJson('run_javascript', { code })
   }

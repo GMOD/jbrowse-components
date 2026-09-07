@@ -75,7 +75,7 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'docs',
     handledBy: 'stdio',
     description:
-      'Read the JBrowse automation documentation, generated from the running version. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "recipes" (worked snippets for the common asks — tabulating what is on screen, a derived track, a figure per locus, adding a remote file — each verified against the app), "hosted-data" (the ready-made config URL for any UCSC or GenArk assembly, for "show me BRCA1 in human" with nothing open), "session-spec" (the session spec / URL params reference, every view type and launch key), "automating" (overview), "model:<Name>" (one model type\'s runtime API — every action with its signature, getters, properties; the type name is jb.inspect(path).modelType, e.g. model:LinearAlignmentsDisplay), "config:<Name>" (one type\'s config slots, e.g. config:BamAdapter), "types" (every documented type name by category). A long topic answers with its table of contents and section sizes; pass section (a heading, e.g. "Actions") to read one part, or "all". Works while the app is closed.',
+      'Read the JBrowse automation documentation, generated from the running version. Pass search to look inside every page at once when you do not know the topic or type name ("colorBy", "modifications", "pif") — it answers with the topic and section to read next, ranked type name first. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "recipes" (worked snippets for the common asks — tabulating what is on screen, a derived track, a figure per locus, adding a remote file — each verified against the app), "hosted-data" (the ready-made config URL for any UCSC or GenArk assembly, for "show me BRCA1 in human" with nothing open), "session-spec" (the session spec / URL params reference, every view type and launch key), "automating" (overview), "model:<Name>" (one model type\'s runtime API — every action with its signature, getters, properties; the type name is jb.inspect(path).modelType, e.g. model:LinearAlignmentsDisplay), "config:<Name>" (one type\'s config slots, e.g. config:BamAdapter), "types" (every documented type name by category). A long topic answers with its table of contents and section sizes; pass section (a heading, e.g. "Actions") to read one part, or "all". Works while the app is closed.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -84,6 +84,11 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
           type: 'string',
           description:
             'A heading of the topic to read (e.g. "Linear genome view"), or "all" for the entire document',
+        },
+        search: {
+          type: 'string',
+          description:
+            'Text to find across every bundled page, when you do not know which topic holds it. Answers with matching topic/section pairs to read, not the pages themselves.',
         },
       },
     },
