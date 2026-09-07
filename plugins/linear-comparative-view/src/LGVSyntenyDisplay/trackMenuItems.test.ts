@@ -45,15 +45,16 @@ test('every colour row carries a session-default pin', () => {
 
 // A promoted default is keyed by display type, so this key is LGVSyntenyDisplay's
 // alone — no alignments pin can write it, which is exactly why the missing row
-// left the slot pinned to its base forever.
+// left the slot pinned to its base forever. Mapping quality rather than Strand:
+// strand is this display's `promotedBase`, and offering the base clears.
 test('a colour pin promotes that scheme for this display type', () => {
   const { session, display } = createSyntenyEnv()
-  const strand = colorRows(display).find(
-    i => 'label' in i && i.label === 'Strand',
+  const mapq = colorRows(display).find(
+    i => 'label' in i && i.label === 'Mapping quality',
   )
-  const pin = strand && 'pin' in strand ? strand.pin : undefined
+  const pin = mapq && 'pin' in mapq ? mapq.pin : undefined
   if (!pin) {
-    throw new Error('no pin on the Strand row')
+    throw new Error('no pin on the Mapping quality row')
   }
   expect(pin.control.active).toBe(false)
   // the click applies Strand to the open tracks; the toast's one action is what
@@ -62,7 +63,7 @@ test('a colour pin promotes that scheme for this display type', () => {
   takeSnackbarAction(session)
 
   const after = colorRows(display).find(
-    i => 'label' in i && i.label === 'Strand',
+    i => 'label' in i && i.label === 'Mapping quality',
   )
   expect(after && 'pin' in after ? after.pin?.control.active : undefined).toBe(
     true,

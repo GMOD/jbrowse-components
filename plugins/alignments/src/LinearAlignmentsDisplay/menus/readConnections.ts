@@ -1,5 +1,5 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { promotableToggleItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
@@ -7,20 +7,20 @@ import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
-  pairsDisplayTypeDefault: Pin
+  pairsDisplayTypeDefault: TogglePin
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  arcsDisplayTypeDefault: Pin
-  readCloudDisplayTypeDefault: Pin
+  arcsDisplayTypeDefault: TogglePin
+  readCloudDisplayTypeDefault: TogglePin
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  readConnectionsDownDisplayTypeDefault: Pin
+  readConnectionsDownDisplayTypeDefault: TogglePin
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
@@ -67,39 +67,39 @@ export function getReadConnectionsMenuItem(
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
     // Value checkbox + a trailing "default for all" pin, in one row.
-    promotableToggleItem({
-      label: 'View as pairs / link supplementary alignments',
-      checked: linked,
-      onToggle: () => {
+    checkboxItem(
+      'View as pairs / link supplementary alignments',
+      linked,
+      () => {
         model.setLinkedReads(linked ? 'off' : 'normal')
       },
-      pin: model.pairsDisplayTypeDefault,
-    }),
+      { pin: model.pairsDisplayTypeDefault },
+    ),
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
-    // overlays are mutually exclusive — enabling one disables the other. Their
-    // "default for all" pins target distinct on-values ('arc' vs 'cloud'), so
-    // they stay independent even though they share the readConnections slot.
-    promotableToggleItem({
-      label: 'Show read arcs',
-      checked: model.readConnections === 'arc',
-      onToggle: () => {
+    // overlays are mutually exclusive — enabling one disables the other. Each
+    // pin toggles its own member of the shared readConnections slot against
+    // 'off' ('arc' vs 'cloud'), so the two stay independent.
+    checkboxItem(
+      'Show read arcs',
+      model.readConnections === 'arc',
+      () => {
         model.setReadConnections(
           model.readConnections === 'arc' ? 'off' : 'arc',
         )
       },
-      pin: model.arcsDisplayTypeDefault,
-    }),
-    promotableToggleItem({
-      label: 'Show read cloud',
-      checked: model.readConnections === 'cloud',
-      onToggle: () => {
+      { pin: model.arcsDisplayTypeDefault },
+    ),
+    checkboxItem(
+      'Show read cloud',
+      model.readConnections === 'cloud',
+      () => {
         model.setReadConnections(
           model.readConnections === 'cloud' ? 'off' : 'cloud',
         )
       },
-      pin: model.readCloudDisplayTypeDefault,
-    }),
+      { pin: model.readCloudDisplayTypeDefault },
+    ),
     getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
@@ -119,14 +119,14 @@ export function getReadConnectionsMenuItem(
       disabled: !overlayActive,
       disabledHelpText: 'Enable "Show read arcs" or "Show read cloud" first',
       subMenu: [
-        promotableToggleItem({
-          label: 'Draw arcs below coverage band',
-          checked: model.readConnectionsDown,
-          onToggle: () => {
-            model.setReadConnectionsDown(!model.readConnectionsDown)
+        toggleItem(
+          'Draw arcs below coverage band',
+          model.readConnectionsDown,
+          down => {
+            model.setReadConnectionsDown(down)
           },
-          pin: model.readConnectionsDownDisplayTypeDefault,
-        }),
+          { pin: model.readConnectionsDownDisplayTypeDefault },
+        ),
         toggleItem(
           'Show concordant-pair arcs',
           model.drawProperPairArcs,

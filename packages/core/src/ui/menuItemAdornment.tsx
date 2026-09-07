@@ -9,9 +9,8 @@ import type { MenuItem } from './MenuTypes.ts'
  * the builder already made — the escape hatch, for content nothing else can
  * describe. `pin` is a *description* of the "default for all tracks of
  * this type" pin, and turning it into `PinAdornment` here is the whole
- * point: the builders that set it (`promotableToggleItem`,
- * `promotableRadioItem`) are called from state models and menu modules, which
- * are eager, so a module that constructs the element instead puts MUI's
+ * point: the row builders that set it (`toggleMenuItems.ts`) are called from
+ * state models and menu modules, which are eager, so a module that constructs the element instead puts MUI's
  * `ToggleButton`, `Tooltip` and two icons into every host's first paint.
  *
  * Live in one place rather than at each of the four render sites, because the

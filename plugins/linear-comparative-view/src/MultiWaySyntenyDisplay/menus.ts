@@ -8,7 +8,7 @@ import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface LaneOrderModel {
@@ -67,7 +67,7 @@ export interface LaneSettingsModel {
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
   showLegend: boolean
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (flag: boolean) => void
   /** whether the drawn colors key anything; false leaves the row out */
   hasLegendKey: boolean

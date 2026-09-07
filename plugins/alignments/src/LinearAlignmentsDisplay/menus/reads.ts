@@ -1,4 +1,4 @@
-import { promotableToggleItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
@@ -8,13 +8,13 @@ import type {
   CollapseGroupRowsModel,
   HiddenGroupsModel,
 } from './groupByMenu.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean
@@ -23,13 +23,13 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  softClippingDisplayTypeDefault: Pin
+  softClippingDisplayTypeDefault: TogglePin
   isChainMode: boolean
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
-  mismatchAlphaDisplayTypeDefault: Pin
+  mismatchAlphaDisplayTypeDefault: TogglePin
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -59,10 +59,7 @@ function softClippingItem(model: ReadsModel) {
         disabledHelpText:
           'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
       })
-    : promotableToggleItem({
-        label,
-        checked: model.showSoftClipping,
-        onToggle,
+    : toggleItem(label, model.showSoftClipping, onToggle, {
         pin: model.softClippingDisplayTypeDefault,
       })
 }
@@ -94,14 +91,14 @@ export function getReadsMenuItems(model: ReadsModel) {
           'the line joining them is what says they are one read.',
       },
     ),
-    promotableToggleItem({
-      label: 'Fade low quality mismatches',
-      checked: model.mismatchAlpha,
-      onToggle: () => {
-        model.setMismatchAlpha(!model.mismatchAlpha)
+    toggleItem(
+      'Fade low quality mismatches',
+      model.mismatchAlpha,
+      fade => {
+        model.setMismatchAlpha(fade)
       },
-      pin: model.mismatchAlphaDisplayTypeDefault,
-    }),
+      { pin: model.mismatchAlphaDisplayTypeDefault },
+    ),
     // The worker forces soft clipping off in chain mode
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing. It sheds its pin

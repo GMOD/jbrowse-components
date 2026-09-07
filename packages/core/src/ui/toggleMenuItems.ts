@@ -1,3 +1,4 @@
+import type { TogglePin, ValuePin } from '../configuration/promotablePin.ts'
 import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 
 // Neither helper sets `keepMenuOpen`: `CascadingMenu` keeps a checkbox/radio row
@@ -6,9 +7,16 @@ import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 // regressing by omission, the way MAF's "Show..." menu did. The flag is left for
 // the rows that genuinely dismiss (a dialog opener passes `keepMenuOpen: false`).
 //
-// The promotable variants (a trailing pin that sets the display-type default)
-// live in `promotableMenuItems.ts`; reach for those when the setting has a
-// `Pin`.
+// A promotable row is the same row plus a `pin`, passed in the options bag.
+// The pin is described here (`pin: { control, label }`) and drawn by
+// `menuItemAdornment.tsx` when the menu opens, which is what keeps this module
+// — and every state model and menu file that calls it — free of React and of
+// MUI's ToggleButton/Tooltip (reference/EAGER_BUNDLE.md;
+// `menuItems.purity.test.ts` holds it). There used to be a promotable twin of
+// each builder here, and the twins drifted from the originals twice: one
+// accepted `helpText` and `keepMenuOpen` while silently dropping `disabled`
+// and `disabledHelpText`, so a promotable row could not be greyed out the way
+// its plain sibling could.
 
 // The row decorations no builder here decides for itself. `helpText` claims a
 // "?" column that `getMenuColumnFlags` then reserves on EVERY row of the menu,
@@ -17,11 +25,6 @@ import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 // two lines tall is harder to scan than the labels it buried. Put a short
 // clarifier in the label -- `withHint` for a conditional one.
 // `keepMenuOpen: false` is for a settings row whose click opens a dialog.
-//
-// One bag for both row kinds, named rather than inlined, because each
-// promotable builder builds its row *through* the plain one here and has to
-// offer the same set — spelling it twice is how the two drifted, the promotable
-// checkbox silently lacking `disabled` and the promotable radio the same three.
 export interface SettingRowOptions {
   helpText?: string
   disabled?: boolean
@@ -29,20 +32,44 @@ export interface SettingRowOptions {
   keepMenuOpen?: boolean
 }
 
-/** #menuBuilder checkboxItem | one checkbox setting row */
+// The pin a checkbox row carries is the row's own checkbox over every open
+// track of the display type, so it is the toggle kind by construction; a radio
+// row stands for one value, so its pin is the value kind. Typing the option
+// per row kind is what makes a checkbox row over a value pin a compile error
+// rather than a pin that fills for one reason and clears for another.
+export interface CheckboxRowOptions extends SettingRowOptions {
+  pin?: TogglePin
+}
+
+export interface RadioRowOptions extends SettingRowOptions {
+  pin?: ValuePin
+}
+
+function withPin<T extends { label: string }>(
+  row: T,
+  pin: TogglePin | ValuePin | undefined,
+) {
+  return pin ? { ...row, pin: { control: pin, label: row.label } } : row
+}
+
+/** #menuBuilder checkboxItem | one checkbox setting row, with a toggle pin when the setting is promotable */
 export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts?: SettingRowOptions,
+  opts: CheckboxRowOptions = {},
 ): CheckboxMenuItem {
-  return {
-    label,
-    type: 'checkbox',
-    checked,
-    onClick: onToggle,
-    ...opts,
-  }
+  const { pin, ...rest } = opts
+  return withPin(
+    {
+      label,
+      type: 'checkbox' as const,
+      checked,
+      onClick: onToggle,
+      ...rest,
+    },
+    pin,
+  )
 }
 
 /**
@@ -65,7 +92,7 @@ export function toggleItem(
   label: string,
   value: boolean,
   setValue: (value: boolean) => void,
-  opts?: SettingRowOptions,
+  opts?: CheckboxRowOptions,
 ): CheckboxMenuItem {
   return checkboxItem(
     label,
@@ -77,42 +104,55 @@ export function toggleItem(
   )
 }
 
-// One radio row. The singular of `radioItems`, and what
-// `promotableRadioItem` builds through, so a lone radio row and a member of a
-// group are the same object plus or minus its pin.
+// One radio row. The singular of `radioItems`, for a group the plural form
+// can't express: a row with no single value to promote yet (the colorBy
+// "Tag..." row before a tag is picked), a display whose slot isn't promotable
+// at all (the shared colorBy menu on gwas/variants), or a group gated row by
+// row and mixing in a non-promotable peer (the alignments size presets and
+// their "Custom..." row). **Reach for `radioItems` first**: every option in a
+// group has to get a pin, and hand-naming the rows is what leaves one without.
 /** #menuBuilder radioItem | one radio setting row; the singular of `radioItems` */
 export function radioItem(
   label: string,
   checked: boolean,
   onClick: () => void,
-  opts?: SettingRowOptions,
+  opts: RadioRowOptions = {},
 ): RadioMenuItem {
-  return {
-    label,
-    type: 'radio',
-    checked,
-    onClick,
-    ...opts,
-  }
+  const { pin, ...rest } = opts
+  return withPin(
+    {
+      label,
+      type: 'radio' as const,
+      checked,
+      onClick,
+      ...rest,
+    },
+    pin,
+  )
 }
 
-// One option of a radio group. Exported so `promotableRadioItems` can take the
-// same array this does and hand it straight through.
-//
-// Extends `SettingRowOptions` rather than restating it — it had hand-narrowed to
-// two of the four, so no group could be gated row by row and a caller needing
-// that names its rows itself, which is where `promotableRadioItems`' pin-per-row
-// guarantee is lost.
+// One option of a radio group. Extends `SettingRowOptions` rather than
+// restating it — it had hand-narrowed to two of the four, so no group could be
+// gated row by row.
 export interface RadioOption<T extends string> extends SettingRowOptions {
   value: T
   label: string
 }
 
-/** #menuBuilder radioItems | a radio group, one row per option */
+// `pin` is a factory rather than a per-option field so a promotable group can't
+// be a row short. **Every option in a group gets a pin, the `promotedBase`
+// value included**: once a non-base value is promoted, taking the base row's
+// offer is the per-value way to undo it, and a radio group with one row silently
+// missing its trailing control reads as a bug. `sashimiArcsMode`'s base looked
+// unpinnable precisely because each row had been named by hand. Pass
+// `value => makePin(self, slot, value)`, or a model member of that shape where
+// the menu module is handed a duck-typed model (alignments).
+/** #menuBuilder radioItems | a radio group, one row per option, with a value pin per option when the setting is promotable */
 export function radioItems<T extends string>(
   options: readonly RadioOption<T>[],
   current: T | undefined,
   setMode: (m: T) => void,
+  pin?: (value: T) => ValuePin,
 ): RadioMenuItem[] {
   return options.map(({ value, label, ...opts }) =>
     radioItem(
@@ -121,7 +161,7 @@ export function radioItems<T extends string>(
       () => {
         setMode(value)
       },
-      opts,
+      { ...opts, pin: pin?.(value) },
     ),
   )
 }

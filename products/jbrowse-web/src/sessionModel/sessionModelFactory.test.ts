@@ -713,23 +713,21 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.getPreferenceChanges()).toEqual([])
     })
 
-    it('reports a promoted per-display-type default with a (default) from', () => {
+    // A promoted default shares the map but is not a scalar row: the
+    // Preferences dialog lists it through `displayDefaultChanges`, with the
+    // slot's base as `from`, on both of its surfaces.
+    it('leaves promoted per-display-type defaults to getDisplayTypeDefaults', () => {
       const session = createTestSession()
       session.setDisplayTypeDefault(
         'LinearBasicDisplay',
         'displayMode',
         'compact',
       )
-      expect(session.getPreferenceChanges()).toEqual([
-        {
-          path: ['displayTypeDefaults', 'LinearBasicDisplay', 'displayMode'],
-          from: undefined,
-          to: 'compact',
-        },
-      ])
+      expect(session.getPreferenceChanges()).toEqual([])
+      expect(session.getDisplayTypeDefaults()).toHaveLength(1)
     })
 
-    it('empties once cleared', () => {
+    it('empties once cleared, promoted defaults included', () => {
       const session = createTestSession()
       session.setScrollZoom(true)
       session.setDisplayTypeDefault(
@@ -737,66 +735,9 @@ describe('JBrowseWebSessionModel', () => {
         'displayMode',
         'compact',
       )
-      expect(session.getPreferenceChanges()).toHaveLength(2)
       session.clearPreferenceOverrides()
       expect(session.getPreferenceChanges()).toEqual([])
-    })
-  })
-
-  // The Preferences dialog's per-row revert hands a row's `path` straight back,
-  // so each shape getPreferenceChanges emits has to round-trip. A promoted
-  // default is the one that can silently no-op: its path is a readable label
-  // over a flat composite storage key, not the key itself.
-  describe('resetPreferenceChange (per-row revert)', () => {
-    beforeEach(() => {
-      localStorage.clear()
-    })
-
-    it('reverts a promoted per-display-type default by its row path', () => {
-      const session = createTestSession()
-      session.setDisplayTypeDefault(
-        'LinearBasicDisplay',
-        'displayMode',
-        'compact',
-      )
-      const [change] = session.getPreferenceChanges()
-      session.resetPreferenceChange(change!.path)
-      expect(
-        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
-      ).toBeUndefined()
-      expect(session.getPreferenceChanges()).toEqual([])
-    })
-
-    it('leaves a sibling display type alone', () => {
-      const session = createTestSession()
-      session.setDisplayTypeDefault(
-        'LinearBasicDisplay',
-        'displayMode',
-        'compact',
-      )
-      session.setDisplayTypeDefault(
-        'LinearAlignmentsDisplay',
-        'featureHeight',
-        3,
-      )
-      session.resetPreferenceChange([
-        'displayTypeDefaults',
-        'LinearBasicDisplay',
-        'displayMode',
-      ])
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureHeight',
-        ),
-      ).toBe(3)
-    })
-
-    it('reverts a scalar override, whose path is its own key', () => {
-      const session = createTestSession()
-      session.setScrollZoom(true)
-      session.resetPreferenceChange(['scrollZoom'])
-      expect(session.getPreferenceChanges()).toEqual([])
+      expect(session.getDisplayTypeDefaults()).toEqual([])
     })
   })
 })

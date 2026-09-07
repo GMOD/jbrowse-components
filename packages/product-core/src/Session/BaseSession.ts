@@ -61,19 +61,6 @@ function parseDisplayTypeDefaultKey(key: string) {
   return displayType && slot ? { displayType, slot } : undefined
 }
 
-// Head of the display path a promoted default takes in a `getPreferenceChanges`
-// row: `[DISPLAY_TYPE_DEFAULTS_PATH_HEAD, displayType, slot]`. Purely a
-// readable row label, deliberately distinct from the flat
-// `DISPLAY_TYPE_DEFAULT_PREFIX` storage key above.
-//
-// Module-private, like the storage key: both the producer
-// (`getPreferenceChanges`) and the consumer (`resetPreferenceChange`) are
-// methods on this model, so the two path shapes this file emits are the only
-// ones it has to undo. It used to be exported for the Preferences dialog to
-// match on and re-route back through `setDisplayTypeDefault`, which meant a
-// rename on one side alone would silently no-op that dialog's per-row reset.
-const DISPLAY_TYPE_DEFAULTS_PATH_HEAD = 'displayTypeDefaults'
-
 /**
  * #stateModel BaseSessionModel
  *
@@ -278,11 +265,8 @@ export function BaseSessionModel<
        * `{ displayType, slot, value }` — the inventory the Preferences dialog
        * lists and clears one at a time (`setDisplayTypeDefault(…, undefined)`).
        *
-       * Here rather than filtered out of `getPreferenceChanges` by the dialog,
-       * because the composite-key layout is this file's: a consumer that
-       * recognized these rows by matching the path head is exactly the coupling
-       * `DISPLAY_TYPE_DEFAULTS_PATH_HEAD` stopped being exported over, where a
-       * rename on one side alone silently no-ops the other.
+       * Parsed here rather than by the dialog, because the composite-key
+       * layout is this file's and nothing outside it should depend on it.
        */
       getDisplayTypeDefaults(): {
         displayType: string
@@ -300,30 +284,18 @@ export function BaseSessionModel<
       },
       /**
        * #method
-       * every runtime preference-override that currently differs from its
-       * config/admin default, as `{ path, from, to }` rows — the exact set
-       * `clearPreferenceOverrides` reverts. Backs the confirmation diff shown
-       * before "Reset to defaults" (mirrors the per-track changes dialog). A
-       * scalar pref (animationMode, scrollZoom) whose override equals the
-       * default is omitted (reverting it is a no-op); each promoted
-       * per-display-type default is always a difference from the un-promoted
-       * state, so `from` reads "(default)".
+       * every scalar preference override that currently differs from its
+       * config/admin default, as `{ path, from, to }` rows whose path is the
+       * override's own key. A scalar pref (animationMode, scrollZoom) whose
+       * override equals the default is omitted, since reverting it is a no-op.
+       * Promoted display-type defaults share the map but are not here: they
+       * are `getDisplayTypeDefaults`, and the Preferences dialog lists them
+       * through one builder on both of its surfaces.
        */
       getPreferenceChanges(): TrackConfigChange[] {
         const changes: TrackConfigChange[] = []
         for (const [key, value] of self.preferencesOverrides.entries()) {
-          const dtd = parseDisplayTypeDefaultKey(key)
-          if (dtd) {
-            changes.push({
-              path: [
-                DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
-                dtd.displayType,
-                dtd.slot,
-              ],
-              from: undefined,
-              to: value,
-            } as TrackConfigChange)
-          } else {
+          if (!key.startsWith(DISPLAY_TYPE_DEFAULT_PREFIX)) {
             const dflt = this.getPreferenceDefault(key)
             if (value !== dflt) {
               changes.push({
@@ -453,26 +425,6 @@ export function BaseSessionModel<
        */
       clearPreferenceOverride(key: string) {
         self.preferencesOverrides.delete(key)
-      },
-      /**
-       * #action
-       * revert one row emitted by `getPreferenceChanges`, addressed by its
-       * display `path`. Backs the per-entry reset in the Preferences dialog's
-       * "Reset to defaults" confirmation.
-       *
-       * Lives here rather than in that dialog because this model owns both path
-       * shapes it has to undo: a promoted per-display-type default, whose row
-       * path is a readable label over a flat composite storage key, and every
-       * other override, whose path *is* its key. The dialog used to re-derive
-       * the first case from an exported path-head constant.
-       */
-      resetPreferenceChange(path: string[]) {
-        const [head, displayType, slot] = path
-        if (head === DISPLAY_TYPE_DEFAULTS_PATH_HEAD && displayType && slot) {
-          this.setDisplayTypeDefault(displayType, slot, undefined)
-        } else if (head) {
-          this.clearPreferenceOverride(head)
-        }
       },
       /**
        * #action

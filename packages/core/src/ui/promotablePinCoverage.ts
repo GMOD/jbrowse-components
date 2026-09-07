@@ -59,8 +59,8 @@ export function displayTypesWithPromotableSlots(
  * Reads `pin.control.slot` and nothing else. A raw `endAdornment` is
  * deliberately not counted: it is an arbitrary element (synteny's colour
  * swatch), so it cannot say which slot it promotes, and a pin built by hand
- * rather than through `promotableToggleItem`/`promotableRadioItem` is a thing to
- * find, not to accept.
+ * rather than through `makePin`/`makeTogglePin` is a thing to find, not to
+ * accept.
  */
 export function pinnedSlots(items: MenuItem[]): Set<string> {
   const found = new Set<string>()

@@ -80,12 +80,11 @@ export const SizeSliderRow = observer(function SizeSliderRow({
           }}
         />
         {pin ? (
-          // include the current value so the pin's tooltip reads as a concrete
-          // value ("Line width (2px)") — the copy assumes the label is a value,
-          // but a bare setting name reads oddly ("Use 'Line width' as the
-          // default")
+          // the model value, not the drag value: the pin was built over what
+          // the model held, so its tooltip names what a click applies
+          // ("Line width (2px)") rather than where the thumb is mid-drag
           <PinAdornment
-            pin={{ control: pin, label: `${title} (${format(value)})` }}
+            pin={{ control: pin, label: `${title} (${format(modelValue)})` }}
           />
         ) : null}
       </div>

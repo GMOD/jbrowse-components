@@ -1,14 +1,11 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
-import {
-  promotableRadioItems,
-  promotableToggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Every option carries a pin, the base value 'up' included — once a non-base
@@ -24,18 +21,18 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
-  showSashimiArcsDisplayTypeDefault: Pin
+  showSashimiArcsDisplayTypeDefault: TogglePin
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
-  showSashimiLabelsDisplayTypeDefault: Pin
+  showSashimiLabelsDisplayTypeDefault: TogglePin
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => Pin
+  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => ValuePin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
   hideNonCanonicalJunctions: boolean
   setHideNonCanonicalJunctions: (hide: boolean) => void
-  hideNonCanonicalJunctionsDisplayTypeDefault: Pin
+  hideNonCanonicalJunctionsDisplayTypeDefault: TogglePin
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
@@ -62,38 +59,36 @@ interface SashimiModel {
 // repeating that in the abstract is a fourth copy that goes stale first.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
-    promotableToggleItem({
-      label: 'Show sashimi arcs',
-      checked: model.showSashimiArcs,
-      onToggle: () => {
-        model.setShowSashimiArcs(!model.showSashimiArcs)
+    toggleItem(
+      'Show sashimi arcs',
+      model.showSashimiArcs,
+      show => {
+        model.setShowSashimiArcs(show)
       },
-      pin: model.showSashimiArcsDisplayTypeDefault,
-    }),
+      { pin: model.showSashimiArcsDisplayTypeDefault },
+    ),
     ...(model.showSashimiArcs
       ? [
-          promotableToggleItem({
-            label: 'Show labels',
-            checked: model.showSashimiLabels,
-            onToggle: () => {
-              model.setShowSashimiLabels(!model.showSashimiLabels)
+          toggleItem(
+            'Show labels',
+            model.showSashimiLabels,
+            show => {
+              model.setShowSashimiLabels(show)
             },
-            pin: model.showSashimiLabelsDisplayTypeDefault,
-          }),
-          promotableToggleItem({
-            label: 'Hide non-canonical junctions',
-            checked: model.hideNonCanonicalJunctions,
-            onToggle: () => {
-              model.setHideNonCanonicalJunctions(
-                !model.hideNonCanonicalJunctions,
-              )
+            { pin: model.showSashimiLabelsDisplayTypeDefault },
+          ),
+          toggleItem(
+            'Hide non-canonical junctions',
+            model.hideNonCanonicalJunctions,
+            hide => {
+              model.setHideNonCanonicalJunctions(hide)
             },
-            pin: model.hideNonCanonicalJunctionsDisplayTypeDefault,
-          }),
+            { pin: model.hideNonCanonicalJunctionsDisplayTypeDefault },
+          ),
           {
             label: 'Arc placement',
             type: 'subMenu' as const,
-            subMenu: promotableRadioItems(
+            subMenu: radioItems(
               SASHIMI_MODE_OPTIONS,
               model.sashimiArcsMode,
               mode => {

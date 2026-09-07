@@ -1,10 +1,6 @@
 import { makePin } from '@jbrowse/core/configuration'
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
-import {
-  promotableRadioItems,
-  toggleItem,
-  withHint,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
@@ -18,7 +14,11 @@ import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-import type { Pin, ResolvableDisplay } from '@jbrowse/core/configuration'
+import type {
+  ResolvableDisplay,
+  TogglePin,
+  ValuePin,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
@@ -30,7 +30,7 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 // types" at -1000.
 const RECOVERY_PRIORITY = -100
 
-// Rows come from core's `promotableRadioItems`, so every radio keeps the menu
+// Rows come from core's `radioItems`, so every radio keeps the menu
 // open on click; a hand-rolled copy is how the Gene glyph submenu came to
 // dismiss the whole menu. `hint` is applied to the row's label after the pin
 // is attached, never to the option, because the builder copies the option's
@@ -40,12 +40,12 @@ export function inlineRadioGroup<T extends string>(
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
-  pin: (value: T) => Pin,
+  pin: (value: T) => ValuePin,
   hint?: (value: T) => string | undefined,
 ): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...promotableRadioItems(options, current, onSelect, pin).map((item, i) => {
+    ...radioItems(options, current, onSelect, pin).map((item, i) => {
       const { value, label } = options[i]!
       return hint ? { ...item, label: withHint(label, hint(value)) } : item
     }),
@@ -62,7 +62,7 @@ interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   labelsFitHint: string | undefined
   colorLegend: LegendItem[]
   showLegend: boolean
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (value: boolean) => void
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
@@ -187,7 +187,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
       label: 'Set feature height',
       icon: HeightIcon,
       subMenu: [
-        ...promotableRadioItems(
+        ...radioItems(
           DISPLAY_MODE_OPTIONS,
           self.displayMode,
           mode => {

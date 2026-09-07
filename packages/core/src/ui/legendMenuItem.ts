@@ -1,8 +1,7 @@
-import { promotableToggleItem } from './promotableMenuItems.ts'
 import { checkboxItem } from './toggleMenuItems.ts'
 
-import type { Pin } from '../configuration/promotablePin.ts'
 import type { MenuItem } from './MenuTypes.ts'
+import type { CheckboxRowOptions } from './toggleMenuItems.ts'
 
 /**
  * The "Show legend" checkbox, which seven displays build by hand — Hi-C, LD,
@@ -21,14 +20,13 @@ import type { MenuItem } from './MenuTypes.ts'
  * the pin that toggles the legend on every open track of this display type,
  * offering the new state as the display-type default in its snackbar. Every
  * display whose legend is backed by a config slot passes one, and gets it from
- * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling `makePin`
- * itself: the slot is the per-display half, the accessors over it are not.
+ * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling
+ * `makeTogglePin` itself: the slot is the per-display half, the accessors over
+ * it are not.
  *
  * `pin` is optional because two callers have no slot to promote: the Manhattan
  * plot's LD legend and `LinearBasicDisplay`'s color key are a volatile and a
  * per-legend `dismissed` flag respectively, neither of which is config at all.
- * They get the plain row, which is what `checkboxItem` builds either way — the
- * promotable form is that same row plus the pin, per `promotableToggleItem`.
  *
  * Deliberately not used by `synteny-core`'s "Show color legend", which sits
  * inside a "Color by..." submenu where the bare word would not say which legend.
@@ -37,21 +35,7 @@ import type { MenuItem } from './MenuTypes.ts'
 export function showLegendCheckboxItem(
   checked: boolean,
   onToggle: () => void,
-  opts?: {
-    helpText?: string
-    disabled?: boolean
-    disabledHelpText?: string
-    pin?: Pin
-  },
+  opts?: CheckboxRowOptions,
 ): MenuItem {
-  const { pin, ...rest } = opts ?? {}
-  return pin
-    ? promotableToggleItem({
-        label: 'Show legend',
-        checked,
-        onToggle,
-        pin,
-        ...rest,
-      })
-    : checkboxItem('Show legend', checked, onToggle, rest)
+  return checkboxItem('Show legend', checked, onToggle, opts)
 }

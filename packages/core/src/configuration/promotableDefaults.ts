@@ -25,7 +25,7 @@ import { promotableSlotNames } from './promotableSlots.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
 
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
-import type { Pin } from './promotablePin.ts'
+import type { TogglePin, ValuePin } from './promotablePin.ts'
 import type {
   CascadeContext,
   PromotedDefaultStore,
@@ -38,7 +38,7 @@ import type {
   ConfigurationSlotValueResolved,
 } from './types.ts'
 
-export type { Pin } from './promotablePin.ts'
+export type { Pin, TogglePin, ValuePin } from './promotablePin.ts'
 
 /**
  * #api core/configuration
@@ -48,10 +48,10 @@ export type { Pin } from './promotablePin.ts'
  * base instead reads as at-default for a track merely *following* a non-base
  * promoted default, so the reset control lights up on a no-op.
  *
- * `SLOT` is constrained the way `getConf`'s is. A pin or a reset over a slot
- * name the schema does not declare is inert and silent — `resolveSlot` answers
- * about nothing, so the control draws outline forever — and a widened `self`
- * switches the check off (`HostChecksSlotNames`).
+ * `SLOT` is constrained the way `getConf`'s is, and a widened `self` switches
+ * the check off (`HostChecksSlotNames`). A slot name the schema does not
+ * declare throws at the first read (`getSlotDefinition`), and a declared but
+ * non-promotable one throws in `resolveSlotIn`.
  */
 export function isSlotCustomized<
   CONFMODEL extends AnyConfigurationModel,
@@ -314,6 +314,15 @@ export function applySlotToOpenTracks(
  * the offer got a silent no-op. What is still guarded is the session, which owns
  * the map the write lands in. ADR-048 has the decisions this does not change:
  * no track set and no apply/promote decision may be closed over.
+ *
+ * **Promoting the slot's base value clears the default instead of storing it.**
+ * The cascade resolves the two identically, but a stored base was a third
+ * state the rest of the subsystem could see: the Preferences inventory listed a
+ * row reading "from X to X", and the base option's radio pin drew filled. Now
+ * "Set as the default" on the base row is the per-value way to undo a promoted
+ * default, and a filled pin only ever means a non-base value is promoted. The
+ * base is read here rather than at click time because it is a schema literal
+ * and cannot change.
  */
 function applyAndOfferDefault(
   self: ResolvableDisplay,
@@ -322,6 +331,8 @@ function applyAndOfferDefault(
 ): void {
   const session = getSession(self)
   const displayType = self.type
+  const { base } = resolveSlot(self, slot)
+  const promoted = deepEqual(value, base) ? undefined : value
   const open = openTracksOfType(self)
   applySlotToOpenTracks(open, slot, value)
   session.notify(
@@ -331,7 +342,7 @@ function applyAndOfferDefault(
       name: 'Set as the default',
       onClick: () => {
         if (isAlive(session)) {
-          session.setDisplayTypeDefault(displayType, slot, value)
+          session.setDisplayTypeDefault(displayType, slot, promoted)
         }
       },
     },
@@ -351,22 +362,22 @@ function clearDefault(self: ResolvableDisplay, slot: string): void {
 
 /**
  * #api core/configuration
- * The pin for one promotable slot: "apply this value to every open track of this
- * display type", and — via the snackbar it raises — "keep it as the default for
- * the ones opened later".
+ * The pin on a radio or slider row: "apply this value to every open track of
+ * this display type", and — via the snackbar it raises — "keep it as the
+ * default for the ones opened later".
  *
  * `value` chooses between the subsystem's two meanings, which are otherwise
  * identical:
  *
- * - **Give it** for a per-value pin — "make *arcs* the default" — independent of
- *   what the track currently shows. Use on an always-visible pin so it can never
- *   promote a meaningless value, and so two rows sharing one slot (arcs `'arc'`
- *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
+ * - **Give it** for a per-value pin — "make *compact* the default" —
+ *   independent of what the track currently shows. Use on an always-visible pin
+ *   so it can never promote a meaningless value, and so two rows sharing one
+ *   slot (sashimi `'down'` vs `'auto'`) stay independent.
  * - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
  *   a continuous setting where no fixed on-value makes sense (wiggle point size,
  *   arc line width).
  *
- * A checkbox row over a `maybeBoolean` slot takes neither: {@link makeTogglePin}.
+ * A checkbox row takes neither: {@link makeTogglePin}.
  *
  * One function with an optional argument, rather than the two exported builders
  * it replaces — a per-value one and a `…CurrentValue…` one, the second of which
@@ -388,7 +399,7 @@ export function makePin<
           SLOT
         >,
       ]
-): Pin {
+): ValuePin {
   // One walk of the cascade feeds both halves. The value-omitted form's
   // on-value IS the settled value, and `active` compares against the raw
   // promoted default of that same resolution — taking the two from separate
@@ -420,6 +431,7 @@ export function makePin<
   // same `deepEqual`, no second walk.
   const active = deepEqual(res.promoted, onValue)
   return {
+    kind: 'value',
     slot,
     onValue,
     active,
@@ -434,45 +446,80 @@ export function makePin<
 }
 
 /**
+ * The two states a checkbox row moves a slot between. Omitted for a
+ * `maybeBoolean` slot, where they are `true` and `false`; required for a
+ * two-state enum, which is how a checkbox row over a multi-valued slot names
+ * the member it stands for (`readConnections`: an "Arcs" row toggles
+ * `'arc'`/`'off'`, a "Read cloud" row `'cloud'`/`'off'`).
+ */
+export interface ToggleStates<T> {
+  on: T
+  off: T
+}
+
+/**
  * #api core/configuration
- * The pin for a checkbox row: the row's own checkbox, acting on every open
- * track of the display type. `active` mirrors the row, so the pin draws filled
+ * The pin on a checkbox row: the row's own checkbox, acting on every open track
+ * of the display type. `active` mirrors the row, so the pin draws filled
  * exactly when the box is ticked; a click flips the row's state on every open
  * track and offers the new state as the display type's default. It never
  * clears a default the way {@link makePin}'s filled pin does — flipping back
  * and taking the offer promotes the other value, and promoting the base value
- * is indistinguishable from no default.
+ * clears the default (`applyAndOfferDefault`).
  *
  * Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
  * row's current state: beside an unchecked box that applied *off* everywhere
- * and visibly did nothing.
+ * and visibly did nothing. It also replaces the per-value `makePin` a checkbox
+ * row over a shared enum slot used to carry, which gave two checkbox rows in
+ * one submenu two different pins: one filled when its value was promoted and
+ * clearing on a second click, the other filled when the box was ticked and
+ * flipping. With `states`, a checkbox row is always the toggle kind.
  */
 export function makeTogglePin<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   self: ResolvableDisplay<CONFMODEL>,
-  // `never` for a slot the schema resolves to anything but a boolean, so the
-  // runtime throw below is only for a schema widened to `any`
-  slot: SLOT &
-    (ConfigurationSlotValueResolved<
-      ConfigurationSchemaForModel<CONFMODEL>,
-      SLOT
-    > extends boolean
-      ? unknown
-      : never),
-): Pin {
+  slot: SLOT,
+  // rest-tuple, like `makePin`'s value: a boolean slot may omit the states, and
+  // any other slot has to name them, so the type says which without a runtime
+  // check that could only fire on a schema widened to `any`
+  ...states: ConfigurationSlotValueResolved<
+    ConfigurationSchemaForModel<CONFMODEL>,
+    SLOT
+  > extends boolean
+    ? [] | [ToggleStates<boolean>]
+    : [
+        ToggleStates<
+          ConfigurationSlotValueResolved<
+            ConfigurationSchemaForModel<CONFMODEL>,
+            SLOT
+          >
+        >,
+      ]
+): TogglePin {
   const current: unknown = resolveSlot(self, slot).value
-  if (typeof current !== 'boolean') {
+  const [given] = states
+  if (!given && typeof current !== 'boolean') {
     throw new Error(
-      `cannot build a toggle pin over config slot "${slot}": it resolves to ${JSON.stringify(current)}, not a boolean`,
+      `cannot build a toggle pin over config slot "${slot}" without naming its on/off states: it resolves to ${JSON.stringify(current)}, not a boolean`,
     )
   }
-  const onValue = !current
+  const { on, off }: ToggleStates<unknown> = given ?? { on: true, off: false }
+  for (const state of [on, off]) {
+    if (!isPromotableValue(self.configuration, slot, state)) {
+      throw new Error(
+        `cannot toggle config slot "${slot}" to ${JSON.stringify(state)}: the cascade refuses it, so the pin could never apply it`,
+      )
+    }
+  }
+  const active = deepEqual(current, on)
+  const onValue = active ? off : on
   return {
+    kind: 'toggle',
     slot,
     onValue,
-    active: current,
+    active,
     toggle: () => {
       applyAndOfferDefault(self, slot, onValue)
     },

@@ -4,6 +4,7 @@ import { ToggleButton, Tooltip } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { MenuItemPin } from './MenuTypes.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -22,20 +23,21 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// A boolean on-value is a toggle pin over a checkbox row: the copy names the
-// state the click applies, and the fill mirrors the checkbox. Every other
-// on-value IS what the label says — a radio option ("Compact"), a size row whose
-// caller folds the value into the label ("Line width (2px)") — and there the
-// fill means the value is the promoted default, so a click clears it.
+// A toggle pin sits on a checkbox row: the copy names the state the click
+// applies, and the fill mirrors the checkbox. A value pin's on-value IS what
+// the label says — a radio option ("Compact"), a size row whose caller folds
+// the value into the label ("Line width (2px)") — and there the fill means the
+// value is the promoted default, so a click clears it.
 //
 // The aria-label carries "of this type" wherever the tooltip does: it used to
 // stop at "for all open tracks", stating a wider blast radius than the control
 // has.
-function pinCopy(label: string, onValue: unknown, active: boolean) {
-  return typeof onValue === 'boolean'
+function pinCopy(label: string, control: Pin) {
+  const { kind, active } = control
+  return kind === 'toggle'
     ? {
-        title: `Turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
-        ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
+        title: `Turn ${label} ${active ? 'off' : 'on'} for all open tracks of this type`,
+        ariaLabel: `turn ${label} ${active ? 'off' : 'on'} for all open tracks of this type`,
       }
     : active
       ? {
@@ -69,7 +71,7 @@ export function PinAdornment({
 }) {
   const { classes } = useStyles()
   const { label, control } = pin
-  const { title, ariaLabel } = pinCopy(label, control.onValue, control.active)
+  const { title, ariaLabel } = pinCopy(label, control)
   return (
     <Tooltip title={title}>
       <span className={classes.wrapper}>

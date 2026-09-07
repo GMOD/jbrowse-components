@@ -151,21 +151,22 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
   // display type's default.
   it('the pin flips the legend and offers the new state as the default', () => {
     const { session, display } = makeSession({ promotedBase })
-    display.setShowLegend(false)
+    display.setShowLegend(promotedBase)
     display.showLegendDisplayTypeDefault.toggle()
-    expect(display.showLegend).toBe(true)
-    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
+    expect(display.showLegend).toBe(!promotedBase)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(!promotedBase)
     session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
-    ).toBe(true)
+    ).toBe(!promotedBase)
 
+    // flipping back offers the base state, which clears rather than stores
     display.showLegendDisplayTypeDefault.toggle()
-    expect(display.showLegend).toBe(false)
+    expect(display.showLegend).toBe(promotedBase)
     session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
-    ).toBe(false)
+    ).toBeUndefined()
   })
 })
 

@@ -18,9 +18,11 @@ touches the view has to dismiss it first.
 @emotion — its callers are evaluated at plugin install, so reaching them through
 the barrel put ~80 Material components in every host's first paint.
 
-- Each promotable builder is its plain counterpart **plus a pin**, written that
-  way so a change to what a settings row _is_ reaches both forms.
-  `SettingRowOptions` is the one bag both kinds take — a builder that
+- A promotable row is the plain builder **plus a `pin` option** — there is no
+  promotable twin of a builder, since twins drifted twice. A checkbox row's
+  `pin` is a `TogglePin` and a radio row's a `ValuePin`; the type is what stops
+  a checkbox row from carrying a pin that fills for one reason and clears for
+  another. `SettingRowOptions` is the one bag every row takes — a builder that
   hand-narrows it drops fields silently, which is what MAF's local `toggle`
   wrapper had done to three of the five.
 - **`toggleItem`, not `checkboxItem`, for a checkbox over a setter.** It hands

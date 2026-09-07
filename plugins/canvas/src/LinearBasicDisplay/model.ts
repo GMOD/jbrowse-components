@@ -6,11 +6,7 @@ import {
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import {
-  promotableToggleItem,
-  radioItems,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { pluralize } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -297,16 +293,14 @@ export default function stateModelFactory(
               self.showOnlyGenes,
               self.setShowOnlyGenes,
             ),
-            promotableToggleItem({
-              label: 'Show chevrons',
-              checked: self.displayDirectionalChevrons,
-              onToggle: () => {
-                self.setDisplayDirectionalChevrons(
-                  !self.displayDirectionalChevrons,
-                )
+            toggleItem(
+              'Show chevrons',
+              self.displayDirectionalChevrons,
+              show => {
+                self.setDisplayDirectionalChevrons(show)
               },
-              pin: makeTogglePin(self, 'displayDirectionalChevrons'),
-            }),
+              { pin: makeTogglePin(self, 'displayDirectionalChevrons') },
+            ),
           ]
         },
         showSubmenuRadioGroups() {

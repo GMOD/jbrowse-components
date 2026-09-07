@@ -146,10 +146,10 @@ default" predicate for a promotable slot: comparing the resolved value to the
 base instead reads as at-default for a track merely *following* a non-base
 promoted default, so the reset control lights up on a no-op.
 
-`SLOT` is constrained the way `getConf`'s is. A pin or a reset over a slot
-name the schema does not declare is inert and silent — `resolveSlot` answers
-about nothing, so the control draws outline forever — and a widened `self`
-switches the check off (`HostChecksSlotNames`).
+`SLOT` is constrained the way `getConf`'s is, and a widened `self` switches
+the check off (`HostChecksSlotNames`). A slot name the schema does not
+declare throws at the first read (`getSlotDefinition`), and a declared but
+non-promotable one throws in `resolveSlotIn`.
 
 ```js
 // type signature
@@ -160,22 +160,22 @@ switches the check off (`HostChecksSlotNames`).
 
 ## makePin
 
-The pin for one promotable slot: "apply this value to every open track of this
-display type", and — via the snackbar it raises — "keep it as the default for
-the ones opened later".
+The pin on a radio or slider row: "apply this value to every open track of
+this display type", and — via the snackbar it raises — "keep it as the
+default for the ones opened later".
 
 `value` chooses between the subsystem's two meanings, which are otherwise
 identical:
 
-- **Give it** for a per-value pin — "make *arcs* the default" — independent of
-  what the track currently shows. Use on an always-visible pin so it can never
-  promote a meaningless value, and so two rows sharing one slot (arcs `'arc'`
-  vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
+- **Give it** for a per-value pin — "make *compact* the default" —
+  independent of what the track currently shows. Use on an always-visible pin
+  so it can never promote a meaningless value, and so two rows sharing one
+  slot (sashimi `'down'` vs `'auto'`) stay independent.
 - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
   a continuous setting where no fixed on-value makes sense (wiggle point size,
   arc line width).
 
-A checkbox row over a `maybeBoolean` slot takes neither: makeTogglePin.
+A checkbox row takes neither: makeTogglePin.
 
 One function with an optional argument, rather than the two exported builders
 it replaces — a per-value one and a `…CurrentValue…` one, the second of which
@@ -185,28 +185,32 @@ the argument now says what the longer name said.
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => Pin
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => ValuePin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ## makeTogglePin
 
-The pin for a checkbox row: the row's own checkbox, acting on every open
-track of the display type. `active` mirrors the row, so the pin draws filled
+The pin on a checkbox row: the row's own checkbox, acting on every open track
+of the display type. `active` mirrors the row, so the pin draws filled
 exactly when the box is ticked; a click flips the row's state on every open
 track and offers the new state as the display type's default. It never
 clears a default the way makePin's filled pin does — flipping back
 and taking the offer promotes the other value, and promoting the base value
-is indistinguishable from no default.
+clears the default (`applyAndOfferDefault`).
 
 Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
 row's current state: beside an unchecked box that applied *off* everywhere
-and visibly did nothing.
+and visibly did nothing. It also replaces the per-value `makePin` a checkbox
+row over a shared enum slot used to carry, which gave two checkbox rows in
+one submenu two different pins: one filled when its value was promoted and
+clearing on a second click, the other filled when the box was ticked and
+flipping. With `states`, a checkbox row is always the toggle kind.
 
 ```js
 // type signature
-<…>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT & (ConfigurationSlotValueResolved<...> extends boolean ? unknown : never)) => Pin
+<…>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...states: ConfigurationSlotValueResolved<...> extends boolean ? [] | [...] : [...]) => TogglePin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -214,28 +218,13 @@ and visibly did nothing.
 ## Pin
 
 The "apply this to every open track of this type" affordance on a menu row —
-the trailing `PushPin`, bundled so the row consumes it as one prop. Built by
-makePin.
+the trailing `PushPin`, bundled so the row consumes it as one prop.
 
-`active` = this value is currently the session default (a filled pin), which
-is the state, not the click. `toggle` **applies the value to every open track
-of the display type** and raises a snackbar whose one action promotes it to
-the display type's default; on an already-promoted value it clears that
-default instead, touching no track (see `applyPinClick`).
-
-**`toggle` rather than an `apply`/`clear` pair**, which was tried and dropped:
-the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly
-"flip", so splitting it adds a member *and* a branch at the one call site that
-never needed one. `active` is already public for a caller that wants to state a
-direction. (The house preference for explicit setters over toggles is about MST
-actions, where a toggle destroys the ability to set a known state; nothing here
-stores a value.)
-
-Lives here, alone and with no imports, rather than beside `makePin` in
-`promotableDefaults.ts`: the menu types describe a pin without building one,
-and `MenuTypes.ts` taking this one interface from that module gave a
-React-free type file a type closure of 374 files. See
-`agent-docs/ideas/barrels-block-extraction.md` and `scripts/moduleClosure.ts`.
+`kind` is what the adornment words itself from and what the row builders
+check: a checkbox row takes a TogglePin, a radio or slider row a
+ValuePin. The two used to be told apart by `typeof onValue ===
+'boolean'`, which let a value pin over a boolean slot compile and read as a
+toggle while clearing on its second click.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
 
@@ -368,6 +357,16 @@ promotable slot, which the declared slot value type doesn't include.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
 
+## TogglePin
+
+The pin on a checkbox row, built by makeTogglePin: the row's own
+checkbox over every open track of the display type. `active` mirrors the row,
+`onValue` is the state a click applies (the row's opposite), and `toggle`
+applies it everywhere and offers it as the default. It never clears a default
+on its own — promoting the slot's base value is what clears one.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
+
 ## TrackConfigWithPromotables
 
 A track config snapshot with every display's `promotable` slots resolved, plus
@@ -399,3 +398,13 @@ reader has promoted in their own browser. Pinned by
 `products/jbrowse-web/src/tests/CopyConfigPromotedDefaults.test.ts`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+## ValuePin
+
+The pin on a radio or slider row, built by makePin: `onValue` is the
+row's own value, `active` means that value is the display type's promoted
+default, and `toggle` on an outline pin applies the value to every open track
+and offers it as the default, while on a filled pin it clears that default
+and touches no track (`applyAndOfferDefault` / `clearDefault`).
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)

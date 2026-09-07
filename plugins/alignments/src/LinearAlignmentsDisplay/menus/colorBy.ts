@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import {
-  promotableRadioItem,
+  radioItem,
   radioItems,
   toggleItem,
   withSubHeader,
@@ -17,7 +17,7 @@ import { modificationsMenu } from './modificationsMenu.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -85,7 +85,7 @@ interface ColorByMenuOptions {
   // returns the pin control for making that exact scheme the session-wide
   // default, so each scheme radio carries its own pin (like every other
   // promotable setting) instead of a standalone mouthful checkbox.
-  pin?: (colorBy: ColorBy) => Pin
+  pin?: (colorBy: ColorBy) => ValuePin
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -110,14 +110,14 @@ function colorRadio(
   { label, type }: ColorOption,
   pin: ColorByMenuOptions['pin'],
 ): MenuItem {
-  return promotableRadioItem({
+  return radioItem(
     label,
-    checked: model.colorBy.type === type,
-    onClick: () => {
+    model.colorBy.type === type,
+    () => {
       model.setColorScheme({ type })
     },
-    pin: pin?.({ type }),
-  })
+    { pin: pin?.({ type }) },
+  )
 }
 
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
@@ -130,21 +130,23 @@ function tagItem(
 ): MenuItem {
   const { colorBy } = model
   const active = colorBy.type === 'tag' && colorBy.tag !== undefined
-  return promotableRadioItem({
-    label: active ? `Tag (${colorBy.tag})...` : 'Tag...',
-    checked: colorBy.type === 'tag',
-    // the only promotable row whose click opens a dialog rather than writing a
-    // value, so it dismisses the menu instead of the builder's default of
-    // staying open
-    keepMenuOpen: false,
-    onClick: () => {
+  return radioItem(
+    active ? `Tag (${colorBy.tag})...` : 'Tag...',
+    colorBy.type === 'tag',
+    () => {
       getDialogHost(model).queueDialog((onClose: () => void) => [
         ColorByTagDialog,
         { model, handleClose: onClose },
       ])
     },
-    pin: active ? pin?.({ type: 'tag', tag: colorBy.tag }) : undefined,
-  })
+    {
+      // the only promotable row whose click opens a dialog rather than writing
+      // a value, so it dismisses the menu instead of the builder's default of
+      // staying open
+      keepMenuOpen: false,
+      pin: active ? pin?.({ type: 'tag', tag: colorBy.tag }) : undefined,
+    },
+  )
 }
 
 // Plain scheme radios in a submenu — nothing here reads a modification field, so

@@ -8,14 +8,15 @@ import type { Pin } from '../configuration/promotableDefaults.ts'
 
 const theme = createJBrowseTheme()
 
-// test double: the pin reads `active` and `onValue`, and calls `toggle` on
-// click — never `slot`, which only a menu-wide pin-coverage walk reads
+// test double: the pin reads `kind` and `active`, and calls `toggle` on
+// click — never `slot`, which only a menu-wide pin-coverage walk reads, nor
+// `onValue`, which the copy no longer dispatches on
 function fakeControl(
   active: boolean,
   toggle: () => void = () => {},
-  onValue: unknown = 'compact',
+  kind: Pin['kind'] = 'value',
 ): Pin {
-  return { slot: 'unused', onValue, active, toggle }
+  return { kind, slot: 'unused', onValue: 'compact', active, toggle }
 }
 
 function renderAdornment(control: Pin, label = 'this') {
@@ -69,12 +70,13 @@ describe('PinAdornment', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  // A boolean on-value is a toggle pin: the copy names the state the click
-  // applies rather than the value-shaped "apply Show legend" every other pin
-  // gets, and a filled one (row checked) still names a click, not a clear.
-  it('names the state a boolean pin applies, not just the setting', () => {
+  // A toggle pin's copy names the state the click applies rather than the
+  // value-shaped "apply Show legend" a value pin gets, and a filled one (row
+  // checked) still names a click, not a clear. The kind is what decides it: a
+  // value pin over a boolean slot used to read as a toggle by its on-value.
+  it('names the state a toggle pin applies, not just the setting', () => {
     const { getByRole } = renderAdornment(
-      fakeControl(false, () => {}, true),
+      fakeControl(false, () => {}, 'toggle'),
       'Show legend',
     )
     expect(
@@ -84,9 +86,9 @@ describe('PinAdornment', () => {
     ).toBeTruthy()
   })
 
-  it('a filled boolean pin offers the flip, not a clear', () => {
+  it('a filled toggle pin offers the flip, not a clear', () => {
     const { getByRole } = renderAdornment(
-      fakeControl(true, () => {}, false),
+      fakeControl(true, () => {}, 'toggle'),
       'Show legend',
     )
     expect(

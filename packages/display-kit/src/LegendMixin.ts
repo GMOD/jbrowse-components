@@ -9,8 +9,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type {
   ConfigModelForFields,
-  Pin,
   ResolvableDisplay,
+  TogglePin,
 } from '@jbrowse/core/configuration'
 
 /**
@@ -118,7 +118,7 @@ export function gradientSvgLegendWidth(self: { showLegend: boolean }) {
  */
 export function legendCheckboxItem(self: {
   showLegend: boolean
-  showLegendDisplayTypeDefault: Pin
+  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (arg: boolean) => void
 }) {
   return showLegendCheckboxItem(

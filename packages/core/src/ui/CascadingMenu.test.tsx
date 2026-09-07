@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { observable, runInAction } from 'mobx'
 
 import CascadingMenu from './CascadingMenu.tsx'
-import { promotableRadioItem } from './promotableMenuItems.ts'
 import { createJBrowseTheme } from './theme.ts'
+import { radioItem } from './toggleMenuItems.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
 
@@ -222,11 +222,9 @@ describe('CascadingMenu endAdornment', () => {
         <CascadingMenu
           open
           menuItems={() => [
-            promotableRadioItem({
-              label: 'Compact',
-              checked: false,
-              onClick: () => {},
+            radioItem('Compact', false, () => {}, {
               pin: {
+                kind: 'value',
                 slot: 'displayMode',
                 onValue: 'compact',
                 active: promoted.get() === 'compact',

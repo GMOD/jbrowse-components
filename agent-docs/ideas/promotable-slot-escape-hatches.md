@@ -48,8 +48,8 @@ declarations**. Which of them a user can return to the inherit state, and where:
 | Row kind | Reset in place? |
 | --- | --- |
 | Slider (`makePromotableSizeMenu`) | Yes — the row carries one, derived from `isSlotCustomized` |
-| Checkbox (`promotableToggleItem`) | **No** — `SettingRowOptions` has no `onReset` |
-| Radio group (`promotableRadioItems`) | **No** — picking the base value still customizes |
+| Checkbox (`checkboxItem` with a `pin`) | **No** — `SettingRowOptions` has no `onReset` |
+| Radio group (`radioItems` with a `pin` factory) | **No** — picking the base value still customizes |
 
 So a user customizes a boolean from a track menu and can only un-customize it
 from the Configuration editor, a different and more technical surface, whose
@@ -65,9 +65,9 @@ one equal to `promotedBase`. Unticking a box back to its base leaves the track
 customized and pinned against every future promoted default. That is invisible
 at the moment it happens, because the picture does not change.
 
-`promotableToggleItem` is the single site that would give all three row kinds a
-way home at once, which is what makes this worth doing as one change rather than
-per menu.
+`checkboxItem`'s options bag is the single site that would give all three row
+kinds a way home at once, which is what makes this worth doing as one change
+rather than per menu.
 
 ## 3. One menu, two persistence axes
 

@@ -23,6 +23,26 @@ below now holds only for the value pins on radio and size rows. What prompted
 it: the symmetric pin carried the row's current state, so beside an unchecked
 "Show legend" it applied *off* everywhere and visibly did nothing.
 
+**Amended 2026-09-07**, twice:
+
+- **Every checkbox row carries a toggle pin, and the row builders type it so.**
+  `Pin` is a union discriminated on `kind`, `checkboxItem`'s `pin` option takes
+  a `TogglePin` and `radioItem`'s a `ValuePin`. A checkbox row over one member
+  of a multi-valued slot names its two states, `makeTogglePin(self,
+  'readConnections', { on: 'arc', off: 'off' })`, so the alignments arcs and
+  read-cloud rows toggle like every other checkbox instead of carrying value
+  pins that filled when their value was promoted and cleared on a second
+  click, one submenu away from a toggle pin that filled when the box was
+  ticked. The copy used to tell the two apart by `typeof onValue ===
+  'boolean'`, which a value pin over a boolean slot passed.
+- **Promoting the slot's base value clears the default.** The cascade resolves
+  a promoted base and nothing promoted identically, but the store did not: the
+  Preferences inventory listed a row reading "from X to X" and the base
+  option's radio pin drew filled. "Set as the default" now compares against
+  `promotedBase` and writes `undefined` on a match, so taking the base row's
+  offer is the per-value undo of a promoted default, and a filled value pin
+  only ever means a non-base value is promoted.
+
 ## Context
 
 The make-default pin sits on every promotable menu row. The question this ADR

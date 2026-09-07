@@ -1,60 +1,67 @@
 /**
- * #api core/configuration
- * The "apply this to every open track of this type" affordance on a menu row —
- * the trailing `PushPin`, bundled so the row consumes it as one prop. Built by
- * {@link makePin}.
+ * Shared by both pin kinds: which promotable slot the pin writes, whether it
+ * draws filled, and the one click it takes.
  *
- * `active` = this value is currently the session default (a filled pin), which
- * is the state, not the click. `toggle` **applies the value to every open track
- * of the display type** and raises a snackbar whose one action promotes it to
- * the display type's default; on an already-promoted value it clears that
- * default instead, touching no track (see `applyPinClick`).
+ * `slot` is here so a *built menu* can be asked which promotable slots it offers
+ * a pin for, which is the only way that question has an answer: declaring
+ * `promotedBase` is a schema fact and the pin is a menu fact, and a display that
+ * inherits the slot but never builds a row has a slot nothing can ever promote,
+ * silently (`promotableSlotsWithoutPin`, guarded by
+ * `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
  *
  * **`toggle` rather than an `apply`/`clear` pair**, which was tried and dropped:
  * the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly
  * "flip", so splitting it adds a member *and* a branch at the one call site that
- * never needed one. `active` is already public for a caller that wants to state a
- * direction. (The house preference for explicit setters over toggles is about MST
- * actions, where a toggle destroys the ability to set a known state; nothing here
- * stores a value.)
+ * never needed one. `active` is already public for a caller that wants to state
+ * a direction.
  *
  * Lives here, alone and with no imports, rather than beside `makePin` in
  * `promotableDefaults.ts`: the menu types describe a pin without building one,
- * and `MenuTypes.ts` taking this one interface from that module gave a
- * React-free type file a type closure of 374 files. See
- * `agent-docs/ideas/barrels-block-extraction.md` and `scripts/moduleClosure.ts`.
+ * and `MenuTypes.ts` taking this from that module gave a React-free type file a
+ * type closure of 374 files. See `agent-docs/ideas/barrels-block-extraction.md`
+ * and `scripts/moduleClosure.ts`.
  */
-export interface Pin {
-  /**
-   * The promotable slot this pin promotes a value of. Nothing in the UI reads
-   * it — a pin renders from `active`, `onValue` and the toggle. It is here so a
-   * *built menu* can be asked which promotable slots it offers a pin for, which
-   * is the only way that question has an answer: declaring `promotedBase` is a
-   * schema fact and the pin is a menu fact, and a display that inherits the slot
-   * but never builds a row has a slot nothing can ever promote, silently
-   * (`promotableSlotsWithoutPin`, guarded by
-   * `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
-   */
+interface PinBase {
   slot: string
-  /**
-   * The value `toggle` promotes — the on-value {@link makePin} was given, the
-   * track's current resolved value for its value-omitted form, or the flipped
-   * state for a `makeTogglePin`.
-   *
-   * `PinAdornment` words itself from this: a **boolean** on-value is a
-   * `makeTogglePin` over a checkbox row, and the copy names the state the click
-   * applies ("Turn Show legend off for all open tracks of this type"). Every
-   * other on-value IS what the row's label says — a radio option, a slider's
-   * current size — so those keep the value-shaped copy.
-   *
-   * Required, like `slot`: a pin that cannot say what it promotes cannot word
-   * itself.
-   */
+  /** what `toggle` writes into every open track of the display type */
   onValue: unknown
-  /**
-   * What the filled pin means: for a value pin, that `onValue` is the display
-   * type's promoted default; for a toggle pin, that the row is checked.
-   */
   active: boolean
   toggle: () => void
 }
+
+/**
+ * #api core/configuration
+ * The pin on a radio or slider row, built by {@link makePin}: `onValue` is the
+ * row's own value, `active` means that value is the display type's promoted
+ * default, and `toggle` on an outline pin applies the value to every open track
+ * and offers it as the default, while on a filled pin it clears that default
+ * and touches no track (`applyAndOfferDefault` / `clearDefault`).
+ */
+export interface ValuePin extends PinBase {
+  kind: 'value'
+}
+
+/**
+ * #api core/configuration
+ * The pin on a checkbox row, built by {@link makeTogglePin}: the row's own
+ * checkbox over every open track of the display type. `active` mirrors the row,
+ * `onValue` is the state a click applies (the row's opposite), and `toggle`
+ * applies it everywhere and offers it as the default. It never clears a default
+ * on its own — promoting the slot's base value is what clears one.
+ */
+export interface TogglePin extends PinBase {
+  kind: 'toggle'
+}
+
+/**
+ * #api core/configuration
+ * The "apply this to every open track of this type" affordance on a menu row —
+ * the trailing `PushPin`, bundled so the row consumes it as one prop.
+ *
+ * `kind` is what the adornment words itself from and what the row builders
+ * check: a checkbox row takes a {@link TogglePin}, a radio or slider row a
+ * {@link ValuePin}. The two used to be told apart by `typeof onValue ===
+ * 'boolean'`, which let a value pin over a boolean slot compile and read as a
+ * toggle while clearing on its second click.
+ */
+export type Pin = ValuePin | TogglePin

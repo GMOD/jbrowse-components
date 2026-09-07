@@ -166,7 +166,7 @@ function createDisplays(
           [displayType]: forType,
         }
       },
-      // present so applyPinClick's session.notify(...) doesn't throw
+      // present so applyAndOfferDefault's session.notify(...) doesn't throw
       notify() {},
     }))
   const session = Session.create(
@@ -446,6 +446,26 @@ describe('apply a value to open tracks', () => {
     expect(actionNames(session.lastNotify)).toEqual([])
   })
 
+  // The cascade resolves a promoted base and nothing promoted identically, but
+  // a stored base was a third state the rest of the subsystem could see: an
+  // inventory row reading "from 1 to 1", and the base option's pin drawing
+  // filled. Taking the base row's offer is how a promoted default is undone
+  // from its own row, so it has to land on "nothing promoted".
+  test('"Set as the default" on the base value clears the default', () => {
+    const { session, displayOf } = createViews([[{ customHeight: 10 }]])
+    const self = displayOf(0, 0)
+    session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
+
+    makePin(self, 'customHeight', 1).toggle()
+    soleAction(session.lastNotify).onClick()
+
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'customHeight'),
+    ).toBeUndefined()
+    expect(makePin(self, 'customHeight', 1).active).toBe(false)
+    expect(resolveConf(self, 'customHeight')).toBe(1)
+  })
+
   // The pin is no longer symmetric, and that is the trade this design makes:
   // the first click is a bulk write, so the second can only clear the default it
   // was promoted to — never un-apply.
@@ -571,6 +591,24 @@ describe('promotable maybeBoolean slot', () => {
     expect(resolveConf(display, 'chevrons')).toBe(true)
   })
 
+  // Flipping back to the base and taking the offer used to store the base;
+  // now it clears, so a toggle pin's two offers are "promote the non-base
+  // state" and "clear", and the inventory never lists a no-op.
+  test('a toggle pin offering the base state clears the default', () => {
+    const { session, display } = createDisplay(configSchema, {
+      chevrons: false,
+    })
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
+
+    makeTogglePin(display, 'chevrons').toggle()
+    soleAction(session.lastNotify).onClick()
+
+    expect(resolveConf(display, 'chevrons')).toBe(true)
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
+    ).toBeUndefined()
+  })
+
   test('toggle pin mirrors the row, flips it, and offers the new state', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
@@ -582,13 +620,75 @@ describe('promotable maybeBoolean slot', () => {
     pin.toggle()
     expect(resolveConf(display, 'chevrons')).toBe(true)
     expect(makeTogglePin(display, 'chevrons').active).toBe(true)
+    // `true` is the base, so the offer clears rather than stores
     soleAction(session.lastNotify).onClick()
-    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(true)
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
+    ).toBeUndefined()
 
     makeTogglePin(display, 'chevrons').toggle()
     expect(resolveConf(display, 'chevrons')).toBe(false)
     soleAction(session.lastNotify).onClick()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
+  })
+})
+
+// A checkbox row over a multi-valued slot stands for one member of it, and
+// its pin toggles that member against the off member. This is what lets two
+// checkbox rows share one slot (alignments' "Show read arcs" / "Show read
+// cloud" over `readConnections`) while carrying the same toggle pin every
+// other checkbox row does, instead of a value pin that filled for a different
+// reason and cleared on its second click.
+describe('toggle pin over a two-state enum', () => {
+  const configSchema = ConfigurationSchema('ConnectionsDisplay', {
+    connections: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('mode', ['off', 'arc', 'cloud']),
+      defaultValue: undefined,
+      promotedBase: 'off',
+    },
+  })
+  const arcs = { on: 'arc', off: 'off' } as const
+  const cloud = { on: 'cloud', off: 'off' } as const
+
+  test('mirrors the row and applies the other state', () => {
+    const { display } = createDisplay(configSchema, { connections: 'arc' })
+    const pin = makeTogglePin(display, 'connections', arcs)
+    expect(pin.kind).toBe('toggle')
+    expect(pin.active).toBe(true)
+    expect(pin.onValue).toBe('off')
+
+    pin.toggle()
+    expect(resolveConf(display, 'connections')).toBe('off')
+    expect(makeTogglePin(display, 'connections', arcs).onValue).toBe('arc')
+  })
+
+  test('two rows over one slot stay independent', () => {
+    const { display } = createDisplay(configSchema, { connections: 'arc' })
+    expect(makeTogglePin(display, 'connections', cloud).active).toBe(false)
+
+    makeTogglePin(display, 'connections', cloud).toggle()
+    expect(resolveConf(display, 'connections')).toBe('cloud')
+    expect(makeTogglePin(display, 'connections', arcs).active).toBe(false)
+  })
+
+  test('refuses a state outside the slot vocabulary', () => {
+    const { display } = createDisplay(configSchema)
+    expect(() =>
+      makeTogglePin(display, 'connections', {
+        on: 'arc',
+        // @ts-expect-error not a member of the enumeration
+        off: 'none',
+      }),
+    ).toThrow(/refuses it/)
+  })
+
+  test('a non-boolean slot needs its states named', () => {
+    const { display } = createDisplay(configSchema)
+    expect(() =>
+      // @ts-expect-error the states are required for a non-boolean slot
+      makeTogglePin(display, 'connections'),
+    ).toThrow(/on\/off states/)
   })
 })
 
@@ -972,15 +1072,21 @@ describe('promotable slot holding a stray jexl callback', () => {
     ])
   })
 
-  test('the promote-current pin promotes the resolved value, not the callback', () => {
+  test('the promote-current pin carries the resolved value, not the callback', () => {
     const { session, display } = createDisplay(schema, {
       height: 'jexl:get(feature,"h")',
     })
+    session.setDisplayTypeDefault('TestDisplay', 'height', 3)
     // this used to evaluate `get(feature,...)` against nothing and throw out of
     // the whole menu, then disabled itself to avoid that
-    makePin(display, 'height').toggle()
-    soleAction(session.lastNotify).onClick()
-    expect(session.getDisplayTypeDefault('TestDisplay', 'height')).toBe(7)
+    const pin = makePin(display, 'height')
+    expect(pin.onValue).toBe(3)
+    expect(pin.active).toBe(true)
+    pin.toggle()
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'height'),
+    ).toBeUndefined()
+    expect(makePin(display, 'height').onValue).toBe(7)
   })
 
   // The apply asks "is this already what we would write?" of the *stored*
@@ -1057,12 +1163,12 @@ describe('makePin refuses an on-value the cascade could never store', () => {
   // construction (a customized value passed the gate, and `promotedBase` passed
   // it at schema build), so it can never trip the guard
   test('the promote-current form is unaffected', () => {
-    const { session, display } = createDisplay(schema)
+    const { session, display } = createDisplay(schema, { mode: 'compact' })
     expect(makePin(display, 'mode').active).toBe(false)
     makePin(display, 'mode').toggle()
     soleAction(session.lastNotify).onClick()
     expect(makePin(display, 'mode').active).toBe(true)
-    expect(resolveConf(display, 'mode')).toBe('normal')
+    expect(resolveConf(display, 'mode')).toBe('compact')
   })
 })
 

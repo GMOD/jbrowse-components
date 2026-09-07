@@ -1,7 +1,6 @@
 import { makeTogglePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import {
-  promotableToggleItem,
   radioItems,
   toggleItem,
   withSubHeader,
@@ -75,14 +74,9 @@ function ribbonToggle({
   label: string
 } & SettingRowOptions): MenuItem {
   return display
-    ? promotableToggleItem({
-        label,
-        checked: value,
-        onToggle: () => {
-          setValue(!value)
-        },
-        pin: makeTogglePin(display, slot),
+    ? toggleItem(label, value, setValue, {
         ...opts,
+        pin: makeTogglePin(display, slot),
       })
     : toggleItem(label, value, setValue, {
         ...opts,

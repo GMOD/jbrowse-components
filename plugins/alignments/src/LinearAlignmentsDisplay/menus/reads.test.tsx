@@ -8,12 +8,13 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import { getReadsMenuItems } from './reads.ts'
 
-import type { Pin } from '@jbrowse/core/configuration'
+import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
 
-const noPin: Pin = {
+const noPin: TogglePin = {
+  kind: 'toggle',
   slot: 'unused',
   onValue: true,
   active: false,

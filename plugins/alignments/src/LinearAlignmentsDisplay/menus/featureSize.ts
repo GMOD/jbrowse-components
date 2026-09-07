@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { makePin } from '@jbrowse/core/configuration'
-import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
+import { radioItem } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
@@ -118,18 +118,18 @@ export function getFeatureHeightMenuItem(
       // Size presets: each writes its exact height (preserving grow, dropping fit
       // back to fixed); the pin applies that height to every open track of the
       // display type and offers it as that type's default. The rows stay open
-      // (promotableRadioItem's default) so size + mode can both be set in one
+      // (radioItem's default) so size + mode can both be set in one
       // visit.
       ...PRESETS.map(preset =>
         needsContent(
-          promotableRadioItem({
-            label: preset.label,
-            checked: sizeActive && matchesPreset(preset),
-            onClick: () => {
+          radioItem(
+            preset.label,
+            sizeActive && matchesPreset(preset),
+            () => {
               model.setFeatureHeight(preset.featureHeight)
             },
-            pin: makePin(model, 'featureHeight', preset.featureHeight),
-          }),
+            { pin: makePin(model, 'featureHeight', preset.featureHeight) },
+          ),
           gate,
         ),
       ),

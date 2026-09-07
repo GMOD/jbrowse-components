@@ -1,5 +1,5 @@
 import { makePin } from '@jbrowse/core/configuration'
-import { promotableRadioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 
 import { getHeightModeOptions } from './heightMode.ts'
 
@@ -47,7 +47,7 @@ export function heightModeMenuItems<CONF extends AnyConfigurationModel>(
   // setting (`radioItems` states nothing, so `CascadingMenu` decides by type).
   // These render directly below the size presets, which already stay open, so
   // dismissing here made one submenu behave two ways.
-  return promotableRadioItems(
+  return radioItems(
     getHeightModeOptions(noun),
     model.heightMode,
     mode => {

@@ -9,7 +9,13 @@ import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 
 function pin(slot: string): Pin {
-  return { slot, onValue: true, active: false, toggle: () => {} }
+  return {
+    kind: 'toggle',
+    slot,
+    onValue: true,
+    active: false,
+    toggle: () => {},
+  }
 }
 
 function pinnedRow(label: string, slot: string): MenuItem {

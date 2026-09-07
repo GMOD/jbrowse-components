@@ -144,12 +144,7 @@ export { hoverBoxStyle } from './hoverBoxStyle.ts'
 export { useMouseState, useMouseTracking } from './useMouseTracking.ts'
 export type { MouseState, MouseTracker } from './useMouseTracking.ts'
 export { PinAdornment } from './PinAdornment.tsx'
-export {
-  promotableRadioItem,
-  promotableRadioItems,
-  promotableToggleItem,
-} from './promotableMenuItems.ts'
-// Not on the React-free `menuItems.ts` entry beside the two builders above: this
+// Not on the React-free `menuItems.ts` entry beside the row builders: this
 // reads a config's slot table, so it pulls `configuration/promotableSlots.ts`
 // in, and that entry exists precisely to stay out of every plugin's eager graph.
 //

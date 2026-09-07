@@ -1,9 +1,5 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import {
-  checkboxItem,
-  promotableRadioItem,
-  radioItems,
-} from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
 import {
   cytosineContextOptions,
@@ -15,7 +11,7 @@ import {
 } from '../../shared/types.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
-import type { Pin } from '@jbrowse/core/configuration'
+import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -134,7 +130,7 @@ export function modificationsMenu(
   // The per-value session-default pin factory, absent for a display whose
   // colorBy slot isn't promotable. Spelled out rather than reached back for from
   // colorBy.ts's options bag, which would make the import cycle.
-  pin: ((colorBy: ColorBy) => Pin) | undefined,
+  pin: ((colorBy: ColorBy) => ValuePin) | undefined,
 ): MenuItem {
   const mods = currentMods(model)
   const isActive = model.colorBy.type === 'modifications'
@@ -232,28 +228,32 @@ export function modificationsMenu(
     helpText:
       'Color the ONT/PacBio modification calls in these reads: by which modification each call is, or by whether each site is modified at all. Refine with the per-type filter, threshold and cytosine context below.',
     subMenu: [
-      promotableRadioItem({
-        label: 'One color per modification type',
-        helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
-        checked: isActive && !byTwoColor,
-        onClick: () => {
+      radioItem(
+        'One color per modification type',
+        isActive && !byTwoColor,
+        () => {
           patchMods(model, clearView)
         },
-        pin: pin?.({ type: 'modifications' }),
-      }),
-      promotableRadioItem({
-        label: 'One color per type, plus low-probability & unmodified in blue',
-        helpText:
-          'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
-        checked: byTwoColor,
-        onClick: () => {
+        {
+          helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
+          pin: pin?.({ type: 'modifications' }),
+        },
+      ),
+      radioItem(
+        'One color per type, plus low-probability & unmodified in blue',
+        byTwoColor,
+        () => {
           patchMods(model, { ...clearView, ...twoColorView })
         },
-        pin: pin?.({
-          type: 'modifications',
-          modifications: twoColorView,
-        }),
-      }),
+        {
+          helpText:
+            'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
+          pin: pin?.({
+            type: 'modifications',
+            modifications: twoColorView,
+          }),
+        },
+      ),
       ...(refinements.length ? [DIVIDER, ...refinements] : []),
     ],
   }

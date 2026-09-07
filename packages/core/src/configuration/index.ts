@@ -71,5 +71,7 @@ export {
 export type {
   Pin,
   ResolvedConfigSnapshot,
+  TogglePin,
   TrackConfigWithPromotables,
+  ValuePin,
 } from './promotableDefaults.ts'

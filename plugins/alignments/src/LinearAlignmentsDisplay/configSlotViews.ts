@@ -60,10 +60,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'linkedReads')
     },
     /** #getter */
-    // "apply view-as-pairs to the open tracks" control (pin): active
-    // when 'normal' is the session default for this display type
+    // the view-as-pairs checkbox over every open track of this type (pin)
     get pairsDisplayTypeDefault() {
-      return makePin(self, 'linkedReads', 'normal')
+      return makeTogglePin(self, 'linkedReads', { on: 'normal', off: 'off' })
     },
     /** #getter */
     get showBezierConnections(): boolean {
@@ -141,17 +140,19 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnections')
     },
     /** #getter */
-    // "apply arcs to the open tracks" control (pin): active when
-    // 'arc' is the session default. Independent of read cloud (both toggles
-    // share the readConnections slot but target different on-values).
+    // the arcs checkbox over every open track of this type (pin). Independent
+    // of read cloud: both share the readConnections slot, and each toggles its
+    // own member against 'off'.
     get arcsDisplayTypeDefault() {
-      return makePin(self, 'readConnections', 'arc')
+      return makeTogglePin(self, 'readConnections', { on: 'arc', off: 'off' })
     },
     /** #getter */
-    // "apply read cloud to the open tracks" control (pin): active when
-    // 'cloud' is the session default
+    // the read cloud checkbox over every open track of this type (pin)
     get readCloudDisplayTypeDefault() {
-      return makePin(self, 'readConnections', 'cloud')
+      return makeTogglePin(self, 'readConnections', {
+        on: 'cloud',
+        off: 'off',
+      })
     },
     /** #getter */
     // Resolved through the promotable-slot tiers (resolveConf): a

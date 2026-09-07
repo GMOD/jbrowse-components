@@ -75,7 +75,7 @@ export interface BaseMenuItem {
    */
   endAdornment?: React.ReactNode
   /**
-   * #menuField the "apply this to all open tracks of this type" pin; set it with a promotable builder
+   * #menuField the "apply this to all open tracks of this type" pin; set it through a row builder's `pin` option
    *
    * The trailing "default for all tracks of this type" pin, as a **description**
    * rather than an element — the renderer builds `PinAdornment` from
@@ -85,8 +85,8 @@ export interface BaseMenuItem {
    * into every host's first paint. It did, until 2026-08-05; see
    * reference/EAGER_BUNDLE.md.
    *
-   * Set it through `promotableToggleItem` / `promotableRadioItems` (or
-   * `promotableRadioItem` for a lone row), not by hand.
+   * Set it through the `pin` option of `checkboxItem` / `toggleItem` /
+   * `radioItem` / `radioItems`, not by hand.
    *
    * A `type: 'custom'` row (`makePromotableSizeMenu`) draws its own pin inside
    * its rendered content and still sets this — the declaration is what lets a
