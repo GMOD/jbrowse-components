@@ -216,21 +216,29 @@ is the turn-by-turn record; the clip and poster are
 
 Every substantive answer was right, and the agent found the explicit-form keys
 by introspecting a bare `addStructure({})` rather than from any document. The
-time went to three things the app made hard, all worth fixing before the next
-take rather than coaching around:
+time went to three things the app made hard. The two layout ones are fixed; the
+first is a standing property of the take, not a bug to close:
 
-- **`ProteinView` is not in the bundled docs.** `docs topic:"model:ProteinView"`
-  has nothing, and the session-spec page does not carry the explicit form, so
-  the agent read the plugin off the live MST tree. `typeDocs.generated.json`
-  covers in-tree types only.
+- **`ProteinView` is not in the bundled docs, and stays that way.**
+  `docs topic:"model:ProteinView"` has nothing, and the session-spec page does
+  not carry the explicit form, so the agent read the plugin off the live MST
+  tree. `getAllFiles` in `website/scripts/api-docs/util.ts` is `git ls-files`,
+  so the generators only ever see this repo's source, and
+  `typeDocs.generated.json` covers in-tree types only. Vendoring the plugin as a
+  root devDependency to close the gap was built on 2026-09-02 and declined:
+  protein3d is published from its own repository and stays external, named in
+  tutorials rather than pulled in here. A take introspects the live tree for it.
 - **The live `applyLayoutSpec` takes `viewIds`, the spec `layout` takes `views`
   indexes.** The agent passed `{ views: [1] }` to the action, which accepted it
   and collapsed the workspace into one tab; recovering took several calls and
   one `resetUseWorkspaces`. `moveViewToSplitRight(viewId, allViewIds)` was tried
   with one argument. Both are silent-wrong-shape failures of the kind
-  `agents_live_model.md` warns about for display settings.
+  `agents_live_model.md` warns about for display settings. Fixed in
+  `f81bb9e2d0`: one shape for both, and `moveViewToSplitRight(viewId)` defaults
+  its second argument.
 - **The connected genome view is not a layout index**, so the agent's first
-  correct-looking spec left an empty panel; see the layout note above.
+  correct-looking spec left an empty panel. Fixed in the same commit — a spec
+  index now names every view its entry created.
 
 ## Open
 
