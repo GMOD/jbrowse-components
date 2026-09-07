@@ -371,6 +371,7 @@ function withTicks(base: ArcsUploadData, ticks: TickSpec[]): ArcsUploadData {
     arcLinePositions: new Uint32Array(ticks.map(t => t.bp)),
     arcLineSupport: new Uint32Array(ticks.map(t => t.support ?? 1)),
     arcLinePartnerRefNames: ticks.map(t => t.partners ?? ['chr2']),
+    arcLinePartnerLoci: ticks.map(() => []),
     numArcLines: ticks.length,
   }
 }
@@ -396,6 +397,7 @@ describe('a connector tick answers along its whole height', () => {
       bp: 400,
       support: 12,
       partnerRefNames: ['chr7'],
+      partnerLoci: [],
     })
   })
 

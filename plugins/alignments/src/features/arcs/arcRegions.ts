@@ -1,7 +1,12 @@
 import { getOrCreate } from '../../shared/util.ts'
 import { isFlatArcShape, plotsOnInsertSizeAxis } from './shapes.ts'
 
-import type { ComputedArc, ComputedLine, RegionInfo } from './arcTypes.ts'
+import type {
+  ComputedArc,
+  ComputedLine,
+  PartnerLocus,
+  RegionInfo,
+} from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 
 // Partitioning computed arcs onto displayed regions, and materializing each
@@ -210,11 +215,13 @@ export function arcsToRegionResult(
   const arcLinePositions = new Uint32Array(regionLines.length)
   const arcLineSupport = new Uint32Array(regionLines.length)
   const arcLinePartnerRefNames: string[][] = []
+  const arcLinePartnerLoci: PartnerLocus[][] = []
   for (let i = 0; i < regionLines.length; i++) {
     const line = regionLines[i]!
     arcLinePositions[i] = line.x.bp
     arcLineSupport[i] = line.support
     arcLinePartnerRefNames.push(line.partnerRefNames)
+    arcLinePartnerLoci.push(line.partnerLoci)
   }
 
   return {
@@ -231,6 +238,7 @@ export function arcsToRegionResult(
     arcLinePositions,
     arcLineSupport,
     arcLinePartnerRefNames,
+    arcLinePartnerLoci,
     numArcLines: regionLines.length,
   }
 }

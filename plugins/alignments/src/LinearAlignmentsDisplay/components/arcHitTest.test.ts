@@ -193,6 +193,7 @@ describe('a band of ticks and no arcs', () => {
       bp: 1400,
       support: 9,
       partnerRefNames: ['chrX'],
+      partnerLoci: [],
     })
   })
 

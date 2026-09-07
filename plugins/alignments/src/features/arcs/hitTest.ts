@@ -19,6 +19,7 @@ import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
 import { arcMarkFrom } from './mark.ts'
 
+import type { PartnerLocus } from './arcTypes.ts'
 import type { ArcBandFrame, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 import type { ArcCandidate } from '@jbrowse/sv-core'
@@ -67,6 +68,7 @@ export interface ArcLineHitResult {
   // more than the arc one: a tick's own geometry says where the breakpoint is
   // and gives no hint at all of what it reaches.
   partnerRefNames: string[]
+  partnerLoci: PartnerLocus[]
 }
 
 // Everything the arc band can answer a hover with.
@@ -98,6 +100,7 @@ function arcLineHitAt(data: ArcsUploadData, i: number): ArcLineHitResult {
     bp: data.arcLinePositions[i]!,
     support: data.arcLineSupport[i]!,
     partnerRefNames: data.arcLinePartnerRefNames[i] ?? [],
+    partnerLoci: data.arcLinePartnerLoci[i] ?? [],
   }
 }
 

@@ -30,6 +30,7 @@ import { READ_COLOR_CATEGORY_BY_INDEX } from '../colorUtils.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
+import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
 import type {
   ArcHitResult,
   ArcLineHitResult,
@@ -139,6 +140,8 @@ export interface ArcLineTooltipPayload {
   // sorted. Never empty. More than one is a genuinely complex rearrangement
   // rather than a formatting edge case, so the tooltip lists them all.
   partnerRefNames: string[]
+  // Where the reads land, most first — the window a reader would add next.
+  partnerLoci: PartnerLocus[]
   // Reads behind the tick, which is what its stroke width encodes.
   support: number
   // Whether the far end of every connection under this tick is somewhere the
@@ -731,6 +734,7 @@ export function formatArcLineTooltip(
     refName,
     position: hit.bp,
     partnerRefNames: hit.partnerRefNames,
+    partnerLoci: hit.partnerLoci,
     support: hit.support,
     partnerOffView,
   }

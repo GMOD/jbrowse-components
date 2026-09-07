@@ -189,11 +189,13 @@ describe('arc stroke width per instance', () => {
           x: { refName: 'chr1', bp: 100 },
           support: 1,
           partnerRefNames: ['c2'],
+          partnerLoci: [],
         },
         {
           x: { refName: 'chr1', bp: 900 },
           support: 32,
           partnerRefNames: ['c2'],
+          partnerLoci: [],
         },
       ],
     )

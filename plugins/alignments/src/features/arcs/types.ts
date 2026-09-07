@@ -1,3 +1,5 @@
+import type { PartnerLocus } from './arcTypes.ts'
+
 // Worker → main-thread payload for paired-end / split-read arcs and the
 // interchromosomal connector ticks. Owned by the arcs feature.
 export interface ArcsUploadData {
@@ -49,6 +51,8 @@ export interface ArcsUploadData {
   // (`computeArcsByGroup` runs in the model, not the worker); only
   // `arcLinePositions` and the widths derived here cross into a GPU buffer.
   arcLinePartnerRefNames: string[][]
+  // Where each tick's reads land, same shape and same reason as the refNames.
+  arcLinePartnerLoci: PartnerLocus[][]
   numArcLines: number
 }
 
@@ -84,6 +88,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcLinePositions: new Uint32Array(0),
     arcLineSupport: new Uint32Array(0),
     arcLinePartnerRefNames: [],
+    arcLinePartnerLoci: [],
     numArcLines: 0,
   }
 }

@@ -39,7 +39,12 @@ function recordingCtx() {
 const BLOCK: DrawBlock = { start: 0, end: 10_000, screenStartPx: 0 }
 
 function tick(bp: number, support = 1): ComputedLine {
-  return { x: { refName: 'chr1', bp }, support, partnerRefNames: ['chr9'] }
+  return {
+    x: { refName: 'chr1', bp },
+    support,
+    partnerRefNames: ['chr9'],
+    partnerLoci: [],
+  }
 }
 
 function arc(bp1: number, bp2: number): ComputedArc {

@@ -189,6 +189,14 @@ export interface CrossRegionArc extends ComputedArc {
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
 // interchromosomal branch of `resolveArcs` for why that isn't a setting). One
 // per distinct breakpoint, not one per supporting read — see `resolveArcs`.
+// One far-side landing site of a tick's reads: the position the first read of
+// a windowed cluster reached, and the cluster's size.
+export interface PartnerLocus {
+  refName: string
+  bp: number
+  support: number
+}
+
 export interface ComputedLine {
   x: ArcEndpoint
   // Reads through this breakpoint, drawn the same way an arc's is:
@@ -213,6 +221,10 @@ export interface ComputedLine {
   // rearrangement genuinely reaches more than one chromosome, and collapsing
   // that to "the first one" would be a confident wrong answer.
   partnerRefNames: string[]
+  // Where those reads land, one entry per cluster summed into `support`, most
+  // reads first. A tick says "reaches chr9"; this says where on chr9, which is
+  // what a reader needs to open the window the reads are pointing at.
+  partnerLoci: PartnerLocus[]
 }
 
 export interface PendingArcEndpoints {

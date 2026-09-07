@@ -141,12 +141,14 @@ describe('formatArcLineTooltip', () => {
     bp: 23290412,
     support: 37,
     partnerRefNames: ['chr9'],
+    partnerLoci: [{ refName: 'chr9', bp: 130_780_368, support: 37 }],
   }
 
   test('says the partner is off view in arc mode', () => {
     const payload = formatArcLineTooltip(hit, 'chr22', true)
     expect(payload.partnerOffView).toBe(true)
     expect(payload.partnerRefNames).toEqual(['chr9'])
+    expect(payload.partnerLoci).toEqual(hit.partnerLoci)
     expect(payload.support).toBe(37)
   })
 

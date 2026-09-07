@@ -250,8 +250,16 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'arcLine': {
-      const { refName, position, partnerRefNames, support, partnerOffView } =
-        tooltipData
+      const {
+        refName,
+        position,
+        partnerRefNames,
+        partnerLoci,
+        support,
+        partnerOffView,
+      } = tooltipData
+      const shownLoci = partnerLoci.slice(0, 3)
+      const moreLoci = partnerLoci.length - shownLoci.length
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
@@ -281,6 +289,18 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 these reads land outside it. See `partnerOffView` for why the
                 claim is safe to make unconditionally in arc mode. */}
             {partnerOffView ? <div>Outside the displayed regions</div> : null}
+            {shownLoci.length === 0 ? null : (
+              <div>
+                Reads land at:
+                {shownLoci.map(locus => (
+                  <div key={`${locus.refName}:${locus.bp}`}>
+                    {formatLocation(locus.refName, locus.bp)} (
+                    {supportLabel(locus.support).replace('Supported by ', '')})
+                  </div>
+                ))}
+                {moreLoci > 0 ? <div>and {moreLoci} more</div> : null}
+              </div>
+            )}
             <div>{supportLabel(support)}</div>
           </div>
         </BaseTooltip>

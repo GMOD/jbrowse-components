@@ -351,6 +351,7 @@ function resolveArcs(
     refName: string,
     bp: number,
     partnerRef: string,
+    partnerBp: number,
     cluster: number,
     clusterSupport: number,
     // Whether this cluster's evidence answers to the floor at all — see
@@ -361,10 +362,16 @@ function resolveArcs(
   ) {
     const key = `${refName}\0${bp}`
     const seen = byLineKey.get(key)
+    const locus = {
+      refName: partnerRef,
+      bp: partnerBp,
+      support: clusterSupport,
+    }
     if (seen) {
       if (!seen.clusters.has(cluster)) {
         seen.clusters.add(cluster)
         seen.line.support += clusterSupport
+        seen.line.partnerLoci.push(locus)
         seen.exempt ||= exempt
       }
       if (!seen.line.partnerRefNames.includes(partnerRef)) {
@@ -377,6 +384,7 @@ function resolveArcs(
         x: { refName, bp },
         support: clusterSupport,
         partnerRefNames: [partnerRef],
+        partnerLoci: [locus],
       },
       clusters: new Set([cluster]),
       exempt,
@@ -582,8 +590,8 @@ function resolveArcs(
         //
         // Pushed unfiltered: the floor is taken against the coalesced total
         // below, for the reason `pushLine` gives.
-        pushLine(p1Ref, p1Bp, p2Ref, cluster, support, exempt)
-        pushLine(p2Ref, p2Bp, p1Ref, cluster, support, exempt)
+        pushLine(p1Ref, p1Bp, p2Ref, p2Bp, cluster, support, exempt)
+        pushLine(p2Ref, p2Bp, p1Ref, p1Bp, cluster, support, exempt)
       }
       continue
     }
@@ -765,6 +773,12 @@ function resolveArcs(
   // runs — the trap `arcs.sort`'s tie-break is written up for, one field over.
   for (const line of lines) {
     line.partnerRefNames.sort()
+    line.partnerLoci.sort(
+      (a, b) =>
+        b.support - a.support ||
+        a.refName.localeCompare(b.refName) ||
+        a.bp - b.bp,
+    )
   }
 
   return { arcs, crossRegion, lines }

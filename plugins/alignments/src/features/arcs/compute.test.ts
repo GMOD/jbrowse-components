@@ -61,7 +61,12 @@ function tick(
   partner: string,
   support = 1,
 ): ComputedLine {
-  return { x: { refName, bp }, support, partnerRefNames: [partner] }
+  return {
+    x: { refName, bp },
+    support,
+    partnerRefNames: [partner],
+    partnerLoci: [],
+  }
 }
 
 describe('computeArcsFromPileupData', () => {
@@ -201,18 +206,54 @@ describe('computeArcsFromPileupData', () => {
 
     // One tick per breakpoint, each carrying the three reads and naming the
     // chromosome on the OTHER side — which is the direction that makes the pair
-    // two different marks rather than a mirrored one.
+    // two different marks rather than a mirrored one — and the coordinate the
+    // reads land on there.
     expect(result.lines).toEqual([
       {
         x: { refName: 'chr1', bp: 1000 },
         support: 3,
         partnerRefNames: ['chr2'],
+        partnerLoci: [{ refName: 'chr2', bp: 5000, support: 3 }],
       },
       {
         x: { refName: 'chr2', bp: 5000 },
         support: 3,
         partnerRefNames: ['chr1'],
+        partnerLoci: [{ refName: 'chr1', bp: 1000, support: 3 }],
       },
+    ])
+  })
+
+  // One donor, two acceptors: the tick at the donor sums both clusters and
+  // lists where each lands, biggest first — the fact a reader needs to open the
+  // window the majority of the reads are pointing at.
+  test('a tick lists the far-side loci its clusters reach, most reads first', () => {
+    const data = makePileupData({
+      readPositions: new Uint32Array([1000, 1100, 1000, 1100, 1000, 1100]),
+      readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
+      readStrands: new Int8Array([1, 1, 1]),
+      readInsertSizes: new Float32Array([0, 0, 0]),
+      readPairOrientations: new Uint8Array([1, 1, 1]),
+      ...namesToBlock(['readA', 'readB', 'readC']),
+      ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
+      readNextPositions: new Uint32Array([5000, 900_000, 900_000]),
+    })
+
+    const result = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'insertSize',
+        drawInter: true,
+        drawLongRange: true,
+      },
+    )
+
+    const donor = result.lines.find(l => l.x.refName === 'chr1')!
+    expect(donor.support).toBe(3)
+    expect(donor.partnerLoci).toEqual([
+      { refName: 'chr2', bp: 900_000, support: 2 },
+      { refName: 'chr2', bp: 5000, support: 1 },
     ])
   })
 
