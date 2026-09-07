@@ -119,10 +119,10 @@ export function TrackColorsMixin() {
       },
       /**
        * #method
-       * Numeric columns the overlaid tracks declare (an ortholog table's
+       * Columns the overlaid tracks declare (an ortholog table's
        * `attributeColumns`), each of which the palette menu offers as its own
-       * mode. Overridden by the composing view, which is the only thing that
-       * can reach the track configs.
+       * mode, less the reserved `color` column. Overridden by the composing
+       * view, which is the only thing that can reach the track configs.
        *
        * From the CONFIG rather than from loaded data: the menu has to be right
        * before the first fetch, and a track that declares a column carrying no

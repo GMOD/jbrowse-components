@@ -40,14 +40,11 @@ export function declaredAttributes(adapterConfig: Record<string, unknown>) {
 }
 
 /**
- * The reserved column naming the color a text label is painted with. It has to
- * be declared in `attributeColumns` for the adapter to parse it onto the
- * feature at all, but it is the palette for another column rather than a
- * measurement of its own, so no menu offers it as a mode.
+ * The reserved column carrying a label's color. It is declared in
+ * `attributeColumns` so the adapter parses it, but no menu offers it as a mode.
  */
 export const COLOR_COLUMN = 'color'
 
-/** The declared columns a color-by menu offers, which is all but the palette. */
 export function colorableColumns(declared: readonly string[]) {
   return declared.filter(column => column !== COLOR_COLUMN)
 }

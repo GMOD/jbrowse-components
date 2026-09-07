@@ -1154,9 +1154,7 @@ test('the ribbon label table accumulates across fetches and resets on a mode pic
       },
     })
   display.setRibbonColorBy('attribute:group')
-  // `color` is declared so the adapter parses it onto the feature, and the
-  // labels below take their colors from it, but it is the palette for `group`
-  // rather than a measurement, so the menu never offers it as a mode
+  // `color` is parsed for the labels' palette, never offered as a mode
   expect(display.ribbonColorAttributes).toEqual(['group'])
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a', '#4DB5E3')])
   expect(display.ribbonLabels).toEqual({
