@@ -1598,14 +1598,13 @@ mismatches. No aligner is in the loop here either, and no offline step at all:
 the lanes are the graph's own walks.
 
 `haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
-haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so the
-companion file holds side tables that place a GBWT position every 16 kb along
-every path and give each path its length. It also names an **anchor** every 128
-kb along GRCh38 and CHM13, the node in that stretch most haplotypes pass, with a
-row for every haplotype's visit through it, so a window asked for a chosen set
-of lanes walks those haplotypes from the anchor before it and never names the
-rest. It sits beside the database and leaves it untouched, which is what lets a
-database somebody else published get haplotype names.
+haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so a companion
+file beside the database names them, and carries anchors along GRCh38 and CHM13
+from which a chosen set of lanes is walked without naming the rest: a track with
+eight lanes fetches eight walks, not 464, and the KIV-2 window below opens in
+about 3 s on a fresh open and under half a second once cached. What the file
+holds and how it is built is in the
+[gbz-base README](https://github.com/GMOD/gbz-base-js#readme).
 
 ### What a window costs {#gbz-window-cost}
 
@@ -1621,28 +1620,27 @@ takes three times as long as at 1000. The default is 1000. These are all at
 the database from HPRC's bucket and the companion from ours, timed around the
 whole command, two runs each on 2026-09-06 and the median:
 
-| Locus                 | Window                         | Nodes  | Records | Companion read | Time   |
-| --------------------- | ------------------------------ | ------ | ------- | -------------- | ------ |
-| C4                    | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 17.8 s |
-| C4                    | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 31.5 s |
-| CFH cluster           | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 31.9 s |
-| LPA KIV-2             | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 33.8 s |
-| MHC class II          | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 31.7 s |
-| AMY1                  | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 30.3 s |
-| LPA KIV-2, `--keep` 8 | `chr6:160,525,000-160,655,000` | 19,920 | 8       | 14 req, 0.9 MB | 20.8 s |
+| Locus        | Window                         | Nodes  | Records | Companion read | Time   |
+| ------------ | ------------------------------ | ------ | ------- | -------------- | ------ |
+| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 17.8 s |
+| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 31.5 s |
+| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 31.9 s |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 33.8 s |
+| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 31.7 s |
+| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 30.3 s |
 
 Every record is named in all six, and the companion is barely touched, a
-megabyte and a half at most out of its 7 GB. The first five are one record per
+megabyte and a half at most out of its 7.9 GB. The first five are one record per
 haplotype. The times are set by the network the command was timed from rather
 than by the window: on the day of this table one 64 kB range request to the
 bucket took 0.4-0.8 s, every window came back in about half a minute whatever
 its node count, and 2.3.0 timed the same as 2.5.0 on the same connection (15.0
 and 15.4 s against 14.9 and 15.4 s at the small C4 window), so the 5-13 s an
 earlier run of this table showed were that day's network and not a reader that
-has since slowed. The last row is the same KIV-2 window cut to the tutorial's
-eight haplotypes with `--keep`: the companion is read exactly as much, since
-every walk has to be named before the reader knows whose it is, and what the
-chosen set saves is the 456 alignments it does not build, 13 s of 34 here.
+has since slowed. A chosen set takes a different route: with `--keep`, the
+tutorial's eight at KIV-2 are walked from the anchor before the window, 9
+companion requests and 3 s on a fresh open against 3.8 s for all 464, and 0.4 s
+cached; the four tutorial windows measured both ways are in the gbz-base README.
 
 _AMY1_ is the row with more records than haplotypes, and it is the locus a
 copy-number question would start from. The amylase repeat sends each haplotype
@@ -1675,10 +1673,10 @@ The same track feeds the graph view: **Launch → Graph genome view (this
 region)** on a GBZ lane track cuts the window from the database, and the cut
 carries one W line per haplotype walk, named through the companion. That is what
 the rGFA cut cannot say: an rGFA segment names the one assembly that contributed
-it, a GBZ cut says which haplotypes walk every node. The cost is the same as a
-lane fetch, since the walks have to be named before anyone knows whose they are,
-and at KIV-2 that is every one of the 464 walks (21,721 base-level nodes, 12 s
-against the two hosted files) for a Sample rows layout of 232 donors.
+it, a GBZ cut says which haplotypes walk every node. A cut for every haplotype
+names all 464 walks, 21,721 base-level nodes at KIV-2 and 12 s against the two
+hosted files, for a Sample rows layout of 232 donors; a cut for the track's
+chosen lanes walks only those from the anchor.
 
 For a figure of a chosen set, cut once and load the file. `gbz-base-query`, the
 reader's command line, takes `--keep` for each haplotype and writes the
@@ -1695,10 +1693,11 @@ npx -p @gmod/gbz-base gbz-base-query \
   > hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 ```
 
-That is the KIV-2 bubble, 15,808 nodes and nine walks in 1.6 MB after 8 s, and
-the graph view opens it as a file (**Add → Graph genome view**, then the file's
-URL in the load form, or a session with `gfaLocation`), in Sample rows with
-`GRCh38` as the reference path:
+That is the KIV-2 bubble for the eight, 3,140 nodes in 350 kB after 6 s, each
+haplotype's walk in the pieces that stay inside the window, and the graph view
+opens it as a file (**Add → Graph genome view**, then the file's URL in the load
+form, or a session with `gfaLocation`), in Sample rows with `GRCh38` as the
+reference path:
 
 <Figure caption="The KIV-2 array cut from the GBZ for the eight haplotypes, in Sample rows over the same window as the rGFA segments lane. Each row is a haplotype of the eight; an allele is drawn in the row of the first of them to walk it, so a row holds what that haplotype is the first to carry, and the hover on any node lists every haplotype that walks it." src="/img/pangenome/hprc_kiv2_gbz_walks.png" />
 
@@ -1877,8 +1876,8 @@ bash build_hprc_gbz_index.sh out
 
 It downloads the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and
 runs the one command [the section above](#preparing-a-gbz-base-database) shows,
-which takes about an hour on 14 cores. The database it accompanies is read
-straight from HPRC's bucket and never downloaded.
+which takes about a quarter of an hour on 24 cores. The database it accompanies
+is read straight from HPRC's bucket and never downloaded.
 
 The other two both read release 2's published all-vs-GRCh38 PAF:
 
