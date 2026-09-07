@@ -388,6 +388,42 @@ The fold into render-core's shapes was measured the same day and declined:
 the blocker is the shared uniform block thirteen passes read off one write, not
 the geometry.
 
+### The pileup passes do not become a mark list, and `StagedUniforms` did not change that
+
+`StagedUniforms` (`packages/render-core/src/marks/types.ts`) reads like the
+mechanism the paragraph above says is missing, and it is not: it dedupes across
+the marks of ONE block, and the pileup already writes once per block and draws
+thirteen times off it, so it never paid the restatement that mechanism removes.
+What the pileup hoists is across the whole FRAME — `writePalette`'s ~150 stores,
+once ahead of a loop that runs a section block at a time — and nothing on the
+mark path expresses a per-frame write.
+
+`plugins/alignments/benches/pileupUniformWrite.bench.ts` re-measured it against
+today's `for (const layer of PILEUP_LAYERS) if (layer.enabled(state))` section
+block, at 3 blocks x 40 sections — the 120 section blocks per frame
+`Canvas2DAlignmentsRenderer` names at `MAX_GROUPS` — with 8 x 40 and 8 x 1
+beside it, control at 1.00-1.01x on every row. Threshold: 10 us/frame.
+
+- **the mark WALK alone is +10.2 us/frame, 1.29x** — the renderer keeping its
+  own write and handing the thirteen marks a `StagedUniforms` already naming
+  that writer, so not one of them writes. It clears the bar before the writer
+  question is asked at all, and holds its ratio at 8 x 40 (+19.6 us).
+- a whole-struct generated `writeUniforms` per section block, the form every
+  other packer in tree takes: 12.3x, +319 us/frame at 8 x 40.
+- the same with the two `float4[]` tables and the thirteen packs memoized on the
+  palette, as `renderers/coverageMarks.ts` already does: 4.9x, +110 us/frame.
+  The allocation is half of it; the 158 stores are the rest, and no memo reaches
+  those.
+- packing the struct once per frame into a template and doing `scratch.set` plus
+  the seven slots that vary: 1.36x, +5.4 us/frame — the only writer arm under
+  the bar, and it has nowhere to keep the template. A module-level
+  `MarkShape.writeUniforms` reaches per-frame state only through `params`, which
+  for these marks is the `RenderState` both backends and the SVG export share.
+
+So the walk and the cheapest legal writer together are ~1.4x on today's section
+block. At 8 x 1, the ungrouped default, every arm but the generated packer is
+under 1 us/frame, so `MAX_GROUPS` is the whole of what fails.
+
 ## Where this sits
 
 **In plugins/alignments, and deliberately not shared wider.** Lifting

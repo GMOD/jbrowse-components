@@ -55,6 +55,13 @@ export interface PileupLayer {
 // GPU passes against one `drawArcs`, a split that follows from a GPU buffer per
 // shape rather than from a layer list, and `flatPaintOrder.test.ts` is what pins
 // the Canvas2D path to `ARC_PASSES`' order instead.
+//
+// These thirteen stay a list rather than becoming thirteen more marks, and
+// `StagedUniforms` did not change that: the mark walk alone costs 1.29x
+// (+10.2us/frame) over this loop at MAX_GROUPS, and the cheapest writer that
+// could stand in for the per-frame `writePalette` adds another 1.36x.
+// `agent-docs/ideas/one-mark-declaration-per-feature.md` has the table;
+// `benches/pileupUniformWrite.bench.ts` takes it again.
 export const PILEUP_LAYERS: PileupLayer[] = [
   { id: 'connLine', enabled: s => s.chainMode },
   { id: 'linkedReadLine', enabled: s => s.showLinkedReadLines },
