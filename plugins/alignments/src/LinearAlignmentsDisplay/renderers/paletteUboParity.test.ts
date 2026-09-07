@@ -4,6 +4,10 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import {
+  UNIFORM_OFFSET_U32 as ARC_UNIFORM_OFFSET_U32,
+  UNIFORM_SLOT_ARRAYS as ARC_UNIFORM_SLOT_ARRAYS,
+} from '../../shaders/slang/arc.iface.generated.ts'
+import {
   UNIFORM_OFFSET_U32,
   UNIFORM_SLOT_ARRAYS,
 } from '../../shaders/slang/read.iface.generated.ts'
@@ -16,13 +20,14 @@ import {
 } from './GpuAlignmentsRenderer.ts'
 
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
-import type { AlignmentsSources } from './rendererTypes.ts'
+import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 
 /**
  * Four tables project a `ColorPalette` onto uniform slots — the named colors, the
- * arc palette, the linked-read palette, and the read categories — and the walks
- * over them are now PRE-RESOLVED at module load into parallel index/key arrays,
- * because they ran per frame per region per track.
+ * arc palette, the linked-read palette, and the read categories. Three land in
+ * the pileup block, whose walks are PRE-RESOLVED at module load into parallel
+ * index/key arrays because they ran per frame per region per track; the arc
+ * palette is `ArcBandUniforms`' and goes through the generated packer.
  *
  * That trades an `Object.entries` per call for an alignment invariant: slot `i`
  * and key `i` have to still describe the same table entry. Nothing about a
@@ -51,9 +56,21 @@ function distinctPalette() {
 
 const COLORS = distinctPalette()
 
+// The band is drawn so its own UBO is written too: the arc palette and the flat
+// connector are `ArcBandUniforms`' slots, not the pileup block's.
+const SECTION: SectionRender = {
+  pileupTopOffset: 0,
+  coverageTopOffset: 0,
+  covClipTop: 0,
+  covClipHeight: 0,
+  pileupClipTop: 0,
+  pileupClipHeight: 40,
+  arcBand: { top: 40, height: 20, down: false },
+}
+
 // The uniforms one block of one empty region leaves behind. showModifications
 // false, so `effectiveBaseColors` passes the five base colors through unmuted.
-function lastUniforms() {
+function frameUniforms() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
   const sources: AlignmentsSources = {
@@ -79,12 +96,25 @@ function lastUniforms() {
         reversed: false,
       },
     ],
-    makeTestRenderState({ showModifications: false, colors: COLORS }),
+    makeTestRenderState({
+      showModifications: false,
+      colors: COLORS,
+      sections: [SECTION],
+      readConnections: 'arc',
+      readConnectionsHeight: 20,
+    }),
   )
-  return { u32: hal.getLastUniformsU32()!, f32: hal.getLastUniformsF32()! }
+  const arc = hal.uniformsOf(hal.draws().find(d => d.passId === 'arc')!)!
+  const pileup = hal.uniformsOf(hal.draws().find(d => d.passId === 'read')!)!
+  return {
+    u32: new Uint32Array(pileup.buffer),
+    f32: pileup,
+    arcF32: arc,
+    arcU32: new Uint32Array(arc.buffer),
+  }
 }
 
-const { u32, f32 } = lastUniforms()
+const { u32, f32, arcF32, arcU32 } = frameUniforms()
 
 const packed = (key: keyof ColorPalette) => {
   const rgb = COLORS[key]
@@ -111,8 +141,8 @@ describe('the named palette uniforms', () => {
   })
 })
 
-// The three indexed palettes are `float4[]`, so their slots live in the f32 view
-// and carry the normalized components with alpha 1 — not the packed u32 above.
+// The indexed palettes are `float4[]`, so their slots live in the f32 view and
+// carry the normalized components with alpha 1 — not the packed u32 above.
 function f32Slot(offset: number) {
   return [f32[offset], f32[offset + 1], f32[offset + 2], f32[offset + 3]]
 }
@@ -124,14 +154,24 @@ function expectedSlot(key: keyof ColorPalette) {
   return [...Float32Array.of(rgb[0], rgb[1], rgb[2], 1)]
 }
 
-describe('the indexed palette uniforms', () => {
-  test.each(UNIFORM_SLOT_ARRAYS.arcColor.map((o, i) => [i, o]))(
+describe('the arc band palette uniforms', () => {
+  test.each(ARC_UNIFORM_SLOT_ARRAYS.arcColor.map((o, i) => [i, o] as const))(
     'arcColor slot %i holds its category color',
     (i, offset) => {
-      expect(f32Slot(offset)).toEqual(expectedSlot(ARC_SLOT_KEYS[i]!))
+      expect([...arcF32.slice(offset, offset + 4)]).toEqual(
+        expectedSlot(ARC_SLOT_KEYS[i]!),
+      )
     },
   )
 
+  test('colorFlatConnector holds the packed foreground', () => {
+    expect(arcU32[ARC_UNIFORM_OFFSET_U32.colorFlatConnector]).toBe(
+      packed('colorFlatConnector'),
+    )
+  })
+})
+
+describe('the indexed palette uniforms', () => {
   test.each(UNIFORM_SLOT_ARRAYS.linkedReadColor.map((o, i) => [i, o]))(
     'linkedReadColor slot %i holds its category color',
     (i, offset) => {

@@ -24,6 +24,7 @@ import {
   ARC_COLOR_SHORT_INSERT,
   ARC_HEIGHT_MARGIN,
 } from '../../shaders/slang/arc.consts.generated.ts'
+import { UNIFORM_SLOT_ARRAYS as ARC_SLOT_ARRAYS } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcAvailH, arcYFraction, arcYScale } from './arcYScale.ts'
@@ -54,7 +55,7 @@ const STOCK = makeTestPalette({
 describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
   it('the arc palette length matches the GPU arcColor slot count', () => {
     expect(buildArcColorPalette(STOCK).length).toBe(
-      UNIFORM_SLOT_ARRAYS.arcColor.length,
+      ARC_SLOT_ARRAYS.arcColor.length,
     )
   })
   it('the linked-read palette length matches the GPU linkedReadColor slot count', () => {

@@ -3,8 +3,13 @@ import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
+  UNIFORM_OFFSET_F32 as ARC_UNIFORM_OFFSET_F32,
+  UNIFORMS_SIZE_BYTES as ARC_UNIFORMS_SIZE_BYTES,
+} from '../../shaders/slang/arc.iface.generated.ts'
+import {
   UNIFORM_OFFSET_F32,
   UNIFORM_OFFSET_U32,
+  UNIFORMS_SIZE_BYTES,
 } from '../../shaders/slang/read.iface.generated.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
@@ -17,17 +22,12 @@ import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 /**
  * Every uniform write of a frame, not just the last one.
  *
- * The arc band reads the shared UBO but places Y against the band rather than
- * the pileup, so a few slots have to differ for its four passes and go back for
- * everything after. That used to be a clobber of the live buffer bracketed by
- * two full-buffer memcpys and two HAL writes — and the restoring write was
- * consumed by nothing, since the next section writes its own uniforms before
- * anything draws. The band now fills a buffer of its own instead.
- *
- * Two things have to hold, and the frame's final state shows neither: the arc
- * uniforms must not reach a later section, and the frame-constant colour slots
- * — written once ahead of the loop now, rather than rebuilt per section per
- * block — must be on every write.
+ * The arc band writes `ArcBandUniforms`, its own block, in the middle of a frame
+ * whose other passes read the pileup's. It used to write a memcpy of the pileup
+ * block with the band-sensitive slots poked on top, which is why the interleave
+ * is worth pinning either way: a band write must not reach a later section, and
+ * the pileup's frame-constant colour slots — written once ahead of the loop,
+ * rather than rebuilt per section per block — must be on every pileup write.
  */
 
 const BLOCK = {
@@ -95,32 +95,41 @@ function frameWrites() {
 
 describe('the arc band writes its own uniforms', () => {
   it('costs one write per section plus one per arc band, and no more', () => {
-    // Two sections, each a pileup write then an arc write. A third per section
-    // is the restoring write that nothing drew with.
+    // Two sections, each a pileup write then an arc write.
     expect(frameWrites().f32).toHaveLength(4)
+  })
+
+  it('alternates the two blocks, so neither is the other patched', () => {
+    // Writes are [section 0 pileup, section 0 arcs, section 1 pileup, ...], and
+    // the two structs are different sizes — the byte length is the cheapest
+    // statement that the band is not writing a copy of the pileup's.
+    expect(frameWrites().f32.map(w => w.byteLength)).toEqual([
+      UNIFORMS_SIZE_BYTES,
+      ARC_UNIFORMS_SIZE_BYTES,
+      UNIFORMS_SIZE_BYTES,
+      ARC_UNIFORMS_SIZE_BYTES,
+    ])
   })
 
   it('gives the second section its own pileup offset, not the arc band anchor', () => {
     const { f32 } = frameWrites()
-    // Writes are [section 0 pileup, section 0 arcs, section 1 pileup, ...].
-    // `covOffset` is the pileup top for a section write and the arc anchor for
-    // an arc write, so section 1's is what a leaked clobber would corrupt.
+    // `covOffset` is the pileup top on a section write and the arc anchor on an
+    // arc write, so section 1's is what a leaked clobber would corrupt.
     expect(f32[2]![UNIFORM_OFFSET_F32.covOffset]).toBe(50)
   })
 
-  it('places the arc anchor only on the arc writes', () => {
+  it('places the arc anchor on the arc writes', () => {
     const { f32 } = frameWrites()
     // Up mode anchors at the band bottom: section 0's band is [0, 20].
-    expect(f32[1]![UNIFORM_OFFSET_F32.covOffset]).toBe(20)
-    expect(f32[1]![UNIFORM_OFFSET_F32.arcBandH]).toBe(20)
-    // A section write never carries a band height.
-    expect(f32[0]![UNIFORM_OFFSET_F32.arcBandH]).toBe(0)
+    expect(f32[1]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(20)
+    expect(f32[1]![ARC_UNIFORM_OFFSET_F32.arcBandH]).toBe(20)
+    expect(f32[3]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(60)
   })
 
-  it('carries the palette on every write, including the arc ones', () => {
+  it('carries the palette on every pileup write', () => {
     const { u32 } = frameWrites()
-    for (const [i, write] of u32.entries()) {
-      expect({ write: i, colorBaseA: write[UNIFORM_OFFSET_U32.colorBaseA] }) //
+    for (const i of [0, 2]) {
+      expect({ write: i, colorBaseA: u32[i]![UNIFORM_OFFSET_U32.colorBaseA] }) //
         .toEqual({ write: i, colorBaseA: PACKED_BASE_A })
     }
   })

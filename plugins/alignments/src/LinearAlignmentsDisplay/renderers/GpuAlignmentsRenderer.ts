@@ -13,11 +13,7 @@ import { drawMarks, uploadMarks } from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import {
-  arcAnchorY,
-  arcAvailH,
-  arcYScale,
-} from '../../features/arcs/arcYScale.ts'
+import { arcAnchorY } from '../../features/arcs/arcYScale.ts'
 import {
   ARC_FLAT_PASS,
   ARC_LINE_PASS,
@@ -38,7 +34,7 @@ import { PER_BASE_LETTER_PASS } from '../../features/perBaseLetter/packGpu.ts'
 import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
 import { READ_PASS } from '../../features/read/packGpu.ts'
 import { SOFTCLIP_BASES_PASS } from '../../features/softclipBases/packGpu.ts'
-import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
+import { LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
@@ -46,6 +42,10 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
+import {
+  ARC_BAND_UNIFORMS_SIZE_BYTES,
+  writeArcBandUniforms,
+} from './arcBandUniforms.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
@@ -78,10 +78,8 @@ import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
-// Shader strides — every pass shares the same Uniforms struct (see
-// shaders/slang/alignmentsUniforms.slang) so we use any module's
-// UNIFORMS_SIZE_BYTES. Keep one shared ArrayBuffer for the UBO.
-const UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
+// Shader strides — every pileup pass shares the same Uniforms struct (see
+// shaders/slang/alignmentsUniforms.slang) so we use any module's offsets.
 const U = readShader.UNIFORM_OFFSET_F32
 const UI = readShader.UNIFORM_OFFSET_I32
 const UU = readShader.UNIFORM_OFFSET_U32
@@ -144,76 +142,6 @@ function fillFrameUniforms(
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 
-// ---------------------------------------------------------------------------
-// Pure UBO-fill helpers. They live outside the renderer class because they touch
-// no HAL state, and they are all this file holds of the per-pass detail: each
-// pass's instance packing lives in its own `features/X/packGpu.ts`, carried by
-// the pass descriptor itself, so the renderer names passes without knowing what
-// any of them packs.
-// ---------------------------------------------------------------------------
-
-// Arc-pass UBO patch. The arc shaders read the same UBO as the read pass but
-// place Y in absolute canvas px against the arc band, so we overwrite the
-// band-sensitive slots before the draw. Pure — mutates only the views.
-//
-// `arcAnchorPx` is the arc baseline in absolute canvas px (band bottom in up
-// mode, band top in down mode) — what the shaders add to their per-vertex Y
-// before dividing by the full canvas height. `arcBandH` is the band's height,
-// the extent the dome/flat Y-scale maps into. Keeping the band out of the
-// viewport (it stays full-canvas) means a grouped section's band can scroll
-// partly off-screen without an out-of-bounds viewport (WebGPU rejects those
-// pre-Chrome-135); the devicePxBand scissor does the real band clip.
-interface ArcFrame {
-  block: RenderBlock
-  state: RenderState
-  scissorX: number
-  scissorW: number
-  arcBandH: number
-  dpr: number
-  arcAnchorPx: number
-}
-function fillArcUniforms(f: Float32Array, a: ArcFrame) {
-  const { block, state, scissorX, scissorW, arcBandH, dpr, arcAnchorPx } = a
-  const blockW = block.screenEndPx - block.screenStartPx
-  const [hi, lo] = splitPositionWithFrac(block.start)
-  f[U.covOffset] = arcAnchorPx
-  f[U.canvasH] = state.canvasHeight
-  f[U.arcBandH] = arcBandH
-  f[U.canvasW] = scissorW
-  f[U.blockStartPx] = block.screenStartPx - scissorX
-  f[U.blockWidth] = blockW
-  f[U.bpHi] = hi
-  f[U.bpLo] = lo
-  f[U.bpLen] = block.end - block.start
-  // A near-horizontal arc thinner than ~1.5 device px has no vertical room to
-  // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
-  // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2
-  // device px, so the floor is below it and the look is unchanged.
-  //
-  // All THREE stroked arc-band passes — arc, arcFlat and arcLine — take their
-  // width per instance (support-scaled at pack time by `arcLineWidth`) and read
-  // this only as the FLOOR to raise it to: `max(inst.lineWidthPx,
-  // u.lineWidthPx)`. The floor is about the display, not about how many reads a
-  // mark stands for. (The tick pass was the last to stroke with this uniform
-  // directly, and the note saying so outlived the change.)
-  f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
-  // Sizes the antialiasing ramp in device pixels (see STROKE_AA_PX).
-  f[U.devicePixelRatio] = dpr
-  f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
-  // Same domain rule the Canvas2D/SVG draw applies (arcYScale): read cloud
-  // picks its own autoscaled |tlen| domain on a base-2 log axis, arc mode falls
-  // back to the bp-span that fits availH at the current zoom and stays linear.
-  const pxPerBp = blockW / (block.end - block.start)
-  const { domainBp, log } = arcYScale(
-    state.arcsYDomainBp,
-    arcAvailH(arcBandH),
-    pxPerBp,
-  )
-  f[U.pxPerBp] = pxPerBp
-  f[U.arcsYDomainBp] = domainBp
-  f[U.arcsYLog] = log ? 1 : 0
-}
-
 // Which ColorPalette entry backs each NAMED shader color uniform — the ones a
 // pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
 // insertion). The indexed palettes are separate and written below.
@@ -235,7 +163,6 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorSkip: 'colorSkip',
   colorSoftclip: 'colorSoftclip',
   colorHardclip: 'colorHardclip',
-  colorFlatConnector: 'colorFlatConnector',
   colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
   colorOverlapTint: 'colorOverlapTint',
@@ -312,26 +239,14 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   // Driven by the SHADER's slot count, not the palette's, so a palette that
   // fell out of step leaves an undefined behind here rather than silently
   // painting stale colors in the slots it didn't reach. arcYScale.test.ts pins
-  // the two lengths equal.
-  // Resolved against `c`, the same themed palette the read categories below
-  // use. These three used to be module constants, which is how a dark-mode
-  // pileup ended up with dimmed reads under undimmed arcs.
-  // One array, indexed by the arc curves, the connector ticks and the
-  // read-cloud endpoint squares alike. The squares had a `arcMarkerColor` copy
-  // of their own for a substitution that no longer exists (a pale short-insert
-  // fill against the saturated stroke; both are pale now).
-  //
-  // `ARC_SLOT_KEYS` / `LINKED_READ_SLOT_KEYS` are the slot tables' own
-  // resolution through `swatchPaletteKeys`, which is what `buildArcColorPalette`
-  // (the Canvas2D, SVG and overlay path) also reads — so this writes the same
-  // colours without materializing the array that function returns.
-  writePaletteSlots(
-    f,
-    c,
-    readShader.setUniformArcColor,
-    USLOTS.arcColor.length,
-    ARC_SLOT_KEYS,
-  )
+  // the two lengths equal. `LINKED_READ_SLOT_KEYS` is the slot table's own
+  // resolution through `swatchPaletteKeys`, which is what
+  // `buildLinkedReadColorPalette` (the Canvas2D, SVG and overlay path) also
+  // reads — so this writes the same colours without materializing the array
+  // that function returns. Resolved against `c`, the themed palette: these used
+  // to be module constants, which is how a dark-mode pileup ended up with
+  // dimmed reads under undimmed arcs. The arc palette is the arc band's, and
+  // travels in `ArcBandUniforms`.
   writePaletteSlots(
     f,
     c,
@@ -592,25 +507,16 @@ export class GpuAlignmentsRenderer
   private uF32: Float32Array
   private uU32: Uint32Array
   private uI32: Int32Array
-  // The arc band's own copy of the UBO. The arc shaders share the struct but
-  // place Y against the band rather than the pileup, so a handful of slots
-  // differ — and the band draws in the middle of a frame whose other passes
-  // need the originals back.
-  //
-  // A copy rather than a clobber-and-restore of `uData`, which is what this was:
-  // that spent two full-buffer memcpys and two HAL writes per section per block
-  // (the restoring write consumed by nothing — the next section writes uniforms
-  // before anything draws), and it left `uData` holding arc uniforms for the
-  // width of the bracket, so any early return or throw inside corrupted every
-  // later pass in the frame. Copying forward costs one memcpy, one write, and
-  // has no window to get wrong.
-  private uArc = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uArcF32 = new Float32Array(this.uArc)
-  // The coverage band's UBO, which is a DIFFERENT struct rather than a patched
-  // copy of this one: its five passes are render-core's, shared with the MAF
-  // display, and they read `CoverageBandUniforms`. Sized from that struct, so
-  // the write covers exactly it — the HAL's ring slot is aligned to the largest
-  // struct any pass here declares, which is still this plugin's `Uniforms`.
+  // The arc band's UBO, its own `ArcBandUniforms` struct rather than a patched
+  // copy of this one. It was the copy: a memcpy of the whole pileup block with
+  // the band-sensitive slots poked on top, so a slot the poke forgot redrew with
+  // the pileup's value and nothing said so.
+  private uArc = new ArrayBuffer(ARC_BAND_UNIFORMS_SIZE_BYTES)
+  // The coverage band's UBO, likewise its own struct: its five passes are
+  // render-core's, shared with the MAF display, and they read
+  // `CoverageBandUniforms`. Sized from that struct, so the write covers exactly
+  // it — the HAL's ring slot is aligned to the largest struct any pass here
+  // declares, which is still this plugin's `Uniforms`.
   private uCoverage = new ArrayBuffer(COVERAGE_BAND_UNIFORMS_SIZE_BYTES)
   private regions = new Map<number, LocalRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
@@ -628,14 +534,6 @@ export class GpuAlignmentsRenderer
     this.uF32 = new Float32Array(this.uData)
     this.uU32 = new Uint32Array(this.uData)
     this.uI32 = new Int32Array(this.uData)
-  }
-
-  // Copy the frame's UBO into the arc scratch via byte-level memcpy.
-  // Float32Array.set on a shared-byte view technically works on spec-compliant
-  // engines, but a Uint8Array copy reads as "the same bytes" and avoids any
-  // NaN-pattern reinterpretation concerns.
-  private copyUboToArcScratch() {
-    new Uint8Array(this.uArc).set(new Uint8Array(this.uData))
   }
 
   release() {}
@@ -1010,21 +908,26 @@ export class GpuAlignmentsRenderer
     // scissored output is byte-identical to the pre-grouping single pass.
     const scissor = devicePxBand(band.top, band.height, dpr, bufH)
     if (scissor.height > 0) {
-      // The frame's uniforms, then the band's differences on top, in a buffer of
-      // this pass's own — so `uData` still holds what every other pass needs and
-      // an early return here can't strand the frame in arc uniforms.
-      this.copyUboToArcScratch()
-      fillArcUniforms(this.uArcF32, {
-        block,
-        state,
-        scissorX: clip.scissorX,
-        scissorW: clip.scissorW,
-        arcBandH: band.height,
-        dpr,
+      const [bpHi, bpLo] = splitPositionWithFrac(block.start)
+      writeArcBandUniforms(this.uArc, {
+        bpHi,
+        bpLo,
+        bpLen: block.end - block.start,
+        canvasW: clip.scissorW,
+        canvasH: state.canvasHeight,
+        reversed: block.reversed,
         // Up mode anchors at the band bottom (band.top + full height); down
         // mode anchors at the band top — `arcAnchorY`, the same rule the
         // Canvas2D placement and the insert-size ruler take their anchor from.
         arcAnchorPx: arcAnchorY(band.top, band.height, band.down),
+        arcBandH: band.height,
+        blockStartPx: block.screenStartPx - clip.scissorX,
+        blockWidth: block.screenEndPx - block.screenStartPx,
+        lineWidthPx: state.readConnectionsLineWidth,
+        down: state.readConnectionsDown,
+        arcsYDomainBp: state.arcsYDomainBp,
+        dpr,
+        colors: state.colors,
       })
       this.hal.writeUniforms(this.uArc)
 

@@ -11,6 +11,7 @@
 //! export-consts: ARC_MARKER_PX
 
 import alignmentsUniforms;
+import arcBandUniforms;
 import hpmath;
 
 
@@ -21,7 +22,7 @@ static const float ARC_MARKER_PX = 5.0;
 // formula that consumes it — the same declaration arc.slang subtracts, so a
 // marker cannot land off its flat line.
 
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
 struct Instance {
   uint  position  : ATTR0;

@@ -15,13 +15,14 @@
 //! export-consts: ARC_COLOR_INTERCHROM
 
 import alignmentsUniforms;
+import arcBandUniforms;
 import antialias;
 import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
 // Position and width. A `colorType : ATTR1` used to ride along, but
 // `resolveArcs` assigns every tick ARC_COLOR_INTERCHROM and nothing else can —
@@ -75,7 +76,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Absolute canvas px already (bandTopPx came off the anchor), so this does NOT
   // go through arcBandClipPos, which adds the anchor itself.
   o.position = float4(
-    flipX(pxToClipX(screenX + o.dx, u.canvasW), u),
+    arcFlipX(pxToClipX(screenX + o.dx, u.canvasW), u),
     yPxToClipY(bandTopPx + bandY, u.canvasH), 0.0, 1.0);
   o.color = float4(arcColorByIndex(ARC_COLOR_INTERCHROM, u), 1.0);
   return o;

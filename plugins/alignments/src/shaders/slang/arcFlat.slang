@@ -19,6 +19,7 @@
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
 
 import alignmentsUniforms;
+import arcBandUniforms;
 import antialias;
 // `unpackRGBA`, for the connector colour. Slang does not re-export through an
 // import, so naming a packed colour uniform means importing this too — the same
@@ -44,7 +45,7 @@ static const float ARC_FLAT_ALPHA = 0.7;
 static const float ARC_FLAT_DASH_PX = 3.0;
 static const float ARC_FLAT_GAP_PX = 3.0;
 
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
 // No colorType: the line is neutral, and the insert-size / orientation color
 // lives in the endpoint squares (mirrors samplot.py's colored markers joined by

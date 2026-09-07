@@ -61,6 +61,7 @@
 //! js-skip: arcIsFar — reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides
 
 import alignmentsUniforms;
+import arcBandUniforms;
 import antialias;
 
 
@@ -119,7 +120,7 @@ static const float ARC_FAR_SCREEN_WIDTHS = 3.0;
 static const float KIND_ELLIPSE = 0.0;
 static const float KIND_CIRCLE  = 1.0;
 
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
 struct Instance {
   uint  x1        : ATTR0;
@@ -261,7 +262,7 @@ struct Curve { float2 c; float2 ends; float2 radii; float kind; float yDir; floa
 // not on the last row of the band. Not to be confused with the `halfWidthPx`
 // below, which is the PAIR's on-screen half-width — the radius question, not the
 // ink question.
-Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
+Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
   float availH = arcAvailH(u.arcBandH);
   float yDir = arcYDir(u);
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
