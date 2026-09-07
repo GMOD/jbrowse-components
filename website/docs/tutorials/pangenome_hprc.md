@@ -7,15 +7,18 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** HPRC release 2's `sv.gfa` is an rGFA, so its segments carry
-coordinates and the graph opens by locus from two small tabix indexes. Its
-`wave.vcf.gz` ships an index too, so 464 haplotypes draw as a genotype matrix
-straight off S3.
+**TL;DR:** a pangenome graph records what a set of genomes share and where they
+diverge, so sequence one person carries and the reference lacks is an object in
+the file rather than an absence to infer from an alignment. This page opens the
+Human Pangenome Reference Consortium's release 2 graph at a locus, draws it
+beside GRCh38, and takes one allele off the drawing back to the coordinates it
+attaches at. Every track here is a URL, read a window at a time.
 
 :::caution Experimental
 
-The graph view is a beta plugin, and this tutorial covers experimental ideas. We
-welcome your [feedback](/contact).
+The graph view is a beta plugin, and this tutorial covers experimental ideas.
+Where a step below says the view works a particular way today, that is a current
+limit rather than a settled design. We welcome your [feedback](/contact).
 
 :::
 
@@ -87,89 +90,32 @@ straight off S3 or through small tabix projections we host beside them.
 
 ## The route, end to end
 
-Everything this page does to the graph, in one session:
+At the MHC class II locus, GRCh38 carries 12 kb that many haplotypes replace
+with 1.8 kb of their own sequence. The graph holds that swap as an object with
+its own length, attached to the reference either side of what it stands in for.
+This page finds it, reads where it sits on GRCh38, and then loads the haplotype
+it came from to see what the swap did to the genes there.
 
 - open hg38 with its genes and nothing else
 - paste the track config from [Load the graph](#load-the-graph) into the app
-- [cut a window as a graph](#open-a-locus-as-a-graph)
-- take one node [back to its coordinates](#from-a-node-back-to-a-coordinate)
+- [cut the locus as a graph](#open-a-locus-as-a-graph)
+- take the allele
+  [back to its GRCh38 coordinates](#from-a-node-back-to-a-coordinate)
+- [load the haplotype that contributed it](#loading-a-haplotype-as-an-assembly)
+  and read that haplotype's own annotation at the same place
+
+The clip below runs the first four steps. Three things in it are worth naming
+first, because the rest of the page rests on all three. The chain of segments
+running across the drawing is the **backbone**, which is GRCh38's own path
+through the graph. Each place that chain opens out and closes again is a
+**bubble**, one locus where the haplotypes disagree. Each loop inside a bubble
+is an **allele**, a stretch of sequence some haplotype carries in place of the
+reference's.
+
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's GRCh38 interval marked in the linear view above it." />
 
 The link under the clip opens the session it starts in, so pasting a config for
 your own graph walks the same route on it.
-
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
-
-### Every way across {#every-way-across}
-
-Each crossing between the two panels is one menu item, and this is the whole
-list on this graph. Into the graph, from a linear view whose session holds the
-segments track:
-
-1. **Track menu → Launch → Graph genome view (this region)** on the segments
-   lane cuts whatever is on screen.
-2. **Drag across the scale bar** and pick **Graph genome view (this selection)**
-   for a window narrower than the view. Past the view's limit the item greys out
-   and names it.
-3. **Right-click a segment** in the lane for **Graph genome view (this
-   segment)**, which cuts the graph around that one segment, padded by half its
-   length each side. Right-clicking a gene in the RefSeq lane offers the same
-   cut as **Graph genome view (this feature)**; the segments track has to be in
-   the session, not in the view.
-
-Out of the graph:
-
-4. **Hover a node** and its GRCh38 interval is banded across every lane in the
-   linear view above; hover the linear view and the node under the cursor lights
-   up. Nothing to configure.
-5. **Right-click a node** and take **Highlight in hg38**, which writes that
-   interval into the linear view's own highlights, where it stays after the
-   pointer moves.
-6. **Right-click a node** and take **Open in hg38**, which scrolls the linear
-   view to it. On a backbone segment that is the segment's own span; on an
-   allele it is the interval between the two backbone segments the allele leaves
-   and rejoins, and the item says so, **around this node**.
-7. **View menu → Launch → Linear genome view** does the same for the whole
-   window the graph was cut from. Once a contributing haplotype is loaded as an
-   assembly, the node menu gains **Open in** that haplotype at the allele's own
-   coordinates, and with two or more loaded the same **Launch** submenu opens
-   them all as a synteny view;
-   [Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly)
-   sets that up.
-
-The clip above takes 1 and 5, with the layout dropdown between them. The clips
-under [A whole chromosome as a graph](#a-whole-chromosome-as-a-graph) and
-[Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) take 6
-and 2, then 7 on a haplotype.
-
-:::caution What the round trip cannot do
-
-- **A graph pane is a cut, not a live view.** It draws the window it was
-  launched from and stays there when the linear view moves. The next window is
-  the next launch, and every launch is a new pane, so close the one you are done
-  with.
-- **Past about 100 kb the drawing stops being readable at segment resolution.**
-  The layout scales the graph to fit, so ten times the nodes is the same ink at
-  a tenth the size, and a cut is refused outright past 5 Mb. A wider window is
-  the [bubble tier's](#a-whole-chromosome-as-a-graph).
-- **The first cut in a session waits on the index.** Both tabix indexes, about 9
-  MB, download before anything draws; later cuts reuse them.
-- **A node names the haplotype that contributed it, never everyone carrying
-  it.** minigraph collapses, so `contributingAssembly` is the first assembly to
-  add the sequence, and carriage is the [callset's](#the-variant-callset) to
-  say.
-- **A deletion has no haplotype at all.** A dashed edge joins two backbone
-  segments, so it names no donor and opens nowhere but GRCh38.
-- **Only a loaded assembly can be opened.** With hg38 alone, an allele's own
-  coordinates are in its details and the linear view gets the GRCh38 interval
-  around it; the allele itself opens once its haplotype is
-  [loaded](#loading-a-haplotype-as-an-assembly).
-- **Near-identical segmental duplications draw as a bare thread**, because
-  minigraph merged them onto one path: SMN1/SMN2, RHD/RHCE, PMS2/PMS2CL and the
-  CYP clusters among them. A quiet window there is a collapsed one.
-- **The plugin needs a JBrowse 5 build**; see
-  [The GraphGenomeView plugin](#the-graphgenomeview-plugin).
-
-:::
 
 ## HPRC release 2
 
@@ -300,14 +246,30 @@ view; the adapter resolves `<uri>.segs.bed.gz`, `<uri>.links.bed.gz`, and both
 }
 ```
 
-The `color` jexl paints each segment in the graph view's own **Stable rank**
-colors, so a segment is the same color in both panels.
+Three fields carry the track, and they are the three to change for a graph of
+your own:
+
+- **`uri` names a prefix rather than a file.** The adapter appends
+  `.segs.bed.gz` and `.links.bed.gz` and reads the `.tbi` beside each, so one
+  string points at the pair. Both indexes, about 9 MB, arrive on the first cut
+  of a session and are reused by every later one.
+- **`assemblyNameToPanSN` ties your assembly to the graph's own spelling of
+  it.** The session calls the reference `hg38` where the graph calls it
+  `GRCh38#0#chr6`, and the sample half of that name is the part JBrowse cannot
+  work out for itself. [Why this graph opens by locus](#regular-gfa-vs-rgfa) has
+  the rest of the naming.
+- **`color`** paints each segment in the graph view's own **Stable rank**
+  colors, so a segment is the same color in both panels.
 
 Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
-reference and the graph is queryable by locus. Those hosted files are ours: we
-ran the `sv.gfa.gz` through
+reference and the graph is queryable by locus.
+
+The two files here are ours: we ran HPRC's `sv.gfa.gz` through
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
 and put the output on `jbrowse.org`.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) runs the
+same command on a graph of your own, and writes every other file this page
+reads.
 
 ## Open a locus as a graph
 
@@ -323,6 +285,12 @@ The graph draws a window at a time, and there are three ways to pick one:
 Any of them works without a graph track in the view: the item appears whenever
 the session holds a track whose adapter can cut a subgraph, and the subgraph
 comes from the same two files the track reads.
+
+Each launch makes a pane, which draws the window it was cut from and holds it
+while the linear view moves on, so the next window is another launch and a pane
+you are done with can be closed. Around a hundred kilobases is what the layout
+draws legibly at segment resolution, and the view refuses a cut past 5 Mb;
+[the bubble tier](#a-whole-chromosome-as-a-graph) is what draws a wider span.
 
 The third lane in the figure below is the [bubble track](#the-bubble-track),
 which the figures from here on read alongside the graph.
@@ -397,7 +365,10 @@ span carries the size and every arc is the same shape.
 
 <Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT annotation, and the dashed arc under the graph's reference row spans the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
-Hovering one of these edges gives the interval and the bp it removes.
+Hovering one of these edges gives the interval and the bp it removes. An edge
+joins two backbone segments and carries no sequence of its own, so it names no
+donor haplotype and opens nowhere but GRCh38; who carries the deletion is the
+[callset's](#the-variant-callset) to say.
 
 Release 2 annotates every assembly with CAT, on the assembly's own contigs, so a
 haplotype row carries its own gene models. The index
@@ -570,6 +541,49 @@ the 464, and with two or more loaded the view's own **Launch** menu opens them
 all at once as a synteny view. The
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 shows both on five strains.
+
+### Every way across {#every-way-across}
+
+Each crossing between the two panels is one menu item, and this is the whole
+list on this graph. Into the graph, from a linear view whose session holds the
+segments track:
+
+- **Track menu → Launch → Graph genome view (this region)** on the segments lane
+  cuts whatever is on screen.
+- **Drag across the scale bar** and pick **Graph genome view (this selection)**
+  for a window narrower than the view. Past the view's limit the item greys out
+  and names it.
+- **Right-click a segment** in the lane for **Graph genome view (this
+  segment)**, which cuts the graph around that one segment, padded by half its
+  length each side. Right-clicking a gene in the RefSeq lane offers the same cut
+  as **Graph genome view (this feature)**; the segments track has to be in the
+  session, not in the view.
+
+Out of the graph:
+
+- **Hover a node** and its GRCh38 interval is banded across every lane in the
+  linear view above; hover the linear view and the node under the cursor lights
+  up. Nothing to configure.
+- **Right-click a node** and take **Highlight in hg38**, which writes that
+  interval into the linear view's own highlights, where it stays after the
+  pointer moves.
+- **Right-click a node** and take **Open in hg38**, which scrolls the linear
+  view to it. On a backbone segment that is the segment's own span; on an allele
+  it is the interval between the two backbone segments the allele leaves and
+  rejoins, and the item says so, **around this node**.
+- **View menu → Launch → Linear genome view** does the same for the whole window
+  the graph was cut from. Once a contributing haplotype is loaded as an
+  assembly, the node menu gains **Open in** that haplotype at the allele's own
+  coordinates, and with two or more loaded the same **Launch** submenu opens
+  them all as a synteny view;
+  [Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) sets
+  that up.
+
+The [clip at the top of the page](#the-route-end-to-end) takes the region launch
+and **Highlight in hg38**, with the layout dropdown between them. The clips
+under [A whole chromosome as a graph](#a-whole-chromosome-as-a-graph) and
+[Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) take
+**Open in hg38** and the scale-bar drag, then the synteny launch on a haplotype.
 
 ## Loading a haplotype as an assembly {#loading-a-haplotype-as-an-assembly}
 
