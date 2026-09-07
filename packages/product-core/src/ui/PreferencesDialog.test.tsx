@@ -32,7 +32,7 @@ function stubSession(
     setPreferenceOverride: jest.fn(),
     clearPreferenceOverrides: jest.fn(),
     getPreferenceChanges: (): TrackConfigChange[] => [],
-    resetPreferenceChange: jest.fn(),
+    clearPreferenceOverride: jest.fn(),
     getDisplayTypeDefaults: () => [],
     setDisplayTypeDefault: jest.fn(),
     ...overrides,
@@ -124,8 +124,29 @@ test('scroll-to-zoom is settable here, through the session setter', () => {
     </ThemeProvider>,
   )
 
+  fireEvent.click(getByRole('tab', { name: 'Views' }))
   fireEvent.click(getByRole('checkbox', { name: /Zoom on scroll/ }))
 
   expect(setScrollZoom).toHaveBeenCalledWith(true)
   expect(setPreferenceOverride).not.toHaveBeenCalled()
+})
+
+test('a plugin panel is its own tab', () => {
+  const pm = new PluginManager([]).createPluggableElements().configure()
+  pm.contributeToExtensionPoint('Core-preferencesDialogPanels', () => [
+    { name: 'My plugin', Component: () => <div>plugin settings</div> },
+  ])
+  const { getByRole, getByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <PreferencesDialog
+        session={stubSession()}
+        pluginManager={pm}
+        handleClose={() => {}}
+      />
+    </ThemeProvider>,
+  )
+
+  expect(queryByText('plugin settings')).toBeNull()
+  fireEvent.click(getByRole('tab', { name: 'My plugin' }))
+  expect(getByText('plugin settings')).toBeTruthy()
 })
