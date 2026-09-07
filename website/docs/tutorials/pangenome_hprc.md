@@ -1546,7 +1546,8 @@ each lane is the assembly the session already holds (its gene annotation follows
 it), and in the display's `lanes` so the track opens on them rather than on
 all 464. **Choose lanes...** on the track menu lists every haplotype the graph
 names, grouped by sample, so any other set is a tick away, and **Every lane** is
-the whole cohort.
+the whole cohort. The figure's stack is pinned by the same `rowOrder` as the
+gene-table session above; a track pasted from the fence opens densest-first.
 
 <Figure caption="The CFH cluster's eight lanes read from the graph at load time, in the same lane order as the gene-table stack above, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
@@ -1569,10 +1570,11 @@ the lanes are the graph's own walks.
 `haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
 haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so a companion
 file beside the database names them, and carries anchors along GRCh38 and CHM13
-from which a chosen set of lanes is walked without naming the rest: a track with
-eight lanes fetches eight walks, not 464, and the KIV-2 window below opens in
-about 3 s on a fresh open and under half a second once cached. What the file
-holds and how it is built is in the
+from which a named set of haplotypes can be walked without touching the rest,
+which is the route `--keep` and the graph cut take. A lane track does not take
+it: the window comes back whole, so the display's `lanes` chooses what is drawn
+rather than what is fetched, and the timings below are the ones that apply. What
+the file holds and how it is built is in the
 [gbz-base README](https://github.com/GMOD/gbz-base-js#readme).
 
 ### What a window costs {#gbz-window-cost}
@@ -1782,9 +1784,9 @@ bash build_hprc_inversion_synteny.sh  # writes ./hprc_inversion_synteny_build/
 ```
 
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
-picks a carrier and a non-carrier of the deletion out of the callset, slices
-their alignments out of that PAF, and slices each haplotype's CAT annotation to
-the same window.
+picks four carriers and four non-carriers of the deletion out of the callset
+(`CARRIERS` and `NONCARRIERS`), slices their alignments out of that PAF, and
+slices each haplotype's CAT annotation to the same window.
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
 runs the [inversion classification](#inversions) over the same PAF and prints
 the split it finds before slicing out one haplotype of each kind.

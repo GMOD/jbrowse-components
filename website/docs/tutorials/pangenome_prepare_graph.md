@@ -180,8 +180,9 @@ this map, disambiguating an `hg38` assembly against a graph that also carries
 `CHM13#0#chr1`, and the **contig** half is ordinary refName aliasing your
 assembly already does, so an hg38 spelling chr6 as `6` needs nothing further.
 
-`RgfaTabixAdapter` is the only adapter that cuts a subgraph. The same pair
-behind a `BedTabixAdapter` draws as a feature track whose menu offers no graph.
+`RgfaTabixAdapter` is the adapter that cuts a subgraph from this pair of
+indexes, as `GbzBaseSyntenyAdapter` does from a database. The same pair behind a
+`BedTabixAdapter` draws as a feature track whose menu offers no graph.
 
 ## Checking the index against the graph
 
