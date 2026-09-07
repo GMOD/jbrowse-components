@@ -47,7 +47,7 @@ export function arcMarkY(anchorY: number, offsetPx: number, down: boolean) {
 // domain and reads it on a base-2 log axis; arc mode supplies none and falls
 // back to the bp span that fits `availH` at the current zoom, which reproduces
 // a plain `yBp * pxPerBp` linear mapping. Shared by the Canvas2D/SVG draw and
-// `fillArcUniforms` so the two renderers can't pick different domains.
+// `writeArcBandUniforms` so the two backends cannot pick different domains.
 export function arcYScale(
   arcsYDomainBp: number | undefined,
   availH: number,

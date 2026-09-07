@@ -4,7 +4,7 @@
 //   node plugins/hic/benches/instanceAccessors.bench.ts
 //   node plugins/hic/benches/instanceAccessors.bench.ts --rounds=15
 //
-// `Canvas2DHicRenderer.drawContacts` reads three fields per contact through the
+// `drawHicBlocks` reads three fields per contact through the
 // generated accessors, under a comment asserting that "they are single
 // typed-array indexes, so V8 inlines them, which is what lets this loop use them
 // at all — it runs over 300k-4.5M contacts a frame". That was reasoning, not a

@@ -6,7 +6,7 @@ import type { LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
 // Pre-rotation coordinates are the 45°-rotated frame's axis, so every px
-// distance collapses by √2 (see drawLDBlocks / GpuLDRenderer).
+// distance collapses by √2 (see drawLDBlocks / ldMarks).
 const ROTATION = Math.SQRT2
 
 /**
@@ -51,7 +51,7 @@ export function computeBoundaries({
 }
 
 /**
- * Interleaved per-cell x/y and width/height for `GpuLDRenderer`'s genomic pass,
+ * Interleaved per-cell x/y and width/height for the `genomic` mark in ldMarks.ts,
  * in the same cell order as `ldValues`. Uniform mode derives cells from
  * `uniformW` in the shader instead, and skips these buffers entirely.
  *
