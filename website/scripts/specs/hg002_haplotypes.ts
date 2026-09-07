@@ -597,10 +597,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // color they are the blue ticks on a red line. Same red-forward /
           // blue-reverse vocabulary as the gene lanes below (STRAND_COLOR).
           colorBy: 'strand',
-          // Off (review: "can hide legend"). It floats over the top-right of
-          // the plot, which on a square-ish self-dotplot is where the diagonal
-          // terminates -- so the one thing it covers is data.
-          showColorLegend: false,
           views: WHOLE_GENOME_AXES,
           tracks: ['hg002v1.2_mat_vs_pat'],
         },

@@ -440,9 +440,8 @@ tolerance ball for "did this figure move".
   pairs→`insertSizeAndOrientation` coloring only auto-applies via the _menu
   action_, not on snapshot load — set `colorBy` explicitly in the snapshot too.
 - **Dotplot init fields** (top-level in the session view object, routed to
-  `init`): `autoDiagonalize: true`, `showColorLegend: false`, `colorBy`,
-  `minAlignmentLength`. Same for `LinearSyntenyView` (`autoDiagonalize`,
-  `colorBy`, `alpha`, `levelHeights`).
+  `init`): `autoDiagonalize: true`, `colorBy`, `minAlignmentLength`. Same for
+  `LinearSyntenyView` (`autoDiagonalize`, `colorBy`, `alpha`, `levelHeights`).
 - **Arcs below coverage** = `readConnectionsDown: true` (the modern default).
 - **A read-pair arc band is a claim, and some deletions cannot support it.**
   `multisv_rhd_dosage` spent three review rounds on one, and the answer was to

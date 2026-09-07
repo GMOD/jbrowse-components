@@ -89,7 +89,6 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     viewSpec: {
       type: 'LinearSyntenyView',
       displayName,
-      showColorLegend: false,
       views: [
         {
           type: 'LinearGenomeView',

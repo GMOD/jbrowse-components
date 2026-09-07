@@ -246,7 +246,6 @@ const suite: TestSuite = {
           )
         }
         await clickMenuRow(page, 'Distinct color per track')
-        await clickMenuRow(page, 'Show color legend')
         await findByTestId(page, 'color-by-legend', 10000)
 
         // the legend keys the plot by track name, one chip each

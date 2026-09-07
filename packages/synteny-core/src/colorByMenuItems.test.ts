@@ -30,11 +30,9 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   },
   pointBased: false,
   showReference: false,
-  showColorLegend: false,
   setColorBy: noop,
   setTrackColor: noop,
   clearTrackColors: noop,
-  setShowColorLegend: noop,
   ...over,
 })
 
@@ -58,7 +56,7 @@ const valueModes = (items: ReturnType<typeof colorByMenuItems>) =>
 // The view-wide radios come first and are the primary control; the per-track
 // swatches are a secondary section below them. Locking the order in keeps that
 // hierarchy from inverting under a later edit.
-test('view-wide modes lead, track colors follow, the legend toggle closes', () => {
+test('view-wide modes lead, track colors follow', () => {
   const got = labels(colorByMenuItems(target()))
   expect(got.slice(0, 3)).toEqual([
     'Default',
@@ -68,7 +66,7 @@ test('view-wide modes lead, track colors follow, the legend toggle closes', () =
   expect(got.indexOf('Track colors')).toBeGreaterThan(
     got.indexOf(VALUE_MODES_LABEL),
   )
-  expect(got.at(-1)).toBe('Show color legend')
+  expect(got.at(-1)).toBe('Track colors')
 })
 
 test('a single track gets no track colors section and no Track mode', () => {

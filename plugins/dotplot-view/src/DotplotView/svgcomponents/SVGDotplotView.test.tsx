@@ -154,11 +154,12 @@ function legendContents(svg: string) {
 
 test('the color legend is exported outside the clip, at the top right', async () => {
   const { view } = await setup()
-  expect(await renderToSvg(view, {})).not.toContain('Default')
+  expect(await renderToSvg(view, {})).not.toContain('Identity')
 
-  view.setShowColorLegend(true)
+  view.setColorBy('identity')
   const svg = await renderToSvg(view, {})
-  expect(clipGroupContents(svg)).not.toContain('Default')
+  expect(svg).toContain('Identity')
+  expect(clipGroupContents(svg)).not.toContain('Identity')
   // laid out from the right edge of the plot, so past its midpoint
   const x = /<g transform="translate\(([\d.]+) 4\)"/.exec(svg)
   expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
@@ -212,7 +213,6 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     display.setInstanceData(fakeDotplotInstanceData(0))
   }
   view.setColorBy('attribute:goc')
-  view.setShowColorLegend(true)
 
   expect(view.attributeRanges).toEqual({ goc: { min: 0, max: 75 } })
   const legend = legendContents(await renderToSvg(view, {}))

@@ -178,8 +178,9 @@ once it settles. Turn following off to keep it where you put it.
 
 ## Coloring the ribbons
 
-The palette button in the view header sets what the ribbon color means, and
-carries a **Show color legend** toggle:
+The palette button in the view header sets what the ribbon color means. A mode
+with a key to read, a ramp or a color per track, floats its legend over the top
+ribbon band; close it with its own button and it stays away for that mode.
 
 - Default - the ribbon color plus CIGAR operation coloring, so insertions,
   deletions, and skips inside an alignment are drawn in their own colors

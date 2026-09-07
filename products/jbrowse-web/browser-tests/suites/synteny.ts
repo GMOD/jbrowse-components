@@ -143,10 +143,8 @@ const identityLegendTest: TestCase = {
           {
             type: 'LinearSyntenyView',
             tracks: ['subset'],
+            // a ramp mode brings its legend up on its own
             colorBy: 'identity',
-            // opt in explicitly: the legend defaulted to on when it was added
-            // (477292a223) but is off by default since e9e8eeff9c
-            showColorLegend: true,
             views: [
               { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
               { loc: 'chr1:316,306..316,364', assembly: 'grape' },

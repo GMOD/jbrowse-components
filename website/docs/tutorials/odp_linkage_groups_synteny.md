@@ -136,9 +136,9 @@ for the stack at the end.
 
 ## One block per linkage group
 
-Open the jellyfish-against-sponge table as a dotplot, pick **gene_group** from
-the palette button in the view header, and **Show color legend** at the bottom
-of that menu. Then **Reorder chromosomes** on the view menu: it sorts the
+Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
+under **Color by value** on the palette button in the view header; the legend
+comes up with it. Then **Reorder chromosomes** on the view menu: it sorts the
 vertical genome's chromosomes by where their orthologs land along the horizontal
 one, which is what turns one block per group into a diagonal. The same view as a
 session, with the sponge's unplaced scaffolds left off its axis:
@@ -157,7 +157,6 @@ session, with the sponge's unplaced scaffolds left off its axis:
         ],
         "tracks": ["RES_EMU"],
         "colorBy": "attribute:gene_group",
-        "showColorLegend": true,
         "autoDiagonalize": true,
         "lineWidth": 3
       }
@@ -217,7 +216,6 @@ that carries the figure.
         ],
         "tracks": [["RES_EMU"], ["EMU_HCA"], ["HCA_COW"]],
         "colorBy": "attribute:gene_group",
-        "showColorLegend": true,
         "autoDiagonalize": true,
         "fadeThinAlignmentsMode": "off",
         "alpha": 0.5

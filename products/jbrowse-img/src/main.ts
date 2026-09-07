@@ -158,7 +158,6 @@ async function main() {
       alpha: getOptionalNumber(rest, 'alpha'),
       levelHeights: getNumberList(rest, 'levelHeights'),
       cigarMode: getCigarMode(rest),
-      showColorLegend: getBoolean(rest, 'showColorLegend'),
       spec: getString(rest, 'spec'),
       trackList,
     }

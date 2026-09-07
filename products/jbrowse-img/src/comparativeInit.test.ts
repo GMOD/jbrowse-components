@@ -31,7 +31,6 @@ describe('syntenyViewKnobs', () => {
       syntenyViewKnobs({
         autoDiagonalize: false,
         drawCurves: false,
-        showColorLegend: false,
       }),
     ).toEqual({})
   })
@@ -41,7 +40,6 @@ describe('syntenyViewKnobs', () => {
       syntenyViewKnobs({
         autoDiagonalize: true,
         drawCurves: true,
-        showColorLegend: true,
         colorBy: 'query',
         cigarMode: 'full',
         minAlignmentLength: 10_000,
@@ -50,7 +48,6 @@ describe('syntenyViewKnobs', () => {
     ).toEqual({
       autoDiagonalize: true,
       drawCurves: true,
-      showColorLegend: true,
       colorBy: 'query',
       cigarMode: 'full',
       minAlignmentLength: 10_000,
@@ -106,7 +103,6 @@ describe('dotplotInit', () => {
         colorBy: 'query',
         minAlignmentLength: 5000,
         autoDiagonalize: true,
-        showColorLegend: true,
       }),
     ).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
@@ -114,7 +110,6 @@ describe('dotplotInit', () => {
       colorBy: 'query',
       minAlignmentLength: 5000,
       autoDiagonalize: true,
-      showColorLegend: true,
     })
   })
 

@@ -16,7 +16,7 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // `sameScale` is `replay`, the one kind that is not remapped: the value lands
 // on the declared property, and a copy rides in the blob because launching also
 // has to zoom the rows onto the shared scale, after `autoDiagonalize` has
-// rewritten and re-centred them. `colorBy`, `showColorLegend`, `alpha`,
+// rewritten and re-centred them. `colorBy`, `alpha`,
 // `minAlignmentLength` and the rest are plain properties — writing them is the
 // whole job, so none of them is a launch key.
 export const linearSyntenyLaunchKeys =

@@ -273,7 +273,6 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    expect(spec.viewSpec.showColorLegend).toBe(false)
     for (const view of spec.viewSpec.views! as {
       tracks: { displays: { configuration: unknown }[] }[]
     }[]) {

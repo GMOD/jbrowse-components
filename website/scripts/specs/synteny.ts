@@ -731,14 +731,12 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
           selector: displayPainted('synteny_canvas'),
         },
         { type: 'delay', ms: 4000 },
-        // No color legend and no palette menu (reviewer). The launched view
-        // already draws the PAF's CIGAR (cigarMode defaults to 'full', and
-        // all_vs_all.paf is built with `minimap2 -c`), so the wedges inside
-        // these ribbons are the insertions and deletions; the legend that names
-        // them is one floating box in the corner, and the menu it is turned on
-        // from is a full-height overlay across the left half of the frame —
-        // together they cost more of the five-row stack than the naming is
-        // worth here. The prose above the figure names Show color legend.
+        // No palette menu (reviewer). The launched view already draws the
+        // PAF's CIGAR (cigarMode defaults to 'full', and all_vs_all.paf is
+        // built with `minimap2 -c`), so the wedges inside these ribbons are the
+        // insertions and deletions; the menu is a full-height overlay across
+        // the left half of the frame, which costs more of the five-row stack
+        // than the naming is worth here.
       ],
     },
   ]
@@ -2171,7 +2169,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // cannot land on the data, and in the compose it is the one piece
             // of text at the same place in both halves.
             displayName: 'Bread wheat self-alignment',
-            showColorLegend: true,
             views: [
               {
                 assembly: 'wheat',
@@ -2292,7 +2289,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // assembly names, and in the composed pair the two headers are the
             // one place a label can sit at the same height in both halves.
             displayName: 'Oat self-alignment',
-            showColorLegend: true,
             views: [
               { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
               { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
@@ -2407,7 +2403,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearSyntenyView',
-            showColorLegend: true,
             views: [
               {
                 assembly: 'human',

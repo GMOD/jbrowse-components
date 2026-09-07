@@ -1583,22 +1583,6 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show... → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  // Both comparative views carry the same palette button (ColorBySelector), so
-  // one entry serves them and only the header it sits in differs.
-  showColorLegend: (value, { viewType }) => {
-    const header =
-      viewType === 'DotplotView'
-        ? 'Dotplot header'
-        : viewType === 'LinearSyntenyView'
-          ? 'Synteny view header'
-          : undefined
-    return typeof value === 'boolean' && header
-      ? {
-          path: `${header} → palette button → Show color legend (${value ? 'checked' : 'unchecked'})`,
-          note: 'The last item in the same menu the color modes are in.',
-        }
-      : undefined
-  },
   minAlignmentLength: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Min length')
     return typeof value === 'number' && path
@@ -1670,7 +1654,7 @@ export const viewFields: Record<string, FieldRecipe> = {
             : undefined))
         : undefined
     // Both comparative views carry the same palette button; only the header it
-    // sits in differs, the same split showColorLegend makes.
+    // sits in differs.
     const header =
       viewType === 'LinearSyntenyView'
         ? 'Synteny view header'

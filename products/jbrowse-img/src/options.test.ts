@@ -233,7 +233,6 @@ describe('comparative options are scoped to the modes that read them', () => {
       '--autoDiagonalize',
       '--colorBy',
       '--minAlignmentLength',
-      '--showColorLegend',
     ]) {
       expect(dotplot).toContain(flag)
       expect(synteny).toContain(flag)

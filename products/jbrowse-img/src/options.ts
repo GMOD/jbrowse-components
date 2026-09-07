@@ -237,11 +237,6 @@ const comparativeOptionDefs: OptionDef[] = [
       "CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]",
     modes: ['synteny'],
   },
-  {
-    name: 'showColorLegend',
-    description: 'Show the floating colorBy legend',
-    default: false,
-  },
 ]
 
 // Comparative options accepted only by the dotplot/synteny subcommands; exposed

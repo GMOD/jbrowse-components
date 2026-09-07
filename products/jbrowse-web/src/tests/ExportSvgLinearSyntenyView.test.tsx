@@ -219,8 +219,8 @@ test('export svg of synteny with gridlines', async () => {
   })
 }, 45000)
 
-// the floating color-by key is a menu-driven setting, so an export taken with
-// it on has to carry it — otherwise the figure has no key to its ribbon colors
+// a ramp mode floats its key over the band, so an export taken in one has to
+// carry it — otherwise the figure has no key to its ribbon colors
 test('export svg of synteny bakes in the color-by legend', async () => {
   await mockConsoleWarn(async () => {
     const { findByTestId, findAllByText, findByText, view } = await createView({
@@ -230,8 +230,7 @@ test('export svg of synteny bakes in the color-by legend', async () => {
         views: [
           {
             ...syntenySession.views[0],
-            colorBy: 'strand',
-            showColorLegend: true,
+            colorBy: 'identity',
           },
         ],
       },
@@ -245,9 +244,9 @@ test('export svg of synteny bakes in the color-by legend', async () => {
       filename: 'synteny_color_legend',
       delay,
     })
-    expect(svg).toContain('Strand')
-    expect(svg).toContain('forward')
-    expect(svg).toContain('reverse')
+    expect(svg).toContain('Identity')
+    expect(svg).toContain('0%')
+    expect(svg).toContain('100%')
   })
 }, 45000)
 

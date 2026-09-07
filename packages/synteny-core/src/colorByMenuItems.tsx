@@ -45,7 +45,6 @@ export function colorByMenuTargetFor(
     })),
     pointBased,
     showReference,
-    showColorLegend: model.showColorLegend,
     setColorBy: value => {
       model.setColorBy(value)
     },
@@ -54,9 +53,6 @@ export function colorByMenuTargetFor(
     },
     clearTrackColors: () => {
       model.clearTrackColors()
-    },
-    setShowColorLegend: value => {
-      model.setShowColorLegend(value)
     },
   }
 }
@@ -69,12 +65,10 @@ export interface TrackColorsModel {
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
   colorByMode: SyntenyColorBy
-  showColorLegend: boolean
   trackColorFor: (trackId: string) => string
   setColorBy: (value: SyntenyColorBy) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
-  setShowColorLegend: (value: boolean) => void
 }
 
 export interface ColorByMenuTarget {
@@ -97,11 +91,9 @@ export interface ColorByMenuTarget {
   pointBased: boolean
   /** 'reference' is meaningless below two stacked levels */
   showReference: boolean
-  showColorLegend: boolean
   setColorBy: (value: SyntenyColorBy) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
-  setShowColorLegend: (value: boolean) => void
 }
 
 interface ModeEntry {
@@ -230,11 +222,11 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
 /**
  * #api
  * The palette-button menu shared by the dotplot and linear-synteny headers: the
- * structural mode radios, the measurements one hop in, the per-track swatches
- * once more than one track is overlaid, and the legend toggle.
+ * structural mode radios, the measurements one hop in, and the per-track
+ * swatches once more than one track is overlaid.
  */
 export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
-  const { tracks, showColorLegend } = target
+  const { tracks } = target
   const values = valueModes(target)
   return [
     ...radios(target, structuralModes(target)),
@@ -250,14 +242,5 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
     ...(tracks.length > 1
       ? [{ type: 'divider' as const }, ...trackColorItems(target)]
       : []),
-    { type: 'divider' },
-    {
-      label: 'Show color legend',
-      type: 'checkbox',
-      checked: showColorLegend,
-      onClick: () => {
-        target.setShowColorLegend(!showColorLegend)
-      },
-    },
   ]
 }

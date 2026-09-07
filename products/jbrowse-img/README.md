@@ -1332,7 +1332,6 @@ Options:
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
   --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, mappingQuality, dnds, or track
-  --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
@@ -1380,7 +1379,6 @@ Options:
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]
-  --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg

@@ -144,7 +144,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
             alpha={model.alpha}
             attributeRanges={model.attributeRanges}
             onClose={() => {
-              model.setShowColorLegend(false)
+              model.dismissColorLegend()
             }}
           />
         ) : null}

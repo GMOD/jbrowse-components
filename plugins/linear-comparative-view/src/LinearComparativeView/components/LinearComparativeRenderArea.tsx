@@ -158,7 +158,7 @@ const LevelSection = observer(function LevelSection({
             attributeRanges={legendModel.attributeRanges}
             alpha={legendModel.alpha}
             onClose={() => {
-              legendModel.setShowColorLegend(false)
+              legendModel.dismissColorLegend()
             }}
           />
         ) : null}

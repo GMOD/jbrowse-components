@@ -63,10 +63,9 @@ test('a property a composed mixin contributes lands too', async () => {
   const view = await open({
     views: ROWS,
     colorBy: 'query',
-    showColorLegend: true,
   })
   expect(view.colorBy).toBe('query')
-  expect(view.showColorLegend).toBe(true)
+  expect(view.colorByMode).toBe('query')
 })
 
 test('an omitted property keeps its default', async () => {

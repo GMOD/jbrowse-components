@@ -28,8 +28,8 @@ import type { CheckboxRowOptions } from './toggleMenuItems.ts'
  * plot's LD legend and `LinearBasicDisplay`'s color key are a volatile and a
  * per-legend `dismissed` flag respectively, neither of which is config at all.
  *
- * Deliberately not used by `synteny-core`'s "Show color legend", which sits
- * inside a "Color by..." submenu where the bare word would not say which legend.
+ * `synteny-core`'s color-by legend has no toggle at all: it comes up with the
+ * modes that have a key and is dismissed from its own close button.
  */
 /** #menuBuilder showLegendCheckboxItem | the shared "Show legend" checkbox */
 export function showLegendCheckboxItem(

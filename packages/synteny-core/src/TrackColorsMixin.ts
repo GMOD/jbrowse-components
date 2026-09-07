@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isAttributeLabels } from './colorRamps.ts'
-import { coerceColorBy } from './colorUtils.ts'
+import { continuousRampConfig, isAttributeLabels } from './colorRamps.ts'
+import { coerceColorBy, colorByAttributeName } from './colorUtils.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { ColorChip } from './colorLegend.ts'
@@ -81,14 +81,15 @@ export function TrackColorsMixin() {
        * track takes an automatic slot from the palette.
        */
       trackColors: types.map(types.string),
-      /**
-       * #property
-       * Show the floating color-by legend. Dismissible via the legend's close
-       * button; re-enable from the color-by (palette) menu.
-       */
-      showColorLegend: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       * The mode whose legend the reader closed. The legend comes back with the
+       * next mode that has one, so a dismissal is scoped to the mode it was
+       * made in rather than being a setting to find again.
+       */
+      colorLegendDismissedFor: undefined as string | undefined,
       /**
        * #volatile
        * The widest span each numeric channel has been seen to cover, over every
@@ -210,6 +211,21 @@ export function TrackColorsMixin() {
       get colorByMode(): SyntenyColorBy {
         return coerceColorBy(self.colorBy)
       },
+      /**
+       * #getter
+       * Whether the floating legend is up: the mode has a key worth drawing — a
+       * ramp, a label per track, a chip per category — and the reader has not
+       * closed it for this mode. Default and strand are read without one, and
+       * the by-chromosome modes have no fixed key to show.
+       */
+      get showColorLegend(): boolean {
+        const mode = this.colorByMode
+        const hasKey =
+          mode === 'track' ||
+          mode in continuousRampConfig ||
+          colorByAttributeName(mode) !== undefined
+        return hasKey && self.colorLegendDismissedFor !== mode
+      },
     }))
     .views(self => ({
       /**
@@ -304,9 +320,10 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
+         * Close the legend for the mode in use.
          */
-        setShowColorLegend(value: boolean) {
-          self.showColorLegend = value
+        dismissColorLegend() {
+          self.colorLegendDismissedFor = self.colorByMode
         },
       }
     })
