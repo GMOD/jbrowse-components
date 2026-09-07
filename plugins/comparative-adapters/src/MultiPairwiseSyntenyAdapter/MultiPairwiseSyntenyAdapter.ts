@@ -16,8 +16,7 @@ import type { MultiPairwiseSyntenyAdapterConfig } from './configSchema.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { ComparativeOptions } from '@jbrowse/synteny-core'
-import type { LodTierInfo } from '@jbrowse/synteny-core'
+import type { ComparativeOptions, LodTierInfo } from '@jbrowse/synteny-core'
 
 export interface StarChild<T = BaseFeatureDataAdapter> {
   index: number
