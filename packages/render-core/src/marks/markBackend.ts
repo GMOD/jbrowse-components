@@ -40,7 +40,15 @@ export class GpuMarkBackend<
     state: TState,
   ) {
     for (const mark of this.marks) {
-      mark.drawRegion(this.hal, this.uniformData, block, clip, region, state)
+      mark.drawRegion(
+        this.hal,
+        this.uniformData,
+        block,
+        clip,
+        region,
+        state,
+        block.displayedRegionIndex,
+      )
     }
   }
 }

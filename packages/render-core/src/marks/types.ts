@@ -143,6 +143,8 @@ export interface Mark<TRegion, TState extends MarkFrame> {
    * pairing unless the two passes declare one instance struct.
    */
   readonly bufferOf?: string
+  // `regionKey` is the HAL key the caller uploaded this region's passes under;
+  // a stacked alignments section's is not its block's displayedRegionIndex.
   drawRegion(
     hal: GpuHal,
     scratch: ArrayBuffer,
@@ -150,6 +152,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     clip: BlockClipResult,
     region: TRegion,
     state: TState,
+    regionKey: number,
   ): void
   paintBlock(
     ctx: MarkContext2D,
@@ -219,7 +222,7 @@ export function defineMark<
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     bufferOf,
-    drawRegion(hal, scratch, block, clip, region, state) {
+    drawRegion(hal, scratch, block, clip, region, state, regionKey) {
       const strip = band?.(state)
       const scissor = strip
         ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
@@ -236,7 +239,7 @@ export function defineMark<
       }
       shape.writeUniforms(scratch, clip, block, state, p)
       hal.writeUniforms(scratch)
-      hal.drawPass(shape.pass.id, block.displayedRegionIndex, bufferOf)
+      hal.drawPass(shape.pass.id, regionKey, bufferOf)
       if (scissor) {
         hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       }

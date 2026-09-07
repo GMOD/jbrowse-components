@@ -123,7 +123,7 @@ test('the uniforms carry the payload column count beside the frame', () => {
     x: 1,
     y: 1,
   })!
-  MARK.drawRegion(hal, scratch, b, clip, data, state)
+  MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
   const f32 = hal.getLastUniformsF32()!
   expect(f32[shader.UNIFORM_OFFSET_F32.numFeatures]).toBe(4)
   expect(f32[shader.UNIFORM_OFFSET_F32.canvasWidth]).toBe(400)

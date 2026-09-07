@@ -948,6 +948,7 @@ export class GpuAlignmentsRenderer
           clip,
           region,
           sectionState,
+          regionKey,
         )
       }
     }

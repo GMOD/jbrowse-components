@@ -105,7 +105,7 @@ describe('reversed convention', () => {
       x: 1,
       y: 1,
     })!
-    MARK.drawRegion(hal, scratch, b, clip, data, state)
+    MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
     return hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.bpRangeX + 2]!
   }
 

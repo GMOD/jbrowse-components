@@ -140,12 +140,21 @@ export class GpuMultiWayRenderer
     state: MultiWayRenderState,
     scale: CanvasScale,
   ) {
-    const block = glyphBlock(layer, state, this.ribbons.idOf(layer.key))
+    const id = this.ribbons.idOf(layer.key)
+    const block = glyphBlock(layer, state, id)
     const clip = clipBlock(block, state.width, state.height, scale)
     if (clip) {
       const frame = glyphFrame(state)
       for (const mark of MULTIWAY_GLYPH_MARKS) {
-        mark.drawRegion(this.hal, this.uniformData, block, clip, data, frame)
+        mark.drawRegion(
+          this.hal,
+          this.uniformData,
+          block,
+          clip,
+          data,
+          frame,
+          id,
+        )
       }
     }
   }

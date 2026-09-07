@@ -133,6 +133,7 @@ describe('uniforms', () => {
       clip,
       mkData({ positions: [100, 200], rows: [0], colors: [0], shapes: [0] }),
       state,
+      block.displayedRegionIndex,
     )
     return hal.getLastUniformsF32()!
   }

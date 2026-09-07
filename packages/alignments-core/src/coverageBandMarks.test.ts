@@ -261,7 +261,15 @@ test('a reversed block writes the low bp and a positive length, flipped by the f
   const scratch = new ArrayBuffer(FOUR[0]!.pass.uniformByteSize)
   const reversed = { ...block, reversed: true }
   const clip = clipBlock(reversed, 200, 300, { x: 1, y: 1 })!
-  FOUR[0]!.drawRegion(hal, scratch, reversed, clip, region(), state())
+  FOUR[0]!.drawRegion(
+    hal,
+    scratch,
+    reversed,
+    clip,
+    region(),
+    state(),
+    reversed.displayedRegionIndex,
+  )
   const u = hal.getLastUniformsF32()!
   expect(u[UNIFORM_OFFSET_F32.bpHi]! + u[UNIFORM_OFFSET_F32.bpLo]!).toBe(START)
   expect(u[UNIFORM_OFFSET_F32.bpLen]).toBe(100)
