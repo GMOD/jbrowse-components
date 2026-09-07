@@ -1,14 +1,11 @@
-import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { paintArcBand } from '../../LinearAlignmentsDisplay/renderers/arcMarks.ts'
+import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
-import { drawArcs } from './drawCanvas.ts'
 import { ARC_SHAPE_ARC } from './shapes.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ComputedArc, ComputedLine } from './arcTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Records the dash pattern in force at each stroke, which is the whole question
 // here: `setLineDash` is state on the context rather than an argument to the
@@ -32,11 +29,30 @@ function recordingCtx() {
       strokes.push([...dash])
     },
     fillRect() {},
-  } as unknown as Ctx2D
+  } as unknown as MarkContext2D
   return { ctx, strokes }
 }
 
-const BLOCK: DrawBlock = { start: 0, end: 10_000, screenStartPx: 0 }
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: 10_000,
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}
+
+const STATE = makeTestRenderState({
+  canvasWidth: 800,
+  arcsYDomainBp: 1000,
+  readConnectionsLineWidth: 1,
+})
+
+const BAND = {
+  ...STATE,
+  arcBand: { top: 0, height: 100, down: true },
+  screenWidthPx: 800,
+}
 
 function tick(bp: number, support = 1): ComputedLine {
   return {
@@ -62,22 +78,7 @@ function arc(bp1: number, bp2: number): ComputedArc {
 
 function paint(arcs: ComputedArc[], lines: ComputedLine[]) {
   const { ctx, strokes } = recordingCtx()
-  drawArcs(
-    ctx,
-    arcsToRegionResult(arcs, lines),
-    BLOCK,
-    10_000,
-    800,
-    {
-      arcsYDomainBp: 1000,
-      colors: makeTestPalette(),
-      readConnectionsLineWidth: 1,
-    } as RenderState,
-    0,
-    100,
-    true,
-    800,
-  )
+  paintArcBand(ctx, arcsToRegionResult(arcs, lines), BLOCK, BAND)
   return strokes
 }
 
@@ -97,22 +98,7 @@ describe('interchromosomal ticks are solid', () => {
   it('strokes solid even when the context arrives with a dash set', () => {
     const { ctx, strokes } = recordingCtx()
     ctx.setLineDash([3, 3])
-    drawArcs(
-      ctx,
-      arcsToRegionResult([], [tick(4000)]),
-      BLOCK,
-      10_000,
-      800,
-      {
-        arcsYDomainBp: 1000,
-        colors: makeTestPalette(),
-        readConnectionsLineWidth: 1,
-      } as RenderState,
-      0,
-      100,
-      true,
-      800,
-    )
+    paintArcBand(ctx, arcsToRegionResult([], [tick(4000)]), BLOCK, BAND)
     expect(strokes).toEqual([[]])
   })
 })

@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
-import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawHardclips, drawSoftclips } from '../../features/clip/drawCanvas.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
@@ -28,6 +27,7 @@ import {
 import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
+import { paintArcBand } from './arcMarks.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
@@ -443,18 +443,13 @@ export function drawAlignmentBlocks(
         const arcBand = sec.arcBand
         if (arcBand) {
           withClip(ctx, scissorX, arcBand.top, scissorW, arcBand.height, () => {
-            drawArcs(
-              ctx,
-              region,
-              block,
-              bpLength,
-              fullBlockWidth,
-              sectionState,
-              arcBand.top,
-              arcBand.height,
-              arcBand.down,
-              scissorW,
-            )
+            // The same four marks in the same order the GPU draws, so a layer
+            // cannot be reordered on one backend alone.
+            paintArcBand(ctx, region, block, {
+              ...sectionState,
+              arcBand,
+              screenWidthPx: scissorW,
+            })
           })
         }
       }

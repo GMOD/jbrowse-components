@@ -1,14 +1,11 @@
-import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { paintArcBand } from '../../LinearAlignmentsDisplay/renderers/arcMarks.ts'
+import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
-import { drawArcs } from './drawCanvas.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './shapes.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ComputedArc } from './arcTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Records WHICH KIND of mark was painted, in order. The read cloud's two marks
 // are a stroked connector line and a filled endpoint square, so 'stroke' vs
@@ -30,7 +27,7 @@ function recordingCtx() {
     fillRect() {
       ops.push('fill')
     },
-  } as unknown as Ctx2D
+  } as unknown as MarkContext2D
   return { ctx, ops }
 }
 
@@ -47,26 +44,28 @@ function arc(bp1: number, bp2: number, shapeType: number): ComputedArc {
   }
 }
 
-const BLOCK: DrawBlock = { start: 0, end: 10000, screenStartPx: 0 }
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: 10000,
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}
+
+const BAND = {
+  ...makeTestRenderState({
+    canvasWidth: 800,
+    arcsYDomainBp: 1000,
+    readConnectionsLineWidth: 1,
+  }),
+  arcBand: { top: 0, height: 100, down: true },
+  screenWidthPx: 800,
+}
 
 function paint(arcs: ComputedArc[]) {
   const { ctx, ops } = recordingCtx()
-  drawArcs(
-    ctx,
-    arcsToRegionResult(arcs, []),
-    BLOCK,
-    10000,
-    800,
-    {
-      arcsYDomainBp: 1000,
-      colors: makeTestPalette(),
-      readConnectionsLineWidth: 1,
-    } as RenderState,
-    0,
-    100,
-    true,
-    800,
-  )
+  paintArcBand(ctx, arcsToRegionResult(arcs, []), BLOCK, BAND)
   return ops
 }
 

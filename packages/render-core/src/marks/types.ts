@@ -35,6 +35,16 @@ export interface MarkContext2D extends ClipContext2D {
     startAngle: number,
     endAngle: number,
   ): void
+  ellipse(
+    x: number,
+    y: number,
+    radiusX: number,
+    radiusY: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number,
+  ): void
+  setLineDash(segments: number[]): void
   closePath(): void
   fill(): void
   stroke(): void

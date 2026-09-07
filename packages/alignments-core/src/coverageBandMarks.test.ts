@@ -170,6 +170,8 @@ function recordingCtx() {
     save() {},
     restore() {},
     arc() {},
+    ellipse() {},
+    setLineDash() {},
   } satisfies MarkContext2D
   return { ctx, ink }
 }

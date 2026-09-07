@@ -360,6 +360,8 @@ function recordingCtx() {
     moveTo() {},
     lineTo() {},
     arc() {},
+    ellipse() {},
+    setLineDash() {},
     closePath() {},
     fill() {},
     stroke() {},

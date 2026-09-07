@@ -1,8 +1,5 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
-import {
-  clipBlock,
-  splitPositionWithFrac,
-} from '@jbrowse/render-core/blockClipUtils'
+import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { devicePxBand, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
@@ -13,13 +10,6 @@ import { drawMarks, uploadMarks } from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { arcAnchorY } from '../../features/arcs/arcYScale.ts'
-import {
-  ARC_FLAT_PASS,
-  ARC_LINE_PASS,
-  ARC_MARKER_PASS,
-  ARC_PASS,
-} from '../../features/arcs/packGpu.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
@@ -42,10 +32,8 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import {
-  ARC_BAND_UNIFORMS_SIZE_BYTES,
-  writeArcBandUniforms,
-} from './arcBandUniforms.ts'
+import { ARC_BAND_UNIFORMS_SIZE_BYTES } from './arcBandUniforms.ts'
+import { ARC_BAND_MARKS } from './arcMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
@@ -266,7 +254,7 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
 
 // Pure LocalRegion constructor — the shape a region with no pileup feed gets
 // (arcs whose mate is off-screen bring their own region key).
-function emptyRegion(): LocalRegion {
+function emptyRegion(): RegionMeta {
   return {
     readIdToIndex: lazyReadIdToIndex({
       readKeys: [],
@@ -293,7 +281,7 @@ const EMPTY_BUFFER = new ArrayBuffer(0)
 // while skipping the pack — see `syncRegion`. The conditional mirrors the
 // uploads' own guard: a region with no coverage bars keeps `emptyRegion`'s
 // neutral scaling values rather than a stale peak.
-function regionMeta(data: PileupDataResult): LocalRegion {
+function regionMeta(data: PileupDataResult): RegionMeta {
   const hasCoverage = data.coverageGpuBinCount > 0
   return {
     readIdToIndex: lazyReadIdToIndex(data),
@@ -357,7 +345,14 @@ interface BlockFrame {
 // `getChainBounds` accepts it directly, and the band region so the coverage
 // marks' params read the peaks off it; the buffers themselves are references
 // the model already holds.
-interface LocalRegion extends ChainBoundsRegion, AlignmentsCoverageRegion {}
+interface RegionMeta extends ChainBoundsRegion, AlignmentsCoverageRegion {}
+
+// What `renderBlocks` reads per region: the pileup metadata plus the band's own
+// feed, which the arc marks take as their region the way the coverage marks take
+// the pileup payload.
+interface LocalRegion extends RegionMeta {
+  arcPack: ArcsPackData
+}
 
 const OVERLAY_REGION = 999999
 
@@ -397,34 +392,22 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
   perBaseLetter: PER_BASE_LETTER_PASS,
 }
 
-// The arc band's passes, in paint order — the interchromosomal ticks FIRST,
-// then curves and flat connectors (one of the two is always empty, since read
-// cloud draws only flats and arc mode only curves), then the endpoint squares
-// that paint on top of the flat connector lines. The line pass runs first in
-// both renderers, which is the paint order `hitTestArcBand` resolves ties by.
-//
-// The ticks used to run last, on the reading that a full-band vertical is the
-// strongest statement in the band. On deep short-read data it is the opposite:
-// mismapped pairs put a tick at a large share of loci, each one a full-height
-// opaque line straight through every arc crossing it, and the arcs are the marks
-// carrying insert size and orientation. A translocation is also the one call
-// here that a single window cannot support on its own, so it is the claim to
-// draw UNDER the evidence rather than over it.
-//
-// A separate list from the two above because the band packs from a separate RPC
-// result plus the configured line width (`ArcsPackData`), not from the pileup
-// payload — and it has no per-pass gate: the band as a whole is drawn or not.
-export const ARC_PASSES: InstancePass<ArcsPackData>[] = [
-  ARC_LINE_PASS,
-  ARC_PASS,
-  ARC_FLAT_PASS,
-  ARC_MARKER_PASS,
-]
+// The arc band's four passes, in the paint order `ARC_BAND_MARKS` states — and
+// stated there rather than here because each pass's Canvas2D twin and uniform
+// write are declared beside it, the way the coverage band's are.
+export const ARC_PASSES: InstancePass<ArcsPackData>[] = ARC_BAND_MARKS.map(
+  m => m.pass,
+)
 
 // The feed an arc pass packs zero instances from, which is how the band's
 // buffers are released without a whole-region wipe (see `syncRegion`). Shared
 // rather than rebuilt per call: the packers only read it.
 const EMPTY_ARCS = emptyArcsUploadData()
+
+// The band feed a region with no arcs draws from: every pass packs zero
+// instances off it, and `paintsBlock` never sees a band it should skip that this
+// would have drawn.
+const EMPTY_ARC_PACK: ArcsPackData = { arcs: EMPTY_ARCS, baseWidth: 0 }
 
 // Everything the HAL compiles, derived from the three registries above plus the
 // packer-less overlay pass, so that registering a pass is not a fourth wiring
@@ -632,7 +615,11 @@ export class GpuAlignmentsRenderer
     arcs: ArcsUploadData | undefined,
     arcLineWidth: number,
   ) {
-    this.regions.set(idx, data ? regionMeta(data) : emptyRegion())
+    const arcPack = arcs ? { arcs, baseWidth: arcLineWidth } : EMPTY_ARC_PACK
+    this.regions.set(idx, {
+      ...(data ? regionMeta(data) : emptyRegion()),
+      arcPack,
+    })
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: data?.readYs,
@@ -688,8 +675,8 @@ export class GpuAlignmentsRenderer
     arcs: ArcsUploadData,
     arcLineWidth: number,
   ) {
-    for (const pass of ARC_PASSES) {
-      uploadPass(this.hal, idx, pass, { arcs, baseWidth: arcLineWidth })
+    for (const mark of ARC_BAND_MARKS) {
+      uploadPass(this.hal, idx, mark.pass, { arcs, baseWidth: arcLineWidth })
     }
   }
 
@@ -700,7 +687,11 @@ export class GpuAlignmentsRenderer
    * pileup either.
    */
   private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
-    this.regions.set(idx, { ...emptyRegion(), ...coverage })
+    this.regions.set(idx, {
+      ...emptyRegion(),
+      ...coverage,
+      arcPack: EMPTY_ARC_PACK,
+    })
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: undefined,
@@ -881,6 +872,7 @@ export class GpuAlignmentsRenderer
       this.drawArcsPass(
         block,
         sectionState,
+        region,
         regionKey,
         clip,
         sec.arcBand,
@@ -895,6 +887,7 @@ export class GpuAlignmentsRenderer
   private drawArcsPass(
     block: RenderBlock,
     state: RenderState,
+    region: LocalRegion,
     regionKey: number,
     clip: BlockClipResult,
     band: ArcBand,
@@ -908,34 +901,22 @@ export class GpuAlignmentsRenderer
     // scissored output is byte-identical to the pre-grouping single pass.
     const scissor = devicePxBand(band.top, band.height, dpr, bufH)
     if (scissor.height > 0) {
-      const [bpHi, bpLo] = splitPositionWithFrac(block.start)
-      writeArcBandUniforms(this.uArc, {
-        bpHi,
-        bpLo,
-        bpLen: block.end - block.start,
-        canvasW: clip.scissorW,
-        canvasH: state.canvasHeight,
-        reversed: block.reversed,
-        // Up mode anchors at the band bottom (band.top + full height); down
-        // mode anchors at the band top — `arcAnchorY`, the same rule the
-        // Canvas2D placement and the insert-size ruler take their anchor from.
-        arcAnchorPx: arcAnchorY(band.top, band.height, band.down),
-        arcBandH: band.height,
-        blockStartPx: block.screenStartPx - clip.scissorX,
-        blockWidth: block.screenEndPx - block.screenStartPx,
-        lineWidthPx: state.readConnectionsLineWidth,
-        down: state.readConnectionsDown,
-        arcsYDomainBp: state.arcsYDomainBp,
-        dpr,
-        colors: state.colors,
-      })
-      this.hal.writeUniforms(this.uArc)
-
       this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
       this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-      // In ARC_PASSES order, which is the paint order and says why.
-      for (const pass of ARC_PASSES) {
-        this.hal.drawPass(pass.id, regionKey)
+      // In ARC_BAND_MARKS order, which is the paint order and says why. Each
+      // mark writes `ArcBandUniforms` into the band's own scratch before its
+      // draw, so `uData` still holds what every other pass needs.
+      const arcState = { ...state, arcBand: band, screenWidthPx: clip.scissorW }
+      for (const mark of ARC_BAND_MARKS) {
+        mark.drawRegion(
+          this.hal,
+          this.uArc,
+          block,
+          clip,
+          region.arcPack,
+          arcState,
+          regionKey,
+        )
       }
     }
   }

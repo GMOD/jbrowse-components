@@ -1,19 +1,19 @@
-import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { paintArcBand } from '../../LinearAlignmentsDisplay/renderers/arcMarks.ts'
+import {
+  makeTestPalette,
+  makeTestRenderState,
+} from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
 import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
-import { drawArcs } from './drawCanvas.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
 } from './shapes.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ComputedArc, CrossRegionArc } from './arcTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // A read-cloud connector that straddles a seam has to be the SAME MARK as one
 // that does not, and it was three different things at once.
@@ -31,7 +31,14 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 // colour strings: both halves of the band are the same picture, and the overlay's
 // own header says an arc that moves to it does not change colour.
 
-const BLOCK: DrawBlock = { start: 0, end: 10000, screenStartPx: 0 }
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: 10000,
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}
 const BP_LENGTH = 10000
 const BLOCK_WIDTH = 800
 const ARCS_H = 100
@@ -72,7 +79,7 @@ function recordingCtx() {
     fillRect(x: number, y: number, w: number, h: number) {
       fills.push({ style: fillStyle, rect: [x, y, w, h] })
     },
-  } as unknown as Ctx2D
+  } as unknown as MarkContext2D
   return { ctx, strokes, fills }
 }
 
@@ -93,26 +100,20 @@ function computed(shapeType: number): ComputedArc {
 // and the overlay below can be handed the same projection.
 function paint(shapeType: number) {
   const { ctx, strokes, fills } = recordingCtx()
-  drawArcs(
-    ctx,
-    arcsToRegionResult([computed(shapeType)], []),
-    BLOCK,
-    BP_LENGTH,
-    BLOCK_WIDTH,
-    {
+  paintArcBand(ctx, arcsToRegionResult([computed(shapeType)], []), BLOCK, {
+    ...makeTestRenderState({
+      canvasWidth: BLOCK_WIDTH,
       arcsYDomainBp: Y_DOMAIN,
       colors: COLORS,
       readConnectionsLineWidth: 1,
-    } as RenderState,
-    0,
-    ARCS_H,
-    false,
-    BLOCK_WIDTH,
-  )
+    }),
+    arcBand: { top: 0, height: ARCS_H, down: false },
+    screenWidthPx: BLOCK_WIDTH,
+  })
   return { strokes, fills }
 }
 
-// The overlay, on the same projection and the same Y scale `drawArcs` derives
+// The overlay, on the same projection and the same Y scale the band derives
 // for itself — `arcYScale` reads a defined domain as the read cloud's log axis,
 // which is what the model passes through.
 function overlay(shapeType: number) {

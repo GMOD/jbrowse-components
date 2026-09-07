@@ -16,6 +16,7 @@ import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
+import { ARC_BAND_MARKS } from './arcMarks.ts'
 
 import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 
@@ -94,41 +95,55 @@ function frameWrites() {
 }
 
 describe('the arc band writes its own uniforms', () => {
-  it('costs one write per section plus one per arc band, and no more', () => {
-    // Two sections, each a pileup write then an arc write.
-    expect(frameWrites().f32).toHaveLength(4)
+  it('costs one write per section plus one per band mark, and no more', () => {
+    // Two sections, each a pileup write then one per `ARC_BAND_MARKS` entry.
+    // Four identical band writes rather than one is what declaring the band as
+    // marks costs: `defineMark` writes a mark's uniforms before its draw, and
+    // all four arc passes read one `ArcBandUniforms`. The coverage band above
+    // pays the same five times.
+    expect(frameWrites().f32).toHaveLength(2 + 2 * ARC_BAND_MARKS.length)
   })
 
   it('alternates the two blocks, so neither is the other patched', () => {
-    // Writes are [section 0 pileup, section 0 arcs, section 1 pileup, ...], and
-    // the two structs are different sizes — the byte length is the cheapest
+    // The two structs are different sizes, so the byte length is the cheapest
     // statement that the band is not writing a copy of the pileup's.
     expect(frameWrites().f32.map(w => w.byteLength)).toEqual([
       UNIFORMS_SIZE_BYTES,
-      ARC_UNIFORMS_SIZE_BYTES,
+      ...ARC_BAND_MARKS.map(() => ARC_UNIFORMS_SIZE_BYTES),
       UNIFORMS_SIZE_BYTES,
-      ARC_UNIFORMS_SIZE_BYTES,
+      ...ARC_BAND_MARKS.map(() => ARC_UNIFORMS_SIZE_BYTES),
     ])
   })
 
+  // Writes are [section 0 pileup, section 0's four band marks, section 1
+  // pileup, …]. `covOffset` is the pileup top on a section write and the arc
+  // anchor on a band write, so section 1's is what a leaked clobber would
+  // corrupt.
+  const PILEUP_WRITES = [0, 1 + ARC_BAND_MARKS.length]
+
   it('gives the second section its own pileup offset, not the arc band anchor', () => {
     const { f32 } = frameWrites()
-    // `covOffset` is the pileup top on a section write and the arc anchor on an
-    // arc write, so section 1's is what a leaked clobber would corrupt.
-    expect(f32[2]![UNIFORM_OFFSET_F32.covOffset]).toBe(50)
+    expect(f32[PILEUP_WRITES[1]!]![UNIFORM_OFFSET_F32.covOffset]).toBe(50)
   })
 
-  it('places the arc anchor on the arc writes', () => {
+  it('places the arc anchor on every band write of the section', () => {
     const { f32 } = frameWrites()
-    // Up mode anchors at the band bottom: section 0's band is [0, 20].
-    expect(f32[1]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(20)
+    // Up mode anchors at the band bottom: section 0's band is [0, 20] and
+    // section 1's is [40, 20].
+    const anchors = (first: number) =>
+      ARC_BAND_MARKS.map(
+        (_m, i) => f32[first + i]![ARC_UNIFORM_OFFSET_F32.covOffset],
+      )
+    expect(anchors(1)).toEqual(ARC_BAND_MARKS.map(() => 20))
+    expect(anchors(2 + ARC_BAND_MARKS.length)).toEqual(
+      ARC_BAND_MARKS.map(() => 60),
+    )
     expect(f32[1]![ARC_UNIFORM_OFFSET_F32.arcBandH]).toBe(20)
-    expect(f32[3]![ARC_UNIFORM_OFFSET_F32.covOffset]).toBe(60)
   })
 
   it('carries the palette on every pileup write', () => {
     const { u32 } = frameWrites()
-    for (const i of [0, 2]) {
+    for (const i of PILEUP_WRITES) {
       expect({ write: i, colorBaseA: u32[i]![UNIFORM_OFFSET_U32.colorBaseA] }) //
         .toEqual({ write: i, colorBaseA: PACKED_BASE_A })
     }

@@ -18,29 +18,85 @@ import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { arcMark } from './mark.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { RGBColor } from '../../shaders/colors.ts'
+import type { DrawBlock } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcBandFrame, ArcDome } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 // The band frame `arcMark` resolves into, plus what only the paint spends. A
 // third declaration of those seven fields used to live here, beside
 // `ArcHitOptions`' and the frame's own — which is how the frame could grow a
 // field on one side and not the others.
-interface DrawArcsOpts extends ArcBandFrame {
+export interface DrawArcsOpts extends ArcBandFrame {
+  // The CONFIGURED width, unfloored — deliberately not the GPU's
+  // `max(readConnectionsLineWidth, 1.5 / dpr)`, and this is the one place in
+  // this directory where the two renderers are meant to differ. That floor
+  // exists because the shader's AA ramp is a fixed number of DEVICE px
+  // (STROKE_AA_PX) and a stroke thinner than it has no room to ramp, so a
+  // sub-1.5px arc stairsteps. Canvas2D rasterizes with its own antialiasing and
+  // renders a 0.5px line as a faint 1px one, which is the honest picture of a
+  // 0.5px line; raising it here would make the export draw thicker than asked.
+  // `hitTestArcBand` takes the unfloored width for the same reason, and
+  // ARC_HIT_SLOP_PX swallows the sub-pixel difference against the GPU's ink
+  // either way.
   lineWidth: number
   // The arc slot colors, indexed by the curves and by the read-cloud endpoint
   // squares alike — one meaning, one color. The squares took a `markerPalette`
   // of their own until the short-insert substitution behind it went away.
-  palette: RGBColor[]
+  // Pre-stringified once per block, since three of the four painters index it
+  // per instance.
+  cssPalette: string[]
   // The flat read-cloud connector's own colour — the theme's foreground, not a
   // palette slot, because the line carries no category (its endpoint squares
-  // do). Mirrors arcFlat.slang's `u.colorFlatConnector`.
-  flatConnectorColor: RGBColor
+  // do). Mirrors arcFlat.slang's `u.colorFlatConnector`, alpha included.
+  flatLineCss: string
+}
+
+// The frame every painter below resolves its marks in, for one block of one
+// section. Its `arcYScale` call is the same domain rule `writeArcBandUniforms`
+// applies, off the same availH — a mismatch would scale arcs to a different
+// height than they are plotted into.
+export function arcDrawOpts({
+  block,
+  bpLength,
+  fullBlockWidth,
+  arcsTop,
+  arcsH,
+  pairedArcsDown,
+  screenWidthPx,
+  arcsYDomainBp,
+  lineWidth,
+  colors,
+}: {
+  block: DrawBlock
+  bpLength: number
+  fullBlockWidth: number
+  arcsTop: number
+  arcsH: number
+  pairedArcsDown: boolean
+  screenWidthPx: number
+  arcsYDomainBp: number | undefined
+  lineWidth: number
+  colors: ColorPalette
+}): DrawArcsOpts {
+  const { domainBp, log } = arcYScale(
+    arcsYDomainBp,
+    arcAvailH(arcsH),
+    fullBlockWidth / bpLength,
+  )
+  return {
+    bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+    arcsYDomainBp: domainBp,
+    arcsYLog: log,
+    arcsTop,
+    arcsH,
+    pairedArcsDown,
+    screenWidthPx,
+    lineWidth,
+    cssPalette: buildArcColorPalette(colors).map(c => rgb255(c)),
+    flatLineCss: rgba255(colors.colorFlatConnector, ARC_FLAT_ALPHA),
+  }
 }
 
 // Strokes one paired-read dome. Caller sets strokeStyle and clips to the band.
@@ -60,172 +116,145 @@ interface DrawArcsOpts extends ArcBandFrame {
 //
 // Still exported for arcShape.test.ts, which pins the sweep and the centre this
 // wraps the radii in.
-export function strokeArcMark(ctx: Ctx2D, mark: ArcDome) {
+export function strokeArcMark(ctx: MarkContext2D, mark: ArcDome) {
   const [start, end] = mark.down ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   ctx.beginPath()
   ctx.ellipse(mark.mid, mark.anchorY, mark.rx, mark.ry, 0, start, end)
   ctx.stroke()
 }
 
-// Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
-// constant line Y, otherwise the curve apex. See ARC_SHAPE_* in shapes.ts.
-function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
-  // The band rect, the Y scale and the near/far width are not read here at all:
-  // `arcMark` takes `opts` whole and resolves every mark from them.
-  const { lineWidth, palette, flatConnectorColor } = opts
-  // Pre-stringify the palette once per draw — saves N Math.round + string
-  // allocations per frame (N = numArcs, often thousands).
-  const cssPalette = palette.map(c => rgb255(c))
-  // Flat (read cloud) connector lines are neutral — the theme's foreground, so
-  // they read on a dark track background too; the category color lives in the
-  // endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA is
-  // arcFlat.slang's, which is also where the GPU twin of this line lives.
-  const flatLineCss = rgba255(flatConnectorColor, ARC_FLAT_ALPHA)
+// The band's four marks, in `ARC_BAND_MARKS` paint order. Each is one GPU
+// pass's Canvas2D twin, and each resolves its geometry through `arcMark` — the
+// one derivation the stroke, the hover highlight, the hit test and the debug
+// overlay all read.
+//
+// They were one function with a kind branch inside its loop and a second loop
+// for the squares. Splitting them along the passes is what lets the band be
+// declared as marks; it changes no pixel, because `computeArcShape` emits a
+// flat shape iff `cloud`, so a feed is all domes or all bars and the branch
+// never interleaved two kinds in one draw.
 
-  for (let i = 0; i < data.numArcs; i++) {
-    const colorIdx = data.arcColorTypes[i]!
-    const shape = data.arcShapeTypes[i]!
-    // Per arc, not once per draw: an arc is one junction now rather than one
-    // read, and its width is how many reads it stands for (`arcLineWidth`).
-    // Support 1 resolves to exactly `lineWidth`, so a feed with no repeats
-    // paints what it painted before coalescing existed.
-    ctx.lineWidth = arcLineWidth(data.arcSupport[i]!, lineWidth)
-
-    // The one mark — shared with `hitTestArcBand` and the hover highlight, so
-    // none of the three can drift from the other two. Its anchor, its widened
-    // bar extent and its two radii all come off this call; hoisting a second
-    // copy of any of them out of this loop is how a draw gets to disagree with
-    // the geometry it is otherwise reading. The band clip is the caller's; a
-    // dome deliberately leaves the band rather than flattening onto its ceiling.
-    const mark = arcMark(data, i, opts)
-
-    // arcFlat.slang's own dash, not a `[3, 3]` held to the shader's `6.0`
-    // period by a comment — and the SVG cross-region overlay reads the same
-    // pair as its third consumer.
-    ctx.setLineDash(
-      shape === ARC_SHAPE_FLAT_SPLIT ? [ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX] : [],
-    )
-    if (mark.kind === 'bar') {
-      // Neutral connector line at the mark's own widened extent, so short-insert
-      // pairs stay visible; mirrors arcFlat.slang's clamp. The endpoint squares
-      // carry the category color and are a SECOND pass below, not this one's
-      // last two statements.
-      ctx.strokeStyle = flatLineCss
-      ctx.beginPath()
-      ctx.moveTo(mark.mid - mark.halfPx, mark.markY)
-      ctx.lineTo(mark.mid + mark.halfPx, mark.markY)
-      ctx.stroke()
-    } else {
-      ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
-      strokeArcMark(ctx, mark)
-    }
-  }
-  ctx.setLineDash([])
-
-  // EVERY connector line, THEN every endpoint square — the GPU's pass order
-  // (`ARC_FLAT_PASS` before `ARC_MARKER_PASS` in `ARC_PASSES`, whose order is
-  // the paint order and says so), rather than each arc's line
-  // followed by its own two squares.
-  //
-  // Interleaved, a connector is translucent (ARC_FLAT_ALPHA 0.7) and opaque
-  // squares are not, so every arc later in the feed veiled the squares of every
-  // arc before it that its bar crossed. On the GPU no square is ever veiled. The
-  // divergence is worst in the mode that emits thousands of these and is the
-  // whole reason the squares carry the colour — and since the SVG export paints
-  // through this path, an exported read cloud disagreed with the one on screen.
-  //
-  // A second `arcMark` per flat arc rather than state carried between the loops:
-  // it is the same call, so there is nothing here that can drift from the pass
-  // above, and next to a `ctx.stroke()` per arc the arithmetic is free.
-  //
-  // The squares sit on the REAL mates (`sx1`/`sx2`), not on the ends of the bar,
-  // which is why a bar carries both: a sub-minimum pair draws a 2.5px bar with
-  // its two squares overlapping in the middle of it.
-  if (data.numFlatArcs > 0) {
-    const m = ARC_MARKER_PX
-    for (let i = 0; i < data.numArcs; i++) {
-      const mark = arcMark(data, i, opts)
-      if (mark.kind === 'bar') {
-        const { sx1, sx2, markY } = mark
-        ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
-        ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
-        ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
-      }
-    }
-  }
-}
-
-// Canvas2D / SVG entry point used by drawAlignmentBlocks. Paints the arcs band
-// (bezier curves and flat lines) plus the small dots that mark arc-line
-// connector endpoints.
-export function drawArcs(
-  ctx: Ctx2D,
-  region: ArcsUploadData,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-  arcsTop: number,
-  arcsH: number,
-  pairedArcsDown: boolean,
-  screenWidthPx: number,
+// Interchromosomal connector ticks: a vertical line spanning the arc band at
+// the breakpoint, matching arcLine.slang's full-band span. Every tick is
+// ARC_COLOR_INTERCHROM — the shader names the same slot — so the COLOR is
+// hoisted out of the loop rather than read per instance. The WIDTH is not: a
+// tick is one breakpoint since `resolveArcs` coalesced them, so it draws at the
+// width its read support earns, exactly as the arcs below do.
+//
+// Solid, and said so on the shared context: the bar painter sets a dash per
+// arc, so a tick painted after one would otherwise inherit it.
+export function drawArcTicks(
+  ctx: MarkContext2D,
+  data: ArcsUploadData,
+  opts: DrawArcsOpts,
 ) {
-  // Same domain rule the GPU's fillArcUniforms applies, off the same availH —
-  // a mismatch would scale arcs to a different height than they're plotted into.
-  const { domainBp, log } = arcYScale(
-    state.arcsYDomainBp,
-    arcAvailH(arcsH),
-    fullBlockWidth / bpLength,
-  )
-  const arcColors = buildArcColorPalette(state.colors)
-
-  // Interchromosomal connector ticks FIRST, under everything else in the band:
-  // a vertical line spanning the arc band at the breakpoint, matching
-  // arcLine.slang's full-band ±1 span. Every tick is ARC_COLOR_INTERCHROM — the
-  // shader names the same slot — so the COLOR is hoisted out of the loop rather
-  // than read per instance. The WIDTH is not: a tick is one breakpoint since
-  // `resolveArcs` coalesced them, so it draws at the width its read support
-  // earns, exactly as the arcs below do.
-  //
-  // Mirrors `ARC_PASSES`, where `ARC_LINE_PASS` leads for the reason given
-  // there; `hitTestArcBand` resolves its ties by this same order.
-  // Solid, and said so on the shared context: the arc loop below sets a dash
-  // per arc, so a tick painted after one would otherwise inherit it.
+  const { arcsTop, arcsH, lineWidth, cssPalette } = opts
   ctx.setLineDash([])
-  ctx.strokeStyle = rgb255(arcColors[ARC_COLOR_INTERCHROM]!)
-  for (let i = 0; i < region.numArcLines; i++) {
-    const bp = region.arcLinePositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    ctx.lineWidth = arcLineWidth(
-      region.arcLineSupport[i]!,
-      state.readConnectionsLineWidth,
-    )
+  ctx.strokeStyle = cssPalette[ARC_COLOR_INTERCHROM]!
+  for (let i = 0; i < data.numArcLines; i++) {
+    const x = opts.bpToScreenX(data.arcLinePositions[i]!)
+    ctx.lineWidth = arcLineWidth(data.arcLineSupport[i]!, lineWidth)
     ctx.beginPath()
     ctx.moveTo(x, arcsTop)
     ctx.lineTo(x, arcsTop + arcsH)
     ctx.stroke()
   }
-  drawArcsToCtx(ctx, region, {
-    bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
-    arcsYDomainBp: domainBp,
-    arcsYLog: log,
-    arcsTop,
-    arcsH,
-    pairedArcsDown,
-    // The CONFIGURED width, unfloored — deliberately not the GPU's
-    // `max(readConnectionsLineWidth, 1.5 / dpr)` (fillArcUniforms), and this is
-    // the one place in this directory where the two renderers are meant to
-    // differ. That floor exists because the shader's AA ramp is a fixed number
-    // of DEVICE px (STROKE_AA_PX) and a stroke thinner than it has no room to
-    // ramp, so a sub-1.5px arc stairsteps. Canvas2D rasterizes with its own
-    // antialiasing and renders a 0.5px line as a faint 1px one, which is the
-    // honest picture of a 0.5px line; raising it here would make the export
-    // draw thicker than asked. `hitTestArcBand` takes the unfloored width for the
-    // same reason, and ARC_HIT_SLOP_PX swallows the sub-pixel difference
-    // against the GPU's ink either way.
-    lineWidth: state.readConnectionsLineWidth,
-    palette: arcColors,
-    flatConnectorColor: state.colors.colorFlatConnector,
-    screenWidthPx,
-  })
+}
+
+// Per arc, not once per draw: an arc is one junction now rather than one read,
+// and its width is how many reads it stands for (`arcLineWidth`). Support 1
+// resolves to exactly `lineWidth`, so a feed with no repeats paints what it
+// painted before coalescing existed.
+function strokeWidthAt(
+  ctx: MarkContext2D,
+  data: ArcsUploadData,
+  i: number,
+  lineWidth: number,
+) {
+  ctx.lineWidth = arcLineWidth(data.arcSupport[i]!, lineWidth)
+}
+
+// Curved paired-read domes (arc.slang). Never dashed — the dash is the split
+// FLAT variant's, and a dome is `ARC_SHAPE_ARC` by construction — so the dash is
+// cleared once rather than per arc.
+export function drawArcDomes(
+  ctx: MarkContext2D,
+  data: ArcsUploadData,
+  opts: DrawArcsOpts,
+) {
+  const { cssPalette } = opts
+  ctx.setLineDash([])
+  for (let i = 0; i < data.numArcs; i++) {
+    const mark = arcMark(data, i, opts)
+    if (mark.kind === 'dome') {
+      strokeWidthAt(ctx, data, i, opts.lineWidth)
+      ctx.strokeStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
+      strokeArcMark(ctx, mark)
+    }
+  }
+}
+
+// Read-cloud flat connectors (arcFlat.slang). Neutral — the theme's foreground,
+// so they read on a dark track background too; the category color lives in the
+// endpoint squares. ARC_FLAT_ALPHA is arcFlat.slang's, which is also where the
+// GPU twin of this line lives. The bar is drawn at the mark's own widened
+// extent, so short-insert pairs stay visible; mirrors arcFlat.slang's clamp.
+//
+// The dash is arcFlat.slang's own, not a `[3, 3]` held to the shader's `6.0`
+// period by a comment — and the SVG cross-region overlay reads the same pair as
+// its third consumer.
+export function drawArcBars(
+  ctx: MarkContext2D,
+  data: ArcsUploadData,
+  opts: DrawArcsOpts,
+) {
+  ctx.strokeStyle = opts.flatLineCss
+  for (let i = 0; i < data.numArcs; i++) {
+    const mark = arcMark(data, i, opts)
+    if (mark.kind === 'bar') {
+      strokeWidthAt(ctx, data, i, opts.lineWidth)
+      const dashed = data.arcShapeTypes[i] === ARC_SHAPE_FLAT_SPLIT
+      ctx.setLineDash(dashed ? [ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX] : [])
+      ctx.beginPath()
+      ctx.moveTo(mark.mid - mark.halfPx, mark.markY)
+      ctx.lineTo(mark.mid + mark.halfPx, mark.markY)
+      ctx.stroke()
+    }
+  }
+  ctx.setLineDash([])
+}
+
+// The read cloud's endpoint squares (arcMarker.slang), a pass of their own and
+// not the bar painter's last two statements.
+//
+// EVERY connector line, THEN every endpoint square, which is `ARC_BAND_MARKS`
+// order. Interleaved, a connector is translucent (ARC_FLAT_ALPHA 0.7) and
+// opaque squares are not, so every arc later in the feed veiled the squares of
+// every arc before it that its bar crossed. On the GPU no square is ever veiled.
+// The divergence is worst in the mode that emits thousands of these and is the
+// whole reason the squares carry the colour — and since the SVG export paints
+// through this path, an exported read cloud disagreed with the one on screen.
+//
+// The squares sit on the REAL mates (`sx1`/`sx2`), not on the ends of the bar,
+// which is why a bar carries both: a sub-minimum pair draws a 2.5px bar with its
+// two squares overlapping in the middle of it.
+export function drawArcMarkers(
+  ctx: MarkContext2D,
+  data: ArcsUploadData,
+  opts: DrawArcsOpts,
+) {
+  if (data.numFlatArcs === 0) {
+    return
+  }
+  const { cssPalette } = opts
+  const m = ARC_MARKER_PX
+  for (let i = 0; i < data.numArcs; i++) {
+    const mark = arcMark(data, i, opts)
+    if (mark.kind === 'bar') {
+      const { sx1, sx2, markY } = mark
+      ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
+      ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
+      ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
+    }
+  }
 }
