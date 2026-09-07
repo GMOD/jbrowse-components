@@ -280,7 +280,6 @@ cat > session.json <<'JSON'
     {
       "type": "LinearSyntenyView",
       "displayName": "Peach - Cacao - Grape (MCScan blocks)",
-      "showColorLegend": false,
       "views": [
         { "assembly": "peach" },
         { "assembly": "cacao" },

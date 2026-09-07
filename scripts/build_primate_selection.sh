@@ -359,7 +359,6 @@ cat > session.json <<'JSON'
     {
       "type": "LinearSyntenyView",
       "displayName": "Human vs rhesus macaque orthologs, coloured by dN/dS",
-      "showColorLegend": true,
       "views": [
         {
           "assembly": "human",

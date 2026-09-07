@@ -102,7 +102,6 @@
       {
         "type": "LinearSyntenyView",
         "displayName": "tauschii - wheat - durum - emmer - urartu - timopheevii (OrthoFinder orthogroups)",
-        "showColorLegend": false,
         "views": [
           {
             "assembly": "tauschii"

@@ -778,7 +778,6 @@ print(json.dumps({
     "views": [{
         "type": "LinearSyntenyView",
         "displayName": f"{' - '.join(names)} (OrthoFinder orthogroups)",
-        "showColorLegend": False,
           "views": [{"assembly": n} for n in names],
           # one entry per band: N genomes stack into N-1 bands
           "tracks": [[track]] * (len(names) - 1),

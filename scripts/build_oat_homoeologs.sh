@@ -367,7 +367,6 @@ cat > session.json <<'JSON'
     {
       "type": "DotplotView",
       "displayName": "Hexaploid oat against itself, coloured by dN/dS",
-      "showColorLegend": true,
       "views": [{ "assembly": "oat" }, { "assembly": "oat" }],
       "tracks": ["oat_homoeologs"],
       "colorBy": "dnds"

@@ -231,7 +231,6 @@
       {
         "type": "LinearSyntenyView",
         "displayName": "Peach \u2013 Cacao \u2013 Grape (MCScan blocks)",
-        "showColorLegend": false,
         "views": [
           {
             "assembly": "peach"

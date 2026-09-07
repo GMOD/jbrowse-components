@@ -115,7 +115,6 @@
       {
         "type": "LinearSyntenyView",
         "displayName": "melanogaster - simulans - yakuba - pseudoobscura - virilis (OrthoFinder orthogroups)",
-        "showColorLegend": false,
         "views": [
           {
             "assembly": "melanogaster"

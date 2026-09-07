@@ -79,7 +79,6 @@
       {
         "type": "LinearSyntenyView",
         "displayName": "human - chicken - frog - gar - zebrafish (OrthoFinder orthogroups)",
-        "showColorLegend": false,
         "views": [
           {
             "assembly": "human"

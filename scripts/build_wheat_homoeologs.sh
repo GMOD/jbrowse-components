@@ -250,7 +250,6 @@ cat > session.json <<'JSON'
     {
       "type": "LinearSyntenyView",
       "displayName": "Aegilops tauschii - sorghum - bread wheat",
-      "showColorLegend": true,
       "views": [
         { "assembly": "tauschii" },
         { "assembly": "sorghum" },

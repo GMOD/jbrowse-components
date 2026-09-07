@@ -41,7 +41,6 @@
       {
         "type": "LinearSyntenyView",
         "displayName": "Bread wheat against itself, coloured by dN/dS",
-        "showColorLegend": true,
         "views": [
           {
             "assembly": "wheat"

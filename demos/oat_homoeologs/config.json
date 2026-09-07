@@ -41,7 +41,6 @@
       {
         "type": "DotplotView",
         "displayName": "Hexaploid oat against itself, coloured by dN/dS",
-        "showColorLegend": true,
         "views": [
           {
             "assembly": "oat"
