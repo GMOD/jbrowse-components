@@ -311,6 +311,9 @@ export function emitLiftReport(
     // Nothing on the website can act on this, and check-reference-citations
     // would otherwise ask a generated file to earn a citation.
     'audience: internal',
+    // reference/'s index groups on `kind:`; without it generate-doc-indexes
+    // refuses the whole directory rather than leave this file off the index.
+    'kind: measurement',
     '---',
     '',
     '# Shader → JS liftability inventory',

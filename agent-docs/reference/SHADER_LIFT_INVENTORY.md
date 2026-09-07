@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 110 functions
-are inside the emitter's subset, of which **83 are exported**.
+Scanned 40 shaders with entry points. 98 functions
+are inside the emitter's subset, of which **74 are exported**.
 
 ## Candidates
 
@@ -46,8 +46,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
-| `ldFinalize` | `(f32, f32, f32, f32, f32, u32, u32) -> f32` | picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported |
-| `ldGenotypeCovariance` | `(f32, f32, f32, f32) -> f32` | reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
@@ -77,7 +75,7 @@ noticing in a diff.
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 15 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
-| type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |
+| type 'vec3' is outside the supported scalar subset | 6 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
@@ -87,7 +85,6 @@ noticing in a diff.
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
-| indexing is outside the supported scalar subset | 1 | `getWord` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
