@@ -3,6 +3,7 @@ import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   MISSING_VALUE_COLOR,
+  UNLABELLED_COLOR,
   createComparativeColorFunction,
   makeNameColorFunction,
   paletteColorAt,
@@ -236,7 +237,8 @@ describe('a categorical attribute', () => {
     })
     expect(fn(0)).toBe(cssColorToABGR(refNameColor('B1', 1)))
     expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
-    expect(fn(2)).toBe(MISSING_VALUE_COLOR)
+    expect(fn(2)).toBe(UNLABELLED_COLOR)
+    expect(fn(2)).not.toBe(MISSING_VALUE_COLOR)
   })
 
   test('a numeric column under the same mode string still ramps', () => {

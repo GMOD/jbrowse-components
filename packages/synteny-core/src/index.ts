@@ -177,6 +177,7 @@ export type {
 } from './colorRamps.ts'
 export {
   MISSING_VALUE_COLOR,
+  UNLABELLED_COLOR,
   categoricalColor,
   createComparativeColorFunction,
   makeCategoricalColorFunction,

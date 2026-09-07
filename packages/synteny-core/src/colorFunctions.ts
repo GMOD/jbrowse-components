@@ -44,6 +44,10 @@ export const MISSING_VALUE_COLOR = cssColorToABGR(
   colorSchemes.default.cigarColors.M,
 )
 
+// a row a text column leaves unlabelled is "in no group", not "no data", and
+// recedes so the labelled rows carry the picture
+export const UNLABELLED_COLOR = cssColorToABGR('#c8c8c8')
+
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
 
@@ -194,8 +198,8 @@ export function makeCategoricalColorFunction(
   return (index: number) => {
     const value = values?.[index]
     return value === undefined || value < 0
-      ? MISSING_VALUE_COLOR
-      : (lut[value] ?? MISSING_VALUE_COLOR)
+      ? UNLABELLED_COLOR
+      : (lut[value] ?? UNLABELLED_COLOR)
   }
 }
 
