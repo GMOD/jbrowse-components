@@ -59,6 +59,24 @@ keeps its own ground.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
 
+### bandInk
+
+The inks a band draws in, off its own ground rather than the page theme, at the
+light theme's weights: a dark theme's text and dividers are white and vanish on
+the band.
+
+```js
+// type signature
+;() => {
+  text: string
+  divider: string
+  gridline: string
+  stripe: string
+}
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
+
 ### blendOverGround
 
 Composite a CSS color over `ground` by `a`, returning an opaque `rgb(...)`. The

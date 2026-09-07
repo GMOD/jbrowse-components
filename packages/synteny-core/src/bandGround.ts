@@ -1,3 +1,5 @@
+import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
+
 /**
  * #api
  * The colour a comparative band is painted on, for every surface that has to
@@ -14,4 +16,20 @@ export const BAND_GROUND_COLOR = '#fff'
 
 export function bandGroundColor() {
   return BAND_GROUND_COLOR
+}
+
+/**
+ * #api
+ * The inks a band draws in, off its own ground rather than the page theme, at
+ * the light theme's weights: a dark theme's text and dividers are white and
+ * vanish on the band.
+ */
+export function bandInk() {
+  const ink = getContrastText(BAND_GROUND_COLOR)
+  return {
+    text: alpha(ink, 0.87),
+    divider: alpha(ink, 0.12),
+    gridline: alpha(ink, 0.12),
+    stripe: alpha(ink, 0.04),
+  }
 }

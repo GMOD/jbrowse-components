@@ -29,6 +29,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   bandGroundColor,
+  bandInk,
   colorableColumns,
   declaredAttributes,
   lodMenuItems,
@@ -1314,7 +1315,7 @@ export function stateModelFactory(
               stack: self.laneStack,
               tickIntervalBp: self.tickIntervalBp,
               width: self.canvasWidth,
-              color: self.palette.gridlineMinor,
+              color: bandInk().gridline,
             })
           : { cells: new Map(), layers: [] }
       },
@@ -1325,15 +1326,14 @@ export function stateModelFactory(
        * only when a lane comes or goes, and an unchanged cell uploads nothing
        */
       get bandCell(): MultiWayCell {
-        const { palette } = self
         return {
           kind: 'glyphs',
           data: buildBandCell({
             bands: laneGeometry(self.height, 1 + self.rowAssemblies.length)
               .rows,
             width: self.canvasWidth,
-            paper: palette.background.paper,
-            stripe: palette.action.hover,
+            paper: bandGroundColor(),
+            stripe: bandInk().stripe,
           }),
         }
       },
@@ -1348,6 +1348,7 @@ export function stateModelFactory(
       get laneGlyphCells() {
         const { palette, selectedFeatureId, laneGenes, glyphColors } = self
         const { lanes, glyphHeight } = self.laneStack
+        const ink = bandInk()
         const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
           selectedFeatureId === feature.id()
             ? palette.highlight.main
@@ -1362,8 +1363,8 @@ export function stateModelFactory(
             width: self.canvasWidth,
             colors: {
               colorOf,
-              stroke: palette.text.primary,
-              divider: palette.divider,
+              stroke: ink.text,
+              divider: ink.divider,
             },
           })
           out.set(boxesKey(row), { kind: 'glyphs', data: boxes })
