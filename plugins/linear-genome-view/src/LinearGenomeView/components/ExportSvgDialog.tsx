@@ -20,7 +20,7 @@ export default function ExportSvgDialog({
         trackLabels: TrackLabelMode
         showGridlines: boolean
       },
-    ): Promise<void>
+    ): Promise<unknown>
   }
   handleClose: () => void
 }) {

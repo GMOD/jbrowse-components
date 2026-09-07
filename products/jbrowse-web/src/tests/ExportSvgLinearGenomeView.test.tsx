@@ -38,6 +38,25 @@ test('export svg of lgv', async () => {
   await exportAndVerifySvg({ findByTestId, findByText, filename: 'lgv', delay })
 }, 45000)
 
+// The route an agent takes: it has a path of its own to write to, and a
+// download landing in ~/Downloads under a name it did not choose is a second
+// file it cannot account for.
+test('save: false returns the markup and writes nothing', async () => {
+  const { saveAs } = jest.requireMock('@jbrowse/core/util/FileSaver') as {
+    saveAs: jest.Mock
+  }
+  const { view, findByTestId } = await createView(config)
+
+  view.setNewView(0.1, 1)
+  fireEvent.click(
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
+  )
+
+  const markup = await view.exportSvg({ save: false })
+  expect(markup).toContain('<svg')
+  expect(saveAs).not.toHaveBeenCalled()
+}, 45000)
+
 test('export svg of lgv with gridlines', async () => {
   const { view, findByTestId, findByText } = await createView(config)
 

@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { createJbApi } from '@jbrowse/app-core'
 
+import { TOC_ABOVE_CHARS } from '../../electron/mcp/docLimits.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   MCP_TOOLS,
@@ -103,6 +104,19 @@ it('every copy stating the timeout default states the real one', () => {
       expect(`${name}: ${match[1]}`).toBe(`${name}: ${expected}`)
     }
   }
+})
+
+// The guide is the one topic whose point is being read whole — it is what
+// "read docs topic live-model FIRST" asks for. Past TOC_ABOVE_CHARS the docs
+// tool serves a table of contents instead, silently, and the agent gets
+// headings where it expected the contract. The guide sits close enough to that
+// line that one added paragraph crosses it, so the answer is to trim the guide
+// or put the new material in agents_recipes.md — not to raise the cap.
+it('the guide still fits in one read', () => {
+  expect({
+    chars: copies.guide.length,
+    under: copies.guide.length < TOC_ABOVE_CHARS,
+  }).toEqual({ chars: copies.guide.length, under: true })
 })
 
 it('the guide awaits the adapter helper, which is async', () => {

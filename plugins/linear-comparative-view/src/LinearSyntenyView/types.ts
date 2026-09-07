@@ -126,6 +126,13 @@ export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
   filename?: string
+  /**
+   * Whether to hand the result to the browser's download path. Default true,
+   * which is the dialog. False returns the markup and writes nothing — the
+   * caller has somewhere of its own to put it, and a download it did not ask
+   * for would land beside that under a name it did not choose.
+   */
+  save?: boolean
   Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number

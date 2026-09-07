@@ -403,6 +403,35 @@ return {
 - On JBrowse Web the capture is the browser agent's own, taken after
   `jb.waitReady` resolves.
 
+## A publication figure, at a path you choose
+
+A screenshot is the window; `view.exportSvg` is the figure — vector, no browser
+chrome, the same output the Export SVG dialog writes. `save: false` returns the
+markup instead of handing it to the browser's download path, so it lands where
+you say rather than in the download folder under a name you did not choose:
+
+```js
+const view = jb.view()
+await jb.waitReady(30000)
+const svg = await view.exportSvg({ save: false })
+const fs = window.require('fs')
+const path = window.require('path')
+const os = window.require('os')
+const out = path.join(os.tmpdir(), 'figure.svg')
+fs.writeFileSync(out, svg)
+return { out, bytes: svg.length, loc: view.visibleLocStrings }
+```
+
+- Every view type that exports takes the same call: linear, circular, dotplot,
+  linear synteny, breakpoint split.
+- `{ format: 'png' }` rasterizes on the way to the file, and is the one case
+  where the return value is still the SVG markup rather than the bytes written.
+- Leave `save` alone to get the normal download instead.
+- `rasterizeLayers: true` embeds each display's heavy layer as a PNG rather than
+  emitting vector elements, which is what a hundred-thousand-read pileup wants.
+- Only Desktop can write a file. In JBrowse Web, take the markup and put it
+  somewhere the page can reach.
+
 ## Add a file by URL, and check it lines up
 
 `jb.addTrack` infers the track and adapter type from the extension, adds the

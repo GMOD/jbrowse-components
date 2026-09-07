@@ -10,7 +10,7 @@ export default function ExportSvgDialog({
   model,
   handleClose,
 }: {
-  model: { exportSvg(opts: BaseExportSvgOptions): Promise<void> }
+  model: { exportSvg(opts: BaseExportSvgOptions): Promise<unknown> }
   handleClose: () => void
 }) {
   return (

@@ -48,7 +48,7 @@ export default observer(function BaseExportSvgDialog({
 }: {
   model: IAnyStateTreeNode
   handleClose: () => void
-  exportSvg: (opts: BaseExportSvgOptions) => Promise<void>
+  exportSvg: (opts: BaseExportSvgOptions) => Promise<unknown>
   children?: React.ReactNode
   checkboxes?: React.ReactNode
 }) {

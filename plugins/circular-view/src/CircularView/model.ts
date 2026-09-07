@@ -83,6 +83,13 @@ function figureMiddleY(width: number, height: number, figureSize: number) {
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 export interface ExportSvgOptions {
+  /**
+   * Whether to hand the result to the browser's download path. Default true,
+   * which is the dialog. False returns the markup and writes nothing — the
+   * caller has somewhere of its own to put it, and a download it did not ask
+   * for would land beside that under a name it did not choose.
+   */
+  save?: boolean
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
   filename?: string
@@ -1011,15 +1018,22 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * creates an svg export and save using FileSaver
+       * renders the view to SVG markup, which it returns; saves it through
+       * FileSaver unless `save: false`
        */
-      async exportSvg(opts: ExportSvgOptions = {}) {
+      // Promise<string> is stated, against the house preference for inferred
+      // return types: renderToSvg is typed against this very model, so an
+      // inferred return makes the model type reference itself (TS2456).
+      async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
         const { renderToSvg } =
           await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const { saveSvgAsImage } =
-          await import('@jbrowse/core/svg/saveSvgAsImage')
-        await saveSvgAsImage(html, opts)
+        if (opts.save !== false) {
+          const { saveSvgAsImage } =
+            await import('@jbrowse/core/svg/saveSvgAsImage')
+          await saveSvgAsImage(html, opts)
+        }
+        return html
       },
     }))
     .actions(self => ({

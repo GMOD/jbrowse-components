@@ -687,13 +687,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      async exportSvg(opts: ExportSvgOptions) {
+      // Promise<string> is stated, against the house preference for inferred
+      // return types: renderToSvg is typed against this very model, so an
+      // inferred return makes the model type reference itself (TS2456).
+      async exportSvg(opts: ExportSvgOptions): Promise<string> {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearSyntenyView.tsx')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        const { saveSvgAsImage } =
-          await import('@jbrowse/core/svg/saveSvgAsImage')
-        await saveSvgAsImage(html, opts)
+        if (opts.save !== false) {
+          const { saveSvgAsImage } =
+            await import('@jbrowse/core/svg/saveSvgAsImage')
+          await saveSvgAsImage(html, opts)
+        }
+        return html
       },
     }))
     .views(self => {

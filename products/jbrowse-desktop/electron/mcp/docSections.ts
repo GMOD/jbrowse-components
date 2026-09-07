@@ -1,9 +1,6 @@
-import type { BridgeToolResult } from './stdioServer.ts'
+import { TOC_ABOVE_CHARS } from './docLimits.ts'
 
-// The session-spec reference is ~77 KB — around 20k tokens — and an agent
-// composing one linear genome view needs a tenth of it. Over this size the
-// bare topic answers with its headings and the text before the first one.
-const TOC_ABOVE_CHARS = 20_000
+import type { BridgeToolResult } from './stdioServer.ts'
 
 interface DocSection {
   level: number
