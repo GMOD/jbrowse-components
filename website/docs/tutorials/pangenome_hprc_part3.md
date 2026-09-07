@@ -104,11 +104,12 @@ The `uri` shorthand resolves the sibling `.tai`, which downloads once.
 
 TAF is taffy's own column-oriented format, and the same alignment is published
 as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter` reads with the same `uri`
-shorthand. The v2.0 file is the one this page uses: it is the build the graph
-and the callset above come from, and it is far smaller to store and cheaper to
-read a locus out of.
+shorthand. The v2.0 file is the one this page uses: it is the build
+[the graph](/docs/tutorials/pangenome_hprc#load-the-graph) and
+[the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
+from, and it is far smaller to store and cheaper to read a locus out of.
 
-Each product this page has opened states something different about the same
+Each product these three pages open states something different about the same
 sequence, so the figure below puts them on one axis: the graph as its segments
 and again as a subgraph, the callset as a genotype matrix over all 464
 haplotypes, and the alignment as rows. The band runs down all of them.
@@ -497,6 +498,9 @@ The companion HPRC does not publish is the one exception, and it has a script of
 its own under [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
+
+The lanes above put each haplotype on its own contigs, which is as far as an
+assembly with no reference of its own goes. One contributor has one.
 
 CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
 which UCSC serves as `hs1` with RefSeq genes and RepeatMasker, so it loads from
