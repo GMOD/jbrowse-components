@@ -144,12 +144,10 @@ test('one menu holds every render setting', async () => {
     'Identity fade',
     'Curved lines',
     'Location markers',
-    'Thin fade',
     'Opacity',
     'CIGAR indels',
     'Off-screen mates',
     'Min length',
-    'Overdraw',
   ]) {
     expect(screen.getByText(label)).toBeTruthy()
   }
@@ -161,7 +159,7 @@ test('one menu holds every render setting', async () => {
 // inline menu slider row loads through.
 test('a continuous setting keeps its slider one hop in', async () => {
   await openMenu()
-  for (const slug of ['opacity', 'min_length', 'overdraw']) {
+  for (const slug of ['opacity', 'min_length']) {
     expect(screen.getByTestId(`cascading-submenu-${slug}`)).toBeTruthy()
   }
   expect(screen.queryByTestId('opacity-slider')).toBeNull()

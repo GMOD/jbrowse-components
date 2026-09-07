@@ -9,7 +9,6 @@ import { toLocale } from '@jbrowse/core/util'
 import {
   MAX_MIN_LENGTH_BP,
   MIN_LENGTH_HELP,
-  PAN_BUFFER_PX,
   lodMenuItems,
 } from '@jbrowse/synteny-core'
 import WarningIcon from '@mui/icons-material/WarningAmber'
@@ -18,7 +17,6 @@ import { CIGAR_MODE_OPTIONS } from '../../LinearSyntenyView/cigarModes.ts'
 import {
   DEFAULT_ALPHA,
   DEFAULT_MIN_ALIGNMENT_LENGTH,
-  DEFAULT_OVERDRAW_PX,
 } from '../../LinearSyntenyView/consts.ts'
 import {
   OFFSCREEN_MATE_HELP,
@@ -29,19 +27,6 @@ import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
-
-const FADE_MODES = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'on', label: 'On' },
-  { value: 'off', label: 'Off' },
-] as const
-
-const THIN_FADE_HELP =
-  'Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered ' +
-  'whole-genome view does not read as a hard full-opacity hairball. Auto ' +
-  'enables it only when the view is dense enough to tangle; a genuinely ' +
-  'sparse comparison (e.g. distant species, every alignment sub-pixel) stays ' +
-  'unfaded so the fade does not wash it out. On/Off pin it.'
 
 /**
  * One RIBBONS checkbox whose state a reader can also make this session's
@@ -106,10 +91,7 @@ function ribbonToggle({
  * THREE SECTIONS, each a question rather than a kind of widget: RIBBONS is how
  * one alignment looks, DETAIL is how much of one is loaded and painted, and
  * SCOPE is which alignments make it into the picture at all — dropped for being
- * short, marked for having nowhere to land, or drawn past the edge of the
- * window. Min length and Overdraw read as unrelated until they are next to each
- * other under that heading, where they are the same question asked of feature
- * size and of screen extent.
+ * short, or marked for having nowhere to land.
  *
  * WITHIN a section, arity orders the rows: the checkboxes, then the choices,
  * then the values. Sections group by subject and nothing about a subject says
@@ -166,13 +148,6 @@ export function syntenySettingsMenuItems(
       helpText:
         "Continues the query row's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with.",
     }),
-    {
-      label: 'Thin fade',
-      helpText: THIN_FADE_HELP,
-      subMenu: radioItems(FADE_MODES, model.fadeThinAlignmentsMode, mode => {
-        model.setFadeThinAlignmentsMode(mode)
-      }),
-    },
     makeSizeSubMenu({
       label: 'opacity',
       title: 'Opacity',
@@ -272,33 +247,6 @@ export function syntenySettingsMenuItems(
       },
       onReset: () => {
         model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
-      },
-    }),
-    makeSizeSubMenu({
-      label: 'overdraw',
-      title: 'Overdraw',
-      help: 'Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance.',
-      min: 0,
-      // Capped at the pan buffer, which is what the worker emits out to
-      // (syntenyPanBufferPx: this floor, or half the viewport on a wide
-      // view). Past it there is no CIGAR detail and there are no location
-      // markers, because the geometry stage culled them — so the slider
-      // used to offer 5x more overdraw than there was anything to draw,
-      // and spending it bought ribbons whose ticks stopped partway along.
-      // The floor rather than the width-scaled value so this holds at
-      // every viewport size without plumbing the width in; a wide view
-      // leaves a little on the table, and overdraw beyond one screen is
-      // already past what panning reveals before the fetch window rolls
-      // over.
-      max: PAN_BUFFER_PX,
-      step: 100,
-      getValue: () => model.overdrawPx,
-      isDefault: model.overdrawPx === DEFAULT_OVERDRAW_PX,
-      onChange: v => {
-        model.setOverdrawPx(v)
-      },
-      onReset: () => {
-        model.setOverdrawPx(DEFAULT_OVERDRAW_PX)
       },
     }),
   ] satisfies MenuItem[]

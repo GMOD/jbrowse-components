@@ -234,11 +234,6 @@ what the view _is_ — which genomes it stacks, where they point, what leaves it
 **Ribbons** — how one alignment is drawn.
 
 - **Identity fade** is described above
-- **Thin fade** fades ribbons thinner than a pixel by their on-screen width, so
-  an unfiltered whole-genome view does not read as a hard full-opacity hairball.
-  Its default, **Auto**, turns the fade on only where the view is dense enough
-  to tangle, leaving a genuinely sparse comparison — distant species, every
-  alignment sub-pixel — unfaded; **On** and **Off** pin it
 - **Curved lines** draws ribbons as bezier curves instead of straight
   connectors, which reads far better at whole-genome scale where straight
   crossings stack into noise
@@ -268,8 +263,10 @@ takes the whole section with it.
   draw (below)
 - **Min length** hides ones shorter than it, which is what clears the hairball
   of short spurious chains at whole-genome zoom
-- **Overdraw** is how many pixels beyond the visible area are still drawn, which
-  is what keeps a ribbon reaching a long way off screen visible while you scroll
+
+Ribbons thinner than a pixel fade by their on-screen width once the view is
+dense enough to tangle, so an unfiltered whole-genome view does not read as a
+hard full-opacity hairball; a genuinely sparse comparison stays unfaded.
 
 ## View options
 
@@ -309,7 +306,8 @@ the two rows are not over each other.
 
 Where the mate sits on the facing panel is a live question, so the marks answer
 it live. Scroll that panel onto the mate and the mark becomes the ribbon it
-stood in for. **Overdraw** is the edge it is measured against.
+stood in for. The pan buffer past the window's edge is the edge it is measured
+against.
 
 **Off-screen mates** in the settings menu is where **Upper panel** turns the
 marks on, and it is on by default. Each mark sits where the alignment is on the
@@ -384,9 +382,7 @@ mark; clicking one of those navigates the **upper** panel. An alignment whose
 other end is on a contig the upper panel _is_ displaying, outside the window it
 is showing, is a ribbon in principle — but a ribbon with one end that far off
 the edge is not drawn, which is the same rule that governs any alignment
-reaching a long way off screen, so it becomes a mark too. Raising **Overdraw**
-past the panel's pan buffer is what turns those marks into the ribbons they
-stand for.
+reaching a long way off screen, so it becomes a mark too.
 
 It is off by default: it is a second query per panel pair, which on a
 whole-genome alignment file is real work.
