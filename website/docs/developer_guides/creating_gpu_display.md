@@ -358,7 +358,7 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
 ```
 
 For a real, complete example of this shape see
-`plugins/variants/src/LDDisplay/components/GpuLDRenderer.ts`.
+`plugins/variants/src/LDDisplay/components/ldMarks.ts`.
 
 ## Step 4: Canvas2D renderer (required)
 

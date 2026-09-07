@@ -4,12 +4,11 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { svgLegendAreaReserved } from '@jbrowse/display-kit/types'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDColumnZone from './components/LDColumnZone.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
-import { generateLDColorRamp } from './components/ldColorRamp.ts'
-import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
+import { LD_MARKS } from './components/ldMarks.ts'
 
 import type { SharedLDModel } from './shared.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -27,21 +26,19 @@ function LdSvgBody({
   height,
   opts,
 }: LgvSvgBodyProps<SharedLDModel>) {
-  const { rpcData, effectiveLdMetric, showLegend, effectiveLineZoneHeight } =
-    self
-
-  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the single nullable fetch blob for TS only — unreachable at
-  // runtime. An empty (numCells === 0) result still paints an empty triangle.
-  if (!rpcData) {
-    return null
-  }
+  const {
+    ldRegions,
+    ldBlocks,
+    renderState,
+    effectiveLdMetric,
+    showLegend,
+    effectiveLineZoneHeight,
+  } = self
 
   // The live canvas's own box (`canvasWidth`), not the raw viewport width —
   // otherwise the export's legend drifts from the matrix when the genome
   // doesn't fill the viewport or spans multiple regions.
   const visibleWidth = self.canvasWidth
-  const ramp = generateLDColorRamp(rpcData.metric)
   const triangleHeight = height - effectiveLineZoneHeight
 
   return (
@@ -66,7 +63,7 @@ function LdSvgBody({
             // hand-built one, so the export cannot pack the matrix differently
             // from the screen.
             paint={ctx => {
-              drawLDBlocks(ctx, toLDUploadData(rpcData), ramp, self.renderState)
+              paintMarkBlocks(ctx, LD_MARKS, ldRegions, ldBlocks, renderState)
             }}
           />
         </g>

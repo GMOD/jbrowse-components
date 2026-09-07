@@ -554,8 +554,9 @@ features visible and must stay in step.
 
 ### Shared per-region streamed contract
 
-Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
-specialize one generic type and declare a **mark list**, which
+Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle) and
+the whole-view ones over a single canvas-wide block (hic, LD, the variant
+matrix) specialize one generic type and declare a **mark list**, which
 `createMarkBackend` turns into both backends — the passes are the marks' own and
 each backend walks the same list:
 
@@ -613,9 +614,11 @@ no per-region display uses it today. MAF used to — its upload carried a
 pre-encoded buffer and the render side re-read `rpcDataMap` — until the rows
 became `span` channels both backends draw from.
 
-Whole-map synced (alignments, multi-LGV synteny) and monolithic (HiC, LD,
-multi-variant-matrix, dotplot) plugins define their own backend interfaces
-because their upload shapes differ — see "Upload patterns."
+Whole-map synced (alignments, multi-LGV synteny) and keyed (dotplot) plugins
+define their own backend interfaces because their upload shapes differ — see
+"Upload patterns." The whole-view displays (HiC, LD, the variant matrix) are
+per-region backends over a single canvas-wide block, which is what lets them
+declare marks.
 
 #### Whole-map synced: skipping a region without leaving stale buffers
 
@@ -731,7 +734,7 @@ display is **what its map is keyed by**:
 |---|---|---|---|---|
 | `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, multi-wiggle, MAF, manhattan, sequence, multi-variant |
 | a sibling display's `sharedBackendKey` | `KeyedRenderingBackend` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
-| a slot name, via `oneCell` | `GlobalRenderingBackend` | `render(data, state)` (no blocks) | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
+| a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
 
 **Release is per key, never an active-set prune.** The diff knows exactly which
 keys departed, so a per-key release does the same job on a display's own map as
@@ -740,24 +743,27 @@ shared canvas, where a prune computed from one display's map would wipe its
 siblings' buffers. That one fact is why the three installers this used to be
 (per-region, keyed, global — ADR-079) collapsed to one.
 
-**A display with two cells of different kinds** (HiC's contact matrix from the
-fetch beside its colour ramp from a config slot; LD's matrix and ramp, both off
-one fetch) keys them by name and lets `encode` see the key — `encode(data,
-props, key)` — while the backend's `upload` tells them apart by the cell's type.
-A palette flip then re-encodes and re-uploads the ramp alone, which is what the
-old installer's named slots existed for.
+**A display with two cells of different kinds** keys them by name and lets
+`encode` see the key — `encode(data, props, key)` — while the backend's
+`upload` tells them apart by the cell's type. HiC and LD were the two, each
+carrying its colour ramp beside its matrix; both are one cell now, the ramp
+being the mark's `texture` (§"A pass that samples a colour ramp"), which the
+backend re-uploads on the bytes' identity alone.
 
 **Absence is absence.** A whole-view display with nothing fetched yet leaves the
-key out (`oneCell('data', self.rpcData)` does), so the key is released rather
-than uploaded as `undefined`; `render` is handed `null` and the frame clears.
+key out (`oneCell(0, self.rpcData)` does), so the key is released rather than
+uploaded as `undefined` and the frame clears. What it must NOT leave out is a
+fetch that came back empty: with the payload in the map `renderBlocks` answers
+true, which is the answer an empty-but-finished matrix needs — the cleared
+canvas is its whole picture and nothing later will upload bytes for it, so
+`canvasDrawn` has to flip or the scrim never lifts.
 
 The keyed table row keeps getting misfiled: dotplot and synteny are keyed, and
-keyed is neither neighbour — a whole-view display has no key at all, and
+keyed is neither neighbour — a whole-view display carries one constant key, and
 per-region hands the model's data map back at render time instead of the
 backend owning it. `KeyedRenderingBackend` is an interface with no abstract
-class under it, unlike the other two: the base classes are the shared state,
-and there is no shared behavior on top because the two render loops genuinely
-differ.
+class under it: the base classes are the shared state, and there is no shared
+behavior on top because the two render loops genuinely differ.
 
 MAF is **per-region**, not whole-map: its blocks are independent, with no
 main-thread Y-layout coupling adjacent regions, so each region's upload
@@ -995,7 +1001,7 @@ outline) and 0.00% (webgl vs webgpu).
 pack through rather than skipping it. What a caller must not do is skip the call
 to save an upload: that leaves the previous frame's bytes on the GPU. A guard
 that *deletes* first and returns is merely the same instruction spelled twice —
-`GpuHicRenderer` carried one until 2026-08-21, harmless and a second place to
+hic's GPU renderer carried one until 2026-08-21, harmless and a second place to
 state the release.
 
 **Replacing a buffer mid-frame is legal, because WebGPU defers the release.**
@@ -1631,7 +1637,7 @@ structural.** Every mark there shares a horizontal edge with another mark:
 - `coverageInterbase` is already `floor(… + 0.5)` on both y edges, deliberately
   — its own comment records the cross-backend divergence that produced the snap.
 
-`Canvas2DHicRenderer.ts` and §"Tiled cells" above are the two earlier findings
+hic's `drawHicBlocks.ts` and §"Tiled cells" above are the two earlier findings
 this is the third of. The shape that would let the coverage band go analytic is
 the same one §5 of
 [ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)

@@ -1,14 +1,7 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
-import { GpuLDRenderer, LD_PASSES } from './GpuLDRenderer.ts'
-
-import type { LDRenderingBackend } from './ldRenderingBackendTypes.ts'
+import { LD_MARKS } from './ldMarks.ts'
 
 export function LDRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<LDRenderingBackend>(canvas, {
-    passes: LD_PASSES,
-    createGpuBackend: hal => new GpuLDRenderer(hal),
-    createCanvas2DBackend: c => new Canvas2DLDRenderer(c),
-  })
+  return createMarkBackend(canvas, LD_MARKS)
 }

@@ -13,10 +13,10 @@ export const COLOR_RAMP_LUT_ENTRIES = RAMP_LUT_ENTRIES
 /**
  * Upload a 256-entry RGBA colour-ramp LUT as each named pass's 256×1 texture —
  * the runtime half of the shared ramp mechanism whose shader half is
- * `shaders/colorRampLut.slang`. HiC, LD (whose two shader variants are the
- * reason this takes a pass list) and wiggle density all put their ramps behind
- * their samplers through this one call; each keeps its own scale and its own
- * LUT contents.
+ * `shaders/colorRampLut.slang`. Called by `createMarkBackend` alone now, for
+ * every mark declaring a `texture`: hic, LD's two shader variants and wiggle
+ * density all put their ramps behind their samplers through it, each keeping
+ * its own scale and its own LUT contents.
  */
 export function uploadColorRampLut(
   hal: GpuHal,

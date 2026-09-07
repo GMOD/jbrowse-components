@@ -44,9 +44,10 @@ Per-block-vs-monolithic is an upload/data-shape question (see GPU_RENDERING.md
 data and paint.
 
 All entry points take any 2D-context-shaped surface: a real
-`CanvasRenderingContext2D` on-screen, an `SvgCanvas` for vector export.
-`Canvas2DXxxRenderer` is bound (canvas required at construction) — SVG export
-does **not** instantiate the renderer; it calls the pure functions directly.
+`CanvasRenderingContext2D` on-screen, an `SvgCanvas` for vector export. A
+Canvas2D backend is bound (canvas required at construction) — SVG export does
+**not** instantiate one; it calls the pure functions directly, or
+`paintMarkBlocks` over the display's mark list.
 
 Canonical references: builder-wrapper shape →
 `plugins/alignments/src/LinearAlignmentsDisplay/renderers/Canvas2DAlignmentsRenderer.ts`

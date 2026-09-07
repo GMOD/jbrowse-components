@@ -20,12 +20,12 @@ import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { ldValueComputed } from '@jbrowse/ld-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { installUpload } from '@jbrowse/render-core/installUpload'
+import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
-import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { ldMarkBlocks } from './components/ldMarks.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
@@ -33,9 +33,9 @@ import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type {
-  LDCellKey,
   LDRenderState,
   LDRenderingBackend,
+  LDUploadData,
 } from './components/ldRenderingBackendTypes.ts'
 import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
 import type { LDRpcProps } from './ldFetchPhases.ts'
@@ -406,6 +406,28 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * The matrix as the mark backend's region map: one payload under key 0,
+       * left out until the fetch lands so the backend answers "nothing drawn"
+       * and the loading scrim stays over a blank canvas. A matrix that computed
+       * zero cells keeps the key — the cleared canvas IS the picture for a
+       * window with no pairs, and nothing later will upload bytes for it.
+       *
+       * The narrowing the SVG export reads too, so the export cannot pack the
+       * matrix differently from the screen.
+       */
+      get ldRegions(): ReadonlyMap<number, LDUploadData> {
+        const data = self.rpcData
+        return oneCell(0, data ? toLDUploadData(data) : undefined)
+      },
+      /**
+       * #getter
+       * The one block the mark backend draws: the whole canvas.
+       */
+      get ldBlocks() {
+        return ldMarkBlocks(this.canvasWidth)
+      },
+      /**
+       * #getter
        * The per-frame map from the payload's pre-rotation data space to canvas
        * px; `triangleViewTransform` owns the arithmetic and says why.
        */
@@ -559,39 +581,16 @@ export default function sharedModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Starts the upload/render autorun. No upload-diffing helper here on
-       * purpose: matrix and color ramp both derive from the one `rpcData`
-       * object, so the upload autorun's whole dependency set is that field and
-       * it can't re-fire without both genuinely being stale. (HiC needs
-       * `createGlobalUploadSync` because its palette is a config slot with an
-       * input independent of the RPC result.)
+       * Starts the upload/render autorun.
        */
       startRenderingBackend(backend: LDRenderingBackend) {
         installUpload(self, backend, {
-          // Both cells encode off the one fetch result, so both re-upload on a
-          // new fetch and neither on anything else.
-          cells: () => {
-            const cells = new Map<LDCellKey, LDDataResult>()
-            if (self.rpcData) {
-              cells.set('data', self.rpcData)
-              cells.set('colorRamp', self.rpcData)
-            }
-            return cells
-          },
-          encode: (d, _props, key) =>
-            key === 'colorRamp'
-              ? generateLDColorRamp(d.metric)
-              : toLDUploadData(d),
-          // The backend answers "did real content reach the canvas". It used to
-          // be this callback's answer, because a monolithic `render` returned
-          // void — and "the data is here" is not the same claim as "something
-          // was painted": the Canvas2D renderer draws nothing until the colour
-          // ramp arrives, and the GPU one nothing until a buffer is filled.
+          // One cell, the matrix: the colour ramp is the marks' `texture`,
+          // resolved per frame off the metric the payload carries, so a
+          // downgraded metric costs one 256-entry texture and no instance byte.
+          cells: () => self.ldRegions,
           render: b =>
-            b.render(
-              self.rpcData ? toLDUploadData(self.rpcData) : null,
-              self.renderState,
-            ),
+            b.renderBlocks(self.ldBlocks, self.ldRegions, self.renderState),
         })
       },
     }))

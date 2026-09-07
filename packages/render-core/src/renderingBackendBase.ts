@@ -4,13 +4,11 @@ import type { GpuHal } from './hal/types.ts'
 
 /**
  * Minimum render-state shape a frame scaffold needs: the CSS-pixel canvas
- * dimensions used to size the backing store, and — on the per-region side —
- * to clip each block.
+ * dimensions used to size the backing store, and to clip each block.
  *
  * Here rather than beside either family because both bound their render state
- * by it: `GpuPerRegionRenderingBackend.renderBlocks` and
- * `GpuGlobalRenderingBackend.render` open with the same `hal.resize`, and the
- * two Canvas2D bases with the same `prepareCanvas`.
+ * by it: `GpuPerRegionRenderingBackend.renderBlocks` opens with `hal.resize`,
+ * and its Canvas2D twin with `prepareCanvas`.
  */
 export interface FrameDimensions {
   canvasWidth: number
@@ -18,10 +16,9 @@ export interface FrameDimensions {
 }
 
 /**
- * What every rendering backend has, whatever its upload shape — the three
- * shape contracts (`PerRegionRenderingBackend`, `GlobalRenderingBackend`,
- * `KeyedRenderingBackend`) all extend this, and `useRenderingBackend` is
- * bounded by it.
+ * What every rendering backend has, whatever its upload shape — both shape
+ * contracts (`PerRegionRenderingBackend`, `KeyedRenderingBackend`) extend
+ * this, and `useRenderingBackend` is bounded by it.
  *
  * `setErrorHandler` is here rather than optional at the hook because it was
  * optional at the hook, and the three backends that then went without it —
@@ -45,8 +42,8 @@ export interface RenderingBackend {
 }
 
 /**
- * Shared GPU-side state for every GPU rendering backend — both per-region
- * (`GpuPerRegionRenderingBackend`) and monolithic (`GpuGlobalRenderingBackend`).
+ * Shared GPU-side state for every GPU rendering backend
+ * (`GpuPerRegionRenderingBackend`, and the shared-canvas backends over it).
  * Owns the `hal` reference and a pre-allocated uniform scratch `ArrayBuffer`
  * reused across frames to avoid per-frame GC churn. `dispose()` delegates to
  * the HAL. Subclasses add only their upload/render shape.
@@ -72,9 +69,9 @@ export abstract class GpuRenderingBackendBase {
 }
 
 /**
- * Shared Canvas2D-side state for every Canvas2D rendering backend — both
- * per-region (`Canvas2DPerRegionRenderingBackend`) and monolithic
- * (`Canvas2DGlobalRenderingBackend`). Owns the `canvas` and its 2D context
+ * Shared Canvas2D-side state for every Canvas2D rendering backend
+ * (`Canvas2DPerRegionRenderingBackend`, and the shared-canvas backends over
+ * it). Owns the `canvas` and its 2D context
  * (constructor throws if unavailable). `dispose()` is a no-op since Canvas2D
  * holds no GPU resources. Subclasses add only their render shape and stub the
  * upload/prune hooks their interface requires (everything flows through the

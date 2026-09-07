@@ -9,7 +9,7 @@
 // produces it. A field reordered in `ldGenomic.slang` moves both sides and stays
 // green — which is correct, that is the layout being the shader's — but a packer
 // that fed the wrong array into a lane does not.
-import { interleaveLDInstances } from './GpuLDRenderer.ts'
+import { interleaveLDInstances } from './ldMarks.ts'
 import {
   INSTANCE_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,

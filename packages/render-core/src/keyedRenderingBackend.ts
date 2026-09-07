@@ -6,10 +6,10 @@ import type { RenderingBackend } from './renderingBackendBase.ts'
  * key. Dotplot (a key per display in the view) and multi-LGV synteny (a key per
  * track level) are the two.
  *
- * The third shape beside per-region and monolithic, and genuinely neither:
- * per-region drives off `renderBlocks(blocks, regions, state)` with the model's
- * data map handed back each frame, and monolithic is one payload under the `data` key
- * with no key at all. These key their uploads and render every key in one
+ * The second shape beside per-region, and genuinely not it: per-region drives
+ * off `renderBlocks(blocks, regions, state)` with the model's data map handed
+ * back each frame — a whole-view display included, its map being one payload
+ * under one constant key. These key their uploads and render every key in one
  * frame from state the caller assembled, so they own the map.
  *
  * Unlike the other two this is an interface with no abstract class under it:

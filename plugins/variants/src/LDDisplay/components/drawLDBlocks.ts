@@ -1,31 +1,25 @@
 import { ldValueComputed } from '@jbrowse/ld-core'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
-import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { bandRowFirstColumn } from '../../VariantRPC/ldBand.ts'
 import { mapLDValue } from './ldColorRamp.ts'
 
-import type {
-  LDRenderState,
-  LDCellKey,
-  LDRenderingBackend,
-  LDUploadData,
-} from './ldRenderingBackendTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { LDDrawState, LDUploadData } from './ldRenderingBackendTypes.ts'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 const COS45 = Math.SQRT1_2
 
 /**
  * Pure draw entry point. Paints the LD lower-triangle as 45°-rotated diamonds
  * into any 2D-canvas-like context (real CanvasRenderingContext2D or
- * SvgCanvas). The on-screen Canvas2DLDRenderer wraps this with prepareCanvas
- * + lifecycle upload state; SVG export calls it directly with an SvgCanvas.
+ * SvgCanvas): the `ld` marks' painter, and so both the on-screen Canvas2D
+ * fallback and the SVG export.
  */
 export function drawLDBlocks(
-  ctx: Ctx2D,
+  ctx: MarkContext2D,
   data: LDUploadData,
   colorRamp: Uint8Array,
-  state: LDRenderState,
+  state: LDDrawState,
 ) {
   const { yScalar, viewScale, viewOffsetX } = state
   const { ldValues, boundaries, numCells, band } = data
@@ -86,37 +80,5 @@ export function drawLDBlocks(
       ctx.closePath()
       ctx.fill()
     }
-  }
-}
-
-export class Canvas2DLDRenderer
-  extends Canvas2DGlobalRenderingBackend<
-    LDUploadData,
-    LDRenderState,
-    LDCellKey,
-    LDUploadData | Uint8Array
-  >
-  implements LDRenderingBackend
-{
-  private colorRamp: Uint8Array | null = null
-
-  upload(_key: LDCellKey, cell: LDUploadData | Uint8Array) {
-    if (cell instanceof Uint8Array) {
-      this.uploadColorRamp(cell)
-    }
-  }
-
-  uploadColorRamp(colors: Uint8Array) {
-    this.colorRamp = colors
-  }
-
-  // `prepareCanvas` is the base's (Canvas2DGlobalRenderingBackend), which is
-  // also what clears the canvas on the null-payload frame.
-  protected draw(data: LDUploadData, state: LDRenderState) {
-    if (!this.colorRamp) {
-      return false
-    }
-    drawLDBlocks(this.ctx, data, this.colorRamp, state)
-    return true
   }
 }
