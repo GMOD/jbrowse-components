@@ -33,6 +33,57 @@ if [ -f "$staleness" ]; then
   echo >&2
 fi
 
+# ---------------------------------------------------------------------------
+# The config manifest is a contract, and until now only push checked the things
+# that read it. `configManifest.generated.ts` holds the key set every authored
+# view object is validated against, so a commit that REGENERATES it can
+# invalidate configs it never touches -- and nothing local said so.
+#
+# That is how `showColorLegend` went on being written into ten demo configs,
+# six build scripts and a test fixture after 3b7afee169 stopped it being
+# settable. `pnpm check-docs` names every one of them, and check-docs runs at
+# push, behind however many commits have queued up there.
+#
+# So it runs here on the commits that can cause it: 72 of the 6204 commits in
+# the 30 days to 2026-09-07 touched the manifest, about one in eighty-five.
+# Costs ~0.2s for the demo configs and ~3.8s for the build scripts, and nothing
+# at all on a commit that leaves the manifest alone. A commit that only edits
+# demo configs pays the 0.2s half. SKIP_CONFIG_CHECK=1 to skip.
+# ---------------------------------------------------------------------------
+if [ "${SKIP_CONFIG_CHECK:-}" != 1 ]; then
+  croot=$(git rev-parse --show-toplevel)
+  cached=$(git diff --cached --name-only --diff-filter=ACMR || true)
+  manifest=products/jbrowse-cli/src/commands/validate/configManifest.generated.ts
+  cstatus=0
+  cout=
+
+  if printf '%s\n' "$cached" | grep -qxF "$manifest"; then
+    echo "pre-commit: the config manifest changed, so re-checking what reads it" >&2
+    cout=$(node --experimental-strip-types "$croot/scripts/validate-built-config.ts" \
+      --schema-only "$croot"/demos/*/config.json 2>&1) || cstatus=$?
+    bout=$(python3 "$croot/scripts/check-build-scripts.py" 2>&1) || cstatus=$?
+    cout="$cout
+$bout"
+  else
+    demos=$(printf '%s\n' "$cached" | grep '^demos/.*/config\.json$' || true)
+    if [ -n "$demos" ]; then
+      cout=$(printf '%s\n' "$demos" | sed "s|^|$croot/|" | tr '\n' '\0' |
+        xargs -0 node --experimental-strip-types \
+          "$croot/scripts/validate-built-config.ts" --schema-only 2>&1) || cstatus=$?
+    fi
+  fi
+
+  if [ "$cstatus" != 0 ]; then
+    echo >&2
+    printf '%s\n' "$cout" | grep -vE "^ok:|: ok — " >&2 || true
+    echo >&2
+    echo "pre-commit: the above read the config manifest and no longer validate." >&2
+    echo "A regenerated manifest can invalidate a config this commit never" >&2
+    echo "touched. Fix them, or commit anyway with SKIP_CONFIG_CHECK=1." >&2
+    exit "$cstatus"
+  fi
+fi
+
 if [ "${SKIP_OXFMT:-}" = 1 ]; then
   exit 0
 fi
