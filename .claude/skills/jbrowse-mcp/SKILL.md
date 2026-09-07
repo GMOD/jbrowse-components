@@ -2,80 +2,44 @@
 name: jbrowse-mcp
 description:
   Use when driving JBrowse Desktop through its MCP server (the "jbrowse" MCP —
-  run_javascript, docs, open, screenshot). Covers the working discipline the
-  tool descriptions cannot: read the bundled docs first, verify visually,
-  introspect instead of guessing, and where the silent failure modes are.
+  run_javascript, docs, open, screenshot). Points at the discipline the app
+  itself serves, and carries the repo-only parts.
 ---
 
 # Driving JBrowse Desktop over MCP
 
 One interface: `run_javascript` executes your code against the live session,
 with `jb` as the standard library; `open`, `screenshot`, and `docs` cover the
-three things code inside the app cannot do. The knowledge lives in the APP, not
-here — the `docs` tool serves documentation bundled into the running version, so
-it cannot drift from the model you are driving. This skill is only the
-discipline for using it.
+three things code inside the app cannot do.
 
-## The loop
+**The working discipline is served by the app, not written here.** It reaches
+every client through two channels that ship with the server, so it cannot drift
+from the version you are driving:
 
-- **`docs topic:"live-model"` before your first `run_javascript`**,
-  `docs topic:"recipes"` for a verified snippet of the ask in hand (tabulate,
-  join, derive a track, a figure per locus, add a remote file),
-  `docs topic:"hosted-data"` for the config URL of any UCSC or GenArk assembly
-  when nothing is open, and `docs topic:"session-spec"` before composing a
-  nontrivial `jb.loadSessionSpec` — it answers with a table of contents; read
-  `section:"Fields every view takes"` and the section for your view type. They
-  carry working examples for exactly the traps below.
-- **Orient before acting**: `return jb.sessionSummary()`. Never assume state
-  carried over from an earlier turn — the user can click around between your
-  calls.
-- After building or changing anything, **`screenshot` and actually read the
-  image** — cropped to the view with `selector` when it is one track you are
-  judging, `fullPage: true` when the settle result says `offscreen` (a session
-  taller than the window is cut off in a viewport capture). A wrong trackId, an
-  empty region, or a dropped settings key all render as a plausible-looking
-  browser with something quietly missing.
-- Verify data claims with `jb.getFeatures` aggregations, never from the picture
-  alone. Every result carries `logs` (the code's console output) and
-  `notifications` (the session's own toasts since your previous call, each
-  reported once, with level), so read them. A thrown error names the line in
-  your code.
+- the `initialize` response's `instructions`, which your client has already read
+- `docs topic:"live-model"` — read it before your first `run_javascript` call.
+  `docs topic:"recipes"` has a verified snippet for most asks,
+  `docs topic:"hosted-data"` the config URL for any UCSC or GenArk assembly when
+  nothing is open, and `docs topic:"session-spec"` the launch keys for a
+  nontrivial `jb.loadSessionSpec`.
 
-## Introspect, never guess
+The short version, because it is what gets skipped: orient with
+`jb.sessionSummary()` and never assume state carried over — the user can click
+around between your calls. Introspect rather than guess (`jb.listTracks()` for
+trackIds, `jb.describeSlots(...)` for settings keys, `jb.inspect(path)` for what
+a live node can answer). After changing anything, `screenshot` and actually read
+the image, and read `notReady` in the settle result — a wrong trackId, an empty
+region or a dropped settings key all render as a plausible browser with
+something quietly missing. Verify data claims with `jb.getFeatures`, never from
+the picture.
 
-- trackIds come from `jb.listTracks()`, not from memory of similar configs.
-- Settings keys come from the display itself:
-  `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An unknown
-  key is not an error: `applyDisplaySettings` lists it under `unapplied` in its
-  report, and `failed` is a key the display knows and could not set. Read the
-  report.
-- The view is `jb.view(viewId?)`, not `session.views[0]`: views nest and several
-  can be open, and with more than one candidate `jb.view()`, `jb.trackModel`,
-  `jb.visibleRegions` and `jb.addTrack` throw naming them — pass the `viewId`
-  from `jb.sessionSummary()`.
-- What a live view can answer comes from `jb.inspect('views.0')` — the `getters`
-  list names things (visibleLocStrings, totalBp, ...) that session snapshots
-  filter out. How to call an action it lists:
-  `docs topic:"model:<its modelType>" section:"Actions"`. A config's slots by
-  type: `docs topic:"config:<Name>"`.
+## Repo-only
 
-## The silent failure modes
-
-- **refName namespaces**: querying a file with the assembly's canonical name
-  ("ctgA" vs "contigA", "1" vs "chr1") matches nothing and reads as "no data
-  here". `jb.getFeatures` handles it; raw adapter code must run
-  `jb.renameRegionsIfNeeded` first (the live-model doc shows how).
-- **Mutations go through actions** — raw assignment throws. Display settings go
-  through `track.applyDisplaySettings(settings)`, and `view.showTrack` on an
-  already-shown track applies nothing (applyDisplaySettings is the update path).
-- **A freshly created view throws "width undefined"** from region getters until
-  it mounts — `await jb.mobx.when(() => view.initialized)`.
-- **Big returns**: don't return thousands of raw features; aggregate in code, or
-  write a file with `window.require('fs')` and return the path.
-- **Long jobs**: a call outliving `timeoutMs` (default 120 s) errors but keeps
-  running, with its `signal` argument aborted — check `signal.aborted` in long
-  loops. Park the promise on `globalThis` and await it from a later call.
-
-Setup and architecture: `products/jbrowse-desktop/electron/mcp/README.md`.
-Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the built
-app, exercises every tool against volvox).
+- Setup and architecture: `products/jbrowse-desktop/electron/mcp/README.md`.
+- Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the
+  built app and exercises every tool against volvox). It needs
+  `pnpm build && pnpm build:electron-main` first, and it takes the per-user
+  socket — with another Desktop instance running it attaches to that one.
+- The discipline above lives in `website/docs/agents_live_model.md` and
+  `SERVER_INSTRUCTIONS` (`electron/mcp/toolDefinitions.ts`). Edit it there;
+  `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree.

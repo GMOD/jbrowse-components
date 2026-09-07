@@ -51,6 +51,51 @@ describe('the documentation names only jb members that exist', () => {
   }
 })
 
+// The converse of the check above, which is the drift that actually happened:
+// `listTracks`' `limit` reached the guide and neither of the other two. The
+// guide is the reference, so it names the whole roster. The copies an agent
+// reads before any doc are deliberately partial — jb.help is a paragraph and
+// the tool description is paid on every turn — so they pin the members whose
+// absence is what produces a silently wrong answer, and nothing more.
+const LOAD_BEARING = [
+  'addTrack',
+  'describeSlots',
+  'getFeatures',
+  'inspect',
+  'listTracks',
+  'loadSessionSpec',
+  'sessionSummary',
+  'trackModel',
+  'view',
+  'waitReady',
+]
+
+function namesIn(text: string) {
+  return new Set([...text.matchAll(/\bjb\.(\w+)/g)].map(m => m[1]!))
+}
+
+it('the guide names every jb member', () => {
+  const named = namesIn(copies.guide)
+  expect([...roster].filter(n => !named.has(n)).sort()).toEqual([])
+})
+
+// SERVER_INSTRUCTIONS is the shortest of the three and orients rather than
+// enumerates, so `view` and `inspect` are the two it leaves to the tool
+// description it arrives beside.
+describe('the copies read before any doc name the load-bearing members', () => {
+  const required = {
+    help: LOAD_BEARING,
+    toolDescriptions: LOAD_BEARING,
+    instructions: LOAD_BEARING.filter(n => n !== 'view' && n !== 'inspect'),
+  }
+  for (const [copy, members] of Object.entries(required)) {
+    it(copy, () => {
+      const named = namesIn(copies[copy as keyof typeof copies])
+      expect(members.filter(n => !named.has(n))).toEqual([])
+    })
+  }
+})
+
 it('every copy stating the timeout default states the real one', () => {
   const expected = `${CODE_TIMEOUT_DEFAULT_MS / 1000}`
   for (const [name, text] of Object.entries(copies)) {

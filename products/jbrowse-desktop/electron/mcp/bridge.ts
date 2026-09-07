@@ -5,6 +5,7 @@ import readline from 'node:readline'
 
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
+import { hostedConfigUrl } from './hostedConfig.ts'
 import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
@@ -260,8 +261,13 @@ export function startMcpBridge({
       return openAndWait({ type: 'link', url: target }, target)
     }
     if (!path.isAbsolute(target)) {
+      const hosted = hostedConfigUrl(target)
       return {
-        error: `"${target}" is a relative path, which would resolve against the app's working directory (${process.cwd()}), not yours — pass an absolute path or a URL`,
+        error: `"${target}" is a relative path, which would resolve against the app's working directory (${process.cwd()}), not yours — pass an absolute path or a URL.${
+          hosted
+            ? ` For the hosted genome of that name: ${hosted}`
+            : ' For a hosted genome, docs topic "hosted-data" has the config URL for any UCSC database or GenArk accession.'
+        }`,
       }
     }
     if (!fs.existsSync(target)) {

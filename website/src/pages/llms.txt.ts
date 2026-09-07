@@ -17,7 +17,7 @@ import {
 // Additive: an absent or renamed key just prints its bullets, never a dead link.
 const sectionNotes: Record<string, string> = {
   'AI agents':
-    'Written for you. How to author a config and check it, hosted assemblies and tracks you can use with no setup, and how to screenshot a view and know it finished rendering.',
+    'Written for you. Driving a live JBrowse session from code, verified snippets for the common asks, hosted assemblies and tracks you can use with no setup, and how to screenshot a view and know it finished rendering.',
   Configuration:
     'The config model: assemblies, then tracks; each track = one adapter (data) + display type(s), wired with JEXL. Per-type slots are under "Reference: Config schema".',
   'Reference: Config schema':

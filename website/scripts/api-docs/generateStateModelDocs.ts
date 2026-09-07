@@ -429,12 +429,15 @@ function renderModel(
 // they read the inherited members in the same list — composition is how the
 // model is built, not something to follow to another page. Actions first: they
 // are what an agent came to find out how to call.
+//
+// No volatiles: 170 KB of the bundled corpus was mouse and hover state
+// (featureIdUnderMouse, contextMenuFeature) that an agent must not write and
+// gains nothing by reading. The website page still lists them.
 const AGENT_KIND_ORDER: MemberKey[] = [
   'actions',
   'getters',
   'properties',
   'methods',
-  'volatiles',
 ]
 
 export function renderAgentModel(
@@ -456,7 +459,7 @@ export function renderAgentModel(
       lines: membersOf(key).map(m =>
         memberLine(
           m.name,
-          key === 'properties' || key === 'volatiles'
+          key === 'properties'
             ? ` = ${flatCode(kind.memberCode(m)).replace(new RegExp(`^${m.name}\\s*:\\s*`), '')}`
             : key === 'getters'
               ? `: ${flatCode(kind.memberCode(m))}`
