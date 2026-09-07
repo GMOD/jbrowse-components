@@ -209,7 +209,13 @@ for f in scripts:
 
     # each quoted heredoc: <<'TAG' ... TAG. Validate the JSON/PY ones (skip data
     # heredocs like STRAINS). Non-greedy body, backreference closes on the tag.
-    for tag, body in re.findall(r"<<'(\w+)'\n(.*?)\n\1\b", src, re.S):
+    #
+    # `[^\n]*` after the tag, because a heredoc commonly carries a redirect on
+    # the same line (`<<'PY' > session.json`). Requiring the newline there
+    # skipped three of build_orthofinder_synteny.sh's eight PY blocks, and the
+    # dead view key in one of them shipped while this check reported the file
+    # clean.
+    for tag, body in re.findall(r"<<'(\w+)'[^\n]*\n(.*?)\n\1\b", src, re.S):
         if tag == "JSON":
             try:
                 failed |= dead_view_keys(json_views(json.loads(body)), f)
