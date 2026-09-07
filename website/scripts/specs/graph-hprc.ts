@@ -1521,6 +1521,22 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         dx: -160,
         dy: -60,
       },
+      // The third name, and the one the pages lean on hardest. s329764+ is one
+      // wall of the clearest lens in the cut: the reference path, and the
+      // dashed 32.7 kb deletion arc bypassing it between the same two nodes.
+      // The label points into the lens and the caption says what the two routes
+      // are, since an anchor names a node and a bubble is a pair of routes.
+      // Below-left, where the leader crosses the red 52 kb node at a right
+      // angle instead of running alongside it.
+      {
+        type: 'text',
+        text: 'bubble',
+        leader: true,
+        fontSize: 20,
+        anchor: { view: 1, graphNode: 's329764+' },
+        dx: -150,
+        dy: 95,
+      },
     ],
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,

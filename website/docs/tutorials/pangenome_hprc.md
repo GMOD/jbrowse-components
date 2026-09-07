@@ -85,7 +85,7 @@ haplotype carries in place of the reference's. A deletion is none of those: it
 is an **edge**, a dashed arc from one backbone segment to another that skips
 what lies between.
 
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph, allele marks a node one haplotype carries where the reference has something else, and the dashed arcs are deletions, each drawn with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph and allele marks a node one haplotype carries where the reference has something else. bubble points into a pair of routes between the same two nodes: the reference path, and the dashed arc that skips it, which the drawing labels with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 The clip below runs the first four steps on the MHC class II window.
 
