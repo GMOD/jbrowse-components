@@ -1,9 +1,11 @@
+import { COLOR_RAMP_LUT_ENTRIES } from '../colorRampLut.ts'
 import { MockHal } from '../hal/mockHal.ts'
 import { GpuMarkBackend } from './markBackend.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
+import type { TextureBinding } from '../hal/types.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
 import type { SpanChannels, SpanParams } from './spanMark.ts'
 import type { Mark, MarkBand, MarkContext2D, MarkShape } from './types.ts'
@@ -18,6 +20,54 @@ interface State {
   span: SpanParams
   point: PointParams
   band: MarkBand
+  ramp?: Uint8Array
+}
+
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
+})
+
+const REGION: Region = {
+  span: {
+    x: Uint32Array.of(10),
+    x2: Uint32Array.of(20),
+    row: Uint32Array.of(0),
+    color: Uint32Array.of(0xff0000ff),
+    count: 1,
+  },
+  point: {
+    x: new Uint32Array(0),
+    x2: new Uint32Array(0),
+    y: new Float32Array(0),
+    color: new Uint32Array(0),
+    glyph: new Uint8Array(0),
+    count: 0,
+  },
+}
+
+const state = (height: number): State => ({
+  canvasWidth: 100,
+  canvasHeight: 80,
+  span: {
+    rowHeight: 10,
+    rowProportion: 1,
+    minWidthPx: 0,
+    seamPx: 0,
+    scrollTop: 0,
+  },
+  point: { domain: [0, 1], diameterPx: 4 },
+  band: { top: 30, height },
+})
+
+const block = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: 100,
+  screenStartPx: 0,
+  screenEndPx: 100,
+  reversed: false,
 }
 
 const span = defineMark({
@@ -46,49 +96,6 @@ test('a mark drawing off another buffer must share its instance struct', () => {
 })
 
 describe('a mark with a band', () => {
-  Object.defineProperty(globalThis, 'devicePixelRatio', {
-    value: 1,
-    writable: true,
-    configurable: true,
-  })
-  const REGION: Region = {
-    span: {
-      x: Uint32Array.of(10),
-      x2: Uint32Array.of(20),
-      row: Uint32Array.of(0),
-      color: Uint32Array.of(0xff0000ff),
-      count: 1,
-    },
-    point: {
-      x: new Uint32Array(0),
-      x2: new Uint32Array(0),
-      y: new Float32Array(0),
-      color: new Uint32Array(0),
-      glyph: new Uint8Array(0),
-      count: 0,
-    },
-  }
-  const state = (height: number): State => ({
-    canvasWidth: 100,
-    canvasHeight: 80,
-    span: {
-      rowHeight: 10,
-      rowProportion: 1,
-      minWidthPx: 0,
-      seamPx: 0,
-      scrollTop: 0,
-    },
-    point: { domain: [0, 1], diameterPx: 4 },
-    band: { top: 30, height },
-  })
-  const block = {
-    displayedRegionIndex: 0,
-    start: 0,
-    end: 100,
-    screenStartPx: 0,
-    screenEndPx: 100,
-    reversed: false,
-  }
   const banded = defineMark({
     shape: spanMark,
     channels: (d: Region) => d.span,
@@ -268,6 +275,67 @@ describe('marks sharing a uniform writer and a params lens', () => {
       { x: 0, y: 30, w: 50, h: 20 },
     ])
     expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0])
+  })
+})
+
+// The ramp binding a shader with a `Sampler2D` reflects; the values are
+// arbitrary here, since what MockHal answers from is only that the pass
+// declares one.
+const RAMP_BINDING: TextureBinding = {
+  textureBinding: 2,
+  samplerBinding: 3,
+  glTextureUnit: 0,
+  glUniformName: 'u_colorRamp',
+  filter: 'linear',
+}
+
+describe('a mark with a ramp texture', () => {
+  const rampA = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4).fill(1)
+  const rampB = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4).fill(2)
+  const textured = defineMark({
+    shape: {
+      ...spanMark,
+      pass: { ...spanMark.pass, textures: [RAMP_BINDING] },
+    },
+    channels: (d: Region) => d.span,
+    params: (s: State) => s.span,
+    texture: (s: State) => s.ramp,
+  })
+
+  function frames(...ramps: (Uint8Array | undefined)[]) {
+    const hal = new MockHal([textured.pass])
+    const backend = new GpuMarkBackend(hal, [textured])
+    backend.upload(0, REGION)
+    for (const ramp of ramps) {
+      backend.renderBlocks([block], new Map([[0, REGION]]), {
+        ...state(20),
+        ramp,
+      })
+    }
+    return hal
+  }
+
+  test('the ramp uploads on the first draw and an unchanged one never again', () => {
+    const hal = frames(rampA, rampA, rampA)
+    expect(hal.callsOf('uploadTexture')).toHaveLength(1)
+    expect(hal.getTexture('span')).toEqual(rampA)
+  })
+
+  test('a changed ramp is exactly one more upload', () => {
+    const hal = frames(rampA, rampB, rampB)
+    expect(hal.callsOf('uploadTexture')).toHaveLength(2)
+    expect(hal.getTexture('span')).toEqual(rampB)
+  })
+
+  // A textured pass with no texture never draws on the WebGPU HAL, so the mark
+  // that names none still binds a table — the inert one, once.
+  test('no ramp binds an inert table, once', () => {
+    const hal = frames(undefined, undefined)
+    expect(hal.callsOf('uploadTexture')).toHaveLength(1)
+    expect(hal.getTexture('span')).toEqual(
+      new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4),
+    )
+    expect(hal.draws()).toHaveLength(2)
   })
 })
 

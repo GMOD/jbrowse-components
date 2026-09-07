@@ -1,3 +1,4 @@
+import { COLOR_RAMP_LUT_ENTRIES, uploadColorRampLut } from '../colorRampLut.ts'
 import { createRenderingBackend } from '../createRenderingBackend.ts'
 import { uploadPass } from '../instancePass.ts'
 import {
@@ -62,6 +63,11 @@ export function drawMarks<TRegion, TState extends FrameDimensions>(
   }
 }
 
+// What a textured pass binds while its mark names no ramp: a shader declares
+// its sampler unconditionally, and a textured pass with no texture never draws
+// on the WebGPU HAL.
+const INERT_RAMP = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
+
 /**
  * The HAL-side half of `createMarkBackend`, exported so a display's mark list
  * can be driven against `MockHal`: which marks upload, which draw off another's
@@ -86,12 +92,35 @@ export class GpuMarkBackend<
     uploadMarks(this.hal, regionKey, this.marks, data)
   }
 
+  // The ramp each textured pass holds, by the table's identity — the mirror of
+  // the one texture the HAL keeps per pass, so an unchanged ramp costs a frame
+  // nothing and a backend rebuilt after context loss re-uploads. Per pass and
+  // per backend, never per region.
+  private boundRamps = new Map<string, Uint8Array>()
+
+  private bindRamp(
+    mark: Mark<TRegion, TState>,
+    region: TRegion,
+    state: TState,
+  ) {
+    if (mark.texture) {
+      const ramp = mark.texture(state, region) ?? INERT_RAMP
+      if (ramp !== this.boundRamps.get(mark.pass.id)) {
+        uploadColorRampLut(this.hal, ramp, [mark.pass.id])
+        this.boundRamps.set(mark.pass.id, ramp)
+      }
+    }
+  }
+
   protected drawRegion(
     block: RenderBlock,
     clip: BlockClipResult,
     region: TRegion,
     state: TState,
   ) {
+    for (const mark of this.marks) {
+      this.bindRamp(mark, region, state)
+    }
     drawMarks(
       this.hal,
       this.uniformData,

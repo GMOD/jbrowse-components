@@ -135,6 +135,12 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
   `select` callback is the single skip gate, and the `finally`-paired restore is
   what keeps a throwing painter from leaving every later frame clipped.
+- **A pass that samples a colour ramp declares it as `texture` on `defineMark`**
+  rather than uploading one itself: the backend binds the 256-entry LUT once per
+  pass, re-uploads only when the bytes' identity moves, and binds an inert table
+  for a mark that names none — a textured pass with no texture never draws on
+  the WebGPU HAL. `uploadColorRampLut` stays the direct call for a display that
+  is not on a mark list (HiC, LD).
 - **A display that stacks bands on one canvas declares them as `band` on
   `defineMark`**, never as a renderer pair around the mark list: the GPU
   scissors to the strip and hands the block column back, Canvas2D clips, a

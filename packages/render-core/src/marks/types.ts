@@ -18,6 +18,11 @@ export interface MarkContext2D extends ClipContext2D {
   fillStyle: string | CanvasGradient | CanvasPattern
   strokeStyle: string | CanvasGradient | CanvasPattern
   lineWidth: number
+  // Optional because only a stroked shape sets them, and a test's recording
+  // context is written to the members its shapes actually touch. Both real
+  // contexts carry them.
+  lineCap?: CanvasLineCap
+  lineJoin?: CanvasLineJoin
   fillRect(x: number, y: number, w: number, h: number): void
   strokeRect(x: number, y: number, w: number, h: number): void
   translate(x: number, y: number): void
@@ -170,6 +175,14 @@ export interface Mark<TRegion, TState extends MarkFrame> {
    * pairing unless the two passes declare one instance struct.
    */
   readonly bufferOf?: string
+  /**
+   * The 256-entry RGBA colour ramp this mark's pass samples this frame, or
+   * undefined when it samples none. `createMarkBackend` uploads it per pass and
+   * only when the bytes' identity moves, and binds an inert table for the
+   * undefined case — a shader owns its sampler unconditionally, and a textured
+   * pass with no texture never draws on the WebGPU HAL.
+   */
+  readonly texture?: (state: TState, region: TRegion) => Uint8Array | undefined
   // `regionKey` is the HAL key the caller uploaded this region's passes under;
   // a stacked alignments section's is not its block's displayedRegionIndex.
   // Draw through `marks/backend`'s `drawMarks`: the viewport must already be
@@ -217,6 +230,12 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * the chevron mark's channels are the line mark's, packed once under the line
  * pass.
  *
+ * `texture` is the colour ramp the mark's pass samples, for a shape that
+ * resolves a per-instance scalar through a LUT (wiggle density, and the same
+ * 256-entry table HiC and LD bind). It is state, not a channel: the backend
+ * uploads it once per pass and re-uploads only when the bytes' identity moves,
+ * so a ramp change costs one texture and no instance byte.
+ *
  * `band` is the strip of the canvas the mark is clipped to, for a display that
  * stacks bands on one canvas (MAF's coverage strip over its rows viewport).
  * The GPU scissors to it and Canvas2D clips to it, a zero-height band draws
@@ -235,8 +254,9 @@ export function defineMark<
   params: (state: TState, region: TRegion) => TParams
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
+  texture?: (state: TState, region: TRegion) => Uint8Array | undefined
 }): Mark<TRegion, TState> {
-  const { shape, channels, params, band } = spec
+  const { shape, channels, params, band, texture } = spec
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -252,6 +272,7 @@ export function defineMark<
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     bufferOf,
+    texture,
     drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
       const strip = band?.(state)
       const scissor = strip
