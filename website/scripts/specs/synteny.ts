@@ -1710,8 +1710,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // Eight primates on a gene-symbol join, no aligner: the TP53 neighbourhood
   // over seven lanes, each drawing its own RefSeq gene models. Strand color so
-  // the one lane reading the block reversed (siamang) is the crossed ribbons
-  // and the rest are straight — the figure's negative is that one lane.
+  // the one lane reading the block reversed (siamang) is painted as an
+  // inversion while its mirroring draws it straight — the negative is that one
+  // lane, and the color is what carries it.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_tp53_lanes',
@@ -1744,8 +1745,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // The same track ten megabases wide, where per-gene ribbons bundle into a
-  // synteny painting: straight bundles are shared gene order, crossed ones are
-  // a block inverted in one lane relative to the one above it.
+  // synteny painting: the strand color names the blocks a lane reads backwards,
+  // and the lean of a bundle is the offset and rung its lane is drawn at rather
+  // than anything rearranged.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_chr17_inversions',

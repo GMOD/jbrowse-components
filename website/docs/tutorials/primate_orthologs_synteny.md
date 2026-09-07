@@ -31,7 +31,10 @@ the page ends there.
 
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
 current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
-et al. 2025) and the telomere-to-telomere rhesus macaque.
+et al. 2025) and the telomere-to-telomere rhesus macaque. Only the annotation
+and the sequence report are downloaded, a few hundred megabytes for the eight.
+Human is GRCh38 rather than T2T-CHM13 so the window's coordinates are the ones
+the rest of the ecosystem quotes.
 
 - human, GRCh38.p14:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/
@@ -136,8 +139,8 @@ dataformat tsv genome-seq --package genomes.zip \
 
 Each GFF3, filtered to the assembled chromosomes, sorted, bgzipped and
 tabix-indexed as in the [web quickstart](/docs/quickstart_web), is that genome's
-gene track. A lane finds its gene models through the session, so the track only
-has to exist under the lane's assembly name.
+gene track, one `FeatureTrack` per genome. A lane finds its gene models through
+the session, so the track only has to exist under the lane's assembly name.
 
 ## The ortholog track
 
@@ -145,9 +148,10 @@ One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table's columns, in the order the
 helper printed. The display colors a gene by its symbol, so a conserved gene is
 one color down the whole stack and a lane missing it breaks the column. The
-color is a hash of the symbol rather than any grouping of genes, and the key in
-the top right names the symbols the human lane draws wherever there are few
-enough of them to name:
+color is a hash of the symbol rather than any grouping of genes, so it
+identifies a gene without classifying it. A key naming the symbols appears in
+the top right once the window holds few enough genes to list, and stays out of
+the way at the windows below:
 
 ```json addtrack
 {
@@ -214,8 +218,19 @@ Opened in a linear genome view on human, the track draws a lane per genome under
 the human axis, each fitted to wherever that genome keeps the window's genes. A
 lane's header names its chromosome, the span it shows and `[rev]` where it reads
 the other way, and the ribbons between adjacent lanes join each gene to its
-ortholog. **Color ribbons by → Strand** on the track menu paints a ribbon that
-crosses, which is a gene running the other way relative to the lane above.
+ortholog. **Color ribbons by → Strand** on the track menu colors each ribbon by
+the strand of the pair it joins — the two lanes' orientations against the human
+axis multiplied out — rather than by whether the ribbon is drawn crossed. A lane
+reading the block backwards is drawn mirrored, so its ribbons come out straight
+while the strand color still marks every one of them as an inversion.
+
+The stack sorts densest-first, so the genome sharing the most of the window's
+genes sits directly under the anchor: a ribbon joins adjacent lanes only, and a
+sparse lane in the middle would cut every chain running through it. That makes
+lane order a property of the window rather than of the phylogeny, and it differs
+between the pictures below. **Move up** and **Move down** on a lane's header
+menu pin an order, **Reset lane order** gives it back, and a session or a config
+authors the same thing as `rowOrder`.
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {
@@ -240,14 +255,17 @@ crosses, which is a gene running the other way relative to the lane above.
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it reversed, and its ribbons are the crossed ones." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header says [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
-Zoomed out to ten megabases the same track reads as a synteny painting. The
-ribbons bundle where gene order is shared and cross where a block is inverted in
-one lineage, and a lane whose header carries a multiple is holding the same
-genes over more sequence.
+Zoomed out to ten megabases the same track reads as a synteny painting, and the
+two things it draws come apart. Color names the inversions: a bundle painted as
+reversed is a block one lane reads backwards, whether or not the mirroring left
+it drawn straight. The lean is the other fact — every lane sits at its own
+offset and its own scale, and a lane whose header carries a multiple is holding
+the same genes over more sequence, so a bundle can cross the frame with nothing
+rearranged in it.
 
-<Figure caption="Ten megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Most of the window is straight ribbons; the crossed bundles are blocks inverted in one lane relative to the one above it." src="/img/multiway_synteny/primate_chr17_inversions.png" />
+<Figure caption="Ten megabases of human chr17 over the seven primate lanes, ribbons colored by strand. The reversed-strand bundles are blocks a lane reads backwards; the lean across the frame is the offset and scale each lane is drawn at, which its header names." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
 ## A window across a chromosome fusion
 
