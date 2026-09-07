@@ -1,10 +1,6 @@
 import { makeTogglePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
-import {
-  radioItems,
-  toggleItem,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import {
   MAX_MIN_LENGTH_BP,
@@ -18,10 +14,6 @@ import {
   DEFAULT_ALPHA,
   DEFAULT_MIN_ALIGNMENT_LENGTH,
 } from '../../LinearSyntenyView/consts.ts'
-import {
-  OFFSCREEN_MATE_HELP,
-  OFFSCREEN_MATE_MODE_OPTIONS,
-} from '../../LinearSyntenyView/offscreenMateModes.ts'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -214,17 +206,17 @@ export function syntenySettingsMenuItems(
       out, and gating the control on the number it exists to change is a
       door that only opens once you are already through it.
     */
-    {
-      label: 'Off-screen mates',
-      helpText: OFFSCREEN_MATE_HELP,
-      subMenu: radioItems(
-        OFFSCREEN_MATE_MODE_OPTIONS,
-        model.offscreenMateMode,
-        mode => {
-          model.setOffscreenMateMode(mode)
-        },
-      ),
-    },
+    toggleItem(
+      'Off-screen mates',
+      model.showOffscreenMates,
+      v => {
+        model.setShowOffscreenMates(v)
+      },
+      {
+        helpText:
+          'Mark alignments whose other end is off screen or on a contig the facing panel is not showing, along the edges of each band. Costs a second query per panel pair on an indexed file.',
+      },
+    ),
     makeSizeSubMenu({
       label: 'min length',
       title: 'Min length',

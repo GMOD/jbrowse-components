@@ -33,9 +33,7 @@ import {
   rowMenuItems,
   rowViewMenuItems,
 } from './menus.ts'
-import { OFFSCREEN_MATE_MODE_VALUES } from './offscreenMateModes.ts'
 
-import type { OffscreenMateMode } from './offscreenMateModes.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
@@ -116,16 +114,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * How much of what the view cannot draw a ribbon for it goes and
-         * finds. 'off' draws no marks. 'query' marks the upper panel of each
-         * pair from the fetch it already runs, so it is a repaint. 'both' also
-         * queries the file from the lower panel and marks it too, which is a
-         * fetch input and a second query per pair.
+         * Mark the alignments the view cannot draw a ribbon for, along both
+         * edges of each band. The lower panel of a pair is queried as well as
+         * the upper one for it, which is a fetch input and a second query per
+         * pair.
          */
-        offscreenMateMode: types.stripDefault(
-          types.enumeration(OFFSCREEN_MATE_MODE_VALUES),
-          'query',
-        ),
+        showOffscreenMates: types.stripDefault(types.boolean, true),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still
@@ -609,8 +603,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setOffscreenMateMode(mode: OffscreenMateMode) {
-        self.offscreenMateMode = mode
+      setShowOffscreenMates(flag: boolean) {
+        self.showOffscreenMates = flag
       },
       /**
        * #action

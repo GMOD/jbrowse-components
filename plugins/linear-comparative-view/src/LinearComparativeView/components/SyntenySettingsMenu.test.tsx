@@ -224,17 +224,11 @@ test('a section keeps its heading while any one row survives', async () => {
   expect(screen.getByText('Level of detail')).toBeTruthy()
 })
 
-// Three steps of one question: the first is a repaint of what the worker
-// already counted and the last costs a query.
-test('the last off-screen step is the one that adds the second query', async () => {
+test('off-screen mates is one checkbox, on by default', async () => {
   const view = await openMenu()
-  expect(view.offscreenMateMode).toBe('query')
-
-  pick('Off-screen mates', 'Both panels (second query)')
-  expect(view.offscreenMateMode).toBe('both')
-
-  pick('Off-screen mates', 'Off')
-  expect(view.offscreenMateMode).toBe('off')
+  expect(view.showOffscreenMates).toBe(true)
+  fireEvent.click(screen.getByText('Off-screen mates'))
+  expect(view.showOffscreenMates).toBe(false)
 })
 
 test('the CIGAR row sets the mode it names', async () => {

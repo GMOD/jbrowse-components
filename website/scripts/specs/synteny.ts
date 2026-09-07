@@ -791,7 +791,7 @@ function peachGrapeChr1({
           // default: this pair exists to show the contrast, so the frame
           // without the marks has to ask for their absence rather than inherit
           // it
-          ...(marks ? {} : { offscreenMateMode: 'off' }),
+          ...(marks ? {} : { showOffscreenMates: false }),
           // hideNoTracksActive on both rows: neither carries a track at
           // whole-chromosome zoom, so each was painting the LGV's "No tracks
           // active / OPEN TRACK SELECTOR" block — two dark call-to-action

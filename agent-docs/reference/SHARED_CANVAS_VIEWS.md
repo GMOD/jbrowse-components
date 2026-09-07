@@ -112,11 +112,11 @@ Both scope their fetch through the shared `syntenyFetchRegions`
 (`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and snapped
 to a buffer-sized grid, so a pan inside the buffer neither refetches nor exposes
 an unfetched strip, and the freshness key stays stable across the gesture.
-Synteny scopes its query axis, dotplot its h axis; by default neither scopes the
-other axis, the fetch being one-dimensional. Synteny's `offscreenMateMode:
-'both'` (not the default; ideas/two-axis-synteny-fetch.md) is the exception: it adds a
-second query scoped to the target axis (`targetFetchRegions`), flipped into the
-query perspective before drawing.
+Synteny scopes its query axis, dotplot its h axis; the fetch is one-dimensional.
+Synteny's `showOffscreenMates` (on by default since 2026-09-07;
+ideas/two-axis-synteny-fetch.md) is the exception: it adds a second query scoped
+to the target axis (`targetFetchRegions`), flipped into the query perspective
+before drawing.
 
 ## The canvas belongs to the container, not the display
 

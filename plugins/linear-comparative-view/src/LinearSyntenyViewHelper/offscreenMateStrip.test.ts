@@ -36,7 +36,7 @@ function source(over: Record<string, unknown> = {}): OffscreenMateSource {
     height: 100,
     linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
     parentView: {
-      offscreenMateMode: 'query' as const,
+      showOffscreenMates: true,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -63,7 +63,7 @@ function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
       },
     ],
     parentView: {
-      offscreenMateMode: 'both' as const,
+      showOffscreenMates: true,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -96,7 +96,7 @@ test('an interior level reads its own upper row', () => {
       source({
         level: 1,
         parentView: {
-          offscreenMateMode: 'query',
+          showOffscreenMates: true,
           minAlignmentLength: 0,
           views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
         },
@@ -110,7 +110,7 @@ test('the toggle off draws nothing', () => {
     offscreenMateStrips(
       source({
         parentView: {
-          offscreenMateMode: 'off',
+          showOffscreenMates: false,
           minAlignmentLength: 0,
           views: [QUERY_ROW, TARGET_ROW],
         },
@@ -153,7 +153,7 @@ test('a level whose row is gone draws nothing rather than throwing', () => {
     offscreenMateStrips(
       source({
         parentView: {
-          offscreenMateMode: 'query',
+          showOffscreenMates: true,
           minAlignmentLength: 0,
           views: [],
         },
@@ -210,7 +210,7 @@ test('below the strip answers nothing, leaving the ribbons to the pick engine', 
 test('with the toggle off nothing is hittable, since nothing is drawn', () => {
   const s = source({
     parentView: {
-      offscreenMateMode: 'off',
+      showOffscreenMates: false,
       minAlignmentLength: 0,
       views: [QUERY_ROW, TARGET_ROW],
     },

@@ -15,7 +15,6 @@ import type {
   OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
-import type { OffscreenMateMode } from '../LinearSyntenyView/offscreenMateModes.ts'
 import type { MarkColorDisplay } from './offscreenMateMarkColors.ts'
 
 export interface OffscreenMateStrip extends OffscreenMateLane {
@@ -38,7 +37,7 @@ export interface OffscreenMateSource {
     culledRibbonMates?: CulledRibbonMates
   })[]
   parentView: {
-    offscreenMateMode: OffscreenMateMode
+    showOffscreenMates: boolean
     minAlignmentLength: number
     overdrawPx: number
     width: number
@@ -91,7 +90,7 @@ export function offscreenMateStrips(
   model: OffscreenMateSource,
 ): OffscreenMateStrip[] {
   const { parentView, height } = model
-  if (parentView.offscreenMateMode === 'off') {
+  if (!parentView.showOffscreenMates) {
     return []
   }
   const { minAlignmentLength, overdrawPx, width, views } = parentView

@@ -30,7 +30,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
     ],
     parentView: {
       width,
-      offscreenMateMode: show ? ('query' as const) : ('off' as const),
+      showOffscreenMates: show,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       views: [{ bpPerPx: 1, offsetPx: 0 }],

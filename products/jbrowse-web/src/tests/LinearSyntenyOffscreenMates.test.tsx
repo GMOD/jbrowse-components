@@ -24,9 +24,9 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
-  offscreenMateMode: 'off' | 'query' | 'both'
+  showOffscreenMates: boolean
   setWidth: (n: number) => void
-  setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
+  setShowOffscreenMates: (flag: boolean) => void
 }
 
 // The two surfaces the band itself reads — what gets a strip, and what a mark's
@@ -66,7 +66,7 @@ async function openSyntenyView() {
 // changes the views that WERE hiding something.
 test('both rows showing every contig hides nothing', async () => {
   const view = await openSyntenyView()
-  expect(view.offscreenMateMode).toBe('query')
+  expect(view.showOffscreenMates).toBe(true)
   expect(strips(view)).toEqual([])
 })
 
@@ -97,14 +97,16 @@ test('and marks them by default', async () => {
     expect(strips(view).length).toBe(1)
   }, timeout)
 
-  expect(view.offscreenMateMode).toBe('query')
+  expect(view.showOffscreenMates).toBe(true)
 })
 
 // THE OTHER HALF, and the one stacked whole assemblies are made of. Both rows
 // display every contig, so the worker's own lane is empty by construction — and
 // `overdrawPx` still culls every ribbon whose mate has scrolled out of the band,
 // which is most of them the moment the rows are not over each other. The band
-// drew almost nothing and said nothing about it.
+// drew almost nothing and said nothing about it. Both edges get a strip: the
+// lower row is queried too, and the alignments anchored down there have their
+// mates off the upper row's band just the same.
 test('a row scrolled off its mate marks what it can no longer pair', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
@@ -118,14 +120,15 @@ test('a row scrolled off its mate marks what it can no longer pair', async () =>
   target!.scrollTo(52000)
 
   await waitFor(() => {
-    expect(strips(view).length).toBe(1)
+    expect(strips(view).map(s => s.side)).toEqual(['top', 'bottom'])
   }, timeout)
-  expect(strips(view)[0]!.side).toBe('top')
 })
 
 // ...and it goes away again on its own, because it is a question about where
 // that row is rather than about what was fetched. A mark decided when the data
-// landed would sit beside the ribbon it says does not exist.
+// landed would sit beside the ribbon it says does not exist. The bottom strip
+// stays: the upper row is still zoomed onto one stretch of ctgA, so the ctgB
+// alignments anchored below it still have nowhere to land.
 test('and stops marking it when that row comes back', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
@@ -134,11 +137,11 @@ test('and stops marking it when that row comes back', async () => {
   target!.zoomTo(1)
   target!.scrollTo(52000)
   await waitFor(() => {
-    expect(strips(view).length).toBe(1)
+    expect(strips(view).length).toBe(2)
   }, timeout)
 
   target!.showAllRegions()
   await waitFor(() => {
-    expect(strips(view)).toEqual([])
+    expect(strips(view).map(s => s.side)).toEqual(['bottom'])
   }, timeout)
 })

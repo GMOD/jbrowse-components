@@ -25,7 +25,7 @@ function source(counts: Record<string, number>) {
       },
     ],
     parentView: {
-      offscreenMateMode: 'both',
+      showOffscreenMates: true,
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
@@ -125,7 +125,7 @@ function bothLanes() {
       },
     ],
     parentView: {
-      offscreenMateMode: 'both',
+      showOffscreenMates: true,
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },

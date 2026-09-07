@@ -70,7 +70,7 @@ export function doAfterAttach(
         // Query axis (v0) drives the scoped fetch, so it alone carries the
         // width; the target axis (v1) supplies its cumBp index and the window
         // the geometry is emitted for, and asks the worker to query that
-        // window too only when the view asked for the second query.
+        // window too only when the view marks off-screen mates.
         // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, currentFetchKey is the decision
         return untracked(() => {
           const { view } = self
@@ -98,7 +98,7 @@ export function doAfterAttach(
               offsetPx: v1.offsetPx,
               displayedRegions: v1.displayedRegions,
               windowRegions: self.targetWindowRegions,
-              queried: view.offscreenMateMode === 'both',
+              queried: view.showOffscreenMates,
             },
           }
         })

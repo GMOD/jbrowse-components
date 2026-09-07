@@ -28,7 +28,6 @@ import {
   COLOR_MODES,
   VALUE_MODES_LABEL,
 } from '../../../../packages/synteny-core/src/colorModes.ts'
-import { OFFSCREEN_MATE_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/offscreenMateModes.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
@@ -401,14 +400,6 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
 // on config.
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
-)
-
-// The same, for the off-screen mate steps. Imported rather than retyped for the
-// reason the leaf module exists: these labels say which panels are marked and
-// what is queried, and a recipe repeating them by hand is a click path that
-// stops matching the menu the first time either sentence is reworded.
-const OFFSCREEN_MATE_STEPS: Record<string, string> = Object.fromEntries(
-  OFFSCREEN_MATE_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
 // The two wiggle displays each open their own color editor from their own menu
@@ -1607,13 +1598,12 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  offscreenMateMode: (value, { viewType }) => {
+  showOffscreenMates: (value, { viewType }) => {
     const path = settingsPath(viewType, 'Off-screen mates')
-    const label = typeof value === 'string' ? OFFSCREEN_MATE_STEPS[value] : undefined
-    return label && path && viewType === 'LinearSyntenyView'
+    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} → ${label}`,
-          note: "'query' is the default: a locus syntenic to a contig the facing panel is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing. 'both' is the one step that changes what is fetched, a second query per panel pair from the lower panel, and the only thing that puts a strip along the bottom edge.",
+          path: `${path} (${value ? 'checked' : 'unchecked'})`,
+          note: 'On by default: a locus syntenic to a contig the facing panel is not showing draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
       : undefined
   },

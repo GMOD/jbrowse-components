@@ -259,8 +259,7 @@ takes the whole section with it.
 
 **Scope** — which alignments make it into the picture at all.
 
-- **Off-screen mates** decides how hard to look for the ones this view cannot
-  draw (below)
+- **Off-screen mates** marks the ones this view cannot draw (below)
 - **Min length** hides ones shorter than it, which is what clears the hairball
   of short spurious chains at whole-genome zoom
 
@@ -309,12 +308,11 @@ it live. Scroll that panel onto the mate and the mark becomes the ribbon it
 stood in for. The pan buffer past the window's edge is the edge it is measured
 against.
 
-**Off-screen mates** in the settings menu is where **Upper panel** turns the
-marks on, and it is on by default. Each mark sits where the alignment is on the
-panel it does have, stopping short of the ribbons so it cannot be read as an
-alignment to whatever is directly below. A run of marks to one contig carries
-that contig's name; where several contigs cover the same stretch, their names
-stack.
+**Off-screen mates** in the settings menu turns the marks on, and it is on by
+default. Each mark sits where the alignment is on the panel it does have,
+stopping short of the ribbons so it cannot be read as an alignment to whatever
+is directly below. A run of marks to one contig carries that contig's name;
+where several contigs cover the same stretch, their names stack.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,
@@ -326,16 +324,10 @@ panels swapped: the lower panel still has it, and the upper panel is the one
 that cannot pair it. Clicking a mark always moves the _other_ panel, the one
 that would have to show that contig for the two to be a ribbon.
 
-**A panel gets a strip only if the file was queried from it.** The upper panel
-always is, which is what makes marking it free: every alignment anchored in the
-window it is showing came back, including the ones there is no way to draw, so
-the top edge accounts for all of them. The lower panel is queried only at the
-step described below, and until it is, the alignments anchored down there are
-held only where they happened to fall inside the upper panel's fetch. A strip
-drawn from those would stop where the fetch stops rather than where the data
-does, shift as the upper panel pans, and give each mark a count that is some
-fraction of the alignments going to that contig. So the bottom edge stays empty
-until there is a query behind it.
+Each panel of a pair is queried for the alignments anchored in the window it is
+showing, so both edges account for everything on their own side. That second
+query, from the lower panel, is what the setting costs on an indexed
+whole-genome file; turning it off drops both the query and the marks.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
@@ -368,24 +360,15 @@ anchor too.
 
 ### Alignments anchored on the lower panel
 
-A synteny track is queried from the **upper** panel of each pair, so an
-alignment anchored on a contig the lower panel is showing — whose other end is
-somewhere the upper panel is not — is never asked for at all. The same two
-genomes therefore report differently depending on which one you stacked on top.
-
-**Both panels (second query)** — the last step of that same submenu — adds that
-second query, and with it the strip along the bottom edge.
-
-What comes back splits two ways. An alignment whose other end is on a contig the
-upper panel is not displaying at all has no second endpoint, so it becomes a
-mark; clicking one of those navigates the **upper** panel. An alignment whose
-other end is on a contig the upper panel _is_ displaying, outside the window it
-is showing, is a ribbon in principle — but a ribbon with one end that far off
-the edge is not drawn, which is the same rule that governs any alignment
-reaching a long way off screen, so it becomes a mark too.
-
-It is off by default: it is a second query per panel pair, which on a
-whole-genome alignment file is real work.
+An alignment anchored on a contig the lower panel is showing, whose other end is
+somewhere the upper panel is not, only comes back from the lower panel's own
+query. What it returns splits two ways. An alignment whose other end is on a
+contig the upper panel is not displaying at all has no second endpoint, so it
+becomes a mark; clicking one of those navigates the **upper** panel. An
+alignment whose other end is on a contig the upper panel _is_ displaying,
+outside the window it is showing, is a ribbon in principle, but a ribbon with
+one end that far off the edge is not drawn, which is the same rule that governs
+any alignment reaching a long way off screen, so it becomes a mark too.
 
 ### Smaller insertions
 

@@ -1,6 +1,6 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the both-rows synteny fetch. SHIPPED 2026-08-19 behind `bidirectionalFetch`, off by default: the second query lands, its ribbons are flipped into the query perspective and drawn, and the class with no second endpoint is marked on the target axis. The blocker this doc recorded — a perspective-stable `syntenyId` for PIF and all-vs-all — turned out not to be one, and the rest is kept for the adapter behaviour it names.
+description: Restoring the both-rows synteny fetch. SHIPPED 2026-08-19 behind `bidirectionalFetch`, on by default since 2026-09-07 as the `showOffscreenMates` checkbox: the second query lands, its ribbons are flipped into the query perspective and drawn, and the class with no second endpoint is marked on the target axis. The blocker this doc recorded — a perspective-stable `syntenyId` for PIF and all-vs-all — turned out not to be one, and the rest is kept for the adapter behaviour it names.
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
@@ -61,7 +61,8 @@ pitched and is no longer specific enough to justify it.
 ## What shipped, and why the blocker below is not one
 
 **2026-08-19: the second fetch landed** behind `bidirectionalFetch` (a view
-property, off by default, a fetch-key input). `executeSyntenyFeaturesAndPositions`
+property, then off by default, a fetch-key input; since 2026-09-07 it is the
+`showOffscreenMates` checkbox, on by default). `executeSyntenyFeaturesAndPositions`
 queries `v2.fetchRegions` alongside `v1.fetchRegions` and splits what comes back
 three ways by where the QUERY end lands:
 
@@ -252,7 +253,8 @@ bug that has a cheaper fix.
 ## Costs, and which of them the shipped shape still pays
 
 - **Two fetches per level instead of one, against a whole-genome PAF.** Still
-  true, and the reason the setting is off by default. The in-memory adapters
+  true, and was the reason the setting shipped off; the on/off checkbox turned
+  it on by default for the picture's sake. The in-memory adapters
   share one `createSharedSetup` download, so there the second is a walk over
   records the first already parsed; an indexed one pays a real second query,
   scoped to the target row's own window.
