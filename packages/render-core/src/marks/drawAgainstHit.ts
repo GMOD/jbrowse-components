@@ -12,21 +12,46 @@ export interface RecordedRect {
 /**
  * A `MarkContext2D` that records every rect a painter fills, in paint order —
  * `fillRect` and path `rect` alike, so a shape that batches by colour records
- * the same list as one that fills per instance.
+ * the same list as one that fills per instance. A path traced with
+ * `moveTo`/`lineTo` and filled records its bounding box, which is what a
+ * shape whose hit test answers a polygon's box (the variant inversion
+ * triangle) is held to.
  */
 export function recordingContext() {
   const calls: RecordedRect[] = []
+  const points: [number, number][] = []
   const ctx = {
     fillStyle: '',
     save() {},
     restore() {},
-    beginPath() {},
+    beginPath() {
+      points.length = 0
+    },
     clip() {},
-    moveTo() {},
-    lineTo() {},
+    moveTo(x: number, y: number) {
+      points.push([x, y])
+    },
+    lineTo(x: number, y: number) {
+      points.push([x, y])
+    },
     arc() {},
     closePath() {},
-    fill() {},
+    fill() {
+      if (points.length > 0) {
+        const xs = points.map(p => p[0])
+        const ys = points.map(p => p[1])
+        const x = Math.min(...xs)
+        const y = Math.min(...ys)
+        calls.push({
+          x,
+          y,
+          w: Math.max(...xs) - x,
+          h: Math.max(...ys) - y,
+          fillStyle: this.fillStyle,
+        })
+        points.length = 0
+      }
+    },
     rect(x: number, y: number, w: number, h: number) {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })
     },

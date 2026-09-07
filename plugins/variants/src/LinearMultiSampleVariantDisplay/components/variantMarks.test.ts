@@ -1,9 +1,12 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { HIDDEN_ROW } from '../../shared/constants.ts'
+import { cellMark } from './cellMark.ts'
 import * as shader from './shaders/variant.iface.generated.ts'
+import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import { VARIANT_MARKS } from './variantMarks.ts'
 
 import type {
@@ -235,4 +238,37 @@ describe('painter', () => {
     expect(fillRectCalls).toHaveLength(1)
     expect(fillRectCalls[0]![1]).toBe(0)
   })
+})
+
+// Two overlapping cells on row 0, an inversion among them, a sub-pixel cell at
+// the 2px floor and a cell on a later row, walked in both orientations and
+// again at half-pixel rows, where the floor overlaps rows and the last-painted
+// one has to answer. The inversion answers as its bounding box.
+describe('draw against hit', () => {
+  const cells = {
+    startEnd: Uint32Array.of(100, 200, 150, 250, 101, 102, 300, 400),
+    rowIndex: Uint32Array.of(0, 0, 1, 2),
+    color: Uint32Array.of(0xff0000ff, 0xff00ff00, 0xffff0000, 0xff0000ff),
+    shapeType: Uint8Array.of(0, 1, 0, 0),
+    count: 4,
+  }
+  const frame = { canvasWidth: 800, canvasHeight: 600 }
+  for (const rowHeight of [10, 0.5]) {
+    for (const reversed of [false, true]) {
+      for (const maxDistSq of [Number.MIN_VALUE, HIT_TOLERANCE_PX ** 2]) {
+        test(`rowHeight ${rowHeight}, reversed ${reversed}, bound ${maxDistSq}`, () => {
+          expect(
+            sweepDrawAgainstHit(
+              cellMark,
+              cells,
+              makeBlock({ reversed }),
+              frame,
+              { rowHeight, scrollTop: 0 },
+              { maxDistSq },
+            ),
+          ).toEqual([])
+        })
+      }
+    }
+  }
 })

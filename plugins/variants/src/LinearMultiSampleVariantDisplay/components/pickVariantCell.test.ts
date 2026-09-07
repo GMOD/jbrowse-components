@@ -2,6 +2,10 @@ import { pickVariantCell } from './pickVariantCell.ts'
 import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 
 import type { PickCellData } from './pickVariantCell.ts'
+import type {
+  VariantRenderBlock,
+  VariantRenderState,
+} from './variantRenderingBackendTypes.ts'
 
 interface Cell {
   feature: number
@@ -9,17 +13,21 @@ interface Cell {
   carriesAlt?: boolean
 }
 
-// Cells in final (post-bucketing) order; features as [start, end] spans.
+// Cells in final (post-bucketing) order; features as [start, end] spans. The
+// worker row is the lookup key; `screenRow` places it the way `rowRemap` does
+// for the painted channels.
 function build({
   refCells = [],
   altCells = [],
   features,
   insertedBp,
+  screenRow = w => w,
 }: {
   refCells?: Cell[]
   altCells?: Cell[]
   features: [number, number][]
   insertedBp?: number[]
+  screenRow?: (workerRow: number) => number
 }): PickCellData {
   const all = [...refCells, ...altCells]
   return {
@@ -30,6 +38,10 @@ function build({
     refCellCount: refCells.length,
     featurePositions: Uint32Array.from(features.flat()),
     featureInsertedBp: Int32Array.from(insertedBp ?? features.map(() => 0)),
+    cellPositions: Uint32Array.from(all.flatMap(c => features[c.feature]!)),
+    cellRowIndices: Uint32Array.from(all.map(c => screenRow(c.row))),
+    cellColors: new Uint32Array(all.length),
+    cellShapeTypes: new Uint8Array(all.length),
   }
 }
 
@@ -38,13 +50,31 @@ function build({
 const identityRows = Int32Array.from({ length: 64 }, (_, i) => i)
 
 // 1 bp per px, region anchored at 0, forward orientation.
-const geom = {
-  toX: (bp: number) => bp,
-  pxPerBp: 1,
-  // even, so the shader's canvas-centred snap leaves whole-pixel bp positions
-  // where they are and these cases stay about the pick, not about the grid
+const block: VariantRenderBlock = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: 800,
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}
+
+// An even canvas width, so the shader's canvas-centred snap leaves whole-pixel
+// bp positions where they are and these cases stay about the pick, not about
+// the grid.
+const state: VariantRenderState = {
   canvasWidth: 800,
-  drawnRowHeight: 10,
+  canvasHeight: 600,
+  rowHeight: 10,
+  scrollTop: 0,
+}
+
+const rowY = (row: number) => row * state.rowHeight + state.rowHeight / 2
+
+const geom = {
+  block,
+  state,
+  pxPerBp: 1,
   insertionsWiden: true,
   rowUnmap: identityRows,
 }
@@ -67,6 +97,7 @@ describe('pickVariantCell candidate narrowing', () => {
       data,
       candidateFeatures: [0, 1],
       mouseX: 300,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...geom,
@@ -80,6 +111,7 @@ describe('pickVariantCell candidate narrowing', () => {
       data,
       candidateFeatures: [1, 0],
       mouseX: 300,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...geom,
@@ -95,6 +127,7 @@ describe('pickVariantCell candidate narrowing', () => {
       data,
       candidateFeatures: [0, 1],
       mouseX: 150,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...geom,
@@ -108,6 +141,7 @@ describe('pickVariantCell candidate narrowing', () => {
         data,
         candidateFeatures: [1],
         mouseX,
+        mouseY: rowY(0),
         rowNearest: 0,
         rowLowest: 0,
         ...geom,
@@ -126,6 +160,7 @@ describe('pickVariantCell candidate narrowing', () => {
         data,
         candidateFeatures: [],
         mouseX: 300,
+        mouseY: rowY(0),
         rowNearest: 0,
         rowLowest: 0,
         ...geom,
@@ -147,6 +182,7 @@ describe('pickVariantCell row resolution', () => {
       data,
       candidateFeatures: [0],
       mouseX: 100,
+      mouseY: rowY(2),
       rowNearest: 2,
       rowLowest: 2,
       ...geom,
@@ -161,6 +197,7 @@ describe('pickVariantCell row resolution', () => {
         data,
         candidateFeatures: [0],
         mouseX: 100,
+        mouseY: rowY(1),
         rowNearest: 1,
         rowLowest: 1,
         ...geom,
@@ -168,16 +205,21 @@ describe('pickVariantCell row resolution', () => {
     ).toBeUndefined()
   })
 
+  // Half-pixel rows under the 2px floor, so rows 0..2 all draw over the
+  // cursor pixel.
+  const subPixel = { ...geom, state: { ...state, rowHeight: 0.5 } }
+
   test('sub-pixel rows: the nearest occupied row in the band wins', () => {
-    // Rows 0..2 all draw over the cursor pixel. Row 2 is nearest (and painted
-    // last), so it reports — not row 0, which a spatial index might return first.
+    // Row 2 is nearest (and painted last), so it reports — not row 0, which a
+    // spatial index might return first.
     const picked = pickVariantCell({
       data,
       candidateFeatures: [0],
       mouseX: 100,
+      mouseY: 1.2,
       rowNearest: 2,
       rowLowest: 0,
-      ...geom,
+      ...subPixel,
     })
     expect(picked?.rowIndex).toBe(2)
   })
@@ -188,9 +230,10 @@ describe('pickVariantCell row resolution', () => {
       data,
       candidateFeatures: [0],
       mouseX: 100,
+      mouseY: 0.7,
       rowNearest: 1,
       rowLowest: 0,
-      ...geom,
+      ...subPixel,
     })
     expect(picked?.rowIndex).toBe(0)
     expect(picked?.cellIndex).toBe(0)
@@ -208,12 +251,9 @@ describe('pickVariantCell insertion markers', () => {
     insertedBp: [5000],
   })
   const zoomedOut = {
-    toX: (bp: number) => bp * 0.2,
+    ...geom,
+    block: { ...block, end: 4000 },
     pxPerBp: 0.2,
-    canvasWidth: 800,
-    drawnRowHeight: 10,
-    insertionsWiden: true,
-    rowUnmap: identityRows,
   }
   // 1000bp -> x 200; the marker is centered there.
   const farFromLocus = 200 + HIT_TOLERANCE_PX + 4
@@ -223,6 +263,7 @@ describe('pickVariantCell insertion markers', () => {
       data,
       candidateFeatures: [0],
       mouseX: farFromLocus,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...zoomedOut,
@@ -239,6 +280,7 @@ describe('pickVariantCell insertion markers', () => {
         data,
         candidateFeatures: [0],
         mouseX: farFromLocus,
+        mouseY: rowY(1),
         rowNearest: 1,
         rowLowest: 1,
         ...zoomedOut,
@@ -248,6 +290,7 @@ describe('pickVariantCell insertion markers', () => {
       data,
       candidateFeatures: [0],
       mouseX: 200,
+      mouseY: rowY(1),
       rowNearest: 1,
       rowLowest: 1,
       ...zoomedOut,
@@ -267,6 +310,7 @@ describe('pickVariantCell insertion markers', () => {
         data,
         candidateFeatures: [0],
         mouseX: farFromLocus,
+        mouseY: rowY(0),
         rowNearest: 0,
         rowLowest: 0,
         ...noGlyphs,
@@ -278,6 +322,7 @@ describe('pickVariantCell insertion markers', () => {
         data,
         candidateFeatures: [0],
         mouseX: 200,
+        mouseY: rowY(0),
         rowNearest: 0,
         rowLowest: 0,
         ...noGlyphs,
@@ -294,17 +339,14 @@ describe('pickVariantCell reversed regions', () => {
     })
     // Reversed: higher bp maps to lower px, so toX(start) > toX(end).
     const picked = pickVariantCell({
+      ...geom,
+      block: { ...block, start: 200, end: 1000, reversed: true },
       data,
       candidateFeatures: [0],
       mouseX: 750,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
-      rowUnmap: identityRows,
-      toX: (bp: number) => 1000 - bp,
-      pxPerBp: 1,
-      canvasWidth: 800,
-      drawnRowHeight: 10,
-      insertionsWiden: true,
     })
     expect(picked?.genomicStart).toBe(100)
     expect(picked?.genomicEnd).toBe(300)
@@ -324,6 +366,7 @@ describe('pickVariantCell row placement', () => {
       [100, 200],
       [100, 200],
     ],
+    screenRow: w => 1 - w,
   })
   // screen 0 <- worker 1, screen 1 <- worker 0
   const swapped = Int32Array.from([1, 0])
@@ -334,6 +377,7 @@ describe('pickVariantCell row placement', () => {
       data,
       candidateFeatures: [0, 1],
       mouseX: 150,
+      mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       rowUnmap: swapped,
@@ -349,6 +393,7 @@ describe('pickVariantCell row placement', () => {
       data,
       candidateFeatures: [0, 1],
       mouseX: 150,
+      mouseY: rowY(1),
       rowNearest: 1,
       rowLowest: 1,
       rowUnmap: swapped,
@@ -364,6 +409,7 @@ describe('pickVariantCell row placement', () => {
         data,
         candidateFeatures: [0, 1],
         mouseX: 150,
+        mouseY: rowY(2),
         rowNearest: 2,
         rowLowest: 2,
         // a sample the layout draws but this window's genotypes never mention

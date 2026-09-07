@@ -83,20 +83,19 @@ function getHoveredFeature(
     1,
   )
 
-  const toX = makeBpMapper(region)
   const picked = pickVariantCell({
     data: regionCellData,
+    block: { ...region, reversed: region.reversed ?? false },
+    state: model.renderState,
     candidateFeatures,
     mouseX,
+    mouseY,
     rowNearest,
     rowLowest,
     rowUnmap,
-    toX,
     // sizes the insertion marker's click target, so it is the same
     // `pxPerBpOf` the draw pass sized the drawn marker with
     pxPerBp: pxPerBpOf(region),
-    canvasWidth: model.canvasWidthPx,
-    drawnRowHeight: drawnCellHeightPx(model.effectiveRowHeight),
     insertionsWiden: model.showInsertionGlyphs,
   })
   if (!picked) {

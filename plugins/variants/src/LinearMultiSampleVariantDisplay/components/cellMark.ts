@@ -8,7 +8,7 @@ import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { snapVariantCellX } from './snapVariantCellX.ts'
 import { drawVariantShape } from './variantShape.ts'
 
-import type { MarkShape } from '@jbrowse/render-core/marks'
+import type { MarkHit, MarkShape } from '@jbrowse/render-core/marks'
 
 /**
  * The `cell` shape's channels: a glyph from `startEnd[2i]` to `startEnd[2i+1]`
@@ -77,5 +77,35 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
       }
     }
+  },
+
+  // An inversion's triangle answers as its bounding box, the same box the
+  // display's picker measured before this existed.
+  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
+    const { startEnd, rowIndex } = channels
+    const { canvasWidth } = frame
+    const { rowHeight, scrollTop } = params
+    const h = drawnCellHeightPx(rowHeight)
+    const toX = makeBpMapper(block)
+    let best: MarkHit | undefined
+    let bestDistSq = maxDistSq
+    for (const i of candidates) {
+      const { x, width } = snapVariantCellX(
+        toX(startEnd[i * 2]!),
+        toX(startEnd[i * 2 + 1]!),
+        canvasWidth,
+      )
+      const top = rowIndex[i]! * rowHeight - scrollTop
+      const nx = Math.min(Math.max(xPx, x), x + width)
+      const ny = Math.min(Math.max(yPx, top), top + h)
+      const dx = xPx - nx
+      const dy = yPx - ny
+      const distSq = dx * dx + dy * dy
+      if (distSq < bestDistSq) {
+        bestDistSq = distSq
+        best = { index: i, x: nx, y: ny, distSq }
+      }
+    }
+    return best
   },
 }
