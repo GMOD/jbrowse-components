@@ -23,6 +23,14 @@ interface ValidUcscTranscriptCheck {
 // thickStart===thickEnd is a transcript by every structural measure, so it is
 // not tested here. `generateUcscTranscript` reads the same equality to emit
 // exons and no CDS.
+//
+// This does conflate a spliced alignment with a transcript, deliberately: a
+// bigPsl track (`est`, `intronEst`, `mrna`, `xenoMrna`, IsoSeq) has an empty
+// thick range too, so it promotes where the same alignment as GFF3
+// `cDNA_match` does not. BED12 carries no column that separates one from an
+// lncRNA, and the promotion stays honest without one — no CDS children, so the
+// sequence panel withholds CDS and protein and HGVS stays `n.`, and the type
+// is `transcript` rather than `mRNA`.
 export function isUcscTranscript(
   input: UcscTranscriptCheck,
 ): input is ValidUcscTranscriptCheck {

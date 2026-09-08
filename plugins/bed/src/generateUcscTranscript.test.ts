@@ -196,6 +196,32 @@ describe('generateUcscTranscript', () => {
     ])
   })
 
+  // The other placement the coding walk mishandles: every block lands on one
+  // side of the thick point, so it would type the whole transcript UTR.
+  it('emits exons, not UTR, when the empty thick range falls in an intron', () => {
+    const result = generateUcscTranscript({
+      uniqueId: 'lnc3',
+      start: 1000,
+      end: 2000,
+      refName: 'chr1',
+      strand: 1,
+      thickStart: 1400,
+      thickEnd: 1400,
+      blockCount: 2,
+      blockSizes: [200, 200],
+      chromStarts: [0, 800],
+      subfeatures: [
+        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
+        { type: 'block', start: 1800, end: 2000, refName: 'chr1' },
+      ],
+    })
+
+    expect(result.subfeatures).toEqual([
+      { type: 'exon', start: 1000, end: 1200, refName: 'chr1' },
+      { type: 'exon', start: 1800, end: 2000, refName: 'chr1' },
+    ])
+  })
+
   // The thick point need not sit at the transcript's own start, and inside a
   // block the coding walk would emit a zero-length CDS carrying a phase.
   it('emits no zero-length CDS when the empty thick range falls inside a block', () => {

@@ -279,11 +279,20 @@ one step further along.
 
 What changes for a site: the feature reports a type where it reported none, so
 `showOnlyGenes` admits it, the hover readout numbers its exons and gives an HGVS
-`n.` coordinate, "Get sequence" offers the spliced cDNA, "Save track data"
-writes it back as one BED12 row instead of one row per block, and "Collapse
-introns" is offered on it. The drawing does not change — both shapes were
-already drawn by the same glyph. A BED12 file whose blocks are not exons opts
-out with `disableGeneHeuristic: true` on the adapter, as before.
+`n.` coordinate, "Get sequence" offers the spliced cDNA, "Collapse introns" is
+offered on it, and "Save track data" round-trips it byte-exact where it used to
+demote the record to BED6 — one row per block, with the name and the score
+dropped. The feature-details panel stops listing the six raw columns the
+promotion consumes (`thickStart`, `thickEnd`, `blockCount`, `blockSizes`,
+`blockStarts`, `chromStarts`), as it has always done for a coding BED12. The
+drawing does not change — both shapes were already drawn by the same glyph.
+
+A BED12 alignment promotes the same way, so a UCSC `est`, `intronEst`, `mrna` or
+`xenoMrna` track now reports its features as transcripts. That is deliberate:
+BED12 carries no column separating a spliced EST from an lncRNA, and with no CDS
+children the promotion claims nothing it cannot back — the sequence panel
+withholds CDS and protein, and HGVS stays `n.`. A BED12 file whose blocks are
+not exons opts out with `disableGeneHeuristic: true` on the adapter, as before.
 
 ## Config models were flattened
 
