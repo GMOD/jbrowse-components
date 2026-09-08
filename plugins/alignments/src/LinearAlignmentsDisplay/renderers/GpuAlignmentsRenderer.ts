@@ -603,7 +603,7 @@ export class GpuAlignmentsRenderer
    *
    * - the two per-read color arrays the color tier rebakes
    *   (`overlayReadTagColors` / `overlayReadColorCategories`) → the read pass.
-   *   Same shape as `GpuSyntenyRenderer.getInterleaved`'s geometry/color split.
+   *   Same shape as `syntenyInstanceCache`'s geometry/color split.
    * - the arc feed and its stroke width → `ARC_PASSES`. `arcsByGroup` allocates
    *   fresh maps for every arc-tier setting (`minInterchromSupport` is a live
    *   slider), so without this each tick repacked all eighteen pileup and

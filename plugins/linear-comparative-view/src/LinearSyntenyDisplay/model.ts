@@ -109,6 +109,15 @@ export interface FeatPos {
   attributes: Record<string, number>
 }
 
+// The 1-based featureId an instance index resolves to, or 0 for "no hit".
+function instanceFeatureId(
+  data: SyntenyGeometry | undefined,
+  idx: number,
+): number {
+  const featureIdx = idx >= 0 ? data?.instanceFeatureIdx[idx] : undefined
+  return featureIdx === undefined ? 0 : featureIdx + 1
+}
+
 // Exported for the synteny follow, which picks a feature by scanning the packed
 // arrays itself and so holds a FEATURE index rather than the instance index
 // `getFeature` below translates from.
@@ -827,6 +836,32 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       * The hovered instance as a 1-based featureId (0 = "no hit"), the id the
+       * shaders and the painter compare against to highlight every instance of
+       * a feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
+       * interleaveInstances and the pick engine. An index past the end reads
+       * `undefined` and answers "no hit", the same way `getFeature` refuses an
+       * out-of-range instance: asserting it non-null instead wrote `NaN` into
+       * the uniform.
+       */
+      get hoveredFeatureId() {
+        return instanceFeatureId(self.instanceData, self.hoveredInstanceIdx)
+      },
+      /**
+       * #getter
+       * The clicked twin, and **its own computed rather than a field of
+       * `renderParams`**: the outline cell is keyed on it, and `renderParams`
+       * carries the two views' `offsetPx` and `bpPerPx`, so a getter reading it
+       * through there would move on every pan frame and every hover — which is
+       * a re-pack and a re-upload of the outline per pointermove, for as long as
+       * a ribbon is selected. `MultiWaySyntenyDisplay`'s twin is the same shape
+       * for the same reason.
+       */
+      get clickedFeatureId() {
+        return instanceFeatureId(self.instanceData, self.clickedInstanceIdx)
+      },
+      /**
+       * #getter
        * Per-track render params consumed by the view's aggregator. yTop is 0
        * here: the level's canvas is the band, and only the multiway display
        * stacks tracks within one.
@@ -840,27 +875,14 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         }
         const view = this.view
         const { v0, v1 } = connected
-        const { hoveredInstanceIdx, clickedInstanceIdx, instanceData } = self
-        // Instance index -> 1-based featureId (0 = "no hit"), the id the
-        // shaders/canvas compare against to highlight every instance of a
-        // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
-        // interleaveInstances and the pick engine. An index past the end reads
-        // `undefined` and answers "no hit", the same way `getFeature` refuses
-        // an out-of-range instance: asserting it non-null instead wrote
-        // `NaN` into the clickedFeatureId uniform.
-        const toFeatureId = (idx: number) => {
-          const featureIdx =
-            idx >= 0 ? instanceData?.instanceFeatureIdx[idx] : undefined
-          return featureIdx === undefined ? 0 : featureIdx + 1
-        }
         return {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
           fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
-          hoveredFeatureId: toFeatureId(hoveredInstanceIdx),
-          clickedFeatureId: toFeatureId(clickedInstanceIdx),
+          hoveredFeatureId: this.hoveredFeatureId,
+          clickedFeatureId: this.clickedFeatureId,
           offsetPx0: v0.offsetPx,
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
@@ -897,13 +919,14 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * The clicked ribbon's outline cell, or nothing while no ribbon is
        * selected. Its identity moves on a selection, a refetch and a recolor —
        * which is exactly when the packed bytes it copies out stop describing it
-       * — and on nothing a pan does.
+       * — and on nothing a pan or a hover does, which is what `clickedFeatureId`
+       * being its own computed buys.
        */
       get outlineCell(): SyntenyCell | undefined {
         const data = self.renderInstanceData
-        const featureId = self.renderParams?.clickedFeatureId
-        return data && featureId !== undefined && featureId > 0
-          ? { kind: 'outline', data, featureId }
+        const { clickedFeatureId } = self
+        return data && clickedFeatureId > 0
+          ? { kind: 'outline', data, featureId: clickedFeatureId }
           : undefined
       },
     }))

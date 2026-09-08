@@ -62,7 +62,14 @@
   `packClickedOutlineInstances` (in `instanceInterleave.ts`) out of the bytes
   the interleave cache already holds for the fill. It is a CELL of its own,
   under a key of its own (`display.outlineKey`), so a click re-uploads the
-  handful of records the outline traces and a pan re-uploads nothing. They used
+  handful of records the outline traces and a pan re-uploads nothing. **What
+  makes the second half true is `clickedFeatureId` being its own computed**
+  rather than a field read off `renderParams`, which carries the two rows'
+  `offsetPx` and `bpPerPx` and so returns a fresh object every pan frame and
+  every hover. Keyed through there, the cell moved per pointermove and each tick
+  was an O(instanceCount) scan plus an upload — invisible to a cross-backend
+  gate, which only compares pictures. `outlineUploadSchedule.test.ts` is the
+  check, and the multi-way twin is the same shape for the same reason. They used
   to be drawn against the fill pass's buffer via `drawPass`'s `bufferPassId`,
   which ran the vertex shader over the whole region — 24M invocations per frame
   in curve mode on a 500k-instance view — to outline one ribbon.

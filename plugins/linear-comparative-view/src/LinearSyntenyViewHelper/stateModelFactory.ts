@@ -440,9 +440,19 @@ export function linearSyntenyViewHelperModelFactory(
        * reach the canvas" off the blocks it drew, which is the right answer for
        * a track still fetching and the wrong one for a band with nothing to
        * draw on it.
+       *
+       * `initialized` is the other half, as it is in `DotplotView.paintInert`:
+       * a stack that has not been measured has no tracks either and is *not*
+       * finished. This family carries a second guard one layer up —
+       * `ComparativeSurface.initPending`, for the level that exists from the
+       * moment its rows do while init adds its tracks several awaits later —
+       * but that one is about the init blob, not about measurement, so it does
+       * not stand in for this.
        */
       get paintInert() {
-        return self.linearSyntenyDisplays.length === 0
+        return (
+          self.parentView.initialized && self.linearSyntenyDisplays.length === 0
+        )
       },
     }))
     .views(self => {

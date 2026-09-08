@@ -79,6 +79,14 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   geometry token must be a **coordinate** array (replaced atomically on
   refetch); a color array would never invalidate. The token is also the key, so
   nothing evicts and one cache is safe inside a module-level mark's `pack`.
+- **A cell keyed on a value must read that value from its own computed, not
+  through the display's render state.** Same failure as the `inputs` rule below
+  and one layer earlier: synteny's clicked-outline cell read `clickedFeatureId`
+  off `renderParams`, which carries the two rows' `offsetPx`, so the cell's
+  identity moved on every pan frame and every hover and the installer's diff
+  re-packed and re-uploaded it per pointermove. A gate that compares pictures
+  cannot see it; the check is a test that pans with a selection live and counts
+  `upload` calls (`outlineUploadSchedule.test.ts`).
 - **An `installUpload` declares a narrow `inputs` getter (`gpuProps()`), never
   the display's `renderState`.** Its identity re-encodes _every_ region, and a
   `renderState` carries the canvas box and row geometry, which move on each

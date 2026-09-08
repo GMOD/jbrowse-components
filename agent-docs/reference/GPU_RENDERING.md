@@ -747,6 +747,16 @@ display is **what its map is keyed by**:
 | a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
 | a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display), the synteny level (a block per track's ribbons and per clicked outline), multi-way synteny (a block per gutter, outline and lane) |
 
+**A cell keyed on a value reads that value from its own computed.** The diff is
+by reference, so a cell built from anything a per-frame render-state getter
+returns is a re-upload per frame — synteny's clicked-outline cell read
+`clickedFeatureId` off `renderParams`, which carries the two rows' `offsetPx`,
+and so re-packed and re-uploaded on every pan frame and every hover for as long
+as a ribbon stayed selected. **No rendering gate can see this**: the picture is
+identical, and a cross-backend drift table compares pictures. The check is a
+test that pans with a selection live and counts `upload` calls
+(`LinearSyntenyDisplay/outlineUploadSchedule.test.ts`).
+
 **Release is per key, never an active-set prune.** The diff knows exactly which
 keys departed, so a per-key release does the same job on a display's own map as
 the HAL's old `pruneRegions(active)` did, and it is the only correct shape on a

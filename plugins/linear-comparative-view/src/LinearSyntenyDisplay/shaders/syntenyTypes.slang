@@ -14,8 +14,9 @@
 //
 // Curve mode and straight-line mode live in separate shader files
 // (syntenyFill{Curve,Straight}.slang, syntenyEdge{Curve,Straight}.slang) so
-// there are no `isCurve` branches anywhere; `GpuSyntenyRenderer.render`
-// dispatches the appropriate pass per track. This module is mode-agnostic.
+// there are no `isCurve` branches anywhere; each mode's mark declines the
+// block the other draws (`paintsBlock` on `drawCurves`), so one uploaded
+// buffer serves both. This module is mode-agnostic.
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
@@ -129,7 +130,7 @@ public float thinWidthFade(float perpW, float kind, bool fadeThinAlignments) {
 
 // Per-view `panPx` + `bpPerPxInv`. `panPx = (base - offsetPx*bpPerPx)/bpPerPx`
 // (computed float64 on the main thread from a SMALL delta — see
-// GpuSyntenyRenderer.writeUniforms) carries how far the current view has panned
+// syntenyRibbonMarks' uniform write) carries how far the current view has panned
 // from the fetch-time base, so `bpRel*bpPerPxInv + panPx` reconstructs the
 // LGV-aligned screen X. The delta is bounded by the pan buffer, so panPx is a
 // small, exactly-representable Float32.

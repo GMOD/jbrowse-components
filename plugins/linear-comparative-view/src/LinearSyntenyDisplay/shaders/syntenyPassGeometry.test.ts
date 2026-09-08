@@ -40,8 +40,8 @@ describe('synteny pass geometry', () => {
       expect(edge.INSTANCE_OFFSET_F32).toEqual(fill.INSTANCE_OFFSET_F32)
       expect(edge.INSTANCE_OFFSET_U32).toEqual(fill.INSTANCE_OFFSET_U32)
       // The vertex-attribute layout each HAL builds its pipeline from. Now that
-      // the edge pass declares its own (SYNTENY_PASSES no longer overrides it
-      // with the fill module's), this is what says the two agree.
+      // the edge pass declares its own (nothing overrides it with the fill
+      // module's), this is what says the two agree.
       expect(edge.VERTEX_ATTRIBUTES).toEqual(fill.VERTEX_ATTRIBUTES)
       expect(edge.UNIFORM_OFFSET_F32).toEqual(fill.UNIFORM_OFFSET_F32)
       expect(edge.UNIFORMS_SIZE_BYTES).toBe(fill.UNIFORMS_SIZE_BYTES)
@@ -49,7 +49,7 @@ describe('synteny pass geometry', () => {
   })
 
   test('all four passes share the uniform block', () => {
-    // GpuSyntenyRenderer writes one uniform buffer and reads its offsets off
+    // The ribbon marks write one uniform buffer and read its offsets off
     // syntenyFillStraight, on the stated assumption that all four agree.
     for (const mod of [fillCurve, edgeStraight, edgeCurve]) {
       expect(mod.UNIFORM_OFFSET_F32).toEqual(fillStraight.UNIFORM_OFFSET_F32)

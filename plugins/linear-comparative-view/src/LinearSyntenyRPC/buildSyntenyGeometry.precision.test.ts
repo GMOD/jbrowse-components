@@ -6,8 +6,9 @@ import { viewportWindow } from './testUtils.ts'
 // single Float32 — no hi/lo split. The base keeps on-screen corners small so a
 // single Float32 stays sub-pixel even at genome-scale cumBp (the case that used
 // to need the split). Screen X is reconstructed as bpRel*inv + panPx, where
-// panPx = (base - offsetPx*bpPerPx)*inv — SYNC with GpuSyntenyRenderer.write
-// Uniforms / syntenyPickEngine.projectCorners / syntenyTypes.computeCorners.
+// panPx = (base - offsetPx*bpPerPx)*inv — SYNC with syntenyRibbonMarks'
+// uniform write / syntenyPickEngine.projectCorners /
+// syntenyTypes.computeCorners.
 function screenXTop(
   g: ReturnType<typeof buildAt>['g'],
   i: number,
