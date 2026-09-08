@@ -16,9 +16,9 @@ export interface FrameDimensions {
 }
 
 /**
- * What every rendering backend has, whatever its upload shape — both shape
- * contracts (`PerRegionRenderingBackend`, `KeyedRenderingBackend`) extend
- * this, and `useRenderingBackend` is bounded by it.
+ * What every rendering backend has, whatever its upload shape —
+ * `PerRegionRenderingBackend` extends this, and `useRenderingBackend` is
+ * bounded by it.
  *
  * `setErrorHandler` is here rather than optional at the hook because it was
  * optional at the hook, and the three backends that then went without it —

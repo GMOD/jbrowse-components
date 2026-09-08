@@ -4,7 +4,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
-import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
+import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
   ComparativeFetchMixin,
   LodTierInfoMixin,
