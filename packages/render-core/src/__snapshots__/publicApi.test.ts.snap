@@ -28,6 +28,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./marks/colorFill",
   "./marks/drawAgainstHit",
   "./marks/glyphPaint",
+  "./marks/hit",
   "./namedReactions",
   "./perRegionRenderingBackend",
   "./regionDataMap",

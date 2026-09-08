@@ -1,7 +1,8 @@
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
-import { DOTPLOT_MARKS, dotplotMarkBlock } from './dotplotMarks.ts'
+import { DOTPLOT_MARKS } from './dotplotMarks.ts'
 
 import type {
   DotplotGeometryData,
@@ -243,7 +244,7 @@ export function pickDotplotFeature({
   // enough — inclusively, the way it has always been.
   const hit = SEGMENT_MARK.hitNearest!(
     data,
-    dotplotMarkBlock(0, state.canvasWidth),
+    canvasWideBlock(0, state.canvasWidth),
     state,
     x,
     y,

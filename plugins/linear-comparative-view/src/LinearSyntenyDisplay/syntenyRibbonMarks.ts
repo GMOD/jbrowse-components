@@ -17,6 +17,7 @@ import { computeTransform } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { Mark, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 import type { ClearColor } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -144,6 +145,27 @@ function writeRibbonUniforms(
 }
 
 /**
+ * Every synteny shape's `writeUniforms`, BY REFERENCE. `StagedUniforms`
+ * compares writer identity, so a shape closing over its own wrapper would be
+ * four writers where the shaders declare one struct — and the second mark of a
+ * block would re-stage bytes the first already wrote.
+ *
+ * A cell with no ribbon params writes nothing: `paintsBlock` has declined the
+ * block, so the scratch is never drawn from.
+ */
+function writeSyntenyUniforms(
+  scratch: ArrayBuffer,
+  _clip: BlockClipResult,
+  _block: RenderBlock,
+  frame: MarkFrame,
+  p: SyntenyRibbonParams | undefined,
+) {
+  if (p) {
+    writeRibbonUniforms(scratch, frame, p)
+  }
+}
+
+/**
  * A track's ribbons in one of the two fill modes. `drawCurves` picks which of
  * the pair paints, so a mode switch is a different pass over the same uploaded
  * buffer rather than a re-upload.
@@ -167,11 +189,7 @@ function ribbonFillShape(
       ...slangPass({ id, mod }),
       pack: data => syntenyInstanceCache.get(data),
     },
-    writeUniforms(scratch, _clip, _block, frame, p) {
-      if (p) {
-        writeRibbonUniforms(scratch, frame, p)
-      }
-    },
+    writeUniforms: writeSyntenyUniforms,
     paintsBlock(_block, _frame, p) {
       return p !== undefined && p.track.drawCurves === curves
     },
@@ -219,11 +237,7 @@ function ribbonEdgeShape(
           syntenyInstanceCache.get(data),
         ).buf,
     },
-    writeUniforms(scratch, _clip, _block, frame, p) {
-      if (p) {
-        writeRibbonUniforms(scratch, frame, p)
-      }
-    },
+    writeUniforms: writeSyntenyUniforms,
     paintsBlock(_block, _frame, p) {
       return p !== undefined && p.track.drawCurves === curves
     },
@@ -298,25 +312,4 @@ export function syntenyRibbonMarks<TRegion, TState extends MarkFrame>(lenses: {
       bufferOf: edgeStraight,
     }),
   ]
-}
-
-/**
- * One cell's whole canvas as one block. A ribbon's x is not a block's bp span —
- * a corner's screen x comes from the payload's own window-relative bp through
- * the shader's `panPx` fold and the painter's `computeTransform` — so the block
- * carries nothing but its key and the identity bp span that keeps `clipBlock`
- * well-formed. `dotplotMarkBlock` is the same shape for the same reason.
- */
-export function syntenyMarkBlock(
-  key: number,
-  canvasWidth: number,
-): RenderBlock {
-  return {
-    displayedRegionIndex: key,
-    start: 0,
-    end: canvasWidth,
-    screenStartPx: 0,
-    screenEndPx: canvasWidth,
-    reversed: false,
-  }
 }

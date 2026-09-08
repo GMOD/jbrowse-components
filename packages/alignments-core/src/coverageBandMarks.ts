@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/render-core/coverageBand'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
+import { inkOnRect, nearestInk } from '@jbrowse/render-core/marks/hit'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import {
   SCALE_TYPE_LINEAR,
@@ -161,41 +162,6 @@ type LayerPainter<TChannels> = (
   viewWidth: number,
   p: Placed,
 ) => void
-
-/**
- * A rectangle of ink and a cursor: distance 0 inside, else to the nearest
- * edge. What each band shape's `hitNearest` measures its records with.
- */
-function rectHit(
-  index: number,
-  left: number,
-  right: number,
-  top: number,
-  bottom: number,
-  xPx: number,
-  yPx: number,
-): MarkHit {
-  const nx = Math.min(Math.max(xPx, left), right)
-  const ny = Math.min(Math.max(yPx, top), bottom)
-  const dx = xPx - nx
-  const dy = yPx - ny
-  return { index, x: nx, y: ny, distSq: dx * dx + dy * dy }
-}
-
-function nearest(
-  hits: Iterable<MarkHit | undefined>,
-  maxDistSq: number,
-): MarkHit | undefined {
-  let best: MarkHit | undefined
-  let bestDistSq = maxDistSq
-  for (const hit of hits) {
-    if (hit && hit.distSq < bestDistSq) {
-      bestDistSq = hit.distSq
-      best = hit
-    }
-  }
-  return best
-}
 
 /**
  * One band layer: render-core's pass, the shared uniform write, and an
@@ -350,24 +316,25 @@ export const coverageInterbaseShape = layerShape<
       p.interbaseMaxCount,
       p.domainMax,
     )
-    if (barHeight === 0) {
-      return undefined
-    }
-    const segments = readInterbaseSegments(c.interbasePackedBuffer)
+    const segments =
+      barHeight === 0
+        ? undefined
+        : readInterbaseSegments(c.interbasePackedBuffer)
     const bandBottom = p.top + p.height
-    return nearest(
-      Array.from(candidates, i => {
+    return (
+      segments &&
+      nearestInk(candidates, maxDistSq, i => {
         const px = bpToX(segments.position(i))
         const top = p.top + interbaseEdgePx(segments.stackStart(i), barHeight)
         const bottom = Math.min(
           bandBottom,
           p.top + interbaseEdgePx(segments.stackEnd(i), barHeight),
         )
+        // a stack clipped entirely out of the band has no ink to be near
         return bottom < top
           ? undefined
-          : rectHit(i, px - 0.5, px + 0.5, top, bottom, xPx, yPx)
-      }),
-      maxDistSq,
+          : inkOnRect(xPx, yPx, px - 0.5, top, 1, bottom - top)
+      })
     )
   },
 )
@@ -390,21 +357,16 @@ export const coverageIndicatorShape = layerShape<
   },
   (c, bpToX, p, xPx, yPx, candidates, maxDistSq) => {
     const indicators = readIndicators(c.indicatorPackedBuffer)
-    const bottom = p.top + Math.min(p.height, INDICATOR_TRIANGLE_H)
-    return nearest(
-      Array.from(candidates, i => {
-        const px = bpToX(indicators.position(i))
-        return rectHit(
-          i,
-          px - INDICATOR_TRIANGLE_HW,
-          px + INDICATOR_TRIANGLE_HW,
-          p.top,
-          bottom,
-          xPx,
-          yPx,
-        )
-      }),
-      maxDistSq,
+    const height = Math.min(p.height, INDICATOR_TRIANGLE_H)
+    return nearestInk(candidates, maxDistSq, i =>
+      inkOnRect(
+        xPx,
+        yPx,
+        bpToX(indicators.position(i)) - INDICATOR_TRIANGLE_HW,
+        p.top,
+        INDICATOR_TRIANGLE_HW * 2,
+        height,
+      ),
     )
   },
 )

@@ -5,8 +5,9 @@ import { valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph } from './glyphPaint.ts'
+import { inkAtPoint, nearestInk } from './markHit.ts'
 
-import type { MarkHit, MarkShape } from './types.ts'
+import type { MarkShape } from './types.ts'
 
 /**
  * The `point` shape's channels: a glyph per instance at `x`, on the `y` scale,
@@ -103,9 +104,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const domainMin = domain[0]
     const domainMax = domain[1]
     const canvasHeight = frame.canvasHeight
-    let best: MarkHit | undefined
-    let bestDistSq = maxDistSq
-    for (const i of candidates) {
+    return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       // The bar branch, in the same words the shader and the painter take it:
@@ -113,17 +112,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       // glyph at its centre.
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
-      const ptX =
-        hi - lo > diameterPx ? Math.max(lo, Math.min(xPx, hi)) : xStart
-      const ptY = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
-      const dx = xPx - ptX
-      const dy = yPx - ptY
-      const distSq = dx * dx + dy * dy
-      if (distSq < bestDistSq) {
-        bestDistSq = distSq
-        best = { index: i, x: ptX, y: ptY, distSq }
-      }
-    }
-    return best
+      return inkAtPoint(
+        xPx,
+        yPx,
+        hi - lo > diameterPx ? Math.max(lo, Math.min(xPx, hi)) : xStart,
+        valueToYPx(y[i]!, domainMin, domainMax, canvasHeight),
+      )
+    })
   },
 }

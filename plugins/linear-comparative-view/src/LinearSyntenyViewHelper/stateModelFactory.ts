@@ -11,6 +11,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import {
   bandGroundColor,
   comparativeSurfacePhase,
@@ -18,7 +19,6 @@ import {
   installClearHoverOnSurfaceMove,
 } from '@jbrowse/synteny-core'
 
-import { syntenyMarkBlocks } from '../LinearSyntenyDisplay/syntenyMarks.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import {
   captureStackViewports,
@@ -355,10 +355,7 @@ export function linearSyntenyViewHelperModelFactory(
        * fill and a later track over an earlier one.
        */
       get syntenyBlocks() {
-        return syntenyMarkBlocks(
-          this.syntenyCells.keys(),
-          self.parentView.width,
-        )
+        return canvasWideBlocks(this.syntenyCells.keys(), self.parentView.width)
       },
       /**
        * #getter

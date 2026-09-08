@@ -20,9 +20,9 @@ import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
-import { hicMarkBlocks } from './components/hicMarks.ts'
 import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
@@ -477,7 +477,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * The one block the mark backend draws: the whole canvas.
        */
       get hicBlocks() {
-        return hicMarkBlocks(self.canvasWidth)
+        return canvasWideBlocks([0], self.canvasWidth)
       },
 
       /**

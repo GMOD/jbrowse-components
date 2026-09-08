@@ -21,11 +21,11 @@ import { ldValueComputed } from '@jbrowse/ld-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
-import { ldMarkBlocks } from './components/ldMarks.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
@@ -424,7 +424,7 @@ export default function sharedModelFactory(
        * The one block the mark backend draws: the whole canvas.
        */
       get ldBlocks() {
-        return ldMarkBlocks(this.canvasWidth)
+        return canvasWideBlocks([0], this.canvasWidth)
       },
       /**
        * #getter

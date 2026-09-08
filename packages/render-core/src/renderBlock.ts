@@ -34,3 +34,34 @@ export function buildRenderBlocks(
     reversed: r.reversed ?? false,
   }))
 }
+
+/**
+ * One display key's whole canvas as a single block.
+ *
+ * For a display whose x axis is not the block's bp span — a dotplot segment, a
+ * synteny ribbon, a Hi-C or LD diamond all read their screen x off the
+ * payload's own coordinates through a `panPx` fold the shader and the painter
+ * each apply — so the block carries nothing but its key and the identity bp
+ * span that keeps `clipBlock` well-formed.
+ */
+export function canvasWideBlock(
+  displayedRegionIndex: number,
+  canvasWidth: number,
+): RenderBlock {
+  return {
+    displayedRegionIndex,
+    start: 0,
+    end: canvasWidth,
+    screenStartPx: 0,
+    screenEndPx: canvasWidth,
+    reversed: false,
+  }
+}
+
+/** {@link canvasWideBlock} per key, in the keys' own order. */
+export function canvasWideBlocks(
+  keys: Iterable<number>,
+  canvasWidth: number,
+): RenderBlock[] {
+  return [...keys].map(key => canvasWideBlock(key, canvasWidth))
+}

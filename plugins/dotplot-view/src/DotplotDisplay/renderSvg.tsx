@@ -2,8 +2,9 @@ import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { DOTPLOT_MARKS, dotplotMarkBlocks } from './dotplotMarks.ts'
+import { DOTPLOT_MARKS } from './dotplotMarks.ts'
 
 import type { DotplotRenderState } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRenderModel } from './types.ts'
@@ -50,7 +51,7 @@ export async function renderSvg(
           ctx,
           DOTPLOT_MARKS,
           new Map([[0, geometry]]),
-          dotplotMarkBlocks([0], viewWidth),
+          canvasWideBlocks([0], viewWidth),
           {
             ...dotplotRenderState,
             canvasWidth: viewWidth,

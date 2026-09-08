@@ -1,5 +1,6 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
+import { nearestInk } from '@jbrowse/render-core/marks/hit'
 import { capsuleDistPx } from '@jbrowse/render-core/shaders/capsule'
 import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
 import { slangPass } from '@jbrowse/render-core/slangPass'
@@ -13,8 +14,7 @@ import type {
   DotplotGeometryData,
   DotplotRenderState,
 } from './dotplotRenderingBackendTypes.ts'
-import type { MarkHit, MarkShape } from '@jbrowse/render-core/marks'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { MarkShape } from '@jbrowse/render-core/marks'
 
 // The projection plus the per-axis fetch-time base the buffer was packed
 // against: `baseH`/`baseV` ride the payload and the rest rides the frame, and
@@ -30,41 +30,13 @@ export interface DotplotSegmentParams {
   baseV: number
 }
 
-/**
- * One display's whole canvas as one block. A dotplot's x axis is not the
- * block's bp span — a segment's screen x comes from the payload's own absolute
- * cumBp through the shader's `panPx` fold and the painter's `cumBpToPxH` — so
- * the block carries nothing but its key and the identity bp span that keeps
- * `clipBlock` well-formed. `hicMarkBlocks` and `ldMarkBlocks` are the same
- * shape for the same reason.
- */
-export function dotplotMarkBlock(
-  displayKey: number,
-  canvasWidth: number,
-): RenderBlock {
-  return {
-    displayedRegionIndex: displayKey,
-    start: 0,
-    end: canvasWidth,
-    screenStartPx: 0,
-    screenEndPx: canvasWidth,
-    reversed: false,
-  }
-}
-
-export function dotplotMarkBlocks(
-  displayKeys: Iterable<number>,
-  canvasWidth: number,
-): RenderBlock[] {
-  return [...displayKeys].map(key => dotplotMarkBlock(key, canvasWidth))
-}
-
 // Where the cursor lands on a segment's ink, in the segment's own frame: the
 // shader's `capsuleFrame` (with its guard for the zero-length dots a
 // whole-genome plot is mostly made of) measured by the shader's own
 // `capsuleDistPx`, so a hit is the ink the fragment actually shades, end caps
 // included. The distance is to the centreline — the stroke's half width is the
-// caller's tolerance, as it is for `point`.
+// caller's tolerance, as it is for `point`. The capsule metric IS the
+// distance to that clamped point, so `nearestInk` never re-derives it.
 function nearestOnSegmentPx(
   px: number,
   py: number,
@@ -86,8 +58,9 @@ function nearestOnSegmentPx(
   const halfLen = len / 2
   const along = rx * tx + ry * ty
   const clamped = Math.min(Math.max(along, -halfLen), halfLen)
+  const distPx = capsuleDistPx(along, ry * tx - rx * ty, halfLen)
   return {
-    distPx: capsuleDistPx(along, ry * tx - rx * ty, halfLen),
+    distSq: distPx * distPx,
     x: cx + tx * clamped,
     y: cy + ty * clamped,
   }
@@ -140,24 +113,16 @@ export const segmentMark: MarkShape<DotplotGeometryData, DotplotSegmentParams> =
       const { x1, y1, x2, y2 } = channels
       const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } = p
       const h = frame.canvasHeight
-      let best: MarkHit | undefined
-      let bestDistSq = maxDistSq
-      for (const i of candidates) {
-        const near = nearestOnSegmentPx(
+      return nearestInk(candidates, maxDistSq, i =>
+        nearestOnSegmentPx(
           xPx,
           yPx,
           cumBpToPxH(x1[i]!, viewBpH, bpPerPxHInv),
           cumBpToPxV(y1[i]!, viewBpV, bpPerPxVInv, h),
           cumBpToPxH(x2[i]!, viewBpH, bpPerPxHInv),
           cumBpToPxV(y2[i]!, viewBpV, bpPerPxVInv, h),
-        )
-        const distSq = near.distPx * near.distPx
-        if (distSq < bestDistSq) {
-          bestDistSq = distSq
-          best = { index: i, x: near.x, y: near.y, distSq }
-        }
-      }
-      return best
+        ),
+      )
     },
   }
 

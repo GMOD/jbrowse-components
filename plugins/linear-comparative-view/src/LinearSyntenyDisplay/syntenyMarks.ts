@@ -1,4 +1,4 @@
-import { syntenyMarkBlock, syntenyRibbonMarks } from './syntenyRibbonMarks.ts'
+import { syntenyRibbonMarks } from './syntenyRibbonMarks.ts'
 
 import type {
   SyntenyCell,
@@ -30,13 +30,3 @@ export const SYNTENY_MARKS = syntenyRibbonMarks<
     )
   },
 })
-
-/**
- * One canvas-wide block per cell, in the map's insertion order — so a track's
- * outline draws over its own fill and a later track over an earlier one. An
- * empty list is a real frame, not a skip: the frame clears before drawing, so
- * painting zero cells is what wipes a departed track's ribbons.
- */
-export function syntenyMarkBlocks(keys: Iterable<number>, canvasWidth: number) {
-  return [...keys].map(key => syntenyMarkBlock(key, canvasWidth))
-}

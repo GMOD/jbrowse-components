@@ -2,12 +2,9 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import {
-  DOTPLOT_MARKS,
-  dotplotMarkBlocks,
-  segmentMark,
-} from './dotplotMarks.ts'
+import { DOTPLOT_MARKS, segmentMark } from './dotplotMarks.ts'
 import {
   INSTANCE_OFFSET_F32 as F_F32,
   INSTANCE_OFFSET_U32 as F_U32,
@@ -83,7 +80,7 @@ function render(
     backend.upload(key, data)
   }
   const painted = backend.renderBlocks(
-    dotplotMarkBlocks(regions.keys(), state.canvasWidth),
+    canvasWideBlocks(regions.keys(), state.canvasWidth),
     regions,
     state,
   )
@@ -198,7 +195,7 @@ describe('the dotplot mark list', () => {
     const state = makeState()
     expect(
       backend.renderBlocks(
-        dotplotMarkBlocks(regions.keys(), state.canvasWidth),
+        canvasWideBlocks(regions.keys(), state.canvasWidth),
         regions,
         state,
       ),
@@ -220,7 +217,7 @@ describe('the dotplot mark list', () => {
 
     const state = makeState({ alpha: 0.25 })
     backend.renderBlocks(
-      dotplotMarkBlocks(regions.keys(), state.canvasWidth),
+      canvasWideBlocks(regions.keys(), state.canvasWidth),
       regions,
       state,
     )
@@ -300,7 +297,7 @@ function paint(
     ctx as unknown as MarkContext2D,
     DOTPLOT_MARKS,
     regions,
-    dotplotMarkBlocks(regions.keys(), state.canvasWidth),
+    canvasWideBlocks(regions.keys(), state.canvasWidth),
     state,
   )
   return { ctx, strokes }
@@ -432,7 +429,7 @@ describe("every stroked segment answers its own hit, within its caps' slack", ()
           segmentMark,
           channels,
           {
-            ...dotplotMarkBlocks([0], sweepFrame.canvasWidth)[0]!,
+            ...canvasWideBlocks([0], sweepFrame.canvasWidth)[0]!,
             reversed,
           },
           sweepFrame,

@@ -117,7 +117,9 @@ export interface MarkShape<TChannels, TParams> {
   /**
    * The shape's draw predicate over (block, frame, params) — not over its
    * instances, which it is never handed. Both backends skip the block when it
-   * says no. Optional: a shape whose every block can carry ink leaves it off.
+   * says no, and so does `hitNearest`: a block with no ink on it has nothing
+   * to be near. Optional: a shape whose every block can carry ink leaves it
+   * off.
    *
    * Placement is one use: the canvas continuation marker exists only where a
    * block meets a canvas edge, and an interior block would otherwise shade a
@@ -367,18 +369,25 @@ export function defineMark<
     hitNearest: shape.hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
           const c = channels(region)
-          return c === undefined || bandExcludes(band?.(state), yPx)
-            ? undefined
-            : shape.hitNearest!(
+          let hit: MarkHit | undefined
+          // The same three gates `paintBlock` takes, in the same order: what a
+          // mark does not draw here does not answer a hover here either.
+          if (c !== undefined && !bandExcludes(band?.(state), yPx)) {
+            const p = params(state, region, block)
+            if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
+              hit = shape.hitNearest!(
                 c,
                 block,
                 state,
-                params(state, region, block),
+                p,
                 xPx,
                 yPx,
                 candidates,
                 maxDistSq,
               )
+            }
+          }
+          return hit
         }
       : undefined,
   }

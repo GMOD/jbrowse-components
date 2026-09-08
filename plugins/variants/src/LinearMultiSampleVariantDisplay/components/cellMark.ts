@@ -1,6 +1,7 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr, makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
+import { inkOnRect, nearestInk } from '@jbrowse/render-core/marks/hit'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/variant.generated.ts'
@@ -8,7 +9,7 @@ import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { snapVariantCellX } from './snapVariantCellX.ts'
 import { drawVariantShape } from './variantShape.ts'
 
-import type { MarkHit, MarkShape } from '@jbrowse/render-core/marks'
+import type { MarkShape } from '@jbrowse/render-core/marks'
 
 /**
  * The `cell` shape's channels: a glyph from `startEnd[2i]` to `startEnd[2i+1]`
@@ -87,25 +88,20 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
     const { rowHeight, scrollTop } = params
     const h = drawnCellHeightPx(rowHeight)
     const toX = makeBpMapper(block)
-    let best: MarkHit | undefined
-    let bestDistSq = maxDistSq
-    for (const i of candidates) {
+    return nearestInk(candidates, maxDistSq, i => {
       const { x, width } = snapVariantCellX(
         toX(startEnd[i * 2]!),
         toX(startEnd[i * 2 + 1]!),
         canvasWidth,
       )
-      const top = rowIndex[i]! * rowHeight - scrollTop
-      const nx = Math.min(Math.max(xPx, x), x + width)
-      const ny = Math.min(Math.max(yPx, top), top + h)
-      const dx = xPx - nx
-      const dy = yPx - ny
-      const distSq = dx * dx + dy * dy
-      if (distSq < bestDistSq) {
-        bestDistSq = distSq
-        best = { index: i, x: nx, y: ny, distSq }
-      }
-    }
-    return best
+      return inkOnRect(
+        xPx,
+        yPx,
+        x,
+        rowIndex[i]! * rowHeight - scrollTop,
+        width,
+        h,
+      )
+    })
   },
 }

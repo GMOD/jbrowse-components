@@ -3,6 +3,7 @@ import {
   Canvas2DMarkBackend,
   GpuMarkBackend,
 } from '@jbrowse/render-core/marks/backend'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import {
   KIND_BASE,
@@ -13,7 +14,7 @@ import {
   INSTANCE_STRIDE_BYTES,
   UNIFORM_OFFSET_F32 as U,
 } from './shaders/syntenyFillStraight.generated.ts'
-import { SYNTENY_MARKS, syntenyMarkBlocks } from './syntenyMarks.ts'
+import { SYNTENY_MARKS } from './syntenyMarks.ts'
 import { createSyntenyPicker } from './syntenyPickEngine.ts'
 import { syntenyGroundClear } from './syntenyRibbonMarks.ts'
 import { stubPickCtx } from './testUtils.ts'
@@ -178,7 +179,7 @@ function paintFrame(
     syntenyGroundClear(s.groundColor),
   )
   const painted = backend.renderBlocks(
-    syntenyMarkBlocks(cells.keys(), state.canvasWidth),
+    canvasWideBlocks(cells.keys(), state.canvasWidth),
     cells,
     state,
   )
@@ -348,7 +349,7 @@ describe('the ribbon painter, through the mark list', () => {
       }
     })
     new Canvas2DMarkBackend(mock.canvas, SYNTENY_MARKS).renderBlocks(
-      syntenyMarkBlocks(cells.keys(), state.canvasWidth),
+      canvasWideBlocks(cells.keys(), state.canvasWidth),
       cells,
       state,
     )
@@ -491,7 +492,7 @@ function gpuFrame(
     backend.upload(key, cell)
   }
   const render = (s = state, c = cells) =>
-    backend.renderBlocks(syntenyMarkBlocks(c.keys(), s.canvasWidth), c, s)
+    backend.renderBlocks(canvasWideBlocks(c.keys(), s.canvasWidth), c, s)
   render()
   return { hal, backend, render }
 }

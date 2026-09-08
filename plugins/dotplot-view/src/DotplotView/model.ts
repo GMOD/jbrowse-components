@@ -32,6 +32,7 @@ import {
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
@@ -47,7 +48,6 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
 
-import { dotplotMarkBlocks } from '../DotplotDisplay/dotplotMarks.ts'
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
@@ -1109,7 +1109,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * hidden.
          */
         get dotplotBlocks() {
-          return dotplotMarkBlocks(
+          return canvasWideBlocks(
             this.geometryByDisplayKey.keys(),
             this.viewWidth,
           )

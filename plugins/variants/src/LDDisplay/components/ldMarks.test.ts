@@ -2,11 +2,12 @@ import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
 import { generateLDColorRamp } from './ldColorRamp.ts'
-import { LD_MARKS, interleaveLDInstances, ldMarkBlocks } from './ldMarks.ts'
+import { LD_MARKS, interleaveLDInstances } from './ldMarks.ts'
 import {
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_U32 as UU,
@@ -76,7 +77,7 @@ function render(data: LDUploadData | undefined, state = makeRenderState()) {
     backend.upload(0, data)
   }
   const painted = backend.renderBlocks(
-    ldMarkBlocks(state.canvasWidth),
+    canvasWideBlocks([0], state.canvasWidth),
     regions,
     state,
   )
@@ -167,7 +168,7 @@ describe('the LD mark list', () => {
     const hal = new MockHal(PASSES)
     const backend = new GpuMarkBackend(hal, LD_MARKS)
     const data = makeOneCell()
-    const blocks = ldMarkBlocks(800)
+    const blocks = canvasWideBlocks([0], 800)
     const regions = new Map([[0, data]])
     backend.upload(0, data)
 
@@ -255,7 +256,7 @@ function paint(data: LDUploadData | undefined, state = makeRenderState()) {
     ctx,
     LD_MARKS,
     data ? new Map([[0, data]]) : new Map(),
-    ldMarkBlocks(state.canvasWidth),
+    canvasWideBlocks([0], state.canvasWidth),
     state,
   )
   // `forEachClippedBlock` opens the block's clip with a beginPath/rect/clip of

@@ -5,9 +5,10 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { svgLegendAreaReserved } from '@jbrowse/display-kit/types'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
-import { HIC_MARKS, hicMarkBlocks } from './components/hicMarks.ts'
+import { HIC_MARKS } from './components/hicMarks.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -58,7 +59,7 @@ function HicSvgBody({
               ctx,
               HIC_MARKS,
               hicRegions,
-              hicMarkBlocks(visibleWidth),
+              canvasWideBlocks([0], visibleWidth),
               exportState,
             )
           }}

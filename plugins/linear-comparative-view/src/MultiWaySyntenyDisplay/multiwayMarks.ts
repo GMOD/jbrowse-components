@@ -2,11 +2,9 @@ import {
   MAX_VISIBLE_CHEVRONS_PER_LINE,
   featureGlyphMarks,
 } from '@jbrowse/plugin-canvas'
+import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
-import {
-  syntenyMarkBlock,
-  syntenyRibbonMarks,
-} from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
+import { syntenyRibbonMarks } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
 import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
 
 import type {
@@ -89,7 +87,7 @@ function multiwayBlock(
       reversed: false,
     }
   } else {
-    return syntenyMarkBlock(key, canvasWidth)
+    return canvasWideBlock(key, canvasWidth)
   }
 }
 

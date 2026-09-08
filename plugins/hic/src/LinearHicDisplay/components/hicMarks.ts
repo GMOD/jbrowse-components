@@ -11,30 +11,10 @@ import type {
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
 import type { MarkShape } from '@jbrowse/render-core/marks'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 interface HicContactParams extends HicDrawState {
   binWidth: number
   colorRamp: Uint8Array
-}
-
-/**
- * The whole canvas as one block. HiC's x axis is not bp — a bin's screen x is
- * the diagonal transform over `viewScale`/`viewOffsetX`, which the shader and
- * the painter both apply themselves — so the block carries nothing but the
- * clip, and its bp span is the identity map that keeps that clip well-formed.
- */
-export function hicMarkBlocks(canvasWidth: number): RenderBlock[] {
-  return [
-    {
-      displayedRegionIndex: 0,
-      start: 0,
-      end: canvasWidth,
-      screenStartPx: 0,
-      screenEndPx: canvasWidth,
-      reversed: false,
-    },
-  ]
 }
 
 const contactMark: MarkShape<HicUploadData, HicContactParams> = {

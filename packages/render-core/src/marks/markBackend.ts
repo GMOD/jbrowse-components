@@ -20,21 +20,26 @@ import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { Mark, StagedUniforms } from './types.ts'
 
 /**
- * Pack and upload one region's buffers for a mark list — every mark that owns
- * one, which is the whole list minus those drawing off another's (`bufferOf`).
- * That skip is the reason a display's upload is this call rather than a loop:
- * uploading to a borrowed pass is silent, and its buffer is the lender's.
+ * The passes a mark list owns a buffer for: the whole list minus those drawing
+ * off another's (`bufferOf`). Uploading to a borrowed pass is silent and its
+ * buffer is the lender's, so the skip is stated once — here, for the mark
+ * backend's upload and for a display driving its own.
  */
+export function ownedPasses<TRegion, TState extends FrameDimensions>(
+  marks: readonly Mark<TRegion, TState>[],
+) {
+  return marks.filter(m => !m.bufferOf).map(m => m.pass)
+}
+
+/** Pack and upload one region's buffers for a mark list. */
 export function uploadMarks<TRegion, TState extends FrameDimensions>(
   hal: GpuHal,
   regionKey: number,
   marks: readonly Mark<TRegion, TState>[],
   data: TRegion,
 ) {
-  for (const mark of marks) {
-    if (!mark.bufferOf) {
-      uploadPass(hal, regionKey, mark.pass, data)
-    }
+  for (const pass of ownedPasses(marks)) {
+    uploadPass(hal, regionKey, pass, data)
   }
 }
 
@@ -47,6 +52,12 @@ export function uploadMarks<TRegion, TState extends FrameDimensions>(
  * coverage strip inside the column it hands over. `GpuPerRegionRenderingBackend`
  * sets both per block already, so for a backend on that scaffold the viewport
  * set here is the same rect twice.
+ *
+ * A caller that narrows it must hand over marks declaring no `band`, and that
+ * is the one way the two clips do not compose: a banded mark scissors to its
+ * strip and hands the BLOCK COLUMN back rather than what the caller had. The
+ * split is deliberate — `render-core/CLAUDE.md` §Drawing has which displays
+ * take which side — but nothing enforces it, so it is stated at both.
  */
 export function drawMarks<TRegion, TState extends FrameDimensions>(
   hal: GpuHal,
@@ -80,9 +91,9 @@ export class GpuMarkBackend<
   TRegion,
   TState extends FrameDimensions,
 > extends GpuPerRegionRenderingBackend<TRegion, TState> {
-  // `upload` runs `uploadMarks` in place of the base's loop, so nothing reads
-  // this — the `bufferOf` skip is stated once, there
-  protected regionPasses: InstancePass<TRegion>[] = []
+  // The base's upload loop already IS the mark walk, so this backend names its
+  // passes instead of overriding `upload` with a second spelling of it.
+  protected regionPasses: InstancePass<TRegion>[]
 
   constructor(
     hal: GpuHal,
@@ -90,14 +101,11 @@ export class GpuMarkBackend<
     private clear?: (state: TState) => ClearColor,
   ) {
     super(hal)
+    this.regionPasses = ownedPasses(marks)
   }
 
   protected override clearColor(state: TState) {
     return this.clear ? this.clear(state) : super.clearColor(state)
-  }
-
-  override upload(regionKey: number, data: TRegion) {
-    uploadMarks(this.hal, regionKey, this.marks, data)
   }
 
   // The ramp each textured pass holds, by the table's identity — the mirror of

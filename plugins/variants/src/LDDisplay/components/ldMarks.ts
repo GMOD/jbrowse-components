@@ -13,7 +13,6 @@ import type {
 } from './ldRenderingBackendTypes.ts'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkShape } from '@jbrowse/render-core/marks'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The generated packer, not a loop of our own: `ldGenomic`'s instance struct is
 // exactly `{position: float2, cellSize: float2, ldValue: float}`, and
@@ -37,25 +36,6 @@ export function interleaveLDInstances(data: {
     },
     data.numCells,
   )
-}
-
-/**
- * The whole canvas as one block. LD's x axis is not bp — a cell's screen x is
- * the diagonal transform over `viewScale`/`viewOffsetX`, which the shaders and
- * the painter both apply themselves — so the block carries nothing but the
- * clip, and its bp span is the identity map that keeps that clip well-formed.
- */
-export function ldMarkBlocks(canvasWidth: number): RenderBlock[] {
-  return [
-    {
-      displayedRegionIndex: 0,
-      start: 0,
-      end: canvasWidth,
-      screenStartPx: 0,
-      screenEndPx: canvasWidth,
-      reversed: false,
-    },
-  ]
 }
 
 interface LDCellParams extends LDDrawState {
