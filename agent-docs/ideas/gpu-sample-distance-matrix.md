@@ -18,10 +18,10 @@ exception.
 
 ## The criterion
 
-The clustering workflow (`reference/CLUSTERING_WORKFLOW.md`) and the LD matrix
-(`plugins/variants/src/VariantRPC/getLDMatrixGPU.ts`) are the two analyses the
-app runs itself, and they share a shape that nothing else in the "just load it
-as a track" category has:
+The clustering workflow (`reference/CLUSTERING_WORKFLOW.md`) is the analysis
+the app still runs itself, and the retired LD estimator (its matrix now comes
+from a plink file) was the other. They share a shape that nothing else in the
+"just load it as a track" category has:
 
 - **The input is a runtime choice with a combinatorial domain.** LD is a
   pairwise matrix over the sites in the window; clustering is an ordering over

@@ -2,9 +2,9 @@
  * A dispatch that comes back incomplete raises no WebGPU error: the cells its
  * workgroups never reached read back as the zeros the buffer started with,
  * and a zero distance is a perfectly plausible one — hclust would merge those
- * samples first, at height 0. `getLDMatrixGPU.ts` met exactly this on a
- * Radeon Pro 5300M and grew `ldGpuSpotCheck.ts`; this is the same detector
- * for the distance build. A handful of pairs recomputed in f64 cost O(V) each
+ * samples first, at height 0. The LD matrix kernel met exactly this on a
+ * Radeon Pro 5300M and grew a spot check of its own before that estimator was
+ * retired; this is the same detector for the distance build. A handful of pairs recomputed in f64 cost O(V) each
  * against a dispatch the caller only reached past a work gate of 10^9
  * pair-elements.
  */
