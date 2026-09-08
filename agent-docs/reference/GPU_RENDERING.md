@@ -586,6 +586,22 @@ const createXxxBackend = (canvas: HTMLCanvasElement) =>
   createMarkBackend(canvas, XXX_MARKS)
 ```
 
+A display whose x axis is not the block's bp span builds its blocks with
+`canvasWideBlock` / `canvasWideBlocks` (`render-core/renderBlock`) — hic and LD
+one block, dotplot and the two synteny displays one per cell. Their marks read
+screen x off the payload's own coordinates through a transform of the display's
+own — dotplot and synteny fold a `panPx` from the fetch-time base, hic and LD
+apply the diagonal `viewScale`/`viewOffsetX` — so the block carries nothing but
+its key and the identity bp span that keeps `clipBlock` well-formed. It was four
+per-plugin copies of that until 2026-09-08.
+
+A shape that answers `hitNearest` measures its ink with `render-core/marks/hit`:
+`inkOnRect` / `inkAtPoint` say where instance i's ink is and how far, and
+`nearestInk` keeps the closest — only a STRICTLY nearer candidate replaces the
+best, so a caller handing candidates back to front gets the mark on top. Dotplot
+is the one shape with a metric of its own, the shader's `capsuleDistPx`, which
+is the same distance measured the shader's way.
+
 Both halves `createMarkBackend` builds extend one of two abstract base classes
 in `@jbrowse/render-core/perRegionRenderingBackend`
 (`GpuPerRegionRenderingBackend`, `Canvas2DPerRegionRenderingBackend`), and a

@@ -145,10 +145,15 @@ function writeRibbonUniforms(
 }
 
 /**
- * Every synteny shape's `writeUniforms`, BY REFERENCE. `StagedUniforms`
- * compares writer identity, so a shape closing over its own wrapper would be
- * four writers where the shaders declare one struct — and the second mark of a
- * block would re-stage bytes the first already wrote.
+ * Every synteny shape's `writeUniforms` — one function where the four shapes
+ * each closed over an identical wrapper, which is the whole of what this buys.
+ *
+ * NOT a `StagedUniforms` saving, though it looks like one: a block is one cell,
+ * a cell is ribbons or an outline, and `paintsBlock` picks one of each pair on
+ * `drawCurves`, so exactly one synteny mark ever draws a block and there is no
+ * second write to skip. The four shaders do declare one `Uniforms` struct
+ * (`syntenyPassGeometry.test.ts` pins it), which is what makes one writer
+ * correct.
  *
  * A cell with no ribbon params writes nothing: `paintsBlock` has declined the
  * block, so the scratch is never drawn from.

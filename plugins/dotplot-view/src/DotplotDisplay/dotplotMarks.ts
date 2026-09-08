@@ -59,10 +59,12 @@ function nearestOnSegmentPx(
   const along = rx * tx + ry * ty
   const clamped = Math.min(Math.max(along, -halfLen), halfLen)
   const distPx = capsuleDistPx(along, ry * tx - rx * ty, halfLen)
+  // x/y/distSq in `InkHit`'s own order, as the shared rect and point forms
+  // declare them, so one hidden class serves every `nearestInk` caller.
   return {
-    distSq: distPx * distPx,
     x: cx + tx * clamped,
     y: cy + ty * clamped,
+    distSq: distPx * distPx,
   }
 }
 

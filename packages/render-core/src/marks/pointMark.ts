@@ -5,7 +5,7 @@ import { valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph } from './glyphPaint.ts'
-import { inkAtPoint, nearestInk } from './markHit.ts'
+import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 
 import type { MarkShape } from './types.ts'
 
@@ -107,17 +107,20 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      // The bar branch, in the same words the shader and the painter take it:
-      // a mark with extent is grabbed at the nearest point along its span, a
-      // glyph at its centre.
+      const cy = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
+      // The bar branch, on the same test the shader and the painter take it.
+      // A bar is the RECT the painter fills, so a cursor anywhere inside one
+      // is on its ink — `MarkShape.hitNearest`'s "distance 0 means on the ink,
+      // edges included", which measuring to the centreline alone did not give.
+      // `BAR_OVERDRAW_PX` stays out of it: that pad is the shader's, and the
+      // hit box is what Canvas2D and the export draw.
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
-      return inkAtPoint(
-        xPx,
-        yPx,
-        hi - lo > diameterPx ? Math.max(lo, Math.min(xPx, hi)) : xStart,
-        valueToYPx(y[i]!, domainMin, domainMax, canvasHeight),
-      )
+      // A glyph offers its centre and nothing else — a disc, a triangle and a
+      // diamond have no rect to clamp into.
+      return hi - lo > diameterPx
+        ? inkOnRect(xPx, yPx, lo, cy - diameterPx / 2, hi - lo, diameterPx)
+        : inkAtPoint(xPx, yPx, xStart, cy)
     })
   },
 }

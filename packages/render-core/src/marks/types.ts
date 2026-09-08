@@ -368,11 +368,19 @@ export function defineMark<
     },
     hitNearest: shape.hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
+          const strip = band?.(state)
           const c = channels(region)
           let hit: MarkHit | undefined
-          // The same three gates `paintBlock` takes, in the same order: what a
-          // mark does not draw here does not answer a hover here either.
-          if (c !== undefined && !bandExcludes(band?.(state), yPx)) {
+          // The three gates `paintBlock` takes, in its order — the band on its
+          // HEIGHT, as there, so a band both backends decline answers nothing
+          // either. The cursor being inside the strip is a fourth, and the ink
+          // being inside it the fifth: a band is a CLIP, so ink outside one was
+          // never drawn and cannot be the nearest thing to anything.
+          if (
+            (!strip || strip.height > 0) &&
+            c !== undefined &&
+            !bandExcludes(strip, yPx)
+          ) {
             const p = params(state, region, block)
             if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
               hit = shape.hitNearest!(
@@ -387,7 +395,7 @@ export function defineMark<
               )
             }
           }
-          return hit
+          return hit && !bandExcludes(strip, hit.y) ? hit : undefined
         }
       : undefined,
   }

@@ -7,7 +7,7 @@ import type { MismatchUploadData } from './types.ts'
 // first `cell` mark — the pivot every 1bp-cell layer shares, which is
 // deliberately NOT the span pivot the gap bars use. `makeCellLeftMapper` floors
 // one-sidedly to match mismatch.slang's snapped left edge, and the cursor
-// coordinate that agrees with that floor is `basePos`; see `MarkShape`.
+// coordinate that agrees with that floor is `basePos`; see `PileupShape`.
 export const MISMATCH_MARK: PileupMark<MismatchUploadData> = {
   shape: 'cell',
   channels: data => ({

@@ -133,12 +133,54 @@ describe('a mark with a band', () => {
     expect(rects).toHaveLength(1)
   })
 
+  // A band is a clip, not an offset, so a display places its rows INSIDE the
+  // strip itself — MAF's row mark subtracts `rowsTop` from the shape's
+  // `scrollTop` for exactly this reason.
+  const placed = (s: State): State => ({
+    ...s,
+    span: { ...s.span, scrollTop: -s.band.top },
+  })
+
   test('a hit outside the band is no hit', () => {
     const hit = (y: number) =>
-      banded.hitNearest!(REGION, block, state(20), 15, y, [0], Infinity)
+      banded.hitNearest!(REGION, block, placed(state(20)), 15, y, [0], Infinity)
     expect(hit(35)).toBeDefined()
     expect(hit(60)).toBeUndefined()
   })
+
+  // The cursor being inside the strip is not enough: this fixture leaves the
+  // row at the canvas top, where the GPU scissor and the Canvas2D clip both
+  // remove it, so there is no ink under y=35 to be nearest to.
+  test('ink the band clipped away is no hit either', () => {
+    expect(
+      banded.hitNearest!(REGION, block, state(20), 15, 35, [0], Infinity),
+    ).toBeUndefined()
+  })
+
+  test('a zero-height band answers no hit, as it draws nothing', () => {
+    expect(
+      banded.hitNearest!(REGION, block, placed(state(0)), 15, 0, [0], Infinity),
+    ).toBeUndefined()
+  })
+})
+
+// The gate is the draw's, so it has to reach the hover too: a shape that
+// declines a block puts no ink on it, and a cursor there is over whatever the
+// mark UNDER it drew.
+test('a block the shape declines answers no hit either', () => {
+  const declining = defineMark({
+    shape: { ...spanMark, paintsBlock: (_b, _f, p) => p.rowHeight > 0 },
+    channels: (d: Region) => d.span,
+    params: (s: State) => s.span,
+  })
+  const on = state(20)
+  const off = { ...on, span: { ...on.span, rowHeight: 0 } }
+  expect(
+    declining.hitNearest!(REGION, block, on, 15, 5, [0], Infinity),
+  ).toBeDefined()
+  expect(
+    declining.hitNearest!(REGION, block, off, 15, 5, [0], Infinity),
+  ).toBeUndefined()
 })
 
 // The shape a display declaring several layers over one shader family has:

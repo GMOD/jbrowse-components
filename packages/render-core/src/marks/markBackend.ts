@@ -19,13 +19,11 @@ import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { Mark, StagedUniforms } from './types.ts'
 
-/**
- * The passes a mark list owns a buffer for: the whole list minus those drawing
- * off another's (`bufferOf`). Uploading to a borrowed pass is silent and its
- * buffer is the lender's, so the skip is stated once — here, for the mark
- * backend's upload and for a display driving its own.
- */
-export function ownedPasses<TRegion, TState extends FrameDimensions>(
+// The passes a mark list owns a buffer for: the whole list minus those drawing
+// off another's (`bufferOf`). Uploading to a borrowed pass is silent and its
+// buffer is the lender's, so the skip is stated once, here — module-local,
+// because `marks/backend` is a published subpath and nothing outside wants it.
+function ownedPasses<TRegion, TState extends FrameDimensions>(
   marks: readonly Mark<TRegion, TState>[],
 ) {
   return marks.filter(m => !m.bufferOf).map(m => m.pass)

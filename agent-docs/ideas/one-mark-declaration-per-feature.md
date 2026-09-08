@@ -165,7 +165,7 @@ wherever a shader's fades are already `//! js-export`ed.
 
 ### What the shape needed that this doc did not predict
 
-- **The pivot is one decision spanning two consumers, not two.** `MarkShape` is
+- **The pivot is one decision spanning two consumers, not two.** `PileupShape` is
   `span | cell`, and it settles the Canvas2D widening AND the cursor coordinate
   together: `span` widens about the midpoint (`fillSpanRect`, twin of
   `expandMinWidthX`) and contains the fractional `genomicPos`; `cell` floors
@@ -196,7 +196,7 @@ anything", and that `clip` wanted the same minus the painter. Both are converted
 now, as one piece rather than one feature at a time, and the prediction was right
 about the pieces and wrong about one of them.
 
-`MarkShape` is `span | cell | point`, and `PileupMark` is a union: a `SpanMark`
+`PileupShape` is `span | cell | point`, and `PileupMark` is a union: a `SpanMark`
 keeps `endBp`, a `PointMark` has no extent at all and states two members in its
 place.
 
@@ -303,7 +303,7 @@ what it draws:
   shader's `floor(pileupRowCenterPx - 0.5)` — but the SVG export emits a `<rect>`
   where it emitted a `<path>`.
 
-So the choice is a third `MarkShape` member (a span that states whether it takes
+So the choice is a third `PileupShape` member (a span that states whether it takes
 the floor) or a decision that the floor is right here and the shader should grow
 `expandMinWidthX` too. Both are decisions rather than refactors, which is why
 this was stopped rather than picked.

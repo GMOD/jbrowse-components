@@ -51,7 +51,12 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // The block a mark is projected through, as the Canvas2D painters already
 // receive it. `bpLength`/`fullBlockWidth` are the block's clip-derived span.
-export interface MarkFrame {
+//
+// `Pileup`-prefixed, and so is the shape tag below, because render-core's mark
+// system has a `MarkFrame` and a `MarkShape` of its own that mean other things
+// — a canvas box and a whole shader/painter/hit triple — and one of this
+// plugin's own files (`renderers/arcMarks.ts`) imports those.
+export interface PileupFrame {
   block: DrawBlock
   bpLength: number
   fullBlockWidth: number
@@ -111,7 +116,7 @@ export interface MarkChannels {
  * not, and the two coordinates are on `CigarCoords` side by side for this
  * reason.
  */
-export type MarkShape = 'span' | 'cell' | 'point'
+export type PileupShape = 'span' | 'cell' | 'point'
 
 // Drawn opacity, as the rule rather than a closure. `widthPx` is what the mark
 // occupies on screen — its true genomic span for `span`/`cell`, its drawn bar
@@ -219,7 +224,7 @@ export interface MarkPaint {
 
 // One feature's mark, as its three consumers need it.
 export interface PileupMark<Data> {
-  shape: MarkShape
+  shape: PileupShape
   channels: (data: Data) => MarkChannels
   fade: FadeRule
   hit: HitRule
@@ -371,7 +376,7 @@ export function paintMarks<Data>(
   ctx: Ctx2D,
   mark: PileupMark<Data>,
   data: Data,
-  frame: MarkFrame,
+  frame: PileupFrame,
   state: RenderState,
   paint: MarkPaint,
   decorate?: (
@@ -527,7 +532,7 @@ export function paintMarks<Data>(
  * answers with the mark of a read painted under the one `hitTestFeature` names
  * alongside it.
  *
- * The containment test is the painter's own pivot read back — see `MarkShape`,
+ * The containment test is the painter's own pivot read back — see `PileupShape`,
  * which is where the two are one decision — so the two cannot disagree about
  * which bases a mark occupies. That is the drift with no cross-backend gate,
  * because every gate this repo has is GPU vs Canvas2D.

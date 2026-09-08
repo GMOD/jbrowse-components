@@ -62,10 +62,10 @@ describe('span: every drawn rect answers its own hit, in both orientations', () 
   })
 })
 
-// Bars only: a glyph paints a path rather than a rect, and its hit target is
-// its centre. Each bar is wider than the glyph and the rows sit far enough
-// apart that no bar is nearer to a point on another's rect than that rect's
-// own centreline.
+// Bars only: a glyph paints a path rather than a rect, so `recordingContext`
+// records the colour run's hull instead of one rect per instance. A bar IS a
+// rect on both sides, which is why this sweeps at containment only, as span's
+// does.
 const points: PointChannels = {
   x: Uint32Array.from([10, 40, 70]),
   x2: Uint32Array.from([30, 60, 95]),
@@ -78,7 +78,6 @@ const points: PointChannels = {
 const pointParams: PointParams = { domain: [0, 1], diameterPx: 6 }
 
 test('point: every drawn bar answers its own hit, in both orientations', () => {
-  const r = pointParams.diameterPx / 2
   for (const reversed of [false, true]) {
     expect(
       sweepDrawAgainstHit(
@@ -87,7 +86,7 @@ test('point: every drawn bar answers its own hit, in both orientations', () => {
         { ...block, reversed },
         { canvasWidth: 60, canvasHeight: 100 },
         pointParams,
-        { maxDistSq: r * r + 1e-9 },
+        { maxDistSq: Number.MIN_VALUE },
       ),
     ).toEqual([])
   }

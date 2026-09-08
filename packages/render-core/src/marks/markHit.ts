@@ -59,7 +59,10 @@ export function nearestInk(
     const ink = inkAt(index)
     if (ink && ink.distSq < bestDistSq) {
       bestDistSq = ink.distSq
-      best = { index, ...ink }
+      // Field by field, not `{ index, ...ink }`, which is both slower and one
+      // shape away from minting a hidden class per ink source and making every
+      // downstream `hit.x` read polymorphic.
+      best = { index, x: ink.x, y: ink.y, distSq: ink.distSq }
     }
   }
   return best

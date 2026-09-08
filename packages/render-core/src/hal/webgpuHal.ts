@@ -494,12 +494,12 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   ) {
     const existing = this.passTextures.get(passId)
     if (existing) {
-      // Same hazard as a buffer, one step further from a live caller: every
-      // `uploadTexture` in tree is a colour ramp written from an upload autorun
-      // (hic's `LinearHicDisplay/model.ts`, variants' `LDDisplay/shared.ts`),
-      // which never runs inside a frame. Routing it through the same deferral
-      // costs nothing and keeps "replaced mid-frame" from being a hazard again
-      // the first time a renderer builds a texture from render state.
+      // Same hazard as a buffer, and no longer a hypothetical one: every
+      // `uploadTexture` in tree is a colour ramp, and since the ramp became a
+      // `defineMark` `texture` they are all written by `GpuMarkBackend`'s
+      // `bindRamp` from inside `drawRegion` — mid-frame, between an encoded
+      // draw and its submit. The deferral is what makes replacing one there
+      // safe.
       this.destroyWhenIdle(existing.texture)
     }
     const texture = this.device.createTexture({
