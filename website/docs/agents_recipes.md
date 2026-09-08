@@ -464,20 +464,25 @@ return { ...added, valuesInView: values.length }
 ## The same data under another display
 
 `track.compatibleDisplays` is the set the containing view can draw, and
-`replaceDisplay` swaps the drawn one for another of them. Read the ids off the
-track rather than naming a type: an id the track does not carry throws, and a
-display TYPE passed to `showTrack` does not — it synthesizes a dangling id that
-resolves back to the default, so the track redraws unchanged and the call
-reports success.
+`await track.launchDisplay(id)` swaps to one of them. Read the ids off the track
+rather than naming a type: an id the track does not carry throws, and a display
+TYPE passed to `showTrack` does not — it synthesizes a dangling id that resolves
+back to the default, so the track redraws unchanged and the call reports
+success.
 
 ```js
 const track = jb.trackModel('volvox_test_vcf')
 const ids = track.compatibleDisplays.map(d => d.displayId)
 const drawn = track.activeDisplay.configuration.displayId
 const next = ids.find(id => id !== drawn)
-track.replaceDisplay(drawn, next)
+await track.launchDisplay(next)
 return { ids, from: drawn, to: next, ...(await jb.waitReady(30000)) }
 ```
+
+`launchDisplay`, not the `replaceDisplay` beneath it: a display type's state
+model is a dynamic import until something shows it, and `replaceDisplay` is sync
+and asserts it is loaded. This is `launchTrack` against `showTrack` one level
+down.
 
 Against volvox this answers with the three linear displays a `VariantTrack`
 carries — `LinearVariantDisplay`, `LinearMultiSampleVariantDisplay`,

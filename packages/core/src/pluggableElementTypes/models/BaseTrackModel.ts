@@ -457,6 +457,32 @@ export function createBaseTrackModel(
         })
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * The awaitable sibling of `replaceDisplay`: loads the target display's
+       * state model, then swaps to it carrying whatever settings the outgoing
+       * display can hand over.
+       *
+       * `replaceDisplay` stays a plain sync action and ASSERTS the model is
+       * loaded, and every display state model in this tree is a dynamic import
+       * until something shows one — so a caller that has not already shown the
+       * target needs this. Named like `launchTrack`, which is the same problem
+       * one level up.
+       */
+      async launchDisplay(displayId: string) {
+        const displays = self.configuration.displays as DisplayConf[]
+        const { type } = getDisplayConf(displays, displayId)
+        await pm.resolveDisplayTypeRecord(type)?.loadStateModel()
+        if (isAlive(self)) {
+          self.replaceDisplay(
+            self.activeDisplay.configuration.displayId,
+            displayId,
+            self.activeDisplay.getPortableSettings?.(displayId) ?? {},
+          )
+        }
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -562,29 +588,15 @@ export function createBaseTrackModel(
                       // being replaced, so leaving the menu up would keep a
                       // list of items built against a destroyed MST node
                       keepMenuOpen: false,
-                      // the chosen display's state model may still be a dynamic
-                      // import away, so load it before swapping — replaceDisplay
-                      // itself stays a plain sync action
+                      // launchDisplay, because the chosen display's state
+                      // model may still be a dynamic import away
                       onClick: () => {
                         if (d.displayId !== shownId) {
-                          void (async () => {
-                            try {
-                              await pm
-                                .resolveDisplayTypeRecord(d.type)
-                                ?.loadStateModel()
-                              if (isAlive(self)) {
-                                self.replaceDisplay(
-                                  shownId,
-                                  d.displayId,
-                                  self.activeDisplay.getPortableSettings?.(
-                                    d.displayId,
-                                  ) ?? {},
-                                )
-                              }
-                            } catch (e) {
+                          void self
+                            .launchDisplay(d.displayId)
+                            .catch((e: unknown) => {
                               getSession(self).notifyError(`${e}`, e)
-                            }
-                          })()
+                            })
                         }
                       },
                     }

@@ -615,10 +615,28 @@ try {
         await openRecipeSession()
         openedFor = heading
       }
+      // An error TOAST fails the recipe as surely as a throw does. The page
+      // promises "the values quoted are what came back", and a snippet that
+      // notifies an error and returns anyway satisfied a did-not-throw check
+      // while doing the wrong thing — which is how a recipe naming a display
+      // type v5 had removed passed here for a release. Display failures
+      // surface through `notReady` rather than a toast (the deliberately
+      // failing track in "Prove a track drew" is the case that proves it), so
+      // an error-level notification here means the snippet itself is wrong.
       const outcome = await client
-        .call('run_javascript', { code, timeoutMs: 60_000 })
+        .callJson('run_javascript', { code, timeoutMs: 60_000 })
         .then(
-          () => '',
+          result => {
+            const errors = (
+              (result?.notifications ?? []) as {
+                level: string
+                message: string
+              }[]
+            ).filter(n => n.level === 'error')
+            return errors.length > 0
+              ? `raised ${errors.length} error notification(s): ${errors.map(n => n.message).join('; ')}`
+              : ''
+          },
           (e: Error) => e.message,
         )
       check(`recipe runs: ${heading}`, outcome === '', outcome)
