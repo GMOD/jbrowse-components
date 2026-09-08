@@ -1,43 +1,14 @@
 import { isFeature } from '@jbrowse/core/util'
-import createJexlInstance from '@jbrowse/core/util/jexl'
 import { waitFor } from '@testing-library/react'
 
-import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
-import { findGlyph } from '../RenderFeatureDataRPC/glyphs/findGlyph.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
-  mockDisplayConfig,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { isGeneLikeType } from './collapseIntronsMenu.ts'
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
-
-function mockFeature(opts: {
-  type: string | undefined
-  id: string
-  start: number
-  end: number
-  subfeatures?: Feature[]
-}): Feature {
-  const { type, id, start, end, subfeatures = [] } = opts
-  const map: Record<string, unknown> = {
-    type,
-    name: id,
-    start,
-    end,
-    strand: 1,
-    subfeatures,
-  }
-  return {
-    get: (key: string) => map[key],
-    id: () => id,
-    parent: () => undefined,
-  } as unknown as Feature
-}
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -214,127 +185,39 @@ describe('collapse introns context menu', () => {
   })
 })
 
-describe('isGeneLikeType', () => {
-  it.each([
-    'gene',
-    'protein_coding_gene',
-    'pseudogene',
-    'ncRNA_gene',
-    'V_gene_segment',
-    'mRNA',
-    'lnc_RNA',
-    'tRNA',
-    'transcript',
-    'pseudogenic_transcript',
-  ])('offers a collapse on %s', type => {
-    expect(isGeneLikeType(type)).toBe(true)
-  })
-
-  it.each([
-    'intergenic_region',
-    'exon',
-    'CDS',
-    'mature_protein_region_of_CDS',
-    'repeat_region',
-    undefined,
-  ])('withholds it from %s', type => {
-    expect(isGeneLikeType(type)).toBe(false)
-  })
-})
-
-// The type test answers for a gene and for nothing else that splices, so these
-// go through the real renderer rather than a hand-written FlatbushItem: the
-// glyph's `spliced` record is the only evidence these shapes leave, and a
-// fixture asserting it by hand would pass whether or not the glyph writes it.
+// The gate is a type test, so these ask the menu itself rather than
+// re-asserting the predicate core already pins.
 describe('which right-clicked features are offered a collapse', () => {
-  function part(type: string | undefined, start: number, end: number): Feature {
-    return mockFeature({ type, start, end, id: `${type}-${start}` })
-  }
-
-  function offersCollapse(feature: Feature) {
-    const config = mockDisplayConfig()
-    const { flatbushItems } = collectRenderData({
-      layouts: [findGlyph(feature, config)({ feature, config })],
-      regionStart: 0,
-      regionEnd: 10_000,
-      config,
-      colorByCDS: false,
-      peptideDataMap: undefined,
-      jexl: createJexlInstance(),
-    })
+  function offersCollapse(type: string | undefined) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const item = flatbushItems[0]!
+    const item = makeFlatbushItem({
+      featureId: 'f1',
+      type,
+      startBp: 1050,
+      endBp: 9000,
+    })
     display.setRpcData(0, makeFeatureData({ flatbushItems: [item] }), ctgA)
     rightClick(display, item)
     const items: MenuItem[] = display.contextMenuItems()
     return items.some(m => 'label' in m && m.label === 'Collapse introns')
   }
 
-  it('offers it on a cDNA alignment, which no gene-like type matches', () => {
-    const match = mockFeature({
-      type: 'cDNA_match',
-      id: 'm1',
-      start: 1050,
-      end: 9000,
-      subfeatures: [
-        part('match_part', 1050, 1500),
-        part('match_part', 8000, 9000),
-      ],
-    })
-    expect(isGeneLikeType('cDNA_match')).toBe(false)
-    expect(offersCollapse(match)).toBe(true)
-  })
+  it.each(['gene', 'mRNA', 'lnc_RNA', 'cDNA_match', 'EST_match', 'match'])(
+    'offers it on %s',
+    type => {
+      expect(offersCollapse(type)).toBe(true)
+    },
+  )
 
-  it('offers it on a BED12 whose blocks are all it carries, and which has no type at all', () => {
-    const bed = mockFeature({
-      type: undefined,
-      id: 'bed1',
-      start: 1050,
-      end: 9000,
-      subfeatures: [part('block', 1050, 1500), part('block', 8000, 9000)],
-    })
-    expect(offersCollapse(bed)).toBe(true)
-  })
-
-  it('withholds it from a BED12 drawn as one unbroken block', () => {
-    const bed = mockFeature({
-      type: undefined,
-      id: 'bed1',
-      start: 1050,
-      end: 9000,
-      subfeatures: [part('block', 1050, 9000)],
-    })
-    expect(offersCollapse(bed)).toBe(false)
-  })
-
-  it('withholds it from a typeless feature that draws nothing inside itself', () => {
-    expect(
-      offersCollapse(
-        mockFeature({ type: undefined, id: 'bed1', start: 1050, end: 9000 }),
-      ),
-    ).toBe(false)
-  })
-
-  // A gene's own glyph paints no intron — the transcripts it stacks do — so it
-  // is the type test, not `spliced`, that has to answer for it.
-  it('offers it on a gene, whose own glyph records no splice', () => {
-    const gene = mockFeature({
-      type: 'gene',
-      id: 'g1',
-      start: 1050,
-      end: 9000,
-      subfeatures: [
-        mockFeature({
-          type: 'mRNA',
-          id: 'g1.1',
-          start: 1050,
-          end: 9000,
-          subfeatures: [part('exon', 1050, 1500), part('exon', 8000, 9000)],
-        }),
-      ],
-    })
-    expect(offersCollapse(gene)).toBe(true)
+  it.each([
+    'exon',
+    'match_part',
+    'repeat_region',
+    'intergenic_region',
+    undefined,
+  ])('withholds it from %s', type => {
+    expect(offersCollapse(type)).toBe(false)
   })
 })
 

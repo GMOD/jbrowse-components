@@ -7,7 +7,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
-import { pluralize } from '@jbrowse/core/util'
+import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -21,7 +21,6 @@ import {
 import baseStateModelFactory from './baseModel.ts'
 import {
   collapseIntronsMenuItem,
-  isGeneLikeType,
   offersCollapseIntrons,
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
@@ -360,7 +359,7 @@ export default function stateModelFactory(
           const info = self.contextMenuInfo
           const data =
             info && self.laidOutDataMap.get(info.displayedRegionIndex)
-          return info && offersCollapseIntrons(info)
+          return info && offersCollapseIntrons(info.item.type)
             ? [
                 ...base,
                 collapseIntronsMenuItem(

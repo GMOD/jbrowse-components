@@ -481,6 +481,7 @@ export {
   makeAbortError,
 } from './aborting.ts'
 export { linkify } from './linkify.ts'
+export { isGeneLikeType, isSequenceMatchType } from './featureTypes.ts'
 export { locStringsToRegions } from './locStringsToRegions.ts'
 export type { RefNameSource } from './locStringsToRegions.ts'
 export {

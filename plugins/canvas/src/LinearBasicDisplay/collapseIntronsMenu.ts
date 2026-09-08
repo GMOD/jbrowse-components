@@ -4,6 +4,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getSession,
+  isGeneLikeType,
+  isSequenceMatchType,
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -25,23 +27,14 @@ const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
-// Anchored at the end for gene and RNA so 'intergenic_region' is not offered
-// a collapse.
-const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript/
-export function isGeneLikeType(type: string | undefined) {
-  return type !== undefined && GENE_LIKE_TYPE.test(type.toLowerCase())
-}
-
 /**
- * A gene holds its introns in the transcripts it stacks, so its own glyph
- * paints none and only the type answers for it. The other two intron-bearing
- * shapes have no type to answer with — a cDNA or EST alignment types itself
- * `match`, and a BED12 with no thick region misses the gene heuristic and
- * carries no type at all — so they are read off the glyph, which recorded
- * whether it painted an intron between the parts it drew.
+ * The two type families whose parts are separated by introns: a gene or one of
+ * its transcripts, and a sequence alignment, whose `match_part` children are
+ * the aligned blocks. A gene answers by type rather than by what its glyph
+ * drew, because its own introns belong to the transcripts it stacks.
  */
-export function offersCollapseIntrons(info: FeatureContextMenuInfo) {
-  return isGeneLikeType(info.item.type) || info.item.spliced === true
+export function offersCollapseIntrons(type: string | undefined) {
+  return isGeneLikeType(type) || isSequenceMatchType(type)
 }
 
 // Structural rather than the model's instance type: the factory calls this
