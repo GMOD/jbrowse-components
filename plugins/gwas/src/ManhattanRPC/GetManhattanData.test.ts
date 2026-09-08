@@ -51,6 +51,7 @@ function args(overrides: Partial<GetManhattanDataArgs> = {}) {
     colorBy: 'ld' as const,
     indexSnp: 'rsIndex',
     ldAdapterConfig: LD_ADAPTER,
+    ldWindowBp: 1_000_000,
     ...overrides,
   }
 }

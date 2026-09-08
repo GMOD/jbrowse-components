@@ -170,10 +170,7 @@ const ManhattanBody = observer(function ManhattanBody({
         />
       ) : null}
       {model.indexSnpMissing ? (
-        <LdIndexWarning
-          offsetTop={plotBox.yTop}
-          offscreen={model.indexSnpOffscreen}
-        />
+        <LdIndexWarning offsetTop={plotBox.yTop} />
       ) : null}
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => (

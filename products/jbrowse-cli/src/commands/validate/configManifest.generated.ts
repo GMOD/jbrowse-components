@@ -5042,6 +5042,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | GwasColorBy)"
         },
         {
+          "name": "ldWindowBp",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },

@@ -31,7 +31,6 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   hoveredFeature: ManhattanHit | undefined
   ldColoringActive: boolean
   indexSnpMissing: boolean
-  indexSnpOffscreen: boolean
   showLdLegend: boolean
   // the significance threshold as a score rule, [] when unset or off-domain
   scoreRuleMarks: ScoreRuleMark[]

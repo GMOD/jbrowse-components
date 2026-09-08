@@ -36,6 +36,18 @@ test('partner looked up by position when name is absent', () => {
   expect(evalR2(f)).toBe(0.3)
 })
 
+// The lookup half of the unnamed-variant fix. A GWAS file writes `.` for a
+// variant it has no id for as readily as the LD file does, and `.` reaching the
+// by-name lookup is what coloured such a feature as somebody else's partner.
+test('a feature named `.` is looked up by position, never by that name', () => {
+  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const atPartner = feat({ name: '.', start: 299 })
+  expect(evalR2(atPartner)).toBe(0.3)
+  const nowhereNear = feat({ name: '.', start: 999 })
+  expect(evalR2(nowhereNear)).toBeNaN()
+  expect(evalColor(nowhereNear)).toBe(ldBinColor(undefined))
+})
+
 test('SNP absent from the LD data: grey color, NaN r²', () => {
   const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
   const f = feat({ name: 'rsUnknown', start: 999 })

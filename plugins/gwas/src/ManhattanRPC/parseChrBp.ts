@@ -4,8 +4,8 @@
 // id ("chr2:"), an exponential ("chr2:1e3"), or a bare rsID (no colon) all
 // return undefined, meaning "not a placeable locus, match by name instead".
 // Single source of truth for the two consumers (the worker's region-rename in
-// GetManhattanData and the off-screen test in isIndexSnpOffscreen) so their
-// parse rules can't drift.
+// GetManhattanData and `ldQueryWindow`, which anchors the LD read on the
+// index) so their parse rules can't drift.
 export function parseChrBp(
   indexSnp: string,
 ): { refName: string; bp: number } | undefined {

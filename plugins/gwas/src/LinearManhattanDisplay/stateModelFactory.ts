@@ -40,8 +40,6 @@ import {
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
-
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type {
   ManhattanContextMenuInfo,
@@ -236,6 +234,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * bp either side of the index SNP the `.ld` file is read at — the
+         * reach-back a pair whose index is the B side needs. See the slot.
+         */
+        get ldWindowBp(): number {
+          return getConf(self, 'ldWindowBp')
+        },
+        /**
+         * #getter
          * LD coloring is actually in effect — the mode is on *and* there's an .ld
          * adapter for it to read. `colorBy` alone can be 'ld' from config with no
          * adapter configured, in which case the worker silently falls back to
@@ -356,20 +362,22 @@ export function stateModelFactory(
         /**
          * #method
          * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
-         * index SNP, LD adapter) triggers a refetch, since the worker bakes
-         * per-feature color into the result
+         * index SNP, LD adapter, LD window) triggers a refetch, since the worker
+         * bakes per-feature color into the result
          */
         rpcProps(): {
           color: string
           colorBy: 'normal' | 'ld'
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
+          ldWindowBp: number
         } {
           return {
             color: self.color,
             colorBy: self.colorBy,
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
+            ldWindowBp: self.ldWindowBp,
           }
         },
         /**
@@ -456,6 +464,13 @@ export function stateModelFactory(
          * true when LD coloring is active with data loaded, but no region's LD
          * data referenced the index SNP — so every point is grey. LD is a
          * single-region analysis, so "found in no loaded region" means missing.
+         *
+         * Panning is no longer one of the ways in: the LD read is anchored on
+         * the index rather than on the viewport (`ldQueryWindow`), so a loaded
+         * region on the index's own contig finds it wherever the view has
+         * moved to. What is left is the index being absent from the file,
+         * named differently there than in the GWAS file, or on a contig none
+         * of the loaded regions are.
          */
         get indexSnpMissing(): boolean {
           return (
@@ -464,18 +479,6 @@ export function stateModelFactory(
             self.rpcDataMap.size > 0 &&
             ![...self.rpcDataMap.values()].some(d => d.indexFound)
           )
-        },
-        /**
-         * #getter
-         * When the index SNP is a `chr:bp` locus, whether it lies outside every
-         * visible region — the benign, pannable cause of `indexSnpMissing`
-         * (PLINK `--ld-window` files carry no records once you pan away from the
-         * index), as opposed to reference-name aliasing or the SNP being absent
-         * from the file. A bare rsID index returns false since its position isn't
-         * known here.
-         */
-        get indexSnpOffscreen(): boolean {
-          return isIndexSnpOffscreen(self.indexSnp, self.host.visibleRegions)
         },
         /**
          * #getter

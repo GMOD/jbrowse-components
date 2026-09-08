@@ -74,7 +74,6 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
                 canvasWidth={legendRight}
                 maxHeight={height - YSCALEBAR_LABEL_OFFSET}
                 indexSnpMissing={model.indexSnpMissing}
-                indexSnpOffscreen={model.indexSnpOffscreen}
               />
             </g>
           ) : null}

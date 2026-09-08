@@ -1,5 +1,6 @@
 import { buildLdToIndex, posKey } from './ldToIndex.ts'
 
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type { LDRecordSource, PlinkLDRecord } from '@jbrowse/ld-core'
 
 function rec(p: Partial<PlinkLDRecord>): PlinkLDRecord {
@@ -19,6 +20,33 @@ function source(
   records: PlinkLDRecord[],
 ): Pick<LDRecordSource, 'getLDRecords'> {
   return { getLDRecords: () => Promise.resolve(records) }
+}
+
+// An LD file with a real index over it: a row is findable only by its A side,
+// which is what makes the query window matter at all.
+function indexedSource(
+  ownRefName: string,
+  records: PlinkLDRecord[],
+): Pick<LDRecordSource, 'getLDRecords'> {
+  return {
+    getLDRecords: ({ refName, start, end }: NoAssemblyRegion) =>
+      Promise.resolve(
+        refName === ownRefName
+          ? records.filter(r => r.bpA > start && r.bpA <= end)
+          : [],
+      ),
+  }
+}
+
+// plink's own --ld-window-kb default, and the config slot's
+const WINDOW_BP = 1_000_000
+
+function build(
+  args: Omit<Parameters<typeof buildLdToIndex>[0], 'windowBp'> & {
+    windowBp?: number
+  },
+) {
+  return buildLdToIndex({ windowBp: WINDOW_BP, ...args })
 }
 
 // An LD file that answers only to its own spelling of the contig, the way a
@@ -41,7 +69,7 @@ test('posKey is 1-based to line up with chr:bp ids', () => {
 })
 
 test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations', async () => {
-  const ld = await buildLdToIndex({
+  const ld = await build({
     adapter: source([
       // index as snpA
       rec({
@@ -73,7 +101,7 @@ test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations'
 })
 
 test('matches the index SNP by chr:bp as well as by id', async () => {
-  const ld = await buildLdToIndex({
+  const ld = await build({
     adapter: source([
       rec({
         snpA: 'rsA',
@@ -92,7 +120,7 @@ test('matches the index SNP by chr:bp as well as by id', async () => {
 })
 
 test('indexFound is false when no pair references the index SNP', async () => {
-  const ld = await buildLdToIndex({
+  const ld = await build({
     adapter: source([rec({ snpA: 'rsA', snpB: 'rsB', r2: 0.9 })]),
     region,
     indexSnp: 'rsIndex',
@@ -122,7 +150,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   const gwasRegion = { refName: '1', start: 0, end: 1000, assemblyName: 'hg38' }
 
   it('queries the LD file by its own name', async () => {
-    const built = await buildLdToIndex({
+    const built = await build({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -132,7 +160,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('keys positions in the GWAS scheme, which is what a feature looks up', async () => {
-    const built = await buildLdToIndex({
+    const built = await build({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -146,7 +174,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('matches a chr:bp index written in the GWAS scheme', async () => {
-    const built = await buildLdToIndex({
+    const built = await build({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -159,7 +187,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('gives a partner on another contig no position key at all', async () => {
-    const built = await buildLdToIndex({
+    const built = await build({
       adapter: ldSource('chr1', [
         rec({
           snpA: 'rsIndex',
@@ -185,7 +213,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('without ldRefName the query misses entirely — the bug this fixes', async () => {
-    const built = await buildLdToIndex({
+    const built = await build({
       adapter: ld,
       region: gwasRegion,
       indexSnp: 'rsIndex',
@@ -196,7 +224,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
 })
 
 test('a pair where both sides are the index SNP is ignored', async () => {
-  const ld = await buildLdToIndex({
+  const ld = await build({
     adapter: source([
       rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsIndex', bpB: 100, r2: 1 }),
     ]),
@@ -205,4 +233,95 @@ test('a pair where both sides are the index SNP is ignored', async () => {
   })
   expect(ld.indexFound).toBe(false)
   expect(ld.r2ByKey.size).toBe(0)
+})
+
+// The defect the index anchoring exists to fix, in the shape
+// test_data/gwas/SLE.ld actually has: every row carries the index as its A
+// side, so a viewport panned past the index finds no row mentioning it and
+// every point goes grey. Measured on that file, a 200kb pan in either
+// direction took 1212 partners to 0.
+describe('a viewport panned away from the index SNP', () => {
+  const INDEX_BP = 191_958_656
+  const ld = indexedSource(
+    '2',
+    [191_794_580, 192_010_000, 192_115_052].map((bpB, i) =>
+      rec({
+        chrA: '2',
+        bpA: INDEX_BP,
+        snpA: 'rsIndex',
+        chrB: '2',
+        bpB,
+        snpB: `rsP${i}`,
+        r2: 0.5,
+      }),
+    ),
+  )
+  // the demo's own window moved 200kb right; the index is no longer inside it
+  const panned = {
+    refName: '2',
+    start: 191_990_000,
+    end: 192_320_000,
+    assemblyName: 'hg19',
+  }
+  const indexSnp = `2:${INDEX_BP}`
+
+  it('still colours, because the read is anchored on the index', async () => {
+    const built = await build({
+      adapter: ld,
+      region: panned,
+      ldRefName: '2',
+      indexSnp,
+    })
+    expect(built.indexFound).toBe(true)
+    expect(built.r2ByKey.get('2:192010000')).toBe(0.5)
+  })
+
+  // the viewport-anchored read this replaced, in the form this window can
+  // express it: a window that does not reach the index finds no row naming it
+  it('finds nothing once the window no longer reaches the index', async () => {
+    const built = await build({
+      adapter: ld,
+      region: panned,
+      ldRefName: '2',
+      indexSnp: `2:${INDEX_BP + 1}`,
+      windowBp: 0,
+    })
+    expect(built.indexFound).toBe(false)
+    expect(built.r2ByKey.size).toBe(0)
+  })
+
+  it('reads nothing at all for an index on another contig', async () => {
+    const getLDRecords = jest.fn(() => Promise.resolve([]))
+    const built = await build({
+      adapter: { getLDRecords },
+      region: panned,
+      ldRefName: '2',
+      indexSnp: '7:1000',
+    })
+    expect(getLDRecords).not.toHaveBeenCalled()
+    expect(built.indexFound).toBe(false)
+  })
+})
+
+// PLINK writes `.` for a variant it has no id for. Keyed as an id, every
+// unnamed partner in a file collides on the one entry and the last read wins,
+// so a feature the GWAS file also leaves unnamed reads back a stranger's r²,
+// and one with no LD record at all is coloured as a partner.
+test('an unnamed partner does not shadow a named one', async () => {
+  const ld = await build({
+    adapter: source([
+      rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 200, r2: 0.9 }),
+      rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 300, r2: 0.1 }),
+      rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsNamed', bpB: 400, r2: 0.7 }),
+    ]),
+    region,
+    indexSnp: 'chr1:100',
+  })
+  // each unnamed partner keeps its own r² under its own position
+  expect(ld.r2ByKey.get('chr1:200')).toBe(0.9)
+  expect(ld.r2ByKey.get('chr1:300')).toBe(0.1)
+  // and `.` never becomes a key, so a feature named `.` falls through to its
+  // position instead of reading whichever unnamed partner was written last
+  expect(ld.r2ByKey.get('.')).toBeUndefined()
+  expect(ld.r2ByKey.get('rsNamed')).toBe(0.7)
 })

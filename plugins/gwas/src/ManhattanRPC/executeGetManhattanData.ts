@@ -131,6 +131,7 @@ async function makeEvaluators(
     | 'indexSnp'
     | 'ldAdapterConfig'
     | 'ldRefName'
+    | 'ldWindowBp'
   > & {
     pluginManager: PluginManager
     statusCallback: StatusCallback | undefined
@@ -143,7 +144,8 @@ async function makeEvaluators(
   // this side said yes where that side said no, the LD read would run with no
   // `ldRefName` and query the PLINK file under the GWAS file's name.
   if (ldColoringRequested(args)) {
-    const { indexSnp, ldAdapterConfig, ldRefName, stopTokenCheck } = args
+    const { indexSnp, ldAdapterConfig, ldRefName, ldWindowBp, stopTokenCheck } =
+      args
     const { dataAdapter: ldAdapter } = await getAdapter(
       pluginManager,
       sessionId,
@@ -155,7 +157,13 @@ async function makeEvaluators(
       )
     }
     const ld = await updateStatus('Downloading LD data', statusCallback, () =>
-      buildLdToIndex({ adapter: ldAdapter, region, ldRefName, indexSnp }),
+      buildLdToIndex({
+        adapter: ldAdapter,
+        region,
+        ldRefName,
+        indexSnp,
+        windowBp: ldWindowBp,
+      }),
     )
     checkStopTokenThrottled(stopTokenCheck)
     return {
@@ -186,6 +194,7 @@ export async function executeGetManhattanData({
     indexSnp,
     ldAdapterConfig,
     ldRefName,
+    ldWindowBp,
     stopToken,
     statusCallback,
   } = args
@@ -215,6 +224,7 @@ export async function executeGetManhattanData({
     indexSnp,
     ldAdapterConfig,
     ldRefName,
+    ldWindowBp,
     statusCallback,
     stopTokenCheck,
   })

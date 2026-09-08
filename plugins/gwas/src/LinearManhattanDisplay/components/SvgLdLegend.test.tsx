@@ -6,19 +6,10 @@ import SvgLdLegend from './SvgLdLegend.tsx'
 
 afterEach(cleanup)
 
-function renderLegend(props: {
-  maxHeight: number
-  indexSnpMissing?: boolean
-  indexSnpOffscreen?: boolean
-}) {
+function renderLegend(props: { maxHeight: number; indexSnpMissing?: boolean }) {
   return render(
     <svg>
-      <SvgLdLegend
-        canvasWidth={800}
-        indexSnpMissing={false}
-        indexSnpOffscreen={false}
-        {...props}
-      />
+      <SvgLdLegend canvasWidth={800} indexSnpMissing={false} {...props} />
     </svg>,
   )
 }
@@ -45,19 +36,6 @@ test('a default-height track folds the overflow into a "+N more" row', () => {
 })
 
 test('a missing index SNP says why every point is grey', () => {
-  const { getByText } = renderLegend({
-    maxHeight: 400,
-    indexSnpMissing: true,
-    indexSnpOffscreen: false,
-  })
+  const { getByText } = renderLegend({ maxHeight: 400, indexSnpMissing: true })
   getByText('Index SNP not in LD data: all grey')
-})
-
-test('an off-screen index SNP names the benign case instead', () => {
-  const { getByText } = renderLegend({
-    maxHeight: 400,
-    indexSnpMissing: true,
-    indexSnpOffscreen: true,
-  })
-  getByText('Index SNP off-screen: all grey')
 })

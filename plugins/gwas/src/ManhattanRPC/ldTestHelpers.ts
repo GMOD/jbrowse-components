@@ -2,11 +2,14 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import type { LdToIndex } from './ldToIndex.ts'
 
+// The `.` entry is one `buildLdToIndex` no longer writes, kept here so the
+// lookup's own refusal to read it is testable rather than merely unreachable.
 export const testLd: LdToIndex = {
   r2ByKey: new Map([
     ['rsB', 0.9],
     ['chr1:200', 0.9],
     ['chr1:300', 0.3],
+    ['.', 0.77],
   ]),
   indexFound: true,
 }

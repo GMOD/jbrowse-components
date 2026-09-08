@@ -1,3 +1,5 @@
+import { parseChrBp } from './parseChrBp.ts'
+
 import type { Region } from '@jbrowse/core/util'
 import type { LDRecordSource } from '@jbrowse/ld-core'
 
@@ -5,6 +7,17 @@ import type { LDRecordSource } from '@jbrowse/ld-core'
 // The position key therefore uses start+1 so it lines up with `chr:bp` ids.
 export function posKey(refName: string, start: number) {
   return `${refName}:${start + 1}`
+}
+
+// PLINK writes `.` for a variant it has no id for, and a `.` is not an
+// identifier — it is the absence of one. Keyed as if it were, every unnamed
+// partner in a file collides on the single `.` entry and the last one wins, so
+// a feature the GWAS file also leaves unnamed reads back a stranger's r², and
+// one with no LD record at all is colored as a partner. Both sides of the
+// name comparison go through this, so an unnamed record can neither be keyed
+// nor be mistaken for an unnamed index.
+export function isNamedSnp(name: string | undefined): name is string {
+  return name !== undefined && name !== '' && name !== '.'
 }
 
 // True when a feature's SNP id or its chr:bp position key equals the index SNP.
@@ -21,15 +34,16 @@ export function matchesIndexSnp(
   key: string | undefined,
   indexSnp: string,
 ) {
-  return name === indexSnp || key === indexSnp
+  return (isNamedSnp(name) && name === indexSnp) || key === indexSnp
 }
 
 export interface LdToIndex {
-  // r² keyed by both the partner's SNP id and its `chr:bp` position, so a
-  // feature can be looked up by name or by position.
+  // r² keyed by the partner's `chr:bp` position and, where the file names it,
+  // by its SNP id too, so a feature can be looked up either way.
   r2ByKey: Map<string, number>
-  // True when no record in the region referenced the index SNP at all — lets
-  // the caller distinguish "index not in this LD dataset" from "real zeros".
+  // True when no record in the index's window referenced the index SNP at all
+  // — lets the caller distinguish "index not in this LD dataset" from "real
+  // zeros".
   indexFound: boolean
 }
 
@@ -40,12 +54,61 @@ export function lookupR2(
   name: string | undefined,
   key: string,
 ): number | undefined {
-  const byName = name !== undefined ? ld.r2ByKey.get(name) : undefined
+  const byName = isNamedSnp(name) ? ld.r2ByKey.get(name) : undefined
   return byName !== undefined ? byName : ld.r2ByKey.get(key)
 }
 
+// Where to read the `.ld` file for one region's coloring, in the LD adapter's
+// naming scheme, or undefined when no record could possibly help.
+//
+// **Anchored on the index SNP, not on the viewport.** PLINK emits a pair once
+// and an index over the file finds a row by its A side, so a window that does
+// not contain the index returns no row that mentions it: read the viewport and
+// panning the index off screen greys every point. Measured on
+// `test_data/gwas/SLE.ld`, whose rows all carry the index as their A side, a
+// 200kb pan in either direction took 1212 partners to 0.
+//
+// `windowBp` is the reach-back, and it is a setting rather than something
+// discoverable here because the file does not record the `--ld-window-kb` it
+// was written at.
+//
+// The two fallbacks are the cases with no locus to anchor on:
+//   - a bare rsID index has no position until a record names it, so the
+//     viewport is still the only window there is, and the scan matches by id.
+//   - a placeable index on another contig can have no partner among this
+//     region's features at all — PLINK's windowed output is same-contig — so
+//     there is nothing to read. Returning undefined skips the request rather
+//     than spending it to find nothing.
+export function ldQueryWindow({
+  region,
+  queryRefName,
+  indexSnp,
+  windowBp,
+}: {
+  region: Region
+  queryRefName: string
+  indexSnp: string
+  windowBp: number
+}) {
+  // `indexSnp` and `region.refName` are both in the GWAS adapter's scheme
+  // (`GetManhattanData` renames the index through the same pass as the
+  // region), so they are comparable; the window that comes out is spelled in
+  // the LD file's scheme, which is what the adapter is asked in.
+  const parsed = parseChrBp(indexSnp)
+  if (!parsed) {
+    return { refName: queryRefName, start: region.start, end: region.end }
+  }
+  return parsed.refName === region.refName
+    ? {
+        refName: queryRefName,
+        start: Math.max(0, parsed.bp - 1 - windowBp),
+        end: parsed.bp + windowBp,
+      }
+    : undefined
+}
+
 // Build the per-SNP r²-to-index lookup from a PLINK .ld source. Reads every
-// pair touching the region, keeps those where one side is the index SNP, and
+// pair in the index's window, keeps those where one side is the index SNP, and
 // maps the *other* side's r². Captures both orientations (index as SNP_A or
 // SNP_B) since PLINK emits each pair once.
 //
@@ -70,6 +133,7 @@ export async function buildLdToIndex({
   region,
   ldRefName,
   indexSnp,
+  windowBp,
 }: {
   // Only the A-side scan is needed here, so accept the narrower capability.
   adapter: Pick<LDRecordSource, 'getLDRecords'>
@@ -81,13 +145,15 @@ export async function buildLdToIndex({
   // agree.
   ldRefName?: string
   indexSnp: string
+  // bp either side of the index to read; see `ldQueryWindow`.
+  windowBp: number
 }): Promise<LdToIndex> {
   const queryRefName = ldRefName ?? region.refName
-  const records = await adapter.getLDRecords({
-    refName: queryRefName,
-    start: region.start,
-    end: region.end,
-  })
+  const query = ldQueryWindow({ region, queryRefName, indexSnp, windowBp })
+  if (!query) {
+    return { r2ByKey: new Map(), indexFound: false }
+  }
+  const records = await adapter.getLDRecords(query)
 
   // One side's position key in the caller's scheme, or undefined when that side
   // is not on this region's contig.
@@ -120,17 +186,16 @@ export async function buildLdToIndex({
     const keyB = callerKey(r.chrB, r.bpB)
     const aIsIndex = matchesIndexSnp(r.snpA, keyA, indexSnp)
     const bIsIndex = matchesIndexSnp(r.snpB, keyB, indexSnp)
-    if (aIsIndex && !bIsIndex) {
+    if (aIsIndex !== bIsIndex) {
       indexFound = true
-      r2ByKey.set(r.snpB, r.r2)
-      if (keyB !== undefined) {
-        r2ByKey.set(keyB, r.r2)
+      // the partner is whichever side the index is not
+      const name = aIsIndex ? r.snpB : r.snpA
+      const key = aIsIndex ? keyB : keyA
+      if (isNamedSnp(name)) {
+        r2ByKey.set(name, r.r2)
       }
-    } else if (bIsIndex && !aIsIndex) {
-      indexFound = true
-      r2ByKey.set(r.snpA, r.r2)
-      if (keyA !== undefined) {
-        r2ByKey.set(keyA, r.r2)
+      if (key !== undefined) {
+        r2ByKey.set(key, r.r2)
       }
     }
   }
@@ -138,7 +203,7 @@ export async function buildLdToIndex({
     const r = records[0]!
     console.warn(
       `LD coloring: index SNP "${indexSnp}" matched none of ${records.length} ` +
-        `LD records in ${queryRefName}:${region.start}-${region.end} ` +
+        `LD records in ${query.refName}:${query.start}-${query.end} ` +
         `(e.g. SNP_A "${r.snpA}" at ${r.chrA}:${r.bpA}) — every point will be ` +
         `grey. The index is probably absent from the LD file, or named ` +
         `differently there than in the GWAS file.`,

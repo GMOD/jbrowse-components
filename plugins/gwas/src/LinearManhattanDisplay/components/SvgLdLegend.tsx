@@ -18,13 +18,11 @@ export default function SvgLdLegend({
   canvasWidth,
   maxHeight,
   indexSnpMissing,
-  indexSnpOffscreen,
 }: {
   canvasWidth: number
   // the track height below the legend's own offset, so the box can't be clipped
   maxHeight: number
   indexSnpMissing: boolean
-  indexSnpOffscreen: boolean
 }) {
   return (
     <SvgColorLegend
@@ -39,13 +37,7 @@ export default function SvgLdLegend({
         items: [
           ...LD_LEGEND,
           ...(indexSnpMissing
-            ? [
-                {
-                  label: indexSnpOffscreen
-                    ? 'Index SNP off-screen: all grey'
-                    : 'Index SNP not in LD data: all grey',
-                },
-              ]
+            ? [{ label: 'Index SNP not in LD data: all grey' }]
             : []),
         ],
       })}
