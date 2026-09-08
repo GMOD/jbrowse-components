@@ -22,10 +22,10 @@ import type { ClearColor } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ShaderModule } from '@jbrowse/render-core/slangPass'
 
-export const PASS_FILL_STRAIGHT = 'fillStraight'
-export const PASS_FILL_CURVE = 'fillCurve'
-export const PASS_EDGE_STRAIGHT = 'edgeStraight'
-export const PASS_EDGE_CURVE = 'edgeCurve'
+const PASS_FILL_STRAIGHT = 'fillStraight'
+const PASS_FILL_CURVE = 'fillCurve'
+const PASS_EDGE_STRAIGHT = 'edgeStraight'
+const PASS_EDGE_CURVE = 'edgeCurve'
 
 /**
  * The clicked feature's outline as an upload cell: the region's own packed
@@ -147,6 +147,14 @@ function writeRibbonUniforms(
  * A track's ribbons in one of the two fill modes. `drawCurves` picks which of
  * the pair paints, so a mode switch is a different pass over the same uploaded
  * buffer rather than a re-upload.
+ *
+ * **No `hitNearest`, deliberately.** The question a ribbon answers is not
+ * "where is the nearest ink" but "is this point inside the silhouette", and the
+ * silhouette is a sheared quad or a pair of cubic beziers that `buildFeaturePath`
+ * already traces and `isPointInPath` already tests. A `hitNearest` would be a
+ * second, analytic spelling of that path — the exact drift `syntenyRibbonPath`
+ * exists to prevent — so the pick stays a model-level function over the same
+ * geometry the painter uses, as the arc band's does.
  */
 function ribbonFillShape(
   id: string,

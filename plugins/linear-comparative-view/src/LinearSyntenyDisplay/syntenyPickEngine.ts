@@ -404,8 +404,8 @@ export function pickFeatureAtPoint(
         continue
       }
       // The other half of the fill/stroke split in `drawSyntenyTrack` — not a
-      // copy of it: both call
-      // the same `ribbonMaxPerpWidth`, and `syntenyPickRenderAgreement.test.ts`
+      // copy of it: both call the same `ribbonMaxPerpWidth`, and
+      // `syntenyPickRenderAgreement.test.ts`
       // pins the one thing that could still drift, this threshold. `drawCurves`
       // has to be threaded through with it: a bezier ribbon is at its widest
       // where its edges are vertical, so the two modes do not answer alike.

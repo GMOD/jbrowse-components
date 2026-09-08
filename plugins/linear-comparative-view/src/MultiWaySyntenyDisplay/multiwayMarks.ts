@@ -72,7 +72,7 @@ export const MULTIWAY_MARKS = [
  * payload through `panPx`, so theirs is the canvas-wide identity every synteny
  * block is.
  */
-export function multiwayBlock(
+function multiwayBlock(
   key: number,
   layer: MultiWayLayer,
   state: MultiWayRenderState,
