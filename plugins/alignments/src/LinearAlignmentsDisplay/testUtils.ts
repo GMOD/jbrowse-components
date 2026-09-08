@@ -586,11 +586,19 @@ export function applyView(
  * is what `computeArcsFromPileupData` turns into an arc; without it the lane has
  * reads but no arc — the 'Not split' lane of a split-read grouping.
  */
-export function oneReadWithMate(mateBp?: number): WorkerPileupData {
+export function oneReadWithMate(
+  mateBp?: number,
+  // Identity of the record. TWO LANES NEVER HOLD THE SAME ONE — a read id names
+  // one record in one lane (`ReadIdIndexMap`) — so a fixture stacking two lanes
+  // has to give each its own. The arc pass buckets every lane's reads under one
+  // QNAME before chaining, so two lanes sharing this read the same identity are
+  // read as one molecule's two segments and one of them is deduped away.
+  identity = { key: 'r0', name: 'readA' },
+): WorkerPileupData {
   return {
     ...makeEmptyPileupData(),
-    readKeys: ['r0'],
-    ...namesToBlock(['readA']),
+    readKeys: [identity.key],
+    ...namesToBlock([identity.name]),
     readPositions: new Uint32Array([1000, 1100]),
     readFlags: new Uint16Array([mateBp === undefined ? 0 : SAM_FLAG_PAIRED]),
     readMapqs: new Uint8Array(1),

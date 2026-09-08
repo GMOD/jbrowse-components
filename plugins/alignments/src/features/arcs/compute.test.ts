@@ -2307,6 +2307,170 @@ describe('computeArcsByGroup', () => {
     )
     expect(byGroup.get('only')!.get(0)).toEqual(arcsToRegionResult(arcs, lines))
   })
+
+  // A split molecule reaches every lane its segments were fetched into: each
+  // lane holds one segment as an entry and the rest through that segment's SA
+  // tag, so lane-by-lane chaining drew the junction once per lane at a fraction
+  // of the support each time. The junction belongs to the FRAGMENT, so it draws
+  // once, in the lane of the primary its pair fields already come off.
+  //
+  // Two reads over the identical junction, so the surviving arc has to report
+  // both — a fix that merely dropped the duplicate lane would leave support 1.
+  const splitLanes = () =>
+    new Map([
+      [
+        'primaries',
+        new Map([
+          [
+            0,
+            makePileupData({
+              readPositions: new Uint32Array([1000, 1500, 1000, 1500]),
+              readFlags: new Uint16Array([0, 0]),
+              readStrands: new Int8Array([1, 1]),
+              readClipAtStart: new Uint32Array([0, 0]),
+              ...namesToBlock(['readA', 'readB']),
+              readKeys: ['a1', 'b1'],
+              readSuppAlignments: [
+                'chr1,3001,+,500S200M,60,0;',
+                'chr1,3001,+,500S200M,60,0;',
+              ],
+            }),
+          ],
+        ]),
+      ],
+      [
+        'supplementaries',
+        new Map([
+          [
+            0,
+            makePileupData({
+              readPositions: new Uint32Array([3000, 3200, 3000, 3200]),
+              readFlags: new Uint16Array([
+                SAM_FLAG_SUPPLEMENTARY,
+                SAM_FLAG_SUPPLEMENTARY,
+              ]),
+              readStrands: new Int8Array([1, 1]),
+              readClipAtStart: new Uint32Array([500, 500]),
+              ...namesToBlock(['readA', 'readB']),
+              readKeys: ['a2', 'b2'],
+              readSuppAlignments: [
+                'chr1,1001,+,500M200S,60,0;',
+                'chr1,1001,+,500M200S,60,0;',
+              ],
+            }),
+          ],
+        ]),
+      ],
+    ])
+
+  test('a split read reaching two lanes draws one arc, in its primary’s lane', () => {
+    const { byGroup, inkGroupKeys } = computeArcsByGroup(
+      splitLanes(),
+      { loaded: regions, displayed: regions },
+      settings,
+    )
+
+    const primaries = byGroup.get('primaries')!.get(0)!
+    expect(primaries.numArcs).toBe(1)
+    expect([primaries.arcX1[0], primaries.arcX2[0]]).toEqual([1500, 3000])
+    expect(primaries.arcSupport[0]).toBe(2)
+    expect(byGroup.get('supplementaries')!.get(0)!.numArcs).toBe(0)
+    expect([...inkGroupKeys]).toEqual(['primaries'])
+  })
+
+  // A mate link is the FRAGMENT's, so a lane holding one segment of it must not
+  // invent one of its own. Lane-by-lane resolution could not tell "my mate is in
+  // another lane" from "my mate is off screen": the lane holding only read1's
+  // supplementary saw one side of the pair, took the lone-mate arm, and drew an
+  // arc from that supplementary to its RNEXT — carrying the SUPPLEMENTARY's own
+  // orientation and TLEN, which is the divergent record `pairFieldEntry` exists
+  // to avoid reading. Pooled, the pair has both sides, so it draws one real mate
+  // link off the primary, in the primary's lane.
+  test('a lane holding one segment of a pair does not invent a mate link', () => {
+    const lanes = new Map([
+      [
+        'primaries',
+        new Map([
+          [
+            0,
+            makePileupData({
+              readPositions: new Uint32Array([1000, 1500, 2400, 2900]),
+              readFlags: new Uint16Array([
+                SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+                SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+              ]),
+              readStrands: new Int8Array([1, -1]),
+              readPairOrientations: new Uint8Array([1, 1]),
+              readInsertSizes: new Float32Array([1900, 1900]),
+              readClipAtStart: new Uint32Array([0, 0]),
+              ...namesToBlock(['readA', 'readA']),
+              readKeys: ['a-r1', 'a-r2'],
+              ...nextRefsToTable(['chr1', 'chr1']),
+              readNextPositions: new Uint32Array([2400, 1000]),
+              readSuppAlignments: ['chr1,3001,+,500S200M,60,0;', ''],
+            }),
+          ],
+        ]),
+      ],
+      [
+        'supplementary',
+        new Map([
+          [
+            0,
+            makePileupData({
+              readPositions: new Uint32Array([3000, 3200]),
+              readFlags: new Uint16Array([
+                SAM_FLAG_PAIRED |
+                  SAM_FLAG_FIRST_IN_PAIR |
+                  SAM_FLAG_SUPPLEMENTARY,
+              ]),
+              readStrands: new Int8Array([1]),
+              // the divergent record: its own orientation and a TLEN that is not
+              // the fragment's
+              readPairOrientations: new Uint8Array([4]),
+              readInsertSizes: new Float32Array([0]),
+              readClipAtStart: new Uint32Array([500]),
+              ...namesToBlock(['readA']),
+              readKeys: ['a-supp'],
+              ...nextRefsToTable(['chr1']),
+              readNextPositions: new Uint32Array([2400]),
+              readSuppAlignments: ['chr1,1001,+,500M200S,60,0;'],
+            }),
+          ],
+        ]),
+      ],
+    ])
+
+    const { byGroup } = computeArcsByGroup(
+      lanes,
+      { loaded: regions, displayed: regions },
+      settings,
+    )
+
+    // Nothing at all in the lane that holds only the supplementary segment.
+    expect(byGroup.get('supplementary')!.get(0)!.numArcs).toBe(0)
+    // The split junction and the pair's one mate link, both off the primary.
+    const primaries = byGroup.get('primaries')!.get(0)!
+    expect([...primaries.arcX1].slice(0, primaries.numArcs).sort()).toEqual([
+      1000, 1500,
+    ])
+  })
+
+  // The junction's two segments are both fetched, so it is not a connection to
+  // anything off screen and the off-screen-partner gates have no say in it.
+  // Lane-by-lane chaining made them decide it: each lane saw one segment as an
+  // entry and the other only through an SA tag, so unticking "Show off-screen
+  // mate connections" deleted split-read evidence from a grouped display that
+  // an ungrouped one drew.
+  test('a split read reaching two lanes draws with off-screen partners off', () => {
+    const { byGroup } = computeArcsByGroup(
+      splitLanes(),
+      { loaded: regions, displayed: regions },
+      { ...settings, drawLongRange: false },
+    )
+
+    expect(byGroup.get('primaries')!.get(0)!.numArcs).toBe(1)
+  })
 })
 
 // A region's buffer holds the arcs that can paint ink in ITS block, which

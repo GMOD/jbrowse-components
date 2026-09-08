@@ -11,11 +11,21 @@ import {
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
+// The second lane's record identity. A read id names one record in one lane, so
+// two lanes holding the SAME one is a state production cannot reach — and the
+// arc pass, which buckets every lane's reads under one QNAME before chaining,
+// reads it as one molecule split across the two.
+const LANE_B = { key: 'r1', name: 'readB' }
+
 // `n` reads stacked at one position, so the lane lays out exactly `n` rows —
 // enough of them that the fit pitch lands under the Normal cap and a change in
 // the budget is visible in it. `mateBp` pairs the FIRST read, which is all
 // `computeArcsFromPileupData` needs to give the lane an arc.
-function stackedLane(n: number, mateBp?: number): WorkerPileupData {
+function stackedLane(
+  n: number,
+  mateBp: number | undefined,
+  tag: string,
+): WorkerPileupData {
   const positions = new Uint32Array(n * 2)
   for (let i = 0; i < n; i++) {
     positions[i * 2] = 1000
@@ -24,8 +34,8 @@ function stackedLane(n: number, mateBp?: number): WorkerPileupData {
   const paired = (i: number) => mateBp !== undefined && i === 0
   return {
     ...makeEmptyPileupData(),
-    readKeys: Array.from({ length: n }, (_, i) => `r${i}`),
-    ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
+    readKeys: Array.from({ length: n }, (_, i) => `${tag}r${i}`),
+    ...namesToBlock(Array.from({ length: n }, (_, i) => `${tag}read${i}`)),
     readPositions: positions,
     readFlags: Uint16Array.from(
       Array.from({ length: n }, (_, i) => (paired(i) ? SAM_FLAG_PAIRED : 0)),
@@ -91,7 +101,7 @@ function twoLanes() {
     {
       groups: [
         { key: 'notsplit', label: 'Not split', data: oneRead() },
-        { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
+        { key: 'split', label: 'Split (SA)', data: oneRead(2000, LANE_B) },
       ],
     },
     {
@@ -133,7 +143,7 @@ test('the reserved band tracks the arc feed, not just the setting', () => {
     {
       groups: [
         { key: 'notsplit', label: 'Not split', data: oneRead() },
-        { key: 'split', label: 'Split (SA)', data: oneRead() },
+        { key: 'split', label: 'Split (SA)', data: oneRead(undefined, LANE_B) },
       ],
     },
     display.view.displayedRegions[0]!,
@@ -158,7 +168,7 @@ test('turning read connections off drops the band from the lane that had one', (
     {
       groups: [
         { key: 'notsplit', label: 'Not split', data: oneRead() },
-        { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
+        { key: 'split', label: 'Split (SA)', data: oneRead(2000, LANE_B) },
       ],
     },
     display.view.displayedRegions[0]!,
@@ -190,7 +200,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
       {
         groups: [
           { key: 'a', label: 'Lane A', data: oneRead(2000) },
-          { key: 'b', label: 'Lane B', data: oneRead(3000) },
+          { key: 'b', label: 'Lane B', data: oneRead(3000, LANE_B) },
         ],
       },
       {
@@ -251,7 +261,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
       {
         groups: [
           { key: 'a', label: 'Lane A', data: oneRead(2000) },
-          { key: 'b', label: 'Lane B', data: oneRead() },
+          { key: 'b', label: 'Lane B', data: oneRead(undefined, LANE_B) },
         ],
       },
       {
@@ -333,7 +343,11 @@ describe('the pooled below-coverage bands agree with the sections', () => {
         {
           groups: [
             { key: '+', label: 'Forward strand', data: oneRead() },
-            { key: '-', label: 'Reverse strand', data: oneRead() },
+            {
+              key: '-',
+              label: 'Reverse strand',
+              data: oneRead(undefined, LANE_B),
+            },
           ],
         },
         {
@@ -369,11 +383,15 @@ describe('the pooled below-coverage bands agree with the sections', () => {
         0,
         {
           groups: [
-            { key: '+', label: 'Forward strand', data: stackedLane(20, 2000) },
+            {
+              key: '+',
+              label: 'Forward strand',
+              data: stackedLane(20, 2000, 'a'),
+            },
             {
               key: '-',
               label: 'Reverse strand',
-              data: stackedLane(20, secondLaneMate),
+              data: stackedLane(20, secondLaneMate, 'b'),
             },
           ],
         },

@@ -278,6 +278,12 @@ export interface ReadEntry {
   refName: string
   readIdx: number
   data: WorkerPileupData
+  // The display lane this record was fetched into, '' when the display draws
+  // one. Carried on the record because grouped rendering buckets every lane's
+  // reads under ONE QNAME before chaining, so which lane an arc belongs to is a
+  // question about the fragment — answered by the primary the pair fields
+  // already come off — rather than about whichever segment a lane held.
+  groupKey: string
 }
 // Maps a raw BAM refName (SA tag / RNEXT — the file's own naming, e.g. `chr1`)
 // to the assembly-canonical name the fetched reads carry (e.g. `1`). Keeping

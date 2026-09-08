@@ -12,6 +12,7 @@ import {
   clipAt,
   flagsOf,
   pairFieldEntry,
+  primaryOf,
   resolveReadGroup,
   spanOf,
   strandOf,
@@ -54,6 +55,7 @@ import type {
 export function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
+  groupKey: string,
 ) {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const region of regions) {
@@ -67,9 +69,30 @@ export function groupReadsByName(
             refName: region.refName,
             readIdx: i,
             data,
+            groupKey,
           })
         }
       }
+    }
+  }
+  return readsByName
+}
+
+// The same bucketing over EVERY lane at once, each entry stamped with the lane
+// it came from. One QNAME's records then meet whatever lane they were fetched
+// into, which is what `collectPendingArcsByLane` needs to emit a junction once.
+export function groupLaneReadsByName(
+  lanes: Iterable<readonly [string, ReadonlyMap<number, WorkerPileupData>]>,
+  regions: RegionInfo[],
+) {
+  const readsByName = new Map<string, ReadEntry[]>()
+  for (const [groupKey, rpcDataMap] of lanes) {
+    for (const [name, entries] of groupReadsByName(
+      rpcDataMap,
+      regions,
+      groupKey,
+    )) {
+      getOrCreate(readsByName, name, () => []).push(...entries)
     }
   }
   return readsByName
@@ -246,7 +269,7 @@ export function computeReadChains(
 ): SegAln[][] {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const lane of lanes) {
-    for (const [name, entries] of groupReadsByName(lane, regions)) {
+    for (const [name, entries] of groupReadsByName(lane, regions, '')) {
       getOrCreate(readsByName, name, () => []).push(...entries)
     }
   }
@@ -478,6 +501,12 @@ export function offScreenMateArcs(
   ]
 }
 
+// A pending arc and the display lane it is drawn in.
+interface LanePendingArc {
+  groupKey: string
+  arc: PendingArc
+}
+
 // Every QNAME group resolves the same way — the bezier overlay's group
 // resolution (resolveReadGroup owns the secondary filter, the readId dedup, the
 // mate partition, and the mate-link guard) with two arc-path substitutions:
@@ -491,19 +520,57 @@ export function offScreenMateArcs(
 //
 // An unpaired (long) read falls out as the case where the partition puts every
 // segment on one side and neither mate hook fires.
+//
+// EVERY LANE AT ONCE, for the reason `computeReadChains` gives above: a lane
+// holds one segment as a fetched entry and reaches the rest through that
+// segment's SA tag, so resolving lane by lane emitted one junction once per
+// lane its segments landed in, each copy carrying a fraction of the support
+// `arcLineWidth` then drew. On the HG02768 inverted duplication that put the
+// same junction in the LR, RR and LL bands at three different widths.
+export function collectPendingArcsByLane(
+  readsByName: Map<string, ReadEntry[]>,
+  ctx: ArcChainContext,
+) {
+  const byLane = new Map<string, PendingArc[]>()
+  for (const entries of readsByName.values()) {
+    const laned = resolveReadGroup<ReadEntry, LanePendingArc>(entries, {
+      // The fragment's own lane, not the segment's. A mate's chain is walked
+      // once over every lane's records, so an inverted supplementary — which
+      // computes its own `pair_orientation` and lands in a different lane from
+      // its primary — no longer gives its lane a second copy of the junction.
+      chainMate: segs => {
+        const arcs = unpairedChainArcs(segs, ctx)
+        const groupKey = arcs.length > 0 ? primaryOf(segs).groupKey : ''
+        return arcs.map(arc => ({ groupKey, arc }))
+      },
+      // The entry the orientation and TLEN are already read off, so the lane a
+      // mate link draws in is the one whose reads gave it its colour.
+      mateLink: (e1, e2) => ({
+        groupKey: pairFieldEntry(e1, e2).groupKey,
+        arc: mateLinkArc(e1, e2),
+      }),
+      loneMateLink: primary =>
+        offScreenMateArcs(primary, ctx).map(arc => ({
+          groupKey: primary.groupKey,
+          arc,
+        })),
+    })
+    for (const { groupKey, arc } of laned) {
+      getOrCreate(byLane, groupKey, () => []).push(arc)
+    }
+  }
+  return byLane
+}
+
+/**
+ * The ungrouped feed: every pending arc of a display drawing one band. Routed
+ * through the lane pass so the two cannot drift on which segments join — with
+ * one lane every entry carries the same key, so the single bucket comes back in
+ * the order the reads produced it.
+ */
 export function collectPendingArcs(
   readsByName: Map<string, ReadEntry[]>,
   ctx: ArcChainContext,
 ) {
-  const pendingArcs: PendingArc[] = []
-  for (const entries of readsByName.values()) {
-    pendingArcs.push(
-      ...resolveReadGroup<ReadEntry, PendingArc>(entries, {
-        chainMate: segs => unpairedChainArcs(segs, ctx),
-        mateLink: mateLinkArc,
-        loneMateLink: primary => offScreenMateArcs(primary, ctx),
-      }),
-    )
-  }
-  return pendingArcs
+  return [...collectPendingArcsByLane(readsByName, ctx).values()].flat()
 }

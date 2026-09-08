@@ -2,7 +2,9 @@ import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generat
 import { isConcordantPairRead } from '../../shared/buildBaseFeatureData.ts'
 import {
   collectPendingArcs,
+  collectPendingArcsByLane,
   computePairingInfo,
+  groupLaneReadsByName,
   groupReadsByName,
 } from './arcChains.ts'
 import {
@@ -37,6 +39,7 @@ import { hasArcBandInk } from './types.ts'
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type {
+  ArcChainContext,
   ArcRegions,
   ArcSettings,
   ComputedArc,
@@ -176,18 +179,25 @@ interface ArcInputs {
   stats: InsertSizeBand | undefined
 }
 
+// The two user gates plus the refName normalizer, in the one shape pending-arc
+// emission takes them. Both entry points build it, so neither can hand the
+// chainer a different `drawLongRange` from the other.
+function arcChainContext(settings: ArcSettings): ArcChainContext {
+  return {
+    drawLongRange: settings.drawLongRange,
+    drawInter: settings.drawInter,
+    canonicalRefName: settings.canonicalRefName ?? (refName => refName),
+  }
+}
+
 function collectArcInputs(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
   settings: ArcSettings,
 ): ArcInputs {
-  const readsByName = groupReadsByName(rpcDataMap, regions)
+  const readsByName = groupReadsByName(rpcDataMap, regions, '')
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
-  const pendingArcs = collectPendingArcs(readsByName, {
-    drawLongRange: settings.drawLongRange,
-    drawInter: settings.drawInter,
-    canonicalRefName: settings.canonicalRefName ?? (refName => refName),
-  })
+  const pendingArcs = collectPendingArcs(readsByName, arcChainContext(settings))
   return { pendingArcs, hasPaired, stats }
 }
 
@@ -204,7 +214,7 @@ interface ArcScale {
   stats: InsertSizeBand | undefined
 }
 
-function poolArcScale(inputs: ArcInputs[]): ArcScale {
+function poolArcScale(inputs: ArcScale[]): ArcScale {
   return {
     hasPaired: inputs.some(i => i.hasPaired),
     stats: inputs.find(i => i.stats !== undefined)?.stats,
@@ -866,23 +876,29 @@ export function computeArcsByGroup(
   regions: ArcRegions,
   settings: ArcSettings,
 ): ArcsByGroupResult {
-  // Each group carries its own collected input rather than sitting in a second
-  // array indexed in step with this one: the pooling in between is the whole
-  // reason collection and resolution are separate passes, and two parallel
-  // arrays make "same index" an invariant to hold rather than one to read.
-  const groups = [...rawDataByGroup].map(([key, rawMap]) => ({
-    key,
-    input: collectArcInputs(rawMap, regions.loaded, settings),
-  }))
-  const scale = poolArcScale(groups.map(g => g.input))
+  // COLLECTION IS POOLED, resolution is per lane. Grouping partitions reads for
+  // drawing and says nothing about which molecule carries which junction, so
+  // chaining one lane at a time counted a read once per lane its segments
+  // landed in — see `collectPendingArcsByLane`, and `computeReadChains` for the
+  // same fix already made for the derivative-path consumer. Each pending arc
+  // arrives stamped with its fragment's lane, and a lane that produced none
+  // still gets its (empty) entry below, since the band reservation reads
+  // `byGroup` for every group the display drew.
+  const arcsByLane = collectPendingArcsByLane(
+    groupLaneReadsByName(rawDataByGroup, regions.loaded),
+    arcChainContext(settings),
+  )
+  const scale = poolArcScale(
+    [...rawDataByGroup.values()].map(rawMap => computePairingInfo(rawMap)),
+  )
   const byGroup = new Map<string, Map<number, ArcsUploadData>>()
   const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
   const inkGroupKeys = new Set<string>()
   const colorSlots = new Set<number>()
   let maxFlatArcSpanBp = 0
-  for (const { key, input } of groups) {
+  for (const key of rawDataByGroup.keys()) {
     const { arcs, crossRegion, lines } = resolveArcs(
-      input.pendingArcs,
+      arcsByLane.get(key) ?? [],
       scale,
       settings,
       regions,

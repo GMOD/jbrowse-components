@@ -277,7 +277,7 @@ function splitJunctions<E extends MinEntry>(
 // The primary (non-supplementary) segment carries the read's pair orientation /
 // template length, so the mate link sources its color from it. Falls back to
 // the first-listed segment if no primary is on screen.
-function primaryOf<E extends MinEntry>(segs: E[]) {
+export function primaryOf<E extends MinEntry>(segs: E[]) {
   return segs.find(e => !isSupplementary(e)) ?? segs[0]!
 }
 
