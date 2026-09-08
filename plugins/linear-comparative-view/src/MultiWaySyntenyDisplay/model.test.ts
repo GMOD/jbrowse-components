@@ -1174,3 +1174,39 @@ test('the ribbon label table accumulates across fetches and resets on a mode pic
   display.setRibbonColorBy('strand')
   expect(display.ribbonLabels).toBeUndefined()
 })
+
+// The fetch asks for the view's static blocks, which reach past the window,
+// and `clipToRegion` cuts each record to what was ASKED FOR — so an adapter
+// answering one record per lane hands the fit a placement the width of the
+// padding. The picture is still drawn from the whole record, since the stack
+// is translated between settles and a ribbon cut at the viewport edge would
+// end in mid-air on the first pan.
+test('the fit sees a record cut to the viewport, the picture sees it whole', () => {
+  const display = createDisplay()
+  const overhang = new SimpleFeature({
+    uniqueId: 'r1',
+    refName: 'ctgA',
+    start: 0,
+    end: 1000,
+    strand: 1,
+    mate: {
+      assemblyName: 'volvox_random',
+      refName: 'ctgB',
+      start: 5000,
+      end: 6000,
+    },
+  })
+  display.setFeatures([overhang])
+  expect(display.lgv.settledDynamicBlocks.map(b => [b.start, b.end])).toEqual([
+    [0, 800],
+  ])
+  expect(display.visibleGroups.map(g => g.mates.get('volvox_random'))).toEqual([
+    [{ refName: 'ctgB', start: 5000, end: 6000, orientation: 1 }],
+  ])
+  expect(display.fitGroups.map(g => g.mates.get('volvox_random'))).toEqual([
+    [{ refName: 'ctgB', start: 5000, end: 5800, orientation: 1 }],
+  ])
+  expect(display.fitGroups.map(g => g.anchor)).toEqual([
+    { refName: 'ctgA', start: 0, end: 800 },
+  ])
+})

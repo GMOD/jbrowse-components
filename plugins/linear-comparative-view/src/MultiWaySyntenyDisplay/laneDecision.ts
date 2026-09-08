@@ -87,9 +87,22 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
+// A rung covers a fit it is within this much of. The ladder's bottom step is
+// 50% wide, so with no tolerance at all a lane whose own sequence runs a
+// fraction of a percent longer than the anchor's window buys half a window of
+// blank lane to show the difference in — one HPRC haplotype at the CFH cluster
+// has a 541bp insertion in 260kb, and sat at 1.5x for it. What the frame then
+// leaves out is TOLERANCE of the fit however far out the lane is drawn, and the
+// frame is that fit's own rung over the same width, so the cost is a fixed few
+// px at either edge of the lane whatever the rung — against half of it empty.
+const RUNG_TOLERANCE = 0.01
+
+const rungCovers = (rung: number, need: number) =>
+  rung * (1 + RUNG_TOLERANCE) >= need
+
 export function pickRung(need: number, incumbent?: number) {
-  const up = SCALE_LADDER.find(r => r >= need) ?? Math.ceil(need)
-  if (incumbent === undefined || incumbent < need) {
+  const up = SCALE_LADDER.find(r => rungCovers(r, need)) ?? Math.ceil(need)
+  if (incumbent === undefined || !rungCovers(incumbent, need)) {
     return up
   }
   const below = SCALE_LADDER.filter(r => r < incumbent).at(-1)
@@ -168,8 +181,13 @@ function fitExtent(
     min = Math.min(min, p.start)
     max = Math.max(max, p.end)
   }
-  const pad = Math.max((max - min) * 0.02, 1)
-  return { lo: Math.max(0, min - pad), hi: max + pad }
+  // The extent itself, with no margin around it. The frame is a ladder rung
+  // over this and centred on it, so the rounding up is the margin — and a 2%
+  // one, which this carried from when the frame WAS the fitted extent, is
+  // enough on its own to push a lane whose placements cover exactly the
+  // anchor's window onto the next rung up. The 1 bp is so that a lane placing
+  // one point still has an extent to rung and to slide in.
+  return { lo: Math.max(0, min), hi: Math.max(max, min + 1) }
 }
 
 // which way the lane's placements run against the anchor's order, as the sign

@@ -91,7 +91,8 @@ export interface RowFrame {
   flipped: boolean
   // the extent the frame was fitted to, before the ladder rounded its span up.
   // The frame may slide anywhere that still covers this, and that difference is
-  // the freedom `decideLaneFrames` works in
+  // the freedom `decideLaneFrames` works in — nil, and the extent a hair wider
+  // than the frame, where `RUNG_TOLERANCE` called a rung close enough
   fitMin: number
   fitMax: number
   // the lane's other contigs explaining a comparable share of the anchor
@@ -181,6 +182,65 @@ export function groupFeatures(features: Feature[]) {
       a.anchor.refName.localeCompare(b.anchor.refName) ||
       a.anchor.start - b.anchor.start,
   )
+}
+
+/**
+ * The group as the VIEWPORT sees it: the anchor interval cut to
+ * [start, end], and each mate cut by the same two fractions of its own length,
+ * from whichever of its ends the anchor's cut corresponds to.
+ *
+ * The fetch asks for the view's STATIC blocks, which reach up to a whole block
+ * past the window on either side, and `clipToRegion` cuts each record to what
+ * was ASKED FOR — so a record that spans the window arrives spanning the
+ * padded region too, and a lane fitted to it is fitted to the padding. A PAF
+ * of small records never showed it, since one record's overhang is a few kb
+ * against a window's worth of others; a graph adapter answers one record per
+ * haplotype and the overhang IS the fit. The HPRC CFH window (260 kb, hg38
+ * chr1:196.64-196.90 Mb, 416 kb of static blocks behind it) put every
+ * matching haplotype at 2x the window and every CFHR3-CFHR1 deletion carrier
+ * at 1.5x, each drawing its own gene models across sequence the anchor window
+ * does not reach and no ribbon can join.
+ *
+ * By PROPORTION because that is all a clipped record can say: the alignment
+ * strings are what made it expensive to ship and the clip drops them. Over the
+ * near-identity records this matters for, the two axes run at one rate anyway,
+ * and the ladder rounds what is left. A group already inside the window comes
+ * back as it is, which is every group of a gene table and nearly every one of
+ * a small-record PAF.
+ */
+export function clipGroupToAnchor(
+  group: MultiWayGroup,
+  start: number,
+  end: number,
+): MultiWayGroup {
+  const { anchor } = group
+  const span = Math.max(anchor.end - anchor.start, 1)
+  const head = Math.max(start - anchor.start, 0) / span
+  const tail = Math.max(anchor.end - end, 0) / span
+  return head === 0 && tail === 0
+    ? group
+    : {
+        ...group,
+        anchor: {
+          ...anchor,
+          start: Math.max(anchor.start, start),
+          end: Math.min(anchor.end, end),
+        },
+        mates: new Map(
+          [...group.mates].map(([assemblyName, placements]) => [
+            assemblyName,
+            placements.map(p => {
+              const width = p.end - p.start
+              const reversed = p.orientation < 0
+              return {
+                ...p,
+                start: Math.round(p.start + width * (reversed ? tail : head)),
+                end: Math.round(p.end - width * (reversed ? head : tail)),
+              }
+            }),
+          ]),
+        ),
+      }
 }
 
 // Whether a group can gather placements from several lanes — a gene keyed by
@@ -387,10 +447,11 @@ export function groupRunSpansOnRow(
   })
 }
 
-// Every bp position a lane's frame can occupy. The frame always covers
-// [fitMin, fitMax] and its span is fixed by the ladder rung, so the alignment
-// shift can only slide it inside this window — which makes the window itself
-// independent of both the shift and the viewport width.
+// Every bp position a lane's frame can occupy. The frame covers [fitMin,
+// fitMax] and its span is fixed by the ladder rung, so the alignment shift can
+// only slide it inside this window — which makes the window itself independent
+// of both the shift and the viewport width. A frame `RUNG_TOLERANCE` narrower
+// than its own fit cannot slide at all, and this collapses onto it.
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
   return {

@@ -7,6 +7,7 @@ import {
   frameFromDecision,
 } from './laneDecision.ts'
 import {
+  clipGroupToAnchor,
   frameSpan,
   frameTickXs,
   laneFetchRegion,
@@ -1469,5 +1470,109 @@ describe('a grouped feature groups as its pairwise expansion', () => {
     expect(comparable(groups)).toEqual(
       comparable(groupFeatures([groupedFeature])),
     )
+  })
+})
+
+// The fetch asks for the view's STATIC blocks, so a record clipped to what was
+// asked for reaches past the window; a lane fitted to it is fitted to that
+// padding. The HPRC CFH figure is the case that made it visible: hg38
+// chr1:196,640,000-196,900,000 at the 1500px capture width sits inside three
+// 800px static blocks, chr1:196,540,734-196,956,840, and the graph adapter
+// answers one alignment record per haplotype covering all of it. Every
+// haplotype matching the reference then drew at 520,132bp (2x the window) and
+// every CFHR3-CFHR1 deletion carrier at 390,099bp (1.5x), each with its own
+// gene models over sequence the window does not reach and no ribbon can join.
+describe('a lane fitted to one record clipped to the padded fetch region', () => {
+  const WINDOW = { start: 196_640_000, end: 196_900_066 }
+  const FETCHED = { start: 196_540_734, end: 196_956_840 }
+  const SPAN_BP = WINDOW.end - WINDOW.start
+  const FETCHED_BP = FETCHED.end - FETCHED.start
+  // the CFHR3-CFHR1 deletion, the one thing a carrier's record is short by
+  const DELETION = 84_552
+
+  // `lengthDelta` is how much of its own sequence the haplotype has over the
+  // reference across the FETCHED region, so a carrier is negative
+  const haplotype = (lane: string, lengthDelta: number, strand = 1) =>
+    groupFeatures([
+      pairFeature({
+        uniqueId: lane,
+        start: FETCHED.start,
+        end: FETCHED.end,
+        strand,
+        mate: {
+          assemblyName: lane,
+          refName: 'chr1',
+          start: 1_000_000,
+          end: 1_000_000 + FETCHED_BP + lengthDelta,
+        },
+      }),
+    ])
+
+  const laneSpan = (groups: ReturnType<typeof groupFeatures>, lane: string) => {
+    const frame = computeRowFrame(
+      groups.map(g => clipGroupToAnchor(g, WINDOW.start, WINDOW.end)),
+      lane,
+      SPAN_BP,
+    )!
+    return frame.max - frame.min
+  }
+
+  test('a haplotype matching the reference draws the window, not the fetch', () => {
+    expect(laneSpan(haplotype('hg002', 0), 'hg002')).toBe(SPAN_BP)
+  })
+
+  test('a haplotype short by a deletion still draws no more than the window', () => {
+    expect(laneSpan(haplotype('hg005', -DELETION), 'hg005')).toBe(SPAN_BP)
+  })
+
+  // HG00133's class: an insertion makes the lane's own sequence LONGER than
+  // the window it corresponds to, which no clip can take off. `RUNG_TOLERANCE`
+  // is what keeps a fraction of a percent of it off the rung above
+  test('a haplotype longer than the window by an insertion draws the window', () => {
+    const insertion = 541
+    const groups = haplotype(
+      'hg00133',
+      Math.round((insertion * FETCHED_BP) / SPAN_BP),
+    )
+    const [mate] = clipGroupToAnchor(
+      groups[0]!,
+      WINDOW.start,
+      WINDOW.end,
+    ).mates.get('hg00133')!
+    expect(mate!.end - mate!.start).toBe(SPAN_BP + insertion)
+    expect(laneSpan(groups, 'hg00133')).toBe(SPAN_BP)
+  })
+
+  // the anchor's low end is the mate's high end, so the two cuts swap ends
+  test('the cuts swap ends on a reverse-strand mate', () => {
+    const head = WINDOW.start - FETCHED.start
+    const tail = FETCHED.end - WINDOW.end
+    const mateOf = (strand: number) => {
+      const [group] = haplotype('hg002', 0, strand)
+      return clipGroupToAnchor(group!, WINDOW.start, WINDOW.end).mates.get(
+        'hg002',
+      )
+    }
+    expect(mateOf(1)).toEqual([
+      {
+        refName: 'chr1',
+        start: 1_000_000 + head,
+        end: 1_000_000 + FETCHED_BP - tail,
+        orientation: 1,
+      },
+    ])
+    expect(mateOf(-1)).toEqual([
+      {
+        refName: 'chr1',
+        start: 1_000_000 + tail,
+        end: 1_000_000 + FETCHED_BP - head,
+        orientation: -1,
+      },
+    ])
+  })
+
+  test('a group the window already contains is left alone', () => {
+    const [group] = haplotype('hg002', 0)
+    expect(clipGroupToAnchor(group!, FETCHED.start, FETCHED.end)).toBe(group)
   })
 })

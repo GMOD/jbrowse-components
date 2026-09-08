@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  computeRowFrame,
   decideLaneFrames,
   frameFromDecision,
   pickRung,
@@ -157,6 +158,68 @@ describe('the ladder rung', () => {
   test('drops only once a lower rung has clear room', () => {
     expect(pickRung(1, 2)).toBe(1)
     expect(pickRung(1.3, 3)).toBe(1.5)
+  })
+
+  // The step from 1 to 1.5 is half a window wide, so a fit that overruns a rung
+  // by a fraction of a percent must not buy the whole step. HG00133 at the HPRC
+  // CFH cluster is the case: 260,607bp of its own sequence against the
+  // 260,066bp window, a 541bp insertion, and it drew at 1.5x with 130kb of the
+  // lane blank.
+  test('a fit a fraction of a percent over a rung still sits on that rung', () => {
+    expect(pickRung(260_607 / 260_066)).toBe(1)
+    expect(pickRung(1.05)).toBe(1.5)
+    expect(pickRung(2.01)).toBe(2)
+    expect(pickRung(2.1)).toBe(3)
+  })
+
+  // what the tolerance costs, stated: the lane is the window and the overrun
+  // is outside it, half at either edge
+  test('the overrun a tolerated rung leaves out falls outside the frame', () => {
+    const window = 260_066
+    const longer = groupFeatures([
+      new SimpleFeature({
+        uniqueId: 'hg00133',
+        refName: 'chr1',
+        start: 196_640_000,
+        end: 196_640_000 + window,
+        strand: 1,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 1_000_000,
+          end: 1_000_000 + 260_607,
+        },
+      }),
+    ])
+    const frame = computeRowFrame(longer, 'peach', window)!
+    expect(frame.max - frame.min).toBe(window)
+    expect(frame.fitMax - frame.fitMin).toBe(260_607)
+    expect(frame.min - frame.fitMin).toBeCloseTo(270.5)
+  })
+
+  // the fit is the extent itself: a margin around it, which this had from when
+  // the frame WAS the fitted extent, is enough on its own to round a lane that
+  // corresponds to the window exactly onto the rung above
+  test('a lane covering exactly the anchor window sits at 1x', () => {
+    const exact = groupFeatures([
+      new SimpleFeature({
+        uniqueId: 'whole-window',
+        refName: 'chr1',
+        start: 0,
+        end: SPAN_BP,
+        strand: 1,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500_000,
+          end: 500_000 + SPAN_BP,
+        },
+      }),
+    ])
+    const frame = computeRowFrame(exact, 'peach', SPAN_BP)!
+    expect(frame.max - frame.min).toBe(SPAN_BP)
   })
 })
 

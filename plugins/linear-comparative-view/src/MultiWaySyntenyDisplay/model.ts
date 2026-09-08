@@ -58,6 +58,7 @@ import { frameFromDecision } from './laneDecision.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
 import {
+  clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
   rowAssembliesOf,
@@ -907,19 +908,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the groups whose anchor placement is inside the settled viewport —
-       * the population every lane's local frame is fitted to, so panning the
-       * anchor re-lays-out the other lanes
+       * the groups whose anchor placement is inside the settled viewport, each
+       * with the bp interval of it the viewport shows: the hull of the settled
+       * blocks the group meets, so a group reaching across a block boundary is
+       * cut at neither
        */
-      get visibleGroups() {
+      get visibleGroupWindows() {
         const view = self.lgv
         const assembly = self.anchorAssembly
         return view.initialized && assembly
-          ? self.groups.filter(group => {
+          ? self.groups.flatMap(group => {
               const refName = assembly.getCanonicalRefName2(
                 group.anchor.refName,
               )
-              return view.settledDynamicBlocks.some(
+              const blocks = view.settledDynamicBlocks.filter(
                 block =>
                   block.refName === refName &&
                   doesIntersect2(
@@ -929,8 +931,40 @@ export function stateModelFactory(
                     group.anchor.end,
                   ),
               )
+              return blocks.length
+                ? [
+                    {
+                      group,
+                      start: Math.min(...blocks.map(block => block.start)),
+                      end: Math.max(...blocks.map(block => block.end)),
+                    },
+                  ]
+                : []
             })
           : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the groups the viewport shows something of, WHOLE: what the picture is
+       * drawn from, since the stack is translated between settles and a group
+       * cut at the viewport edge would end mid-ribbon on the first pan
+       */
+      get visibleGroups() {
+        return self.visibleGroupWindows.map(({ group }) => group)
+      },
+      /**
+       * #getter
+       * the same groups cut to the viewport — the population every lane's
+       * local frame is fitted to, so panning the anchor re-lays-out the other
+       * lanes. Cut rather than merely filtered because the fetch is padded and
+       * the records come back cut to the PADDING: see `clipGroupToAnchor`
+       */
+      get fitGroups() {
+        return self.visibleGroupWindows.map(({ group, start, end }) =>
+          clipGroupToAnchor(group, start, end),
+        )
       },
       /**
        * #getter
