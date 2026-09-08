@@ -21,7 +21,7 @@ held, a pass can register and draw while nothing uploads to it, which paints
 nothing, silently, on the GPU backend only. **Fully general — use it.**
 
 **2. The upload loop derived from a pass array.**
-`GpuPerRegionRenderingBackend.uploadRegion` walks `regionPasses` and lets
+`GpuPerRegionRenderingBackend.upload` walks `regionPasses` and lets
 `uploadPass` read each instance count off the bytes the packer allocated, so the
 count is never a second expression free to disagree. **Fully general.**
 Alignments is the one renderer that doesn't inherit it, because bands and
