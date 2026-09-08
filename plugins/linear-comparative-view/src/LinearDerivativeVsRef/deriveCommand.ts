@@ -28,23 +28,31 @@ export function deriveLoci(candidate: DerivativeCandidate) {
   return loci.filter((locus, idx) => loci.indexOf(locus) === idx)
 }
 
+// The command is pasted into a shell and every value in it is data: a uri is
+// whatever the track config said, a Desktop localPath has spaces, and the SAM
+// grammar lets a refName hold `;` or `$`.
+function shellQuote(value: string) {
+  return `'${value.replaceAll("'", `'\\''`)}'`
+}
+
 /**
  * The offline command that builds this route as a sequence: the picker ranks
  * what the reads say and draws it, and `derive` is where a consensus, the
  * realignment and the allele-fraction measurement happen. The alignment file
  * is filled in from the track when the adapter names one; the reference FASTA
- * is never known in-app, so it stays a placeholder.
+ * is never known in-app, so it stays a placeholder. The two `<placeholder>`
+ * words are the only unquoted ones, since they are what the reader replaces.
  */
 export function deriveCommand(
   candidate: DerivativeCandidate,
   alignmentFile: string | undefined,
 ) {
-  const name = derivativeName(candidate)
+  const name = shellQuote(derivativeName(candidate))
   return [
     'python3 sv_multihop.py derive',
-    `--aln ${alignmentFile ?? '<reads.bam>'}`,
+    `--aln ${alignmentFile === undefined ? '<reads.bam>' : shellQuote(alignmentFile)}`,
     '--ref <reference.fa>',
-    `--loci ${deriveLoci(candidate).join(',')}`,
+    `--loci ${shellQuote(deriveLoci(candidate).join(','))}`,
     `--out ${name} --name ${name}`,
   ].join(' \\\n  ')
 }

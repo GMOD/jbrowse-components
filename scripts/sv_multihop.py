@@ -723,6 +723,11 @@ def cmd_derive(args):
 
 
 def derive(args, tmp):
+    if args.polish_rounds < 1:
+        sys.exit('--polish-rounds is a count of consensus rounds; below 1 hands '
+                 'back the backbone read itself, one molecule with its own error '
+                 'profile, as if it were a reconstruction')
+
     loci = []
     for token in args.loci.split(','):
         chrom, pos = token.rsplit(':', 1)
