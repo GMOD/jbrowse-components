@@ -333,7 +333,8 @@ const interbaseParams = (
 // A stack of all three segment types at one position, a lone bar and a
 // full-scale one. Every segment is inside the block and inside the band, so
 // every candidate paints its rect and the sweep's rect-per-instance check
-// holds; `top` is 0 because the recording context has no `translate`.
+// holds. At `interbaseMaxCount` 40 the tallest is 36px, so it clears a band 100
+// tall wherever that band's top is put.
 const SWEEP_SEGMENTS: Segment[] = [
   { position: START + 2, yOffset: 0, segHeight: 0.2, colorType: 1 },
   { position: START + 2, yOffset: 0.2, segHeight: 0.3, colorType: 2 },
@@ -342,26 +343,31 @@ const SWEEP_SEGMENTS: Segment[] = [
   { position: START + 61, yOffset: 0, segHeight: 1, colorType: 2 },
 ]
 
-test.each([false, true])(
-  'interbase: every drawn bar answers its own hit, reversed=%s',
-  reversed => {
-    expect(
-      sweepDrawAgainstHit(
-        coverageInterbaseShape,
-        interbaseChannels(SWEEP_SEGMENTS),
-        { ...block, reversed },
-        SWEEP_FRAME,
-        interbaseParams(),
-        { maxDistSq: Number.MIN_VALUE },
-      ),
-    ).toEqual([])
-  },
-)
+// `top` 40 is the grouped alignments section, where the band's offset reaches
+// the painter as a `translate` and the hit test as an addend on both a bar's
+// edges — two spellings of one number, which is what this half of the sweep is
+// for.
+describe.each([0, 40])('interbase at band top %i', top => {
+  test.each([false, true])(
+    'every drawn bar answers its own hit, reversed=%s',
+    reversed => {
+      expect(
+        sweepDrawAgainstHit(
+          coverageInterbaseShape,
+          interbaseChannels(SWEEP_SEGMENTS),
+          { ...block, reversed },
+          SWEEP_FRAME,
+          interbaseParams({ top }),
+          { maxDistSq: Number.MIN_VALUE },
+        ),
+      ).toEqual([])
+    },
+  )
+})
 
 // The sweep cannot cover this pair: the painter draws the whole bar and leaves
 // the band clip to the backend, so a bar overhanging the band is ink the hit
-// deliberately does not claim, and `top` reaches the painter as a `translate`
-// the recorder does not implement.
+// deliberately does not claim.
 test('a bar taller than the band stops at the band bottom, and the band top moves both its edges', () => {
   const channels = interbaseChannels([
     { position: START + 2, yOffset: 0, segHeight: 0.8, colorType: 1 },

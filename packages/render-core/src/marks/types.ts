@@ -384,6 +384,15 @@ export function defineMark<
           // either. The cursor being inside the strip is a fourth, and the ink
           // being inside it the fifth: a band is a CLIP, so ink outside one was
           // never drawn and cannot be the nearest thing to anything.
+          //
+          // The fifth gate REJECTS rather than re-runs, and that is the one
+          // conservative edge here: the shape picks its winner without knowing
+          // about the band, so a clipped-away nearest masks a farther candidate
+          // whose ink IS inside the strip, and the mark answers nothing instead
+          // of that one. Safe in the direction that matters — it never claims a
+          // hover over pixels neither backend drew — and closing it would mean
+          // pushing the band down into every shape's own ink test, where the
+          // band is deliberately not.
           if (
             (!strip || strip.height > 0) &&
             c !== undefined &&

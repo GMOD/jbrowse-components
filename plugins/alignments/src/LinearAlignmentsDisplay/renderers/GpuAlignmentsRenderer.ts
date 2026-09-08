@@ -65,7 +65,6 @@ import type {
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
-import type { StagedUniforms } from '@jbrowse/render-core/marks'
 
 // Shader strides — every pileup pass shares the same Uniforms struct (see
 // shaders/slang/alignmentsUniforms.slang) so we use any module's offsets.
@@ -903,25 +902,23 @@ export class GpuAlignmentsRenderer
     // scissored output is byte-identical to the pre-grouping single pass.
     const scissor = devicePxBand(band.top, band.height, dpr, bufH)
     if (scissor.height > 0) {
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
       this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-      // In ARC_BAND_MARKS order, which is the paint order and says why. The
-      // first mark writes `ArcBandUniforms` into the band's own scratch and the
-      // rest draw off it, so `uData` still holds what every other pass needs.
-      const arcState = { ...state, arcBand: band, screenWidthPx: clip.scissorW }
-      const staged: StagedUniforms = { writer: undefined, params: undefined }
-      for (const mark of ARC_BAND_MARKS) {
-        mark.drawRegion(
-          this.hal,
-          this.uArc,
-          block,
-          clip,
-          region.arcPack,
-          arcState,
-          regionKey,
-          staged,
-        )
-      }
+      // `drawMarks` sets the full-canvas viewport (`clip.pxH` IS `bufH`) and
+      // leaves this scissor alone, which is the split it documents: the band
+      // clip is the caller's, and no arc mark declares a `band` of its own. In
+      // ARC_BAND_MARKS order, which is the paint order and says why. The first
+      // mark writes `ArcBandUniforms` into the band's own scratch and the rest
+      // draw off it, so `uData` still holds what every other pass needs.
+      drawMarks(
+        this.hal,
+        this.uArc,
+        ARC_BAND_MARKS,
+        block,
+        clip,
+        region.arcPack,
+        { ...state, arcBand: band, screenWidthPx: clip.scissorW },
+        regionKey,
+      )
     }
   }
 

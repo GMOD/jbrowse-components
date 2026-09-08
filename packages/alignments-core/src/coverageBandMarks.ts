@@ -151,32 +151,46 @@ function writeBandUniforms(
   })
 }
 
-const hasDomain = (p: CoverageBandParams) => p.domainMax !== undefined
-
 type Placed = CoverageBandParams & { domainMax: number }
 
-type LayerPainter<TChannels> = (
-  ctx: MarkContext2D,
-  channels: TChannels,
-  bpToX: (bp: number) => number,
-  viewWidth: number,
-  p: Placed,
-) => void
+/**
+ * Whether the display's autoscale has settled, as the narrowing every
+ * depth-scaled layer needs: `domainMax` is the divisor its normalizer is built
+ * from, so a layer that draws before it resolves would draw bars of arbitrary
+ * height. A predicate rather than a boolean and a cast — the indicator triangles
+ * are fixed-size and draw without one, so a shape's params say which it is.
+ */
+const hasDomain = (p: CoverageBandParams): p is Placed =>
+  p.domainMax !== undefined
+
+const onDepthAxis = (p: CoverageBandParams) => (hasDomain(p) ? p : undefined)
 
 /**
  * One band layer: render-core's pass, the shared uniform write, and an
  * alignments-core painter placed the way the shader places it — anchored at
  * the band's top, translated down to it on a stacked canvas. `hit` measures the
  * layer's records against a cursor under the same gate the painter draws under.
+ *
+ * `placed` is that gate, and it hands back the params the layer draws from
+ * rather than a boolean: a layer on the depth axis is drawn from `Placed` and
+ * one that is not (the fixed-size indicator triangles) from the params as they
+ * came, so neither the painter nor the hit test asserts a field the gate did not
+ * establish.
  */
-function layerShape<TChannels>(
+function layerShape<TChannels, TDraw extends CoverageBandParams>(
   pass: MarkShape<TChannels, CoverageBandParams>['pass'],
-  draws: (p: CoverageBandParams) => boolean,
-  paint: LayerPainter<TChannels>,
+  placed: (p: CoverageBandParams) => TDraw | undefined,
+  paint: (
+    ctx: MarkContext2D,
+    channels: TChannels,
+    bpToX: (bp: number) => number,
+    viewWidth: number,
+    p: TDraw,
+  ) => void,
   hit?: (
     channels: TChannels,
     bpToX: (bp: number) => number,
-    p: CoverageBandParams,
+    p: TDraw,
     xPx: number,
     yPx: number,
     candidates: Iterable<number>,
@@ -187,36 +201,40 @@ function layerShape<TChannels>(
     id: pass.id,
     pass,
     writeUniforms: writeBandUniforms,
-    paintsBlock: (_block, _frame, p) => draws(p),
+    paintsBlock: (_block, _frame, p) => placed(p) !== undefined,
     paintBlock(ctx, channels, block, frame, p) {
-      const bpToX = makeBpMapper(block)
-      const viewWidth = Math.min(block.screenEndPx, frame.canvasWidth)
-      const placed = p as Placed
-      if (p.top === 0) {
-        paint(ctx, channels, bpToX, viewWidth, placed)
-        return
-      }
-      ctx.save()
-      ctx.translate(0, p.top)
-      try {
-        paint(ctx, channels, bpToX, viewWidth, placed)
-      } finally {
-        ctx.restore()
+      const d = placed(p)
+      if (d) {
+        const bpToX = makeBpMapper(block)
+        const viewWidth = Math.min(block.screenEndPx, frame.canvasWidth)
+        if (p.top === 0) {
+          paint(ctx, channels, bpToX, viewWidth, d)
+        } else {
+          ctx.save()
+          ctx.translate(0, p.top)
+          try {
+            paint(ctx, channels, bpToX, viewWidth, d)
+          } finally {
+            ctx.restore()
+          }
+        }
       }
     },
     hitNearest: hit
-      ? (channels, block, _frame, p, xPx, yPx, candidates, maxDistSq) =>
-          draws(p)
+      ? (channels, block, _frame, p, xPx, yPx, candidates, maxDistSq) => {
+          const d = placed(p)
+          return d
             ? hit(
                 channels,
                 makeBpMapper(block),
-                p,
+                d,
                 xPx,
                 yPx,
                 candidates,
                 maxDistSq,
               )
             : undefined
+        }
       : undefined,
   }
 }
@@ -230,49 +248,53 @@ const interbaseColors = (c: CoverageBandColors) => ({
   hardclip: abgrToCssRgba(c.hardclipIndicator),
 })
 
-export const coverageBarShape = layerShape<
-  Pick<CoverageBandBuffers, 'coveragePackedBuffer'>
->(COVERAGE_BAR_PASS, hasDomain, (ctx, c, bpToX, viewWidth, p) => {
-  drawCoverageBins(
-    ctx,
-    c.coveragePackedBuffer,
-    normalizer(p),
-    p.regionMaxDepth,
-    p.height,
-    abgrToCssRgba(p.colors.coverage),
-    bpToX,
-    viewWidth,
-    p.coverageBinSize,
-    COVERAGE_BAR_SEAM_FUDGE_PX,
-  )
-})
+export const coverageBarShape = layerShape(
+  COVERAGE_BAR_PASS,
+  onDepthAxis,
+  (ctx, c, bpToX, viewWidth, p) => {
+    drawCoverageBins(
+      ctx,
+      c.coveragePackedBuffer,
+      normalizer(p),
+      p.regionMaxDepth,
+      p.height,
+      abgrToCssRgba(p.colors.coverage),
+      bpToX,
+      viewWidth,
+      p.coverageBinSize,
+      COVERAGE_BAR_SEAM_FUDGE_PX,
+    )
+  },
+)
 
-export const coverageSnpShape = layerShape<
-  Pick<CoverageBandBuffers, 'snpPackedBuffer'>
->(COVERAGE_SNP_PASS, hasDomain, (ctx, c, bpToX, viewWidth, p) => {
-  const { colors } = p
-  drawSnpSegments(
-    ctx,
-    c.snpPackedBuffer,
-    normalizer(p),
-    p.regionMaxDepth,
-    p.height,
-    {
-      baseA: abgrToCssRgba(colors.baseA),
-      baseC: abgrToCssRgba(colors.baseC),
-      baseG: abgrToCssRgba(colors.baseG),
-      baseT: abgrToCssRgba(colors.baseT),
-      baseN: abgrToCssRgba(colors.baseN),
-    },
-    bpToX,
-    viewWidth,
-    p.snpMinFrequency,
-  )
-})
+export const coverageSnpShape = layerShape(
+  COVERAGE_SNP_PASS,
+  onDepthAxis,
+  (ctx, c, bpToX, viewWidth, p) => {
+    const { colors } = p
+    drawSnpSegments(
+      ctx,
+      c.snpPackedBuffer,
+      normalizer(p),
+      p.regionMaxDepth,
+      p.height,
+      {
+        baseA: abgrToCssRgba(colors.baseA),
+        baseC: abgrToCssRgba(colors.baseC),
+        baseG: abgrToCssRgba(colors.baseG),
+        baseT: abgrToCssRgba(colors.baseT),
+        baseN: abgrToCssRgba(colors.baseN),
+      },
+      bpToX,
+      viewWidth,
+      p.snpMinFrequency,
+    )
+  },
+)
 
-export const coverageModShape = layerShape<CoverageBandModBuffer>(
+export const coverageModShape = layerShape(
   COVERAGE_MOD_PASS,
-  hasDomain,
+  onDepthAxis,
   (ctx, c, bpToX, viewWidth, p) => {
     drawModCovSegments(
       ctx,
@@ -293,11 +315,9 @@ export const coverageModShape = layerShape<CoverageBandModBuffer>(
  * shader's own snapped edge math, so the hit rectangle is the painted one.
  * A bar taller than the band is clipped to it on both backends, and here too.
  */
-export const coverageInterbaseShape = layerShape<
-  Pick<CoverageBandBuffers, 'interbasePackedBuffer'>
->(
+export const coverageInterbaseShape = layerShape(
   COVERAGE_INTERBASE_PASS,
-  p => p.showInterbase && hasDomain(p),
+  p => (p.showInterbase && hasDomain(p) ? p : undefined),
   (ctx, c, bpToX, viewWidth, p) => {
     drawInterbaseSegments(
       ctx,
@@ -341,11 +361,9 @@ export const coverageInterbaseShape = layerShape<
 
 // Fixed-size triangles, so they draw before the domain resolves: gating them on
 // data would blank them for the whole fetch.
-export const coverageIndicatorShape = layerShape<
-  Pick<CoverageBandBuffers, 'indicatorPackedBuffer'>
->(
+export const coverageIndicatorShape = layerShape(
   COVERAGE_INDICATOR_PASS,
-  p => p.showInterbase,
+  p => (p.showInterbase ? p : undefined),
   (ctx, c, bpToX, viewWidth, p) => {
     drawIndicators(
       ctx,
