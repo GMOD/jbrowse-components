@@ -163,6 +163,7 @@ const stale: string[] = []
 // fixture exists, which would buy back the whole page at once.
 const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '41')
 let unIncluded = 0
+const byPage: [string, number][] = []
 
 for (const path of docFiles(docsDir)) {
   const text = readFileSync(path, 'utf8')
@@ -170,8 +171,13 @@ for (const path of docFiles(docsDir)) {
   const out: string[] = []
   let changed = false
 
-  if (!isGeneratedDocPath(relative(docsDir, path))) {
-    unIncluded += countUnIncludedFences(text)
+  const rel = relative(docsDir, path)
+  if (!isGeneratedDocPath(rel)) {
+    const fences = countUnIncludedFences(text)
+    unIncluded += fences
+    if (fences > 0) {
+      byPage.push([rel, fences])
+    }
   }
 
   for (let i = 0; i < lines.length; i++) {
@@ -263,8 +269,17 @@ if (stale.length > 0) {
 }
 
 if (unIncluded > FENCE_BASELINE) {
+  // Smallest page first and the verdict last, because a reader downstream of
+  // this often keeps only the tail: `pnpm autogen` repeats a failed generator's
+  // last lines under its name, and the post-merge marker carries that summary
+  // alone. Truncated there, what survives is the verdict and the worst pages.
+  const pages = byPage
+    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+    .map(([page, fences]) => `  ${String(fences).padStart(3)}  ${page}`)
+    .join('\n')
   console.error(
-    `\n${unIncluded} hand-written TS/JS fences in the docs exceeds the ` +
+    `\nun-included TS/JS fences, by page:\n${pages}\n\n` +
+      `${unIncluded} hand-written TS/JS fences in the docs exceeds the ` +
       `baseline of ${FENCE_BASELINE}. Point the new fence at real source with ` +
       `an <!-- include: --> marker (see example-plugins/score-example), or ` +
       `raise DOC_FENCE_BASELINE if it genuinely can't be.`,
