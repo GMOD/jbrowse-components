@@ -45,11 +45,12 @@
 // id.
 //
 // LEFT TO RIGHT, which is the exception among the pipeline figures here (their
-// header comments each record coming off a strip too wide to read). This one is
-// four shallow columns rather than a chain, so the long axis is the SHORT one:
-// stacked it is a narrow column four autoruns tall with the trigger names
-// wrapped, and the funnel -- three autoruns, two resets, one cancel -- is what
-// the figure is for.
+// header comments each record coming off a strip too wide to read). Stacking
+// this one does not buy what it bought them: it is four shallow columns rather
+// than a chain, so turning it measured 1938x744 against 1830x698 -- wider AND
+// taller, because four autoruns and four triggers then spread across the top
+// instead of down the side. The funnel it is for -- three autoruns, two resets,
+// one cancel -- reads across either way.
 digraph display_autoruns {
   rankdir=LR
   labelloc=t
