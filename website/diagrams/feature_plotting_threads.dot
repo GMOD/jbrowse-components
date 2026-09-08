@@ -1,11 +1,35 @@
+// Source for /img/feature_plotting_threads.png, embedded by
+// docs/developer_guides/plotting_features.md under "The mental model".
+//
+// TOP TO BOTTOM, and the reason is the one its two siblings each recorded after
+// paying for it. As a left-to-right row this rendered 2423x404 at the
+// pipeline's own 150 dpi -- a 6:1 strip whose 12pt labels land around 7px once
+// the docs column scales it to width. gpu_display_lifecycle.dot came off the
+// same shape ("as three side-by-side lanes this came out about 7:1, which on a
+// docs page is a strip with unreadable text") and so did gpu_display_tldr.dot
+// ("as a left-to-right row this measured 2312x211"). Stacked, each lane is a
+// band and the figure reads at column width without scaling.
+//
+// It is also the SAME GRAPH as gpu_display_lifecycle.dot with the GPU lane
+// swapped out, which is what the two pages claim about the code: the GPU guide
+// says its plugin "builds the same plugin without the shader, so moving up
+// later adds files rather than changing them". So the lanes are named the same
+// way, in the same order, in the same colours, and rpcDataMap and renderState
+// are drawn the same. A reader arriving at the GPU page should recognise this
+// picture with buffers added, rather than meet a second diagram of one system.
+//
+// The SVG export hangs off the draw function rather than off the canvas: it is
+// the same function run against a context that serializes each call, which is
+// the claim the dashed edge carries and the reason the node is on the figure at
+// all.
 digraph feature_plotting_threads {
-  rankdir=LR
+  rankdir=TB
   labelloc=t
   fontname="Helvetica"
   fontsize=18
   label="Plotting features: the worker returns data, the main thread draws"
-  nodesep=0.35
-  ranksep=0.6
+  nodesep=0.4
+  ranksep=0.55
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
@@ -26,8 +50,14 @@ digraph feature_plotting_threads {
 
   // ── Main thread ──────────────────────────────────────────────────
   subgraph cluster_main {
-    label="Main thread (MST model + Canvas2D)"
+    label="Main thread (Canvas2D)"
     labelloc=t
+    // Short AND left-justified, both for the reason rpc_lifecycle.dot records:
+    // the incoming arrow enters the box at its horizontal centre, and a label
+    // that reaches that far gets struck through by it. "(MST model + Canvas2D)"
+    // did, from the left as well as from the centre; the title carries which
+    // thread draws.
+    labeljust=l
     fontname="Helvetica"
     fontsize=13
     style=filled
@@ -37,14 +67,18 @@ digraph feature_plotting_threads {
     rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
     renderstate [label="renderState\nrecomputed each frame, no fetch"]
     draw [label="drawScore()\npure draw function"]
-    canvas [label="<canvas>\nvisible blocks", peripheries=2, fillcolor="#e1f5fe"]
-    svg [label="SVG export", style="filled,dashed", fillcolor="#f3e5f5"]
   }
 
+  // The two things the draw function ends in, on one rank below the lanes so
+  // neither lands inside the main-thread box and reads as another model member.
+  canvas [label="<canvas>\nvisible blocks", peripheries=2, fillcolor="#e1f5fe"]
+  svg [label="SVG export", style="filled,dashed", fillcolor="#f3e5f5"]
+
   adapter -> pack
-  pack -> rpcdata [label="structured clone\nabsolute uint32 bp"]
+  pack -> rpcdata [label="  structured clone\l  absolute uint32 bp\l"]
   rpcdata -> renderstate
-  renderstate -> draw [label="per frame"]
+  renderstate -> draw [label="  per frame"]
   draw -> canvas
-  draw -> svg [style=dashed, label="same function"]
+  draw -> svg [style=dashed, label="  same function"]
+  { rank=same; canvas; svg }
 }
