@@ -58,6 +58,13 @@ export function lookupR2(
   return byName !== undefined ? byName : ld.r2ByKey.get(key)
 }
 
+// How far either side of the index to read, matching PLINK's `--ld-window-kb`
+// default. Fixed rather than configurable because the reach that is right is a
+// property of the `.ld` file, which was written at some window already: read
+// narrower than it and the file has pairs this never asks for, wider and the
+// read is empty space.
+export const LD_WINDOW_BP = 1_000_000
+
 // Where to read the `.ld` file for one region's coloring, in the LD adapter's
 // naming scheme, or undefined when no record could possibly help.
 //
@@ -67,10 +74,6 @@ export function lookupR2(
 // panning the index off screen greys every point. Measured on
 // `test_data/gwas/SLE.ld`, whose rows all carry the index as their A side, a
 // 200kb pan in either direction took 1212 partners to 0.
-//
-// `windowBp` is the reach-back, and it is a setting rather than something
-// discoverable here because the file does not record the `--ld-window-kb` it
-// was written at.
 //
 // The two fallbacks are the cases with no locus to anchor on:
 //   - a bare rsID index has no position until a record names it, so the
@@ -83,12 +86,10 @@ export function ldQueryWindow({
   region,
   queryRefName,
   indexSnp,
-  windowBp,
 }: {
   region: Region
   queryRefName: string
   indexSnp: string
-  windowBp: number
 }) {
   // `indexSnp` and `region.refName` are both in the GWAS adapter's scheme
   // (`GetManhattanData` renames the index through the same pass as the
@@ -101,8 +102,8 @@ export function ldQueryWindow({
   return parsed.refName === region.refName
     ? {
         refName: queryRefName,
-        start: Math.max(0, parsed.bp - 1 - windowBp),
-        end: parsed.bp + windowBp,
+        start: Math.max(0, parsed.bp - 1 - LD_WINDOW_BP),
+        end: parsed.bp + LD_WINDOW_BP,
       }
     : undefined
 }
@@ -133,7 +134,6 @@ export async function buildLdToIndex({
   region,
   ldRefName,
   indexSnp,
-  windowBp,
 }: {
   // Only the A-side scan is needed here, so accept the narrower capability.
   adapter: Pick<LDRecordSource, 'getLDRecords'>
@@ -145,11 +145,9 @@ export async function buildLdToIndex({
   // agree.
   ldRefName?: string
   indexSnp: string
-  // bp either side of the index to read; see `ldQueryWindow`.
-  windowBp: number
 }): Promise<LdToIndex> {
   const queryRefName = ldRefName ?? region.refName
-  const query = ldQueryWindow({ region, queryRefName, indexSnp, windowBp })
+  const query = ldQueryWindow({ region, queryRefName, indexSnp })
   if (!query) {
     return { r2ByKey: new Map(), indexFound: false }
   }

@@ -1,4 +1,4 @@
-import { buildLdToIndex, posKey } from './ldToIndex.ts'
+import { LD_WINDOW_BP, buildLdToIndex, posKey } from './ldToIndex.ts'
 
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type { LDRecordSource, PlinkLDRecord } from '@jbrowse/ld-core'
@@ -38,17 +38,6 @@ function indexedSource(
   }
 }
 
-// plink's own --ld-window-kb default, and the config slot's
-const WINDOW_BP = 1_000_000
-
-function build(
-  args: Omit<Parameters<typeof buildLdToIndex>[0], 'windowBp'> & {
-    windowBp?: number
-  },
-) {
-  return buildLdToIndex({ windowBp: WINDOW_BP, ...args })
-}
-
 // An LD file that answers only to its own spelling of the contig, the way a
 // real adapter does (`r.chrA === refName`), so a query in the GWAS file's
 // scheme comes back empty rather than quietly working.
@@ -69,7 +58,7 @@ test('posKey is 1-based to line up with chr:bp ids', () => {
 })
 
 test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations', async () => {
-  const ld = await build({
+  const ld = await buildLdToIndex({
     adapter: source([
       // index as snpA
       rec({
@@ -101,7 +90,7 @@ test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations'
 })
 
 test('matches the index SNP by chr:bp as well as by id', async () => {
-  const ld = await build({
+  const ld = await buildLdToIndex({
     adapter: source([
       rec({
         snpA: 'rsA',
@@ -120,7 +109,7 @@ test('matches the index SNP by chr:bp as well as by id', async () => {
 })
 
 test('indexFound is false when no pair references the index SNP', async () => {
-  const ld = await build({
+  const ld = await buildLdToIndex({
     adapter: source([rec({ snpA: 'rsA', snpB: 'rsB', r2: 0.9 })]),
     region,
     indexSnp: 'rsIndex',
@@ -150,7 +139,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   const gwasRegion = { refName: '1', start: 0, end: 1000, assemblyName: 'hg38' }
 
   it('queries the LD file by its own name', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -160,7 +149,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('keys positions in the GWAS scheme, which is what a feature looks up', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -174,7 +163,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('matches a chr:bp index written in the GWAS scheme', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ld,
       region: gwasRegion,
       ldRefName: 'chr1',
@@ -187,7 +176,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('gives a partner on another contig no position key at all', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ldSource('chr1', [
         rec({
           snpA: 'rsIndex',
@@ -213,7 +202,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
   })
 
   it('without ldRefName the query misses entirely — the bug this fixes', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ld,
       region: gwasRegion,
       indexSnp: 'rsIndex',
@@ -224,7 +213,7 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
 })
 
 test('a pair where both sides are the index SNP is ignored', async () => {
-  const ld = await build({
+  const ld = await buildLdToIndex({
     adapter: source([
       rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsIndex', bpB: 100, r2: 1 }),
     ]),
@@ -266,7 +255,7 @@ describe('a viewport panned away from the index SNP', () => {
   const indexSnp = `2:${INDEX_BP}`
 
   it('still colours, because the read is anchored on the index', async () => {
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: ld,
       region: panned,
       ldRefName: '2',
@@ -276,15 +265,15 @@ describe('a viewport panned away from the index SNP', () => {
     expect(built.r2ByKey.get('2:192010000')).toBe(0.5)
   })
 
-  // the viewport-anchored read this replaced, in the form this window can
-  // express it: a window that does not reach the index finds no row naming it
-  it('finds nothing once the window no longer reaches the index', async () => {
-    const built = await build({
+  // and the read really is a window around the index rather than the whole
+  // contig: move the index past the far edge of one and the same records stop
+  // being reachable, which is what the viewport-anchored read did on every pan
+  it('reads a window around the index, not the whole contig', async () => {
+    const built = await buildLdToIndex({
       adapter: ld,
       region: panned,
       ldRefName: '2',
-      indexSnp: `2:${INDEX_BP + 1}`,
-      windowBp: 0,
+      indexSnp: `2:${INDEX_BP + 2 * LD_WINDOW_BP}`,
     })
     expect(built.indexFound).toBe(false)
     expect(built.r2ByKey.size).toBe(0)
@@ -292,7 +281,7 @@ describe('a viewport panned away from the index SNP', () => {
 
   it('reads nothing at all for an index on another contig', async () => {
     const getLDRecords = jest.fn(() => Promise.resolve([]))
-    const built = await build({
+    const built = await buildLdToIndex({
       adapter: { getLDRecords },
       region: panned,
       ldRefName: '2',
@@ -308,7 +297,7 @@ describe('a viewport panned away from the index SNP', () => {
 // so a feature the GWAS file also leaves unnamed reads back a stranger's r²,
 // and one with no LD record at all is coloured as a partner.
 test('an unnamed partner does not shadow a named one', async () => {
-  const ld = await build({
+  const ld = await buildLdToIndex({
     adapter: source([
       rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 200, r2: 0.9 }),
       rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 300, r2: 0.1 }),

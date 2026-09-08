@@ -234,14 +234,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * bp either side of the index SNP the `.ld` file is read at — the
-         * reach-back a pair whose index is the B side needs. See the slot.
-         */
-        get ldWindowBp(): number {
-          return getConf(self, 'ldWindowBp')
-        },
-        /**
-         * #getter
          * LD coloring is actually in effect — the mode is on *and* there's an .ld
          * adapter for it to read. `colorBy` alone can be 'ld' from config with no
          * adapter configured, in which case the worker silently falls back to
@@ -362,22 +354,20 @@ export function stateModelFactory(
         /**
          * #method
          * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
-         * index SNP, LD adapter, LD window) triggers a refetch, since the worker
-         * bakes per-feature color into the result
+         * index SNP, LD adapter) triggers a refetch, since the worker bakes
+         * per-feature color into the result
          */
         rpcProps(): {
           color: string
           colorBy: 'normal' | 'ld'
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
-          ldWindowBp: number
         } {
           return {
             color: self.color,
             colorBy: self.colorBy,
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
-            ldWindowBp: self.ldWindowBp,
           }
         },
         /**

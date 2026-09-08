@@ -44,11 +44,6 @@ export interface GetManhattanDataArgs {
   // free to spell the same contig differently, so it needs its own name.
   // Present only in LD coloring mode, where it is the only thing that reads it.
   ldRefName?: string
-  // bp either side of the index SNP to read the `.ld` file at. The query is
-  // anchored on the index rather than on the viewport, so this — not the
-  // region — is what decides how much of the file a request touches. See
-  // `ldQueryWindow`.
-  ldWindowBp: number
 }
 
 // Whether this request colors by LD. Three things have to be present, and both

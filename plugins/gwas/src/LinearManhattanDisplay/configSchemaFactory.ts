@@ -103,24 +103,6 @@ export function configSchemaFactory() {
         defaultValue: 'normal',
         description: 'How to color Manhattan points',
       },
-      /**
-       * #slot
-       * How far either side of the index SNP to read the `.ld` file when
-       * `colorBy` is 'ld'.
-       *
-       * PLINK writes a pair once, with the lower position as the A side, and an
-       * index over the file finds a row by that side — so a partner upstream of
-       * the index is only reachable by reading back at least as far as the
-       * window the file was written at. The file does not record that window,
-       * hence the slot. The default matches plink's own `--ld-window-kb`
-       * default of 1000kb; raise it for a file written wider.
-       */
-      ldWindowBp: {
-        type: 'number',
-        defaultValue: 1_000_000,
-        description:
-          'bp either side of the index SNP to read the LD file at (plink --ld-window-kb)',
-      },
       // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
       // because `ScoreScaleMixin` reads all five, but only the min/max bounds
       // reach this plot: -log10 p values are pre-transformed so the axis is
