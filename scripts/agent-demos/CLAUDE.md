@@ -112,6 +112,79 @@ when Claude Code updates:
   settled pane — a pane changes the instant a prompt is typed, so settling alone
   declares a turn finished before the model has started it.
 
+## macOS: `recordDemoApp.mjs` — the Claude app, and why it is not the one to use
+
+`node scripts/agent-demos/recordDemoApp.mjs <outdir> [takes/<name>.mjs] [--dry-run]`
+films Claude Code inside the Claude desktop app instead of the TUI, with
+`appClient.mjs` holding everything app-specific. It runs end to end — the smoke
+take encodes in 75s — and the output was still judged **not showcase material**
+on 2026-09-08. Read this before reaching for it again.
+
+**The TUI harness is the one that makes publishable clips**, because tmux gives
+real text state. Here every single interaction is a pixel probe, and on the
+first real take three of them failed SILENTLY at once: the model never switched,
+the account email and usage card filmed, and the session's folder was detached
+by a blind banner click, so the agent aligned two unrelated FASTAs it found
+elsewhere on disk while reporting success.
+
+What is established, each of it paid for:
+
+- **MCP reaches the app only through `claude_desktop_config.json`.** A
+  user-scope entry in `~/.claude.json` is ignored, a project `.mcp.json` is
+  ignored, and `/mcp` opens the connector Directory — a remote marketplace a
+  local stdio server is never in. The app reads that file at LAUNCH and spawns
+  one server child per surface, so `pgrep` on the server path proves it loaded
+  without spending a turn.
+- **`claude://code/new?folder=<urlencoded>&source=services`** opens a session in
+  a named folder. The app must be fully quit first, polled rather than slept on:
+  a running app makes the deep link merely FOCUS it, and the session lands in
+  whatever workspace it already had.
+- **The trust modal is up on every launch**, including for a folder trusted
+  minutes earlier, with **Cancel** focused — so a synthetic Return abandons the
+  session. Its absence is the signal that the deep link did not open the folder.
+- **Its confirm button is found by pixels, never by offset.** The modal grows
+  with the length of the path it names, so a take in a deep directory has its
+  buttons ~20 points below one in a short directory. It is the only filled white
+  control on screen, which `whiteControl` in `appClient.mjs` locates.
+- **Clicks land only when the app is frontmost, and the first one after
+  activating is eaten** by the activation itself. Every click activates, waits,
+  then clicks.
+- **The sidebar is a persisted toggle and its panel is DARKER than the content**
+  — 17 against 21 — so a probe with the sense backwards reports "already
+  collapsed" over an open sidebar and films the account email and every past
+  session title. `sidebarMode` in the app config is which sidebar, not whether.
+- **Three banners arrive unbidden** (notifications-off, a model promo, an
+  approaching-weekly-usage warning that also puts the reset date on camera), and
+  each is a different height, so there is no single offset for its close glyph.
+  A ladder of blind clicks is how the folder chip got detached; detect the strip
+  changed, and never click over the composer chrome speculatively.
+- **The model menu's digit accelerators do not take**, silently. Click the row —
+  measured UP from the window bottom in POINTS, 157.5 for the topmost and 24 a
+  row — and then read the blue tick beside the current model back, which is the
+  only proof. Reading those offsets off a screenshot in pixels selects two rows
+  out, which lands on a model that may be rate-limited, changing nothing.
+- **There is no transcript on disk.** Nothing appears under
+  `~/.claude/projects/` for an app session, so turn detection is a hash of the
+  conversation pane: the same state machine `demoCore.waitTurnDone` runs against
+  a tmux pane, with every sample logged to `<outdir>/turn-samples.log` because
+  that log is the only evidence for why a turn was called done. The send button
+  is NOT the signal — it stays a send arrow for the whole turn.
+- **Stillness cannot tell "blocked" from "finished".** In Auto mode the app
+  blocks any command it cannot statically analyze (`ls -la "$(pwd)"` was one)
+  and waits on a dialog, so the window goes as quiet as a finished turn. A
+  shell-heavy take needs Bypass permissions, or a detector that finds the
+  dialog's own white "Allow once" button.
+- **`--dry-run` stops before the camera**, so startup and chrome cleanup can be
+  iterated for zero model turns. Use it: every bug above was found by spending
+  turns until it was added.
+- **The app has none of the CLI's three flags.** The take's `SYSTEM` becomes
+  `<cwd>/CLAUDE.md`, `--allowedTools` becomes the permission mode, and
+  `--strict-mcp-config` has no equivalent, so the session also sees whatever
+  connectors the account has. The app is launched through LaunchServices and
+  does not inherit the shell environment either, so the harness resolves
+  `minimap2` and the repo CLI to absolute paths in that CLAUDE.md —
+  `which jbrowse` is an fnm shim whose path dies with the shell.
+
 ## Linux: `recordDemoTui.mjs`
 
 `node scripts/agent-demos/recordDemoTui.mjs <outdir>` writes
@@ -253,8 +326,9 @@ first:
   expression, not a `return`; caps one evaluation at 45 s while the code runs
   on; and sanitizes results (depth-truncated objects, clipped strings, any
   string that looks like base64 replaced with a `[BLOCKED]` marker, which has
-  hit a display type name). `website/docs/agents_web.md` carries the
-  agent-facing version of these.
+  hit a display type name). `website/docs/agents_live_model.md` § "In a browser"
+  carries the agent-facing version of these; `agents_web.md` was folded into it
+  and `agents.md` in 2026-08.
 - **Naming the browser is two calls**, `list_connected_browsers` then
   `select_browser` with its `deviceId`, and two Chrome installs register the
   extension here, so a headless run has to be told the id in its prompt.

@@ -53,9 +53,26 @@ Still true: the panel is a `chrome-extension://` page, so the extension's own
 `javascript_tool` cannot read it — host permissions are http/https. Any
 cleverer detection has to come from pixels.
 
-## Claude Desktop — not started
+## The Claude desktop app — attempted, and not showcase material
 
-Needs the same keyboard path, which now works.
+Tried on 2026-09-08 with a harness written for it (`recordDemoApp.mjs` +
+`appClient.mjs`, whose traps are in
+[`scripts/agent-demos/CLAUDE.md`](../../scripts/agent-demos/CLAUDE.md)). It runs
+end to end and the smoke take encodes in 75 s; the verdict on the output was
+"not working well at all, it is not showcase material", and the reason is
+structural rather than a bug list. tmux gives the TUI harness real text state,
+while every interaction here is a pixel probe, so a failure is silent by
+default: on the first four-turn take the model never switched, the account email
+and usage card filmed, and a blind banner click detached the session's folder,
+after which the agent aligned two unrelated FASTAs and reported success.
+
+Two things would have to change before it is worth another attempt: the filmed
+session needs Bypass permissions (in Auto mode the app blocks any command it
+cannot statically analyze, and a blocked turn is indistinguishable from a
+finished one by stillness), and the chrome cleanup needs to stop clicking
+anywhere it has not first detected something to click. The findings are all
+recorded, so a later attempt starts from a working startup rather than from
+scratch — but the TUI harness remains the one that produces clips.
 
 ## Before filming anything again
 
