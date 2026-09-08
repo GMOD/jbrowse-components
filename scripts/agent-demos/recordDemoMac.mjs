@@ -335,7 +335,11 @@ try {
     console.log(`\n❯ ${step.prompt}`)
     const before = capture(SESSION)
     await typePrompt(SESSION, step.prompt)
-    if (!(await waitTurnDone(SESSION, before, 900_000))) {
+    // 40 minutes, not 15: turn one of a take can carry a whole-genome
+    // alignment, and the cap firing mid-turn desynchronises the harness from
+    // the agent — it types the next prompt into a session still working on the
+    // last one.
+    if (!(await waitTurnDone(SESSION, before, 2_400_000))) {
       console.error('  (turn did not settle before timeout; continuing)')
     }
     // The window can only be measured through the app, which needs a session,
