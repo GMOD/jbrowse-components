@@ -1,4 +1,4 @@
-import { alignmentUriOf, deriveCommand, deriveLoci } from './deriveCommand.ts'
+import { alignmentFileOf, deriveCommand, deriveLoci } from './deriveCommand.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
@@ -68,7 +68,20 @@ test('a track with no file leaves a placeholder rather than an empty flag', () =
 })
 
 test('the alignment file comes from either adapter type', () => {
-  expect(alignmentUriOf({ bamLocation: { uri: 'a.bam' } })).toBe('a.bam')
-  expect(alignmentUriOf({ cramLocation: { uri: 'a.cram' } })).toBe('a.cram')
-  expect(alignmentUriOf({ type: 'SamAdapter' })).toBeUndefined()
+  expect(
+    alignmentFileOf({
+      bamLocation: { uri: 'a.bam', locationType: 'UriLocation' },
+    }),
+  ).toBe('a.bam')
+  expect(
+    alignmentFileOf({
+      cramLocation: { uri: 'a.cram', locationType: 'UriLocation' },
+    }),
+  ).toBe('a.cram')
+  expect(
+    alignmentFileOf({
+      bamLocation: { localPath: '/d/a.bam', locationType: 'LocalPathLocation' },
+    }),
+  ).toBe('/d/a.bam')
+  expect(alignmentFileOf({})).toBeUndefined()
 })

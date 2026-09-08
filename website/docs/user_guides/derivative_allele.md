@@ -15,8 +15,12 @@ enough that the aligner wrote it as a split alignment.
 
 Each route is written as a lettered string of reference pieces with a prime on
 an inverted one, and each row draws its segments to scale under its read count.
-**Save segment map (SVG)** writes that map for the picked route as a figure.
-**Draw as** picks the view it opens in: a
+**Save segment map (SVG)** writes that map for the picked route as a figure, and
+**Copy derive command** writes the
+[`sv_multihop.py derive`](/docs/tutorials/cancer_sv#reconstructing-the-alleles-sequence)
+command line that builds the route's sequence offline, with the track's
+alignment file and both sides of every junction already filled in. **Draw as**
+picks the view it opens in: a
 [linear synteny view](/docs/user_guides/linear_synteny_view) puts the allele
 along the bottom and the loci it visits along the top, and a
 [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)

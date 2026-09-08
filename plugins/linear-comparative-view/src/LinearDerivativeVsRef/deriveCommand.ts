@@ -1,7 +1,9 @@
+import { isLocalPathLocation, isUriLocation } from '@jbrowse/core/util'
 import { segmentEntryBp, segmentExitBp } from '@jbrowse/plugin-alignments'
 
 import { derivativeName } from './derivativeName.ts'
 
+import type { FileLocation } from '@jbrowse/core/util'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 /**
@@ -35,12 +37,12 @@ export function deriveLoci(candidate: DerivativeCandidate) {
  */
 export function deriveCommand(
   candidate: DerivativeCandidate,
-  alignmentUri: string | undefined,
+  alignmentFile: string | undefined,
 ) {
   const name = derivativeName(candidate)
   return [
     'python3 sv_multihop.py derive',
-    `--aln ${alignmentUri ?? '<reads.bam>'}`,
+    `--aln ${alignmentFile ?? '<reads.bam>'}`,
     '--ref <reference.fa>',
     `--loci ${deriveLoci(candidate).join(',')}`,
     `--out ${name} --name ${name}`,
@@ -48,13 +50,18 @@ export function deriveCommand(
 }
 
 /**
- * The file a BAM or CRAM adapter reads, or nothing for an adapter that names
- * none (a SAM served inline, a synthetic track in a test).
+ * What to type after `--aln`: the URL or the path a BAM or CRAM adapter reads,
+ * and nothing for an adapter that names neither (a blob dropped into the
+ * browser, a SAM served inline).
  */
-export function alignmentUriOf(adapter: unknown) {
-  const conf = adapter as {
-    bamLocation?: { uri?: string }
-    cramLocation?: { uri?: string }
-  }
-  return conf.bamLocation?.uri ?? conf.cramLocation?.uri
+export function alignmentFileOf(adapter: {
+  bamLocation?: FileLocation
+  cramLocation?: FileLocation
+}) {
+  const location = adapter.bamLocation ?? adapter.cramLocation
+  return isUriLocation(location)
+    ? location.uri
+    : isLocalPathLocation(location)
+      ? location.localPath
+      : undefined
 }

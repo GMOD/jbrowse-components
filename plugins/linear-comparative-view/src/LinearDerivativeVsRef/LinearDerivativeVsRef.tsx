@@ -42,7 +42,7 @@ import {
   buildSplitViewFromPath,
 } from './buildSplitViewFromPath.ts'
 import { derivativeName } from './derivativeName.ts'
-import { alignmentUriOf, deriveCommand } from './deriveCommand.ts'
+import { alignmentFileOf, deriveCommand } from './deriveCommand.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
 import { segmentMapCaption, segmentMapSvg } from './segmentMapSvg.ts'
 
@@ -518,7 +518,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   function copyDeriveCommand(candidate: DerivativeCandidate) {
     void copyText(
       track,
-      deriveCommand(candidate, alignmentUriOf(getConf(track, 'adapter'))),
+      deriveCommand(candidate, alignmentFileOf(getConf(track, 'adapter'))),
       'derive command',
     )
   }
