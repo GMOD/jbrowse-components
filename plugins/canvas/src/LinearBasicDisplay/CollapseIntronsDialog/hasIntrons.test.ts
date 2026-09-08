@@ -1,4 +1,4 @@
-import { hasIntrons } from './util.ts'
+import { hasCollapsibleIntrons, hasIntrons } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -97,5 +97,45 @@ describe('hasIntrons', () => {
     const transcript1 = mockFeature([{ type: 'exon', start: 100, end: 200 }])
     const transcript2 = mockFeature([{ type: 'exon', start: 150, end: 250 }])
     expect(hasIntrons([transcript1, transcript2])).toBe(false)
+  })
+
+  it('counts match_part and block children the way it counts exons', () => {
+    expect(
+      hasIntrons([
+        mockFeature([
+          { type: 'match_part', start: 100, end: 200 },
+          { type: 'match_part', start: 300, end: 400 },
+        ]),
+      ]),
+    ).toBe(true)
+    expect(
+      hasIntrons([
+        mockFeature([
+          { type: 'block', start: 100, end: 200 },
+          { type: 'block', start: 300, end: 400 },
+        ]),
+      ]),
+    ).toBe(true)
+  })
+})
+
+describe('hasCollapsibleIntrons', () => {
+  // The retained-intron gene: the union of the two isoforms' exons is
+  // contiguous, so the whole-gene scope collapses nothing while the spliced
+  // isoform the dropdown offers collapses fine.
+  const retained = mockFeature([{ type: 'exon', start: 100, end: 400 }])
+  const spliced = mockFeature([
+    { type: 'exon', start: 100, end: 200 },
+    { type: 'exon', start: 300, end: 400 },
+  ])
+
+  it('passes a gene whose union is contiguous but whose isoform is spliced', () => {
+    expect(hasIntrons([retained, spliced])).toBe(false)
+    expect(hasCollapsibleIntrons([retained, spliced])).toBe(true)
+  })
+
+  it('still refuses a gene with no intron in any scope', () => {
+    expect(hasCollapsibleIntrons([retained])).toBe(false)
+    expect(hasCollapsibleIntrons([])).toBe(false)
   })
 })

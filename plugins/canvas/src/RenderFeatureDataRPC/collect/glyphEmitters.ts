@@ -3,6 +3,7 @@ import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 import { LITERAL } from '../colorClasses.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
+import { paintsInternalIntron } from '../glyphs/glyphUtils.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
@@ -668,6 +669,12 @@ function emitGlyph(
   GLYPH_EMITTERS[layout.glyphType](layout, place, ctx, collector)
 }
 
+// Read off the emitter table rather than spelled as its own list of glyph
+// names, so a glyph routed through `processTranscriptLayout` later cannot end
+// up painting introns nobody records.
+const paintsIntronLines = (glyphType: GlyphType) =>
+  GLYPH_EMITTERS[glyphType] === processTranscriptLayout
+
 export function processFeatureRecord(
   layout: FeatureLayout,
   ctx: RenderContext,
@@ -722,6 +729,9 @@ export function processFeatureRecord(
     transcript: transcriptCoords(layout),
     // Fade eligibility, per feature — the per-rect decision is layout's alone.
     densityFade: layout.glyphType === 'Box',
+    spliced: paintsIntronLines(layout.glyphType)
+      ? paintsInternalIntron(layout)
+      : undefined,
     labelRows: layout.labelRows,
     isoformStack: layout.isoformStack,
   })

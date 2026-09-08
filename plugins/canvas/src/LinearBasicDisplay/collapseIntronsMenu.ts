@@ -10,7 +10,10 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
-import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
+import {
+  getTranscripts,
+  hasCollapsibleIntrons,
+} from './CollapseIntronsDialog/util.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -28,6 +31,18 @@ const CollapseIntronsDialog = lazy(
 const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript/
 export function isGeneLikeType(type: string | undefined) {
   return type !== undefined && GENE_LIKE_TYPE.test(type.toLowerCase())
+}
+
+/**
+ * A gene holds its introns in the transcripts it stacks, so its own glyph
+ * paints none and only the type answers for it. The other two intron-bearing
+ * shapes have no type to answer with — a cDNA or EST alignment types itself
+ * `match`, and a BED12 with no thick region misses the gene heuristic and
+ * carries no type at all — so they are read off the glyph, which recorded
+ * whether it painted an intron between the parts it drew.
+ */
+export function offersCollapseIntrons(info: FeatureContextMenuInfo) {
+  return isGeneLikeType(info.item.type) || info.item.spliced === true
 }
 
 // Structural rather than the model's instance type: the factory calls this
@@ -66,7 +81,7 @@ export function collapseIntronsMenuItem(
           return
         }
         const transcripts = getTranscripts(target)
-        if (!hasIntrons(transcripts)) {
+        if (!hasCollapsibleIntrons(transcripts)) {
           session.notify('No introns found in this feature', 'info')
           return
         }

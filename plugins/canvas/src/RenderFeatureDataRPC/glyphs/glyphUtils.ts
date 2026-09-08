@@ -102,6 +102,19 @@ export function hasContainerChildren(feature: Feature) {
   return getSubfeatures(feature).some(sub => getSubfeatures(sub).length > 0)
 }
 
+// Whether the glyph paints an intron INSIDE this layout: a gap between two of
+// the parts it drew, which is the same walk `emitIntronLines` makes. The
+// leading and trailing connectors it also paints are excluded, being the
+// feature overhanging its own parts rather than a gap between them.
+export function paintsInternalIntron(layout: FeatureLayout) {
+  let prevEnd = layout.feature.get('start')
+  return layout.children.some(child => {
+    const gap = child.feature.get('start') > prevEnd
+    prevEnd = Math.max(prevEnd, child.feature.get('end'))
+    return gap
+  })
+}
+
 // The feature ITSELF counts, because an isoform can BE the CDS rather than
 // contain one — a viral polyprotein hangs its cleavage products off its CDS,
 // not off further CDSs.

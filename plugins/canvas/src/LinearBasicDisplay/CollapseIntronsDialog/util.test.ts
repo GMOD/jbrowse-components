@@ -3,8 +3,8 @@ import {
   buildCollapsedRegions,
   buildCollapsedViewSnapshot,
   collapsedRegionsFor,
-  featureHasExonsOrCDS,
-  getExonsAndCDS,
+  featureHasSplicedParts,
+  getSplicedParts,
   getTranscripts,
   replaceIntrons,
 } from './util.ts'
@@ -67,7 +67,7 @@ function intronArgs(opts: {
 }
 
 describe('CollapseIntrons utilities', () => {
-  describe('getExonsAndCDS', () => {
+  describe('getSplicedParts', () => {
     it('extracts exons from transcripts', () => {
       const transcripts = [
         feat({
@@ -78,7 +78,7 @@ describe('CollapseIntrons utilities', () => {
           ],
         }),
       ]
-      expect(getExonsAndCDS(transcripts)).toHaveLength(2)
+      expect(getSplicedParts(transcripts)).toHaveLength(2)
     })
 
     it('extracts CDS from transcripts', () => {
@@ -87,29 +87,32 @@ describe('CollapseIntrons utilities', () => {
           subfeatures: [feat({ type: 'CDS' }), feat({ type: 'UTR' })],
         }),
       ]
-      expect(getExonsAndCDS(transcripts)).toHaveLength(1)
+      expect(getSplicedParts(transcripts)).toHaveLength(1)
     })
 
     it('handles transcripts with no subfeatures', () => {
-      expect(getExonsAndCDS([feat()])).toHaveLength(0)
+      expect(getSplicedParts([feat()])).toHaveLength(0)
     })
   })
 
-  describe('featureHasExonsOrCDS', () => {
-    it('returns true when subfeatures include an exon', () => {
-      expect(
-        featureHasExonsOrCDS(feat({ subfeatures: [feat({ type: 'exon' })] })),
-      ).toBe(true)
-    })
+  describe('featureHasSplicedParts', () => {
+    it.each(['exon', 'CDS', 'match_part', 'block'])(
+      'returns true when subfeatures include a %s',
+      type => {
+        expect(
+          featureHasSplicedParts(feat({ subfeatures: [feat({ type })] })),
+        ).toBe(true)
+      },
+    )
 
-    it('returns false when subfeatures contain neither exon nor CDS', () => {
+    it('returns false when subfeatures contain no spliced part', () => {
       expect(
-        featureHasExonsOrCDS(feat({ subfeatures: [feat({ type: 'UTR' })] })),
+        featureHasSplicedParts(feat({ subfeatures: [feat({ type: 'UTR' })] })),
       ).toBe(false)
     })
 
     it('returns false when feature has no subfeatures', () => {
-      expect(featureHasExonsOrCDS(feat())).toBe(false)
+      expect(featureHasSplicedParts(feat())).toBe(false)
     })
   })
 
@@ -136,6 +139,42 @@ describe('CollapseIntrons utilities', () => {
       expect(
         getTranscripts(feat({ subfeatures: [transcript, childless] })),
       ).toEqual([transcript])
+    })
+
+    it('prefers the mRNA children of a gene that also carries stray exons', () => {
+      const transcript = feat({
+        type: 'mRNA',
+        subfeatures: [feat({ type: 'exon' })],
+      })
+      const gene = feat({
+        type: 'gene',
+        subfeatures: [feat({ type: 'exon' }), transcript],
+      })
+      expect(getTranscripts(gene)).toEqual([transcript])
+    })
+
+    it('stays one transcript when its exons nest their own CDS rows', () => {
+      const mrna = feat({
+        type: 'mRNA',
+        subfeatures: [
+          feat({ type: 'exon', subfeatures: [feat({ type: 'CDS' })] }),
+          feat({ type: 'exon' }),
+        ],
+      })
+      expect(getTranscripts(mrna)).toEqual([mrna])
+    })
+
+    it('wraps a match whose children are match_parts', () => {
+      const match = feat({
+        type: 'cDNA_match',
+        subfeatures: [feat({ type: 'match_part' })],
+      })
+      expect(getTranscripts(match)).toEqual([match])
+    })
+
+    it('wraps a BED12 feature whose children are blocks', () => {
+      const bed = feat({ subfeatures: [feat({ type: 'block' })] })
+      expect(getTranscripts(bed)).toEqual([bed])
     })
   })
 
@@ -285,7 +324,7 @@ describe('CollapseIntrons utilities', () => {
 
     it('reports having found no exons, rather than an empty region set', () => {
       expect(errorFor([feat({ refName: 'ctgA', type: 'tRNA' })])).toEqual({
-        error: expect.stringMatching(/No exons or CDS/),
+        error: expect.stringMatching(/No exons, CDS or blocks/),
       })
     })
 

@@ -234,6 +234,12 @@ export interface FlatbushItem extends HitItemBase {
   name?: string
   strand?: number
   densityFade: boolean
+  // Set when the glyph painted an intron between this feature's OWN parts. A
+  // gene leaves it unset: its gaps belong to the transcripts it stacks, which
+  // register as subfeatures of their own. It is the only main-thread evidence
+  // that a typeless feature splices — a BED12 with no thick region carries no
+  // type, and its blocks register nothing.
+  spliced?: boolean
   // Present on a gene stacking more than one child.
   isoformStack?: IsoformStack
 }

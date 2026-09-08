@@ -17,11 +17,11 @@ import {
 import { observer } from 'mobx-react'
 
 import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
-import { isExon } from '../../RenderFeatureDataRPC/util.ts'
+import { isCDS, isExon } from '../../RenderFeatureDataRPC/util.ts'
 import {
   collapseIntrons,
   collapsedRegionsFor,
-  getExonsAndCDS,
+  getSplicedParts,
   replaceIntrons,
   runIntronAction,
 } from './util.ts'
@@ -56,10 +56,15 @@ export function collapseSummary(result: CollapseResult, spannedBp: number) {
 }
 
 function transcriptLabel(transcript: Feature, idx: number) {
-  const parts = getExonsAndCDS([transcript])
+  const parts = getSplicedParts([transcript])
   const exons = parts.filter(isExon).length
+  const cds = parts.filter(isCDS).length
   const counted =
-    exons > 0 ? `${exons} ${pluralize(exons, 'exon')}` : `${parts.length} CDS`
+    exons > 0
+      ? `${exons} ${pluralize(exons, 'exon')}`
+      : cds > 0
+        ? `${cds} CDS`
+        : `${parts.length} ${pluralize(parts.length, 'block')}`
   const length = transcript.get('end') - transcript.get('start')
   const name = getFeatureName(transcript) ?? `Transcript ${idx + 1}`
   return `${name} (${counted}, ${toLocale(length)} bp)`

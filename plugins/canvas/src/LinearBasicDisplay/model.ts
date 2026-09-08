@@ -22,6 +22,7 @@ import baseStateModelFactory from './baseModel.ts'
 import {
   collapseIntronsMenuItem,
   isGeneLikeType,
+  offersCollapseIntrons,
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
@@ -222,10 +223,8 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Its own getter in an earlier block than its caller:
-      // jbrowse-plugin-msaview reads it off the display, and inlining it took
-      // "Launch MSA view" out of every gene track's menu with nothing
-      // failing; pluginFacingDisplayApi.test.ts is the guard.
+      // No in-repo caller: jbrowse-plugin-msaview reads it off the display to
+      // gate "Launch MSA view", and pluginFacingDisplayApi.test.ts is the guard.
       /**
        * #getter
        * whether the right-clicked feature is a gene, transcript or RNA
@@ -359,7 +358,7 @@ export default function stateModelFactory(
         contextMenuItems() {
           const base = superContextMenuItems()
           const info = self.contextMenuInfo
-          return info && self.isGeneLike
+          return info && offersCollapseIntrons(info)
             ? [...base, collapseIntronsMenuItem(self, info)]
             : base
         },
