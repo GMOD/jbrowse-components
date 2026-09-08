@@ -50,12 +50,15 @@ export function nsisScriptFor(
   })
 }
 
+// A native makensis cross-compiles the Windows installer from any host, and is
+// what the release runs and what `pnpm check:nsis` compiles this script with.
+// Wine-hosted NSIS stays as a fallback for a machine that only has that.
 function getNsisCommand(): { cmd: string; useWine: boolean } {
-  if (process.platform === 'win32') {
-    try {
-      runQuiet('makensis -VERSION')
-      return { cmd: 'makensis', useWine: false }
-    } catch {
+  try {
+    runQuiet('makensis -VERSION')
+    return { cmd: 'makensis', useWine: false }
+  } catch {
+    if (process.platform === 'win32') {
       throw new Error('makensis not found — install NSIS for Windows')
     }
   }
@@ -67,7 +70,7 @@ function getNsisCommand(): { cmd: string; useWine: boolean } {
     }
   } catch {
     throw new Error(
-      'NSIS not found in Wine — install NSIS under Wine (Linux/macOS)',
+      'NSIS not found — install it natively (apt: nsis, brew: makensis) or under Wine',
     )
   }
 }

@@ -16,11 +16,8 @@
  * section structure — everything except the app bytes. Seconds, and needs only
  * `makensis` (apt: `nsis`).
  *
- * Native makensis, not the Wine one the release uses. The two compile the same
- * language; what differs is only which of `createNsisScript`'s two path-escaping
- * branches produced the paths, and those are pinned separately in
- * packaging/nsis.test.ts. Installing NSIS under Wine takes minutes (see
- * release.yml) and would buy nothing this does not already catch.
+ * The same native makensis the release job uses, against the same script — what
+ * differs is only that the release compiles it over the real packaged tree.
  */
 import { spawnSync } from 'child_process'
 import fs from 'fs'

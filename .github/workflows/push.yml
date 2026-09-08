@@ -976,9 +976,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # Native makensis, not the Wine-hosted NSIS the release uses. Both compile
-      # the same language; installing NSIS under Wine takes minutes (see
-      # release.yml) and buys nothing this does not already catch.
+      # The same native makensis the release job compiles the installer with.
       - name: Install NSIS
         run: sudo apt-get update && sudo apt-get -y install nsis
       - name: Compile the installer script

@@ -129,8 +129,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      # install: false — pnpm install must run after the Wine/native build deps
-      # below so native modules rebuild against them.
+      # install: false — pnpm install must run after the native build deps below
+      # so native modules rebuild against them.
       - uses: ./.github/actions/setup
         with:
           install: 'false'
@@ -140,24 +140,17 @@ jobs:
           # eclipse 'temurin' openjdk https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Selecting-a-Java-distribution
           distribution: 'temurin'
           java-version: '21'
-      - name: Install build deps and Wine
+      # Linux-native makensis, which cross-compiles the Windows installer just
+      # as the Wine-hosted one did — and which push CI already compiles this
+      # script with (nsis_installer_script). The Wine route it replaces was
+      # NSIS-under-Wine in a root container; once the container went, wineboot
+      # refused the /tmp prefix it had always used ("'/tmp' is not owned by
+      # you") and no tagged release built a Windows binary again.
+      - name: Install build deps and NSIS
         run: |
-          sudo dpkg --add-architecture i386
           sudo apt update
-          sudo apt install -y wine wine32 wine64 libwine libwine:i386 fonts-wine \
+          sudo apt install -y nsis \
             python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      - name: Install NSIS under Wine
-        env:
-          WINEPREFIX: /tmp/wine
-        run: |
-          # Initialize Wine prefix first (suppress GUI prompts)
-          WINEDLLOVERRIDES="mscoree,mshtml=" wineboot --init
-          # Download and install NSIS silently
-          wget -q https://downloads.sourceforge.net/project/nsis/NSIS%203/3.12/nsis-3.12-setup.exe -O /tmp/nsis-setup.exe
-          wine /tmp/nsis-setup.exe /S
-          rm /tmp/nsis-setup.exe
-          # Verify NSIS installation
-          wine "C:\\Program Files (x86)\\NSIS\\makensis.exe" /VERSION
       - name: Get ssl.com esigner zip file and unzip
         # We use the tool directly rather than the GitHub Action: https://github.com/SSLcom/esigner-codesign
         run: |
@@ -171,7 +164,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build app
         env:
-          WINEPREFIX: /tmp/wine
           WINDOWS_SIGN_USER_NAME: ${{ secrets.WINDOWS_SIGN_USER_NAME }}
           WINDOWS_SIGN_USER_PASSWORD: ${{ secrets.WINDOWS_SIGN_USER_PASSWORD }}
           WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
@@ -215,6 +207,18 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
           rm $RUNNER_TEMP/certificate.p12
+      # `find-identity -v` lists only unexpired, trusted identities, which is
+      # also how @electron/osx-sign chooses one — so an expired certificate
+      # reads here as an empty list. The one in CSC_LINK expired 2026-06-04,
+      # and the three releases after that each packaged an unsigned app instead
+      # of saying so.
+      - name: Check the signing identity is usable
+        run: |
+          security find-identity -v -p codesigning
+          if ! security find-identity -v -p codesigning | grep -q 'Developer ID Application'; then
+            echo "::error::No valid Developer ID Application identity. CSC_LINK/CSC_KEY_PASSWORD need a current Developer ID certificate for team 9KR53J86Q2."
+            exit 1
+          fi
       - name: Build Mac app
         env:
           APPLE_ID: ${{ secrets.APPLEID }}

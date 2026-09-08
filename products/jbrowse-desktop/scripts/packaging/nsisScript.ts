@@ -59,6 +59,7 @@ export function createNsisScript({
   const progId = progIdFor(productName)
   return `
 Unicode true
+SetCompressor /SOLID lzma
 
 !include "MUI2.nsh"
 !include "FileFunc.nsh"

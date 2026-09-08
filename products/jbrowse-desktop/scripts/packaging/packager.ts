@@ -49,13 +49,21 @@ export async function packageApp(target: Platform) {
         ? path.join(ASSETS, 'icon.icns')
         : undefined
 
+  // `continueOnError` defaults to true, and packager reports the failure
+  // through a `warning()` that `quiet` below suppresses — so a signing failure
+  // (an expired identity, say) otherwise produces an unsigned app and no
+  // message at all. entitlements and hardenedRuntime are per-file options in
+  // @electron/osx-sign v2; passed at the top level they are silently ignored,
+  // and the app is signed with osx-sign's defaults instead of entitlements.plist.
   const osxSign =
     platform === 'darwin' && process.env.APPLE_ID
       ? {
           identity: 'Developer ID Application',
-          hardenedRuntime: true,
-          entitlements: path.join(ROOT, 'entitlements.plist'),
-          'entitlements-inherit': path.join(ROOT, 'entitlements.plist'),
+          continueOnError: false,
+          optionsForFile: () => ({
+            hardenedRuntime: true,
+            entitlements: path.join(ROOT, 'entitlements.plist'),
+          }),
         }
       : undefined
 
