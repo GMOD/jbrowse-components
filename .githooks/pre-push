@@ -398,9 +398,16 @@ docs_pid=$!
 #
 # `--fix` still exits nonzero for anything it could not fix, so this is one pass
 # and not a fix-then-verify pair.
+# `--no-error-on-unmatched-pattern`, oxlint's spelling of the `--no-warn-ignored`
+# on the eslint line below, and on this line for the same reason: a scoped run
+# names files, and oxlint exits 1 with "No files found to lint" when every name
+# it was given is one `ignorePatterns` covers. That is a push whose only lintable
+# file is ignored — `products/**/examples-site/scripts` is what blocked a
+# dependency bump — reported as unfixable lint errors. Whole-tree runs always
+# match something, so the flag belongs here rather than in the script.
 lstatus=0
 if [ -s "$tmp/scope-lint" ]; then
-  xargs -0 sh -c "$cmd_lint --fix \"\$@\"" sh <"$tmp/scope-lint.0" >"$tmp/lint.log" 2>&1 || lstatus=$?
+  xargs -0 sh -c "$cmd_lint --fix --no-error-on-unmatched-pattern \"\$@\"" sh <"$tmp/scope-lint.0" >"$tmp/lint.log" 2>&1 || lstatus=$?
 fi
 if [ "$lstatus" != 0 ]; then
   echo >&2
