@@ -1,0 +1,65 @@
+{
+  "id": "uniform-ring-occupancy",
+  "measured": "2026-09-07",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build, then in products/jbrowse-web: node browser-tests/probe-uniform-ring.ts [--dpr=2] [--tracks=a,b]",
+    "notes": "Headless Chrome with --use-gl=angle on a MacBook Pro (AMD RDNA-1 under WebGPU), 1600x900 viewport, a 1588 px LinearGenomeView on volvox ctgA:1-6000. Every GPUDevice.createBuffer, createTexture and GPUQueue.writeBuffer in the page is wrapped. A ring is a UNIFORM buffer sized MAX_UNIFORM_SLOTS x its aligned slot, allocated once per display as a GPU buffer AND a Uint8Array staging copy, so the CPU column is the GPU column. `msaa` is the 4x colour attachment each display allocates, at w x h x 4 bytes x 4 samples — the swap-chain texture is not counted, since it comes from getCurrentTexture rather than createTexture. `data` is every other GPU buffer, which is the instance data the tracks actually drew. `peak slots` is the largest slot count any one display's ring reached in a frame, from the single writeBuffer endFrame issues per frame (bytes / aligned slot size); it did not move between load and 30 frames of panning. The dpr 1 arm is volvox_alignments + volvox_cram_alignments; the dpr 2 arm adds volvox_alignments_grouped_by_strand (two groups, the row that reaches 4 slots), volvox-long-reads-sv-bam, volvox_sv and volvox_bam_pileup."
+  },
+  "columns": [
+    { "key": "scenario", "label": "session" },
+    { "key": "ringGpu", "label": "ring, GPU", "format": "MB", "precision": 2, "align": "right" },
+    { "key": "ringCpu", "label": "ring, staging", "format": "MB", "precision": 2, "align": "right" },
+    { "key": "msaa", "label": "MSAA targets", "format": "MB", "precision": 2, "align": "right" },
+    { "key": "data", "label": "instance data", "format": "MB", "precision": 2, "align": "right" },
+    {
+      "key": "ringShare",
+      "label": "ring share of GPU bytes",
+      "format": "percent",
+      "precision": 1,
+      "derived": "ringGpu / (ringGpu + msaa + data) * 100",
+      "align": "right"
+    },
+    {
+      "key": "packSaves",
+      "label": "a 512-byte slot would save",
+      "format": "MB",
+      "precision": 2,
+      "derived": "(ringGpu + ringCpu) / 3",
+      "align": "right"
+    },
+    { "key": "peakSlots", "label": "peak slots used", "format": "int", "align": "right" },
+    {
+      "key": "slotShare",
+      "label": "of the 2048 cap",
+      "format": "percent",
+      "precision": 2,
+      "derived": "peakSlots / 2048 * 100",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "2 alignments tracks, dpr 1",
+        "ringGpu": 3.15,
+        "ringCpu": 3.15,
+        "msaa": 21.57,
+        "data": 0.54,
+        "peakSlots": 2
+      }
+    },
+    {
+      "values": {
+        "scenario": "6 alignments tracks, dpr 2",
+        "ringGpu": 9.44,
+        "ringCpu": 9.44,
+        "msaa": 223.31,
+        "data": 1.26,
+        "peakSlots": 4
+      },
+      "emphasize": ["msaa", "peakSlots"]
+    }
+  ]
+}

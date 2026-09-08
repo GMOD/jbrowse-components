@@ -37,11 +37,13 @@ class ShaderCompileError extends Error {
 // aligned slot in the uniform ring buffer.
 //
 // The ring is allocated eagerly at this many slots, as a GPU buffer AND a CPU
-// staging array, whether a renderer writes 4 slots or 1900 — so the cost is
-// per display and is the aligned uniform size that decides it, not the slot
-// count. A display whose uniform fits the 256-byte minimum alignment pays
-// 512 KB each side; alignments' 864-byte uniform aligns to 1024, so 2 MiB each
-// side. Trivial once, per-track at ten open alignments tracks.
+// staging array, whether a renderer writes 4 slots or 1900 — so the cost is per
+// display, and both terms are in it. A display whose uniform fits the 256-byte
+// minimum alignment pays 512 KB each side; alignments' 640-byte uniform aligns
+// to 768, so 1.5 MiB each side, per track. A frame is measured using 2-4 of
+// those slots, which is what makes the count above the oversized term rather
+// than any struct:
+// agent-docs/ideas/size-the-uniform-ring-to-its-measured-occupancy.md.
 //
 // Exhausting it does not throw: the write is dropped and its draws render
 // against the previous batch's uniforms, which is wrong data rather than stale

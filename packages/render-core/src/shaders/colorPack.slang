@@ -15,7 +15,11 @@ module colorPack;
 //
 // Declare such a palette as `float4[N]` instead — a vector element needs no
 // wrapper struct, lowers correctly, AND costs the same 16 bytes per slot that
-// std140 was padding the uint to anyway, so packing bought nothing here. Packing
+// std140 was padding the uint to anyway, so packing one colour per element
+// bought nothing here. FOUR to a `uint4` element, read as `p[i >> 2][i & 3]`,
+// does compile and does save — it is the only form that beats the padding — and
+// on alignments' 23-colour palette it was measured and declined:
+// agent-docs/ideas/size-the-uniform-ring-to-its-measured-occupancy.md. Packing
 // still earns its keep in VERTEX ATTRIBUTES, which is what this is for.
 public float4 unpackRGBA(uint c) {
   return float4(

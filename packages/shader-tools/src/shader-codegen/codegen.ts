@@ -104,8 +104,9 @@ function tsFieldType(t: UniformFieldType): string {
  * The fix is always the same, so name it here rather than making someone
  * bisect a segfault: declare the array as `float4[N]`. A vector element needs no
  * wrapper, lowers correctly, and occupies the same 16 bytes std140 was padding
- * the scalar to — so packing bought nothing in a uniform array anyway. (It buys
- * plenty in a vertex attribute, which is unaffected: those can't be arrays.)
+ * the scalar to — so one packed colour per element buys nothing. Four to a
+ * `uint4` element does, and compiles; colorPack.slang carries when that is
+ * worth reaching for.
  */
 function assertNoScalarArray(baseName: string, field: Field, type: ArrayType) {
   if (type.elementType.kind === 'scalar') {

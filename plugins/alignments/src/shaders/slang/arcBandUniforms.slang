@@ -70,12 +70,11 @@ public struct ArcBandUniforms {
   // `arcColorByIndex` copied all nine into a local array on every vertex to get
   // one of them.
   //
-  // float4 rather than the packed ABGR uint every OTHER color uses, for two
-  // reasons that point the same way. std140 pads an array element to 16 bytes
-  // regardless, so the packed form would occupy the same 144 bytes while still
-  // costing an unpack per vertex — packing buys nothing in a uniform array (it
-  // buys plenty in a vertex attribute, which is where it stays). And slangc
-  // cannot compile the packed form at all: see colorPack.slang.
+  // float4 rather than the packed ABGR uint every OTHER color uses. std140 pads
+  // an array element to 16 bytes regardless, so ONE packed colour per element
+  // would occupy the same 144 bytes while still costing an unpack per vertex.
+  // Four to a `uint4` element would be 48 and does compile — measured on
+  // alignments' 23-colour palette and declined there: see colorPack.slang.
   //
   // The read-cloud endpoint squares (arcMarker.slang) index this same array.
   // They used to have `arcMarkerColor`, a second copy with the short-insert

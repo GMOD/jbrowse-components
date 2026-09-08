@@ -163,9 +163,10 @@ export const PALETTE_UNIFORM_FIELDS = {
 // Two representations on purpose. The NAMED colors are packed ABGR u32, one
 // slot each, which is how every color travels through this renderer. The two
 // INDEXED palettes are `float4[]` in the shader and so are written as four
-// floats per slot: std140 pads an array element to 16 bytes whatever it holds,
-// so the packed form would occupy the same space and still cost an unpack per
-// vertex (and slangc can't compile it — see colorPack.slang).
+// floats per slot, through the generated setter: std140 pads an array element to
+// 16 bytes whatever it holds, so one packed colour per element would occupy the
+// same space. Four to a `uint4` element would not, and compiles — measured and
+// declined, see colorPack.slang.
 function packRgb(rgb: RGBColor) {
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
