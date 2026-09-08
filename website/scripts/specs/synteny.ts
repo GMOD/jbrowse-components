@@ -4484,11 +4484,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Same fix as sv_cgiab/dotplot_result: the config's plain PAFAdapter can't
     // strip the PIF q/t refName prefixes, so ribbons never map. Override with
     // PairwiseIndexedPAFAdapter.
-    // The v3.2 scaffolds are named for the GRCh38 chromosomes they carry, and
+    //
+    // THREE ROWS, one per haplotype with the reference between them. The v3.2
+    // scaffolds are named for the GRCh38 chromosomes they carry, and
     // chr3_chr13_hap1 is a single contig carrying both (100.7Mb aligned to chr3
     // + 98.2Mb to chr13 in HG008T_v3.2.paf) — the translocation itself, as one
-    // assembled sequence. Pairing it with chr13_hap2 (the untranslocated hap2
-    // chr13) puts the derivative and its normal counterpart side by side.
+    // assembled sequence. Stacking only that against the reference does not
+    // separate the haplotypes: the reference row still receives the alignments
+    // of every scaffold, so hap2's names appear on it and a reader cannot tell
+    // which ribbons belong to which copy. A row each does.
+    //
+    // The two breakends are marked on the reference row and named by callouts,
+    // in the same words and the same colour as
+    // sv_cgiab/translocation_breakpoint_split, which opens on those two
+    // coordinates in the reads.
     url: cgiabUrl({
       sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
@@ -4504,7 +4513,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // the ribbons have room to spread out. NB the launch init
           // handler consumes `levelHeights`, not a `levels` snapshot — the
           // latter is silently dropped, which is why the band stayed short.
-          levelHeights: [260],
+          // One entry per level, and three rows make two.
+          levelHeights: [200, 200],
           // drop short noisy alignments and lighten the ribbons so the dense
           // "dark areas" (many overlapping anchors stacking opacity into solid
           // fans) read as clean syntenic blocks
@@ -4514,8 +4524,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // leaves the arm-level blocks that make the chr3/chr13 fusion legible.
           minAlignmentLength: 500000,
           alpha: 0.35,
-          tracks: ['HG008T_v3.2_pif'],
-          // hideNoTracksActive on both rows. Neither panel carries a track —
+          // One level per adjacent pair: hap2 to the reference, then the
+          // reference to hap1. Both are the same assembly pair, so both take
+          // the same track.
+          tracks: [['HG008T_v3.2_pif'], ['HG008T_v3.2_pif']],
+          // hideNoTracksActive on every row. No panel carries a track —
           // GRCh38 at 300 Mb has nothing worth drawing under the ribbons, and
           // the config has no HG008T_v3.2 track at all — so each was painting
           // the LGV's "No tracks active / OPEN TRACK SELECTOR" block instead.
@@ -4524,12 +4537,51 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // frame competing with the ribbons for attention.
           views: [
             {
-              loc: 'chr3:1-198295559 chr13:1-114364328',
-              assembly: 'GRCh38_GIABv3',
+              // hap2's counterparts to the two reference chromosomes: chr13 is
+              // a clean scaffold of its own, and chr3's material sits in a
+              // scaffold this haplotype fuses with chr6 and chr11.
+              loc: 'chr3_chr6_chr11_hap2 chr13_hap2',
+              assembly: 'HG008T_v3.2',
               hideNoTracksActive: true,
             },
             {
-              loc: 'chr3_chr13_hap1:1-212897834 chr13_hap2:1-99565785',
+              loc: 'chr3:1-198295559 chr13:1-114364328',
+              assembly: 'GRCh38_GIABv3',
+              hideNoTracksActive: true,
+              // WHICH junction this is, marked on the reference row: the same
+              // two breakends the breakpoint split view opens on. A highlight
+              // rather than a callout pill because these are coordinates the
+              // app can place itself — and 1 bp is sub-pixel over 313 Mb, so
+              // each is widened to a few megabases to draw at all.
+              //
+              // BLUE, not the callout red: the ribbons are pink-red at every
+              // opacity they stack to, so a red band read as one more
+              // alignment rather than as a marker over them.
+              //
+              // NO `label`. A highlight's label is drawn inside the band, so it
+              // truncates to the band's own width — 'chr3 breakend' needs about
+              // 16 Mb of chromosome to fit at this zoom, which would draw a
+              // breakpoint as a region. The bands mark the two positions; the
+              // callouts below name them.
+              highlight: [
+                {
+                  refName: 'chr3',
+                  assemblyName: 'GRCh38_GIABv3',
+                  start: 136976414,
+                  end: 142976414,
+                  color: 'rgba(31,119,180,0.45)',
+                },
+                {
+                  refName: 'chr13',
+                  assemblyName: 'GRCh38_GIABv3',
+                  start: 111353244,
+                  end: 114364328,
+                  color: 'rgba(31,119,180,0.45)',
+                },
+              ],
+            },
+            {
+              loc: 'chr3_chr13_hap1:1-212897834',
               assembly: 'HG008T_v3.2',
               hideNoTracksActive: true,
             },
@@ -4537,12 +4589,94 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    annotations: [
+      // Which row is which genome. Anchored to each row's own header label,
+      // which is the one string in the frame that names that row and nothing
+      // else — the toolbar's assembly chips repeat the names without the
+      // `<assembly>:<refName>` colon these carry.
+      {
+        type: 'text',
+        text: 'HG008-T hap2',
+        fontSize: 19,
+        anchor: {
+          text: 'HG008T_v3.2:chr3_chr6_chr11_hap2',
+          alignX: 'right',
+          dx: 24,
+        },
+      },
+      {
+        type: 'text',
+        text: 'GRCh38 reference',
+        fontSize: 19,
+        anchor: { text: 'GRCh38_GIABv3:chr3', alignX: 'right', dx: 24 },
+      },
+      {
+        type: 'text',
+        text: 'HG008-T hap1',
+        fontSize: 19,
+        anchor: {
+          text: 'HG008T_v3.2:chr3_chr13_hap1',
+          alignX: 'right',
+          dx: 24,
+        },
+      },
+      // The two breakends. Anchored to the bands themselves (`highlight-band`,
+      // HighlightBand.tsx) rather than to a locus: a locus anchor resolves
+      // through `getHighlightCoords` with the view's own `assemblyNames[0]`,
+      // which does not resolve for an LGV nested in a synteny view, so both
+      // loci came back "resolved to nothing". The bands are placed FROM those
+      // coordinates, so anchoring to them is the same point by another route.
+      //
+      // The second band takes the SIBLING COMBINATOR — "a band preceded by a
+      // band". `:nth-of-type(2)` and `:last-of-type` both match nothing, since
+      // neither band is the second or last DIV among its siblings, and `view`
+      // is not honoured for a selector anchor inside a nested view, so a
+      // `tracksContainer` anchor takes the first one in the whole synteny view.
+      // Highlights exist on the reference row alone, which is what makes both
+      // of these unambiguous.
+      {
+        type: 'text',
+        text: 'chr3 breakend',
+        fontSize: 19,
+        // PAIRED WITH THE OTHER FIGURE of this junction: the same tinted pill
+        // and blue leader appear on the breakend callouts of
+        // sv_cgiab/translocation_breakpoint_split, so a reader seeing one
+        // figure recognises the other's marks as the same two positions. The
+        // fill is the band's own blue, lightened — the label is black and the
+        // leader takes `color`, so a saturated fill costs both. Every other
+        // callout in the corpus stays white/red.
+        color: '#1f77b4',
+        background: '#dceaf6',
+        leader: true,
+        anchor: {
+          selector: '[data-testid="highlight-band"]',
+          alignY: 'top',
+        },
+        dx: -150,
+        dy: -34,
+      },
+      {
+        type: 'text',
+        text: 'chr13 breakend',
+        fontSize: 19,
+        color: '#1f77b4',
+        background: '#dceaf6',
+        leader: true,
+        anchor: {
+          selector:
+            '[data-testid="highlight-band"] ~ [data-testid="highlight-band"]',
+          alignY: 'top',
+        },
+        dx: -150,
+        dy: -34,
+      },
+    ],
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1800,
-    // fit the taller curved synteny band + both LGV panels without a tall
+    // fit the curved synteny bands and all three LGV panels without a tall
     // white margin
-    viewportHeight: 558,
+    viewportHeight: 806,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
     settleMs: 45000,
