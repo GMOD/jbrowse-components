@@ -96,6 +96,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'warnIfMidFrame',
     "GPU_RENDERING names the warning WebGPUHal's deferred destroy replaced",
   ],
+  [
+    'KeyedRenderingBackend',
+    'GPU_RENDERING names the third backend contract adr-088 retired, whose survivor is sharedBackendKey',
+  ],
   ['cacheIdleTimeoutMs', 'an upstream option deliberately not plumbed'],
   [
     'useOverlayState',

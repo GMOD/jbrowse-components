@@ -240,7 +240,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   and the fit-height row budget stay global, since re-deriving them from
   `sections` routes the fit volatile back through the layout it feeds.
 - Screen-x is not start/end-ordered — keep new sashimi geometry on the
-  normalized fields. In shaders use `bpToClipX`/`bpToLinear`, never
+  normalized fields. In shaders use `bpToClipX`/`arcBpToLinear`, never
   `hpClipX(hpSplitUint(…))`.
 
 ## Reaching into the arc band
