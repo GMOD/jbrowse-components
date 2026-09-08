@@ -98,8 +98,8 @@ export function syntenyGroundClear(groundColor: string): ClearColor {
 /**
  * The synteny passes' uniform block for one track. All four shaders declare one
  * `Uniforms` struct out of syntenyTypes.slang — `syntenyPassGeometry.test.ts`
- * pins it — so one writer serves every shape, and two marks of one block draw
- * off a single staged write.
+ * pins it — which is what lets `writeSyntenyUniforms` below be every shape's
+ * writer. It does NOT buy a staged write; that function says why.
  */
 function writeRibbonUniforms(
   scratch: ArrayBuffer,
