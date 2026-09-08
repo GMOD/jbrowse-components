@@ -317,10 +317,40 @@ offset of a home plate is two closed-form terms off the apex half-angle (see
 version would have spent twice — which is the per-read cost the read painter is
 built around.
 
+### What the gate cannot see: a geometry change on an ALREADY-ANTIALIASED edge
+
+`pngDiff.ts`'s `comparePngBuffers` calls pixelmatch without `includeAA`, so it
+runs at the default `false` and drops every pixel the heuristic reads as
+antialiasing. Both the golden comparison and the cross-backend comparison go
+through it, so this applies to the gate, not just to `-u`.
+
+**It is not that a 1 px shift "looks like AA" to pixelmatch.** That reading is
+wrong and worth killing, because it would condemn the gate far too broadly:
+`antialiased()` bails at `zeroes > 2`, so more than two identical neighbours
+DISQUALIFIES a pixel as AA. On synthetic aliased images at the gate's own
+settings, a solid 20x20 block shifted 1 px counts 40 of 40 changed pixels, and a
+4 px bar grown 1 px at each end counts 8 of 8. **On an aliased edge the gate sees
+a 1 px move perfectly well.**
+
+What defeats it is the edge already carrying a real AA gradient, which is what
+supplies the mixed neighbourhood the heuristic wants. Measured 2026-09-08 on
+`targeted_gwas-manhattan-bars` under SwiftShader, whose bar edges ramp
+`62,140,219` → `183,209,235`: removing `BAR_OVERDRAW_PX` from `pointMark.slang`
+— a 1 CSS px overdraw at each end of every extent bar, GPU-side only — moves
+**387 px of 113,940 (0.340%)** by a plain RGB compare, **380** at
+`includeAA: true`, and **2** at the gate's settings.
+
+So the rule is not "the gate is blind to small geometry" but "the gate is blind
+to small geometry wherever the mark is antialiased" — which is most marks, and
+all of the analytic-coverage ones. A divergence of that shape needs its own
+measurement: six lines of pixelmatch over two captures, or
+`browser-tests/probe-bar-top-aa.ts`, which classifies differing pixels into
+horizontal and vertical runs for the same reason.
+
 **A shade change will not rebaseline under `-u`.** Changing only the outline's
 value leaves its geometry and both its neighbours (the fill and the background)
 exactly where they were, which is the signature pixelmatch uses to classify a
-pixel as anti-aliasing — and jest-image-snapshot runs it with the default
+pixel as anti-aliasing — and `comparePngBuffers` runs it with the default
 `includeAA: false`, so every changed pixel is skipped and the suite passes
 against a stale golden. 0.7 → 0.85 moves 9,211 pixels and reports 0. Delete the
 `.png` and let the run write a fresh one; `-u` never fires because nothing

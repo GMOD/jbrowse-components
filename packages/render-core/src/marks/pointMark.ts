@@ -1,7 +1,7 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
-import { valueToYPx } from '../shaders/pointMark.js.generated.ts'
+import { pointDrawsBar, valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph } from './glyphPaint.ts'
@@ -88,7 +88,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xEnd = bpToPx(x2[i]!)
       const yPx = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
       const widthPx = Math.abs(xEnd - xStart)
-      if (widthPx > diameterPx) {
+      if (pointDrawsBar(widthPx, r)) {
         ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
       } else {
         appendGlyph(ctx, glyph[i]!, xStart, yPx, diameterPx)
@@ -108,17 +108,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const cy = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
-      // The bar branch, on the same test the shader and the painter take it.
-      // A bar is the RECT the painter fills, so a cursor anywhere inside one
-      // is on its ink — `MarkShape.hitNearest`'s "distance 0 means on the ink,
-      // edges included", which measuring to the centreline alone did not give.
-      // `BAR_OVERDRAW_PX` stays out of it: that pad is the shader's, and the
-      // hit box is what Canvas2D and the export draw.
+      // A bar is the rect the painter fills, unpadded on every side, so the
+      // drawn bar and this box are one rectangle. A glyph has no rect to clamp
+      // into and offers its centre.
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
-      // A glyph offers its centre and nothing else — a disc, a triangle and a
-      // diamond have no rect to clamp into.
-      return hi - lo > diameterPx
+      return pointDrawsBar(hi - lo, diameterPx / 2)
         ? inkOnRect(xPx, yPx, lo, cy - diameterPx / 2, hi - lo, diameterPx)
         : inkAtPoint(xPx, yPx, xStart, cy)
     })

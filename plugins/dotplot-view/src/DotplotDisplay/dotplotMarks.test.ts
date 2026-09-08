@@ -230,8 +230,9 @@ describe('the dotplot mark list', () => {
 // The rpcProps/gpuProps split means a colorBy change hands the mark a new
 // geometry object over the SAME coordinate arrays. The re-upload is unavoidable
 // (the HAL has no partial-buffer update); re-packing the four coordinate lanes
-// is not, and `uploadMarks` calls `pack` on every upload, so the fast path has
-// to live inside it.
+// is not, and every upload calls `pack` — the mark backend's passes are walked
+// by `GpuPerRegionRenderingBackend.upload` — so the fast path has to live
+// inside it.
 describe('the dotplot recolor path', () => {
   test('a colour-only change uploads once and repacks no coordinate lane', () => {
     const hal = new MockHal(PASSES)

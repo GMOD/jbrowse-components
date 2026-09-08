@@ -19,3 +19,7 @@ function _min(a: number, b: number) {
 export function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
   return ((1.0 - _clamp(((value - domainMin) / _max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)) * h)
 }
+
+export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {
+  return (spanPx > (radiusPx * 2.0))
+}

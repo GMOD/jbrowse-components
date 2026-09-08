@@ -7,7 +7,7 @@
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
-//! js-export: valueToYPx
+//! js-export: valueToYPx, pointDrawsBar
 
 import antialias;
 import hpmath;
@@ -64,6 +64,19 @@ float valueToYPx(float value, float domainMin, float domainMax, float h) {
   return (1.0 - norm) * h;
 }
 
+// Whether an instance draws as an extent bar rather than a glyph: its span has
+// to beat the glyph it would otherwise be, so a datum wider than its own marker
+// stops pretending to be a point.
+//
+// `//! js-export`ed because this one decision is read in three places — the
+// vertex branch below, the painter's rect-vs-glyph fork and the hit test's
+// rect-vs-centre fork — and a display whose hit test took the other branch from
+// the draw would grab a bar at its midpoint. `rectDrawsOutline` and `arrowDraws`
+// are the same lift for the same reason.
+bool pointDrawsBar(float spanPx, float radiusPx) {
+  return spanPx > radiusPx * 2.0;
+}
+
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
@@ -72,10 +85,6 @@ struct VsOut {
   // 2 = inverted triangle, 3 = solid bar.
   nointerpolation float shape : TEXCOORD1;
 };
-
-// Solid ink each side of a bar's genomic span, in CSS px, so a run of adjacent
-// bars abuts. SHAPE_BAR's fragment coverage is a constant 1.
-static const float BAR_OVERDRAW_PX = 1.0;
 
 // Shape discriminators for the fragment shader. SMALL_POINT_MAX_DIAMETER and
 // the disc SDF come from the shared pointGlyph module so they stay in lockstep
@@ -119,17 +128,21 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   // abs() because reversal is baked into bpRangeX (negated length), so
   // endClipX < startClipX on reversed regions — matches wiggle.slang.
   float spanPx = clipLenToPx(abs(endClipX - startClipX), u.viewportWidth);
-  bool isBar = spanPx > u.radiusPx * 2.0;
+  bool isBar = pointDrawsBar(spanPx, u.radiusPx);
 
   VsOut o;
   o.color = unpackRGBA(inst.color);
   if (isBar) {
     // Horizontal bar from x→x2, height 2*radiusPx px, centered on the value.
-    float overdrawClipX = pxToClipLen(BAR_OVERDRAW_PX, u.viewportWidth);
-    // min/max so a reversed region (endClipX < startClipX) still spans the full
-    // bar extent instead of drawing an inverted quad — matches wiggle.slang.
-    float x = xZero ? (min(startClipX, endClipX) - overdrawClipX)
-                    : (max(startClipX, endClipX) + overdrawClipX);
+    //
+    // NO SEAM PAD, and this reverses a deliberate one: `c7ff9d459d` kept the
+    // 1 px overdraw on the claim that abutting bars leave hairline gaps without
+    // it (the claim is that commit's, not the ADR-098 document's).
+    // Measured against a fixture built to test that (38 of 39 boundaries on a
+    // shared pixel row), padded and unpadded have the same interior gap
+    // columns — none opens. A hairline at a fractional `fillRect` edge is a
+    // Canvas2D problem and takes a Canvas2D pad; see `spanMark`'s `seamPx`.
+    float x = xZero ? min(startClipX, endClipX) : max(startClipX, endClipX);
     float halfBandPx = u.radiusPx;
     float y = centerClipY + pxToClipLen(local.y * halfBandPx, u.canvasHeight);
     o.position = float4(x, y, 0.0, 1.0);

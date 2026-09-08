@@ -34,9 +34,10 @@ export interface DotplotSegmentParams {
 // shader's `capsuleFrame` (with its guard for the zero-length dots a
 // whole-genome plot is mostly made of) measured by the shader's own
 // `capsuleDistPx`, so a hit is the ink the fragment actually shades, end caps
-// included. The distance is to the centreline — the stroke's half width is the
-// caller's tolerance, as it is for `point`. The capsule metric IS the
-// distance to that clamped point, so `nearestInk` never re-derives it.
+// included. The distance is to the centreline, so the stroke's half width is
+// the caller's tolerance — as it is for `point`'s GLYPH branch, though not its
+// bar, which is grabbed anywhere inside the rect it fills. The capsule metric
+// IS the distance to that clamped point, so `nearestInk` never re-derives it.
 function nearestOnSegmentPx(
   px: number,
   py: number,

@@ -54,6 +54,10 @@ const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md'])
 // A name a doc means to say is gone, or that left for another repo. The entry
 // asserts the sentence around it is still true.
 const ABSENT_ON_PURPOSE = new Map([
+  [
+    'BAR_OVERDRAW_PX',
+    'CROSS_BACKEND_GATE names the GWAS bar pad whose removal it measures, as the worked example of what the gate cannot see',
+  ],
   ['beginUpload', 'GPU_RENDERING names the retired upload transaction'],
   ['endUpload', 'GPU_RENDERING, the same sentence'],
   ['retainRegion', 'GPU_RENDERING, the same sentence'],

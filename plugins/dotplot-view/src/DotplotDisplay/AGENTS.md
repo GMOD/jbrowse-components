@@ -26,7 +26,7 @@
   Same split as the synteny renderer's `fillShade`.
 - **The display draws through `DOTPLOT_MARKS`, one mark over `dotplot.slang`, on
   the per-region mark backend.** The view hands it one canvas-wide block per
-  display keyed by `sharedBackendKey` (`dotplotMarkBlocks`) and its
+  display keyed by `sharedBackendKey` (`canvasWideBlocks`) and its
   `geometryByDisplayKey` map: a dotplot's x is the payload's own absolute cumBp
   through the shader's `panPx` fold, so the block's bp span is an identity clip
   and the per-region frame is the whole of what a keyed one was. `baseH`/`baseV`
