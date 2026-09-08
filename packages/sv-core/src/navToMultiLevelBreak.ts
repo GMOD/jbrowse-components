@@ -1,7 +1,10 @@
 import { stripTrackIds } from '@jbrowse/core/util'
-import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
-import { openDefaultTracks, openOrReuseSplitView } from './openSplitView.ts'
+import {
+  awaitSplitViewSettled,
+  openDefaultTracks,
+  openOrReuseSplitView,
+} from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -126,11 +129,7 @@ export async function navToMultiLevelBreak({
       ),
     ),
   )
-  if (!(await whenViewSettled(view))) {
-    throw new Error(`Cannot open breakpoint split view: ${view.error}`, {
-      cause: view.error,
-    })
-  }
+  await awaitSplitViewSettled(view)
 
   const bpPerPx = breakpointBpPerPx(windowSize, view.views[0]!.width)
   for (const [idx, panel] of panels.entries()) {

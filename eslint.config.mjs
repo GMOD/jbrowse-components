@@ -205,6 +205,36 @@ const noHandRolledAttach = {
     'Call installUpload rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
 }
 
+// `initialized` and `ready` are one-sided: neither ever goes true on the error
+// path, so a `when` over either does not fail on a view whose assembly failed —
+// it never settles at all, leaving a pending promise and whatever the caller
+// meant to do next simply undone. That has surfaced twice as bugs — an SVG
+// export hung behind its spinner, a launched breakpoint split view that opened
+// but was never navigated — and once by inspection, `navToLocations` parked on
+// a view that never mounted. `whenViewSettled`'s docstring carries the
+// reasoning.
+//
+// The bare promise form. `when(pred, effect)` is exempt because it is a
+// reaction: a predicate that never comes true leaves it undisposed and its
+// effect unrun, which is a leak rather than a parked caller, and
+// `LinearDerivativeVsRef`'s carries its own `isAlive` escape.
+//
+// Arity is how that exemption is spelled, and it is not the same distinction:
+// `when(pred, { timeout })` is promise-form and bounded (mobx rejects it), but
+// so is `when(pred, {})`, which is neither exempt nor caught. A named-function
+// predicate (`when(present, …)`, assemblyManager) and `mobx.when` are missed
+// for the same kind of reason. This fails the shape that has actually shipped
+// three times; it is not a proof.
+//
+// Source only. A test calls `setWidth(800)` synchronously, so the bare form is
+// honest there, and 22 occurrences use it.
+const noOneSidedViewWait = {
+  selector:
+    "CallExpression[callee.name='when'][arguments.length=1] > ArrowFunctionExpression:has(MemberExpression[property.name=/^(initialized|ready)$/]):not(:has(MemberExpression[property.name='error']))",
+  message:
+    'This `when` waits on `initialized`/`ready`, which never go true on the error path, so a view whose assembly failed parks it forever. Use `whenViewSettled(view, escape?)` or `whenViewsSettled(views, escape?)` from @jbrowse/core/util/whenViewSettled; inside an installInitAutorun `apply`, the escape is `superseded`. See agent-docs/reference/VIEW_INIT.md.',
+}
+
 // `session.addTrackConf` survives only so that prebuilt plugin bundles keep
 // working (protein3d calls it), and it now means `addSessionTrackConf`. Nothing
 // in tree may reach for it: the name reads like the general capability and used
@@ -309,6 +339,7 @@ const noPayloadThroughAProp = {
 
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
+  noOneSidedViewWait,
   noSessionAddTrackConf,
   noSetSlot,
   noTrackWidthPx,

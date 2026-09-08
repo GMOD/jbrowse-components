@@ -1,4 +1,5 @@
 import { launchOrReplaceView } from '@jbrowse/core/util'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
@@ -85,5 +86,19 @@ export async function openOrReuseSplitView({
       replacing: found,
     })) as unknown as BreakpointSplitView,
     reused: false,
+  }
+}
+
+/**
+ * `whenViewSettled` in the launchers' vocabulary, so the two navigators do not
+ * each carry the wording. It throws where the helper returns a boolean, because
+ * an SVG export and a launcher say different things about the same failure —
+ * this is what a launcher says.
+ */
+export async function awaitSplitViewSettled(view: BreakpointSplitView) {
+  if (!(await whenViewSettled(view))) {
+    throw new Error(`Cannot open breakpoint split view: ${view.error}`, {
+      cause: view.error,
+    })
   }
 }

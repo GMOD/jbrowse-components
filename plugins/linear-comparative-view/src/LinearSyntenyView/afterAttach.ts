@@ -4,6 +4,7 @@ import {
   resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
+import { whenViewsSettled } from '@jbrowse/core/util/whenViewSettled'
 import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -12,7 +13,6 @@ import {
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
-import { when } from 'mobx'
 
 import { installAutoFadeLatch } from './installAutoFadeLatch.ts'
 import { normalizeTrackLevels } from './util/initHelpers.ts'
@@ -123,8 +123,12 @@ async function buildViews(
   )
   // a row only initializes once it has been laid out, so this parks
   // indefinitely if the view is never given a width — which would hold the
-  // drain open and strand the newer init that replaced this one
-  await when(() => superseded() || self.views.every(view => view.initialized))
+  // drain open and strand the newer init that replaced this one. A row that
+  // errors settles it for the same reason: `initialized` folds in the row's
+  // assemblies and so never goes true on that path, and parking here is worse
+  // than proceeding with the rows that did come up, which the per-row placement
+  // below already reports one at a time.
+  await whenViewsSettled(self.views, superseded)
 }
 
 // Navigate one genome row, reporting a bad `loc` as that row's problem. Without

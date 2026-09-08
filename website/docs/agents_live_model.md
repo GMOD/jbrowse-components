@@ -225,9 +225,9 @@ a field.
   key through the same slot machinery a session spec's inline keys get.
 - `docs topic:"model:<modelType>"` documents a display's own actions for
   anything a slot does not cover.
-- A track too tall for the window wants a height strategy, not `displayMode`:
-  many displays take `heightMode` `fit` or `grow`, and `compact` only shrinks
-  each feature. `describeSlots` lists both.
+- A track too tall for the window wants a height strategy, not `displayMode`: a
+  display may take `heightMode` `fit` or `grow`, and `compact` only shrinks each
+  feature. `describeSlots` lists both.
 
 ```js
 // make every shown track compact
@@ -378,10 +378,10 @@ await jb.view().launchTrack('nutlin-log2')
   `notReady` with a `jb.getFeatures` count over the visible region. Do not go
   looking for pixels: displays render into offscreen canvases and paint the
   result, so the `<canvas>` elements in the page measure 0x0.
-- A freshly created view throws "width undefined" from region-dependent getters
-  (`visibleRegions`, `visibleLocStrings`, `dynamicBlocks`) until its component
-  mounts and sets a width. `await jb.mobx.when(() => view.initialized)` before
-  reading them on a view you just made.
+- A freshly created view throws "width undefined" from its region getters until
+  it mounts and navigates. Read them with `await jb.visibleRegions(viewId)`,
+  which waits for both: `initialized` is already true in the window before
+  navigation, where `visibleRegions` is silently empty.
 - Long synchronous loops block the UI thread, so chunk big work with
   `await new Promise(r => setTimeout(r))` between batches.
 - "Does it all fit in the window" is arithmetic: `jb.sessionSummary()` reports

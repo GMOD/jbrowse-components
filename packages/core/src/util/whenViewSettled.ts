@@ -1,5 +1,20 @@
 import { when } from 'mobx'
 
+// `error` is required, and that is the type doing the same job as the lint
+// selector: a caller whose view has no resolved `error` beside `initialized`
+// would reduce `done` back to the one-sided predicate this module exists to
+// replace, and would do it while reading as a fix.
+export interface SettleableView {
+  initialized: boolean
+  error: unknown
+  pendingLaunch?: unknown
+}
+
+const consumed = (view: SettleableView) =>
+  view.initialized && view.pendingLaunch === undefined
+
+const done = (view: SettleableView) => consumed(view) || !!view.error
+
 /**
  * Wait until a view has either initialized — launch blob consumed and all — or
  * failed, and report which.
@@ -30,17 +45,46 @@ import { when } from 'mobx'
  *
  * No time bound, deliberately: `(initialized && launch consumed) || error` is a
  * terminal set, so a slow-but-healthy remote assembly is waited out rather than
- * guessed at.
+ * guessed at. `escape` is how a caller adds the one term that is not the view's
+ * own — a session-level render failure for an export, `superseded` for a view
+ * an `installInitAutorun` apply is waiting on — which is what keeps a caller
+ * from re-spelling the whole predicate around it.
+ *
+ * **Not for the view whose `apply` you are inside.** `applyInitOnce` clears the
+ * launch blob only after awaiting `apply`, so `pendingLaunch` is held for the
+ * whole of it and this can end only on `escape` or `error`, never on success.
+ * A wait on `self` stays hand-rolled; `reference/VIEW_INIT.md` has the shape.
  *
  * @returns true if the view initialized (and consumed any launch), false if it
  * settled on an error
  */
-export async function whenViewSettled(view: {
-  initialized: boolean
-  error: unknown
-  pendingLaunch?: unknown
-}) {
-  const ready = () => view.initialized && view.pendingLaunch === undefined
-  await when(() => ready() || !!view.error)
-  return ready()
+export async function whenViewSettled(
+  view: SettleableView,
+  escape: () => boolean = () => false,
+) {
+  await when(() => escape() || done(view))
+  return consumed(view)
+}
+
+/**
+ * The same wait over several views at once — a synteny view's genome rows. An
+ * SVG export of a split view keeps its own per-panel loop instead: the split
+ * view's `initialized` folds in `views.every(v => v.initialized)` but not each
+ * panel's own `pendingLaunch`, so that loop is waiting on a different question
+ * by the time it runs.
+ *
+ * One predicate over `every`, never `Promise.all` of the single form: `when`
+ * returns a cancellable promise, so racing N of them against an escape leaves
+ * N-1 live reactions behind on the path that escapes. This is one reaction with
+ * nothing to cancel.
+ *
+ * @returns true if every view initialized, false if any settled on an error or
+ * the escape fired
+ */
+export async function whenViewsSettled(
+  views: SettleableView[],
+  escape: () => boolean = () => false,
+) {
+  await when(() => escape() || views.every(done))
+  return views.every(consumed)
 }

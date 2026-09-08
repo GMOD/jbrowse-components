@@ -4,9 +4,12 @@ import {
   stripTrackIds,
 } from '@jbrowse/core/util'
 import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
-import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
-import { openDefaultTracks, openOrReuseSplitView } from './openSplitView.ts'
+import {
+  awaitSplitViewSettled,
+  openDefaultTracks,
+  openOrReuseSplitView,
+} from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -235,11 +238,7 @@ export async function navToSingleLevelBreak({
   } else {
     await openDefaultTracks(view.views, defaultTrackIds)
   }
-  if (!(await whenViewSettled(view))) {
-    throw new Error(`Cannot open breakpoint split view: ${view.error}`, {
-      cause: view.error,
-    })
-  }
+  await awaitSplitViewSettled(view)
   const lgv = view.views[0]!
 
   if (focusOnBreakends === true) {

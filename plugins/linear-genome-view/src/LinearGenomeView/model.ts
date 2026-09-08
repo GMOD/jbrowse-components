@@ -2939,7 +2939,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return
         }
         const { assemblyManager } = getSession(self)
-        await when(() => self.volatileWidth !== undefined)
+        // A one-sided `volatileWidth !== undefined` parks forever on a view
+        // that never mounts, and `navToMultiLevelBreak` awaits a Promise.all of
+        // these one line before the `whenViewSettled` that was written to cure
+        // exactly that hang. `isAlive` is the second terminal state and the
+        // guard below is what it means. NOT `self.error`, which is a transient
+        // truth (`assembliesNotFound` while a session assembly is registering)
+        // independent of mounting, so it would return without navigating where
+        // waiting would have navigated correctly.
+        await when(() => self.volatileWidth !== undefined || !isAlive(self))
+        if (!isAlive(self) || self.volatileWidth === undefined) {
+          return
+        }
 
         // Generate locations from the parsed regions
         const locations = await generateLocations({

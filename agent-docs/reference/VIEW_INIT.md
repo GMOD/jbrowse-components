@@ -302,8 +302,17 @@ a newer `setLaunch` has replaced this input. Any wait inside `apply` that can pa
 indefinitely **must** fold it in:
 
 ```ts
-await when(() => superseded() || cond() || !!self.assemblyErrors)
+await when(() => superseded() || cond() || !!self.error) // waiting on SELF
+await whenViewsSettled(self.views, superseded) // rows that carry no launch
 ```
+
+**`whenViewSettled(self, superseded)` is not the first of those.** Its
+`pendingLaunch === undefined` term cannot be true inside your own `apply`:
+`applyInitOnce` clears the blob only after awaiting you, so that wait ends on
+`superseded` or `self.error` and never on success. Waiting on `self` stays
+hand-rolled, which is what dotplot's `waitForInit` is. The helper is for a view
+whose launch is not the one you are applying — a synteny row built from a
+snapshot with its launch keys stripped, or a view another caller launched.
 
 Dotplot used to race these against a 30s ceiling. A fixed timeout can only
 guess: too short and it expires on a slow-but-healthy remote assembly, silently

@@ -3,6 +3,7 @@ import {
   viewCanDisplayTrack,
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -14,7 +15,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 
 import {
   applyDisplayOpts,
@@ -42,6 +43,7 @@ import type { ViewSpec } from './spec.ts'
 import type { Config, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
 import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'
 import type {
   CircularViewCommands,
@@ -202,22 +204,19 @@ function throwOnRenderError(session: RenderErrorSources) {
   }
 }
 
-interface InitView {
+interface InitView extends SettleableView {
   setWidth: (n: number) => void
-  initialized: boolean
-  pendingLaunch?: unknown
-  error?: unknown
 }
 
 // A comparative/circular view sets `initialized` true as soon as it has regions
 // to show, but its launch blob is consumed a moment later by an async autorun
 // (which awaits assemblies, navigates each sub-view, and attaches tracks). The
-// SVG only has content once that autorun has cleared it. This is core's
-// `whenViewSettled` condition plus a session escape: a launch that fails before
-// the view materializes keeps its blob and sets the view's `error`
-// (installInitAutorun's failure policy), and a failure reported only to the
-// session — a bad track config, an assembly fetch — should fail the render now
-// rather than after a wait that has nothing left to wait for.
+// SVG only has content once that autorun has cleared it. That is core's
+// `whenViewSettled`, and the session escape is its `escape` argument: a launch
+// that fails before the view materializes keeps its blob and sets the view's
+// `error` (installInitAutorun's failure policy), and a failure reported only to
+// the session — a bad track config, an assembly fetch — should fail the render
+// now rather than after a wait that has nothing left to wait for.
 //
 // `pendingLaunch` and NOT the views' own `initPending`, which looks like the
 // obvious predicate and is the wrong one here: that getter answers "should a
@@ -232,12 +231,7 @@ interface InitView {
 // bound from core's awaitSvgReady: if a view can reach a state where neither
 // disjunct ever becomes true, that view's launch is the bug, not this wait.
 async function whenViewReady(view: InitView, session: RenderErrorSources) {
-  await when(
-    () =>
-      (view.initialized && !view.pendingLaunch) ||
-      view.error !== undefined ||
-      firstRenderError(session) !== undefined,
-  )
+  await whenViewSettled(view, () => firstRenderError(session) !== undefined)
   if (view.error !== undefined) {
     throw toError(view.error)
   }
