@@ -610,6 +610,36 @@ export function withRegionRemoved(regions: Region[], index: number) {
   return regions.filter((_, i) => i !== index)
 }
 
+/**
+ * The full run of same-orientation regions on one refName that a scalebar
+ * label's `firstRegionIndex`..`lastRegionIndex` sits inside. Those come off the
+ * static blocks, which are clipped to the viewport and broken by an elided
+ * block, so a zoomed-in collapsed-introns view brackets only the exons on
+ * screen — which is the wrong answer for anything acting on the whole run.
+ */
+export function regionRunBounds(
+  regions: Region[],
+  firstIndex: number,
+  lastIndex: number,
+) {
+  const anchor = regions[firstIndex]
+  const inRun = (r: Region | undefined) =>
+    r !== undefined &&
+    anchor !== undefined &&
+    r.refName === anchor.refName &&
+    r.assemblyName === anchor.assemblyName &&
+    !!r.reversed === !!anchor.reversed
+  let first = firstIndex
+  let last = lastIndex
+  while (inRun(regions[first - 1])) {
+    first--
+  }
+  while (inRun(regions[last + 1])) {
+    last++
+  }
+  return { first, last }
+}
+
 export function withRegionReversed(regions: Region[], index: number) {
   return regions.map((region, i) =>
     i === index ? { ...region, reversed: !region.reversed } : region,

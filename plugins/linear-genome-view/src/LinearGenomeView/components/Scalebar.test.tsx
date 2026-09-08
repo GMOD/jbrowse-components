@@ -2,7 +2,7 @@ import {
   createTestSession,
   createTestSessionAsync,
 } from '@jbrowse/web/testUtils'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar.tsx'
 
@@ -318,5 +318,63 @@ describe('Scalebar genome view component', () => {
     // neither name wears it, so neither reads as the flipped one of the two
     expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
     expect(getByTestId('refLabel-ctgB').textContent).toBe('ctgB')
+  })
+
+  // The collapsed-introns shape: several windows cut out of one contig, drawn
+  // under a single label. Rejoining them is the only way back to the gene's
+  // whole span once the "Introns collapsed" snackbar is gone. Zoomed in on
+  // purpose: the label's own bracket comes off the static blocks, which stop at
+  // the viewport, so the span has to be taken from the region list instead.
+  it('rejoins a run of regions into the span they were cut from', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 10,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 5000 },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 10000,
+                end: 15000,
+              },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 20000,
+                end: 25000,
+              },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 30000,
+                end: 35000,
+              },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+    model.setWidth(800)
+    render(<Scalebar model={model} />)
+
+    fireEvent.click(await screen.findByTestId('refLabel-ctgA'))
+    fireEvent.click(await screen.findByText('Show the whole span of ctgA'))
+
+    await waitFor(() => {
+      expect(model.displayedRegions).toHaveLength(1)
+    })
+    expect(model.displayedRegions[0].refName).toBe('ctgA')
+    expect(model.displayedRegions[0].start).toBe(0)
+    expect(model.displayedRegions[0].end).toBe(35000)
+    // and the view is looking at it, not left at the old offsetPx in a
+    // coordinate space the rejoin just redefined
+    expect(model.offsetPx).toBe(0)
   })
 })

@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import {
   REF_NAME_LABEL_FONT_SIZE,
   regionMoveActions,
+  regionRunBounds,
   setDisplayedRegionsKeepingCenter,
   withRegionMoved,
   withRegionRemoved,
@@ -210,6 +211,20 @@ const RefNameMenu = observer(function RefNameMenu({
   const locString = oneRegion
     ? assembleLocString(displayedRegions[idx]!)
     : assembleLocStrings(labeled)
+  // The region this label's blocks were cut out of. Taken over the WHOLE run
+  // rather than `labeled`, which the viewport clips: a collapsed-introns view
+  // zoomed into two exons would otherwise offer a span that is not the gene's.
+  const { first: runFirst, last: runLast } = regionRunBounds(
+    displayedRegions,
+    idx,
+    lastIdx,
+  )
+  const run = displayedRegions.slice(runFirst, runLast + 1)
+  const wholeSpan = {
+    ...run[0]!,
+    start: Math.min(...run.map(r => r.start)),
+    end: Math.max(...run.map(r => r.end)),
+  }
 
   return (
     <Menu
@@ -243,6 +258,33 @@ const RefNameMenu = observer(function RefNameMenu({
                   : `Show only ${refName}`,
                 onClick: () => {
                   setDisplayedRegionsKeepingCenter(model, labeled)
+                },
+              },
+            ]
+          : []),
+        ...(runLast > runFirst
+          ? [
+              {
+                // Names its subject the way the two rows above it do; the span
+                // it lands on is not spelled into the label, which would move
+                // under the reader as they navigate.
+                label: `Show the whole span of ${refName}`,
+                // Focused rather than centre-kept: the rejoined region is one
+                // the old viewport never saw, so there is no centre to hold,
+                // and showing the span is the whole point of the row.
+                onClick: () => {
+                  model.setDisplayedRegions([
+                    ...displayedRegions.slice(0, runFirst),
+                    wholeSpan,
+                    ...displayedRegions.slice(runLast + 1),
+                  ])
+                  model.moveTo(
+                    { index: runFirst, offset: 0 },
+                    {
+                      index: runFirst,
+                      offset: wholeSpan.end - wholeSpan.start,
+                    },
+                  )
                 },
               },
             ]
