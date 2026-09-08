@@ -44,6 +44,8 @@ for which foundation each in-tree display uses.
 Cancelling bumps `fetchGeneration`, which re-fires `FetchVisibleRegions` to
 start fresh fetches.
 
+<Figure caption="Three of the four autoruns end in the same cancel, by two routes: clearAllRpcData() takes the loaded data with it, invalidateSettings() leaves it standing under the stale-settings scrim. The cancel is why neither is the end of anything — it bumps fetchGeneration, which is itself a trigger of FetchVisibleRegions, so which of the three ran is the answer to an unexplained refetch. Loaded data is absent on purpose: the fetch autorun reads it untracked." src="/img/display_autoruns.png" />
+
 It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
 from the cached byte estimate, which a blocked display re-takes once per settled
 viewport, so it releases itself and needs no imperative clear; keeping the

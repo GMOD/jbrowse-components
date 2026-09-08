@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import * as ts from 'typescript'
 
 import {
@@ -188,8 +190,44 @@ function render(autoruns: Autorun[]) {
   ].join('\n')
 }
 
+// The figure beside the table draws the same four autoruns, and nothing read a
+// diagram's contents before this: `diagrams.ts` hashes a source against the
+// figure it rendered, `gen-diagram-usage` reads filenames, so a fifth autorun
+// would join the generated table and leave the picture beside it saying four —
+// with every gate green. That is the hand-copied artifact this generator exists
+// to stop being.
+//
+// The figure is hand-laid-out rather than generated, because the layout is what
+// it is FOR: three arrows meeting one box. So the tie is a check on the one
+// thing that can drift, which the diagram's node ids carry — a quoted id there
+// is an autorun name, a bare one is anything else. Both directions: an autorun
+// missing from the figure, and a node naming an autorun that no longer exists.
+const DIAGRAM = 'website/diagrams/display_autoruns.dot'
+const DIAGRAM_NODE = /^\s*"([^"]+)"\s*\[/gm
+
+function checkDiagram(autoruns: Autorun[]) {
+  const drawn = new Set(
+    [...readFileSync(DIAGRAM, 'utf8').matchAll(DIAGRAM_NODE)].map(m => m[1]!),
+  )
+  const names = new Set(autoruns.map(a => a.name))
+  const missing = [...names].filter(name => !drawn.has(name))
+  const stale = [...drawn].filter(name => !names.has(name))
+  if (missing.length || stale.length) {
+    throw new Error(
+      [
+        `${DIAGRAM} is out of step with the autoruns in ${SOURCE}:`,
+        ...missing.map(name => `  ${name} is installed but not in the figure`),
+        ...stale.map(name => `  ${name} is in the figure but not installed`),
+        'Edit the .dot, then `pnpm diagrams` and `pnpm figures:push --filter display_autoruns`.',
+      ].join('\n'),
+    )
+  }
+}
+
 export function writeFetchAutorunDocs({ check = false } = {}) {
-  return rewriteMarkerBlock('FETCH_AUTORUNS', render(collectAutoruns()), {
+  const autoruns = collectAutoruns()
+  checkDiagram(autoruns)
+  return rewriteMarkerBlock('FETCH_AUTORUNS', render(autoruns), {
     check,
   })
 }

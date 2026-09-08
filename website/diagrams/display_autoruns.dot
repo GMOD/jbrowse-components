@@ -1,0 +1,115 @@
+// Source for /img/display_autoruns.png, embedded by
+// docs/developer_guides/data_fetching.md under "The fetch autoruns".
+//
+// THE TABLE ABOVE IT IS GENERATED AND THIS IS NOT THE SAME PICTURE. That table
+// has one row per autorun -- name, trigger, action -- which is everything
+// except the two facts a reader with an unexplained refetch needs: that three
+// of the four converge, and that what they converge on re-enters the fourth. A
+// row cannot say either, because both are about the relationship between rows.
+// So this figure draws only trigger, autorun, action and that loop, and leaves
+// the wording of each to the table beside it.
+//
+// THE CYCLE IS THE FIGURE, and `cancelFetch()` is where it closes. The three
+// autoruns that end in a reset reach it through two of them rather than one:
+// `clearAllRpcData()` drops `loadedRegions` and the canvas with it, while
+// `invalidateSettings()` leaves both standing, so the held data draws under the
+// `staleSettingsDrawn` scrim until the refetch lands. What they share is the
+// cancel, and a cancel bumps `fetchGeneration`, which is a trigger of
+// `FetchVisibleRegions` -- so every reset ends in a fetch, and "why did this
+// refetch" is answered by naming which of the three ran. Drawn as the one
+// dashed edge, the way dashed means "look again" in fetch_chain.dot.
+//
+// WHAT IT DELIBERATELY LEAVES OUT is `loadedRegions` and the display's own
+// `rpcDataMap`, which look like the obvious middle of the picture. The fetch
+// autorun reads both UNTRACKED (see the install site's comments: tracking
+// loaded data would re-fire the autorun mid-fetch, and `fetchGeneration` at
+// fetch end is the real re-trigger). A state node with a read edge into
+// `FetchVisibleRegions` would draw a dependency MobX does not have, in the one
+// figure whose whole subject is what depends on what.
+//
+// `clearByteEstimate()` is off it for a different reason: the byte estimate is
+// dropped on this same `view.displayedRegions` trigger, but by
+// `ClearByteEstimateOnNavOrTierSwap`, which `RegionTooLargeMixin` installs.
+// Hanging it off `DisplayedRegionsChange` would name the wrong autorun, and
+// this figure is scoped to the four `installPerRegionFetchAutoruns` installs.
+//
+// It also stops at `fetchNeeded(needed)`, which is where fetch_chain.dot
+// starts. That figure's name is on the edge, in courier, the convention
+// dataflow.dot uses for every crossing into a sibling figure.
+//
+// THE AUTORUN NODE IDS ARE THE AUTORUN NAMES, quoted -- and that is a contract,
+// not a style. `generateFetchAutorunDocs.ts` reads the names structurally off
+// the install calls to write the table above, and then checks this file for
+// each one, so a fifth autorun cannot join the table while the figure keeps
+// saying four. A quoted id here is an autorun name; everything else uses a bare
+// id.
+//
+// LEFT TO RIGHT, which is the exception among the pipeline figures here (their
+// header comments each record coming off a strip too wide to read). This one is
+// four shallow columns rather than a chain, so the long axis is the SHORT one:
+// stacked it is a narrow column four autoruns tall with the trigger names
+// wrapped, and the funnel -- three autoruns, two resets, one cancel -- is what
+// the figure is for.
+digraph display_autoruns {
+  rankdir=LR
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="The fetch autoruns of a linear display: what wakes each one, and where it ends"
+  nodesep=0.3
+  ranksep=0.6
+
+  node [shape=box style="filled,rounded" fillcolor="#ffffff" color="#9e9e9e"
+        fontname="Helvetica" fontsize=12 margin="0.18,0.10"]
+  edge [color="#555555" fontname="Helvetica" fontsize=10]
+
+  // ── What changes ──────────────────────────────────────────────────
+  node [fillcolor="#e1f5fe" color="#90caf9"]
+  t_regions [label="view.displayedRegions"]
+  t_settings [label="settingsFetchInputs"]
+  t_view [label="view.visibleRegions"]
+  t_gen [label="fetchGeneration\nreloadCounter"]
+
+  // Pinned, because the row order decides where the dashed cycle edge below can
+  // run: left to dot, `SettingsInvalidate` lands on the bottom row and the
+  // return sweep crosses it under its own label.
+  { rank=same; t_regions -> t_view -> t_settings -> t_gen [style=invis] }
+
+  // ── The autoruns ──────────────────────────────────────────────────
+  node [shape=ellipse fillcolor="#f1f8e9" color="#aed581"]
+  "DisplayedRegionsChange" [label="DisplayedRegionsChange"]
+  "SettingsInvalidate" [label="SettingsInvalidate"]
+  "ClearBlockingStateOnViewportChange" [label="ClearBlockingState\nOnViewportChange"]
+  "FetchVisibleRegions" [label="FetchVisibleRegions\nimmediate, then 600 ms"]
+
+  // ── What they do ──────────────────────────────────────────────────
+  clear [shape=box style="filled,rounded" fillcolor="#fff9c4" color="#ffe082"
+         label="clearAllRpcData()"]
+  invalidate [shape=box style="filled,rounded" fillcolor="#fff9c4" color="#ffe082"
+              label="invalidateSettings()"]
+  cancel [shape=box style="filled,rounded" fillcolor="#fff9c4" color="#ffe082"
+          label="cancelFetch()"]
+  fetch [shape=box style="filled,rounded" fillcolor="#dcedc8" color="#aed581"
+         label="fetchNeeded(needed)"]
+
+  t_regions -> "DisplayedRegionsChange"
+  t_settings -> "SettingsInvalidate"
+  t_view -> "ClearBlockingStateOnViewportChange"
+  t_view -> "FetchVisibleRegions"
+  t_gen -> "FetchVisibleRegions"
+
+  "DisplayedRegionsChange" -> clear
+  "SettingsInvalidate" -> invalidate
+  // The one conditional trigger, and the condition is what the autorun is for:
+  // a viewport move while a terminal flag is set is the only thing that lifts
+  // it, since the too-large gate is derived and releases itself.
+  "ClearBlockingStateOnViewportChange" -> clear [label="  error or fetchCanceled  "]
+  "FetchVisibleRegions" -> fetch [label=<  uncovered blocks<br align="left"/>  <font face="Courier" color="#6b6b6b">fetch_chain</font><br align="left"/>>]
+
+  clear -> cancel
+  invalidate -> cancel
+
+  // The cycle. constraint=false so closing it does not pull `t_gen` right and
+  // fold the trigger column into the action column.
+  cancel -> t_gen [style=dashed constraint=false label="  fetchGeneration++  "]
+}

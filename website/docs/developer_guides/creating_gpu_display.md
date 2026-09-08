@@ -28,17 +28,17 @@ display a [build-step plugin](/docs/developer_guides/simple_plugin).
 
 JBrowse GPU displays follow a three-layer model:
 
-<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning, zooming and recoloring never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
+<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning and zooming never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
 
-<Figure caption="Two autoruns, each with its own trigger: one upload autorun on any rpcDataMap entry changing, which diffs the map and uploads what moved, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="The three dashed doors are where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame, and what is left below a door is what that change costs. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installUpload`):
 
 - One upload autorun fires when any `rpcDataMap` entry or the backend changes;
-  it diffs the map against what it last sent and calls `backend.uploadRegion()`
-  only for regions that moved. That diff keeps a streaming whole-genome fetch at
-  O(N) uploads instead of O(N²).
+  it diffs the map against what it last sent and calls `backend.upload()` only
+  for regions that moved. That diff keeps a streaming whole-genome fetch at O(N)
+  uploads instead of O(N²).
 - The render autorun fires when `renderTick` bumps (after every upload) or when
   frame-level state like scroll position changes; it calls
   `backend.renderBlocks()`.

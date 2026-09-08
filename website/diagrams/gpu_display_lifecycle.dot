@@ -1,9 +1,27 @@
+// Source for /img/gpu_display_lifecycle.png, embedded by
+// docs/developer_guides/creating_gpu_display.md under "Architecture overview".
+//
+// THE THREE DOORS ON THE LEFT are the figure's second job, and the page's: a
+// reader deciding where a new setting goes needs to know how far back each kind
+// of change reaches. The chain is one column, each door enters it at the stage
+// that change re-enters, and what is left below the door is what it costs.
+// `rpcProps()` enters above the worker; `gpuProps()` enters at the upload
+// autorun, which is where it is read, so a color scheme re-encodes and
+// re-uploads bytes already in hand; everything else is a frame. Same rule
+// ARCHITECTURE.md states as `rpcProps()` refetches and `gpuProps()` re-uploads,
+// and the one dataflow.md's "Where the GPU sits" carries in prose beside the
+// whole-path figure.
+//
+// They are the light blue this corpus uses for an entry point elsewhere
+// (dataflow.dot's "the visible region changes", fetch_chain.dot's), and dashed,
+// so a door reads as something happening TO the chain rather than as more of
+// it.
 digraph gpu_display_lifecycle {
   rankdir=TB
   labelloc=t
   fontname="Helvetica"
   fontsize=18
-  label="GPU display: worker data to a drawn frame"
+  label="GPU display: worker data to a drawn frame, and where a change re-enters"
   compound=true
   nodesep=0.4
   ranksep=0.55
@@ -28,7 +46,10 @@ digraph gpu_display_lifecycle {
     fillcolor="#e3f2fd"
     color="#90caf9"
 
-    exec [label="executeRender()\nfetch + pack, absolute uint32 bp"]
+    // `execute()` is the RPC method's own hook, and the name rpc_lifecycle.dot
+    // labels "your code". `executeRender()`, which this said, resolves to no
+    // symbol in the tree.
+    exec [label="execute()\nfetch + pack, absolute uint32 bp"]
   }
 
   // ── Main thread ──────────────────────────────────────────────────
@@ -42,13 +63,26 @@ digraph gpu_display_lifecycle {
     color="#aed581"
 
     rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
+    // Inside this lane for the same reason `viewstate` is: `gpuProps()` is a
+    // view method on the model, read by the upload callback. Drawn outside, its
+    // edge came in as a diagonal across the whole lane.
+    door_upload [label="gpuProps() changed,\nor a derived region map", shape=box,
+                 style="filled,rounded,dashed", fillcolor="#e1f5fe", color="#90caf9"]
     uploadrun [label="upload autorun\none per display, diffed", shape=ellipse]
     // Scroll and zoom are why renderState exists. Without them it reads as a
     // node nothing feeds, and the render autorun looks like it has one trigger
     // when the whole point of the pair is that it has two. Inside this lane
     // because they are main-thread view state; outside it, the edge crossed
-    // the cluster's own label on the way in.
-    viewstate [label="scroll, zoom, config", shape=plaintext, fillcolor="#ffffff"]
+    // the cluster's own label on the way in — which is also why this is the one
+    // door drawn inside a lane.
+    //
+    // `config` was the wrong fourth item: a config change is a refetch or a
+    // re-upload depending on which list carries it, which is the distinction
+    // the other two doors are here to draw. Opacity is the plot-wide scalar
+    // that genuinely is a frame — ARCHITECTURE.md, "opacity is a render
+    // parameter, never a packed color".
+    viewstate [label="scroll, zoom, opacity, resize", shape=box,
+               style="filled,rounded,dashed", fillcolor="#e1f5fe", color="#90caf9"]
     renderstate [label="renderState\nframe uniforms, no fetch"]
     renderrun [label="render autorun\nobserves renderTick", shape=ellipse]
   }
@@ -68,7 +102,7 @@ digraph gpu_display_lifecycle {
     fillcolor="#fff3e0"
     color="#ffcc80"
 
-    upload [label="backend.uploadRegion()"]
+    upload [label="backend.upload()"]
     render [label="backend.renderBlocks()"]
   }
 
@@ -80,6 +114,13 @@ digraph gpu_display_lifecycle {
   // not how the rest of the app finds out.
   frame [label="frame", fillcolor="#ffe0b2", peripheries=2]
   drawn [label="canvasDrawn = true\n(readiness testids, DisplayChrome)", fillcolor="#ffe0b2"]
+
+  // The third door, and the only one above the worker.
+  door_fetch [label="a region with no loaded data,\nor rpcProps() changed", shape=box,
+              style="filled,rounded,dashed", fillcolor="#e1f5fe", color="#90caf9"]
+
+  door_fetch -> exec [label=<  <b>refetch</b>  >]
+  door_upload -> uploadrun [label=<  <b>re-encode, re-upload</b><br align="left"/>  no fetch<br align="left"/>>]
 
   exec -> rpcdata [label="  structured clone"]
   rpcdata -> uploadrun [label="  any entry changed"]
@@ -97,7 +138,7 @@ digraph gpu_display_lifecycle {
   ]
 
   viewstate -> renderstate
-  renderstate -> renderrun [label="  or a frame-level change"]
+  renderstate -> renderrun [label=<  <b>redraw</b><br align="left"/>  no fetch, no upload<br align="left"/>>]
   renderrun -> render
   render -> frame
   render -> drawn [label="  if it drew"]

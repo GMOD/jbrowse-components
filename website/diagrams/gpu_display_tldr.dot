@@ -68,11 +68,20 @@ digraph gpu_display_tldr {
   // No sentence on the image: the takeaway (panning and zooming do not refetch)
   // is the Figure caption's job. See website/CLAUDE.md -- on-image text is a
   // label, not a paragraph.
+  //
+  // THE REDRAW EXAMPLES ARE THE THREE THAT ARE ONLY A FRAME. `recolor` was the
+  // third for a while and is not one: a color scheme is packed into the
+  // instance buffer, so changing it re-encodes and re-uploads -- the middle of
+  // the three rates the detailed figure now draws as its own door
+  // (ARCHITECTURE.md, "wiggle color change -> re-encode only"). It came out of
+  // the page's caption in the same pass, for the same reason: a recolor really
+  // does skip the fetch and the parse, but listing it beside a pan is what
+  // blurs the distinction the figures below this one exist to draw.
 
   worker [label="Worker\nfetch and parse the file", fillcolor="#e3f2fd", color="#90caf9"]
   buffers [label="GPU memory\nthe data stays here", fillcolor="#f1f8e9", color="#aed581"]
   canvas [label="Canvas\nredrawn from GPU memory", fillcolor="#ffe0b2", color="#ffcc80"]
 
   worker -> buffers [label="  sent once, when the region changes  \l  typed arrays, uint32 genomic coordinates  \l"]
-  buffers -> canvas [label="  redrawn every frame  \l  scroll, zoom, recolor  \l"]
+  buffers -> canvas [label="  redrawn every frame  \l  scroll, zoom, resize  \l"]
 }
