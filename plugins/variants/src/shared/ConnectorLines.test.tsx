@@ -105,3 +105,31 @@ test('the resize handle survives an empty viewport', () => {
   expect(display.connectorLineCoords).toEqual([])
   expect(container.querySelector('[data-gesture-owner]')).not.toBeNull()
 })
+
+// The field is a canvas now, not the SVG's own giant <path> — 10^4 lines want
+// 10^4 separate composites, and a single stroked path unions instead of
+// accumulating (drawConnectorField).
+test('the live field is a canvas under the hover chrome', () => {
+  const { display } = loadedDisplay()
+  const { container } = render(
+    <ConnectorLineOverlay model={display} strokeWidth={0.5} />,
+  )
+
+  expect(container.querySelector('canvas')).not.toBeNull()
+  expect(container.querySelector('svg path')).toBeNull()
+})
+
+// The export has no canvas to composite on, so it emits the lines as vector —
+// one element each, for the same reason.
+test('the export emits one path per connector', () => {
+  const { display } = loadedDisplay()
+  const { container } = render(
+    <svg>
+      <ConnectorLineOverlay model={display} strokeWidth={0.5} exportSVG />
+    </svg>,
+  )
+
+  expect(container.querySelectorAll('path')).toHaveLength(
+    display.connectorLineCoords.length,
+  )
+})

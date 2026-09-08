@@ -84,9 +84,11 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
   // line zone
   expect(svg).toContain(`transform="translate(0 ${lineZoneHeight})"`)
   // each connector runs from its column center at the bottom of the zone up
-  // to the genomic position on the ruler
+  // to the genomic position on the ruler, and each is its OWN stroked path —
+  // one path holding every line unions instead of accumulating, which is what
+  // flattened the dense field (see shared/drawConnectorField.ts)
   const connectors = svg.match(
-    new RegExp(`M[\\d.]+ ${lineZoneHeight}L[\\d.]+ 0`, 'g'),
+    new RegExp(`<path d="M[\\d.]+,${lineZoneHeight}L[\\d.]+,0"`, 'g'),
   )
   expect(connectors?.length).toBeGreaterThan(10)
 }, 45000)

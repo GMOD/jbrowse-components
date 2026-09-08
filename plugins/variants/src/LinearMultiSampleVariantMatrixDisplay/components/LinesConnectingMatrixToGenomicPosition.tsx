@@ -6,6 +6,7 @@ import type {
   ConnectorCoord,
   ConnectorLinesModel,
 } from '../../shared/ConnectorLines.tsx'
+import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 // The matrix adds the crosshair column to what the shared overlay needs, so the
 // SVG-export path can declare it too rather than restating the fields.
@@ -17,10 +18,12 @@ const LinesConnectingMatrixToGenomicPosition = observer(
   function LinesConnectingMatrixToGenomicPosition({
     model,
     exportSVG,
+    opts,
     crosshairX,
   }: {
     model: MatrixConnectorLinesModel
     exportSVG?: boolean
+    opts?: PaintLayerOpts
     crosshairX?: number
   }) {
     return (
@@ -33,6 +36,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
             : model.connectorLineAtScreenX(crosshairX)
         }
         exportSVG={exportSVG}
+        opts={opts}
       />
     )
   },

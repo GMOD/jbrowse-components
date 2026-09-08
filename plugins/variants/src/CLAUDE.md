@@ -199,6 +199,11 @@ a glyph both displays would get, not in a second painter here.
 `connectorLineCoords` is a **model getter**, never a component `useMemo` — a
 memo that doesn't re-run also stops tracking `bpPerPx`/`offsetPx`.
 
+The faint field paints on a canvas, **one `stroke()` per line**: a rasterizer
+composites a stroked path once, so lines batched into a single path union
+instead of accumulating and the field loses the density it exists to show
+(`drawConnectorField`, and the test beside it).
+
 The two counters in `shared/alleleCounts.ts` are context-tuned, not duplication:
 the VCF hot path accumulates into an object because mutating captured primitives
 inside the `processGenotypes` closure forces a V8 deopt. MAF is over **called**

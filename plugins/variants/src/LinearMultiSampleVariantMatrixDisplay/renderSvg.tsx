@@ -69,7 +69,11 @@ function VariantMatrixSvgBody({
       width={canvasWidth}
       height={height}
       lineZone={
-        <LinesConnectingMatrixToGenomicPosition model={model} exportSVG />
+        <LinesConnectingMatrixToGenomicPosition
+          model={model}
+          exportSVG
+          opts={opts}
+        />
       }
     >
       <g transform={`translate(${left})`}>

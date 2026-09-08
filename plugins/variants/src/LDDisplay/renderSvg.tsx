@@ -67,7 +67,7 @@ function LdSvgBody({
             }}
           />
         </g>
-        <LDColumnZone model={self} exportSVG />
+        <LDColumnZone model={self} exportSVG opts={opts} />
       </SvgClipRect>
       {showLegend ? (
         <LDSVGColorLegend

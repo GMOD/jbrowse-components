@@ -1,16 +1,21 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getStrokeProps } from '@jbrowse/core/util'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
 import { BandSeamHandle } from './BandSeamHandle.tsx'
-import { connectorLineAlpha } from './connectorLineAlpha.ts'
+import {
+  connectorFieldAlpha,
+  drawConnectorField,
+} from './drawConnectorField.ts'
 
 /* eslint-disable react-refresh/only-export-components */
+import type { Ctx2D, PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // One connector, in viewport pixels (0 = the view's left edge): `mx` is the
@@ -35,11 +40,9 @@ export interface ConnectorLinesModel extends IStateTreeNode {
   setLineZoneHeight: (arg: number) => void
 }
 
-function round(px: number) {
-  return Math.round(px * 100) / 100
-}
-
-// The red connector line drawn for the hovered (or crosshair) column.
+// The red connector line drawn for the hovered (or crosshair) column. Stays in
+// the SVG above the field: it is one line, it has to sit on top, and the export
+// wants it as vector whatever the field rasterized to.
 function ConnectorLine({
   mx,
   gx,
@@ -58,100 +61,100 @@ function ConnectorLine({
   )
 }
 
-// The faint field of every connector line plus its hover hit-test. Reports the
-// hovered coord back so the overlay can draw its highlight and tooltip;
-// `children` slots in extra overlay (e.g. SNP labels) beneath the lines.
+/**
+ * The faint field of every connector line, on a canvas rather than in the SVG
+ * above it: 10^4 lines want 10^4 separate composites (see `drawConnectorField`)
+ * and 10^4 SVG elements is not a thing to mount.
+ *
+ * Its own observer, so a mousemove over the zone — which is React state on the
+ * overlay, and fires per pixel — re-renders the hover chrome without repainting
+ * the field under it.
+ */
 const ConnectorLineField = observer(function ConnectorLineField({
   lineCoords,
   lineZoneHeight,
+  width,
   strokeWidth,
   exportSVG,
-  onHover,
-  children,
+  opts,
 }: {
   lineCoords: ConnectorCoord[]
   lineZoneHeight: number
+  width: number
   strokeWidth: number
   exportSVG?: boolean
-  onHover: (coord: ConnectorCoord | undefined) => void
-  children?: React.ReactNode
+  opts?: PaintLayerOpts
 }) {
   const theme = useTheme()
+  const color = alpha(
+    theme.palette.text.primary,
+    connectorFieldAlpha(lineCoords, strokeWidth),
+  )
+  const paint = (ctx: Ctx2D) => {
+    drawConnectorField(ctx, lineCoords, lineZoneHeight, strokeWidth, color)
+  }
 
-  // One pass for both the geometry and its density: lineCoords runs to ~10^4
-  // entries on a pangenome VCF. (Indexed min/max rather than Math.max(...xs)
-  // for the same reason — that is past what a spread can pass as args.)
-  const { pathD, strokeAlpha } = useMemo(() => {
-    let lo = Number.POSITIVE_INFINITY
-    let hi = Number.NEGATIVE_INFINITY
-    let d = ''
-    for (const { mx, gx } of lineCoords) {
-      lo = Math.min(lo, mx, gx)
-      hi = Math.max(hi, mx, gx)
-      // 2dp, not the raw float: a column center is (i + 0.5) * pitch, so most
-      // of these serialize as 17 digits, and at 10^4 lines that is ~300KB of
-      // SVG export spent below a hundredth of a pixel
-      d += `M${round(mx)} ${lineZoneHeight}L${round(gx)} 0`
-    }
-    return {
-      pathD: d,
-      // Every line lands in one <path>, so the stroke alpha is shared: derive
-      // it from how deep the lines stack across their own horizontal extent,
-      // else a high-column-count matrix paints the zone solid (see
-      // connectorLineAlpha).
-      strokeAlpha: connectorLineAlpha(lineCoords.length, hi - lo, strokeWidth),
-    }
-  }, [lineCoords, lineZoneHeight, strokeWidth])
-
-  return (
-    <>
-      {exportSVG ? null : (
-        <rect
-          x={0}
-          y={0}
-          width="100%"
-          height={lineZoneHeight}
-          fill="transparent"
-          onMouseMove={event => {
-            const pt = svgMousePoint(event)
-            if (!pt) {
-              onHover(undefined)
-            } else {
-              let minDist = 10
-              let found: ConnectorCoord | undefined
-              for (const coord of lineCoords) {
-                const dist = pointToSegmentDist(
-                  pt.x,
-                  pt.y,
-                  coord.mx,
-                  lineZoneHeight,
-                  coord.gx,
-                  0,
-                )
-                if (dist < minDist) {
-                  minDist = dist
-                  found = coord
-                }
-              }
-              onHover(found)
-            }
-          }}
-          onMouseLeave={() => {
-            onHover(undefined)
-          }}
-        />
-      )}
-      <path
-        d={pathD}
-        {...getStrokeProps(alpha(theme.palette.text.primary, strokeAlpha))}
-        strokeWidth={strokeWidth}
-        fill="none"
-        style={{ pointerEvents: 'none' }}
-      />
-      {children}
-    </>
+  return lineZoneHeight <= 0 ? null : exportSVG ? (
+    <PaintLayer
+      width={width}
+      height={lineZoneHeight}
+      opts={opts}
+      paint={paint}
+    />
+  ) : (
+    <OverlayCanvas width={width} height={lineZoneHeight} draw={paint} />
   )
 })
+
+// The zone's hover hit-test. A transparent rect rather than the lines
+// themselves: they are on a canvas now, and were `pointerEvents: none` before
+// that — a 0.5px line is not something a pointer can be asked to hit.
+function ConnectorHitTestRect({
+  lineCoords,
+  lineZoneHeight,
+  onHover,
+}: {
+  lineCoords: ConnectorCoord[]
+  lineZoneHeight: number
+  onHover: (coord: ConnectorCoord | undefined) => void
+}) {
+  return (
+    <rect
+      x={0}
+      y={0}
+      width="100%"
+      height={lineZoneHeight}
+      fill="transparent"
+      onMouseMove={event => {
+        const pt = svgMousePoint(event)
+        if (!pt) {
+          onHover(undefined)
+        } else {
+          let minDist = 10
+          let found: ConnectorCoord | undefined
+          for (const coord of lineCoords) {
+            const dist = pointToSegmentDist(
+              pt.x,
+              pt.y,
+              coord.mx,
+              lineZoneHeight,
+              coord.gx,
+              0,
+            )
+            if (dist < minDist) {
+              minDist = dist
+              found = coord
+            }
+          }
+          onHover(found)
+        }
+      }}
+      onMouseLeave={() => {
+        onHover(undefined)
+      }}
+    />
+  )
+}
 
 // The frame the zone's contents draw in: an absolutely positioned <svg> live,
 // nothing at all in an SVG export (the export's own <svg> is already the frame).
@@ -225,12 +228,14 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   strokeWidth,
   highlight,
   exportSVG,
+  opts,
   children,
 }: {
   model: ConnectorLinesModel
   strokeWidth: number
   highlight?: ConnectorCoord
   exportSVG?: boolean
+  opts?: PaintLayerOpts
   children?: React.ReactNode
 }) {
   const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
@@ -247,27 +252,38 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   return (
     <>
       {lineCoords.length === 0 ? null : (
-        <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
+        <>
           <ConnectorLineField
             lineCoords={lineCoords}
             lineZoneHeight={lineZoneHeight}
+            width={width}
             strokeWidth={strokeWidth}
             exportSVG={exportSVG}
-            onHover={coord => {
-              setHovered(coord)
-            }}
-          >
+            opts={opts}
+          />
+          {/* the chrome the field cannot carry, in the SVG over it: the
+              hit-test, the labels, the emphasized line */}
+          <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
+            {exportSVG ? null : (
+              <ConnectorHitTestRect
+                lineCoords={lineCoords}
+                lineZoneHeight={lineZoneHeight}
+                onHover={coord => {
+                  setHovered(coord)
+                }}
+              />
+            )}
             {children}
-          </ConnectorLineField>
-          {emphasized ? (
-            <ConnectorLine
-              mx={emphasized.mx}
-              gx={emphasized.gx}
-              lineZoneHeight={lineZoneHeight}
-            />
-          ) : null}
+            {emphasized ? (
+              <ConnectorLine
+                mx={emphasized.mx}
+                gx={emphasized.gx}
+                lineZoneHeight={lineZoneHeight}
+              />
+            ) : null}
+          </ConnectorZone>
           {current?.label ? <BaseTooltip>{current.label}</BaseTooltip> : null}
-        </ConnectorZone>
+        </>
       )}
       {/* Not gated on there being lines: the zone still takes up
       `lineZoneHeight`, and a viewport with no variants in it is exactly when a
