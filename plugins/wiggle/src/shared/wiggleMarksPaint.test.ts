@@ -53,6 +53,7 @@ function createMockCanvas() {
     beginPath: jest.fn(),
     moveTo: jest.fn(),
     lineTo: jest.fn(),
+    bezierCurveTo: jest.fn(),
     rect: jest.fn((x: number, y: number, w: number, h: number) => {
       rectCalls.push([x, y, w, h])
     }),

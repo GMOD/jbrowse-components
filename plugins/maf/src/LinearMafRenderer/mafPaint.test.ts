@@ -24,6 +24,7 @@ function recordingCtx() {
     translate() {},
     moveTo() {},
     lineTo() {},
+    bezierCurveTo() {},
     arc() {},
     ellipse() {},
     setLineDash() {},

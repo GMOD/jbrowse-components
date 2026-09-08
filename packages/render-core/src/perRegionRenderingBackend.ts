@@ -19,6 +19,11 @@ import type {
 // map has always served it.
 export type { FrameDimensions } from './renderingBackendBase.ts'
 
+/** Straight RGBA, each channel 0-1 — what `beginFrame` takes. */
+export type ClearColor = readonly [number, number, number, number]
+
+const TRANSPARENT: ClearColor = [0, 0, 0, 0]
+
 /**
  * Shared contract for per-region streamed GPU backends.
  *
@@ -97,8 +102,26 @@ export abstract class Canvas2DPerRegionRenderingBackend<
     state: RenderState,
   ): boolean {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    const clear = this.clearColor(state)
+    if (clear) {
+      const [r, g, b, a] = clear
+      this.ctx.fillStyle = `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a})`
+      this.ctx.fillRect(0, 0, state.canvasWidth, state.canvasHeight)
+    }
     this.draw(blocks, regions, state)
     return blocks.some(block => regions.has(block.displayedRegionIndex))
+  }
+
+  /**
+   * What the frame is painted onto before the blocks are drawn — the Canvas2D
+   * half of the GPU base's `beginFrame` clear. Undefined, the default, leaves
+   * `prepareCanvas`'s `clearRect` as the whole of it, which is transparent.
+   * Synteny is the one display that overrides: its indel wedges pre-blend
+   * against a KNOWN ground and only agree with the base ribbon beside them over
+   * a destination that really is that colour.
+   */
+  protected clearColor(_state: RenderState): ClearColor | undefined {
+    return undefined
   }
 
   /**
@@ -180,9 +203,10 @@ export abstract class GpuPerRegionRenderingBackend<
     // window, so a track dragged past the clamp draws at reduced resolution
     // instead of asking for a viewport its target cannot hold.
     const scale = this.hal.resize(canvasWidth, canvasHeight)
-    // Always pair beginFrame/endFrame so the canvas clears to transparent even
-    // when every block is skipped (e.g. all regions pruned by a density gate).
-    this.hal.beginFrame(0, 0, 0, 0)
+    // Always pair beginFrame/endFrame so the canvas clears even when every
+    // block is skipped (e.g. all regions pruned by a density gate).
+    const [clearR, clearG, clearB, clearA] = this.clearColor(state)
+    this.hal.beginFrame(clearR, clearG, clearB, clearA)
     for (const block of blocks) {
       const region = regions.get(block.displayedRegionIndex)
       if (region !== undefined) {
@@ -214,4 +238,9 @@ export abstract class GpuPerRegionRenderingBackend<
     region: RenderData,
     state: RenderState,
   ): void
+
+  /** @see Canvas2DPerRegionRenderingBackend.clearColor */
+  protected clearColor(_state: RenderState): ClearColor {
+    return TRANSPARENT
+  }
 }

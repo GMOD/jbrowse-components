@@ -11,7 +11,10 @@ import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
 import type { SampleCount } from '../hal/types.ts'
 import type { InstancePass } from '../instancePass.ts'
-import type { PerRegionRenderingBackend } from '../perRegionRenderingBackend.ts'
+import type {
+  ClearColor,
+  PerRegionRenderingBackend,
+} from '../perRegionRenderingBackend.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { Mark, StagedUniforms } from './types.ts'
@@ -84,8 +87,13 @@ export class GpuMarkBackend<
   constructor(
     hal: GpuHal,
     private marks: readonly Mark<TRegion, TState>[],
+    private clear?: (state: TState) => ClearColor,
   ) {
     super(hal)
+  }
+
+  protected override clearColor(state: TState) {
+    return this.clear ? this.clear(state) : super.clearColor(state)
   }
 
   override upload(regionKey: number, data: TRegion) {
@@ -134,15 +142,26 @@ export class GpuMarkBackend<
   }
 }
 
-class Canvas2DMarkBackend<
+/**
+ * The Canvas2D half, exported for the same reason `GpuMarkBackend` is: a
+ * display's frame scaffold — the ground it clears to, the blocks it paints — is
+ * a property of the pair, and a suite pinning it on one backend has to pin it
+ * on the other.
+ */
+export class Canvas2DMarkBackend<
   TRegion,
   TState extends FrameDimensions,
 > extends Canvas2DPerRegionRenderingBackend<TRegion, TState> {
   constructor(
     canvas: HTMLCanvasElement,
     private marks: readonly Mark<TRegion, TState>[],
+    private clear?: (state: TState) => ClearColor,
   ) {
     super(canvas)
+  }
+
+  protected override clearColor(state: TState) {
+    return this.clear ? this.clear(state) : super.clearColor(state)
   }
 
   protected draw(
@@ -177,15 +196,26 @@ class Canvas2DMarkBackend<
 export function createMarkBackend<TRegion, TState extends FrameDimensions>(
   canvas: HTMLCanvasElement,
   marks: readonly Mark<TRegion, TState>[],
-  opts: { sampleCount?: SampleCount } = {},
+  opts: {
+    sampleCount?: SampleCount
+    /**
+     * What the frame is cleared to, when transparent is the wrong answer. The
+     * GPU side hands it to `beginFrame` and the Canvas2D side fills it after
+     * `prepareCanvas`, so both backends composite over the same colour — which
+     * synteny needs, its indel wedges being pre-blended against the band's
+     * ground rather than composited over it.
+     */
+    clearColor?: (state: TState) => ClearColor
+  } = {},
 ): Promise<PerRegionRenderingBackend<TRegion, TState>> {
+  const { clearColor } = opts
   return createRenderingBackend<PerRegionRenderingBackend<TRegion, TState>>(
     canvas,
     {
       passes: marks.map(m => m.pass),
       sampleCount: opts.sampleCount,
-      createGpuBackend: hal => new GpuMarkBackend(hal, marks),
-      createCanvas2DBackend: c => new Canvas2DMarkBackend(c, marks),
+      createGpuBackend: hal => new GpuMarkBackend(hal, marks, clearColor),
+      createCanvas2DBackend: c => new Canvas2DMarkBackend(c, marks, clearColor),
     },
   )
 }

@@ -35,6 +35,14 @@ export interface MarkContext2D extends ClipContext2D {
   rotate(angle: number): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number,
+  ): void
   arc(
     x: number,
     y: number,
@@ -242,6 +250,20 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * for a value the payload carries rather than the frame (the variant matrix's
  * column count). Both run once per block per frame, never per instance.
  *
+ * **`channels` answers `undefined` for a region this mark has nothing in.**
+ * That is how one mark list serves a display whose cells are a union — synteny
+ * draws ribbon cells, outline cells and glyph-lane cells off one list, and a
+ * region key holds exactly one of the three. The mark then packs an empty
+ * buffer (which every HAL reads as the release), draws nothing and paints
+ * nothing, so the kind test is stated once per mark instead of once per
+ * backend.
+ *
+ * **`params` is handed the block**, because the key a display's per-track
+ * state is filed under is the block's `displayedRegionIndex` and nothing else
+ * in the lens's reach says which track this is. Every method the lens feeds
+ * already receives the block; the lens receiving it is what lets it stay a
+ * pick rather than pushing the lookup into the shape.
+ *
  * `bufferOf` names the mark whose uploaded buffer this one draws from, so the
  * declaration says what the HAL's `drawPass(id, region, bufferPassId)` says:
  * the chevron mark's channels are the line mark's, packed once under the line
@@ -267,8 +289,8 @@ export function defineMark<
   TParams,
 >(spec: {
   shape: MarkShape<TChannels, TParams>
-  channels: (region: TRegion) => TChannels
-  params: (state: TState, region: TRegion) => TParams
+  channels: (region: TRegion) => TChannels | undefined
+  params: (state: TState, region: TRegion, block: RenderBlock) => TParams
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
   texture?: (state: TState, region: TRegion) => Uint8Array | undefined
@@ -287,7 +309,13 @@ export function defineMark<
   }
   const bufferOf = lender?.id
   return {
-    pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
+    pass: {
+      ...shape.pass,
+      pack: region => {
+        const c = channels(region)
+        return c === undefined ? NOTHING : shape.pass.pack(c)
+      },
+    },
     bufferOf,
     texture,
     drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
@@ -295,64 +323,70 @@ export function defineMark<
       const scissor = strip
         ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
         : undefined
-      if (scissor && scissor.height === 0) {
-        return
-      }
-      const p = params(state, region)
-      if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
-        return
-      }
-      if (scissor) {
-        hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-      }
-      if (staged?.writer !== shape.writeUniforms || staged.params !== params) {
-        shape.writeUniforms(scratch, clip, block, state, p)
-        hal.writeUniforms(scratch)
-        if (staged) {
-          staged.writer = shape.writeUniforms
-          staged.params = params
+      if (scissor?.height !== 0 && channels(region) !== undefined) {
+        const p = params(state, region, block)
+        if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
+          if (scissor) {
+            hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
+          }
+          if (
+            staged?.writer !== shape.writeUniforms ||
+            staged.params !== params
+          ) {
+            shape.writeUniforms(scratch, clip, block, state, p)
+            hal.writeUniforms(scratch)
+            if (staged) {
+              staged.writer = shape.writeUniforms
+              staged.params = params
+            }
+          }
+          hal.drawPass(shape.pass.id, regionKey, bufferOf)
+          if (scissor) {
+            hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+          }
         }
-      }
-      hal.drawPass(shape.pass.id, regionKey, bufferOf)
-      if (scissor) {
-        hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       }
     },
     paintBlock(ctx, region, block, state) {
       const strip = band?.(state)
-      if (strip && strip.height <= 0) {
-        return
-      }
-      const p = params(state, region)
-      if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
-        return
-      }
-      const paint = () => {
-        shape.paintBlock(ctx, channels(region), block, state, p)
-      }
-      if (strip) {
-        withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, paint)
-      } else {
-        paint()
+      const c = channels(region)
+      if ((!strip || strip.height > 0) && c !== undefined) {
+        const p = params(state, region, block)
+        if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
+          const paint = () => {
+            shape.paintBlock(ctx, c, block, state, p)
+          }
+          if (strip) {
+            withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, paint)
+          } else {
+            paint()
+          }
+        }
       }
     },
     hitNearest: shape.hitNearest
-      ? (region, block, state, xPx, yPx, candidates, maxDistSq) =>
-          bandExcludes(band?.(state), yPx)
+      ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
+          const c = channels(region)
+          return c === undefined || bandExcludes(band?.(state), yPx)
             ? undefined
             : shape.hitNearest!(
-                channels(region),
+                c,
                 block,
                 state,
-                params(state, region),
+                params(state, region, block),
                 xPx,
                 yPx,
                 candidates,
                 maxDistSq,
               )
+        }
       : undefined,
   }
 }
+
+// What a mark with nothing in this region packs. An empty pack IS the release
+// — every HAL deletes the pass's prior buffer before it looks at the count.
+const NOTHING = new ArrayBuffer(0)
 
 function bandExcludes(strip: MarkBand | undefined, yPx: number) {
   return (

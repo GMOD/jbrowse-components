@@ -174,6 +174,7 @@ function recordingCtx() {
     setLineDash() {},
     scale() {},
     rotate() {},
+    bezierCurveTo() {},
   } satisfies MarkContext2D
   return { ctx, ink }
 }
