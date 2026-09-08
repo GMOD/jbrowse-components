@@ -1,0 +1,76 @@
+{
+  "plugins": [
+    {
+      "name": "Arg",
+      "umdUrl": "https://jbrowse.org/demos/arg/621c82e9916b/jbrowse-plugin-arg.umd.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+      }
+    },
+    {
+      "type": "ArgTrack",
+      "trackId": "chr20_arg",
+      "name": "Simulated ARG (msprime, 50 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "ArgAdapter",
+        "treesLocation": {
+          "uri": "https://jbrowse.org/demos/arg/chr20_sim.trees",
+          "locationType": "UriLocation"
+        },
+        "refName": "chr20"
+      },
+      "displays": [
+        {
+          "type": "LinearArgDisplay",
+          "displayId": "chr20_arg-LinearArgDisplay",
+          "height": 420
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "ARG demo",
+    "views": [
+      {
+        "id": "arg_lgv",
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr20:1,900,000..1,920,000",
+        "tracks": ["genes", "chr20_arg"]
+      }
+    ]
+  }
+}
