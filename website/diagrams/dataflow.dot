@@ -23,6 +23,15 @@
 // the buffers that are already on the card. Every mechanism in the three
 // detailed figures exists to keep that edge available.
 //
+// THE UPLOAD EDGE NAMES TWO TRIGGERS, and it has to. The page under this figure
+// turns on there being three rates rather than two: a color scheme, a sort
+// order and a row grouping are packed INTO the instance buffer, so changing one
+// re-encodes and re-uploads without going back to the worker. An upload edge
+// reading `when the data changes` left that rate off the picture entirely, and
+// the page said the opposite of it for a while -- that a recolor and a re-sort
+// were shader parameters like a pan. They are not; only a plot-wide scalar such
+// as opacity is.
+//
 // COLOUR MEANS SOMETHING HERE, which it does not in the site's other diagrams —
 // they use the palette to separate a cluster from its surroundings. A legend
 // buys that back, and the four meanings are the ones a reader of this pipeline
@@ -122,7 +131,7 @@ digraph dataflow {
   data -> draw2d [style=dashed label=" no GPU "]
   draw2d -> screen [style=dashed]
 
-  data -> gpu [label=<  upload — when the data changes<br align="left"/>  <font face="Courier" color="#6b6b6b">gpu_display_lifecycle</font><br align="left"/>>]
+  data -> gpu [label=<  upload — new data, or a packed setting<br align="left"/>  <font face="Courier" color="#6b6b6b">gpu_display_lifecycle</font><br align="left"/>>]
   gpu -> screen [label=<  draw<br align="left"/>  when anything visible changes<br align="left"/>>]
 
   // The edge the figure is for. constraint=false so closing the loop does not

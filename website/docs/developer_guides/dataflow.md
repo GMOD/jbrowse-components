@@ -113,10 +113,18 @@ says what may go in it.
 
 ## Where the GPU sits
 
-The two edges out of `rpcDataMap` run at different rates. Data crosses to the
-GPU when the region changes. Frames after that redraw buffers that are already
-there, and all a frame writes is a shader parameter — a pan, a zoom, a recolor,
-a re-sort, a resize.
+The upload and the draw run at different rates. Data crosses to the GPU when the
+region changes. Frames after that redraw buffers that are already there, and a
+pan, a zoom, a resize or a plot-wide opacity writes one shader parameter.
+
+A third rate sits between those two. A color scheme, a sort order and a row
+grouping are packed into the instance buffer, so changing one re-encodes and
+re-uploads the regions it touches and stops there — none of them changes what
+the worker computed, so none of them refetches.
+[`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)
+is where a display declares which settings reach the buffer that way, and the
+pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
+returns re-uploads, and everything else is a frame.
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that
