@@ -84,8 +84,11 @@ way `sv_multihop.py` is, and none belongs in core:
 ## What this stops
 
 Every in-app proposal that computes a route from reads beyond the current
-picker: reference-concatenated bases on the derivative panel
-(`REJECTED_IDEAS.md`), reads projected onto the allele (reverted, `e7b4f2b29b`),
+picker: reference-concatenated bases on the derivative panel (declined — the
+temporary assembly carries `seq: ''` because the path is a structure, and
+concatenating each segment's reference slice yields a reference-derived contig
+rather than the sample's), reads projected onto the allele (reverted,
+`e7b4f2b29b`),
 [derive-from-partial-spanners](derive-from-partial-spanners.md), the in-CIGAR
 deletion grouping in
 [chain-in-read-deletions-not-only-sa-segments](chain-in-read-deletions-not-only-sa-segments.md).
