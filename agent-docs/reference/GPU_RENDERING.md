@@ -554,11 +554,21 @@ fudge factor, and porting one in over-widens GPU glyphs. Min-width floors, by
 contrast, *are* mirrored (both clamp to the same px) — those keep sub-pixel
 features visible and must stay in step.
 
+Synteny carries two more of these, both surviving the mark port unchanged.
+`perpCoverage` measures a per-fragment width from the two edges' own
+foreshortenings where `ribbonPerpWidth` measures the whole ribbon's from its
+corners, and each is right for the decision it feeds. And the **clicked outline
+is GPU-only as a mark**: `drawSyntenyTrack` strokes it inside its own loop,
+where it already holds the projected corners and the fill/stroke verdict the
+outline is gated on, so the `edgeStraight`/`edgeCurve` marks paint nothing on
+Canvas2D and their cell exists for the GPU pass alone.
+
 ### Shared per-region streamed contract
 
-Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle) and
-the whole-view ones over a single canvas-wide block (hic, LD, the variant
-matrix) specialize one generic type and declare a **mark list**, which
+Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle), the
+whole-view ones over a single canvas-wide block (hic, LD, the variant matrix)
+and the shared-canvas ones over a block per cell (dotplot, both synteny
+displays) specialize one generic type and declare a **mark list**, which
 `createMarkBackend` turns into both backends — the passes are the marks' own and
 each backend walks the same list:
 
@@ -616,11 +626,10 @@ no per-region display uses it today. MAF used to — its upload carried a
 pre-encoded buffer and the render side re-read `rpcDataMap` — until the rows
 became `span` channels both backends draw from.
 
-Whole-map synced (alignments) and keyed (multi-LGV synteny) plugins define
-their own backend interfaces because their upload shapes differ — see "Upload
-patterns." The whole-view displays (HiC, LD, the variant matrix) and dotplot are
-per-region backends over a single canvas-wide block, which is what lets them
-declare marks.
+Whole-map synced plugins (alignments) define their own backend interface because
+their upload shape differs — see "Upload patterns." The whole-view displays
+(HiC, LD, the variant matrix), dotplot and both synteny displays are per-region
+backends over canvas-wide blocks, which is what lets them declare marks.
 
 #### Whole-map synced: skipping a region without leaving stale buffers
 
@@ -660,7 +669,7 @@ The one sub-region exception is the **recolor**, and it rides on a narrower fact
 (`cloneWithLayout`) and the color tier spreads over the result without touching
 it. Same bytes everywhere but the two per-read color arrays ⇒ skip the region
 and rewrite the read pass alone. Same split as
-`GpuSyntenyRenderer.getInterleaved`'s geometry/color token (FETCH_KEYS.md,
+`syntenyInstanceCache`'s geometry/color token (FETCH_KEYS.md,
 "`gpuProps()` and derived region maps"). It requires the model to keep the color bake in its own
 computed downstream of layout — the `laidOutByGroupUncolored` →
 `laidOutByGroupFramed` → `laidOutByGroup` chain.
@@ -735,9 +744,8 @@ display is **what its map is keyed by**:
 | Key | Contract | Render | Use when | Examples |
 |---|---|---|---|---|
 | `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, multi-wiggle, MAF, manhattan, sequence, multi-variant |
-| a sibling display's `sharedBackendKey` | `KeyedRenderingBackend` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | multi-LGV synteny (key per level) |
 | a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
-| a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display, keyed by it) |
+| a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display), the synteny level (a block per track's ribbons and per clicked outline), multi-way synteny (a block per gutter, outline and lane) |
 
 **Release is per key, never an active-set prune.** The diff knows exactly which
 keys departed, so a per-key release does the same job on a display's own map as
@@ -761,18 +769,20 @@ true, which is the answer an empty-but-finished matrix needs — the cleared
 canvas is its whole picture and nothing later will upload bytes for it, so
 `canvasDrawn` has to flip or the scrim never lifts.
 
-Synteny is the last keyed display, and keyed is neither neighbour — a
-whole-view display carries one constant key, and per-region hands the model's
-data map back at render time instead of the backend owning it.
-`KeyedRenderingBackend` is an interface with no abstract class under it: the
-base classes are the shared state, and there is no shared behavior on top.
+There used to be a third contract here, `KeyedRenderingBackend` — one canvas, a
+key per display, `render(state)` painting every key in one frame. Dotplot and
+the two synteny displays were its consumers and all three are the last row now,
+so it is gone; `sharedBackendKey` is what survives it, on its own subpath.
 
-Dotplot was keyed and is now the row under it. Its x axis is not a block's bp
-span — every segment's screen x comes from the payload's own absolute cumBp
-through a `panPx` fold — so a canvas-wide block per display is an identity clip,
-and what is left is exactly the map-plus-blocks a per-region frame takes. The
-key stays `sharedBackendKey(self.id)`; it rides on `displayedRegionIndex`, which
-is what a block calls the key it was uploaded under.
+The move is the same one each time. A dotplot segment's screen x is not a
+block's bp span — it comes from the payload's own absolute cumBp through a
+`panPx` fold — and a synteny corner's is the same fold over a window-relative
+bp, so a canvas-wide block per cell is an identity clip and what is left is
+exactly the map-plus-blocks a per-region frame takes. The key stays
+`sharedBackendKey(self.id)`; it rides on `displayedRegionIndex`, which is what a
+block calls the key it was uploaded under. The multi-way stack keys its own
+named layers through the same hash, which is what lets its gutters and its lanes
+be one map.
 
 MAF is **per-region**, not whole-map: its blocks are independent, with no
 main-thread Y-layout coupling adjacent regions, so each region's upload
@@ -792,7 +802,8 @@ the display's `renderError`, which is what raises the "too much data to render
 on this GPU — zoom in" banner instead of leaving a blank canvas.
 
 Three backends used to implement their interfaces standalone: **alignments,
-dotplot and multi-LGV synteny** (dotplot's is a mark list now). None declared `setErrorHandler`, and
+dotplot and multi-LGV synteny** (only alignments still does; the other two are
+mark lists now). None declared `setErrorHandler`, and
 `useRenderingBackend` called it as `r.setErrorHandler?.()` — so the three largest
 vertex-buffer allocators in the app were exactly the three whose OOMs reached
 nobody. The HAL reported, `OomReporter`'s handler was null, the console got a
@@ -882,19 +893,20 @@ and only changed regions re-upload. Alignments/synteny keep the plain whole-map
 form (N is only 4–8 buffered regions at their gene-level zoom). Full derivation of
 the incremental-layout memo and its chain-mode wrinkle: [ADR-017](../architecture-decision-records/adr-017-wiggle-per-key-autoruns.md), [ADR-011](../architecture-decision-records/adr-011-canvas-flatbush-immutable-offsets.md).
 
-**A keyed-upload backend wants the same kind of memo one level down: the
+**A shared-canvas backend wants the same kind of memo one level down: the
 color-lane patch.** A genuine recolor (`colorBy`, `opacityByIdentity`, a track
 palette shift) does produce a fresh `colors` array, and the `geometry` getter
 then hands the backend a fresh object over the *same* coordinate arrays — which
 is exactly what `installUpload`'s reference diff is meant to catch, but a
-naive backend re-packs every lane to change one. So both renderers hold a
-`createInstanceCache` (`@jbrowse/render-core/instanceCache`), which memoizes the
-packed bytes on `(one geometry array's identity, colors' identity)` and patches
-the color lane in place when only the latter moved. The GPU re-upload still
+naive backend re-packs every lane to change one. So both mark lists hold a
+`createInstanceCache` (`@jbrowse/render-core/instanceCache`) inside the shape's
+`pack`, which memoizes the packed bytes on `(one geometry array's identity,
+colors' identity)` and patches the color lane in place when only the latter
+moved. The GPU re-upload still
 happens — the HAL has no partial-buffer update — but the CPU interleave, which
 dominates at 10⁵–10⁶ instances, does not. Each plugin supplies an
 `InstanceCacheOpts` naming its geometry token, its color accessor and the stride
-and color offset the patch has to write at; any new keyed-upload backend whose
+and color offset the patch has to write at; any new shared-canvas backend whose
 palette is a separate main-thread pass wants the same. The
 model-side half of this split — why the colors array is fresh in the first place,
 and why opacity is *not* in it — is
@@ -1028,7 +1040,7 @@ WebGL2 needs none of this: it is immediate-mode, and the driver has already
 consumed the bytes by the time `deleteBuffer` runs.
 
 This replaced a `warnIfMidFrame` console warning, which had it backwards on both
-sides — it fired for synteny's `ensureUploaded` deleting a pass the open frame
+sides — it fired for synteny's lazy per-mode upload deleting a pass the open frame
 never referenced (safe), and it did not fire at all for the case that actually
 dropped frames, alignments' `drawOverlayQuads` re-uploading `OVERLAY_REGION`
 once per section inside the block loop, because that release comes from

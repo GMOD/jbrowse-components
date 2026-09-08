@@ -55,7 +55,7 @@ drag (mousemove on the synteny canvas)     wheel
     → offsetPx / bpPerPx change (MobX observable mutation)
       → autorun deps fire (renderState getter, etc.)
         → render autorun callback runs
-          → GpuSyntenyRenderer.render(state)
+          → backend.renderBlocks(blocks, cells, state)
             → hal.beginFrame / writeUniforms / drawPass / endFrame
       → mobx-react flushes observer() re-renders (React commit)
 ```

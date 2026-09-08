@@ -124,10 +124,10 @@ Both put their `RenderLifecycleMixin` *above* the display, so one canvas is
 shared by several displays: dotplot on the view itself, synteny on
 `LinearSyntenyViewHelper` — the per-level (row-gap) model — so a 3-row stack has
 two canvases, one per band, each shared by that level's synteny tracks. That is
-what makes their upload callbacks keyed rather than per-region: they diff through
-`installUpload` and delete each departed key individually, because an
-active-set prune computed from one display's map would wipe its siblings'
-buffers.
+what makes their upload callbacks key by `sharedBackendKey` rather than by a
+region index: they diff through `installUpload` and delete each departed key
+individually, because an active-set prune computed from one display's map would
+wipe its siblings' buffers.
 
 **A shared canvas is laid out by the model that owns it, never by the displays
 drawing on it.** The canvas is absolutely positioned over the whole band, so it
@@ -161,22 +161,24 @@ track's pixels on screen, its buffer deleted and nothing drawn over them. Both
 plugins' backends clear before drawing, so painting zero displays *is* the wipe.
 One shape, in both:
 
-- `renderState` is a **resolved getter**, never `undefined`; an empty
-  `displayKeys` / `perTrack` / block list is a real frame.
+- `renderState` is a **resolved getter**, never `undefined`; an empty block list
+  is a real frame.
 - `canRender` carries the "view isn't measured yet" precondition
   (`view.initialized`), so the autorun pair idles instead of the state going
   nullable.
 - The render always repaints the whole canvas: clear, then draw every key it
-  holds geometry for. Synteny's `backend.render(state)` returns `void`; dotplot
-  draws through `renderBlocks`, whose frame scaffold clears whether or not a
-  block survives.
+  holds geometry for. Both draw through `renderBlocks`, whose frame scaffold
+  clears whether or not a block survives — transparent for dotplot, and the
+  band's own ground for synteny, which declares a `clearColor` because its indel
+  wedges are pre-blended against a known colour rather than composited over it.
 - A view or level that legitimately has nothing to show still resolves
-  `canvasDrawn`, and so `settled` and the `*_done` testid. Synteny's callback
-  returns `true` outright. Dotplot returns what `renderBlocks` answered — no
-  block drew, so nothing reached the canvas — and says the other half through
-  `paintInert`, `RenderLifecycleMixin`'s hook for a display that will not paint
-  its way out of where it is. The distinction is worth the hook: a track still
-  fetching leaves the map empty too, and only one of those two is finished.
+  `canvasDrawn`, and so `settled` and the `*_done` testid. Both return what
+  `renderBlocks` answered — no block drew, so nothing reached the canvas — and
+  say the other half through `paintInert`, `RenderLifecycleMixin`'s hook for a
+  display that will not paint its way out of where it is: a plot with no tracks
+  on it, a band with no ribbon track on it. The distinction is worth the hook: a
+  track still fetching leaves the map empty too, and only one of those two is
+  finished.
 
 `products/jbrowse-web/src/tests/SharedCanvasHideTrack.test.tsx` holds both views
 to this.
@@ -200,13 +202,12 @@ cross-cutting check would otherwise be a list someone has to remember to append
 to — it is the same move as `fetchInert` being a mixin hook rather than a getter
 each display invents.
 
-`canvasDrawn` therefore means "painted at least once" on synteny rather than
-"real content reached the canvas"
-([ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md),
-written for the per-region family, whose loading scrim reads it through
-`computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` term). Nothing is lost:
-both `settled` getters carry data-readiness separately through `displaysSettled`,
-and neither view drives a scrim off `canvasDrawn`. Dotplot keyed by track index
-and gated its render on having geometry until both were fixed; synteny reached
-the same place by a different route, with a nullable state and a `clear()` method
-on the backend interface for the empty case.
+`canvasDrawn` therefore means "a block drew" on both, which is
+[ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md)'s
+own meaning (written for the per-region family, whose loading scrim reads it
+through `computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` term). Nothing is
+lost: both `settled` getters carry data-readiness separately through
+`displaysSettled`, and neither view drives a scrim off `canvasDrawn`. Dotplot
+keyed by track index and gated its render on having geometry until both were
+fixed; synteny reached the same place by a different route, with a nullable state
+and a `clear()` method on the backend interface for the empty case.

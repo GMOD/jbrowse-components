@@ -140,7 +140,7 @@ captured when the geometry is built):
 - The vertex attribute is a single Float32 `bpRel = cumBp − base`. The shader
   reconstructs screen X as `bpRel * bpPerPxInv + panPx`, where `panPx = (base −
   viewBp) / bpPerPx` is folded on the CPU in float64 from a SMALL delta — the
-  pan since fetch (`GpuSyntenyRenderer` / dotplot's `segmentMark`). The base
+  pan since fetch (synteny's `syntenyRibbonMarks` / dotplot's `segmentMark`). The base
   cancels the genome-scale magnitude, so both terms stay sub-pixel in one
   Float32: no hi/lo pair, half the position bytes. Per-instance layout is the
   four corners (`bp{1..4}` / `x1,y1,x2,y2`) plus color etc.
@@ -247,7 +247,7 @@ It was declined, so it can be argued with rather than re-derived:
   **16 bytes/instance of corners becomes 32**. The plugin sizes its target at
   500k instances on whole-genome PAF (`instanceInterleave.ts`,
   `syntenyPickEngine.ts`), so roughly **+8 MB per region**, across the RPC and
-  then resident in `SyntenyGeometryCache`, per level.
+  then resident in the level's cell map, per level.
 - "Half the position bytes" is a stated goal of the refactor that introduced the
   scheme. Undoing it buys consistency and spends a measured win.
 - It is not a buffer-format change. The CPU pick path (`syntenyPickEngine.ts` /

@@ -217,7 +217,7 @@ arriving through slop either could remove.
 
 ## `pickFeatureAtPoint` omits the `isMarker` arm of `isRibbonCulled`
 
-The draw loop passes it (`Canvas2DSyntenyRenderer`), the pick loop does not.
+The draw loop passes it (`drawSyntenyTrack`), the pick loop does not.
 **Harmless by construction**: a marker's two edges are single points, so both
 width deltas are 0 and the pickable-width exclusion keeps it out of the index
 entirely. Left as is deliberately — adding the argument would suggest markers
