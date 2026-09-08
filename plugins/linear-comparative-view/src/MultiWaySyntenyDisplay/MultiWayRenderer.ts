@@ -1,14 +1,7 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DMultiWayRenderer } from './Canvas2DMultiWayRenderer.ts'
-import { GpuMultiWayRenderer, MULTIWAY_PASSES } from './GpuMultiWayRenderer.ts'
-
-import type { MultiWayRenderingBackend } from './multiwayRenderTypes.ts'
+import { MULTIWAY_MARKS } from './multiwayMarks.ts'
 
 export function MultiWayRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<MultiWayRenderingBackend>(canvas, {
-    passes: MULTIWAY_PASSES,
-    createGpuBackend: hal => new GpuMultiWayRenderer(hal, canvas),
-    createCanvas2DBackend: c => new Canvas2DMultiWayRenderer(c),
-  })
+  return createMarkBackend(canvas, MULTIWAY_MARKS)
 }

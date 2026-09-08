@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { resetSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
 import { render } from '@testing-library/react'
 import { when } from 'mobx'
 import { renderToString } from 'react-dom/server'
@@ -34,6 +35,10 @@ test('the SVG export carries no hover; the on-screen overlay does', async () => 
     ),
   )
   await when(() => display.svgReady, { timeout: 5000 })
+  // each render is its own document, as `wrapSvgExport` makes it in production
+  // — the clip ids the mark path's per-block clips mint are document-global, so
+  // without this the second export differs from the first by numbering alone
+  resetSvgClipIds()
   const quiet = renderToString(<svg>{await display.renderSvg()}</svg>)
 
   const target = display.ribbonGeometry.targets.find(t => t.groupKey === 'g1')!
@@ -45,6 +50,7 @@ test('the SVG export carries no hover; the on-screen overlay does', async () => 
   expect(display.renderState.hoveredFeatureId).toBeGreaterThan(0)
   expect(display.hoveredGroupOutlines.length).toBeGreaterThan(0)
 
+  resetSvgClipIds()
   const hovered = renderToString(<svg>{await display.renderSvg()}</svg>)
   expect(hovered).not.toContain('multiway-hover-outline')
   expect(hovered).toBe(quiet)

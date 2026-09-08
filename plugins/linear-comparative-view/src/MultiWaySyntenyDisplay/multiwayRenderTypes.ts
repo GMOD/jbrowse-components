@@ -1,8 +1,10 @@
 import type { SyntenyTrackRenderParams } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
+import type { SyntenyOutlineChannels } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { RegionRenderData } from '@jbrowse/plugin-canvas'
-import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
 
 /**
  * Every cell is stated in the render-origin px space the lane stack lays out
@@ -34,6 +36,7 @@ export interface RibbonTarget {
 
 export type MultiWayCell =
   | { kind: 'ribbons'; data: SyntenyInstanceData }
+  | ({ kind: 'outline' } & SyntenyOutlineChannels)
   | { kind: 'glyphs'; data: LaneGlyphData }
 
 export interface RibbonLayer {
@@ -50,11 +53,20 @@ export interface GlyphLayer {
   scrolled: boolean
 }
 
-export type MultiWayLayer = RibbonLayer | GlyphLayer
+/**
+ * The outline of the clicked group in one gutter — its own layer beside the
+ * ribbon layer it traces, so a selection re-uploads the records the outline
+ * draws rather than the gutter's whole buffer.
+ */
+export interface OutlineLayer {
+  kind: 'outline'
+  key: string
+  ribbon: RibbonLayer
+}
 
-export interface MultiWayRenderState {
-  width: number
-  height: number
+export type MultiWayLayer = RibbonLayer | GlyphLayer | OutlineLayer
+
+export interface MultiWayRenderState extends FrameDimensions {
   dragOffsetPx: number
   /**
    * how far the stack is scrolled inside the viewport — the vertical twin of
@@ -71,26 +83,23 @@ export interface MultiWayRenderState {
    * (`bandCell`), so a gutter and the lane above it agree.
    */
   groundColor: string
-  layers: MultiWayLayer[]
+  /**
+   * The stack back to front, under the key each layer's cell is uploaded
+   * against — ordered, because it is also the block order, and keyed, because a
+   * mark's `params` lens picks its layer by the block's own key.
+   */
+  layers: ReadonlyMap<number, MultiWayLayer>
 }
 
-export interface MultiWayRibbonPick {
-  key: string
-  instanceIndex: number
-  targetIdx: number
-}
-
-export interface MultiWayRenderingBackend extends RenderingBackend {
-  resize(width: number, height: number): void
-  upload(key: string, cell: MultiWayCell): void
-  release(key: string): void
-  render(state: MultiWayRenderState): boolean
-  pickRibbon(
-    x: number,
-    y: number,
-    state: MultiWayRenderState,
-  ): MultiWayRibbonPick | undefined
-}
+/**
+ * One canvas, a block per layer: the gutters' ribbons, the clicked outline over
+ * whichever gutter carries it, and each lane's glyphs. Every cell is a region
+ * of the per-region backend, keyed by `sharedBackendKey` off the layer's name.
+ */
+export type MultiWayRenderingBackend = PerRegionRenderingBackend<
+  MultiWayCell,
+  MultiWayRenderState
+>
 
 export function ribbonParams(
   layer: RibbonLayer,

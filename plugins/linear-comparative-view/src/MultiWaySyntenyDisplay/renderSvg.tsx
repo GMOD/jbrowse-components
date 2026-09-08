@@ -3,9 +3,10 @@ import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { drawMultiWay } from './Canvas2DMultiWayRenderer.ts'
 import MultiWayOverlay from './components/MultiWayOverlay.tsx'
+import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -38,11 +39,18 @@ export async function renderMultiWaySvg(
             height={height}
             opts={opts}
             paint={ctx => {
-              drawMultiWay(ctx, model.renderCells, {
+              const state = {
                 ...model.renderState,
                 hoveredFeatureId: 0,
                 clickedFeatureId: 0,
-              })
+              }
+              paintMarkBlocks(
+                ctx,
+                MULTIWAY_MARKS,
+                model.renderCells,
+                multiwayBlocks(state),
+                state,
+              )
             }}
           />
           <MultiWayOverlay model={model} exportSVG />

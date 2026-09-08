@@ -27,6 +27,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
   bandGroundColor,
   bandInk,
@@ -46,6 +47,7 @@ import {
   syntenyRegionMenuItems,
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
+import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
@@ -77,9 +79,17 @@ import {
   buildTickGeometry,
   glyphHitAt,
   glyphsKey,
+  outlineKey,
 } from './multiwayGeometry.ts'
+import { multiwayBlocks } from './multiwayMarks.ts'
+import { ribbonParams } from './multiwayRenderTypes.ts'
 import { coerceRibbonColorBy, featureLabelTable } from './ribbonColorModes.ts'
 
+import type {
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
@@ -1442,7 +1452,7 @@ export function stateModelFactory(
        * everything the backend holds bytes for, keyed so an unchanged cell
        * keeps its identity across a rebuild of the map and uploads nothing
        */
-      get renderCells(): ReadonlyMap<string, MultiWayCell> {
+      get namedCells(): ReadonlyMap<string, MultiWayCell> {
         return new Map<string, MultiWayCell>([
           [BANDS_KEY, self.bandCell],
           ...self.ribbonGeometry.cells,
@@ -1456,7 +1466,7 @@ export function stateModelFactory(
        * cover the view's gridlines; ribbons; each lane's ticks; each lane's
        * glyphs over its own ribbons
        */
-      get renderLayers(): MultiWayLayer[] {
+      get namedLayers(): MultiWayLayer[] {
         const { lanes } = self.laneStack
         return [
           { kind: 'glyphs', key: BANDS_KEY, scrolled: false },
@@ -1515,12 +1525,89 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the clicked group's outline in every gutter that draws it — its own
+       * cell beside the gutter's, so a selection re-uploads the records the
+       * outline traces rather than the gutter's whole buffer, and a pan
+       * re-uploads nothing. Ticks are left out: no tick carries a feature id
+       */
+      get outlineCells(): ReadonlyMap<string, MultiWayCell> {
+        const featureId = self.clickedFeatureId
+        const out = new Map<string, MultiWayCell>()
+        if (featureId > 0) {
+          for (const [key, cell] of self.ribbonGeometry.cells) {
+            if (cell.kind === 'ribbons') {
+              out.set(outlineKey(key), {
+                kind: 'outline',
+                data: cell.data,
+                featureId,
+              })
+            }
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * everything the backend holds bytes for, under the numeric region key a
+       * block names. Merged from cached maps, so a lane relayout that leaves a
+       * gutter's cell alone re-uploads nothing of it
+       */
+      get renderCells(): ReadonlyMap<number, MultiWayCell> {
+        const out = new Map<number, MultiWayCell>()
+        for (const [key, cell] of self.namedCells) {
+          out.set(sharedBackendKey(key), cell)
+        }
+        for (const [key, cell] of self.outlineCells) {
+          out.set(sharedBackendKey(key), cell)
+        }
+        return out
+      },
+      /**
+       * #getter
+       * the stack back to front under those same keys, each gutter's outline
+       * layer immediately over the gutter it traces
+       */
+      get renderLayers(): ReadonlyMap<number, MultiWayLayer> {
+        const out = new Map<number, MultiWayLayer>()
+        const clicked = self.clickedFeatureId > 0
+        for (const layer of self.namedLayers) {
+          out.set(sharedBackendKey(layer.key), layer)
+          if (clicked && layer.kind === 'ribbons') {
+            const key = outlineKey(layer.key)
+            out.set(sharedBackendKey(key), {
+              kind: 'outline',
+              key,
+              ribbon: layer,
+            })
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
+       * the gutters' ribbon geometry, in draw order — what the pick walks
+       */
+      get ribbonRegions(): ReadonlyMap<number, SyntenyInstanceData> {
+        const out = new Map<number, SyntenyInstanceData>()
+        for (const [key, cell] of self.ribbonGeometry.cells) {
+          if (cell.kind === 'ribbons') {
+            out.set(sharedBackendKey(key), cell.data)
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * what a frame draws with: the cells' layout and the one live transform
        */
       get renderState(): MultiWayRenderState {
         return {
-          width: self.canvasWidth,
-          height: self.height,
+          canvasWidth: self.canvasWidth,
+          canvasHeight: self.height,
           dragOffsetPx: self.dragOffsetPx,
           scrollTopPx: self.scrollTop,
           hoveredFeatureId: self.hoveredFeatureId,
@@ -1532,10 +1619,61 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
+       * #getter
+       * one block per layer, in the order the stack draws them
+       */
+      get renderBlocks() {
+        return multiwayBlocks(self.renderState)
+      },
+      /**
+       * #getter
+       * the render state as the synteny pick engine reads it: a numeric key per
+       * gutter, topmost last, so a point over two gutters answers the one drawn
+       * over
+       */
+      get ribbonPickState(): SyntenyRenderState {
+        const state = self.renderState
+        const perTrack = new Map<number, SyntenyTrackRenderParams>()
+        for (const [key, layer] of state.layers) {
+          if (layer.kind === 'ribbons') {
+            perTrack.set(key, ribbonParams(layer, state))
+          }
+        }
+        return {
+          canvasWidth: state.canvasWidth,
+          canvasHeight: state.canvasHeight,
+          overdrawPx: 0,
+          groundColor: state.groundColor,
+          perTrack,
+        }
+      },
+    }))
+    .views(self => {
+      // the engine's offscreen context and its per-geometry index, allocated
+      // once for the stack — the same closure the pairwise band holds
+      const pick = createSyntenyPicker()
+      return {
+        /**
+         * #method
+         * the ribbon under a container-relative point, topmost first
+         */
+        pickRibbonAt(x: number, y: number) {
+          return pick(
+            self.ribbonRegions,
+            self.ribbonPickState,
+            self.canvasWidth,
+            x,
+            y,
+          )
+        },
+      }
+    })
+    .views(self => ({
+      /**
        * #method
        * what sits under a container-relative point: the glyph or box of the
        * one lane whose glyph row holds it, boxes before genes since that is
-       * the order they draw, then a ribbon through the backend's pick
+       * the order they draw, then a ribbon through the pick engine
        */
       hitTest(x: number, y: number): HoverTarget | undefined {
         const ox = x - self.dragOffsetPx
@@ -1557,19 +1695,27 @@ export function stateModelFactory(
             }
           }
         }
-        const backend = self.currentRenderingBackend as
-          | MultiWayRenderingBackend
-          | undefined
-        const pick = backend?.pickRibbon(x, y, self.renderState)
-        const target = pick && self.ribbonGeometry.targets[pick.targetIdx]
-        return (
-          target && {
-            label: target.label,
-            feature: target.feature,
-            groupKey: target.groupKey,
-            targetIdx: pick.targetIdx,
+        const hit = self.pickRibbonAt(x, y)
+        if (hit) {
+          // the pick answers an INSTANCE; the target is what that instance's
+          // feature index names, which is the gutter cell's own lane
+          const targetIdx = self.ribbonRegions.get(hit.key)?.instanceFeatureIdx[
+            hit.instanceIndex
+          ]
+          const target =
+            targetIdx === undefined
+              ? undefined
+              : self.ribbonGeometry.targets[targetIdx]
+          if (target && targetIdx !== undefined) {
+            return {
+              label: target.label,
+              feature: target.feature,
+              groupKey: target.groupKey,
+              targetIdx,
+            }
           }
-        )
+        }
+        return undefined
       },
     }))
     .views(self => ({
@@ -1748,7 +1894,11 @@ export function stateModelFactory(
         installUpload(self, backend, {
           cells: () => self.renderCells,
           render: b => {
-            b.render(self.renderState)
+            b.renderBlocks(
+              self.renderBlocks,
+              self.renderCells,
+              self.renderState,
+            )
             return self.features !== undefined
           },
         })

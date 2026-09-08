@@ -1,20 +1,32 @@
 import { featureGlyphShader } from '@jbrowse/plugin-canvas'
 import { MockHal } from '@jbrowse/render-core/hal'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
+import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 
 import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
+import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { RibbonPickCells, drawMultiWay } from './Canvas2DMultiWayRenderer.ts'
-import { GpuMultiWayRenderer, MULTIWAY_PASSES } from './GpuMultiWayRenderer.ts'
-import { PX_ORIGIN } from './multiwayRenderTypes.ts'
+import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
+import { PX_ORIGIN, ribbonParams } from './multiwayRenderTypes.ts'
 
 import type { PickCanvasLike } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
+import type {
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   LaneGlyphData,
   MultiWayCell,
+  MultiWayLayer,
   MultiWayRenderState,
 } from './multiwayRenderTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+
+const MULTIWAY_PASSES = MULTIWAY_MARKS.map(m => m.pass)
+const RIBBON_KEY = sharedBackendKey('ribbons:0')
+const GLYPH_KEY = sharedBackendKey('glyphs:1')
 
 const WIDTH = 800
 const HEIGHT = 240
@@ -65,23 +77,52 @@ const glyphs: LaneGlyphData = {
   hits: [],
 }
 
-const cells = new Map<string, MultiWayCell>([
-  ['ribbons:0', { kind: 'ribbons', data: ribbon }],
-  ['glyphs:1', { kind: 'glyphs', data: glyphs }],
+const cells = new Map<number, MultiWayCell>([
+  [RIBBON_KEY, { kind: 'ribbons', data: ribbon }],
+  [GLYPH_KEY, { kind: 'glyphs', data: glyphs }],
 ])
 
+const ribbonLayer: MultiWayLayer = {
+  kind: 'ribbons',
+  key: 'ribbons:0',
+  yTop: 30,
+  height: 80,
+  curves: false,
+}
+
 const state: MultiWayRenderState = {
-  width: WIDTH,
-  height: HEIGHT,
+  canvasWidth: WIDTH,
+  canvasHeight: HEIGHT,
   dragOffsetPx: DRAG,
   scrollTopPx: 0,
   hoveredFeatureId: 0,
   clickedFeatureId: 0,
   groundColor: '#fff',
-  layers: [
-    { kind: 'ribbons', key: 'ribbons:0', yTop: 30, height: 80, curves: false },
-    { kind: 'glyphs', key: 'glyphs:1', scrolled: true },
-  ],
+  layers: new Map<number, MultiWayLayer>([
+    [RIBBON_KEY, ribbonLayer],
+    [GLYPH_KEY, { kind: 'glyphs', key: 'glyphs:1', scrolled: true }],
+  ]),
+}
+
+// the stack as the pick engine reads it — the model's `ribbonPickState`
+function pickState(s: MultiWayRenderState): SyntenyRenderState {
+  const perTrack = new Map<number, SyntenyTrackRenderParams>()
+  for (const [key, layer] of s.layers) {
+    if (layer.kind === 'ribbons') {
+      perTrack.set(key, ribbonParams(layer, s))
+    }
+  }
+  return {
+    canvasWidth: s.canvasWidth,
+    canvasHeight: s.canvasHeight,
+    overdrawPx: 0,
+    groundColor: s.groundColor,
+    perTrack,
+  }
+}
+
+function drawMultiWay(ctx: Ctx2D, s: MultiWayRenderState) {
+  paintMarkBlocks(ctx, MULTIWAY_MARKS, cells, multiwayBlocks(s), s)
 }
 
 interface Call {
@@ -109,18 +150,19 @@ function recordingCtx() {
 
 function gpuFrame(renderState = state) {
   const hal = new MockHal(MULTIWAY_PASSES)
-  const canvas = document.createElement('canvas')
-  const renderer = new GpuMultiWayRenderer(hal, canvas)
+  const backend = new GpuMarkBackend(hal, MULTIWAY_MARKS)
   for (const [key, cell] of cells) {
-    renderer.upload(key, cell)
+    backend.upload(key, cell)
   }
-  renderer.render(renderState)
-  return { hal, renderer }
+  const render = (s: MultiWayRenderState) =>
+    backend.renderBlocks(multiwayBlocks(s), cells, s)
+  render(renderState)
+  return { hal, render }
 }
 
 test('a glyph lands at the same px on both backends: the drag rides the layer transform alone', () => {
   const ctx = recordingCtx()
-  drawMultiWay(ctx, cells, state)
+  drawMultiWay(ctx, state)
   const fill = ctx.calls.find(c => c.method === 'fillRect')!
   expect(fill.args[0]).toBe(500 + DRAG)
   expect(fill.args[1]).toBe(120)
@@ -152,7 +194,7 @@ test('a glyph lands at the same px on both backends: the drag rides the layer tr
 
 test('a ribbon projects through the same pan on both backends', () => {
   const ctx = recordingCtx()
-  drawMultiWay(ctx, cells, state)
+  drawMultiWay(ctx, state)
   const move = ctx.calls.find(c => c.method === 'moveTo')!
   expect(move.args[0]).toBe(100 + DRAG)
   expect(move.args[1]).toBe(30)
@@ -180,17 +222,23 @@ test('the GPU frame draws the layers in the order the state lists them, ribbons 
   )
 })
 
-test('a drawCurves toggle re-uploads the ribbon cell to the other fill pass', () => {
-  const { hal, renderer } = gpuFrame()
-  renderer.render({
+test('a drawCurves toggle draws the other fill pass off the same buffer', () => {
+  const { hal, render } = gpuFrame()
+  hal.calls = []
+  render({
     ...state,
-    layers: [{ ...state.layers[0]!, curves: true } as never, state.layers[1]!],
+    layers: new Map(state.layers).set(RIBBON_KEY, {
+      ...ribbonLayer,
+      curves: true,
+    }),
   })
-  const uploads = hal
-    .callsOf('uploadBuffer')
-    .map(c => c.args[1])
-    .filter(p => p === 'fillStraight' || p === 'fillCurve')
-  expect(uploads).toEqual(['fillStraight', 'fillCurve'])
+  expect(hal.callsOf('uploadBuffer')).toEqual([])
+  expect(
+    hal
+      .callsOf('drawPass')
+      .map(c => c.args)
+      .find(a => a[0] === 'fillCurve'),
+  ).toEqual(['fillCurve', RIBBON_KEY, 'fillStraight'])
 })
 
 function polygonPickCtx(): PickCanvasLike {
@@ -246,7 +294,7 @@ describe('a scrolled stack shifts every layer by the same offset', () => {
 
   test('on Canvas2D', () => {
     const ctx = recordingCtx()
-    drawMultiWay(ctx, cells, scrolled)
+    drawMultiWay(ctx, scrolled)
     const fill = ctx.calls.find(c => c.method === 'fillRect')!
     expect(fill.args[0]).toBe(500 + DRAG)
     expect(fill.args[1]).toBe(GLYPH_TOP - SCROLL)
@@ -265,27 +313,29 @@ describe('a scrolled stack shifts every layer by the same offset', () => {
   })
 
   test('and the pick answers at the shifted y', () => {
-    const cells = new RibbonPickCells(polygonPickCtx)
-    cells.set('ribbons:0', ribbon)
-    expect(cells.pick(250 + DRAG, 70 - SCROLL, scrolled, WIDTH)).toEqual({
-      key: 'ribbons:0',
-      instanceIndex: 0,
-      targetIdx: 7,
-    })
-    expect(cells.pick(250 + DRAG, 70, scrolled, WIDTH)).toBeUndefined()
+    const pick = createSyntenyPicker(polygonPickCtx)
+    const regions = new Map([[RIBBON_KEY, ribbon]])
+    expect(
+      pick(regions, pickState(scrolled), WIDTH, 250 + DRAG, 70 - SCROLL),
+    ).toEqual({ key: RIBBON_KEY, instanceIndex: 0 })
+    expect(
+      pick(regions, pickState(scrolled), WIDTH, 250 + DRAG, 70),
+    ).toBeUndefined()
   })
 })
 
-test('a pick over the drawn ribbon answers its target through the same transform', () => {
-  const cells = new RibbonPickCells(polygonPickCtx)
-  cells.set('ribbons:0', ribbon)
-  const pick = (x: number, y: number) => cells.pick(x, y, state, WIDTH)
+test('a pick over the drawn ribbon answers its instance through the same transform', () => {
+  const picker = createSyntenyPicker(polygonPickCtx)
+  const regions = new Map([[RIBBON_KEY, ribbon]])
+  const pick = (x: number, y: number) =>
+    picker(regions, pickState(state), WIDTH, x, y)
   // at mid-height the ribbon spans 200..300 before the drag carries it right
   expect(pick(250 + DRAG, 70)).toEqual({
-    key: 'ribbons:0',
+    key: RIBBON_KEY,
     instanceIndex: 0,
-    targetIdx: 7,
   })
+  // and the model reads the target off the instance the hit names
+  expect(ribbon.instanceFeatureIdx[0]).toBe(7)
   expect(pick(150, 70)).toBeUndefined()
   expect(pick(250 + DRAG, 20)).toBeUndefined()
 })

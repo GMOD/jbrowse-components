@@ -47,6 +47,10 @@ export function boxesKey(row: number) {
   return `boxes:${row}`
 }
 export const BANDS_KEY = 'bands'
+/** the clicked group's outline over the gutter `key` draws */
+export function outlineKey(key: string) {
+  return `${key}:outline`
+}
 
 function wideEnough(s1: Span, s2: Span) {
   return (
