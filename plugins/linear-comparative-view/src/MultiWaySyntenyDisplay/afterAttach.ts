@@ -28,6 +28,7 @@ import type { LodTier } from '@jbrowse/synteny-core'
 interface MultiWayFetchArgs {
   regions: FetchRegion[]
   lodTier: LodTier
+  haplotypes: string[] | undefined
 }
 
 const DEPENDENT_FETCH_DELAY = 500
@@ -51,7 +52,13 @@ function fetchPhases(
       const regions = mergeContiguousRegions(
         self.lgv.staticBlocks.contentBlocks,
       )
-      return regions.length ? { regions, lodTier: self.lodTier } : undefined
+      return regions.length
+        ? {
+            regions,
+            lodTier: self.lodTier,
+            haplotypes: self.fetchLaneSelection,
+          }
+        : undefined
     },
     // no targetAssemblyName: a multi-genome adapter queried with no target
     // answers with every pair anchored on the queried assembly, which is
@@ -62,8 +69,14 @@ function fetchPhases(
     // PIF at a whole-chromosome window serves its coarse rows. `clipToRegion`
     // cuts each alignment record to the window on both axes before it crosses
     // the RPC: a lane fitted to whole liftOver chains sat at 80x the window.
-    // `splitAtGapBp` cuts it again at every large indel, one placement per run
-    run: async ({ regions, lodTier }, ctx) =>
+    // `splitAtGapBp` cuts it again at every large indel, one placement per run.
+    // `haplotypes` is the lane selection where the source can cut on it, and it
+    // narrows what is FETCHED rather than what is drawn: a pangenome graph
+    // holds hundreds of haplotypes and the display usually shows eight, and
+    // without this the window comes back whole and the stack throws away the
+    // rest. Captured in `prepare` with the tier, so a landing is labelled with
+    // the selection it was asked for and not a live re-read at commit
+    run: async ({ regions, lodTier, haplotypes }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
@@ -73,6 +86,7 @@ function fetchPhases(
             lodMode: lodTier,
             clipToRegion: true,
             splitAtGapBp: SPLIT_AT_GAP_BP,
+            ...(haplotypes === undefined ? {} : { haplotypes }),
           },
         }),
         r => r.id(),

@@ -379,10 +379,16 @@ the lanes are the graph's own walks.
 haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so a companion
 file beside the database names them, and carries anchors along GRCh38 and CHM13
 from which a named set of haplotypes can be walked without touching the rest,
-which is the route `--keep` and the graph cut take. A lane track does not take
-it: the window comes back whole, so the display's `lanes` chooses what is drawn
-rather than what is fetched, and the timings below are the ones that apply. What
-the file holds and how it is built is in the
+which is the route `--keep` and the graph cut take. A lane track takes it too:
+the display's `lanes`, and whatever the reader picks from **Choose lanes...**,
+reach the adapter as the set to fetch rather than only the set to draw, so a
+track opened on eight of the 464 walks those eight from the anchor before the
+window instead of naming all 464 and discarding 456 of them. The timings below
+are what the whole cohort costs, which is what a window with no selection in
+force still pays; the reader's own
+[measurements](https://github.com/GMOD/gbz-base-js/blob/main/docs/performance.md)
+have the same windows for a chosen eight beside them. What the file holds and
+how it is built is in the
 [gbz-base README](https://github.com/GMOD/gbz-base-js#readme).
 
 ### What a window costs {#gbz-window-cost}

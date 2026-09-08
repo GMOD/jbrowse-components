@@ -800,6 +800,38 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the lane selection an ADAPTER is asked to narrow its fetch to, which
+       * is not the same thing as the selection the stack draws. A source whose
+       * header declares the lane universe knows lanes as objects it can cut
+       * on, and is the only kind that can answer for a subset more cheaply
+       * than for all of them — `GbzBaseSyntenyAdapter` walks only the named
+       * haplotypes from an anchor rather than naming all 464 and discarding.
+       * For every other multiway source the term would be a refetch bought for
+       * a filter it ignores, so it is withheld and `rowAssemblies` narrows the
+       * drawing exactly as before.
+       */
+      get fetchLaneSelection(): string[] | undefined {
+        return self.adapterDeclaresLanes && self.laneSelection
+          ? [...self.laneSelection]
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * The settings axis of this display's fetch key. A lane selection the
+       * adapter acts on changes what comes back, so held data fetched under a
+       * different selection is stale and has to be refetched — and the
+       * sanctioned way to say so is a field here, which `rpcPropsCacheKey`
+       * folds into `currentFetchKey`, rather than a term hand-folded into
+       * `viewSignature`. Reads only user-controlled state (the picker's choice,
+       * else the config's `lanes`), never anything a fetch produced, which is
+       * what the loop trap forbids.
+       */
+      rpcProps() {
+        return { haplotypes: self.fetchLaneSelection }
+      },
+      /**
+       * #getter
        */
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)

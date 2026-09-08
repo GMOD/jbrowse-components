@@ -1105,6 +1105,47 @@ test('a lane selection narrows the stack, survives a refetch, and is what the co
   expect(getSnapshot(display).selectedLanes).toBeUndefined()
 })
 
+// The bug this locks down: `laneSelection` existed and narrowed the DRAWING,
+// and nothing passed it to the adapter — so a graph track showing eight lanes
+// still fetched all 464 haplotypes and threw away 456 of them. The two halves
+// are the term reaching the fetch at all, and the fetch key moving when it
+// does, since held data fetched for a different selection is stale.
+test('a lane selection reaches the fetch only where the adapter can cut on it', () => {
+  // MCScanBlocksAdapter declares no lane universe. A source that cannot answer
+  // for a subset more cheaply than for all of it must not be made to refetch
+  // for a filter it would ignore, so the selection stays a drawing concern.
+  const plain = createDisplay()
+  plain.setSelectedLanes(['sample#1#a'])
+  expect(plain.laneSelection).toEqual(['sample#1#a'])
+  expect(plain.fetchLaneSelection).toBeUndefined()
+  expect(plain.rpcProps()).toEqual({ haplotypes: undefined })
+
+  // the graph adapter declares its lanes in its header, which is what earns it
+  // the term: it walks the named haplotypes from an anchor instead of naming
+  // every one and discarding
+  const { display: graph } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+  })
+  const everyLane = graph.rpcPropsCacheKey
+  expect(graph.fetchLaneSelection).toBeUndefined()
+
+  graph.setSelectedLanes(['HG00097.1', 'HG00099.1'])
+  expect(graph.fetchLaneSelection).toEqual(['HG00097.1', 'HG00099.1'])
+  expect(graph.rpcProps()).toEqual({
+    haplotypes: ['HG00097.1', 'HG00099.1'],
+  })
+  const eightLanes = graph.rpcPropsCacheKey
+  expect(eightLanes).not.toBe(everyLane)
+
+  // a different set is a different fetch, and clearing it comes back to the key
+  // the unfiltered window was fetched under rather than to a third state
+  graph.setSelectedLanes(['HG00097.1'])
+  expect(graph.rpcPropsCacheKey).not.toBe(eightLanes)
+  graph.setSelectedLanes(undefined)
+  expect(graph.fetchLaneSelection).toBeUndefined()
+  expect(graph.rpcPropsCacheKey).toBe(everyLane)
+})
+
 test('the track menu offers the picker once there is a choice, and the way back out of a selection', () => {
   const display = createDisplay()
   const labels = () =>
