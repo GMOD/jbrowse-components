@@ -137,3 +137,28 @@ test('a leader with nothing to point at is a reported miss', () => {
   expect(unresolved).toHaveLength(1)
   expect(unresolved[0]).toMatch(/needs an anchor/)
 })
+
+// A pill's fill and label color are locked to white-on-black unless a figure
+// asks otherwise. It asks when the SAME fact is called out in two figures and
+// the shared color is what says they are the same fact — the chr3/chr13
+// breakends of sv_cgiab/translocation_breakpoint_split and
+// sv_cgiab/synteny_view. Defaults are pinned alongside, because every other
+// callout in the corpus depends on them.
+test('a pill takes background and textColor, defaulting to white on black', () => {
+  document.body.replaceChildren()
+  drawAnnotationOverlay(
+    [
+      callout('plain', -40),
+      {
+        ...callout('paired', -40),
+        background: '#dceaf6',
+        textColor: '#10344f',
+      },
+    ],
+    ANNOTATION_OVERLAY_ID,
+  )
+  const rects = [...document.querySelectorAll('rect')]
+  const texts = [...document.querySelectorAll('text')]
+  expect(rects.map(r => r.getAttribute('fill'))).toEqual(['#fff', '#dceaf6'])
+  expect(texts.map(t => t.getAttribute('fill'))).toEqual(['#000', '#10344f'])
+})

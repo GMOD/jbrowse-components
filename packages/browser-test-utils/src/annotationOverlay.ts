@@ -153,10 +153,15 @@ export interface Annotation {
   pad?: number
   text?: string
   color?: string // default red (#e3242b); also the 'text' pill border color
-  textColor?: string // circle badge label color (circle default white)
-  // for 'text': a white rounded pill with a red border and black text is always
-  // drawn behind the label so callouts read consistently over busy page content.
-  // (background/textColor are ignored for 'text' to keep every callout uniform.)
+  textColor?: string // circle badge label color (circle default white); for
+  // 'text', the label color (default black)
+  // for 'text': a rounded pill is always drawn behind the label so callouts read
+  // over busy page content. It defaults to white with a red border and black
+  // text, and every callout should keep that unless a figure has a reason to
+  // depart from it — one worth having is PAIRING, where the same fact is called
+  // out in two figures and a shared pill color is what says they are the same
+  // fact. Tint the fill lightly: the label is black by default and the leader
+  // takes `color`, so a saturated fill costs the contrast both rely on.
   background?: string
   // for 'text': wrap the label onto multiple lines once it exceeds this width in
   // CSS px (default 420). A newline in `text` is a hard break — so a callout can
@@ -892,8 +897,10 @@ export function drawAnnotationOverlay(
       // in isolation; move them back on top so nothing overlaps a swatch
       group.append(labels)
     } else if (a.type === 'text' && a.text) {
-      // Uniform callout style: white pill, red border, black text, larger
-      // default font, with word-wrapping once a line exceeds maxWidth.
+      // Callout style: white pill, red border, black text, larger default
+      // font, with word-wrapping once a line exceeds maxWidth. `background`
+      // and `textColor` override the first and third; see their doc comments
+      // for when that is worth doing.
       const fontFamily = 'system-ui, sans-serif'
       const fontWeight = '600'
       const fontSize = Math.max(a.fontSize ?? 22, 13)
@@ -938,7 +945,7 @@ export function drawAnnotationOverlay(
       const text = document.createElementNS(NS, 'text')
       text.setAttribute('x', String(cx))
       text.setAttribute('y', String(cy))
-      text.setAttribute('fill', '#000')
+      text.setAttribute('fill', a.textColor ?? '#000')
       text.setAttribute('font-family', fontFamily)
       text.setAttribute('font-size', String(fontSize))
       text.setAttribute('font-weight', fontWeight)
@@ -993,7 +1000,7 @@ export function drawAnnotationOverlay(
       rect.setAttribute('width', String(width))
       rect.setAttribute('height', String(height))
       rect.setAttribute('rx', '6')
-      rect.setAttribute('fill', '#fff')
+      rect.setAttribute('fill', a.background ?? '#fff')
       rect.setAttribute('stroke', a.color ?? '#e3242b')
       rect.setAttribute('stroke-width', '3')
       text.before(rect)
