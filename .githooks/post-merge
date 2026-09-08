@@ -136,7 +136,12 @@ mkdir "$lock" 2>/dev/null || exit 0
     flags=--skip-figure-dependent
   fi
 
-  out=$(pnpm autogen --check $flags 2>&1) && agen=0 || agen=$?
+  # Split, because autogen's stderr IS its failure summary and nothing else:
+  # every generator's own output is captured and echoed to stdout, and the
+  # summary names each failed generator with the tail of its diagnostic. That
+  # is what the marker quotes, so it needs no filter over the run's whole log.
+  agen_err=$lock/autogen.err
+  out=$(pnpm autogen --check $flags 2>"$agen_err") && agen=0 || agen=$?
   # 2s warm, and the only gate here that sees a type error in `products/`.
   tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
   # No --fix, unlike pre-push's copy: that one runs on your own push, this one
@@ -206,33 +211,18 @@ mkdir "$lock" 2>/dev/null || exit 0
       fi
       echo
       if [ "$agen" != 0 ]; then
-        echo "Fix the artifact: pnpm autogen, then commit what it writes."
-        echo
-        # A crashed generator's diagnostic is inline, above the summary that
-        # names it -- so that case takes a window, and only the stale case takes
-        # the filter below, which would drop exactly that diagnostic.
-        #
-        # The filter is anchored on the summary block rather than written as "not
-        # the passing lines": every generator words its own success differently
-        # ("up to date", "match their source", ": up to date"), so excluding them
-        # is a list that grows quietly, while the summary is one line the runner
-        # itself writes and already names every stale artifact. Anything earlier
-        # saying "out of date" comes along, since that is where the path and the
-        # per-checker fix live. This used to be `grep -A20`, which pulled in
-        # twenty lines of other checkers reporting success.
-        if printf '%s\n' "$out" | grep -q 'did not run to completion'; then
-          printf '%s\n' "$out" | tail -40
+        # Quoted whole, not grepped. This used to pull the summary out of the
+        # combined log by matching two phrases the runner printed -- "generated
+        # artifact(s) out of date" and "did not run to completion" -- and
+        # 315fe92ba3 stopped printing both on 2026-09-01. Nothing said so: the
+        # fallback tail still produced a plausible-looking marker, so the fence
+        # ratchet failed on main for 61 commits while this reported "doc
+        # snippets (exited 1)" and no reason at all. A phrase this file does not
+        # own is not something to match on.
+        if [ -s "$agen_err" ]; then
+          cat "$agen_err"
         else
-          summary=$(printf '%s\n' "$out" | awk '
-            /generated artifact\(s\) out of date/ { tail = 1 }
-            tail { print; next }
-            /out of date/ { print }')
-          # An output shape neither branch recognizes is still worth showing.
-          if [ -n "$summary" ]; then
-            printf '%s\n' "$summary"
-          else
-            printf '%s\n' "$out" | tail -20
-          fi
+          printf '%s\n' "$out" | tail -20
         fi
         echo
         echo "To find what staled one: git log -1 -- <its path> is the last"

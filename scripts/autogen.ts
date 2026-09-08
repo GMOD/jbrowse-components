@@ -281,7 +281,7 @@ function run(argv: string[], stream: boolean) {
   })
 }
 
-const failed: { name: string; status: number | null }[] = []
+const failed: { name: string; status: number | null; output: string }[] = []
 const skipped: string[] = []
 const timings: { name: string; ms: number }[] = []
 const startedAt = performance.now()
@@ -367,7 +367,7 @@ async function runGenerator(generator: Generator, stream: boolean) {
       stream,
     )
     if (status !== 0) {
-      failed.push({ name, status })
+      failed.push({ name, status, output })
     }
     if (!stream) {
       console.log(`\n=== ${name}\n${output}`.trimEnd())
@@ -482,14 +482,30 @@ for (const t of [...timings].sort((a, b) => b.ms - a.ms)) {
 }
 console.log(`  ${ms(performance.now() - startedAt)}  wall clock`)
 
+// The tail of a failed generator's own output, repeated under its name. This
+// summary is the only part of a run some readers ever see -- the post-merge
+// marker keeps stderr and drops the per-generator blocks above -- and a name
+// plus an exit code does not say what to fix.
+const REASON_LINES = 20
+
 if (failed.length > 0) {
   const named = failed
-    .map(f => `  - ${f.name} (exited ${f.status ?? 'on a signal'})`)
+    .map(({ name, status, output }) => {
+      const reason = output
+        .split('\n')
+        .filter(line => line.trim() !== '')
+        .slice(-REASON_LINES)
+        .map(line => `      ${line}`)
+        .join('\n')
+      return `  - ${name} (exited ${status ?? 'on a signal'})${
+        reason === '' ? '' : `\n${reason}`
+      }`
+    })
     .join('\n')
   console.error(
     checking
       ? `\n${failed.length} generator(s) reported a stale artifact or failed:\n${named}\n\n` +
-          `Run 'pnpm autogen' and commit the result. A generator whose output ` +
+          `Run 'pnpm autogen' and commit the result. A generator whose reason ` +
           `above is a crash rather than a stale-artifact report needs its cause ` +
           `fixed first: several compile and execute the live source tree, so a ` +
           `half-finished edit or a stale install fails them.`
