@@ -155,7 +155,13 @@ const stale: string[] = []
 // the shape a plugin author writes, not a region we ship. A migration guide's
 // pair is the case this baseline's own instruction calls "genuinely can't be" —
 // but it is still debt, and it is the only kind that should raise this number.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '40')
+//
+// 40 -> 41 on 2026-09-07: `agents_recipes.md` gained the exportSvg recipe
+// (e3511754c2). It is a `run_javascript` body like the other sixteen on that
+// page — the thing a reader pastes into MCP, not code we ship — so there is no
+// source to point an include at. Lower this the moment a tested `jb` example
+// fixture exists, which would buy back the whole page at once.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '41')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
