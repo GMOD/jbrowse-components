@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Arg",
-      "umdUrl": "https://jbrowse.org/demos/arg/621c82e9916b/jbrowse-plugin-arg.umd.js"
+      "umdUrl": "https://jbrowse.org/demos/arg/f13a2e6f356f/jbrowse-plugin-arg.umd.js"
     }
   ],
   "assemblies": [
@@ -59,17 +59,57 @@
           "height": 420
         }
       ]
+    },
+    {
+      "type": "ArgTrack",
+      "trackId": "prnp_arg",
+      "name": "Inferred ARG at PRNP (Wohns et al. 2022, 50 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "ArgAdapter",
+        "treesLocation": {
+          "uri": "https://jbrowse.org/demos/arg/prnp_real.trees",
+          "locationType": "UriLocation"
+        },
+        "refName": "chr20"
+      },
+      "displays": [
+        {
+          "type": "LinearArgDisplay",
+          "displayId": "prnp_arg-LinearArgDisplay",
+          "height": 330
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "prnp_variants",
+      "name": "1000 Genomes genotypes (the same 23 individuals)",
+      "assemblyNames": ["hg38"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/arg/prnp_variants.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "prnp_variants-matrix",
+          "height": 200
+        }
+      ]
     }
   ],
   "defaultSession": {
-    "name": "ARG demo",
+    "name": "ARG at PRNP",
     "views": [
       {
         "id": "arg_lgv",
         "type": "LinearGenomeView",
         "assembly": "hg38",
-        "loc": "chr20:1,900,000..1,920,000",
-        "tracks": ["genes", "chr20_arg"]
+        "loc": "chr20:4,689,000..4,693,000",
+        "tracks": ["genes", "prnp_arg", "prnp_variants"]
       }
     ]
   }
