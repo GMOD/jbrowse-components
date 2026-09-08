@@ -13,6 +13,7 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import AssemblyInfoPanel from './AssemblyInfoPanel.tsx'
+import DescriptionPanel from './DescriptionPanel.tsx'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
@@ -88,6 +89,10 @@ const AboutDialogContents = observer(function AboutDialogContents({
           <Attributes attributes={shown.metadata} hideUris={hideUris} />
         </BaseCard>
       ) : null}
+      {/* a track hub's own prose page for this track, which is the half of a
+          hub track nothing in the app surfaced — the metadata card shows its
+          URL and stops there */}
+      <DescriptionPanel config={config} session={session} />
       {/* the assembly a reference sequence track belongs to. That track's own
           config is three slots of adapter, and the interesting half of what a
           user opens it for — the aliases, the cytobands, the assembly's own
