@@ -73,4 +73,13 @@ describe('readDocSection', () => {
     const long = `${doc}${'x'.repeat(30_000)}\n`
     expect(readDocSection(long, 'all')).toEqual({ text: long })
   })
+
+  // The live-model guide is the contract every agent is told to read first, so
+  // it is served whole at any length; a bare read of a long topic that is NOT
+  // exempt still answers with its headings.
+  it('serves a whole topic whole, however long', () => {
+    const long = `${doc}${'x'.repeat(30_000)}\n`
+    expect(readDocSection(long, '', { whole: true })).toEqual({ text: long })
+    expect(readDocSection(long, '').text).toContain('Sections (pass one as')
+  })
 })

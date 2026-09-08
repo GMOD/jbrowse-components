@@ -12,6 +12,7 @@ import {
   createJbApi,
   safeJson,
   sessionOf,
+  undeliveredNotifications,
   waitReady,
 } from './jbApi.ts'
 
@@ -176,6 +177,114 @@ describe('waitReady', () => {
     )
   })
 
+  // A settle is a CONSUMER of the session's toasts, so the MCP envelope's
+  // promise that "every result carries notifications" only holds if whatever
+  // the code's own waitReady took is handed back. Without the sink,
+  // `await jb.waitReady(...); return 'ok'` dropped them.
+  it("hands a settle's notifications to the sink that asked for them", async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const consumed: { level: string; message: string }[] = []
+    const noisy = {
+      views: [],
+      snackbarMessages: [{ message: 'track x failed', level: 'error' }],
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi(
+      { rootModel: { session: noisy } } as unknown as PluginManager,
+      {
+        onNotifications: messages => {
+          consumed.push(...messages)
+        },
+      },
+    )
+    await jb.waitReady(5000)
+    expect(consumed).toEqual([{ level: 'error', message: 'track x failed' }])
+    // and the toast is spent either way, so nothing double-reports it
+    expect(undeliveredNotifications(noisy)).toEqual([])
+  })
+
+  // renderError is its own volatile and outranks every other phase term, so a
+  // display whose renderer threw reported `phase: 'renderError'` and nothing
+  // to act on, while the guide promises the phase AND the reason.
+  it('names the reason a display failed to render', () => {
+    const failed = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          ownViews: [],
+          ownTracks: [
+            {
+              type: 'FeatureTrack',
+              configuration: { trackId: 'genes' },
+              activeDisplay: {
+                type: 'LinearBasicDisplay',
+                displayPhase: 'renderError',
+                renderError: new Error('no WebGL2 context'),
+              },
+            },
+          ],
+        },
+      ],
+      snackbarMessages: [],
+      assemblyNames: ['volvox'],
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi({
+      rootModel: { session: failed },
+    } as unknown as PluginManager)
+    expect(jb.sessionSummary().views[0]).toMatchObject({
+      tracks: [
+        {
+          trackId: 'genes',
+          phase: 'renderError',
+          renderError: 'Error: no WebGL2 context',
+        },
+      ],
+    })
+  })
+
+  // A drawer widget takes a column off every view and a modal covers the app,
+  // so both make a screenshot look right and be wrong — the same class as
+  // `offscreen`, and previously reported nowhere: every filmed take told the
+  // agent to close the track selector in its system prompt instead.
+  it('names the drawer and any modal over the views', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const covered = {
+      views: [],
+      snackbarMessages: [],
+      assemblyNames: ['volvox'],
+      drawerVisible: true,
+      drawerWidth: 384,
+      visibleWidget: { type: 'HierarchicalTrackSelectorWidget' },
+      DialogComponent: () => null,
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi({
+      rootModel: { session: covered },
+    } as unknown as PluginManager)
+    expect(jb.sessionSummary()).toMatchObject({
+      drawer: { widget: 'HierarchicalTrackSelectorWidget', width: 384 },
+      dialog: {},
+    })
+    // and the settle says so too, since that is the report read before a
+    // screenshot
+    expect(await jb.waitReady(5000)).toMatchObject({
+      drawer: { width: 384 },
+    })
+  })
+
+  it('says nothing about chrome that is not up', () => {
+    const plain = {
+      views: [],
+      snackbarMessages: [],
+      assemblyNames: ['volvox'],
+      drawerVisible: false,
+    } as unknown as AbstractSessionModel
+    const summary = createJbApi({
+      rootModel: { session: plain },
+    } as unknown as PluginManager).sessionSummary()
+    expect(summary).not.toHaveProperty('drawer')
+    expect(summary).not.toHaveProperty('dialog')
+  })
+
   it('delivers each toast once, with its level, and never a stale one twice', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     const toasts = [{ message: 'track x failed', level: 'error' }]
@@ -284,7 +393,9 @@ describe('addTrack in a browser', () => {
       assemblyNames: ['volvox'],
       ownViews: [],
       ownTracks: [],
-      showTrack: (trackId: string) => {
+      // launchTrack, not showTrack: the display state model is lazy in every
+      // plugin, and showTrack answers before its chunk lands
+      launchTrack: async (trackId: string) => {
         shown.push(trackId)
       },
     }
@@ -367,7 +478,7 @@ describe('a name that several views could answer', () => {
       /No track with trackId "missing"/,
     )
     expect(() => jb.trackModel('variants')).toThrow(
-      /"variants" is not shown in any open view — view.showTrack\("variants"\)/,
+      /"variants" is not shown in any open view — await view.launchTrack\("variants"\)/,
     )
     expect(() => jb.trackModel('variants', 'v1')).toThrow(
       /not shown in view v1/,

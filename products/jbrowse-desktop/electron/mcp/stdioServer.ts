@@ -30,6 +30,24 @@ export interface BridgeToolResult {
   image?: { data: string; mimeType: string }
 }
 
+/**
+ * Why the app could not be reached, told apart by which failure it was.
+ *
+ * These need different remedies and used to share one message: a file that is
+ * not there means nothing has served this socket, while a file that refuses a
+ * connection means something DID — a JBrowse Desktop that has since exited, or
+ * one too old to serve the bridge at all. 4.3.0 has no `--mcp` handling, so
+ * pointing a client at it launches the GUI and serves nothing; the app is then
+ * on screen, in front of the user, while the only advice on offer was to launch
+ * it.
+ */
+export function unreachableMessage(socketPath: string, e: Error) {
+  const refused = (e as NodeJS.ErrnoException).code === 'ECONNREFUSED'
+  return refused
+    ? `A JBrowse Desktop was serving ${socketPath} and is not answering now (${e.message}). Either it has quit — relaunch it — or the one running is older than 5.0.0, which serves no MCP bridge: check Help, "Connect an AI agent...", which only exists in a build that does.`
+    : `Could not reach JBrowse Desktop at ${socketPath} (${e.message}). Launch the JBrowse Desktop app, then try again.`
+}
+
 function connectBridge(socketPath: string) {
   let socket: net.Socket | undefined
   let connecting: Promise<net.Socket> | undefined
@@ -79,11 +97,7 @@ function connectBridge(socketPath: string) {
         if (socket === s) {
           failAll(e)
         } else {
-          reject(
-            new Error(
-              `Could not reach JBrowse Desktop at ${socketPath} (${e.message}). Launch the JBrowse Desktop app, then try again.`,
-            ),
-          )
+          reject(new Error(unreachableMessage(socketPath, e)))
         }
       })
       s.on('close', () => {

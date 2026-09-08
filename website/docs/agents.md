@@ -33,6 +33,12 @@ in advance.
 
 ## Claude Desktop or Claude Code, with JBrowse Desktop
 
+The MCP server ships in **JBrowse Desktop 5.0.0 and later**. On an earlier build
+the `--mcp` argument below is unhandled, so the client launches the app's window
+and waits forever on a server that never speaks — the app is on screen and the
+agent cannot reach it. **Help → Connect an AI agent...** exists only in a build
+that serves the bridge, which is the quickest way to tell.
+
 1. Install JBrowse Desktop, launch it, and leave it running.
 2. Point the client at the app binary with `--mcp`. Claude Desktop, under
    Settings, Developer, Edit Config:

@@ -12,7 +12,11 @@ import path from 'node:path'
 import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
 
-import { runMcpStdioServer, versionSkewNote } from './stdioServer.ts'
+import {
+  runMcpStdioServer,
+  unreachableMessage,
+  versionSkewNote,
+} from './stdioServer.ts'
 
 interface JsonRpcResponse {
   id: number
@@ -385,3 +389,29 @@ function startFakeBridgeAsync(
     })
   })
 }
+
+// The two ways the app is unreachable want different remedies, and they used to
+// share one message: a user with JBrowse Desktop open in front of them, on a
+// build that serves no bridge, was told to launch it.
+describe('unreachableMessage', () => {
+  const socketPath = '/tmp/jbrowse-desktop-mcp-someone/mcp.sock'
+
+  it('says to launch the app when nothing has served the socket', () => {
+    const missing = Object.assign(new Error('connect ENOENT'), {
+      code: 'ENOENT',
+    })
+    expect(unreachableMessage(socketPath, missing)).toMatch(
+      /Launch the JBrowse Desktop app/,
+    )
+  })
+
+  it('names the two live causes when the socket refuses', () => {
+    const refused = Object.assign(new Error('connect ECONNREFUSED'), {
+      code: 'ECONNREFUSED',
+    })
+    const message = unreachableMessage(socketPath, refused)
+    expect(message).toMatch(/has quit/)
+    expect(message).toMatch(/older than 5\.0\.0/)
+    expect(message).not.toMatch(/Launch the JBrowse Desktop app, then try/)
+  })
+})

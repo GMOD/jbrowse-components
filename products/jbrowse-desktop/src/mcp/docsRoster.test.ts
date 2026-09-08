@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { createJbApi } from '@jbrowse/app-core'
 
-import { TOC_ABOVE_CHARS } from '../../electron/mcp/docLimits.ts'
+import { WHOLE_TOPICS } from '../../electron/mcp/docLimits.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   MCP_TOOLS,
@@ -31,6 +31,16 @@ const copies = {
   ),
   recipes: fs.readFileSync(
     path.join(mcpDir, '../../../../website/docs/agents_recipes.md'),
+    'utf8',
+  ),
+  // served as `docs topic:"hosted-data"` and named in the instructions, so a
+  // renamed helper leaves it pointing at nothing exactly like the rest
+  hostedData: fs.readFileSync(
+    path.join(mcpDir, '../../../../website/docs/agents_hosted_data.md'),
+    'utf8',
+  ),
+  overview: fs.readFileSync(
+    path.join(mcpDir, '../../../../website/docs/agents.md'),
     'utf8',
   ),
   skill: fs.readFileSync(
@@ -107,19 +117,55 @@ it('every copy stating the timeout default states the real one', () => {
 })
 
 // The guide is the one topic whose point is being read whole — it is what
-// "read docs topic live-model FIRST" asks for. Past TOC_ABOVE_CHARS the docs
-// tool serves a table of contents instead, silently, and the agent gets
-// headings where it expected the contract. The guide sits close enough to that
-// line that one added paragraph crosses it, so the answer is to trim the guide
-// or put the new material in agents_recipes.md — not to raise the cap.
-it('the guide still fits in one read', () => {
-  expect({
-    chars: copies.guide.length,
-    under: copies.guide.length < TOC_ABOVE_CHARS,
-  }).toEqual({ chars: copies.guide.length, under: true })
+// "read docs topic live-model FIRST" asks for, and past the size cap the docs
+// tool would answer that with a table of contents, silently. It is exempt by
+// name rather than by staying under a length, because it spent months 43
+// characters from the line: every paragraph added to the contract had to be
+// paid for by deleting one, and the check said so only after the edit.
+it('the guide is served whole rather than as a table of contents', () => {
+  expect([...WHOLE_TOPICS]).toContain('live-model')
 })
 
 it('the guide awaits the adapter helper, which is async', () => {
   expect(copies.guide).toMatch(/await jb\.getFeatureAdapterOrThrow\(/)
   expect(copies.guide).not.toMatch(/[^t] jb\.getFeatureAdapterOrThrow\(\{/)
+})
+
+// The one member whose options list has drifted twice, in the same direction
+// both times: the guide gains an option and the two copies an agent reads
+// FIRST do not. `viewId` missing from jb.help is the load-bearing case, since
+// that string is the whole contract for a browser agent with no docs tool.
+//
+// agent-docs/ideas/one-generated-description-of-the-jb-surface.md parks
+// generating all three from one source and names "a signature drifts a second
+// time" as its trigger; this is the cheaper half of that, over the one
+// signature that actually drifts.
+describe('getFeatures names the same options everywhere', () => {
+  function optionsIn(text: string) {
+    const object = /jb\.getFeatures\(\{([^}]*)\}/.exec(text)
+    return new Set(
+      (object?.[1] ?? '')
+        .split(',')
+        .map(part => part.trim().replaceAll(/[?`]/g, ''))
+        .filter(Boolean),
+    )
+  }
+  const expected = optionsIn(copies.guide)
+
+  it('the guide names every option the implementation takes', () => {
+    expect([...expected].sort()).toEqual([
+      'assembly',
+      'byteLimit',
+      'loc',
+      'regions',
+      'trackId',
+      'viewId',
+    ])
+  })
+
+  for (const copy of ['help', 'toolDescriptions'] as const) {
+    it(copy, () => {
+      expect([...optionsIn(copies[copy])].sort()).toEqual([...expected].sort())
+    })
+  }
 })

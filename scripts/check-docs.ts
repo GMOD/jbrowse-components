@@ -104,6 +104,14 @@ const VALIDATORS: Validator[] = [
     argv: web('check-doc-removed-symbols.ts'),
   },
   {
+    // The agent-facing pages are the ones an agent is TOLD to read before its
+    // first call, and a stale display type in them does not throw: showTrack
+    // does not validate a requested type, so the wrong display renders under a
+    // successful result and the recipe conformance suite sees nothing.
+    name: 'agent docs name types this build registers',
+    argv: web('check-agent-doc-types.ts'),
+  },
+  {
     name: 'every doc reachable from the sidebar',
     argv: web('check-sidebar.ts'),
   },

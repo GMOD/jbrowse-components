@@ -176,7 +176,17 @@ async function evaluate(
   }
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
   const timeoutMs = clampTimeout(args.timeoutMs)
-  const jb = createJbApi(pluginManager)
+  // A toast is delivered once, by identity, and a settle is what consumes it —
+  // so `await jb.waitReady(...)` inside the code took the notifications this
+  // envelope promises to carry, and returning anything but the settle dropped
+  // them. Collected here and merged below, so it does not matter which of the
+  // two read them first.
+  const consumed: { level: string; message: string }[] = []
+  const jb = createJbApi(pluginManager, {
+    onNotifications: messages => {
+      consumed.push(...messages)
+    },
+  })
   const fn = compileCode(code)
   const logs: string[] = []
   // aborted when timeoutMs expires: the deadline otherwise only stops the
@@ -204,7 +214,10 @@ async function evaluate(
   }
   // read after the code ran: loadSessionSpec inside it replaces the session
   const liveSession = sessionOf(pluginManager)
-  const notifications = liveSession ? undeliveredNotifications(liveSession) : []
+  const notifications = [
+    ...consumed,
+    ...(liveSession ? undeliveredNotifications(liveSession) : []),
+  ]
   const extras = {
     ...(logs.length > 0 ? { logs } : {}),
     ...(notifications.length > 0 ? { notifications } : {}),

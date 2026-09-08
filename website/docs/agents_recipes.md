@@ -463,24 +463,39 @@ return { ...added, valuesInView: values.length }
 
 ## The same data under another display
 
-The display types a track can take are the ones registered for its track type,
-and `showTrack` picks one by name. Read arcs over an alignments track, where the
-default would be the pileup:
+`track.compatibleDisplays` is the set the containing view can draw, and
+`replaceDisplay` swaps the drawn one for another of them. Read the ids off the
+track rather than naming a type: an id the track does not carry throws, and a
+display TYPE passed to `showTrack` does not — it synthesizes a dangling id that
+resolves back to the default, so the track redraws unchanged and the call
+reports success.
 
 ```js
-const view = jb.view()
-const conf = session.getTrackById('volvox_cram')
-const displayTypes = pluginManager
-  .getDisplayElements()
-  .filter(d => d.trackType === conf.type)
-  .map(d => d.name)
-view.hideTrack('volvox_cram')
-await view.showTrack('volvox_cram', {}, { type: 'LinearReadArcsDisplay' })
-return { displayTypes, ...(await jb.waitReady(30000)) }
+const track = jb.trackModel('volvox_test_vcf')
+const ids = track.compatibleDisplays.map(d => d.displayId)
+const drawn = track.activeDisplay.configuration.displayId
+const next = ids.find(id => id !== drawn)
+track.replaceDisplay(drawn, next)
+return { ids, from: drawn, to: next, ...(await jb.waitReady(30000)) }
 ```
 
-To show both at once, add the same file a second time with `jb.addTrack` under
-another name; a trackId is shown once per view.
+Against volvox this answers with the three linear displays a `VariantTrack`
+carries — `LinearVariantDisplay`, `LinearMultiSampleVariantDisplay`,
+`LinearMultiSampleVariantMatrixDisplay`. Do not read `configuration.displays`
+for this: it also holds the `ChordVariantDisplay` a circular view would draw,
+and handing that id to a linear view's track is the one way to make
+`replaceDisplay` fail.
+
+**Read arcs, the read cloud and coverage are settings on the alignments
+display.** An alignments track has one `LinearAlignmentsDisplay`, so arcs are
+`track.applyDisplaySettings({ readConnections: 'arc' })`, and
+`jb.describeSlots(track.activeDisplay.configuration)` lists the rest. A session
+saved before v5 still loads, because `LinearPileupDisplay`,
+`LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and `LinearReadCloudDisplay`
+remain as aliases of it.
+
+To show the same data twice at once, add the file a second time with
+`jb.addTrack` under another name; a trackId is shown once per view.
 
 ## A second view without replacing the session
 

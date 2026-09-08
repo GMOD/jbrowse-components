@@ -214,6 +214,22 @@ export function createBaseTrackModel(
 
       /**
        * #getter
+       * the configured displays the CONTAINING VIEW can draw, which is the set
+       * `replaceDisplay` will accept
+       *
+       * `configuration.displays` is not that set: baseTrackConfig injects one
+       * entry per display type registered for the track TYPE, across every
+       * view type, so a VariantTrack carries a ChordVariantDisplay a linear
+       * view cannot draw. The track menu's own "Display types" submenu has
+       * always filtered them; this exposes the same list to code, because the
+       * alternative is every caller re-deriving it from the plugin manager.
+       */
+      get compatibleDisplays() {
+        return getCompatibleDisplays(self)
+      },
+
+      /**
+       * #getter
        */
       get canConfigure() {
         const session = getSession(self)
@@ -524,7 +540,7 @@ export function createBaseTrackModel(
       trackMenuItems(): MenuItem[] {
         const menuItems = self.displays.flatMap(d => d.trackMenuItems())
         const shownId = self.activeDisplay.configuration.displayId
-        const compatDisp = getCompatibleDisplays(self)
+        const compatDisp = self.compatibleDisplays
 
         return [
           ...menuItems,

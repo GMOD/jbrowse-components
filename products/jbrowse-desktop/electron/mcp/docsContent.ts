@@ -7,6 +7,7 @@ import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
+import { WHOLE_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
 import { readDocSection } from './docSections.ts'
 import typePages from './docs/typeDocs.generated.json'
@@ -69,7 +70,9 @@ export function docsToolResult(
   }
   const entry = TOPICS[topic]
   if (entry) {
-    return readDocSection(entry.text, section)
+    return readDocSection(entry.text, section, {
+      whole: WHOLE_TOPICS.has(topic),
+    })
   }
   if (topic === 'types') {
     return { text: typeIndex(typePages) }

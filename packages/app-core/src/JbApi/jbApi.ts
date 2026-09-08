@@ -80,6 +80,10 @@ interface DisplaySelf {
   regionTooLargeReason?: string
   height?: number
   error?: unknown
+  // its own volatile, and the term that outranks every other in
+  // computeDisplayPhase — so a display whose renderer threw reports
+  // phase: 'renderError' and, without this, nothing to act on
+  renderError?: unknown
 }
 
 interface TrackSelf extends IStateTreeNode {
@@ -112,6 +116,15 @@ interface ViewSelf {
     initialSnapshot?: object,
     displayInitialSnapshot?: Record<string, unknown>,
   ) => unknown
+  // the awaitable one, and the only correct choice here: showTrack returns
+  // undefined and fires launchTrack itself whenever the display's state model
+  // is not loaded yet, which for every display type in this tree is the first
+  // time one is shown
+  launchTrack?: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: Record<string, unknown>,
+  ) => Promise<unknown>
   hideTrack?: (trackId: string) => number
 }
 
@@ -153,10 +166,55 @@ function displayState(track: TrackSelf) {
         ? { reason: display.regionTooLargeReason }
         : {}),
       ...(display.error ? { error: String(display.error) } : {}),
+      ...(display.renderError
+        ? { renderError: String(display.renderError) }
+        : {}),
     }
   } catch (e) {
     return { display: display.type, error: String(e) }
   }
+}
+
+// What the session has standing over or beside the views, duck-typed like the
+// rest: these getters live on mixins this module must not import.
+interface SessionChrome {
+  drawerVisible?: boolean
+  drawerWidth?: number
+  visibleWidget?: { type?: string }
+  DialogComponent?: unknown
+}
+
+/**
+ * The drawer and any modal, for the same reason `offscreen` is reported: both
+ * are on top of the views in a screenshot that otherwise looks right.
+ *
+ * The drawer takes a column off every view rather than covering them, so a
+ * figure framed with the track selector open is narrower than the one asked
+ * for — which every filmed take worked around by telling the agent in its
+ * system prompt to close it. A modal covers the app outright.
+ */
+function sessionChrome(session: AbstractSessionModel) {
+  const s = session as unknown as SessionChrome
+  const drawer =
+    s.drawerVisible && s.visibleWidget
+      ? {
+          drawer: {
+            widget: s.visibleWidget.type,
+            ...(typeof s.drawerWidth === 'number'
+              ? { width: s.drawerWidth }
+              : {}),
+            note: 'the drawer takes this width off every view; session.hideAllWidgets() closes it',
+          },
+        }
+      : {}
+  const dialog = s.DialogComponent
+    ? {
+        dialog: {
+          note: 'a modal dialog is open over the app, so a screenshot is of the dialog',
+        },
+      }
+    : {}
+  return { ...drawer, ...dialog }
 }
 
 export function sessionOf(pluginManager: PluginManager | undefined) {
@@ -210,6 +268,7 @@ function sessionSummary(session: AbstractSessionModel) {
   return {
     name: session.name,
     assemblyNames: session.assemblyNames,
+    ...sessionChrome(session),
     views: session.views.map(v => viewSummary(v)),
   }
 }
@@ -437,6 +496,7 @@ export async function waitReady(
     ...(messages.length ? { notifications: messages } : {}),
     ...(notReady.length ? { notReady } : {}),
     ...(offscreen ? { offscreen } : {}),
+    ...(session ? sessionChrome(session) : {}),
   }
 }
 
@@ -527,7 +587,7 @@ function listTracks(
 function pickView(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
-  capability: 'navToLocString' | 'showTrack' | 'hideTrack',
+  capability: 'navToLocString' | 'showTrack' | 'launchTrack' | 'hideTrack',
   wants?: {
     assembly?: string
     trackType?: string
@@ -663,7 +723,7 @@ function shownTrackModel(
   if (!track) {
     throw new Error(
       session.getTrackById(trackId)
-        ? `"${trackId}" is not shown in ${viewId === undefined ? 'any open view' : `view ${viewId}`} — view.showTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
+        ? `"${trackId}" is not shown in ${viewId === undefined ? 'any open view' : `view ${viewId}`} — await view.launchTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
         : `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
@@ -989,17 +1049,36 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
-Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions() and jb.addTrack throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
+Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
 
 Full guide: https://jbrowse.org/jb2/docs/agents_live_model (JBrowse Desktop serves the same guide offline through its MCP docs tool — Help menu, "Connect an AI agent...").`
+
+export interface JbApiOptions {
+  /**
+   * Told about every notification a settle inside this object consumed.
+   *
+   * A toast is delivered to a caller once, by identity, so a settle is a
+   * CONSUMER: `await jb.waitReady(...)` followed by `return 'ok'` used to drop
+   * whatever fired during the call, while the MCP envelope goes on promising
+   * that every result carries the session's notifications. Desktop passes a
+   * sink and merges what it collects into the envelope; jbrowse-web passes
+   * none, because in a browser the settle result IS where an agent reads them.
+   */
+  onNotifications?: (
+    notifications: { level: string; message: string }[],
+  ) => void
+}
 
 // The helper library an agent drives the app through. Built from the plugin
 // manager alone, so one of these serves a whole app rather than one session —
 // which is what lets jbrowse-web hand the same object to every caller for the
 // life of a plugin manager.
-export function createJbApi(pluginManager: PluginManager) {
+export function createJbApi(
+  pluginManager: PluginManager,
+  options: JbApiOptions = {},
+) {
   // Resolved per call, never captured: jb.loadSessionSpec REPLACES the session,
   // and a helper bound to the old one keeps answering from a detached tree —
   // which reads as stale data rather than throwing, so the agent is told about
@@ -1013,6 +1092,20 @@ export function createJbApi(pluginManager: PluginManager) {
       )
     }
     return current
+  }
+  // Every settle an agent can reach goes through here, so a notification
+  // cannot be consumed by one of these helpers without the caller hearing
+  // about it.
+  // a declaration, not a generic arrow: `<T>(x: T) => …` in a .ts file is a
+  // JSX tag to babel, which is what jest parses these with
+  function reported<T>(settle: T) {
+    const messages = (settle as { notifications?: unknown }).notifications
+    if (Array.isArray(messages) && messages.length > 0) {
+      options.onNotifications?.(
+        messages as { level: string; message: string }[],
+      )
+    }
+    return settle
   }
   const jb = {
     help: JB_HELP,
@@ -1037,7 +1130,8 @@ export function createJbApi(pluginManager: PluginManager) {
     stopStopToken,
     // a default because an omitted number made the deadline NaN, and a view
     // that never readied then held the call open to the relay's own timeout
-    waitReady: (timeoutMs = 30_000) => waitReady(timeoutMs, live()),
+    waitReady: async (timeoutMs = 30_000) =>
+      reported(await waitReady(timeoutMs, live())),
     sessionSummary: () => sessionSummary(live()),
     inspect: (path?: string, maxInspectBytes?: number) =>
       inspectSession(live(), { path, maxBytes: maxInspectBytes }),
@@ -1047,8 +1141,8 @@ export function createJbApi(pluginManager: PluginManager) {
     trackModel: (trackId: string, viewId?: string) =>
       shownTrackModel(live(), trackId, viewId),
     visibleRegions: (viewId?: string) => visibleRegionsOf(live(), viewId),
-    loadSessionSpec: (spec: Record<string, unknown>, settleMs?: number) =>
-      loadSpec(pluginManager, { spec, settleMs }),
+    loadSessionSpec: async (spec: Record<string, unknown>, settleMs?: number) =>
+      reported(await loadSpec(pluginManager, { spec, settleMs })),
     addTrack: (opts: {
       location: string | string[]
       index?: string
@@ -1057,7 +1151,7 @@ export function createJbApi(pluginManager: PluginManager) {
       show?: boolean
       viewId?: string
       settleMs?: number
-    }) => addTrack(pluginManager, live(), opts),
+    }) => addTrack(pluginManager, live(), opts).then(reported),
     // Two of four filmed takes wrote jb.getFeatures('trackId', loc) and lost a
     // turn to "No track with trackId undefined", and a third wrote
     // jb.getFeatures('trackId', loc, { assembly }) and had the options
@@ -1177,12 +1271,16 @@ async function addTrack(
   if (args.show === false) {
     return summary
   }
-  const view = pickView(session, args, 'showTrack', {
+  const view = pickView(session, args, 'launchTrack', {
     assembly,
     trackType: conf.type,
     pluginManager,
   })
-  viewSelf(view).showTrack!(conf.trackId)
+  // awaited: a display state model is lazy in every plugin here, and the
+  // synchronous showTrack answers before the chunk lands — so the settle below
+  // would run against a session that does not hold the track yet, and report
+  // ready over it
+  await viewSelf(view).launchTrack!(conf.trackId)
   const shown = { ...summary, shownInView: view.id }
   // 0 skips the settle, so several adds can share one jb.waitReady
   const settleMs =

@@ -66,8 +66,12 @@ function withoutFrontmatter(preamble: string) {
 export function readDocSection(
   markdown: string,
   section: string,
+  { whole = false }: { whole?: boolean } = {},
 ): BridgeToolResult {
-  if (section === 'all' || (!section && markdown.length <= TOC_ABOVE_CHARS)) {
+  if (
+    section === 'all' ||
+    (!section && (whole || markdown.length <= TOC_ABOVE_CHARS))
+  ) {
     return { text: markdown }
   }
   const sections = splitSections(markdown)

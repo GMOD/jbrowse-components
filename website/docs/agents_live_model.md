@@ -33,7 +33,10 @@ Everything else is done with the model; the re-exports at the end are frozen.
 Orientation and building:
 
 - `jb.sessionSummary()` is the orientation call: views, tracks with their
-  display type and render phase, assemblies, visible regions.
+  display type and render phase, assemblies, visible regions, and anything
+  standing over them — a `drawer` (the widget panel, with the width it takes off
+  every view; `session.hideAllWidgets()` closes it) and a `dialog` when a modal
+  is up.
 - `jb.inspect(path?, maxBytes?)` walks the live model by dot path (`'views.0'`)
   and answers with the value, its getters, **the actions it takes** and its
   `modelType`. MST actions are non-enumerable, so `Object.keys` lists none of
@@ -64,9 +67,10 @@ Orientation and building:
   the settle's `notReady`. `settleMs: 0` skips the settle, for several adds and
   one `jb.waitReady`.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
-  throws naming each one, as do `jb.trackModel`, `jb.visibleRegions` and
-  `jb.addTrack` when more than one view could answer. `viewId` comes from
-  `jb.sessionSummary()`; nested synteny and breakpoint views count as open.
+  throws naming each one, as do `jb.trackModel`, `jb.visibleRegions`,
+  `jb.addTrack` and `jb.getFeatures` reading a visible region, when more than
+  one view could answer. `viewId` comes from `jb.sessionSummary()`; nested
+  synteny and breakpoint views count as open.
 - `jb.trackModel(trackId, viewId?)` is the shown track's live model. It throws
   when no view shows the track, saying whether the id is unknown or the track is
   not shown.
@@ -93,9 +97,10 @@ Reading:
   drawing (default 30000). Its result carries `notifications` (the session's
   error toasts), `notReady` (views that failed to initialize or are still
   `initializing`, and tracks whose display settled without drawing, with the
-  `phase`: `tooLarge`, `error`, `renderError`, `loading`) and `offscreen` (views
-  taller than the window). Neither a gated display nor a failed view raises a
-  toast, and both look plausible in a screenshot; this report is what tells.
+  `phase`: `tooLarge`, `error`, `renderError`, `loading`, each with its reason),
+  `offscreen` (views taller than the window) and the `drawer` and `dialog`
+  above. None of those raises a toast and all of them look plausible in a
+  screenshot; this report is what tells.
 
 Lower level, frozen at what shipped:
 
@@ -106,9 +111,16 @@ Lower level, frozen at what shipped:
 - `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
   slots, which are not plain properties.
 - `jb.rootModel` is the root model.
-- `jb.parseLocString`, `jb.getFeatureAdapterOrThrow` (async),
-  `jb.renameRegionsIfNeeded`, `jb.getRpcSessionId`, `jb.createStopToken` and
-  `jb.stopStopToken` are direct data access, below.
+- `jb.parseLocString` parses `"chr1:100-200"` against an assembly's refNames,
+  and `await jb.getFeatureAdapterOrThrow` builds an adapter to ask a file what
+  it holds before adding it as a track — both under
+  [Reading data directly](#reading-data-directly-fast-path).
+- `jb.renameRegionsIfNeeded` is what `jb.getFeatures` already does for you, and
+  what raw adapter code has to call itself.
+- `jb.getRpcSessionId(trackModel)` with `jb.createStopToken` /
+  `jb.stopStopToken` are for an `rpcManager.call` of your own — a method
+  `getFeatures` does not cover — on the same worker the track's display uses,
+  and a token to cancel it with.
 
 ## Calls and what they answer with
 
@@ -199,16 +211,19 @@ view.hideTrack('mytrack')
 const display = jb.trackModel('mytrack').activeDisplay
 // open the feature-details panel on a feature you read, as a click would
 display.selectFeature(feature)
-// the same track drawn by another of its display types (read arcs instead of
-// the pileup): display ids are `<trackId>-<DisplayType>`, and the track's
-// config lists the ones it has
+// the same track drawn by another of its display types: `compatibleDisplays`
+// is the set this view can draw, and passing an id from it is the only safe
+// argument — a type name you guessed, or an id off `configuration.displays`
+// (which spans every view type), throws or silently redraws the default
 const track = jb.trackModel('mytrack')
-track.configuration.displays.map(d => d.displayId)
-track.replaceDisplay(
-  display.configuration.displayId,
-  'mytrack-LinearReadArcsDisplay',
-)
+const ids = track.compatibleDisplays.map(d => d.displayId)
+track.replaceDisplay(display.configuration.displayId, ids[1])
 ```
+
+A variation the display owns is a setting on it: an alignments track has one
+`LinearAlignmentsDisplay` whose read arcs, read cloud and coverage are slots, so
+arcs are `applyDisplaySettings({ readConnections: 'arc' })` and `describeSlots`
+lists what else it takes.
 
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
