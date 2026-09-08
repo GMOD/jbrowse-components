@@ -583,7 +583,12 @@ describe('the ribbon marks on the GPU', () => {
       ])
     })
 
-    test('a pan re-uploads neither buffer', () => {
+    // The BACKEND half only: this re-renders with the same `cells` map, so what
+    // it says is that a frame uploads nothing on its own. Whether a pan moves
+    // the cell in the first place is a question about the model's getters, and
+    // it belongs to `outlineUploadSchedule.test.ts` — this test carried the
+    // name for both and checked one of them.
+    test('a frame re-renders an unchanged cell without re-uploading it', () => {
       const cells = cellsFor([[0, clickable()]], 1)
       const params = makeParams({ clickedFeatureId: 1 })
       const { hal, render } = gpuFrame(
