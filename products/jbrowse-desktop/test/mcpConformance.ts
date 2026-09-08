@@ -579,11 +579,21 @@ try {
   )
 
   // The recipes page promises every snippet was run against the app. This is
-  // what keeps that true: each js fence runs verbatim, in page order, against
-  // the reopened volvox session the page describes. Fences over the hosted
-  // hg38 config, or reaching a remote host, need the network and are left to
-  // the page's own verification.
-  await run(`
+  // what keeps that true: each js fence runs verbatim against the volvox
+  // session the page describes. Fences over the hosted hg38 config, or reaching
+  // a remote host, need the network and are left to the page's own verification.
+  //
+  // The session is reset per RECIPE, not once for the page. A reader copies one
+  // heading, not the whole file, so that is the state each snippet has to work
+  // from -- and running them into one accumulating session tested something
+  // else, which is how "Prove a track drew" came to decide whether "A
+  // publication figure" passed. That recipe launches a track that cannot load
+  // on purpose, and an export refuses a broken track by design
+  // (`throwOnExportErrors`), so the export fence failed on the previous
+  // recipe's subject. Fences under one heading still share a session: those do
+  // build on each other.
+  const openRecipeSession = () =>
+    run(`
     return jb.loadSessionSpec({
       sessionName: 'recipes',
       views: [
@@ -598,8 +608,13 @@ try {
         },
       ],
     })`)
+  let openedFor: string | undefined
   for (const { heading, code } of recipeFences()) {
     if (!code.includes('hg38') && !code.includes('https://')) {
+      if (openedFor !== heading) {
+        await openRecipeSession()
+        openedFor = heading
+      }
       const outcome = await client
         .call('run_javascript', { code, timeoutMs: 60_000 })
         .then(

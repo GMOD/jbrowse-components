@@ -429,6 +429,10 @@ return { out, bytes: svg.length, loc: view.visibleLocStrings }
 - Leave `save` alone to get the normal download instead.
 - `rasterizeLayers: true` embeds each display's heavy layer as a PNG rather than
   emitting vector elements, which is what a hundred-thousand-read pileup wants.
+- A track that failed to load makes the export fail rather than come out with a
+  gap: `exportSvg` rejects with `Cannot export:` and the errors behind it. Read
+  `notReady` from `jb.waitReady` first, and hide the offending track if the
+  figure is meant without it.
 - Only Desktop can write a file. In JBrowse Web, take the markup and put it
   somewhere the page can reach.
 

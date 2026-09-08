@@ -67,9 +67,22 @@ describe('crypto utilities (web crypto path)', () => {
       expect(encrypted.startsWith('U2FsdGVkX1')).toBe(true)
     })
 
+    // CBC authenticates nothing, so what rejects a wrong password is the PKCS7
+    // padding check on the garbage it produces -- and garbage carries valid
+    // padding about 1 time in 217 (measured over 20k envelopes). Encrypting
+    // here would salt afresh and fail that often; this envelope is one whose
+    // garbage does not pad. The round-trip below is what keeps the constant
+    // honest: it is `testPlaintext` under `testPassword`.
+    const wrongPasswordEnvelope =
+      'U2FsdGVkX18p4Y7hQZMN48vxqW2r5Rq+GbeL5qYlsfqKa0peDTRjIjIr74y7dJTe1p2mVKwYAnU4dZ4lDvHnag=='
+
     it('fails to decrypt with wrong password', async () => {
-      const encrypted = await aesEncrypt(testPlaintext, testPassword)
-      await expect(aesDecrypt(encrypted, 'wrongPassword')).rejects.toThrow()
+      await expect(
+        aesDecrypt(wrongPasswordEnvelope, 'wrongPassword'),
+      ).rejects.toThrow()
+      await expect(
+        aesDecrypt(wrongPasswordEnvelope, testPassword),
+      ).resolves.toBe(testPlaintext)
     })
 
     it('handles empty string', async () => {
