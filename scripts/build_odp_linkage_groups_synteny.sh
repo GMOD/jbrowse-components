@@ -81,7 +81,7 @@ if [ ! -d genomes ]; then
   tar xzf "$DRYAD_DIR/genomes.tar.gz" $WILDCARDS "${DIRS[@]}"
   # the archive's own root is `genomes/`, so for_odp is lifted out from under
   # whatever it landed in rather than moved onto its own parent
-  extracted=$(find . -type d -name for_odp | head -1)
+  extracted=$(find . -type d -name for_odp | awk 'NR<=1')
   [ -n "$extracted" ] || {
     echo "genomes.tar.gz extracted no for_odp directory" >&2
     exit 1
@@ -131,10 +131,10 @@ fi
 while read -r code dir; do
   [ -z "$code" ] && continue
   d="genomes/$dir"
-  fa=$(ls "$d"/*.fasta | head -1)
+  fa=$(ls "$d"/*.fasta | awk 'NR<=1')
   [ -f "$code.fa" ] || ln -sf "$fa" "$code.fa"
   [ -f "$code.fa.fai" ] || samtools faidx "$code.fa"
-  [ -f "$code.chrom" ] || ln -sf "$(ls "$d"/*.chrom | head -1)" "$code.chrom"
+  [ -f "$code.chrom" ] || ln -sf "$(ls "$d"/*.chrom | awk 'NR<=1')" "$code.chrom"
 done <<<"$SPECIES"
 
 # One .blocks per pair, the gene_group and color columns carried through. The

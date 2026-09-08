@@ -240,7 +240,7 @@ so the filters and signed LD are absent here. The
 
 ### Which metric, and how far to thin
 
-[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric) switches between two
+[`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) switches between two
 reads of the same block:
 
 - **D'** asks whether recombination has been seen between two markers, so it
@@ -250,11 +250,12 @@ reads of the same block:
   two to be at similar frequency, so it draws the sharper boundary. It says
   whether one marker can stand in for another
 
-[`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
-thins a dense callset to the common, block-tagging variants. High enough it
-reaches the tagging variants themselves, and the block fades. Several haplotypes
-at one locus fragment the block too, since no single pair of biallelic markers
-tags them all, so a soft sweep reads patchier than its strength suggests.
+Thinning is plink's `--maf`, decided when the table is written rather than in
+the browser: it holds the dense callset down to the common, block-tagging
+variants. High enough it reaches the tagging variants themselves, and the block
+fades. Several haplotypes at one locus fragment the block too, since no single
+pair of biallelic markers tags them all, so a soft sweep reads patchier than its
+strength suggests.
 
 ## See also
 

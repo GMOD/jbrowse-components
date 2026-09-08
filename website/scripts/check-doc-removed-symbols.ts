@@ -141,6 +141,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'viewTrackConfigs',
     'CONFIG_PATTERN names it under ADR-084, which deleted it',
   ],
+  [
+    'clickedInstanceIdx',
+    'ui-state-holds-keys-not-indices names the index LinearSyntenyDisplay stored before clickedFeatureUniqueId replaced it',
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']
