@@ -41,8 +41,13 @@ registry plus two records to `coverageBandMarks`, whose shapes gate through
 **4. `HIT_GATES`.** A second exhaustive record over the same ids forcing every
 drawn layer to state a hit-testing story, checked against each layer's actual
 `enabled` behaviour rather than its word (`hitTestGateParity.test.ts`).
-**Alignments-only today for want of a second display with independently gated
-marks — and the most transferable idea here.**
+**Alignments-only, and it should stay that way**: a display on the mark list
+has the property structurally rather than by table, because `defineMark` runs
+one mark's three gates — `channels` answering undefined, the `band`, and
+`paintsBlock` — over the GPU draw, the Canvas2D paint and `hitNearest` alike.
+What is left for a record is the pileup's thirteen hand-driven passes, whose
+gates live in the renderers rather than in a mark. Don't build a `HIT_GATES`
+for a mark display; it would restate what `defineMark` already enforces.
 
 ## A registry is two maps over one list, never a table of uniform rows
 

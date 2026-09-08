@@ -554,6 +554,15 @@ fudge factor, and porting one in over-widens GPU glyphs. Min-width floors, by
 contrast, *are* mirrored (both clamp to the same px) — those keep sub-pixel
 features visible and must stay in step.
 
+A `band` on `defineMark` carries one of its own, at the sub-device-pixel edge:
+the GPU scissor rounds each edge to a device row independently and skips the
+mark when both land on the same one, where Canvas2D's clip takes
+`strip.height > 0` and paints an antialiased sliver. `{top: 10.6, height: 0.3}`
+at dpr 1 is the case. Every other band edge agrees in visible pixels — zero and
+negative heights skip on both, a band off either canvas edge draws nothing on
+both, a band taller than the canvas clamps on both — so this is the one row
+where a band mid-height-drag can differ.
+
 Synteny carries two more of these, both surviving the mark port unchanged.
 `perpCoverage` measures a per-fragment width from the two edges' own
 foreshortenings where `ribbonPerpWidth` measures the whole ribbon's from its

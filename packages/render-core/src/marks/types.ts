@@ -277,6 +277,14 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * uploads it once per pass and re-uploads only when the bytes' identity moves,
  * so a ramp change costs one texture and no instance byte.
  *
+ * **Per pass per FRAME, though the lens is handed a region too.** LD reads its
+ * ramp off the payload's own metric — a pre-computed file with no D' column
+ * downgrades the request, and the metric that arrived is the authoritative one
+ * — which is exact because LD holds one region. A display with several regions
+ * wanting different ramps for one pass would re-upload the texture per region
+ * per frame; correct, since each recorded draw keeps the table bound when it
+ * was encoded, but a texture per region per frame is not what this is for.
+ *
  * `band` is the strip of the canvas the mark is clipped to, for a display that
  * stacks bands on one canvas (MAF's coverage strip over its rows viewport).
  * The GPU scissors to it and Canvas2D clips to it, a zero-height band draws
