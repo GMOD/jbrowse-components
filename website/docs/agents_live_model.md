@@ -51,7 +51,11 @@ Orientation and building:
   reporting what is still not ready, and returns the summary. It **replaces the
   session**: the `session` argument you were given is a dead node afterwards.
   Every `jb` helper re-reads the live one, and `jb.session` is it if you need to
-  rebind. A spec `layout` indexes the spec's own `views` array.
+  rebind. A spec `layout` indexes the spec's own `views` array. A key on a track
+  entry that is neither a config slot nor something the display carries raises
+  an error notification naming it — a spec has no return channel of its own, so
+  a misspelled setting reports there rather than loading a track with the
+  setting quietly missing.
 - `session.layoutViews(spec)` arranges the views already open into panels
   without replacing the session: the same tree as a spec `layout` (a leaf
   carries `views`, a container `children` and a `direction`), with a leaf naming

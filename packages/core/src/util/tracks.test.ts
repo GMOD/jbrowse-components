@@ -76,11 +76,39 @@ describe('pickDisplayForView', () => {
     expect(
       pickDisplayForView({
         declaredDisplays,
+        requestedType: 'ExtraDisplay',
+        trackDisplayTypes: [...trackDisplayTypes, 'ExtraDisplay'],
+        viewDisplayTypes: [...viewDisplayTypes, 'ExtraDisplay'],
+      }),
+    ).toEqual({ type: 'ExtraDisplay', conf: undefined })
+  })
+
+  // The refusals below are what a requested type not being taken on faith
+  // buys. An unsupported one used to pass straight through, and the
+  // `<trackId>-<type>` id it synthesized — which no config declares — was then
+  // resolved back to the track's DEFAULT display by type, so a caller that
+  // asked for read arcs got the pileup and every layer reported success. Both
+  // of these were that.
+  test('refuses a requested type this view cannot draw', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays,
         requestedType: 'ChordDisplay',
         trackDisplayTypes,
         viewDisplayTypes,
       }),
-    ).toEqual({ type: 'ChordDisplay', conf: undefined })
+    ).toBeUndefined()
+  })
+
+  test('refuses a requested type the track type does not offer', () => {
+    expect(
+      pickDisplayForView({
+        declaredDisplays,
+        requestedType: 'LinearAlignmentsDisplay',
+        trackDisplayTypes,
+        viewDisplayTypes: [...viewDisplayTypes, 'LinearAlignmentsDisplay'],
+      }),
+    ).toBeUndefined()
   })
 
   test('undefined when the view supports none of the track’s displays', () => {

@@ -902,8 +902,26 @@ export function pickDisplayForView({
   viewDisplayTypes: string[]
 }) {
   const supported = new Set(viewDisplayTypes)
+  // A requested type is CHECKED, not taken on faith. It used to pass straight
+  // through: an unsupported or misspelled one produced a synthesized
+  // `<trackId>-<type>` displayId that no config declares, and the display
+  // configuration reference then resolved that dangling id back to the track's
+  // DEFAULT display by type — so a caller that asked for read arcs got the
+  // pileup, and every layer reported success. The caller turns this
+  // `undefined` into an error naming what the track can be drawn as.
+  //
+  // Callers pass a CANONICAL name (resolveTrackDisplayChoice resolves an alias
+  // first), because these two lists hold canonical names only.
+  if (requestedType !== undefined) {
+    return supported.has(requestedType) &&
+      trackDisplayTypes.includes(requestedType)
+      ? {
+          type: requestedType,
+          conf: declaredDisplays.find(d => d.type === requestedType),
+        }
+      : undefined
+  }
   const type =
-    requestedType ??
     declaredDisplays.find(d => supported.has(d.type))?.type ??
     trackDisplayTypes.find(name => supported.has(name))
   return type === undefined
@@ -1006,16 +1024,36 @@ function resolveTrackDisplayChoice(
   // getContainingView already resolves to for everything else beneath it.
   const view = isViewModel(self) ? self : getContainingView(self)
   const viewType = pluginManager.getViewType(view.type)
+  const trackDisplayTypes = trackType.displayTypes.map(d => d.name)
+  const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
+  // An alias first, so a session spec or a caller naming a pre-consolidation
+  // display type (`LinearPileupDisplay`) reaches the type that replaced it
+  // instead of being refused — and so the membership checks below, which are
+  // over canonical names, ask the right question.
+  const requested = displayInitialSnapshot.type
+  const requestedType =
+    requested === undefined
+      ? undefined
+      : pluginManager.resolveDisplayTypeRecord(requested)?.name
   const picked = pickDisplayForView({
     declaredDisplays: conf.displays ?? [],
-    requestedType: displayInitialSnapshot.type,
-    trackDisplayTypes: trackType.displayTypes.map(d => d.name),
-    viewDisplayTypes: viewType.displayTypes.map(d => d.name),
+    requestedType,
+    trackDisplayTypes,
+    viewDisplayTypes,
   })
 
   if (!picked) {
+    const drawable = trackDisplayTypes.filter(name =>
+      viewDisplayTypes.includes(name),
+    )
     throw new Error(
-      `Could not find a compatible display for view type ${view.type}`,
+      requested === undefined
+        ? `Could not find a compatible display for view type ${view.type}`
+        : `Track "${trackId}" cannot be shown as "${requested}" in a ${view.type}. ${
+            drawable.length > 0
+              ? `It takes: ${drawable.join(', ')}`
+              : 'This view draws none of its display types'
+          }`,
     )
   }
   return { rawConf, conf, trackType, picked }
@@ -1125,10 +1163,41 @@ export function showTrackGeneric(
     const report = (
       track as {
         applyDisplaySettings: (settings: Record<string, unknown>) => {
+          unapplied: string[]
           failed: { key: string; error: string }[]
         }
       }
     ).applyDisplaySettings(displaySettings)
+    // A key that reached NOTHING, told apart from the ones `unapplied` holds
+    // legitimately. `unapplied` means "not a config slot", which covers both an
+    // MST display prop the snapshot spread above already applied and a
+    // misspelling that did nothing at all — so reporting the list wholesale
+    // called a correct spec broken, and reporting none of it let
+    // `{ trackId, colorSchem: 'x' }` load a plausible track with the setting
+    // silently missing. The display's own model type says which is which.
+    // Asked of the display NODE, not of its model type: `type.properties` sees
+    // declared props and misses everything else a key can legitimately reach —
+    // a volatile the snapshot spread above just set (`resolution` on the GC
+    // content display is one) reads as unreached and gets reported over a
+    // correct call.
+    // `unapplied` holds three kinds of entry, and only one of them means the
+    // key did nothing at all: applyDisplaySettings annotates `type` and the
+    // "a setter exists, pass allowSetters" case in parentheses, and pushes a
+    // BARE key when the display has neither a slot nor a setter for it. So the
+    // bare ones are the candidates, and the node itself settles the rest — the
+    // snapshot spread above may already have landed the key as a prop or a
+    // volatile, which is what `resolution` on the GC content display is.
+    const drawn = (track as { displays: Record<string, unknown>[] }).displays[0]
+    const reachedNothing = drawn
+      ? report.unapplied.filter(
+          entry => !entry.includes(' (') && !(entry in drawn),
+        )
+      : []
+    if (reachedNothing.length > 0) {
+      session.notifyError(
+        `Track "${trackId}" ignored ${reachedNothing.join(', ')}: neither a setting the ${displayType} accepts nor one of its properties`,
+      )
+    }
     if (report.failed.length) {
       session.notifyError(
         `Track "${trackId}" rejected ${report.failed

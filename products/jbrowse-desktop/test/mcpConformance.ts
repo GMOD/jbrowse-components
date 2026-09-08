@@ -282,7 +282,10 @@ try {
     return client.callJson('run_javascript', { code })
   }
 
-  const loaded = await run(`
+  // Factored out because a check that loads a spec of its own REPLACES the
+  // session, and every check after it reads the two tracks at ctgA:1-30,000.
+  const openConformanceSession = () =>
+    run(`
     return jb.loadSessionSpec({
       sessionName: 'MCP conformance',
       views: [
@@ -297,6 +300,7 @@ try {
         },
       ],
     })`)
+  const loaded = await openConformanceSession()
   const actions = await client.call('docs', {
     topic: 'model:LinearGenomeView',
     section: 'Actions',
@@ -437,6 +441,58 @@ try {
     required.value?.catalog > 10 && required.value?.vcfListed >= 1,
     required,
   )
+
+  // Two refusals, checked here because the whole point of them is that the
+  // alternative looked like success. A wrong display type used to draw the
+  // track's default one, and a spec key that reached nothing used to load a
+  // plausible track with the setting silently missing. Both now report, and
+  // both report through the envelope's `notifications` rather than a throw,
+  // because showTrackGeneric is the single choke point every open-a-track path
+  // funnels through and it turns a failure into a toast.
+  // A track NOT already shown: launchTrack returns early for one that is, so
+  // asking the shown vcf would never reach the check being tested.
+  // ChordVariantDisplay is registered for VariantTrack and drawn by a circular
+  // view, which is exactly the shape that used to pass through and land on the
+  // linear default.
+  const wrongDisplay = await run(`
+    await jb.view().launchTrack('volvox_filtered_vcf', {}, {
+      type: 'ChordVariantDisplay',
+    })
+    return {
+      shown: jb.sessionSummary().views[0].tracks.map(t => t.trackId),
+    }`)
+  check(
+    'a display type this view cannot draw is refused, not silently defaulted',
+    (wrongDisplay.notifications ?? []).some((n: { message: string }) =>
+      n.message.includes('cannot be shown as "ChordVariantDisplay"'),
+    ) &&
+      !(wrongDisplay.value?.shown as string[] | undefined)?.includes(
+        'volvox_filtered_vcf',
+      ),
+    wrongDisplay,
+  )
+
+  const strayKey = await run(`
+    return jb.loadSessionSpec({
+      sessionName: 'stray key',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-30,000',
+          tracks: [{ trackId: 'gff3tabix_genes', colorSchem: 'strand' }],
+        },
+      ],
+    })`)
+  check(
+    'a spec key that reaches nothing is reported, not dropped',
+    [
+      ...(strayKey.notifications ?? []),
+      ...((strayKey.value?.notifications ?? []) as { message: string }[]),
+    ].some((n: { message: string }) => n.message.includes('colorSchem')),
+    strayKey,
+  )
+  await openConformanceSession()
 
   const variants = await run(`
     const feats = await jb.getFeatures({

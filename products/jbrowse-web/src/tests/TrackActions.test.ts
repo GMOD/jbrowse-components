@@ -62,6 +62,21 @@ test('a correct displayInitialSnapshot raises no notification', async () => {
   expect(session.snackbarMessages).toHaveLength(0)
 })
 
+// The other half of that contract. A key with no slot, no setter and no
+// presence on the display node reached NOTHING, and used to load a plausible
+// track with the setting silently missing — which is the shape of every "the
+// browser looks right but the thing I asked for is not there" report.
+test('a spec key that reaches nothing is named', async () => {
+  await mockConsole(async () => {
+    const { session, view } = await getTestSession()
+    const track = await view.launchTrack(TRACK_ID, {}, { colorSchem: 'strand' })
+    // the track still opened: one dead key must not strand it
+    expect(track).toBeDefined()
+    expect(session.snackbarMessages).toHaveLength(1)
+    expect(session.snackbarMessages[0]!.message).toContain('colorSchem')
+  })
+})
+
 test('a display setting that throws is reported instead of dropped', async () => {
   await mockConsole(async () => {
     const { session, view } = await getTestSession()
