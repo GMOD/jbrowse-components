@@ -27,7 +27,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { gzipSync } from 'zlib'
 
-import { init, parse } from 'es-module-lexer'
+import { init, parse } from 'es-module-lexer/minimal'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const site = path.join(here, '..')
