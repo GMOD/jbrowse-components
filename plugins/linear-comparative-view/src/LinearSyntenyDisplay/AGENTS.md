@@ -27,8 +27,8 @@
   New module functions go at the END of the file — inserting mid-module
   reshuffles every importer's generated `#line` numbers.
 - The ribbon is the exact cubic bezier with both control points at mid-height;
-  `sBlend`/`yCurve` are its two components, and `Canvas2DSyntenyRenderer` draws
-  the same curve with `bezierCurveTo`. Don't approximate it with chords — the
+  `sBlend`/`yCurve` are its two components, and `drawSyntenyTrack` draws the
+  same curve with `bezierCurveTo`. Don't approximate it with chords — the
   outline pass used to, and sat up to 11.7px off.
 - The curve passes spell `VERTS_PER_INSTANCE` as `CURVE_SEGMENTS * 6u` — the
   codegen resolves identifiers through the import, so the count follows
@@ -49,48 +49,61 @@
   sit where the x-curve is momentarily vertical. The test modelled the rows as
   spanning exactly `[y(t0), y(t1)]` and read zero over all of it for as long as
   that was wrong.
-- `GpuSyntenyRenderer.ts` wires the four passes (`fillStraight`, `fillCurve`,
+- `syntenyRibbonMarks.ts` declares the four passes (`fillStraight`, `fillCurve`,
   `edgeStraight`, `edgeCurve` — curve vs straight live in separate shader files
-  so there are no `isCurve` branches) via `slangPass()` from
-  `@jbrowse/render-core/slangPass`, each from its own generated module — no
-  `bufferStride`/`bufferAttributes` overrides, because every pass now owns its
-  buffer.
-- **The edge passes get their own one-instance buffer**, packed by
-  `packClickedOutlineInstances` (in `instanceInterleave.ts`) from the clicked
-  feature's record and uploaded under the edge pass id, from `render()` — the
-  clicked id is a render parameter, so nothing knows what to pack until the
-  frame that draws it. They used to be drawn against the fill pass's buffer via
-  `drawPass`'s `bufferPassId`, which ran the vertex shader over the whole region
-  — 24M invocations per frame in curve mode on a 500k-instance view — to outline
-  one ribbon. `isClickedSilhouette` stays in the shader as the safety net, and
+  so there are no `isCurve` branches) as four marks, each from its own generated
+  module. `fillStraight` owns the region's buffer and `fillCurve` borrows it
+  (`bufferOf`), so a `drawCurves` toggle is a uniform and a different pass
+  rather than a second upload; the edge pair is the same split over its own
+  buffer. Both the band (`syntenyMarks.ts`) and the multi-way stack
+  (`MultiWaySyntenyDisplay/multiwayMarks.ts`) build their list from that one
+  factory, so neither owns a renderer class.
+- **The edge passes get their own small buffer**, packed by
+  `packClickedOutlineInstances` (in `instanceInterleave.ts`) out of the bytes
+  the interleave cache already holds for the fill. It is a CELL of its own,
+  under a key of its own (`display.outlineKey`), so a click re-uploads the
+  handful of records the outline traces and a pan re-uploads nothing. They used
+  to be drawn against the fill pass's buffer via `drawPass`'s `bufferPassId`,
+  which ran the vertex shader over the whole region — 24M invocations per frame
+  in curve mode on a 500k-instance view — to outline one ribbon.
+  `isClickedSilhouette` stays in the shader as the safety net, and
   `syntenyPassGeometry.test.ts` pins each mode's two passes to one instance
   layout, which is what lets a record packed for the fill be read by the edge.
+- **The outline is the pair's one asymmetry.** `drawSyntenyTrack` strokes the
+  clicked feature's side edges inside its own loop, where it already holds the
+  projected corners and the fill/stroke verdict the outline is gated on, so the
+  edge marks paint nothing on Canvas2D. `GPU_RENDERING.md` §"Intentional
+  divergences" carries it.
 - `instanceInterleave.ts` hand-writes the pack loop instead of calling the
   generated `packInstances`, because `featureId` is `instanceFeatureIdx[i] + 1`
   and the generated packer only takes flat arrays. Its `SYNTENY_INSTANCE_CACHE`
-  twin declares the recolor fast path `createInstanceCache` runs — dotplot's
+  twin declares the recolor fast path `syntenyInstanceCache` runs — dotplot's
   `DotplotDisplay/instanceInterleave.ts` is the same two exports for the same
   reason.
 - **The pick context is never the render context.** `makePickCtx` (in
-  `syntenyPickEngine.ts`) hands each backend a private 1x1 offscreen 2D context,
+  `syntenyPickEngine.ts`) hands each picker a private 1x1 offscreen 2D context,
   because `isPointInPath` takes its point in the canvas coordinate space
   _unaffected by the current transformation_ while the path it tests was built
   through it — so on the Canvas2D backend's own context, which carries
-  `setTransform(dpr, …)` from `clear()`, hover and click missed by the device
-  pixel ratio on every HiDPI screen. No mock ctx applies a transform, so no
-  assertion about hit coordinates can catch a regression here; what the suites
-  pin instead is that the pick builds no path on the drawing context.
-- Picking is CPU-side: `syntenyPickEngine.ts` mirrors the shader's geometry
-  (`projectCorners`, `isRibbonCulled`) and runs a Flatbush bbox query refined
-  with `isPointInPath`. Both `Canvas2DSyntenyRenderer` and `GpuSyntenyRenderer`
-  use it — the `// SYNC:` comments mark the JS↔Slang pairs that must stay in
-  lockstep, and `syntenyRibbonPath.ts` is where the shared predicates
-  (`isRibbonCulled`, `ribbonPerpWidth`, `isInstanceInvisible`) live so "drawn"
-  and "pickable" cannot answer differently. The cull's own comparison is not a
-  SYNC pair: `isRibbonCulled` asks its three questions through
-  `spanOutsideBand`, `//! js-export`ed from syntenyTypes.slang, so both sides
-  run the shader's function and choose only what they pass it — the pads, and
-  where the `minAlignmentLength` cull is applied.
+  `setTransform(dpr, …)` from `prepareCanvas`, hover and click missed by the
+  device pixel ratio on every HiDPI screen. No mock ctx applies a transform, so
+  no assertion about hit coordinates can catch a regression here; what the
+  suites pin instead is that the pick builds no path on the drawing context.
+- Picking is CPU-side and MODEL-side: `syntenyPickEngine.ts` mirrors the
+  shader's geometry (`projectCorners`, `isRibbonCulled`) and runs a Flatbush
+  bbox query refined with `isPointInPath`. `createSyntenyPicker` is what a model
+  holds — the level's `pickFeatureAt` and the multi-way display's `pickRibbonAt`
+  are the two, over one engine rather than a copy on each of four retired
+  backend classes. Its index is a `WeakMap` keyed by the geometry array a
+  refetch replaces, so a recolor keeps it and nothing has to evict. The
+  `// SYNC:` comments mark the JS↔Slang pairs that must stay in lockstep, and
+  `syntenyRibbonPath.ts` is where the shared predicates (`isRibbonCulled`,
+  `ribbonPerpWidth`, `isInstanceInvisible`) live so "drawn" and "pickable"
+  cannot answer differently. The cull's own comparison is not a SYNC pair:
+  `isRibbonCulled` asks its three questions through `spanOutsideBand`,
+  `//! js-export`ed from syntenyTypes.slang, so both sides run the shader's
+  function and choose only what they pass it — the pads, and where the
+  `minAlignmentLength` cull is applied.
 - **Per-feature string lanes are dictionary-encoded, and `getFeatureAtIndex` is
   where the encoding stops.** `nameDict`/`nameIds` and the four refName/assembly
   pairs replace what were five `string[]` of length n — the only part of the

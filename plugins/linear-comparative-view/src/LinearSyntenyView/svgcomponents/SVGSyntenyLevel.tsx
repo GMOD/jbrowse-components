@@ -40,7 +40,7 @@ export default function SVGSyntenyLevel({
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
         {/* The band's ground, which on screen is the renderers' own clear
-          (`Canvas2DSyntenyRenderer.clear` says why it is a known colour and
+          (`syntenyGroundClear` says why it is a known colour and
           what depends on it) and here is nothing at all: `renderSvg` paints
           ribbons through `drawSyntenyTrack` without clearing, and the only
           other background in the file is `SVGExportRoot`'s full-bleed themed

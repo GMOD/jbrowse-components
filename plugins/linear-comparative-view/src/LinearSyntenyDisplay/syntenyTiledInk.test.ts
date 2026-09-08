@@ -3,7 +3,7 @@ import { createCanvas } from 'canvas'
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { viewportWindow } from '../LinearSyntenyRPC/testUtils.ts'
-import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
+import { drawSyntenyTrack } from './drawSyntenyTrack.ts'
 
 // How much ink transparent-indel mode lays down against the colored-indel mode
 // it is otherwise the complement of, on a real rasterizer.

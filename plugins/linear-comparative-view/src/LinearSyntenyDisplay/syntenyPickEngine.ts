@@ -30,7 +30,7 @@ export interface PickCanvasLike extends CanvasLike {
 // the canvas coordinate space *unaffected by the current transformation*, while
 // the path it tests against was transformed as it was built — so on a context
 // carrying `setTransform(dpr, …)` the two land in different spaces and the pick
-// is off by the device pixel ratio. `Canvas2DSyntenyRenderer` used to pass its
+// is off by the device pixel ratio. The Canvas2D backend used to pass its
 // render context, where that made hover and click miss by 2x on every retina
 // screen (and answer a ribbon at half the cursor's x, in the top half of the
 // band, when they hit at all). A context of our own is transform-free by
@@ -308,8 +308,21 @@ function isIndexUsable(idx: PickIndex, t: ComputedTransform) {
 export interface PickContext {
   ctx: PickCanvasLike
   state: SyntenyRenderState
-  regions: Map<number, SyntenyInstanceData>
-  pickIndices: Map<number, PickIndex>
+  /**
+   * The ribbon geometry the frame drew, in draw order and under the same keys
+   * `state.perTrack` files each track's params under. Only ribbons: an outline
+   * cell is the selection's own silhouette, drawn over the ribbon it traces,
+   * and a lane's glyphs are hit-tested off their own hit list.
+   */
+  regions: ReadonlyMap<number, SyntenyInstanceData>
+  /**
+   * The Flatbush index per geometry, keyed by the coordinate array a refetch
+   * replaces atomically — the same `geomToken` reasoning `createInstanceCache`
+   * keys on, which is what keeps an index across a recolor (the boxes do not
+   * depend on `colors`) and drops it with the geometry it described. Weak, so a
+   * departed track takes its index with it and nothing has to evict.
+   */
+  pickIndices: WeakMap<Float32Array, PickIndex>
   canvasLogicalWidth: number
   x: number
   y: number
@@ -322,11 +335,11 @@ export function pickFeatureAtPoint(
   const scratch = makeCornerScratch()
 
   // Iterate tracks in reverse draw order so top-most wins.
-  const entries = [...state.perTrack]
+  const entries = [...regions]
   for (let ei = entries.length - 1; ei >= 0; ei--) {
-    const [key, params] = entries[ei]!
-    const data = regions.get(key)
-    if (!data || data.instanceCount === 0) {
+    const [key, data] = entries[ei]!
+    const params = state.perTrack.get(key)
+    if (!params || data.instanceCount === 0) {
       continue
     }
     const { yTop, height, minAlignmentLength, alpha } = params
@@ -336,10 +349,10 @@ export function pickFeatureAtPoint(
     const localY = y - yTop
     const transform = computeTransform(params, data)
 
-    let idx = pickIndices.get(key)
+    let idx = pickIndices.get(data.bp1)
     if (!idx || !isIndexUsable(idx, transform)) {
       idx = buildPickIndex(data, transform)
-      pickIndices.set(key, idx)
+      pickIndices.set(data.bp1, idx)
     }
     // Nothing in this region is wide enough to be pickable at this zoom. Cached
     // as such, so a hover over a whole-genome hairball answers without touching
@@ -390,8 +403,8 @@ export function pickFeatureAtPoint(
       if (isRibbonCulled(c, canvasLogicalWidth, state.overdrawPx)) {
         continue
       }
-      // The other half of the fill/stroke split in
-      // Canvas2DSyntenyRenderer.drawSyntenyTrack — not a copy of it: both call
+      // The other half of the fill/stroke split in `drawSyntenyTrack` — not a
+      // copy of it: both call
       // the same `ribbonMaxPerpWidth`, and `syntenyPickRenderAgreement.test.ts`
       // pins the one thing that could still drift, this threshold. `drawCurves`
       // has to be threaded through with it: a bezier ribbon is at its widest
@@ -422,4 +435,41 @@ export function pickFeatureAtPoint(
     }
   }
   return undefined
+}
+
+/**
+ * The pick as a model holds it: the offscreen context and the per-geometry
+ * index, allocated once and reused, so the band and the multi-way stack share
+ * one engine instead of a copy each on two backend classes.
+ *
+ * A `.views` closure rather than volatile state, for the same reason
+ * `createEncodeMemo` is one: both are caches the model reads and never
+ * snapshots. `makeCtx` is the seam a suite substitutes a point-in-polygon
+ * double through.
+ */
+export function createSyntenyPicker(
+  makeCtx: () => PickCanvasLike | undefined = makePickCtx,
+) {
+  let ctx: PickCanvasLike | undefined
+  const pickIndices = new WeakMap<Float32Array, PickIndex>()
+  return (
+    regions: ReadonlyMap<number, SyntenyInstanceData>,
+    state: SyntenyRenderState,
+    canvasLogicalWidth: number,
+    x: number,
+    y: number,
+  ) => {
+    ctx ??= makeCtx()
+    return ctx
+      ? pickFeatureAtPoint({
+          ctx,
+          state,
+          regions,
+          pickIndices,
+          canvasLogicalWidth,
+          x,
+          y,
+        })
+      : undefined
+  }
 }

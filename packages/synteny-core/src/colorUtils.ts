@@ -22,7 +22,7 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 //
 // Opaque is also what lets the synteny indel wedge be pre-blended with the band's
 // ground and written out opaque rather than composited, which is the arrangement
-// `LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` fixes that ground for.
+// `LinearSyntenyDisplay/syntenyGroundClear` fixes that ground for.
 //
 // These remain LIGHT-GROUND colours — picked against a white band, and at the
 // 0.2 default alpha they are faint on a dark one. The ground is threaded now,

@@ -157,7 +157,7 @@ public struct Uniforms {
   // The band's ground: whatever both backends just cleared the canvas to, as
   // linear 0-1 rgb. shadeFill pre-blends an indel against it and writes opaque,
   // which agrees with the base ribbon composited beside it only if the
-  // destination really is this colour — `Canvas2DSyntenyRenderer.clear` is the
+  // destination really is this colour — `syntenyGroundClear` is the
   // whole argument, and `writeSyntenyUniforms` is what keeps the two in step.
   public float3 ground;
   // Ink for what is drawn ONTO the band rather than composited into it: the
@@ -448,7 +448,7 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
     // the branch below composites at `shade` against whatever is there, this
     // one bakes the same blend in and writes opaque, and the two agree only
     // when "whatever is there" is `u.ground`. Both backends guarantee it — see
-    // LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear.
+    // LinearSyntenyDisplay/syntenyGroundClear.
     rgb = rgb * darken * shade + u.ground * (1.0 - shade);
     return float4(rgb, color.a * coverage);
   }

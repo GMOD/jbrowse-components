@@ -1,14 +1,10 @@
-import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 
-import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
-import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
-
-import type { SyntenyRenderingBackend } from './syntenyRenderingBackendTypes.ts'
+import { SYNTENY_MARKS } from './syntenyMarks.ts'
+import { syntenyGroundClear } from './syntenyRibbonMarks.ts'
 
 export function SyntenyRendererFactory(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<SyntenyRenderingBackend>(canvas, {
-    passes: SYNTENY_PASSES,
-    createGpuBackend: hal => new GpuSyntenyRenderer(hal, canvas),
-    createCanvas2DBackend: c => new Canvas2DSyntenyRenderer(c),
+  return createMarkBackend(canvas, SYNTENY_MARKS, {
+    clearColor: state => syntenyGroundClear(state.groundColor),
   })
 }

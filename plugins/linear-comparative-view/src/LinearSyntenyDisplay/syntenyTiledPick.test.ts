@@ -121,9 +121,11 @@ const params: SyntenyTrackRenderParams = {
 function pickedFeatureAt(
   data: SyntenyInstanceData,
   x: number,
-  pickIndices = new Map<number, PickIndex>(),
+  pickIndices = new WeakMap<Float32Array, PickIndex>(),
 ) {
   const state: SyntenyRenderState = {
+    canvasWidth: VIEW_WIDTH,
+    canvasHeight: HEIGHT,
     overdrawPx: 1000,
     groundColor: '#fff',
     perTrack: new Map([[0, params]]),
@@ -154,7 +156,7 @@ function midBandSpanPx(block: Block) {
 // One index for the whole sweep, as a real hover has: rebuilding per position
 // would make this hundreds of index builds and say nothing extra.
 function sweep(data: SyntenyInstanceData, from: number, to: number) {
-  const pickIndices = new Map<number, PickIndex>()
+  const pickIndices = new WeakMap<Float32Array, PickIndex>()
   const out: (number | undefined)[] = []
   for (let x = from; x <= to; x++) {
     out.push(pickedFeatureAt(data, x, pickIndices))

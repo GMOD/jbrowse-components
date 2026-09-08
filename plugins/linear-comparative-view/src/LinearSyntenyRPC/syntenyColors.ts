@@ -53,7 +53,7 @@ export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
 //
 // Contrast-derived rather than either black or a theme text colour: the band is
-// an opaque KNOWN colour by construction (`Canvas2DSyntenyRenderer.clear`), so a
+// an opaque KNOWN colour by construction (`syntenyGroundClear`), so a
 // tick has to be legible against THAT and not against the page. Reading
 // `text.secondary` while the band said something else is what shipped the
 // off-screen-mate strip invisible.

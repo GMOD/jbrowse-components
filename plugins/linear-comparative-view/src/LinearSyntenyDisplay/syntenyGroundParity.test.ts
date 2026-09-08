@@ -1,8 +1,8 @@
 import { createCanvas } from 'canvas'
 
 import { KIND_BASE, KIND_CIGAR_D } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 import { offscreenMateColors } from './drawOffscreenMates.ts'
+import { drawSyntenyTrack } from './drawSyntenyTrack.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 

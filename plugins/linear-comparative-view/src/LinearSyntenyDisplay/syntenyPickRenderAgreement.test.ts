@@ -1,4 +1,4 @@
-import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
+import { drawSyntenyTrack } from './drawSyntenyTrack.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import { createGeometricPickCtx } from './testUtils.ts'
 
@@ -9,7 +9,7 @@ import type {
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
 
-// The `perpW < 1` boundary is written twice: once in Canvas2DSyntenyRenderer
+// The `perpW < 1` boundary is written twice: once in `drawSyntenyTrack`
 // (fill the silhouette, or stroke a 1px centerline) and once in
 // syntenyPickEngine (pick the ribbon, or skip it). Both call the same
 // `ribbonPerpWidth`, so what can drift is the *threshold* — and the renderer's
@@ -18,7 +18,7 @@ import type {
 //   "a ribbon is clickable exactly when it's drawn as a solid fill"
 //
 // Nothing asserted that. `syntenyPickEngine.test.ts` imports only the pick
-// engine, and `Canvas2DSyntenyRenderer.test.ts` only the renderer, so moving
+// engine, and `syntenyMarks.test.ts` only the painter, so moving
 // one threshold and not the other produces ribbons you can see but not click
 // (or click but not see) with every test still green. It is the last hand-sync
 // site encoding a user-visible must-agree invariant rather than a deliberate
@@ -127,6 +127,8 @@ function isDrawnAsFill(widthBp: number) {
 /** Does a click at the ribbon's center select it? */
 function isPickable(widthBp: number, alpha?: number) {
   const state: SyntenyRenderState = {
+    canvasWidth: 800,
+    canvasHeight: HEIGHT,
     overdrawPx: 300,
     groundColor: '#fff',
     perTrack: new Map([[0, makeParams(alpha)]]),
@@ -135,7 +137,7 @@ function isPickable(widthBp: number, alpha?: number) {
     ctx: createGeometricPickCtx(),
     state,
     regions: new Map([[0, makeData(widthBp)]]),
-    pickIndices: new Map<number, PickIndex>(),
+    pickIndices: new WeakMap<Float32Array, PickIndex>(),
     canvasLogicalWidth: 800,
     x: LEFT_BP + widthBp / 2,
     y: HEIGHT / 2,
@@ -241,12 +243,14 @@ function slopedVerdicts(drawCurves: boolean) {
   const hit = pickFeatureAtPoint({
     ctx: createGeometricPickCtx(),
     state: {
+      canvasWidth: 800,
+      canvasHeight: HEIGHT,
       overdrawPx: 300,
       groundColor: '#fff',
       perTrack: new Map([[0, params]]),
     },
     regions: new Map([[0, makeSlopedData()]]),
-    pickIndices: new Map<number, PickIndex>(),
+    pickIndices: new WeakMap<Float32Array, PickIndex>(),
     canvasLogicalWidth: 800,
     // mid-height, where the ribbon's centre sits half its travel along
     x: LEFT_BP + SLOPED_TRAVEL / 2 + SLOPED_W / 2,
@@ -268,12 +272,14 @@ test('drawn and pickable stay one boundary in curve mode too', () => {
     const hit = pickFeatureAtPoint({
       ctx: createGeometricPickCtx(),
       state: {
+        canvasWidth: 800,
+        canvasHeight: HEIGHT,
         overdrawPx: 300,
         groundColor: '#fff',
         perTrack: new Map([[0, params]]),
       },
       regions: new Map([[0, makeData(w)]]),
-      pickIndices: new Map<number, PickIndex>(),
+      pickIndices: new WeakMap<Float32Array, PickIndex>(),
       canvasLogicalWidth: 800,
       x: LEFT_BP + w / 2,
       y: HEIGHT / 2,

@@ -30,7 +30,7 @@ import type { CanvasLike } from './syntenyRibbonPath.ts'
 //
 // 1. The kind PREDICATES are now generated from syntenyTypes.slang, replacing
 //    `kind >= KIND_CIGAR_MATCH` / `kind === KIND_MARKER` open-coded in
-//    Canvas2DSyntenyRenderer. These tests are the retirement gate: they assert
+//    drawSyntenyTrack. These tests are the retirement gate: they assert
 //    the generated predicates agree with the spellings they replaced, across
 //    every kind the RPC emits.
 //
@@ -79,7 +79,7 @@ test('the two predicates partition the kinds the way the renderer assumes', () =
   expect(ALL_KINDS.filter(k => isMarkerKind(k))).toStrictEqual([KIND_MARKER])
 })
 
-// --- the fade, retired from Canvas2DSyntenyRenderer --------------------------
+// --- the fade, retired from the Canvas2D painter -----------------------------
 
 // resolveInstanceFill's hover branch, verbatim as it stood before it called the
 // generated pair. The ×5 boost capped at 0.35 and the 0.7 darkening were a

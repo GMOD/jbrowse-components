@@ -6,8 +6,6 @@ import {
   abgrRed,
   cssColorToRgb,
 } from '@jbrowse/core/util/colorBits'
-import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
-import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { STROKE_ALPHA } from './shaders/syntenyTypes.generated.ts'
 import {
@@ -17,8 +15,6 @@ import {
   isMarkerKind,
   thinWidthFade,
 } from './shaders/syntenyTypes.js.generated.ts'
-import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
-import { makePickCtx, pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
@@ -33,12 +29,7 @@ import {
 } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { PickCanvasLike } from './syntenyPickEngine.ts'
-import type {
-  SyntenyRenderState,
-  SyntenyRenderingBackend,
-  SyntenyTrackRenderParams,
-} from './syntenyRenderingBackendTypes.ts'
+import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
 import type { CanvasLike } from './syntenyRibbonPath.ts'
 
 export type { CanvasLike } from './syntenyRibbonPath.ts'
@@ -283,127 +274,5 @@ export function drawSyntenyTrack(
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
     }
-  }
-}
-
-export class Canvas2DSyntenyRenderer
-  extends Canvas2DRenderingBackendBase
-  implements SyntenyRenderingBackend
-{
-  private cache = new SyntenyGeometryCache()
-  // Its own, NOT `this.ctx` — see makePickCtx. This backend is the one that
-  // carries a device-scale transform on its render context, so it is the one
-  // the distinction was invisible in.
-  private pickCtx: PickCanvasLike | undefined
-
-  private get dpr() {
-    return getDpr()
-  }
-
-  constructor(canvas: HTMLCanvasElement) {
-    // The base owns `canvas`, the acquired 2D context, and the no-op
-    // `setErrorHandler` (no GPU resources, so no OOM channel to forward).
-    super(canvas)
-  }
-
-  resize(width: number, height: number) {
-    const dpr = this.dpr
-    const pw = Math.round(width * dpr)
-    const ph = Math.round(height * dpr)
-    if (this.canvas.width !== pw || this.canvas.height !== ph) {
-      this.canvas.width = pw
-      this.canvas.height = ph
-    }
-  }
-
-  upload(key: number, data: SyntenyInstanceData) {
-    this.cache.set(key, data)
-  }
-
-  release(key: number) {
-    this.cache.delete(key)
-  }
-
-  // Background wipe, and the start of every render pass. Sets the one
-  // device-scale transform the pass runs under — drawSyntenyTrack draws in
-  // logical coords and bakes each track's yTop into its y values.
-  //
-  // OPAQUE AND KNOWN, NOT TRANSPARENT, and it is load-bearing for what the band
-  // looks like rather than for what it costs. Every other backend in the tree
-  // clears to (0,0,0,0); this one and its GPU twin (`beginFrame`) do not,
-  // because the two fill branches only agree over a ground they both know.
-  // `resolveInstanceFill` above is the arithmetic: a BASE ribbon comes out
-  // `rgb*darken` at alpha `shade`, while a CIGAR indel comes out
-  // `rgb*darken*shade + ground*(1 - shade)` FULLY OPAQUE — the indel palette is
-  // opaque literals (`colorUtils.ts` warns against a non-opaque one). Those land
-  // on the same pixel only when the destination IS `ground`, since
-  // base-over-ground is `rgb*shade + ground*(1 - shade)`, the pre-blend byte for
-  // byte. Over any other backdrop the indel stays blended toward a colour that
-  // is not there while the base beside it composites over the real one, so every
-  // indel wedge reads as a hole punched in the band. `shadeFill` in
-  // syntenyTypes.slang is the GPU spelling of the same thing, and
-  // `blendOverGround` a third for the legend chips.
-  //
-  // NOT A PERFORMANCE CHOICE, which is worth saying because it looks like one:
-  // a clear costs the same whatever the value (`gl.clearColor` + `gl.clear`),
-  // and both HALs configure the context with alpha on (`premultipliedAlpha`,
-  // `alphaMode: 'premultiplied'`), so no opaque-layer compositor path is being
-  // bought either.
-  //
-  // SO INK DRAWN ONTO THE BAND IS DERIVED FROM THE SAME VALUE, never read off
-  // the theme independently: `getContrastText(groundColor)` is the one source,
-  // and `markerColor`, `drawOffscreenMates`' `offscreenMateColors`, its label
-  // halo and the clicked outline all come off it. Reading `theme.palette.text.secondary`
-  // beside a ground that did not move with it is the bug that shipped the
-  // off-screen-mate strip invisible: near-white marks at 0.35 alpha on white.
-  //
-  // What is STILL a light-ground assumption is the ribbon palettes themselves —
-  // `defaultCigarColors` and the categorical ramps are fixed colours picked for
-  // a white band, and at the 0.2 default alpha they are near invisible on a dark
-  // one. Threading the ground is what makes a dark band expressible; tuning
-  // those is the separate follow-up, in the `colorPairLRDark` mould.
-  private clear(groundColor: string) {
-    const dpr = this.dpr
-    const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = groundColor
-    ctx.fillRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr)
-  }
-
-  render(state: SyntenyRenderState) {
-    const ctx = this.ctx
-    const logicalW = this.canvas.width / this.dpr
-    const { overdrawPx, groundColor } = state
-
-    this.clear(groundColor)
-
-    for (const [key, params] of state.perTrack) {
-      const data = this.cache.regions.get(key)
-      if (!data || data.instanceCount === 0) {
-        continue
-      }
-      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx, groundColor)
-    }
-  }
-
-  pick(x: number, y: number, state: SyntenyRenderState) {
-    this.pickCtx ??= makePickCtx()
-    const ctx = this.pickCtx
-    if (!ctx) {
-      return undefined
-    }
-    return pickFeatureAtPoint({
-      ctx,
-      state,
-      regions: this.cache.regions,
-      pickIndices: this.cache.pickIndices,
-      canvasLogicalWidth: this.canvas.width / this.dpr,
-      x,
-      y,
-    })
-  }
-
-  dispose() {
-    this.cache.clear()
   }
 }

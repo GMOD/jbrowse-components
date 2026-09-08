@@ -9,11 +9,9 @@ import { getPluginManager, setup } from './util.tsx'
 
 // Dotplot and synteny both hang one canvas above several displays, so hiding a
 // track cannot unmount anything — the container has to repaint, or the departed
-// track's pixels stay up. Both keep the same shape (resolved render state, keys
-// hashed per display, a repaint that always covers the whole canvas); these are
-// the tests that hold them to it. What each frame names its per-display list is
-// where they differ: synteny hands the backend one `perTrack` map, dotplot one
-// canvas-wide block per display keyed by the same hash. See
+// track's pixels stay up. Both keep the same shape, and now the same contract:
+// a resolved render state, keys hashed per display, and one canvas-wide block
+// per display, so an empty block list IS the frame that wipes the canvas. See
 // agent-docs/reference/SHARED_CANVAS_VIEWS.md §"The empty frame is
 // load-bearing".
 
@@ -28,11 +26,6 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(grapePeachGetFile)
 
-// the slice of synteny's render state these tests assert on
-interface SyntenyState {
-  perTrack: Map<number, unknown>
-}
-
 function fakeCalls<Frame>() {
   return {
     uploaded: [] as number[],
@@ -41,33 +34,10 @@ function fakeCalls<Frame>() {
   }
 }
 
-function fakeSyntenyBackend() {
-  const calls = fakeCalls<SyntenyState>()
-  return {
-    calls,
-    backend: {
-      resize() {},
-      upload(key: number) {
-        calls.uploaded.push(key)
-      },
-      release(key: number) {
-        calls.deleted.push(key)
-      },
-      render(state: SyntenyState) {
-        calls.rendered.push(state)
-      },
-      pick() {
-        return undefined
-      },
-      dispose() {},
-    },
-  }
-}
-
-// Dotplot draws through the per-region contract, so the per-display list a
-// frame carries is its block list — one canvas-wide block per display, keyed
-// by the same hash the upload used.
-function fakeDotplotBackend() {
+// Both draw through the per-region contract, so the per-display list a frame
+// carries is its block list — one canvas-wide block per display, keyed by the
+// same hash the upload used.
+function fakeBackend() {
   const calls = fakeCalls<number[]>()
   return {
     calls,
@@ -107,7 +77,7 @@ async function loadedDotplot(tracks: string[]) {
     },
     { timeout: 30000 },
   )
-  const { calls, backend } = fakeDotplotBackend()
+  const { calls, backend } = fakeBackend()
   view.startRenderingBackend(backend)
   // settle before measuring: a late geometry commit would otherwise land in the
   // upload counts these tests attribute to the hide
@@ -139,12 +109,12 @@ async function loadedSynteny(tracks: string[]) {
     { timeout: 30000 },
   )
   const level = view.levels[0]
-  const { calls, backend } = fakeSyntenyBackend()
+  const { calls, backend } = fakeBackend()
   level.startRenderingBackend(backend)
   await waitFor(
     () => {
       expect(level.settled).toBe(true)
-      expect(calls.rendered.at(-1)?.perTrack.size).toBe(tracks.length)
+      expect(calls.rendered.at(-1)?.length).toBe(tracks.length)
     },
     { timeout: 30000 },
   )
@@ -205,5 +175,8 @@ test('synteny: hiding the last track repaints the level empty', async () => {
     expect(calls.deleted).toStrictEqual([key])
   })
   expect(calls.rendered.length).toBeGreaterThan(rendersBefore)
-  expect(calls.rendered.at(-1)?.perTrack.size).toBe(0)
+  expect(calls.rendered.at(-1)).toStrictEqual([])
+  // and the level still reports finished over the band it just wiped —
+  // `paintInert` is what says a band with no tracks has nothing coming
+  expect(level.painted).toBe(true)
 }, 45000)

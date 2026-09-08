@@ -59,14 +59,20 @@ function makeParams(
   }
 }
 
+// One instance shared by the reuse suite: the index is keyed by the geometry
+// array a refetch replaces, so a fresh fixture per call would be a refetch.
+const sharedData = makeData()
+
 function pickAt(
   x: number,
   y: number,
   params: SyntenyTrackRenderParams,
-  pickIndices: Map<number, PickIndex>,
-  data = makeData(),
+  pickIndices: WeakMap<Float32Array, PickIndex>,
+  data = sharedData,
 ) {
   const state: SyntenyRenderState = {
+    canvasWidth: 800,
+    canvasHeight: 100,
     overdrawPx: 300,
     groundColor: '#fff',
     perTrack: new Map([[0, params]]),
@@ -84,28 +90,28 @@ function pickAt(
 
 describe('pick index reuse', () => {
   test('a pan reuses the index instead of rebuilding it', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     pickAt(150, 50, makeParams(), pickIndices)
-    const first = pickIndices.get(0)
+    const first = pickIndices.get(sharedData.bp1)
     expect(first).toBeDefined()
 
     pickAt(100, 50, makeParams({ offsetPx0: 50, offsetPx1: 50 }), pickIndices)
-    expect(pickIndices.get(0)).toBe(first)
+    expect(pickIndices.get(sharedData.bp1)).toBe(first)
   })
 
   test('a one-sided pan within the skew cap still reuses the index', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     pickAt(150, 50, makeParams(), pickIndices)
-    const first = pickIndices.get(0)
+    const first = pickIndices.get(sharedData.bp1)
 
     pickAt(150, 50, makeParams({ offsetPx0: 100 }), pickIndices)
-    expect(pickIndices.get(0)).toBe(first)
+    expect(pickIndices.get(sharedData.bp1)).toBe(first)
   })
 
   test('a one-sided pan past the skew cap rebuilds the index', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     pickAt(150, 50, makeParams(), pickIndices)
-    const first = pickIndices.get(0)
+    const first = pickIndices.get(sharedData.bp1)
 
     // 3000px of skew between the axes exceeds MAX_PAN_SKEW_PX, past which the
     // widened query would return too many candidates to reject cheaply. The
@@ -113,22 +119,22 @@ describe('pick index reuse', () => {
     // agent-docs/reference/SYNTENY_PICKING.md — so this only pins that SOME
     // skew rebuilds, not where the line sits.
     pickAt(150, 50, makeParams({ offsetPx0: 3000 }), pickIndices)
-    expect(pickIndices.get(0)).not.toBe(first)
+    expect(pickIndices.get(sharedData.bp1)).not.toBe(first)
   })
 
   test('a zoom rebuilds the index', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     pickAt(150, 50, makeParams(), pickIndices)
-    const first = pickIndices.get(0)
+    const first = pickIndices.get(sharedData.bp1)
 
     pickAt(150, 50, makeParams({ bpPerPx0: 2 }), pickIndices)
-    expect(pickIndices.get(0)).not.toBe(first)
+    expect(pickIndices.get(sharedData.bp1)).not.toBe(first)
   })
 })
 
 describe('pick after panning', () => {
   test('hit follows the ribbon when both views pan together', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     // unpanned: the ribbon covers x=[100,200]
     expect(pickAt(150, 50, makeParams(), pickIndices)).toEqual({
       key: 0,
@@ -146,7 +152,7 @@ describe('pick after panning', () => {
   })
 
   test('hit is exact when the two views pan by different amounts', () => {
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     pickAt(150, 50, makeParams(), pickIndices)
 
     // top edge shifts to [50,150], bottom edge stays [100,200]: a slanted
@@ -177,7 +183,13 @@ describe('per-candidate rejection', () => {
       bp2: Float32Array.from([-4900]),
     })
     expect(
-      pickAt(150, 50, makeParams(), new Map<number, PickIndex>(), data),
+      pickAt(
+        150,
+        50,
+        makeParams(),
+        new WeakMap<Float32Array, PickIndex>(),
+        data,
+      ),
     ).toBeUndefined()
   })
 
@@ -189,7 +201,7 @@ describe('per-candidate rejection', () => {
       bp3: Float32Array.from([100.5]),
       bp4: Float32Array.from([100]),
     })
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     expect(pickAt(100, 50, makeParams(), pickIndices, data)).toBeUndefined()
     expect(
       pickAt(
@@ -326,7 +338,7 @@ test('the index answers exactly what a brute-force scan answers', () => {
     const params = makeParams(override)
     // One index per case, then reused across the sweep — which is also what
     // exercises the reuse path against a moving query x.
-    const pickIndices = new Map<number, PickIndex>()
+    const pickIndices = new WeakMap<Float32Array, PickIndex>()
     for (let x = 0; x <= 800; x += 3) {
       const y = 50 % Math.max(params.height, 1)
       const got = pickAt(x, y, params, pickIndices, data)

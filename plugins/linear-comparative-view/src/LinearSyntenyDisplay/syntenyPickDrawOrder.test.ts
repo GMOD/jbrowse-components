@@ -65,6 +65,8 @@ function pickedFeatureAt(x: number) {
     drawCurves: false,
   }
   const state: SyntenyRenderState = {
+    canvasWidth: 800,
+    canvasHeight: 100,
     overdrawPx: 300,
     groundColor: '#fff',
     perTrack: new Map([[0, params]]),
@@ -73,7 +75,7 @@ function pickedFeatureAt(x: number) {
     ctx: createGeometricPickCtx(),
     state,
     regions: new Map([[0, data]]),
-    pickIndices: new Map<number, PickIndex>(),
+    pickIndices: new WeakMap<Float32Array, PickIndex>(),
     canvasLogicalWidth: 800,
     x,
     y: 50,

@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
-import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
+import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
   ComparativeFetchMixin,
   LodTierInfoMixin,
@@ -40,6 +40,7 @@ import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMate
 import type { ParentViewDuck } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
+import type { SyntenyCell } from './syntenyRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
@@ -866,6 +867,44 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           bpPerPx1: v1.bpPerPx,
           drawCurves: this.effectiveDrawCurves,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Stable key for this display's outline cell, beside the `displayKey` its
+       * ribbons upload under. Two cells rather than one so a click re-uploads
+       * the handful of records the outline traces instead of the track's whole
+       * buffer — hashed off a name of its own for the same reason `displayKey`
+       * is hashed rather than indexed.
+       */
+      get outlineKey() {
+        return sharedBackendKey(`${self.id}:outline`)
+      },
+      /**
+       * #getter
+       * This display's ribbons as the band's backend holds them. Built here
+       * rather than in the level's map so the wrapper's identity is this
+       * display's: a sibling's refetch rebuilds that map, and a fresh wrapper
+       * per entry would re-upload every track on it.
+       */
+      get ribbonCell(): SyntenyCell | undefined {
+        const data = self.renderInstanceData
+        return data && { kind: 'ribbons', data }
+      },
+      /**
+       * #getter
+       * The clicked ribbon's outline cell, or nothing while no ribbon is
+       * selected. Its identity moves on a selection, a refetch and a recolor —
+       * which is exactly when the packed bytes it copies out stop describing it
+       * — and on nothing a pan does.
+       */
+      get outlineCell(): SyntenyCell | undefined {
+        const data = self.renderInstanceData
+        const featureId = self.renderParams?.clickedFeatureId
+        return data && featureId !== undefined && featureId > 0
+          ? { kind: 'outline', data, featureId }
+          : undefined
       },
     }))
     .actions(self => ({

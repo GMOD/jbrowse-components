@@ -1,3 +1,5 @@
+import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
+
 import {
   INSTANCE_OFFSET_F32,
   INSTANCE_OFFSET_U32,
@@ -88,6 +90,12 @@ export const SYNTENY_INSTANCE_CACHE: InstanceCacheOpts<SyntenyInstanceData> = {
   strideWords: INSTANCE_STRIDE_WORDS,
   colorOffsetWords: INSTANCE_OFFSET_U32.color,
 }
+
+// Module-level, and the token keying is what makes that safe: the mark list is
+// module-level too, so a cache keyed by track would be one map shared by every
+// band on the page — while two tracks never hold one `bp1`. The outline pack
+// reads the same entry the fill filled, so a selection costs no interleave.
+export const syntenyInstanceCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
 
 // The instances the clicked-outline (edge) pass would actually paint, copied out
 // of an already-interleaved region buffer into a buffer of their own.

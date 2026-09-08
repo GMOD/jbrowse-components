@@ -166,7 +166,7 @@ export interface ComputedTransform {
 }
 
 // The uniforms the shader consumes, computed once for the CPU paths too —
-// `GpuSyntenyRenderer.writeUniforms` writes these same values into the UBO, so
+// `syntenyRibbonMarks`' uniform write puts these same values into the UBO, so
 // this is the producer rather than a copy of a consumer.
 //
 // `panPx = (base - offsetPx*bpPerPx)/bpPerPx` is how far the view has panned
@@ -259,7 +259,7 @@ export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
 
 // The widest the ribbon is perpendicular to itself ANYWHERE along its length,
 // which is the question "is this ever more than a hairline" — so it is what
-// decides fill vs centerline-stroke in Canvas2DSyntenyRenderer.drawSyntenyTrack,
+// decides fill vs centerline-stroke in drawSyntenyTrack,
 // and through that pickability in pickFeatureAtPoint. Both call this, so "drawn
 // as a solid fill" and "pickable" stay one boundary.
 //
@@ -363,7 +363,7 @@ export function isRibbonCulled(
 // `< 2.55` IS `< 3`, and the divide leaves the per-instance loops.
 const MIN_VISIBLE_ALPHA_BYTE = 3
 
-// The draw loop (Canvas2DSyntenyRenderer.drawSyntenyTrack) and the pick engine
+// The draw loop (drawSyntenyTrack) and the pick engine
 // must answer this identically, or a ribbon too faint to paint stays hoverable
 // — the same "drawn and pickable are one boundary" rule `ribbonPerpWidth`
 // enforces for sub-pixel thinness. Which is why it is this function and not a

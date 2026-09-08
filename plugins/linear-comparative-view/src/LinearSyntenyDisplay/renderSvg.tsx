@@ -1,7 +1,7 @@
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
-import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
+import { drawSyntenyTrack } from './drawSyntenyTrack.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'

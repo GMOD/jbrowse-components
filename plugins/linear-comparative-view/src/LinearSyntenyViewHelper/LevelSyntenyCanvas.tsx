@@ -147,7 +147,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         },
       )
       // a mark hovered is not a ribbon hovered
-      model.setHoveredFeature(mate ? undefined : pickAt(at))
+      model.setHoveredFeature(
+        mate ? undefined : model.pickFeatureAt(at.x, at.y),
+      )
     })
 
   const {
@@ -185,13 +187,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       clientX: evt.clientX,
       clientY: evt.clientY,
     }
-  }
-
-  function pickAt(coords: { x: number; y: number }) {
-    const backend = model.gpuRenderingBackend
-    return backend
-      ? backend.pick(coords.x, coords.y, model.syntenyRenderState)
-      : undefined
   }
 
   // Flushes per event, since pointer moves already arrive at about frame rate.
@@ -287,7 +282,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // A release outside the band answers no hit (the pick engine rejects a y
     // outside the track), which clears the selection — the same thing a click on
     // empty canvas has always done.
-    const hit = pickAt(coords)
+    const hit = model.pickFeatureAt(coords.x, coords.y)
     const display = model.setClickedFeature(hit)
     if (display && hit) {
       openSyntenyFeatureWidget(display, hit.instanceIndex)
@@ -321,7 +316,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       setMarkMenu({ hit: mate, clientX: event.clientX, clientY: event.clientY })
       return
     }
-    const hit = pickAt(coords)
+    const hit = model.pickFeatureAt(coords.x, coords.y)
     if (!hit) {
       return
     }

@@ -18,6 +18,8 @@ import {
   installClearHoverOnSurfaceMove,
 } from '@jbrowse/synteny-core'
 
+import { syntenyMarkBlocks } from '../LinearSyntenyDisplay/syntenyMarks.ts'
+import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import {
   captureStackViewports,
   mateFlightAllowed,
@@ -29,6 +31,7 @@ import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
+  SyntenyCell,
   SyntenyPickResult,
   SyntenyRenderState,
   SyntenyRenderingBackend,
@@ -86,19 +89,6 @@ export function linearSyntenyViewHelperModelFactory(
         level: types.number,
       }),
     )
-    .views(self => ({
-      /**
-       * #getter
-       * Typed accessor for the slot-mixin-owned `currentRenderingBackend`. All
-       * synteny displays within the level upload their geometry to the same
-       * backend and render onto one canvas.
-       */
-      get gpuRenderingBackend(): SyntenyRenderingBackend | undefined {
-        return self.currentRenderingBackend as
-          | SyntenyRenderingBackend
-          | undefined
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -322,26 +312,59 @@ export function linearSyntenyViewHelperModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Per-display GPU geometry keyed by displayKey. The upload autorun
-       * diffs this map — new entries upload, vanished entries evict.
+       * Every cell the band's backend holds bytes for, in draw order: each
+       * display's ribbons, then its outline while a ribbon of it is selected.
+       * The upload autorun diffs this map — new entries upload, vanished
+       * entries evict — and the wrappers are the displays' own, so a refetch on
+       * one track re-uploads only that track.
        */
-      get geometryByDisplayKey() {
-        const m = new Map<number, SyntenyInstanceData>()
+      get syntenyCells() {
+        const m = new Map<number, SyntenyCell>()
         for (const display of self.linearSyntenyDisplays) {
           // Read renderInstanceData (main-thread-recolored) not instanceData,
           // so colorBy changes re-upload without an RPC refetch.
-          const data = display.renderInstanceData
-          if (data) {
-            m.set(display.displayKey, data)
+          const cell = display.ribbonCell
+          if (cell) {
+            m.set(display.displayKey, cell)
+          }
+          const outline = display.outlineCell
+          if (outline) {
+            m.set(display.outlineKey, outline)
           }
         }
         return m
       },
       /**
        * #getter
+       * Each track's ribbon geometry, in draw order — what the pick walks. The
+       * outline cells are left out: an outline is the selection's own
+       * silhouette, drawn over the ribbon it traces.
+       */
+      get ribbonGeometryByDisplayKey() {
+        const m = new Map<number, SyntenyInstanceData>()
+        for (const [key, cell] of this.syntenyCells) {
+          if (cell.kind === 'ribbons') {
+            m.set(key, cell.data)
+          }
+        }
+        return m
+      },
+      /**
+       * #getter
+       * One canvas-wide block per cell, so a ribbon's outline draws over its own
+       * fill and a later track over an earlier one.
+       */
+      get syntenyBlocks() {
+        return syntenyMarkBlocks(
+          this.syntenyCells.keys(),
+          self.parentView.width,
+        )
+      },
+      /**
+       * #getter
        * Aggregated per-frame render state, always resolved — "the view isn't
        * measured yet" is `canRender`'s precondition. An empty `perTrack` is a
-       * real frame rather than a skip: the backend clears before drawing, so
+       * real frame rather than a skip: the frame clears before drawing, so
        * painting zero tracks is what drops a hidden track's ribbons.
        */
       get syntenyRenderState(): SyntenyRenderState {
@@ -349,10 +372,16 @@ export function linearSyntenyViewHelperModelFactory(
         for (const display of self.linearSyntenyDisplays) {
           const params = display.renderParams
           if (params) {
+            // Both of the display's keys, since the mark's `params` lens picks
+            // by the block's own key and a track's outline draws under the
+            // track's params.
             perTrack.set(display.displayKey, params)
+            perTrack.set(display.outlineKey, params)
           }
         }
         return {
+          canvasWidth: self.parentView.width,
+          canvasHeight: self.height,
           overdrawPx: self.parentView.overdrawPx,
           groundColor: this.groundColor,
           perTrack,
@@ -403,7 +432,42 @@ export function linearSyntenyViewHelperModelFactory(
       get canRender() {
         return self.parentView.initialized
       },
+      /**
+       * #getter
+       * Overrides `RenderLifecycleMixin`'s hook: a band with no synteny track on
+       * it paints its ground this tick and nothing is coming, so it has
+       * finished rather than being pending. `renderBlocks` answers "did content
+       * reach the canvas" off the blocks it drew, which is the right answer for
+       * a track still fetching and the wrong one for a band with nothing to
+       * draw on it.
+       */
+      get paintInert() {
+        return self.linearSyntenyDisplays.length === 0
+      },
     }))
+    .views(self => {
+      // The engine's offscreen context and its per-geometry index, allocated
+      // once for the band. A `.views` closure and not volatile state: neither
+      // is snapshottable, and the pointer handlers read this untracked.
+      const pick = createSyntenyPicker()
+      return {
+        /**
+         * #method
+         * The ribbon under a canvas-relative point, topmost first — the band's
+         * hover, click and context menu all ask this. CPU picking rather than a
+         * GPU id buffer: ADR-019.
+         */
+        pickFeatureAt(x: number, y: number) {
+          return pick(
+            self.ribbonGeometryByDisplayKey,
+            self.syntenyRenderState,
+            self.parentView.width,
+            x,
+            y,
+          )
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
@@ -457,17 +521,17 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        */
       startRenderingBackend(backend: SyntenyRenderingBackend) {
-        // renderInstanceData is MST-cached, so the identity diff keeps an
-        // upload-autorun re-fire from one display off the others' buffers.
+        // the cells are the displays' own MST-cached wrappers, so the identity
+        // diff keeps an upload-autorun re-fire from one display off the others'
+        // buffers.
         installUpload(self, backend, {
-          cells: () => self.geometryByDisplayKey,
-          render: b => {
-            // the parent's own width, not views[0]'s: the same number with no
-            // assertion on a row that may not exist yet
-            b.resize(self.parentView.width, self.height)
-            b.render(self.syntenyRenderState)
-            return true
-          },
+          cells: () => self.syntenyCells,
+          render: b =>
+            b.renderBlocks(
+              self.syntenyBlocks,
+              self.syntenyCells,
+              self.syntenyRenderState,
+            ),
         })
       },
       afterAttach() {
