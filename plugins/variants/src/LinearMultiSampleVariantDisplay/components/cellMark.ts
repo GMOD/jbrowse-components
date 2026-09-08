@@ -10,6 +10,7 @@ import { snapVariantCellX } from './snapVariantCellX.ts'
 import { drawVariantShape } from './variantShape.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
+import type { InkHit } from '@jbrowse/render-core/marks/hit'
 
 /**
  * The `cell` shape's channels: a glyph from `startEnd[2i]` to `startEnd[2i+1]`
@@ -82,26 +83,29 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
 
   // An inversion's triangle answers as its bounding box, the same box the
   // display's picker measured before this existed.
+  //
+  // The off-canvas test is `paintBlock`'s, spelled the same way: a row the
+  // viewport has scrolled past is ink nobody drew, so it must not be the nearest
+  // thing to a cursor either. It also costs the walk nothing — a culled instance
+  // skips both bp lookups and the snap.
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { startEnd, rowIndex } = channels
-    const { canvasWidth } = frame
+    const { canvasWidth, canvasHeight } = frame
     const { rowHeight, scrollTop } = params
     const h = drawnCellHeightPx(rowHeight)
     const toX = makeBpMapper(block)
     return nearestInk(candidates, maxDistSq, i => {
-      const { x, width } = snapVariantCellX(
-        toX(startEnd[i * 2]!),
-        toX(startEnd[i * 2 + 1]!),
-        canvasWidth,
-      )
-      return inkOnRect(
-        xPx,
-        yPx,
-        x,
-        rowIndex[i]! * rowHeight - scrollTop,
-        width,
-        h,
-      )
+      const y = rowIndex[i]! * rowHeight - scrollTop
+      let ink: InkHit | undefined
+      if (y + h >= 0 && y <= canvasHeight) {
+        const { x, width } = snapVariantCellX(
+          toX(startEnd[i * 2]!),
+          toX(startEnd[i * 2 + 1]!),
+          canvasWidth,
+        )
+        ink = inkOnRect(xPx, yPx, x, y, width, h)
+      }
+      return ink
     })
   },
 }

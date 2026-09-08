@@ -271,4 +271,29 @@ describe('draw against hit', () => {
       }
     }
   }
+
+  // Scrolled so row 0 is off the top of the canvas and row 2 off the bottom:
+  // `paintBlock` skips both, and the sweep can only see that through
+  // `sliceOne`, one instance painted at a time. Positional attribution reads
+  // the survivors as instances 0 and 1 and gates the wrong pair.
+  const sliceCell = (c: typeof cells, i: number) => ({
+    startEnd: c.startEnd.subarray(i * 2, i * 2 + 2),
+    rowIndex: c.rowIndex.subarray(i, i + 1),
+    color: c.color.subarray(i, i + 1),
+    shapeType: c.shapeType.subarray(i, i + 1),
+    count: 1,
+  })
+
+  test('a row scrolled off the canvas is painted by nobody and answers nobody', () => {
+    expect(
+      sweepDrawAgainstHit(
+        cellMark,
+        cells,
+        makeBlock(),
+        { canvasWidth: 800, canvasHeight: 12 },
+        { rowHeight: 10, scrollTop: 25 },
+        { maxDistSq: HIT_TOLERANCE_PX ** 2, sliceOne: sliceCell },
+      ),
+    ).toEqual([])
+  })
 })

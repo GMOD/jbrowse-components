@@ -1,3 +1,8 @@
+import {
+  GLYPH_DIAMOND,
+  GLYPH_DISC,
+  GLYPH_TRIANGLE,
+} from '../shaders/pointMark.consts.generated.ts'
 import { sweepDrawAgainstHit } from './drawAgainstHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
@@ -62,10 +67,9 @@ describe('span: every drawn rect answers its own hit, in both orientations', () 
   })
 })
 
-// Bars only: a glyph paints a path rather than a rect, so `recordingContext`
-// records the colour run's hull instead of one rect per instance. A bar IS a
-// rect on both sides, which is why this sweeps at containment only, as span's
-// does.
+// Bars, which are a rect on both sides — so this arm gets the containment
+// claim, as span's does, and sweeps at containment only. The glyph arm below is
+// the one that needs `sliceOne`.
 const points: PointChannels = {
   x: Uint32Array.from([10, 40, 70]),
   x2: Uint32Array.from([30, 60, 95]),
@@ -90,4 +94,55 @@ test('point: every drawn bar answers its own hit, in both orientations', () => {
       ),
     ).toEqual([])
   }
+})
+
+// Every glyph kind at 1bp, which at this zoom is half a pixel and so well under
+// `pointDrawsBar`'s threshold — the branch Manhattan actually draws, and the one
+// `findManhattanHit` picks through. The painter batches a colour run into one
+// path, so nothing here is attributable positionally and the whole arm rests on
+// `sliceOne`.
+//
+// Two diameters: 2 takes `appendGlyph`'s crisp-square branch
+// (SMALL_POINT_MAX_DIAMETER is 3) and 6 its disc, and the square is the one that
+// SNAPS, so its box is not centred on the bp the hit test measures from.
+const glyphs: PointChannels = {
+  x: Uint32Array.from([12, 38, 64, 88]),
+  x2: Uint32Array.from([13, 39, 65, 89]),
+  y: Float32Array.from([0.15, 0.4, 0.65, 0.9]),
+  color: Uint32Array.from([RED, RED, BLUE, BLUE]),
+  glyph: Uint8Array.from([
+    GLYPH_DISC,
+    GLYPH_TRIANGLE,
+    GLYPH_DIAMOND,
+    GLYPH_DISC,
+  ]),
+  count: 4,
+}
+
+const slicePoint = (c: PointChannels, i: number): PointChannels => ({
+  x: c.x.subarray(i, i + 1),
+  x2: c.x2.subarray(i, i + 1),
+  y: c.y.subarray(i, i + 1),
+  color: c.color.subarray(i, i + 1),
+  glyph: c.glyph.subarray(i, i + 1),
+  count: 1,
+})
+
+describe('point: a glyph hit lands on the glyph the painter drew', () => {
+  test.each([2, 6])('diameter %i', diameterPx => {
+    for (const reversed of [false, true]) {
+      expect(
+        sweepDrawAgainstHit(
+          pointMark,
+          glyphs,
+          { ...block, reversed },
+          { canvasWidth: 60, canvasHeight: 100 },
+          { domain: [0, 1], diameterPx },
+          // Wide enough that every swept point gets an answer, so the claims are
+          // made everywhere rather than only on top of a glyph.
+          { maxDistSq: 400, sliceOne: slicePoint },
+        ),
+      ).toEqual([])
+    }
+  })
 })
