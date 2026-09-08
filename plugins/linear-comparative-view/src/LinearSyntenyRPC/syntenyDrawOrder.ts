@@ -38,8 +38,9 @@ export interface DrawOrderKey {
 //
 // PIXELS, not query bp: an inversion can be narrow on one axis and wide on the
 // other. That makes the order zoom-dependent, which costs nothing — the sort
-// runs per fetch, and setRpcData drops the hover/click indices along with the
-// geometry they addressed.
+// runs per fetch, setRpcData drops the hover index along with the geometry it
+// addressed, and this renumbering is why the click is stored as the adapter's
+// feature id instead.
 //
 // Ties break on position/mate/id rather than on the adapter's block-arrival
 // order, which varies run-to-run as concurrent region fetches resolve. That

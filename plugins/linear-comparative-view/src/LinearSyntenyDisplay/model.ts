@@ -118,6 +118,29 @@ function instanceFeatureId(
   return featureIdx === undefined ? 0 : featureIdx + 1
 }
 
+// Unlike the positional featureId above, this survives a refetch — see
+// `agent-docs/mechanisms/ui-state-holds-keys-not-indices.md`.
+function instanceFeatureUniqueId(
+  featureData: SyntenyFeatureData | undefined,
+  instanceData: SyntenyGeometry | undefined,
+  idx: number,
+) {
+  const featureIdx =
+    idx >= 0 ? instanceData?.instanceFeatureIdx[idx] : undefined
+  return featureIdx === undefined
+    ? undefined
+    : featureData?.featureIds[featureIdx]
+}
+
+function featureIdOfUniqueId(
+  data: SyntenyFeatureData | undefined,
+  uniqueId: string | undefined,
+) {
+  return uniqueId === undefined || !data
+    ? 0
+    : data.featureIds.indexOf(uniqueId) + 1
+}
+
 // Exported for the synteny follow, which picks a feature by scanning the packed
 // arrays itself and so holds a FEATURE index rather than the instance index
 // `getFeature` below translates from.
@@ -220,10 +243,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       hoveredInstanceIdx: -1,
       /**
        * #volatile
-       * Clicked twin of `hoveredInstanceIdx` — the instance whose feature stays
-       * highlighted after the pointer leaves it.
+       * Clicked twin of `hoveredInstanceIdx`, held as the adapter's own
+       * feature id rather than an offset: the click opens the details drawer,
+       * which resizes the view and refetches, and an offset cannot survive
+       * that.
        */
-      clickedInstanceIdx: -1,
+      clickedFeatureUniqueId: undefined as string | undefined,
       contextMenuAnchor: undefined as ClickCoord | undefined,
     }))
     .actions(self => ({
@@ -232,22 +257,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Set both feature and instance data in one MST action so downstream
        * autoruns (upload, render) fire once per RPC completion, not twice.
        *
-       * The hover/click indices address the OUTGOING instanceData, so they are
-       * meaningless against the incoming arrays and must be dropped here — a
-       * surviving index either highlights an unrelated ribbon (still in range)
-       * or writes NaN into the clickedFeatureId uniform (out of range). A
-       * refetch is a zoom/pan/mode change, after which the pointer is no longer
-       * over whatever it was hovering anyway.
-       *
-       * An open context menu goes with them, for the same reason one step
-       * further along. It does not hold an index — it holds a resolved feature
-       * and the window a panel was showing — but both describe the fetch that
-       * has just been replaced, and its items act on them ASYNCHRONOUSLY, after
-       * a click. Feature ids are not comparable across a tiered PIF's two
-       * tiers, so a menu that outlived a tier flip would ask the worker to
-       * resolve an id the new tier does not have, and get back the same
-       * `undefined` a CIGAR-less block gives — which is what
-       * `moveMatchingPanel` then reports it as.
+       * The hover index and the context menu both describe the fetch being
+       * replaced and are dropped. The clicked feature is not: it is a name, and
+       * `clickedFeatureId` re-resolves it against whatever landed.
        */
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
@@ -256,7 +268,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         self.featureData = featureData
         self.instanceData = instanceData
         self.hoveredInstanceIdx = -1
-        self.clickedInstanceIdx = -1
         self.contextMenuAnchor = undefined
       },
       /**
@@ -269,9 +280,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #action
+       * Point the click at one GPU instance, or -1 for none. Stores the
+       * feature behind it, not the index.
        */
-      setClickedInstanceIdx(idx: number) {
-        self.clickedInstanceIdx = idx
+      setClickedInstance(idx: number) {
+        self.clickedFeatureUniqueId = instanceFeatureUniqueId(
+          self.featureData,
+          self.instanceData,
+          idx,
+        )
       },
       openContextMenu(anchor: ClickCoord) {
         self.contextMenuAnchor = anchor
@@ -837,28 +854,25 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * The hovered instance as a 1-based featureId (0 = "no hit"), the id the
-       * shaders and the painter compare against to highlight every instance of
-       * a feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
-       * interleaveInstances and the pick engine. An index past the end reads
-       * `undefined` and answers "no hit", the same way `getFeature` refuses an
-       * out-of-range instance: asserting it non-null instead wrote `NaN` into
-       * the uniform.
+       * shaders and the painter compare against. Matches the
+       * `instanceFeatureIdx[i] + 1` mapping in interleaveInstances and the pick
+       * engine.
        */
       get hoveredFeatureId() {
         return instanceFeatureId(self.instanceData, self.hoveredInstanceIdx)
       },
       /**
        * #getter
-       * The clicked twin, and **its own computed rather than a field of
-       * `renderParams`**: the outline cell is keyed on it, and `renderParams`
-       * carries the two views' `offsetPx` and `bpPerPx`, so a getter reading it
-       * through there would move on every pan frame and every hover — which is
-       * a re-pack and a re-upload of the outline per pointermove, for as long as
-       * a ribbon is selected. `MultiWaySyntenyDisplay`'s twin is the same shape
-       * for the same reason.
+       * The clicked twin, re-resolved from the stored name; a payload that
+       * dropped the feature answers 0. Its own computed rather than a field of
+       * `renderParams`, which moves on every pan frame — the outline cell is
+       * keyed on this, so that would re-upload it per pointermove.
        */
       get clickedFeatureId() {
-        return instanceFeatureId(self.instanceData, self.clickedInstanceIdx)
+        return featureIdOfUniqueId(
+          self.featureData,
+          self.clickedFeatureUniqueId,
+        )
       },
       /**
        * #getter

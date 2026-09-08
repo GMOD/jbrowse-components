@@ -304,7 +304,7 @@ export function linearSyntenyViewHelperModelFactory(
          */
         setClickedFeature(hit: SyntenyPickResult | undefined) {
           return point(hit, (display, idx) => {
-            display.setClickedInstanceIdx(idx)
+            display.setClickedInstance(idx)
           })
         },
       }

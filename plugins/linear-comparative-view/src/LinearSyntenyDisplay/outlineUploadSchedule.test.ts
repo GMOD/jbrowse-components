@@ -59,9 +59,28 @@ const GEOMETRY: SyntenyGeometry = {
 }
 
 const FEATURES = packSyntenyFeatureData([
-  { start: 0, end: 100 },
-  { start: 200, end: 300 },
+  { id: 'aln-a', start: 0, end: 100 },
+  { id: 'aln-b', start: 200, end: 300 },
 ])
+
+// The same two alignments a commit later, in the other order — `compareDrawOrder`
+// sorts on on-screen pixels. A stored offset still reads 1 here and outlines the
+// wrong ribbon.
+const REORDERED = packSyntenyFeatureData([
+  { id: 'aln-b', start: 200, end: 300 },
+  { id: 'aln-a', start: 0, end: 100 },
+])
+
+const WITHOUT_A = packSyntenyFeatureData([
+  { id: 'aln-b', start: 200, end: 300 },
+])
+
+const ONE_INSTANCE: SyntenyGeometry = {
+  ...GEOMETRY,
+  kinds: Uint8Array.from([KIND_BASE]),
+  instanceFeatureIdx: Uint32Array.from([0]),
+  instanceCount: 1,
+}
 
 // Records which keys the installer's diff pushed, which is the whole question
 // here — the frame itself is not.
@@ -113,7 +132,7 @@ async function openSelectedRibbon() {
 
   // the RPC's answer, then a click on the first ribbon
   display.setRpcData(FEATURES, GEOMETRY)
-  display.setClickedInstanceIdx(0)
+  display.setClickedInstance(0)
   const { uploaded, backend } = recordingBackend()
   level.startRenderingBackend(backend)
   await when(() => uploaded.includes(display.outlineKey))
@@ -153,10 +172,34 @@ test('a new selection re-uploads the outline and nothing else', async () => {
   const outlineUploads = countOf(display.outlineKey)
   const ribbonUploads = countOf(display.displayKey)
 
-  display.setClickedInstanceIdx(1)
+  display.setClickedInstance(1)
 
   expect(display.outlineCell).not.toBe(cell)
   await when(() => countOf(display.outlineKey) > outlineUploads)
   expect(level.syntenyCells.get(display.displayKey)).toBe(ribbons)
   expect(countOf(display.displayKey)).toBe(ribbonUploads)
+}, 20000)
+
+// The click's own side effect causes the commit: the details drawer narrows the
+// view, which moves the snapped fetch window. See
+// `agent-docs/mechanisms/ui-state-holds-keys-not-indices.md`.
+test('a refetch still carrying the feature keeps the outline on it', async () => {
+  const { display } = await openSelectedRibbon()
+  expect(display.clickedFeatureId).toBe(1)
+
+  display.setRpcData(REORDERED, { ...GEOMETRY })
+
+  expect(display.clickedFeatureId).toBe(2)
+  expect(display.outlineCell?.kind).toBe('outline')
+}, 20000)
+
+// The other half, and what makes the survival above safe: an id the new payload
+// does not carry resolves to 0, which is the release.
+test('a refetch that dropped the feature releases the outline', async () => {
+  const { display } = await openSelectedRibbon()
+
+  display.setRpcData(WITHOUT_A, ONE_INSTANCE)
+
+  expect(display.clickedFeatureId).toBe(0)
+  expect(display.outlineCell).toBeUndefined()
 }, 20000)
