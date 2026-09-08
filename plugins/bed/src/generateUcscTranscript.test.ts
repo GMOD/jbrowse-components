@@ -45,7 +45,8 @@ describe('isUcscTranscript', () => {
     ).toBe(false)
   })
 
-  it('returns false when thickStart === thickEnd (no CDS)', () => {
+  // Blocks are what make a transcript; thickness only says whether it codes.
+  it('returns true when thickStart === thickEnd, which is a non-coding transcript', () => {
     expect(
       isUcscTranscript({
         thickStart: 100,
@@ -53,7 +54,7 @@ describe('isUcscTranscript', () => {
         blockCount: 3,
         strand: 1,
       }),
-    ).toBe(false)
+    ).toBe(true)
   })
 
   it('returns false when thickStart is missing', () => {
@@ -162,6 +163,59 @@ describe('generateUcscTranscript', () => {
     })
 
     expect(result.type).toBe('transcript')
+    expect(result.subfeatures).toEqual([
+      { type: 'exon', start: 1000, end: 1200, refName: 'chr1' },
+      { type: 'exon', start: 1800, end: 2000, refName: 'chr1' },
+    ])
+  })
+
+  // A plain BED12 carries no cdsStartStat — those are bigGenePred's — so the
+  // empty thick range is all there is to read the absence of a CDS off.
+  it('handles a non-coding BED12, which has no cdsStartStat to say so', () => {
+    const result = generateUcscTranscript({
+      uniqueId: 'lnc1',
+      start: 1000,
+      end: 2000,
+      refName: 'chr1',
+      strand: -1,
+      thickStart: 1000,
+      thickEnd: 1000,
+      blockCount: 2,
+      blockSizes: [200, 200],
+      chromStarts: [0, 800],
+      subfeatures: [
+        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
+        { type: 'block', start: 1800, end: 2000, refName: 'chr1' },
+      ],
+    })
+
+    expect(result.type).toBe('transcript')
+    expect(result.subfeatures).toEqual([
+      { type: 'exon', start: 1000, end: 1200, refName: 'chr1' },
+      { type: 'exon', start: 1800, end: 2000, refName: 'chr1' },
+    ])
+  })
+
+  // The thick point need not sit at the transcript's own start, and inside a
+  // block the coding walk would emit a zero-length CDS carrying a phase.
+  it('emits no zero-length CDS when the empty thick range falls inside a block', () => {
+    const result = generateUcscTranscript({
+      uniqueId: 'lnc2',
+      start: 1000,
+      end: 2000,
+      refName: 'chr1',
+      strand: 1,
+      thickStart: 1100,
+      thickEnd: 1100,
+      blockCount: 2,
+      blockSizes: [200, 200],
+      chromStarts: [0, 800],
+      subfeatures: [
+        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
+        { type: 'block', start: 1800, end: 2000, refName: 'chr1' },
+      ],
+    })
+
     expect(result.subfeatures).toEqual([
       { type: 'exon', start: 1000, end: 1200, refName: 'chr1' },
       { type: 'exon', start: 1800, end: 2000, refName: 'chr1' },

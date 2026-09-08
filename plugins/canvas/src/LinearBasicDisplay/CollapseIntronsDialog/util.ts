@@ -22,9 +22,10 @@ import type { TrackSnapshot } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// The four child shapes whose gaps are introns: exon/CDS on an annotation,
-// match_part on a cDNA or EST alignment, and block on a BED12 that carried no
-// thick region for the gene heuristic to promote.
+// The child shapes whose gaps are introns: exon/CDS on an annotation,
+// match_part on a sequence alignment, and block on a BED12 the gene heuristic
+// declined to promote — an unstranded one, or a track with
+// `disableGeneHeuristic` set.
 const SPLICED_PART_TYPES = new Set(['exon', 'cds', 'match_part', 'block'])
 
 export function isSplicedPartType(type: string | undefined) {

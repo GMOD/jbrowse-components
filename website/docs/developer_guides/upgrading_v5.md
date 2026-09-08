@@ -267,6 +267,24 @@ loads and [`jbrowse validate`](/docs/cli#jbrowse-validate) accepts them. Plugin
 code that imports the adapter classes or the `AllVsAll…Config` types needs the
 new names.
 
+## A non-coding BED12 parses as a transcript
+
+The BED12 gene heuristic used to require a non-empty thick range, so every
+12-column feature with `thickStart == thickEnd` — an lncRNA, a spliced EST, any
+alignment with no CDS — came back with no `type` and `block` children. Blocks
+are what make a transcript, and UCSC's own format definition calls them exons;
+thickness only says whether the transcript codes. Those features now parse as
+`transcript` with `exon` children, which is what a coding BED12 has always done
+one step further along.
+
+What changes for a site: the feature reports a type where it reported none, so
+`showOnlyGenes` admits it, the hover readout numbers its exons and gives an HGVS
+`n.` coordinate, "Get sequence" offers the spliced cDNA, "Save track data"
+writes it back as one BED12 row instead of one row per block, and "Collapse
+introns" is offered on it. The drawing does not change — both shapes were
+already drawn by the same glyph. A BED12 file whose blocks are not exons opts
+out with `disableGeneHeuristic: true` on the adapter, as before.
+
 ## Config models were flattened
 
 Config slots are no longer each their own MST instance; one model holds many

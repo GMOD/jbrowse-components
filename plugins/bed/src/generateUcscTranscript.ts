@@ -14,15 +14,21 @@ interface ValidUcscTranscriptCheck {
   strand: number
 }
 
-// type guard: narrows input fields to required + non-zero when true
+// type guard: narrows input fields to required when true
 // strand===0 means unstranded — likely not a gene
+//
+// Blocks are what make a transcript, and UCSC's own format definition calls
+// them exons. Thickness says whether the transcript CODES, which is a separate
+// axis: an lncRNA, a spliced EST and any other 12-column feature with
+// thickStart===thickEnd is a transcript by every structural measure, so it is
+// not tested here. `generateUcscTranscript` reads the same equality to emit
+// exons and no CDS.
 export function isUcscTranscript(
   input: UcscTranscriptCheck,
 ): input is ValidUcscTranscriptCheck {
   return (
     input.thickStart !== undefined &&
     input.thickEnd !== undefined &&
-    input.thickStart !== input.thickEnd &&
     input.blockCount !== undefined &&
     input.blockCount > 0 &&
     input.strand !== undefined &&
@@ -118,8 +124,15 @@ export function generateUcscTranscript(
   const fiveUTR = strand > 0 ? 'five_prime_UTR' : 'three_prime_UTR'
   const threeUTR = strand > 0 ? 'three_prime_UTR' : 'five_prime_UTR'
 
+  // thickStart===thickEnd is UCSC for no coding region, and the block walk
+  // below cannot express that: a thick point inside a block would emit a
+  // zero-length CDS carrying a phase, and one outside every block would make
+  // the whole transcript UTR.
   const { cdsEndStat, cdsStartStat } = rest
-  if (cdsStartStat === 'none' && cdsEndStat === 'none') {
+  if (
+    thickStart === thickEnd ||
+    (cdsStartStat === 'none' && cdsEndStat === 'none')
+  ) {
     return {
       ...rest,
       uniqueId,

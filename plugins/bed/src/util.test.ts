@@ -41,6 +41,28 @@ function makeTranscriptLikeInput() {
   }
 }
 
+// a BED12 line whose thick range is empty, which is UCSC for non-coding
+function makeNonCodingInput() {
+  return {
+    ...makeTranscriptLikeInput(),
+    splitLine: [
+      'chr1',
+      '1000',
+      '2000',
+      'lnc1',
+      '100',
+      '+',
+      '1000',
+      '1000',
+      '0',
+      '3',
+      '200,300,200,',
+      '0,400,800,',
+    ],
+    uniqueId: 'test-noncoding',
+  }
+}
+
 describe('parseNamesFromHeader', () => {
   it('returns column names from a tab-separated defline', () => {
     const header = '#chrom\tstart\tend\tscore\tstrand'
@@ -158,6 +180,29 @@ describe('featureData', () => {
     expect(result.type).toBe('mRNA')
     const types = result.subfeatures?.map(s => s.type)
     expect(types).toContain('CDS')
+  })
+
+  it('produces a non-coding transcript with exons for an empty thick range', () => {
+    const result = featureData(makeNonCodingInput())
+    expect(result.type).toBe('transcript')
+    expect(result.subfeatures?.map(s => s.type)).toEqual([
+      'exon',
+      'exon',
+      'exon',
+    ])
+  })
+
+  it('still skips the heuristic for a non-coding BED12 when it is disabled', () => {
+    const result = featureData({
+      ...makeNonCodingInput(),
+      disableGeneHeuristic: true,
+    })
+    expect(result.type).toBeUndefined()
+    expect(result.subfeatures?.map(s => s.type)).toEqual([
+      'block',
+      'block',
+      'block',
+    ])
   })
 
   it('skips transcript heuristic when disableGeneHeuristic is true', () => {
