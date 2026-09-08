@@ -1,4 +1,3 @@
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { isFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { waitFor } from '@testing-library/react'
@@ -150,20 +149,12 @@ function collapseItem(display: Display) {
   return item
 }
 
-function subMenu(item: MenuItem): MenuItem[] | undefined {
-  return 'subMenu' in item ? resolveSubMenu(item) : undefined
-}
-
-function subMenuLabels(item: MenuItem) {
-  return subMenu(item)?.map(m => ('label' in m ? m.label : undefined))
-}
-
-function clickSubMenu(item: MenuItem, label: string) {
-  const row = subMenu(item)?.find(m => 'label' in m && m.label === label)
-  if (!row || !('onClick' in row)) {
-    throw new Error(`no clickable submenu row labeled "${label}"`)
+function clickCollapse(display: Display) {
+  const item = collapseItem(display)
+  if (!('onClick' in item)) {
+    throw new Error('expected a clickable item')
   }
-  row.onClick()
+  item.onClick()
 }
 
 async function queuedDialogProps(session: Session) {
@@ -181,58 +172,45 @@ function transcriptIds(props: Record<string, unknown>) {
 }
 
 describe('collapse introns context menu', () => {
-  it('collapses the whole gene when the click resolved no transcript', async () => {
+  it('is a single row, not a scope submenu', () => {
+    const { display } = setup([eden1])
+    rightClick(display, gene, eden1)
+
+    expect(collapseItem(display)).not.toHaveProperty('subMenu')
+  })
+
+  it('hands the dialog every transcript when the click resolved none', async () => {
     const { display, session } = setup([])
     rightClick(display, gene)
-
-    const item = collapseItem(display)
-    expect(subMenuLabels(item)).toBeUndefined()
-    if (!('onClick' in item)) {
-      throw new Error('expected a clickable item')
-    }
-    item.onClick()
+    clickCollapse(display)
 
     const props = await queuedDialogProps(session)
     expect(transcriptIds(props)).toEqual(['EDEN.1', 'EDEN.2'])
     expect(props.featureName).toBe('EDEN')
+    expect(props.initialTranscriptId).toBeUndefined()
   })
 
-  it('offers both scopes when the click landed on a transcript', () => {
-    const { display } = setup([eden1])
-    rightClick(display, gene, eden1)
-
-    expect(subMenuLabels(collapseItem(display))).toEqual([
-      'This transcript (EDEN.1)',
-      'All transcripts',
-    ])
-  })
-
-  it('scopes to the clicked transcript, keeping the gene as the solo target', async () => {
+  it('preselects the clicked transcript without narrowing the dialog to it', async () => {
     const { display, session } = setup([eden1])
     rightClick(display, gene, eden1)
-    clickSubMenu(collapseItem(display), 'This transcript (EDEN.1)')
-
-    const props = await queuedDialogProps(session)
-    expect(transcriptIds(props)).toEqual(['EDEN.1'])
-    expect(props.featureName).toBe('EDEN.1')
-    expect(props.featureId).toBe('EDEN')
-  })
-
-  it('still reaches the union from a transcript click', async () => {
-    const { display, session } = setup([eden1])
-    rightClick(display, gene, eden1)
-    clickSubMenu(collapseItem(display), 'All transcripts')
+    clickCollapse(display)
 
     const props = await queuedDialogProps(session)
     expect(transcriptIds(props)).toEqual(['EDEN.1', 'EDEN.2'])
+    expect(props.initialTranscriptId).toBe('EDEN.1')
+    expect(props.featureId).toBe('EDEN')
+    expect(props.featureName).toBe('EDEN')
   })
 
-  it('leaves a non-transcript subpart hit as a whole-gene collapse', () => {
+  it('passes a non-transcript subpart hit through as a preselection miss', async () => {
     const matureProtein = isoform('EDEN.1.p1', 'mature_protein_region_of_CDS')
-    const { display } = setup([matureProtein])
+    const { display, session } = setup([matureProtein])
     rightClick(display, gene, matureProtein)
+    clickCollapse(display)
 
-    expect(subMenuLabels(collapseItem(display))).toBeUndefined()
+    const props = await queuedDialogProps(session)
+    expect(props.initialTranscriptId).toBe('EDEN.1.p1')
+    expect(transcriptIds(props)).toEqual(['EDEN.1', 'EDEN.2'])
   })
 })
 
@@ -388,23 +366,25 @@ describe('the collapsed view is titled the way the track labels', () => {
   it('titles the gene scope with the drawn gene label', async () => {
     const { display, session } = setupLabelled([])
     rightClick(display, labelled)
-
-    const item = collapseItem(display)
-    if (!('onClick' in item)) {
-      throw new Error('expected a clickable item')
-    }
-    item.onClick()
+    clickCollapse(display)
 
     expect((await queuedDialogProps(session)).featureName).toBe('dystrophin')
   })
 
-  it('titles the transcript scope with the drawn isoform label', async () => {
+  it('titles a transcript click with the drawn gene label it is scoped under', async () => {
     const { display, session } = setupLabelled([labelledIsoform])
     rightClick(display, labelled, labelledIsoform)
-    clickSubMenu(collapseItem(display), 'This transcript (dystrophin-201)')
+    clickCollapse(display)
 
-    expect((await queuedDialogProps(session)).featureName).toBe(
-      'dystrophin-201',
-    )
+    expect((await queuedDialogProps(session)).featureName).toBe('dystrophin')
+  })
+
+  it('carries the drawn isoform label through to the dialog', async () => {
+    const { display, session } = setupLabelled([labelledIsoform])
+    rightClick(display, labelled, labelledIsoform)
+    clickCollapse(display)
+
+    const { transcriptLabels } = await queuedDialogProps(session)
+    expect(transcriptLabels).toEqual(new Map([['EDEN.1', 'dystrophin-201']]))
   })
 })

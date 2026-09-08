@@ -121,7 +121,11 @@ function singleViewSession() {
   return { session, view }
 }
 
-function renderDialog(view: LinearGenomeViewModel) {
+function renderDialog(
+  view: LinearGenomeViewModel,
+  initialTranscriptId?: string,
+  transcriptLabels?: ReadonlyMap<string, string>,
+) {
   view.setWidth(800)
   view.setDisplayedRegions([CTG_A])
   const handleClose = jest.fn()
@@ -135,6 +139,8 @@ function renderDialog(view: LinearGenomeViewModel) {
           handleClose()
         }}
         featureId="EDEN"
+        initialTranscriptId={initialTranscriptId}
+        transcriptLabels={transcriptLabels}
         featureName="EDEN"
         trackId="test_track"
       />
@@ -186,6 +192,20 @@ describe('the window-size field', () => {
   })
 })
 
+// Isolating is an exact match on the gene's own uniqueId, so scoping the
+// regions to one isoform does not scope what the track draws.
+describe('the isolation caveat', () => {
+  it('stays silent while the whole gene is in scope', () => {
+    renderDialog(multiViewSession().view)
+    expect(screen.queryByText(/still draw wherever they fall/)).toBeNull()
+  })
+
+  it('is spoken once a single isoform is in scope', () => {
+    renderDialog(multiViewSession().view, 'EDEN.2')
+    expect(screen.getByText(/still draw wherever they fall/)).toBeVisible()
+  })
+})
+
 describe('the launched view', () => {
   it('is named for the gene when every transcript is in scope', () => {
     const { session, view } = multiViewSession()
@@ -196,6 +216,36 @@ describe('the launched view', () => {
     expect(session.views[1]!.displayName).toBe('EDEN (introns collapsed)')
     expect(session.views[0]).toBe(view)
     expect(handleClose).toHaveBeenCalled()
+  })
+
+  it('opens on the transcript the right-click landed on', () => {
+    const { session, view } = multiViewSession()
+    renderDialog(view, 'EDEN.2')
+    fireEvent.click(screen.getByText('Open in new view'))
+
+    expect(session.views[1]!.displayName).toBe('EDEN.2 (introns collapsed)')
+  })
+
+  it('ignores a preselection that names no transcript in scope', () => {
+    const { session, view } = multiViewSession()
+    renderDialog(view, 'EDEN.1.p1')
+    fireEvent.click(screen.getByText('Open in new view'))
+
+    expect(session.views[1]!.displayName).toBe('EDEN (introns collapsed)')
+  })
+
+  // The track's `labels.name` expression, as the glyph drew each isoform; the
+  // fetched record only knows its own name.
+  it('names the picked transcript the way the track drew it', () => {
+    const { session, view } = multiViewSession()
+    renderDialog(view, undefined, new Map([['EDEN.2', 'dystrophin-202']]))
+    fireEvent.mouseDown(screen.getByRole('combobox'))
+    fireEvent.click(screen.getByText(/^dystrophin-202 \(/))
+    fireEvent.click(screen.getByText('Open in new view'))
+
+    expect(session.views[1]!.displayName).toBe(
+      'dystrophin-202 (introns collapsed)',
+    )
   })
 
   it('is named for the transcript that was picked', () => {

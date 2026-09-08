@@ -55,7 +55,11 @@ export function collapseSummary(result: CollapseResult, spannedBp: number) {
   return `Collapses to ${regions.length} ${pluralize(regions.length, 'region')} — ${toLocale(shown)}bp shown of the ${toLocale(spannedBp)}bp this feature spans`
 }
 
-function transcriptLabel(transcript: Feature, idx: number) {
+function transcriptLabel(
+  transcript: Feature,
+  idx: number,
+  drawnLabel: string | undefined,
+) {
   const parts = getSplicedParts([transcript])
   const exons = parts.filter(isExon).length
   const cds = parts.filter(isCDS).length
@@ -66,7 +70,8 @@ function transcriptLabel(transcript: Feature, idx: number) {
         ? `${cds} CDS`
         : `${parts.length} ${pluralize(parts.length, 'block')}`
   const length = transcript.get('end') - transcript.get('start')
-  const name = getFeatureName(transcript) ?? `Transcript ${idx + 1}`
+  const name =
+    drawnLabel ?? getFeatureName(transcript) ?? `Transcript ${idx + 1}`
   return `${name} (${counted}, ${toLocale(length)} bp)`
 }
 
@@ -76,6 +81,8 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   assembly,
   handleClose,
   featureId,
+  initialTranscriptId,
+  transcriptLabels,
   featureName,
   trackId,
 }: {
@@ -84,11 +91,16 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   assembly: Assembly
   handleClose: () => void
   featureId: string
+  initialTranscriptId?: string
+  transcriptLabels?: ReadonlyMap<string, string>
   featureName: string
   trackId: string
 }) {
   const { classes } = useStyles()
-  const [selectedId, setSelectedId] = useState(ALL_TRANSCRIPTS)
+  const preselected = transcripts.find(t => t.id() === initialTranscriptId)
+  const [selectedId, setSelectedId] = useState(
+    preselected ? preselected.id() : ALL_TRANSCRIPTS,
+  )
   const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)
   const [soloOnly, setSoloOnly] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
@@ -104,7 +116,9 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
     ? [selectedTranscript]
     : transcripts
   const label = selectedTranscript
-    ? (getFeatureName(selectedTranscript) ?? featureName)
+    ? (transcriptLabels?.get(selectedTranscript.id()) ??
+      getFeatureName(selectedTranscript) ??
+      featureName)
     : featureName
   const result =
     windowSize === undefined
@@ -160,7 +174,11 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             </MenuItem>
             {transcripts.map((transcript, idx) => (
               <MenuItem key={transcript.id()} value={transcript.id()}>
-                {transcriptLabel(transcript, idx)}
+                {transcriptLabel(
+                  transcript,
+                  idx,
+                  transcriptLabels?.get(transcript.id()),
+                )}
               </MenuItem>
             ))}
           </TextField>
@@ -201,6 +219,12 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             label="Show only this feature (hide others in the track)"
           />
         </FormGroup>
+        {soloOnly && selectedTranscript ? (
+          <Typography variant="body2" color="textSecondary">
+            Isolating matches whole features, so the other isoforms of{' '}
+            {featureName} still draw wherever they fall inside the kept windows.
+          </Typography>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button

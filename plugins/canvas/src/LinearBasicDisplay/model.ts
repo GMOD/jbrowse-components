@@ -358,8 +358,17 @@ export default function stateModelFactory(
         contextMenuItems() {
           const base = superContextMenuItems()
           const info = self.contextMenuInfo
+          const data =
+            info && self.laidOutDataMap.get(info.displayedRegionIndex)
           return info && offersCollapseIntrons(info)
-            ? [...base, collapseIntronsMenuItem(self, info)]
+            ? [
+                ...base,
+                collapseIntronsMenuItem(
+                  self,
+                  info,
+                  data ? data.subfeatureInfos : [],
+                ),
+              ]
             : base
         },
       }
