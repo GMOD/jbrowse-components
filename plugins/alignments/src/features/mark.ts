@@ -118,6 +118,12 @@ export interface MarkChannels {
  */
 export type PileupShape = 'span' | 'cell' | 'point'
 
+// There is no fourth member, and in particular no span that opts out of the 1 px
+// floor: `connectingLines` is the pass that would want one and was declined
+// instead on 2026-09-08, because what it actually needs is the ANCHORED pivot
+// rather than no pivot. `agent-docs/ideas/one-mark-declaration-per-feature.md`
+// has the argument and what would have to be true to revisit it.
+
 // Drawn opacity, as the rule rather than a closure. `widthPx` is what the mark
 // occupies on screen — its true genomic span for `span`/`cell`, its drawn bar
 // for a `point` — and `pxPerBp` the zoom, because a point's fades measure the

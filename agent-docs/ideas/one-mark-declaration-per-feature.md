@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, nine features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test, a stroke with no expandMinWidthX), and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, nine features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test, and connectingLines, declined 2026-09-08 because a chain's span is anchored and paintMarks' pivot is centred), and the two things it must not do.
 ---
 
 # A feature declares its mark once
@@ -285,28 +285,53 @@ CSS px about its midpoint, and the contract calls that the twin of
 widened has already faded out and the branch is unreachable. The mark says so
 where a reader will look for it.
 
-### `connectingLines` does not fit yet, and the reason is the span's 1px floor
+### `connectingLines` is DECLINED, 2026-09-08, and the pivot is why
 
 It looks like the smallest thing left — one row per instance, a `[start, end]`
-pair, a constant alpha, no hit test — and it is not convertible without changing
-what it draws:
+pair, a constant alpha, and only two consumers, since it has no `hitTest.ts` at
+all. It was worked twice and declined; the sentence lives at the site, and this
+is the argument.
 
-- **connectingLine.slang has no `expandMinWidthX`**, where gap.slang (the only
-  other `span`) does. A chain whose whole footprint is under a pixel draws a
-  sub-pixel hairline on both backends today; through `paintMarks` Canvas2D would
-  draw a full 1 px and the GPU would not. That is a Canvas2D-only widening with
-  no shader twin, which is the thing `MarkCanvas2D` exists to keep visible and
-  `paintMarks`'s span pivot cannot currently opt out of.
-- **The Canvas2D call changes from `stroke` to `fillRect`.** Pixel-identical for
-  a horizontal 1px butt-capped stroke on an integer row — which is what the
-  painter already snaps to, `floor(rowY + fH/2 - 0.5) + 0.5`, the twin of the
-  shader's `floor(pileupRowCenterPx - 0.5)` — but the SVG export emits a `<rect>`
-  where it emitted a `<path>`.
+The blocker this section used to state was that connectingLine.slang has no
+`expandMinWidthX` where gap.slang does, so `paintMarks` would give Canvas2D a
+1 px floor the GPU lacks — and the way out looked like growing the shader's
+floor, since a floored connector at sub-pixel zoom would be occluded by the
+chain's own reads, which floor already. **That is wrong, and the reason is the
+reversed-block family's own pivot rule.** `read.slang` floors with
+`extendToMinWidthX`, ANCHORED at the read's start; `expandMinWidthX` widens
+about the span's MIDPOINT. `chainAbsMinStarts[i]` is by construction the minimum
+over the chain's reads, so a connector's left edge IS a read's left edge — an
+anchored span, handed the unanchored pivot. It would protrude up to 0.5 CSS px
+left of every sub-pixel chain at ~0.11-0.22 alpha, where nothing is drawn today.
+`canvas2dUtils.ts`' `spanLeft` names that family and the three painters that
+each got it wrong independently.
 
-So the choice is a third `PileupShape` member (a span that states whether it takes
-the floor) or a decision that the floor is right here and the shader should grow
-`expandMinWidthX` too. Both are decisions rather than refactors, which is why
-this was stopped rather than picked.
+So the floor is not free, and the conversion buys no correctness to pay for it.
+This pass is already among the best-twinned in the tree: the alpha is
+`export-consts`ed, the colour comes off `colorConnectingLine` on both sides, the
+Y snap is twinned with a comment naming the shader expression, and there is no
+per-instance fade, no palette key, no sub-range and no hit test to drift. There
+is no latent bug for a declaration to find, unlike `perBaseLetter`'s.
+
+Two costs the earlier reading missed, both measured: the constant 0.45 alpha is
+neither `Fade.opaque` nor `Fade.intron`, so without a new `Fade` code the mark
+falls off `paintMarks`' `constantCss` hoist and does a per-instance string
+concatenation — the exact per-item work the 2026-09-05 data conversion removed.
+And connectingLine.slang snaps Y where `Band.centerline` does not, so it needs a
+band rule too (that one is free: 2.63 vs 2.36 ns/instance, snapped-on
+indistinguishable from snapped-off).
+
+The regime is also triple-gated. Chain mode is opt-in (`promotedBase: 'off'`);
+footprints are tightly distributed, so the layer flips rather than degrades —
+0.67% of chains sub-pixel at 100 bp/px and 98.60% at 1000, measured on
+volvox-sv.bam — and `fetchSizeLimit`'s 5 MB reaches only ~227 bp/px on a 30x
+BAM, short of the 500-700 bp/px flip. Long reads cannot reach it at all.
+
+**If it is ever converted anyway**, two things follow from the above: the pivot
+must be ANCHORED (`extendToMinWidthX` / `spanLeft`), which is the `PileupShape`
+opt-out this section used to reject; and the band should be unified on SNAPPED
+for everyone rather than gaining a third code — which changes shipped `skip`
+pixels and so is a look-at-the-pixels decision.
 
 **`linkedReads` is out for a different and simpler reason**: its instances carry
 TWO rows (`y1`, `y2`, a diagonal between mates), where `MarkCommon.rows` is one

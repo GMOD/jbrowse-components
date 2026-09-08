@@ -13,6 +13,13 @@ import type {
 import type { ConnectingLinesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
+// NOT a `PileupMark`, declined 2026-09-08 — see
+// `agent-docs/ideas/one-mark-declaration-per-feature.md` before starting the
+// conversion this file looks ready for. `paintMarks` widens a sub-pixel span
+// about its MIDPOINT, and a chain's span starts at `chainAbsMinStarts[i]`, which
+// is the minimum over the chain's own reads — so it is an anchored span, and the
+// centred pivot would push it half a pixel left of the read that defines its
+// edge. The doc has the rest, including the two rule codes it would also need.
 export function drawConnectingLines(
   ctx: Ctx2D,
   region: ConnectingLinesUploadData,
