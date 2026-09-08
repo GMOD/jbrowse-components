@@ -9,6 +9,7 @@ import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 import { interbaseBarHeightPx } from './coverageBandBox.ts'
 import {
   coverageBandMarks,
+  coverageIndicatorShape,
   coverageInterbaseShape,
 } from './coverageBandMarks.ts'
 import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
@@ -318,7 +319,7 @@ function interbaseChannels(segments: Segment[]) {
   }
 }
 
-const interbaseParams = (
+const sweepParams = (
   over: Partial<CoverageBandParams> = {},
 ): CoverageBandParams => ({
   ...state().band,
@@ -357,7 +358,7 @@ describe.each([0, 40])('interbase at band top %i', top => {
           interbaseChannels(SWEEP_SEGMENTS),
           { ...block, reversed },
           SWEEP_FRAME,
-          interbaseParams({ top }),
+          sweepParams({ top }),
           { maxDistSq: Number.MIN_VALUE },
         ),
       ).toEqual([])
@@ -374,7 +375,7 @@ test('a bar taller than the band stops at the band bottom, and the band top move
   ])
   // 200/50 of the half-band is a 180px bar, which ends 49px below a band that
   // starts at 40 and is 100 tall.
-  const p = interbaseParams({ top: 40, interbaseMaxCount: 200 })
+  const p = sweepParams({ top: 40, interbaseMaxCount: 200 })
   const hitAt = (yPx: number) =>
     coverageInterbaseShape.hitNearest!(
       channels,
@@ -388,4 +389,78 @@ test('a bar taller than the band stops at the band bottom, and the band top move
     )
   expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 140, distSq: 160 ** 2 })
   expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 45, distSq: 45 ** 2 })
+})
+
+function indicatorChannels(
+  indicators: { position: number; colorType: number }[],
+) {
+  return {
+    indicatorPackedBuffer: packIndicatorInstances(
+      {
+        position: indicators.map(i => i.position),
+        colorType: indicators.map(i => i.colorType),
+      },
+      indicators.length,
+    ),
+    count: indicators.length,
+  }
+}
+
+// The triangles are traced as a PATH, so what the sweep records per instance is
+// the path's bounding box — which is exactly what the hit answers, so this arm
+// keeps the containment claim a `fillRect` layer gets rather than needing
+// `sliceOne`: every point of a triangle's 7x4.5 box has to answer that triangle,
+// and the last-painted one where two overlap. The first two are 2bp apart, which
+// at this zoom is 4px, so their boxes do overlap; all four are far enough inside
+// the block that `drawIndicators`' extent cull keeps every one of them, which is
+// what makes the rects attributable positionally.
+const SWEEP_INDICATORS = [
+  { position: START + 2, colorType: 1 },
+  { position: START + 4, colorType: 2 },
+  { position: START + 31, colorType: 3 },
+  { position: START + 77, colorType: 1 },
+]
+
+// Both band tops, for the same reason the interbase arm sweeps both: `top`
+// reaches the painter as a `ctx.translate` and the hit test as an addend.
+describe.each([0, 40])('indicators at band top %i', top => {
+  test.each([false, true])(
+    'every drawn triangle answers its own hit, reversed=%s',
+    reversed => {
+      expect(
+        sweepDrawAgainstHit(
+          coverageIndicatorShape,
+          indicatorChannels(SWEEP_INDICATORS),
+          { ...block, reversed },
+          SWEEP_FRAME,
+          sweepParams({ top }),
+          { maxDistSq: Number.MIN_VALUE },
+        ),
+      ).toEqual([])
+    },
+  )
+})
+
+// The other half of the interbase clip test, and outside the sweep for the same
+// reason: the painter draws the whole 4.5px triangle and leaves the band clip to
+// the backend, so on a band shorter than the triangle the hit claims only the
+// part inside the band. A band that short is a config-declared one —
+// `MIN_BAND_HEIGHT` is 20 — and at every height above the triangle the clamp is
+// the triangle's own height and the two boxes are one box.
+test('a band shorter than the triangle claims only the part of it inside the band', () => {
+  const channels = indicatorChannels([{ position: START + 2, colorType: 1 }])
+  const p = sweepParams({ top: 40, height: 3 })
+  const hitAt = (yPx: number) =>
+    coverageIndicatorShape.hitNearest!(
+      channels,
+      block,
+      SWEEP_FRAME,
+      p,
+      4,
+      yPx,
+      [0],
+      1e6,
+    )
+  expect(hitAt(50)).toEqual({ index: 0, x: 4, y: 43, distSq: 49 })
+  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 40, distSq: 1600 })
 })

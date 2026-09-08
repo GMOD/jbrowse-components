@@ -373,6 +373,10 @@ export const coverageIndicatorShape = layerShape(
       viewWidth,
     )
   },
+  // A triangle answers as its BOUNDING BOX, which is twice the ink it draws:
+  // 7x4.5 px is a small enough hover target already, and that box is what
+  // `hitCoverageBand` searches candidates at, its bp tolerance being this
+  // half-width.
   (c, bpToX, p, xPx, yPx, candidates, maxDistSq) => {
     const indicators = readIndicators(c.indicatorPackedBuffer)
     const height = Math.min(p.height, INDICATOR_TRIANGLE_H)
