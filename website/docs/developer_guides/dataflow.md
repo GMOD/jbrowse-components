@@ -126,6 +126,8 @@ is where a display declares which settings reach the buffer that way, and the
 pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
 returns re-uploads, and everything else is a frame.
 
+<Figure caption="The vertical position of a door is the claim: a setting that reaches rpcProps() enters above the worker and pays for a round trip, one that reaches gpuProps() enters at the encode and pays for an upload, everything else enters at the draw. The chain is collapsed, with no autorun and no tick on it, so that depth is the only thing to read off it." src="/img/render_rates.png" />
+
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that
 same function against a context that serializes each call, which is what stops

@@ -32,6 +32,11 @@
 // were shader parameters like a pan. They are not; only a plot-wide scalar such
 // as opacity is.
 //
+// An edge label is as far as a PATH figure can carry that, which is why
+// render_rates.dot is further down the same page: this draws what runs, that
+// draws what a change costs, on a chain collapsed to the six steps a door can
+// land between.
+//
 // COLOUR MEANS SOMETHING HERE, which it does not in the site's other diagrams —
 // they use the palette to separate a cluster from its surroundings. A legend
 // buys that back, and the four meanings are the ones a reader of this pipeline

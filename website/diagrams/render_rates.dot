@@ -1,0 +1,88 @@
+// Source for /img/render_rates.png, embedded by
+// docs/developer_guides/dataflow.md under "Where the GPU sits".
+//
+// ONE CHAIN, THREE DOORS INTO IT, and the vertical position of a door is the
+// whole content: where a change enters IS what it costs. The section under this
+// figure states the rule in prose -- what `rpcProps()` returns refetches, what
+// `gpuProps()` returns re-uploads, everything else is a frame -- and a rule
+// with three cases and an ordering is the thing a picture does better than a
+// sentence, because the ordering is spatial.
+//
+// It exists BESIDE two figures that draw pieces of the same path, and the split
+// is by what each answers:
+//
+//   dataflow.dot             the whole path, one track, one region, with the
+//                            worker's internals and the caches on it. Its
+//                            upload edge names both of its triggers, which is
+//                            as far as a path figure can carry this: it draws
+//                            what runs, not what a change costs.
+//   gpu_display_lifecycle    the same three doors on the REACTIVE graph --
+//     .dot                   autoruns, renderTick, canvasDrawn -- for someone
+//                            writing a display. The pair is the one
+//                            gpu_display_tldr.dot and that figure already are:
+//                            same architecture, two zooms.
+//
+// So the chain here is COLLAPSED to the six steps a door can land between, and
+// carries no autorun, no tick and no HAL. `encode on the main thread` is on it
+// for one reason: it is the only stage the middle door can enter, and every
+// figure that leaves it out has to draw a re-upload as either a refetch or a
+// frame, which is the error the page under this used to make.
+//
+// The door labels are the same strings gpu_display_lifecycle.dot uses, in the
+// same order and the same light blue. A reader meeting both should recognise
+// three doors they have seen, not meet a second taxonomy.
+//
+// `theme` is deliberately NOT in the frame door's list, though it looks like it
+// belongs: a theme change moves palette-derived colors, and for a display that
+// packs its colors that is the middle door, not this one. Opacity is the
+// example that is safe, and it is safe for a reason ARCHITECTURE.md spends a
+// section on ("opacity is a render parameter, never a packed color").
+digraph render_rates {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="Refetch, re-upload, redraw: where a change enters the chain"
+  nodesep=0.3
+  ranksep=0.45
+
+  node [shape=box style="filled,rounded" fillcolor="#ffffff" color="#9e9e9e"
+        fontname="Helvetica" fontsize=12 margin="0.18,0.10"]
+  edge [color="#555555" fontname="Helvetica" fontsize=10]
+
+  // ── The chain, one column ─────────────────────────────────────────
+  // Colored by what each step is, on dataflow.dot's legend: blue for the
+  // worker, yellow for what survives the next gesture, orange for the GPU.
+  worker [label="worker: fetch, parse, pack" fillcolor="#e3f2fd" color="#90caf9"]
+  data [label="rpcDataMap" fillcolor="#fff9c4" color="#ffe082"]
+  encode [label="encode on the main thread\nlayout, colors, packed instances" fillcolor="#f1f8e9" color="#aed581"]
+  upload [label="backend.upload()" fillcolor="#ffe0b2" color="#ffcc80"]
+  draw [label="backend.renderBlocks()" fillcolor="#ffe0b2" color="#ffcc80"]
+  screen [label="<canvas>" fillcolor="#e1f5fe" color="#90caf9"]
+
+  worker -> data [label="  transferables, uint32 bp  "]
+  data -> encode
+  encode -> upload
+  upload -> draw [label="  renderTick++  "]
+  draw -> screen
+
+  // ── The three doors ───────────────────────────────────────────────
+  // A shared width, so the three read as one column of doors rather than as
+  // three boxes sized by how long their text happens to be, and each is on the
+  // rank of the step it enters.
+  node [width=3.9 style="filled,rounded,dashed" fillcolor="#e1f5fe" color="#90caf9"]
+  d1 [label="a region with no loaded data,\nor rpcProps() changed"]
+  d2 [label="gpuProps() changed,\nor a derived region map"]
+  d3 [label="scroll, zoom, opacity, resize"]
+
+  d1 -> worker [label=<  <b>refetch</b>  >]
+  d2 -> encode [label=<  <b>re-encode, re-upload</b><br align="left"/>  no fetch<br align="left"/>>]
+  d3 -> draw [label=<  <b>redraw</b><br align="left"/>  no fetch, no upload<br align="left"/>>]
+
+  // Safe as ranksets because no member is inside a cluster — there are none
+  // here. Each pairs a door with the step it enters, which is what makes the
+  // depth of a door mean something.
+  { rank=same; d1; worker }
+  { rank=same; d2; encode }
+  { rank=same; d3; draw }
+}

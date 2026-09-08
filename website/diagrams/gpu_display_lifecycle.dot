@@ -16,6 +16,14 @@
 // (dataflow.dot's "the visible region changes", fetch_chain.dot's), and dashed,
 // so a door reads as something happening TO the chain rather than as more of
 // it.
+//
+// render_rates.dot is the same three doors on a COLLAPSED chain, on
+// dataflow.md, and the two are the pair gpu_display_tldr.dot and this one
+// already are: same architecture, two zooms. That one has no autorun, no tick
+// and no HAL, so the only thing to read off it is how deep a door lands; this
+// one keeps them, because a reader here is writing the display. Same door
+// strings in the same order, so they are recognisably three doors a reader has
+// met rather than two taxonomies.
 digraph gpu_display_lifecycle {
   rankdir=TB
   labelloc=t
