@@ -88,7 +88,7 @@ export function drawMarks<TRegion, TState extends FrameDimensions>(
  */
 export function drawPlannedPasses(
   hal: GpuHal,
-  plan: MarkPlan<unknown, FrameDimensions>,
+  plan: Pick<MarkPlan<never, never>, 'passes'>,
   regionKey: number,
 ) {
   const { passes } = plan
