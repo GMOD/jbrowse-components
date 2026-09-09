@@ -361,10 +361,7 @@ const suite: TestSuite = {
         // the hover box has to land on the mark under the cursor, not merely
         // exist — it is drawn from the box the LAYOUT placed, so this is also
         // what pins the pick to the same stack the band painted
-        const box = await boxOf(
-          page,
-          '[data-testid="variant_lane_hover_highlight"]',
-        )
+        const box = await boxOf(page, '[data-testid="chrome-hover"]')
         assert(
           x >= box.x - 1 && x <= box.x + box.width + 1,
           `hover box ${JSON.stringify(box)} does not contain the cursor x ${x}`,
@@ -398,7 +395,7 @@ const suite: TestSuite = {
         await delay(500)
         assert(
           (await hoveredRecord(page)) === undefined &&
-            !(await page.$('[data-testid="variant_lane_hover_highlight"]')),
+            !(await page.$('[data-testid="chrome-hover"]')),
           'the lane hover survived the pointer leaving it',
         )
       },

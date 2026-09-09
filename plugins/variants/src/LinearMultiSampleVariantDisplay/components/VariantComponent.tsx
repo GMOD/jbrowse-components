@@ -1,9 +1,4 @@
-import { hoverBoxStyle } from '@jbrowse/core/ui'
-import {
-  makeBpMapper,
-  pxPerBpOf,
-  regionAtPixel,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { pxPerBpOf, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
@@ -13,8 +8,6 @@ import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
 import { pickVariantCell } from './pickVariantCell.ts'
-import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { variantCellSpanPx } from './variantCellSpan.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
@@ -23,7 +16,7 @@ import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 export interface HoveredCell {
-  rowIndex: number
+  cellIndex: number
   genomicStart: number
   genomicEnd: number
   // bp this cell's record inserts; widens the drawn cell to an insertion marker,
@@ -102,7 +95,7 @@ function getHoveredFeature(
     return undefined
   }
 
-  const { rowIndex, genomicStart, genomicEnd, insertedBp } = picked
+  const { rowIndex, cellIndex, genomicStart, genomicEnd, insertedBp } = picked
   const featureId = regionCellData.featureIdList[picked.featureIndex]!
   // The cell row index maps directly into model.sources (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
@@ -139,7 +132,7 @@ function getHoveredFeature(
     }),
     featureInfo: info,
     cell: {
-      rowIndex,
+      cellIndex,
       genomicStart,
       genomicEnd,
       insertedBp,
@@ -172,69 +165,12 @@ export function variantRowsSurface(
   }
 }
 
-const HoveredCellHighlight = observer(function HoveredCellHighlight({
-  model,
-}: {
-  model: LinearMultiSampleVariantDisplayModel
-}) {
-  const cell = model.hoveredCell
-  if (!cell) {
-    return null
-  }
-  const region = model.visibleRegions.find(
-    r => r.displayedRegionIndex === cell.displayedRegionIndex,
-  )
-  if (!region) {
-    return null
-  }
-  const toX = makeBpMapper(region)
-  // The 2px floor every painter applies, read from the shader's own generated
-  // twin (shaders/variant.slang, adr-051) rather than restated — the box has to
-  // be the size the cell was drawn at, not the size a row nominally occupies,
-  // or a sub-pixel row highlights as an invisible sliver over a 2px cell.
-  const drawnRowHeight = drawnCellHeightPx(model.effectiveRowHeight)
-  // Same drawn extent the cell painted, so the box lands on an insertion marker
-  // rather than the ~1bp reference span underneath it.
-  const { left, width } = variantCellSpanPx({
-    x1: toX(cell.genomicStart),
-    x2: toX(cell.genomicEnd),
-    canvasWidth: model.canvasWidthPx,
-    insertedBp: cell.insertedBp,
-    // the box covers what was PAINTED, so it follows the setting that decides
-    // whether an insertion paints as a marker or as a 2px cell
-    insertionsWiden: model.showInsertionGlyphs,
-    pxPerBp: pxPerBpOf(region),
-    drawnRowHeight,
-  })
-  // Screen Y from model.scrollTop — the same value the GPU cells draw at, so
-  // the highlight can't diverge from its cell (virtual scroll: one scroll
-  // source). Cull when the row is fully outside the viewport.
-  const top = cell.rowIndex * model.effectiveRowHeight - model.scrollTop
-  if (top + drawnRowHeight < 0 || top > model.availableHeight) {
-    return null
-  }
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left,
-        top,
-        width,
-        height: drawnRowHeight,
-        ...hoverBoxStyle,
-        pointerEvents: 'none',
-        zIndex: 5,
-      }}
-    />
-  )
-})
-
 // The per-sample variant canvas + its click targets. DisplayChrome (owned by
 // the outer VariantDisplayComponent) owns the GPU backend, the terminal states
 // and the pointer measurement the hover comes from, handing the live canvas
 // down here. Scroll is virtual (fixed canvas + VerticalScrollbar overlay,
 // everything positioned from model.scrollTop) — no native overflow container,
-// so the GPU cells and the DOM hover highlight share one scroll source and can
+// so the GPU cells and the chrome's hover box share one scroll source and can
 // never tear apart.
 //
 // The scroll affordances themselves are NOT here: they hang off the display's
@@ -276,7 +212,6 @@ const VariantBody = observer(function VariantBody({
         {...variantSurfaceHandlers(model, variantRowsSurface(model))}
       />
       <VariantInsertionGlyphOverlay model={model} />
-      <HoveredCellHighlight model={model} />
     </>
   )
 })

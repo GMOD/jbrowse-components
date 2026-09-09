@@ -23,7 +23,13 @@ import {
   solveLabelRoomFactor,
   squeezeFloorScale,
 } from '@jbrowse/plugin-canvas'
+import {
+  makeBpMapper,
+  pxPerBpOf,
+  spanRect,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
@@ -36,6 +42,8 @@ import {
 } from '../shared/variantTopBands.ts'
 import { anyMarkerPossibleForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
+import { variantCellSpanPx } from './components/variantCellSpan.ts'
+import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
 
@@ -46,6 +54,10 @@ import type { VariantRenderingBackend } from './components/variantRenderingBacke
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -116,16 +128,16 @@ export function stateModelFactory(
       .volatile(() => ({
         /**
          * #volatile
-         * The genotype cell under the pointer, as the highlight box draws it.
+         * The genotype cell under the pointer, as `hoverInk` lights it.
          * Beside the base's `hoveredFeature` (the tooltip) rather than folded
          * into it: the tooltip is the shared cross-display slot, and the box
-         * needs the cell's placed geometry that slot has no reason to carry.
+         * needs the cell's instance that slot has no reason to carry.
          */
         hoveredCell: undefined as HoveredCell | undefined,
         /**
          * #volatile
-         * The lane mark under the pointer — plugin-canvas's own hit, so the
-         * highlight lands on the box the lane painted.
+         * The lane mark under the pointer — plugin-canvas's own hit, so
+         * `hoverInk` lands on the box the lane painted.
          */
         hoveredLaneMark: undefined as HitFeatureResult | undefined,
       }))
@@ -367,6 +379,85 @@ export function stateModelFactory(
       }))
       // separate block so these see perRegionCellMap
       .views(self => ({
+        /**
+         * #getter
+         * The box of the hovered genotype cell or lane mark, for the
+         * chrome's highlight. A cell is its instance through the cell mark's
+         * ink, moved down by the bands above the rows, and widened to the
+         * insertion marker where one paints over it; a lane mark is the box
+         * plugin-canvas laid out and painted, in the lane at the top.
+         */
+        get hoverInk(): HighlightRect[] {
+          const { hoveredCell: cell, hoveredLaneMark: lane } = self
+          if (cell) {
+            const region = self.renderBlocks.find(
+              b => b.displayedRegionIndex === cell.displayedRegionIndex,
+            )
+            const [ink] = inkOfInstances(
+              VARIANT_MARKS,
+              self.renderBlocks,
+              idx => self.perRegionCellMap.get(idx),
+              self.renderState,
+              idx =>
+                idx === cell.displayedRegionIndex
+                  ? [{ mark: 0, index: cell.cellIndex }]
+                  : undefined,
+            )
+            if (!ink || !region) {
+              return []
+            }
+            const toX = makeBpMapper(region)
+            const marker = variantCellSpanPx({
+              x1: toX(cell.genomicStart),
+              x2: toX(cell.genomicEnd),
+              canvasWidth: self.canvasWidthPx,
+              insertedBp: cell.insertedBp,
+              insertionsWiden: self.showInsertionGlyphs,
+              pxPerBp: pxPerBpOf(region),
+              drawnRowHeight: ink.height,
+            })
+            return [
+              {
+                ...ink,
+                ...(marker.drawsMarker
+                  ? { left: marker.left, width: marker.width }
+                  : {}),
+                top: ink.top + self.rowsTopOffset,
+              },
+            ]
+          }
+          if (lane) {
+            const region = self.visibleRegions.find(
+              r => r.displayedRegionIndex === lane.displayedRegionIndex,
+            )
+            if (!region) {
+              return []
+            }
+            const { feature } = lane
+            const { left, width } = spanRect(
+              makeBpMapper(region),
+              feature.startBp,
+              feature.endBp,
+              1,
+            )
+            return [
+              {
+                left,
+                top: feature.topPx,
+                width,
+                height: feature.bottomPx - feature.topPx,
+              },
+            ]
+          }
+          return []
+        },
+        /**
+         * #getter
+         * A wash and a border: the cell colours are the data.
+         */
+        get highlightStyle(): HighlightStyle {
+          return 'box'
+        },
         /**
          * #getter
          * Per-region cell data for the insertion-glyph overlay, or undefined

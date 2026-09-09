@@ -1,11 +1,9 @@
-import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   paintFeatureBand,
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-canvas'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
-import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { BandSeamHandle } from '../../shared/BandSeamHandle.tsx'
@@ -98,47 +96,6 @@ export function variantLaneSurface(
   }
 }
 
-const HoveredMarkHighlight = observer(function HoveredMarkHighlight({
-  model,
-}: {
-  model: LinearMultiSampleVariantDisplayModel
-}) {
-  const hit = model.hoveredLaneMark
-  if (!hit) {
-    return null
-  }
-  const region = model.visibleRegions.find(
-    r => r.displayedRegionIndex === hit.displayedRegionIndex,
-  )
-  if (!region) {
-    return null
-  }
-  // The box the layout placed, mapped by the region the pick resolved in — the
-  // same numbers the painter drew from, so the box cannot land on a record other
-  // than the one under the cursor. `startBp`/`endBp` are absolute.
-  const { left, width } = spanRect(
-    makeBpMapper(region),
-    hit.feature.startBp,
-    hit.feature.endBp,
-    1,
-  )
-  return (
-    <div
-      data-testid="variant_lane_hover_highlight"
-      style={{
-        position: 'absolute',
-        left,
-        top: hit.feature.topPx,
-        width,
-        height: hit.feature.bottomPx - hit.feature.topPx,
-        ...hoverBoxStyle,
-        pointerEvents: 'none',
-        zIndex: 5,
-      }}
-    />
-  )
-})
-
 /**
  * The lane's click targets, on a transparent layer over its canvas.
  *
@@ -172,7 +129,6 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
         }}
         {...variantSurfaceHandlers(model, variantLaneSurface(model))}
       />
-      <HoveredMarkHighlight model={model} />
     </>
   )
 })
