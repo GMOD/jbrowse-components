@@ -30,26 +30,32 @@ const markColorSchema = ConfigurationSchema(
   'MarkColor',
   {
     /**
-     * #slot
+     * #slot marks.encoding.color.value
+     * A CSS colour, or a jexl callback over `feature` returning one, for a
+     * mark whose colour is not a scale. Writing `color: 'red'` or
+     * `color: 'jexl:…'` directly on the encoding lands here.
      */
     value: {
       type: 'color',
       defaultValue: DEFAULT_MARK_COLOR,
-      description:
-        'CSS colour, or a jexl callback returning one, when no scale is set',
+      description: 'CSS colour or jexl callback',
       contextVariable: ['feature'],
     },
     /**
-     * #slot
+     * #slot marks.encoding.color.field
+     * The feature field a scale reads — or a jexl callback over `feature`,
+     * which is slower per feature and so the opt-in.
      */
     field: {
       type: 'string',
       defaultValue: '',
-      description:
-        'the feature field a scale reads, or a jexl callback over `feature`',
+      description: 'feature field, or jexl callback',
     },
     /**
-     * #slot
+     * #slot marks.encoding.color.scale
+     * How `field` becomes a colour. `categorical` hands out palette entries
+     * per distinct value; `linear` and `log` read the value through `domain`
+     * into `ramp`. `none` paints `value`.
      */
     scale: {
       type: 'stringEnum',
@@ -60,35 +66,39 @@ const markColorSchema = ConfigurationSchema(
         'log',
       ]),
       defaultValue: 'none',
-      description:
-        'how `field` becomes a colour: `categorical` hands out palette entries per distinct value, `linear`/`log` read the value through `domain` into `ramp`',
+      description: 'none, categorical, linear or log',
     },
     /**
-     * #slot
+     * #slot marks.encoding.color.palette
+     * The CSS colours a categorical scale hands out, in order. Empty uses the
+     * built-in qualitative palette.
      */
     palette: {
       type: 'stringArray',
       defaultValue: [],
-      description:
-        'CSS colours a categorical scale hands out in order; empty uses the built-in qualitative palette',
+      description: 'categorical colours, in order',
     },
     /**
-     * #slot
+     * #slot marks.encoding.color.domain
+     * For a categorical scale, the values in legend order — which pins each
+     * value's colour across every region, where an unlisted value takes its
+     * colour from the region it was seen in. For a linear or log scale, the
+     * `[min, max]` the ramp spans; empty uses each region's own extremes.
      */
     domain: {
       type: 'stringArray',
       defaultValue: [],
-      description:
-        "categorical: the values in legend order, pinning their colours across regions. linear/log: the `[min, max]` the ramp spans; empty uses each region's own extremes",
+      description: 'category order, or a ramp [min, max]',
     },
     /**
-     * #slot
+     * #slot marks.encoding.color.ramp
+     * A linear or log scale's ramp: `["viridis"]`, or two or more CSS colour
+     * stops spaced evenly. Empty is viridis.
      */
     ramp: {
       type: 'stringArray',
       defaultValue: [],
-      description:
-        'a linear/log scale\'s ramp: `["viridis"]`, or two or more CSS colour stops; empty is viridis',
+      description: 'viridis, or CSS colour stops',
     },
   },
   { preProcessSnapshot: normalizeColor },
@@ -96,60 +106,70 @@ const markColorSchema = ConfigurationSchema(
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   /**
-   * #slot
+   * #slot marks.encoding.x
+   * The feature field, or jexl callback over `feature`, giving the mark's
+   * left edge in bp.
    */
   x: {
     type: 'string',
     defaultValue: 'start',
-    description:
-      "the feature field (or jexl callback) giving the mark's left edge, in bp",
+    description: 'left edge field',
   },
   /**
-   * #slot
+   * #slot marks.encoding.x2
+   * The feature field, or jexl callback, giving the mark's right edge in bp.
    */
   x2: {
     type: 'string',
     defaultValue: 'end',
-    description:
-      "the feature field (or jexl callback) giving the mark's right edge, in bp",
+    description: 'right edge field',
   },
   /**
-   * #slot
+   * #slot marks.encoding.y
+   * The feature field, or jexl callback, plotted on the score axis. A feature
+   * whose value is not a finite number is skipped. Empty for a mark with no
+   * value, which is what a span is.
    */
   y: {
     type: 'string',
     defaultValue: '',
-    description:
-      'the feature field (or jexl callback) plotted on the score axis; empty for a mark with no value (a span)',
+    description: 'value field',
   },
   /**
-   * #slot
+   * #slot marks.encoding.color
+   * The mark's colour: a CSS colour, a jexl callback returning one, or an
+   * object binding a field to a categorical or continuous scale. A scale is
+   * what the legend describes.
    */
   color: markColorSchema,
   /**
-   * #slot
+   * #slot marks.encoding.glyph
+   * For a point mark: `disc`, `triangle` or `diamond`, or a jexl callback
+   * over `feature` returning one of those.
    */
   glyph: {
     type: 'string',
     defaultValue: 'disc',
-    description:
-      'for a point mark: `disc`, `triangle` or `diamond`, or a jexl callback returning one',
+    description: 'disc, triangle, diamond or jexl callback',
   },
 })
 
 const markSchema = ConfigurationSchema('Mark', {
   /**
-   * #slot
+   * #slot marks.shape
+   * `bar` stands between `origin` and `y`; `point` is a glyph at `y`; `span`
+   * is a band across the whole plot from `x` to `x2`.
    */
   shape: {
     type: 'stringEnum',
     model: types.enumeration('MarkShape', [...MARK_SHAPES]),
     defaultValue: 'bar',
-    description:
-      '`bar` stands between the origin and `y`, `point` is a glyph at `y`, `span` is a band across the plot from `x` to `x2`',
+    description: 'bar, point or span',
   },
   /**
-   * #slot
+   * #slot marks.encoding
+   * Which feature fields feed the mark's channels. Every channel has a
+   * default, so `{}` draws a bar from `start` to `end` with no value.
    */
   encoding: markEncodingSchema,
 })
@@ -192,41 +212,45 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields({ defaultHeight: 150 }),
       /**
-       * #slot
+       * #slot marks
        * The marks to draw, in order — a later one paints over an earlier one.
+       * Each is a `shape` and an `encoding`.
        */
       marks: types.array(markSchema),
       ...scoreAxisConfigSchemaFields,
       /**
-       * #slot
+       * #slot origin
+       * The value bars grow from. The axis widens to include it whenever a
+       * bar mark is drawn.
        */
       origin: {
         type: 'number',
         defaultValue: 0,
-        description:
-          'the value bars grow from; the axis widens to include it whenever a bar mark is drawn',
+        description: 'baseline value for bars',
       },
       /**
-       * #slot
+       * #slot minWidthPx
+       * Narrowest a bar or span is painted, in px, grown off its start edge.
        */
       minWidthPx: {
         type: 'number',
         defaultValue: 1,
-        description:
-          'narrowest a bar or span is painted, in px, grown off its start edge',
+        description: 'minimum bar/span width in px',
         advanced: true,
       },
       /**
-       * #slot
+       * #slot scatterPointSize
+       * Diameter in px of point marks. Unset (the default) follows the
+       * session-wide default for this display type.
        */
       scatterPointSize: {
         type: 'maybeNumber',
         promotedBase: DEFAULT_POINT_DIAMETER_PX,
-        description:
-          'diameter in px of point marks. Unset (the default) follows the session-wide default for this display type',
+        description: 'point diameter in px',
       },
       /**
-       * #slot
+       * #slot minimalTicks
+       * Draw only the min/max y-axis ticks.
        */
       minimalTicks: {
         type: 'boolean',
@@ -235,22 +259,25 @@ export function configSchemaFactory() {
         advanced: true,
       },
       /**
-       * #slot
+       * #slot showLegend
+       * Draw the colour key for every mark whose colour is a scale. Unset
+       * (the default) follows the session-wide default for this display type,
+       * falling back to on.
        */
       showLegend: {
         type: 'maybeBoolean',
         promotedBase: true,
-        description:
-          'Draw the colour key for every mark whose colour is a scale. Unset (the default) follows the session-wide default for this display type, falling back to on',
+        description: 'draw the colour key',
       },
       /**
-       * #slot
+       * #slot jexlFilters
+       * Jexl filters every feature must pass before it is encoded, written
+       * without the `jexl:` prefix.
        */
       jexlFilters: {
         type: 'stringArray',
         defaultValue: [],
-        description:
-          'jexl filters every feature must pass before it is encoded, without the jexl prefix',
+        description: 'feature filters, without the jexl prefix',
       },
     },
     { explicitlyTyped: true, explicitIdentifier: 'displayId' },

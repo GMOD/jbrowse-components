@@ -162,6 +162,85 @@ every promoted default at once is a preferences-scope action, and Preferences �
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### ColorEncoding
+
+How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
+returning one paints per feature with no scale; the two object forms bind a
+field to a scale, which is what a legend can describe.
+
+A categorical scale hands palette entries to the field's distinct values in
+`domain` order, then in sorted order of whatever else it meets. A continuous
+scale reads the field through `domain` (the region's own extremes when absent)
+into `ramp`. Both discover their table per region when `domain` is left off, so
+two regions with different value sets can disagree — a listed `domain` is what
+pins the answer across a whole view.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### colorEvaluator
+
+A CSS colour or `jexl:` colour expression as a per-feature packed ABGR — the
+unscaled arm of ColorEncoding, on its own for a display that carries a plain
+`color` slot.
+
+```js
+// type signature
+(color: string, jexl: JexlInstance) => (feature: Feature) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### EncodedChannels
+
+One encoding's channels over one region's features, dense and index-aligned:
+instance `i` of every array is the same feature, and `featureIndex[i]` says
+which one of the input list it was.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### encodedChannelTransferables
+
+The buffers an EncodedChannels owns, for `rpcResult`'s transfer list.
+
+```js
+// type signature
+(c: EncodedChannels) => ArrayBufferLike[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### EncodedFeaturesResult
+
+What `CoreEncodeFeatures` answers for one region: `layers[i]` is the request's
+`encodings[i]` over the region's features, so a display's mark list indexes
+straight into it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### encodeFeatures
+
+Evaluate one encoding over a feature list into dense channel arrays, the scale
+table its colours came from, the `y` extremes and a hit index.
+
+A feature whose `x`, `x2` or (declared) `y` is not finite is skipped, so every
+array stays index-aligned with the Flatbush. Pure: the RPC around it owns the
+adapter, the filters and the transferables.
+
+```js
+// type signature
+(features: readonly Feature[], encoding: MarkEncoding, ctx: { jexl: JexlInstance; report?: ProgressReporter | undefined; }) => EncodedChannels
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### FieldRef
+
+Where a channel's value comes from: a feature field name, read natively
+(`feature.get(name)`), or a `jexl:` expression over `feature` — the opt-in
+escape, three orders of magnitude slower per feature.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### getAssemblyHost
 
 The host's assembly manager, for a module that resolves names and nothing else.
@@ -380,6 +459,12 @@ See TrackConfigWithPromotables.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### GlyphEncoding
+
+A GlyphName, or a `jexl:` expression over `feature` returning one.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### hydrateTrackConfig
 
 Hydrate a plain track config into a live config node, dispatching on its `type`
@@ -503,6 +588,15 @@ on a second click, the other filled when the box was ticked and flipping. With
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### MarkEncoding
+
+The declared mapping from a feature's fields to a mark's channels. `x` defaults
+to `start` and `x2` to `end`; a mark that plots no value leaves `y` off. `glyph`
+is a glyph name or a `jexl:` expression returning one, read by the `point` shape
+alone.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### openPromotableDisplays
 
 Every display on an open track, across all open views — the reach of anything
@@ -539,6 +633,13 @@ to be told apart by `typeof onValue === 'boolean'`, which let a value pin over a
 boolean slot compile and read as a toggle while clearing on its second click.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
+
+### RampRef
+
+The ramp a continuous colour scale samples: a named ramp, or evenly spaced CSS
+colour stops.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### readConfObject
 
@@ -703,6 +804,14 @@ than an extrapolation past them, and a one-stop ramp is that stop everywhere.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### ScaleTable
+
+The scale a colour channel was resolved through, as the legend reads it — the
+same table the colours in the payload came from, so the key cannot disagree with
+the painting.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### SessionPaletteProvider
 

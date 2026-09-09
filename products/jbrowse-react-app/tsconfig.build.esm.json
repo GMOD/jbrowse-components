@@ -27,6 +27,7 @@
     { "path": "../../plugins/linear-comparative-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/maf/tsconfig.build.esm.json" },
+    { "path": "../../plugins/marks/tsconfig.build.esm.json" },
     { "path": "../../plugins/menus/tsconfig.build.esm.json" },
     { "path": "../../plugins/rdf/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },

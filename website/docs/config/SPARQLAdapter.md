@@ -42,6 +42,7 @@ a query template
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 

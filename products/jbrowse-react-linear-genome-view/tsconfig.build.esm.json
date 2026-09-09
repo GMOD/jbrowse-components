@@ -19,6 +19,7 @@
     { "path": "../../plugins/legacy-jbrowse/tsconfig.build.esm.json" },
     { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/maf/tsconfig.build.esm.json" },
+    { "path": "../../plugins/marks/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },
     { "path": "../../plugins/trix/tsconfig.build.esm.json" },
     { "path": "../../plugins/variants/tsconfig.build.esm.json" },

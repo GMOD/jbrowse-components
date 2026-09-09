@@ -127,7 +127,11 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
     { color: { field: 'strand', scale: 'categorical' } },
     { jexl },
   )
-  expect(bySortedValue.scale?.entries.map(e => e.label)).toEqual(['-1', '1'])
+  expect(
+    bySortedValue.scale?.kind === 'categorical'
+      ? bySortedValue.scale.entries.map(e => e.label)
+      : undefined,
+  ).toEqual(['-1', '1'])
 })
 
 test('a ramp scale reads the field through its domain into the LUT', () => {

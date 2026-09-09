@@ -42,6 +42,7 @@
     "@jbrowse/plugin-linear-comparative-view": "file:./packed/jbrowse-plugin-linear-comparative-view.tgz",
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
     "@jbrowse/plugin-maf": "file:./packed/jbrowse-plugin-maf.tgz",
+    "@jbrowse/plugin-marks": "file:./packed/jbrowse-plugin-marks.tgz",
     "@jbrowse/plugin-menus": "file:./packed/jbrowse-plugin-menus.tgz",
     "@jbrowse/plugin-rdf": "file:./packed/jbrowse-plugin-rdf.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",

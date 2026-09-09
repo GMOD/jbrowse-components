@@ -1,4 +1,5 @@
 import type { FeatureDensity } from '../data_adapters/BaseAdapter/featureDensity.ts'
+import type { EncodedFeaturesResult } from '../util/markEncoding.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { UnwrapRpcResult } from '../util/rpc.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
@@ -6,10 +7,7 @@ import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/data.ts'
 import type { RpcResult } from './RpcServer.ts'
 import type { ByteEstimateScope, RegionTooLargeResult } from './byteBudget.ts'
-import type {
-  CoreEncodeFeaturesArgs,
-  EncodedFeaturesResult,
-} from './methods/CoreEncodeFeatures.ts'
+import type { CoreEncodeFeaturesArgs } from './methods/CoreEncodeFeatures.ts'
 
 export interface RegionLike {
   refName: string

@@ -13,18 +13,11 @@ import {
 } from '../../util/stopToken.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
 
-import type { EncodedChannels, MarkEncoding } from '../../util/markEncoding.ts'
+import type {
+  EncodedFeaturesResult,
+  MarkEncoding,
+} from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
-
-/**
- * One region's features through each of the request's encodings. `layers[i]`
- * is `encodings[i]`'s channels, so a display's mark list indexes straight
- * into it.
- */
-export interface EncodedFeaturesResult {
-  layers: EncodedChannels[]
-  bytes?: number
-}
 
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>

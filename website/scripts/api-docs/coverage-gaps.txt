@@ -15,7 +15,7 @@ LinearScoreDisplay
 PreferencesConfigSchema
 RpcOptions
 
-# display/view models with no #example (13)
+# display/view models with no #example (14)
 # fix: add an #example to the type’s #stateModel JSDoc
 ArcFetchModel
 BaseDisplay
@@ -24,6 +24,7 @@ DotplotDisplay
 LinearCanvasBaseDisplay
 LinearComparativeView
 LinearManhattanDisplay
+LinearMarkDisplay
 LinearMultiRowFeatureDisplay
 LinearMultiSampleVariantDisplay
 LinearMultiSampleVariantMatrixDisplay

@@ -124,6 +124,17 @@ export interface EncodedChannels {
   scale: ScaleTable | undefined
 }
 
+/**
+ * #api
+ * What `CoreEncodeFeatures` answers for one region: `layers[i]` is the
+ * request's `encodings[i]` over the region's features, so a display's mark
+ * list indexes straight into it.
+ */
+export interface EncodedFeaturesResult {
+  layers: EncodedChannels[]
+  bytes?: number
+}
+
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
 // What a feature paints when its colour field is missing or a `jexl:` colour

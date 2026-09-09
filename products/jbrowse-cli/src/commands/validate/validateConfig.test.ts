@@ -189,6 +189,31 @@ describe('validateConfig', () => {
     ])
   })
 
+  it('recurses into each entry of an array of sub-schemas', () => {
+    const config = baseConfig()
+    config.tracks.push({
+      type: 'FeatureTrack',
+      trackId: 'scores',
+      name: 'Scores',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'BedTabixAdapter', uri: 'scores.bed.gz' },
+      // @ts-expect-error the second mark misspells a slot two levels down
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'scores-marks',
+          marks: [
+            { shape: 'bar', encoding: { y: 'score' } },
+            { shape: 'point', encoding: { colour: 'red' } },
+          ],
+        },
+      ],
+    })
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'tracks[1].displays[0].marks[1].encoding.colour',
+    ])
+  })
+
   it('resolves an assembly alias', () => {
     const config = baseConfig()
     config.tracks[0]!.assemblyNames = ['GRCh38']

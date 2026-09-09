@@ -31,6 +31,7 @@ overrides:
   '@jbrowse/plugin-legacy-jbrowse': 'file:./packed/jbrowse-plugin-legacy-jbrowse.tgz'
   '@jbrowse/plugin-linear-genome-view': 'file:./packed/jbrowse-plugin-linear-genome-view.tgz'
   '@jbrowse/plugin-maf': 'file:./packed/jbrowse-plugin-maf.tgz'
+  '@jbrowse/plugin-marks': 'file:./packed/jbrowse-plugin-marks.tgz'
   '@jbrowse/plugin-score-example': 'file:./packed/jbrowse-plugin-score-example.tgz'
   '@jbrowse/plugin-sequence': 'file:./packed/jbrowse-plugin-sequence.tgz'
   '@jbrowse/plugin-trix': 'file:./packed/jbrowse-plugin-trix.tgz'

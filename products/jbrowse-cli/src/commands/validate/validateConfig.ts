@@ -135,16 +135,31 @@ function checkSlots(
     )
   }
   // Recurse into sub-schemas the config actually filled in. One it omits is
-  // fine: the sub-schema supplies its own defaults.
+  // fine: the sub-schema supplies its own defaults. An array of sub-schemas
+  // (a mark display's `marks`) checks each entry against the element's slots.
   for (const slot of entry.slots) {
     const value = obj[slot.name]
-    if (slot.subSlots && isRecord(value)) {
+    if (!slot.subSlots) {
+      continue
+    }
+    if (isRecord(value)) {
       checkSlots(
         value,
         { slots: slot.subSlots },
         `${where}.${slot.name}`,
         report,
       )
+    } else if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        if (isRecord(item)) {
+          checkSlots(
+            item,
+            { slots: slot.subSlots! },
+            `${where}.${slot.name}[${i}]`,
+            report,
+          )
+        }
+      })
     }
   }
 }

@@ -78,11 +78,14 @@ await Promise.all([
 ])
 
 // A ConfigurationSchema is wrapped in types.optional/late/etc; the model with
-// the .properties we want is some number of unwraps down.
+// the .properties we want is some number of unwraps down. An array of one
+// sub-schema (a display's marks) unwraps through the array's element type,
+// so its slots are the element's and the validator checks each entry; an array
+// over a union (a track's displays) has no single model and stays opaque.
 function modelOf(type) {
   let cur = type
   for (let i = 0; cur && !cur.properties && i < 12; i++) {
-    cur = cur._subtype ?? cur.subType ?? cur.type
+    cur = cur._subtype ?? cur._subType ?? cur.subType ?? cur.type
   }
   return cur
 }

@@ -57,6 +57,7 @@ source and silently desyncs the track if the assembly's sequence changes.
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 

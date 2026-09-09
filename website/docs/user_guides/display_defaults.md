@@ -134,6 +134,7 @@ the alignments ones) offers only the rows it lists.
 | HicTrack | [](/docs/config/linearhicdisplay) | [`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend) |
 | MafTrack | [](/docs/config/linearmafdisplay) | [`showLegend`](/docs/config/linearmafdisplay/#slot-showlegend) |
 | GWASTrack | [](/docs/config/linearmanhattandisplay) | [`scatterPointSize`](/docs/config/linearmanhattandisplay/#slot-scatterpointsize), [`showLegend`](/docs/config/linearmanhattandisplay/#slot-showlegend) |
+| FeatureTrack | [](/docs/config/linearmarkdisplay) | [`scatterPointSize`](/docs/config/linearmarkdisplay/#slot-scatterpointsize), [`showLegend`](/docs/config/linearmarkdisplay/#slot-showlegend) |
 | FeatureTrack | [](/docs/config/linearmultirowfeaturedisplay) | [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) |
 | VariantTrack | [](/docs/config/linearmultisamplevariantdisplay) | [`showLegend`](/docs/config/linearmultisamplevariantdisplay/#slot-showlegend) |
 | VariantTrack | [](/docs/config/linearmultisamplevariantmatrixdisplay) | [`showLegend`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-showlegend) |
