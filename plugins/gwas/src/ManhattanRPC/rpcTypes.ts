@@ -24,6 +24,15 @@ export function defaultGlyph(feature: Feature) {
 // import it without pulling the wiggle config schema into the worker bundle.
 export const DEFAULT_MANHATTAN_COLOR = '#0068d1'
 
+export type ManhattanColorBy = 'normal' | 'ld' | 'field'
+
+// One row of the color key under field coloring: a value the worker met and
+// the CSS color it packed for it.
+export interface ManhattanCategory {
+  value: string
+  color: string
+}
+
 export interface GetManhattanDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
@@ -32,8 +41,13 @@ export interface GetManhattanDataArgs {
   // 'normal' coloring mode.
   color: string
   // 'ld' colors each point by its r² to `indexSnp`, read from `ldAdapterConfig`
-  // (a PLINK .ld adapter). 'normal' uses `color`.
-  colorBy: 'normal' | 'ld'
+  // (a PLINK .ld adapter). 'field' colors by the distinct values of
+  // `colorField`. 'normal' uses `color`.
+  colorBy: ManhattanColorBy
+  colorField: string
+  // The feature field plotted on the y axis, `score` unless the display's
+  // `scoreField` slot names another
+  scoreField: string
   // Index/lead SNP for LD coloring — a SNP id or `chr:bp` (1-based) string.
   indexSnp?: string
   // PLINK .ld adapter config snapshot resolved on the worker for LD coloring.
@@ -108,4 +122,7 @@ export interface ManhattanRpcResult {
   // LD mode only: whether the index SNP appeared in this region's LD data.
   // Undefined in normal coloring mode.
   indexFound?: boolean
+  // Field mode only: the value → color table `colors[]` was packed from, in
+  // the order the values were met. The legend reads this and nothing else.
+  categories?: ManhattanCategory[]
 }

@@ -49,6 +49,8 @@ function args(overrides: Partial<GetManhattanDataArgs> = {}) {
     },
     color: 'red',
     colorBy: 'ld' as const,
+    colorField: 'name',
+    scoreField: 'score',
     indexSnp: 'rsIndex',
     ldAdapterConfig: LD_ADAPTER,
     ...overrides,

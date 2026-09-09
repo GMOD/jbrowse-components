@@ -13,6 +13,7 @@ interface RenderWiggleDataArgs {
   bicolorPivot?: number
   bpPerPx?: number
   resolution?: number
+  scoreField?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

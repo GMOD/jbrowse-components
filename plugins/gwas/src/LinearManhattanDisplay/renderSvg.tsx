@@ -12,7 +12,7 @@ import {
   YScaleBar,
 } from '@jbrowse/wiggle-core'
 
-import SvgLdLegend from './components/SvgLdLegend.tsx'
+import SvgManhattanLegend from './components/SvgManhattanLegend.tsx'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
@@ -59,8 +59,8 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
         ) : null
       }
-      // left y-axis (Manhattan is always linear, never density) plus the r² key
-      // when LD coloring is active
+      // left y-axis (Manhattan is always linear, never density) plus the
+      // color key when a scheme has one
       legend={
         <>
           {model.ticks ? (
@@ -68,9 +68,10 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
               <YScaleBar ticks={model.ticks} orientation="left" />
             </g>
           ) : null}
-          {model.ldColoringActive && model.showLdLegend ? (
+          {model.legend && model.showLegend ? (
             <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-              <SvgLdLegend
+              <SvgManhattanLegend
+                legend={model.legend}
                 canvasWidth={legendRight}
                 maxHeight={height - YSCALEBAR_LABEL_OFFSET}
                 indexSnpMissing={model.indexSnpMissing}

@@ -51,7 +51,9 @@ export function fetchRegionRaws(
         )
       : Promise.all(
           regions.map(region =>
-            adapter.getFeaturesArray(region, opts).then(featuresToRaw),
+            adapter
+              .getFeaturesArray(region, opts)
+              .then(features => featuresToRaw(features, opts.scoreField)),
           ),
         )
 }

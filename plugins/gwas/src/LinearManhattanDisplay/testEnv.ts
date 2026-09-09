@@ -6,6 +6,7 @@ import LinearGenomeViewPlugin, {
 import { configSchemaFactory } from './configSchemaFactory.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
 
+import type { ManhattanColorBy } from '../ManhattanRPC/rpcTypes.ts'
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
 
 // Two displayed regions, because the behaviours worth testing here are about
@@ -31,7 +32,7 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
 export function createTestEnvironment({
   colorBy = 'normal',
   ldAdapter = true,
-}: { colorBy?: 'normal' | 'ld'; ldAdapter?: boolean } = {}) {
+}: { colorBy?: ManhattanColorBy; ldAdapter?: boolean } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'GWASTrack',

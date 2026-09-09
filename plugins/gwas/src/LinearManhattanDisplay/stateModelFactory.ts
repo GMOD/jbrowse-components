@@ -3,8 +3,6 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makeTogglePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -13,6 +11,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -39,8 +38,14 @@ import {
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
+
+import type {
+  ManhattanColorBy,
+  ManhattanRpcResult,
+} from '../ManhattanRPC/rpcTypes.ts'
 import type {
   ManhattanContextMenuInfo,
   ManhattanDisplayModel,
@@ -56,6 +61,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { LegendItem, LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -94,6 +100,30 @@ function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
 const SetSignificanceLineDialog = lazy(
   () => import('./components/SetSignificanceLineDialog.tsx'),
 )
+const SetColorFieldDialog = lazy(
+  () => import('./components/SetColorFieldDialog.tsx'),
+)
+
+// The color key under field coloring: every value any loaded region met, each
+// with the color the worker packed for it. One value can arrive from several
+// regions and always with the same color (`categoricalValueColor` is a
+// function of the value), so the union is a plain first-wins merge, sorted
+// numerically where the values are numbers so `chr2` files before `chr10`.
+function categoryLegendItems(
+  entries: Iterable<ManhattanRpcResult>,
+): LegendItem[] {
+  const byValue = new Map<string, string>()
+  for (const { categories } of entries) {
+    for (const { value, color } of categories ?? []) {
+      if (!byValue.has(value)) {
+        byValue.set(value, color)
+      }
+    }
+  }
+  return [...byValue]
+    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(([label, color]) => ({ label, color }))
+}
 
 // Red, where a configured wiggle rule defaults to grey: this one is a
 // significance threshold rather than a reference level the reader chose, and it
@@ -118,6 +148,7 @@ export function stateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         WiggleScoreConfigMixin(),
+        LegendMixin(),
         ContextMenuMixin<ManhattanContextMenuInfo>(),
         StoredHoverMixin<ManhattanHit>(),
         types.model({
@@ -203,11 +234,18 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * resolved coloring mode: 'normal' uses `color`, 'ld' colors by r² to the
-         * index SNP
+         * resolved coloring mode: 'normal' uses `color`, 'ld' colors by r² to
+         * the index SNP, 'field' by the distinct values of `colorField`
          */
-        get colorBy(): 'normal' | 'ld' {
+        get colorBy(): ManhattanColorBy {
           return getConf(self, 'colorBy')
+        },
+        /**
+         * #getter
+         * the feature field 'field' coloring reads
+         */
+        get colorField(): string {
+          return getConf(self, 'colorField')
         },
         /**
          * #getter
@@ -242,28 +280,6 @@ export function stateModelFactory(
          */
         get ldColoringActive(): boolean {
           return this.colorBy === 'ld' && this.hasLdData
-        },
-        /**
-         * #getter
-         * Whether the LD color key is drawn. Resolved through the
-         * promotable-slot tiers (resolveConf): an explicit track value
-         * customizes it either way, otherwise it follows the session-wide
-         * default for this display type, falling back to on.
-         *
-         * Config-backed rather than volatile, which it was until this became a
-         * slot: a volatile reset on every retick, so turning the key off lasted
-         * until the track was hidden and reshown. It reads as a setting in the
-         * menu and now behaves like one.
-         */
-        get showLdLegend(): boolean {
-          return resolveConf(self, 'showLdLegend')
-        },
-        /**
-         * #getter
-         * the LD-key checkbox over every open track of this type (pin)
-         */
-        get showLdLegendDisplayTypeDefault() {
-          return makeTogglePin(self, 'showLdLegend')
         },
         /**
          * #getter
@@ -353,19 +369,24 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
-         * index SNP, LD adapter) triggers a refetch, since the worker bakes
-         * per-feature color into the result
+         * fetch inputs watched by SettingsInvalidate — any change (score field,
+         * color, colorBy, color field, index SNP, LD adapter) triggers a
+         * refetch, since the worker reads the field and bakes per-feature
+         * color into the result
          */
         rpcProps(): {
+          scoreField: string
           color: string
-          colorBy: 'normal' | 'ld'
+          colorBy: ManhattanColorBy
+          colorField: string
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
         } {
           return {
+            scoreField: self.scoreField,
             color: self.color,
             colorBy: self.colorBy,
+            colorField: self.colorField,
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
           }
@@ -495,6 +516,25 @@ export function stateModelFactory(
             this.topSnp !== self.indexSnp
           )
         },
+        /**
+         * #getter
+         * The color key, or undefined under the single-color scheme, which has
+         * none. The r² bins under LD coloring; under field coloring the values
+         * the loaded regions met, read off the payloads' `categories` tables
+         * — the same table the worker packed `colors[]` from, so a swatch is a
+         * color that was drawn. The on-screen key and the SVG export both
+         * render this one value.
+         */
+        get legend(): LegendSpec | undefined {
+          if (self.ldColoringActive) {
+            return { title: LD_LEGEND_TITLE, items: LD_LEGEND }
+          }
+          if (self.colorBy === 'field') {
+            const items = categoryLegendItems(self.rpcDataMap.values())
+            return items.length ? { title: self.colorField, items } : undefined
+          }
+          return undefined
+        },
       }))
       .actions(self => ({
         /**
@@ -523,14 +563,17 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setShowLdLegend(val: boolean) {
-          setConf(self, 'showLdLegend', val)
+        setColorBy(mode: ManhattanColorBy) {
+          setConf(self, 'colorBy', mode)
         },
         /**
          * #action
+         * Color by the values of a feature field. Mode and field in one action
+         * so rpcProps settles once and a single refetch fires.
          */
-        setColorBy(mode: 'normal' | 'ld') {
-          setConf(self, 'colorBy', mode)
+        colorByField(field: string) {
+          setConf(self, 'colorBy', 'field')
+          setConf(self, 'colorField', field)
         },
         /**
          * #action
@@ -609,31 +652,63 @@ export function stateModelFactory(
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
               showLegendCheckboxItem(
-                self.showLdLegend,
+                self.showLegend,
                 () => {
-                  self.setShowLdLegend(!self.showLdLegend)
+                  self.setShowLegend(!self.showLegend)
                 },
                 {
-                  disabled: !self.ldColoringActive,
-                  disabledHelpText: 'Requires LD coloring to be active',
-                  pin: self.showLdLegendDisplayTypeDefault,
+                  disabled: self.colorBy === 'normal',
+                  disabledHelpText:
+                    'Requires LD or field coloring; a single color has no key',
+                  pin: self.showLegendDisplayTypeDefault,
                 },
               ),
             ]),
+            {
+              label: 'Color by',
+              icon: PaletteIcon,
+              subMenu: [
+                {
+                  label: 'Single color',
+                  type: 'radio' as const,
+                  checked: self.colorBy === 'normal',
+                  onClick: () => {
+                    self.setColorBy('normal')
+                  },
+                },
+                {
+                  label:
+                    self.colorBy === 'field'
+                      ? `Field (${self.colorField})...`
+                      : 'Field...',
+                  type: 'radio' as const,
+                  checked: self.colorBy === 'field',
+                  onClick: () => {
+                    getDialogHost(self).queueDialog(handleClose => [
+                      SetColorFieldDialog,
+                      { display: self, handleClose },
+                    ])
+                  },
+                },
+                {
+                  label: 'LD to index SNP',
+                  type: 'radio' as const,
+                  checked: self.colorBy === 'ld',
+                  disabled: !self.hasLdData,
+                  disabledHelpText:
+                    'Requires a configured LD (PLINK .ld) adapter',
+                  onClick: () => {
+                    self.setColorBy('ld')
+                  },
+                },
+              ],
+            },
             {
               // whole submenu greys out without a configured .ld adapter
               label: 'LD options',
               disabled: !self.hasLdData,
               disabledHelpText: 'Requires a configured LD (PLINK .ld) adapter',
               subMenu: [
-                {
-                  label: 'Color by LD to index SNP',
-                  type: 'checkbox' as const,
-                  checked: self.colorBy === 'ld',
-                  onClick: () => {
-                    self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
-                  },
-                },
                 {
                   label: 'Set index SNP to top hit',
                   disabled:

@@ -101,6 +101,10 @@ export type { DensityRampName } from './shared/densityColorRamp.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
+export {
+  DEFAULT_SCORE_FIELD,
+  scoreFieldConfigSchemaFields,
+} from './shared/scoreFieldConfigSchemaFields.ts'
 export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
 export {
   WiggleScoreConfigMixin,

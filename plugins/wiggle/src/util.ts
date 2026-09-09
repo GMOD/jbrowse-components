@@ -256,6 +256,7 @@ export function processFeaturesFromArrays(
 
 export function featuresToRaw(
   features: { get: (key: string) => unknown }[],
+  scoreField = 'score',
 ): RawFeatureArrays {
   const n = features.length
   const starts = new Int32Array(n)
@@ -274,7 +275,7 @@ export function featuresToRaw(
   for (const [i, feature] of features.entries()) {
     starts[i] = feature.get('start') as number
     ends[i] = feature.get('end') as number
-    const score = (feature.get('score') as number | undefined) ?? 0
+    const score = Number(feature.get(scoreField) ?? 0)
     scores[i] = score
     if (minScores && maxScores) {
       const summary = feature.get('summary')

@@ -5,6 +5,7 @@ import type {
   ManhattanRenderingBackend,
 } from '../manhattanRenderingBackendTypes.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
@@ -29,9 +30,10 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   renderState: ManhattanRenderState
   scatterPointSize: number
   hoveredFeature: ManhattanHit | undefined
-  ldColoringActive: boolean
   indexSnpMissing: boolean
-  showLdLegend: boolean
+  // the color key the active scheme draws, undefined for a single color
+  legend: LegendSpec | undefined
+  showLegend: boolean
   // the significance threshold as a score rule, [] when unset or off-domain
   scoreRuleMarks: ScoreRuleMark[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void
@@ -41,5 +43,5 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   openContextMenu: (info: ManhattanContextMenuInfo) => void
   closeContextMenu: () => void
   contextMenuItems: () => MenuItem[]
-  setShowLdLegend: (val: boolean) => void
+  setShowLegend: (val: boolean) => void
 }

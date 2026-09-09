@@ -214,8 +214,7 @@ export function extractWithComment(
   }
 
   function visit(node: ts.Node, isStateModel: boolean, isConfig: boolean) {
-    const link = displayTrackLink(node)
-    if (link) {
+    for (const link of displayTrackLinks(node)) {
       onDisplayLink(link)
     }
     if (isConfig) {
@@ -1305,42 +1304,58 @@ function findStringLiteral(node: ts.Node): string | undefined {
 }
 
 // Matches `new DisplayType({ name: 'X', trackType: 'Y', ... })` — the only
-// place in the codebase a Display declares which Track it attaches to. Plain
+// place in the codebase a Display declares which Track it attaches to — and
+// emits one link per track type, since `trackType` may be an array. Plain
 // structural pattern match, not tied to any import path, so it also catches a
 // default-imported local alias.
-function displayTrackLink(node: ts.Node): DisplayTrackLink | undefined {
+function displayTrackLinks(node: ts.Node): DisplayTrackLink[] {
   if (
     !ts.isNewExpression(node) ||
     !ts.isIdentifier(node.expression) ||
     node.expression.text !== 'DisplayType' ||
     !node.arguments?.length
   ) {
-    return undefined
+    return []
   }
   const arg = node.arguments[0]!
   if (!ts.isObjectLiteralExpression(arg)) {
-    return undefined
+    return []
   }
   const displayName = stringPropValue(arg, 'name')
-  const trackType = stringPropValue(arg, 'trackType')
   const viewType = stringPropValue(arg, 'viewType')
-  return displayName && trackType
-    ? { displayName, trackType, viewType }
-    : undefined
+  return displayName
+    ? stringPropValues(arg, 'trackType').map(trackType => ({
+        displayName,
+        trackType,
+        viewType,
+      }))
+    : []
+}
+
+function propInitializer(obj: ts.ObjectLiteralExpression, key: string) {
+  return obj.properties.find(
+    (p): p is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(p) &&
+      ts.isIdentifier(p.name) &&
+      p.name.text === key,
+  )?.initializer
 }
 
 // The string-literal value of a `key: '...'` property in an object literal, or
 // undefined when the property is absent or not a plain string literal.
 function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
-  const prop = obj.properties.find(
-    (p): p is ts.PropertyAssignment =>
-      ts.isPropertyAssignment(p) &&
-      ts.isIdentifier(p.name) &&
-      p.name.text === key,
-  )
-  return prop && ts.isStringLiteral(prop.initializer)
-    ? prop.initializer.text
-    : undefined
+  const init = propInitializer(obj, key)
+  return init && ts.isStringLiteral(init) ? init.text : undefined
+}
+
+// The string literals of a `key: '...'` or `key: ['...', '...']` property.
+function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
+  const init = propInitializer(obj, key)
+  if (!init) {
+    return []
+  }
+  const literals = ts.isArrayLiteralExpression(init) ? init.elements : [init]
+  return literals.filter(ts.isStringLiteral).map(l => l.text)
 }
 
 // True when `text` contains the JSDoc tag `#name` as a whole token, i.e. not as

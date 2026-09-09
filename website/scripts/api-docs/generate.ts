@@ -131,7 +131,11 @@ async function main() {
     } else {
       displayTypesByTrack.set(trackType, [displayName])
     }
-    displayToTrackType.set(displayName, trackType)
+    // a display on several track types keeps the first — its home, whose
+    // adapters the "compatible adapters" section lists
+    if (!displayToTrackType.has(displayName)) {
+      displayToTrackType.set(displayName, trackType)
+    }
   }
   // Push order is extractor traversal order, which moves with the composition
   // of the TS program — and `getAllFiles` includes untracked files, so one

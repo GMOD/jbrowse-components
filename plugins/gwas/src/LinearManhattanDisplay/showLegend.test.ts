@@ -6,26 +6,27 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The LD color key labels the r² ramp the points are painted against. It was a
-// VOLATILE until it became a promotable config slot — sitting with
-// `hoveredFeature` and `rpcDataMap`, so it reset on every retick and turning
-// the key off lasted only until the track was hidden and reshown. These pin the
-// two halves of that change: it persists, and it cascades.
+// The color key — the r² ramp under LD coloring, the value table under field
+// coloring — is a promotable config slot through LegendMixin. It was a VOLATILE
+// once, sitting with `hoveredFeature` and `rpcDataMap`, so it reset on every
+// retick and turning the key off lasted only until the track was hidden and
+// reshown. These pin the two halves of the change: it persists, and it
+// cascades.
 //
 // `colorBy: 'ld'` throughout, since the row is disabled (though still present,
 // and still pinned) under the plain single-color scheme.
 
-function ldLegendRow(items: MenuItem[]) {
+function legendRow(items: MenuItem[]) {
   const walk = (list: MenuItem[]): MenuItem[] =>
     list.flatMap(i => ('subMenu' in i ? walk(resolveSubMenu(i)) : [i]))
   return walk(items).find(i => 'label' in i && i.label === 'Show legend')
 }
 
-describe('Manhattan showLdLegend', () => {
+describe('Manhattan showLegend', () => {
   it('is on by default, from promotedBase rather than a volatile initializer', () => {
     const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
-    expect(display.showLdLegend).toBe(true)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(true)
+    expect(display.showLegend).toBe(true)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
   })
 
   // The whole point of the volatile -> config move. A volatile write was lost
@@ -33,25 +34,21 @@ describe('Manhattan showLdLegend', () => {
   // which outlives the display instance.
   it('an explicit off is written to the config node, so it survives a retick', () => {
     const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
-    display.setShowLdLegend(false)
+    display.setShowLegend(false)
 
-    expect(display.showLdLegend).toBe(false)
+    expect(display.showLegend).toBe(false)
     // the RAW stored value: `getConf` never walks the cascade, so this is what
     // the config node itself holds rather than what the display resolved to
-    expect(getConf(display, 'showLdLegend')).toBe(false)
+    expect(getConf(display, 'showLegend')).toBe(false)
   })
 
   it('follows a session-wide default of off when the track is not customized', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
-    session.setDisplayTypeDefault(
-      'LinearManhattanDisplay',
-      'showLdLegend',
-      false,
-    )
-    expect(display.showLdLegend).toBe(false)
-    expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
+    session.setDisplayTypeDefault('LinearManhattanDisplay', 'showLegend', false)
+    expect(display.showLegend).toBe(false)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
   })
 
   // A `maybeBoolean` sentinel slot, so an explicit value wins in EITHER
@@ -62,27 +59,19 @@ describe('Manhattan showLdLegend', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
-    session.setDisplayTypeDefault(
-      'LinearManhattanDisplay',
-      'showLdLegend',
-      false,
-    )
-    expect(display.showLdLegend).toBe(false)
+    session.setDisplayTypeDefault('LinearManhattanDisplay', 'showLegend', false)
+    expect(display.showLegend).toBe(false)
 
-    display.setShowLdLegend(true)
-    expect(display.showLdLegend).toBe(true)
+    display.setShowLegend(true)
+    expect(display.showLegend).toBe(true)
   })
 
   it('ignores a non-boolean session default', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
-    session.setDisplayTypeDefault(
-      'LinearManhattanDisplay',
-      'showLdLegend',
-      'yes',
-    )
-    expect(display.showLdLegend).toBe(true)
+    session.setDisplayTypeDefault('LinearManhattanDisplay', 'showLegend', 'yes')
+    expect(display.showLegend).toBe(true)
   })
 
   // The pin's click applies the value to the open tracks; the toast's one
@@ -91,23 +80,23 @@ describe('Manhattan showLdLegend', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
     }).createDisplay()
-    display.setShowLdLegend(false)
-    const row = ldLegendRow(display.trackMenuItems())
+    display.setShowLegend(false)
+    const row = legendRow(display.trackMenuItems())
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()
 
-    display.showLdLegendDisplayTypeDefault.toggle()
-    expect(display.showLdLegend).toBe(true)
+    display.showLegendDisplayTypeDefault.toggle()
+    expect(display.showLegend).toBe(true)
     // on is the slot's base, so the offer clears rather than stores
     takeSnackbarAction(session)
     expect(
-      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
+      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLegend'),
     ).toBeUndefined()
 
-    display.showLdLegendDisplayTypeDefault.toggle()
-    expect(display.showLdLegend).toBe(false)
+    display.showLegendDisplayTypeDefault.toggle()
+    expect(display.showLegend).toBe(false)
     takeSnackbarAction(session)
     expect(
-      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
+      session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLegend'),
     ).toBe(false)
   })
 
@@ -116,7 +105,7 @@ describe('Manhattan showLdLegend', () => {
   // 'normal'` state, so a pin only present under 'ld' would read as missing.
   it('still offers the pinned row under the plain color scheme, disabled', () => {
     const { display } = createTestEnvironment().createDisplay()
-    const row = ldLegendRow(display.trackMenuItems())
+    const row = legendRow(display.trackMenuItems())
     expect(row && 'disabled' in row ? row.disabled : undefined).toBe(true)
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()
   })

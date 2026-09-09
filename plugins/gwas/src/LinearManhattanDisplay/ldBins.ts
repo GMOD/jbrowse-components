@@ -36,10 +36,8 @@ export const LD_LEGEND: LdSwatch[] = [
   LD_MISSING_SWATCH,
 ]
 
-// Shared by both legend renderers (SVG export in SvgLdLegend, DOM overlay in
-// LdColorLegend) so they title the same key the same way. Swatch sizes are each
-// renderer's own (FloatingLegend's CSS box, SvgColorLegend's LEGEND_SWATCH) and
-// were never actually shared, despite a constant here that claimed to be.
+// The title of the display's `legend` value under LD coloring, which both the
+// on-screen key and the SVG export render.
 export const LD_LEGEND_TITLE = 'r² to index'
 
 const GREY = cssColorToABGR(LD_MISSING_SWATCH.color)

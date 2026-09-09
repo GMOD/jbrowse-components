@@ -1225,7 +1225,7 @@ export default class PluginManager {
       for (const display of displays) {
         // track may have already added the displayType in its cb
         if (
-          display.trackType === track.name &&
+          [display.trackType].flat().includes(track.name) &&
           !track.displayTypes.includes(display)
         ) {
           track.addDisplayType(display)

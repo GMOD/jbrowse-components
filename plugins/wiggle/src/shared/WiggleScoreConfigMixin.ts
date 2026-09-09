@@ -2,6 +2,7 @@ import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 
+import type { scoreFieldConfigSchemaFields } from './scoreFieldConfigSchemaFields.ts'
 import type {
   ConfigModelForFields,
   ResolvableDisplay,
@@ -27,7 +28,9 @@ export const wiggleScoreConfigExtraSlots = {
 } as const
 
 type WiggleScoreConfigModel = ConfigModelForFields<
-  typeof scoreAxisConfigSchemaFields & typeof wiggleScoreConfigExtraSlots
+  typeof scoreAxisConfigSchemaFields &
+    typeof scoreFieldConfigSchemaFields &
+    typeof wiggleScoreConfigExtraSlots
 >
 
 // The mixin composes onto a display that supplies these props, but they're
@@ -100,6 +103,15 @@ export function WiggleScoreConfigMixin() {
        */
       get scatterPointSize(): number {
         return resolveConf(confNode(self), 'scatterPointSize')
+      },
+      /**
+       * #getter
+       * The feature field the worker plots on the score axis, `score` by
+       * default. A fetch input: every composing display carries it in its
+       * `rpcProps()`, since the field is read where the features are.
+       */
+      get scoreField(): string {
+        return getConf(confNode(self), 'scoreField')
       },
       /**
        * #getter

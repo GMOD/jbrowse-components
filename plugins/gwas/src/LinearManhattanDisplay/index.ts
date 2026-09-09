@@ -22,7 +22,10 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
         import('./stateModelFactory.ts').then(f =>
           f.stateModelFactory(pluginManager, configSchema),
         ),
-      trackType: 'GWASTrack',
+      // A FeatureTrack too: the plot reads `score` (or the `scoreField` slot)
+      // off whatever feature adapter the track carries, so any BED-like file
+      // with a numeric column is a Manhattan plot waiting for the display
+      trackType: ['GWASTrack', 'FeatureTrack'],
       viewType: 'LinearGenomeView',
       ReactComponent: ManhattanReactComponent,
     })

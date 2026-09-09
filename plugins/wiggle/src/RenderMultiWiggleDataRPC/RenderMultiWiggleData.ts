@@ -18,6 +18,7 @@ interface RenderMultiWiggleDataArgs {
   // min/max separately can skip reading them for a mode that cannot show them.
   // Optional: a caller that omits it gets the summary either way.
   summaryScoreMode?: string
+  scoreField?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

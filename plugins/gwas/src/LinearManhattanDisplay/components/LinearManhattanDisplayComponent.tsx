@@ -20,8 +20,8 @@ import { observer } from 'mobx-react'
 import { findManhattanHit } from '../findManhattanHit.ts'
 import { MANHATTAN_MARKS } from '../manhattanMarks.ts'
 import HoverHighlight from './HoverHighlight.tsx'
-import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
+import ManhattanLegend from './ManhattanLegend.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
@@ -119,14 +119,9 @@ const ManhattanBody = observer(function ManhattanBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const {
-    ticks,
-    hoveredFeature,
-    showCrossHatches,
-    ldColoringActive,
-    scoreRuleMarks,
-  } = model
-  const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
+  const { ticks, hoveredFeature, showCrossHatches, scoreRuleMarks, legend } =
+    model
+  const showLegend = legend && model.canvasDrawn && model.showLegend
   const plotBox = axisPlotBox(height)
 
   return (
@@ -162,10 +157,11 @@ const ManhattanBody = observer(function ManhattanBody({
           pointDiameterPx={model.scatterPointSize}
         />
       ) : null}
-      {ldMode ? (
-        <LdColorLegend
+      {showLegend ? (
+        <ManhattanLegend
+          legend={legend}
           onDismiss={() => {
-            model.setShowLdLegend(false)
+            model.setShowLegend(false)
           }}
         />
       ) : null}

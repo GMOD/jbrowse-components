@@ -37,6 +37,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   effectiveSummaryScoreMode: string
   maxGapMultiple: number
   resolution: number
+  scoreField: string
   /**
    * Whether one color ramp describes the whole plot. Density is the only
    * rendering that spends color on the score, and each display has its own
@@ -122,6 +123,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
       return {
         bicolorPivot: self.bicolorPivot,
         resolution: self.resolution,
+        scoreField: self.scoreField,
       }
     },
 

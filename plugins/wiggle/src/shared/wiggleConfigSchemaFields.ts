@@ -6,11 +6,13 @@ import {
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
+import { scoreFieldConfigSchemaFields } from './scoreFieldConfigSchemaFields.ts'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const wiggleConfigSchemaFields = {
   ...scoreAxisConfigSchemaFields,
+  ...scoreFieldConfigSchemaFields,
   // Widens the shared axis slot rather than living in it: `symlog` is only
   // offered where something implements it, and that is the wiggle shaders.
   // LinearManhattanDisplay spreads the same shared fields and its shader has no

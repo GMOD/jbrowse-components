@@ -25,6 +25,7 @@ interface FetchOpts {
   bpPerPx: number
   resolution: number
   sources?: SourceInfo[]
+  scoreField?: string
   stopToken?: StopToken
   // Reaches the per-subtrack adapters so a multiwiggle gets the same
   // determinate byte progress a single-source wiggle does. The fan-out that
@@ -73,7 +74,7 @@ async function getFallbackSourceArrays(
   return sources.map(source => ({
     source,
     raws: groupsPerRegion.map(groups =>
-      featuresToRaw(groups.get(source) ?? []),
+      featuresToRaw(groups.get(source) ?? [], opts.scoreField),
     ),
   }))
 }
@@ -93,6 +94,7 @@ interface ExecuteParams {
     // adapter so one that stores min/max separately can skip reading them.
     // Optional: a caller that does not send it gets the summary either way.
     summaryScoreMode?: string
+    scoreField?: string
     statusCallback?: StatusCallback
   }
 }
@@ -127,6 +129,7 @@ export async function executeRenderMultiWiggleData({
     bpPerPx = 0,
     resolution = 1,
     summaryScoreMode,
+    scoreField,
     statusCallback,
   } = args
 
@@ -152,6 +155,7 @@ export async function executeRenderMultiWiggleData({
         resolution,
         sources: sourcesArg,
         summaryScoreMode,
+        scoreField,
         stopToken,
         statusCallback,
       }

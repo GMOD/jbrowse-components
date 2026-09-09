@@ -29,6 +29,7 @@ interface ExecuteParams {
     stopToken?: StopToken
     bpPerPx?: number
     resolution?: number
+    scoreField?: string
     statusCallback?: StatusCallback
   }
 }
@@ -46,6 +47,7 @@ export async function executeRenderWiggleData({
     stopToken,
     bpPerPx = 0,
     resolution = 1,
+    scoreField,
     statusCallback,
   } = args
 
@@ -59,7 +61,13 @@ export async function executeRenderWiggleData({
 
   // statusCallback/stopToken let the adapter report determinate download progress
   // (e.g. BigWig block fetches) and stay interruptible mid-fetch
-  const fetchOpts = { bpPerPx, resolution, statusCallback, stopToken }
+  const fetchOpts = {
+    bpPerPx,
+    resolution,
+    scoreField,
+    statusCallback,
+    stopToken,
+  }
   const raws = await updateStatus(
     'Downloading wiggle data',
     statusCallback,

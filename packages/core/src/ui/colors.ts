@@ -123,6 +123,23 @@ export const categoricalPalette = [
   ),
 ]
 
+/**
+ * The palette color a categorical value paints, derived from the value rather
+ * than from the order it was met: values stream in as regions load, and a
+ * discovery-order slot would let one region paint `chr2` blue and the next
+ * paint it pink. A non-negative integer takes the slot it names, anchored at
+ * 1, so `1`, `2`, `3` walk the palette in order and stay distinct; anything
+ * else hashes in, stable for the same reason at the cost of an occasional
+ * collision.
+ */
+export function categoricalValueColor(value: string) {
+  const n = categoricalPalette.length
+  const num = Number(value)
+  return value !== '' && Number.isInteger(num) && num >= 0
+    ? categoricalPalette[(num + n - 1) % n]!
+    : categoricalPalette[hashString(value) % n]!
+}
+
 // only category10 and set1 are imported by name; the rest are reached through
 // paletteColors above
 /**

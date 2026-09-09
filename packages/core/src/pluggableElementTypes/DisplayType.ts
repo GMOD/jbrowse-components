@@ -12,9 +12,11 @@ export default class DisplayType extends LazyStateModelElement {
   ReactComponent: AnyReactComponentType
 
   /**
-   * The track type the display is associated with
+   * The track type the display attaches to, or several: a display that reads
+   * a field any feature adapter serves (the Manhattan plot's `score`) belongs
+   * to every track type whose adapters serve it.
    */
-  trackType: string
+  trackType: string | string[]
 
   /**
    * The view type the display is associated with
@@ -29,7 +31,7 @@ export default class DisplayType extends LazyStateModelElement {
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType | (() => Promise<IAnyModelType>)
-    trackType: string
+    trackType: string | string[]
     viewType: string
     displayName?: string
     configSchema: AnyConfigurationSchemaType

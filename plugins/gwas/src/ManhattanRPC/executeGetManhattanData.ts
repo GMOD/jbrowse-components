@@ -11,10 +11,11 @@ import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
+import { makeFieldColorEvaluator } from './makeFieldColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
-import type { ManhattanRpcResult } from './rpcTypes.ts'
+import type { ManhattanCategory, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type {
@@ -27,11 +28,13 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // The per-feature derivations the reducer needs, built once per request by
 // makeEvaluators. `evalR2` is present only in LD mode — its absence is what
-// drops the r² array from the payload.
+// drops the r² array from the payload — and `categories` only in field mode,
+// where `evalColor` fills it as it meets values.
 export interface ManhattanEvaluators {
   evalColor: (f: Feature) => number
   evalGlyph?: (f: Feature) => number
   evalR2?: (f: Feature) => number
+  categories?: ManhattanCategory[]
 }
 
 // Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
@@ -41,9 +44,12 @@ export function buildManhattanResult({
   evalColor,
   evalGlyph = defaultGlyph,
   evalR2,
+  categories,
+  scoreField = 'score',
   report,
 }: ManhattanEvaluators & {
   features: Feature[]
+  scoreField?: string
   report?: ProgressReporter
 }): ManhattanRpcResult {
   const n = features.length
@@ -60,7 +66,7 @@ export function buildManhattanResult({
   for (let i = 0; i < n; i++) {
     report?.(i)
     const f = features[i]!
-    const score = Number(f.get('score'))
+    const score = Number(f.get(scoreField))
     // A Manhattan point needs a finite y (-log10 p). Missing/garbage scores
     // (Number(undefined) === NaN) aren't plottable, and an unguarded NaN box
     // poisons the region's Flatbush node bounds via Math.min/max — breaking
@@ -114,13 +120,15 @@ export function buildManhattanResult({
     scoreMin,
     scoreMax,
     flatbushData,
+    categories,
   }
 }
 
 // Per-feature evaluators for one request, plus whether the LD scan found the
 // index SNP. LD coloring needs a mode, an index and an adapter to read r² from;
 // with any of the three missing the worker falls back to the flat `color`
-// config, which is also the whole of normal coloring mode.
+// config, which is also the whole of normal coloring mode. Field coloring
+// needs only the mode: the values come off the features themselves.
 async function makeEvaluators(
   args: Pick<
     RpcExecuteArgs<'GetManhattanData'>,
@@ -128,6 +136,7 @@ async function makeEvaluators(
     | 'region'
     | 'color'
     | 'colorBy'
+    | 'colorField'
     | 'indexSnp'
     | 'ldAdapterConfig'
     | 'ldRefName'
@@ -162,6 +171,8 @@ async function makeEvaluators(
       ...makeLdEvaluator(ld, indexSnp, region.refName),
       indexFound: ld.indexFound,
     }
+  } else if (args.colorBy === 'field') {
+    return makeFieldColorEvaluator(args.colorField)
   } else {
     return { evalColor: makeColorEvaluator(color, pluginManager.jexl) }
   }
@@ -183,6 +194,8 @@ export async function executeGetManhattanData({
     region,
     color,
     colorBy,
+    colorField,
+    scoreField,
     indexSnp,
     ldAdapterConfig,
     ldRefName,
@@ -212,6 +225,7 @@ export async function executeGetManhattanData({
     region,
     color,
     colorBy,
+    colorField,
     indexSnp,
     ldAdapterConfig,
     ldRefName,
@@ -221,6 +235,7 @@ export async function executeGetManhattanData({
 
   const result = buildManhattanResult({
     features,
+    scoreField,
     ...evaluators,
     report: createProgressReporter({
       label: 'Processing GWAS features',

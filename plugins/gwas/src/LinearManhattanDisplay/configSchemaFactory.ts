@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   remapRetiredAutoscale,
   scoreAxisConfigSchemaFields,
+  scoreFieldConfigSchemaFields,
 } from '@jbrowse/plugin-wiggle'
 
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
@@ -26,7 +27,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearManhattanDisplay
  * #category display
- * configuration for the Manhattan plot display used by GWAS tracks
+ * configuration for the Manhattan plot display: the default display of a GWAS
+ * track, and one a FeatureTrack can switch to, plotting any numeric feature
+ * field as a scored scatter
  *
  * #example
  * Minimal `GWASTrack` config. See the
@@ -71,6 +74,31 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   },
  * }
  * ```
+ *
+ * #example
+ * A selection scan as a plain `FeatureTrack`: the plot reads the file's `fst`
+ * column through `scoreField` and colors each point by its `population`
+ * column, with the color key derived from the values it meets:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'fst_scan',
+ *   name: 'Fst scan',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'BedTabixAdapter',
+ *     uri: 'https://example.com/fst.bed.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearManhattanDisplay',
+ *       scoreField: 'fst',
+ *       colorBy: 'field',
+ *       colorField: 'population',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export function configSchemaFactory() {
   return ConfigurationSchema(
@@ -93,16 +121,32 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
-       * LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point
-       * by its r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter`
-       * sub-adapter.
+       * How points take their color. 'normal' uses `color`; 'ld' colors each
+       * point by its r² to the index SNP, read from the `GWASAdapter`'s
+       * `ldAdapter` sub-adapter (LocusZoom-style); 'field' gives each distinct
+       * value of `colorField` a color from the categorical palette, and the
+       * color key lists the values met.
        */
       colorBy: {
         type: 'stringEnum',
-        model: types.enumeration('GwasColorBy', ['normal', 'ld']),
+        model: types.enumeration('GwasColorBy', ['normal', 'ld', 'field']),
         defaultValue: 'normal',
         description: 'How to color Manhattan points',
       },
+      /**
+       * #slot
+       * The feature field `colorBy: 'field'` colors by: `name`, `refName`, a
+       * BED extra column, a GFF attribute. Each distinct value takes a palette
+       * color derived from the value itself, so a value keeps its color across
+       * regions and sessions.
+       */
+      colorField: {
+        type: 'string',
+        defaultValue: 'name',
+        description:
+          'Feature field whose values color the points under colorBy: field',
+      },
+      ...scoreFieldConfigSchemaFields,
       // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
       // because `ScoreScaleMixin` reads all five, but only the min/max bounds
       // reach this plot: -log10 p values are pre-transformed so the axis is
@@ -153,24 +197,15 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
-       * Draw the LD color key, which labels the r² ramp the points are painted
-       * against. Only appears while LD coloring is active — the ramp means
-       * nothing under the plain single-color scheme.
+       * Draw the color key: the r² ramp under LD coloring, the value table
+       * under field coloring. Nothing under the plain single-color scheme,
+       * which has no key to draw.
        */
-      // Named for the LD legend specifically, not `showLegend` like the eight
-      // displays whose key is their color scheme's: this display could grow a
-      // second key (a chromosome band, a significance threshold) and the two
-      // would need separate switches.
-      //
-      // Promotable, and a config slot at all only as of this change — it was a
-      // volatile, so it sat with `hoveredFeature` and `rpcDataMap` and reset
-      // on every retick. Read through the resolved `showLdLegend` getter
-      // (resolveConf), never raw.
-      showLdLegend: {
+      showLegend: {
         type: 'maybeBoolean',
         promotedBase: true,
         description:
-          'Draw the LD color key while LD coloring is active. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+          'Draw the color key while LD or field coloring is active. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
       },
     },
     {
