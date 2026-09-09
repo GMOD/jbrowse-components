@@ -14,7 +14,6 @@ import { observer } from 'mobx-react'
 
 import { findManhattanHit } from '../findManhattanHit.ts'
 import { MANHATTAN_MARKS } from '../manhattanMarks.ts'
-import HoverHighlight from './HoverHighlight.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
@@ -113,7 +112,6 @@ const ManhattanBody = observer(function ManhattanBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const { hoveredFeature } = model
   const plotBox = axisPlotBox(height)
 
   return (
@@ -130,15 +128,6 @@ const ManhattanBody = observer(function ManhattanBody({
           top: plotBox.yTop,
         }}
       />
-      {hoveredFeature ? (
-        <HoverHighlight
-          screenX={hoveredFeature.screenX}
-          screenY={hoveredFeature.screenY}
-          width={width}
-          height={height}
-          pointDiameterPx={model.scatterPointSize}
-        />
-      ) : null}
       {model.indexSnpMissing ? (
         <LdIndexWarning offsetTop={plotBox.yTop} />
       ) : null}

@@ -25,6 +25,7 @@ import {
   makePointSizeSubMenu,
 } from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   SCALE_TYPE_LINEAR,
@@ -42,6 +43,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
+import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type {
   ManhattanColorBy,
@@ -64,6 +66,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -435,6 +441,43 @@ export function stateModelFactory(
             canvasHeight,
             pointDiameterPx: self.scatterPointSize,
           }))
+        },
+        /**
+         * #getter
+         * A ring around the hovered point, for the chrome's highlight: the
+         * glyph's box grown to the ring's radius, which sits a fixed margin
+         * outside the point and floors at 6 px so a tiny point stays findable.
+         * A ring rather than a shade because a wash over a 4 px glyph is
+         * invisible, and every hue is taken by the colour schemes.
+         */
+        get hoverInk(): HighlightRect[] {
+          const hit = self.hoveredFeature
+          if (!hit) {
+            return []
+          }
+          const plotTop = axisPlotBox(self.height).yTop
+          const r = Math.max(6, self.scatterPointSize / 2 + 4)
+          return inkOfInstances(
+            MANHATTAN_MARKS,
+            self.renderBlocks,
+            index => self.rpcDataMap.get(index),
+            this.renderState,
+            index =>
+              index === hit.regionIndex
+                ? [{ mark: 0, index: hit.instance }]
+                : undefined,
+          ).map(box => ({
+            left: box.left + box.width / 2 - r,
+            top: plotTop + box.top + box.height / 2 - r,
+            width: 2 * r,
+            height: 2 * r,
+          }))
+        },
+        /**
+         * #getter
+         */
+        get highlightStyle(): HighlightStyle {
+          return 'ring'
         },
         /**
          * #getter

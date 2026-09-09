@@ -1,22 +1,22 @@
+import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 
-// `HoverHighlight` is a DOM ring positioned from the hit's screenX/screenY,
-// captured when the pointer last moved. A painted canvas fires neither mousemove
-// nor mouseleave when the content moves under a stationary cursor, so without an
-// explicit clear the ring stays parked on empty space while the tooltip beside
-// it names a SNP that has moved. Both axes are pinned because a locstring or
-// side-scroll pan moves offsetPx without touching bpPerPx — the case a
-// zoom-only guard misses.
+// The hover is the instance under the pointer when it last moved. A painted
+// canvas fires neither mousemove nor mouseleave when the content moves under a
+// stationary cursor, so without an explicit clear the tooltip keeps naming a
+// SNP that has moved out from under it. Both axes are pinned because a
+// locstring or side-scroll pan moves offsetPx without touching bpPerPx — the
+// case a zoom-only guard misses.
 const hit: ManhattanHit = {
   refName: 'ctgA',
   start: 100,
   end: 101,
   score: 9,
   r2: undefined,
-  screenX: 250,
-  screenY: 40,
+  regionIndex: 0,
+  instance: 0,
 }
 
 describe('LinearManhattanDisplay clears its hover when the content moves', () => {
@@ -48,5 +48,24 @@ describe('LinearManhattanDisplay clears its hover when the content moves', () =>
     const { display } = createTestEnvironment().createDisplay()
     display.setHoveredFeature(hit)
     expect(display.hoveredFeature).toBeDefined()
+  })
+})
+
+describe('the hovered point lights as a ring', () => {
+  it('is the glyph box grown to the ring radius, inset by the plot top', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(
+      0,
+      manhattanFixture({ x: [100, 200], y: [5, 8], indexFound: true }),
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
+    )
+    expect(display.hoverInk).toEqual([])
+    display.setHoveredFeature({ ...hit, instance: 1 })
+    const [ring] = display.hoverInk
+    const r = Math.max(6, display.scatterPointSize / 2 + 4)
+    expect(ring).toMatchObject({ width: 2 * r, height: 2 * r })
+    expect(display.highlightStyle).toBe('ring')
+    display.clearHoveredFeature()
+    expect(display.hoverInk).toEqual([])
   })
 })

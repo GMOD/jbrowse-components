@@ -16,8 +16,9 @@ export interface ManhattanHit {
   // r² to the index SNP in LD mode (1 for the index, NaN where absent);
   // undefined in normal coloring mode.
   r2?: number
-  screenX: number
-  screenY: number
+  /** The instance in its region's payload, which the highlight lights. */
+  regionIndex: number
+  instance: number
 }
 
 const HIT_RADIUS_PX = 8
@@ -105,8 +106,8 @@ export function findManhattanHit(
         end: data.x2[hit.index]!,
         score: data.y[hit.index]!,
         r2: Number.isFinite(raw) ? raw : undefined,
-        screenX: hit.x,
-        screenY: hit.y,
+        regionIndex: block.displayedRegionIndex,
+        instance: hit.index,
       }
     }
   }

@@ -53,8 +53,8 @@ test('finds nearest point within hit radius', () => {
     start: 500,
     end: 501,
     score: 5,
-    screenX: 50,
-    screenY: 50,
+    regionIndex: 0,
+    instance: 0,
   })
 })
 
