@@ -1836,6 +1836,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'human_genes',
+                type: 'LinearBasicDisplay',
                 jexlFilters: [
                   "feature.type=='gene'||feature.type=='pseudogene'",
                 ],
