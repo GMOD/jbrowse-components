@@ -5,7 +5,11 @@ import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/data.ts'
 import type { RpcResult } from './RpcServer.ts'
-import type { ByteEstimateScope } from './byteBudget.ts'
+import type { ByteEstimateScope, RegionTooLargeResult } from './byteBudget.ts'
+import type {
+  CoreEncodeFeaturesArgs,
+  EncodedFeaturesResult,
+} from './methods/CoreEncodeFeatures.ts'
 
 export interface RegionLike {
   refName: string
@@ -54,6 +58,13 @@ export interface RpcRegistry {
     return: Feature[]
     // deserializeReturn rebuilds each of these into a SimpleFeature
     wire: SimpleFeatureSerialized[]
+  }
+  CoreEncodeFeatures: {
+    args: CoreEncodeFeaturesArgs
+    // wrapped in rpcResult so postMessage transfers its channel buffers; the
+    // refusal arm owns none
+    return: EncodedFeaturesResult | RegionTooLargeResult
+    transferables: EncodedFeaturesResult
   }
   CoreGetRegionByteEstimate: {
     args: {
