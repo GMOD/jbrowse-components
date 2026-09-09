@@ -1,3 +1,4 @@
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { render } from '@testing-library/react'
 
 import { createTestEnvironment } from '../../LinearMultiSampleVariantDisplay/testEnv.ts'
@@ -10,13 +11,24 @@ import type { Source } from '../types.ts'
 // the sidebar color swatches, a lone sample's row label, and the color key.
 //
 // Built inside a real view rather than as a bare `stateModel.create()`. The
-// overlay renders `legendSections()`, and the insertion entry asks the painter's
+// key derives from `colorScales`, and the insertion entry asks the painter's
 // own question about the visible blocks, so the model needs the view its
 // components always have in the app.
 function createDisplay(sources: Source[]) {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(sources)
   return display
+}
+
+// The key is the export shell's, so these cases render the shell's own
+// component over this model: what they check is that it keys the display off
+// the same scales the screen does.
+function renderKey(model: ReturnType<typeof createDisplay>) {
+  return render(
+    <svg>
+      <SvgLegend model={model} width={800} height={model.height} opts={{}} />
+    </svg>,
+  )
 }
 
 function renderOverlay(model: ReturnType<typeof createDisplay>) {
@@ -63,7 +75,7 @@ test('a single-sample track labels its one row', () => {
 
 test('the genotype color key exports, untitled when it is the only section', () => {
   const model = createDisplay([{ name: 'HG001' }, { name: 'HG002' }])
-  const { getByText, queryByText } = renderOverlay(model)
+  const { getByText, queryByText } = renderKey(model)
   getByText('Homozygous reference')
   getByText('Homozygous alt')
   expect(queryByText('Genotypes')).toBeNull()
@@ -75,7 +87,7 @@ test('colorBy adds a titled sample-grouping section to the exported key', () => 
     { name: 'HG002', population: 'AFR' },
   ])
   model.setColorBy('population')
-  const { getByText } = renderOverlay(model)
+  const { getByText } = renderKey(model)
   getByText('Genotypes')
   getByText('Population')
   getByText('EUR')
@@ -85,6 +97,6 @@ test('colorBy adds a titled sample-grouping section to the exported key', () => 
 test('a hidden legend exports nothing', () => {
   const model = createDisplay([{ name: 'HG001' }, { name: 'HG002' }])
   model.setShowLegend(false)
-  const { queryByText } = renderOverlay(model)
+  const { queryByText } = renderKey(model)
   expect(queryByText('Homozygous reference')).toBeNull()
 })

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- the shell and the key it appends are one module */
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
@@ -69,9 +70,10 @@ const GUTTER_INSET = 10
  * off the same `legendSpec` the chrome draws on screen. Over the plot's
  * top-right corner, as every display placed its own; beside the plot when the
  * display reserved the export gutter (`svgLegendWidth`) and the container
- * granted it. No `onDismiss`: an exported legend cannot be clicked.
+ * granted it. No `onDismiss`: an exported legend cannot be clicked. Exported
+ * so a display's test can render its key without a fetch.
  */
-function SvgLegend({
+export function SvgLegend({
   model,
   width,
   height,

@@ -6,17 +6,23 @@ import {
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import {
-  getGenotypeLegendItems,
-  getSampleGroupLegendItems,
-  getVariantLegendSections,
+  getGenotypeEntries,
+  getSampleGroupEntries,
+  getVariantColorScales,
 } from './variantLegend.ts'
 import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
-describe('getGenotypeLegendItems', () => {
+// Every scale these build is categorical; the narrowing is what the type asks.
+function entriesOf(scale: ColorScale | undefined) {
+  return scale?.kind === 'categorical' ? scale.entries : undefined
+}
+
+describe('getGenotypeEntries', () => {
   it('alleleCount mode: dosage shades + no call', () => {
-    const items = getGenotypeLegendItems({
+    const items = getGenotypeEntries({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -31,7 +37,7 @@ describe('getGenotypeLegendItems', () => {
   })
 
   it('alleleCount mode: adds other-alt when multiallelic', () => {
-    const items = getGenotypeLegendItems({
+    const items = getGenotypeEntries({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: true,
       hasUnphased: false,
@@ -41,7 +47,7 @@ describe('getGenotypeLegendItems', () => {
   })
 
   it('phased mode: ref + alt, plus unphased when present', () => {
-    const items = getGenotypeLegendItems({
+    const items = getGenotypeEntries({
       renderingMode: 'phased',
       hasSecondaryAlt: false,
       hasUnphased: true,
@@ -55,7 +61,7 @@ describe('getGenotypeLegendItems', () => {
   })
 
   it('phased mode: adds no-call when present, distinct from unphased', () => {
-    const items = getGenotypeLegendItems({
+    const items = getGenotypeEntries({
       renderingMode: 'phased',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -69,7 +75,7 @@ describe('getGenotypeLegendItems', () => {
   })
 })
 
-describe('getSampleGroupLegendItems', () => {
+describe('getSampleGroupEntries', () => {
   const sources: Source[] = [
     { name: 'HG1', population: 'EUR', labelColor: '#a' },
     { name: 'HG2', population: 'AFR', labelColor: '#b' },
@@ -78,19 +84,19 @@ describe('getSampleGroupLegendItems', () => {
   ]
 
   it('returns [] when colorBy is unset', () => {
-    expect(getSampleGroupLegendItems('', sources)).toEqual([])
+    expect(getSampleGroupEntries('', sources)).toEqual([])
   })
 
   it('returns [] when sources are undefined/empty', () => {
-    expect(getSampleGroupLegendItems('population', undefined)).toEqual([])
-    expect(getSampleGroupLegendItems('population', [])).toEqual([])
+    expect(getSampleGroupEntries('population', undefined)).toEqual([])
+    expect(getSampleGroupEntries('population', [])).toEqual([])
   })
 
   it('one entry per distinct value, most-common first, with its color', () => {
-    const items = getSampleGroupLegendItems('population', sources)
+    const items = getSampleGroupEntries('population', sources)
     expect(items).toEqual([
-      { color: '#a', label: 'EUR' }, // 3 occurrences -> first
-      { color: '#b', label: 'AFR' }, // 1 occurrence -> second
+      { value: 'EUR', label: 'EUR', color: '#a' }, // 3 occurrences -> first
+      { value: 'AFR', label: 'AFR', color: '#b' }, // 1 occurrence -> second
     ])
   })
 
@@ -99,9 +105,13 @@ describe('getSampleGroupLegendItems', () => {
       { name: 'a', population: 'EUR', labelColor: '#a' },
       { name: 'b', labelColor: '#b' }, // no population
     ]
-    const items = getSampleGroupLegendItems('population', mixed)
-    expect(items).toContainEqual({ color: '#a', label: 'EUR' })
-    expect(items).toContainEqual({ color: '#b', label: '(unlabeled)' })
+    const items = getSampleGroupEntries('population', mixed)
+    expect(items).toContainEqual({ value: 'EUR', label: 'EUR', color: '#a' })
+    expect(items).toContainEqual({
+      value: '',
+      label: '(unlabeled)',
+      color: '#b',
+    })
   })
 
   it('returns [] when colorBy attribute is absent from every source', () => {
@@ -109,18 +119,18 @@ describe('getSampleGroupLegendItems', () => {
       { name: 'a', labelColor: '#a' },
       { name: 'b', labelColor: '#b' },
     ]
-    expect(getSampleGroupLegendItems('population', noPop)).toEqual([])
+    expect(getSampleGroupEntries('population', noPop)).toEqual([])
   })
 })
 
-describe('getVariantLegendSections', () => {
+describe('getVariantColorScales', () => {
   const sources: Source[] = [
     { name: 'HG1', population: 'EUR', labelColor: '#a' },
     { name: 'HG2', population: 'AFR', labelColor: '#b' },
   ]
 
   it('only the genotype section when colorBy is unset', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -133,7 +143,7 @@ describe('getVariantLegendSections', () => {
   })
 
   it('adds a title-cased group section when colorBy is set', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -144,11 +154,11 @@ describe('getVariantLegendSections', () => {
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
     expect(sections[1]!.title).toBe('Population')
-    expect(sections[1]!.items.map(i => i.label)).toEqual(['EUR', 'AFR'])
+    expect(sections[1]!.entries.map(i => i.label)).toEqual(['EUR', 'AFR'])
   })
 
   it('replaces the genotype section with an impact key for the consequence preset', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -158,7 +168,7 @@ describe('getVariantLegendSections', () => {
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['consequenceImpact'])
-    expect(sections[0]!.items.map(i => i.label)).toEqual([
+    expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
       'HIGH',
       'MODERATE',
       'LOW',
@@ -170,7 +180,7 @@ describe('getVariantLegendSections', () => {
   })
 
   it('builds an SV-type section from the shipped color map', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -181,16 +191,20 @@ describe('getVariantLegendSections', () => {
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['svType'])
-    expect(sections[0]!.items).toEqual([
-      { color: '#e41a1c', label: 'Deletion' },
-      { color: '#377eb8', label: 'Duplication' },
-      { color: '#1f77b4', label: 'INVDUP' }, // unrecognized token: raw label
-      { color: REFERENCE_COLOR, label: 'Homozygous reference' },
+    expect(entriesOf(sections[0])!).toEqual([
+      { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
+      { value: 'DUP', label: 'Duplication', color: '#377eb8' },
+      { value: 'INVDUP', label: 'INVDUP', color: '#1f77b4' }, // unrecognized token: raw label
+      {
+        value: 'Homozygous reference',
+        label: 'Homozygous reference',
+        color: REFERENCE_COLOR,
+      },
     ])
   })
 
   it('names the no-call fill in an SV-type key when one is drawn', () => {
-    const [section] = getVariantLegendSections({
+    const [section] = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -202,15 +216,19 @@ describe('getVariantLegendSections', () => {
     })
     // an SV-type override paints alt cells only; a no-call keeps the no-call
     // yellow, and a key that omits it leaves a whole column unexplained
-    expect(section!.items).toEqual([
-      { color: '#e41a1c', label: 'Deletion' },
-      { color: REFERENCE_COLOR, label: 'Homozygous reference' },
-      { color: NO_CALL_COLOR, label: 'No call' },
+    expect(entriesOf(section)!).toEqual([
+      { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
+      {
+        value: 'Homozygous reference',
+        label: 'Homozygous reference',
+        color: REFERENCE_COLOR,
+      },
+      { value: 'No call', label: 'No call', color: NO_CALL_COLOR },
     ])
   })
 
   it('keeps a genotype key for a plain CSS feature color, recolored', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'phased',
       hasSecondaryAlt: true,
       hasUnphased: false,
@@ -222,15 +240,15 @@ describe('getVariantLegendSections', () => {
     expect(sections.map(s => s.id)).toEqual(['genotypes'])
     // one alt entry in the override color: the secondary-alt color is
     // overridden too, so listing it would describe a swatch nothing paints
-    expect(sections[0]!.items).toEqual([
-      { color: REFERENCE_COLOR, label: 'Reference' },
-      { color: '#E69F00', label: 'Alt allele' },
-      { color: NO_CALL_COLOR, label: 'No call' },
+    expect(entriesOf(sections[0])!).toEqual([
+      { value: 'Reference', label: 'Reference', color: REFERENCE_COLOR },
+      { value: 'Alt allele', label: 'Alt allele', color: '#E69F00' },
+      { value: 'No call', label: 'No call', color: NO_CALL_COLOR },
     ])
   })
 
   it('drops the cell legend for an arbitrary custom feature color', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
@@ -254,13 +272,13 @@ describe('phase-set legend section', () => {
   }
 
   test('replaces the alt-allele swatches with the hue rule', () => {
-    const [section] = getVariantLegendSections({
+    const [section] = getVariantColorScales({
       ...base,
       renderingMode: 'phased',
       featureColor: PHASE_SET_COLOR,
     })
     expect(section!.id).toBe('phaseSet')
-    const labels = section!.items.map(i => i.label)
+    const labels = entriesOf(section)!.map(i => i.label)
     // The two swatches that would now match nothing on screen are gone; the
     // rule replaces them, and Reference (still literal) stays.
     expect(labels).not.toContain('Alt allele')
@@ -269,24 +287,26 @@ describe('phase-set legend section', () => {
     expect(labels).toContain('Alt allele (hue identifies the phase set)')
     // A rule line carries no swatch — there is no single color to show.
     expect(
-      section!.items.find(i => i.label.startsWith('Alt allele ('))!.color,
+      entriesOf(section)!.find(i => i.label.startsWith('Alt allele ('))!.color,
     ).toBeUndefined()
   })
 
   test('falls back to the genotype legend outside phased mode', () => {
     // Only the phased cell loop reads PS, so in allele-count mode the cells are
     // genotype-colored and the legend must describe that, not phase sets.
-    const [section] = getVariantLegendSections({
+    const [section] = getVariantColorScales({
       ...base,
       renderingMode: 'alleleCount',
       featureColor: PHASE_SET_COLOR,
     })
     expect(section!.id).toBe('genotypes')
-    expect(section!.items.map(i => i.label)).toContain('Homozygous reference')
+    expect(entriesOf(section)!.map(i => i.label)).toContain(
+      'Homozygous reference',
+    )
   })
 })
 
-describe('getVariantLegendSections insertion marker', () => {
+describe('getVariantColorScales insertion marker', () => {
   const base = {
     renderingMode: 'alleleCount',
     hasSecondaryAlt: false,
@@ -302,7 +322,7 @@ describe('getVariantLegendSections insertion marker', () => {
   // where no marker is drawn — the matrix display, the slot off, or nothing
   // visible inserting bases. Absent means absent, not a colorless entry.
   test('no section when the display draws no markers', () => {
-    expect(getVariantLegendSections(base).map(s => s.id)).toEqual(['genotypes'])
+    expect(getVariantColorScales(base).map(s => s.id)).toEqual(['genotypes'])
   })
 
   // Allele-count mode: one row is a whole sample, and the marker covers the
@@ -310,16 +330,17 @@ describe('getVariantLegendSections insertion marker', () => {
   // saying how many copies the sample carries. Both swatches come from
   // getInsertionColorForDosage, so the key cannot drift from the glyph.
   test('allele-count mode keys both the hom and the het shade', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       ...base,
       insertionColor: '#800080',
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
-    expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
-      { color: '#800080', label: 'Homozygous' },
+    expect(entriesOf(sections.find(s => s.id === 'insertions'))!).toEqual([
+      { value: 'Homozygous', label: 'Homozygous', color: '#800080' },
       {
-        color: getInsertionColorForDosage('#800080', 128),
+        value: 'Heterozygous',
         label: 'Heterozygous',
+        color: getInsertionColorForDosage('#800080', 128),
       },
     ])
   })
@@ -328,13 +349,13 @@ describe('getVariantLegendSections insertion marker', () => {
   // carries the allele or does not, so zygosity reads as the pattern down a
   // sample's rows and every marker is full strength.
   test('phased mode keys one shade, since rows carry the zygosity', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       ...base,
       renderingMode: 'phased',
       insertionColor: '#800080',
     })
-    expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
-      { color: '#800080', label: 'Insertion' },
+    expect(entriesOf(sections.find(s => s.id === 'insertions'))!).toEqual([
+      { value: 'Insertion', label: 'Insertion', color: '#800080' },
     ])
   })
 
@@ -347,7 +368,7 @@ describe('getVariantLegendSections insertion marker', () => {
     ['svType', SV_TYPE_COLOR],
     ['consequenceImpact', CONSEQUENCE_IMPACT_JEXL],
   ])('survives the %s coloring replacing the genotype items', (id, color) => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       ...base,
       featureColor: color,
       svTypeColors: { DEL: '#123456' },
@@ -357,7 +378,7 @@ describe('getVariantLegendSections insertion marker', () => {
   })
 
   test('survives a jexl coloring that drops the cell section outright', () => {
-    const sections = getVariantLegendSections({
+    const sections = getVariantColorScales({
       ...base,
       featureColor: 'jexl:someUserExpression(feature)',
       insertionColor: '#800080',

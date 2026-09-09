@@ -57,7 +57,7 @@ import {
   variantShowSubmenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
-import { UNLABELED_GROUP, getVariantLegendSections } from './variantLegend.ts'
+import { getVariantColorScales } from './variantLegend.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   variantTopBandsGeometry,
@@ -68,12 +68,12 @@ import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
-import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
 // Apply a `colorBy` palette to the sample sources. Returns the colored sources,
 // or undefined when there's nothing to apply (no colorBy attribute, or sources
@@ -480,14 +480,6 @@ export default function MultiSampleVariantBaseModelF(
       .volatile(() => ({
         /**
          * #volatile
-         * Ids of legend sections the user has individually closed (e.g.
-         * 'genotypes' / 'group'); reset when the whole legend is re-shown.
-         * Stays volatile where `showLegend` did not: this is which sections a
-         * reader collapsed in one sitting, not how the track is configured.
-         */
-        dismissedLegendSections: [] as string[],
-        /**
-         * #volatile
          */
         sourcesVolatile: undefined as Source[] | undefined,
         /**
@@ -778,7 +770,6 @@ export default function MultiSampleVariantBaseModelF(
       // before it downloads, and afterAttach clears the estimate on chromosome
       // nav. Byte-only — no density axis.
       .actions(self => {
-        const { setShowLegend: superSetShowLegend } = self
         const fetchMetadata = createAdapterMetadataFetch(self)
         return {
           /**
@@ -786,25 +777,6 @@ export default function MultiSampleVariantBaseModelF(
            */
           setJexlFilters(f?: string[]) {
             self.jexlFiltersSetting = cast(f)
-          },
-          /**
-           * #action
-           * The one override of `LegendMixin`'s setter: this display keeps a
-           * per-section dismissed list, and re-showing the whole legend restores
-           * the sections closed inside it. The slot write stays the mixin's.
-           */
-          setShowLegend(s: boolean) {
-            superSetShowLegend(s)
-            if (s) {
-              self.dismissedLegendSections = []
-            }
-          },
-          /**
-           * #action
-           * Close a single legend section (leaving the others visible).
-           */
-          dismissLegendSection(id: string) {
-            self.dismissedLegendSections = [...self.dismissedLegendSections, id]
           },
           /**
            * #action
@@ -1551,12 +1523,10 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
-         * Narrow the rows to one `colorBy` group — what clicking that group's
-         * swatch in the legend does. `label` is the legend's own spelling, so
-         * the unlabeled group comes in as it is listed there.
+         * Narrow the rows to one `colorBy` group, by the group's value — `''`
+         * for the rows the attribute is blank on.
          */
-        focusGroup(label: string) {
-          const value = label === UNLABELED_GROUP ? '' : label
+        focusGroup(value: string) {
           // `sourcesBeforeSubtreeFilter` for both of `focusRowGroup`'s reasons,
           // and it is the one list here that can be absent: the samples arrive
           // on their own RPC, and before it lands there is no group to focus.
@@ -1567,6 +1537,17 @@ export default function MultiSampleVariantBaseModelF(
               rows,
               s => String(s[self.colorBy] ?? '') === value,
             )
+          }
+        },
+        /**
+         * #action
+         * The chrome's legend hook: a click on a row of the group scale
+         * focuses that group; the cell-color scales name genotypes and stay
+         * inert.
+         */
+        focusLegendEntry(scaleId: string, value: string) {
+          if (scaleId === 'group') {
+            self.focusGroup(value)
           }
         },
       }))
@@ -1710,7 +1691,7 @@ export default function MultiSampleVariantBaseModelF(
          * markers, else undefined — which is what keeps the marker out of the
          * legend it does not appear in.
          *
-         * Declared here, answering undefined, so `legendSections` below can be
+         * Declared here, answering undefined, so `colorScales` below can be
          * written once: the matrix display draws no markers at all, and the
          * regular display overrides this with the theme color when its
          * `showInsertionGlyphs` slot is on and something visible actually
@@ -1723,23 +1704,15 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .views(self => ({
         /**
-         * #method
-         * Legend split into independently-closable sections: the genotype/cell
-         * coloring and (when colorBy is set) the sample-grouping coloring shown
-         * on the sidebar row labels. Dismissed sections are filtered out.
-         *
-         * `insertionColor` repaints the marker swatch without touching *whether*
-         * one is shown — that stays `insertionLegendColor`'s answer, which is the
-         * painter's own test on the painter's own blocks. Only the SVG export
-         * passes it, and it has to: the export draws its glyphs with the palette
-         * of the theme the user picked in the export dialog rather than the live
-         * session's (the rule plugin-maf's export follows too), so a session that
-         * themes `palette.insertion` would otherwise key an export in one color
-         * and draw it in another.
+         * #getter
+         * `LegendMixin`'s hook: the cell coloring, the insertion marker where
+         * one is drawn, and (when colorBy is set) the sample-grouping coloring
+         * shown on the sidebar row labels. Whether the marker is keyed is
+         * `insertionLegendColor`'s answer, the painter's own test on the
+         * painter's own blocks.
          */
-        legendSections(insertionColor?: string): LegendSection[] {
-          const drawnColor = self.insertionLegendColor
-          return getVariantLegendSections({
+        get colorScales(): ColorScale[] {
+          return getVariantColorScales({
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
             hasUnphased: self.hasUnphased,
@@ -1748,11 +1721,8 @@ export default function MultiSampleVariantBaseModelF(
             svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
             sources: self.sources,
-            insertionColor:
-              drawnColor === undefined
-                ? undefined
-                : (insertionColor ?? drawnColor),
-          }).filter(s => !self.dismissedLegendSections.includes(s.id))
+            insertionColor: self.insertionLegendColor,
+          })
         },
 
         /**

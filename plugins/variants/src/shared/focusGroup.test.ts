@@ -16,7 +16,7 @@ function display() {
 // Clicking a group's swatch in the legend narrows the rows to that group, the
 // same write a tree-node click makes, so the sidebar's "Showing N rows" chip
 // and "Clear subtree filter" are the way back.
-test('focuses the rows of a colorBy group by its legend label', () => {
+test('focuses the rows of a colorBy group by its value', () => {
   const d = display()
   d.focusGroup('AFR')
   expect(d.sources.map(s => s.name)).toEqual(['S0', 'S2'])
@@ -25,8 +25,20 @@ test('focuses the rows of a colorBy group by its legend label', () => {
 
 test('the unlabeled group is the rows with no value', () => {
   const d = display()
-  d.focusGroup(UNLABELED_GROUP)
+  d.focusGroup('')
   expect(d.sources.map(s => s.name)).toEqual(['S3'])
+})
+
+// The chrome hands a click the scale id and the row's value, and only the group
+// scale's rows act: a genotype swatch names a color, not a set of rows.
+test('a legend click on the group scale focuses it, on the genotype scale nothing', () => {
+  const d = display()
+  const group = d.legendSpec.sections!.find(s => s.id === 'group')!
+  expect(group.items.find(i => i.label === UNLABELED_GROUP)!.value).toBe('')
+  d.focusLegendEntry('genotypes', 'ref')
+  expect(d.subtreeFilter).toBeUndefined()
+  d.focusLegendEntry('group', 'AFR')
+  expect(d.subtreeFilter).toEqual(['S0', 'S2'])
 })
 
 // The filter names sample-level rows, which is what `sourcesBase` is still

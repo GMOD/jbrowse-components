@@ -47,7 +47,7 @@ export const UNPHASED_COLOR = 'black'
 
 // Phased-mode alt fills: the primary (most frequent) alt and everything else.
 // The legend swatches read these same two constants (see
-// variantLegend.getGenotypeLegendItems) so cell and key can't drift.
+// variantLegend.getGenotypeEntries) so cell and key can't drift.
 export const PRIMARY_ALT_COLOR = set1[0]!
 export const SECONDARY_ALT_COLOR = set1[1]!
 

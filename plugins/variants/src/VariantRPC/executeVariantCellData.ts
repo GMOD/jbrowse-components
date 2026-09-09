@@ -303,7 +303,7 @@ export async function executeVariantCellData({
   // is a per-haplotype fact and only the phased loop paints one: the allele-count
   // loop never reads PS, so outside phased mode this only bought the heavy
   // per-sample `samples` read (the flat `genotypes` map doesn't carry PS) for
-  // cells that then paint by genotype anyway. `getVariantLegendSections` resolves
+  // cells that then paint by genotype anyway. `getVariantColorScales` resolves
   // the same combination the same way, so the key and the cells agree. Reachable
   // because the two settings are independent: a config can declare both, and
   // switching rendering mode leaves `featureColor` alone.

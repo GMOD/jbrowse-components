@@ -15,17 +15,23 @@ import { SV_TYPE_COLOR, svTypeDisplayLabel } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type {
-  LegendItem,
-  LegendSection,
-} from '@jbrowse/plugin-linear-genome-view'
+  CategoricalEntry,
+  CategoricalScale,
+  ColorScale,
+} from '@jbrowse/core/ui/colorScale'
 
-// Pure legend builders, split out of MultiSampleVariantBaseModel so they can be
+// Pure scale builders, split out of MultiSampleVariantBaseModel so they can be
 // unit-tested without instantiating the display model. The model's
-// `legendItems()` is a thin wrapper that feeds these its scalar getters.
+// `colorScales` feeds these its scalar getters.
 
-// Genotype-color legend (the cell coloring): allele-dosage shades in
+// A fixed-vocabulary row: the value is its label.
+function entry(label: string, color?: string): CategoricalEntry {
+  return { value: label, label, color }
+}
+
+// Genotype-color scale (the cell coloring): allele-dosage shades in
 // alleleCount mode, alt-allele colors in phased mode.
-export function getGenotypeLegendItems({
+export function getGenotypeEntries({
   renderingMode,
   hasSecondaryAlt,
   hasUnphased,
@@ -42,53 +48,51 @@ export function getGenotypeLegendItems({
   // otherwise would describe a scheme that isn't on screen. Ref, unphased and
   // no-call keep their own colors (see computeVariantMatrixCells).
   altColorOverride?: string
-}): LegendItem[] {
+}): CategoricalEntry[] {
   if (altColorOverride) {
     return [
-      {
-        color: REFERENCE_COLOR,
-        label:
-          renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
-      },
-      { color: altColorOverride, label: 'Alt allele' },
-      ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
-      ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+      entry(
+        renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+        REFERENCE_COLOR,
+      ),
+      entry('Alt allele', altColorOverride),
+      ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+      ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
     ]
   }
   if (renderingMode === 'phased') {
     return [
-      { color: REFERENCE_COLOR, label: 'Reference' },
-      { color: PRIMARY_ALT_COLOR, label: 'Alt allele' },
+      entry('Reference', REFERENCE_COLOR),
+      entry('Alt allele', PRIMARY_ALT_COLOR),
       ...(hasSecondaryAlt
-        ? [{ color: SECONDARY_ALT_COLOR, label: 'Other alt allele' }]
+        ? [entry('Other alt allele', SECONDARY_ALT_COLOR)]
         : []),
-      ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
-      ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+      ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+      ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
     ]
   }
   return [
-    { color: REFERENCE_COLOR, label: 'Homozygous reference' },
-    { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
-    { color: getAltColorForDosage(1), label: 'Homozygous alt' },
-    ...(hasSecondaryAlt
-      ? [{ color: OTHER_ALT_COLOR, label: 'Other alt allele' }]
-      : []),
-    { color: NO_CALL_COLOR, label: 'No call' },
+    entry('Homozygous reference', REFERENCE_COLOR),
+    entry('Heterozygous alt', getAltColorForDosage(0.5)),
+    entry('Homozygous alt', getAltColorForDosage(1)),
+    ...(hasSecondaryAlt ? [entry('Other alt allele', OTHER_ALT_COLOR)] : []),
+    entry('No call', NO_CALL_COLOR),
   ]
 }
 
-// How the legend names the rows whose `colorBy` attribute is blank. Exported so
-// `focusGroup` can map the label back to the value it stands for.
+// How the legend names the rows whose `colorBy` attribute is blank. The entry
+// keeps the blank as its `value`, so a click hands `focusGroup` the value
+// itself.
 export const UNLABELED_GROUP = '(unlabeled)'
 
-// Sample-grouping legend (the per-row sidebar coloring): one entry per distinct
+// Sample-grouping scale (the per-row sidebar coloring): one entry per distinct
 // `colorBy` metadata value (e.g. population), most-common first, reusing the
 // `labelColor` the palette already assigned to that group's sources. Empty
 // when colorBy is unset or no sources carry it.
-export function getSampleGroupLegendItems(
+export function getSampleGroupEntries(
   colorBy: string,
   sources: Source[] | undefined,
-): LegendItem[] {
+): CategoricalEntry[] {
   if (!colorBy || !sources?.length) {
     return []
   }
@@ -103,7 +107,7 @@ export function getSampleGroupLegendItems(
     }
   }
   // A single group (whether unset '' or one shared real value) distinguishes
-  // nothing, so the group legend is omitted — matches getVariantLegendSections'
+  // nothing, so the group scale is omitted — matches getVariantColorScales'
   // "omitted when colorBy is unset or carries a single value".
   if (counts.size <= 1) {
     return []
@@ -111,8 +115,9 @@ export function getSampleGroupLegendItems(
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([value]) => ({
-      color: colorByValue.get(value),
+      value,
       label: value || UNLABELED_GROUP,
+      color: colorByValue.get(value),
     }))
 }
 
@@ -124,29 +129,29 @@ export function getSampleGroupLegendItems(
 // exactly how a reviewer read the yellow no-call column in the RHD figure as
 // unexplained. Ref is unconditional because grey is the row background even
 // under `referenceDrawingMode: 'skip'`; no-call is gated on there being one.
-function getNonAltItems({
+function getNonAltEntries({
   renderingMode,
   hasNoCall,
 }: {
   renderingMode: string
   hasNoCall: boolean
-}): LegendItem[] {
+}): CategoricalEntry[] {
   return [
-    {
-      color: REFERENCE_COLOR,
-      label: renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
-    },
-    ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+    entry(
+      renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+      REFERENCE_COLOR,
+    ),
+    ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
   ]
 }
 
-// The cell-coloring section for a resolved `featureColor` key: the impact-tier
+// The cell-coloring scale for a resolved `featureColor` key: the impact-tier
 // key for the consequence preset, the present SV types for the SV-type preset,
 // the phasing rule for the phase-set preset, or the genotype key — which is also
 // where a plain CSS color lands, since "every alt cell is that color" is a
 // genotype key with one alt swatch. Undefined only for a real jexl expression,
 // whose output can't be enumerated into swatches.
-function getCellColorSection({
+function getCellColorScale({
   cellColorKey,
   renderingMode,
   hasSecondaryAlt,
@@ -160,32 +165,36 @@ function getCellColorSection({
   hasUnphased: boolean
   hasNoCall: boolean
   svTypeColors?: Record<string, string>
-}): LegendSection | undefined {
+}): CategoricalScale | undefined {
   if (cellColorKey === CONSEQUENCE_IMPACT_JEXL) {
     return {
+      kind: 'categorical',
       id: 'consequenceImpact',
       title: 'Consequence impact',
-      items: [
-        ...IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
-        ...getNonAltItems({ renderingMode, hasNoCall }),
+      entries: [
+        ...IMPACT_TIERS.map(t => entry(t.tier, t.color)),
+        ...getNonAltEntries({ renderingMode, hasNoCall }),
       ],
     }
   }
   if (cellColorKey === SV_TYPE_COLOR) {
     return {
+      kind: 'categorical',
       id: 'svType',
       title: 'SV type',
-      items: [
+      entries: [
         ...Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
-          color,
+          value: type,
           label: svTypeDisplayLabel(type),
+          color,
         })),
-        ...getNonAltItems({ renderingMode, hasNoCall }),
+        ...getNonAltEntries({ renderingMode, hasNoCall }),
       ],
     }
   }
   if (cellColorKey === PHASE_SET_COLOR) {
     return {
+      kind: 'categorical',
       id: 'phaseSet',
       title: 'Phase set',
       // No swatch list of the phase sets present: a PS id is an arbitrary
@@ -194,11 +203,11 @@ function getCellColorSection({
       // arbitrarily. The rule is what a reader needs — equal hue down a row means
       // one phasing block. Ref/no-call/unphased keep their own colors, so those
       // swatches stay literal.
-      items: [
-        { color: REFERENCE_COLOR, label: 'Reference' },
-        { label: 'Alt allele (hue identifies the phase set)' },
-        ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
-        ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+      entries: [
+        entry('Reference', REFERENCE_COLOR),
+        entry('Alt allele (hue identifies the phase set)'),
+        ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+        ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
       ],
     }
   }
@@ -206,9 +215,10 @@ function getCellColorSection({
     return undefined
   }
   return {
+    kind: 'categorical',
     id: 'genotypes',
     title: 'Genotypes',
-    items: getGenotypeLegendItems({
+    entries: getGenotypeEntries({
       renderingMode,
       hasSecondaryAlt,
       hasUnphased,
@@ -220,12 +230,12 @@ function getCellColorSection({
   }
 }
 
-// The legend split into independently-closable sections: the genotype/cell
-// coloring, the insertion marker where one is drawn, and (when colorBy is set)
-// the sample-grouping coloring used for the sidebar row labels — distinct color
-// meanings that share one legend box. The group section is omitted when colorBy
-// is unset or carries a single value.
-export function getVariantLegendSections({
+// The display's color scales, each a section of the key the reader can close
+// on its own: the genotype/cell coloring, the insertion marker where one is
+// drawn, and (when colorBy is set) the sample-grouping coloring used for the
+// sidebar row labels — distinct color meanings that share one legend box. The
+// group scale is omitted when colorBy is unset or carries a single value.
+export function getVariantColorScales({
   renderingMode,
   hasSecondaryAlt,
   hasUnphased,
@@ -258,8 +268,8 @@ export function getVariantLegendSections({
   // `drawVariantInsertionGlyphs` takes it: this is `palette.insertion`, so a
   // custom theme moves the swatch and the glyph together.
   insertionColor?: string
-}): LegendSection[] {
-  const groupItems = getSampleGroupLegendItems(colorBy, sources)
+}): ColorScale[] {
+  const groupEntries = getSampleGroupEntries(colorBy, sources)
   // Phase-set coloring exists only on the phased path — the allele-count cell
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on
@@ -269,7 +279,7 @@ export function getVariantLegendSections({
     featureColor === PHASE_SET_COLOR && renderingMode !== 'phased'
       ? ''
       : featureColor
-  const cellSection = getCellColorSection({
+  const cellScale = getCellColorScale({
     cellColorKey,
     renderingMode,
     hasSecondaryAlt,
@@ -278,9 +288,9 @@ export function getVariantLegendSections({
     svTypeColors,
   })
   return [
-    ...(cellSection ? [cellSection] : []),
-    // A section of its own rather than one more swatch on the genotype items:
-    // the marker is drawn in EVERY cell-color mode, while the genotype items
+    ...(cellScale ? [cellScale] : []),
+    // A scale of its own rather than one more swatch on the genotype entries:
+    // the marker is drawn in EVERY cell-color mode, while the genotype entries
     // are *replaced* wholesale by the consequence-impact, SV-type or phase-set
     // section — so an entry appended to them would vanish exactly when the
     // cells are colored by SV type. The label names what the number means, not
@@ -292,37 +302,39 @@ export function getVariantLegendSections({
     // the marker covers the dosage-shaded cell underneath. Phased mode needs
     // one: a row there is a single haplotype, which either carries the allele or
     // does not, so zygosity reads as the pattern down a sample's rows. Same
-    // split the genotype items already make ("Reference" vs "Homozygous
+    // split the genotype entries already make ("Reference" vs "Homozygous
     // reference"), and both shades come from `getInsertionColorForDosage` so the key
     // cannot drift from the glyph.
     ...(insertionColor
       ? [
           {
+            kind: 'categorical' as const,
             id: 'insertions',
             // The number's meaning rides on the title rather than on every
             // item: as an item label it ran past the legend box and ellipsized
             // to "Insertion, homozygous (label is l...", losing exactly the
             // thing the entry exists to say.
             title: 'Insertions (number = bp)',
-            items:
+            entries:
               renderingMode === 'phased'
-                ? [{ color: insertionColor, label: 'Insertion' }]
+                ? [entry('Insertion', insertionColor)]
                 : [
-                    { color: insertionColor, label: 'Homozygous' },
-                    {
-                      color: getInsertionColorForDosage(insertionColor, 128),
-                      label: 'Heterozygous',
-                    },
+                    entry('Homozygous', insertionColor),
+                    entry(
+                      'Heterozygous',
+                      getInsertionColorForDosage(insertionColor, 128),
+                    ),
                   ],
           },
         ]
       : []),
-    ...(groupItems.length
+    ...(groupEntries.length
       ? [
           {
+            kind: 'categorical' as const,
             id: 'group',
             title: capitalizeFirst(colorBy) || 'Samples',
-            items: groupItems,
+            entries: groupEntries,
           },
         ]
       : []),

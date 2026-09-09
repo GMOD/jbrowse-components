@@ -80,9 +80,9 @@ function sectionIds(
   showInsertionGlyphs = true,
   bpPerPx = 100,
 ) {
-  return setup(insertedBp, showInsertionGlyphs, bpPerPx)
-    .legendSections()
-    .map(s => s.id)
+  return setup(insertedBp, showInsertionGlyphs, bpPerPx).colorScales.map(
+    s => s.id,
+  )
 }
 
 test('a window with an insertion gets the marker section', () => {
@@ -121,8 +121,8 @@ test('the slot turned off suppresses it even where an insertion is present', () 
 // The swatch must be the color the overlay paints, or the legend teaches the
 // reader the wrong thing to look for. Both read palette.insertion.
 test('the swatch is the palette color the overlay paints with', () => {
-  const section = setup(7833)
-    .legendSections()
-    .find(s => s.id === 'insertions')
-  expect(section!.items[0]!.color).toBe(resolvePalette().insertion)
+  const scale = setup(7833).colorScales.find(s => s.id === 'insertions')
+  expect(scale!.kind === 'categorical' && scale.entries[0]!.color).toBe(
+    resolvePalette().insertion,
+  )
 })

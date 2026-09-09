@@ -1,4 +1,3 @@
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowLabelsOverlay,
   RowSeparatorLines,
@@ -9,50 +8,11 @@ import { observer } from 'mobx-react'
 import { SEPARATOR_OPACITY } from '../constants.ts'
 
 import type { VariantRowsModel } from './types.ts'
-import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
-interface VariantOverlayModel extends VariantRowsModel {
-  showLegend: boolean
-  legendSections(): LegendSection[]
-  setShowLegend(s: boolean): void
-  dismissLegendSection(id: string): void
-  focusGroup(label: string): void
-}
-
-// Its own observer child, not part of the overlay below: the overlay reads
-// `scrollTop` and re-renders per wheel frame, while `legendSections()` is an
-// uncached view whose evaluation walks every source — mounting the legend here
-// (observer components are memo'd) keeps that walk off the scroll path.
-const VariantLegend = observer(function VariantLegend({
-  model,
-}: {
-  model: VariantOverlayModel
-}) {
-  return model.showLegend ? (
-    <FloatingLegend
-      sections={model.legendSections()}
-      onDismiss={() => {
-        model.setShowLegend(false)
-      }}
-      onDismissSection={id => {
-        model.dismissLegendSection(id)
-      }}
-      // the group section names rows, so its swatches focus them; the
-      // cell-color sections name genotypes and stay inert
-      onItemClick={(item, section) => {
-        if (section.id === 'group') {
-          model.focusGroup(item.label)
-        }
-      }}
-    />
-  ) : null
-})
-
-// Everything the multi-sample variant displays float over their canvas: the
-// row labels, the row separators and the color key. On-screen counterpart of
-// `SvgVariantOverlay`, which composes the same three for the export — the
-// labels through `SvgTreeSidebar`, the key from `SvgVariantLegend` off the same
-// `legendSections()`.
+// What the multi-sample variant displays float over their canvas: the row
+// labels and the row separators. On-screen counterpart of `SvgVariantOverlay`,
+// which composes the same two for the export, the labels through
+// `SvgTreeSidebar`. The color key is the chrome's, off `colorScales`.
 //
 // The labels are tree-sidebar's `RowLabelsOverlay`, the same one the other
 // three row displays mount, tinted by `labelColor`. These displays used to draw
@@ -63,7 +23,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   model,
   top = 0,
 }: {
-  model: VariantOverlayModel
+  model: VariantRowsModel
   top?: number
 }) {
   const {
@@ -110,7 +70,6 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
         scrollTop={scrollTop}
         showLabels={showRowLabels}
       />
-      <VariantLegend model={model} />
     </>
   )
 })
