@@ -72,38 +72,8 @@ its own length, attached to the reference either side of what it stands in for.
 This page finds it, reads where it sits on GRCh38, and then loads the haplotype
 it came from to see what the swap did to the genes there.
 
-- open hg38 with its genes and nothing else
-- paste the track config from [Load the graph](#load-the-graph) into the app
-- [cut the locus as a graph](#open-a-locus-as-a-graph)
-- take the allele
-  [back to its GRCh38 coordinates](#from-a-node-back-to-a-coordinate)
-- [load the haplotype that contributed it](#loading-a-haplotype-as-an-assembly)
-  and read that haplotype's own annotation at the same place
-
-Three things are worth naming before any of that, because the rest of the page
-rests on all three. The chain of segments running across the drawing is the
-**backbone**, which is GRCh38's own path through the graph. Each place that
-chain opens out and closes again is a **bubble**, one locus where the haplotypes
-disagree. Each loop inside a bubble is an **allele**, a stretch of sequence some
-haplotype carries in place of the reference's. A deletion is none of those: it
-is an **edge**, a dashed arc from one backbone segment to another that skips
-what lies between.
-
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph and allele marks a node one haplotype carries where the reference has something else. bubble points into a pair of routes between the same two nodes: the reference path, and the dashed arc that skips it, which the drawing labels with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
-
-The clip below runs the first four steps on the MHC class II window, which holds
-too many nodes to label the way the figure above is labelled.
-
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's GRCh38 interval marked in the linear view above it." />
-
-The link under the clip opens the session it starts in, so pasting a config for
-your own graph walks the same route on it.
-
-## HPRC release 2
-
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
-fivefold expansion over release 1, and publishes three products of the same
-sequence:
+HPRC release 2 is roughly a fivefold expansion over release 1, and publishes
+three products of the same sequence:
 
 - the pangenome graph, which this page draws as a graph
 - the variant callset, 464 haplotypes as a genotype matrix
@@ -116,6 +86,34 @@ alignment
 Every track below is a URL you can paste: the graph route reads projections we
 prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
+
+Three words carry the drawing, and the rest of the page rests on all three. The
+chain of segments running across the drawing is the **backbone**, which is
+GRCh38's own path through the graph. Each place that chain opens out and closes
+again is a **bubble**, one locus where the haplotypes disagree. Each loop inside
+a bubble is an **allele**, a stretch of sequence some haplotype carries in place
+of the reference's. A deletion is none of those: it is an **edge**, a dashed arc
+from one backbone segment to another that skips what lies between.
+
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. backbone marks GRCh38's own path through the graph and allele marks a node one haplotype carries where the reference has something else. bubble points into a pair of routes between the same two nodes: the reference path, and the dashed arc that skips it, which the drawing labels with what it removes." src="/img/pangenome/hprc_graph_anatomy.png" />
+
+With those named, the route is five steps:
+
+- open hg38 with its genes and nothing else
+- paste the track config from [Load the graph](#load-the-graph) into the app
+- [cut the locus as a graph](#open-a-locus-as-a-graph)
+- take the allele
+  [back to its GRCh38 coordinates](#from-a-node-back-to-a-coordinate)
+- [load the haplotype that contributed it](#loading-a-haplotype-as-an-assembly)
+  and read that haplotype's own annotation at the same place
+
+The clip below runs the first four steps on the MHC class II window, which holds
+too many nodes to label the way the figure above is labelled.
+
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's GRCh38 interval marked in the linear view above it." />
+
+The link under the clip opens the session it starts in, so pasting a config for
+your own graph walks the same route on it.
 
 ## The GraphGenomeView plugin
 
@@ -218,7 +216,7 @@ is what we ran on HPRC's `sv.gfa.gz`, and
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) walks it and
 every other file these two pages read.
 
-## Why this graph opens by locus {#regular-gfa-vs-rgfa}
+### Why this graph opens by locus {#regular-gfa-vs-rgfa}
 
 That the track answers a locus at all is a property of the file behind it.
 Release 2 labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
@@ -240,38 +238,6 @@ A PanSN name has two halves, and only the first needs configuring:
 - The variant callset in
   [part 2](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) needs no
   mapping at all: its contigs are plain GRCh38 (`chr6`, not `GRCh38#0#chr6`).
-
-## What release 2 publishes
-
-`pangenomes/freeze/release2/minigraph-cactus/` holds these per reference (a
-GRCh38 and a T2T-CHM13 build; everything below uses GRCh38):
-
-| File                | Size   | What it is                                   |
-| ------------------- | ------ | -------------------------------------------- |
-| `*.sv.gfa.gz`       | 842 MB | SV-resolution graph, and an rGFA             |
-| `*.gfa.gz`          | 63 GB  | the base-level graph                         |
-| `*.gbz`             | 5.4 GB | the same graph in vg's indexed format        |
-| `*.wave.vcf.gz`     | 2.3 GB | every variant, decomposed, **tabix-indexed** |
-| `*.wave.vcf.gz.tbi` | 2.2 MB | the index, published beside it               |
-
-The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
-downloading the whole file: the VCF ships its index, and we host small BED
-projections of the graph (below). Release 3 is the verkko assembly and QC
-release, and publishes no graphs.
-
-Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
-fuller per-build set. All three pages read the `v2.1/` build, its `sv.gfa`, its
-callsets and its gbz-base database, so node ids agree across the set. The one
-file only `v2.0/` has is the alignment the graph and the callset are derived
-from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
-`.tai` index, which
-[part 3](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
-opens; v2.1 publishes its MAF only, 53 GB and unindexed.
-
-Every file above is published twice, once per reference, and this page uses the
-GRCh38 build. Both build scripts run on the CHM13 files unchanged, with one
-config change, the PanSN prefix: `{ "chm13": "CHM13" }` in place of
-`{ "hg38": "GRCh38" }`.
 
 ## Open a locus as a graph
 
@@ -329,6 +295,12 @@ behaviors are specific to a graph this size:
 - The layout scales to a target node size, so ten times the nodes turns the
   loops that carry the figure into specks. Every window in the table below is
   around a hundred kb.
+
+## Reading the drawing
+
+A cut is on screen, and three readings make it say something: the size each
+alternative carries, the axes the layout is spending, and the haplotype a node
+belongs to.
 
 ### Insertions, deletions and their sizes
 
@@ -415,8 +387,8 @@ The anchored half labels the same node a 10.2 kb deletion, which is the net of
 1.8 kb standing in for 12.
 
 Taking the dropdown from one to the other says which node in the tangle is which
-node on the axis, and the video under [HPRC release 2](#hprc-release-2) makes
-that move on this subgraph.
+node on the axis, and the [clip in the intro](#the-route-end-to-end) makes that
+move on this subgraph.
 
 Each locus below is a window small enough to draw:
 
@@ -461,7 +433,7 @@ person:
 A donor row names the haplotype the sequence was taken from, the
 [attribution the node panel reports](#from-a-node-back-to-a-coordinate).
 
-### From a node back to a coordinate
+## From a node back to a coordinate
 
 **Right-click a node** for two answers that persist past a hover:
 
@@ -506,20 +478,13 @@ ringed without a number, over the band **Highlight in hg38** left in the linear
 view. The band is the 12 kb of backbone that allele attaches across, which here
 is _HLA-DRB5_.
 
-The lanes above combine into one route:
-
-- rubberband a locus into a graph
-- right-click an allele to put the linear view on its GRCh38 interval
-- read that interval off the tracks anchored there: the
-  [bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track) gives
-  the bubble it belongs to, the
-  [allele inventory](/docs/tutorials/pangenome_hprc_part2#the-allele-inventory)
-  its length and the haplotype it was first seen in, and the
-  [variant callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset)
-  whether anything is genotyped there
-
-The graph states what sequence exists and where it attaches; those three state
-how common it is.
+Once the linear view is on that interval, part 2's lanes read it: the
+[bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track) gives the
+bubble the allele belongs to, the
+[allele inventory](/docs/tutorials/pangenome_hprc_part2#the-allele-inventory)
+its length and the haplotype it was first seen in, and the
+[variant callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset)
+whether anything is genotyped there.
 
 Where a contributing haplotype is itself loaded, the same menu opens the allele
 on that haplotype's own coordinates, which the next section sets up for any of
@@ -531,44 +496,27 @@ shows both on five strains.
 ### Every way across {#every-way-across}
 
 Each crossing between the two panels is one menu item, and this is the whole
-list on this graph. Into the graph, from a linear view whose session holds the
-segments track:
+list on this graph. Everything going in needs the segments track in the session,
+though not in the view.
 
-- **Track menu → Launch → Graph genome view (this region)** on the segments lane
-  cuts whatever is on screen.
-- **Drag across the scale bar** and pick **Graph genome view (this selection)**
-  for a window narrower than the view. Past the view's limit the item greys out
-  and names it.
-- **Right-click a segment** in the lane for **Graph genome view (this
-  segment)**, which cuts the graph around that one segment, padded by half its
-  length each side. Right-clicking a gene in the RefSeq lane offers the same cut
-  as **Graph genome view (this feature)**; the segments track has to be in the
-  session, not in the view.
+| Gesture                                                                    | What it cuts or opens                                                                                                                                        |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Track menu → Launch → Graph genome view (this region)**                  | whatever is on screen                                                                                                                                        |
+| **Drag across the scale bar**, then **Graph genome view (this selection)** | a window narrower than the view; past the view's limit the item greys out and names it                                                                       |
+| **Right-click a segment**, then **Graph genome view (this segment)**       | that segment, padded by half its length each side                                                                                                            |
+| **Right-click a gene**, then **Graph genome view (this feature)**          | the same cut around a gene in the RefSeq lane                                                                                                                |
+| **Hover a node**                                                           | bands its GRCh38 interval across every lane above, and hovering the linear view lights the node under the cursor. Nothing to configure                       |
+| **Right-click a node**, then **Highlight in hg38**                         | writes that interval into the linear view's own highlights, where it stays after the pointer moves                                                           |
+| **Right-click a node**, then **Open in hg38**                              | scrolls the linear view there: a backbone segment's own span, or for an allele the interval it leaves and rejoins, which the item names **around this node** |
+| **Right-click a node**, then **Open in** a haplotype                       | the allele on that haplotype's own coordinates, once [that haplotype is loaded](#loading-a-haplotype-as-an-assembly)                                         |
+| **View menu → Launch → Linear genome view**                                | the whole window the graph was cut from                                                                                                                      |
+| **View menu → Launch → Linear synteny view**                               | every loaded contributor at once, with two or more of them loaded                                                                                            |
 
-Out of the graph:
-
-- **Hover a node** and its GRCh38 interval is banded across every lane in the
-  linear view above; hover the linear view and the node under the cursor lights
-  up. Nothing to configure.
-- **Right-click a node** and take **Highlight in hg38**, which writes that
-  interval into the linear view's own highlights, where it stays after the
-  pointer moves.
-- **Right-click a node** and take **Open in hg38**, which scrolls the linear
-  view to it. On a backbone segment that is the segment's own span; on an allele
-  it is the interval between the two backbone segments the allele leaves and
-  rejoins, and the item says so, **around this node**.
-- **View menu → Launch → Linear genome view** does the same for the whole window
-  the graph was cut from. Once a contributing haplotype is loaded as an
-  assembly, the node menu gains **Open in** that haplotype at the allele's own
-  coordinates, and with two or more loaded the same **Launch** submenu opens
-  them all as a synteny view;
-  [Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) sets
-  that up.
-
-The [clip at the top of the page](#the-route-end-to-end) takes the region launch
-and **Highlight in hg38**, with the layout dropdown between them. The clip under
+Three clips cover most of the table. The
+[one in the intro](#the-route-end-to-end) takes the region launch and
+**Highlight in hg38**, with the layout dropdown between them; the one under
 [Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) takes
-**Open in** on a haplotype, and part 2's
+**Open in** on a haplotype; and part 2's
 [whole-chromosome clip](/docs/tutorials/pangenome_hprc_part2#a-whole-chromosome-as-a-graph)
 takes **Open in hg38** and the scale-bar drag.
 
@@ -699,6 +647,37 @@ much, what each alternative is, and which of the 464 haplotypes walk it.
 [Part 3](/docs/tutorials/pangenome_hprc_part3) leaves that axis, starting from
 the multiple alignment the graph and the callset were both derived from and
 ending with each haplotype on its own contigs.
+
+## What release 2 publishes
+
+The rest of the release, for choosing a file to point your own session at.
+`pangenomes/freeze/release2/minigraph-cactus/` holds these per reference, a
+GRCh38 build and a T2T-CHM13 one; every track above reads the GRCh38 build:
+
+| File                | Size   | What it is                                   |
+| ------------------- | ------ | -------------------------------------------- |
+| `*.sv.gfa.gz`       | 842 MB | SV-resolution graph, and an rGFA             |
+| `*.gfa.gz`          | 63 GB  | the base-level graph                         |
+| `*.gbz`             | 5.4 GB | the same graph in vg's indexed format        |
+| `*.wave.vcf.gz`     | 2.3 GB | every variant, decomposed, **tabix-indexed** |
+| `*.wave.vcf.gz.tbi` | 2.2 MB | the index, published beside it               |
+
+The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
+downloading the whole file: the VCF ships its index, and we host the small BED
+projections [the graph track](#load-the-graph) reads. Release 3 is the verkko
+assembly and QC release, and publishes no graphs.
+
+Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
+fuller per-build set. All three pages read the `v2.1/` build, its `sv.gfa`, its
+callsets and its gbz-base database, so node ids agree across the set. The one
+file only `v2.0/` has is the alignment the graph and the callset are derived
+from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
+`.tai` index, which
+[part 3](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
+opens; v2.1 publishes its MAF only, 53 GB and unindexed.
+
+Both build scripts run on the CHM13 files unchanged, with one config change, the
+PanSN prefix: `{ "chm13": "CHM13" }` in place of `{ "hg38": "GRCh38" }`.
 
 ## Reproduce it end to end
 
