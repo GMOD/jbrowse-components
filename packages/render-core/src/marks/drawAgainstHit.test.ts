@@ -3,10 +3,12 @@ import {
   GLYPH_DISC,
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
+import { barMark } from './barMark.ts'
 import { sweepDrawAgainstHit } from './drawAgainstHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
 
+import type { BarChannels, BarParams } from './barMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
 import type { SpanChannels, SpanParams } from './spanMark.ts'
 
@@ -145,4 +147,85 @@ describe('point: a glyph hit lands on the glyph the painter drew', () => {
       ).toEqual([])
     }
   })
+})
+
+// Bars stand between the origin and the value, on both sides of it, and one is
+// narrower than the min-width floor. Every instance is one `fillRect`, so the
+// containment claim holds — a point on a bar answers that bar.
+const bars: BarChannels = {
+  x: Uint32Array.from([5, 30, 50, 70, 90]),
+  x2: Uint32Array.from([25, 45, 51, 85, 100]),
+  y: Float32Array.from([0.8, -0.4, 0.5, 0.05, -1]),
+  color: Uint32Array.from([RED, BLUE, RED, BLUE, RED]),
+  count: 5,
+}
+
+// The same bars with every value strictly inside (-1, 1), for the params that
+// clamp: a value landing on the same edge as the origin is a zero-height bar,
+// which the arm below covers on its own.
+const barsInside: BarChannels = {
+  ...bars,
+  y: Float32Array.from([0.8, -0.4, 0.5, 0.05, -0.9]),
+}
+
+describe('bar: every drawn rect answers its own hit, in both orientations', () => {
+  test.each<[string, BarParams, BarChannels]>([
+    ['zero origin', { domain: [-1, 1], origin: 0, minWidthPx: 2 }, bars],
+    ['no floor', { domain: [-1, 1], origin: 0, minWidthPx: 0 }, bars],
+    [
+      'origin below the domain',
+      { domain: [-1, 1], origin: -2, minWidthPx: 2 },
+      barsInside,
+    ],
+    [
+      'clamped domain',
+      { domain: [-0.5, 0.5], origin: 0, minWidthPx: 2 },
+      barsInside,
+    ],
+  ])('%s', (_label, params, channels) => {
+    for (const reversed of [false, true]) {
+      expect(
+        sweepDrawAgainstHit(
+          barMark,
+          channels,
+          { ...block, reversed },
+          { canvasWidth: 60, canvasHeight: 100 },
+          params,
+          { maxDistSq: Number.MIN_VALUE },
+        ),
+      ).toEqual([])
+    }
+  })
+})
+
+// A bar whose value sits on the origin has no height: the painter fills
+// nothing and the hit test answers nothing, which the sweep can only see
+// through `sliceOne` (the batch paints fewer rects than it has instances).
+test('bar: a zero-height bar paints nothing and is never the answer', () => {
+  const flat: BarChannels = {
+    x: Uint32Array.from([10, 40]),
+    x2: Uint32Array.from([30, 60]),
+    y: Float32Array.from([0, 0.5]),
+    color: Uint32Array.from([RED, BLUE]),
+    count: 2,
+  }
+  expect(
+    sweepDrawAgainstHit(
+      barMark,
+      flat,
+      block,
+      { canvasWidth: 60, canvasHeight: 100 },
+      { domain: [0, 1], origin: 0, minWidthPx: 2 },
+      {
+        maxDistSq: 400,
+        sliceOne: (c, i) => ({
+          x: c.x.subarray(i, i + 1),
+          x2: c.x2.subarray(i, i + 1),
+          y: c.y.subarray(i, i + 1),
+          color: c.color.subarray(i, i + 1),
+          count: 1,
+        }),
+      },
+    ),
+  ).toEqual([])
 })

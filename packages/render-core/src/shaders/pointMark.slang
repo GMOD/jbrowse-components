@@ -8,11 +8,14 @@
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
 //! js-export: valueToYPx, pointDrawsBar
+// `valueToYPx` is `valueScale`'s; it is lifted here, once, for every consumer
+// of the scale — the bar shape's painter and hit test import this twin too.
 
 import antialias;
 import hpmath;
 import colorPack;
 import pointGlyph;
+import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -39,29 +42,6 @@ struct Uniforms {
 
 float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
-}
-
-// The shape's y scale: clamp into the domain, invert (a bigger value sits
-// higher), scale to the canvas. Linear only — a consumer that wants log
-// pre-transforms its values, which is what GWAS -log10 p already is.
-//
-// `//! js-export`ed because the Canvas2D painter AND the hit test run the JS
-// twin: a drift would move the grab target off the drawn glyph on the no-GPU
-// path only.
-//
-// max(range, 1e-6) guards a degenerate (min == max) domain from dividing by
-// zero. JS spelled that guard `|| 1`, and the two are NOT the same: `|| 1`
-// invents a phantom unit-wide domain, so with bounds pinned to a single value
-// a value half a unit above it drew half-way up the Canvas2D canvas while the
-// GPU clamped it to the top. Pinning a degenerate domain means everything above
-// it is off the top, which is what this does; the parity test pins the case.
-float valueToYPx(float value, float domainMin, float domainMax, float h) {
-  float norm = clamp(
-    (value - domainMin) / max(domainMax - domainMin, 1e-6),
-    0.0,
-    1.0,
-  );
-  return (1.0 - norm) * h;
 }
 
 // Whether an instance draws as an extent bar rather than a glyph: its span has
