@@ -47,6 +47,10 @@ veiws = "veiws"
 # fixture, asserting the "Add to dictionary" item names the word electron's
 # spellchecker flagged.
 chromsome = "chromsome"
+# same fixture shape for a track spec key: TrackActions.test.ts and
+# mcpConformance.ts pass `colorSchem` to assert the reaches-nothing warning
+# names it, and tracks.ts quotes the key in the comment explaining that check
+Schem = "Schem"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
