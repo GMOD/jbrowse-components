@@ -89,3 +89,12 @@ test('settle takes zero but not a negative pause', () => {
 test('a bare positional is an error', () => {
   expect(() => parseArgs(['hg38'])).toThrow('unexpected argument "hg38"')
 })
+
+// The option table is a plain object, so an inherited key is a name that looks
+// defined. It used to be six Sets, which had no such keys.
+test.each(['--constructor', '--toString'])(
+  'an inherited Object key is still an unknown flag (%s)',
+  flag => {
+    expect(() => parseArgs([flag, 'x'])).toThrow('unknown flag')
+  },
+)

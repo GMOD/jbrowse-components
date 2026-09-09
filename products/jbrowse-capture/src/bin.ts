@@ -41,7 +41,7 @@ THE IMAGE
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)
-  --settle <ms>         extra pause after everything reports drawn (default 0)
+  --settle <ms>         extra pause before the census and the shot (default 0)
   --allowUnsettled      write the image anyway when a stage times out
 
   Every stage is waited on for you: the session holding the assembly and tracks

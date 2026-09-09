@@ -59,7 +59,11 @@ export interface ReadyOptions extends SessionExpectations {
    * marker; the marker's `ready` already means no display is fetching.
    */
   waitForDownloads?: boolean
-  /** Extra settle after everything reports done, for animations and tooltips. */
+  /**
+   * Extra pause after every stage reports done, for animations and tooltips —
+   * and for a display finishing its first paint, since the census that decides
+   * whether the run failed is taken after this rather than before it.
+   */
   settleMs?: number
   /**
    * Skip the session gate. Only for a page that is not jbrowse-web and so
@@ -136,18 +140,45 @@ export async function waitForJBrowseReady(
       unsettled.push(name)
     }
   }
-  // The post-condition of the paint stage, and on a terminal display the ONLY
-  // report of it: `waitForDisplaysDone` returns as soon as every pending display
-  // is past `loading`, so an errored canvas that will never paint no longer
-  // spends the whole timeout to arrive here. The phase is what a reader needs —
-  // `error` is a banner, `ready` is a display claiming it finished without
-  // drawing — so the entry carries the census rather than naming the question.
-  const reportUnpainted = async () => {
-    const pending = await pendingDisplayStates(page)
-    if (pending.length > 0) {
+  // The shutter-time census, and with it the report.
+  //
+  // It is the post-condition of the paint stage and, on a terminal display, the
+  // only report of it: `waitForDisplaysDone` returns as soon as every pending
+  // display is past `loading`, so an errored canvas that will never paint no
+  // longer spends the whole timeout to arrive here. The phase is what a reader
+  // needs — `error` is a banner, `ready` is a display claiming it finished
+  // without drawing — so the entry carries the census rather than naming the
+  // question.
+  //
+  // Taken ONCE, after the settle delays, so the throw and the report it ships
+  // with agree. Taken before them it did not: a display that painted during
+  // `settleMs` was absent from `pending` and still failed the run, while the
+  // CLI's own warning recommended raising `--settle` to fix exactly that.
+  const finish = async (
+    paintContract: boolean,
+    instrumentation: Instrumentation,
+    appMarker: boolean,
+  ): Promise<ReadyReport> => {
+    const pendingStates = await pendingDisplayStates(page)
+    if (pendingStates.length > 0) {
       unsettled.push(
-        `display(s) never painted: ${describePendingDisplays(pending)}`,
+        `display(s) never painted: ${describePendingDisplays(pendingStates)}`,
       )
+    }
+    if (!allowUnsettled && unsettled.length > 0) {
+      // Throwing is the point. Each stage swallows its own timeout so a slow
+      // page is not failed for being slow, which historically meant the run
+      // ended with an image and an exit code of 0 whether it had settled or
+      // not. A caller that genuinely wants the frame anyway asks for it by name.
+      throw new Error(unsettledMessage(timeout, unsettled))
+    }
+    return {
+      pending: pendingStates.map(d => d.name),
+      pendingStates,
+      paintContract,
+      unsettled,
+      instrumentation,
+      appMarker,
     }
   }
   // The two hard waits reject with puppeteer's own `Waiting failed: Nms
@@ -206,23 +237,14 @@ export async function waitForJBrowseReady(
         waitForDisplaysDone(page, timeout),
       )
     }
-    await reportUnpainted()
     if (settleMs > 0) {
       await delay(settleMs)
     }
-    const pendingStates = await pendingDisplayStates(page)
-    const report = {
-      pending: pendingStates.map(d => d.name),
-      pendingStates,
-      paintContract: await hasPaintContract(page),
-      unsettled,
-      instrumentation: await readInstrumentation(page),
-      appMarker: true,
-    }
-    if (!allowUnsettled && unsettled.length > 0) {
-      throw new Error(unsettledMessage(timeout, unsettled))
-    }
-    return report
+    return finish(
+      await hasPaintContract(page),
+      await readInstrumentation(page),
+      true,
+    )
   }
 
   // 1b. what an older build can be asked instead. On one that publishes none of
@@ -263,7 +285,6 @@ export async function waitForJBrowseReady(
     'a display never reported its first paint',
     waitForDisplaysDone(page, timeout),
   )
-  await reportUnpainted()
   // 5. nothing still reports itself busy: adapter "Downloading…" status on the
   //    session model, which can outlive the overlay, and the visible
   //    "Loading…/Rendering…" labels of the views that publish no phase
@@ -302,23 +323,7 @@ export async function waitForJBrowseReady(
   if (settleMs > 0) {
     await delay(settleMs)
   }
-  const pendingStates = await pendingDisplayStates(page)
-  const report = {
-    pending: pendingStates.map(d => d.name),
-    pendingStates,
-    paintContract,
-    unsettled,
-    instrumentation,
-    appMarker: false,
-  }
-  if (!allowUnsettled && unsettled.length > 0) {
-    // Throwing is the point. Each of these stages swallows its own timeout so a
-    // slow page is not failed for being slow, which historically meant the run
-    // ended with an image and an exit code of 0 whether it had settled or not.
-    // A caller that genuinely wants the frame anyway asks for it by name.
-    throw new Error(unsettledMessage(timeout, unsettled))
-  }
-  return report
+  return finish(paintContract, instrumentation, false)
 }
 
 /**

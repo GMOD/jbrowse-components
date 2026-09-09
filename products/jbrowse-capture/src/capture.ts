@@ -17,6 +17,11 @@ import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
 
+// Puppeteer's own `goto` default is 30s, half of what a caller passing nothing
+// is told each wait stage gets. Defaulted here so the navigation, the chain and
+// the fullPage re-settle all run on one budget.
+const DEFAULT_TIMEOUT = 60000
+
 export interface OpenOptions extends JBrowseUrlOptions, ReadyOptions {
   width?: number
   height?: number
@@ -60,10 +65,7 @@ export async function openJBrowse(
     executablePath = findChromeExecutable(),
     args = [],
     onConsole,
-    // Defaulted here as well as in waitForJBrowseReady, so the navigation gets
-    // the same budget as the wait stages — puppeteer's own goto default is 30s,
-    // half of what a caller passing nothing was told each stage would get.
-    timeout = 60000,
+    timeout = DEFAULT_TIMEOUT,
     trackIds,
     // `assembly` is deliberately NOT pulled out here: it is both a URL option
     // (which assembly to open) and the session gate's expectation (which
@@ -173,8 +175,24 @@ export async function captureJBrowse(
       if (viewport && pageHeight > viewport.height) {
         await page.setViewport({ ...viewport, height: pageHeight })
         // The resize invalidates the raster and can start work (a display that
-        // grew gained rows to draw), so the frame has to settle again.
-        await waitForAppSettled(page, { timeout: openOptions.timeout })
+        // grew gained rows to draw), so the frame has to settle again — on the
+        // same budget the chain used, and with its outcome reported. Dropping
+        // the outcome made this the one stage that could give up and still
+        // report `unsettled: []`, over the frame most likely to be half-drawn.
+        const settled = await waitForAppSettled(page, {
+          timeout: openOptions.timeout ?? DEFAULT_TIMEOUT,
+        })
+        if (!settled) {
+          report.unsettled.push('the app never re-settled after the resize')
+          if (!openOptions.allowUnsettled) {
+            throw new Error(
+              `gave up waiting after ${openOptions.timeout ?? DEFAULT_TIMEOUT}ms: ` +
+                'the app never re-settled after the fullPage resize. Raise the ' +
+                'timeout, or pass allowUnsettled (--allowUnsettled) to capture ' +
+                'the frame as it stands.',
+            )
+          }
+        }
       }
     }
     const image = await page.screenshot({ path: out })

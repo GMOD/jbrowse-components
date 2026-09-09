@@ -185,7 +185,11 @@ export async function waitForSession(
               wantTracks.every(id => openTracks.includes(id))
             )
           } catch {
-            return false
+            // A malformed census falls through to the walk, as
+            // readSessionSummaryInPage does. Failing the gate on it instead
+            // meant the gate could never pass while the diagnostic it prints on
+            // timeout — read off the model — reported a healthy session:
+            // `Wanted assembly "hg38"; found assemblies [hg38]`.
           }
         }
         // No census: a deployed build older than the marker's attributes, so

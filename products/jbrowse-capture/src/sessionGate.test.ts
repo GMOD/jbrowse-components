@@ -1,7 +1,34 @@
 import {
   readInstrumentationInPage,
   readSessionSummaryInPage,
+  waitForSession,
 } from './sessionGate.ts'
+
+import type { Page } from 'puppeteer'
+
+// evaluate/waitForFunction run the real in-page predicates against jsdom's own
+// document, as readyChain.test.ts does.
+const gatePage = () =>
+  ({
+    evaluate: (fn: (...a: unknown[]) => unknown, ...args: unknown[]) =>
+      Promise.resolve(fn(...args)),
+    waitForFunction: async (
+      fn: (...a: unknown[]) => unknown,
+      opts: { timeout?: number } = {},
+      ...args: unknown[]
+    ) => {
+      const deadline = Date.now() + (opts.timeout ?? 30000)
+      for (;;) {
+        if (fn(...args)) {
+          return {}
+        }
+        if (Date.now() >= deadline) {
+          throw new Error(`Waiting failed: ${opts.timeout}ms exceeded`)
+        }
+        await new Promise(r => setTimeout(r, 10))
+      }
+    },
+  }) as unknown as Page
 
 const stub = (session: unknown) => {
   ;(globalThis as { JBrowseSession?: unknown }).JBrowseSession = session
@@ -170,4 +197,21 @@ test('a released build publishing none of them reports all three false', () => {
 test('an attribute mid-flight still counts as published', () => {
   document.body.innerHTML = '<div data-display-phase="loading"></div>'
   expect(readInstrumentationInPage().displayPhase).toBe(true)
+})
+
+// The gate reads the same census, and used to give up on a malformed one
+// instead of falling through to the walk — so it could never pass while the
+// diagnostic it prints on timeout, read off the model, reported a healthy
+// session: "wanted assembly hg38; found assemblies [hg38]".
+test('a malformed census lets the gate fall through to the session walk', async () => {
+  document.body.innerHTML =
+    '<span data-app-tracks="not json" data-app-assemblies="[]"></span>'
+  stub({ views: [{ assemblyNames: ['hg38'], tracks: [track('genes')] }] })
+  await expect(
+    waitForSession(gatePage(), {
+      assembly: 'hg38',
+      trackIds: ['genes'],
+      timeout: 1000,
+    }),
+  ).resolves.toBeUndefined()
 })

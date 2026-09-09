@@ -73,7 +73,7 @@ export async function waitForLoadingComplete(
   }: { timeout?: number; waitForDownloads?: boolean } = {},
 ): Promise<boolean> {
   await page.waitForFunction(
-    (selector: string) => document.querySelectorAll(selector).length === 0,
+    (selector: string) => document.querySelector(selector) === null,
     { timeout, polling: 'mutation' },
     LOADING_OVERLAY,
   )
@@ -325,7 +325,7 @@ export function waitForViewPhases(page: Page, timeoutMs: number) {
  *   `data-view-phase`      a view still resolving its assembly, newer builds
  */
 export const BUSY_SELECTOR = [
-  '[data-testid="loading-overlay"]',
+  LOADING_OVERLAY,
   '[data-busy="true"]',
   '[data-display-phase="loading"]',
   '[data-view-phase="loading"]',

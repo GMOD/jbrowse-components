@@ -183,3 +183,27 @@ test('an errored display is named unsettled instead of burning the timeout', asy
     waitForJBrowseReady(fakePage(), { expectSession: false, timeout: 30000 }),
   ).rejects.toThrow(/display\(s\) never painted: pileup is error/)
 }, 15000)
+
+// `--settle` is what the CLI's own "had not finished drawing" warning tells you
+// to raise, and the census that decides whether the run fails used to be taken
+// BEFORE it: a display that painted during the settle was absent from `pending`
+// and still failed the run, so the report and the throw disagreed.
+test('a display that paints during settleMs is not reported as never painted', async () => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="ready"></span>
+    <div data-testid="pileup" data-display-drawn="false"
+         data-display-phase="ready"></div>`
+  // after waitForAppSettled's 1s hold, so the flip lands inside the settle
+  setTimeout(() => {
+    document
+      .querySelector('[data-testid="pileup"]')!
+      .setAttribute('data-display-drawn', 'true')
+  }, 2000)
+  const report = await waitForJBrowseReady(fakePage(), {
+    expectSession: false,
+    settleMs: 3000,
+    timeout: 10000,
+  })
+  expect(report.pending).toEqual([])
+  expect(report.unsettled).toEqual([])
+}, 30000)

@@ -126,9 +126,12 @@ Four fields on a successful capture:
   proceed anyway.
 - **`appMarker`** — which of the two paths above ran. False on the default
   instance, and on anything else that predates `data-app-phase`.
-- **`pending`** — displays still reporting unpainted when the shutter fired. A
-  display can return to pending after its stage passed, so this is a separate
-  question from `unsettled`.
+- **`pending`** — displays still reporting unpainted when the shutter fired.
+  Read after `settle`, not before it, so the frame it describes is the frame
+  that was captured; a display that finished during the settle is not in it, and
+  no longer fails the run either. Whatever is left lands in `unsettled` too,
+  carrying each display's own phase — `loading` is a slow fetch, `error` a
+  banner, `ready` a display claiming it finished without drawing.
 - **`paintContract`** — whether this JBrowse build publishes the per-display
   paint attributes at all. It is false on the default instance, so `pending: []`
   there means "cannot tell", not "all done", and the CLI says so. A page with no
