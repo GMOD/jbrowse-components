@@ -42,7 +42,14 @@ adopted (ADR-106 §"The ladder").
    glyph })` plus the LD `r2` array and `indexFound`; `buildScoreResult` =
    `encodeFeatures(features, { y: scoreColumn })` with the display owning the
    domain. Then `manhattanMarks.ts` is a rename and `ScoreRPC/` shrinks to the
-   call.
+   call. Sized on 2026-09-09: the example's `buildScoreResult` normalises
+   `scores` to the region's own max in the worker, and its shape reads that
+   0..1 value straight into the bar height, so "the display owning the
+   domain" means the example's `score.slang` takes a y domain uniform
+   (`valueScale.slang`, as `bar` does) and `LinearScoreDisplay` grows the
+   autoscale the wiggle family has. The developer guide is generated from
+   those files (`#exampleFile`), so thread 4 moves with it — do the two as
+   one branch.
 4. **The guides, config first.** `creating_gpu_display.md` and
    `plotting_features.md` teach the mark form (landed); neither yet opens with
    "a `marks` entry in config over any feature adapter" and sends the reader
