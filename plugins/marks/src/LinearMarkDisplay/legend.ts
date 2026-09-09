@@ -50,10 +50,19 @@ function unionEntries<E extends { label: string }>(
 }
 
 function union(current: ScaleTable, next: ScaleTable) {
-  if (current.kind === 'categorical' && next.kind === 'categorical') {
-    unionEntries(current.entries, next.entries)
-  } else if (current.kind === 'glyph' && next.kind === 'glyph') {
-    unionEntries(current.entries, next.entries)
+  switch (current.kind) {
+    case 'categorical':
+      if (next.kind === 'categorical') {
+        unionEntries(current.entries, next.entries)
+      }
+      break
+    case 'glyph':
+      if (next.kind === 'glyph') {
+        unionEntries(current.entries, next.entries)
+      }
+      break
+    case 'ramp':
+      break
   }
 }
 
