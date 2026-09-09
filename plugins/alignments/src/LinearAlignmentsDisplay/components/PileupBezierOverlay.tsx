@@ -4,6 +4,7 @@ import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
+import { PAN_MOVED } from './panState.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   BEZIER_ARC_STROKE_WIDTH,
@@ -159,6 +160,11 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                 model.clearHoverUnlessPinned()
               }}
               onClick={e => {
+                // A pan that started on this curve still ends in a click, as
+                // the canvas `handleClick` says.
+                if (e.currentTarget.closest(PAN_MOVED)) {
+                  return
+                }
                 const svg = e.currentTarget.ownerSVGElement
                 model.selectReadWithChain(
                   svg

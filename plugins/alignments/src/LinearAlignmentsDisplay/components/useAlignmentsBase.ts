@@ -16,6 +16,7 @@ import {
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
 import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
+import { PAN_DRAGGING, PAN_MOVED } from './panState.ts'
 import {
   formatArcLineTooltip,
   formatArcTooltip,
@@ -39,12 +40,6 @@ export interface FeatureHit {
   id: string
   index: number
 }
-
-// The LGV's click-drag pan (`useSideScroll`) publishes its state as attributes
-// on the tracks container: one while the button is down, one once the press
-// has travelled far enough to be a pan rather than a click.
-const PAN_DRAGGING = '[data-pan-dragging]'
-const PAN_MOVED = '[data-pan-moved]'
 
 // Hit-test handlers + palette plumbing for the pileup canvas. Mouse coords come
 // straight off the native event (`offsetX`/`offsetY`, canvas-relative since the

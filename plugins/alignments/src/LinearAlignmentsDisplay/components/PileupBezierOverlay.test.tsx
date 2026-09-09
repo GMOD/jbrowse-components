@@ -114,6 +114,17 @@ test('a click selects the endpoint nearer the cursor, chain and all', () => {
   expect(model.selectReadWithChain).toHaveBeenLastCalledWith('readA')
 })
 
+// A click-drag pan across the pileup still ends in a click, and the curves sit
+// on top of the reads — so panning off one would open a read's detail widget.
+test('a click that followed a pan selects nothing', () => {
+  const { model, target, container } = renderOverlay()
+  container.setAttribute('data-pan-moved', '')
+
+  fireEvent.click(target, { clientX: 25 })
+
+  expect(model.selectReadWithChain).not.toHaveBeenCalled()
+})
+
 // Through `setHoverState`, which the open context menu's hover pin can refuse —
 // the direct volatile write it replaces could not be. Outside chain mode the
 // connector's two ends are what a canvas hover on either would box.
@@ -165,9 +176,12 @@ test('hovering one hop thickens every arc of that read', () => {
 // Selection is read off the model rather than remembered from the last click,
 // so clearing it on the canvas un-thickens the arc.
 test('an arc is thick while the model selects either of its reads', () => {
-  const { inks } = renderOverlay({ selectedFeatureId: 'readB' }, [ARC, OTHER])
-  expect(strokeWidth(inkFor(inks, ARC))).toBe(5)
-  expect(strokeWidth(inkFor(inks, OTHER))).toBe(1)
+  for (const id of ['readA', 'readB']) {
+    const { inks } = renderOverlay({ selectedFeatureId: id }, [ARC, OTHER])
+    expect(strokeWidth(inkFor(inks, ARC))).toBe(5)
+    expect(strokeWidth(inkFor(inks, OTHER))).toBe(1)
+    cleanup()
+  }
 })
 
 test('a chain selection thickens every arc of the chain', () => {

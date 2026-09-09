@@ -61,10 +61,10 @@ interface RegionBounds {
   pileupHeight: number
 }
 
-// Screen-space boxes for the hovered read (one id) or hovered chain (its member
-// ids share one row, so they collapse to a single span per region). Lives in a
-// React overlay rather than the canvas renderState so a hover change repaints
-// only this div, not the whole pileup — see the renderState getter.
+// Screen-space boxes for the hovered read, chain, or connector's two ends: one
+// span per row occupied. Lives in a React overlay rather than the canvas
+// renderState so a hover change repaints only this div, not the whole pileup —
+// see the renderState getter.
 export function computeHighlightBoxes(
   params: ComputeHighlightBoxesParams,
 ): HighlightBox[] {
@@ -81,8 +81,11 @@ export function computeHighlightBoxes(
 
   const sectionByGroup = new Map(sections.map(s => [s.groupKey, s]))
 
-  // Collapse ids that share a row into one span, keyed per (group, region):
-  // chain members live in one group, and the topOffset is the group's section.
+  // Collapse ids that share a row into one span, keyed per (group, region,
+  // row). The row is part of the key, not an assumption: a chain's members do
+  // share one, but a hovered connector's two ends outside chain mode are laid
+  // out independently, and merging those spans the reads between them and
+  // draws the box on whichever end came last.
   const byKey = new Map<
     string,
     RegionBounds & { displayedRegionIndex: number }
@@ -101,12 +104,11 @@ export function computeHighlightBoxes(
           endBp !== undefined &&
           yRow !== undefined
         ) {
-          const mapKey = `${entry.groupKey}\0${entry.displayedRegionIndex}`
+          const mapKey = `${entry.groupKey}\0${entry.displayedRegionIndex}\0${yRow}`
           const cur = byKey.get(mapKey)
           if (cur) {
             cur.startBp = Math.min(cur.startBp, startBp)
             cur.endBp = Math.max(cur.endBp, endBp)
-            cur.yRow = yRow
           } else {
             byKey.set(mapKey, {
               startBp,
