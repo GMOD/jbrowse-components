@@ -69,6 +69,11 @@ const KNOWN_UNPINNED: Record<string, string[]> = {
   // `rpcProps` resolves promotable slots for the worker, so a slot that stops
   // being promotable ships the bare sentinel. Reference doc has the argument.
   LinearVariantDisplay: ['displayDirectionalChevrons', 'subfeatureLabels'],
+  // Its point-size row (and pin) applies only while a `point` mark is declared,
+  // and `marks` is an array-of-sub-schema slot the fixture's display snapshot
+  // cannot write — `setSlot` refuses it — so the fixture opens with no marks.
+  // MarkDisplay.test.tsx opens the point form from a track config.
+  LinearMarkDisplay: ['scatterPointSize'],
 }
 
 // One open display per registered type that declares a promotable slot, and the
@@ -136,6 +141,7 @@ const FIXTURES: Fixture[] = [
   { displayType: 'LinearPairedArcDisplay', trackId: 'volvox_sv_test' },
   { displayType: 'LGVSyntenyDisplay', trackId: 'volvox_fake_synteny' },
   { displayType: 'LinearManhattanDisplay', trackId: 'volvox_gwas' },
+  { displayType: 'LinearMarkDisplay', trackId: 'bedtabix_genes' },
   {
     displayType: 'LinearWiggleDisplay',
     trackId: 'volvox_microarray',
