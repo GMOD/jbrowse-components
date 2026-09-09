@@ -328,3 +328,35 @@ test('MCScanBlocksAdapter: a window cutting through a gene returns the gene whol
     [300, 400],
   ])
 })
+
+// A lane's place in the stack is decided by a weight that ties exactly and a
+// tie-break on first appearance in this feature list, so the list's order is
+// load-bearing and must not be the order the network answered in.
+class SlowFirstRegionAdapter extends StubAdapter {
+  subscribed: number[] = []
+  completed: number[] = []
+
+  override getFeatures(region: Region, opts: ComparativeOptions = {}) {
+    this.regionsSeen.push(opts)
+    const index = region.start === 1000 ? 0 : 1
+    this.subscribed.push(index)
+    return ObservableCreate<Feature>(observer => {
+      setTimeout(
+        () => {
+          observer.next(record({ uniqueId: `region${index}` }))
+          this.completed.push(index)
+          observer.complete()
+        },
+        index === 0 ? 20 : 0,
+      )
+    })
+  }
+}
+
+test('the two regions are fetched at once and emitted in region order', async () => {
+  const adapter = new SlowFirstRegionAdapter(stubConfigSchema.create({}))
+  const features = await fetchAll(adapter, {})
+  expect(adapter.subscribed).toEqual([0, 1])
+  expect(adapter.completed).toEqual([1, 0])
+  expect(features.map(f => f.id())).toEqual(['region0', 'region1'])
+})

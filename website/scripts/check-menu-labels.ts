@@ -22,6 +22,18 @@
 // documented path also exists somewhere as a plain literal, so exact matching
 // costs nothing real.
 //
+// **It cannot see a PATH.** Each segment is asked for on its own, so a path
+// assembled from two labels that both exist and never appear together passes:
+// two synteny pages documented `Color by... → dN/dS` — "Color by..." is the
+// variants plugin's menu, and the synteny track's is "Color by value" — and
+// this check was green on both while a reader following either found no such
+// item. Seeing adjacency means reading the `subMenu` trees the menus are built
+// from, which is a different scan from this one. The cheap proxy is not it:
+// requiring one package to render every segment of a path was measured against
+// the corpus and flags 34 of the 121 documented paths, because a container
+// label (`Clustering`, `Display types`, `Show`) belongs to core while the item
+// under it belongs to a plugin.
+//
 // Run: `pnpm check-menu-labels`, or the root `pnpm check-docs`.
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

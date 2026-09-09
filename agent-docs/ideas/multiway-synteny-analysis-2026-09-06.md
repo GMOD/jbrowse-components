@@ -40,7 +40,11 @@ fetch's tier and window), **4.7** (the serialisation boundary no test names),
 
 The pass added 4.10 and 4.11 below. 4.10 replaces a wrong causal claim from
 its first draft: the lane sort is deterministic, and the figures that
-disagreed were shot against two different datasets.
+disagreed were shot against two different datasets. Both of 4.10's items are
+closed since: the reshoot landed on 2026-09-09 and `hprc_lane_menu` and
+`pangenome/hprc_cfh_haplotypes` now stack their haplotypes the same way, and
+`ComparativeAdapterBase` emits its per-region streams in region order, pinned
+by a test in `clipFeatureToRegion.test.ts`.
 
 ## The verdict in one paragraph
 
@@ -593,19 +597,21 @@ the stack is simply PIF file order. `MultiGenomeIndexedPAFAdapter` sorts its
 concurrent reads by `fileOffset` precisely so that order is reproducible, and a
 single-region fetch is therefore deterministic.
 
-The exposure is `ComparativeAdapterBase.getFeaturesInMultipleRegions`, which
-`merge`s the per-region streams: on a multi-region view the arrival order varies
-run to run, and against ties this size that is enough to swap two lanes. It
-wants the file-order discipline the indexed PAF adapter already applies.
+The exposure was `ComparativeAdapterBase.getFeaturesInMultipleRegions`, which
+`merge`d the per-region streams: on a multi-region view the arrival order varies
+run to run, and against ties this size that is enough to swap two lanes. It now
+applies the file-order discipline the indexed PAF adapter already had — each
+region still subscribes at once and only the emission waits for its turn.
 
 The inverted lane order between the `pangenome/hprc_cfh_haplotypes` and
-`multiway_synteny/hprc_lane_menu` figures is **not** that bug, and an earlier
+`multiway_synteny/hprc_lane_menu` figures was **not** that bug, and an earlier
 version of this section was wrong to say it was. The hosted PIF was rebuilt from
-HPRC release 2.1 on 2026-09-06, between the two captures; `hprc_lane_menu` has
-not been reshot since 2026-09-05, so the two pictures are of two different
-datasets. Reshooting it is the fix. `multiway_synteny/hg38_vertebrates_17p_break`
-is stale the same way against `05ec50660e`: it draws the marmoset lane `[rev]`
-at `2.4Mbp 2x` where today's code decides forward at rung 3.
+HPRC release 2.1 on 2026-09-06, between the two captures; `hprc_lane_menu` was
+shot on 2026-09-05, so the two pictures were of two different datasets. The
+2026-09-09 reshoot settled it, and the two now agree haplotype for haplotype.
+`multiway_synteny/hg38_vertebrates_17p_break` was stale the same way against
+`05ec50660e` — it drew the marmoset lane `[rev]` at `2.4Mbp 2x` where the code
+decides forward at rung 3 — and the same reshoot fixed it.
 
 ### 4.11 A long `alsoOn` overflows an exported figure
 

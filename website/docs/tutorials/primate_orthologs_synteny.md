@@ -247,15 +247,16 @@ authors the same thing as `rowOrder`.
 
 <Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header says [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
-Zoomed out to ten megabases the same track reads as a synteny painting, and the
-two things it draws come apart. Color names the inversions: a bundle painted as
-reversed is a block one lane reads backwards, whether or not the mirroring left
-it drawn straight. The lean is the other fact — every lane sits at its own
-offset and its own scale, and a lane whose header carries a multiple is holding
-the same genes over more sequence, so a bundle can cross the frame with nothing
-rearranged in it.
+Zoomed out to four megabases the same track reads as a synteny painting, and
+color is what separates the two things it draws. A bundle painted as reversed is
+a block that lane reads backwards from the lane above it, whether the mirroring
+left it drawn straight or crossed: one block runs down the middle of the frame
+with same-orientation flanks on either side of it, and one pair of lanes crosses
+near the right-hand edge. The headers carry the other fact — every lane sits at
+its own offset and its own scale, and a lane whose header names a multiple is
+holding the same genes over more sequence.
 
-<Figure caption="Ten megabases of human chr17 over the seven primate lanes, ribbons colored by strand. The reversed-strand bundles are blocks a lane reads backwards; the lean across the frame is the offset and scale each lane is drawn at, which its header names." src="/img/multiway_synteny/primate_chr17_inversions.png" />
+<Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
 ## A window across a chromosome fusion
 
@@ -274,10 +275,13 @@ lane and have no ribbon.
 The join is exactly as good as the naming. The salivary amylase cluster on human
 chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,
 _AMY1B_, _AMY1C_), while the other primates' copies were left as placeholder
-`LOC` ids, so the table holds no row for them. Every lane still draws its own
-copies, from its own annotation, and the ribbons stop at the cluster's edge.
+`LOC` ids — so most of them have no row in the table at all. Every lane still
+draws its own copies, from its own annotation, and the ribbons stop where the
+naming does. A human RefSeq track above the lanes is what names the copies; each
+lettered one is its own symbol, so each takes its own color and the family reads
+as unrelated genes.
 
-<Figure caption="The amylase cluster on human chr1 over the seven primate lanes. The flanking genes chain down the stack; the amylase copies in each lane are drawn from that genome's annotation and joined to nothing." src="/img/multiway_synteny/primate_amy_cluster.png" />
+<Figure caption="The amylase cluster on human chr1 over the seven primate lanes, with the human RefSeq gene track above them. The gene flanking the cluster chains down the whole stack; inside it the copies are drawn in every lane from that genome's own annotation and joined to almost nothing." src="/img/multiway_synteny/primate_amy_cluster.png" />
 
 For a locus like this the table wants a real homology call, which is what the
 [OrthoFinder page](/docs/tutorials/orthofinder_synteny) builds, or an alignment.

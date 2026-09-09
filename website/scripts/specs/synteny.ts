@@ -1744,10 +1744,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 820,
   },
 
-  // The same track ten megabases wide, where per-gene ribbons bundle into a
-  // synteny painting: the strand color names the blocks a lane reads backwards,
-  // and the lean of a bundle is the offset and rung its lane is drawn at rather
-  // than anything rearranged.
+  // Four megabases of chr17 where the strand color separates two things a
+  // wider window mixes: the three African ape lanes read the whole frame
+  // backwards, and inside it one block flips in the orangutan and macaque
+  // lanes while their own flanks stay forward. Every lane spans about the
+  // window, so the bundles run level and the color is what carries.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_chr17_inversions',
@@ -1760,7 +1761,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'human',
-            loc: 'chr17:40,000,000-50,000,000',
+            loc: 'chr17:34,000,000-38,000,000',
             tracks: [
               {
                 trackId: 'primate_orthologs',
@@ -1776,7 +1777,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
     settleMs: 15000,
-    viewportHeight: 820,
+    viewportHeight: 860,
   },
 
   // A window across the human chr2 fusion point. Every non-human lane has
@@ -1815,7 +1816,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The join's limit: the amylase cluster, lettered symbols in human and LOC
   // placeholders elsewhere, so the copies draw in every lane and chain to
-  // nothing while the flanking genes chain down the stack.
+  // nothing while the flanking genes chain down the stack. The human RefSeq
+  // track rides above the lanes because the copies are the subject and only
+  // their labels name them; the filter drops the RefSeq `match` records, whose
+  // GFF carries no Name and which drew a row of uuids over the gene labels.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_amy_cluster',
@@ -1828,8 +1832,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'human',
-            loc: 'chr1:103,500,000-103,800,000',
+            loc: 'chr1:103,500,000-103,790,000',
             tracks: [
+              {
+                trackId: 'human_genes',
+                jexlFilters: [
+                  "feature.type=='gene'||feature.type=='pseudogene'",
+                ],
+                height: 120,
+              },
               {
                 trackId: 'primate_orthologs',
                 type: 'MultiWaySyntenyDisplay',
@@ -1843,7 +1854,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
     settleMs: 15000,
-    viewportHeight: 820,
+    viewportHeight: 1000,
   },
 
   // The same join at cohort scale: 44 E. coli and Shigella genomes under K-12

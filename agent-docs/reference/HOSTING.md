@@ -201,6 +201,17 @@ and spec comments claiming 10 kb windows for 2 kb data.
 Auditing a data tutorial: `curl -o /dev/null -w '%{http_code}' -I` every hosted
 URL it names *and* every URL in its spec, then check the data matches the prose.
 
+**A field the code stopped needing cannot leave `demos/*/config.json` on its
+own**, because `check-live-configs --network` compares the repo copy against the
+hosted one and fails on the difference. Two are sitting there now: the
+adapter-level `assemblyNames` that duplicates `blockAssemblies`, which
+`MCScanBlocksAdapter.mateAssemblies` defaults, and
+`jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'`, where `randomColor`
+already answers `NO_CATEGORY_COLOR` for an absent value
+(`demos/primate_orthologs`, `demos/ecoli_orthologs`). Both draw the same picture
+either way, so the unit of work is one pass over the build scripts plus a
+`scripts/deploy-demo.sh` of each config — not a config edit.
+
 ## Third-party mirrors, and what a bucket listing does not prove
 
 `website/scripts/third-party-hosts.txt` is the ratchet over which servers we do
