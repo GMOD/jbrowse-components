@@ -1,8 +1,4 @@
-import {
-  readInstrumentationInPage,
-  readSessionSummaryInPage,
-  waitForSession,
-} from './sessionGate.ts'
+import { readSessionSummaryInPage, waitForSession } from './sessionGate.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -30,31 +26,27 @@ const gatePage = () =>
     },
   }) as unknown as Page
 
-const stub = (session: unknown) => {
-  ;(globalThis as { JBrowseSession?: unknown }).JBrowseSession = session
+const census = (views: number, assemblies: string[], trackIds: string[]) => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"
+    data-app-views="${views}"
+    data-app-assemblies='${JSON.stringify(assemblies)}'
+    data-app-tracks='${JSON.stringify(trackIds)}'></span>`
 }
 
 afterEach(() => {
-  delete (globalThis as { JBrowseSession?: unknown }).JBrowseSession
   document.body.replaceChildren()
 })
 
-const track = (trackId: string) => ({ configuration: { trackId } })
-
-test('no session on the page reports undefined', () => {
-  stub(undefined)
+test('no census on the page reports undefined', () => {
   expect(readSessionSummaryInPage()).toBeUndefined()
 })
 
-// The census the app publishes on its ready marker: one element, read before
-// any walk of the session model, so on a build that has it nothing here needs
-// to know which property a container view keeps its children on.
-test('a published census answers the summary without a session walk', () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="loading" data-app-views="2"
-          data-app-assemblies='["hg38","mm39"]'
-          data-app-tracks='["genes","synteny"]'></span>`
-  // no JBrowseSession stubbed at all — the census alone answers
+// One element answers the whole summary. Each view declares what it holds and
+// the marker publishes the reduction (ADR-103), so nothing here knows that a
+// synteny view keeps its tracks on levels and its rows on sub-views — the walk
+// that did went with the builds that had no census.
+test('the census answers the summary', () => {
+  census(2, ['hg38', 'mm39'], ['genes', 'synteny'])
   expect(readSessionSummaryInPage()).toEqual({
     views: 2,
     assemblies: ['hg38', 'mm39'],
@@ -62,151 +54,20 @@ test('a published census answers the summary without a session walk', () => {
   })
 })
 
-test('a malformed census falls back to the session walk', () => {
+test('a malformed census reports undefined rather than throwing', () => {
   document.body.innerHTML =
     '<span data-app-tracks="not json" data-app-assemblies="[]"></span>'
-  stub({ views: [{ assemblyNames: ['hg38'], tracks: [track('genes')] }] })
-  expect(readSessionSummaryInPage()).toEqual({
-    views: 1,
-    assemblies: ['hg38'],
-    trackIds: ['genes'],
-  })
+  expect(readSessionSummaryInPage()).toBeUndefined()
 })
 
-test('a plain view reports its own tracks', () => {
-  stub({ views: [{ assemblyNames: ['hg38'], tracks: [track('genes')] }] })
-  expect(readSessionSummaryInPage()).toEqual({
-    views: 1,
-    assemblies: ['hg38'],
-    trackIds: ['genes'],
-  })
-})
-
-// The bug this file exists to prevent: a LinearSyntenyView keeps its synteny
-// tracks on `levels`, one per gap between adjacent rows, and its own `tracks`
-// is empty. Reading the top level only reported "tracks []" for a view whose
-// ribbons were on screen, so every synteny capture timed out and the error
-// blamed the caller's config.
-test('a synteny view reports the tracks open on its levels', () => {
-  stub({
-    views: [
-      {
-        assemblyNames: ['hg002v1.2'],
-        tracks: [],
-        levels: [{ tracks: [track('mat_vs_pat')] }],
-        views: [
-          { assemblyNames: ['hg002v1.2'] },
-          { assemblyNames: ['hg002v1.2'] },
-        ],
-      },
-    ],
-  })
-  expect(readSessionSummaryInPage()).toEqual({
-    views: 1,
-    assemblies: ['hg002v1.2'],
-    trackIds: ['mat_vs_pat'],
-  })
-})
-
-// The per-row LGV tracks of a container view are one level down too, so a
-// top-level-only walk misses those as well.
-test('a container view reports the tracks open on its rows', () => {
-  stub({
-    views: [
-      {
-        tracks: [],
-        levels: [{ tracks: [track('synteny')] }],
-        views: [
-          { assemblyNames: ['hg38'], tracks: [track('top_genes')] },
-          { assemblyNames: ['mm39'], tracks: [track('bottom_genes')] },
-        ],
-      },
-    ],
-  })
-  expect(readSessionSummaryInPage()).toEqual({
-    views: 1,
-    assemblies: ['hg38', 'mm39'],
-    trackIds: ['synteny', 'top_genes', 'bottom_genes'],
-  })
-})
-
-// The published AbstractViewModel spelling of the same containers. A view
-// implementing the contract without a `levels` prop was invisible here while
-// the busy walk in waits.ts (which read only `trackContainers`) saw it — the
-// two walkers each covered one spelling. Both now read the contract first and
-// fall back, and reading one or the other keeps a live synteny view, which
-// carries both, from being counted twice.
-test('a view publishing only the trackContainers contract reports its tracks', () => {
-  stub({
-    views: [
-      {
-        tracks: [],
-        trackContainers: [{ tracks: [track('mat_vs_pat')] }],
-      },
-    ],
-  })
-  expect(readSessionSummaryInPage()?.trackIds).toEqual(['mat_vs_pat'])
-})
-
-test('a view carrying both spellings is not double-counted', () => {
-  const containers = [{ tracks: [track('synteny')] }]
-  stub({
-    views: [{ tracks: [], trackContainers: containers, levels: containers }],
-  })
-  expect(readSessionSummaryInPage()?.trackIds).toEqual(['synteny'])
-})
-
-test('a track with no configuration is named rather than dropped', () => {
-  stub({ views: [{ tracks: [{}] }] })
-  expect(readSessionSummaryInPage()?.trackIds).toEqual(['(unnamed)'])
-})
-
-// The other half of "what can this build be asked". Every wait keyed on these
-// attributes passes when the selector is ABSENT, so a build publishing none of
-// them satisfies all of them while it has drawn nothing — measured on
-// jbrowse.org/code/jb2/latest, which publishes none of the three. This probe is
-// what lets a caller tell that apart from "everything finished".
-test('an instrumented page reports each attribute family it publishes', () => {
-  document.body.innerHTML = `
-    <div data-view-phase="ready">
-      <div data-display-phase="ready" data-display-drawn="true"></div>
-    </div>`
-  expect(readInstrumentationInPage()).toEqual({
-    viewPhase: true,
-    displayPhase: true,
-    displayDrawn: true,
-  })
-})
-
-test('a released build publishing none of them reports all three false', () => {
-  // what the hosted app's DOM looks like: an app, a display, no contract
-  document.body.innerHTML = `
-    <div data-testid="view-container-lgv">
-      <div data-testid="pileup-display"></div>
-    </div>`
-  expect(readInstrumentationInPage()).toEqual({
-    viewPhase: false,
-    displayPhase: false,
-    displayDrawn: false,
-  })
-})
-
-// Presence is the question, never the value: `data-display-phase="loading"` is a
-// build that CAN be asked, answering "not yet". That is the opposite of a build
-// that cannot be asked at all, and reading the value here would conflate them.
-test('an attribute mid-flight still counts as published', () => {
-  document.body.innerHTML = '<div data-display-phase="loading"></div>'
-  expect(readInstrumentationInPage().displayPhase).toBe(true)
-})
-
-// The gate reads the same census, and used to give up on a malformed one
-// instead of falling through to the walk — so it could never pass while the
-// diagnostic it prints on timeout, read off the model, reported a healthy
-// session: "wanted assembly hg38; found assemblies [hg38]".
-test('a malformed census lets the gate fall through to the session walk', async () => {
+test('a census with no view count reads as no views', () => {
   document.body.innerHTML =
-    '<span data-app-tracks="not json" data-app-assemblies="[]"></span>'
-  stub({ views: [{ assemblyNames: ['hg38'], tracks: [track('genes')] }] })
+    '<span data-app-tracks=\'["genes"]\' data-app-assemblies=\'["hg38"]\'></span>'
+  expect(readSessionSummaryInPage()?.views).toBe(0)
+})
+
+test('the gate passes once the census holds what was asked for', async () => {
+  census(1, ['hg38'], ['genes', 'clinvar'])
   await expect(
     waitForSession(gatePage(), {
       assembly: 'hg38',
@@ -214,4 +75,40 @@ test('a malformed census lets the gate fall through to the session walk', async 
       timeout: 1000,
     }),
   ).resolves.toBeUndefined()
+})
+
+// The exact ids, not a count: a hosted config usually ships a defaultSession,
+// so `&tracks=` ADDS to tracks already open and a count is satisfied before
+// yours arrives — or by the default set alone when the id does not exist.
+test('a trackId the config does not define fails the gate, and is named', async () => {
+  census(1, ['hg38'], ['genes'])
+  await expect(
+    waitForSession(gatePage(), {
+      assembly: 'hg38',
+      trackIds: ['genes', 'typo'],
+      timeout: 300,
+    }),
+  ).rejects.toThrow(/track\(s\) \[typo\].*found 1 view\(s\)/s)
+})
+
+test('an assembly that does not match fails the gate', async () => {
+  census(1, ['hg19'], ['genes'])
+  await expect(
+    waitForSession(gatePage(), { assembly: 'hg38', timeout: 300 }),
+  ).rejects.toThrow(/assembly "hg38".*assemblies \[hg19\]/s)
+})
+
+// The failure a config URL that 404s produces: nothing publishes a census at
+// all, and the message has to say so rather than reporting an empty session.
+test('no census at all is reported as such', async () => {
+  await expect(
+    waitForSession(gatePage(), { assembly: 'hg38', timeout: 300 }),
+  ).rejects.toThrow('no census on the page at all')
+})
+
+test('a census with no views open does not satisfy the gate', async () => {
+  census(0, [], [])
+  await expect(waitForSession(gatePage(), { timeout: 300 })).rejects.toThrow(
+    'Wanted an open view',
+  )
 })

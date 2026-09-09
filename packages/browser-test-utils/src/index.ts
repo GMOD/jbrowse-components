@@ -20,7 +20,6 @@ export {
   isBrowserConsoleNoise,
   isPageBusyInPage,
   pendingDisplayStatesInPage,
-  readInstrumentation,
   sessionSpecQuery,
   waitForAppReady,
   waitForAppSettled,

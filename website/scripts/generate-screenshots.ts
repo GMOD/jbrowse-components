@@ -82,7 +82,6 @@ import {
   pct,
   printSummary,
   recordOverflow,
-  recordReadyPath,
   recordTooltip,
   recordUnpainted,
 } from './screenshot-report.ts'
@@ -172,7 +171,7 @@ async function renderSpecToTemp(
     return captureEmbeddedToTemp(page, spec, suffix)
   }
 
-  recordReadyPath(spec.name, await captureUrl(page, spec, port))
+  await captureUrl(page, spec, port)
 
   await runActions(page, spec.name, spec.actions)
   // same as in captureStages: actions can kick off a re-render, so wait it out
@@ -446,7 +445,7 @@ async function captureEachStage(
       if (stage.viewportHeight && viewport) {
         await page.setViewport({ ...viewport, height: stage.viewportHeight })
       }
-      recordReadyPath(spec.name, await captureUrl(page, stageSpec, port))
+      await captureUrl(page, stageSpec, port)
     }
     if (stage.closeMenusFirst) {
       await closeOpenMenus(page, spec.name)

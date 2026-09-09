@@ -57,36 +57,34 @@ test('an app still working when the timeout expires reports false', async () => 
   ).resolves.toBe(false)
 })
 
-// A build too old for the marker must not pass instantly. That silent no-op is
-// how a spec that dropped its fixed sleep for this wait ends up capturing the
-// frame the sleep was there to avoid — so the fallback watches the app work and
-// stop, through the signals such a build does publish.
-test('a build with no marker falls back to watching the app work', async () => {
+// A build too old for the marker must not pass, and must not quietly wait out
+// an absence either: every other readiness attribute is satisfied by an app
+// that has not started, so a fallback here reports success on an empty browser.
+test('a build with no marker is an error, not a fallback', async () => {
   document.body.innerHTML = '<div data-testid="loading-overlay"></div>'
-  const stopWorking = setTimeout(() => {
-    document.body.replaceChildren()
-  }, 40)
-  const start = Date.now()
-  await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
-  expect(Date.now() - start).toBeGreaterThanOrEqual(40 + FAST.holdMs)
-  clearTimeout(stopWorking)
+  await expect(waitForAppSettled(jsdomPage(), FAST)).rejects.toThrow(
+    'publishes no [data-app-phase]',
+  )
 })
 
-// The busy window is itself a hold: every sample taken inside it read idle, since
-// a failed evaluate counts as busy. Starting the quiet hold from the END of the
-// window charged a page that had nothing to fetch for the same idle twice —
-// 600ms here rather than 300.
-test('a page that is never busy pays the busy window once', async () => {
+// Idle has to HOLD: a track that ends one fetch and starts the next is
+// momentarily idle, and a single-sample read takes that gap for the end.
+test('the quiet period restarts when the page goes busy again', async () => {
+  const goBusy = setTimeout(() => {
+    document.body.innerHTML = '<div data-testid="loading-overlay"></div>'
+  }, 100)
+  const goIdle = setTimeout(() => {
+    document.body.replaceChildren()
+  }, 200)
   const start = Date.now()
   await expect(
     waitForQuietPeriod(jsdomPage(), {
-      busyWindowMs: 300,
       quietMs: 300,
       pollMs: 10,
       timeout: 3000,
     }),
   ).resolves.toBe(true)
-  const elapsed = Date.now() - start
-  expect(elapsed).toBeGreaterThanOrEqual(300)
-  expect(elapsed).toBeLessThan(500)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(500)
+  clearTimeout(goBusy)
+  clearTimeout(goIdle)
 })

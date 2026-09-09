@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs'
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { listHubTracks } from './hub.ts'
-import { PAINT_CONTRACT_NOTE } from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
 
 import type { ParsedArgs } from './args.ts'
@@ -142,7 +141,7 @@ async function main() {
   if (!args.out) {
     throw new Error('--out <file.png> is required (or use `jb2capture url`)')
   }
-  const { url, pending, paintContract, unsettled } = await captureJBrowse({
+  const { url, pending, unsettled } = await captureJBrowse({
     ...urlOptions(args),
     out: args.out,
     width: args.width,
@@ -173,8 +172,6 @@ async function main() {
       `warning: ${pending.length} display(s) had not finished drawing at capture time ` +
         `(${pending.join(', ')}). Raise --timeout, or --settle for a slow remote file.`,
     )
-  } else if (!paintContract) {
-    console.error(`note: ${PAINT_CONTRACT_NOTE}`)
   }
 }
 

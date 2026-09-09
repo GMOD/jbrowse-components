@@ -67,8 +67,7 @@ const browser = await launch({
 })
 try {
   const page = await browser.newPage()
-  const readiedBy = await captureUrl(page, spec, PORT)
-  console.log(`readied by: ${readiedBy}`)
+  await captureUrl(page, spec, PORT)
   for (const action of actions.slice(0, -1)) {
     await runAction(page, action)
   }

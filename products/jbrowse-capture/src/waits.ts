@@ -335,74 +335,39 @@ export const BUSY_SELECTOR = [
  * Is the app doing anything right now?
  *
  * Serialized into the page, so it declares everything it uses and takes
- * `BUSY_SELECTOR` as an argument rather than importing it. Two sources: that
- * selector, and the live session model's own per-display status, which is the
- * only PER-DISPLAY signal a build with no readiness attributes has left. Both
- * are contracts rather than renderings — a model field and a set of data
- * attributes — so neither moves when the UI is restyled.
+ * `BUSY_SELECTOR` as an argument rather than importing it. Every signal is a
+ * data attribute a component sets deliberately, so restyling or rewording the
+ * UI cannot move the answer.
+ *
+ * It used to also walk `window.JBrowseSession` for each display's own status
+ * message — the only PER-DISPLAY signal a build with no readiness attributes
+ * had. That walk was a duck-typed copy of the session gate's, drifted onto a
+ * different container spelling (ADR-103), and it went with the builds that
+ * needed it: `data-display-phase="loading"` covers the same fetch directly.
  *
  * Exported so a test can call the real function rather than a copy of it.
  */
 export function isPageBusyInPage(busySelector: string): boolean {
-  if (document.querySelector(busySelector)) {
-    return true
-  }
-  interface DisplayState {
-    message?: string
-    statusMessage?: string
-  }
-  interface TrackState {
-    displays?: DisplayState[]
-  }
-  interface TrackContainerState {
-    tracks?: TrackState[]
-  }
-  interface ViewState extends TrackContainerState {
-    // the synteny view holds no `tracks` of its own — one list per level.
-    // `trackContainers` is the AbstractViewModel contract; `levels` is the raw
-    // prop and the only spelling on a deployed build older than the getter.
-    trackContainers?: TrackContainerState[]
-    levels?: TrackContainerState[]
-    views?: ViewState[]
-  }
-  const session = (globalThis as { JBrowseSession?: { views?: ViewState[] } })
-    .JBrowseSession
-  const tracksOf = (c: TrackContainerState) =>
-    (c.tracks ?? []).flatMap(t => t.displays ?? [])
-  const displaysOf = (v: ViewState): DisplayState[] => [
-    ...tracksOf(v),
-    ...(v.trackContainers ?? v.levels ?? []).flatMap(tracksOf),
-    ...(v.views ?? []).flatMap(displaysOf),
-  ]
-  return (session?.views ?? [])
-    .flatMap(displaysOf)
-    .some(d => (d.message ?? d.statusMessage ?? '').trim() !== '')
+  return document.querySelector(busySelector) !== null
 }
 
 /**
  * Wait until the app has been idle for an unbroken stretch.
  *
- * The gate for a build that publishes no readiness attributes, where every
- * other wait in this module is an assertion about an absent selector and so
- * cannot fail. Absence answers "is it working NOW"; a capture needs "has it
- * finished", and the two differ in both directions:
+ * Idle answers "is it working NOW"; a page is finished only if it stays that
+ * way, because a track that ends one fetch and starts the next is momentarily
+ * idle and a single-sample read takes that gap for the end. Requiring the idle
+ * to HOLD closes it.
  *
- *   BEFORE the work starts. Measured on jbrowse.org/code/jb2/latest with two
- *   remote tracks: the session reports both tracks open at ~2.5s and the
- *   loading overlay does not go up until ~3.5s. Every absence-based gate passes
- *   during that second, over an app that has drawn nothing.
+ * NOT a readiness gate on its own — idle is an absence, equally true of an app
+ * that has not started. `waitForAppSettled` is the gate; this is the tool for
+ * "nothing is in flight right now", which is what a probe or a benchmark wants
+ * between two measured actions.
  *
- *   BETWEEN two pieces of work. A track that finishes one fetch and starts the
- *   next is momentarily idle, and a single-sample gate takes it.
+ * Polled from node rather than in-page: chrome throttles in-page timers and rAF
+ * once the tab is not visible, which is the state a headless capture sits in.
  *
- * Requiring the idle to HOLD closes both without needing to know which signals
- * a given build has. Polled from node rather than in-page: chrome throttles
- * in-page timers and rAF once the tab is not visible, which is the state a
- * headless capture sits in.
- *
- * Returns false on timeout rather than throwing, like its neighbours — the
- * caller decides whether a page that never went quiet is a failure or a slow
- * page worth capturing anyway.
+ * Returns false on timeout rather than throwing, like its neighbours.
  */
 export async function waitForQuietPeriod(
   page: Page,
@@ -410,34 +375,10 @@ export async function waitForQuietPeriod(
     quietMs = 1500,
     timeout = 30000,
     pollMs = 250,
-    busyWindowMs = 0,
-  }: {
-    quietMs?: number
-    timeout?: number
-    pollMs?: number
-    /**
-     * Wait for the app to be seen BUSY before any idle counts, giving up on
-     * that after this long. Zero (the default) accepts idle immediately.
-     *
-     * This is what turns the wait positive. Idle is still an absence, so an app
-     * that has not begun looks exactly like one that has finished — measured on
-     * jbrowse.org/code/jb2/latest, where a chain starting at the session gate
-     * saw an idle page at 1.6s and the tracks did not draw until past 10s.
-     * Seeing the transition INTO work and back out of it is an observation of
-     * the work itself.
-     *
-     * The window is bounded because a page with nothing to fetch never goes
-     * busy at all, and hanging on that would be worse than the race it closes.
-     * Size it above the gap between the session gate passing and the first
-     * indicator appearing, measured at ~1s on that instance.
-     */
-    busyWindowMs?: number
-  } = {},
+  }: { quietMs?: number; timeout?: number; pollMs?: number } = {},
 ): Promise<boolean> {
-  const start = Date.now()
-  const deadline = start + timeout
+  const deadline = Date.now() + timeout
   let quietSince: number | undefined
-  let seenBusy = busyWindowMs === 0
   while (Date.now() < deadline) {
     // A page that navigates or closes under us fails the evaluate; treat that
     // as busy and let the deadline decide, rather than reporting quiet.
@@ -446,21 +387,11 @@ export async function waitForQuietPeriod(
       .catch(() => true)
     const now = Date.now()
     if (busy) {
-      seenBusy = true
       quietSince = undefined
     } else {
-      if (!seenBusy && now - start >= busyWindowMs) {
-        // Never went busy within the window: nothing to wait out, and the idle
-        // that already ran the length of the window counts towards the hold —
-        // every sample in it was idle, since a failed evaluate reads as busy.
-        seenBusy = true
-        quietSince = start
-      }
-      if (seenBusy) {
-        quietSince ??= now
-        if (now - quietSince >= quietMs) {
-          return true
-        }
+      quietSince ??= now
+      if (now - quietSince >= quietMs) {
+        return true
       }
     }
     await delay(pollMs)
@@ -477,8 +408,7 @@ export async function waitForQuietPeriod(
  * debounced next one starting. `waitForAppSettled` requires it to HOLD, and is
  * what both the chain here and `jb.waitReady` use.
  *
- * Returns false if the page never publishes it, which is how a caller tells "not
- * ready yet" from "a build too old to have the marker" and falls back.
+ * Returns false if it never appears within the timeout.
  */
 export function waitForAppReady(
   page: Page,
@@ -522,9 +452,8 @@ export function hasAppReadyMarker(page: Page): Promise<boolean> {
  * `waitForQuietPeriod` is: chrome throttles in-page timers and rAF once the tab
  * is not visible, which is exactly the state a headless capture sits in.
  *
- * Falls back to the quiet period on a build too old for the marker, rather than
- * passing instantly. A no-op that reports success is how a spec that dropped its
- * sleep for this ends up capturing the frame the sleep was there to avoid.
+ * Throws on a build too old for the marker rather than falling back — see the
+ * body.
  */
 export async function waitForAppSettled(
   page: Page,
@@ -535,7 +464,16 @@ export async function waitForAppSettled(
   }: { timeout?: number; holdMs?: number; pollMs?: number } = {},
 ): Promise<boolean> {
   if (!(await hasAppReadyMarker(page))) {
-    return waitForQuietPeriod(page, { quietMs: holdMs, timeout, pollMs })
+    // Throws rather than falling back to the quiet period. The fallback was a
+    // no-op that reported success on a build with no attributes at all, which
+    // is how a spec that dropped its fixed sleep for this ended up capturing
+    // the frame the sleep was there to avoid. A build without the marker needs
+    // a newer build, not a wait that cannot fail.
+    throw new Error(
+      'this page publishes no [data-app-phase], so there is nothing positive ' +
+        'to wait for — every other readiness attribute is an absence an app ' +
+        'that has not started also satisfies.',
+    )
   }
   const deadline = Date.now() + timeout
   let readySince: number | undefined

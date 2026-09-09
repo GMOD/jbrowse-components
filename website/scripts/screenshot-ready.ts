@@ -6,13 +6,11 @@
 // have to run in, which is the part that took the bugs to learn.
 import {
   hasAppReadyMarker,
-  readInstrumentation,
   waitForAppReady,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
-  waitForQuietPeriod,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
@@ -39,40 +37,6 @@ const DEFAULT_SETTLE_MS = 2500
 // Default ceiling for the ready-selector / loading-overlay / quiescent waits.
 // Slow remote-data specs raise it via spec.readyTimeout.
 const DEFAULT_READY_TIMEOUT_MS = 30000
-// How long an uninstrumented build has to hold still before it counts as
-// finished.
-//
-// A spec whose url is absolute reaches jbrowse.org/code/jb2/latest, and the
-// released build publishes none of `data-view-phase`, `data-display-phase` or
-// `data-display-drawn` (measured 2026-08-17). Against that instance
-// `waitForViewPhases` and both display waits below are assertions about
-// attributes that do not exist — they pass the moment they are asked — and the
-// loading overlay does not go up until a second AFTER the session reports its
-// tracks open. So every gate in this file could be satisfied by an app that had
-// drawn nothing, which is what a tour filmed there right-clicked into.
-//
-// Holding still is the one signal that does not depend on an attribute
-// existing. Paid only on those targets; `@jbrowse/capture` carries the same
-// constant for the same reason.
-const LEGACY_BUSY_WINDOW_MS = 4000
-const LEGACY_QUIET_MS = 2000
-
-/**
- * Which gate actually readied a page, for the run to report.
- *
- * The three are not equivalent, and which one runs is a property of the BUILD
- * being served rather than of the spec: only `marker` is positive, and it is the
- * only one that cannot be satisfied over an app that has not started. So a
- * corpus captured on `phases` is a corpus whose blank-frame race is still open,
- * and the difference is invisible in every artifact a run produces — the PNG
- * looks the same either way.
- *
- * `phases` is the one to notice. It means a build new enough to publish
- * `data-display-phase` and older than `AppReadyMarker`, which is what a
- * `products/jbrowse-web/build` from before that lands is, and what the whole
- * corpus was captured against for as long as nobody rebuilt.
- */
-export type ReadyPath = 'marker' | 'phases' | 'quiet'
 
 // The ceiling for every wait a spec is subject to. readyText is only the track
 // label (present well before a slow remote BAM finishes), so a spec that says it
@@ -110,14 +74,11 @@ async function settlePass(page: Page, spec: BrowserScreenshotSpec) {
 // become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
 // indicator quiesces, and canvas displays signal paint-complete.
 //
-// Returns which gate answered, because on this path that is a fact about the
-// build being served and nothing else records it — see ReadyPath.
 export async function waitForReady(
   page: Page,
   spec: SessionUrlSpec | EmbeddedSpec,
-): Promise<ReadyPath> {
+): Promise<void> {
   const readyTimeout = readyTimeoutOf(spec)
-  let path: ReadyPath = 'marker'
   const readySelectors = [
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
@@ -138,24 +99,20 @@ export async function waitForReady(
       waitForDownloads: true,
       timeout: readyTimeout,
     })
-    // ...and then the one selector that answers the whole question, on a build
-    // that has it: the session renders `[data-app-phase="ready"]` when nothing
-    // is loading, so it cannot be true before the app starts.
-    if (await hasAppReadyMarker(page)) {
-      await waitForAppReady(page, { timeout: readyTimeout })
-    } else {
-      // An older build publishes no phases at all, so every wait above passed
-      // the moment it was asked. Watch it work instead: seen busy, then idle.
-      const { displayPhase, displayDrawn } = await readInstrumentation(page)
-      path = displayPhase || displayDrawn ? 'phases' : 'quiet'
-      if (path === 'quiet') {
-        await waitForQuietPeriod(page, {
-          quietMs: LEGACY_QUIET_MS,
-          busyWindowMs: LEGACY_BUSY_WINDOW_MS,
-          timeout: readyTimeout,
-        })
-      }
+    // ...and then the one selector that answers the whole question: the session
+    // renders `[data-app-phase="ready"]` when nothing is loading, so it cannot
+    // be true before the app starts. Every wait above it is an ABSENCE, and an
+    // absence is equally true of a page that has not begun — so a build without
+    // the marker is a stale `products/jbrowse-web/build`, not a build to fall
+    // back for. It used to fall back, and a corpus captured that way had its
+    // blank-frame race still open with nothing in any artifact saying so.
+    if (!(await hasAppReadyMarker(page))) {
+      throw new Error(
+        `${spec.name}: the page publishes no [data-app-phase], so there is no ` +
+          'positive signal that it finished. Rebuild jbrowse-web.',
+      )
     }
+    await waitForAppReady(page, { timeout: readyTimeout })
   } catch (e) {
     await debugDump(page, spec.name)
     throw e
@@ -179,7 +136,6 @@ export async function waitForReady(
     })
     await settlePass(page, spec)
   }
-  return path
 }
 
 /**
@@ -218,7 +174,6 @@ export async function captureUrl(
     timeout: Math.max(60000, spec.readyTimeout ?? 0),
   })
 
-  const path = await waitForReady(page, spec)
+  await waitForReady(page, spec)
   await markPageAlive(page)
-  return path
 }

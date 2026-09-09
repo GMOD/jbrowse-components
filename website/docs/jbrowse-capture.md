@@ -28,14 +28,10 @@ config, builds a session, resolves an assembly, fetches each track, and then
 draws to a canvas — and a screenshot taken at any point before the last step is
 a picture of an empty browser that looks like a successful run.
 
-Which signals exist at all depends on the build. Checked on 2026-09-05, the
-default `--instance` — `jbrowse.org/code/jb2/latest`, the released build every
-genomes.jbrowse.org link opens — publishes the loading overlay
-(`[data-testid="loading-overlay"]`) and none of `data-app-phase`,
-`data-view-phase`, `data-display-phase`, `data-display-drawn` or `data-busy`.
-Every one of those is a **negative** signal — no overlay, no display in its
-loading phase, no unpainted canvas — so all of them pass on a page whose
-JavaScript has not started yet. Measured against that instance:
+Nearly every signal a browser publishes is **negative** — no loading overlay, no
+display in its loading phase, no unpainted canvas — and an absence is equally
+true of a page whose JavaScript has not started. Measured against a released
+build with two remote tracks:
 
 - `networkidle2` resolves at ~350ms
 - the session appears at ~880ms
@@ -45,23 +41,30 @@ JavaScript has not started yet. Measured against that instance:
 A wait chain built from those signals alone finishes in under a second and
 reports success.
 
-So this package puts a **positive gate** in front of them, read off the live MST
-session model that jbrowse-web publishes as `window.JBrowseSession`: the session
-exists, its views are initialized, and the assembly and trackIds you asked for
-are the ones actually open. A config URL that 404s, a trackId the config does
-not define, and an assembly name that does not match all fail there, loudly.
+So this package waits on the two **positive** signals instead, and nothing else
+decides the answer:
 
-What runs after that gate depends on which build answered it:
+1. **The census.** `AppReadyMarker` publishes what is open as `data-app-views`,
+   `data-app-assemblies` and `data-app-tracks`, and the gate reads that one
+   element: at least one view, your assembly among them, every trackId you named
+   actually open. A config URL that 404s, a trackId the config does not define
+   and an assembly name that does not match the config all fail here, loudly,
+   and this is the only place they fail at all.
+2. **`[data-app-phase="ready"]`, held.** The session renders it when no view is
+   resolving an assembly and no display is fetching. It has to hold for a beat,
+   not merely be true once: a display drops to `ready` in the gap between one
+   fetch finishing and the debounced next one starting.
 
-- **One that publishes `data-app-phase`** — `jbrowse.org/code/jb2/main`, or a
-  local build of this repo, reached with `--instance` — needs one selector and
-  no chain: `[data-app-phase="ready"]` appears when no view is resolving an
-  assembly and no display is fetching, and `data-display-drawn` then says paint
-  happened.
-- **Every other build, the default included**, has the overlay and the status
-  text the session model carries per display. There the app has to be _seen
-  busy, then quiet for 2s_ — an absence alone is satisfied before the first
-  fetch is even set up — then given a fixed 1.5s for the paint nothing reports.
+Then one negative gate, which is meaningful only after those two and answers
+what they do not — the marker is about WORK, and a display whose fetch failed is
+not working, so it reads `ready` over an error banner. `data-display-drawn` is
+the stricter question, and the census of what is still unpainted goes in the
+error.
+
+**A build that publishes no `[data-app-phase]` is an error, not a slower path.**
+The fallback chain that used to run there was those negative signals plus a
+seen-busy-then-quiet heuristic to compensate for them, and it existed for builds
+older than the marker. Point `--instance` at a build that has it.
 
 ## Library
 
@@ -69,7 +72,7 @@ What runs after that gate depends on which build answered it:
 import { captureJBrowse, openJBrowse } from '@jbrowse/capture'
 
 // one call: launch, wait, shoot, close
-const { pending, paintContract } = await captureJBrowse({
+const { pending, unsettled } = await captureJBrowse({
   hub: 'hg38',
   loc: 'BRCA1',
   tracks: ['hg38-ncbiRefSeqCurated'],
@@ -94,9 +97,8 @@ Two waits, depending on what you did:
   that is loading starts out `loading` and the transition into `ready` is it
   finishing; a page you just clicked is already `ready` and stays that way until
   the click's work registers, so waiting for `ready` there returns on the
-  pre-click frame. `waitForAppSettled` requires it to hold, and on a build
-  without the marker falls back to the quiet period rather than passing
-  instantly.
+  pre-click frame. `waitForAppSettled` requires it to hold, and throws on a
+  build with no marker rather than falling back to a wait that cannot fail.
 
 ## Timeouts and unsettled waits
 
@@ -120,23 +122,16 @@ still tells you what did not settle.
 
 ## Reading the result
 
-Four fields on a successful capture:
+Two fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
-- **`appMarker`** — which of the two paths above ran. False on the default
-  instance, and on anything else that predates `data-app-phase`.
 - **`pending`** — displays still reporting unpainted when the shutter fired.
   Read after `settle`, not before it, so the frame it describes is the frame
   that was captured; a display that finished during the settle is not in it, and
   no longer fails the run either. Whatever is left lands in `unsettled` too,
   carrying each display's own phase — `loading` is a slow fetch, `error` a
   banner, `ready` a display claiming it finished without drawing.
-- **`paintContract`** — whether this JBrowse build publishes the per-display
-  paint attributes at all. It is false on the default instance, so `pending: []`
-  there means "cannot tell", not "all done", and the CLI says so. A page with no
-  tracks open reports true — there is nothing to measure, which is not the same
-  as being unable to.
 
 ## CLI
 

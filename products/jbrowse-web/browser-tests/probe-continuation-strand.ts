@@ -236,7 +236,7 @@ try {
     )
     console.log(`  webgl2 renderer:  ${evidence.webgl2Renderer}`)
     console.log(
-      `  ready: unsettled=[${ready.unsettled.join(',')}] pending=[${ready.pending.join(',')}] paintContract=${ready.paintContract}`,
+      `  ready: unsettled=[${ready.unsettled.join(',')}] pending=[${ready.pending.join(',')}]`,
     )
     for (const line of gpuConsole) {
       console.log(`  console ${line}`)

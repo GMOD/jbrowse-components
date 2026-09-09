@@ -45,110 +45,71 @@ const fakePage = () =>
     },
   }) as unknown as Page
 
+// The census and the phase, which is what every build the chain supports
+// publishes. `phase` is what a test varies.
+const app = (phase: string, body = '') => {
+  document.body.innerHTML = `
+    <span hidden data-app-phase="${phase}" data-app-views="1"
+          data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>
+    ${body}`
+}
+
 afterEach(() => {
   document.body.replaceChildren()
-  delete (globalThis as { JBrowseSession?: unknown }).JBrowseSession
 })
 
-// The census path: on a build whose marker publishes what is open, the whole
-// session gate is a read of one element — no walk of window.JBrowseSession,
-// which is not even present here.
-test('the marker census satisfies the session gate without a session walk', async () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="ready" data-app-views="1"
-          data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
+test('a ready app with nothing pending settles clean', async () => {
+  app('ready')
   const report = await waitForJBrowseReady(fakePage(), {
     assembly: 'hg38',
     trackIds: ['genes'],
-    // above the hold the marker path requires: `ready` has to still be ready a
-    // beat later, or the wait takes the frame between two debounced fetches
-    timeout: 2000,
+    timeout: 10000,
   })
-  expect(report.appMarker).toBe(true)
   expect(report.unsettled).toEqual([])
-}, 15000)
+  expect(report.pending).toEqual([])
+}, 20000)
 
-test('a census missing the requested track fails the gate with the diagnostic', async () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="ready" data-app-views="1"
-          data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
+// The gate is the only check that the data asked for is the data on screen, and
+// the only place a mistyped trackId fails at all — everything below it is
+// satisfied by a browser that loaded and drew nothing.
+test('a trackId that never opens fails the gate, not the paint wait', async () => {
+  app('ready')
   await expect(
-    waitForJBrowseReady(fakePage(), {
-      assembly: 'hg38',
-      trackIds: ['clinvar'],
-      timeout: 200,
-    }),
-  ).rejects.toThrow(/track\(s\) \[clinvar\].*tracks \[genes\]/s)
-}, 15000)
+    waitForJBrowseReady(fakePage(), { trackIds: ['typo'], timeout: 300 }),
+  ).rejects.toThrow('the session never reached the requested state')
+})
 
-// The regression this file exists for. With the session gate skipped, the
-// marker and instrumentation reads race the boot: an empty page has no marker,
-// no attributes and no session, and every stage in the fallback chain is an
-// absence an empty page satisfies. Reading "no session summary" as "no tracks
-// open" then skipped the quiet gate too, so the whole wait passed in
-// milliseconds over an app that had not started — the blank capture the
-// package exists to prevent, on the one path with no positive gate.
-test('expectSession: false on an empty page still runs the quiet gate', async () => {
-  const report = await waitForJBrowseReady(fakePage(), {
-    expectSession: false,
-    allowUnsettled: true,
-    timeout: 200,
-  })
-  expect(report.appMarker).toBe(false)
-  expect(report.unsettled.some(s => s.includes('never went quiet'))).toBe(true)
-}, 15000)
-
-// A session that reports no tracks open has nothing to load, and the gate
-// skipping there is what keeps an import form or a menu shot from paying the
-// busy window as a fixed sleep. Only a KNOWN-empty session earns that.
-test('a session known to have no tracks open skips the quiet gate', async () => {
-  ;(globalThis as { JBrowseSession?: unknown }).JBrowseSession = {
-    views: [{ tracks: [] }],
-  }
-  const report = await waitForJBrowseReady(fakePage(), {
-    expectSession: false,
-    allowUnsettled: true,
-    timeout: 200,
-  })
-  expect(report.unsettled).toEqual([])
-}, 15000)
+// The fallback chain that used to run here was every remaining signal, and
+// every one of them is an ABSENCE that an app which has not started also
+// satisfies — so it reported success on an empty browser. Saying so is the
+// answer; a wait that cannot fail is not.
+test('a build with no marker is an error rather than a fallback chain', async () => {
+  document.body.innerHTML = `<span hidden data-app-views="1"
+    data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
+  await expect(
+    waitForJBrowseReady(fakePage(), { timeout: 300 }),
+  ).rejects.toThrow('publishes no [data-app-phase]')
+})
 
 // The marker path when the app never reports ready: the stage lands in
 // unsettled under its own name, the census lands beside it naming the display
 // and its phase, and — with allowUnsettled — the caller gets the report rather
 // than a throw.
-test('a marker build that never goes ready reports the stage and the census', async () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="loading"></span>
-    <div data-testid="pileup" data-display-drawn="false"
-         data-display-phase="loading"></div>`
+test('an app that never goes ready reports the stage and the census', async () => {
+  app(
+    'loading',
+    `<div data-testid="pileup" data-display-drawn="false"
+          data-display-phase="loading"></div>`,
+  )
   const report = await waitForJBrowseReady(fakePage(), {
-    expectSession: false,
     allowUnsettled: true,
     timeout: 200,
   })
-  expect(report.appMarker).toBe(true)
   expect(report.unsettled).toEqual([
     'the app never held itself ready',
     'display(s) never painted: pileup is loading',
   ])
   expect(report.pending).toEqual(['pileup'])
-}, 15000)
-
-// waitForDownloads: false asks for none of the busy-report waiting, and the
-// download half and the label half are one predicate now, so neither runs.
-test('waitForDownloads: false leaves a lingering status message unsettled-free', async () => {
-  ;(globalThis as { JBrowseSession?: unknown }).JBrowseSession = {
-    views: [{ tracks: [{ displays: [{ message: 'Downloading features' }] }] }],
-  }
-  document.body.innerHTML = '<div data-display-phase="ready"></div>'
-  const report = await waitForJBrowseReady(fakePage(), {
-    expectSession: false,
-    waitForDownloads: false,
-    allowUnsettled: true,
-    timeout: 200,
-  })
-  expect(report.unsettled).toEqual([])
 }, 15000)
 
 // A display in a terminal phase is not coming back, and the two comparative
@@ -165,7 +126,7 @@ test('a pending display that has errored ends the paint wait at once', async () 
 
 test.each([
   ['still loading', 'data-display-phase="loading"'],
-  ['publishing no phase at all, on a build older than the attribute', ''],
+  ['publishing no phase at all', ''],
 ])('a pending display %s keeps the paint wait going', async (_name, attr) => {
   document.body.innerHTML = `
     <div data-testid="pileup" data-display-drawn="false" ${attr}></div>`
@@ -173,14 +134,17 @@ test.each([
 })
 
 // ...and the census the early return is traded for: the chain still fails, with
-// the phase that says a longer timeout is not the fix.
+// the phase that says a longer timeout is not the fix. The marker reads `ready`
+// over an error banner, which is a correct answer to a different question than
+// a capture is asking.
 test('an errored display is named unsettled instead of burning the timeout', async () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="ready"></span>
-    <div data-testid="pileup" data-display-drawn="false"
-         data-display-phase="error"></div>`
+  app(
+    'ready',
+    `<div data-testid="pileup" data-display-drawn="false"
+          data-display-phase="error"></div>`,
+  )
   await expect(
-    waitForJBrowseReady(fakePage(), { expectSession: false, timeout: 30000 }),
+    waitForJBrowseReady(fakePage(), { timeout: 30000 }),
   ).rejects.toThrow(/display\(s\) never painted: pileup is error/)
 }, 15000)
 
@@ -189,18 +153,18 @@ test('an errored display is named unsettled instead of burning the timeout', asy
 // BEFORE it: a display that painted during the settle was absent from `pending`
 // and still failed the run, so the report and the throw disagreed.
 test('a display that paints during settleMs is not reported as never painted', async () => {
-  document.body.innerHTML = `
-    <span hidden data-app-phase="ready"></span>
-    <div data-testid="pileup" data-display-drawn="false"
-         data-display-phase="ready"></div>`
+  app(
+    'ready',
+    `<div data-testid="pileup" data-display-drawn="false"
+          data-display-phase="ready"></div>`,
+  )
   // after waitForAppSettled's 1s hold, so the flip lands inside the settle
   setTimeout(() => {
-    document
-      .querySelector('[data-testid="pileup"]')!
-      .setAttribute('data-display-drawn', 'true')
+    document.querySelector<HTMLElement>(
+      '[data-testid="pileup"]',
+    )!.dataset.displayDrawn = 'true'
   }, 2000)
   const report = await waitForJBrowseReady(fakePage(), {
-    expectSession: false,
     settleMs: 3000,
     timeout: 10000,
   })
