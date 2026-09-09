@@ -29,7 +29,6 @@ import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   SCALE_TYPE_LINEAR,
   axisPlotBox,
-  computeYTicks,
   makeCrossHatchItem,
   makeScoreNormalizer,
   makeScoreSubMenu,
@@ -68,7 +67,7 @@ import type { Region } from '@jbrowse/core/util/types/data'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
 // The Manhattan walker: the worker ships each region's score extremes already
 // reduced, so the domain is their min/max rather than a scan of the scores.
@@ -351,17 +350,18 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * y-axis tick positions. Manhattan plots are linear-only (pre-transformed
-         * -log10 p values); the inherited scaleType config is intentionally
-         * ignored so the axis ticks stay consistent with the linear `domain`.
+         * The y scale the chrome draws the axis from. Manhattan plots are
+         * linear-only (pre-transformed -log10 p values); the inherited
+         * scaleType config is intentionally ignored so the axis stays
+         * consistent with the linear `domain`.
          */
-        get ticks() {
-          return computeYTicks({
-            height: self.height,
+        get valueScale(): ValueScale {
+          return {
             domain: self.domain,
             scaleType: 'linear',
+            height: self.height,
             minimalTicks: getConf(self, 'minimalTicks'),
-          })
+          }
         },
         /**
          * #getter

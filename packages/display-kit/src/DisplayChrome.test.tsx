@@ -755,3 +755,51 @@ describe('the chrome element publishes the display identity', () => {
     expect(done.dataset.displayId).toBe('test-display')
   })
 })
+
+// The chrome draws the axis of a display declaring a `valueScale` off the
+// ticks its mixin derived, so no display places its own; a host whose scale
+// is unset gets none, however its `ticks` read.
+describe('the y axis', () => {
+  const ticks = {
+    items: [
+      { value: 0, y: 95 },
+      { value: 10, y: 5 },
+    ],
+    yTop: 5,
+    yBottom: 95,
+  }
+  const AxisModel = TestChromeModel.props({
+    hasScale: true,
+    showCrossHatches: false,
+  }).views(self => ({
+    get valueScale() {
+      return self.hasScale ? { domain: [0, 10] } : undefined
+    },
+    get ticks() {
+      return ticks
+    },
+    get canvasWidthPx() {
+      return 400
+    },
+  }))
+
+  test('a declared scale places the axis and, when shown, the hatches', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ showCrossHatches: true }),
+    )
+    await findByTestId('probe-canvas')
+    const labels = [...container.querySelectorAll('text')].map(
+      t => t.textContent,
+    )
+    expect(labels).toEqual(['0', '10'])
+    expect(container.querySelectorAll('svg')).toHaveLength(2)
+  })
+
+  test('an unset scale draws no axis', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ hasScale: false, showCrossHatches: true }),
+    )
+    await findByTestId('probe-canvas')
+    expect(container.querySelectorAll('svg')).toHaveLength(0)
+  })
+})

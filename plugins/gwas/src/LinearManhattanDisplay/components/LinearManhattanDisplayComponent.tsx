@@ -9,12 +9,7 @@ import {
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import {
-  CrossHatches,
-  ScoreRules,
-  YScaleBarOverlay,
-  axisPlotBox,
-} from '@jbrowse/wiggle-core'
+import { axisPlotBox } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { findManhattanHit } from '../findManhattanHit.ts'
@@ -118,7 +113,7 @@ const ManhattanBody = observer(function ManhattanBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const { ticks, hoveredFeature, showCrossHatches, scoreRuleMarks } = model
+  const { hoveredFeature } = model
   const plotBox = axisPlotBox(height)
 
   return (
@@ -127,24 +122,14 @@ const ManhattanBody = observer(function ManhattanBody({
         ref={canvasRef}
         style={{
           width,
-          // the box `ticks` places itself in, so a tick lands on its data —
-          // both ends off the one helper, as the wiggle body does, rather than
-          // the height from it and the top from the raw constant
+          // the box the chrome's axis places its ticks in, so a tick lands on
+          // its data
           height: plotBox.plotHeight,
           position: 'absolute',
           left: 0,
           top: plotBox.yTop,
         }}
       />
-      {ticks ? (
-        <YScaleBarOverlay ticks={ticks} height={height} width={width} />
-      ) : null}
-      {showCrossHatches && ticks ? (
-        <CrossHatches ticks={ticks} width={width} height={height} />
-      ) : null}
-      {scoreRuleMarks.length > 0 ? (
-        <ScoreRules marks={scoreRuleMarks} width={width} height={height} />
-      ) : null}
       {hoveredFeature ? (
         <HoverHighlight
           screenX={hoveredFeature.screenX}

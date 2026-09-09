@@ -9,11 +9,7 @@ import {
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import {
-  CrossHatches,
-  YScaleBarOverlay,
-  axisPlotBox,
-} from '@jbrowse/wiggle-core'
+import { axisPlotBox } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'
@@ -103,7 +99,6 @@ const MarkBody = observer(function MarkBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const { ticks, showCrossHatches } = model
   const plotBox = axisPlotBox(height)
   return (
     <>
@@ -117,12 +112,6 @@ const MarkBody = observer(function MarkBody({
           top: plotBox.yTop,
         }}
       />
-      {ticks ? (
-        <YScaleBarOverlay ticks={ticks} height={height} width={width} />
-      ) : null}
-      {showCrossHatches && ticks ? (
-        <CrossHatches ticks={ticks} width={width} height={height} />
-      ) : null}
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => <MarkTooltip model={model} mouseState={mouseState} />}
       </PointerLayer>

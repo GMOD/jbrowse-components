@@ -1,7 +1,7 @@
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
-import type { YScaleTicks } from './yScaleTicks.ts'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
+import type { YScaleTicks } from '@jbrowse/display-ui'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 

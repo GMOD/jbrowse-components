@@ -1,6 +1,6 @@
 ---
 name: mark-grammar-v5
-description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list, every key on the scales) the two packers on the encoder, the guides config-first) and the two threads still open, each with its first move — the y axis on the chrome, and the browser checks nobody has run. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
+description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list, every key on the scales, the two packers on the encoder, the guides config-first, the y axis derived from a declared value scale) and the one thread still open — the browser checks nobody has run. Read before touching render-core marks, LegendMixin, ScoreScaleMixin, plugins/marks or the alignments pileup passes.
 ---
 
 # Mark grammar for v5
@@ -51,16 +51,15 @@ adopted (ADR-106 §"The ladder").
 4. **The guides, config first — landed 2026-09-09** (same commits). Both
    developer guides open on the `marks` entry and link the config page as
    rung one; the config page links back up the ladder. Not done: a figure of the ladder.
-5. **The y axis on the chrome**, the legend's pattern again: four displays
-   place `YScaleBarOverlay` by hand on screen and in SVG (gwas, both wiggles,
-   the alignments coverage band; `LinearMarkDisplay` copied Manhattan's). A
-   `yAxis` hook on `ScoreScaleMixin` or `WiggleScoreConfigMixin`, placed by
-   `DisplayChrome` and `renderDisplaySvg`, removes eight placement sites, and
-   the multi-wiggle's `ScoreDomainCaption` (the `[min, max]` an axis-less
-   row shows) is the ninth — it is what the axis becomes when there is no
-   room for one, and it is why that display answers `legendTop`. Tooltips are
-   the same shape in principle but hover content varies far more (feature rows,
-   coverage tables, LD values); not sized.
+5. **The y axis on the chrome — landed 2026-09-09** (ADR-109). `valueScale`
+   on `ScoreScaleMixin`, `ticks` derived, `ChromeYAxis` / `SvgYAxis` placed by
+   the two shells, the axis primitives in `display-ui`. The single wiggle,
+   Manhattan and the mark display are on it; the multi-wiggle keeps its
+   per-row `ticks` with the scale unset. Not done: the alignments coverage
+   band and its insert-size axis (a band inside a taller display, its own
+   gutter and orientation — a `box` member on the declaration is the first
+   move), and the multi-wiggle's `ScoreDomainCaption`. Tooltips stay unsized.
+   Thread 6's browser list grows by the three migrated displays' axes.
 6. **Two checks nobody has run in a browser.** The `bar` shader has MockHal
    uniform tests and jsdom Canvas2D paints only — no GPU capture, and the
    cross-backend gate (`browser-tests/compare-backends.ts`) was not run for it

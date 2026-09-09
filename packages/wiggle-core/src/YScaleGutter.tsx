@@ -1,7 +1,7 @@
-import YScaleBar from './YScaleBar.tsx'
-import { AXIS_GUTTER_WIDTH_PX, leftAxisSpineX } from './yScaleTicks.ts'
+import { YScaleBar } from '@jbrowse/display-ui'
+import { AXIS_GUTTER_WIDTH_PX, leftAxisSpineX } from '@jbrowse/display-ui'
 
-import type { YScaleTicks } from './yScaleTicks.ts'
+import type { YScaleTicks } from '@jbrowse/display-ui'
 
 /**
  * A left-oriented Y-axis in the shared gutter, at a band's top-left corner on

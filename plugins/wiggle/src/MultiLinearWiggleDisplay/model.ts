@@ -39,7 +39,7 @@ import {
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
+import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -301,6 +301,24 @@ export default function stateModelFactory(
     }))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
+      /**
+       * #getter
+       * One row's axis, laid out in the row's own box; the on-screen and the
+       * exported scales stack it once per row. Its own rather than the
+       * `valueScale`-derived one: the chrome draws a single axis, and this
+       * display has `numRows` of them.
+       */
+      get ticks() {
+        const { tickHeight, yTop } = self.plotGeometry
+        return computeYTicks({
+          symlogConstant: self.symlogConstant,
+          height: tickHeight,
+          domain: self.domain,
+          scaleType: self.scaleType,
+          minimalTicks: self.minimalTicks,
+          offset: yTop,
+        })
+      },
       /**
        * #method
        * summaryScoreMode rides along so an adapter can skip work it cannot be

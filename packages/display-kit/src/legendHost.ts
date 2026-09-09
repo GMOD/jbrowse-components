@@ -8,6 +8,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * importing it.
  */
 export interface LegendHost extends IStateTreeNode {
+  id: string
   showLegend: boolean
   legendSpec: LegendSpec
   setShowLegend(arg: boolean): void

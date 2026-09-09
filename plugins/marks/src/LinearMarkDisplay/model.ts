@@ -35,7 +35,6 @@ import {
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   axisPlotBox,
-  computeYTicks,
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
@@ -74,7 +73,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type { VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
   MarkRegionData,
@@ -297,16 +296,16 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * y-axis ticks; the shapes place values linearly, so the inherited
-       * `scaleType` slot is not consulted
+       * The y scale the chrome draws the axis from; the shapes place values
+       * linearly, so the inherited `scaleType` slot is not consulted
        */
-      get ticks() {
-        return computeYTicks({
-          height: self.height,
+      get valueScale(): ValueScale {
+        return {
           domain: self.domain,
           scaleType: 'linear',
+          height: self.height,
           minimalTicks: getConf(self, 'minimalTicks'),
-        })
+        }
       },
       /**
        * #method

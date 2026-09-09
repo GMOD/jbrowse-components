@@ -1,14 +1,18 @@
 /* eslint-disable react-refresh/only-export-components -- the shell and the key it appends are one module */
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getContainingView } from '@jbrowse/core/util'
+import { CrossHatchLines, ScoreRuleLines, YScaleBar } from '@jbrowse/display-ui'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
+import { axisTicks, isAxisHost } from './axisHost.ts'
 import { isLegendHost } from './legendHost.ts'
 import { svgLegendAreaReserved } from './types.ts'
 
+import type { AxisHost } from './axisHost.ts'
 import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions } from './types.ts'
@@ -98,9 +102,46 @@ export function SvgLegend({
       x={gutter ? width + GUTTER_INSET : undefined}
       maxHeight={height - top}
       testid="color-legend"
+      idPrefix={`legend-${svgNodeId(model)}`}
     />
   )
   return top > 0 ? <g transform={`translate(0 ${top})`}>{key}</g> : key
+}
+
+/**
+ * The exported y axis of a display composing `ScoreScaleMixin` with a
+ * `valueScale`, drawn by the shell off the same ticks the chrome draws on
+ * screen: the cross-hatch guide lines across the plot when the display shows
+ * them, the reader's rules over those, and the axis left-oriented at the
+ * content's left edge so the labels grow into the export margin rather than
+ * over the plot. Tick y-positions already carry the plot box's inset, so all
+ * three sit in the un-translated space.
+ */
+export function SvgYAxis({
+  model,
+  view,
+  width,
+}: {
+  model: AxisHost
+  view: { offsetPx: number }
+  width: number
+}) {
+  const ticks = axisTicks(model)
+  if (!ticks) {
+    return null
+  }
+  const rules = model.scoreRuleMarks ?? []
+  return (
+    <>
+      {model.showCrossHatches ? (
+        <CrossHatchLines ticks={ticks} width={width} />
+      ) : null}
+      {rules.length > 0 ? <ScoreRuleLines marks={rules} width={width} /> : null}
+      <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
+        <YScaleBar ticks={ticks} orientation="left" />
+      </g>
+    </>
+  )
 }
 
 /**
@@ -158,6 +199,9 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
           height={height}
           opts={opts}
         />
+      ) : null}
+      {isAxisHost(model) ? (
+        <SvgYAxis model={model} view={view} width={view.width} />
       ) : null}
     </SvgChrome>
   )

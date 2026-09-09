@@ -1,4 +1,6 @@
-import { clampStrokeInsideAxis, scoreToAxisY } from './yScaleTicks.ts'
+import { clampStrokeInsideAxis, scoreToAxisY } from '@jbrowse/display-ui'
+
+import type { ScoreRuleMark } from '@jbrowse/display-ui'
 
 /**
  * #api
@@ -17,9 +19,7 @@ export interface ScoreRule {
   color?: string
 }
 
-export interface ScoreRuleMark extends ScoreRule {
-  y: number
-}
+export type { ScoreRuleMark } from '@jbrowse/display-ui'
 
 /**
  * #api

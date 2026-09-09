@@ -1,3 +1,9 @@
+import {
+  axisPlotBox,
+  clampStrokeInsideAxis,
+  scoreToAxisY,
+} from '@jbrowse/display-ui'
+
 import { computeYTicks } from './computeYTicks.ts'
 import {
   makeScoreNormalizer,
@@ -5,11 +11,6 @@ import {
   scaleTypeFromString,
 } from './normalize.ts'
 import { getNiceDomain } from './scale.ts'
-import {
-  axisPlotBox,
-  clampStrokeInsideAxis,
-  scoreToAxisY,
-} from './yScaleTicks.ts'
 
 // The invariant `YScaleTicks` documents, over the pair that broke it: the axis
 // (`computeYTicks`, d3 through `getScale`) and the renderer (`axisPlotBox` +

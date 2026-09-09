@@ -96,3 +96,44 @@ test('fails the export on the error terminal instead of drawing it', async () =>
 
   expect(seen).toHaveLength(0)
 })
+
+// The shell draws the axis of a display declaring a `valueScale` off the
+// ticks its mixin derived — the y-axis counterpart of the legend — and nothing
+// for a host whose scale is unset, which is how a display with several axes
+// (the multi-wiggle's rows) keeps its own.
+describe('the y axis', () => {
+  const ticks = {
+    items: [
+      { value: 0, y: 95 },
+      { value: 10, y: 5 },
+    ],
+    yTop: 5,
+    yBottom: 95,
+  }
+  function axisHost(valueScale: unknown, showCrossHatches = false) {
+    return Object.create(makeDisplay({}), {
+      valueScale: { value: valueScale },
+      ticks: { value: ticks },
+      canvasWidthPx: { value: 806 },
+      showCrossHatches: { value: showCrossHatches },
+    }) as TestDisplayModel
+  }
+
+  test('a declared scale places the axis at the content edge, with hatches when shown', async () => {
+    const { container } = await renderShell(
+      axisHost({ domain: [0, 10] }, true),
+      [],
+    )
+    const labels = [...container.querySelectorAll('text')].map(
+      t => t.textContent,
+    )
+    expect(labels).toEqual(['0', '10'])
+    expect(container.querySelectorAll('line').length).toBeGreaterThanOrEqual(4)
+  })
+
+  test('an unset scale draws no axis even where ticks exist', async () => {
+    const { container } = await renderShell(axisHost(undefined, true), [])
+    expect(container.querySelectorAll('text')).toHaveLength(0)
+    expect(container.querySelectorAll('line')).toHaveLength(0)
+  })
+})

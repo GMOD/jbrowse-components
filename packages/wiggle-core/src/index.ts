@@ -24,7 +24,25 @@ export {
 } from './autoscale.ts'
 export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
 
-export { ONSCREEN_AXIS_LEFT_PX, YSCALEBAR_LABEL_OFFSET } from './constants.ts'
+// The y-axis primitives live in `@jbrowse/display-ui`, where the chrome
+// places them for any display declaring a `valueScale`; re-exported here so
+// their published names hold.
+export {
+  AXIS_GUTTER_WIDTH_PX,
+  CrossHatchLines,
+  CrossHatches,
+  ONSCREEN_AXIS_LEFT_PX,
+  YSCALEBAR_LABEL_OFFSET,
+  ScoreRuleLines,
+  ScoreRules,
+  YScaleBar,
+  YScaleBarOverlay,
+  axisPlotBox,
+  clampStrokeInsideAxis,
+  leftAxisSpineX,
+  scoreToAxisY,
+} from '@jbrowse/display-ui'
+export type { YScaleTicks } from '@jbrowse/display-ui'
 
 export { computeYTicks } from './computeYTicks.ts'
 
@@ -37,17 +55,6 @@ export type {
   VisibleStatsDomainSpec,
 } from './visibleStatsDomain.ts'
 
-export {
-  AXIS_GUTTER_WIDTH_PX,
-  axisPlotBox,
-  clampStrokeInsideAxis,
-  leftAxisSpineX,
-  scoreToAxisY,
-} from './yScaleTicks.ts'
-export type { YScaleTicks } from './yScaleTicks.ts'
-
-export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
-export { ScoreRuleLines, default as ScoreRules } from './ScoreRules.tsx'
 export {
   parseScoreRules,
   scoreRuleMarks,
@@ -72,9 +79,8 @@ export {
 } from './scoreMenuItems.ts'
 export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-export { default as YScaleBar } from './YScaleBar.tsx'
+export type { ValueScale } from './ScoreScaleMixin.ts'
 export { SvgYScaleGutter, default as YScaleGutter } from './YScaleGutter.tsx'
-export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export {
   MIN_FILL_WIDTH_PX,

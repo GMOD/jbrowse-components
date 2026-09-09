@@ -1,3 +1,5 @@
+import { axisPlotBox } from '@jbrowse/display-ui'
+
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_SYMLOG,
@@ -9,7 +11,6 @@ import {
   scoreRuleMarks,
   widenRangeToRules,
 } from './scoreRuleMarks.ts'
-import { axisPlotBox } from './yScaleTicks.ts'
 
 const linear = (min: number, max: number) =>
   makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR)

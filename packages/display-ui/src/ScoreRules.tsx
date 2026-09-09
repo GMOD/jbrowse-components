@@ -1,6 +1,15 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
-import type { ScoreRuleMark } from './scoreRuleMarks.ts'
+/**
+ * One horizontal rule across a score plot at a chosen value, placed in the
+ * plot's own pixel space; `label` is free text the reader chose.
+ */
+export interface ScoreRuleMark {
+  value: number
+  y: number
+  label?: string
+  color?: string
+}
 
 const DEFAULT_RULE_COLOR = 'rgb(120,120,120)'
 

@@ -1,4 +1,4 @@
-import { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
+import { YSCALEBAR_LABEL_OFFSET } from './yAxisConstants.ts'
 
 // Tick positions for a y-axis, in the same screen space the renderer paints in.
 //

@@ -1,7 +1,27 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { computeYTicks } from './computeYTicks.ts'
+
 import type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
+import type { YScaleTicks } from '@jbrowse/display-ui'
+
+/**
+ * #api
+ * The value scale a display places its y through, declared so the chrome can
+ * derive the axis from it — the score axis's counterpart to `colorScales`.
+ * `domain` is the resolved `[min, max]`, `height` and `offset` the pixel box
+ * it maps onto (`axisPlotBox(height, offset)`), and the rest is how the ticks
+ * are chosen.
+ */
+export interface ValueScale {
+  domain: [number, number] | undefined
+  scaleType: string
+  height: number
+  offset?: number
+  minimalTicks?: boolean
+  symlogConstant?: number
+}
 
 /**
  * The whole of what `ScoreScaleMixin` needs a composing display to be. Exported
@@ -149,6 +169,37 @@ export function ScoreScaleMixin() {
         return (
           this.manualMinScore !== undefined || this.manualMaxScore !== undefined
         )
+      },
+      /**
+       * #getter
+       * Overridable hook (default none): the scale this display draws its y
+       * through. A display that answers it gets its axis and its cross-hatches
+       * placed by `DisplayChrome` and `renderDisplaySvg`, and `ticks` derived
+       * below; one with several axes (the multi-wiggle's rows) leaves it unset
+       * and lays its own out.
+       */
+      get valueScale(): ValueScale | undefined {
+        return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The axis, derived from `valueScale`: where each tick lands in the
+       * plot's own pixel space.
+       */
+      get ticks(): YScaleTicks | undefined {
+        const scale = self.valueScale
+        return scale
+          ? computeYTicks({
+              height: scale.height,
+              offset: scale.offset,
+              domain: scale.domain,
+              scaleType: scale.scaleType,
+              minimalTicks: scale.minimalTicks ?? false,
+              symlogConstant: scale.symlogConstant,
+            })
+          : undefined
       },
     }))
     .actions(self => ({

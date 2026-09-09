@@ -1,5 +1,3 @@
-import { computeYTicks } from '@jbrowse/wiggle-core'
-
 import { densityRampLut } from './densityColorRamp.ts'
 import { scoreRampScale } from './scoreRampScale.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
@@ -68,21 +66,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
  */
 export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
   return {
-    /**
-     * #getter
-     */
-    get ticks() {
-      const { tickHeight, yTop } = self.plotGeometry
-      return computeYTicks({
-        symlogConstant: self.symlogConstant,
-        height: tickHeight,
-        domain: self.domain,
-        scaleType: self.scaleType,
-        minimalTicks: self.minimalTicks,
-        offset: yTop,
-      })
-    },
-
     /**
      * #getter
      * The density ramp as a color scale, or undefined when there is no single

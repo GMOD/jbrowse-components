@@ -3,11 +3,6 @@ import { useCallback } from 'react'
 import { Crosshairs } from '@jbrowse/core/ui'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
-import {
-  CrossHatches,
-  ScoreRules,
-  YScaleBarOverlay,
-} from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -93,27 +88,14 @@ const WiggleBody = observer(function WiggleBody({
         ref={canvasRef}
         style={{
           width,
-          // the box `model.ticks` places itself in, so a tick lands on its data
+          // the box the chrome's axis places its ticks in, so a tick lands on
+          // its data
           height: plotHeight,
           position: 'absolute',
           left: 0,
           top: yTop,
         }}
       />
-      {/* density spends color on the score, and its key is the chrome's ramp */}
-      {model.isDensityMode ? null : model.ticks ? (
-        <YScaleBarOverlay ticks={model.ticks} height={height} width={width} />
-      ) : null}
-      {model.showCrossHatches && model.ticks ? (
-        <CrossHatches ticks={model.ticks} width={width} height={height} />
-      ) : null}
-      {model.scoreRuleMarks.length > 0 ? (
-        <ScoreRules
-          marks={model.scoreRuleMarks}
-          width={width}
-          height={height}
-        />
-      ) : null}
       {/* no mouseY, so no horizontal guide: y here is the score axis, which
           CrossHatches above already rules, and a second line at the cursor would
           read as another threshold */}

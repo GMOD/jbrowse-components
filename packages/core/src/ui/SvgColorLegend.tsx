@@ -147,19 +147,25 @@ export default function SvgColorLegend({
   maxHeight,
   onDismiss,
   testid,
+  idPrefix,
 }: {
   entries: ColorLegendEntry[]
   canvasWidth: number
   x?: number
   maxHeight?: number
   onDismiss?: () => void
+  // What a gradient's `<linearGradient id>` is minted from. An export passes
+  // the display's `svgNodeId`, so two exports of one unchanged view are the
+  // same bytes; on screen the React id is unique and enough.
+  idPrefix?: string
   // opt-in marker for tests/screenshot specs: the legend renders only once
   // color entries exist (i.e. real data has loaded and been binned), so it is a
   // data-gated ready signal — unlike canvasDrawn, which can flip on an
   // empty first paint
   testid?: string
 }) {
-  const legendId = useId()
+  const reactId = useId()
+  const legendId = idPrefix ?? reactId
   const shown =
     maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
   const overflowLabel =

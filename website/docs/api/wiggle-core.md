@@ -254,6 +254,16 @@ differently, and the alignments coverage band does.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
+## ValueScale
+
+The value scale a display places its y through, declared so the chrome can
+derive the axis from it — the score axis's counterpart to `colorScales`.
+`domain` is the resolved `[min, max]`, `height` and `offset` the pixel box
+it maps onto (`axisPlotBox(height, offset)`), and the rest is how the ticks
+are chosen.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts)
+
 ## visibleStatsDomain
 
 The visible score domain four displays derive identically: walk the settled

@@ -1,8 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { WiggleFamilySvgFrame, svgScalebarLeftPx } from '@jbrowse/plugin-wiggle'
+import { WiggleFamilySvgFrame } from '@jbrowse/plugin-wiggle'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -20,7 +19,7 @@ export async function renderSvg(
 }
 
 function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view } = props
+  const { model } = props
   return (
     <WiggleFamilySvgFrame
       {...props}
@@ -32,15 +31,6 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           canvasHeight: drawHeight,
         })
       }}
-      legend={
-        <>
-          {model.ticks ? (
-            <g transform={`translate(${svgScalebarLeftPx(view)})`}>
-              <YScaleBar ticks={model.ticks} orientation="left" />
-            </g>
-          ) : null}
-        </>
-      }
     />
   )
 }

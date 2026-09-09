@@ -10,7 +10,9 @@ import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
 import ChromeLegend from './ChromeLegend.tsx'
+import ChromeYAxis from './ChromeYAxis.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
+import { isAxisHost } from './axisHost.ts'
 import { isLegendHost } from './legendHost.ts'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
@@ -275,6 +277,7 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
       {/* The key of a display composing `LegendMixin`, detected structurally
           so a display gets it by composing the mixin and nothing else. Outside
           the canvas key: a backend re-init has nothing to say to it. */}
+      {isAxisHost(model) ? <ChromeYAxis model={model} /> : null}
       {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </DisplayStatusChromeBase>
   )

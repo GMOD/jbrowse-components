@@ -1,12 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { ScoreRuleLines, YScaleBar } from '@jbrowse/wiggle-core'
 
-import {
-  WiggleFamilySvgFrame,
-  svgScalebarLeftPx,
-} from '../shared/WiggleFamilySvg.tsx'
+import { WiggleFamilySvgFrame } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 
@@ -24,7 +20,7 @@ export async function renderSvg(
 }
 
 function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
-  const { model, view, canvasWidth } = props
+  const { model } = props
   return (
     <WiggleFamilySvgFrame
       {...props}
@@ -41,19 +37,6 @@ function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
           canvasHeight: drawHeight,
         })
       }}
-      overlay={
-        model.scoreRuleMarks.length > 0 ? (
-          <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
-        ) : null
-      }
-      // the left y-axis; density has none, and its ramp is the chrome's key
-      legend={
-        model.isDensityMode ? null : (
-          <g transform={`translate(${svgScalebarLeftPx(view)})`}>
-            <YScaleBar ticks={model.ticks} orientation="left" />
-          </g>
-        )
-      }
     />
   )
 }

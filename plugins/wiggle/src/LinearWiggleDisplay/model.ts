@@ -50,7 +50,7 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
+import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -170,6 +170,28 @@ export default function stateModelFactory(
       get plotGeometry() {
         const { yTop, plotHeight } = axisPlotBox(self.height)
         return { yTop, plotHeight, numRows: 1, tickHeight: self.height }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The y scale the chrome draws the axis and cross-hatches from, in the
+       * plot box above. None under density, which spends colour on the score
+       * and has the chrome's ramp as its key instead.
+       */
+      get valueScale(): ValueScale | undefined {
+        if (self.isDensityMode) {
+          return undefined
+        }
+        const { tickHeight, yTop } = self.plotGeometry
+        return {
+          domain: self.domain,
+          scaleType: self.scaleType,
+          height: tickHeight,
+          offset: yTop,
+          minimalTicks: self.minimalTicks,
+          symlogConstant: self.symlogConstant,
+        }
       },
 
       /**

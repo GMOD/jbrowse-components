@@ -1,8 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { WiggleFamilySvgFrame, svgScalebarLeftPx } from '@jbrowse/plugin-wiggle'
+import { WiggleFamilySvgFrame } from '@jbrowse/plugin-wiggle'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { ScoreRuleLines, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
@@ -29,7 +28,7 @@ export async function renderSvg(
 }
 
 function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, canvasWidth } = props
+  const { model } = props
   return (
     <WiggleFamilySvgFrame
       {...props}
@@ -41,23 +40,6 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           canvasHeight: drawHeight,
         })
       }}
-      // Over the plot rather than inside `paint`: the threshold is an
-      // annotation on the axis, so it comes off the model's own
-      // scoreRuleMarks, the same marks the screen overlay draws.
-      overlay={
-        model.scoreRuleMarks.length > 0 ? (
-          <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
-        ) : null
-      }
-      // left y-axis (Manhattan is always linear, never density); the color
-      // key is the chrome's, off `colorScales`
-      legend={
-        model.ticks ? (
-          <g transform={`translate(${svgScalebarLeftPx(view)})`}>
-            <YScaleBar ticks={model.ticks} orientation="left" />
-          </g>
-        ) : null
-      }
     />
   )
 }

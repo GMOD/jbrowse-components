@@ -2,24 +2,22 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { CrossHatchLines, axisPlotBox } from '@jbrowse/wiggle-core'
+import { axisPlotBox } from '@jbrowse/wiggle-core'
 
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
 // The display fields the shared SVG scaffold reads. LinearWiggleDisplay,
 // MultiLinearWiggleDisplay and LinearManhattanDisplay all satisfy this
 // (`error`/`regionTooLarge`/`svgReady` come from SvgExportable); each supplies
-// its own paint + legend.
+// its own paint. The axis and the cross-hatches are the shell's
+// (`renderDisplaySvg`), off the display's `valueScale`.
 export interface WiggleFamilySvgModel extends SvgExportable {
   id: string
   height: number
-  ticks?: YScaleTicks
-  showCrossHatches: boolean
 }
 
 // Canvas geometry handed to the paint callback. The caller builds its own
@@ -59,9 +57,8 @@ export function svgLegendRightPx(
 // Shared SVG-export body for every wiggle-family display, mounted by each
 // display's own body through `renderDisplaySvg`. Owns the parts that must stay
 // pixel-aligned with the on-screen canvas — the clip rect + plot-box translate,
-// the PaintLayer sizing, and the cross-hatch overlay. The caller supplies only
-// its paint (draws the data onto a 2D context) and an optional legend/axis
-// element.
+// the PaintLayer sizing. The caller supplies only its paint (draws the data
+// onto a 2D context) and an optional legend element.
 //
 // `plotGeometry` is where the plot sits inside the display's own height, and is
 // the whole of what the two wiggle displays disagree about: single-wiggle insets
@@ -86,13 +83,12 @@ export function WiggleFamilySvgFrame({
   paint: (ctx: Ctx2D, layout: WiggleFamilySvgLayout) => void
   legend?: React.ReactNode
   overlay?: React.ReactNode
-  // The hatch overlay, for a display that rules more than one axis: multi-wiggle
+  // The hatch overlay of a display that rules more than one axis: multi-wiggle
   // repeats them per row, and passes its row separators through the same
-  // element. Unset draws the single-plot set below.
+  // element. A single-axis display leaves it unset and the shell rules them.
   crossHatches?: React.ReactNode
 }) {
   const { yTop, plotHeight } = plotGeometry
-  const { ticks, showCrossHatches } = model
   return (
     <>
       <SvgClipRect
@@ -111,13 +107,7 @@ export function WiggleFamilySvgFrame({
           />
         </g>
       </SvgClipRect>
-      {/* Y-scale cross-hatches, shared with the on-screen path so an exported
-          SVG matches the track when the option is enabled. Tick y-positions
-          already carry the plot box's own inset, aligning with the canvas group. */}
-      {crossHatches ??
-        (showCrossHatches && ticks ? (
-          <CrossHatchLines ticks={ticks} width={canvasWidth} />
-        ) : null)}
+      {crossHatches}
       {/* Annotations drawn on the plot rather than in it, in the same
           un-translated space the cross-hatches use: a y computed from
           `axisPlotBox` already carries the label-gutter inset. */}
