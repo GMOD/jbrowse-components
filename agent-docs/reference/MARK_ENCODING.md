@@ -122,6 +122,33 @@ Three packers moved onto it on 2026-09-09:
   alone and passes no jexl instance — every channel it hands the encoder is
   a reader — and the `wiggle` row of the table below is that call.
 
+## Prior art, read against the encoder on 2026-09-09
+
+GenomeSpy (`~/src/vendor/genomespy`, a Vega-Lite dialect over WebGL for
+genomics; `SESSION_SPEC_FORMAT.md` §"What the grammars do" has the census)
+answers the same questions differently, and three of its answers are worth
+knowing at this seam:
+
+- **Scales resolve on the GPU.** A categorical attribute carries the category
+  index and the colours sit in a range texture, so a re-palette touches no
+  buffer — and its scale generator carries a note that WebGL treats those
+  indices as fixed texture positions, so a domain cannot reorder or grow
+  dynamically. The value-derived resolution above is this tree's answer to
+  the same per-region problem, without a texture and with colour still
+  resolved in one place.
+- **A transform names its `type`.** GenomeSpy departed from Vega-Lite's
+  inferred transform shape on purpose, for extensibility. A transform list on
+  `CoreEncodeFeatures`, if one lands, takes that spelling, with `filters`
+  folded in as the first member.
+- **Semantic zoom is a layer property.** Its `multiscale` composition orders
+  layers from zoomed-out to zoomed-in with `stops` and cross-fades by the zoom
+  metric. `defineMark`'s `enabled(state)` and the tier mixins do that
+  imperatively; a zoom range on a `marks` entry is the declared form.
+
+What it has that the compile-time form deliberately does not: `size`,
+`opacity` and `angle` as channels, from shaders generated at runtime from the
+encoding (ADR-095 §"The grammar position").
+
 ## The jexl channel, measured
 
 <!-- BEGIN GENERATED MEASUREMENT mark-encoding-jexl-channel -->
