@@ -302,15 +302,14 @@ the setting should be config, which is a product question about that display,
 not a cascade one.
 
 `LinearManhattanDisplay` was the other, and it is the worked example of making
-that decision. Its `showLdLegend` was a **volatile**, sitting with
+that decision. Its legend switch was a **volatile**, sitting with
 `featureUnderMouse` and `rpcDataMap` while being a track-menu setting — so it
-reset on every retick, and no config or session could set it. It became a
-`maybeBoolean` slot with `promotedBase: true` (the volatile's old initial
-value, so an untouched track is unchanged) with a pin, named for the r² ramp
-on the reasoning that a second key would want its own switch. The second key
-came — field coloring's value table — and shares the switch, since the
-coloring modes are exclusive, so the slot is `showLegend` through
-`LegendMixin` like the rest of the family.
+reset on every retick, and no config or session could set it. It is now
+`showLegend` through `LegendMixin`, a `maybeBoolean` slot with
+`promotedBase: true` (the volatile's old initial value, so an untouched track
+is unchanged) and a pin. One switch serves both keys the display can draw —
+the r² ramp under LD coloring and the value table under field coloring —
+because the coloring modes are exclusive and only one key is ever up.
 
 **A volatile is the thing to look for when a "Show ..." row has no pin.** The
 alignments doctrine — display options are config slots, volatiles are for
