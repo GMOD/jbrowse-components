@@ -15,7 +15,11 @@ import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
-import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
+import {
+  MANHATTAN_LANES,
+  defaultGlyph,
+  ldColoringRequested,
+} from './rpcTypes.ts'
 
 import type { ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -126,7 +130,12 @@ export function buildManhattanResult(
   { r2, indexFound, ...readers }: ManhattanReaders,
   ctx: { jexl: JexlInstance; report?: ProgressReporter },
 ): { result: ManhattanRpcResult; transferables: ArrayBufferLike[] } {
-  const encoded = encodeFeatures(features, { y: scoreField, ...readers }, ctx)
+  const encoded = encodeFeatures(
+    features,
+    { y: scoreField, ...readers },
+    MANHATTAN_LANES,
+    ctx,
+  )
   const r2s = r2 ? r2Channel(features, encoded.featureIndex, r2) : undefined
   return {
     result: { ...encoded, r2s, indexFound },

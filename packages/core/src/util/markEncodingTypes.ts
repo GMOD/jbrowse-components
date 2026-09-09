@@ -74,15 +74,28 @@ export type GlyphEncoding =
  * #api
  * The declared mapping from a feature's fields to a mark's channels. `x`
  * defaults to `start` and `x2` to `end`; a mark that plots no value leaves `y`
- * off. `glyph` is read by the `point` shape alone.
+ * off. `glyph` is read by the `point` shape alone, `row` — an integer field,
+ * 0 where missing — by the `span` shape, which stacks a feature on the band
+ * it names.
  */
 export interface MarkEncoding {
   x?: FieldRef
   x2?: FieldRef
   y?: FieldRef
+  row?: FieldRef
   color?: ColorEncoding
   glyph?: GlyphEncoding
 }
+
+/**
+ * #api
+ * The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
+ * `featureIndex`, which every payload carries: a shape's channels, and
+ * `index` for the Flatbush a hover reads. A lane not asked for is neither
+ * allocated nor transferred, and a caller that never hovers declines the
+ * index, which is most of the encoder's cost after the walk.
+ */
+export type LaneName = 'y' | 'color' | 'glyph' | 'row' | 'index'
 
 /**
  * #api
@@ -125,31 +138,52 @@ export type ScaleTable = ColorScaleTable | GlyphScaleTable
  * #api
  * One encoding's channels over one region's features, dense and
  * index-aligned: instance `i` of every array is the same feature, and
- * `featureIndex[i]` says which one of the input list it was.
+ * `featureIndex[i]` says which one of the input list it was. A lane is
+ * present when the caller asked for it ({@link LaneName}); {@link Encoded}
+ * is this type with a known lane set required.
  */
 export interface EncodedChannels {
   count: number
   x: Uint32Array
   x2: Uint32Array
-  y: Float32Array
-  color: Uint32Array
-  glyph: Uint8Array
   featureIndex: Uint32Array
+  y?: Float32Array
+  color?: Uint32Array
+  glyph?: Uint8Array
+  row?: Uint32Array
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */
   yMin: number
   yMax: number
-  /** A Flatbush over (x, y, x2, y), or undefined when `count` is 0. */
-  flatbushData: ArrayBuffer | undefined
+  /** A Flatbush over (x, y, x2, y), when `index` was asked for and `count` is not 0. */
+  flatbushData?: ArrayBuffer
   /** The colour channel's table, when `color` is a scale. */
-  scale: ColorScaleTable | undefined
+  scale?: ColorScaleTable
   /** The glyph channel's table, when `glyph` is a scale. */
-  glyphScale: GlyphScaleTable | undefined
+  glyphScale?: GlyphScaleTable
+}
+
+/**
+ * #api
+ * {@link EncodedChannels} with the lanes in `L` present — what
+ * `encodeFeatures` answers a caller that named them.
+ */
+export type Encoded<L extends LaneName> = EncodedChannels &
+  Required<Pick<EncodedChannels, Exclude<L, 'index'>>>
+
+/**
+ * #api
+ * One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and
+ * the lanes the display's shape reads.
+ */
+export interface LayerRequest {
+  encoding: MarkEncoding
+  lanes: LaneName[]
 }
 
 /**
  * #api
  * What `CoreEncodeFeatures` answers for one region: `layers[i]` is the
- * request's `encodings[i]` over the region's features, so a display's mark
+ * request's `layers[i]` over the region's features, so a display's mark
  * list indexes straight into it.
  */
 export interface EncodedFeaturesResult {
@@ -160,7 +194,7 @@ export interface EncodedFeaturesResult {
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>
   region: { refName: string; start: number; end: number; assemblyName: string }
-  encodings: MarkEncoding[]
+  layers: LayerRequest[]
   /** `jexl:`-prefixed feature filters, every one of which must pass. */
   filters?: string[]
   byteLimit?: number

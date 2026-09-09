@@ -118,9 +118,8 @@ positions.
 // One region's worth of features as the encoder packs them: parallel typed
 // arrays, `x`/`x2` absolute genomic uint32 (never region-relative, so they
 // cross the worker boundary without precision loss) and `y` the raw score,
-// plus the score extremes and a hit index over (bp, score). The shape reads
-// the arrays under these names.
-export type ScoreRegionData = EncodedChannels
+// plus the score extremes. The shape reads the arrays under these names.
+export type ScoreRegionData = Encoded<'y'>
 ```
 
 ## Step 2: Write the RPC method
@@ -190,13 +189,12 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
     })
     // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a
     // feature with no finite score, and ships the dense arrays with their
-    // extremes and a hit index. A packer of your own is for a payload the
-    // encoder's channels cannot say.
-    const encoded = encodeFeatures(
-      features,
-      { y: scoreColumn },
-      { jexl: this.pluginManager.jexl },
-    )
+    // extremes. The lane list is what the shape reads — `y` here; a display
+    // that hovers through a Flatbush adds `index`. A packer of your own is for
+    // a payload the encoder's channels cannot say.
+    const encoded = encodeFeatures(features, { y: scoreColumn }, ['y'], {
+      jexl: this.pluginManager.jexl,
+    })
     return rpcResult(encoded, encodedChannelTransferables(encoded))
   }
 }
@@ -630,9 +628,9 @@ with the answer:
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
 // against the same rect `paintBlock` fills. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
-// boxes; the encoder also ships a Flatbush over (bp, score), and a display
-// with hundreds of thousands of instances hands in what that index answers
-// instead (`findManhattanHit` in plugins/gwas is the worked form).
+// boxes; a display with hundreds of thousands of instances asks the encoder
+// for its `index` lane — a Flatbush over (bp, score) — and hands in what that
+// answers instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

@@ -158,3 +158,26 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
     'M0 0L12 0L6 12Z',
   ])
 }, 30000)
+
+test('spans stacked by a row channel band the plot by the highest row', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig('mark_rows', [
+      {
+        shape: 'span',
+        encoding: {
+          row: "jexl:get(feature,'name')=='EDEN.1'?0:1",
+          color: { field: 'name', scale: 'categorical' },
+        },
+      },
+    ]),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_rows'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayDrawn).toBe('true')
+  const display = view.tracks[0]!.displays[0] as { rowCount: number }
+  await waitFor(() => {
+    expect(display.rowCount).toBe(2)
+  })
+}, 30000)

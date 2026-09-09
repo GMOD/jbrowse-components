@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
+import type { Encoded, LaneName } from '@jbrowse/core/util/markEncoding'
 
 // The per-feature glyph classes belong to render-core's `point` shape, whose
 // pointMark.slang authors them once and `//! export-consts`es them (adr-051) —
@@ -76,13 +76,17 @@ export function ldColoringRequested<
   )
 }
 
+/** The point shape's lanes, and the index the hover reads. */
+export const MANHATTAN_LANES = ['y', 'color', 'glyph', 'index'] as const
+export type ManhattanLane = (typeof MANHATTAN_LANES)[number] & LaneName
+
 /**
  * One region's worth of GWAS points: the encoder's channels — `y` the score,
  * `color` packed per feature under whichever coloring mode, `glyph` the
  * point shape's class, `scale` the value table under field coloring — plus
  * what LD coloring adds.
  */
-export interface ManhattanRpcResult extends EncodedChannels {
+export interface ManhattanRpcResult extends Encoded<ManhattanLane> {
   // LD mode only: per-feature r² to the index SNP (1 for the index itself,
   // NaN where the SNP has no LD record). Undefined in normal coloring mode,
   // so the bulk score payload stays compact for whole-genome views.

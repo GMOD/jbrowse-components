@@ -17,8 +17,8 @@ export interface MarkHitInfo {
   end: number
   /** The plotted value, or undefined for a mark with no `y`. */
   y: number | undefined
-  /** The packed colour the worker resolved for this instance. */
-  color: number
+  /** The packed colour the worker resolved for this instance, if its shape reads one. */
+  color: number | undefined
   screenX: number
   screenY: number
 }
@@ -124,8 +124,8 @@ export function findMarkHit(
           refName,
           start: layer.x[hit.index]!,
           end: layer.x2[hit.index]!,
-          y: shape === 'span' ? undefined : layer.y[hit.index]!,
-          color: layer.color[hit.index]!,
+          y: layer.y?.[hit.index],
+          color: layer.color?.[hit.index],
           screenX: hit.x,
           screenY: hit.y,
         }

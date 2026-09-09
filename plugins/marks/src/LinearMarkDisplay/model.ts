@@ -45,7 +45,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, markColorScales } from './legend.ts'
-import { buildMarkList } from './markList.ts'
+import { SHAPE_LANES, buildMarkList } from './markList.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -67,6 +67,7 @@ import type {
   EncodedFeaturesResult,
   GlyphEncoding,
   GlyphName,
+  LayerRequest,
   MarkEncoding,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -84,27 +85,36 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
 // The worker's layers as the display stores them: the Flatbush wrapped once
-// at the commit, and a span mark's zero row channel allocated once here rather
-// than per frame in the lens.
-function storedRegionData(
-  result: EncodedFeaturesResult,
-  shapes: readonly MarkShapeName[],
-): MarkRegionData {
+// at the commit.
+function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
   return {
-    layers: result.layers.map((layer, i): StoredLayer => ({
+    layers: result.layers.map((layer): StoredLayer => ({
       ...layer,
       flatbush: layer.flatbushData
         ? Flatbush.from(layer.flatbushData)
         : undefined,
-      row: shapes[i] === 'span' ? new Uint32Array(layer.count) : undefined,
     })),
   }
+}
+
+function highestRow(layers: Iterable<StoredLayer>) {
+  let highest = 0
+  for (const { row } of layers) {
+    if (row) {
+      for (let i = 0; i < row.length; i++) {
+        if (row[i]! > highest) {
+          highest = row[i]!
+        }
+      }
+    }
+  }
+  return highest
 }
 
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 function encodingOf(mark: MarkConfig): MarkEncoding {
-  const { x, x2, y, glyph, color } = mark.encoding
+  const { x, x2, y, row, glyph, color } = mark.encoding
   const scaled: ColorEncoding =
     color.scale === 'none'
       ? color.value
@@ -145,6 +155,7 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
     x,
     x2,
     y: y === '' ? undefined : y,
+    row: row === '' ? undefined : row,
     color: scaled,
     glyph: glyphEncoding,
   }
@@ -236,6 +247,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * The worker request, one layer per mark: its encoding and the lanes
+       * its shape reads.
+       */
+      get layerRequests(): LayerRequest[] {
+        return self.conf.marks.map((m: MarkConfig) => {
+          const shape: MarkShapeName = m.shape
+          return { encoding: encodingOf(m), lanes: [...SHAPE_LANES[shape]] }
+        })
+      },
+      /**
+       * #getter
        */
       get origin(): number {
         return getConf(self, 'origin')
@@ -322,11 +344,23 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * the fetch inputs SettingsInvalidate watches: the encodings and the
-       * filters, both evaluated in the worker
+       * the fetch inputs SettingsInvalidate watches: each mark's encoding
+       * and lanes, and the filters, all evaluated in the worker
        */
-      rpcProps(): { encodings: MarkEncoding[]; filters: string[] } {
-        return { encodings: self.encodings, filters: self.activeFilters }
+      rpcProps(): { layers: LayerRequest[]; filters: string[] } {
+        return { layers: self.layerRequests, filters: self.activeFilters }
+      },
+      /**
+       * #getter
+       * bands a span stacks into: the highest `row` any loaded layer
+       * carries, plus one
+       */
+      get rowCount(): number {
+        let highest = 0
+        for (const data of self.rpcDataMap.values()) {
+          highest = Math.max(highest, highestRow(data.layers))
+        }
+        return highest + 1
       },
       /**
        * #getter
@@ -343,6 +377,7 @@ export function stateModelFactory(
           origin: self.origin,
           minWidthPx: self.minWidthPx,
           pointDiameterPx: self.scatterPointSize,
+          rowCount: this.rowCount,
         }))
       },
       /**
@@ -434,11 +469,7 @@ export function stateModelFactory(
        * Stage a region as fetched, with this display's payload shape.
        */
       setRpcData(idx: number, data: EncodedFeaturesResult, region: Region) {
-        self.setLoadedRegion(
-          idx,
-          region,
-          storedRegionData(data, self.markShapes),
-        )
+        self.setLoadedRegion(idx, region, storedRegionData(data))
       },
       /**
        * #action
@@ -499,7 +530,7 @@ export function stateModelFactory(
         return fetchEachRegion(self, needed, {
           call: (region, ctx) =>
             ctx.callRpc('CoreEncodeFeatures', { ...rpcArgs(self), region }),
-          onResult: (_idx, result) => storedRegionData(result, self.markShapes),
+          onResult: (_idx, result) => storedRegionData(result),
         })
       },
       /**

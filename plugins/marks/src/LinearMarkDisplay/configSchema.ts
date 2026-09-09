@@ -197,6 +197,17 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
     description: 'value field',
   },
   /**
+   * #slot marks.encoding.row
+   * For a span mark: the feature field, or jexl callback, naming the band
+   * the span stacks on, an integer from 0; a feature with nothing there sits
+   * on band 0. Empty puts every span on one band across the whole plot.
+   */
+  row: {
+    type: 'string',
+    defaultValue: '',
+    description: 'band field for spans',
+  },
+  /**
    * #slot marks.encoding.color
    * The mark's colour: a CSS colour, a jexl callback returning one, or an
    * object binding a field to a categorical or continuous scale. A scale is

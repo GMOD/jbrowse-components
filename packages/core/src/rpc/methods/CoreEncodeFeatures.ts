@@ -17,10 +17,11 @@ import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
- * Fetch a region's features once and evaluate every declared encoding over
- * them in the worker, where the `Feature` objects are. The colours come back
- * packed, the scale tables resolved, and the main thread reads the same table
- * for its legend that the colours were drawn from.
+ * Fetch a region's features once and evaluate every requested layer's
+ * encoding over them in the worker, where the `Feature` objects are, filling
+ * the lanes its shape reads. The colours come back packed, the scale tables
+ * resolved, and the main thread reads the same table for its legend that the
+ * colours were drawn from.
  */
 export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'CoreEncodeFeatures'> {
   name = 'CoreEncodeFeatures' as const
@@ -31,7 +32,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       adapterConfig,
       sequenceAdapter,
       region,
-      encodings,
+      layers: requested,
       filters = [],
       byteLimit,
       stopToken,
@@ -74,8 +75,8 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         ? fetched
         : fetched.filter(f => chain.passes(f))
 
-    const layers = encodings.map(encoding =>
-      encodeFeatures(features, encoding, {
+    const layers = requested.map(({ encoding, lanes }) =>
+      encodeFeatures(features, encoding, lanes, {
         jexl: pluginManager.jexl,
         report: createProgressReporter({
           label: 'Encoding features',

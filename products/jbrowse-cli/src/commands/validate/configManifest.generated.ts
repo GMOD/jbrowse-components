@@ -5167,6 +5167,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(JexlString | string)"
                 },
                 {
+                  "name": "row",
+                  "type": "(JexlString | string)"
+                },
+                {
                   "name": "color",
                   "type": "MarkColorConfigurationSchema",
                   "subSlots": [

@@ -29,7 +29,8 @@ const MarkTooltip = observer(function MarkTooltip({
   const { hoveredFeature: hit, encodings, markShapes, legendSections } = model
   const encoding = hit ? encodings[hit.markIndex] : undefined
   const scale = hit ? colorSection(legendSections, hit.markIndex) : undefined
-  const label = hit ? categoryLabel(scale, hit.color) : undefined
+  const label =
+    hit?.color === undefined ? undefined : categoryLabel(scale, hit.color)
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
@@ -43,7 +44,7 @@ const MarkTooltip = observer(function MarkTooltip({
               {encoding.y}: {toP(hit.y, 4)}
             </>
           )}
-          {scale ? (
+          {scale && hit.color !== undefined ? (
             <>
               <br />
               <span

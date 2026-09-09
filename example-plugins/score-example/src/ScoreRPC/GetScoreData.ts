@@ -52,13 +52,12 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
     })
     // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a
     // feature with no finite score, and ships the dense arrays with their
-    // extremes and a hit index. A packer of your own is for a payload the
-    // encoder's channels cannot say.
-    const encoded = encodeFeatures(
-      features,
-      { y: scoreColumn },
-      { jexl: this.pluginManager.jexl },
-    )
+    // extremes. The lane list is what the shape reads — `y` here; a display
+    // that hovers through a Flatbush adds `index`. A packer of your own is for
+    // a payload the encoder's channels cannot say.
+    const encoded = encodeFeatures(features, { y: scoreColumn }, ['y'], {
+      jexl: this.pluginManager.jexl,
+    })
     return rpcResult(encoded, encodedChannelTransferables(encoded))
   }
 }

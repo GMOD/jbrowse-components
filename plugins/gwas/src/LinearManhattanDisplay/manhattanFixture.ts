@@ -52,8 +52,6 @@ export function manhattanFixture({
     yMin,
     yMax,
     flatbushData,
-    scale: undefined,
-    glyphScale: undefined,
     ...rest,
   }
 }

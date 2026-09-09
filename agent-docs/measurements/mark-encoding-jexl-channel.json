@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node packages/core/benches/encodeFeatures.bench.ts --rounds=9",
-    "notes": "1,000,000 synthetic SimpleFeatures (2 bp each, an integer score, a strand) through encodeFeatures, seven arms interleaved round-robin in one node 24 process on AC power, min of 9 rounds. Every arm packs x/x2/y, builds the Flatbush and skips the same features; the identity check compares count, x and y across arms first. 'native' reads score with feature.get and packs a constant colour; 'control' is the same encoding declared a second time, so its ratio is the harness's own resolution; 'jexl-y' reads score through a jexl: expression, one evaluation per feature; 'jexl-color' reads score natively and colours through a jexl ternary, one evaluation per feature with its CSS answer parsed once per distinct string; 'scale-color' colours through a categorical scale over strand, a field read and a table lookup per feature plus one pass after the walk; 'jexl-glyph' and 'scale-glyph' are the same pair for the glyph channel. Re-measured with the scale arms on 2026-09-09 under a load average near 5, which is why the absolute times sit above the first record's; the ratios are the comparison. Absolute times drift about 2x between runs on this shared box; the within-run ratios held across three runs. 'vs native' is typed rather than derived because it divides by another row."
+    "notes": "1,000,000 synthetic SimpleFeatures (2 bp each, an integer score, a strand) through encodeFeatures, nine arms interleaved round-robin in one node 24 process on AC power, min of 9 rounds. Every arm packs x/x2/y, builds the Flatbush and skips the same features; the identity check compares count, x and y across arms first. 'native' reads score with feature.get and packs a constant colour; 'control' is the same encoding declared a second time, so its ratio is the harness's own resolution; 'jexl-y' reads score through a jexl: expression, one evaluation per feature; 'jexl-color' reads score natively and colours through a jexl ternary, one evaluation per feature with its CSS answer parsed once per distinct string; 'scale-color' colours through a categorical scale over strand, a field read and a table lookup per feature plus one pass after the walk; 'jexl-glyph' and 'scale-glyph' are the same pair for the glyph channel. The first seven ask for the point shape's lanes and the hit index; 'no-index' is the native encoding without the Flatbush, and 'wiggle' is the array-less wiggle fallback's call \u2014 y as a reader, the y lane alone, no jexl instance. Re-measured with the lane arms on 2026-09-09, load average under 2. Absolute times drift about 2x between runs on this shared box; the within-run ratios held across three runs. 'vs native' is typed rather than derived because it divides by another row."
   },
   "columns": [
     {
@@ -43,7 +43,7 @@
       "values": {
         "arm": "native",
         "features": 1000000,
-        "ms": 288,
+        "ms": 218,
         "vsNative": 1
       }
     },
@@ -51,16 +51,16 @@
       "values": {
         "arm": "control",
         "features": 1000000,
-        "ms": 317,
-        "vsNative": 1.1
+        "ms": 227,
+        "vsNative": 1.04
       }
     },
     {
       "values": {
         "arm": "jexl-y",
         "features": 1000000,
-        "ms": 426,
-        "vsNative": 1.48
+        "ms": 325,
+        "vsNative": 1.49
       },
       "emphasize": [
         "vsNative"
@@ -70,8 +70,8 @@
       "values": {
         "arm": "jexl-color",
         "features": 1000000,
-        "ms": 485,
-        "vsNative": 1.68
+        "ms": 416,
+        "vsNative": 1.91
       },
       "emphasize": [
         "vsNative"
@@ -81,8 +81,8 @@
       "values": {
         "arm": "scale-color",
         "features": 1000000,
-        "ms": 366,
-        "vsNative": 1.27
+        "ms": 275,
+        "vsNative": 1.26
       },
       "emphasize": [
         "vsNative"
@@ -92,8 +92,8 @@
       "values": {
         "arm": "jexl-glyph",
         "features": 1000000,
-        "ms": 507,
-        "vsNative": 1.76
+        "ms": 387,
+        "vsNative": 1.78
       },
       "emphasize": [
         "vsNative"
@@ -103,8 +103,30 @@
       "values": {
         "arm": "scale-glyph",
         "features": 1000000,
-        "ms": 365,
-        "vsNative": 1.27
+        "ms": 262,
+        "vsNative": 1.2
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "no-index",
+        "features": 1000000,
+        "ms": 81,
+        "vsNative": 0.37
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "wiggle",
+        "features": 1000000,
+        "ms": 67,
+        "vsNative": 0.31
       },
       "emphasize": [
         "vsNative"

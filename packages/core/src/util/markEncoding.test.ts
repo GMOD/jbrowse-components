@@ -8,12 +8,17 @@ import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
-import { NO_VALUE_LABEL, encodeFeatures } from './markEncoding.ts'
+import {
+  NO_VALUE_LABEL,
+  encodeFeatures,
+  encodedChannelTransferables,
+} from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 
-import type { GlyphName } from './markEncoding.ts'
+import type { GlyphName, LaneName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
+const ALL: LaneName[] = ['y', 'color', 'glyph', 'row', 'index']
 
 function feature(
   i: number,
@@ -39,7 +44,7 @@ const features = [
 ]
 
 test('x and x2 default to start and end, read natively', () => {
-  const r = encodeFeatures(features, {}, { jexl })
+  const r = encodeFeatures(features, {}, ALL, { jexl })
   expect(r.count).toBe(5)
   expect([...r.x]).toEqual([0, 100, 200, 300, 400])
   expect([...r.x2]).toEqual([50, 150, 250, 350, 450])
@@ -51,7 +56,7 @@ test('x and x2 default to start and end, read natively', () => {
 })
 
 test('a declared y skips the features whose value is not finite', () => {
-  const r = encodeFeatures(features, { y: 'score' }, { jexl })
+  const r = encodeFeatures(features, { y: 'score' }, ALL, { jexl })
   expect(r.count).toBe(3)
   expect([...r.y]).toEqual([10, 40, 25])
   expect([...r.featureIndex]).toEqual([0, 1, 2])
@@ -65,6 +70,7 @@ test('a jexl: field ref is the escape for a derived channel', () => {
   const r = encodeFeatures(
     features,
     { x: "jexl:get(feature,'start')+5", y: 'jexl:feature.score*2' },
+    ALL,
     { jexl },
   )
   expect([...r.x]).toEqual([5, 105, 205])
@@ -72,11 +78,12 @@ test('a jexl: field ref is the escape for a derived channel', () => {
 })
 
 test('a constant colour packs once, a jexl colour per feature', () => {
-  const constant = encodeFeatures(features, { color: 'red' }, { jexl })
+  const constant = encodeFeatures(features, { color: 'red' }, ALL, { jexl })
   expect(new Set(constant.color)).toEqual(new Set([cssColorToABGR('red')]))
   const perFeature = encodeFeatures(
     features,
     { color: "jexl:get(feature,'strand')==1?'red':'blue'" },
+    ALL,
     { jexl },
   )
   expect([...perFeature.color]).toEqual(
@@ -89,6 +96,7 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
   const r = encodeFeatures(
     features,
     { color: { field: 'type', scale: 'categorical' } },
+    ALL,
     { jexl },
   )
   const of = (label: string) =>
@@ -106,6 +114,7 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
   const other = encodeFeatures(
     [feature(9, { type: 'gene' }), feature(10, {})],
     { color: { field: 'type', scale: 'categorical' } },
+    ALL,
     { jexl },
   )
   expect(other.color[0]).toBe(of('gene'))
@@ -131,6 +140,7 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
         palette: ['red', 'blue'],
       },
     },
+    ALL,
     { jexl },
   )
   expect(r.scale).toEqual({
@@ -144,6 +154,7 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
   const bySortedValue = encodeFeatures(
     features,
     { color: { field: 'strand', scale: 'categorical' } },
+    ALL,
     { jexl },
   )
   expect(
@@ -163,6 +174,7 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
         ramp: ['black', 'white'],
       },
     },
+    ALL,
     { jexl },
   )
   expect(r.scale?.kind).toBe('ramp')
@@ -190,17 +202,19 @@ test('a pinned ramp domain wins over the region extremes', () => {
         ramp: ['black', 'white'],
       },
     },
+    ALL,
     { jexl },
   )
   expect(r.color[1]).toBe(cssColorToABGR('rgb(102,102,102)'))
 })
 
 test('glyph is a name or a jexl expression returning one', () => {
-  const named = encodeFeatures(features, { glyph: 'triangle' }, { jexl })
+  const named = encodeFeatures(features, { glyph: 'triangle' }, ALL, { jexl })
   expect(new Set(named.glyph)).toEqual(new Set([GLYPH_TRIANGLE]))
   const derived = encodeFeatures(
     features,
     { glyph: "jexl:get(feature,'type')=='exon'?'triangle':'disc'" },
+    ALL,
     { jexl },
   )
   expect([...derived.glyph]).toEqual([
@@ -223,6 +237,7 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   const r = encodeFeatures(
     features,
     { glyph: { field: 'type', scale: 'categorical' } },
+    ALL,
     { jexl },
   )
   const of = (label: string) => categoricalValueColor(label, GLYPHS)
@@ -242,6 +257,7 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   const other = encodeFeatures(
     [feature(9, { type: 'exon' }), feature(10, {})],
     { glyph: { field: 'type', scale: 'categorical' } },
+    ALL,
     { jexl },
   )
   expect(other.glyph[0]).toBe(CODE[of('exon')])
@@ -263,6 +279,7 @@ test('a pinned glyph domain walks the range in order', () => {
         range: ['triangle', 'diamond'],
       },
     },
+    ALL,
     { jexl },
   )
   expect(r.glyphScale).toEqual({
@@ -289,6 +306,7 @@ test('colour and glyph scales over different fields resolve side by side', () =>
       color: { field: 'type', scale: 'categorical', domain: ['gene', 'exon'] },
       glyph: { field: 'strand', scale: 'categorical', domain: [1, -1] },
     },
+    ALL,
     { jexl },
   )
   expect(r.scale?.kind).toBe('categorical')
@@ -305,7 +323,7 @@ test('colour and glyph scales over different fields resolve side by side', () =>
 })
 
 test('an empty feature list ships no index', () => {
-  const r = encodeFeatures([], { y: 'score' }, { jexl })
+  const r = encodeFeatures([], { y: 'score' }, ALL, { jexl })
   expect(r.count).toBe(0)
   expect(r.flatbushData).toBeUndefined()
 })
@@ -318,6 +336,7 @@ test("a channel spelled as a reader is read in the field ref's place", () => {
       color: f => (f.get('strand') === 1 ? 0xff0000ff : 0xff00ff00),
       glyph: f => (f.get('type') === 'exon' ? GLYPH_TRIANGLE : GLYPH_DISC),
     },
+    ALL,
     { jexl },
   )
   expect(r.count).toBe(3)
@@ -325,4 +344,48 @@ test("a channel spelled as a reader is read in the field ref's place", () => {
   expect([...r.color]).toEqual([0xff0000ff, 0xff00ff00, 0xff0000ff])
   expect([...r.glyph]).toEqual([GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DISC])
   expect(r.scale).toBeUndefined()
+})
+
+test('only the lanes asked for are filled, and the index only when named', () => {
+  const r = encodeFeatures(features, { y: 'score' }, ['y'], { jexl })
+  expect(r.count).toBe(3)
+  expect([...r.y]).toEqual([10, 40, 25])
+  expect(r.color).toBeUndefined()
+  expect(r.glyph).toBeUndefined()
+  expect(r.row).toBeUndefined()
+  expect(r.flatbushData).toBeUndefined()
+  expect(encodedChannelTransferables(r)).toHaveLength(4)
+  // a declared y outside the lane set is not read: nothing is skipped
+  const spans = encodeFeatures(features, { y: 'score' }, ['color', 'index'], {
+    jexl,
+  })
+  expect(spans.count).toBe(5)
+  expect(spans.y).toBeUndefined()
+  expect(spans.yMin).toBe(Infinity)
+  expect(Flatbush.from(spans.flatbushData!).search(90, -1, 160, 1)).toEqual([1])
+})
+
+test('row is an integer lane, 0 where the field is missing or negative', () => {
+  const r = encodeFeatures(
+    [
+      feature(0, { sampleIndex: 2 }),
+      feature(1, {}),
+      feature(2, { sampleIndex: -1 }),
+      feature(3, { sampleIndex: '1' }),
+    ],
+    { row: 'sampleIndex' },
+    ['row'],
+    { jexl },
+  )
+  expect([...r.row]).toEqual([2, 0, 0, 1])
+  const bare = encodeFeatures(features, {}, ['row'], { jexl })
+  expect([...bare.row]).toEqual([0, 0, 0, 0, 0])
+})
+
+test('a caller whose channels are readers or field names needs no jexl instance', () => {
+  const r = encodeFeatures(features, { y: f => Number(f.get('score')) }, ['y'])
+  expect([...r.y]).toEqual([10, 40, 25])
+  expect(() =>
+    encodeFeatures(features, { y: 'jexl:feature.score' }, ['y']),
+  ).toThrow(/jexl/)
 })

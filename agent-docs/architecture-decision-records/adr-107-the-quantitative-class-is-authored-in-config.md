@@ -63,13 +63,17 @@ Four moves, one class:
   `linear`/`log` (a ramp, optional `domain`). A scale belongs to a channel
   rather than to colour: `glyph` takes the same categorical form with a
   `range` of glyph names, resolved through the one categorical arm, and ships
-  its own table for the legend (2026-09-09, measured at 1.27x native against
-  the jexl ternary's 1.76x). `CoreEncodeFeatures` takes
-  `{ adapterConfig, region, encodings[], filters?, byteLimit? }`, runs
-  `encodeFeatures` per encoding and returns one `EncodedChannels` per mark —
-  columnar typed arrays, the y extremes, a Flatbush over (bp, y) for hit
-  candidates, and the **scale table** the legend reads — with `RegionTooLarge`
-  on refusal. `LinearMarkDisplay` (`@jbrowse/plugin-marks`, on `FeatureTrack`)
+  its own table for the legend (2026-09-09; the scale is a fraction of the
+  jexl ternary's cost, `MARK_ENCODING.md` §"The jexl channel, measured").
+  `CoreEncodeFeatures` takes
+  `{ adapterConfig, region, layers[], filters?, byteLimit? }` — a layer is an
+  encoding and the **lanes** its shape reads — runs `encodeFeatures` per layer
+  and returns one `EncodedChannels` per mark: columnar typed arrays for the
+  lanes named, the y extremes, a Flatbush over (bp, y) for hit candidates
+  when `index` is among them, and the **scale table** the legend reads — with
+  `RegionTooLarge` on refusal. A lane not named — `row` for a bar, the index
+  for a caller that never hovers — is neither allocated nor shipped
+  (2026-09-09). `LinearMarkDisplay` (`@jbrowse/plugin-marks`, on `FeatureTrack`)
   takes `marks: [{ shape: 'bar' | 'point' | 'span', encoding }]` as typed
   sub-schemas (never `frozen`, so the manifest and `jbrowse validate` see two
   levels down), composes the same foundation as Manhattan (`MultiRegionDisplayMixin`,

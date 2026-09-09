@@ -1,3 +1,4 @@
+import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
@@ -36,25 +37,35 @@ function createTestEnvironment(marks: unknown[]) {
 
 type Layer = EncodedFeaturesResult['layers'][number]
 
+function extremes(y: number[]) {
+  let yMin = Infinity
+  let yMax = -Infinity
+  for (const v of y) {
+    yMin = v < yMin ? v : yMin
+    yMax = v > yMax ? v : yMax
+  }
+  return { yMin, yMax }
+}
+
 function result(
   layers: {
     y: number[]
+    row?: number[]
     scale?: Layer['scale']
     glyphScale?: Layer['glyphScale']
   }[],
 ): EncodedFeaturesResult {
   return {
-    layers: layers.map(({ y, scale, glyphScale }) => ({
+    layers: layers.map(({ y, row, scale, glyphScale }) => ({
       count: y.length,
       x: Uint32Array.from(y.map((_, i) => i * 100)),
       x2: Uint32Array.from(y.map((_, i) => i * 100 + 50)),
       y: Float32Array.from(y),
+      row: row ? Uint32Array.from(row) : undefined,
       color: new Uint32Array(y.length),
       glyph: new Uint8Array(y.length),
       featureIndex: Uint32Array.from(y.map((_, i) => i)),
-      yMin: Math.min(...y),
-      yMax: Math.max(...y),
-      flatbushData: undefined,
+      ...extremes(y),
       scale,
       glyphScale,
     })),
@@ -95,37 +106,49 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
   expect(display.markShapes).toEqual(['bar', 'point', 'span'])
   expect(display.rpcProps()).toEqual({
     filters: [],
-    encodings: [
+    layers: [
       {
-        x: 'start',
-        x2: 'end',
-        y: 'score',
-        color: {
-          field: 'strand',
-          scale: 'categorical',
-          palette: undefined,
-          domain: ['1', '-1'],
+        encoding: {
+          x: 'start',
+          x2: 'end',
+          y: 'score',
+          row: undefined,
+          color: {
+            field: 'strand',
+            scale: 'categorical',
+            palette: undefined,
+            domain: ['1', '-1'],
+          },
+          glyph: 'disc',
         },
-        glyph: 'disc',
+        lanes: ['y', 'color', 'index'],
       },
       {
-        x: "jexl:get(feature,'thickStart')",
-        x2: 'end',
-        y: 'jexl:feature.score*2',
-        color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-        glyph: 'triangle',
+        encoding: {
+          x: "jexl:get(feature,'thickStart')",
+          x2: 'end',
+          y: 'jexl:feature.score*2',
+          row: undefined,
+          color: "jexl:get(feature,'name')=='a'?'red':'blue'",
+          glyph: 'triangle',
+        },
+        lanes: ['y', 'color', 'glyph', 'index'],
       },
       {
-        x: 'start',
-        x2: 'end',
-        y: undefined,
-        color: {
-          field: 'score',
-          scale: 'log',
-          domain: [1, 1000],
-          ramp: ['white', 'red'],
+        encoding: {
+          x: 'start',
+          x2: 'end',
+          y: undefined,
+          row: undefined,
+          color: {
+            field: 'score',
+            scale: 'log',
+            domain: [1, 1000],
+            ramp: ['white', 'red'],
+          },
+          glyph: 'disc',
         },
-        glyph: 'disc',
+        lanes: ['row', 'color', 'index'],
       },
     ],
   })
@@ -153,9 +176,30 @@ test('a span-only display has no score domain', () => {
     { shape: 'span', encoding: {} },
   ])
   const { display } = createDisplay()
-  display.setRpcData(0, result([{ y: [0, 0] }]), REGION)
+  display.setRpcData(0, result([{ y: [0, 0], row: [0, 0] }]), REGION)
   expect(display.domain).toBeUndefined()
-  expect(display.rpcDataMap.get(0)?.layers[0]?.row).toEqual(new Uint32Array(2))
+  expect(display.rowCount).toBe(1)
+})
+
+test('a span stacked by a row field asks the worker for the row lane and bands the plot by the highest row', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'span', encoding: { row: 'sampleIndex' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.rpcProps().layers[0]).toEqual({
+    encoding: {
+      x: 'start',
+      x2: 'end',
+      y: undefined,
+      row: 'sampleIndex',
+      color: DEFAULT_MARK_COLOR,
+      glyph: 'disc',
+    },
+    lanes: ['row', 'color', 'index'],
+  })
+  display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
+  expect(display.rowCount).toBe(3)
+  expect(display.renderState.rowCount).toBe(3)
 })
 
 test('the legend reads the scale table the worker resolved', () => {
@@ -211,7 +255,7 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
     },
   ])
   const { display } = createDisplay()
-  expect(display.rpcProps().encodings[0]?.glyph).toEqual({
+  expect(display.rpcProps().layers[0]?.encoding.glyph).toEqual({
     field: 'strand',
     scale: 'categorical',
     domain: ['1', '-1'],

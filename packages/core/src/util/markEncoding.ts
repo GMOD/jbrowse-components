@@ -13,11 +13,13 @@ import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
   ColorScaleTable,
+  Encoded,
   EncodedChannels,
   FieldRef,
   GlyphEncoding,
   GlyphName,
   GlyphScaleTable,
+  LaneName,
   RampRef,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
@@ -28,12 +30,15 @@ export type {
   ColorEncoding,
   ColorScaleTable,
   CoreEncodeFeaturesArgs,
+  Encoded,
   EncodedChannels,
   EncodedFeaturesResult,
   FieldRef,
   GlyphEncoding,
   GlyphName,
   GlyphScaleTable,
+  LaneName,
+  LayerRequest,
   MarkEncoding,
   RampRef,
   ScaleTable,
@@ -73,19 +78,38 @@ export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
   x2?: FieldRef | ChannelReader
   y?: FieldRef | ChannelReader
+  row?: FieldRef | ChannelReader
   color?: ColorEncoding | ChannelReader<number>
   glyph?: GlyphEncoding | ChannelReader<number>
 }
 
+/**
+ * #api
+ * What surrounds an encode: the jexl instance a `jexl:` channel compiles
+ * against — a caller whose channels are all readers or field names passes
+ * none — and a progress reporter.
+ */
+export interface EncodeContext {
+  jexl?: JexlInstance
+  report?: ProgressReporter
+}
+
+function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
+  if (!jexl) {
+    throw new Error(`a jexl: channel needs a jexl instance (${ref})`)
+  }
+  return stringToJexlExpression(ref, jexl)
+}
+
 function fieldReader(
   ref: FieldRef | ChannelReader,
-  jexl: JexlInstance,
+  jexl: JexlInstance | undefined,
 ): ChannelReader {
   if (typeof ref === 'function') {
     return ref
   }
   if (isJexl(ref)) {
-    const expr = stringToJexlExpression(ref, jexl)
+    const expr = jexlExpression(ref, jexl)
     return feature => expr.eval(buildJexlContext({ feature }))
   }
   return feature => feature.get(ref)
@@ -97,7 +121,7 @@ function isGlyphName(glyph: string): glyph is GlyphName {
 
 function glyphReader(
   glyph: Exclude<GlyphEncoding, object> | ChannelReader<number> | undefined,
-  jexl: JexlInstance,
+  jexl: JexlInstance | undefined,
 ): ChannelReader<number> {
   if (glyph === undefined) {
     return () => GLYPH_DISC
@@ -109,7 +133,7 @@ function glyphReader(
     const code = GLYPH_CODES[glyph]
     return () => code
   }
-  const expr = stringToJexlExpression(glyph, jexl)
+  const expr = jexlExpression(glyph, jexl)
   return feature => {
     const v = expr.eval(buildJexlContext({ feature }))
     return typeof v === 'string' && isGlyphName(v) ? GLYPH_CODES[v] : GLYPH_DISC
@@ -219,39 +243,51 @@ function hasMissing(indexOf: Int32Array, count: number) {
 
 /**
  * #api
- * Evaluate one encoding over a feature list into dense channel arrays, the
- * scale table its colours came from, the `y` extremes and a hit index.
+ * Evaluate one encoding over a feature list into dense channel arrays for
+ * the lanes named, the scale table each scaled channel came from, the `y`
+ * extremes and — when `index` is among the lanes — a hit index.
  *
- * A feature whose `x`, `x2` or (declared) `y` is not finite is skipped, so
- * every array stays index-aligned with the Flatbush. Pure: the RPC around it
- * owns the adapter, the filters and the transferables.
+ * A feature whose `x`, `x2` or (declared and asked-for) `y` is not finite is
+ * skipped, so every array stays index-aligned with the Flatbush. Pure: the
+ * RPC around it owns the adapter, the filters and the transferables.
  */
-export function encodeFeatures(
+export function encodeFeatures<L extends LaneName>(
   features: readonly Feature[],
   encoding: MarkEncodingInput,
-  ctx: { jexl: JexlInstance; report?: ProgressReporter },
-): EncodedChannels {
+  lanes: readonly L[],
+  ctx: EncodeContext = {},
+): Encoded<L> {
   const { jexl, report } = ctx
   const n = features.length
+  const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
   const readX = fieldReader(encoding.x ?? 'start', jexl)
   const readX2 = fieldReader(encoding.x2 ?? 'end', jexl)
   const readY =
-    encoding.y === undefined ? undefined : fieldReader(encoding.y, jexl)
+    has('y') && encoding.y !== undefined
+      ? fieldReader(encoding.y, jexl)
+      : undefined
+  const readRow =
+    has('row') && encoding.row !== undefined
+      ? fieldReader(encoding.row, jexl)
+      : undefined
 
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
-  const y = new Float32Array(n)
-  const color = new Uint32Array(n)
-  const glyph = new Uint8Array(n)
+  const y = has('y') ? new Float32Array(n) : undefined
+  const row = has('row') ? new Uint32Array(n) : undefined
+  const color = has('color') ? new Uint32Array(n) : undefined
+  const glyph = has('glyph') ? new Uint8Array(n) : undefined
   const featureIndex = new Uint32Array(n)
   let yMin = Infinity
   let yMax = -Infinity
   let count = 0
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
-  const scaled = typeof colorEncoding === 'object' ? colorEncoding : undefined
-  const readColor =
-    typeof colorEncoding === 'function'
+  const scaled =
+    color && typeof colorEncoding === 'object' ? colorEncoding : undefined
+  const readColor = !color
+    ? undefined
+    : typeof colorEncoding === 'function'
       ? colorEncoding
       : scaled === undefined
         ? colorEvaluator(colorEncoding as string, jexl)
@@ -259,21 +295,23 @@ export function encodeFeatures(
   // A scaled channel resolves after the walk, once the table is known: the
   // category per admitted instance, or a ramp's raw value, kept here.
   const colorCategories =
-    scaled?.scale === 'categorical'
+    scaled?.scale === 'categorical' && readColor
       ? categoricalChannel(readColor, n)
       : undefined
   const rampValues =
     scaled && scaled.scale !== 'categorical' ? new Float32Array(n) : undefined
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =
-    typeof glyphEncoding === 'object' ? glyphEncoding : undefined
+    glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
   const glyphCategories = glyphScaled
     ? categoricalChannel(fieldReader(glyphScaled.field, jexl), n)
     : undefined
-  const readGlyph = glyphReader(
-    typeof glyphEncoding === 'object' ? undefined : glyphEncoding,
-    jexl,
-  )
+  const readGlyph = glyph
+    ? glyphReader(
+        typeof glyphEncoding === 'object' ? undefined : glyphEncoding,
+        jexl,
+      )
+    : undefined
 
   for (let i = 0; i < n; i++) {
     report?.(i)
@@ -286,7 +324,9 @@ export function encodeFeatures(
     }
     x[count] = xv
     x2[count] = x2v
-    y[count] = yv
+    if (y) {
+      y[count] = yv
+    }
     if (readY) {
       if (yv < yMin) {
         yMin = yv
@@ -295,24 +335,28 @@ export function encodeFeatures(
         yMax = yv
       }
     }
+    if (row && readRow) {
+      const rv = Number(readRow(f))
+      row[count] = rv > 0 ? rv : 0
+    }
     if (glyphCategories) {
       glyphCategories.collect(f, count)
-    } else {
+    } else if (glyph && readGlyph) {
       glyph[count] = readGlyph(f)
     }
     featureIndex[count] = i
     if (colorCategories) {
       colorCategories.collect(f, count)
-    } else if (rampValues) {
+    } else if (rampValues && readColor) {
       rampValues[count] = Number(readColor(f))
-    } else {
+    } else if (color && readColor) {
       color[count] = readColor(f) as number
     }
     count++
   }
 
   let scale: ColorScaleTable | undefined
-  if (scaled?.scale === 'categorical' && colorCategories) {
+  if (scaled?.scale === 'categorical' && colorCategories && color) {
     const palette = (scaled.palette ?? categoricalPalette).map(cssColorToABGR)
     const { ofIndex, entries } = colorCategories.resolve(scaled.domain, palette)
     const { indexOf } = colorCategories
@@ -330,7 +374,7 @@ export function encodeFeatures(
           : []),
       ],
     }
-  } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
+  } else if (scaled && scaled.scale !== 'categorical' && rampValues && color) {
     const domain = scaled.domain ?? finiteExtremes(rampValues, count)
     const lut = buildColorRampLut(rampStops(scaled.ramp))
     const norm = normalizer(scaled.scale, domain)
@@ -348,7 +392,7 @@ export function encodeFeatures(
   }
 
   let glyphScale: GlyphScaleTable | undefined
-  if (glyphScaled && glyphCategories) {
+  if (glyphScaled && glyphCategories && glyph) {
     const { ofIndex, entries } = glyphCategories.resolve(
       glyphScaled.domain,
       glyphScaled.range ?? GLYPH_NAMES,
@@ -372,30 +416,46 @@ export function encodeFeatures(
   }
 
   let flatbushData: ArrayBuffer | undefined
-  if (count > 0) {
+  if (has('index') && count > 0) {
     const fb = new Flatbush(count, undefined, Float64Array)
     for (let i = 0; i < count; i++) {
-      const v = y[i]!
+      const v = y ? y[i]! : 0
       fb.add(x[i]!, v, x2[i], v)
     }
     fb.finish()
     flatbushData = fb.data
   }
 
-  return {
+  const encoded: EncodedChannels = {
     count,
     x: x.subarray(0, count),
     x2: x2.subarray(0, count),
-    y: y.subarray(0, count),
-    color: color.subarray(0, count),
-    glyph: glyph.subarray(0, count),
     featureIndex: featureIndex.subarray(0, count),
     yMin,
     yMax,
-    flatbushData,
-    scale,
-    glyphScale,
   }
+  if (y) {
+    encoded.y = y.subarray(0, count)
+  }
+  if (row) {
+    encoded.row = row.subarray(0, count)
+  }
+  if (color) {
+    encoded.color = color.subarray(0, count)
+  }
+  if (glyph) {
+    encoded.glyph = glyph.subarray(0, count)
+  }
+  if (flatbushData) {
+    encoded.flatbushData = flatbushData
+  }
+  if (scale) {
+    encoded.scale = scale
+  }
+  if (glyphScale) {
+    encoded.glyphScale = glyphScale
+  }
+  return encoded as Encoded<L>
 }
 
 function finiteExtremes(values: Float32Array, count: number): [number, number] {
@@ -423,10 +483,10 @@ function finiteExtremes(values: Float32Array, count: number): [number, number] {
  */
 export function colorEvaluator(
   color: string,
-  jexl: JexlInstance,
+  jexl: JexlInstance | undefined,
 ): (feature: Feature) => number {
   if (isJexl(color)) {
-    const expr = stringToJexlExpression(color, jexl)
+    const expr = jexlExpression(color, jexl)
     // A jexl colour answers from a handful of strings over a million
     // features; parsing each answer once is a third of the arm's cost
     // (packages/core/benches/encodeFeatures.bench.ts).
@@ -454,13 +514,18 @@ export function colorEvaluator(
  * list.
  */
 export function encodedChannelTransferables(c: EncodedChannels) {
-  return [
+  const buffers: ArrayBufferLike[] = [
     c.x.buffer,
     c.x2.buffer,
-    c.y.buffer,
-    c.color.buffer,
-    c.glyph.buffer,
     c.featureIndex.buffer,
-    ...(c.flatbushData ? [c.flatbushData] : []),
   ]
+  for (const lane of [c.y, c.row, c.color, c.glyph]) {
+    if (lane) {
+      buffers.push(lane.buffer)
+    }
+  }
+  if (c.flatbushData) {
+    buffers.push(c.flatbushData)
+  }
+  return buffers
 }

@@ -200,7 +200,7 @@ unscaled arm of ColorEncoding, on its own for a display that carries a plain
 
 ```js
 // type signature
-(color: string, jexl: JexlInstance) => (feature: Feature) => number
+(color: string, jexl: JexlInstance | undefined) => (feature: Feature) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -213,11 +213,27 @@ the painting.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### EncodeContext
+
+What surrounds an encode: the jexl instance a `jexl:` channel compiles against —
+a caller whose channels are all readers or field names passes none — and a
+progress reporter.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### Encoded
+
+EncodedChannels with the lanes in `L` present — what `encodeFeatures` answers a
+caller that named them.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### EncodedChannels
 
 One encoding's channels over one region's features, dense and index-aligned:
 instance `i` of every array is the same feature, and `featureIndex[i]` says
-which one of the input list it was.
+which one of the input list it was. A lane is present when the caller asked for
+it (LaneName); Encoded is this type with a known lane set required.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -235,23 +251,24 @@ The buffers an EncodedChannels owns, for `rpcResult`'s transfer list.
 ### EncodedFeaturesResult
 
 What `CoreEncodeFeatures` answers for one region: `layers[i]` is the request's
-`encodings[i]` over the region's features, so a display's mark list indexes
+`layers[i]` over the region's features, so a display's mark list indexes
 straight into it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### encodeFeatures
 
-Evaluate one encoding over a feature list into dense channel arrays, the scale
-table its colours came from, the `y` extremes and a hit index.
+Evaluate one encoding over a feature list into dense channel arrays for the
+lanes named, the scale table each scaled channel came from, the `y` extremes and
+— when `index` is among the lanes — a hit index.
 
-A feature whose `x`, `x2` or (declared) `y` is not finite is skipped, so every
-array stays index-aligned with the Flatbush. Pure: the RPC around it owns the
-adapter, the filters and the transferables.
+A feature whose `x`, `x2` or (declared and asked-for) `y` is not finite is
+skipped, so every array stays index-aligned with the Flatbush. Pure: the RPC
+around it owns the adapter, the filters and the transferables.
 
 ```js
 // type signature
-(features: readonly Feature[], encoding: MarkEncodingInput, ctx: { jexl: JexlInstance; report?: ProgressReporter | undefined; }) => EncodedChannels
+<L extends LaneName>(features: readonly Feature[], encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -562,6 +579,16 @@ non-promotable one throws in `resolveSlotIn`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### LaneName
+
+The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
+`featureIndex`, which every payload carries: a shape's channels, and `index` for
+the Flatbush a hover reads. A lane not asked for is neither allocated nor
+transferred, and a caller that never hovers declines the index, which is most of
+the encoder's cost after the walk.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### launchOrReplaceView
 
 `addOrReplaceView` for view types whose state model may be lazily loaded; the
@@ -573,6 +600,13 @@ synchronous `addOrReplaceView` requires it loaded already.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+### LayerRequest
+
+One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and the
+lanes the display's shape reads.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### makePin
 
@@ -635,7 +669,8 @@ on a second click, the other filled when the box was ticked and flipping. With
 
 The declared mapping from a feature's fields to a mark's channels. `x` defaults
 to `start` and `x2` to `end`; a mark that plots no value leaves `y` off. `glyph`
-is read by the `point` shape alone.
+is read by the `point` shape alone, `row` — an integer field, 0 where missing —
+by the `span` shape, which stacks a feature on the band it names.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

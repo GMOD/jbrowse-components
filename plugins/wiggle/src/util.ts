@@ -2,7 +2,6 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
 
 import type { Feature } from '@jbrowse/core/util'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 // Rendering-type tables live in renderingTypes.ts (import-free) so non-UI
@@ -284,12 +283,9 @@ function summaryChannels(
   return { minScores, maxScores }
 }
 
-const readersOnly: JexlInstance = {
-  compile() {
-    throw new Error('wiggle hands the encoder readers, not jexl channels')
-  },
-}
-
+// The score lane and nothing else: wiggle draws from arrays and never hovers
+// through the encoder, so the hit index — most of the encoder's cost after
+// the walk — is declined.
 export function featuresToRaw(
   features: readonly Feature[],
   scoreField = 'score',
@@ -297,7 +293,7 @@ export function featuresToRaw(
   const { x, x2, y, featureIndex, count } = encodeFeatures(
     features,
     { y: f => Number(f.get(scoreField) ?? 0) },
-    { jexl: readersOnly },
+    ['y'],
   )
   return {
     starts: x,

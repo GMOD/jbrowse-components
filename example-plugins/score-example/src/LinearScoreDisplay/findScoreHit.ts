@@ -31,9 +31,9 @@ function* everyInstance(count: number) {
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
 // against the same rect `paintBlock` fills. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
-// boxes; the encoder also ships a Flatbush over (bp, score), and a display
-// with hundreds of thousands of instances hands in what that index answers
-// instead (`findManhattanHit` in plugins/gwas is the worked form).
+// boxes; a display with hundreds of thousands of instances asks the encoder
+// for its `index` lane — a Flatbush over (bp, score) — and hands in what that
+// answers instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

@@ -63,6 +63,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | the track label sits above the plot so the y-axis stays on the edge | LinearMarkDisplay |
 | <span id="getter-markshapes">**markShapes**</span><br><code>("bar" &#124; "point" &#124; "span")[]</code> | The declared marks' shapes, in draw order. | LinearMarkDisplay |
 | <span id="getter-encodings">**encodings**</span><br><code>MarkEncoding[]</code> | The declared marks' encodings, as the worker takes them. | LinearMarkDisplay |
+| <span id="getter-layerrequests">**layerRequests**</span><br><code>LayerRequest[]</code> | The worker request, one layer per mark: its encoding and the lanes its shape reads. | LinearMarkDisplay |
 | <span id="getter-origin">**origin**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-minwidthpx">**minWidthPx**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-configuredfilters">**configuredFilters**</span><br><code>() =&gt; string[]</code> | the `jexlFilters` slot, `jexl:`-prefixed | LinearMarkDisplay |
@@ -72,6 +73,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-activefilters">**activeFilters**</span><br><code>string[]</code> | the filters actually applied, `jexl:`-prefixed | LinearMarkDisplay |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> | nice-rounded [min, max] over the visible regions' shipped extremes, widened to the origin whenever a bar mark draws, or undefined before any valued mark loads | LinearMarkDisplay |
 | <span id="getter-valuescale">**valueScale**</span><br><code>ValueScale</code> | The y scale the chrome draws the axis from; the shapes place values linearly, so the inherited `scaleType` slot is not consulted | LinearMarkDisplay |
+| <span id="getter-rowcount">**rowCount**</span><br><code>number</code> | bands a span stacks into: the highest `row` any loaded layer carries, plus one | LinearMarkDisplay |
 | <span id="getter-renderstate">**renderState**</span><br><code>MarkRenderState</code> | geometry and scale for the plot canvas, the same box the hit test measures in | LinearMarkDisplay |
 | <span id="getter-regionrefnames">**regionRefNames**</span><br><code>ReadonlyMap&lt;number, string&gt;</code> | displayedRegionIndex → refName, for the hit test | LinearMarkDisplay |
 | <span id="getter-legendsections">**legendSections**</span><br><code>MarkLegendSection[]</code> | the colour keys the loaded regions carry, one per scaled mark | LinearMarkDisplay |
@@ -168,7 +170,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { encodings: MarkEncoding[]; filters: string[]; }</code> | the fetch inputs SettingsInvalidate watches: the encodings and the filters, both evaluated in the worker | LinearMarkDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { layers: LayerRequest[]; filters: string[]; }</code> | the fetch inputs SettingsInvalidate watches: each mark's encoding and lanes, and the filters, all evaluated in the worker | LinearMarkDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearMarkDisplay |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearMarkDisplay |
 | <span id="method-renderingprops">**renderingProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;{ id: IOptionalITy…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;…&gt;; type: ISimpleType&lt;string&gt;; }&gt; &amp; { ...; } &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }</code></pre></dialog></span> | <span data-pagefind-ignore>props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks</span> | [BaseDisplay](../basedisplay#method-renderingprops) |

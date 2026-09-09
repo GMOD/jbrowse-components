@@ -1,11 +1,12 @@
 // What does a `jexl:` channel cost against a native field read, per feature,
-// through `encodeFeatures`?
+// through `encodeFeatures` — and what does each lane a caller declines save?
 //
 //   node packages/core/benches/encodeFeatures.bench.ts
 //   node packages/core/benches/encodeFeatures.bench.ts --rounds=9 --features=1000000
 //
-// Seven arms over one synthetic feature list, interleaved round-robin, min
-// across rounds (agent-docs/reference/BENCHMARKING.md):
+// Nine arms over one synthetic feature list, interleaved round-robin, min
+// across rounds (agent-docs/reference/BENCHMARKING.md). The first seven ask
+// for the point shape's lanes and the hit index:
 //
 //   native      y: 'score', a constant colour — the encoder's own loop and
 //               `feature.get` per channel
@@ -19,6 +20,13 @@
 //   jexl-glyph  y native, glyph a jexl ternary over strand
 //   scale-glyph y native, glyph a categorical scale over strand
 //
+// The last two decline lanes:
+//
+//   no-index    native, without the Flatbush — what a display that never
+//               hovers through the index saves
+//   wiggle      y as a reader and the `y` lane alone, no jexl instance —
+//               wiggle's array-less fallback (`featuresToRaw`)
+//
 // Every arm packs the same x/x2 and skips the same features, so the identity
 // check compares `count`, `x` and `y` across arms before any time is believed.
 // The feature list is built once and reused: the encoder never allocates per
@@ -29,7 +37,7 @@ import createJexlInstance from '../src/util/jexl.ts'
 import { encodeFeatures } from '../src/util/markEncoding.ts'
 import SimpleFeature from '../src/util/simpleFeature.ts'
 
-import type { MarkEncoding } from '../src/util/markEncoding.ts'
+import type { LaneName, MarkEncodingInput } from '../src/util/markEncoding.ts'
 
 const arg = (name: string, fallback: number) =>
   Number(
@@ -53,7 +61,13 @@ const features = Array.from({ length: n }, (_, i) => {
   })
 })
 
-const ARMS: { name: string; encoding: MarkEncoding }[] = [
+const POINT_LANES: LaneName[] = ['y', 'color', 'glyph', 'index']
+
+const ARMS: {
+  name: string
+  encoding: MarkEncodingInput
+  lanes?: LaneName[]
+}[] = [
   { name: 'native', encoding: { y: 'score', color: 'red' } },
   { name: 'control', encoding: { y: 'score', color: 'red' } },
   { name: 'jexl-y', encoding: { y: 'jexl:feature.score', color: 'red' } },
@@ -87,13 +101,24 @@ const ARMS: { name: string; encoding: MarkEncoding }[] = [
       glyph: { field: 'strand', scale: 'categorical' },
     },
   },
+  {
+    name: 'no-index',
+    encoding: { y: 'score', color: 'red' },
+    lanes: ['y', 'color', 'glyph'],
+  },
+  {
+    name: 'wiggle',
+    encoding: { y: f => Number(f.get('score') ?? 0) },
+    lanes: ['y'],
+  },
 ]
 
 // One driver per arm, written out rather than shared, so no call site goes
 // polymorphic across arms.
-const drivers = ARMS.map(({ encoding }) => {
+const drivers = ARMS.map(({ encoding, lanes = POINT_LANES }) => {
   const enc = encoding
-  return () => encodeFeatures(features, enc, { jexl })
+  return () =>
+    encodeFeatures(features, enc, lanes, lanes.length === 1 ? {} : { jexl })
 })
 
 // identity: every arm admits the same features at the same coordinates

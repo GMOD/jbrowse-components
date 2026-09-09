@@ -3,6 +3,7 @@ import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import * as barShader from '@jbrowse/render-core/shaders/barMarkIface'
 import * as pointShader from '@jbrowse/render-core/shaders/pointMarkIface'
+import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
 
 import { findMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend } from './legend.ts'
@@ -50,8 +51,6 @@ function layer(
     yMax: Math.max(...y),
     flatbushData: fb.data,
     flatbush: Flatbush.from(fb.data),
-    scale: undefined,
-    glyphScale: undefined,
     ...extra,
   }
 }
@@ -63,6 +62,7 @@ const state: MarkRenderState = {
   origin: 0,
   minWidthPx: 1,
   pointDiameterPx: 4,
+  rowCount: 1,
 }
 
 const block = {
@@ -97,6 +97,64 @@ test('a region with fewer layers than marks packs nothing for the missing one', 
   const marks = buildMarkList(['bar', 'point'])
   const data: MarkRegionData = { layers: [layer([1], [1], [RED])] }
   expect(marks[1]!.pass.pack(data).byteLength).toBe(0)
+})
+
+test('a layer without the lanes its shape reads packs nothing', () => {
+  const [span] = buildMarkList(['span'])
+  const withoutRow: MarkRegionData = { layers: [layer([1], [1], [RED])] }
+  expect(span!.pass.pack(withoutRow).byteLength).toBe(0)
+  const withRow: MarkRegionData = {
+    layers: [layer([1], [1], [RED], { row: new Uint32Array([2]) })],
+  }
+  expect(span!.pass.pack(withRow).byteLength).toBeGreaterThan(0)
+})
+
+test('a span mark stacks on the row lane, the bands dividing the plot by rowCount', () => {
+  const [mark] = buildMarkList(['span'])
+  const hal = new MockHal([mark!.pass])
+  const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const data: MarkRegionData = {
+    layers: [
+      layer([100, 500], [0, 0], [RED, BLUE], {
+        row: new Uint32Array([0, 1]),
+        y: undefined,
+      }),
+    ],
+  }
+  const stacked = { ...state, rowCount: 2 }
+  mark!.drawRegion(hal, scratch, block, clip, data, stacked, 0)
+  expect(
+    hal.getLastUniformsF32()![spanShader.UNIFORM_OFFSET_F32.rowHeight],
+  ).toBe(200)
+  // 500 bp is x=400; row 1 is the lower band, y 200..400
+  const hit = findMarkHit(
+    402,
+    300,
+    [block],
+    new Map([[0, data]]),
+    [mark!],
+    ['span'],
+    stacked,
+    new Map([[0, 'ctgA']]),
+  )
+  expect(hit).toMatchObject({ instance: 1, start: 500, color: BLUE })
+  expect(hit?.y).toBeUndefined()
+  expect(
+    findMarkHit(
+      402,
+      100,
+      [block],
+      new Map([[0, data]]),
+      [mark!],
+      ['span'],
+      stacked,
+      new Map([[0, 'ctgA']]),
+    ),
+  ).toBeUndefined()
 })
 
 test('a bar mark writes the origin and the domain into its uniforms', () => {

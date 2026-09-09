@@ -129,9 +129,8 @@ arrays a config-declared mark reads too, in absolute genomic uint32:
 // One region's worth of features as the encoder packs them: parallel typed
 // arrays, `x`/`x2` absolute genomic uint32 (never region-relative, so they
 // cross the worker boundary without precision loss) and `y` the raw score,
-// plus the score extremes and a hit index over (bp, score). The shape reads
-// the arrays under these names.
-export type ScoreRegionData = EncodedChannels
+// plus the score extremes. The shape reads the arrays under these names.
+export type ScoreRegionData = Encoded<'y'>
 ```
 
 And the render state, recomputed cheaply every frame. The colour is resolved to
@@ -676,9 +675,9 @@ cursor and stores what comes back:
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
 // against the same rect `paintBlock` fills. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
-// boxes; the encoder also ships a Flatbush over (bp, score), and a display
-// with hundreds of thousands of instances hands in what that index answers
-// instead (`findManhattanHit` in plugins/gwas is the worked form).
+// boxes; a display with hundreds of thousands of instances asks the encoder
+// for its `index` lane — a Flatbush over (bp, score) — and hands in what that
+// answers instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

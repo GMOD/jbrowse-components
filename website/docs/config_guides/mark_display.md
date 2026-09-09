@@ -67,6 +67,7 @@ Each mark's `encoding` maps feature fields to the channels its shape reads:
 | `x`     | every shape    | a field holding the left edge in bp; `start` by default                                        |
 | `x2`    | every shape    | the right edge; `end` by default                                                               |
 | `y`     | `bar`, `point` | the field plotted on the score axis; a feature whose value is not a finite number is skipped   |
+| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0                        |
 | `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                |
 | `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below) |
 
@@ -148,9 +149,13 @@ points' colour a callback:
 ]
 ```
 
-A `span` has no `y`: it paints a band across the whole plot from `x` to `x2`, in
-its colour, for an interval whose extent is the point — a region of interest
-under the bars, coloured by a class field.
+A `span` has no `y`: it paints a band from `x` to `x2`, in its colour, for an
+interval whose extent is the point — a region of interest under the bars,
+coloured by a class field. With no `row` every span shares one band across the
+whole plot; with one —
+`{ "shape": "span", "encoding": { "row": "sampleIndex" } }` — the plot divides
+into as many bands as the highest row on screen needs, and each span sits on the
+band its field names.
 
 ## What the track menu offers
 

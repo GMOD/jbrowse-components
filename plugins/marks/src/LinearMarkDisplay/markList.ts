@@ -7,18 +7,50 @@ import {
 
 import type { MarkShapeName } from './configSchema.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
-import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
+import type {
+  Encoded,
+  EncodedChannels,
+  LaneName,
+} from '@jbrowse/core/util/markEncoding'
 import type { Mark, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 
 /**
- * One encoded layer as the display stores it: the worker's channels, the
- * Flatbush wrapped once at the commit, and — for a span mark — the row
- * channel the shape reads, all zeros because a span here is a band across the
- * whole plot rather than a row in a stack.
+ * One encoded layer as the display stores it: the worker's channels — the
+ * lanes its shape asked for — and the Flatbush wrapped once at the commit.
  */
 export interface StoredLayer extends EncodedChannels {
   flatbush?: Flatbush
-  row?: Uint32Array
+}
+
+/**
+ * The lanes each shape reads, which is what the worker is asked to fill:
+ * `index` on every one, for the hover.
+ */
+export const SHAPE_LANES = {
+  bar: ['y', 'color', 'index'],
+  point: ['y', 'color', 'glyph', 'index'],
+  span: ['row', 'color', 'index'],
+} as const satisfies Record<MarkShapeName, readonly LaneName[]>
+
+// Whether a layer carries the lanes a shape reads. A region whose payload
+// predates a shape change packs nothing rather than a lane of zeros.
+function hasLanes<L extends LaneName>(
+  layer: StoredLayer,
+  lanes: readonly L[],
+): layer is StoredLayer & Encoded<L> {
+  for (const lane of lanes as readonly LaneName[]) {
+    if (lane !== 'index' && layer[lane] === undefined) {
+      return false
+    }
+  }
+  return true
+}
+
+function withLanes<L extends LaneName>(
+  layer: StoredLayer | undefined,
+  lanes: readonly L[],
+) {
+  return layer && hasLanes(layer, lanes) ? layer : undefined
 }
 
 /** One region's payload: `layers[i]` is mark `i`'s channels. */
@@ -31,6 +63,8 @@ export interface MarkRenderState extends MarkFrame {
   origin: number
   minWidthPx: number
   pointDiameterPx: number
+  /** Bands a span mark stacks into: the highest `row` any loaded layer carries, plus one. */
+  rowCount: number
 }
 
 export type DisplayMark = Mark<MarkRegionData, MarkRenderState>
@@ -52,7 +86,8 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
       case 'bar': {
         return defineMark({
           shape: withPassId(barMark, id),
-          channels: (d: MarkRegionData) => d.layers[i],
+          channels: (d: MarkRegionData) =>
+            withLanes(d.layers[i], SHAPE_LANES.bar),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             origin: s.origin,
@@ -63,7 +98,8 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
       case 'point': {
         return defineMark({
           shape: withPassId(pointMark, id),
-          channels: (d: MarkRegionData) => d.layers[i],
+          channels: (d: MarkRegionData) =>
+            withLanes(d.layers[i], SHAPE_LANES.point),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             diameterPx: s.pointDiameterPx,
@@ -73,14 +109,10 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
       case 'span': {
         return defineMark({
           shape: withPassId(spanMark, id),
-          channels: (d: MarkRegionData) => {
-            const l = d.layers[i]
-            return l?.row
-              ? { x: l.x, x2: l.x2, row: l.row, color: l.color, count: l.count }
-              : undefined
-          },
+          channels: (d: MarkRegionData) =>
+            withLanes(d.layers[i], SHAPE_LANES.span),
           params: (s: MarkRenderState) => ({
-            rowHeight: s.canvasHeight,
+            rowHeight: s.canvasHeight / s.rowCount,
             rowProportion: 1,
             minWidthPx: s.minWidthPx,
             seamPx: 0,

@@ -19,9 +19,9 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 
 | Piece | Where | What it owns |
 | --- | --- | --- |
-| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, the `y` extremes, a Flatbush over `(x, y, x2, y)`, and the `ScaleTable` per scaled channel |
-| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the `jexlFilters` applied, every encoding of the request run over the same list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for `encodings[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding }` sub-schemas, one `defineMark` per entry reading `layers[i]`, the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush |
+| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
+| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the `jexlFilters` applied, every layer of the request — an encoding and its lanes — run over the same list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`), the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **Colour is resolved in exactly one place** — the worker — and the legend reads
 the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
@@ -51,6 +51,19 @@ legend draws a glyph table as rows whose swatch is the glyph — recorded from
 render-core's own `appendGlyph` as SVG path data, so the key cannot draw a
 triangle the plot draws as a disc. Only `point` reads the lane; a scale on a
 bar's glyph resolves and is never drawn.
+
+**A lane is filled because a shape reads it.** `encodeFeatures` takes the
+lane set beside the encoding — `y`, `color`, `glyph`, `row`, and `index` for
+the Flatbush — and a lane not named is neither allocated, filled nor
+transferred: `EncodedChannels` carries every lane as optional on the wire,
+`Encoded<L>` is the same type with a caller's own lanes required, and the
+mark display's lens hands a shape its layer only when the lanes it reads
+are there. The index is a lane like the others because it was most of the
+cost after the walk — the `no-index` and `wiggle` rows below — and a caller
+that never hovers through it (wiggle's fallback, the example plugin's
+every-instance walk) declines it. A `jexl` instance is likewise passed only
+by a caller with a `jexl:` channel to compile; every other channel is a
+field name or a reader.
 
 **A `jexl:` ref is a channel escape, not the default.** The measurement below
 is why: the native read is the loop's own cost and a jexl evaluation is half
@@ -104,12 +117,10 @@ Three packers moved onto it on 2026-09-09:
   `RawFeatureArrays` admits the encoder's `Uint32Array` beside the bbi
   `Int32Array`, and `processFeaturesFromArrays` copies either. Measured over
   a million `SimpleFeature`s, min of 7: 83 → 219 ns/feature, 91 → 263 with a
-  summary band. **The whole gap is the Flatbush** the encoder builds for a hit
-  index this packer discards — with that block skipped the loop is 80 → 82 —
-  so the encoder wants a way to decline it; until then the fallback pays
-  ~136 ns/feature for an index nothing reads. Every channel wiggle hands the
-  encoder is a reader, so the `jexl` in its context is an instance that
-  refuses to compile, which a context that made `jexl` optional would retire.
+  summary band, and **the whole gap was the Flatbush** the encoder built for
+  a hit index this packer discards. The fallback now names the `y` lane
+  alone and passes no jexl instance — every channel it hands the encoder is
+  a reader — and the `wiggle` row of the table below is that call.
 
 ## The jexl channel, measured
 
@@ -119,13 +130,15 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 | arm         |  features |  wall | per feature (ns) | vs native |
 | ----------- | --------: | ----: | ---------------: | --------: |
-| native      | 1,000,000 | 288ms |              288 |     1.00x |
-| control     | 1,000,000 | 317ms |              317 |     1.10x |
-| jexl-y      | 1,000,000 | 426ms |              426 | **1.48x** |
-| jexl-color  | 1,000,000 | 485ms |              485 | **1.68x** |
-| scale-color | 1,000,000 | 366ms |              366 | **1.27x** |
-| jexl-glyph  | 1,000,000 | 507ms |              507 | **1.76x** |
-| scale-glyph | 1,000,000 | 365ms |              365 | **1.27x** |
+| native      | 1,000,000 | 218ms |              218 |     1.00x |
+| control     | 1,000,000 | 227ms |              227 |     1.04x |
+| jexl-y      | 1,000,000 | 325ms |              325 | **1.49x** |
+| jexl-color  | 1,000,000 | 416ms |              416 | **1.91x** |
+| scale-color | 1,000,000 | 275ms |              275 | **1.26x** |
+| jexl-glyph  | 1,000,000 | 387ms |              387 | **1.78x** |
+| scale-glyph | 1,000,000 | 262ms |              262 | **1.20x** |
+| no-index    | 1,000,000 |  81ms |               81 | **0.37x** |
+| wiggle      | 1,000,000 |  67ms |               67 | **0.31x** |
 
 <!-- END GENERATED MEASUREMENT mark-encoding-jexl-channel -->
 
@@ -135,4 +148,6 @@ evaluation per feature over `buildJexlContext`'s proxy; the colour arm was
 rather than per feature, which is the cache `colorEvaluator` holds. The scale
 rows are the same rule declared as a scale — a field read, a map lookup per
 feature and one pass after the walk — and are why shape-by-field is a scale
-on `glyph` rather than the jexl ternary it used to need.
+on `glyph` rather than the jexl ternary it used to need. The last two rows
+are what the lane set buys: `no-index` is the native encoding without its
+Flatbush, and `wiggle` is the fallback packer's call.

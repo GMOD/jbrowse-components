@@ -30,14 +30,9 @@ function mkData(x: number[], x2: number[], y: number[]): ScoreRegionData {
     x: Uint32Array.from(x),
     x2: Uint32Array.from(x2),
     y: Float32Array.from(y),
-    color: new Uint32Array(count),
-    glyph: new Uint8Array(count),
     featureIndex: Uint32Array.from(x.map((_, i) => i)),
     yMin: 0,
     yMax: 1,
-    flatbushData: undefined,
-    scale: undefined,
-    glyphScale: undefined,
   }
 }
 
