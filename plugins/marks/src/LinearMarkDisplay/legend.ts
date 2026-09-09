@@ -1,5 +1,11 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+
 import type { MarkRegionData } from './markList.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ScaleTable } from '@jbrowse/core/util/markEncoding'
+
+const RAMP_STOPS = 8
 
 /** One mark's colour key: the scale table its worker resolved, by mark. */
 export interface MarkLegendSection {
@@ -51,6 +57,30 @@ export function buildMarkLegend(
     })
   }
   return sections.filter(s => s !== undefined)
+}
+
+/** The keys as the color scales `LegendMixin` derives the legend from. */
+export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
+  return sections.map(({ markIndex, scale }) =>
+    scale.kind === 'categorical'
+      ? {
+          kind: 'categorical',
+          id: `mark-${markIndex}`,
+          title: scale.field,
+          entries: scale.entries.map(e => ({
+            value: e.label,
+            label: e.label,
+            color: abgrToCssRgba(e.color),
+          })),
+        }
+      : {
+          kind: 'ramp',
+          id: `mark-${markIndex}`,
+          title: scale.field,
+          domain: scale.domain,
+          stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
+        },
+  )
 }
 
 /** The category a packed colour names in a categorical table, if any. */

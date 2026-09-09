@@ -61,7 +61,7 @@ test('bars from a BED score column, coloured by strand, with the key on screen',
   expect(el.dataset.displayId).toBe('mark_bars-marks')
   // every feature in volvox-bed12 is on the + strand, so the categorical
   // table the worker resolved has the one entry
-  const legend = await findByTestId('mark-legend', {}, { timeout })
+  const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
     expect(legend.textContent).toContain('1')
   })
@@ -96,7 +96,7 @@ test('the SVG export paints the same bars and carries the key', async () => {
   // the painter's bars: score 1000 tops the domain, so each is the full plot height, in the palette colour the worker packed
   expect(svg).toContain('height="140" fill="rgb(255,0,0)"')
   // the key, off the same table
-  expect(svg).toContain('data-testid="mark-legend"')
+  expect(svg).toContain('data-testid="color-legend"')
   expect(svg).toContain('>1<')
 }, 40000)
 

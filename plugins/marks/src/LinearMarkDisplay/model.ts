@@ -45,7 +45,7 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { sameMarkHit } from './findMarkHit.ts'
-import { buildMarkLegend } from './legend.ts'
+import { buildMarkLegend, markColorScales } from './legend.ts'
 import { buildMarkList } from './markList.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -351,6 +351,14 @@ export function stateModelFactory(
        */
       get legendSections() {
         return buildMarkLegend(self.rpcDataMap.values(), self.markShapes.length)
+      },
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the keys as color scales, so the chrome and the
+       * export draw the legend off the tables the worker resolved
+       */
+      get colorScales() {
+        return markColorScales(this.legendSections)
       },
     }))
     .volatile(self => ({

@@ -6,7 +6,7 @@ import {
   DisplayContextMenu,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
-import { FloatingSvgOverlay, PointerLayer } from '@jbrowse/display-ui'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
@@ -17,7 +17,6 @@ import {
 import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'
-import MarkLegend from './MarkLegend.tsx'
 import MarkTooltip from './MarkTooltip.tsx'
 
 import type { MarkTooltipModel } from './MarkTooltip.tsx'
@@ -104,7 +103,7 @@ const MarkBody = observer(function MarkBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  const { ticks, showCrossHatches, showLegend, legendSections } = model
+  const { ticks, showCrossHatches } = model
   const plotBox = axisPlotBox(height)
   return (
     <>
@@ -123,19 +122,6 @@ const MarkBody = observer(function MarkBody({
       ) : null}
       {showCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
-      ) : null}
-      {showLegend && legendSections.length > 0 ? (
-        <FloatingSvgOverlay width={width} height={height}>
-          <MarkLegend
-            sections={legendSections}
-            canvasWidth={width}
-            maxHeight={height}
-            displayId={model.configuration.displayId}
-            onDismiss={() => {
-              model.setShowLegend(false)
-            }}
-          />
-        </FloatingSvgOverlay>
       ) : null}
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => <MarkTooltip model={model} mouseState={mouseState} />}
