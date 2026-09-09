@@ -286,7 +286,7 @@ a handful of range requests rather than a 10 GB download.
 Every graph-derived track on this page reads release **2.1**, so a segment id in
 the rGFA tracks and a node id in this database are the same graph's; only the
 alignment underneath, the TAF, is release 2.0, which
-[the last section](#the-alignment-underneath-both) says why.
+[the alignment section](#the-alignment-underneath-both) says why.
 
 ```json addtrack
 {

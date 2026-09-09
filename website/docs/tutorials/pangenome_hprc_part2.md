@@ -400,8 +400,9 @@ widen.
 That leaves few enough alleles to draw each at its own genomic position, lined
 up with the genes above. **Clustering → Cluster rows by genotype... → Run
 clustering** in the track menu reorders the 464 rows by genotype similarity and
-draws a dendrogram beside them. The next section's figure is that matrix, beside
-the graph the same alleles came out of.
+draws a dendrogram beside them. That matrix is what
+[Comparing the graph with the callset](#comparing-the-graph-with-the-callset)
+puts beside the graph the same alleles came out of.
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 

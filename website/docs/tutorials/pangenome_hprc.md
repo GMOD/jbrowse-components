@@ -487,9 +487,10 @@ its length and the haplotype it was first seen in, and the
 whether anything is genotyped there.
 
 Where a contributing haplotype is itself loaded, the same menu opens the allele
-on that haplotype's own coordinates, which the next section sets up for any of
-the 464, and with two or more loaded the view's own **Launch** menu opens them
-all at once as a synteny view. The
+on that haplotype's own coordinates, which
+[Loading a haplotype as an assembly](#loading-a-haplotype-as-an-assembly) sets
+up for any of the 464, and with two or more loaded the view's own **Launch**
+menu opens them all at once as a synteny view. The
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 shows both on five strains.
 
