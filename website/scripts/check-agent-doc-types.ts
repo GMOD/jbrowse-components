@@ -48,10 +48,10 @@ const SOURCES = [
 // exceptions.
 const EXEMPT: Record<string, string> = {
   // Registered by jbrowse-plugin-protein3d, out of this tree, and the snippet
-  // that names it is explicitly the recipe FOR a type with no page. The
-  // plugin's model tag is Protein3dViewPlugin, so it would not gain a
-  // `model:ProteinView` page even once the plugin is documented — see
-  // agent-docs/handoffs/proteinview-agent-docs.md.
+  // that names it is explicitly the recipe FOR a type with no page. The plugin
+  // is published from its own repository and stays external, so no generator
+  // run will ever write this page — scripts/agent-demos/takes/protein.md
+  // records the decision.
   ProteinView: 'registered by the out-of-tree protein3d plugin',
 }
 
