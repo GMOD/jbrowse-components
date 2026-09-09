@@ -21,6 +21,7 @@ import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Maf from '@jbrowse/plugin-maf'
+import Marks from '@jbrowse/plugin-marks'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
@@ -63,6 +64,7 @@ const corePlugins = [
   ComparativeAdapters,
   Arc,
   Gwas,
+  Marks,
   Blat,
 ]
 

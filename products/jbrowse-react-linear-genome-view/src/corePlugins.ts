@@ -12,6 +12,7 @@ import GWAS from '@jbrowse/plugin-gwas'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Maf from '@jbrowse/plugin-maf'
+import Marks from '@jbrowse/plugin-marks'
 import Sequence from '@jbrowse/plugin-sequence'
 import Trix from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
@@ -34,6 +35,7 @@ const corePlugins = [
   GCContent,
   GWAS,
   Maf,
+  Marks,
   Trix,
   Arc,
 ]

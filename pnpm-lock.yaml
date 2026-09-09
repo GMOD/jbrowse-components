@@ -1678,6 +1678,52 @@ importers:
         specifier: workspace:^
         version: link:../bed
 
+  plugins/marks:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.5.1
+        version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../wiggle
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
+      '@mui/icons-material':
+        specifier: ^9.4.0
+        version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
+      '@mui/material':
+        specifier: ^9.4.0
+        version: 9.4.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      mobx:
+        specifier: ^7.0.3
+        version: 7.0.3
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.3)(react@19.2.8)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.2.8
+    devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
+
   plugins/menus:
     dependencies:
       '@jbrowse/core':
@@ -2186,6 +2232,9 @@ importers:
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-menus':
         specifier: workspace:^
         version: link:../../plugins/menus
@@ -2443,6 +2492,9 @@ importers:
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-menus':
         specifier: workspace:^
         version: link:../../plugins/menus
@@ -2711,6 +2763,9 @@ importers:
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
@@ -2887,6 +2942,9 @@ importers:
       '@jbrowse/plugin-maf':
         specifier: workspace:^
         version: link:../../plugins/maf
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-menus':
         specifier: workspace:^
         version: link:../../plugins/menus
