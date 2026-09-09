@@ -657,7 +657,9 @@ export function stateModelFactory(
                   self.setShowLegend(!self.showLegend)
                 },
                 {
-                  disabled: self.colorBy === 'normal',
+                  disabled: !(
+                    self.ldColoringActive || self.colorBy === 'field'
+                  ),
                   disabledHelpText:
                     'Requires LD or field coloring; a single color has no key',
                   pin: self.showLegendDisplayTypeDefault,
