@@ -167,31 +167,96 @@ export function breakendTickPx(
 }
 
 /**
+ * One end of a paired record, 0-based and half-open like every other coordinate
+ * on a feature.
+ */
+export interface FeatureEnd {
+  refName: string
+  start: number
+  end: number
+  /** which way the sequence this end keeps runs from it: 1 right, -1 left, 0 unknown */
+  mateDirection: number
+}
+
+const UNPAIRED_END: FeatureEnd = {
+  refName: 'unknown',
+  start: 0,
+  end: 0,
+  mateDirection: 0,
+}
+
+/**
+ * #api
+ * Both ends of a paired record, off whichever of the two things a producer
+ * states the far one with: the `mate` field a paired adapter fills in, or a VCF
+ * `ALT` this parses. `paired` is false for a record that names no other end,
+ * and `k2` is then a placeholder no view resolves.
+ *
+ * One resolver where there were three — the arc display's endpoint pair,
+ * `svMateLocus`'s far end for a chain walk, and `pairedEndsLocString`'s two
+ * windows for the row menu. Each spelled the 1-based-to-interbase shift itself
+ * (`parseSvAlt` reports VCF's 1-based position while `mate.start` is already
+ * 0-based) and two of them read `ALT` ahead of `mate` while the third read
+ * `mate` first.
+ */
+export function makeFeaturePair(feature: Feature, alt?: string) {
+  const start = feature.get('start')
+  const parsed = parseSvAlt(feature, alt)
+  const mate = feature.get('mate') as Partial<FeatureEnd> | undefined
+  const isSymbolic =
+    alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))
+  // a paired adapter with no VCF ALT to parse (StarFusion, and any adapter that
+  // knows which side of its own breakpoint is retained) states the tick on the
+  // feature the way it states the mate's on `mate`
+  const own = feature.get('mateDirection')
+  const there =
+    mate?.refName !== undefined && mate.start !== undefined
+      ? {
+          ...mate,
+          refName: mate.refName,
+          start: mate.start,
+          end: mate.end ?? mate.start + 1,
+          mateDirection: mate.mateDirection ?? 0,
+        }
+      : parsed
+        ? {
+            refName: parsed.mateRefName,
+            start: parsed.matePos - 1,
+            end: parsed.matePos,
+            mateDirection: parsed.mateDirection ?? 0,
+          }
+        : undefined
+  return {
+    k1: {
+      refName: feature.get('refName'),
+      start,
+      // symbolic alleles: an arc spans start→end, so the local end collapses to
+      // start + 1
+      end: parsed && isSymbolic ? start + 1 : feature.get('end'),
+      mateDirection:
+        parsed?.joinDirection ?? (typeof own === 'number' ? own : 0),
+    },
+    k2: there ?? UNPAIRED_END,
+    paired: there !== undefined,
+  }
+}
+
+export type FeaturePair = ReturnType<typeof makeFeaturePair>
+
+/**
  * #api
  * Where a record's other end is, in the feature's own refName namespace and
  * 0-based like every other coordinate on a feature.
- *
- * The places that need it were each resolving it themselves — `parseSvAlt`
- * first, for a breakend or a symbolic allele carrying CHR2/END, then an
- * explicit `mate` field for a BEDPE row — and each had its own off-by-one to
- * get wrong, since `parseSvAlt` reports VCF's 1-based position while
- * `mate.start` is already 0-based.
  *
  * `undefined` when the record names no other end, which is most of a VCF: a
  * plain SNV, or an indel that is only ever its own span.
  */
 export function svMateLocus(feature: Feature) {
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const parsed = parseSvAlt(feature, alt)
-  if (parsed) {
-    return { refName: parsed.mateRefName, pos: parsed.matePos - 1 }
-  }
-  const mate = feature.get('mate') as
-    | { refName?: string; start?: number }
-    | undefined
-  return mate?.refName !== undefined && mate.start !== undefined
-    ? { refName: mate.refName, pos: mate.start }
-    : undefined
+  const { k2, paired } = makeFeaturePair(
+    feature,
+    (feature.get('ALT') as string[] | undefined)?.[0],
+  )
+  return paired ? { refName: k2.refName, pos: k2.start } : undefined
 }
 
 /**
@@ -204,46 +269,39 @@ export function svMateLocus(feature: Feature) {
  * the single span between them. `undefined` for a record with one end.
  */
 export function pairedEndsLocString(feature: Feature, windowBp: number) {
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const parsed = parseSvAlt(feature, alt)
-  const mate = feature.get('mate') as
-    | { refName: string; start: number; mateDirection?: number }
-    | undefined
-  const ownDirection = feature.get('mateDirection') as number | undefined
-  const here = {
-    refName: feature.get('refName'),
-    pos: feature.get('start'),
-    keeps: parsed?.joinDirection ?? ownDirection ?? 0,
-  }
-  const there = parsed
-    ? {
-        refName: parsed.mateRefName,
-        pos: parsed.matePos - 1,
-        keeps: parsed.mateDirection ?? 0,
-      }
-    : mate
-      ? {
-          refName: mate.refName,
-          pos: mate.start,
-          keeps: mate.mateDirection ?? 0,
-        }
-      : undefined
-  const window = (end: typeof here, reversed: boolean) =>
+  const { k1, k2, paired } = makeFeaturePair(
+    feature,
+    (feature.get('ALT') as string[] | undefined)?.[0],
+  )
+  const window = (end: FeatureEnd, reversed: boolean) =>
     assembleLocString({
       refName: end.refName,
-      start: Math.max(0, end.pos - windowBp),
-      end: end.pos + windowBp,
+      start: Math.max(0, end.start - windowBp),
+      end: end.start + windowBp,
     }) + (reversed ? '[rev]' : '')
-  return there === undefined
+  return !paired
     ? undefined
-    : here.refName === there.refName &&
-        Math.abs(here.pos - there.pos) < 2 * windowBp
+    : k1.refName === k2.refName && Math.abs(k1.start - k2.start) < 2 * windowBp
       ? assembleLocString({
-          refName: here.refName,
-          start: Math.max(0, Math.min(here.pos, there.pos) - windowBp),
-          end: Math.max(here.pos, there.pos) + windowBp,
+          refName: k1.refName,
+          start: Math.max(0, Math.min(k1.start, k2.start) - windowBp),
+          end: Math.max(k1.start, k2.start) + windowBp,
         })
-      : `${window(here, here.keeps === 1)} ${window(there, there.keeps === -1)}`
+      : `${window(k1, panelIsTurned(k1, 'left'))} ${window(k2, panelIsTurned(k2, 'right'))}`
+}
+
+/**
+ * #api
+ * Whether the panel showing this end has to be turned for the join to read left
+ * to right across the seam: an end keeping the sequence to its RIGHT is
+ * reversed on the left panel, one keeping its LEFT is reversed on the right.
+ *
+ * Stated once because two routes to the same pair of panels read it — the
+ * spreadsheet row menu's loc string, and the single-level breakpoint split
+ * view's displayed regions.
+ */
+export function panelIsTurned(end: FeatureEnd, side: 'left' | 'right') {
+  return end.mateDirection === (side === 'left' ? 1 : -1)
 }
 
 /**

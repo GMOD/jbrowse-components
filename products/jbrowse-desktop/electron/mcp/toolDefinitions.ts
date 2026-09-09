@@ -9,8 +9,8 @@
 // with the app closed (docs). Every correctness rule lives in the `jb` helper
 // library instead of in tool plumbing.
 
-// What a client shows the model, and the sources (kept current in README.md,
-// "What each client shows the model"):
+// What a client shows the model, and the sources (kept current in
+// ../mcp/README.md, "What each client shows the model"):
 // - Claude Code cuts the server instructions and each tool description at
 //   2048 characters, appending "… [truncated]". Changelog 2.1.84:
 //   https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md ("MCP

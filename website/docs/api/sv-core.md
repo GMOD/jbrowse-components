@@ -146,6 +146,27 @@ or split-view a mate must drop both rather than treat `<DEL>` as a refName.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+## makeFeaturePair
+
+Both ends of a paired record, off whichever of the two things a producer
+states the far one with: the `mate` field a paired adapter fills in, or a VCF
+`ALT` this parses. `paired` is false for a record that names no other end,
+and `k2` is then a placeholder no view resolves.
+
+One resolver where there were three — the arc display's endpoint pair,
+`svMateLocus`'s far end for a chain walk, and `pairedEndsLocString`'s two
+windows for the row menu. Each spelled the 1-based-to-interbase shift itself
+(`parseSvAlt` reports VCF's 1-based position while `mate.start` is already
+0-based) and two of them read `ALT` ahead of `mate` while the third read
+`mate` first.
+
+```js
+// type signature
+(feature: Feature, alt?: string | undefined) => { k1: { refName: string; start: number; end: number; mateDirection: number; }; k2: FeatureEnd; paired: boolean; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ## pairedEndsLocString
 
 Both ends of a paired record as one loc string an LGV opens side by side,
@@ -158,6 +179,23 @@ the single span between them. `undefined` for a record with one end.
 ```js
 // type signature
 (feature: Feature, windowBp: number) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+## panelIsTurned
+
+Whether the panel showing this end has to be turned for the join to read left
+to right across the seam: an end keeping the sequence to its RIGHT is
+reversed on the left panel, one keeping its LEFT is reversed on the right.
+
+Stated once because two routes to the same pair of panels read it — the
+spreadsheet row menu's loc string, and the single-level breakpoint split
+view's displayed regions.
+
+```js
+// type signature
+(end: FeatureEnd, side: "left" | "right") => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -202,12 +240,6 @@ breakend there stays visible in each.
 
 Where a record's other end is, in the feature's own refName namespace and
 0-based like every other coordinate on a feature.
-
-The places that need it were each resolving it themselves — `parseSvAlt`
-first, for a breakend or a symbolic allele carrying CHR2/END, then an
-explicit `mate` field for a BEDPE row — and each had its own off-by-one to
-get wrong, since `parseSvAlt` reports VCF's 1-based position while
-`mate.start` is already 0-based.
 
 `undefined` when the record names no other end, which is most of a VCF: a
 plain SNV, or an indel that is only ever its own span.

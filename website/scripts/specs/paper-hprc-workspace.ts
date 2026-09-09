@@ -125,7 +125,15 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
       // The mouse stays where it clicked, so the button keeps its hover
       // background in the capture. Park it on the blank page below the graph
       // pane, where nothing reacts to a pointer.
-      { type: 'hover', from: { x: 1500, y: 910 } },
+      {
+        type: 'hover',
+        anchor: {
+          selector: `[data-testid="view-container-${GRAPH_VIEW}"]`,
+          alignX: 'center',
+          alignY: 'bottom',
+          dy: -30,
+        },
+      },
     ],
   },
   {

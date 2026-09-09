@@ -160,6 +160,59 @@ test('a mate upstream on one contig still gets two focused windows', async () =>
   ])
 })
 
+// The panels turn by the rule the spreadsheet row menu's `pairedEndsLocString`
+// already applied to the same junction, so the two routes to it agree on which
+// way it reads. `]ctgB:20001]A` keeps the sequence to the RIGHT of ctgA:60000
+// and to the LEFT of ctgB:20000, so both panels turn.
+test('each panel is turned the way the join reads across the seam', async () => {
+  const { snap } = await singleLevelFocusedSnapshotFromBreakendFeature({
+    session: setup(),
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, ']ctgB:20001]A'),
+    windowSize: 5000,
+  })
+
+  expect(snap.views[0]!.displayedRegions).toEqual([
+    expect.objectContaining({ refName: 'ctgA', reversed: true }),
+    expect.objectContaining({ refName: 'ctgB', reversed: true }),
+  ])
+})
+
+// The pair the k562 BCR--ABL1 figure opens: each end already runs into the
+// join, so turning either would read it backwards.
+test('an end already running into the join leaves its panel alone', async () => {
+  const { snap } = await singleLevelFocusedSnapshotFromBreakendFeature({
+    session: setup(),
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, 'A[ctgB:20001['),
+    windowSize: 5000,
+  })
+
+  expect(snap.views[0]!.displayedRegions).toEqual([
+    expect.objectContaining({ refName: 'ctgA', reversed: false }),
+    expect.objectContaining({ refName: 'ctgB', reversed: false }),
+  ])
+})
+
+// One contig turns nothing, whatever the record says it keeps: the row is
+// sorted into genomic order and its windows merge where they touch, so the
+// record does not decide which panel its own end is on. `[ctgA:20001[A` keeps
+// the sequence to the right at both ends, which is the turn this drops.
+test('a same-contig pair turns no panel', async () => {
+  const { snap } = await singleLevelFocusedSnapshotFromBreakendFeature({
+    session: setup(),
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, '[ctgA:20001[A'),
+    windowSize: 5000,
+  })
+
+  expect(
+    snap.views[0]!.displayedRegions.map(
+      r => (r as { reversed?: boolean }).reversed,
+    ),
+  ).toEqual([false, false])
+})
+
 const STABLE_ID = 'reused_volvox_breakpointsplitview'
 
 // A launcher with no source view to copy tracks from: the SV inspector's chord

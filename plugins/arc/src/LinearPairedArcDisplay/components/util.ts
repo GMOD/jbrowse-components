@@ -1,48 +1,13 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { SV_SYMBOLIC_ALLELES, parseSvAlt } from '@jbrowse/sv-core'
 
 import type { Feature } from '@jbrowse/core/util'
-
-export function makeFeaturePair(feature: Feature, alt?: string) {
-  const start = feature.get('start')
-  const refName = feature.get('refName')
-  const mate = feature.get('mate') as
-    | { refName: string; start: number; end: number; mateDirection?: number }
-    | undefined
-  const parsed = parseSvAlt(feature, alt)
-  const isSymbolic = alt
-    ? SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))
-    : false
-  // a paired adapter with no VCF ALT to parse (StarFusion, and any adapter that
-  // knows which side of its own breakpoint is retained) states the tick on the
-  // feature the way it states the mate's on `mate`
-  const own = feature.get('mateDirection')
-
-  return {
-    k1: {
-      refName,
-      start,
-      // symbolic alleles: arc spans start→end, so collapse the local end to start+1
-      end: parsed && isSymbolic ? start + 1 : feature.get('end'),
-      mateDirection:
-        parsed?.joinDirection ?? (typeof own === 'number' ? own : 0),
-    },
-    k2: mate ?? {
-      refName: parsed?.mateRefName ?? 'unknown',
-      end: parsed?.matePos ?? 0,
-      start: parsed ? parsed.matePos - 1 : 0,
-      mateDirection: parsed?.mateDirection ?? 0,
-    },
-  }
-}
+import type { FeaturePair } from '@jbrowse/sv-core'
 
 interface Endpoint {
   refName: string
   start: number
   end: number
 }
-
-export type FeaturePair = ReturnType<typeof makeFeaturePair>
 
 // Canonical, orientation-independent key for an arc: a paired feature is
 // emitted from both endpoints' interval trees (flip r1/r2), and reciprocal VCF

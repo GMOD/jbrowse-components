@@ -13,10 +13,13 @@ import {
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
+  makeFeaturePair,
   makeTitle,
+  panelIsTurned,
 } from './util.ts'
 
 import type { Track } from './types.ts'
+import type { FeatureEnd } from './util.ts'
 import type {
   AbstractViewContainer,
   AssemblyHost,
@@ -40,7 +43,19 @@ function singleLevelSnap(feature: Feature, regions: Region[]) {
 
 /**
  * `getBreakendAssemblyRegions`, with the two ends put in the order a single row
- * lays them out.
+ * lays them out and each turned the way the join reads across the seam.
+ *
+ * The turn is `panelIsTurned`, the rule the spreadsheet row menu's
+ * `pairedEndsLocString` already applied to the same pair of panels: the end
+ * keeping the sequence to its right is reversed on the left, the end keeping its
+ * left is reversed on the right. Without it a fusion whose acceptor sits on the
+ * minus strand reads outwards from the join in the panel that receives it, which
+ * is the picture the row menu was turning panels to avoid.
+ *
+ * Only across two contigs. This row is sorted into genomic order below and its
+ * windows merge where they touch, so on one contig which panel an end lands on
+ * is not the record's to say — `pairedEndsLocString` turns such a pair only
+ * because it keeps the record's own order and never merges.
  *
  * `gatherOverlaps` groups by refName and, within a refName, sorts by start — so
  * the row reads left to right in genomic order. A BND may name a mate *upstream*
@@ -59,9 +74,22 @@ async function orderedBreakendEnds(args: {
   session: AbstractViewContainer & AssemblyHost
   assemblyName: string
 }) {
-  const { coverage, region, mateRegion } =
-    await getBreakendAssemblyRegions(args)
+  const {
+    coverage,
+    region: ownRegion,
+    mateRegion: farRegion,
+  } = await getBreakendAssemblyRegions(args)
   const { refName, pos, mateRefName, matePos } = coverage
+  const { k1, k2 } = makeFeaturePair(
+    args.feature,
+    (args.feature.get('ALT') as string[] | undefined)?.[0],
+  )
+  const turn = (r: Region, end: FeatureEnd, side: 'left' | 'right') => ({
+    ...r,
+    reversed: refName !== mateRefName && panelIsTurned(end, side),
+  })
+  const region = turn(ownRegion, k1, 'left')
+  const mateRegion = turn(farRegion, k2, 'right')
   return refName === mateRefName && matePos < pos
     ? {
         // refName === mateRefName here, so swapping the positions is the whole

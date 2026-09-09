@@ -1,6 +1,7 @@
 import { SimpleFeature, dedupe } from '@jbrowse/core/util'
+import { makeFeaturePair } from '@jbrowse/sv-core'
 
-import { makeFeaturePair, pairKey } from './util.ts'
+import { pairKey } from './util.ts'
 
 // A paired feature is inserted into both endpoints' interval trees (flip r1/r2),
 // so an intra-chromosomal SV in view comes back as two features with the mate

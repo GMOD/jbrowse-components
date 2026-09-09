@@ -7,6 +7,7 @@ import {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
+  makeFeaturePair,
   pairedEndsLocString,
   parseSvAlt,
   readTranslocationMate,
@@ -618,5 +619,55 @@ describe('pairedEndsLocString', () => {
       mate: { refName: 'chr2', start: 5000, end: 5_001 },
     })
     expect(pairedEndsLocString(f, 1000)).toBe('chr1:1..1,050 chr2:4,001..6,000')
+  })
+})
+
+describe('makeFeaturePair', () => {
+  test('a record naming no other end is not paired', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 5,
+      end: 6,
+      ALT: ['A'],
+    })
+    expect(makeFeaturePair(f, 'A').paired).toBe(false)
+  })
+
+  // The one place the three resolvers this replaced disagreed. A producer that
+  // fills in `mate` has resolved its own record; an ALT is what is left to parse
+  // when nothing did.
+  test('an explicit mate wins over a parseable ALT', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'f',
+      refName: 'chr1',
+      start: 999,
+      end: 1_000,
+      ALT: ['N[chr2:2000['],
+      mate: { refName: 'chr3', start: 30_000, end: 30_001 },
+    })
+    expect(makeFeaturePair(f, 'N[chr2:2000[').k2).toMatchObject({
+      refName: 'chr3',
+      start: 30_000,
+    })
+  })
+
+  // A mate stating only where it is: the end and the direction are filled in
+  // rather than left undefined, so a key built from the pair is a key.
+  // `SimpleFeature`'s own type requires the end, and a feature deserialized out
+  // of a worker carries whatever its producer wrote.
+  test('a mate with no end or direction is still one interbase end', () => {
+    const f = createMockFeature({
+      refName: 'chr1',
+      start: 10,
+      end: 11,
+      mate: { refName: 'chr2', start: 500 },
+    }) as unknown as SimpleFeature
+    expect(makeFeaturePair(f).k2).toEqual({
+      refName: 'chr2',
+      start: 500,
+      end: 501,
+      mateDirection: 0,
+    })
   })
 })

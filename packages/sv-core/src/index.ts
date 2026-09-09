@@ -15,9 +15,11 @@ export {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
+  makeFeaturePair,
   makeTitle,
   navToLoc,
   pairedEndsLocString,
+  panelIsTurned,
   parseSvAlt,
   readTranslocationMate,
   safeParseBreakend,
@@ -26,6 +28,8 @@ export {
 } from './util.ts'
 export type {
   BreakpointSplitViewHost,
+  FeatureEnd,
+  FeaturePair,
   Region,
   ViewWithAssemblyNames,
 } from './util.ts'
