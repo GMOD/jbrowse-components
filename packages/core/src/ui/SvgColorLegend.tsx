@@ -159,7 +159,7 @@ export default function SvgColorLegend({
   // empty first paint
   testid?: string
 }) {
-  const gradientPrefix = useId()
+  const legendId = useId()
   const shown =
     maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
   const overflowLabel =
@@ -209,7 +209,7 @@ export default function SvgColorLegend({
             <GradientRow
               entry={entry}
               width={totalWidth}
-              gradientId={svgSafeId(`${gradientPrefix}-${entry.key}`)}
+              gradientId={svgSafeId(`${legendId}-${entry.key}`)}
             />
           ) : (
             <>

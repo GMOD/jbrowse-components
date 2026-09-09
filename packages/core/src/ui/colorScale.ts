@@ -68,9 +68,10 @@ export type ColorScale = CategoricalScale | RampScale
 // draw a section's title only beside other sections, and a bar of numbers
 // with nothing saying what they count is not a key.
 function rampItem(
-  { title, domain: [min, max], stops, format = toLocale }: RampScale,
+  { title, domain, stops, format = toLocale }: RampScale,
   lone: boolean,
 ): LegendItem {
+  const [min, max] = domain
   return {
     label: lone ? (title ?? '') : '',
     gradient: { stops, minLabel: format(min), maxLabel: format(max) },
