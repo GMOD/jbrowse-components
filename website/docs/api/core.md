@@ -213,14 +213,14 @@ supplying colors of its own mounts `PaletteProvider` directly instead.
 `n` evenly spaced legend stops read straight out of a
 buildColorRampLut byte table — the same 256×1 RGBA array
 `uploadColorRampLut` hands the GPU and the Canvas2D fillStyle LUTs index —
-formatted for `SvgGradientLegend`. It holds one claim by construction: the
+as the stops of a `RampScale`. It holds one claim by construction: the
 swatch at bar fraction `t` is byte-identical to the ramp entry at `t` on
 both backends. Alpha rides `opacity` (the juicebox fade), never baked into
 the color string.
 
 ```js
 // type signature
-(lut: Uint8Array<ArrayBufferLike>, n: number) => GradientStop[]
+(lut: Uint8Array<ArrayBufferLike>, n: number) => RampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
