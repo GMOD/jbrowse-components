@@ -445,6 +445,12 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
   ],
 })
 
+// The right-click sort row, from `sortRowsHereMenuItem` in
+// multiSampleVariantMenuItems.ts. Named once because the three figures below and
+// the tour in videos/sv.ts all wait on it, and a rename in the display leaves a
+// stale spelling here as a timeout against a fully-drawn matrix.
+export const SORT_BY_GENOTYPE = 'Sort rows by genotype here'
+
 // The panel's shared handles: what `multisv_rhd` right-clicks and waits on, and
 // what the tour in videos/sv.ts does. Two spellings of the deletion would be
 // two figures sorting on two variants.
@@ -766,7 +772,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     hideTooltip: true,
     actions: [
-      // The variant under the pointer is what "Sort by genotype" keys on, so the
+      // The variant under the pointer is what the sort keys on, so the
       // x is the whole content of this click and it is a locus, not the x=1130 it
       // used to be (that coordinate held only for this window at this width). The
       // ROW is immaterial — every row is a sample's cell of the same variant — so
@@ -780,8 +786,8 @@ export const uiSpecs: ScreenshotSpec[] = [
           fracY: 0.5,
         },
       },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
+      { type: 'waitForText', text: SORT_BY_GENOTYPE },
+      { type: 'click', text: SORT_BY_GENOTYPE },
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
       // into the capture
@@ -846,8 +852,8 @@ export const uiSpecs: ScreenshotSpec[] = [
           fracY: 0.5,
         },
       },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
+      { type: 'waitForText', text: SORT_BY_GENOTYPE },
+      { type: 'click', text: SORT_BY_GENOTYPE },
       { type: 'delay', ms: 6000 },
       PARK_CURSOR,
       { type: 'delay', ms: 800 },
@@ -888,7 +894,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // trackId and returns the open one), so the record lane is a sessionTrack
   // pointing at the same VCF under its own id. Two multi-sample displays in one
   // view is separately impossible: the second one's presence makes the first
-  // stop answering `onContextMenu`, so "Sort by genotype" never appears. One
+  // stop answering `onContextMenu`, so the sort row never appears. One
   // matrix plus one ordinary display does not hit that.
   //
   // The right-click names HGSV_1821's own span, so it lands on the deletion's
@@ -934,8 +940,8 @@ export const uiSpecs: ScreenshotSpec[] = [
           fracY: 0.5,
         },
       },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
+      { type: 'waitForText', text: SORT_BY_GENOTYPE },
+      { type: 'click', text: SORT_BY_GENOTYPE },
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
       // into the capture

@@ -43,10 +43,10 @@ For genotype data the window matters in one more way. A tree asks for a single
 distance summarizing the whole window, and a haplotype is a mosaic of segments
 with different histories, so past the first recombination breakpoint a
 window-averaged distance describes no position in particular. The multi-sample
-variant display's **Sort by genotype** (right-click a variant) answers that
-question directly: it orders rows by their allele at that variant and then by
-how far they agree outward, so the shared block reads as a solid rectangle and
-frays exactly where recombination ends it.
+variant display's **Sort rows by genotype here** (right-click a variant) answers
+that question directly: it orders rows by their allele at that variant and then
+by how far they agree outward, so the shared block reads as a solid rectangle
+and frays exactly where recombination ends it.
 
 ## Auto and manual modes
 

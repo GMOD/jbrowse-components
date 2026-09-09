@@ -5,7 +5,7 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { cancerSvVideoFixtures } from '../specs/cancer_sv.ts'
 import { cgiabVideoFixtures, svVideoFixtures } from '../specs/sv.ts'
-import { multisvVideoFixtures } from '../specs/ui.ts'
+import { SORT_BY_GENOTYPE, multisvVideoFixtures } from '../specs/ui.ts'
 import { DENDROGRAM, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
@@ -280,13 +280,13 @@ export const svVideos: VideoSpec[] = [
   // as a correction of the tree.
   //
   // Neither item leaves its menu standing, so no Escapes belong here.
-  // `Sort by genotype` is a plain action row (multiSampleVariantMenuItems.ts,
+  // `Sort rows by genotype here` is a plain action row (multiSampleVariantMenuItems.ts,
   // `variantContextMenuItems`) and `Cluster rows by genotype...` is one that
   // queues a dialog, and `staysOpenOnClick` keeps only a checkbox or a radio up.
   {
     name: 'sv/multisample_sort',
     description:
-      'Two orders over the 1000 Genomes cohort at the RHD deletion: right-click the block for Sort by genotype and the callset order resolves into three dosage bands, then Clustering, Cluster rows by genotype... and Run clustering re-key the same rows on the whole window and draw the tree they came out of',
+      'Two orders over the 1000 Genomes cohort at the RHD deletion: right-click the block for Sort rows by genotype here and the callset order resolves into three dosage bands, then Clustering, Cluster rows by genotype... and Run clustering re-key the same rows on the whole window and draw the tree they came out of',
     url: unsortedRhdPanel,
     // SIZED TO THE FIGURE, which is the same four lanes: `multisv_rhd` measures
     // them at 1230 and every one carries an explicit height (290 matrix, 330
@@ -326,15 +326,15 @@ export const svVideos: VideoSpec[] = [
       // sort keys on the variant UNDER the pointer (`contextMenuFeature`), so a
       // pixel here rather than a locus would be right only at the width it was
       // measured at, and wrong quietly: a right-click between two records offers
-      // a menu with no "Sort by genotype" in it at all.
+      // a menu with no sort row in it at all.
       {
         type: 'rightclick',
         anchor: { track: matrixTrackId, locus: deletionSpan, fracY: 0.5 },
         say: 'Order the callset by genotype at the deletion',
         hold: 1800,
       },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
+      { type: 'waitForText', text: SORT_BY_GENOTYPE },
+      { type: 'click', text: SORT_BY_GENOTYPE },
       // ON CAMERA, deliberately. `sortByGenotype` is synchronous over cell data
       // already in memory — no fetch, no worker — so this wait is the app
       // answering again rather than a spinner, and the frame it holds is the one

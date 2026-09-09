@@ -1469,7 +1469,7 @@ export default function MultiSampleVariantBaseModelF(
          * Sorts the rows that are already on screen, so the palette color,
          * label and labelColor ride along and nothing has to be merged back.
          * Sorting adapter metadata instead discarded all three: **Color by… →
-         * Population** then **Sort by genotype** reordered correctly and
+         * Population** then **Sort rows by genotype here** reordered correctly and
          * blanked every sidebar swatch, with the menu still showing Population
          * ticked. Nothing re-seeds the palette afterwards — `setSources`
          * short-circuits on `deepEqual`, and `applyArrangement` is reachable
