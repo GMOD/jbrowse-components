@@ -32,15 +32,19 @@ deletion that removes two genes, and that is where the page ends.
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose
-Minigraph-Cactus graph is built from a multiple alignment that the release
-publishes projected onto GRCh38, beside a CAT gene annotation of every assembly.
+Minigraph-Cactus graph carries every haplotype as a walk, published beside the
+same alignment projected onto GRCh38 and a CAT gene annotation of every
+assembly.
 
-- the graph's alignment, projected onto GRCh38 and indexed by locus:
+- the graph, which the lanes are unpacked from, 63 GB:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
+- the same alignment projected onto GRCh38 and indexed by locus, which the
+  `SOURCE=taf` route reads in place of the graph:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
-- GRCh38's chromosome lengths, which bound each chromosome's read of the
-  alignment:
+- GRCh38's chromosome lengths, which bound each chromosome's read of that
+  projection:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 - hg38's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 - the finished index, chromosome lengths, annotations and config, rehosted so
@@ -88,7 +92,7 @@ sequence:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
-pigz -dc hprc-v2.0-mc-grch38.gfa.gz \
+pigz -dc hprc-v2.1-mc-grch38.gfa.gz \
   | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
       --queries HG01109#1,HG00099#1 --max-gap 10000 \
       --contig-lengths contig_lengths.fai \
@@ -256,12 +260,13 @@ lanes** and **Reset lane order**.
 
 ## Reproduce it end to end
 
-The script fetches the TAF and its index, unpacks every chromosome for the eight
-haplotypes several at a time, indexes the PAF, fetches and trims each
-haplotype's CAT annotation and writes the config; see
-[Prerequisites](#prerequisites). The whole alignment streams once, as MAF, and
-that stream is the cost; `JOBS` sets how many chromosomes run at once, and a
-finished chromosome is kept, so a rerun picks up where it stopped.
+The script fetches the graph, unpacks the eight haplotypes' walks in one pass
+over it, indexes the PAF, fetches and trims each haplotype's CAT annotation and
+writes the config; see [Prerequisites](#prerequisites). The 63 GB download is
+the cost, and it is kept, so a rerun starts from the file it already has.
+`SOURCE=taf` takes the projection instead, where `taffy` streams a chromosome at
+a time, `JOBS` sets how many run at once, and a finished chromosome is kept the
+same way; that route wants `taffy` on the path in place of `pigz`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
