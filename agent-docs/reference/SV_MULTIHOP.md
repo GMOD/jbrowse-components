@@ -30,7 +30,7 @@ ideas that used to sit at the bottom of this file are in
 | `website/scripts/specs/cancer_sv.ts` | the figure specs for both |
 | `https://jbrowse.org/demos/cancer_sv/` | hosted data, 2.3 GB, 18 files |
 
-Behavior checks for both python helpers live in `scripts/check-build-scripts.py`,
+Behavior checks for all three python helpers live in `scripts/check-build-scripts.py`,
 53 of them for `sv_multihop` alone. Every bug below is pinned by one.
 
 ## Verified facts, do not re-derive

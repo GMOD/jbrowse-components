@@ -1625,6 +1625,74 @@ check("segments prefixes chr and converts to a 0-based start",
       open(seg_out).read().split("\n")[0].split("\t")[:3],
       ["chr9", "130731326", "131152326"])
 
+# lift_bnd_vcf.py: a breakend's partner coordinate lives inside its ALT, so a
+# POS-only lift leaves every pair pointing at the old assembly. Pinned against a
+# stand-in liftOver that shifts every locus by 1000, loses chrUn, and lands one
+# locus on the minus strand.
+lift_bnd = load("scripts/lift_bnd_vcf.py", "lift_bnd_vcf")
+d = tempfile.mkdtemp()
+fake_liftover = os.path.join(d, "liftOver")
+with open(fake_liftover, "w") as fh:
+    fh.write("#!/usr/bin/env python3\n"
+             "import sys\n"
+             "src, chain, out, unmapped = sys.argv[1:5]\n"
+             "with open(src) as f, open(out, 'w') as o, open(unmapped, 'w') as u:\n"
+             "    for line in f:\n"
+             "        c, s, e, name, score, strand = line.rstrip('\\n').split('\\t')\n"
+             "        if c == 'chrUn':\n"
+             "            u.write(line)\n"
+             "            continue\n"
+             "        if name == 'chr3:300':\n"
+             "            strand = '-'\n"
+             "        o.write(f'{c}\\t{int(s)+1000}\\t{int(e)+1000}\\t{name}\\t{score}\\t{strand}\\n')\n")
+os.chmod(fake_liftover, 0o755)
+lift_in = os.path.join(d, "in.vcf")
+with open(lift_in, "w") as fh:
+    fh.write("##fileformat=VCFv4.2\n"
+             "##contig=<ID=chr1>\n"
+             "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+             "chr2\t200\tb\tA\t]chr1:100]A\t.\tPASS\tSVTYPE=BND;MATEID=a\n"
+             "chr1\t100\ta\tT\tT[chr2:200[\t.\tPASS\tSVTYPE=BND;MATEID=b\n"
+             "chr1\t500\tc\tG\tG[chrUn:50[\t.\tPASS\tSVTYPE=BND;MATEID=d\n"
+             "chrUn\t50\td\tC\t]chr1:500]C\t.\tPASS\tSVTYPE=BND;MATEID=c\n"
+             "chr3\t300\te\tA\tA[chr4:400[\t.\tPASS\tSVTYPE=BND;MATEID=f\n"
+             "chr4\t400\tf\tT\t]chr3:300]T\t.\tPASS\tSVTYPE=BND;MATEID=e\n"
+             "HLA-A*01:01:01:01\t5000\tg\tA\tA[chr5:600[\t.\tPASS\tSVTYPE=BND\n")
+lift_out = os.path.join(d, "out.vcf")
+quiet_err = io.StringIO()
+with contextlib.redirect_stderr(quiet_err):
+    lift_kept, lift_total = lift_bnd.lift(
+        lift_in, "chain", fake_liftover, lift_out, os.path.join(d, "work"))
+lifted = [l.split("\t") for l in open(lift_out).read().splitlines()
+          if not l.startswith("#")]
+check("lift moves POS and the ALT mate together",
+      [(f[0], f[1], f[4]) for f in lifted if f[2] == "a"],
+      [("chr1", "1100", "T[chr2:1200[")])
+check("lift drops both records of a pair whose one end did not land",
+      [f[2] for f in lifted if f[2] in ("c", "d")], [])
+check("lift drops both records of a pair whose one end landed inverted",
+      [f[2] for f in lifted if f[2] in ("e", "f")], [])
+check("lift keeps a mate on a colon-bearing contig whole",
+      [(f[0], f[1]) for f in lifted if f[2] == "g"],
+      [("HLA-A*01:01:01:01", "6000")])
+check("lift sorts on the new coordinates and drops the old ##contig lines",
+      [l for l in open(lift_out).read().splitlines() if l.startswith("##contig")],
+      [])
+check("lift reports what it kept", (lift_kept, lift_total), (3, 7))
+symbolic_in = os.path.join(d, "symbolic.vcf")
+with open(symbolic_in, "w") as fh:
+    fh.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+             "chr1\t100\ta\tT\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=900\n")
+try:
+    with contextlib.redirect_stderr(quiet_err):
+        lift_bnd.lift(symbolic_in, "chain", fake_liftover, lift_out,
+                      os.path.join(d, "work2"))
+    symbolic_refused = False
+except SystemExit as e:
+    symbolic_refused = "symbolic allele" in str(e)
+check("lift refuses a symbolic allele rather than passing its END through",
+      symbolic_refused, True)
+
 # mcscanx_to_anchors.py: the MCScan adapters throw on a gene id missing from the
 # BED and silently mis-draw a block whose columns are the wrong way round, so
 # what is pinned is the genome split and the column normalization.

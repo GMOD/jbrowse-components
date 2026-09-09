@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Pull one cell line out of a DepMap Omics release into JBrowse-ready files, for
-website/docs/tutorials/cancer_sv.md.
+website/docs/tutorials/k562_fusions.md.
 
 DepMap publishes STAR-Fusion calls and copy-number segments for ~1900 cell lines
 as two big CSVs keyed by model/profile id. Both carry the columns JBrowse wants,

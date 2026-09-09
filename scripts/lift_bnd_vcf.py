@@ -29,7 +29,7 @@ from pathlib import Path
 # partner locus between a matched pair of brackets: `t[p[`, `t]p]`, `[p[t`,
 # `]p]t`. The bracket direction encodes which side of the partner is joined and
 # is preserved verbatim -- only the coordinate inside changes.
-ALT_MATE = re.compile(r"([\[\]])([^\[\]:]+):(\d+)\1")
+ALT_MATE = re.compile(r"([\[\]])([^\[\]]+):(\d+)\1")
 
 
 def open_maybe_gz(path):
@@ -43,8 +43,7 @@ def loci_of(chrom, pos, alt):
         yield mate_chrom, int(mate_pos)
 
 
-def main():
-    in_vcf, chain, liftover, out_vcf, workdir = sys.argv[1:6]
+def lift(in_vcf, chain, liftover, out_vcf, workdir):
     work = Path(workdir)
     work.mkdir(parents=True, exist_ok=True)
 
@@ -55,7 +54,13 @@ def main():
             if line.startswith("#"):
                 header.append(line.rstrip("\n"))
             else:
-                records.append(line.rstrip("\n").split("\t"))
+                f = line.rstrip("\n").split("\t")
+                if f[4].startswith("<"):
+                    sys.exit(
+                        f"lift_bnd_vcf: {f[0]}:{f[1]} is a symbolic allele; its END "
+                        "would not be lifted, so only breakend records are accepted"
+                    )
+                records.append(f)
 
     # One BED interval per DISTINCT locus. A junction's two records name each
     # other, so every coordinate appears at least twice; deduping keeps the lift
@@ -153,6 +158,12 @@ def main():
         f"{flipped} of those onto the minus strand)",
         file=sys.stderr,
     )
+
+    return len(out), len(records)
+
+
+def main():
+    lift(*sys.argv[1:6])
 
 
 if __name__ == "__main__":
