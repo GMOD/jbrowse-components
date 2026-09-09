@@ -66,9 +66,7 @@ test('a Manhattan scoreField plots another column as y', async () => {
   await waitFor(() => {
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(50001)
   })
-  const scores = [...display.rpcDataMap.values()].flatMap(d =>
-    Array.from(d.scores as Float32Array),
-  )
+  const scores = [...display.rpcDataMap.values()].flatMap(d => Array.from(d.y))
   expect(scores).toContain(50001)
 }, 30000)
 
