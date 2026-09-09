@@ -261,8 +261,8 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html).toContain('>Village dog</text>')
     expect(html).toContain('>Wolf</text>')
     expect(html).toContain('fill="#e41a1c"')
-    // A lone surviving section stays untitled, per legendEntries' shared rule.
-    expect(html).not.toContain('>Row groups</text>')
+    // A lone scale names the box, per legendSpecOf's shared rule.
+    expect(html).toContain('>Row groups</text>')
   })
 
   // With both vocabularies present each gets its heading, so a reader can tell

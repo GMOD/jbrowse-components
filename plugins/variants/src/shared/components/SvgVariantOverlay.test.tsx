@@ -73,12 +73,12 @@ test('a single-sample track labels its one row', () => {
   getByText('HG001')
 })
 
-test('the genotype color key exports, untitled when it is the only section', () => {
+test('the genotype color key exports, titled by its one scale', () => {
   const model = createDisplay([{ name: 'HG001' }, { name: 'HG002' }])
-  const { getByText, queryByText } = renderKey(model)
+  const { getByText } = renderKey(model)
   getByText('Homozygous reference')
   getByText('Homozygous alt')
-  expect(queryByText('Genotypes')).toBeNull()
+  getByText('Genotypes')
 })
 
 test('colorBy adds a titled sample-grouping section to the exported key', () => {
