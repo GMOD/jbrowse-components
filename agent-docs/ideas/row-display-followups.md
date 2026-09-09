@@ -24,7 +24,7 @@ Everything but the shader exists — `useRowVirtualScroll` (core) and
 `rowHeightConfigSchemaFields` + `RowHeightMixin` + `rowHeightMenuItem` are the
 slot, the getters and the menu. What is missing is a `scrollTop` uniform in
 `wiggle.slang` / `wiggleLine.slang` and the Canvas2D twin, a `rowsHeight`
-viewport under `plotGeometry`, and the per-row axes (`MultiWiggleSvgScales`)
+viewport under `plotGeometry`, and the per-row axes (the chrome's, off `valueScales`)
 culling to it. Declined in the pass because fit-to-height is what the display
 is for at cohort scale (a 1,000-row density matrix is read as a stack), and the
 hint's advice is right more often than a scrollbar would be.

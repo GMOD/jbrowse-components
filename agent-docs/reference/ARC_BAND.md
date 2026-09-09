@@ -30,7 +30,7 @@ own:
 - **Arc mode only.** The read cloud's Y axis IS insert size, and an
   interchromosomal pair has none — it carries TLEN 0, so `computeArcShape` falls
   back to the endpoint gap, which becomes a real `maxFlatArcSpanBp`, which
-  `arcsYDomainBp` maxes across groups, which `insertSizeTickSections` PRINTS on
+  `arcsYDomainBp` maxes across groups, which the insert-size axis PRINTS on
   the ruler. One connection would rescale the cloud to a 107 Mb "insert size".
   Arc mode's axis is genomic radius, where the band ceiling is already where a
   maximally-far same-chromosome pair clamps (`INTERCHROM_ARC_YBP`).
@@ -317,7 +317,7 @@ The bar is drawn between two feet, so a partner the view has no block for is
 extrapolated: the line runs off the screen edge to a coordinate nothing covers
 and paints the full width of the band, saying nothing its near foot does not. And
 the same connection's span sets `arcsYDomainBp`, which every lane shares and
-`insertSizeTickSections` prints at the top of the axis.
+the insert-size axis prints at its top.
 
 Measured on HG002 300x (`NHGRI_Illumina300X_AJtrio`, hs37d5) over 47 20 kb
 windows across chr1, 2, 5, 11, 17 and 20 — 5,281 cloud arcs after the

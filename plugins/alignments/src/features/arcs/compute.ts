@@ -555,7 +555,7 @@ function resolveArcs(
       // `computeArcShape` would fall back to the endpoint GAP — |ctgBbp -
       // ctgAbp|, about 1.07e8 for a real chr9/chr22 junction — and that
       // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
-      // across every group, which `insertSizeTickSections` prints on the
+      // across every group, which the insert-size axis prints on the
       // ruler. One connection would rescale the whole read cloud to a 107 Mb
       // "insert size" and label it. Arc mode's axis is genomic radius, where
       // the band ceiling is not an invented position — see
@@ -851,7 +851,7 @@ export interface ArcsByGroupResult {
   // have, so the slots stay raw here.
   colorSlots: Set<number>
   // The largest reported flat-arc span, which is the read cloud's Y domain: its
-  // axis autoscales to this and `insertSizeTickSections` labels the top tick
+  // axis autoscales to this and the insert-size axis labels its top tick
   // with it. 0 when nothing flat is drawn.
   maxFlatArcSpanBp: number
 }
