@@ -122,7 +122,7 @@ test('the slot turned off suppresses it even where an insertion is present', () 
 // reader the wrong thing to look for. Both read palette.insertion.
 test('the swatch is the palette color the overlay paints with', () => {
   const scale = setup(7833).colorScales.find(s => s.id === 'insertions')
-  expect(scale!.kind === 'categorical' && scale.entries[0]!.color).toBe(
+  expect(scale?.kind === 'categorical' && scale.entries[0]!.color).toBe(
     resolvePalette().insertion,
   )
 })

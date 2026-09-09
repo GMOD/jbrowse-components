@@ -1547,7 +1547,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         focusLegendEntry(scaleId: string, value: string) {
           if (scaleId === 'group') {
-            self.focusGroup(value)
+            this.focusGroup(value)
           }
         },
       }))

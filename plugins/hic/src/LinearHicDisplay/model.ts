@@ -278,7 +278,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             id: 'contacts',
             title: useLogScale ? 'Contacts (log)' : 'Contacts',
             domain: hicScaleDomain(score, useLogScale),
-            stops: legendStops(self.colorScheme),
+            stops: legendStops(this.colorScheme),
           },
         ]
       },

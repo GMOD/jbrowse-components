@@ -17,7 +17,7 @@ test('the scale is the loaded metric, read out of the painting LUT', () => {
     domain: [0, 1],
   })
   const lut = generateLDColorRamp('r2')
-  const last = scale!.kind === 'ramp' ? scale.stops.at(-1)! : undefined
+  const last = scale?.kind === 'ramp' ? scale.stops.at(-1)! : undefined
   expect(last).toMatchObject({ offset: 1 })
   expect(last!.color).toBe(
     `rgb(${lut[lut.length - 4]},${lut[lut.length - 3]},${lut[lut.length - 2]})`,

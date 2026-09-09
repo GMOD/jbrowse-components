@@ -154,7 +154,7 @@ describe('getVariantColorScales', () => {
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
     expect(sections[1]!.title).toBe('Population')
-    expect(sections[1]!.entries.map(i => i.label)).toEqual(['EUR', 'AFR'])
+    expect(entriesOf(sections[1])!.map(i => i.label)).toEqual(['EUR', 'AFR'])
   })
 
   it('replaces the genotype section with an impact key for the consequence preset', () => {

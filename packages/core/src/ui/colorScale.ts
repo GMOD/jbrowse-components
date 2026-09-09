@@ -2,7 +2,6 @@ import { toLocale } from '../util/numericUtils.ts'
 
 import type {
   LegendItem,
-  LegendMark,
   LegendSection,
   LegendSpec,
   LegendSwatch,
@@ -18,7 +17,6 @@ export interface CategoricalEntry {
   value: string
   label: string
   color?: string
-  mark?: LegendMark
   swatches?: LegendSwatch[]
   hidden?: boolean
 }
