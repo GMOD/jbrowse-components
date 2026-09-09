@@ -1,4 +1,5 @@
 import { devicePxBand, withClip } from '../canvas2dUtils.ts'
+import { shapeHitNearest } from './markHit.ts'
 
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { ClipContext2D } from '../canvas2dUtils.ts'
@@ -81,6 +82,14 @@ export interface MarkHit {
   distSq: number
 }
 
+/** An axis-aligned box of the canvas, in CSS px. */
+export interface InkRect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 /**
  * A shape: one hand-written `.slang`, one packer, one Canvas2D painter and one
  * hit test, all reading the same channel arrays.
@@ -131,6 +140,25 @@ export interface MarkShape<TChannels, TParams> {
    */
   paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
   /**
+   * The rect `paintBlock` fills for instance `i`, or undefined for an instance
+   * it skips — a row the viewport has scrolled past, a bar with no height. A
+   * shape whose every instance is one box declares this and nothing about
+   * hovering: `defineMark` derives `hitNearest` from it where none is
+   * declared, and a display's highlight guide reads it for the instances it
+   * names. A shape whose ink is not a box (a ribbon, an arc, a capsule) leaves
+   * it off and keeps its own hit test.
+   *
+   * Painter-only overdraw — `span`'s seam — is not ink; `drawAgainstHit.ts`
+   * holds the two to each other within a pixel.
+   */
+  ink?(
+    channels: TChannels,
+    block: RenderBlock,
+    frame: MarkFrame,
+    params: TParams,
+    i: number,
+  ): InkRect | undefined
+  /**
    * The nearest drawn ink to `(xPx, yPx)` among `candidates`, or undefined if
    * nothing beats `maxDistSq`.
    *
@@ -148,7 +176,8 @@ export interface MarkShape<TChannels, TParams> {
    *
    * Optional, because a shape earns it from a consumer like any other member.
    * MAF answers a hit from row/column arithmetic over the alignment rather than
-   * from `span`'s channels, so it reads none.
+   * from `span`'s channels, so it reads none. A shape with `ink` and no hit test
+   * gets `inkHitNearest` — the nearest of its boxes — through `shapeHitNearest`.
    */
   hitNearest?(
     channels: TChannels,
@@ -265,6 +294,18 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     candidates: Iterable<number>,
     maxDistSq: number,
   ): MarkHit | undefined
+  /**
+   * The box instance `i` painted under the mark's gates, clipped to its band
+   * where it has one: what a highlight guide draws for the instance a display
+   * names. Undefined off a shape with no `ink`, and for an instance nothing
+   * drew.
+   */
+  ink?(
+    region: TRegion,
+    block: RenderBlock,
+    state: TState,
+    i: number,
+  ): InkRect | undefined
 }
 
 /**
@@ -339,6 +380,7 @@ export function defineMark<
   enabled?: (state: TState) => boolean
 }): Mark<TRegion, TState> {
   const { shape, channels, params, band, texture, enabled } = spec
+  const hitNearest = shapeHitNearest(shape)
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -417,7 +459,7 @@ export function defineMark<
         }
       }
     },
-    hitNearest: shape.hitNearest
+    hitNearest: hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
           const strip = band?.(state)
           const c = channels(region)
@@ -444,7 +486,7 @@ export function defineMark<
           ) {
             const p = params(state, region, block)
             if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
-              hit = shape.hitNearest!(
+              hit = hitNearest(
                 c,
                 block,
                 state,
@@ -459,7 +501,34 @@ export function defineMark<
           return hit && !bandExcludes(strip, hit.y) ? hit : undefined
         }
       : undefined,
+    ink: shape.ink
+      ? (region, block, state, i) => {
+          const strip = band?.(state)
+          const c = channels(region)
+          if (
+            (enabled && !enabled(state)) ||
+            (strip && strip.height <= 0) ||
+            c === undefined
+          ) {
+            return undefined
+          }
+          const p = params(state, region, block)
+          if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+            return undefined
+          }
+          const r = shape.ink!(c, block, state, p, i)
+          return r && strip ? clipToBand(r, strip) : r
+        }
+      : undefined,
   }
+}
+
+function clipToBand(r: InkRect, strip: MarkBand): InkRect | undefined {
+  const top = Math.max(r.top, strip.top)
+  const bottom = Math.min(r.top + r.height, strip.top + strip.height)
+  return bottom > top
+    ? { left: r.left, top, width: r.width, height: bottom - top }
+    : undefined
 }
 
 // What a mark with nothing in this region packs. An empty pack IS the release

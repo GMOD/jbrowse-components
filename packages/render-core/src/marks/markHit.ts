@@ -1,4 +1,4 @@
-import type { MarkHit } from './types.ts'
+import type { MarkHit, MarkShape } from './types.ts'
 
 /** One instance's ink measured against a cursor — a `MarkHit` before it is one. */
 export type InkHit = Omit<MarkHit, 'index'>
@@ -17,18 +17,6 @@ export function inkOnRect(
 ): InkHit {
   const x = Math.min(Math.max(xPx, left), left + width)
   const y = Math.min(Math.max(yPx, top), top + height)
-  const dx = xPx - x
-  const dy = yPx - y
-  return { x, y, distSq: dx * dx + dy * dy }
-}
-
-/** The same for a mark with no extent to clamp into. */
-export function inkAtPoint(
-  xPx: number,
-  yPx: number,
-  x: number,
-  y: number,
-): InkHit {
   const dx = xPx - x
   const dy = yPx - y
   return { x, y, distSq: dx * dx + dy * dy }
@@ -66,4 +54,28 @@ export function nearestInk(
     }
   }
   return best
+}
+
+/**
+ * The hit test a shape's `ink` implies: the nearest of its boxes, edges
+ * included, so a point inside one answers it at distance 0.
+ */
+export function inkHitNearest<C, P>(
+  ink: NonNullable<MarkShape<C, P>['ink']>,
+): NonNullable<MarkShape<C, P>['hitNearest']> {
+  return (channels, block, frame, params, xPx, yPx, candidates, maxDistSq) =>
+    nearestInk(candidates, maxDistSq, i => {
+      const r = ink(channels, block, frame, params, i)
+      return r && inkOnRect(xPx, yPx, r.left, r.top, r.width, r.height)
+    })
+}
+
+/** A shape's own `hitNearest`, else the one its `ink` implies, else none. */
+export function shapeHitNearest<C, P>(
+  shape: MarkShape<C, P>,
+): MarkShape<C, P>['hitNearest'] {
+  return (
+    shape.hitNearest ??
+    (shape.ink ? inkHitNearest<C, P>(shape.ink.bind(shape)) : undefined)
+  )
 }

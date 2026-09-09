@@ -1,5 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
+import { bpToScreenPx, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -7,8 +7,8 @@ import {
 import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
-import { inkOnRect, nearestInk } from './markHit.ts'
 
+import type { RenderBlock } from '../renderBlock.ts'
 import type { MarkShape } from './types.ts'
 
 /**
@@ -56,6 +56,20 @@ export interface SpanParams {
   scrollTop: number
 }
 
+// Per instance rather than through `makeBpMapper`: `ink` is asked one
+// instance at a time, and a closure per ask is the allocation the mapper
+// exists to hoist out of a loop.
+export function blockPx(block: RenderBlock, bp: number) {
+  return bpToScreenPx(
+    bp,
+    block.start,
+    block.end,
+    block.screenStartPx,
+    block.screenEndPx,
+    block.reversed,
+  )
+}
+
 export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   id: 'span',
   pass: {
@@ -100,26 +114,20 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     }
   },
 
-  hitNearest(channels, block, _frame, params, xPx, yPx, candidates, maxDistSq) {
+  ink(channels, block, _frame, params, i) {
     const { x, x2, row } = channels
     const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
-    const h = drawnRowHeightPx(rowHeight, rowProportion)
-    const offset = rowBandOffsetPx(rowHeight, rowProportion)
-    const bpToPx = makeBpMapper(block)
-    return nearestInk(candidates, maxDistSq, i => {
-      const xa = bpToPx(x[i]!)
-      const xb = bpToPx(x2[i]!)
-      const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      // the rect `paintBlock` fills, less `seamPx`, which is painter-only
-      // overdraw
-      return inkOnRect(
-        xPx,
-        yPx,
-        spanLeft(xa, xb, width),
-        offset + rowHeight * row[i]! - scrollTop,
-        width,
-        h,
-      )
-    })
+    const xa = blockPx(block, x[i]!)
+    const xb = blockPx(block, x2[i]!)
+    const width = Math.max(minWidthPx, Math.abs(xb - xa))
+    return {
+      left: spanLeft(xa, xb, width),
+      top:
+        rowBandOffsetPx(rowHeight, rowProportion) +
+        rowHeight * row[i]! -
+        scrollTop,
+      width,
+      height: drawnRowHeightPx(rowHeight, rowProportion),
+    }
   },
 }

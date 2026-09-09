@@ -6,7 +6,7 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 
-import type { MarkContext2D } from './types.ts'
+import type { InkRect, MarkContext2D } from './types.ts'
 
 /** The path calls a glyph is built from — what a recorder has to answer. */
 export type GlyphPath = Pick<
@@ -59,4 +59,31 @@ export function appendGlyph(
     ctx.moveTo(cx + r, y)
     ctx.arc(cx, y, r, 0, Math.PI * 2)
   }
+}
+
+/**
+ * The box `appendGlyph` paints inside, by the same split and snap: the
+ * diamond is scaled by `DIAMOND_GLYPH_SCALE` and the small square snaps to
+ * the pixel grid, so neither is the diameter about the centre.
+ */
+export function glyphBox(
+  glyph: number,
+  cx: number,
+  y: number,
+  diameter: number,
+): InkRect {
+  const r = diameter / 2
+  if (glyph === GLYPH_DIAMOND) {
+    const ri = r * DIAMOND_GLYPH_SCALE
+    return { left: cx - ri, top: y - ri, width: 2 * ri, height: 2 * ri }
+  }
+  if (glyph !== GLYPH_TRIANGLE && diameter <= SMALL_POINT_MAX_DIAMETER) {
+    return {
+      left: crispSquareTopLeftPx(cx, diameter),
+      top: crispSquareTopLeftPx(y, diameter),
+      width: diameter,
+      height: diameter,
+    }
+  }
+  return { left: cx - r, top: y - r, width: diameter, height: diameter }
 }

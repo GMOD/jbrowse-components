@@ -2,6 +2,7 @@ import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
 import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
+import { shapeHitNearest } from './markHit.ts'
 import { spanMark } from './spanMark.ts'
 
 import type { SpanChannels, SpanParams } from './spanMark.ts'
@@ -137,7 +138,7 @@ test('packs x/x2/row/color into the struct lanes of the same name', () => {
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(BLUE)
 })
 
-describe('hitNearest', () => {
+describe('the hit test derived from ink', () => {
   const all = (c: SpanChannels) =>
     Array.from({ length: c.count }, (_, i) => c.count - 1 - i)
   const hit = (
@@ -147,7 +148,7 @@ describe('hitNearest', () => {
     b = block,
     p = params,
     maxDistSq = Number.MIN_VALUE,
-  ) => spanMark.hitNearest!(c, b, frame, p, x, y, all(c), maxDistSq)
+  ) => shapeHitNearest(spanMark)!(c, b, frame, p, x, y, all(c), maxDistSq)
 
   test('distance 0 on the painted rect, edges included, and nothing past it', () => {
     const c = channels([10, 50], [20, 60], [0, 1], [RED, BLUE])

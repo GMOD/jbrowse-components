@@ -4,7 +4,7 @@ import * as shader from '../shaders/barMark.generated.ts'
 import { valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
-import { inkOnRect, nearestInk } from './markHit.ts'
+import { blockPx } from './spanMark.ts'
 
 import type { MarkShape } from './types.ts'
 
@@ -96,19 +96,15 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     }
   },
 
-  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
+  ink(channels, block, frame, params, i) {
     const { x, x2, y } = channels
-    const bpToPx = makeBpMapper(block)
-    return nearestInk(candidates, maxDistSq, i => {
-      const r = barRect(
-        bpToPx,
-        x[i]!,
-        x2[i]!,
-        y[i]!,
-        params,
-        frame.canvasHeight,
-      )
-      return r && inkOnRect(xPx, yPx, r.left, r.top, r.width, r.height)
-    })
+    return barRect(
+      bp => blockPx(block, bp),
+      x[i]!,
+      x2[i]!,
+      y[i]!,
+      params,
+      frame.canvasHeight,
+    )
   },
 }

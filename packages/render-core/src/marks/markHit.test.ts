@@ -1,4 +1,4 @@
-import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
+import { inkOnRect, nearestInk } from './markHit.ts'
 
 test('a cursor inside a rect is on the ink, at distance 0', () => {
   expect(inkOnRect(15, 25, 10, 20, 10, 10)).toEqual({
@@ -19,10 +19,6 @@ test('a cursor outside a rect measures to the nearest edge, corners included', (
     y: 30,
     distSq: 25,
   })
-})
-
-test('a point mark has no extent to clamp into', () => {
-  expect(inkAtPoint(10, 10, 13, 14)).toEqual({ x: 13, y: 14, distSq: 25 })
 })
 
 const RECTS = [

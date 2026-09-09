@@ -4,8 +4,8 @@ import * as shader from '../shaders/pointMark.generated.ts'
 import { pointDrawsBar, valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
-import { appendGlyph } from './glyphPaint.ts'
-import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
+import { appendGlyph, glyphBox } from './glyphPaint.ts'
+import { blockPx } from './spanMark.ts'
 
 import type { MarkShape } from './types.ts'
 
@@ -97,25 +97,21 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     ctx.fill()
   },
 
-  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
-    const { x, x2, y } = channels
-    const bpToPx = makeBpMapper(block)
+  // A bar is the rect the painter fills, unpadded on every side; a glyph is
+  // the box `appendGlyph` paints inside. The hit test is the derived one, so a
+  // cursor inside either box is on the instance and a tie goes to the one on
+  // top.
+  ink(channels, block, frame, params, i) {
+    const { x, x2, y, glyph } = channels
     const { diameterPx, domain } = params
-    const domainMin = domain[0]
-    const domainMax = domain[1]
-    const canvasHeight = frame.canvasHeight
-    return nearestInk(candidates, maxDistSq, i => {
-      const xStart = bpToPx(x[i]!)
-      const xEnd = bpToPx(x2[i]!)
-      const cy = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
-      // A bar is the rect the painter fills, unpadded on every side, so the
-      // drawn bar and this box are one rectangle. A glyph has no rect to clamp
-      // into and offers its centre.
-      const lo = Math.min(xStart, xEnd)
-      const hi = Math.max(xStart, xEnd)
-      return pointDrawsBar(hi - lo, diameterPx / 2)
-        ? inkOnRect(xPx, yPx, lo, cy - diameterPx / 2, hi - lo, diameterPx)
-        : inkAtPoint(xPx, yPx, xStart, cy)
-    })
+    const xStart = blockPx(block, x[i]!)
+    const xEnd = blockPx(block, x2[i]!)
+    const cy = valueToYPx(y[i]!, domain[0], domain[1], frame.canvasHeight)
+    const lo = Math.min(xStart, xEnd)
+    const hi = Math.max(xStart, xEnd)
+    const r = diameterPx / 2
+    return pointDrawsBar(hi - lo, r)
+      ? { left: lo, top: cy - r, width: hi - lo, height: diameterPx }
+      : glyphBox(glyph[i]!, xStart, cy, diameterPx)
   },
 }

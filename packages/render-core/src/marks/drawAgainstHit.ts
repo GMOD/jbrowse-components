@@ -1,4 +1,4 @@
-import { inkOnRect } from './markHit.ts'
+import { inkOnRect, shapeHitNearest } from './markHit.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
 import type { MarkContext2D, MarkFrame, MarkShape } from './types.ts'
@@ -229,8 +229,13 @@ interface Box {
   h: number
 }
 
-function contains(r: Box, x: number, y: number) {
-  return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h
+function contains(r: Box, x: number, y: number, slack = 0) {
+  return (
+    x >= r.x - slack &&
+    x <= r.x + r.w + slack &&
+    y >= r.y - slack &&
+    y <= r.y + r.h + slack
+  )
 }
 
 function unionBox(rs: readonly RecordedRect[]) {
@@ -288,6 +293,14 @@ const EPS = 1e-9
  * is a superset of its ink. So it runs exactly when the batch painted one rect
  * per instance, which is that set.
  *
+ * A shape declaring `ink` is held to a second clause, per instance: the box
+ * the painter recorded for `i` lies inside `ink(i)`, and each edge of `ink(i)`
+ * lies within `inkSlackPx` (default 1) of the painting's — so the rect is
+ * tight to the ink within a pixel on every side, which admits a seam overdraw
+ * or a pixel snap and rejects a rect that is the wrong row, the wrong width or
+ * the whole canvas. An instance that painted nothing must answer no ink, and
+ * one with ink must have painted.
+ *
  * Returns the violations rather than asserting, so a test reads as
  * `expect(sweep(...)).toEqual([])`. `maxDistSq` is the caller's, because a
  * shape whose hit target is wider than its ink (`point`) needs a bound that
@@ -303,10 +316,12 @@ export function sweepDrawAgainstHit<C extends { count: number }, P>(
     maxDistSq,
     step = 0.5,
     sliceOne,
+    inkSlackPx = 1,
   }: {
     maxDistSq: number
     step?: number
     sliceOne?: (channels: C, index: number) => C
+    inkSlackPx?: number
   },
 ) {
   const { count } = channels
@@ -327,6 +342,41 @@ export function sweepDrawAgainstHit<C extends { count: number }, P>(
         unionBox(paint(sliceOne(channels, i))),
       )
     : rects.map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }))
+
+  if (shape.ink) {
+    for (let i = 0; i < count; i++) {
+      const r = shape.ink(channels, block, frame, params, i)
+      const b = boxes[i]
+      if (r && !b) {
+        violations.push(`${i} painted nothing but has ink`)
+      } else if (b && !r) {
+        violations.push(`${i} painted but has no ink`)
+      } else if (b && r) {
+        const gaps = [
+          b.x - r.left,
+          r.left + r.width - (b.x + b.w),
+          b.y - r.top,
+          r.top + r.height - (b.y + b.h),
+        ]
+        if (gaps.some(g => g < -EPS)) {
+          violations.push(
+            `${i} painted (${b.x}, ${b.y}, ${b.w}, ${b.h}) outside its ink (${r.left}, ${r.top}, ${r.width}, ${r.height})`,
+          )
+        } else if (gaps.some(g => g > inkSlackPx + EPS)) {
+          violations.push(
+            `${i}'s ink (${r.left}, ${r.top}, ${r.width}, ${r.height}) is more than ${inkSlackPx}px outside its painting (${b.x}, ${b.y}, ${b.w}, ${b.h})`,
+          )
+        }
+      }
+      if (violations.length >= 10) {
+        return violations
+      }
+    }
+  }
+  const hitNearest = shapeHitNearest(shape)
+  if (!hitNearest) {
+    return [`${shape.id} has no hit test`]
+  }
 
   const candidates = Array.from({ length: count }, (_, k) => count - 1 - k)
   let yMin = Infinity
@@ -353,7 +403,7 @@ export function sweepDrawAgainstHit<C extends { count: number }, P>(
           }
         }
       }
-      const hit = shape.hitNearest!(
+      const hit = hitNearest(
         channels,
         block,
         frame,
@@ -369,7 +419,7 @@ export function sweepDrawAgainstHit<C extends { count: number }, P>(
           `(${x}, ${y}) answered ${hit.index}, which painted nothing`,
         )
       } else if (hit && box) {
-        if (!contains(box, hit.x, hit.y)) {
+        if (!contains(box, hit.x, hit.y, EPS)) {
           violations.push(
             `(${x}, ${y}) answered ${hit.index} with ink at (${hit.x}, ${hit.y}), off its painting`,
           )
