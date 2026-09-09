@@ -33,6 +33,7 @@ applies wherever you run it. For copy-paste recipes, see the [](/docs/cookbook).
 - [](/docs/config_guides/gwas_track)
 - [](/docs/config_guides/hic_track)
 - [](/docs/config_guides/maf_track)
+- [](/docs/config_guides/mark_display)
 - [](/docs/config_guides/multiquantitative_track)
 - [](/docs/config_guides/quantitative_track)
 - [](/docs/config_guides/synteny_track)

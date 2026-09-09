@@ -398,7 +398,9 @@ function checkObject(
           `so JBrowse stores it and never applies it`,
       )
     }
-    if (value && typeof value === 'object') {
+    // a track's `metadata` is free-form, so a key in it that happens to spell
+    // a slot name (`origin`) is not that slot
+    if (value && typeof value === 'object' && key !== 'metadata') {
       // displayDefaults' children are slot names; a nested object elsewhere
       // (adapter, a displays entry, index) carries slots of its own type
       const children = Array.isArray(value) ? value : [value]

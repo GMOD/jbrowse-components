@@ -408,9 +408,21 @@ export function colorEvaluator(
 ): (feature: Feature) => number {
   if (isJexl(color)) {
     const expr = stringToJexlExpression(color, jexl)
+    // A jexl colour answers from a handful of strings over a million
+    // features; parsing each answer once is a third of the arm's cost
+    // (packages/core/benches/encodeFeatures.bench.ts).
+    const packed = new Map<string, number>()
     return feature => {
       const v = expr.eval(buildJexlContext({ feature }))
-      return typeof v === 'string' ? cssColorToABGR(v) : FALLBACK_COLOR
+      if (typeof v !== 'string') {
+        return FALLBACK_COLOR
+      }
+      let c = packed.get(v)
+      if (c === undefined) {
+        c = cssColorToABGR(v)
+        packed.set(v, c)
+      }
+      return c
     }
   }
   const constant = cssColorToABGR(color)

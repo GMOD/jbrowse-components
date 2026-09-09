@@ -1,0 +1,35 @@
+{
+  "id": "mark-encoding-jexl-channel",
+  "measured": "2026-09-09",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/encodeFeatures.bench.ts --rounds=9",
+    "notes": "1,000,000 synthetic SimpleFeatures (2 bp each, an integer score, a strand) through encodeFeatures, four arms interleaved round-robin in one node 24 process on AC power, min of 9 rounds. Every arm packs x/x2/y, builds the Flatbush and skips the same features; the identity check compares count, x and y across arms first. 'native' reads score with feature.get and packs a constant colour; 'control' is the same encoding declared a second time, so its ratio is the harness's own resolution; 'jexl-y' reads score through a jexl: expression, one evaluation per feature; 'jexl-color' reads score natively and colours through a jexl ternary, one evaluation per feature with its CSS answer parsed once per distinct string. Absolute times drift about 2x between runs on this shared box; the within-run ratios held across three runs. 'vs native' is typed rather than derived because it divides by another row."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    { "key": "features", "label": "features", "format": "int", "align": "right" },
+    { "key": "ms", "label": "wall", "format": "ms", "align": "right" },
+    {
+      "key": "nsPerFeature",
+      "label": "per feature (ns)",
+      "format": "int",
+      "align": "right",
+      "derived": "ms * 1000000 / features"
+    },
+    { "key": "vsNative", "label": "vs native", "format": "x", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "arm": "native", "features": 1000000, "ms": 237, "vsNative": 1 } },
+    { "values": { "arm": "control", "features": 1000000, "ms": 246, "vsNative": 1.04 } },
+    {
+      "values": { "arm": "jexl-y", "features": 1000000, "ms": 355, "vsNative": 1.5 },
+      "emphasize": ["vsNative"]
+    },
+    {
+      "values": { "arm": "jexl-color", "features": 1000000, "ms": 405, "vsNative": 1.71 },
+      "emphasize": ["vsNative"]
+    }
+  ]
+}
