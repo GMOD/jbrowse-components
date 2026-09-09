@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- the shell and the key it appends are one module */
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
-import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
+import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
+import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getContainingView } from '@jbrowse/core/util'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
