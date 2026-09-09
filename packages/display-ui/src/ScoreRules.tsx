@@ -75,16 +75,18 @@ export function ScoreRuleLines({
   )
 }
 
-// Pointer-events disabled so the canvas underneath still gets mouse events,
-// matching CrossHatches.
+// Once per band the scale rules, like CrossHatches; pointer-events disabled so
+// the canvas underneath still gets mouse events.
 export default function ScoreRules({
   marks,
   width,
   height,
+  bandTops,
 }: {
   marks: ScoreRuleMark[]
   width: number
   height: number
+  bandTops: number[]
 }) {
   return (
     <svg
@@ -97,7 +99,9 @@ export default function ScoreRules({
         width,
       }}
     >
-      <ScoreRuleLines marks={marks} width={width} />
+      {bandTops.map(top => (
+        <ScoreRuleLines key={top} marks={marks} width={width} offsetY={top} />
+      ))}
     </svg>
   )
 }

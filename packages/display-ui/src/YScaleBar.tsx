@@ -20,21 +20,19 @@ const LABEL_HALF_HEIGHT_PX = 5
 export default function YScaleBar({
   ticks,
   orientation,
-  insetLabels,
+  bandHeight,
 }: {
   ticks: YScaleTicks | undefined
   orientation?: 'left' | 'right'
-  // Keep each label's text box inside [yTop, yBottom] instead of centering it on
-  // its tick. For an axis whose box is inset from what it's drawn on (every
-  // single-row wiggle-family display reserves YSCALEBAR_LABEL_OFFSET at both
-  // ends) a centered end label already fits, so this is off by default. It is
-  // for multi-wiggle, which stacks a full-height axis per row with no inset: the
-  // end labels there are centered on the row boundary, which puts the first
-  // row's top label and the last row's bottom label half outside the track —
-  // clipped away by the <svg> — and at every boundary in between draws one row's
-  // domain-min on top of the next row's domain-max, so the halo of whichever
-  // paints second erases the other.
-  insetLabels?: boolean
+  // Keep each label's text box inside the band [0, bandHeight] instead of
+  // centering it on its tick. A no-op for a box inset by YSCALEBAR_LABEL_OFFSET
+  // at both ends, where a centered end label already fits; it is for rows that
+  // stack edge to edge (multi-wiggle), whose end labels are centered on the row
+  // boundary — the first row's top label and the last row's bottom label half
+  // outside the track, clipped away by the <svg>, and at every boundary between
+  // one row's domain-min drawn on top of the next row's domain-max, so the halo
+  // of whichever paints second erases the other.
+  bandHeight?: number
 }) {
   const palette = usePalette()
   if (!ticks) {
@@ -52,18 +50,18 @@ export default function YScaleBar({
   // below it.
   const strokeY = (y: number) => clampStrokeInsideAxis(y + 0.5, yBottom)
   // The tick keeps the group transform; only the text moves off it, and only
-  // under `insetLabels` within half a label of an end. A tick is where the data
+  // under `bandHeight` within half a label of an end. A tick is where the data
   // is, so it never moves — the label is then drawn against the tick rather than
   // across it, which is what any axis does at the edge of its own frame.
   // `undefined` rather than 0 for the labels that don't move, so the markup this
   // emits is unchanged wherever the inset doesn't apply.
   const labelDy = (sy: number) => {
-    if (!insetLabels) {
+    if (bandHeight === undefined) {
       return undefined
     }
     const inset = Math.min(
-      Math.max(sy, yTop + LABEL_HALF_HEIGHT_PX),
-      yBottom - LABEL_HALF_HEIGHT_PX,
+      Math.max(sy, LABEL_HALF_HEIGHT_PX),
+      bandHeight - LABEL_HALF_HEIGHT_PX,
     )
     return inset === sy ? undefined : inset - sy
   }

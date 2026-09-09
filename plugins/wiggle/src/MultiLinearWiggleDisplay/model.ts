@@ -37,15 +37,20 @@ import {
   showRowSeparatorsMenuItem,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
+  treeSidebarOffset,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
+import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
+import {
+  getRowHeight,
+  getRowTop,
+  isOverlayMode,
+} from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeGroupedRenderingTypeSubMenu,
@@ -55,7 +60,6 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
-import { scoreCaptionReservedPx } from './MultiWiggleSvgScales.tsx'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
@@ -74,7 +78,7 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
+import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
@@ -261,10 +265,6 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get rowHeightTooSmallForScalebar() {
-        return self.effectiveRowHeight < 70
-      },
-
       /**
        * #getter
        * Rows stacked edge-to-edge over the full height, no scalebar-label inset
@@ -303,21 +303,33 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * One row's axis, laid out in the row's own box; the on-screen and the
-       * exported scales stack it once per row. Its own rather than the
-       * `valueScale`-derived one: the chrome draws a single axis, and this
-       * display has `numRows` of them.
+       * The one scale every row shares, ruling a band per row stacked down the
+       * track, past the dendrogram where one is shown. Density rows each in
+       * their own colour map the scale to colour rather than to y, so they
+       * rule no band and the chrome captions the domain instead; under the
+       * one ramp the ramp is the key and carries the domain itself.
        */
-      get ticks() {
-        const { tickHeight, yTop } = self.plotGeometry
-        return computeYTicks({
-          symlogConstant: self.symlogConstant,
-          height: tickHeight,
-          domain: self.domain,
-          scaleType: self.scaleType,
-          minimalTicks: self.minimalTicks,
-          offset: yTop,
-        })
+      get valueScales(): ValueScale[] {
+        if (self.scoreRampApplies) {
+          return []
+        }
+        const { tickHeight, yTop, numRows } = self.plotGeometry
+        return [
+          {
+            domain: self.domain,
+            scaleType: self.scaleType,
+            height: tickHeight,
+            offset: yTop,
+            minimalTicks: self.minimalTicks,
+            symlogConstant: self.symlogConstant,
+            bandTops: self.isDensityMode
+              ? []
+              : Array.from({ length: numRows }, (_, row) =>
+                  getRowTop(row, self.effectiveRowHeight),
+                ),
+            left: treeSidebarOffset(self),
+          },
+        ]
       },
       /**
        * #method
@@ -392,7 +404,7 @@ export default function stateModelFactory(
        *    this was widened for ("we need to make it so density can show legend
        *    also ideally because the left side labels are too small to see").
        *    `showTree` is deliberately no part of this: the labels are
-       *    `MultiWiggleSvgScales`' own and draw whether or not a dendrogram
+       *    `MultiWiggleRowLabels`' own and draw whether or not a dendrogram
        *    does, so reading it here drew a key restating labels still on screen.
        * 3. **Is the key worth its rows?** Short enough to read, and made of
        *    more than one color — both `legendIsReadable`, shared with the other
@@ -445,15 +457,6 @@ export default function stateModelFactory(
           })
         }
         return scales
-      },
-
-      /**
-       * #getter
-       * `LegendMixin`'s hook: the key starts below the `[min, max]` caption
-       * that stands in for the axes on rows too short to carry one.
-       */
-      get legendTop(): number {
-        return scoreCaptionReservedPx(self)
       },
 
       /**

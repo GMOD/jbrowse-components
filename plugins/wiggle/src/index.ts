@@ -110,11 +110,7 @@ export {
   WiggleScoreConfigMixin,
   wiggleScoreConfigExtraSlots,
 } from './shared/WiggleScoreConfigMixin.ts'
-export {
-  WiggleFamilySvgFrame,
-  svgLegendRightPx,
-  svgScalebarLeftPx,
-} from './shared/WiggleFamilySvg.tsx'
+export { WiggleFamilySvgFrame } from './shared/WiggleFamilySvg.tsx'
 export type {
   WiggleFamilySvgModel,
   WiggleFamilySvgLayout,

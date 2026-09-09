@@ -6,17 +6,12 @@ import {
   SvgTreePath,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
-import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 
-import {
-  WiggleFamilySvgFrame,
-  svgLegendRightPx,
-  svgScalebarLeftPx,
-} from '../shared/WiggleFamilySvg.tsx'
+import { WiggleFamilySvgFrame } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
-import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
+import MultiWiggleRowLabels from './MultiWiggleRowLabels.tsx'
+import MultiWiggleRowSeparators from './MultiWiggleRowSeparators.tsx'
 
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
@@ -33,7 +28,7 @@ import type {
   SourceRenderData,
   WiggleDataResult,
   WiggleGPURenderState,
-  YScaleTicks,
+  YAxis,
 } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
@@ -57,7 +52,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   hierarchy?: ClusterHierarchyNode
   clusterProvenance?: ClusterProvenance
 
-  // read by MultiWiggleSvgScales (row labels, per-row axes, score caption)
+  // read by MultiWiggleRowLabels
   sources: {
     name: string
     label?: string
@@ -68,18 +63,17 @@ export interface RenderSvgModel extends LgvSvgExportable {
   isOverlay: boolean
   isDensityMode: boolean
   effectiveRowHeight: number
-  domain: [number, number] | undefined
-  scaleType: string
-  ticks?: YScaleTicks
-  rowHeightTooSmallForScalebar: boolean
   numSources: number
   numRows: number
-  scoreRampApplies: boolean
 
-  // read by MultiWiggleOverlayLines
+  // read by the shell's axes
+  axes: YAxis[]
+  canvasWidthPx: number
+  showCrossHatches: boolean
+
+  // read by MultiWiggleRowSeparators
   showRowSeparators: boolean
   showRowLabels: boolean
-  showCrossHatches: boolean
 }
 
 export async function renderSvg(
@@ -90,33 +84,20 @@ export async function renderSvg(
 }
 
 function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, canvasWidth } = props
+  const { model, canvasWidth } = props
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
-  // autoscale resolves), so an empty region paints an empty plot; the per-source
-  // scales draw only where a real domain exists (MultiWiggleSvgScales).
-  // Wiggle can't use the shared SvgTreeSidebar: its row labels live in
-  // MultiWiggleSvgScales (shared with the on-screen path, alongside the
-  // scalebars). So keep the split, but derive the label offset and the tree from
-  // the one `treeSidebarOffset` gate so a blank gutter can't appear.
+  // autoscale resolves), so an empty region paints an empty plot; the per-row
+  // axes are the shell's, off `valueScales`, and draw only where a real domain
+  // exists. Wiggle can't use the shared SvgTreeSidebar: its row labels live in
+  // MultiWiggleRowLabels (shared with the on-screen path). So keep the split,
+  // but derive the label offset and the tree from the one `treeSidebarOffset`
+  // gate so a blank gutter can't appear.
   const { hierarchy } = model
   const labelOffset = treeSidebarOffset(model)
-  // The per-row axes are left-oriented, so what each one needs is a clear strip
-  // to its LEFT for its ticks and numbers. With no dendrogram that strip is the
-  // export's own margin, which is why this normally anchors at the content's
-  // left edge and lets the numbers run out past it. **A reserved gutter sits
-  // between the two**, so the margin is no longer reachable and an axis anchored
-  // there draws its spine down the full height of the tree panel — which is
-  // what the export did, while the screen put the same axis in its own strip
-  // past the gutter. Same strip, same width, because the numbers it has to
-  // clear are the same numbers.
-  const scalebarLeft = labelOffset
-    ? labelOffset + ONSCREEN_AXIS_LEFT_PX
-    : svgScalebarLeftPx(view)
 
   const gpuProps = model.gpuProps()
-  const legendRight = svgLegendRightPx(view, canvasWidth)
 
   return (
     <WiggleFamilySvgFrame
@@ -134,20 +115,10 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           canvasHeight: drawHeight,
         })
       }}
-      /* Row separators and per-row Y-scale cross-hatches, shared with the
-         on-screen path so an exported SVG matches the track when either is
-         enabled. Takes the frame's hatch slot, since these ARE the hatches. */
-      crossHatches={
-        <MultiWiggleOverlayLines model={model} width={canvasWidth} />
-      }
+      overlay={<MultiWiggleRowSeparators model={model} width={canvasWidth} />}
       legend={
         <>
-          <MultiWiggleSvgScales
-            model={model}
-            legendRight={legendRight}
-            scalebarLeft={scalebarLeft}
-            labelOffset={labelOffset}
-          />
+          <MultiWiggleRowLabels model={model} labelOffset={labelOffset} />
           {labelOffset && hierarchy ? (
             <>
               <SvgTreePath hierarchy={hierarchy} />

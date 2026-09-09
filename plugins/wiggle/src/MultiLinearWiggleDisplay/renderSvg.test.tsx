@@ -43,13 +43,29 @@ jest.mock('mobx', () => ({
 }))
 
 const ticks = {
-  values: [0, 10],
   yTop: 0,
   yBottom: 50,
   items: [
     { value: 0, y: 50, label: '0' },
     { value: 10, y: 0, label: '10' },
   ],
+}
+
+// The one scale the rows share, as `ScoreScaleMixin` resolves it off the
+// model's `valueScales`: a band per row, past the dendrogram where one shows,
+// and no band at all for density rows in their own colours.
+function axes({ left = 0, density = false } = {}) {
+  return [
+    {
+      domain: [0, 10] as [number, number],
+      scaleType: 'linear',
+      height: 50,
+      offset: 0,
+      ticks,
+      bandTops: density ? [] : [0, 50],
+      left,
+    },
+  ]
 }
 
 // Two sources, each one bar spanning the left half of the region, so the paint
@@ -138,13 +154,10 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
-    domain: [0, 10],
-    scaleType: 'linear',
-    ticks,
-    rowHeightTooSmallForScalebar: false,
     numSources: 2,
     numRows: 2,
-    scoreRampApplies: false,
+    axes: axes(),
+    canvasWidthPx: 800,
     showRowSeparators: false,
     showRowLabels: true,
     showCrossHatches: false,
@@ -154,10 +167,9 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
 
 // The members `renderDisplaySvg` detects a `LegendMixin` host by, over one
 // source key; the fixture is a plain object, so they are spelled out.
-function withKey(showLegend: boolean, legendTop = 0) {
+function withKey(showLegend: boolean) {
   return {
     showLegend,
-    legendTop,
     legendSpec: legendSpecOf([
       {
         kind: 'categorical',
@@ -207,12 +219,16 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   })
 
   // The dendrogram is the display's own, not the shared SvgTreeSidebar: the row
-  // labels live in MultiWiggleSvgScales. Both derive their offset from
+  // labels live in MultiWiggleRowLabels. Both derive their offset from
   // treeSidebarOffset, so a blank gutter can't appear.
   it('draws the dendrogram and shifts the labels past it', async () => {
     const html = render(
       await renderSvg(
-        makeModel({ showTree: true, hierarchy: makeHierarchy() }),
+        makeModel({
+          showTree: true,
+          hierarchy: makeHierarchy(),
+          axes: axes({ left: 40 }),
+        }),
       ),
     )
     expect(html).toContain('stroke="#0008"')
@@ -221,26 +237,32 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('translate(94 0)')
   })
 
-  // The axes are left-oriented: their ticks and numbers occupy the strip that
-  // ends where they are anchored. With no dendrogram that strip is the export
-  // margin and the anchor is the content's left edge; a gutter sits between the
-  // two, so an axis left there ran its spine down the whole height of the tree
-  // panel. Same strip the screen gives it, on the other side of the gutter.
+  // The axes are left-oriented: their ticks and numbers occupy the gutter that
+  // ends at their spine. With no dendrogram that gutter is the export margin;
+  // a tree panel sits between the two, so an axis left there ran its spine
+  // down the whole height of the panel. The scale's `left` is what moves the
+  // gutter past it, and the shell honours it for every row.
   it('anchors the per-row axes past the tree gutter rather than inside it', async () => {
-    const axisXs = (html: string) =>
-      [...html.matchAll(/<g transform="translate\((\d+)\)">/g)].map(m =>
-        Number(m[1]),
-      )
-    expect(axisXs(render(await renderSvg(makeModel())))).toEqual([0])
+    const gutterXs = (html: string) =>
+      [
+        ...html.matchAll(
+          /<g transform="translate\((-?\d+) \d+\)"><g transform="translate\(50 0\)">/g,
+        ),
+      ].map(m => Number(m[1]))
+    expect(gutterXs(render(await renderSvg(makeModel())))).toEqual([-50, -50])
     expect(
-      axisXs(
+      gutterXs(
         render(
           await renderSvg(
-            makeModel({ showTree: true, hierarchy: makeHierarchy() }),
+            makeModel({
+              showTree: true,
+              hierarchy: makeHierarchy(),
+              axes: axes({ left: 40 }),
+            }),
           ),
         ),
       ),
-    ).toEqual([90])
+    ).toEqual([40, 40])
   })
 
   it('omits the dendrogram when the tree is hidden', async () => {
@@ -284,11 +306,17 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   // The caption and the key are pinned to the content's right edge and both
   // draw from y=0, so a density track whose rows carry their own colors —
   // which is exactly when a short-rowed track gets BOTH — used to print the
-  // key on top of the score range. `legendTop` is the model's clearance; the
-  // shell honours it.
+  // key on top of the score range. The caption is the shell's, for a scale
+  // that rules no band, and the shell starts the key below it.
   it('stacks the color key below the score caption rather than over it', async () => {
     const html = render(
-      await renderSvg(makeModel({ isDensityMode: true, ...withKey(true, 16) })),
+      await renderSvg(
+        makeModel({
+          isDensityMode: true,
+          axes: axes({ density: true }),
+          ...withKey(true),
+        }),
+      ),
     )
     expect(html).toContain('[0, 10]')
     expect(html).toContain('<g transform="translate(0 16)">')

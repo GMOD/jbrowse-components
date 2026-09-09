@@ -3,7 +3,7 @@ import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // What the hint reads, spelled out like its sibling overlays (see
-// MultiWiggleOverlayLines, MultiWiggleSvgScales) rather than taking the whole
+// MultiWiggleRowSeparators, MultiWiggleRowLabels) rather than taking the whole
 // display — which is also what keeps the two blank-plot cases checkable without
 // standing one up.
 export interface HintModel {

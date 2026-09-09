@@ -54,7 +54,7 @@ function stackedLane(
 }
 
 import type { SectionsLayout } from './sectionLayout.ts'
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 // Boots a real LinearAlignmentsDisplay in a measured view, so the per-lane band
 // decision is exercised through the actual `arcsByGroup` → `sections` chain
@@ -186,8 +186,7 @@ test('turning read connections off drops the band from the lane that had one', (
 // `computeArcBand(self.arcBandInput)`, a section-RELATIVE band, and both hosts
 // placed it at content y 0. The values were right for every lane (the domain is
 // pooled across groups by `arcsYDomainBp`) but only the first lane's band had
-// anything beside it. `CoverageScaleBars` had solved the same problem by mapping
-// over sections; this is that.
+// anything beside it. The insert-size scale now lists a band per lane.
 describe('the read cloud rules every lane that reserves an arc band', () => {
   // Both lanes carrying a pair, so both reserve a band. Read cloud rather than
   // arc mode, since only read cloud puts |TLEN| on the axis at all.
@@ -213,44 +212,39 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     return { view, display }
   }
 
-  // The harness's `display` is the loosely-typed MST instance the session hands
-  // back, so name what this getter returns once rather than at four call sites.
-  type Ruler = { groupKey: string; ticks: YScaleTicks }
-  const rulers = (display: { insertSizeTickSections: Ruler[] }): Ruler[] =>
-    display.insertSizeTickSections
+  // The insert-size scale the display declares, as the chrome places it: one
+  // band per lane that reserves an arc band, in stacking order.
+  const tlen = (display: { valueScales: ValueScale[] }) =>
+    display.valueScales.find(s => s.caption === 'TLEN')
 
-  test('one ruler per banded lane, named by its group', () => {
+  test('one band per banded lane, in lane order', () => {
     const { display } = twoCloudLanes()
     const layout: SectionsLayout = display.sections
     expect(layout.sections.every(s => s.hasArcsBand)).toBe(true)
-    expect(rulers(display).map(s => s.groupKey)).toEqual(['a', 'b'])
+    expect(tlen(display)?.bandTops).toHaveLength(2)
   })
 
-  test('each ruler sits on its own lane’s band, in content space', () => {
+  test('each band sits on its own lane’s arc band, in content space', () => {
     const { display } = twoCloudLanes()
     const bands = display.renderSections
-    for (const [i, { ticks }] of rulers(display).entries()) {
-      const band = bands[i]!
-      // Down mode anchors at the band top, so the baseline tick (value 1, log
-      // fraction 0) lands exactly there — the same `arcAnchorY` the arcs take.
-      expect(ticks.items[0]!.value).toBe(1)
-      expect(ticks.items[0]!.y).toBe(band.arcBandTop)
-      expect(ticks.yTop).toBe(band.arcBandTop)
-    }
+    const scale = tlen(display)!
+    // Down mode anchors at the band top, so the baseline tick (value 1, log
+    // fraction 0) lands exactly there — the same `arcAnchorY` the arcs take —
+    // and each band's top is its lane's own.
+    expect(scale.ticks!.items[0]!.value).toBe(1)
+    expect(scale.ticks!.items[0]!.y).toBe(0)
+    expect(scale.bandTops).toEqual(bands.map(b => b.arcBandTop))
   })
 
-  test('the second lane’s ruler is genuinely lower than the first', () => {
+  test('the second lane’s band is genuinely lower than the first', () => {
     // The regression this exists for: one bar for the whole track put every
     // section's ticks at the first section's band.
     const { display } = twoCloudLanes()
-    const [a, b] = rulers(display)
-    if (!a || !b) {
-      throw new Error('expected a ruler for each of the two lanes')
-    }
-    expect(b.ticks.yTop).toBeGreaterThan(a.ticks.yTop)
+    const [a, b] = tlen(display)!.bandTops!
+    expect(b).toBeGreaterThan(a!)
   })
 
-  test('a lane with no arc band gets no ruler', () => {
+  test('a lane with no arc band gets no band', () => {
     // Same gate the renderers use to skip the pass: no arcs, no band, so
     // nothing to label. Lane A pairs, lane B does not.
     const { display } = createEnv()
@@ -271,13 +265,14 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
         assemblyName: 'volvox',
       },
     )
-    expect(rulers(display).map(s => s.groupKey)).toEqual(['a'])
+    const bands = display.renderSections
+    expect(tlen(display)?.bandTops).toEqual([bands[0]!.arcBandTop])
   })
 
   test('arc mode has no |TLEN| axis to rule', () => {
     const { display } = twoCloudLanes()
     display.setReadConnections('arc')
-    expect(rulers(display)).toEqual([])
+    expect(tlen(display)).toBeUndefined()
   })
 })
 

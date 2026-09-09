@@ -4,8 +4,7 @@ import type { YScaleTicks } from './yScaleTicks.ts'
 
 // Bare <line> set for the Y-scale tick guide lines, no wrapping <svg>. Shared by
 // the absolutely-positioned on-screen CrossHatches overlay and the flat SVG
-// export (single- and multi-wiggle), so the three can't drift. `offsetY` shifts
-// every line down for per-row rendering in multi-wiggle.
+// export, so the two can't drift. `offsetY` is the band's top.
 export function CrossHatchLines({
   ticks,
   width,
@@ -43,16 +42,18 @@ export function CrossHatchLines({
   )
 }
 
-// Horizontal guide lines at each Y-scale tick. Pointer-events disabled so
-// the underlying canvas still receives mouse events.
+// Horizontal guide lines at each Y-scale tick, once per band the scale rules.
+// Pointer-events disabled so the underlying canvas still receives mouse events.
 export default function CrossHatches({
   ticks,
   width,
   height,
+  bandTops,
 }: {
   ticks: YScaleTicks
   width: number
   height: number
+  bandTops: number[]
 }) {
   return (
     <svg
@@ -65,7 +66,9 @@ export default function CrossHatches({
         width,
       }}
     >
-      <CrossHatchLines ticks={ticks} width={width} />
+      {bandTops.map(top => (
+        <CrossHatchLines key={top} ticks={ticks} width={width} offsetY={top} />
+      ))}
     </svg>
   )
 }

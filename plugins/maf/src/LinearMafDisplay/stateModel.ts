@@ -82,6 +82,7 @@ import {
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
+import { conservationTicks } from './components/drawConservation.ts'
 import { identityLegendItems } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
@@ -153,6 +154,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
  * One species row. `RowSource` is the shared vocabulary every display with a
@@ -1557,7 +1559,7 @@ export default function stateModelFactory(
          * (which already reflect the active subtree — see `rpcProps`). Linear
          * and unbounded: sample counts are already bounded and
          * well-distributed, so this display composes no score axis to
-         * configure. Feeds `coverageTicks`.
+         * configure. Feeds `axes`.
          */
         get coverageDomain() {
           return visibleStatsDomain({
@@ -1575,16 +1577,37 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Y-axis tick marks for the coverage band.
+         * The band axes the chrome places: the coverage band's, off its
+         * autoscaled domain through the coverage ladder, and the conservation
+         * band's fixed 0–100%. Both ladders are their own, so this display
+         * answers the resolved axes directly rather than composing
+         * `ScoreScaleMixin` for a score it has no config for.
          */
-        get coverageTicks() {
-          return self.coverageDomain
-            ? computeCoverageTicks(
-                self.coverageDomain,
-                self.coverageDisplayHeight,
-                'linear',
-              )
-            : undefined
+        get axes(): YAxis[] {
+          const { topBands } = self
+          const axes: YAxis[] = []
+          const { coverageDomain } = self
+          if (self.coverageBandActive && coverageDomain) {
+            const height = topBands.reserved.coverage
+            axes.push({
+              domain: coverageDomain,
+              scaleType: 'linear',
+              height,
+              ticks: computeCoverageTicks(coverageDomain, height, 'linear'),
+              bandTops: [topBands.top.coverage],
+            })
+          }
+          if (self.conservationBandActive) {
+            const height = topBands.reserved.conservation
+            axes.push({
+              domain: [0, 100],
+              scaleType: 'linear',
+              height,
+              ticks: conservationTicks(height),
+              bandTops: [topBands.top.conservation],
+            })
+          }
+          return axes
         },
         /**
          * #getter

@@ -29,7 +29,7 @@ it('does not apply to a multi-row track whose rows can carry their labels', () =
 })
 
 // Hiding the dendrogram does not hide the row labels — those are
-// MultiWiggleSvgScales' own and draw for every multi-row track — so the key
+// MultiWiggleRowLabels' own and draw for every multi-row track — so the key
 // would restate names still on screen. Row height is the whole test.
 it('does not apply to a labellable multi-row track with the tree hidden', () => {
   const display = makeDisplay(cells(9, 9), 600)

@@ -10,14 +10,13 @@ import {
   TreeSidebar,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
-import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
-import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
+import MultiWiggleRowLabels from '../MultiWiggleRowLabels.tsx'
+import MultiWiggleRowSeparators from '../MultiWiggleRowSeparators.tsx'
 import MultiWiggleHint from './MultiWiggleHint.tsx'
 import { findMultiWiggleContextHit, findMultiWiggleHit } from './findHit.ts'
 
@@ -120,11 +119,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   const { yTop, plotHeight } = model.plotGeometry
   const labelOffset = treeSidebarOffset(model)
 
-  // Pin the right-aligned legends to the content's right edge, not the full
-  // track width — the view's clamped scalar, not a derivation off
-  // `visibleRegions`, which rebuilds its array every gesture frame.
-  const legendWidth = model.host.contentRightEdgePx
-
   return (
     <>
       <div>
@@ -132,7 +126,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           ref={canvasRef}
           style={{
             width: totalWidth,
-            // the box `model.ticks` stacks its per-row axes in
+            // the box `valueScales` stacks its per-row bands in
             height: plotHeight,
             position: 'absolute',
             left: 0,
@@ -152,16 +146,8 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           width: totalWidth,
         }}
       >
-        <MultiWiggleSvgScales
-          model={model}
-          legendRight={legendWidth}
-          // past the dendrogram, which paints an opaque panel over the left of
-          // the plot and would otherwise swallow the axis
-          scalebarLeft={labelOffset + ONSCREEN_AXIS_LEFT_PX}
-          labelOffset={labelOffset}
-        />
-
-        <MultiWiggleOverlayLines model={model} width={totalWidth} />
+        <MultiWiggleRowLabels model={model} labelOffset={labelOffset} />
+        <MultiWiggleRowSeparators model={model} width={totalWidth} />
       </svg>
 
       <TreeSidebar model={model} />

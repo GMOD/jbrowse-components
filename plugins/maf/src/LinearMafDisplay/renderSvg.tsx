@@ -9,7 +9,6 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
-import { SvgYScaleGutter } from '@jbrowse/wiggle-core'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { buildMafChannels } from '../LinearMafRenderer/mafChannels.ts'
@@ -33,7 +32,6 @@ import {
 } from '../LinearMafRenderer/util.ts'
 import { SvgBandLabels } from './components/MafBandLabels.tsx'
 import {
-  conservationTicks,
   drawCodonConservation,
   drawConservation,
 } from './components/drawConservation.ts'
@@ -72,7 +70,6 @@ function MafSvgBody({
     rowsHeight,
     topBands,
     rowsTopOffset,
-    coverageTicks,
     coverageBandActive,
     conservationBandActive,
     codonConservationActive,
@@ -243,15 +240,6 @@ function MafSvgBody({
           the same reason: with both bands drawn they are told apart only by
           their Y-axis units, and an exported figure can't be hovered. */}
       <SvgBandLabels labels={model.bandLabels} theme={theme} />
-      {coverageBandActive && coverageTicks ? (
-        <SvgYScaleGutter y={topBands.top.coverage} ticks={coverageTicks} />
-      ) : null}
-      {conservationBandActive ? (
-        <SvgYScaleGutter
-          y={topBands.top.conservation}
-          ticks={conservationTicks(conservationDisplayHeight)}
-        />
-      ) : null}
     </SvgClipRect>
   )
 }

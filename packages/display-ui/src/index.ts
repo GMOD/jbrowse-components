@@ -99,26 +99,36 @@ export {
   BottomRightCornerContext,
 } from './bottomRightCorner.ts'
 
-// The y axis: the tick contract a score renderer and its axis agree on, the
-// plot box they share, the axis drawn on screen and in an export, and the
-// guide lines ruled across the plot at each tick. Here because
+// The y axis: the value scale a display declares, the tick contract a score
+// renderer and its axis agree on, the plot box they share, the axis drawn on
+// screen and in an export, the caption that stands in for it, and the guide
+// lines ruled across the plot at each tick. Here because
 // `@jbrowse/display-kit`'s chrome places them for any display that declares
-// a value scale, the way it places the legend; `@jbrowse/wiggle-core`
+// value scales, the way it places the legend; `@jbrowse/wiggle-core`
 // re-exports them under their published names.
+export type { AxisSide, ValueScale, YAxis } from './valueScale.ts'
 export {
   AXIS_GUTTER_WIDTH_PX,
   axisPlotBox,
   clampStrokeInsideAxis,
-  leftAxisSpineX,
   scoreToAxisY,
 } from './yScaleTicks.ts'
 export type { YScaleTicks } from './yScaleTicks.ts'
+export { YSCALEBAR_LABEL_OFFSET } from './yAxisConstants.ts'
 export {
-  ONSCREEN_AXIS_LEFT_PX,
-  YSCALEBAR_LABEL_OFFSET,
-} from './yAxisConstants.ts'
+  AXIS_RIGHT_INSET_PX,
+  COMPACT_AXIS_HEIGHT,
+  axisDrawn,
+  axisGutterLeft,
+} from './axisPlacement.ts'
+export { default as AxisGutter } from './AxisGutter.tsx'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
+export {
+  default as ScoreDomainCaption,
+  SCORE_CAPTION_HEIGHT,
+} from './ScoreDomainCaption.tsx'
+export { formatScore } from './formatScore.ts'
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { ScoreRuleLines, default as ScoreRules } from './ScoreRules.tsx'
 export type { ScoreRuleMark } from './ScoreRules.tsx'

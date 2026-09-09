@@ -4,7 +4,6 @@ import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
 import { projectSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { splitArcsBySide } from './components/sashimiArcs.ts'
-import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { MergedJunction } from '../features/sashimi/junctions.ts'
@@ -90,45 +89,6 @@ export function computeSashimiArcSections(
       coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
       sashimiBandTop: sec.sashimiBandTop,
     }
-  })
-}
-
-/**
- * The read cloud's insert-size ruler, ONE PER SECTION that reserves an arc band,
- * in stacking order.
- *
- * Per section for the same reason `CoverageScaleBars` is: arc strips are
- * reserved per section, so a grouped read cloud has N bands and a single ruler
- * can only sit beside one of them. It sat beside the first — the values were
- * right for every lane, since `arcsYDomainBp` is pooled across groups, but every
- * lane below the first had a plotted axis and nothing labelling it.
- *
- * The band comes off the placed section, which carries `computeArcBand`'s answer
- * already at the section's own `coverageTop`, rather than from a second
- * `computeArcBand` call that could only describe a section-relative band. So the
- * tick `y`s are absolute CONTENT y, and the one `bandScreenTop(0, …)` shift both
- * hosts already apply completes the projection — `bandScreenTop` being linear in
- * its argument, that is exactly `bandScreenTop(sec.arcBandTop, …)`.
- */
-export function computeInsertSizeTickSections(
-  sections: readonly ArcBandSectionInput[],
-  arcsYDomainBp: number,
-) {
-  return sections.flatMap(sec => {
-    // A lane whose reads produced no arc reserves no band, so it gets no ruler —
-    // the same gate the renderers use to skip the pass.
-    const ticks =
-      sec.arcBandHeight > 0
-        ? computeInsertSizeTicks({
-            band: {
-              top: sec.arcBandTop,
-              height: sec.arcBandHeight,
-              down: sec.arcDown,
-            },
-            arcsYDomainBp,
-          })
-        : undefined
-    return ticks ? [{ groupKey: sec.groupKey, ticks }] : []
   })
 }
 

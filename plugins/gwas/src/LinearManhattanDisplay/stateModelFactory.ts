@@ -355,13 +355,15 @@ export function stateModelFactory(
          * scaleType config is intentionally ignored so the axis stays
          * consistent with the linear `domain`.
          */
-        get valueScale(): ValueScale {
-          return {
-            domain: self.domain,
-            scaleType: 'linear',
-            height: self.height,
-            minimalTicks: getConf(self, 'minimalTicks'),
-          }
+        get valueScales(): ValueScale[] {
+          return [
+            {
+              domain: self.domain,
+              scaleType: 'linear',
+              height: self.height,
+              minimalTicks: getConf(self, 'minimalTicks'),
+            },
+          ]
         },
         /**
          * #getter

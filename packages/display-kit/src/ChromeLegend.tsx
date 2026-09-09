@@ -1,11 +1,14 @@
 import { FLOATING_LEGEND_TOP_PX, FloatingLegend } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
+import { axisCaptionsReservedPx, isAxisHost } from './axisHost.ts'
+
 import type { LegendHost } from './legendHost.ts'
 
 /**
  * The on-screen key of a display composing `LegendMixin`, drawn by the chrome
- * off `legendSpec` so no display places its own. Its own observer, so a
+ * off `legendSpec` so no display places its own, below whatever `[min, max]`
+ * captions the chrome's axes took at the corner. Its own observer, so a
  * scale that re-derives on every fetch re-renders the box and not the chrome
  * around it.
  */
@@ -15,11 +18,12 @@ const ChromeLegend = observer(function ChromeLegend({
   model: LegendHost
 }) {
   const { showLegend, legendSpec, legendTop, legendMaxWidth } = model
+  const captions = isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
   return showLegend ? (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
-      top={FLOATING_LEGEND_TOP_PX + (legendTop ?? 0)}
+      top={FLOATING_LEGEND_TOP_PX + (legendTop ?? 0) + captions}
       maxWidth={legendMaxWidth}
       onDismiss={() => {
         model.setShowLegend(false)

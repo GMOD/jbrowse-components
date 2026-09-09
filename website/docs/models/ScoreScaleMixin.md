@@ -50,8 +50,8 @@ is the only getter that answers it — the resolved pair cannot, since
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> | Resolved lower bound; `undefined` means autoscale this end. |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> | Resolved upper bound; `undefined` means autoscale this end. |
 | <span id="getter-hasmanualscorebounds">**hasManualScoreBounds**</span><br><code>boolean</code> | Whether the user has pinned either end, which is a different question from whether either end resolved to a number: `defaultScoreDomain` fills the sentinels in, so a GC content track answers yes to the second with nothing configured. The score menu asks this one — it gates the "Clear manual min/max" row, and a Clear that writes the sentinels already there is a row that does nothing and never goes away. |
-| <span id="getter-valuescale">**valueScale**</span><br><code>ValueScale &#124; undefined</code> | Overridable hook (default none): the scale this display draws its y through. A display that answers it gets its axis and its cross-hatches placed by `DisplayChrome` and `renderDisplaySvg`, and `ticks` derived below; one with several axes (the multi-wiggle's rows) leaves it unset and lays its own out. |
-| <span id="getter-ticks">**ticks**</span><br><code>YScaleTicks &#124; undefined</code> | The axis, derived from `valueScale`: where each tick lands in the plot's own pixel space. |
+| <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | Overridable hook (default none): the scales this display draws its y through. A display that answers it gets an axis per band of each, with its cross-hatches, placed by `DisplayChrome` and `renderDisplaySvg`, and the ticks derived below. |
+| <span id="getter-axes">**axes**</span><br><code>YAxis[]</code> | The axes, one per declared scale whose domain resolved: where each tick lands in the band's own pixel space, through `computeYTicks` unless the scale brought its own ladder. |
 
 ## Actions
 

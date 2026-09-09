@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react'
 
 import MafBand from './MafBand.tsx'
-import {
-  conservationTicks,
-  drawCodonConservation,
-  drawConservation,
-} from './drawConservation.ts'
+import { drawCodonConservation, drawConservation } from './drawConservation.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { Theme } from '@mui/material'
@@ -60,11 +56,6 @@ const MafConservationBand = observer(function MafConservationBand({
       show={conservationBandActive}
       top={topBands.top.conservation}
       height={conservationDisplayHeight}
-      ticks={
-        conservationBandActive
-          ? conservationTicks(conservationDisplayHeight)
-          : undefined
-      }
       resize={n => {
         model.resizeConservationHeight(n)
       }}

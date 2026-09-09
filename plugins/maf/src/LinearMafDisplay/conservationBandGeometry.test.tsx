@@ -68,15 +68,15 @@ describe('the conservation band paints the height it reserved', () => {
     expect(display.rowsTopOffset - 4).toBeLessThan(display.height)
   })
 
-  it('scales its axis to the reservation', () => {
+  // The axis is the chrome's, off `axes`: the band it declares is the
+  // reservation, and its ticks are laid out in it.
+  it('declares its axis at the reservation', () => {
     const display = overStatedBand()
-    const { container } = render(
-      <MafConservationBand model={display} onResizeActiveChange={() => {}} />,
-    )
-    const gutter = container.querySelector('svg')
-    expect(gutter?.style.height).toBe(`${display.conservationDisplayHeight}px`)
-    expect(container.innerHTML).toContain(
-      midAxisTick(display.conservationDisplayHeight),
+    const axis = display.axes.find(a => a.domain[1] === 100)!
+    expect(axis.height).toBe(display.conservationDisplayHeight)
+    expect(axis.bandTops).toEqual([display.topBands.top.conservation])
+    expect(axis.ticks).toEqual(
+      conservationTicks(display.conservationDisplayHeight),
     )
   })
 

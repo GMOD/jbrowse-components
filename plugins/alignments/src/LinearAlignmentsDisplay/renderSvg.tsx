@@ -7,25 +7,15 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { SvgYScaleGutter, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
 import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
-import { InsertSizeAxisStack } from './components/InsertSizeAxis.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
-import {
-  COMPACT_AXIS_FONT_SIZE,
-  COMPACT_AXIS_HEIGHT,
-  compactAxisLabel,
-  insertSizeAxisBoxLeft,
-  rightAxisLabelX,
-  rightAxisSpineX,
-} from './coverageAxisStyle.ts'
 import {
   GROUP_LABEL_INSET_X,
   groupChipTop,
@@ -71,7 +61,7 @@ function AlignmentsSvgBody({
   const palette = resolvePalette({ configTheme: opts?.theme })
   const baseState = model.renderState
   const displayHeight = height
-  const { coverageTicks, insertSizeTickSections, renderSections } = model
+  const { renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero
   // only when scrolled before the genome start
   const contentLeft = Math.max(-view.offsetPx, 0)
@@ -150,29 +140,6 @@ function AlignmentsSvgBody({
         <CrossRegionArcsSvg model={model} width={canvasWidth} />
         <PileupBezierArcsSvg model={model} view={model.view} />
       </SvgClipRect>
-      {model.showCoverage && coverageTicks ? (
-        <CoverageScaleBars
-          sections={screenSections}
-          ticks={coverageTicks}
-          left={contentLeft}
-          hasGroupLabels={model.showsGroupLabels}
-          canvasWidth={canvasWidth}
-        />
-      ) : null}
-      {/* Insert-size (TLEN) scale bars, read-cloud mode only — one per section
-          that reserves an arc band, the way CoverageScaleBars does for
-          coverage. All this supplies that the on-screen host doesn't is `x`:
-          the export has no CSS box to anchor the axis in. The shift is the same
-          sticky-capable band-top projection. */}
-      {insertSizeTickSections.length > 0 ? (
-        <InsertSizeAxisStack
-          sections={insertSizeTickSections}
-          down={model.readConnectionsDown}
-          yShift={bandScreenTop(0, scroll)}
-          x={insertSizeAxisBoxLeft(canvasWidth, model.readConnectionsDown)}
-          palette={palette}
-        />
-      ) : null}
       {model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={screenSections}
@@ -182,64 +149,6 @@ function AlignmentsSvgBody({
           scroll={scroll}
         />
       ) : null}
-    </>
-  )
-}
-
-// One coverage y-axis per stacked section's coverage band. Mirrors the
-// on-screen `CoverageAxisHost`, which makes a three-way choice: a band under
-// COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[min, max]`
-// right-aligned; a full axis goes right whenever the group label chips are
-// drawn, so it clears them, and left otherwise.
-//
-// The side keys off the chips (`showsGroupLabels`), not off the section count:
-// a grouping that yields one named section still draws a chip at the left edge.
-//
-// `sections` arrive already projected to screen y by the body, so `coverageTop`
-// is the section's final y here.
-export function CoverageScaleBars({
-  sections,
-  ticks,
-  left,
-  hasGroupLabels,
-  canvasWidth,
-}: {
-  sections: RenderSection[]
-  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
-  left: number
-  hasGroupLabels: boolean
-  canvasWidth: number
-}) {
-  return (
-    <>
-      {sections.map(section =>
-        section.coverageHeight < COMPACT_AXIS_HEIGHT ? (
-          <text
-            key={sectionKey(section.groupKey)}
-            x={rightAxisLabelX(canvasWidth)}
-            y={section.coverageTop + 10}
-            fontSize={COMPACT_AXIS_FONT_SIZE}
-            fontFamily="sans-serif"
-            textAnchor="end"
-          >
-            {compactAxisLabel(ticks)}
-          </text>
-        ) : hasGroupLabels ? (
-          <g
-            key={sectionKey(section.groupKey)}
-            transform={`translate(${rightAxisSpineX(canvasWidth)}, ${section.coverageTop})`}
-          >
-            <YScaleBar ticks={ticks} orientation="right" />
-          </g>
-        ) : (
-          <SvgYScaleGutter
-            key={sectionKey(section.groupKey)}
-            left={left}
-            y={section.coverageTop}
-            ticks={ticks}
-          />
-        ),
-      )}
     </>
   )
 }

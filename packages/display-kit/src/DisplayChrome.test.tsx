@@ -1,4 +1,5 @@
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
   setGpuOverride,
@@ -15,6 +16,7 @@ import type {
   MouseState,
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
+import type { YAxis } from '@jbrowse/display-ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Fast guard that the banner/overlay/canvas subtrees actually COMMIT to the DOM
@@ -756,9 +758,10 @@ describe('the chrome element publishes the display identity', () => {
   })
 })
 
-// The chrome draws the axis of a display declaring a `valueScale` off the
-// ticks its mixin derived, so no display places its own; a host whose scale
-// is unset gets none, however its `ticks` read.
+// The chrome draws the axes of a display declaring value scales off the ticks
+// its mixin derived, so no display places its own: one axis per band each
+// scale rules, in a gutter on the side the scale declares, and the `[min, max]`
+// caption for a scale with no room for one.
 describe('the y axis', () => {
   const ticks = {
     items: [
@@ -769,37 +772,111 @@ describe('the y axis', () => {
     yBottom: 95,
   }
   const AxisModel = TestChromeModel.props({
-    hasScale: true,
+    axes: types.frozen<YAxis[]>([]),
     showCrossHatches: false,
-  }).views(self => ({
-    get valueScale() {
-      return self.hasScale ? { domain: [0, 10] } : undefined
-    },
-    get ticks() {
-      return ticks
-    },
+  }).views(() => ({
     get canvasWidthPx() {
       return 400
     },
   }))
+  const scale = (over: Partial<YAxis> = {}): YAxis => ({
+    domain: [0, 10],
+    scaleType: 'linear',
+    height: 100,
+    ticks,
+    ...over,
+  })
+  const labelsOf = (container: HTMLElement) =>
+    [...container.querySelectorAll('text')].map(t => t.textContent)
+  const overlays = (container: HTMLElement) =>
+    [...container.querySelectorAll('svg')].map(svg => svg.style)
 
-  test('a declared scale places the axis and, when shown, the hatches', async () => {
+  test('a declared scale places the axis in the left gutter and, when shown, the hatches', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ axes: [scale()], showCrossHatches: true }),
+    )
+    await findByTestId('probe-canvas')
+    expect(labelsOf(container)).toEqual(['0', '10'])
+    const [hatches, axis] = overlays(container)
+    expect(hatches?.left).toBe('0px')
+    expect(axis?.left).toBe('0px')
+    expect(axis?.width).toBe('50px')
+    expect(axis?.top).toBe('0px')
+  })
+
+  test('no declared scale draws no axis', async () => {
     const { container, findByTestId } = renderChrome(
       AxisModel.create({ showCrossHatches: true }),
     )
     await findByTestId('probe-canvas')
-    const labels = [...container.querySelectorAll('text')].map(
-      t => t.textContent,
-    )
-    expect(labels).toEqual(['0', '10'])
-    expect(container.querySelectorAll('svg')).toHaveLength(2)
+    expect(container.querySelectorAll('svg')).toHaveLength(0)
   })
 
-  test('an unset scale draws no axis', async () => {
+  // A grouped alignments track repeats its coverage band per group; the one
+  // scale rules them all, so each band gets the same axis at its own top —
+  // and a band scrolled off the display gets none.
+  test('a scale ruling several bands gets an axis per band on screen', async () => {
     const { container, findByTestId } = renderChrome(
-      AxisModel.create({ hasScale: false, showCrossHatches: true }),
+      AxisModel.create({
+        axes: [scale({ height: 40, bandTops: [0, 60, 500] })],
+      }),
     )
     await findByTestId('probe-canvas')
-    expect(container.querySelectorAll('svg')).toHaveLength(0)
+    expect(overlays(container).map(s => s.top)).toEqual(['0px', '60px'])
+    expect(labelsOf(container)).toEqual(['0', '10', '0', '10'])
+  })
+
+  test('a right-side scale takes the gutter inside the right edge', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ axes: [scale({ side: 'right' })] }),
+    )
+    await findByTestId('probe-canvas')
+    const [axis] = overlays(container)
+    // 400 wide, less the scrollbar clearance and the gutter
+    expect(Number.parseFloat(axis!.left)).toBeLessThan(400 - 50)
+    expect(Number.parseFloat(axis!.left)).toBeGreaterThan(300)
+  })
+
+  // A dendrogram panel takes the left edge; the gutter starts past it.
+  test('a scale with a panel at the left starts its gutter past it', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ axes: [scale({ left: 40 })] }),
+    )
+    await findByTestId('probe-canvas')
+    expect(overlays(container)[0]?.left).toBe('40px')
+  })
+
+  // Below COMPACT_AXIS_HEIGHT the labels would overlap, so the scale is
+  // captioned once at the top-right instead — and the hatches go with the
+  // axis. A scale ruling no band (density rows each in their own colour) is
+  // captioned the same way.
+  test('a scale too short for an axis is captioned, hatches and all', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [scale({ height: 20, bandTops: [0, 20, 40] })],
+        showCrossHatches: true,
+      }),
+    )
+    await findByTestId('probe-canvas')
+    expect(labelsOf(container)).toEqual(['[0, 10]'])
+    expect(container.querySelectorAll('line')).toHaveLength(0)
+  })
+
+  test('a scale ruling no band is captioned, naming its scale type', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [scale({ scaleType: 'log', bandTops: [] })],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    expect(labelsOf(container)).toEqual(['[0, 10] (log)'])
+  })
+
+  test('a scale with a caption names its axis beside it', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({ axes: [scale({ caption: 'TLEN' })] }),
+    )
+    await findByTestId('probe-canvas')
+    expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
 })

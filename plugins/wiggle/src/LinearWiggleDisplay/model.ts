@@ -179,19 +179,21 @@ export default function stateModelFactory(
        * plot box above. None under density, which spends colour on the score
        * and has the chrome's ramp as its key instead.
        */
-      get valueScale(): ValueScale | undefined {
+      get valueScales(): ValueScale[] {
         if (self.isDensityMode) {
-          return undefined
+          return []
         }
         const { tickHeight, yTop } = self.plotGeometry
-        return {
-          domain: self.domain,
-          scaleType: self.scaleType,
-          height: tickHeight,
-          offset: yTop,
-          minimalTicks: self.minimalTicks,
-          symlogConstant: self.symlogConstant,
-        }
+        return [
+          {
+            domain: self.domain,
+            scaleType: self.scaleType,
+            height: tickHeight,
+            offset: yTop,
+            minimalTicks: self.minimalTicks,
+            symlogConstant: self.symlogConstant,
+          },
+        ]
       },
 
       /**

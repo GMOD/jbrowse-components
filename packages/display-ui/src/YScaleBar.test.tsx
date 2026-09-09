@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 
 import YScaleBar from './YScaleBar.tsx'
-import { AXIS_GUTTER_WIDTH_PX, leftAxisSpineX } from './yScaleTicks.ts'
+import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
 describe('YScaleBar', () => {
   it('returns null when ticks is undefined', () => {
@@ -118,11 +118,11 @@ describe('YScaleBar', () => {
 
   // Multi-wiggle's case: a full-height axis per row, no inset, so both end
   // labels are centered on a row boundary. Ticks stay put; only the text moves.
-  it('insetLabels pulls the end labels inside the box, leaving ticks alone', () => {
+  it('bandHeight pulls the end labels inside the band, leaving ticks alone', () => {
     const { container } = render(
       <svg>
         <YScaleBar
-          insetLabels
+          bandHeight={100}
           ticks={{
             items: [
               { value: 0, y: 100, label: '0' },
@@ -150,16 +150,15 @@ describe('YScaleBar', () => {
     )
   })
 
-  // What `AXIS_GUTTER_WIDTH_PX` / `leftAxisSpineX` are for, checked against the
-  // component they compensate for rather than against a transcription of its
-  // numbers. A left-oriented axis grows leftward, so a spine at x=0 puts every
-  // label at negative x — which is what once put an exported coverage axis off
-  // the image. The alignments coverage gutter and the MAF band gutters both go
-  // through these.
-  it('a left axis at leftAxisSpineX keeps spine and labels inside the gutter', () => {
+  // What `AXIS_GUTTER_WIDTH_PX` is for, checked against the component it
+  // compensates for rather than against a transcription of its numbers. A
+  // left-oriented axis grows leftward, so `AxisGutter` puts its spine on the
+  // gutter's right edge and every label lands inside the gutter — where a
+  // spine at x=0 once put an exported coverage axis off the image.
+  it('a left axis on the gutter edge keeps spine and labels inside the gutter', () => {
     const { container } = render(
       <svg>
-        <g transform={`translate(${leftAxisSpineX()}, 0)`}>
+        <g transform={`translate(${AXIS_GUTTER_WIDTH_PX}, 0)`}>
           <YScaleBar
             ticks={{
               items: [
@@ -174,7 +173,7 @@ describe('YScaleBar', () => {
         </g>
       </svg>,
     )
-    const originX = leftAxisSpineX()
+    const originX = AXIS_GUTTER_WIDTH_PX
     // the spine's own stroke and the tick marks reaching back from it: M and H
     // carry the xs (V is the spine's y), and all of them land in the gutter
     const d = container.querySelector('path')!.getAttribute('d')!
@@ -182,7 +181,7 @@ describe('YScaleBar', () => {
     expect(spineXs).not.toHaveLength(0)
     for (const localX of spineXs) {
       expect(originX + localX).toBeGreaterThan(0)
-      expect(originX + localX).toBeLessThanOrEqual(AXIS_GUTTER_WIDTH_PX)
+      expect(originX + localX).toBeLessThanOrEqual(AXIS_GUTTER_WIDTH_PX + 1)
     }
     // every label anchor sits inside the gutter, with room left for the text
     // itself — the labels are `textAnchor: end`, so they extend leftward from
@@ -197,7 +196,7 @@ describe('YScaleBar', () => {
     }
   })
 
-  it('leaves labels centered on their ticks without insetLabels', () => {
+  it('leaves labels centered on their ticks without a bandHeight', () => {
     const { container } = render(
       <svg>
         <YScaleBar

@@ -1,20 +1,11 @@
 import { Fragment, useId, useState } from 'react'
 
 import { ResizeHandle, ScrollChrome } from '@jbrowse/core/ui'
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
-import { YScaleBar, YScaleGutter } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
-import {
-  AXIS_SVG_WIDTH,
-  COMPACT_AXIS_FONT_SIZE,
-  COMPACT_AXIS_HEIGHT,
-  compactAxisLabel,
-} from '../coverageAxisStyle.ts'
 import { groupSectionLabel } from '../groupLabelStyle.ts'
 import { stackedBandGain } from '../sectionLayout.ts'
 import ArcDebugOverlay from './ArcDebugOverlay.tsx'
@@ -22,24 +13,17 @@ import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import CrossRegionArcsOverlay from './CrossRegionArcsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
-import { InsertSizeAxisStack } from './InsertSizeAxis.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import {
-  bandOnScreen,
-  bandScreenTop,
-  contentScreenY,
-  sectionKey,
-  tickSpanOnScreen,
-} from './sectionScreen.ts'
+import { bandScreenTop, contentScreenY, sectionKey } from './sectionScreen.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type React from 'react'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   resizeHandle: {
     position: 'absolute' as const,
     left: 0,
@@ -47,17 +31,7 @@ const useStyles = makeStyles()(theme => ({
     height: YSCALEBAR_LABEL_OFFSET,
     zIndex: 10,
   },
-  compactAxisLabel: {
-    position: 'absolute' as const,
-    right: VERTICAL_SCROLLBAR_CLEARANCE,
-    fontSize: COMPACT_AXIS_FONT_SIZE,
-    lineHeight: '11px',
-    fontFamily: 'sans-serif',
-    color: theme.palette.text.secondary,
-    pointerEvents: 'none' as const,
-    userSelect: 'none' as const,
-  },
-}))
+})
 
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
 // backend and the three terminal states (render error, region-too-large, fetch
@@ -139,10 +113,6 @@ const PileupBody = observer(function PileupBody({
         height={height}
         contrastMap={contrastMap}
       />
-
-      <CoverageAxisHost model={model} />
-
-      <InsertSizeAxisHost model={model} />
 
       <CoverageResizeHandle model={model} />
 
@@ -428,181 +398,6 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
       height={height}
       contrastMap={contrastMap}
     />
-  )
-})
-
-function CompactCoverageLabel({
-  top,
-  ticks,
-}: {
-  top: number
-  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.compactAxisLabel} style={{ top }}>
-      {compactAxisLabel(ticks)}
-    </div>
-  )
-}
-
-// One coverage y-axis bar, on the right at a section's scrolled band top. Right
-// side avoids the group labels at left:4. All groups share `coverageTicks` (one
-// domain), so each band shows the same scale positioned at its own coverage.
-function GroupCoverageAxisBar({
-  top,
-  coverageHeight,
-  ticks,
-}: {
-  top: number
-  coverageHeight: number
-  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
-}) {
-  if (coverageHeight < COMPACT_AXIS_HEIGHT) {
-    return <CompactCoverageLabel top={top + 1} ticks={ticks} />
-  }
-  return (
-    <svg
-      style={{
-        position: 'absolute',
-        top,
-        right: VERTICAL_SCROLLBAR_CLEARANCE,
-        pointerEvents: 'none',
-        height: coverageHeight,
-        width: AXIS_SVG_WIDTH,
-      }}
-    >
-      <YScaleBar ticks={ticks} orientation="right" />
-    </svg>
-  )
-}
-
-// One bar per group so every coverage band carries its own scale; each scrolls
-// with its section and off-screen bands are culled.
-const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  const { coverageTicks, renderSections, scrollModel: scroll } = model
-  if (!coverageTicks) {
-    return null
-  }
-  return (
-    <>
-      {renderSections.map(section => {
-        const top = bandScreenTop(section.coverageTop, scroll)
-        return bandOnScreen(top, section.coverageHeight, scroll) ? (
-          <GroupCoverageAxisBar
-            key={sectionKey(section.groupKey)}
-            top={top}
-            coverageHeight={section.coverageHeight}
-            ticks={coverageTicks}
-          />
-        ) : null
-      })}
-    </>
-  )
-})
-
-const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  const { coverageTicks, renderSections, scalebarOverlapLeft } = model
-  const section = renderSections[0]
-  if (!coverageTicks || !section) {
-    return null
-  }
-  if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
-    return <CompactCoverageLabel top={1} ticks={coverageTicks} />
-  }
-  return (
-    <YScaleGutter
-      top={0}
-      left={scalebarOverlapLeft}
-      height={section.coverageHeight}
-      ticks={coverageTicks}
-    />
-  )
-})
-
-// Split so scroll-dependent tracking (GroupedCoverageAxis) is isolated —
-// UngroupedCoverageAxis won't re-render on scroll.
-//
-// `showsGroupLabels`, NOT `isGrouped`: the right-hand axis exists to clear the
-// group label chips (see coverageAxisStyle.ts), so the question is whether the
-// chips are drawn, not whether there is more than one section. A grouping that
-// yields a single named section draws them — and `scalebarOverlapLeft` is 0
-// there, so the left axis landed straight on top of the chip. GroupedCoverageAxis
-// projects through `bandScreenTop`, which keeps that lone section's band sticky.
-const CoverageAxisHost = observer(function CoverageAxisHost({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  return model.showsGroupLabels ? (
-    <GroupedCoverageAxis model={model} />
-  ) : (
-    <UngroupedCoverageAxis model={model} />
-  )
-})
-
-// Only rendered in read-cloud mode (`insertSizeTickSections` is empty
-// otherwise). One bar per section that reserves an arc band, mirroring
-// `CoverageAxisHost`: the Y domain is pooled across groups so every bar reads
-// the same values, but the bands are stacked, and a single bar could only sit
-// beside the first of them.
-const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  const palette = usePalette()
-  const {
-    insertSizeTickSections,
-    readConnectionsDown,
-    height,
-    scrollModel: scroll,
-  } = model
-  if (insertSizeTickSections.length === 0) {
-    return null
-  }
-  // Cull the off-screen bands, the same duty `GroupedCoverageAxis` does above:
-  // a grouped read cloud scrolls its sections, so most of them are outside the
-  // canvas on any frame and their ticks are reconciliation spent on ink the
-  // `<svg>` root clips anyway.
-  //
-  // Here and not inside `InsertSizeAxisStack`, because the stack is shared with
-  // `renderSvg` and an export has no viewport to be off-screen of — every band
-  // must reach the figure.
-  const visible = insertSizeTickSections.filter(({ ticks }) =>
-    tickSpanOnScreen(ticks, scroll),
-  )
-  return (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        // the box `InsertSizeAxis` lays itself out in; the export anchors the
-        // same one with `insertSizeAxisBoxLeft`
-        ...(readConnectionsDown ? { left: 0 } : { right: 0 }),
-        pointerEvents: 'none',
-        height,
-        width: AXIS_SVG_WIDTH,
-      }}
-    >
-      <InsertSizeAxisStack
-        sections={visible}
-        down={readConnectionsDown}
-        // The arc band is a sticky-capable band top like coverage — same tier,
-        // same projection, rather than a second inline
-        // `isGrouped ? -scrollTop : 0`.
-        yShift={bandScreenTop(0, model.scrollModel)}
-        palette={palette}
-      />
-    </svg>
   )
 })
 

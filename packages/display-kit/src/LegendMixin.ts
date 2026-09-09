@@ -104,8 +104,8 @@ export default function LegendMixin() {
        * #getter
        * Overridable hook (default 0): px the key is pushed down from its own
        * inset, on screen and in the export alike. A display that already draws
-       * something in that corner — Hi-C's resolution box, the multi-wiggle's
-       * score caption — answers that thing's height.
+       * something of its own in that corner — Hi-C's resolution box — answers
+       * that thing's height; the chrome adds its own axis captions on top.
        */
       get legendTop(): number {
         return 0

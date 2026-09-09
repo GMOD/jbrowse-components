@@ -1,15 +1,18 @@
-import type { ScoreRuleMark, YScaleTicks } from '@jbrowse/display-ui'
+import { SCORE_CAPTION_HEIGHT, axisDrawn } from '@jbrowse/display-ui'
+
+import type { ScoreRuleMark, YAxis } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * What the two chrome shells read to draw a display's y axis: the members
- * `ScoreScaleMixin` brings, named structurally so `DisplayChrome` and
- * `renderDisplaySvg` detect the mixin on any model handed to them without
- * importing it. A host whose `valueScale` is unset draws no axis.
+ * What the two chrome shells read to draw a display's y axes: `axes` as
+ * `ScoreScaleMixin` derives it from the display's `valueScales`, or as a
+ * display whose every ladder is its own answers it directly, named
+ * structurally so `DisplayChrome` and `renderDisplaySvg` detect it on any model
+ * handed to them without importing the mixin. A host whose `axes` is empty
+ * draws none.
  */
 export interface AxisHost extends IStateTreeNode {
-  valueScale: unknown
-  ticks: YScaleTicks | undefined
+  axes: YAxis[]
   height: number
   canvasWidthPx: number
   /** Whether guide lines are ruled across the plot at each tick. */
@@ -19,10 +22,15 @@ export interface AxisHost extends IStateTreeNode {
 }
 
 export function isAxisHost(model: object): model is AxisHost {
-  return 'valueScale' in model && 'ticks' in model && 'canvasWidthPx' in model
+  return 'axes' in model && 'canvasWidthPx' in model
 }
 
-/** The ticks the chrome draws, if the host declared a scale and one resolved. */
-export function axisTicks(model: AxisHost) {
-  return model.valueScale ? model.ticks : undefined
+/** The scales whose bands are too short for an axis, captioned instead. */
+export function captionedAxes(model: AxisHost) {
+  return model.axes.filter(axis => !axisDrawn(axis))
+}
+
+/** Px those captions take at the top-right, which the legend starts below. */
+export function axisCaptionsReservedPx(model: AxisHost) {
+  return captionedAxes(model).length * SCORE_CAPTION_HEIGHT
 }

@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { renderDisplaySvg } from './renderDisplaySvg.tsx'
 
 import type { LgvSvgBodyProps } from './renderDisplaySvg.tsx'
+import type { YAxis } from '@jbrowse/display-ui'
 
 // The shell is the one place the export's canvas geometry and terminal gating are
 // decided, and both failures it prevents are invisible in a snapshot: painting at
@@ -35,6 +36,9 @@ const TestView = types
   .actions(self => ({
     setWidth(n: number) {
       self.width = n
+    },
+    setOffsetPx(n: number) {
+      self.offsetPx = n
     },
   }))
 
@@ -110,30 +114,137 @@ describe('the y axis', () => {
     yTop: 5,
     yBottom: 95,
   }
-  function axisHost(valueScale: unknown, showCrossHatches = false) {
-    return Object.create(makeDisplay({}), {
-      valueScale: { value: valueScale },
-      ticks: { value: ticks },
+  const scale = (over: Partial<YAxis> = {}): YAxis => ({
+    domain: [0, 10],
+    scaleType: 'linear',
+    height: 100,
+    ticks,
+    ...over,
+  })
+  function axisHost(
+    axes: YAxis[],
+    { showCrossHatches = false, offsetPx = 0 } = {},
+  ) {
+    const view = TestView.create({ display: {} })
+    view.setOffsetPx(offsetPx)
+    return Object.create(view.display, {
+      error: { value: undefined },
+      axes: { value: axes },
       canvasWidthPx: { value: 806 },
       showCrossHatches: { value: showCrossHatches },
     }) as TestDisplayModel
   }
+  const labelsOf = (container: HTMLElement) =>
+    [...container.querySelectorAll('text')].map(t => t.textContent)
+  // Absolute x of each tick label: `YScaleBar` grows its labels away from the
+  // spine, so the local x is signed and only the enclosing translates make it
+  // absolute.
+  function labelXs(container: HTMLElement) {
+    return [...container.querySelectorAll('text')].map(t => {
+      let x = Number(t.getAttribute('x'))
+      for (
+        let node = t.parentElement;
+        node && node !== container;
+        node = node.parentElement
+      ) {
+        const dx = /translate\((-?[\d.]+)/.exec(
+          node.getAttribute('transform') ?? '',
+        )?.[1]
+        x += Number(dx ?? 0)
+      }
+      return x
+    })
+  }
 
-  test('a declared scale places the axis at the content edge, with hatches when shown', async () => {
+  test('a declared scale places the axis in the margin at the content edge, with hatches when shown', async () => {
     const { container } = await renderShell(
-      axisHost({ domain: [0, 10] }, true),
+      axisHost([scale()], { showCrossHatches: true }),
       [],
     )
-    const labels = [...container.querySelectorAll('text')].map(
-      t => t.textContent,
-    )
-    expect(labels).toEqual(['0', '10'])
+    expect(labelsOf(container)).toEqual(['0', '10'])
     expect(container.querySelectorAll('line').length).toBeGreaterThanOrEqual(4)
+    for (const x of labelXs(container)) {
+      expect(x).toBeLessThan(0)
+      expect(x).toBeGreaterThan(-50)
+    }
   })
 
-  test('an unset scale draws no axis even where ticks exist', async () => {
-    const { container } = await renderShell(axisHost(undefined, true), [])
+  test('no declared scale draws no axis', async () => {
+    const { container } = await renderShell(
+      axisHost([], { showCrossHatches: true }),
+      [],
+    )
     expect(container.querySelectorAll('text')).toHaveLength(0)
     expect(container.querySelectorAll('line')).toHaveLength(0)
+  })
+
+  // Scrolled before the genome start, the content edge moves right and the
+  // axis follows it.
+  test('follows the content edge when scrolled before the genome start', async () => {
+    const at0 = labelXs((await renderShell(axisHost([scale()]), [])).container)
+    const at30 = labelXs(
+      (await renderShell(axisHost([scale()], { offsetPx: -30 }), [])).container,
+    )
+    expect(at30[0]! - at0[0]!).toBe(30)
+  })
+
+  // A grouped alignments track draws its coverage axis on the right so it
+  // clears the group label chips at the left edge: past the midpoint, and
+  // still inside the image.
+  test('a right-side scale sits inside the right edge, clear of the left', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ side: 'right' })]),
+      [],
+    )
+    const xs = labelXs(container)
+    expect(xs.length).toBeGreaterThan(0)
+    for (const x of xs) {
+      expect(x).toBeGreaterThan(806 / 2)
+      expect(x).toBeLessThanOrEqual(806)
+    }
+  })
+
+  // A panel at the left (the dendrogram) pushes the gutter inside the image,
+  // past the panel, instead of into the margin.
+  test('a scale with a panel at the left starts its gutter past it', async () => {
+    const { container } = await renderShell(axisHost([scale({ left: 40 })]), [])
+    for (const x of labelXs(container)) {
+      expect(x).toBeGreaterThan(40)
+      expect(x).toBeLessThan(90)
+    }
+  })
+
+  test('a scale ruling several bands gets an axis per band', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ height: 40, bandTops: [0, 60] })]),
+      [],
+    )
+    expect(labelsOf(container)).toEqual(['0', '10', '0', '10'])
+    expect(
+      [...container.querySelectorAll('g[transform]')]
+        .map(g => g.getAttribute('transform'))
+        .filter(t => t?.startsWith('translate(-50')),
+    ).toEqual(['translate(-50 0)', 'translate(-50 60)'])
+  })
+
+  // Both ends of the caption come off the scale's own domain, so a log-scaled
+  // coverage band floored at one read reads "[1, …]" and says it is log.
+  test('a scale too short for an axis is captioned at the top-right', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ domain: [1, 128], scaleType: 'log', height: 20 })]),
+      [],
+    )
+    expect(labelsOf(container)).toEqual(['[1, 128] (log)'])
+    const x = Number(container.querySelector('text')?.getAttribute('x'))
+    expect(x).toBeGreaterThan(806 / 2)
+    expect(x).toBeLessThanOrEqual(806)
+  })
+
+  test('a scale with a caption names its axis beside it', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ side: 'right', caption: 'TLEN' })]),
+      [],
+    )
+    expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
 })

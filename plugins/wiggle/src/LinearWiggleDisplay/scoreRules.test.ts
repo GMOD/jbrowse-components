@@ -48,7 +48,7 @@ function makeDisplay() {
 // [0,30] domain and lands at the same y under any box centered on the plot.
 it('places a configured rule on the axis its ticks were built in', () => {
   const display = makeDisplay()
-  const ticks = display.ticks!
+  const ticks = display.axes[0]!.ticks
   expect(display.domain).toEqual([0, 30])
 
   // toBeCloseTo, not toEqual: a tick's y comes off the d3 scale and a rule's

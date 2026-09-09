@@ -10,6 +10,7 @@ import type {
 import type {
   WiggleDataResult,
   WiggleGpuDisplayModel,
+  YAxis,
 } from '@jbrowse/wiggle-core'
 
 export interface MultiWiggleDisplayModel
@@ -24,7 +25,7 @@ export interface MultiWiggleDisplayModel
   domain: [number, number] | undefined
   scaleType: string
   // where the plot canvas sits inside the display's height — the same value
-  // `ticks` and the SVG export are laid out against
+  // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
   // WiggleGpuProps above carries the raw `summaryScoreMode` slot (the encoder
   // wants it verbatim); the hit/tooltip path reads the resolved one, which is
@@ -35,7 +36,7 @@ export interface MultiWiggleDisplayModel
   numSources: number
   numRows: number
   effectiveRowHeight: number
-  rowHeightTooSmallForScalebar: boolean
+  axes: YAxis[]
   scoreRampApplies: boolean
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number

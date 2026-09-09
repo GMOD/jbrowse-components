@@ -15,12 +15,10 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   canonicalizeViewRefName,
-  getContainingTrack,
   getNotificationSink,
   getPaletteHost,
   getSession,
   isFeature,
-  measureText,
   notifyFeatureDetailsMiss,
   openFeatureWidget,
   SimpleFeature,
@@ -101,6 +99,7 @@ import {
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { bandScreenTop } from './components/sectionScreen.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { colorSchemeIndexFor } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
@@ -125,6 +124,7 @@ import {
   NO_HIDDEN_GROUPS,
   orderedGroups,
 } from './groupedDataMaps.ts'
+import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   buildLanes,
   drawnLanesOf,
@@ -147,7 +147,6 @@ import {
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   computeCrossRegionArcSections,
-  computeInsertSizeTickSections,
   computeSashimiArcSections,
 } from './overlaySections.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
@@ -209,6 +208,7 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -1038,6 +1038,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The coverage band's own ladder: octaves against the shader's band
+         * box (`computeCoverageTicks`), which `valueScales` hands the chrome
+         * in place of the ladder the mixin would derive. The raw
+         * `symlogConstant` slot, which the producer resolves from the same
+         * domain `renderState` does, so the labels sit on the bars rather
+         * than on a second symlog curve.
          */
         get coverageTicks() {
           return this.coverageDepthDomain
@@ -1045,9 +1051,6 @@ export default function stateModelFactory(
                 this.coverageDepthDomain,
                 self.coverageHeight,
                 self.scaleType,
-                // Raw slot; computeCoverageTicks resolves it from the same
-                // domain `renderState` resolves it from, so the labels sit on
-                // the bars rather than on a second symlog curve.
                 getConf(self, 'symlogConstant'),
               )
             : undefined
@@ -2405,23 +2408,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get scalebarOverlapLeft() {
-          const { view } = self
-          // when grouping (prefersOffset) the label is drawn above the plot, so
-          // the coverage axis needn't dodge right of it (matches TrackContainer)
-          if (
-            view.effectiveTrackLabels === 'overlapping' &&
-            !self.prefersOffset
-          ) {
-            const track = getContainingTrack(self)
-            return measureText(getConf(track, 'name'), 12.8) + 100
-          }
-          return 0
-        },
-
-        /**
-         * #getter
-         */
         get showOutline() {
           return getConf(self, 'showOutline') ?? self.isChainMode
         },
@@ -2847,8 +2833,8 @@ export default function stateModelFactory(
           // overlay still sizes the axis it is plotted on. Ungrouped has one
           // group, so this reduces to the prior single-group max.
           //
-          // The largest INSERT SIZE, not the largest drawn Y —
-          // `insertSizeTickSections` labels its top tick with this number, so a
+          // The largest INSERT SIZE, not the largest drawn Y — the insert-size
+          // scale in `valueScales` labels its top tick with this number, so a
           // domain carrying the cloud's ±8% jitter printed a template length no
           // read has.
           return Math.max(1000, self.arcsResult.maxFlatArcSpanBp)
@@ -2856,15 +2842,52 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The read cloud's insert-size ruler, per section — see
-         * `computeInsertSizeTickSections`. Empty outside read-cloud mode, which
-         * is the only mode that puts |TLEN| on the band's Y axis.
+         * The scales the chrome places the axes from. Coverage rules one band
+         * per section, on the right wherever the group label chips take the
+         * left edge; the read cloud's insert-size scale rules the arc band of
+         * every section that reserves one, on the side the arcs spring from,
+         * captioned TLEN. Each band is projected to screen through the
+         * section's own scroll; the chrome drops the ones off screen.
          */
-        get insertSizeTickSections() {
+        get valueScales(): ValueScale[] {
+          const { coverageHeight, scrollModel: scroll, renderSections } = self
+          const scales: ValueScale[] = []
+          if (self.showCoverage && self.coverageDepthDomain) {
+            scales.push({
+              domain: self.coverageDepthDomain,
+              scaleType: self.scaleType,
+              height: coverageHeight,
+              ticks: self.coverageTicks,
+              side: self.showsGroupLabels ? 'right' : 'left',
+              bandTops: renderSections.map(section =>
+                bandScreenTop(section.coverageTop, scroll),
+              ),
+            })
+          }
           const arcsYDomainBp = this.arcsYDomainBp
-          return arcsYDomainBp === undefined
-            ? []
-            : computeInsertSizeTickSections(self.renderSections, arcsYDomainBp)
+          const banded = renderSections.filter(s => s.arcBandHeight > 0)
+          const band = banded[0]
+          if (arcsYDomainBp !== undefined && band) {
+            const down = self.readConnectionsDown
+            const ticks = computeInsertSizeTicks({
+              band: { top: 0, height: band.arcBandHeight, down },
+              arcsYDomainBp,
+            })
+            if (ticks) {
+              scales.push({
+                domain: [1, arcsYDomainBp],
+                scaleType: 'log',
+                height: band.arcBandHeight,
+                ticks,
+                side: down ? 'left' : 'right',
+                caption: 'TLEN',
+                bandTops: banded.map(section =>
+                  bandScreenTop(section.arcBandTop, scroll),
+                ),
+              })
+            }
+          }
+          return scales
         },
 
         /**

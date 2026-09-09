@@ -1,4 +1,4 @@
-import { measureText } from '../util/index.ts'
+import { measureText } from '../util/measureText.ts'
 
 // measureText uses a Helvetica width table, but SVG legend <text> nodes have no
 // font-family and render in the wider app font (Roboto), so scale the estimate

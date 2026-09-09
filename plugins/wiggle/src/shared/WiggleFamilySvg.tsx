@@ -1,6 +1,5 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { axisPlotBox } from '@jbrowse/wiggle-core'
 
@@ -14,7 +13,7 @@ import type React from 'react'
 // MultiLinearWiggleDisplay and LinearManhattanDisplay all satisfy this
 // (`error`/`regionTooLarge`/`svgReady` come from SvgExportable); each supplies
 // its own paint. The axis and the cross-hatches are the shell's
-// (`renderDisplaySvg`), off the display's `valueScale`.
+// (`renderDisplaySvg`), off the display's `valueScales`.
 export interface WiggleFamilySvgModel extends SvgExportable {
   id: string
   height: number
@@ -27,31 +26,6 @@ export interface WiggleFamilySvgLayout {
   canvasWidth: number
   drawHeight: number
   renderBlocks: RenderBlock[]
-}
-
-/**
- * x a left-oriented y-axis is anchored at (the content's left edge). Non-zero
- * only when scrolled before genome start. Left-oriented so the labels grow into
- * the export margin rather than over the plot — the on-screen axis instead
- * indents by ONSCREEN_AXIS_LEFT_PX and grows rightward.
- */
-export function svgScalebarLeftPx(view: { offsetPx: number }) {
-  return Math.max(-view.offsetPx, 0)
-}
-
-/**
- * x a right-aligned legend is pinned to: the content's right edge, not the
- * viewport's. At whole-genome zoom the regions can end before it, and a legend
- * parked out in the empty gutter reads as detached from the plot.
- */
-export function svgLegendRightPx(
-  view: { visibleRegions: { screenEndPx: number }[] },
-  canvasWidth: number,
-) {
-  // Not `view.contentRightEdgePx`, which the on-screen path reads: that one is
-  // clamped to the view's own `trackWidthPx`, and an export's canvas is its own
-  // width. Same rule, this width.
-  return contentRightEdgePx(view.visibleRegions, canvasWidth)
 }
 
 // Shared SVG-export body for every wiggle-family display, mounted by each
@@ -76,17 +50,12 @@ export function WiggleFamilySvgFrame({
   paint,
   legend,
   overlay,
-  crossHatches,
 }: LgvSvgBodyProps<WiggleFamilySvgModel> & {
   clipIdPrefix: string
   plotGeometry?: { yTop: number; plotHeight: number }
   paint: (ctx: Ctx2D, layout: WiggleFamilySvgLayout) => void
   legend?: React.ReactNode
   overlay?: React.ReactNode
-  // The hatch overlay of a display that rules more than one axis: multi-wiggle
-  // repeats them per row, and passes its row separators through the same
-  // element. A single-axis display leaves it unset and the shell rules them.
-  crossHatches?: React.ReactNode
 }) {
   const { yTop, plotHeight } = plotGeometry
   return (
@@ -107,9 +76,8 @@ export function WiggleFamilySvgFrame({
           />
         </g>
       </SvgClipRect>
-      {crossHatches}
       {/* Annotations drawn on the plot rather than in it, in the same
-          un-translated space the cross-hatches use: a y computed from
+          un-translated space the shell's cross-hatches use: a y computed from
           `axisPlotBox` already carries the label-gutter inset. */}
       {overlay}
       {legend}

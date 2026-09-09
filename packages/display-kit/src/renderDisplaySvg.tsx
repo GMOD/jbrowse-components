@@ -1,14 +1,29 @@
 /* eslint-disable react-refresh/only-export-components -- the shell and the key it appends are one module */
+import { Fragment } from 'react'
+
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getContainingView } from '@jbrowse/core/util'
-import { CrossHatchLines, ScoreRuleLines, YScaleBar } from '@jbrowse/display-ui'
+import {
+  AXIS_RIGHT_INSET_PX,
+  AxisGutter,
+  CrossHatchLines,
+  SCORE_CAPTION_HEIGHT,
+  ScoreDomainCaption,
+  ScoreRuleLines,
+  axisDrawn,
+  axisGutterLeft,
+} from '@jbrowse/display-ui'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { axisTicks, isAxisHost } from './axisHost.ts'
+import {
+  axisCaptionsReservedPx,
+  captionedAxes,
+  isAxisHost,
+} from './axisHost.ts'
 import { isLegendHost } from './legendHost.ts'
 import { svgLegendAreaReserved } from './types.ts'
 
@@ -91,7 +106,9 @@ export function SvgLegend({
 }) {
   const gutter =
     svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
-  const top = model.legendTop ?? 0
+  const top =
+    (model.legendTop ?? 0) +
+    (isAxisHost(model) ? axisCaptionsReservedPx(model) : 0)
   if (!model.showLegend) {
     return null
   }
@@ -109,13 +126,15 @@ export function SvgLegend({
 }
 
 /**
- * The exported y axis of a display composing `ScoreScaleMixin` with a
- * `valueScale`, drawn by the shell off the same ticks the chrome draws on
- * screen: the cross-hatch guide lines across the plot when the display shows
- * them, the reader's rules over those, and the axis left-oriented at the
- * content's left edge so the labels grow into the export margin rather than
- * over the plot. Tick y-positions already carry the plot box's inset, so all
- * three sit in the un-translated space.
+ * The exported y axes of a display declaring value scales, drawn by the shell
+ * off the same ticks the chrome draws on screen: for each scale, once per band
+ * it rules, the cross-hatch guide lines across the band when the display
+ * shows them, the reader's rules over those, and the axis in its gutter. A
+ * left-side axis nothing pushes right sits in the export margin with its
+ * spine on the content edge, so the numbers land outside the plot. A scale
+ * whose bands are too short for an axis is captioned `[min, max]` once at
+ * the top-right, as on screen. Tick y-positions carry the plot box's inset,
+ * so a band's `top` is the only translate.
  */
 export function SvgYAxis({
   model,
@@ -126,20 +145,55 @@ export function SvgYAxis({
   view: { offsetPx: number }
   width: number
 }) {
-  const ticks = axisTicks(model)
-  if (!ticks) {
-    return null
-  }
+  const { axes, height, showCrossHatches } = model
   const rules = model.scoreRuleMarks ?? []
+  const contentLeft = Math.max(-view.offsetPx, 0)
   return (
     <>
-      {model.showCrossHatches ? (
-        <CrossHatchLines ticks={ticks} width={width} />
-      ) : null}
-      {rules.length > 0 ? <ScoreRuleLines marks={rules} width={width} /> : null}
-      <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
-        <YScaleBar ticks={ticks} orientation="left" />
-      </g>
+      {axes.map((axis, i) => {
+        const fits = axisDrawn(axis)
+        const gutterLeft = axisGutterLeft(
+          axis,
+          width,
+          AXIS_RIGHT_INSET_PX,
+          contentLeft,
+        )
+        return (axis.bandTops ?? [0])
+          .filter(top => top + axis.height >= 0 && top <= height)
+          .map(top => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- the scales are declared in a fixed order
+            <Fragment key={`${i}-${top}`}>
+              {showCrossHatches && fits ? (
+                <CrossHatchLines
+                  ticks={axis.ticks}
+                  width={width}
+                  offsetY={top}
+                />
+              ) : null}
+              {rules.length > 0 ? (
+                <ScoreRuleLines marks={rules} width={width} offsetY={top} />
+              ) : null}
+              {fits ? (
+                <g transform={`translate(${gutterLeft} ${top})`}>
+                  <AxisGutter axis={axis} />
+                </g>
+              ) : null}
+            </Fragment>
+          ))
+      })}
+      {captionedAxes(model).map((axis, i) => (
+        <g
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- stacked in declaration order
+          key={i}
+          transform={`translate(0 ${i * SCORE_CAPTION_HEIGHT})`}
+        >
+          <ScoreDomainCaption
+            domain={axis.domain}
+            scaleType={axis.scaleType}
+            canvasWidth={width}
+          />
+        </g>
+      ))}
     </>
   )
 }

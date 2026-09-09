@@ -16,7 +16,7 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
  *
  * Its own component because two exports draw it. `SvgTreeSidebar` owns the
  * sidebar for every display that can use that wrapper; multi-wiggle cannot —
- * its row labels live in `MultiWiggleSvgScales`, beside the per-row scalebars —
+ * its row labels live in `MultiWiggleRowLabels`, beside the per-row scalebars —
  * so its body assembles the sidebar itself and had re-stated all four of these
  * literals. They agreed, and the point is that nothing was keeping them
  * agreeing: the caption's color in particular is a bare `#666` that a themed

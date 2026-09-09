@@ -51,7 +51,7 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   // they cannot parse, so the alpha is stripped rather than left to break the
   // whole shape. It is *dropped*, not converted, so a translucent color exports
   // fully opaque: components that need transparency to survive set a separate
-  // opacity attribute instead (`CrossHatches`, `MultiWiggleOverlayLines`).
+  // opacity attribute instead (`CrossHatches`, `RowSeparatorLines`).
   //
   // Rewriting `fill="rgba(r,g,b,a)"` into `fill="rgb(r,g,b)" fill-opacity="a"`
   // would preserve the appearance and let those two drop their workarounds, but

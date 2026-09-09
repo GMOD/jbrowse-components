@@ -1,40 +1,38 @@
-import YScaleBar from './YScaleBar.tsx'
-import { ONSCREEN_AXIS_LEFT_PX } from './yAxisConstants.ts'
+import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 
-import type { YScaleTicks } from './yScaleTicks.ts'
+import AxisGutter from './AxisGutter.tsx'
+import { axisGutterLeft } from './axisPlacement.ts'
+import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
-// Y-axis tick labels positioned absolutely, indented from the track's left edge
-// so a right-oriented axis reads inside the plot. The SVG export instead anchors
-// a left-oriented axis at the content edge, putting the labels in the export
-// margin — see WiggleFamilySvgFrame.
-//
-// `width` is the track's, not a fixed strip: an <svg> clips to its own box, and
-// the hardcoded 70px this used to carry silently truncated any label past ~11
-// characters. Not hypothetical on a log axis — a domain under 1 nices to
-// negative powers of two, so `0.0009765625` is an ordinary tick on a
-// mappability track and the labels grow exactly where the numbers get small.
-// The track's own right edge is the real boundary.
+import type { YAxis } from './valueScale.ts'
+
+/**
+ * The on-screen axis of one band: an `<svg>` the width of the gutter,
+ * positioned absolutely over the band at `top`, with `AxisGutter` inside. A
+ * right-side gutter clears the vertical scrollbar a display may mount.
+ */
 export default function YScaleBarOverlay({
-  ticks,
-  height,
+  axis,
+  top,
   width,
 }: {
-  ticks: YScaleTicks
-  height: number
+  axis: YAxis
+  top: number
   width: number
 }) {
   return (
     <svg
       style={{
         position: 'absolute',
-        top: 0,
-        left: ONSCREEN_AXIS_LEFT_PX,
+        top,
+        left: axisGutterLeft(axis, width, VERTICAL_SCROLLBAR_CLEARANCE),
         pointerEvents: 'none',
-        height,
-        width: Math.max(0, width - ONSCREEN_AXIS_LEFT_PX),
+        height: axis.height,
+        width: AXIS_GUTTER_WIDTH_PX,
+        overflow: 'visible',
       }}
     >
-      <YScaleBar ticks={ticks} orientation="right" />
+      <AxisGutter axis={axis} />
     </svg>
   )
 }

@@ -334,13 +334,15 @@ export function stateModelFactory(
        * The y scale the chrome draws the axis from; the shapes place values
        * linearly, so the inherited `scaleType` slot is not consulted
        */
-      get valueScale(): ValueScale {
-        return {
-          domain: self.domain,
-          scaleType: 'linear',
-          height: self.height,
-          minimalTicks: getConf(self, 'minimalTicks'),
-        }
+      get valueScales(): ValueScale[] {
+        return [
+          {
+            domain: self.domain,
+            scaleType: 'linear',
+            height: self.height,
+            minimalTicks: getConf(self, 'minimalTicks'),
+          },
+        ]
       },
       /**
        * #method

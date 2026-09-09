@@ -430,4 +430,29 @@ carries position only.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/useTrackControlMenu.tsx)
 
+### ValueScale
+
+A value scale a display places its y through, declared so the chrome can derive
+the axis from it — the score axis's counterpart to a colour scale.
+
+`domain` is the resolved `[min, max]`; `height` the band it rules and `offset`
+the inset of the plot box inside that band (`axisPlotBox(height, offset)`);
+`minimalTicks` and `symlogConstant` how the ticks are chosen. `ticks` is the
+display's own ladder where the band's arithmetic is its own (the coverage band's
+octaves against the shader's box, the read cloud's decades against the arc
+geometry); `ScoreScaleMixin` derives one through `computeYTicks` otherwise.
+
+`bandTops` is the screen y of each band the scale rules — one at 0 unless the
+display stacks the same plot: the multi-wiggle's rows, a grouped alignments
+track's coverage band per group, each projected through the display's own
+scroll; the chrome drops the ones off screen. `[]` is a scale the display maps
+to colour rather than to y (density rows each in their own colour), which gets
+the `[min, max]` caption and no axis, as a scale whose bands are too short for
+one does. `side` is the edge the axis hugs, right where the left is spoken for
+by group label chips or by which way the arcs point; `left` is what a panel of
+the display's own takes at the left edge before the axis's gutter starts (the
+dendrogram); `caption` names the axis beside it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/valueScale.ts)
+
 <!-- API_DOCS_END -->
