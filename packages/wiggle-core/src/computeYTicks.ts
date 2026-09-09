@@ -1,5 +1,4 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
-import { axisPlotBox } from '@jbrowse/display-ui'
+import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
 
 import { getScale } from './scale.ts'
 

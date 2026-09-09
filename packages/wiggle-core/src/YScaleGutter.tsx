@@ -1,5 +1,8 @@
-import { YScaleBar } from '@jbrowse/display-ui'
-import { AXIS_GUTTER_WIDTH_PX, leftAxisSpineX } from '@jbrowse/display-ui'
+import {
+  AXIS_GUTTER_WIDTH_PX,
+  YScaleBar,
+  leftAxisSpineX,
+} from '@jbrowse/display-ui'
 
 import type { YScaleTicks } from '@jbrowse/display-ui'
 
