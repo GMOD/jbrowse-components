@@ -11,7 +11,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
-import type { LegendItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 setup()
 
@@ -35,7 +35,7 @@ interface VariantDisplay {
   colorByMode: string
   setFeatureColor: (arg?: string) => void
   colorMenuItems: () => ColorMenuItem[]
-  colorLegend: LegendItem[]
+  colorScales: ColorScale[]
   showLegend: boolean
   setShowLegend: (value: boolean) => void
 }
@@ -69,10 +69,11 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
 }, 60000)
 
 // The variant display has no component of its own — it registers the canvas
-// feature display's, and its color key reaches the screen through the canvas
-// base's `colorLegend` model hook. So this is the test that the borrowed
-// component + hook actually draw variant-specific chrome; without it the legend
-// could silently stop rendering with every other variant test still green.
+// feature display's, and its color key reaches the screen through
+// `LegendMixin`'s `colorScales` hook and the chrome. So this is the test that
+// the borrowed component + hook actually draw variant-specific chrome; without
+// it the legend could silently stop rendering with every other variant test
+// still green.
 test('the consequence-impact color key renders, and dismissing it stops it drawing', async () => {
   const { view } = await createView(config)
 
@@ -81,15 +82,13 @@ test('the consequence-impact color key renders, and dismissing it stops it drawi
   await findAnyDisplayPainted(delay)
 
   const display = view.tracks[0]!.displays[0] as VariantDisplay
-  expect(display.colorLegend).toEqual([])
+  expect(display.colorScales).toEqual([])
 
   display.setFeatureColor('jexl:impactColor(feature)')
-  expect(display.colorLegend.map(i => i.label)).toEqual([
-    'HIGH',
-    'MODERATE',
-    'LOW',
-    'MODIFIER',
-  ])
+  const [scale] = display.colorScales
+  expect(
+    scale?.kind === 'categorical' && scale.entries.map(i => i.label),
+  ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER'])
   expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 
   display.setShowLegend(false)
