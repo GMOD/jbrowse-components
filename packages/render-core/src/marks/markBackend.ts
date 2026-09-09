@@ -17,6 +17,7 @@ import type {
 } from '../perRegionRenderingBackend.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
+import type { MarkPlan } from './markPlan.ts'
 import type { Mark, StagedUniforms } from './types.ts'
 
 // The passes a mark list owns a buffer for: the whole list minus those drawing
@@ -72,6 +73,28 @@ export function drawMarks<TRegion, TState extends FrameDimensions>(
   const staged: StagedUniforms = { writer: undefined, params: undefined }
   for (const mark of marks) {
     mark.drawRegion(hal, scratch, block, clip, region, state, regionKey, staged)
+  }
+}
+
+/**
+ * Draw one block's planned passes off the uniforms the caller has already
+ * staged for it. No gate, no lens, no write: `planMarks` settled the frame
+ * question and the caller's own `hal.writeUniforms` settled the block's, so
+ * what is left per mark is the `drawPass` — the loop a display with its own
+ * frame scaffold was already running over a hand-kept pass list.
+ *
+ * Viewport and scissor are the caller's, as with `drawMarks`' scissor: a
+ * plan's marks declare no `band`, so nothing here narrows or restores either.
+ */
+export function drawPlannedPasses(
+  hal: GpuHal,
+  plan: MarkPlan<unknown, FrameDimensions>,
+  regionKey: number,
+) {
+  const { passes } = plan
+  for (let i = 0; i < passes.length; i++) {
+    const pass = passes[i]!
+    hal.drawPass(pass.id, regionKey, pass.bufferOf)
   }
 }
 

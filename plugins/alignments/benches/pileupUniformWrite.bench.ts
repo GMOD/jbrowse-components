@@ -25,9 +25,10 @@
 // handed a bare `ArrayBuffer` and has no frame hook, so converting the thirteen
 // pileup layers to a mark list moves that palette write inside the loop.
 //
-// EIGHT ARMS, one a control. The first five price the WRITE against `poke`; the
-// last two price today's section block against the mark walk that would replace
-// it, which is the comparison `poke` cannot make because it omits the gate loop.
+// NINE ARMS, one a control. The first five price the WRITE against `poke`; the
+// last three price today's section block against the two mark walks that could
+// replace it, which is the comparison `poke` cannot make because it omits the
+// gate loop.
 //   poke     — today's write: per-frame palette + per-section-block pokes
 //   control  — a separately-declared duplicate of `poke`, so `control / poke`
 //              is what this harness could resolve at all
@@ -50,12 +51,18 @@
 //              stages the struct and hands the thirteen marks a staged record
 //              already naming that writer and lens, so no mark writes. What is
 //              left is the walk, and `preseed / pokegate` is its price
+//   plan     — the conversion through `planMarks` / `drawPlannedPasses`: the
+//              thirteen gates are asked ONCE per frame and the section block
+//              draws the planned pass list off the renderer's own write, so
+//              the per-block loop is two field reads and a `drawPass` per
+//              enabled mark. `plan / pokegate` is what the mark list costs
+//              once the frame question leaves the block loop
 //
 // The HAL stub stages the way `WebGPUHal.writeUniforms` does (a `set` into the
 // ring's CPU staging array, slot post-incremented). `drawPass` is a counter —
 // thirteen per section block in every arm, so it cannot move the delta.
 //
-// Written out longhand, eight times. Do NOT refactor the drivers or the writers
+// Written out longhand, nine times. Do NOT refactor the drivers or the writers
 // into one parameterized function: a shared driver makes the call site
 // polymorphic and hands all arms one set of inline caches, which has scored a
 // byte-identical control at 1.14x in this repo's sibling benches.
@@ -101,7 +108,7 @@ class TimingHal {
     this.slot++
     this.writes++
   }
-  drawPass() {
+  drawPass(_passId?: string, _bufferPassId?: string) {
     this.draws++
   }
 }
@@ -961,6 +968,137 @@ function runPreseed(hal: TimingHal, reps: number) {
   }
 }
 
+// ------------------------------------------------------------- arm "plan"
+// `planMarks` once per frame over the thirteen gates, then `drawPlannedPasses`
+// per section block: the renderer's own palette and frame writes exactly as
+// `poke` makes them, and a loop over `{ id, bufferOf }` records with no gate,
+// no lens and no staged compare left in it. Hand-copied from
+// `render-core/src/marks/markPlan.ts` and `markBackend.ts` for the reason the
+// header gives.
+
+const PLAN_BUF = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
+const PLAN_F32 = new Float32Array(PLAN_BUF)
+const PLAN_I32 = new Int32Array(PLAN_BUF)
+const PLAN_U32 = new Uint32Array(PLAN_BUF)
+
+function planPalette(f32: Float32Array, u32: Uint32Array) {
+  for (let i = 0; i < NAMED_KEYS.length; i++) {
+    u32[U[NAMED_KEYS[i]!]] = packRgb(COLORS.named[NAMED_KEYS[i]!]!)
+  }
+  for (let i = 0; i < LINKED_COUNT; i++) {
+    const rgb = COLORS.linked[i]!
+    setUniformLinkedReadColor(f32, i, rgb[0], rgb[1], rgb[2], 1)
+  }
+  for (let i = 0; i < CATEGORY_COUNT; i++) {
+    const rgb = COLORS.category[i]!
+    setUniformReadCategoryColor(f32, i, rgb[0], rgb[1], rgb[2], 1)
+  }
+}
+
+function planFrame(
+  f32: Float32Array,
+  i32: Int32Array,
+  block: Block,
+  top: number,
+) {
+  f32[F.devicePixelRatio] = STATE.dpr
+  f32[F.bpHi] = block.bpHi
+  f32[F.bpLo] = block.bpLo
+  f32[F.bpLen] = block.bpLen
+  f32[F.hpZero] = 0
+  f32[F.canvasW] = block.canvasW
+  f32[F.pxPerBp] = block.canvasW / block.bpLen
+  f32[F.canvasH] = CANVAS_H
+  f32[F.rangeY0] = STATE.scrollTop
+  f32[F.covOffset] = top
+  f32[F.featHeight] = STATE.featureHeight
+  f32[F.featSpacing] = STATE.featureSpacing
+  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
+  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.colorScheme] = STATE.colorScheme
+  i32[I.chainMode] = STATE.chainMode ? 1 : 0
+  i32[I.showStroke] = STATE.showStroke ? 1 : 0
+  f32[F.reversed] = block.reversed ? 1 : 0
+}
+
+interface PlanMark {
+  pass: { id: string }
+  enabled: ((s: FrameState) => boolean) | undefined
+  planned: { id: string; bufferOf: string | undefined } | undefined
+}
+
+function planMark(
+  id: string,
+  enabled: ((s: FrameState) => boolean) | undefined,
+) {
+  const mark: PlanMark = {
+    pass: { id },
+    enabled,
+    planned: { id, bufferOf: undefined },
+  }
+  return mark
+}
+
+// The real gate SHAPE again — nine flagged, four unconditional, an
+// `undefined` gate being what `defineMark` leaves for a mark with no `enabled`.
+const PLAN_MARKS: PlanMark[] = [
+  planMark('connLine', s => s.showStroke),
+  planMark('linkedReadLine', s => s.showStroke),
+  planMark('read', undefined),
+  planMark('overlap', s => s.showStroke),
+  planMark('mod', s => s.filterMismatchesByFrequency),
+  planMark('perBaseQual', s => s.filterMismatchesByFrequency),
+  planMark('skip', undefined),
+  planMark('deletion', s => s.filterMismatchesByFrequency),
+  planMark('mismatch', s => s.filterMismatchesByFrequency),
+  planMark('insertion', s => s.filterMismatchesByFrequency),
+  planMark('clip', undefined),
+  planMark('softclipBases', s => s.showStroke),
+  planMark('perBaseLetter', s => s.showStroke),
+]
+
+function planMarksArm(marks: PlanMark[], state: FrameState) {
+  const enabled: PlanMark[] = []
+  const passes: { id: string; bufferOf: string | undefined }[] = []
+  for (const mark of marks) {
+    if (!mark.enabled || mark.enabled(state)) {
+      if (!mark.planned) {
+        throw new Error(`mark ${mark.pass.id} declares a band or a block gate`)
+      }
+      enabled.push(mark)
+      passes.push(mark.planned)
+    }
+  }
+  return { marks: enabled, passes }
+}
+
+function drawPlannedArm(
+  hal: TimingHal,
+  plan: { passes: { id: string; bufferOf: string | undefined }[] },
+) {
+  const { passes } = plan
+  for (let i = 0; i < passes.length; i++) {
+    const pass = passes[i]!
+    hal.drawPass(pass.id, pass.bufferOf)
+  }
+}
+
+function runPlan(hal: TimingHal, reps: number) {
+  for (let r = 0; r < reps; r++) {
+    hal.slot = 0
+    planPalette(PLAN_F32, PLAN_U32)
+    const plan = planMarksArm(PLAN_MARKS, STATE)
+    for (let b = 0; b < BLOCK_LIST.length; b++) {
+      const block = BLOCK_LIST[b]!
+      for (let s = 0; s < SECTION_TOPS.length; s++) {
+        planFrame(PLAN_F32, PLAN_I32, block, SECTION_TOPS[s]!)
+        hal.writeUniforms(PLAN_BUF)
+        drawPlannedArm(hal, plan)
+      }
+    }
+  }
+}
+
 // ---------------------------------------------------- identity + call counts
 
 const halPoke = new TimingHal()
@@ -971,6 +1109,7 @@ const halView = new TimingHal()
 const halHoist = new TimingHal()
 const halSeed = new TimingHal()
 const halGate = new TimingHal()
+const halPlan = new TimingHal()
 
 runPoke(halPoke, 1)
 runControl(halCtrl, 1)
@@ -980,6 +1119,7 @@ runPokeView(halView, 1)
 runHoisted(halHoist, 1)
 runPreseed(halSeed, 1)
 runPokeGate(halGate, 1)
+runPlan(halPlan, 1)
 
 const STAGED_BYTES = halPoke.slot * SLOT_BYTES
 
@@ -1000,6 +1140,7 @@ for (const [name, hal] of [
   ['hoisted', halHoist],
   ['preseed', halSeed],
   ['pokegate', halGate],
+  ['plan', halPlan],
 ] as const) {
   if (hal.slot !== halPoke.slot || hal.draws !== halPoke.draws) {
     console.error(
@@ -1033,6 +1174,7 @@ runPokeView(halView, 200)
 runHoisted(halHoist, 200)
 runPreseed(halSeed, 200)
 runPokeGate(halGate, 200)
+runPlan(halPlan, 200)
 
 let minPoke = Infinity
 let minCtrl = Infinity
@@ -1042,12 +1184,13 @@ let minView = Infinity
 let minHoist = Infinity
 let minSeed = Infinity
 let minGate = Infinity
+let minPlan = Infinity
 // The arms rotate position within the round, so no arm always runs first (or
 // always inherits the one before it).
 for (let round = 0; round < ROUNDS; round++) {
-  for (let slot = 0; slot < 8; slot++) {
+  for (let slot = 0; slot < 9; slot++) {
     const t = Number(process.hrtime.bigint())
-    const which = (round + slot) % 8
+    const which = (round + slot) % 9
     if (which === 0) {
       runPoke(halPoke, REPS)
       minPoke = Math.min(minPoke, Number(process.hrtime.bigint()) - t)
@@ -1069,9 +1212,12 @@ for (let round = 0; round < ROUNDS; round++) {
     } else if (which === 6) {
       runPreseed(halSeed, REPS)
       minSeed = Math.min(minSeed, Number(process.hrtime.bigint()) - t)
-    } else {
+    } else if (which === 7) {
       runPokeGate(halGate, REPS)
       minGate = Math.min(minGate, Number(process.hrtime.bigint()) - t)
+    } else {
+      runPlan(halPlan, REPS)
+      minPlan = Math.min(minPlan, Number(process.hrtime.bigint()) - t)
     }
   }
 }
@@ -1085,6 +1231,7 @@ const view = usPerFrame(minView)
 const hoist = usPerFrame(minHoist)
 const seed = usPerFrame(minSeed)
 const gate = usPerFrame(minGate)
+const plan = usPerFrame(minPlan)
 
 console.log('')
 console.log('arm         us/frame   vs poke      delta us/frame')
@@ -1101,3 +1248,4 @@ row('pokeview', view)
 row('hoisted', hoist)
 row('pokegate', gate)
 row('preseed', seed)
+row('plan', plan)

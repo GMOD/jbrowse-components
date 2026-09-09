@@ -186,6 +186,16 @@ export interface StagedUniforms {
 }
 
 /**
+ * A mark's pass as a frame plan draws it: what `hal.drawPass(id, regionKey,
+ * bufferOf)` takes and nothing else, resolved once per frame so the per-block
+ * loop reads two fields per mark.
+ */
+export interface PlannedPass {
+  readonly id: string
+  readonly bufferOf: string | undefined
+}
+
+/**
  * A shape bound to one display's region payload and render state — what
  * `defineMark` returns and what a display actually holds.
  *
@@ -210,6 +220,22 @@ export interface Mark<TRegion, TState extends MarkFrame> {
    * pass with no texture never draws on the WebGPU HAL.
    */
   readonly texture?: (state: TState, region: TRegion) => Uint8Array | undefined
+  /**
+   * The frame-level gate: whether the mark draws at all under `state`, read
+   * off the display-wide state and nothing else. `planMarks` asks it once per
+   * frame; `drawRegion`, `paintBlock` and `hitNearest` ask it per block, so a
+   * list drawn through `drawMarks` gates like one drawn through a plan — and
+   * so does the hit test, which is what stops a switched-off layer answering a
+   * hover over blank pixels. A question about the block is `paintsBlock`, on
+   * the shape.
+   */
+  readonly enabled?: (state: TState) => boolean
+  /**
+   * The pass a frame plan draws for this mark, or undefined for a mark the plan
+   * form cannot carry: one with a `band` (a plan's caller owns the scissor) or a
+   * `paintsBlock` (a plan asks the block nothing).
+   */
+  readonly planned?: PlannedPass
   // `regionKey` is the HAL key the caller uploaded this region's passes under;
   // a stacked alignments section's is not its block's displayedRegionIndex.
   // Draw through `marks/backend`'s `drawMarks`: the viewport must already be
@@ -291,6 +317,12 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * nothing, and the shape still places Y against the whole canvas — the band is
  * a clip, never an offset, which is what lets one `scrollTop` serve both
  * backends. A mark without one paints wherever its shape puts ink.
+ *
+ * `enabled` is the setting that turns the mark off for a whole frame — the
+ * pileup's "show mismatches" — and it is one gate for the three consumers: a
+ * mark that does not draw does not answer a hover either. It reads the state
+ * alone so `planMarks` can resolve it once per frame; a gate that needs the
+ * block is the shape's `paintsBlock`.
  */
 export function defineMark<
   TRegion,
@@ -304,8 +336,9 @@ export function defineMark<
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
   texture?: (state: TState, region: TRegion) => Uint8Array | undefined
+  enabled?: (state: TState) => boolean
 }): Mark<TRegion, TState> {
-  const { shape, channels, params, band, texture } = spec
+  const { shape, channels, params, band, texture, enabled } = spec
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -318,6 +351,8 @@ export function defineMark<
     )
   }
   const bufferOf = lender?.id
+  const planned =
+    band || shape.paintsBlock ? undefined : { id: shape.pass.id, bufferOf }
   return {
     pass: {
       ...shape.pass,
@@ -328,7 +363,12 @@ export function defineMark<
     },
     bufferOf,
     texture,
+    enabled,
+    planned,
     drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
+      if (enabled && !enabled(state)) {
+        return
+      }
       const strip = band?.(state)
       const scissor = strip
         ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
@@ -358,6 +398,9 @@ export function defineMark<
       }
     },
     paintBlock(ctx, region, block, state) {
+      if (enabled && !enabled(state)) {
+        return
+      }
       const strip = band?.(state)
       const c = channels(region)
       if ((!strip || strip.height > 0) && c !== undefined) {
@@ -394,6 +437,7 @@ export function defineMark<
           // pushing the band down into every shape's own ink test, where the
           // band is deliberately not.
           if (
+            (!enabled || enabled(state)) &&
             (!strip || strip.height > 0) &&
             c !== undefined &&
             !bandExcludes(strip, yPx)
