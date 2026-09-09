@@ -264,17 +264,16 @@ export function encodeFeatures(
       : undefined
   const rampValues =
     scaled && scaled.scale !== 'categorical' ? new Float32Array(n) : undefined
+  const { glyph: glyphEncoding } = encoding
   const glyphScaled =
-    typeof encoding.glyph === 'object' ? encoding.glyph : undefined
+    typeof glyphEncoding === 'object' ? glyphEncoding : undefined
   const glyphCategories = glyphScaled
     ? categoricalChannel(fieldReader(glyphScaled.field, jexl), n)
     : undefined
-  const readGlyph = glyphScaled
-    ? undefined
-    : glyphReader(
-        encoding.glyph as Exclude<typeof encoding.glyph, object>,
-        jexl,
-      )
+  const readGlyph = glyphReader(
+    typeof glyphEncoding === 'object' ? undefined : glyphEncoding,
+    jexl,
+  )
 
   for (let i = 0; i < n; i++) {
     report?.(i)
@@ -296,10 +295,10 @@ export function encodeFeatures(
         yMax = yv
       }
     }
-    if (readGlyph) {
-      glyph[count] = readGlyph(f)
+    if (glyphCategories) {
+      glyphCategories.collect(f, count)
     } else {
-      glyphCategories!.collect(f, count)
+      glyph[count] = readGlyph(f)
     }
     featureIndex[count] = i
     if (colorCategories) {
