@@ -52,9 +52,36 @@ like `height`/`colorBy` go in `displayDefaults` — see
 }
 ```
 
+A selection scan as a plain `FeatureTrack`: the plot reads the file's `fst`
+column through `scoreField` and colors each point by its `population`
+column, with the color key derived from the values it meets:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'fst_scan',
+  name: 'Fst scan',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: 'https://example.com/fst.bed.gz',
+  },
+  displays: [
+    {
+      type: 'LinearManhattanDisplay',
+      scoreField: 'fst',
+      colorBy: 'field',
+      colorField: 'population',
+    },
+  ],
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
-configuration for the Manhattan plot display used by GWAS tracks
+configuration for the Manhattan plot display: the default display of a GWAS
+track, and one a FeatureTrack can switch to, plotting any numeric feature
+field as a scored scatter
 
 ## Related links
 
@@ -69,12 +96,14 @@ These slots go on a display entry: `"displays": [{ "type": "LinearManhattanDispl
 | Slot | Description |
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | CSS color or jexl callback for Manhattan points<br>_callback args:_ `feature` |
-| <span id="slot-colorby">**colorBy**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (normal, ld) = <code>'normal'</code> | LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter. |
+| <span id="slot-colorby">**colorBy**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (normal, ld, field) = <code>'normal'</code> | How points take their color. 'normal' uses `color`; 'ld' colors each point by its r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter (LocusZoom-style); 'field' gives each distinct value of `colorField` a color from the categorical palette, and the color key lists the values met. |
+| <span id="slot-colorfield">**colorField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | The feature field `colorBy: 'field'` colors by: `name`, `refName`, a BED extra column, a GFF attribute. Each distinct value takes a palette color derived from the value itself, so a value keeps its color across regions and sessions. |
 | <span id="slot-significanceline">**significanceLine**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | Draw a horizontal line across the plot at this score, for the threshold a scan is read against: genome-wide significance on a GWAS, or an empirical outlier cutoff on a differentiation scan. Unset (the default) draws none, since there is no threshold that is right for every scan.<br><br>On the plot's own scale, so it is a `-log10(p)` where the points are and an Fst where `scoreColumn` names an Fst column. The autoscaled y-axis widens to reach it, so a window where nothing clears the threshold still shows the threshold; an explicit `minScore`/`maxScore` that excludes it still wins, and there the line is not drawn. |
 | <span id="slot-minimalticks">**minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw only the min/max Y-axis ticks<br>_advanced_ |
 | <span id="slot-scatterpointsize">**scatterPointSize**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>4</code> _promotable_ | Manhattan point diameter in px (adjustable from the track menu). Larger default than wiggle's since Manhattan points are the primary glyph. |
-| <span id="slot-showldlegend">**showLdLegend**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) = <code>true</code> _promotable_ | Draw the LD color key, which labels the r² ramp the points are painted against. Only appears while LD coloring is active — the ramp means nothing under the plain single-color scheme. |
+| <span id="slot-showlegend">**showLegend**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) = <code>true</code> _promotable_ | Draw the color key: the r² ramp under LD coloring, the value table under field coloring. Nothing under the plain single-color scheme, which has no key to draw. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
+| <span id="slot-scorefield">**scoreField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'score'</code> | Feature field plotted on the score axis, read natively off each feature. The default `score` is the field every adapter serves — including the value a BED adapter's `scoreColumn` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0 |
 | <span id="slot-minscore">**minScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MIN_VALUE</code> | Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning "unset, use autoscale"<br>_advanced_ |
 | <span id="slot-maxscore">**maxScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_VALUE</code> | Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning "unset, use autoscale"<br>_advanced_ |
 | <span id="slot-scaletype">**scaleType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | Scale type (linear or log) |

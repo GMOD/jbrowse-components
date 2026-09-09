@@ -1748,7 +1748,8 @@ export const configManifest: ConfigManifest = {
       "displayTypes": [
         "LinearBasicDisplay",
         "LinearMultiRowFeatureDisplay",
-        "LinearArcDisplay"
+        "LinearArcDisplay",
+        "LinearManhattanDisplay"
       ]
     },
     "AlignmentsTrack": {
@@ -4319,6 +4320,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "scoreField",
+          "type": "(JexlString | string)"
+        },
+        {
           "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
@@ -4407,6 +4412,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "symlogConstant",
@@ -4547,6 +4556,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "scoreField",
+          "type": "(JexlString | string)"
+        },
+        {
           "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
@@ -4663,6 +4676,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "symlogConstant",
@@ -5042,6 +5059,14 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | GwasColorBy)"
         },
         {
+          "name": "colorField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "scoreField",
+          "type": "(JexlString | string)"
+        },
+        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },
@@ -5078,7 +5103,7 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (number | undefined))"
         },
         {
-          "name": "showLdLegend",
+          "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
         }
       ],

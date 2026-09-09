@@ -10,6 +10,8 @@ guide_category: Track types
 main work is prep: a bgzipped, tabix-indexed BED-like file whose score column is
 in -log₁₀(p) units (or set `scoreTransform` to convert). Add a PLINK `.ld` file
 and `colorBy: "ld"` to color points by linkage disequilibrium to an index SNP.
+Any `FeatureTrack` can draw the same plot from one of its numeric columns — see
+[any scored feature file](#any-scored-feature-file).
 
 <Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>
 
@@ -92,6 +94,46 @@ feature, and `scatterPointSize` sets the point diameter in px
   "displayDefaults": {
     "colorBy": "ld"
   }
+}
+```
+
+## Any scored feature file
+
+`LinearManhattanDisplay` is also a display of `FeatureTrack`, so a selection
+scan, a QTL table or any BED-like file with a numeric column draws as a
+Manhattan plot without a `GWASTrack` or a `GWASAdapter`. Name the display in the
+track's `displays` (it is also offered under the track menu's **Display
+types**), and two slots choose what it reads:
+
+- [`scoreField`](/docs/config/linearmanhattandisplay/#slot-scorefield) — the
+  column plotted as y. The default `score` is the BED score column (or what the
+  adapter's `scoreColumn` rewrote it to); an explicit name reaches a raw column
+  of the file. A feature with no finite value there is skipped.
+- [`colorBy: "field"`](/docs/config/linearmanhattandisplay/#slot-colorby) with
+  [`colorField`](/docs/config/linearmanhattandisplay/#slot-colorfield) — gives
+  each distinct value of a column its own color and draws a key of the values
+  met. A value takes the same color in every region and session. The track
+  menu's **Color by** submenu switches between a single color, a field and LD.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "fst_scan",
+  "name": "Fst scan",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://yourhost/fst.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearManhattanDisplay",
+      "scoreField": "fst",
+      "colorBy": "field",
+      "colorField": "population",
+      "significanceLine": 0.25
+    }
+  ]
 }
 ```
 

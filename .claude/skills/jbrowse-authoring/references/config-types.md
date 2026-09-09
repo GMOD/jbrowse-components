@@ -17,7 +17,8 @@ come from the file's extension, and any key written beside `uri` overrides the
 inference.
 
 - [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
-  displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay, LinearArcDisplay
+  displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay, LinearArcDisplay,
+  LinearManhattanDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
