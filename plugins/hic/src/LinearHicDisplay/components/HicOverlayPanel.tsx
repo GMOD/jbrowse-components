@@ -96,16 +96,6 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
-// Where the chrome's legend starts when the resolution box holds the corner.
-// Deliberately a clearance rather than a sum: the row's height is whichever of
-// its contents is tallest — the `<select>`, or the reset `IconButton` beside it
-// once the resolution is biased — and the select's own is the UA's at
-// `fontSize: 10`, which moves with the theme's font family. Measured in Chrome
-// at 15px under the default Roboto stack (box bottom 29, legend 33) and 18px
-// under `system-ui` (box bottom 32, legend 36). 38 clears both with room, and
-// erring high costs a few px of gap while erring low overlaps the box.
-export const RESOLUTION_ROW_CLEARANCE = 38
-
 // The juicebox-style resolution box, in its own portal above the plot. The
 // color key beside it is the chrome's, off `colorScales`.
 const HicOverlayPanel = observer(function HicOverlayPanel({

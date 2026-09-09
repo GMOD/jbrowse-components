@@ -11,17 +11,15 @@ import type { LegendHost } from './legendHost.ts'
  */
 const ChromeLegend = observer(function ChromeLegend({
   model,
-  top,
 }: {
   model: LegendHost
-  top?: number
 }) {
-  const { showLegend, legendSpec } = model
+  const { showLegend, legendSpec, legendTop } = model
   return showLegend ? (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
-      top={top}
+      top={legendTop}
       onDismiss={() => {
         model.setShowLegend(false)
       }}

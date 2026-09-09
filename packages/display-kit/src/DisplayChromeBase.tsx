@@ -136,12 +136,6 @@ export type DisplayChromeBaseProps<B> = {
   testid: string
   overlays: DisplayChromeOverlays
   /**
-   * Where the legend of a display composing `LegendMixin` starts, from the top
-   * of the display box. Only a display that already draws something in that
-   * corner (Hi-C's resolution box) sets it.
-   */
-  legendTop?: number
-  /**
    * Called with each measured pointer position (and `undefined` on leave), for
    * a display that hit-tests as the cursor moves. It runs off the same single
    * measurement the tracker publishes, so a display's hit and its guides can't
@@ -155,7 +149,6 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
   factory,
   children,
   overlays,
-  legendTop,
   onPointerPosition,
   onMouseMove,
   onMouseLeave,
@@ -282,9 +275,7 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
       {/* The key of a display composing `LegendMixin`, detected structurally
           so a display gets it by composing the mixin and nothing else. Outside
           the canvas key: a backend re-init has nothing to say to it. */}
-      {isLegendHost(model) ? (
-        <ChromeLegend model={model} top={legendTop} />
-      ) : null}
+      {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </DisplayStatusChromeBase>
   )
 }

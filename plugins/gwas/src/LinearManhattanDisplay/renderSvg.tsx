@@ -1,18 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import {
-  WiggleFamilySvgFrame,
-  svgLegendRightPx,
-  svgScalebarLeftPx,
-} from '@jbrowse/plugin-wiggle'
+import { WiggleFamilySvgFrame, svgScalebarLeftPx } from '@jbrowse/plugin-wiggle'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import {
-  ScoreRuleLines,
-  YSCALEBAR_LABEL_OFFSET,
-  YScaleBar,
-} from '@jbrowse/wiggle-core'
+import { ScoreRuleLines, YScaleBar } from '@jbrowse/wiggle-core'
 
-import SvgManhattanLegend from './components/SvgManhattanLegend.tsx'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
@@ -24,7 +15,7 @@ import type React from 'react'
 // Importing the full LinearManhattanDisplayModel here would close a type cycle
 // (factory return type → renderSvg action → model instance → factory return
 // type), so this reuses the component's hand-rolled slice of the same model —
-// which already covers every paint/legend input — plus the shared
+// which already covers every paint input — plus the shared
 // SvgChrome/axis/cross-hatch fields. Reusing it rather than re-declaring the
 // fields keeps the export under the `_ModelSatisfiesComponentContract` guard in
 // stateModelFactory.ts instead of adding a second slice that drifts on its own.
@@ -38,8 +29,7 @@ export async function renderSvg(
 }
 
 function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, height, canvasWidth } = props
-  const legendRight = svgLegendRightPx(view, canvasWidth)
+  const { model, view, canvasWidth } = props
   return (
     <WiggleFamilySvgFrame
       {...props}
@@ -59,26 +49,14 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
         ) : null
       }
-      // left y-axis (Manhattan is always linear, never density) plus the
-      // color key when a scheme has one
+      // left y-axis (Manhattan is always linear, never density); the color
+      // key is the chrome's, off `colorScales`
       legend={
-        <>
-          {model.ticks ? (
-            <g transform={`translate(${svgScalebarLeftPx(view)})`}>
-              <YScaleBar ticks={model.ticks} orientation="left" />
-            </g>
-          ) : null}
-          {model.legend && model.showLegend ? (
-            <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-              <SvgManhattanLegend
-                legend={model.legend}
-                canvasWidth={legendRight}
-                maxHeight={height - YSCALEBAR_LABEL_OFFSET}
-                indexSnpMissing={model.indexSnpMissing}
-              />
-            </g>
-          ) : null}
-        </>
+        model.ticks ? (
+          <g transform={`translate(${svgScalebarLeftPx(view)})`}>
+            <YScaleBar ticks={model.ticks} orientation="left" />
+          </g>
+        ) : null
       }
     />
   )

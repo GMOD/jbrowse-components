@@ -15,6 +15,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
+import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
@@ -100,6 +101,16 @@ export default function LegendMixin() {
         return []
       },
       /**
+       * #getter
+       * Overridable hook (default 0): px from the top of the display box the
+       * key starts at, on screen and in the export alike. A display that
+       * already draws something in that corner — Hi-C's resolution box, the
+       * multi-wiggle's score caption — answers its clearance.
+       */
+      get legendTop(): number {
+        return 0
+      },
+      /**
        * #method
        * Overridable hook (default 0): the width the LGV export reserves beside
        * the plot for this legend. A display whose plot fills its band — the
@@ -173,17 +184,22 @@ export function svgLegendGutterWidth(self: { showLegend: boolean }) {
 /**
  * The "Show legend" checkbox for a display composing `LegendMixin`: the slot,
  * the toggle and the display-type pin, so a track menu lists it in one call.
+ * `opts` is for a display that greys the row out under a scheme with no key,
+ * which keeps the row — and its pin — in the menu whatever the scheme.
  */
-export function legendCheckboxItem(self: {
-  showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
-  setShowLegend: (arg: boolean) => void
-}) {
+export function legendCheckboxItem(
+  self: {
+    showLegend: boolean
+    showLegendDisplayTypeDefault: TogglePin
+    setShowLegend: (arg: boolean) => void
+  },
+  opts?: SettingRowOptions,
+) {
   return showLegendCheckboxItem(
     self.showLegend,
     () => {
       self.setShowLegend(!self.showLegend)
     },
-    { pin: self.showLegendDisplayTypeDefault },
+    { ...opts, pin: self.showLegendDisplayTypeDefault },
   )
 }

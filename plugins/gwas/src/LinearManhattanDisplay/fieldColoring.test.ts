@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { LD_LEGEND_TITLE } from './ldBins.ts'
+import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type {
@@ -40,11 +40,11 @@ function labels(items: MenuItem[]): string[] {
 }
 
 describe('LinearManhattanDisplay field coloring', () => {
-  it('derives the color key from the payloads, merged across regions and sorted numerically', () => {
+  it('derives the color scale from the payloads, merged across regions and sorted numerically', () => {
     const { display } = createTestEnvironment({
       colorBy: 'field',
     }).createDisplay()
-    expect(display.legend).toBeUndefined()
+    expect(display.colorScales).toEqual([])
 
     display.setRpcData(
       0,
@@ -62,23 +62,47 @@ describe('LinearManhattanDisplay field coloring', () => {
       ]),
       { ...REGION, refName: 'ctgB' },
     )
-    expect(display.legend).toEqual({
-      title: 'name',
-      items: [
-        { label: 'chr1', color: '#333333' },
-        { label: 'chr2', color: '#222222' },
-        { label: 'chr10', color: '#111111' },
-      ],
-    })
+    expect(display.colorScales).toEqual([
+      {
+        kind: 'categorical',
+        id: 'field',
+        title: 'name',
+        entries: [
+          { value: 'chr1', label: 'chr1', color: '#333333' },
+          { value: 'chr2', label: 'chr2', color: '#222222' },
+          { value: 'chr10', label: 'chr10', color: '#111111' },
+        ],
+      },
+    ])
   })
 
   it('has no key under a single color, and the r² bins under LD coloring', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, payload(), REGION)
-    expect(display.legend).toBeUndefined()
+    expect(display.colorScales).toEqual([])
 
     const ld = createTestEnvironment({ colorBy: 'ld' }).createDisplay().display
-    expect(ld.legend?.title).toBe(LD_LEGEND_TITLE)
+    const [scale] = ld.colorScales
+    expect(scale?.title).toBe(LD_LEGEND_TITLE)
+    expect(
+      scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+    ).toEqual(LD_LEGEND.map(s => s.label))
+  })
+
+  // Without it an export where nothing matched the index SNP is an all-grey
+  // plot under a full r² key that implies the colors mean something.
+  it('a missing index SNP adds a note row saying why every point is grey', () => {
+    const ld = createTestEnvironment({ colorBy: 'ld' }).createDisplay().display
+    ld.setIndexSnp('ctgA:500')
+    ld.setRpcData(0, { ...payload(), indexFound: false }, REGION)
+    expect(ld.indexSnpMissing).toBe(true)
+    const [scale] = ld.colorScales
+    const last =
+      scale?.kind === 'categorical' ? scale.entries.at(-1) : undefined
+    expect(last).toEqual({
+      value: 'missing',
+      label: 'Index SNP not in LD data: all grey',
+    })
   })
 
   it('colorByField sets the mode and the field together, and both reach the worker', () => {

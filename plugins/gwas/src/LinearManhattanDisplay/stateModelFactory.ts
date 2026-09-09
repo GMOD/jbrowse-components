@@ -6,12 +6,13 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import LegendMixin, {
+  legendCheckboxItem,
+} from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -61,7 +62,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { LegendItem, LegendSpec } from '@jbrowse/core/ui/legendSpec'
+import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -104,14 +105,14 @@ const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
 )
 
-// The color key under field coloring: every value any loaded region met, each
-// with the color the worker packed for it. One value can arrive from several
-// regions and always with the same color (`categoricalValueColor` is a
+// The color scale under field coloring: every value any loaded region met,
+// each with the color the worker packed for it. One value can arrive from
+// several regions and always with the same color (`categoricalValueColor` is a
 // function of the value), so the union is a plain first-wins merge, sorted
 // numerically where the values are numbers so `chr2` files before `chr10`.
-function categoryLegendItems(
+function categoryEntries(
   entries: Iterable<ManhattanRpcResult>,
-): LegendItem[] {
+): CategoricalEntry[] {
   const byValue = new Map<string, string>()
   for (const { categories } of entries) {
     for (const { value, color } of categories ?? []) {
@@ -122,7 +123,25 @@ function categoryLegendItems(
   }
   return [...byValue]
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(([label, color]) => ({ label, color }))
+    .map(([value, color]) => ({ value, label: value, color }))
+}
+
+// The LD key's rows: the index swatch, the r² bins high to low, the no-data
+// grey — and, where nothing matched the index SNP, a note saying so, or an
+// export where every point is grey sits under a full r² key that implies the
+// colors mean something.
+function ldScale(indexSnpMissing: boolean): ColorScale {
+  return {
+    kind: 'categorical',
+    id: 'ld',
+    title: LD_LEGEND_TITLE,
+    entries: [
+      ...LD_LEGEND.map(({ label, color }) => ({ value: label, label, color })),
+      ...(indexSnpMissing
+        ? [{ value: 'missing', label: 'Index SNP not in LD data: all grey' }]
+        : []),
+    ],
+  }
 }
 
 // Red, where a configured wiggle rule defaults to grey: this one is a
@@ -518,22 +537,31 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The color key, or undefined under the single-color scheme, which has
-         * none. The r² bins under LD coloring; under field coloring the values
-         * the loaded regions met, read off the payloads' `categories` tables
-         * — the same table the worker packed `colors[]` from, so a swatch is a
-         * color that was drawn. The on-screen key and the SVG export both
-         * render this one value.
+         * `LegendMixin`'s hook: the scale the active scheme paints through,
+         * or none under the single color, which has no key. The r² bins under
+         * LD coloring; under field coloring the values the loaded regions met,
+         * read off the payloads' `categories` tables — the same table the
+         * worker packed `colors[]` from, so a swatch is a color that was
+         * drawn. The chrome draws the key on screen and in the export.
          */
-        get legend(): LegendSpec | undefined {
+        get colorScales(): ColorScale[] {
           if (self.ldColoringActive) {
-            return { title: LD_LEGEND_TITLE, items: LD_LEGEND }
+            return [ldScale(this.indexSnpMissing)]
           }
           if (self.colorBy === 'field') {
-            const items = categoryLegendItems(self.rpcDataMap.values())
-            return items.length ? { title: self.colorField, items } : undefined
+            const entries = categoryEntries(self.rpcDataMap.values())
+            return entries.length
+              ? [
+                  {
+                    kind: 'categorical',
+                    id: 'field',
+                    title: self.colorField,
+                    entries,
+                  },
+                ]
+              : []
           }
-          return undefined
+          return []
         },
       }))
       .actions(self => ({
@@ -651,20 +679,11 @@ export function stateModelFactory(
             },
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
-              showLegendCheckboxItem(
-                self.showLegend,
-                () => {
-                  self.setShowLegend(!self.showLegend)
-                },
-                {
-                  disabled: !(
-                    self.ldColoringActive || self.colorBy === 'field'
-                  ),
-                  disabledHelpText:
-                    'Requires LD or field coloring; a single color has no key',
-                  pin: self.showLegendDisplayTypeDefault,
-                },
-              ),
+              legendCheckboxItem(self, {
+                disabled: !(self.ldColoringActive || self.colorBy === 'field'),
+                disabledHelpText:
+                  'Requires LD or field coloring; a single color has no key',
+              }),
             ]),
             {
               label: 'Color by',
