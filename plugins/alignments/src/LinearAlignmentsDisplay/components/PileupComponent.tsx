@@ -12,7 +12,6 @@ import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import CrossRegionArcsOverlay from './CrossRegionArcsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
-import HighlightOverlay from './HighlightOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
@@ -95,8 +94,6 @@ const PileupBody = observer(function PileupBody({
         handleClick={handleClick}
         handleContextMenu={handleContextMenu}
       />
-
-      <HighlightOverlay model={model} />
 
       <GroupLabelsOverlay model={model} />
       <PileupTruncationRule model={model} />

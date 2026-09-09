@@ -97,8 +97,8 @@ import {
   buildColorPaletteFromPalette,
   makeBpToScreenX,
 } from './components/alignmentComponentUtils.ts'
-import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { readHighlightInk } from './components/readHighlightInk.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { colorSchemeIndexFor } from './constants.ts'
@@ -205,6 +205,7 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -2433,39 +2434,6 @@ export default function stateModelFactory(
         },
 
         /**
-         * #getter
-         * Screen boxes for the hovered read / chain, painted by the
-         * `HighlightOverlay` div. Deliberately NOT part of `renderState`: the
-         * hovered id changes on nearly every mousemove, and routing it through
-         * the canvas would repaint the whole pileup each move.
-         */
-        get highlightBoxes() {
-          const view = self.host
-          const chainReadIds = self.highlightedChainReadIds
-          const ids =
-            chainReadIds.length > 0
-              ? chainReadIds
-              : self.featureIdUnderMouse
-                ? [self.featureIdUnderMouse]
-                : []
-          // Reading `readIdIndexMap` forces its (per-read) build over the whole
-          // fetched dataset — deferred until something is actually hovered /
-          // highlighted so it stays off the initial-render path.
-          return view.initialized && ids.length > 0
-            ? computeHighlightBoxes({
-                view,
-                sections: this.renderSections,
-                readIdIndexMap: self.readIdIndexMap,
-                ids,
-                height: self.height,
-                featureHeight: self.featureHeight,
-                featureSpacing: self.featureSpacing,
-                scrollTop: self.scrollTop,
-              })
-            : []
-        },
-
-        /**
          * #method
          * Content-space Y of a group's pileup relative to the reserved
          * below-coverage height, i.e. how far a read's row shifts because its
@@ -2806,9 +2774,9 @@ export default function stateModelFactory(
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
             // The renderers draw on `length > 0` with no mode check, so the
-            // gate lives in `selectedChainReadIdsInMode`. (Hover highlight is
-            // `highlightBoxes` / `HighlightOverlay`, not here, so a hover never
-            // triggers a canvas repaint.)
+            // gate lives in `selectedChainReadIdsInMode`. (The hover highlight
+            // is `hoverInk`, not here, so a hover never triggers a canvas
+            // repaint.)
             selectedChainReadIds: self.selectedChainReadIdsInMode,
             colors: palette,
             chainMode: self.isChainMode,
@@ -2817,6 +2785,38 @@ export default function stateModelFactory(
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }
+        },
+
+        /**
+         * #getter
+         * The boxes of the hovered read or chain, for the chrome's highlight.
+         * Deliberately NOT part of `renderState`: the hovered id changes on
+         * nearly every mousemove, and routing it through the canvas would
+         * repaint the whole pileup each move.
+         */
+        get hoverInk(): HighlightRect[] {
+          const view = self.host
+          const chainReadIds = self.highlightedChainReadIds
+          const ids =
+            chainReadIds.length > 0
+              ? chainReadIds
+              : self.featureIdUnderMouse
+                ? [self.featureIdUnderMouse]
+                : []
+          // Reading `readIdIndexMap` forces its (per-read) build over the whole
+          // fetched dataset — deferred until something is actually hovered /
+          // highlighted so it stays off the initial-render path.
+          return view.initialized && ids.length > 0
+            ? readHighlightInk({
+                blocks: self.renderBlocks,
+                sections: self.renderSections,
+                readIdIndexMap: self.readIdIndexMap,
+                ids,
+                state: this.renderState,
+                scroll: self.scrollModel,
+                strong: chainReadIds.length > 0,
+              })
+            : []
         },
 
         // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
@@ -3888,7 +3888,7 @@ export default function stateModelFactory(
             self.hoverCoverageBand = state.hoverCoverageBand
             self.hoveredArcHighlight = state.hoveredArcHighlight
             // Write only on a real change. Assigning an equal array still
-            // replaces the MST node, which invalidates `highlightBoxes` — an
+            // replaces the MST node, which invalidates `hoverInk` — an
             // O(reads) rebuild — so dragging the cursor along one chain would
             // recompute every box on every mousemove. MobX already skips the
             // no-op writes above, since those are primitives.
@@ -4054,7 +4054,7 @@ export default function stateModelFactory(
             superOpenContextMenu(info)
             self.contextMenuFeature = undefined
             // Pin the hover to the menu's target read so its highlight box
-            // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the
+            // (`hoverInk`, keyed on featureIdUnderMouse) stays on while the
             // menu is open — the clear above dropped the tooltip, so this
             // re-boxes just the read the menu acts on. Undefined for
             // coverage/indicator hits, which have no read to box.

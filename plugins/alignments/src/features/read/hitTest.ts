@@ -27,6 +27,22 @@ function firstSegmentOf(segmentReadIndices: Uint32Array, read: number) {
   return lo
 }
 
+/**
+ * The read mark's instances for one read — its exon segments, contiguous in
+ * the segment arrays because the worker emits them per read in read order.
+ */
+export function segmentsOfRead(segmentReadIndices: Uint32Array, read: number) {
+  const first = firstSegmentOf(segmentReadIndices, read)
+  let last = first
+  while (
+    last < segmentReadIndices.length &&
+    segmentReadIndices[last] === read
+  ) {
+    last++
+  }
+  return { first, last }
+}
+
 // The arrowhead is ink the body's bp span does not cover: it protrudes
 // CHEVRON_PX past the capped edge. Same predicate the shader's geometry is
 // built from (readChevron.slang), asked in bp so a reversed region needs no
@@ -49,11 +65,8 @@ function chevronContainsCursor(
   const strand = readStrands[read]!
   const dyPx = coords.yWithinRow - frame.featureHeight / 2
   let inside = false
-  for (
-    let s = firstSegmentOf(segmentReadIndices, read);
-    !inside && s < segmentReadIndices.length && segmentReadIndices[s] === read;
-    s++
-  ) {
+  const { first, last } = segmentsOfRead(segmentReadIndices, read)
+  for (let s = first; !inside && s < last; s++) {
     const capsEdge = chevronCapsEdge(strand, segmentEdgeFlags[s]!)
     if (capsEdge !== 0) {
       const start = segmentPositions[s * 2]!

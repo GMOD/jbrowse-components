@@ -32,8 +32,8 @@ const useStyles = makeStyles()(theme => ({
 //
 // An overlay rather than a canvas pass because the canvas is repaint-tier: the
 // hovered arc changes on nearly every mousemove, and on the Canvas2D fallback a
-// repaint re-rasterizes the whole pileup. Same reason `HighlightOverlay` is a
-// div rather than a read-fill pass.
+// repaint re-rasterizes the whole pileup. Same reason the read highlight is a
+// chrome div rather than a read-fill pass.
 const ArcHoverOverlay = observer(function ArcHoverOverlay({
   model,
 }: {

@@ -21,7 +21,7 @@ export const BEZIER_ARC_STROKE_OPACITY = 0.8
 // Loops `model.renderSections` so every group's pairs get arcs, not just the
 // first; each section supplies its own `topOffset` (pileup band top) and
 // `viewportBottom` (band bottom, via the shared `sectionBandBottom`), mirroring
-// how `computeVisibleLabels`/`computeHighlightBoxes` clip per section.
+// how `computeVisibleLabels`/`readHighlightInk` clip per section.
 export function computePileupBezierArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,

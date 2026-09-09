@@ -93,8 +93,8 @@ export interface RenderState {
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
-  // Hover highlight is NOT here — it's a React overlay (HighlightOverlay) so a
-  // mousemove repaints only the overlay div, not the canvas. Selection stays
+  // Hover highlight is NOT here — it's the chrome's guide (`hoverInk`) so a
+  // mousemove repaints only its divs, not the canvas. Selection stays
   // canvas-side: it changes on click (rare) and belongs in SVG export.
   selectedFeatureId?: string
   // Every READ of the selected chain, keyed the same way as `selectedFeatureId`

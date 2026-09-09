@@ -441,7 +441,7 @@ function paintSelectionBox(
   ctx.strokeRect(left, y, width, state.featureHeight)
 }
 
-// Selection only — the hover highlight is a React overlay (HighlightOverlay).
+// Selection only — the hover highlight is the chrome's guide (`hoverInk`).
 function drawSelectionOverlays(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
