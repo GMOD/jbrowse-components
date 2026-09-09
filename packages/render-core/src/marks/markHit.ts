@@ -22,6 +22,18 @@ export function inkOnRect(
   return { x, y, distSq: dx * dx + dy * dy }
 }
 
+/** The same for a mark with no extent to clamp into. */
+export function inkAtPoint(
+  xPx: number,
+  yPx: number,
+  x: number,
+  y: number,
+): InkHit {
+  const dx = xPx - x
+  const dy = yPx - y
+  return { x, y, distSq: dx * dx + dy * dy }
+}
+
 /**
  * The nearest of `candidates` by where each one's ink is, or undefined when
  * none beats `maxDistSq`.

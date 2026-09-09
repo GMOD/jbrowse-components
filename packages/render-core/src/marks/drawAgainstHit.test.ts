@@ -229,3 +229,25 @@ test('bar: a zero-height bar paints nothing and is never the answer', () => {
     ),
   ).toEqual([])
 })
+
+// Why `point` keeps a hit test of its own where the rect shapes take the one
+// their ink implies: two glyphs a pixel apart both contain the cursor, and the
+// one under it is the nearer CENTRE, which the boxes cannot say.
+test('point: overlapping glyphs answer the nearest centre, not the first box', () => {
+  const cluster: PointChannels = {
+    x: Uint32Array.from([50, 52]),
+    x2: Uint32Array.from([51, 53]),
+    y: Float32Array.from([0.5, 0.5]),
+    color: Uint32Array.from([RED, RED]),
+    glyph: Uint8Array.from([GLYPH_DISC, GLYPH_DISC]),
+    count: 2,
+  }
+  const f = { canvasWidth: 60, canvasHeight: 100 }
+  const p = { domain: [0, 1] as [number, number], diameterPx: 6 }
+  const x1 = pointMark.ink!(cluster, block, f, p, 1)!
+  const cursorX = x1.left + x1.width / 2 - 0.25
+  expect(
+    pointMark.hitNearest!(cluster, block, f, p, cursorX, 50, [0, 1], 100)
+      ?.index,
+  ).toBe(1)
+})

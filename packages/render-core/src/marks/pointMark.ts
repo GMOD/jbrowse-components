@@ -5,6 +5,7 @@ import { pointDrawsBar, valueToYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
+import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { blockPx } from './spanMark.ts'
 
 import type { MarkShape } from './types.ts'
@@ -98,9 +99,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   },
 
   // A bar is the rect the painter fills, unpadded on every side; a glyph is
-  // the box `appendGlyph` paints inside. The hit test is the derived one, so a
-  // cursor inside either box is on the instance and a tie goes to the one on
-  // top.
+  // the box `appendGlyph` paints inside.
   ink(channels, block, frame, params, i) {
     const { x, x2, y, glyph } = channels
     const { diameterPx, domain } = params
@@ -113,5 +112,28 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     return pointDrawsBar(hi - lo, r)
       ? { left: lo, top: cy - r, width: hi - lo, height: diameterPx }
       : glyphBox(glyph[i]!, xStart, cy, diameterPx)
+  },
+
+  // Its own rather than the one `ink` implies, for the glyph: a dense plot
+  // stacks glyphs whose boxes all contain the cursor at distance 0, and the
+  // one under the cursor is the nearest CENTRE, which no box can say. A bar
+  // is grabbed anywhere inside the rect it fills, as the derived test would.
+  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
+    const { x, x2, y } = channels
+    const bpToPx = makeBpMapper(block)
+    const { diameterPx, domain } = params
+    const domainMin = domain[0]
+    const domainMax = domain[1]
+    const canvasHeight = frame.canvasHeight
+    return nearestInk(candidates, maxDistSq, i => {
+      const xStart = bpToPx(x[i]!)
+      const xEnd = bpToPx(x2[i]!)
+      const cy = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
+      const lo = Math.min(xStart, xEnd)
+      const hi = Math.max(xStart, xEnd)
+      return pointDrawsBar(hi - lo, diameterPx / 2)
+        ? inkOnRect(xPx, yPx, lo, cy - diameterPx / 2, hi - lo, diameterPx)
+        : inkAtPoint(xPx, yPx, xStart, cy)
+    })
   },
 }
