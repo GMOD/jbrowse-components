@@ -96,7 +96,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
               }}
               onMouseLeave={() => {
                 setHoveredArcKey(null)
-                model.clearMouseoverState()
+                model.clearHoverUnlessPinned()
               }}
               // Select AND open, always — selection marks the junction the
               // detail widget is showing, so a second click on the same arc is

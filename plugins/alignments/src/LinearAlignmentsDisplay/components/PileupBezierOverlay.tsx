@@ -61,17 +61,9 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   const { view } = model
   const { bezierArcScope, height, selectedFeatureId } = model
 
-  // `view.width` is read AFTER this gate, never destructured alongside
-  // `initialized` above it: destructuring evaluates the getter, and `width`
-  // throws by design before the view is measured — so `const { initialized,
-  // width } = view` throws on the very run the `!initialized` check exists to
-  // handle. It read as guarded and wasn't. Nothing caught it because no display
-  // mounts before its view is measured — `LinearGenomeView` shows
-  // `ViewLoadingScreen` for the whole of `showLoading`, which includes
-  // `!initialized` — so the branch never ran. That is what made it latent, and
-  // it is also why the fix is worth keeping rather than deleting the check: the
-  // gate below is now the only thing standing between this body and a throw if
-  // it is ever mounted somewhere that doesn't share the LGV's screen.
+  // `view.width` is read after this gate, never destructured alongside
+  // `initialized` above it: `width` throws by design before the view is
+  // measured, so the destructure would throw on the run the gate exists for.
   if (bezierArcScope === 'none' || !view.initialized) {
     return null
   }
@@ -85,7 +77,8 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 
   // Selection is the model's, not a local mirror of the last click: clearing
   // it on the canvas or selecting another read has to un-thicken the arc too.
-  const selectedChain = new Set(model.selectedChainReadIds)
+  // Through the mode-gated getter, as the canvas `renderState` is.
+  const selectedChain = new Set(model.selectedChainReadIdsInMode)
   const isSelected = (arc: PileupArc) =>
     arc.id1 === selectedFeatureId ||
     arc.id2 === selectedFeatureId ||
@@ -163,7 +156,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                 setHoveredReadName(prev =>
                   prev === arc.readName ? null : prev,
                 )
-                model.clearMouseoverState()
+                model.clearHoverUnlessPinned()
               }}
               onClick={e => {
                 const svg = e.currentTarget.ownerSVGElement

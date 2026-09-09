@@ -34,19 +34,21 @@ export function computePileupBezierArcsFromModel(
   const result: PileupArc[] = []
   for (const sec of model.bezierPairSections) {
     const bottom = sectionBandBottom(sec.topOffset, sec.pileupHeight, scroll)
-    result.push(
-      ...computePileupBezierArcs({
-        pairs: sec.pairs,
-        colors: model.colorPalette,
-        displayedRegions: view.displayedRegions,
-        bpToScreenX,
-        featureHeight: model.featureHeight,
-        featureSpacing: model.featureSpacing,
-        pileupTopOffset: sec.topOffset,
-        scrollTop: scroll.scrollTop,
-        viewportBottom: bottom,
-      }),
-    )
+    // Appended one at a time, not spread: a section's arc count is a read
+    // count, and `push(...arr)` passes the array as arguments.
+    for (const arc of computePileupBezierArcs({
+      pairs: sec.pairs,
+      colors: model.colorPalette,
+      displayedRegions: view.displayedRegions,
+      bpToScreenX,
+      featureHeight: model.featureHeight,
+      featureSpacing: model.featureSpacing,
+      pileupTopOffset: sec.topOffset,
+      scrollTop: scroll.scrollTop,
+      viewportBottom: bottom,
+    })) {
+      result.push(arc)
+    }
   }
   return result
 }

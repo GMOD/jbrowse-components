@@ -132,7 +132,7 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
               })
             }}
             onMouseLeave={() => {
-              model.clearMouseoverState()
+              model.clearHoverUnlessPinned()
             }}
           />
         </g>

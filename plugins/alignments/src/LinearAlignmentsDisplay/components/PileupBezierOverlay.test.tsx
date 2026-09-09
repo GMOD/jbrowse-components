@@ -74,10 +74,10 @@ function renderOverlay(
     height: 200,
     isChainMode: false,
     selectedFeatureId: undefined,
-    selectedChainReadIds: [],
+    selectedChainReadIdsInMode: [],
     getFeatureInfoById: () => undefined,
     setHoverState: jest.fn(),
-    clearMouseoverState: jest.fn(),
+    clearHoverUnlessPinned: jest.fn(),
     readIdsSharingChainWith: jest.fn(() => []),
     selectReadWithChain: jest.fn(),
     ...overrides,
@@ -93,7 +93,7 @@ function renderOverlay(
       '[data-testid="pileup-bezier-arc"]',
     ),
   ]
-  return { model, target: targets[0]!, targets, inks }
+  return { model, container, target: targets[0]!, targets, inks }
 }
 
 const strokeWidth = (path: SVGPathElement) =>
@@ -171,7 +171,7 @@ test('an arc is thick while the model selects either of its reads', () => {
 })
 
 test('a chain selection thickens every arc of the chain', () => {
-  const { inks } = renderOverlay({ selectedChainReadIds: CHAIN }, [
+  const { inks } = renderOverlay({ selectedChainReadIdsInMode: CHAIN }, [
     ARC,
     NEXT_HOP,
     OTHER,
@@ -187,6 +187,47 @@ test('the hover target is wider than the ink', () => {
   const { target, inks } = renderOverlay()
   expect(strokeWidth(inks[0]!)).toBe(1)
   expect(strokeWidth(target)).toBe(7)
+})
+
+// `width` throws before the view is measured, so the gate has to return before
+// anything reads it. Destructuring it alongside `initialized`, which reads as
+// guarded, evaluates the getter on the very run the gate exists for.
+test('the gate returns before the view is measured, without reading width', () => {
+  const view = {
+    initialized: false,
+    get width(): number {
+      throw new Error('width read before the view was measured')
+    },
+  }
+
+  const { container } = renderOverlay({
+    view,
+  } as unknown as Partial<LinearAlignmentsDisplayModel>)
+
+  expect(container.querySelector('[data-testid="pileup-bezier-overlay"]')).toBe(
+    null,
+  )
+})
+
+test('the overlay draws nothing when the arc scope is none', () => {
+  const { container } = renderOverlay({
+    bezierArcScope: 'none',
+  })
+
+  expect(container.querySelector('[data-testid="pileup-bezier-overlay"]')).toBe(
+    null,
+  )
+})
+
+// The leave refuses the write the enter refuses: `setHoverState` declines while
+// the right-click menu pins the hover to its own read, so a straight
+// `clearMouseoverState` here would wipe the pin on the way out.
+test('leaving an arc clears the hover through the pin-aware action', () => {
+  const { model, target } = renderOverlay()
+
+  fireEvent.mouseLeave(target)
+
+  expect(model.clearHoverUnlessPinned).toHaveBeenCalled()
 })
 
 test('a dashed arc names the loci it skipped in its tooltip', () => {

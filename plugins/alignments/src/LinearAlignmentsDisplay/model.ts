@@ -2545,6 +2545,17 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * The selected chain, empty outside chain mode. Every consumer reads it
+         * here — `renderState` for the canvas, `PileupBezierOverlay` for which
+         * arcs draw thick — so a selection the mode has made meaningless is
+         * unrenderable by construction rather than by a clear-on-transition.
+         */
+        get selectedChainReadIdsInMode() {
+          return self.isChainMode ? self.selectedChainReadIds : []
+        },
+
+        /**
          * #method
          */
         getFeatureInfoById(featureId: string) {
@@ -2808,16 +2819,11 @@ export default function stateModelFactory(
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
-            // Chain selection is only valid in chain mode. Gating here makes a
-            // stale selection unrenderable outside it by construction — render
-            // correctness no longer depends on any clear-on-transition. The
-            // renderers draw on `length > 0` with no
-            // mode check, so this is the one place the invariant must hold.
-            // (Hover highlight lives in `highlightBoxes` / `HighlightOverlay`,
-            // not here, so a hover never triggers a canvas repaint.)
-            selectedChainReadIds: self.isChainMode
-              ? self.selectedChainReadIds
-              : [],
+            // The renderers draw on `length > 0` with no mode check, so the
+            // gate lives in `selectedChainReadIdsInMode`. (Hover highlight is
+            // `highlightBoxes` / `HighlightOverlay`, not here, so a hover never
+            // triggers a canvas repaint.)
+            selectedChainReadIds: self.selectedChainReadIdsInMode,
             colors: palette,
             chainMode: self.isChainMode,
             showLinkedReadLines: self.showLinkedReadLines,
@@ -3182,6 +3188,21 @@ export default function stateModelFactory(
            * #action
            */
           clearMouseoverState,
+
+          /**
+           * #action
+           * What a cursor leaving a read or a connector calls. `setHoverState`
+           * refuses writes while the right-click menu pins the hover to its own
+           * read, so the leave has to refuse them too — otherwise crossing an
+           * arc with the menu open wipes the pin the enter side declined to
+           * overwrite. `clearMouseoverState` is the unconditional form, for
+           * `closeContextMenu`, which is releasing that pin.
+           */
+          clearHoverUnlessPinned() {
+            if (!self.contextMenuInfo) {
+              clearMouseoverState()
+            }
+          },
 
           /**
            * #action
@@ -4057,10 +4078,13 @@ export default function stateModelFactory(
            */
           selectReadWithChain(featureId: string) {
             void self.selectFeatureById(featureId)
-            const chain = self.readIdsSharingChainWith(featureId)
-            if (chain.length > 0) {
-              self.setSelectedChainReadIds(chain)
-            }
+            // Assigned unconditionally: a read with no chain — one whose group
+            // is hidden, or whose block no longer holds it — has to clear the
+            // chain the last click left selected, or that chain stays boxed
+            // and its arcs stay thick behind a selection that moved on.
+            self.setSelectedChainReadIds(
+              self.readIdsSharingChainWith(featureId),
+            )
           },
         }
       })

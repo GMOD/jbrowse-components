@@ -143,6 +143,7 @@ describe('sashimi selection', () => {
       setSelectedSashimiKey: jest.fn(),
       setHoverState: jest.fn(),
       clearMouseoverState: jest.fn(),
+      clearHoverUnlessPinned: jest.fn(),
     } as unknown as LinearAlignmentsDisplayModel
   }
 

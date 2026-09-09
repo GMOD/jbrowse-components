@@ -233,9 +233,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // drop a hover queued for the next frame, or it would land after the cursor
     // has already gone and re-light the tooltip we are clearing here
     hover.cancel()
-    if (!model.contextMenuInfo) {
-      model.clearMouseoverState()
-    }
+    model.clearHoverUnlessPinned()
   }
 
   function handleContextMenu(e: React.MouseEvent) {
