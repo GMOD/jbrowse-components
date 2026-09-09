@@ -7,7 +7,7 @@ summary: "A display declares a mark, a shape plus the channels that feed it, and
 
 ## Status
 
-Rejected (2026-08-24), and the code removed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) has the measurements. The port of an in-tree display showed the spec holds a display's wiring and nothing else, so it was not kept for third parties either. What follows is the record as accepted; the file paths in it no longer exist.
+Rejected (2026-08-24), and the code removed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) has the measurements. **The render half came back without the spec** — a display declares a mark list through `defineMark` and thirteen displays draw that way; [ADR-106](adr-106-a-display-declares-its-marks.md) is the record and says what differs from this one. The port of an in-tree display showed the spec holds a display's wiring and nothing else, so it was not kept for third parties either. What follows is the record as accepted; the file paths in it no longer exist.
 
 As accepted: `packages/render-core/src/marks/bar.ts` and
 `packages/render-core/src/shaders/bar.slang` are the first shape;

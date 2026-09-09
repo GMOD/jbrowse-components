@@ -10,6 +10,10 @@ summary: "A track type is not a spec and a display's settings are not a declared
 Rejected (2026-08-24), and this ADR rejects
 [ADR-089](adr-089-a-track-type-is-a-spec-the-factory-composes-the-stack.md)
 and [ADR-090](adr-090-a-mark-is-a-shape-plus-its-channels.md) with it. The
+factory and the settings table stay rejected; the mark half of ADR-090 was
+never measured on its own and returned in a different form —
+[ADR-106](adr-106-a-display-declares-its-marks.md). The eager-bundle finding
+below dissolved on 2026-09-02 when `DisplayType.stateModel` took a loader. The
 factory (`defineDisplay`), the mark system (`display-kit/marks`,
 `render-core/marks/bar`) and `example-plugins/score-example`'s spec form are
 removed; the example plugin is back on the hand-composed stack it had before

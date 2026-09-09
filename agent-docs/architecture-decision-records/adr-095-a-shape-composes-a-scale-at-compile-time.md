@@ -124,16 +124,22 @@ The grammar-of-graphics question — the comparison with GenomeSpy and Gosling �
 got three answers at three levels, on different evidence, and they must not be
 read as one:
 
-1. **Authoring level: refused.** JBrowse is format-typed where the grammars are
-   mark-typed — a track is a file format, and the reader never picks a mark, so
-   "any channel on any mark" has nothing to attach to.
+1. **Authoring level: refused for the general case, reopened for the
+   quantitative class** ([ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md)):
+   a feature file's field on a score axis is authored in config, through a
+   declared encoding the worker evaluates once. Elsewhere JBrowse stays
+   format-typed where the grammars are mark-typed — a track is a file format,
+   and the reader never picks a mark, so "any channel on any mark" has nothing
+   to attach to.
    [reference/SESSION_SPEC_FORMAT.md](../reference/SESSION_SPEC_FORMAT.md)
    §"The assessment" is the argument, with GenomeSpy's own 532-line BAM example
    as the cost of the alternative.
 2. **Display/settings level: refused, on measurement.** ADR-091's declaration
    table across four display models eliminated zero getters — the cost sits in
    layout, tiering, fetch shape and per-display meaning, not in channels.
-3. **Encoding level: adopted, at compile time.** This ADR. The factoring is
+3. **Mark level: adopted** ([ADR-106](adr-106-a-display-declares-its-marks.md)) —
+   drawing, hit test and export from one declaration.
+4. **Encoding level: adopted, at compile time.** This ADR. The factoring is
    the same one GenomeSpy uses; the form is hand-written imports inlined by
    `slangc` rather than runtime codegen.
 
@@ -164,11 +170,11 @@ because a rule describing five shaders is a census, not a mechanism.
   own scale, by default — a fourth spelling now needs an argument (ADR-094).
 - ADR-040 and ADR-051 stand untouched: nothing here is a generated draw stage
   or a single-consumer helper, and every module landed on two-plus consumers.
-- ADR-089/090/091 are not reopened. The composition registers nothing,
-  composes no MST chain, holds no config slot beyond `densityColorRamp` (an
-  ordinary display slot) and crosses no RPC boundary; ADR-091's reopening
-  condition governs a replacement for the display stack, which a shape library
-  is not.
+- ADR-089/091 are not reopened; ADR-090's mark half is, as ADR-106. The
+  composition registers nothing, composes no MST chain, holds no config slot
+  beyond `densityColorRamp` (an ordinary display slot) and crosses no RPC
+  boundary; ADR-091's reopening condition governs a replacement for the display
+  stack, which neither a shape library nor a mark list is.
 - The layout boundary holds: placement, tiering and the fetch stay imperative
   and per-display. Nothing in this work touched `sortLayout.ts` or `layout.ts`.
 - [reference/SHADER_SHAPE_LIBRARY.md](../reference/SHADER_SHAPE_LIBRARY.md) is

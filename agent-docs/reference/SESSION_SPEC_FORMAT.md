@@ -274,7 +274,10 @@ assembly defines — and the schema takes the rest into the editor.
 
 - *A uniform `encoding` block.* Cross-display channels exist and are flat; the
   per-display keys are mechanisms with no channel to sit in. The block would
-  nest the first set and leave the second where it is.
+  nest the first set and leave the second where it is. **For the quantitative
+  class the block exists**: `LinearMarkDisplay`'s `marks[].encoding`, evaluated
+  once in the worker —
+  [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md).
 - *First-class `Scale` objects.* One consumer set (`scaleType` / `minScore` /
   `maxScore` / `autoscale`) is already shared by the wiggle, Manhattan,
   alignments-coverage and MAF-coverage displays through `@jbrowse/wiggle-core`,
@@ -285,8 +288,10 @@ assembly defines — and the schema takes the rest into the editor.
   synteny and breakpoint figure in the corpus uses. Layering inside a track is a display's own business —
   coverage over pileup is one display — and exposing it as a spec operation is
   the mark-typed design again.
-- *Marks as a published unit.* Run and reversed: ADR-090 accepted, ADR-091
-  rejected with measurements. "What would reopen this" there still stands.
+- *Marks as a published unit.* Run and reversed as a spec field (ADR-090,
+  ADR-091), then adopted as a display's own declaration:
+  [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md).
+  ADR-091's "what would reopen this" still governs a factory.
 
 **One place the answer differs, and it is below the display rather than above
 it.** Everything assessed here is a grammar a *reader* writes or a *third party*
