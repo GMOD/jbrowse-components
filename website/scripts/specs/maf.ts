@@ -899,9 +899,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               // only, and the block of dropouts gets a bracket that says so.
               showBranchLength: false,
               rowProportion: 1,
-              // grow: the filtered rows all fit, so this is the track sizing
-              // to its own content rather than the cohort being scrolled
-              heightMode: 'grow',
             },
           ],
         },
@@ -977,14 +974,18 @@ export const mafSpecs: ScreenshotSpec[] = [
     // cover. Same answer pangenome/hprc_graph_vs_callset reached: a ring on the
     // node, and an arrow from the band to it.
     //
-    // s101039+ is the node, and it is the marked span almost exactly: rank 0,
-    // 5,140 bp at GRCh38#0#chr6:32,005,828-32,010,968, against the band's
-    // 32,005,691-32,011,057. Read out of `probe-graph-nodes.ts`, which also
-    // names the two alleles hanging across it (s442199+ at rank 16 and s511121+
-    // at rank 68, both about 6.4 kb) -- ONE ring, not three, because a previous
-    // round of this on the MHC figure was reviewed as "why are there three
-    // circles". The reference node is the right survivor: the haplotypes that go
-    // white in the alignment above are the ones that do not walk it.
+    // s329764+ is the node the band sits on: rank 0, 14,346 bp at
+    // GRCh38#0#chr6:31,996,631-32,010,977, and the band's
+    // 32,005,691-32,011,057 is its last 5 kb. Release 2.1 renumbered every
+    // segment and cuts this window coarser than 2.0 did, where the ring went on
+    // a 5,140 bp node that was the band almost exactly -- so the id here is read
+    // out of `probe-graph-nodes.ts` against the release the fixture names, not
+    // carried forward. The two alleles hanging across it are s348272+ (rank 8,
+    // HG00232 haplotype 2) and s352179+ (rank 77, NA18948 haplotype 2) -- ONE
+    // ring, not three, because a previous round of this on the MHC figure was
+    // reviewed as "why are there three circles". The reference node is the right
+    // survivor: the haplotypes that go white in the alignment above are the ones
+    // that do not walk it.
     annotations: [
       {
         type: 'text' as const,
@@ -1005,7 +1006,7 @@ export const mafSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'circle' as const,
-        anchor: { view: 1, graphNode: 's101039+' },
+        anchor: { view: 1, graphNode: 's329764+' },
         radius: 26,
         strokeWidth: 3,
         // The default red, and near-black was rendered against it before this
@@ -1032,7 +1033,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         },
         // stopped short of the ring by its own radius: an anchored head resolves
         // to the node's CENTRE, which would put the triangle inside the circle
-        anchor: { view: 1, graphNode: 's101039+', dx: -30, dy: -30 },
+        anchor: { view: 1, graphNode: 's329764+', dx: -30, dy: -30 },
         strokeWidth: 3,
       },
     ],
