@@ -1,25 +1,11 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { findManhattanHit } from './findManhattanHit.ts'
+import { manhattanFixture } from './manhattanFixture.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-function buildFlatbush(
-  positions: number[],
-  scores: number[],
-): Flatbush | undefined {
-  if (positions.length === 0) {
-    return undefined
-  }
-  const fb = new Flatbush(positions.length, undefined, Float64Array)
-  for (let i = 0; i < positions.length; i++) {
-    fb.add(positions[i]!, scores[i]!, positions[i], scores[i])
-  }
-  fb.finish()
-  return fb
-}
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
 const block: RenderBlock = {
@@ -41,26 +27,11 @@ const state: ManhattanRenderState = {
 const refNames = new Map([[0, 'chr1']])
 
 function mkData(positions: number[], scores: number[]) {
-  const data = new Map<number, ManhattanRpcResult>([
-    [
-      0,
-      {
-        positions: new Uint32Array(positions),
-        ends: new Uint32Array(positions.map(p => p + 1)),
-        glyphs: new Uint8Array(positions.length),
-        scores: new Float32Array(scores),
-        colors: new Uint32Array(positions.length),
-        numFeatures: positions.length,
-        scoreMin: 0,
-        scoreMax: 0,
-        flatbushData: undefined,
-      },
-    ],
-  ])
-  const fb = buildFlatbush(positions, scores)
+  const result = manhattanFixture({ x: positions, y: scores })
+  const data = new Map<number, ManhattanRpcResult>([[0, result]])
   const flatbushes = new Map<number, Flatbush>()
-  if (fb) {
-    flatbushes.set(0, fb)
+  if (result.flatbushData) {
+    flatbushes.set(0, Flatbush.from(result.flatbushData))
   }
   return { data, flatbushes }
 }

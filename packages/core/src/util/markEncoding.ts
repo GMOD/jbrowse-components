@@ -14,11 +14,11 @@ import { buildJexlContext } from './simpleFeature.ts'
 import type { ColorRampStop } from './colorRamp.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
+  ColorEncoding,
   EncodedChannels,
   FieldRef,
   GlyphEncoding,
   GlyphName,
-  MarkEncoding,
   RampRef,
   ScaleTable,
 } from './markEncodingTypes.ts'
@@ -51,10 +51,36 @@ const GLYPH_CODES: Record<GlyphName, number> = {
   diamond: GLYPH_DIAMOND,
 }
 
+/**
+ * #api
+ * A channel read per feature: the compiled form of a {@link FieldRef}, and
+ * what a display's own worker method hands the encoder for a channel no
+ * field name can say — a join against a second adapter, a lookup table, a
+ * rule over two fields.
+ */
+export type ChannelReader<T = unknown> = (feature: Feature) => T
+
+/**
+ * #api
+ * What `encodeFeatures` takes: a {@link MarkEncoding}, any channel of which
+ * may be a {@link ChannelReader} in place of its declared form. The declared
+ * form is what crosses the wire; a reader is built in the worker.
+ */
+export interface MarkEncodingInput {
+  x?: FieldRef | ChannelReader
+  x2?: FieldRef | ChannelReader
+  y?: FieldRef | ChannelReader
+  color?: ColorEncoding | ChannelReader<number>
+  glyph?: GlyphEncoding | ChannelReader<number>
+}
+
 function fieldReader(
-  ref: FieldRef,
+  ref: FieldRef | ChannelReader,
   jexl: JexlInstance,
-): (feature: Feature) => unknown {
+): ChannelReader {
+  if (typeof ref === 'function') {
+    return ref
+  }
   if (isJexl(ref)) {
     const expr = stringToJexlExpression(ref, jexl)
     return feature => expr.eval(buildJexlContext({ feature }))
@@ -67,11 +93,14 @@ function isGlyphName(glyph: string): glyph is GlyphName {
 }
 
 function glyphReader(
-  glyph: GlyphEncoding | undefined,
+  glyph: GlyphEncoding | ChannelReader<number> | undefined,
   jexl: JexlInstance,
-): (feature: Feature) => number {
+): ChannelReader<number> {
   if (glyph === undefined) {
     return () => GLYPH_DISC
+  }
+  if (typeof glyph === 'function') {
+    return glyph
   }
   if (isGlyphName(glyph)) {
     const code = GLYPH_CODES[glyph]
@@ -144,7 +173,7 @@ function categoryOrder(
  */
 export function encodeFeatures(
   features: readonly Feature[],
-  encoding: MarkEncoding,
+  encoding: MarkEncodingInput,
   ctx: { jexl: JexlInstance; report?: ProgressReporter },
 ): EncodedChannels {
   const { jexl, report } = ctx
@@ -166,11 +195,13 @@ export function encodeFeatures(
   let count = 0
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
-  const scaled = typeof colorEncoding === 'string' ? undefined : colorEncoding
+  const scaled = typeof colorEncoding === 'object' ? colorEncoding : undefined
   const readColor =
-    scaled === undefined
-      ? colorEvaluator(colorEncoding as string, jexl)
-      : fieldReader(scaled.field, jexl)
+    typeof colorEncoding === 'function'
+      ? colorEncoding
+      : scaled === undefined
+        ? colorEvaluator(colorEncoding as string, jexl)
+        : fieldReader(scaled.field, jexl)
   // A scaled colour resolves after the walk, once the table is known: the
   // category index or the raw value per admitted instance, kept here.
   const scaledValues = scaled ? new Float32Array(n) : undefined

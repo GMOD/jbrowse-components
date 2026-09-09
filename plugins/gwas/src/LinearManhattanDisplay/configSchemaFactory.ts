@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -7,7 +8,6 @@ import {
   scoreFieldConfigSchemaFields,
 } from '@jbrowse/plugin-wiggle'
 
-import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -110,7 +110,7 @@ export function configSchemaFactory() {
        */
       color: {
         type: 'color',
-        defaultValue: DEFAULT_MANHATTAN_COLOR,
+        defaultValue: DEFAULT_MARK_COLOR,
         description: 'CSS color or jexl callback for Manhattan points',
         // What makes the config editor offer this slot's value/callback toggle
         // at all (SlotEditor gates that switch on a non-empty contextVariable),

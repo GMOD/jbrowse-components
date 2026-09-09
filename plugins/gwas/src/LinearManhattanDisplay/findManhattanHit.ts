@@ -101,9 +101,9 @@ export function findManhattanHit(
       const raw = data.r2s?.[hit.index]
       best = {
         refName,
-        start: data.positions[hit.index]!,
-        end: data.ends[hit.index]!,
-        score: data.scores[hit.index]!,
+        start: data.x[hit.index]!,
+        end: data.x2[hit.index]!,
+        score: data.y[hit.index]!,
         r2: Number.isFinite(raw) ? raw : undefined,
         screenX: hit.x,
         screenY: hit.y,

@@ -1,5 +1,6 @@
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
+import { manhattanFixture } from './manhattanFixture.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -80,23 +81,13 @@ function abgr(r: number, g: number, b: number, a = 255) {
 }
 
 function data(
-  positions: number[],
-  scores: number[],
-  colors: number[],
-  ends: number[] = positions.map(p => p + 1),
-  glyphs: number[] = positions.map(() => 0),
+  x: number[],
+  y: number[],
+  color: number[],
+  x2: number[] = x.map(p => p + 1),
+  glyph: number[] = x.map(() => 0),
 ): ManhattanRpcResult {
-  return {
-    positions: new Uint32Array(positions),
-    ends: new Uint32Array(ends),
-    glyphs: new Uint8Array(glyphs),
-    scores: new Float32Array(scores),
-    colors: new Uint32Array(colors),
-    numFeatures: positions.length,
-    scoreMin: Math.min(...scores),
-    scoreMax: Math.max(...scores),
-    flatbushData: undefined,
-  }
+  return manhattanFixture({ x, y, color, x2, glyph, flatbush: false })
 }
 
 test('draws one arc per feature at the expected screen position', () => {

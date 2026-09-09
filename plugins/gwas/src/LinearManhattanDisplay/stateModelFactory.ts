@@ -8,6 +8,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
@@ -88,11 +89,11 @@ function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
   let scoreMin = Infinity
   let scoreMax = -Infinity
   for (const { data } of entries) {
-    if (data.scoreMin < scoreMin) {
-      scoreMin = data.scoreMin
+    if (data.yMin < scoreMin) {
+      scoreMin = data.yMin
     }
-    if (data.scoreMax > scoreMax) {
-      scoreMax = data.scoreMax
+    if (data.yMax > scoreMax) {
+      scoreMax = data.yMax
     }
   }
   return Number.isFinite(scoreMin) ? { scoreMin, scoreMax } : undefined
@@ -113,17 +114,23 @@ const SetColorFieldDialog = lazy(
 function categoryEntries(
   entries: Iterable<ManhattanRpcResult>,
 ): CategoricalEntry[] {
-  const byValue = new Map<string, string>()
-  for (const { categories } of entries) {
-    for (const { value, color } of categories ?? []) {
-      if (!byValue.has(value)) {
-        byValue.set(value, color)
+  const byValue = new Map<string, number>()
+  for (const { scale } of entries) {
+    if (scale?.kind === 'categorical') {
+      for (const { label, color } of scale.entries) {
+        if (!byValue.has(label)) {
+          byValue.set(label, color)
+        }
       }
     }
   }
   return [...byValue]
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(([value, color]) => ({ value, label: value, color }))
+    .map(([value, color]) => ({
+      value,
+      label: value,
+      color: abgrToCssRgba(color),
+    }))
 }
 
 // The LD key's rows: the index swatch, the r² bins high to low, the no-data
@@ -329,7 +336,7 @@ export function stateModelFactory(
             active: true,
             view: self.host,
             payloadFor: index => self.rpcDataMap.get(index),
-            itemsFor: data => (data.numFeatures === 0 ? [] : [data]),
+            itemsFor: data => (data.count === 0 ? [] : [data]),
             accumulate: shippedExtremes,
             range: ({ scoreMin, scoreMax }) =>
               widenRangeToRules(
@@ -470,12 +477,12 @@ export function stateModelFactory(
             // hoisted out of the loop: this walks every SNP of every loaded
             // region, and a whole-genome GWAS puts hundreds of thousands in
             // each, so the two array lookups are the loop body
-            const { scores, positions, numFeatures } = self.rpcDataMap.get(idx)!
-            for (let i = 0; i < numFeatures; i++) {
-              const s = scores[i]!
+            const { y, x, count } = self.rpcDataMap.get(idx)!
+            for (let i = 0; i < count; i++) {
+              const s = y[i]!
               if (s > bestScore) {
                 bestScore = s
-                bestPos = positions[i]!
+                bestPos = x[i]!
                 bestIdx = idx
               }
             }
@@ -540,9 +547,8 @@ export function stateModelFactory(
          * `LegendMixin`'s hook: the scale the active scheme paints through,
          * or none under the single color, which has no key. The r² bins under
          * LD coloring; under field coloring the values the loaded regions met,
-         * read off the payloads' `categories` tables — the same table the
-         * worker packed `colors[]` from, so a swatch is a color that was
-         * drawn. The chrome draws the key on screen and in the export.
+         * read off the payloads' scale tables — the same table the worker
+         * packed `color` from, so a swatch is a color that was drawn. The chrome draws the key on screen and in the export.
          */
         get colorScales(): ColorScale[] {
           if (self.ldColoringActive) {

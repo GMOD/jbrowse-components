@@ -198,3 +198,20 @@ test('an empty feature list ships no index', () => {
   expect(r.count).toBe(0)
   expect(r.flatbushData).toBeUndefined()
 })
+
+test("a channel spelled as a reader is read in the field ref's place", () => {
+  const r = encodeFeatures(
+    features,
+    {
+      y: f => Number(f.get('score')) * 2,
+      color: f => (f.get('strand') === 1 ? 0xff0000ff : 0xff00ff00),
+      glyph: f => (f.get('type') === 'exon' ? GLYPH_TRIANGLE : GLYPH_DISC),
+    },
+    { jexl },
+  )
+  expect(r.count).toBe(3)
+  expect([...r.y]).toEqual([20, 80, 50])
+  expect([...r.color]).toEqual([0xff0000ff, 0xff00ff00, 0xff0000ff])
+  expect([...r.glyph]).toEqual([GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DISC])
+  expect(r.scale).toBeUndefined()
+})

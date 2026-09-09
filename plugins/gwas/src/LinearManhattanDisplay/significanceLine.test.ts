@@ -1,6 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { axisPlotBox } from '@jbrowse/wiggle-core'
 
+import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -13,15 +14,8 @@ const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 }
 // configured wiggle rule defaults to.
 function makeResult(score: number): ManhattanRpcResult {
   return {
-    positions: new Uint32Array([100]),
-    ends: new Uint32Array([101]),
-    glyphs: new Uint8Array([0]),
-    scores: new Float32Array([score]),
-    colors: new Uint32Array([0xff_00_00_ff]),
-    numFeatures: 1,
-    scoreMin: 0,
-    scoreMax: score,
-    flatbushData: undefined,
+    ...manhattanFixture({ x: [100], y: [score], flatbush: false }),
+    yMin: 0,
     indexFound: true,
   }
 }

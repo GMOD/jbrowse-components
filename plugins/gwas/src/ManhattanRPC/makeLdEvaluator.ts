@@ -7,15 +7,15 @@ import { defaultGlyph } from './rpcTypes.ts'
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Per-feature LD color + r² to the index SNP from one shared lookup:
+// Per-feature LD color, glyph and r² to the index SNP from one shared lookup:
 //   - color: index SNP is purple (ldIndexColor), partners bin by r², absent → grey
+//   - glyph: the index is the diamond; everything else keeps its normal glyph
 //   - r²:    1 for the index, the looked-up r² for partners, NaN when absent (so
 //            the tooltip omits it rather than showing a fake 0)
-// glyph and color both derive entirely from the r² state, so all three come
-// from a single name/posKey/Map derivation. buildManhattanResult calls
-// evalGlyph, evalColor and evalR2 back-to-back for the same feature, so
-// memoizing on the last feature runs that derivation once per point instead of
-// three times, with no per-feature allocation.
+// All three derive from the r² state, so they come from a single
+// name/posKey/Map derivation, memoized on the last feature: the encoder reads
+// color and glyph back-to-back for one feature, and the r² pass that follows
+// it derives once more per point.
 export function makeLdEvaluator(
   ld: LdToIndex,
   indexSnp: string,
@@ -34,17 +34,15 @@ export function makeLdEvaluator(
     }
   }
   return {
-    evalColor(feature: Feature) {
+    color(feature: Feature) {
       compute(feature)
       return isIndex ? ldIndexColor : ldBinColor(r2)
     },
-    evalR2(feature: Feature) {
+    r2(feature: Feature) {
       compute(feature)
       return r2
     },
-    // Index SNP renders as the diamond glyph (GLYPH_DIAMOND) instead of a disc;
-    // everything else keeps the glyph it would have in normal coloring.
-    evalGlyph(feature: Feature) {
+    glyph(feature: Feature) {
       compute(feature)
       return isIndex ? GLYPH_DIAMOND : defaultGlyph(feature)
     },

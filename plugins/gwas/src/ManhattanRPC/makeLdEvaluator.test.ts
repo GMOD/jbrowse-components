@@ -9,28 +9,44 @@ import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 
 test('index SNP (by name): index color, r²=1', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const f = feat({ name: 'rsIndex', start: 100 })
   expect(evalColor(f)).toBe(ldIndexColor)
   expect(evalR2(f)).toBe(1)
 })
 
 test('index SNP (by chr:bp): index color, r²=1', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'chr1:100', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'chr1:100',
+    'chr1',
+  )
   const f = feat({ start: 99 })
   expect(evalColor(f)).toBe(ldIndexColor)
   expect(evalR2(f)).toBe(1)
 })
 
 test('partner looked up by name', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const f = feat({ name: 'rsB', start: 500 })
   expect(evalColor(f)).toBe(ldBinColor(0.9))
   expect(evalR2(f)).toBe(0.9)
 })
 
 test('partner looked up by position when name is absent', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const f = feat({ start: 299 })
   expect(evalColor(f)).toBe(ldBinColor(0.3))
   expect(evalR2(f)).toBe(0.3)
@@ -40,7 +56,11 @@ test('partner looked up by position when name is absent', () => {
 // variant it has no id for as readily as the LD file does, and `.` reaching the
 // by-name lookup is what coloured such a feature as somebody else's partner.
 test('a feature named `.` is looked up by position, never by that name', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const atPartner = feat({ name: '.', start: 299 })
   expect(evalR2(atPartner)).toBe(0.3)
   const nowhereNear = feat({ name: '.', start: 999 })
@@ -49,14 +69,18 @@ test('a feature named `.` is looked up by position, never by that name', () => {
 })
 
 test('SNP absent from the LD data: grey color, NaN r²', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const f = feat({ name: 'rsUnknown', start: 999 })
   expect(evalColor(f)).toBe(ldBinColor(undefined))
   expect(evalR2(f)).toBeNaN()
 })
 
 test('glyph: index → diamond, insertion → triangle, others → point', () => {
-  const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
   expect(evalGlyph(feat({ name: 'rsIndex', start: 100 }))).toBe(GLYPH_DIAMOND)
   expect(evalGlyph(feat({ name: 'rsB', start: 500, svtype: 'INS' }))).toBe(
     GLYPH_TRIANGLE,
@@ -65,14 +89,18 @@ test('glyph: index → diamond, insertion → triangle, others → point', () =>
 })
 
 test('index takes precedence over insertion glyph', () => {
-  const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
   expect(evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' }))).toBe(
     GLYPH_DIAMOND,
   )
 })
 
 test('memoized lookup is independent of color/r² call order', () => {
-  const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { color: evalColor, r2: evalR2 } = makeLdEvaluator(
+    ld,
+    'rsIndex',
+    'chr1',
+  )
   const partner = feat({ name: 'rsB', start: 500 })
   const absent = feat({ name: 'rsUnknown', start: 999 })
   // r² first, then color, then a different feature, then back — each read

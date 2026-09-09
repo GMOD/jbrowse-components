@@ -1,5 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -16,23 +17,11 @@ import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
 function makeResult(positions: number[]): ManhattanRpcResult {
-  const index = new Flatbush(positions.length)
-  for (const p of positions) {
-    index.add(p, 0, p + 1, 1)
-  }
-  index.finish()
-  return {
-    positions: new Uint32Array(positions),
-    ends: new Uint32Array(positions.map(p => p + 1)),
-    glyphs: new Uint8Array(positions.length),
-    scores: new Float32Array(positions.map(() => 5)),
-    colors: new Uint32Array(positions.length),
-    numFeatures: positions.length,
-    scoreMin: 0,
-    scoreMax: 5,
-    flatbushData: index.data,
+  return manhattanFixture({
+    x: positions,
+    y: positions.map(() => 5),
     indexFound: true,
-  }
+  })
 }
 
 describe('the hit-test indexes survive a frame', () => {

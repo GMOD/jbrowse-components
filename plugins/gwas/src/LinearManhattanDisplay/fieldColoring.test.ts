@@ -1,13 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
+import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type {
-  ManhattanCategory,
-  ManhattanRpcResult,
-} from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const REGION = {
@@ -17,19 +16,22 @@ const REGION = {
   assemblyName: 'volvox',
 }
 
-function payload(categories?: ManhattanCategory[]): ManhattanRpcResult {
-  return {
-    positions: new Uint32Array([100]),
-    ends: new Uint32Array([101]),
-    glyphs: new Uint8Array([0]),
-    scores: new Float32Array([3]),
-    colors: new Uint32Array([0xff_00_00_ff]),
-    numFeatures: 1,
-    scoreMin: 3,
-    scoreMax: 3,
-    flatbushData: undefined,
-    categories,
-  }
+function payload(
+  categories?: { value: string; color: string }[],
+): ManhattanRpcResult {
+  return manhattanFixture({
+    x: [100],
+    y: [3],
+    flatbush: false,
+    scale: categories && {
+      kind: 'categorical',
+      field: 'name',
+      entries: categories.map(({ value, color }) => ({
+        label: value,
+        color: cssColorToABGR(color),
+      })),
+    },
+  })
 }
 
 function labels(items: MenuItem[]): string[] {
@@ -68,9 +70,9 @@ describe('LinearManhattanDisplay field coloring', () => {
         id: 'field',
         title: 'name',
         entries: [
-          { value: 'chr1', label: 'chr1', color: '#333333' },
-          { value: 'chr2', label: 'chr2', color: '#222222' },
-          { value: 'chr10', label: 'chr10', color: '#111111' },
+          { value: 'chr1', label: 'chr1', color: 'rgba(51,51,51,1)' },
+          { value: 'chr2', label: 'chr2', color: 'rgba(34,34,34,1)' },
+          { value: 'chr10', label: 'chr10', color: 'rgba(17,17,17,1)' },
         ],
       },
     ])

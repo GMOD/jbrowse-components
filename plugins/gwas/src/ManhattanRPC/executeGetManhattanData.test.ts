@@ -1,9 +1,18 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import {
+  GLYPH_DISC,
+  GLYPH_TRIANGLE,
+} from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { buildManhattanResult } from './executeGetManhattanData.ts'
+import { defaultGlyph } from './rpcTypes.ts'
 
+import type { ManhattanReaders } from './executeGetManhattanData.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+const jexl = createJexlInstance()
 
 function feature(uniqueId: string, start: number, score: number): Feature {
   return new SimpleFeature({
@@ -31,127 +40,61 @@ function svFeature(
   })
 }
 
-const constColor = (c: number) => () => c
+function build(
+  features: Feature[],
+  readers: Partial<ManhattanReaders> = {},
+  scoreField = 'score',
+) {
+  return buildManhattanResult(
+    features,
+    scoreField,
+    { color: () => 0xff00ffff, glyph: defaultGlyph, ...readers },
+    { jexl },
+  ).result
+}
 
-test('flattens features into typed arrays at matching indexes', () => {
-  const r = buildManhattanResult({
-    features: [
-      feature('a', 10, 1.5),
-      feature('b', 200, 7.25),
-      feature('c', 3000, 4),
-    ],
-    evalColor: constColor(0xff00ffff),
-  })
-  expect(r.numFeatures).toBe(3)
-  expect(Array.from(r.positions)).toEqual([10, 200, 3000])
-  expect(Array.from(r.scores)).toEqual([1.5, 7.25, 4])
-  expect(Array.from(r.colors)).toEqual([0xff00ffff, 0xff00ffff, 0xff00ffff])
+test('the encoder packs the channels: position, score, color per feature', () => {
+  const r = build([
+    feature('a', 10, 1.5),
+    feature('b', 200, 7.25),
+    feature('c', 3000, 4),
+  ])
+  expect(r.count).toBe(3)
+  expect(Array.from(r.x)).toEqual([10, 200, 3000])
+  expect(Array.from(r.y)).toEqual([1.5, 7.25, 4])
+  expect(Array.from(r.color)).toEqual([0xff00ffff, 0xff00ffff, 0xff00ffff])
+  expect(r.yMin).toBe(1.5)
+  expect(r.yMax).toBe(7.25)
+  expect(Flatbush.from(r.flatbushData!).search(190, 7, 210, 8)).toEqual([1])
 })
 
-test('drops features with a non-finite score, keeping arrays dense and the flatbush valid', () => {
+test('captures end and derives the glyph from svtype (INS → triangle)', () => {
+  const r = build([
+    svFeature('del', 100, 2600, 'DEL'),
+    svFeature('ins', 300, 301, 'INS'),
+    feature('snp', 500, 3),
+  ])
+  expect(Array.from(r.x2)).toEqual([2600, 301, 501])
+  expect(Array.from(r.glyph)).toEqual([GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DISC])
+})
+
+test('no r² array without an r² reader (normal coloring)', () => {
+  const r = build([feature('a', 0, 1)])
+  expect(r.r2s).toBeUndefined()
+  expect(r.scale).toBeUndefined()
+})
+
+test('the r² channel stays aligned with the admitted features', () => {
   const scoreless = new SimpleFeature({
     uniqueId: 'n',
     refName: '1',
     start: 50,
     end: 51,
   })
-  const r = buildManhattanResult({
-    features: [feature('a', 10, 1.5), scoreless, feature('c', 3000, 4)],
-    evalColor: constColor(0xff00ffff),
+  const r = build([feature('a', 0, 1), scoreless, feature('b', 1, 5)], {
+    r2: f => (f.get('start') === 0 ? 1 : 0.4),
   })
-  expect(r.numFeatures).toBe(2)
-  expect(Array.from(r.positions)).toEqual([10, 3000])
-  expect(Array.from(r.scores)).toEqual([1.5, 4])
-  // a NaN box would poison the R-tree bounds and make every search return
-  // nothing; both kept points must still be found
-  const fb = Flatbush.from(r.flatbushData!)
-  expect(fb.search(0, -Infinity, 4000, Infinity).sort((a, b) => a - b)).toEqual(
-    [0, 1],
-  )
-})
-
-test('captures end and derives glyph code from svtype (INS → 1)', () => {
-  const r = buildManhattanResult({
-    features: [
-      svFeature('del', 100, 2600, 'DEL'),
-      svFeature('ins', 300, 301, 'INS'),
-      feature('snp', 500, 3),
-    ],
-    evalColor: constColor(0),
-  })
-  expect(Array.from(r.ends)).toEqual([2600, 301, 501])
-  // Only insertions get the triangle code; deletions/SNPs stay points (0).
-  expect(Array.from(r.glyphs)).toEqual([0, 1, 0])
-})
-
-test('preserves bp ≥ 2^31 through Uint32Array coercion', () => {
-  // Past `| 0` semantics would sign-extend large genomic coordinates (T2T-
-  // scale). Uint32Array assignment uses ToUint32, which preserves them.
-  const big = 0x9000_0000
-  const r = buildManhattanResult({
-    features: [feature('x', big, 1)],
-    evalColor: constColor(0),
-  })
-  expect(r.positions[0]).toBe(big)
-})
-
-test('rolls scoreMin/scoreMax across features', () => {
-  const r = buildManhattanResult({
-    features: [feature('a', 0, 3), feature('b', 1, -2), feature('c', 2, 8.5)],
-    evalColor: constColor(0),
-  })
-  expect(r.scoreMin).toBe(-2)
-  expect(r.scoreMax).toBe(8.5)
-})
-
-test('empty input → numFeatures 0, sentinels at Infinity, no flatbush', () => {
-  const r = buildManhattanResult({ features: [], evalColor: constColor(0) })
-  expect(r.numFeatures).toBe(0)
-  expect(r.positions).toHaveLength(0)
-  expect(r.scoreMin).toBe(Infinity)
-  expect(r.scoreMax).toBe(-Infinity)
-  expect(r.flatbushData).toBeUndefined()
-})
-
-test('emits a deserializable Flatbush index over (bp, score)', () => {
-  const r = buildManhattanResult({
-    features: [
-      feature('a', 100, 5),
-      feature('b', 500, 9),
-      feature('c', 900, 2),
-    ],
-    evalColor: constColor(0),
-  })
-  expect(r.flatbushData).toBeDefined()
-  const fb = Flatbush.from(r.flatbushData!)
-  // Query a tight box around feature b; expect only index 1.
-  expect(fb.search(490, 8, 510, 10)).toEqual([1])
-  // Query covering the whole input; expect all three.
-  expect(fb.search(0, -10, 1000, 100).sort()).toEqual([0, 1, 2])
-})
-
-test('per-feature color evaluator decides each instance color', () => {
-  const r = buildManhattanResult({
-    features: [feature('a', 0, 1), feature('b', 1, 5), feature('c', 2, 8)],
-    evalColor: f => (f.get('score')! > 4 ? 0xff0000ff : 0xff00ff00),
-  })
-  expect(Array.from(r.colors)).toEqual([0xff00ff00, 0xff0000ff, 0xff0000ff])
-})
-
-test('no r² array when no evaluator is given (normal coloring)', () => {
-  const r = buildManhattanResult({
-    features: [feature('a', 0, 1)],
-    evalColor: constColor(0),
-  })
-  expect(r.r2s).toBeUndefined()
-})
-
-test('per-feature r² evaluator fills the r² array (LD coloring)', () => {
-  const r = buildManhattanResult({
-    features: [feature('a', 0, 1), feature('b', 1, 5)],
-    evalColor: constColor(0),
-    evalR2: f => (f.get('start') === 0 ? 1 : 0.4),
-  })
+  expect(r.count).toBe(2)
   expect(r.r2s).toHaveLength(2)
   expect(r.r2s![0]).toBe(1)
   expect(r.r2s![1]).toBeCloseTo(0.4)
@@ -167,27 +110,35 @@ test('scoreField reads another feature field as y, skipping features without one
       score: 1000,
       fst,
     })
-  const r = buildManhattanResult({
-    features: [
-      withFst('a', 10, 0.2),
-      feature('b', 20, 7),
-      withFst('c', 30, 0.9),
-    ],
-    evalColor: constColor(0),
-    scoreField: 'fst',
-  })
-  expect(Array.from(r.positions)).toEqual([10, 30])
-  expect(r.scores[0]).toBeCloseTo(0.2)
-  expect(r.scores[1]).toBeCloseTo(0.9)
-  expect(r.scoreMax).toBeCloseTo(0.9)
+  const r = build(
+    [withFst('a', 10, 0.2), feature('b', 20, 7), withFst('c', 30, 0.9)],
+    {},
+    'fst',
+  )
+  expect(Array.from(r.x)).toEqual([10, 30])
+  expect(r.y[0]).toBeCloseTo(0.2)
+  expect(r.y[1]).toBeCloseTo(0.9)
+  expect(r.yMax).toBeCloseTo(0.9)
 })
 
-test('the category table the color evaluator filled rides in the payload', () => {
-  const categories = [{ value: 'CEU', color: '#4e79a7' }]
-  const r = buildManhattanResult({
-    features: [feature('a', 0, 1)],
-    evalColor: constColor(0),
-    categories,
-  })
-  expect(r.categories).toBe(categories)
+test('the scale the color reader filled rides in the payload with the index flag', () => {
+  const scale = {
+    kind: 'categorical' as const,
+    field: 'pop',
+    entries: [{ label: 'CEU', color: 0xff00ffff }],
+  }
+  const r = build([feature('a', 0, 1)], { scale, indexFound: true })
+  expect(r.scale).toBe(scale)
+  expect(r.indexFound).toBe(true)
+})
+
+test('the r² buffer is transferred beside the channels', () => {
+  const { result, transferables } = buildManhattanResult(
+    [feature('a', 0, 1)],
+    'score',
+    { color: () => 0, glyph: defaultGlyph, r2: () => 0.5 },
+    { jexl },
+  )
+  expect(transferables).toContain(result.r2s!.buffer)
+  expect(transferables).toContain(result.x.buffer)
 })

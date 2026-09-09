@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
+import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -17,18 +18,12 @@ const TOP_SNP = 'ctgB:501'
 
 function makeResult(region: Region): ManhattanRpcResult {
   const hit = HITS[region.refName]!
-  return {
-    positions: new Uint32Array([hit.pos]),
-    ends: new Uint32Array([hit.pos + 1]),
-    glyphs: new Uint8Array([0]),
-    scores: new Float32Array([hit.score]),
-    colors: new Uint32Array([0xff_00_00_ff]),
-    numFeatures: 1,
-    scoreMin: hit.score,
-    scoreMax: hit.score,
-    flatbushData: undefined,
+  return manhattanFixture({
+    x: [hit.pos],
+    y: [hit.score],
+    flatbush: false,
     indexFound: true,
-  }
+  })
 }
 
 beforeEach(() => {
@@ -128,12 +123,8 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       end: 1000,
       assemblyName: 'volvox',
     }
-    const tied = (pos: number): ManhattanRpcResult => ({
-      ...makeResult({ refName: 'ctgA', start: 0, end: 1, assemblyName: 'v' }),
-      positions: new Uint32Array([pos]),
-      ends: new Uint32Array([pos + 1]),
-      scores: new Float32Array([9]),
-    })
+    const tied = (pos: number): ManhattanRpcResult =>
+      manhattanFixture({ x: [pos], y: [9], flatbush: false, indexFound: true })
 
     const first = createDisplay().display
     first.setRpcData(0, tied(100), tiedRegion)

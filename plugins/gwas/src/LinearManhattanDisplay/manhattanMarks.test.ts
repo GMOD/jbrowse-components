@@ -2,6 +2,7 @@ import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import * as shader from '@jbrowse/render-core/shaders/pointMarkIface'
 
+import { manhattanFixture } from './manhattanFixture.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -16,30 +17,20 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
 const MARK = MANHATTAN_MARKS[0]!
 
 function mkData(
-  positions: number[],
-  scores: number[],
-  colors: number[],
-  ends: number[] = positions,
-  glyphs: number[] = positions.map(() => 0),
+  x: number[],
+  y: number[],
+  color: number[],
+  x2: number[] = x,
+  glyph: number[] = x.map(() => 0),
 ): ManhattanRpcResult {
-  return {
-    positions: new Uint32Array(positions),
-    ends: new Uint32Array(ends),
-    glyphs: new Uint8Array(glyphs),
-    scores: new Float32Array(scores),
-    colors: new Uint32Array(colors),
-    numFeatures: positions.length,
-    scoreMin: Math.min(...scores),
-    scoreMax: Math.max(...scores),
-    flatbushData: undefined,
-  }
+  return manhattanFixture({ x, y, color, x2, glyph, flatbush: false })
 }
 
-// The declaration's own claim: which of this display's arrays reach which of
-// the shape's lanes. The shape owns the byte layout — a lane swap here would
+// The declaration's own claim: the payload's channels reach the shape's lanes
+// under the same names. The shape owns the byte layout — a lane swap would
 // pack a valid buffer that draws the wrong picture, which no shader-side test
 // can see.
-test('the declaration feeds positions/ends/scores/colors/glyphs to x/x2/y/color/glyph', () => {
+test('the declaration feeds x/x2/y/color/glyph through unchanged', () => {
   const buf = MARK.pass.pack(
     mkData(
       [42, 1337],

@@ -1,8 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  colorEvaluator,
+  encodeFeatures,
+  encodedChannelTransferables,
+} from '@jbrowse/core/util/markEncoding'
 import {
   checkStopTokenThrottled,
   createStopTokenChecker,
@@ -10,12 +14,11 @@ import {
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
-import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeFieldColorEvaluator } from './makeFieldColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
-import type { ManhattanCategory, ManhattanRpcResult } from './rpcTypes.ts'
+import type { ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type {
@@ -23,113 +26,28 @@ import type {
   ProgressReporter,
   StatusCallback,
 } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { RpcResult } from '@jbrowse/core/util/librpc'
+import type { ChannelReader, ScaleTable } from '@jbrowse/core/util/markEncoding'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-// The per-feature derivations the reducer needs, built once per request by
-// makeEvaluators. `evalR2` is present only in LD mode — its absence is what
-// drops the r² array from the payload — and `categories` only in field mode,
-// where `evalColor` fills it as it meets values.
-export interface ManhattanEvaluators {
-  evalColor: (f: Feature) => number
-  evalGlyph?: (f: Feature) => number
-  evalR2?: (f: Feature) => number
-  categories?: ManhattanCategory[]
+// The channels a coloring mode reads off each feature, and what it ships
+// beside them: `r2` only in LD mode, whose absence is what drops the r² array
+// from the payload, and `scale` only in field mode, where the color reader
+// fills it as it meets values.
+export interface ManhattanReaders {
+  color: ChannelReader<number>
+  glyph: ChannelReader<number>
+  r2?: ChannelReader<number>
+  scale?: ScaleTable
+  indexFound?: boolean
 }
 
-// Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
-// tested without the RPC/adapter/jexl plumbing.
-export function buildManhattanResult({
-  features,
-  evalColor,
-  evalGlyph = defaultGlyph,
-  evalR2,
-  categories,
-  scoreField = 'score',
-  report,
-}: ManhattanEvaluators & {
-  features: Feature[]
-  scoreField?: string
-  report?: ProgressReporter
-}): ManhattanRpcResult {
-  const n = features.length
-  const positions = new Uint32Array(n)
-  const ends = new Uint32Array(n)
-  const glyphs = new Uint8Array(n)
-  const scores = new Float32Array(n)
-  const colors = new Uint32Array(n)
-  const r2s = evalR2 ? new Float32Array(n) : undefined
-  let scoreMin = Infinity
-  let scoreMax = -Infinity
-  let count = 0
-
-  for (let i = 0; i < n; i++) {
-    report?.(i)
-    const f = features[i]!
-    const score = Number(f.get(scoreField))
-    // A Manhattan point needs a finite y (-log10 p). Missing/garbage scores
-    // (Number(undefined) === NaN) aren't plottable, and an unguarded NaN box
-    // poisons the region's Flatbush node bounds via Math.min/max — breaking
-    // hit-testing for every point in the region. Skip them so the output
-    // arrays stay dense and index-aligned with the flatbush.
-    if (Number.isFinite(score)) {
-      // Uint32Array assignment coerces via ToUint32 (handles full 32-bit bp
-      // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
-      // T2T-scale cumulative coordinates.
-      positions[count] = f.get('start')
-      ends[count] = f.get('end')
-      glyphs[count] = evalGlyph(f)
-      scores[count] = score
-      if (score < scoreMin) {
-        scoreMin = score
-      }
-      if (score > scoreMax) {
-        scoreMax = score
-      }
-      colors[count] = evalColor(f)
-      if (r2s) {
-        r2s[count] = evalR2!(f)
-      }
-      count++
-    }
-  }
-
-  let flatbushData: ArrayBuffer | undefined
-  if (count > 0) {
-    const fb = new Flatbush(count, undefined, Float64Array)
-    for (let i = 0; i < count; i++) {
-      const s = scores[i]!
-      // bp interval [start,end] so hovering anywhere on a ranged SV's span
-      // (not just its start) returns it; point features collapse to a 1bp box.
-      fb.add(positions[i]!, s, ends[i], s)
-    }
-    fb.finish()
-    flatbushData = fb.data
-  }
-
-  // Truncate to the finite-score count (subarray shares the buffer, so no copy
-  // and the full ArrayBuffer still transfers correctly).
-  return {
-    positions: positions.subarray(0, count),
-    ends: ends.subarray(0, count),
-    glyphs: glyphs.subarray(0, count),
-    scores: scores.subarray(0, count),
-    colors: colors.subarray(0, count),
-    r2s: r2s?.subarray(0, count),
-    numFeatures: count,
-    scoreMin,
-    scoreMax,
-    flatbushData,
-    categories,
-  }
-}
-
-// Per-feature evaluators for one request, plus whether the LD scan found the
-// index SNP. LD coloring needs a mode, an index and an adapter to read r² from;
-// with any of the three missing the worker falls back to the flat `color`
-// config, which is also the whole of normal coloring mode. Field coloring
-// needs only the mode: the values come off the features themselves.
-async function makeEvaluators(
+// LD coloring needs a mode, an index and an adapter to read r² from; with any
+// of the three missing the worker falls back to the flat `color` config,
+// which is also the whole of normal coloring mode. Field coloring needs only
+// the mode: the values come off the features themselves.
+async function makeReaders(
   args: Pick<
     RpcExecuteArgs<'GetManhattanData'>,
     | 'sessionId'
@@ -145,7 +63,7 @@ async function makeEvaluators(
     statusCallback: StatusCallback | undefined
     stopTokenCheck: StopTokenChecker
   },
-): Promise<ManhattanEvaluators & { indexFound?: boolean }> {
+): Promise<ManhattanReaders> {
   const { pluginManager, sessionId, region, color, statusCallback } = args
   // The same predicate `GetManhattanData.serializeArguments` resolves
   // `ldRefName` under. Kept as one call rather than a restated condition: if
@@ -172,9 +90,46 @@ async function makeEvaluators(
       indexFound: ld.indexFound,
     }
   } else if (args.colorBy === 'field') {
-    return makeFieldColorEvaluator(args.colorField)
+    return { ...makeFieldColorEvaluator(args.colorField), glyph: defaultGlyph }
   } else {
-    return { evalColor: makeColorEvaluator(color, pluginManager.jexl) }
+    return {
+      color: colorEvaluator(color, pluginManager.jexl),
+      glyph: defaultGlyph,
+    }
+  }
+}
+
+// The LD r² channel the encoder does not carry, read over the features it
+// admitted: `featureIndex[i]` is instance `i`'s feature, so the array lands
+// index-aligned with the rest of the payload.
+function r2Channel(
+  features: readonly Feature[],
+  featureIndex: Uint32Array,
+  readR2: ChannelReader<number>,
+) {
+  const r2s = new Float32Array(featureIndex.length)
+  for (let i = 0; i < featureIndex.length; i++) {
+    r2s[i] = readR2(features[featureIndex[i]!]!)
+  }
+  return r2s
+}
+
+// Pure: the encoder over `scoreField` with the mode's readers, plus what the
+// mode ships beside the channels. Unit-tested without the RPC plumbing.
+export function buildManhattanResult(
+  features: readonly Feature[],
+  scoreField: string,
+  { r2, scale, indexFound, ...readers }: ManhattanReaders,
+  ctx: { jexl: JexlInstance; report?: ProgressReporter },
+): { result: ManhattanRpcResult; transferables: ArrayBufferLike[] } {
+  const encoded = encodeFeatures(features, { y: scoreField, ...readers }, ctx)
+  const r2s = r2 ? r2Channel(features, encoded.featureIndex, r2) : undefined
+  return {
+    result: { ...encoded, scale, r2s, indexFound },
+    transferables: [
+      ...encodedChannelTransferables(encoded),
+      ...(r2s ? [r2s.buffer] : []),
+    ],
   }
 }
 
@@ -219,7 +174,7 @@ export async function executeGetManhattanData({
 
   checkStopTokenThrottled(stopTokenCheck)
 
-  const { indexFound, ...evaluators } = await makeEvaluators({
+  const readers = await makeReaders({
     pluginManager,
     sessionId,
     region,
@@ -233,29 +188,19 @@ export async function executeGetManhattanData({
     stopTokenCheck,
   })
 
-  const result = buildManhattanResult({
+  const { result, transferables } = buildManhattanResult(
     features,
     scoreField,
-    ...evaluators,
-    report: createProgressReporter({
-      label: 'Processing GWAS features',
-      total: features.length,
-      statusCallback,
-      stopTokenCheck,
-    }),
-  })
-  result.indexFound = indexFound
-
-  // Each array owns its own buffer (they're independent allocations, not views
-  // onto one), so no dedupe is needed before postMessage.
-  const transferables = [
-    result.positions.buffer,
-    result.ends.buffer,
-    result.glyphs.buffer,
-    result.scores.buffer,
-    result.colors.buffer,
-    result.r2s?.buffer,
-    result.flatbushData,
-  ].filter(buffer => buffer !== undefined)
+    readers,
+    {
+      jexl: pluginManager.jexl,
+      report: createProgressReporter({
+        label: 'Processing GWAS features',
+        total: features.length,
+        statusCallback,
+        stopTokenCheck,
+      }),
+    },
+  )
   return rpcResult(result, transferables)
 }
