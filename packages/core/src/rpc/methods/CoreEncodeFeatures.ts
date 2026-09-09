@@ -13,21 +13,8 @@ import {
 } from '../../util/stopToken.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
 
-import type {
-  EncodedFeaturesResult,
-  MarkEncoding,
-} from '../../util/markEncoding.ts'
+import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
-
-export type CoreEncodeFeaturesArgs = {
-  adapterConfig: Record<string, unknown>
-  region: { refName: string; start: number; end: number; assemblyName: string }
-  encodings: MarkEncoding[]
-  /** `jexl:`-prefixed feature filters, every one of which must pass. */
-  filters?: string[]
-  byteLimit?: number
-  sequenceAdapter?: Record<string, unknown>
-}
 
 /**
  * Fetch a region's features once and evaluate every declared encoding over

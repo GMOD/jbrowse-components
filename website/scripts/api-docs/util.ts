@@ -1354,7 +1354,9 @@ function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
   if (!init) {
     return []
   }
-  const literals = ts.isArrayLiteralExpression(init) ? init.elements : [init]
+  const literals: ts.Expression[] = ts.isArrayLiteralExpression(init)
+    ? [...init.elements]
+    : [init]
   return literals.filter(ts.isStringLiteral).map(l => l.text)
 }
 
