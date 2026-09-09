@@ -1,0 +1,45 @@
+digraph grammar_pipeline {
+  rankdir=LR
+  nodesep=0.3
+  ranksep=0.45
+  node [shape=box fontname=monospace fontsize=10]
+  edge [fontname=monospace fontsize=9]
+
+  subgraph cluster_grammar {
+    label="  the grammar's stages  "
+    fontname=monospace fontsize=10 style=dashed color=gray50
+    data [label="data"]
+    transform [label="transform"]
+    scale [label="scale"]
+    mark [label="mark"]
+    guide [label="guide"]
+    layer [label="layer"]
+    coord [label="coordinates"]
+    data -> transform -> scale -> mark -> guide -> layer -> coord [style=invis]
+  }
+
+  subgraph cluster_tree {
+    label="  where the tree answers, and how far  "
+    fontname=monospace fontsize=10 style=dashed color=gray50
+    adapter [label="feature adapter\ngetFeaturesArray\n(any format)"]
+    filters [label="filters: jexl[]\nthe one transform", style=dashed]
+    encode [label="encodeFeatures\nfield -> channel, one loop\ncolour + glyph scales resolved\nin the worker, per region", style=bold]
+    valueScale [label="valueScale\non ScoreScaleMixin\ndomain -> uniform, on the GPU", style=bold]
+    marks [label="defineMark list\nshape x lenses\nGPU, Canvas2D, SVG, hit test", style=bold]
+    legend [label="colorScales -> legend\nvalueScale -> axis, hatches, rules\nplaced by the chrome", style=bold]
+    layers [label="marks[] in draw order\none y domain, shared", style=bold]
+    genomic [label="genomic x, fixed\ncircular and dotplot\nare displays", style=dashed]
+    adapter -> filters -> encode -> marks -> legend -> layers -> genomic
+    encode -> valueScale [style=dotted label="y extremes"]
+    valueScale -> marks [style=dotted]
+    valueScale -> legend [style=dotted]
+  }
+
+  data -> adapter [style=dotted color=gray50]
+  transform -> filters [style=dotted color=gray50]
+  scale -> encode [style=dotted color=gray50]
+  mark -> marks [style=dotted color=gray50]
+  guide -> legend [style=dotted color=gray50]
+  layer -> layers [style=dotted color=gray50]
+  coord -> genomic [style=dotted color=gray50]
+}

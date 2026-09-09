@@ -164,4 +164,8 @@ cannot is layout, tiering, fetch shape and per-display meaning.
 - **Fold the pileup's `PileupMark` into `MarkShape` in the same pass.** The
   mechanism landed and measured on 2026-09-09; the conversion was parked
   behind its parity suites rather than landed red, and landed the same day
-  once they were green.
+  once they were green. `sweepDrawAgainstHit` does not run over the pileup
+  shapes: the sweep wants pixel-box containment and `pileupShape`'s
+  `hitNearest` answers inside a feature's bp span, so the per-feature
+  `markParity` suites stay the one-directional gate, and a sweep variant
+  taking a containment rule is the first move if one is wanted.
