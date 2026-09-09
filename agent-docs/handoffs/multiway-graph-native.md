@@ -1,6 +1,6 @@
 ---
 name: multiway-graph-native
-description: The multi-way synteny display now reads eukaryote-scale alignment sources (a star of pairwise PIFs, a PanSN multi-genome PIF, and a graph-native adapter that lives in jbrowse-plugin-graphgenomeviewer) while the HPRC demo's alignments are still unpacked from the graph's GFA offline — waiting on three tutorial figures the pages still lack, coarse tiers for the hosted liftOver PIFs, and four smaller items the reviews left open. Read before touching MultiWaySyntenyDisplay's fetch, the multi-genome adapters, or gfa_to_pairwise_paf.py.
+description: The multi-way synteny display now reads eukaryote-scale alignment sources (a star of pairwise PIFs, a PanSN multi-genome PIF, and a graph-native adapter that lives in jbrowse-plugin-graphgenomeviewer) while the HPRC demo's alignments are still unpacked from the graph's GFA offline — waiting on coarse tiers for the hosted liftOver PIFs and four smaller items the reviews left open. The three tutorial figures this file once owed are shot and current as of 2026-09-09. Read before touching MultiWaySyntenyDisplay's fetch, the multi-genome adapters, or gfa_to_pairwise_paf.py.
 ---
 
 # Multi-way synteny, graph-native: handoff
@@ -58,24 +58,36 @@ window) or the clicked outline and the hover re-resolve wrongly across a
 refetch; `clipToRegion` already suffixes ids with the region, which is the
 pattern.
 
-## Owed to the two new tutorials
+The other determinism the lane order rests on is the adapter base's, and it is
+settled: `ComparativeAdapterBase.getFeaturesInMultipleRegions` emits its
+per-region streams in region order rather than arrival order (`eba6e34b8f`).
+Every region still subscribes at once and only the emission waits. The lane
+weights can tie exactly, and the sort breaks a tie on first appearance in the
+feature list, so before that fix a multi-region view let whichever fetch landed
+first decide the stack. `clipFeatureToRegion.test.ts` fails against the old
+merge.
 
-Neither page shows what the work claims, and both are one figure each:
+## The three figures are shot, and current
 
-- **A whole-chromosome HPRC figure** (chr1 over the eight haplotypes), which
-  would be the first hosted picture of the coarse tier at all, and the one
-  that says "eukaryote scale" in a picture rather than in prose.
-- **A vertebrates window at a synteny break**, where the primate lanes stay
-  whole and the mouse, dog and cow lanes break, flip and change contig, so the
-  `[rev]` marker and the "also on" contig note appear for a reason. At TP53
-  every lane runs straight and the page has no negative.
-- **The interaction surface**: one annotated figure of a lane header menu open
-  (re-anchor, open in its own view, pin a contig), and a sentence each on
-  group hover, lane reordering by drag, and the level-of-detail menu.
+Nothing is owed here. This section once asked for three figures the two
+tutorials lacked; all three landed in `eb5d6fe58c`, 49 minutes after this file
+was written, and `a6bc98aa7e` re-published them on 2026-09-09 along with 34
+others. That re-publish is what makes them trustworthy: the earlier captures
+predated `05ec50660e` (2026-09-06), which cuts a clipped record at every large
+indel, so they drew a lane's frame and its block count the way the display no
+longer does. Comparing the superseded `hprc_chr1_whole` against the current one
+by content, 8.4% of the frame differs — three haplotype lanes drop from 373 Mbp
+1.5× to 249 Mbp 1×, and the right half's blocks are cut into more pieces.
 
-Both pages want a shared "reading the stack" section for the scale label, the
-reversed marker and what a composed ribbon is. Specs go in
-`website/scripts/specs/synteny.ts` beside the two that exist.
+- `multiway_synteny/hprc_chr1_whole` — all of hg38 chr1 over the eight
+  haplotypes, the first hosted picture of the coarse tier.
+- `multiway_synteny/hg38_vertebrates_17p_break` — the mammal lanes breaking and
+  flipping, which TP53 gave the page no negative for.
+- `multiway_synteny/hprc_lane_menu` — a lane header menu open.
+
+[ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+§4.10 records the 17p and lane-menu figures as current. **`hprc_chr1_whole` is
+recorded nowhere else, so this file is its record.**
 
 ## Data
 
@@ -92,9 +104,13 @@ reversed marker and what a composed ribbon is. Specs go in
   build-script change plus a second track or a second file the multi-genome
   adapter reads; measure whether the composed projection differs visibly
   first (the E. coli Sakai-vs-CFT073 direct alignment is the worked example).
-- **464 haplotypes are not a lane stack.** The lane-selection provider the
-  design record parks (TreeSidebarMixin over a "which haplotypes differ here"
-  answer) is the piece that turns the eight-haplotype demo into HPRC.
+- **464 haplotypes are not a lane stack.** Half of this moved after the file
+  was written: `44e771ef80` gave the display a lane picker over the lanes the
+  source declares, held as display state, and `d3593f5440` made a selection
+  narrow the fetch rather than only the drawing. What is still parked is the
+  provider that would populate such a picker at 464 — the design record's
+  TreeSidebarMixin over a "which haplotypes differ here" answer, which is the
+  piece that turns the eight-haplotype demo into HPRC.
 
 ## Smaller items the reviews left open
 
