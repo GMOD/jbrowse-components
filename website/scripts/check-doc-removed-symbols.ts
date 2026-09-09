@@ -149,6 +149,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'clickedInstanceIdx',
     'ui-state-holds-keys-not-indices names the index LinearSyntenyDisplay stored before clickedFeatureUniqueId replaced it',
   ],
+  [
+    'HIT_GATES',
+    "draw-pass-registries names the pileup's retired hit-gate record, replaced by defineMark's structural draw/hit parity",
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']
