@@ -1,8 +1,13 @@
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
+import { isLegendHost } from './legendHost.ts'
+import { svgLegendAreaReserved } from './types.ts'
+
+import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
@@ -55,10 +60,45 @@ export interface LgvSvgBodyProps<M> {
   opts: ExportSvgDisplayOptions | undefined
 }
 
+// Gap between the plot's right edge and a legend parked in the export's
+// reserved gutter.
+const GUTTER_INSET = 10
+
+/**
+ * The exported key of a display composing `LegendMixin`, drawn by the shell
+ * off the same `legendSpec` the chrome draws on screen. Over the plot's
+ * top-right corner, as every display placed its own; beside the plot when the
+ * display reserved the export gutter (`svgLegendWidth`) and the container
+ * granted it. No `onDismiss`: an exported legend cannot be clicked.
+ */
+function SvgLegend({
+  model,
+  width,
+  height,
+  opts,
+}: {
+  model: LegendHost
+  width: number
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
+  const gutter =
+    svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
+  return model.showLegend ? (
+    <SvgColorLegend
+      entries={legendEntries(model.legendSpec)}
+      canvasWidth={width}
+      x={gutter ? width + GUTTER_INSET : undefined}
+      maxHeight={height}
+      testid="color-legend"
+    />
+  ) : null
+}
+
 /**
  * The async shell every LGV display's `renderSvg` opens with: await readiness,
- * resolve the view geometry once, and mount the single terminal-state gate
- * around the display's own body.
+ * resolve the view geometry once, mount the single terminal-state gate around
+ * the display's own body, and append the legend of a display that has one.
  *
  * A display that failed to load fails the whole export, in `awaitSvgReady`
  * itself. `regionTooLarge` is the other terminal and stays drawn: see
@@ -103,6 +143,14 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
         renderBlocks={buildRenderBlocks(view.visibleRegions)}
         opts={opts}
       />
+      {isLegendHost(model) ? (
+        <SvgLegend
+          model={model}
+          width={view.width}
+          height={height}
+          opts={opts}
+        />
+      ) : null}
     </SvgChrome>
   )
 }

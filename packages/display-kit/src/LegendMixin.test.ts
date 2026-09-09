@@ -4,8 +4,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
 
-import type { LegendHost } from './LegendMixin.ts'
+import type { LegendConfHost } from './LegendMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 // The six displays composing this had, between them, tests that would notice a
 // wrong `showLegend` on two — alignments and the multi-sample variants. Hi-C,
@@ -25,10 +26,12 @@ function makeSession({
   promotedBase,
   configuration = {},
   displayTypeDefaults = {},
+  colorScales = [],
 }: {
   promotedBase: boolean
   configuration?: Record<string, unknown>
   displayTypeDefaults?: Record<string, Record<string, unknown>>
+  colorScales?: ColorScale[]
 }) {
   const configSchema = ConfigurationSchema('TestLegendDisplay', {
     showLegend: {
@@ -37,14 +40,20 @@ function makeSession({
       promotedBase,
     },
   })
-  const Display = types.compose(
-    'TestLegendDisplay',
-    LegendMixin(),
-    types.model({
-      type: types.literal('TestLegendDisplay'),
-      configuration: configSchema,
-    }),
-  )
+  const Display = types
+    .compose(
+      'TestLegendDisplay',
+      LegendMixin(),
+      types.model({
+        type: types.literal('TestLegendDisplay'),
+        configuration: configSchema,
+      }),
+    )
+    .views(() => ({
+      get colorScales(): ColorScale[] {
+        return colorScales
+      },
+    }))
   const Session = types
     .model('TestSession', {
       rpcManager: types.frozen({}),
@@ -170,12 +179,73 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
   })
 })
 
+const genotypes: ColorScale = {
+  kind: 'categorical',
+  id: 'genotypes',
+  title: 'Genotypes',
+  entries: [{ value: 'ref', label: 'Reference', color: 'grey' }],
+}
+const groups: ColorScale = {
+  kind: 'categorical',
+  id: 'group',
+  title: 'Population',
+  entries: [{ value: 'AFR', label: 'AFR', color: 'red' }],
+}
+
+describe('the key derives from the scales', () => {
+  it('a display declaring no scales has no key to offer', () => {
+    const { display } = makeSession({ promotedBase: true })
+    expect(display.colorScales).toEqual([])
+    expect(display.legendSpec.sections).toEqual([])
+    expect(display.hasLegendKey).toBe(false)
+    expect(display.svgLegendWidth()).toBe(0)
+  })
+
+  it('one section per scale, in the order declared', () => {
+    const { display } = makeSession({
+      promotedBase: true,
+      colorScales: [genotypes, groups],
+    })
+    expect(display.hasLegendKey).toBe(true)
+    expect(display.legendSpec.sections!.map(s => s.id)).toEqual([
+      'genotypes',
+      'group',
+    ])
+  })
+
+  it('an empty scale is no key', () => {
+    const { display } = makeSession({
+      promotedBase: true,
+      colorScales: [{ ...genotypes, entries: [] }],
+    })
+    expect(display.hasLegendKey).toBe(false)
+  })
+
+  // Re-showing the whole legend is what un-dismisses the sections inside it,
+  // the behaviour the multi-sample variant base used to override the setter for.
+  it('a dismissed section leaves the key until the legend is shown again', () => {
+    const { display } = makeSession({
+      promotedBase: true,
+      colorScales: [genotypes, groups],
+    })
+    display.dismissLegendSection('group')
+    expect(display.legendSpec.sections!.map(s => s.id)).toEqual(['genotypes'])
+    display.setShowLegend(false)
+    expect(display.dismissedLegendSections).toEqual(['group'])
+    display.setShowLegend(true)
+    expect(display.legendSpec.sections!.map(s => s.id)).toEqual([
+      'genotypes',
+      'group',
+    ])
+  })
+})
+
 // One line per mixin, and the whole point of it: a host cast widened back to
 // `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
 // intersection, which re-widens — compiles and checks nothing, so every slot
 // name below it typechecks and a misspelled read reports nothing at any layer.
 // `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
-const legendPin: HostChecksSlotNames<LegendHost> = true
+const legendPin: HostChecksSlotNames<LegendConfHost> = true
 test('the mixin checks the slot name it reads', () => {
   expect(legendPin).toBe(true)
 })

@@ -159,14 +159,8 @@ export {
 } from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
-  GRADIENT_LEGEND_HEIGHT,
-  GRADIENT_LEGEND_SVG_AREA_WIDTH,
-  GRADIENT_LEGEND_WIDTH,
-  default as SvgGradientLegend,
-} from './SvgGradientLegend.tsx'
-export type { GradientLabel, GradientStop } from './SvgGradientLegend.tsx'
-export {
   LEGEND_ROW_HEIGHT,
+  LEGEND_SVG_GUTTER_WIDTH,
   LEGEND_SWATCH,
   default as SvgColorLegend,
 } from './SvgColorLegend.tsx'
@@ -181,9 +175,18 @@ export {
   nonEmptyLegendSections,
 } from './legendSpec.ts'
 export type {
+  LegendGradient,
   LegendItem,
   LegendSection,
   LegendSpec,
   LegendSwatch,
 } from './legendSpec.ts'
+export { colorScaleIsEmpty, legendSpecOf } from './colorScale.ts'
+export type {
+  CategoricalEntry,
+  CategoricalScale,
+  ColorScale,
+  RampScale,
+  RampStop,
+} from './colorScale.ts'
 export { checkboxItem, radioItems } from './toggleMenuItems.ts'

@@ -1,6 +1,6 @@
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 
-import type { GradientStop } from '../ui/SvgGradientLegend.tsx'
+import type { RampStop } from '../ui/colorScale.ts'
 
 /** One evenly-spaced ramp stop: 8-bit red, green, blue, alpha. */
 export type ColorRampStop = readonly [number, number, number, number]
@@ -85,19 +85,19 @@ export function buildColorRampLut(stops: readonly ColorRampStop[]) {
  * `n` evenly spaced legend stops read straight out of a
  * {@link buildColorRampLut} byte table — the same 256×1 RGBA array
  * `uploadColorRampLut` hands the GPU and the Canvas2D fillStyle LUTs index —
- * formatted for `SvgGradientLegend`. It holds one claim by construction: the
+ * as the stops of a `RampScale`. It holds one claim by construction: the
  * swatch at bar fraction `t` is byte-identical to the ramp entry at `t` on
  * both backends. Alpha rides `opacity` (the juicebox fade), never baked into
  * the color string.
  */
-export function stopsFromRampLut(lut: Uint8Array, n: number): GradientStop[] {
+export function stopsFromRampLut(lut: Uint8Array, n: number): RampStop[] {
   const lastEntry = lut.length / 4 - 1
-  const out: GradientStop[] = []
+  const out: RampStop[] = []
   for (let i = 0; i < n; i++) {
     const t = n === 1 ? 0 : i / (n - 1)
     const o = Math.round(t * lastEntry) * 4
     out.push({
-      offset: `${+(t * 100).toFixed(2)}%`,
+      offset: t,
       color: `rgb(${lut[o]!},${lut[o + 1]!},${lut[o + 2]!})`,
       opacity: lut[o + 3]! / 255,
     })

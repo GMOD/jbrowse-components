@@ -75,11 +75,11 @@ test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () =
     const entry = Math.round(t * 255)
     const [r, g, b, a] = sampleColorRamp(source, entry / 255)
     expect(stop).toEqual({
-      offset: `${+(t * 100).toFixed(2)}%`,
+      offset: t,
       color: `rgb(${r},${g},${b})`,
       opacity: a / 255,
     })
   })
-  expect(legend[0]!.offset).toBe('0%')
-  expect(legend.at(-1)!.offset).toBe('100%')
+  expect(legend[0]!.offset).toBe(0)
+  expect(legend.at(-1)!.offset).toBe(1)
 })

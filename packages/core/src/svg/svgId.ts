@@ -37,7 +37,7 @@ const UNSAFE_ID_CHAR = /[^\w.:-]/g
  * Injective but NOT idempotent — escaping the marker is what buys injectivity,
  * so a second pass re-escapes the `~`s the first one wrote. Apply it exactly
  * once, at the place that emits both the id and the reference to it
- * (`SvgClipRect` and `SvgGradientLegend` already do; a hand-rolled `<clipPath>`
+ * (`SvgClipRect` and `SvgColorLegend` already do; a hand-rolled `<clipPath>`
  * must). Double-applying is harmless to correctness — the id and its `url()`
  * still agree, since both are derived from one call — but it produces noisy ids
  * for no reason.

@@ -15,8 +15,11 @@ import { observer } from 'mobx-react'
 import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
-import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
-import type { ReactNode } from 'react'
+import type {
+  LegendGradient,
+  LegendItem,
+  LegendSection,
+} from '@jbrowse/core/ui/legendSpec'
 
 const useStyles = makeStyles()(theme => ({
   legend: {
@@ -142,6 +145,24 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  gradientRow: {
+    marginBottom: 1,
+  },
+  gradientBar: {
+    width: GRADIENT_BAR_WIDTH,
+    height: 10,
+    borderRadius: 2,
+    border: `1px solid ${theme.palette.divider}`,
+    // clip the gradient to the padding box so it doesn't paint under the
+    // translucent divider border — otherwise the border composites over the
+    // gradient's end and the edge renders a dark sliver
+    backgroundClip: 'padding-box',
+  },
+  gradientLabels: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: GRADIENT_BAR_WIDTH,
+  },
   // was `<Link component="button" underline="hover">`, which is the same
   // element with Material's typography on it — see `closeButton` above for why
   // that mattered
@@ -164,6 +185,7 @@ const useStyles = makeStyles()(theme => ({
 
 const DEFAULT_MAX_ITEMS = 12
 const DEFAULT_MAX_WIDTH = 200
+const GRADIENT_BAR_WIDTH = 100
 
 // Side of one swatch box.
 const SWATCH = 12
@@ -172,11 +194,59 @@ const SWATCH = 12
 // flatten the very value this component renders (see legendEntries). Re-exported
 // here because every display already imports it from this plugin.
 export type {
+  LegendGradient,
   LegendItem,
   LegendSection,
   LegendSpec,
   LegendSwatch,
 } from '@jbrowse/core/ui/legendSpec'
+
+// A ramp row: the caption, the bar and the domain ends. The bar is a CSS
+// gradient over the same stops the export's <linearGradient> takes, so the
+// two draw one ramp. Stops are flattened over the paper because a translucent
+// first stop (Hi-C's juicebox fade) rasterizes to a dark sliver at the bar's
+// left edge.
+function gradientCss({ stops }: LegendGradient, paper: string) {
+  const list = stops.map(({ color, opacity = 1, offset }) => {
+    const flat =
+      opacity >= 1
+        ? color
+        : `color-mix(in srgb, ${color} ${Math.round(opacity * 100)}%, ${paper})`
+    return `${flat} ${offset * 100}%`
+  })
+  return `linear-gradient(to right, ${list.join(', ')})`
+}
+
+function GradientRow({
+  label,
+  gradient,
+}: {
+  label: string
+  gradient: LegendGradient
+}) {
+  const { classes, theme } = useStyles()
+  return (
+    <div className={classes.gradientRow}>
+      {label ? <div className={classes.label}>{label}</div> : null}
+      <div
+        className={classes.gradientBar}
+        // backgroundImage (longhand), not the `background` shorthand: the
+        // shorthand resets background-clip back to border-box, undoing the
+        // padding-box clip
+        style={{
+          backgroundImage: gradientCss(
+            gradient,
+            theme.palette.background.paper,
+          ),
+        }}
+      />
+      <div className={classes.gradientLabels}>
+        <span>{gradient.minLabel}</span>
+        <span>{gradient.maxLabel}</span>
+      </div>
+    </div>
+  )
+}
 
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.
@@ -202,6 +272,16 @@ const LegendItemList = observer(function LegendItemList({
   return (
     <>
       {shown.map((item, i) => {
+        if (item.gradient) {
+          return (
+            <GradientRow
+              // eslint-disable-next-line @eslint-react/no-array-index-key
+              key={`${item.label}-${i}`}
+              label={item.label}
+              gradient={item.gradient}
+            />
+          )
+        }
         const row = (
           <>
             <div
@@ -273,16 +353,10 @@ const FloatingLegend = observer(function FloatingLegend({
   maxItems = DEFAULT_MAX_ITEMS,
   maxWidth = DEFAULT_MAX_WIDTH,
   top = 10,
-  children,
 }: {
   items?: LegendItem[]
   sections?: LegendSection[]
   title?: string
-  // A key whose vocabulary is not a row list — Hi-C's continuous gradient bar —
-  // draws itself here and leaves `items`/`sections` empty. It still gets the
-  // box, the title, the `×` and the gesture ownership, which is the whole point
-  // of not hand-rolling a second panel.
-  children?: ReactNode
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
   onItemClick?: (item: LegendItem, section: LegendSection) => void
@@ -304,7 +378,7 @@ const FloatingLegend = observer(function FloatingLegend({
   const { classes } = useStyles()
 
   const nonEmpty = nonEmptyLegendSections({ items, sections })
-  if (nonEmpty.length === 0 && !children) {
+  if (nonEmpty.length === 0) {
     return null
   }
 
@@ -347,7 +421,6 @@ const FloatingLegend = observer(function FloatingLegend({
           </Tooltip>
         ) : null}
         {title ? <div className={classes.topTitle}>{title}</div> : null}
-        {children}
         {nonEmpty.map(section => (
           <div key={section.id} className={classes.section}>
             {multiSection && section.title ? (

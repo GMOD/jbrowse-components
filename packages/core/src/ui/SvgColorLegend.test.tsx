@@ -35,22 +35,33 @@ test('hidden entries dim and strike through', () => {
   expect(container.querySelector('g[opacity="0.35"]')).toBeTruthy()
 })
 
-test('a custom marker replaces the default color square', () => {
-  const { getByTestId, container } = renderSvg(
+test('a ramp row draws a gradient bar under its caption, labelled at both ends', () => {
+  const { getByText, container } = renderSvg(
     <SvgColorLegend
       canvasWidth={500}
       entries={[
         {
-          key: 'a',
-          label: 'coverage',
-          marker: <line data-testid="marker" x1={2} y1={7} x2={12} y2={7} />,
+          key: 'contacts',
+          label: 'Contacts',
+          gradient: {
+            stops: [
+              { offset: 0, color: 'rgb(255,255,255)', opacity: 0 },
+              { offset: 1, color: 'rgb(255,0,0)' },
+            ],
+            minLabel: '0',
+            maxLabel: '1,200',
+          },
         },
       ]}
     />,
   )
-  expect(getByTestId('marker')).toBeTruthy()
-  // only the paper rect remains; no swatch rect drawn for a markered/colorless row
-  expect(container.querySelectorAll('rect')).toHaveLength(1)
+  expect(getByText('Contacts')).toBeTruthy()
+  expect(getByText('0')).toBeTruthy()
+  expect(getByText('1,200').getAttribute('text-anchor')).toBe('end')
+  const bar = container.querySelector('rect[fill^="url(#"]')!
+  const gradient = container.querySelector('linearGradient')!
+  expect(bar.getAttribute('fill')).toBe(`url(#${gradient.id})`)
+  expect(gradient.querySelectorAll('stop')).toHaveLength(2)
 })
 
 test('a two-color row draws both boxes, and every label keeps one column', () => {
@@ -74,13 +85,17 @@ test('a two-color row draws both boxes, and every label keeps one column', () =>
   expect(getByText('Long insert').getAttribute('x')).toBe('28')
 })
 
-test('children render inside the positioned box', () => {
-  const { getByText } = renderSvg(
-    <SvgColorLegend canvasWidth={500} entries={[]}>
-      <text>custom footer</text>
-    </SvgColorLegend>,
+test('a caller may place the box instead of right-aligning it', () => {
+  const { container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      x={510}
+      entries={[{ key: 'a', label: 'TssA', color: 'red' }]}
+    />,
   )
-  expect(getByText('custom footer')).toBeTruthy()
+  expect(container.querySelector('g')!.getAttribute('transform')).toBe(
+    'translate(510 0)',
+  )
 })
 
 test('maxHeight collapses overflow into a "+N more" row and never exceeds it', () => {
@@ -124,7 +139,7 @@ test('no dismiss button without onDismiss (e.g. the SVG export)', () => {
   expect(queryByText('×')).toBeNull()
 })
 
-test('draws nothing with no entries and no children', () => {
+test('draws nothing with no entries', () => {
   const { container } = renderSvg(
     <SvgColorLegend canvasWidth={500} entries={[]} />,
   )

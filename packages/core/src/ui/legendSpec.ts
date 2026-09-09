@@ -1,25 +1,32 @@
-import type { ReactNode } from 'react'
+import type { RampStop } from './colorScale.ts'
 
 // One filled box in one color.
 export interface LegendSwatch {
   color: string
 }
 
+// A continuous bar in place of a swatch: the ramp a scalar is painted
+// through, with its domain ends printed beneath. What Hi-C, LD and the synteny
+// identity modes key by.
+export interface LegendGradient {
+  stops: RampStop[]
+  minLabel: string
+  maxLabel: string
+}
+
 export interface ColorLegendEntry {
   // React key; keep distinct across entries
   key: string
   label: string
-  // CSS color for the default square swatch; omit when supplying `marker`
+  // CSS color for the default square swatch
   color?: string
   // several colors on one row. Takes precedence over `color`; `legendEntries`
   // sets it only for rows that need it.
   swatches?: LegendSwatch[]
   // toggled-off entries render dimmed and struck through
   hidden?: boolean
-  // custom SVG drawn in the swatch slot instead of the default color square, in
-  // row-local coords (the swatch occupies ~x:2 y:2, LEGEND_SWATCH square). Lets a
-  // row key by line style, shape, gradient, etc. rather than a flat color.
-  marker?: ReactNode
+  // a ramp row: the bar draws under `label`, which may be empty
+  gradient?: LegendGradient
 }
 
 // One swatch of a color vocabulary. `color` is omitted for a row that is text
@@ -31,8 +38,12 @@ export interface ColorLegendEntry {
 // once drops a color the display really painted, so the row keeps both boxes.
 // Set it OR `color`, not both — `legendSwatches` prefers it.
 export interface LegendItem {
+  // the datum the row classifies, handed back to a display whose rows act
+  // (`FloatingLegend`'s `onItemClick`); absent for a note row
+  value?: string
   color?: string
   swatches?: LegendSwatch[]
+  gradient?: LegendGradient
   label: string
   // Toggled off — the row draws dimmed and struck through. Per ITEM rather than
   // applied by the caller over the flattened result, because a display with
@@ -102,6 +113,7 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
         color: item.color,
         swatches: exportSwatches(item),
         hidden: item.hidden,
+        gradient: item.gradient,
       })),
     ]),
   ]

@@ -3,7 +3,8 @@ import {
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
+import { LEGEND_SVG_GUTTER_WIDTH } from '@jbrowse/core/ui/SvgColorLegend'
+import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -12,6 +13,8 @@ import type {
   ResolvableDisplay,
   TogglePin,
 } from '@jbrowse/core/configuration'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
@@ -34,40 +37,39 @@ export const legendMixinSlots = {
 type LegendConfigModel = ConfigModelForFields<typeof legendMixinSlots>
 
 /** The whole of what `LegendMixin` needs a composing display to be. */
-export type LegendHost = ResolvableDisplay<LegendConfigModel>
+export type LegendConfHost = ResolvableDisplay<LegendConfigModel>
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies — every display composing this
 // is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
 // `HeightModeMixin`'s `confNode`.
-const confNode = (self: object) => self as LegendHost
+const confNode = (self: object) => self as LegendConfHost
 
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin, `setShowLegend`, and `legendCheckboxItem(self)`, the "Show legend" row a track menu lists
+ * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the promotable `showLegend` slot's resolved getter, display-type pin and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
  *
- * Six displays carried a character-identical copy of these three members —
- * alignments, Hi-C, multi-row features, multi-wiggle, the multi-sample variant
- * base and the shared LD model — reading and writing one slot name through the
- * promotable cascade. **Both ends of that were already shared**: the track-menu
- * row is `showLegendCheckboxItem` and the thing it shows is `FloatingLegend`,
- * so this was the middle link between two pieces of common code.
- *
- * **The config slot stays per display, and deliberately** — `promotedBase`
- * legitimately differs (a Hi-C color scale is off by default, a variant
- * genotype key on) and each description describes a genuinely different legend.
- * That decision is `showLegendCheckboxItem`'s docstring and this does not
- * disturb it: the slot is what the composing display still supplies, and the
- * mixin only stops it hand-writing the accessors over it.
- *
- * `setShowLegend` is overridable, and one display overrides it: the
- * multi-sample variant base also clears `dismissedLegendSections`, since
- * re-showing the whole legend is what un-dismisses the sections inside it.
+ * A key derived from the scales the painter resolves colors through cannot
+ * list a color nothing painted, which is what a legend hand-built from a second
+ * copy of the rules used to do. The config slot stays per display: the
+ * composing schemas set `promotedBase` differently (a Hi-C color scale is off
+ * by default, a variant genotype key on) and describe different legends, so
+ * this mixin supplies the accessors over the slot and never the slot.
  */
 export default function LegendMixin() {
   return types
     .model('LegendMixin', {})
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Ids of the scales whose section the reader closed on its own; cleared
+       * when the whole legend is shown again. Volatile where `showLegend` is
+       * config: which sections a reader collapsed in one sitting is not how
+       * the track is configured.
+       */
+      dismissedLegendSections: [] as string[],
+    }))
     .views(self => ({
       /**
        * #getter
@@ -87,29 +89,85 @@ export default function LegendMixin() {
       get showLegendDisplayTypeDefault() {
         return makeTogglePin(confNode(self), 'showLegend')
       },
+      /**
+       * #getter
+       * Overridable hook (default none): the color scales this display paints
+       * with, in the order the key lists them. Each becomes one section of the
+       * legend, so a display with two vocabularies (genotype colors and sample
+       * groups) declares two.
+       */
+      get colorScales(): ColorScale[] {
+        return []
+      },
+      /**
+       * #method
+       * Overridable hook (default 0): the width the LGV export reserves beside
+       * the plot for this legend. A display whose plot fills its band — the
+       * contact matrix, the LD triangle — answers `svgLegendGutterWidth(self)`
+       * so the key does not cover it.
+       */
+      svgLegendWidth(): number {
+        return 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The key, derived from `colorScales` less the sections the reader
+       * dismissed. `DisplayChrome` renders it on screen and `renderDisplaySvg`
+       * flattens it for the export, so the two describe one set of colors.
+       */
+      get legendSpec(): LegendSpec {
+        return legendSpecOf(
+          self.colorScales.filter(
+            scale => !self.dismissedLegendSections.includes(scale.id),
+          ),
+        )
+      },
+      /**
+       * #getter
+       * Whether the display has a key at all, which is what the "Show legend"
+       * row is offered on. Overridable for a display whose key is only waiting
+       * for data: a scale that fills in once a region lands must not take the
+       * way back to the toggle with it.
+       */
+      get hasLegendKey(): boolean {
+        return self.colorScales.some(scale => !colorScaleIsEmpty(scale))
+      },
     }))
     .actions(self => ({
       /**
        * #action
+       * Writes the slot, and showing the legend again restores the sections
+       * closed inside it.
        */
       setShowLegend(arg: boolean) {
         setConf(confNode(self), 'showLegend', arg)
+        if (arg) {
+          self.dismissedLegendSections = []
+        }
+      },
+      /**
+       * #action
+       * Close one section of the legend, leaving the others up.
+       */
+      dismissLegendSection(id: string) {
+        self.dismissedLegendSections = [...self.dismissedLegendSections, id]
       },
     }))
 }
 
 /**
- * The `svgLegendWidth()` both gradient-legend displays (HiC, LD) answer with.
+ * The `svgLegendWidth()` a display whose plot fills its band answers with.
  * Deliberately NOT gated on whether there is legend data: SVGLinearGenomeView
  * maxes this across tracks *before* awaiting each `renderSvg`, so on a headless
  * export (jbrowse-img — the fetch is a debounced autorun) the data has not
  * landed yet and a data-dependent answer reserved nothing, leaving the legend
  * to float over the matrix. Reserving on the setting alone costs an unused
- * strip only when the track loads empty or errors. This rationale used to live
- * on one of the two copies.
+ * strip only when the track loads empty or errors.
  */
-export function gradientSvgLegendWidth(self: { showLegend: boolean }) {
-  return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
+export function svgLegendGutterWidth(self: { showLegend: boolean }) {
+  return self.showLegend ? LEGEND_SVG_GUTTER_WIDTH : 0
 }
 
 /**
