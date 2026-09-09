@@ -49,7 +49,7 @@ describe('repoPathRefs', () => {
     ).toEqual([])
     expect(repoPathRefs('`jb2bench/scripts/ldbench.ts`')).toEqual([])
     expect(
-      repoPathRefs('`jbrowse-plugin-graphgenomeview/scripts/build-wasm.sh`'),
+      repoPathRefs('`jbrowse-plugin-graphgenomeviewer/scripts/build-wasm.sh`'),
     ).toEqual([])
   })
 

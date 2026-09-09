@@ -35,7 +35,7 @@ import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 
 // Figures for the pangenome tutorials that use the third-party
-// jbrowse-plugin-graphgenomeview (GraphGenomeView). The plugin bundle and the
+// jbrowse-plugin-graphgenomeviewer (GraphGenomeView). The plugin bundle and the
 // GFA fixtures are served same-origin from test_data/graphgenomeview, so the
 // cross-origin plugin-trust dialog never triggers in the headless capture. The
 // GFA slice is the same four-strain E. coli minigraph data the pangenome_ecoli
@@ -119,7 +119,7 @@ const localEsmUrl =
 if (process.env.GRAPH_PLUGIN_LOCAL) {
   const pluginDist =
     process.env.GRAPH_PLUGIN_DIST ??
-    join(pluginCheckout('graphgenomeview'), 'dist')
+    join(pluginCheckout('graphgenomeviewer'), 'dist')
   if (!existsSync(pluginDist)) {
     throw new Error(
       `GRAPH_PLUGIN_LOCAL is set but no plugin build at ${pluginDist} — run \`pnpm build\` in the plugin, or set GRAPH_PLUGIN_DIST`,
@@ -203,7 +203,7 @@ export const CARRIAGE_DISPLAY = {
 //
 // That scheme is a hue ramp over the region the subgraph was cut from: hue 0
 // (red) at its start to 300 (magenta) at its end, at saturation 70% and
-// lightness 50% (jbrowse-plugin-graphgenomeview renderer/GeometryBuilder.ts,
+// lightness 50% (jbrowse-plugin-graphgenomeviewer renderer/GeometryBuilder.ts,
 // REFERENCE_RAMP_MAX_HUE). It is a function of two stated numbers and a
 // midpoint, which is the whole reason it exists: a linear track can reproduce
 // it exactly, so a block above and a node below are the same color for the same

@@ -691,13 +691,13 @@ reports `instanceData.alignmentLengths` instead of `index 19`.
 
 ## Pangenome graph figures: the plugin publish loop
 
-The plugin lives in `~/src/jb2plugins/jbrowse-plugin-graphgenomeview`, and the
+The plugin lives in `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`, and the
 three `test_data/graphgenomeview/*.json` configs pin `esmUrl` to a
 content-addressed prefix, so **a plugin change reaches no figure until it is
 published**. The loop, all three steps or none:
 
 ```bash
-cd ~/src/jb2plugins/jbrowse-plugin-graphgenomeview && pnpm betabuild   # prints the hash
+cd ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer && pnpm betabuild   # prints the hash
 sed -i 's|graphgenomeviewer/<old>/|graphgenomeviewer/<new>/|g' test_data/graphgenomeview/*.json
 cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 ```

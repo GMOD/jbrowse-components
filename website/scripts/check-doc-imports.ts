@@ -460,7 +460,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // whole job is listing removed names "so a reader doesn't go looking for them"),
 // and symbols belonging to a DIFFERENT repo, since several of these docs are
 // about a boundary with one: `@gmod/bam`'s and `@gmod/cram`'s options, and the
-// graph plugin's launcher, which lives in jbrowse-plugin-graphgenomeview.
+// graph plugin's launcher, which lives in jbrowse-plugin-graphgenomeviewer.
 // One real find: CONFIG_PATTERN.md's "Key functions" table listed a
 // `createRenderConfigContext` that no longer exists, which is the one shape the
 // exemption is genuinely bad at — a table of CURRENT API, where the idiom that
