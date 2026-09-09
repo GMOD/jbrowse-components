@@ -62,8 +62,8 @@ neither paints nor answers.
 `encodeFeatures` takes a `MarkEncodingInput`: a `MarkEncoding` any channel of
 which may be a `ChannelReader`, a `(feature) => value` built in the worker.
 The declared form is what crosses the wire; the reader form is how a display's
-own worker method reaches the one loop for a channel no field name can say. Two
-packers moved onto it on 2026-09-09:
+own worker method reaches the one loop for a channel no field name can say.
+Three packers moved onto it on 2026-09-09:
 
 - **Manhattan** (`plugins/gwas/src/ManhattanRPC/executeGetManhattanData.ts`)
   is `encodeFeatures(features, { y: scoreField, color, glyph })` where `color`
@@ -82,6 +82,21 @@ packers moved onto it on 2026-09-09:
   folds the shipped `yMax` of every loaded region into one `[0, max]` domain
   the shape's `valueScale` uniform reads, so a box's height means the same in
   every region.
+- **wiggle's array-less fallback** (`featuresToRaw`,
+  `plugins/wiggle/src/util.ts`) is `encodeFeatures(features, { y })` where
+  `y` is a reader over `scoreField` that plots a missing value at 0, as the
+  slot documents, plus the summary `minScore`/`maxScore` band read over
+  `featureIndex` afterwards, the way Manhattan reads r². The array fast path
+  (BigWig, GC content) never materialises a `Feature` and stays as it is;
+  `RawFeatureArrays` admits the encoder's `Uint32Array` beside the bbi
+  `Int32Array`, and `processFeaturesFromArrays` copies either. Measured over
+  a million `SimpleFeature`s, min of 7: 83 → 219 ns/feature, 91 → 263 with a
+  summary band. **The whole gap is the Flatbush** the encoder builds for a hit
+  index this packer discards — with that block skipped the loop is 80 → 82 —
+  so the encoder wants a way to decline it; until then the fallback pays
+  ~136 ns/feature for an index nothing reads. Every channel wiggle hands the
+  encoder is a reader, so the `jexl` in its context is an instance that
+  refuses to compile, which a context that made `jexl` optional would retire.
 
 ## The jexl channel, measured
 

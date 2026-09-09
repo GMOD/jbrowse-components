@@ -148,9 +148,10 @@ cannot is layout, tiering, fetch shape and per-display meaning.
   `startEnd`/`y`/`height`. Converging it is a lens change per display, not a
   shape change, and is the next small move on this layer.
 - The encoding — features to typed arrays — is the half of a grammar the tree
-  hand-wrote per display. ADR-107 declared it; on 2026-09-09 Manhattan and the
-  example moved onto `encodeFeatures`, leaving canvas's `packRenderArrays` as
-  the hand-written packer. Field selection stays native: gwas measured jexl at
+  hand-wrote per display. ADR-107 declared it; on 2026-09-09 Manhattan, the
+  example and wiggle's array-less fallback moved onto `encodeFeatures`,
+  leaving canvas's `packRenderArrays` as the hand-written packer. Field
+  selection stays native: gwas measured jexl at
   ~0.34M values/s against ~390M native
   (`plugins/gwas/src/GWASAdapter/scoreTransforms.ts`), and a declared encoding
   is field names with jexl as the escape.
