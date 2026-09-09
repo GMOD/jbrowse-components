@@ -1,6 +1,6 @@
 ---
 name: mark-grammar-v5
-description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list, every key on the scales) and the four threads still open, each with its first move — Manhattan and the example onto the encoder, the guides made config-first, the y axis on the chrome, and two checks nobody has run in a browser. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
+description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list, every key on the scales) the two packers on the encoder, the guides config-first) and the two threads still open, each with its first move — the y axis on the chrome, and the browser checks nobody has run. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
 ---
 
 # Mark grammar for v5
@@ -37,25 +37,21 @@ adopted (ADR-106 §"The ladder").
    and the Hi-C key under its resolution box both moved onto `legendTop`,
    and the two synteny browser suites now target `floating-legend` — thread
    6's list grows by those.
-3. **Manhattan and the example onto the encoder** (ADR-107 §Consequences).
-   `buildManhattanResult` = `encodeFeatures(features, { y: scoreField, color,
-   glyph })` plus the LD `r2` array and `indexFound`; `buildScoreResult` =
-   `encodeFeatures(features, { y: scoreColumn })` with the display owning the
-   domain. Then `manhattanMarks.ts` is a rename and `ScoreRPC/` shrinks to the
-   call. Sized on 2026-09-09: the example's `buildScoreResult` normalises
-   `scores` to the region's own max in the worker, and its shape reads that
-   0..1 value straight into the bar height, so "the display owning the
-   domain" means the example's `score.slang` takes a y domain uniform
-   (`valueScale.slang`, as `bar` does) and `LinearScoreDisplay` grows the
-   autoscale the wiggle family has. The developer guide is generated from
-   those files (`#exampleFile`), so thread 4 moves with it — do the two as
-   one branch.
-4. **The guides, config first.** `creating_gpu_display.md` and
-   `plotting_features.md` teach the mark form (landed); neither yet opens with
-   "a `marks` entry in config over any feature adapter" and sends the reader
-   down to a shape only when the library lacks one. `website/docs/config_guides/`
-   has the mark display's page (landed with C); the developer guides should
-   link it as rung one. ADR-107's ladder paragraph is the outline.
+3. **Manhattan and the example onto the encoder — landed 2026-09-09**
+   (`60c4a394fd`, `76d185b6f0`). `encodeFeatures` takes a `ChannelReader` in
+   any channel's place; Manhattan hands it the colouring mode's colour and
+   glyph readers and reads LD's r² over `featureIndex` after, the example is
+   the bare `{ y: scoreColumn }` call with the display folding shipped `yMax`
+   into one domain its shader reads through `valueScale`. Field colouring
+   fills the encoder's `ScaleTable`. `MARK_ENCODING.md` §"A reader in a
+   channel's place" has the measurement (13 ns/feature over the hand loop,
+   28 in LD mode). What it did not do: put the r² array on the encoder as a
+   generic extra channel — one consumer, and ADR-106 says an ABI option waits
+   for a second pull.
+4. **The guides, config first — landed 2026-09-09** (same commits). Both
+   developer guides open on the `marks` entry and link the config page as
+   rung one; the config page links back up the ladder. Not done: a figure of
+   the ladder, and the plotting guide's `Figure` captions still say "packs".
 5. **The y axis on the chrome**, the legend's pattern again: four displays
    place `YScaleBarOverlay` by hand on screen and in SVG (gwas, both wiggles,
    the alignments coverage band; `LinearMarkDisplay` copied Manhattan's). A

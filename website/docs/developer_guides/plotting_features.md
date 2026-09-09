@@ -292,6 +292,8 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       rpcProps() {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
+    }))
+    .views(self => ({
       // the score range every loaded region's boxes are placed through: zero
       // up to the largest score any region shipped, read off the extremes the
       // encoder packed beside the channels, so a region arriving rescales
