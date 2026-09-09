@@ -75,7 +75,7 @@ describe('hic count statistics', () => {
   // A typed-array sort puts NaN last, so scoring off the raw counts made a
   // single non-finite value the max. NaN then propagates through
   // `Math.max(colorMaxScore, ...)` in both the shader and `mapHicCount`, so
-  // every bin's color maps to NaN and the legend disappears (`hasLegendData`
+  // every bin's color maps to NaN and the legend disappears (`colorScales`
   // reads `NaN > 0`). Both non-finites are reachable from a real file: NaN is
   // the .hic dense-block "no value" marker, which only the dense parse path
   // filters, and a tiny normalization divisor yields Infinity.
@@ -94,7 +94,7 @@ describe('hic count statistics', () => {
     expect(numContacts).toBe(101)
   })
 
-  test('all-non-finite counts score zero, so hasLegendData reads false', async () => {
+  test('all-non-finite counts score zero, so colorScales reads empty', async () => {
     const { maxScore, percentile95 } = await statsFor([
       Number.NaN,
       Number.POSITIVE_INFINITY,

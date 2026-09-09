@@ -63,11 +63,13 @@ describe('frameColorIndex is the one place the palette layout is known', () => {
 })
 
 // The strip is an *overlay*, drawn over whichever rendering won, while
-// `legendItems` is a dispatch on `activeRowRendering` — so no branch of that
+// `colorScales` is a dispatch on `activeRowRendering` — so no branch of that
 // dispatch is ever the strip and it could not have had a key. Three saturated
 // colors on every species row, on screen and in every exported figure, with
 // nothing anywhere saying they mean reading frame.
 describe('the CDS strip keys itself', () => {
+  const keyLabels = (display: LinearMafDisplayModel) =>
+    display.legendSpec.sections!.flatMap(s => s.items.map(i => i.label))
   const framesEnv = () =>
     createMafTestEnvironment({ annotationAdapter: { type: 'BigBedAdapter' } })
 
@@ -117,11 +119,11 @@ describe('the CDS strip keys itself', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, /* strip off */ false)
     expect(display.visibleFrames).toEqual([])
-    expect(display.legendItems).toEqual([])
+    expect(display.colorScales).toEqual([])
 
     seed(display, true)
     expect(display.visibleFrames.length).toBeGreaterThan(0)
-    expect(display.legendItems.map(i => i.label)).toEqual([
+    expect(keyLabels(display)).toEqual([
       'CDS frame: 1st codon base',
       '2nd codon base',
       '3rd codon base',
@@ -139,7 +141,7 @@ describe('the CDS strip keys itself', () => {
     display.setRowIdentityAutoZoom(false)
     expect(display.activeRowRendering).toBe('heatmap')
 
-    const labels = display.legendItems.map(i => i.label)
+    const labels = keyLabels(display)
     expect(labels).toContain('CDS frame: 1st codon base')
     expect(labels.at(-1)).toBe('3rd codon base')
     expect(labels.length).toBeGreaterThan(3)
@@ -153,6 +155,6 @@ describe('the CDS strip keys itself', () => {
     seed(display, true)
     stageDetailRegion(display, 0, emptyMafWireRegionData(), { frames: [] })
     expect(display.visibleFrames).toEqual([])
-    expect(display.legendItems).toEqual([])
+    expect(display.colorScales).toEqual([])
   })
 })

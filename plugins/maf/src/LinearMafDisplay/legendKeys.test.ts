@@ -16,7 +16,7 @@ import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
 // The color key is the only decoder an exported figure ships with, so each of
 // these is built by the module that paints the rendering, out of the colors it
-// paints with. `legendItems` on the model is a dispatch over them. These pin the
+// paints with. `colorScales` on the model is a dispatch over them. These pin the
 // three ways the keys had drifted from the screen while they were written out in
 // the model instead.
 describe('each row rendering keys itself from what it paints', () => {
@@ -122,7 +122,17 @@ describe('the color key is dismissible, like every other row display', () => {
 
   it('offers nothing in bases mode, which has no key to show', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(display.legendItems).toEqual([])
+    expect(display.colorScales).toEqual([])
     expect(rows(display.trackMenuItems())).not.toContain('Show legend')
+  })
+
+  // One scale, keyed by the rendering: the frame strip's rows ride at its end
+  // in paint order rather than as a section of their own.
+  it('the heatmap key is one scale named for the rendering', () => {
+    const display = heatmapDisplay()
+    expect(display.colorScales.map(s => s.id)).toEqual(['heatmap'])
+    expect(display.legendSpec.sections![0]!.items.map(i => i.label)).toEqual(
+      identityLegendItems('heatmap').map(i => i.label),
+    )
   })
 })

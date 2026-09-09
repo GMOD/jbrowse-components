@@ -28,7 +28,6 @@ import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationBand from './MafConservationBand.tsx'
 import MafCoverageBand from './MafCoverageBand.tsx'
-import MafLegends from './MafLegends.tsx'
 import MafRowsCanvas from './MafRowsCanvas.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
@@ -234,7 +233,6 @@ const MafBody = observer(function MafBody({
         }}
       >
         <MafRowsCanvas model={model} />
-        <MafLegends model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}

@@ -236,7 +236,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * Where the color ramp saturates. `0` is the "no data to scale against"
-       * sentinel; `hasLegendData` is the one place it's interpreted.
+       * sentinel; `colorScales` is the one place it is interpreted.
        *
        * The linear branch saturates at a twentieth of the max rather than the
        * max itself. Contact counts are heavily skewed — a handful of very hot

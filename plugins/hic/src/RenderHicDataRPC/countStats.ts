@@ -92,7 +92,7 @@ function selectNth(a: Float32Array, n: number, k: number) {
  * value" marker and a tiny normalization divisor yields Infinity, and both
  * propagate: `Math.max(colorMaxScore, …)` in the shader and in `mapHicCount`
  * turns a single NaN into a NaN color for *every* bin, and the legend silently
- * disappears (`hasLegendData` reads `NaN > 0`). Scoring off the finite subset
+ * disappears (`colorScales` reads `NaN > 0`). Scoring off the finite subset
  * keeps the damage to the offending bin. Both returned values are 0 when
  * nothing is finite.
  *

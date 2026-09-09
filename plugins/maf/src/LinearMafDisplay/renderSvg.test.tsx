@@ -56,8 +56,8 @@ test('a dismissed color key stays out of the export', async () => {
   // the identity plots swap themselves out for the bases at base level
   view.zoomTo(100)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  expect(display.legendItems.length).toBeGreaterThan(0)
-  expect(draw(await renderSvg(display, {}))).toContain('maf-color-legend')
+  expect(display.colorScales.length).toBeGreaterThan(0)
+  expect(draw(await renderSvg(display, {}))).toContain('color-legend')
   display.setShowLegend(false)
-  expect(draw(await renderSvg(display, {}))).not.toContain('maf-color-legend')
+  expect(draw(await renderSvg(display, {}))).not.toContain('color-legend')
 })

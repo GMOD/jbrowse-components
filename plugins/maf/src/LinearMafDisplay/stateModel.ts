@@ -140,7 +140,8 @@ import type {
 import type { RowRendering } from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
-import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
@@ -2326,7 +2327,7 @@ export default function stateModelFactory(
          * stacked filled-histogram bands are otherwise told apart only by their
          * Y-axis units (depth vs %).
          *
-         * A getter for the same reason as `legendItems` below: the on-screen
+         * A getter for the same reason as `colorScales` below: the on-screen
          * labels and the SVG export both read it. The export had no titles at
          * all, so the one figure that needs them most — both bands drawn, and
          * an exported PNG where nothing can be hovered to disambiguate — was
@@ -2353,11 +2354,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The color key for whatever `activeRowRendering` is painting, or empty
-         * where the rendering needs no key (plain bases). One getter rather than
-         * a component per mode, because both the on-screen legend and the SVG
-         * export read it — an exported codon or source-chromosome figure whose
-         * swatches are its only decoder used to ship with no key at all.
+         * `LegendMixin`'s hook: the key for whatever `activeRowRendering` is
+         * painting, or none where the rendering needs no key (plain bases),
+         * as one categorical scale.
          *
          * A dispatch, not a description: each key is built by the module that
          * paints the rendering, out of the colors it paints with. Written out
@@ -2367,7 +2366,7 @@ export default function stateModelFactory(
          * the source-chromosome key kept adding rows past the point where its
          * palette stops changing.
          */
-        get legendItems(): LegendItem[] {
+        get colorScales(): ColorScale[] {
           const view = self.host
           if (!view.initialized) {
             return []
@@ -2391,9 +2390,23 @@ export default function stateModelFactory(
           // `activeRowRendering` has no branch that is ever the strip. Last, so
           // the key reads in paint order, and so the rendering's own swatches
           // stay where a reader of the other modes already expects them.
-          return self.visibleFrames.length > 0
-            ? [...rows, ...getFrameLegendItems(palette)]
-            : rows
+          const items =
+            self.visibleFrames.length > 0
+              ? [...rows, ...getFrameLegendItems(palette)]
+              : rows
+          return items.length
+            ? [
+                {
+                  kind: 'categorical',
+                  id: rendering,
+                  entries: items.map(({ label, color }) => ({
+                    value: label,
+                    label,
+                    color,
+                  })),
+                },
+              ]
+            : []
         },
         /**
          * #getter
@@ -2403,10 +2416,10 @@ export default function stateModelFactory(
          * other rendering keys what it paints, and the CDS strip keys itself
          * over whichever won.
          *
-         * Deliberately not `legendItems.length`: that one declines on an
-         * uninitialized view and on a rank the data has not reported yet, so the
-         * row that turns a dismissed key back on would go missing exactly while
-         * a track was loading, taking the promotable pin with it.
+         * Overrides `LegendMixin`'s, which reads the scales: those decline on
+         * an uninitialized view and on a rank the data has not reported yet, so
+         * the row that turns a dismissed key back on would go missing exactly
+         * while a track was loading, taking the promotable pin with it.
          */
         get hasLegendKey(): boolean {
           return (

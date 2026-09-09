@@ -2,11 +2,7 @@
 import React from 'react'
 
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import {
-  SvgColorLegend,
-  createJBrowseTheme,
-  legendEntries,
-} from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -254,20 +250,6 @@ function MafSvgBody({
         <SvgYScaleGutter
           y={topBands.top.conservation}
           ticks={conservationTicks(conservationDisplayHeight)}
-        />
-      ) : null}
-      {/* The same color key the display shows on screen (`MafLegends`), on the
-          same `showLegend` gate — without it an exported codon or
-          source-chromosome figure has colored cells and nothing saying what the
-          colors mean, and with the key dismissed it would reappear in the
-          figure the reader dismissed it out of. No `onDismiss`: an exported
-          legend can't be clicked. */}
-      {model.showLegend ? (
-        <SvgColorLegend
-          entries={legendEntries({ items: model.legendItems })}
-          canvasWidth={width}
-          maxHeight={height}
-          testid="maf-color-legend"
         />
       ) : null}
     </SvgClipRect>
