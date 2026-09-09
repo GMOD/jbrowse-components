@@ -43,6 +43,7 @@ import { methylationSpecs } from './specs/methylation.ts'
 import { msaSpecs } from './specs/msa.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
 import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
+import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinStructuresSpecs } from './specs/protein_structures.ts'
 import { qcSpecs } from './specs/qc.ts'
@@ -90,6 +91,7 @@ export const specs: ScreenshotSpec[] = [
   ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
+  ...paperHprcWorkspaceSpecs,
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
   ...cookbookSpecs,
