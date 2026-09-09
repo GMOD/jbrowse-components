@@ -14,10 +14,7 @@ import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  containingLgv,
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { autorun } from 'mobx'
@@ -140,7 +137,6 @@ const FeatureComponent = observer(function FeatureComponent({
       {({ canvasRef, mouseTracker }) => (
         <>
           <FeatureBody model={model} canvasRef={canvasRef} />
-          <ColorLegendOverlay model={model} />
           {/* `mouseoverExtraInformation` decides whether there is a tooltip at
               all; only the position comes from the chrome's tracker. */}
           <PointerLayer mouseTracker={mouseTracker}>
@@ -404,21 +400,6 @@ const FeatureBody = observer(function FeatureBody({
       <DisplayContextMenu model={model} />
     </>
   )
-})
-
-// Its own observer so a coloring change repaints the key alone, not the body.
-const ColorLegendOverlay = observer(function ColorLegendOverlay({
-  model,
-}: LinearBasicDisplayComponentProps) {
-  const items = model.colorLegend
-  return model.showLegend && items.length > 0 ? (
-    <FloatingLegend
-      items={items}
-      onDismiss={() => {
-        model.setShowLegend(false)
-      }}
-    />
-  ) : null
 })
 
 export default FeatureComponent

@@ -8,13 +8,11 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawDensityBand } from '../shared/densityBand.ts'
-import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { DensityBandLayer } from '../shared/densityBand.ts'
-import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
@@ -22,7 +20,6 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-import type { LegendItem } from '@jbrowse/core/ui'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
@@ -54,13 +51,8 @@ export interface RenderSvgModel extends SvgExportable {
   hierarchy: ClusterHierarchyNode | undefined
   // Records the color scheme, which is the clustering matrix here.
   clusterProvenance?: ClusterProvenance
-  showLegend: boolean
-  hasLegendEntries: boolean
   showRowSeparators: boolean
   showRowLabels: boolean
-  colorLegend: LegendEntry[]
-  rowGroupLegend: LegendItem[]
-  hiddenCategorySet: ReadonlySet<string>
 }
 
 export async function renderSvg(
@@ -145,15 +137,6 @@ function MultiRowSvgBody({
         availableHeight={height}
         clusterProvenance={self.clusterProvenance}
       />
-      {self.showLegend && self.hasLegendEntries ? (
-        <MultiRowColorLegend
-          entries={self.colorLegend}
-          rowGroupItems={self.rowGroupLegend}
-          canvasWidth={canvasWidth}
-          maxHeight={height}
-          hiddenLabels={self.hiddenCategorySet}
-        />
-      ) : null}
     </>
   )
 }

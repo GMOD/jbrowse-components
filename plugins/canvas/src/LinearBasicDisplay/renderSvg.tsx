@@ -1,6 +1,5 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
-import { SvgColorLegend } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -27,7 +26,6 @@ import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export interface RenderSvgModel extends SvgExportable {
   id: string
@@ -46,8 +44,6 @@ export interface RenderSvgModel extends SvgExportable {
   renderedShowDescriptions: boolean
   renderedShowSubfeatureLabels: boolean
   labelFontSize: number
-  colorLegend: LegendItem[]
-  showLegend: boolean
 }
 
 export async function renderSvg(
@@ -80,7 +76,6 @@ function CanvasFeaturesSvgBody({
   // scissored against the same canvas as the glyphs.
   const renderState = { scrollY, canvasWidth, canvasHeight: height }
   const fontSize = model.labelFontSize
-  const colorLegend = model.colorLegend
   const labelContext = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
@@ -171,26 +166,6 @@ function CanvasFeaturesSvgBody({
           }
         }}
       />
-      {/* The same color key the display shows on screen (the `colorLegend` hook —
-          variants' consequence-impact / SV-type presets; absent for a plain
-          feature track). Without it an exported figure has colored glyphs and
-          nothing saying what the colors mean. Vector, via the shared
-          SvgColorLegend the multi-row painting export already uses; no
-          `onDismiss`, since an exported legend can't be clicked. Skipped when
-          the user has put the key away on screen, so the export matches what
-          they were looking at. */}
-      {model.showLegend && colorLegend.length > 0 ? (
-        <SvgColorLegend
-          canvasWidth={canvasWidth}
-          maxHeight={height}
-          testid="canvas-color-legend"
-          entries={colorLegend.map(item => ({
-            key: item.label,
-            label: item.label,
-            color: item.color,
-          }))}
-        />
-      ) : null}
     </SvgClipRect>
   )
 }

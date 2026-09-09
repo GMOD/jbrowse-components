@@ -1,7 +1,7 @@
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
-import { FloatingSvgOverlay, PointerLayer } from '@jbrowse/display-ui'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   DisplayContextMenu,
@@ -15,7 +15,6 @@ import { observer } from 'mobx-react'
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { MULTI_ROW_MARKS } from '../rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
-import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
@@ -43,13 +42,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     labelSources,
     effectiveRowHeight,
     sidebarOffset,
-    showLegend,
-    hasLegendEntries,
     showRowSeparators,
     showRowLabels,
-    colorLegend,
-    rowGroupLegend,
-    hiddenCategorySet,
   } = model
   return (
     <>
@@ -102,22 +96,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         height={height}
         showLabels={showRowLabels}
       />
-      {/* portaled above the inter-region masks so the legend isn't buried at
-          multi-region scale */}
-      {showLegend && hasLegendEntries ? (
-        <FloatingSvgOverlay width={canvasWidthPx} height={height}>
-          <MultiRowColorLegend
-            entries={colorLegend}
-            rowGroupItems={rowGroupLegend}
-            canvasWidth={canvasWidthPx}
-            maxHeight={height}
-            hiddenLabels={hiddenCategorySet}
-            onDismiss={() => {
-              model.setShowLegend(false)
-            }}
-          />
-        </FloatingSvgOverlay>
-      ) : null}
       <TreeSidebar model={model} />
       <DisplayContextMenu model={model} />
     </>

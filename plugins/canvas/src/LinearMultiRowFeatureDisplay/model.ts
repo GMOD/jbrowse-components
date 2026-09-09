@@ -7,7 +7,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -91,6 +91,7 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource, RowGroup } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -579,21 +580,45 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether either key has a row to draw.
+       * `LegendMixin`'s hook, two vocabularies as two scales: the per-feature
+       * painting, toggleable and dimmed where a category is hidden, and the
+       * row-group stripe, which names rows and is not.
        */
-      get hasLegendEntries() {
-        return self.colorLegend.length > 0 || self.rowGroupLegend.length > 0
+      get colorScales(): ColorScale[] {
+        const hidden = self.hiddenCategorySet
+        return [
+          {
+            kind: 'categorical' as const,
+            id: 'features',
+            title: 'Feature colors',
+            entries: self.colorLegend.map(e => ({
+              value: e.label,
+              label: e.label,
+              color: abgrToCssRgba(e.color),
+              hidden: hidden.has(e.label),
+            })),
+          },
+          {
+            kind: 'categorical' as const,
+            id: 'rowGroups',
+            title: 'Row groups',
+            entries: self.rowGroupLegend.map(({ label, color }) => ({
+              value: label,
+              label,
+              color,
+            })),
+          },
+        ].filter(scale => scale.entries.length > 0)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Whether the display has a key at all, which is what "Show legend" is
-       * offered on: a key merely waiting for data must not take the way back to
-       * the toggle with it.
+       * Overrides `LegendMixin`'s: a configured key merely waiting for data
+       * must not take the way back to the "Show legend" toggle with it.
        */
       get hasLegendKey() {
-        return self.hasLegendEntries || self.configuredLegend.length > 0
+        return self.colorScales.length > 0 || self.configuredLegend.length > 0
       },
     }))
     .views(self => ({

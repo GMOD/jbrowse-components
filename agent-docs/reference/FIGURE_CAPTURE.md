@@ -260,10 +260,11 @@ loaded and been processed** — not on `canvasDrawn`/settle. The color legend is
 ideal: it renders one entry per binned value, so it is absent until real data
 arrives.
 
-- `SvgColorLegend` (`packages/core/src/ui`) takes an optional `testid` prop,
-  applied to its outer `<g>` — which only renders when there are entries.
-- `MultiRowColorLegend` passes `testid="multirow-color-legend"`.
-- The spec sets `readySelector: '[data-testid="multirow-color-legend"]'`.
+- `FloatingLegend` (`packages/display-ui`) carries
+  `data-testid="floating-legend"` on its box, and the chrome mounts it only
+  once the display's `legendSpec` has a section — for a derived key, only once
+  real data has been binned.
+- The spec sets `readySelector: '[data-testid="floating-legend"]'`.
 
 Result: content-stable (0.000% diff across runs), always the full painting; and
 if data genuinely never loads, the wait times out and the spec **fails loudly**

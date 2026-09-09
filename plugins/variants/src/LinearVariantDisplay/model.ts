@@ -22,8 +22,8 @@ import { breakendMenuItems } from './breakendMenu.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantDisplay
@@ -112,22 +112,39 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * This display's answer to the base's `colorLegend` chrome hook: the rows
-       * for whichever preset color key is active (impact tiers or SV classes),
-       * or none. SV-type shows the fixed class key; copy-number and
-       * unrecognized tokens aren't listed (the pure jexl has no present-set).
-       * The shared canvas body draws the key, so this display needs no
-       * component of its own.
+       * `LegendMixin`'s hook: the scale of whichever preset coloring is active
+       * (impact tiers or SV classes), or none. SV-type shows the fixed class
+       * key; copy-number and unrecognized tokens aren't listed (the pure jexl
+       * has no present-set).
        */
-      get colorLegend(): LegendItem[] {
+      get colorScales(): ColorScale[] {
         if (this.colorsByConsequenceImpact) {
-          return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+          return [
+            {
+              kind: 'categorical',
+              id: 'consequenceImpact',
+              title: 'Consequence impact',
+              entries: IMPACT_TIERS.map(t => ({
+                value: t.tier,
+                label: t.tier,
+                color: t.color,
+              })),
+            },
+          ]
         }
         if (this.colorsBySvType) {
-          return PREDEFINED_SV_TYPES.map(t => ({
-            color: t.color,
-            label: t.label,
-          }))
+          return [
+            {
+              kind: 'categorical',
+              id: 'svType',
+              title: 'SV type',
+              entries: PREDEFINED_SV_TYPES.map(t => ({
+                value: t.label,
+                label: t.label,
+                color: t.color,
+              })),
+            },
+          ]
         }
         return []
       },

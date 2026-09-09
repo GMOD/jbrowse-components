@@ -3,7 +3,7 @@ import React from 'react'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -18,6 +18,7 @@ import { renderSvg } from './renderSvg.tsx'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
+import type { LegendSpec } from '@jbrowse/core/ui'
 
 // The model is a plain object here, not an MST node, so `getContainingView`
 // is intercepted.
@@ -82,7 +83,14 @@ function makeData(
   })
 }
 
-function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
+// The shell draws the legend off `LegendMixin`'s members, so the fake carries
+// the two it detects the mixin by.
+type LegendModel = RenderSvgModel & {
+  showLegend: boolean
+  legendSpec: LegendSpec
+}
+
+function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
   return {
     id: 'test',
     height: 100,
@@ -100,8 +108,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: true,
     labelFontSize: LABEL_FONT_SIZE,
-    colorLegend: [],
     showLegend: true,
+    legendSpec: { sections: [] },
     ...overrides,
   }
 }
@@ -285,6 +293,9 @@ describe('renderSvg', () => {
     expect(html).not.toContain('rgb(255,177,29)')
   })
 
+  // The shell draws the key off `legendSpec`, so a display places none of its
+  // own: the same rows the chrome shows on screen, or nothing when the reader
+  // put the key away.
   it('bakes the display color key into the export, and omits it when absent or dismissed', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
     const exportWith = async (showLegend: boolean) =>
@@ -293,10 +304,16 @@ describe('renderSvg', () => {
           makeModel({
             laidOutDataMap: new Map([[0, data]]),
             showLegend,
-            colorLegend: [
-              { label: 'HIGH', color: '#d32f2f' },
-              { label: 'LOW', color: '#fbc02d' },
-            ],
+            legendSpec: legendSpecOf([
+              {
+                kind: 'categorical',
+                id: 'impact',
+                entries: [
+                  { value: 'HIGH', label: 'HIGH', color: '#d32f2f' },
+                  { value: 'LOW', label: 'LOW', color: '#fbc02d' },
+                ],
+              },
+            ]),
           }),
         ),
       )

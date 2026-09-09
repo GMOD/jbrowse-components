@@ -127,7 +127,6 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // Region identity rides in the stored payload: the layout groups by ref, and
 // a canonical refName is not what `Region.refName` carries.
@@ -315,15 +314,6 @@ export default function baseStateModelFactory(
          */
         get geneGlyphNotice(): GeneGlyphNotice | undefined {
           return undefined
-        },
-        /**
-         * #getter
-         * Overridable hook (default none): the color key to draw over the
-         * canvas whenever the display's active coloring has one — variants'
-         * consequence impact / SV type presets, the `legend` config slot.
-         */
-        get colorLegend(): LegendItem[] {
-          return []
         },
       }))
       .views(self => ({

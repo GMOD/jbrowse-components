@@ -58,7 +58,7 @@ describe('the color key waits for a painting to key', () => {
     }).createDisplay()
 
     expect(display.colorLegend).toHaveLength(0)
-    expect(display.hasLegendEntries).toBe(false)
+    expect(display.legendSpec.sections).toHaveLength(0)
   })
 
   it('carries the configured entries once features are drawn', () => {
@@ -68,7 +68,7 @@ describe('the color key waits for a painting to key', () => {
     display.setRpcData(0, painted(), ctgA)
 
     expect(display.colorLegend.map(e => e.label)).toEqual(['EUR', 'AFR'])
-    expect(display.hasLegendEntries).toBe(true)
+    expect(display.legendSpec.sections).toHaveLength(1)
   })
 
   it('drops it again while the density band stands in for the features', () => {
@@ -88,7 +88,7 @@ describe('the color key waits for a painting to key', () => {
 
     expect(display.coarseTierStandsIn).toBe(true)
     expect(display.colorLegend).toHaveLength(0)
-    expect(display.hasLegendEntries).toBe(false)
+    expect(display.legendSpec.sections).toHaveLength(0)
   })
 
   // The data gates the draw, never the toggle: a track waiting on its first
@@ -98,7 +98,7 @@ describe('the color key waits for a painting to key', () => {
       displayConfig: { legend: LEGEND },
     }).createDisplay()
 
-    expect(display.hasLegendEntries).toBe(false)
+    expect(display.legendSpec.sections).toHaveLength(0)
     expect(display.hasLegendKey).toBe(true)
     expect(menuLabels(display)).toContain('Show legend')
   })

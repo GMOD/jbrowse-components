@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
@@ -10,6 +10,7 @@ import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
+import type { ColorScale, LegendSpec } from '@jbrowse/core/ui'
 import type {
   ClusterHierarchyNode,
   HierarchyNode,
@@ -87,7 +88,14 @@ function makeHierarchy(): ClusterHierarchyNode {
   return clusterLayout(root, 100, 80)
 }
 
-function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
+// The shell draws the legend off `LegendMixin`'s members, so the fake carries
+// the two it detects the mixin by.
+type LegendModel = RenderSvgModel & {
+  showLegend: boolean
+  legendSpec: LegendSpec
+}
+
+function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
   // The sidebar reads `labelSources`, which is `sources` plus a derived label
   // tint, so an override naming only one of them means both here.
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
@@ -104,7 +112,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     hiddenColors: new Set<number>(),
     rowColorsByIndex: [undefined, undefined],
   }
-  const model = {
+  return {
     id: 'test',
     height: 100,
     error: undefined,
@@ -131,18 +139,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showLegend: false,
     showRowSeparators: false,
     showRowLabels: true,
-    colorLegend: [],
-    rowGroupLegend: [],
-    hiddenCategorySet: new Set<string>(),
-    hasLegendEntries: false,
+    legendSpec: { sections: [] },
     ...overrides,
-  }
-  // Derived rather than defaulted, so a case naming either legend cannot leave
-  // the gate behind disagreeing with it.
-  return {
-    ...model,
-    hasLegendEntries:
-      model.colorLegend.length > 0 || model.rowGroupLegend.length > 0,
   }
 }
 
@@ -154,6 +152,16 @@ function renderResult(result: React.ReactNode) {
       </svg>
     </ThemeProvider>,
   )
+}
+
+const rowGroups: ColorScale = {
+  kind: 'categorical',
+  id: 'rowGroups',
+  title: 'Row groups',
+  entries: [
+    { value: 'Village dog', label: 'Village dog', color: '#e41a1c' },
+    { value: 'Wolf', label: 'Wolf', color: '#377eb8' },
+  ],
 }
 
 describe('LinearMultiRowFeatureDisplay renderSvg', () => {
@@ -245,10 +253,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
       await renderSvg(
         makeModel({
           showLegend: true,
-          rowGroupLegend: [
-            { color: '#e41a1c', label: 'Village dog' },
-            { color: '#377eb8', label: 'Wolf' },
-          ],
+          legendSpec: legendSpecOf([rowGroups]),
         }),
         {},
       ),
@@ -267,11 +272,15 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
       await renderSvg(
         makeModel({
           showLegend: true,
-          colorLegend: [{ label: 'exon', color: 0xff0000ff }],
-          rowGroupLegend: [
-            { color: '#e41a1c', label: 'Village dog' },
-            { color: '#377eb8', label: 'Wolf' },
-          ],
+          legendSpec: legendSpecOf([
+            {
+              kind: 'categorical',
+              id: 'features',
+              title: 'Feature colors',
+              entries: [{ value: 'exon', label: 'exon', color: 'red' }],
+            },
+            rowGroups,
+          ]),
         }),
         {},
       ),

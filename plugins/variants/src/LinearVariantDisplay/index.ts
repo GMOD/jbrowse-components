@@ -18,7 +18,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
       // Borrow the registered component rather than import one across the plugin
       // boundary (the same move LGVSyntenyDisplay makes with
       // LinearAlignmentsDisplay). The variant-specific chrome rides along on the
-      // base's model hooks: its color key comes from `colorLegend`, and it simply
+      // base's model hooks: its color key comes from `colorScales`, and it simply
       // doesn't answer the gene-glyph hook. Resolved inside this factory
       // callback, which runs after every plugin is installed.
       const { ReactComponent } =

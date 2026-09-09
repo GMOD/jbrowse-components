@@ -6,18 +6,29 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 describe('declared color legend', () => {
-  it('is empty until the legend slot carries entries', () => {
+  it('is no scale until the legend slot carries entries', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.colorLegend).toEqual([])
+    expect(display.colorScales).toEqual([])
+    expect(display.legendSpec.sections).toEqual([])
 
     setConf(display, 'legend', [
       { label: 'SINE', color: '#e41a1c' },
       { label: 'LINE', color: '#377eb8' },
     ])
-    expect(display.colorLegend).toEqual([
-      { label: 'SINE', color: '#e41a1c' },
-      { label: 'LINE', color: '#377eb8' },
+    expect(display.colorScales).toEqual([
+      {
+        kind: 'categorical',
+        id: 'legend',
+        entries: [
+          { value: 'SINE', label: 'SINE', color: '#e41a1c' },
+          { value: 'LINE', label: 'LINE', color: '#377eb8' },
+        ],
+      },
+    ])
+    expect(display.legendSpec.sections![0]!.items).toEqual([
+      { value: 'SINE', label: 'SINE', color: '#e41a1c' },
+      { value: 'LINE', label: 'LINE', color: '#377eb8' },
     ])
   })
 

@@ -33,8 +33,8 @@ import type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -254,11 +254,27 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * This display's answer to the base's `colorLegend` chrome hook, from
-       * the `legend` config slot.
+       * `LegendMixin`'s hook: the `legend` config slot, as one categorical
+       * scale.
        */
-      get colorLegend() {
-        return getConf(self, 'legend') as LegendItem[]
+      get colorScales(): ColorScale[] {
+        const legend = getConf(self, 'legend') as {
+          label: string
+          color: string
+        }[]
+        return legend.length
+          ? [
+              {
+                kind: 'categorical',
+                id: 'legend',
+                entries: legend.map(({ label, color }) => ({
+                  value: label,
+                  label,
+                  color,
+                })),
+              },
+            ]
+          : []
       },
     }))
     .views(self => {

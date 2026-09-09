@@ -23,7 +23,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // Every menu level sorts by `priority` and the sort is stable, so this pins
 // the recovery rows below whatever a subclass appends and above "Display
@@ -60,7 +59,7 @@ interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   showLabelsMode: ShowLabelsMode
   displayMode: DisplayMode
   labelsFitHint: string | undefined
-  colorLegend: LegendItem[]
+  hasLegendKey: boolean
   showLegend: boolean
   showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (value: boolean) => void
@@ -99,7 +98,7 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
     toggleItem('Show outline', self.showOutline, self.setShowOutline),
-    ...(self.colorLegend.length ? [legendCheckboxItem(self)] : []),
+    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
   ]
 }
 

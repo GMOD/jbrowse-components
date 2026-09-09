@@ -580,7 +580,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // have loaded + been binned), not just canvasDrawn/settle: canvasDrawn can
     // flip on an empty first paint, so under a slow first-fetch a fixed settle
     // could capture the track before the painting appears
-    readySelector: '[data-testid="multirow-color-legend"]',
+    readySelector: '[data-testid="floating-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
