@@ -1,12 +1,7 @@
 {
   "mui": {
-<<<<<<< HEAD
-    "bytes": 428245,
-    "gzipBytes": 144232
-=======
-    "bytes": 428126,
-    "gzipBytes": 144180
->>>>>>> 7a9bc1cc22 (chore(autogen): refresh the chrome bundle-size baseline)
+    "bytes": 428249,
+    "gzipBytes": 144226
   },
   "plain": {
     "bytes": 115278,
@@ -16,13 +11,8 @@
     "bytes": 113005,
     "gzipBytes": 39391
   },
-<<<<<<< HEAD
   "savedBytes": 312971,
-  "savedGzipBytes": 104173,
-=======
-  "savedBytes": 312848,
-  "savedGzipBytes": 104123,
->>>>>>> 7a9bc1cc22 (chore(autogen): refresh the chrome bundle-size baseline)
+  "savedGzipBytes": 104169,
   "muiKb": 418,
   "plainKb": 113,
   "seamKb": 110,
