@@ -27,20 +27,26 @@ test('--name=value and flags', () => {
   expect(args.verbose).toBe(false)
 })
 
-test('a locstring with a leading dash is still a value', () => {
-  // `--loc -1:100-200` would be read as a flag if values were sniffed for a
-  // leading dash rather than taken positionally
-  expect(parseArgs(['--loc', '-1:100-200']).loc).toBe('-1:100-200')
+// node:util refuses a dash-leading value in the separated form rather than
+// guessing, and names the spelling that works. The hand-rolled parser took it,
+// so this is the one accepted shape that changed.
+test('a locstring with a leading dash needs the = form', () => {
+  expect(parseArgs(['--loc=-1:100-200']).loc).toBe('-1:100-200')
+  expect(() => parseArgs(['--loc', '-1:100-200'])).toThrow(
+    "To specify an option argument starting with a dash use '--loc=-XYZ'",
+  )
 })
 
 test('an unknown flag is an error, not a silent no-op', () => {
   expect(() => parseArgs(['--tracks', 'a,b'])).toThrow(
-    'unknown flag "--tracks"',
+    "Unknown option '--tracks'",
   )
 })
 
 test('a missing value is an error', () => {
-  expect(() => parseArgs(['--hub'])).toThrow('--hub needs a value')
+  expect(() => parseArgs(['--hub'])).toThrow(
+    "Option '--hub <value>' argument missing",
+  )
 })
 
 test('a non-numeric size is an error', () => {
@@ -54,16 +60,23 @@ test('a non-numeric size is an error', () => {
 // the one that silently turned it on.
 test('a value handed to a flag is an error, not true', () => {
   expect(() => parseArgs(['--fullPage=false'])).toThrow(
-    '--fullPage is a flag and takes no value',
+    "Option '--fullPage' does not take an argument",
   )
 })
 
+// A negative reaches the range check only in the `=` form; the separated form
+// is the dash ambiguity above. Either way it never reaches puppeteer, which is
+// the property that matters — a zero size fails there naming neither the flag
+// nor the value.
 test('a zero or negative viewport dimension is an error', () => {
   expect(() => parseArgs(['--scale', '0'])).toThrow(
     '--scale needs a positive number, got "0"',
   )
-  expect(() => parseArgs(['--width', '-5'])).toThrow(
+  expect(() => parseArgs(['--width=-5'])).toThrow(
     '--width needs a positive number, got "-5"',
+  )
+  expect(() => parseArgs(['--width', '-5'])).toThrow(
+    "Option '--width' argument is ambiguous",
   )
 })
 
@@ -74,27 +87,45 @@ test('a zero or negative timeout is an error', () => {
   expect(() => parseArgs(['--timeout', '0'])).toThrow(
     '--timeout needs a positive number, got "0"',
   )
-  expect(() => parseArgs(['--timeout', '-1'])).toThrow(
+  expect(() => parseArgs(['--timeout=-1'])).toThrow(
     '--timeout needs a positive number, got "-1"',
   )
 })
 
 test('settle takes zero but not a negative pause', () => {
   expect(parseArgs(['--settle', '0']).settle).toBe(0)
-  expect(() => parseArgs(['--settle', '-1'])).toThrow(
+  expect(() => parseArgs(['--settle=-1'])).toThrow(
     '--settle needs a number of milliseconds that is zero or more, got "-1"',
   )
 })
 
 test('a bare positional is an error', () => {
-  expect(() => parseArgs(['hg38'])).toThrow('unexpected argument "hg38"')
+  expect(() => parseArgs(['hg38'])).toThrow("Unexpected argument 'hg38'")
 })
 
-// The option table is a plain object, so an inherited key is a name that looks
-// defined. It used to be six Sets, which had no such keys.
+// `list` is the one form that takes bare words, and routing it through the
+// parser is what makes a flag after it an error: `list hg38 --foo` used to
+// filter the track list on the string "--foo" and report that nothing matched.
+test('list takes its hub and filter as positionals, and still rejects flags', () => {
+  expect(
+    parseArgs(['hg38', 'conservation'], { allowPositionals: true }).positionals,
+  ).toEqual(['hg38', 'conservation'])
+  expect(() =>
+    parseArgs(['hg38', '--foo'], { allowPositionals: true }),
+  ).toThrow("Unknown option '--foo'")
+})
+
 test.each(['--constructor', '--toString'])(
   'an inherited Object key is still an unknown flag (%s)',
   flag => {
-    expect(() => parseArgs([flag, 'x'])).toThrow('unknown flag')
+    expect(() => parseArgs([flag, 'x'])).toThrow('Unknown option')
   },
 )
+
+// node hands back the `default: []` array off the option table itself, so
+// without a copy every parse shares one instance.
+test('tracks is a fresh array each time', () => {
+  const first = parseArgs([]).tracks
+  first.push('mutated')
+  expect(parseArgs([]).tracks).toEqual([])
+})

@@ -1,4 +1,24 @@
-import { assemblyFromSession, trackIdsFromSession } from './session.ts'
+import {
+  assemblyFromSession,
+  sessionSpecQuery,
+  trackIdsFromSession,
+} from './session.ts'
+
+// The query string used to interpolate `config` raw, so a config URL carrying
+// its own `?` or `&` truncated at the first one and the link loaded a partial
+// config. URLSearchParams is the same encoder `jbrowseUrl` uses.
+test('a config URL with its own query survives the query string', () => {
+  const query = sessionSpecQuery({
+    config: 'https://example.org/c.json?v=2&x=1',
+    session: { views: [{ type: 'LinearGenomeView' }] },
+  })
+  const params = new URLSearchParams(query.slice(1))
+  expect(params.get('config')).toBe('https://example.org/c.json?v=2&x=1')
+  expect(params.get('session')).toBe(
+    'spec-{"views":[{"type":"LinearGenomeView"}]}',
+  )
+  expect(params.get('sessionName')).toBe('Screenshot')
+})
 
 test('string and object track entries both yield their id', () => {
   expect(

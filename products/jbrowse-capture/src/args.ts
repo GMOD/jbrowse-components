@@ -1,3 +1,7 @@
+import { parseArgs as parseNodeArgs } from 'node:util'
+
+import type { ParseArgsOptionsConfig } from 'node:util'
+
 export interface ParsedArgs {
   hub?: string
   config?: string
@@ -18,111 +22,103 @@ export interface ParsedArgs {
   verbose: boolean
   help: boolean
   allowUnsettled: boolean
+  /** What `list` reads its hub and filter from. Empty for every other form. */
+  positionals: string[]
 }
-
-// One kind per option, in one place. The kinds used to be six parallel Sets
-// with a `known()` union over them, where `width` was spelled in three of them
-// and a name added to POSITIVE but not NUMERIC silently became a string.
-type OptionKind = 'flag' | 'string' | 'repeatable' | 'positive' | 'nonNegative'
 
 // `--fullPage`, not `--full-page`: the flags match the option names in the
 // library API one for one, so a script and a command line say the same thing.
-const OPTIONS: Record<string, OptionKind> = {
-  hub: 'string',
-  config: 'string',
-  assembly: 'string',
-  loc: 'string',
-  session: 'string',
-  sessionName: 'string',
-  instance: 'string',
-  out: 'string',
-  track: 'repeatable',
-  width: 'positive',
-  height: 'positive',
-  scale: 'positive',
-  timeout: 'positive',
-  settle: 'nonNegative',
-  fullPage: 'flag',
-  headed: 'flag',
-  verbose: 'flag',
-  help: 'flag',
-  allowUnsettled: 'flag',
+// Aliases are the two abbreviations that are hard not to type.
+const OPTIONS = {
+  hub: { type: 'string' },
+  config: { type: 'string' },
+  assembly: { type: 'string' },
+  loc: { type: 'string' },
+  session: { type: 'string' },
+  sessionName: { type: 'string' },
+  instance: { type: 'string' },
+  out: { type: 'string', short: 'o' },
+  track: { type: 'string', multiple: true, default: [] as string[] },
+  width: { type: 'string' },
+  height: { type: 'string' },
+  scale: { type: 'string' },
+  timeout: { type: 'string' },
+  settle: { type: 'string' },
+  fullPage: { type: 'boolean', default: false },
+  headed: { type: 'boolean', default: false },
+  verbose: { type: 'boolean', default: false },
+  help: { type: 'boolean', short: 'h', default: false },
+  allowUnsettled: { type: 'boolean', default: false },
+} satisfies ParseArgsOptionsConfig
+
+function finite(name: string, raw: string | undefined) {
+  if (raw === undefined) {
+    return undefined
+  }
+  const n = Number(raw)
+  if (!Number.isFinite(n)) {
+    throw new Error(`--${name} needs a number, got "${raw}"`)
+  }
+  return n
 }
 
-// Aliases are the two abbreviations that are hard not to type.
-const ALIASES: Record<string, string> = { o: 'out', h: 'help' }
+// node:util parses every value as a string, and these two checks are the ones
+// it cannot make. Without them they fail much later and elsewhere: a zero size
+// inside puppeteer, naming neither the flag nor the value, and `--timeout 0` as
+// no timeout at all there while the node-polled waits read it as expired.
+function positive(name: string, raw: string | undefined) {
+  const n = finite(name, raw)
+  if (n !== undefined && n <= 0) {
+    throw new Error(`--${name} needs a positive number, got "${raw}"`)
+  }
+  return n
+}
 
-// `Object.hasOwn`, not a bare lookup: `--constructor` and `--toString` are
-// inherited keys, so an unguarded read finds a function and the flag stops
-// being unknown.
-function kindOf(name: string): OptionKind | undefined {
-  return Object.hasOwn(OPTIONS, name) ? OPTIONS[name] : undefined
+function milliseconds(name: string, raw: string | undefined) {
+  const n = finite(name, raw)
+  if (n !== undefined && n < 0) {
+    throw new Error(
+      `--${name} needs a number of milliseconds that is zero or more, got "${raw}"`,
+    )
+  }
+  return n
 }
 
 /**
  * Parse `jb2capture` flags. Split from the binary so the accepted shapes are
  * unit-testable without launching a browser.
  *
- * Unknown flags throw rather than being ignored: a mistyped `--tracks` on a tool
- * whose whole job is to produce a plausible-looking image would otherwise be
- * reported by nothing at all.
+ * `node:util`'s parser in strict mode, which rejects an unknown flag rather
+ * than ignoring it: a mistyped `--tracks` on a tool whose whole job is to
+ * produce a plausible-looking image would otherwise be reported by nothing at
+ * all. It also rejects `--fullPage=false`, which used to set the flag true.
+ *
+ * `allowPositionals` is for `list`, the one form that takes bare words. Left
+ * off, a stray `foo.png` is an error rather than a silently ignored argument —
+ * and node's unknown-flag message stays free of the advice about `--` that only
+ * applies to a command with positionals.
  */
-export function parseArgs(argv: string[]): ParsedArgs {
-  const out: Record<string, unknown> = { tracks: [] }
-  for (const [name, kind] of Object.entries(OPTIONS)) {
-    if (kind === 'flag') {
-      out[name] = false
-    }
+export function parseArgs(
+  argv: string[],
+  { allowPositionals = false }: { allowPositionals?: boolean } = {},
+): ParsedArgs {
+  const { values, positionals } = parseNodeArgs({
+    args: argv,
+    options: OPTIONS,
+    allowPositionals,
+  })
+  const { track, width, height, scale, timeout, settle, ...rest } = values
+  return {
+    ...rest,
+    // Copied: with no `--track`, node hands back the `default: []` array off
+    // OPTIONS itself, so every call shares one instance and a caller that
+    // pushes to it edits the module constant.
+    tracks: [...track],
+    width: positive('width', width),
+    height: positive('height', height),
+    scale: positive('scale', scale),
+    timeout: positive('timeout', timeout),
+    settle: milliseconds('settle', settle),
+    positionals,
   }
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]!
-    if (!arg.startsWith('-')) {
-      throw new Error(`unexpected argument "${arg}"`)
-    }
-    const bare = arg.replace(/^--?/, '')
-    const eq = bare.indexOf('=')
-    const rawName = eq === -1 ? bare : bare.slice(0, eq)
-    const name = ALIASES[rawName] ?? rawName
-    const kind = kindOf(name)
-    if (!kind) {
-      throw new Error(`unknown flag "${arg}"`)
-    }
-    if (kind === 'flag') {
-      // `--fullPage=false` used to set the flag true, silently.
-      if (eq !== -1) {
-        throw new Error(
-          `--${name} is a flag and takes no value; omit it to leave it off`,
-        )
-      }
-      out[name] = true
-      continue
-    }
-    const value = eq === -1 ? argv[++i] : bare.slice(eq + 1)
-    if (value === undefined) {
-      throw new Error(`--${name} needs a value`)
-    }
-    if (kind === 'repeatable') {
-      ;(out.tracks as string[]).push(value)
-    } else if (kind === 'string') {
-      out[name] = value
-    } else {
-      const n = Number(value)
-      if (!Number.isFinite(n)) {
-        throw new Error(`--${name} needs a number, got "${value}"`)
-      }
-      // Otherwise these fail much later and elsewhere: a zero size inside
-      // puppeteer, naming neither the flag nor the value, and `--timeout 0` as
-      // no timeout at all there while the node-polled waits read it as expired.
-      if (kind === 'positive' && n <= 0) {
-        throw new Error(`--${name} needs a positive number, got "${value}"`)
-      }
-      if (kind === 'nonNegative' && n < 0) {
-        throw new Error(
-          `--${name} needs a number of milliseconds that is zero or more, got "${value}"`,
-        )
-      }
-      out[name] = n
-    }
-  }
-  return out as unknown as ParsedArgs
 }

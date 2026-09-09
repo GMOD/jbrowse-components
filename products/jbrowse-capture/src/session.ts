@@ -81,8 +81,14 @@ export function trackIdsFromSession(session: object): string[] {
   return collect((session as SpecShape).views)
 }
 
-// Full `?config=…&session=…&sessionName=…` query string. `config` is inserted
-// as-is (callers that point at a remote absolute URL pre-encode it themselves).
+// Full `?config=…&session=…&sessionName=…` query string, for a caller that has
+// an origin but no JBrowse instance URL to hand `jbrowseUrl`.
+//
+// Built with URLSearchParams, the same encoder and the same rule as
+// `jbrowseUrl`: hand it the DECODED spec, because it encodes once itself. It
+// used to interpolate `config` raw and ask callers to pre-encode it, which none
+// of them did — harmless only for as long as no config URL contained a `?` or
+// an `&`, at which point the link loads a truncated config and reports nothing.
 export function sessionSpecQuery({
   config,
   session,
@@ -92,5 +98,9 @@ export function sessionSpecQuery({
   session: object
   sessionName?: string
 }): string {
-  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=${encodeURIComponent(sessionName)}`
+  return `?${new URLSearchParams({
+    config,
+    session: sessionSpecParam(session),
+    sessionName,
+  })}`
 }

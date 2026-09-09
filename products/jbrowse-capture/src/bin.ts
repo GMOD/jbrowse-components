@@ -92,8 +92,8 @@ function urlOptions(args: ParsedArgs) {
   }
 }
 
-async function runList(rest: string[]) {
-  const [hub, filter] = rest
+async function runList(positionals: string[]) {
+  const [hub, filter] = positionals
   if (!hub) {
     throw new Error(
       'list needs an assembly, e.g. `jb2capture list hg38`. ' +
@@ -119,17 +119,23 @@ async function runList(rest: string[]) {
 async function main() {
   const argv = process.argv.slice(2)
   const [first, ...rest] = argv
-  if (first === 'list') {
-    await runList(rest)
-    return
-  }
-  const isUrlOnly = first === 'url'
-  const args = parseArgs(isUrlOnly ? rest : argv)
+  // `list` is the one form that takes bare words, so it is the one that allows
+  // positionals. Routing it through the parser at all is what makes a flag
+  // after it an error: `list hg38 --foo` used to filter the track list on the
+  // string "--foo" and report that nothing matched.
+  const isSubcommand = first === 'list' || first === 'url'
+  const args = parseArgs(isSubcommand ? rest : argv, {
+    allowPositionals: first === 'list',
+  })
   if (args.help || argv.length === 0) {
     console.log(HELP)
     return
   }
-  if (isUrlOnly) {
+  if (first === 'list') {
+    await runList(args.positionals)
+    return
+  }
+  if (first === 'url') {
     console.log(jbrowseUrl(urlOptions(args)))
     return
   }
