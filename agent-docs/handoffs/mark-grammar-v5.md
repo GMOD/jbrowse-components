@@ -1,6 +1,6 @@
 ---
 name: mark-grammar-v5
-description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list) and the five threads still open, each with its first move — legend pass two over gwas/wiggle/alignments/synteny, Manhattan and the example onto the encoder, the guides made config-first, the y axis on the chrome, and two checks nobody has run in a browser. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
+description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list, every key on the scales) and the four threads still open, each with its first move — Manhattan and the example onto the encoder, the guides made config-first, the y axis on the chrome, and two checks nobody has run in a browser. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
 ---
 
 # Mark grammar for v5
@@ -29,18 +29,14 @@ adopted (ADR-106 §"The ladder").
    1px rect), so the per-feature `markParity` suites stay the one-directional
    gate. A sweep variant taking a containment rule is the first move if one
    is wanted.
-2. **Legend pass two** (ADR-108 §Consequences). gwas: Manhattan's `legend`
-   getter becomes `colorScales` (LD bins, field categories) and
-   `ManhattanLegend` / `SvgManhattanLegend` go. Wiggle: `ScoreLegend.tsx` and
-   the multi-wiggle `legendItems.ts` become scales. Alignments:
-   `shared/legendUtils.ts` becomes `colorScales` and `PileupComponent` /
-   `renderSvg.tsx` stop placing it — unblocked now that thread 1 is in. Synteny-core's
-   `TrackColorsMixin` / `ColorByLegend` / `SVGColorByLegend` with the dotplot
-   and linear synteny views' legends, which are view-level and need the chrome
-   equivalent for a view. Each migration: delete the component, its SVG twin
-   and two placement sites; the export snapshot moves by the legend group's
-   test id (`color-legend`) and nesting, nothing else — check with an
-   element-level diff before `-u`.
+2. **Legend pass two — landed 2026-09-09** (ADR-108 §Consequences has the
+   record). gwas, both wiggles, alignments and the synteny family are on
+   `colorScales`; the synteny views host `ChromeLegend` / `SvgLegend` off
+   `TrackColorsMixin`'s own legend-host members, which is the view-level
+   answer. Not run in a browser: the multi-wiggle's caption-plus-key stack
+   and the Hi-C key under its resolution box both moved onto `legendTop`,
+   and the two synteny browser suites now target `floating-legend` — thread
+   6's list grows by those.
 3. **Manhattan and the example onto the encoder** (ADR-107 §Consequences).
    `buildManhattanResult` = `encodeFeatures(features, { y: scoreField, color,
    glyph })` plus the LD `r2` array and `indexFound`; `buildScoreResult` =
@@ -57,8 +53,10 @@ adopted (ADR-106 §"The ladder").
    place `YScaleBarOverlay` by hand on screen and in SVG (gwas, both wiggles,
    the alignments coverage band; `LinearMarkDisplay` copied Manhattan's). A
    `yAxis` hook on `ScoreScaleMixin` or `WiggleScoreConfigMixin`, placed by
-   `DisplayChrome` and `renderDisplaySvg`, removes eight placement sites. Size
-   it after thread 2 so the chrome's slot layout is settled once. Tooltips are
+   `DisplayChrome` and `renderDisplaySvg`, removes eight placement sites, and
+   the multi-wiggle's `ScoreDomainCaption` (the `[min, max]` an axis-less
+   row shows) is the ninth — it is what the axis becomes when there is no
+   room for one, and it is why that display answers `legendTop`. Tooltips are
    the same shape in principle but hover content varies far more (feature rows,
    coverage tables, LD values); not sized.
 6. **Two checks nobody has run in a browser.** The `bar` shader has MockHal

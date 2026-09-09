@@ -1,14 +1,13 @@
 ---
 status: Accepted
-summary: "A display declares the colour scales it paints with — `colorScales`, a list of categorical entries or ramp stops on `LegendMixin` — and the legend derives from that list: `DisplayChrome` places it on screen and `renderDisplaySvg` in the export, so a display places no legend and writes no legend component. Eight displays migrated in the first pass, the mark display in the second; gwas, both wiggles, alignments and the synteny family are the remainder"
+summary: "A display declares the colour scales it paints with — `colorScales`, a list of categorical entries or ramp stops on `LegendMixin` — and the legend derives from that list: `DisplayChrome` places it on screen and `renderDisplaySvg` in the export, so a display places no legend and writes no legend component. Every display with a key is on it, and the two synteny views host the same shells off the same members"
 ---
 
 # ADR-108: A display declares its colour scales
 
 ## Status
 
-Accepted (2026-09-09), first pass landed; the remainder is listed below and in
-[handoffs/mark-grammar-v5.md](../handoffs/mark-grammar-v5.md). Extends
+Accepted (2026-09-09), both passes landed the same day. Extends
 [ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md): the
 four cardinalities of the colour channel resolve, for a legend, to two scales.
 `LegendMixin`'s docstring and
@@ -71,13 +70,29 @@ lost its legend component, its SVG twin and its two placement sites.
   The `dog10k` figure spec and FIGURE_CAPTURE.md gate on `floating-legend`.
 - The chrome carries `FloatingLegend` for every display, +26 KB plain / +10 KB
   gzip on the web bundle baseline.
-- **Remainder, pass two:** gwas (Manhattan's `legend` getter and its two
-  components), both wiggle displays (`ScoreLegend`, the multi-wiggle
-  `legendItems`), alignments (`legendUtils`, `PileupComponent`, `renderSvg`) and
-  `LGVSyntenyDisplay` with it, synteny-core's `TrackColorsMixin` /
-  `ColorByLegend` / `SVGColorByLegend` with dotplot's and the linear synteny
-  view's view-level legends. sv-inspector's `ChordLegend` is a filter with
-  tallies, not a colour key, and stays view-owned.
+- **Pass two** took gwas (the r² bins and the field's values, with a note
+  row when the index SNP is in no loaded region), both wiggles (the density
+  ramp sampled from the live colour function as a `RampScale`; the
+  multi-wiggle's source key with `focusLegendEntry`), alignments (the three
+  merged vocabularies, and `LGVSyntenyDisplay` with it) and the synteny
+  family. The last is view-level: `TrackColorsMixin` carries the legend-host
+  members itself and the dotplot and linear synteny views mount
+  `ChromeLegend` and `SvgLegend` directly, since both shells are model-driven
+  and structural. sv-inspector's `ChordLegend` is a filter with tallies, not
+  a colour key, and stays view-owned.
+- Two hooks joined `LegendMixin` on pass two's pull: `legendTop`, the
+  clearance a display that already draws in the corner answers (Hi-C's
+  resolution box, the multi-wiggle's score caption), read by both shells in
+  place of the chrome's screen-only prop; and `legendMaxWidth` on the host
+  contract, the per-display occlusion ceiling alignments' split-read labels
+  need. A lone categorical scale titles the box the way a lone ramp names its
+  row (`legendSpecOf`).
+- What the shared gradient row does not draw: the wiggle ramp's pivot tick and
+  label, which the hand-rolled `ScoreLegend` marked where the white point
+  fell. The bar's own stops show it; the number does not print.
+- The `[min, max]` caption a short-rowed multi-wiggle draws is an axis
+  stand-in, not a key, and stays the display's (`ScoreDomainCaption`); the y
+  axis on the chrome is its own thread.
 
 ## Rejected alternatives
 
