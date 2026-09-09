@@ -40,8 +40,8 @@ projections of the release 2 `sv.gfa` and the release's own variant callset:
 - the SV-resolution graph the projections are cut from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.sv.gfa.gz
 - the segment and link indexes, the bubble file, the allele inventory and the
-  bubble tier, all under https://jbrowse.org/demos/hprc/ with a README stating
-  how each was built
+  bubble tier, with how each was built recorded beside them:
+  https://jbrowse.org/demos/hprc/README.txt
 - the 464-haplotype callset, read straight off S3:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
 
