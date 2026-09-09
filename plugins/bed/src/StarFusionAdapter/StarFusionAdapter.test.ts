@@ -44,13 +44,13 @@ test('reads a breakpoint on a colon-bearing contig', async () => {
   const feat = features.find(f => f.get('name') === 'GENE7--GENE8')!
   expect(feat).toBeDefined()
   expect(feat.get('refName')).toBe('HLA-A*01:01:01:01')
-  expect(feat.get('start')).toBe(5000)
-  expect(feat.get('end')).toBe(5001)
+  expect(feat.get('start')).toBe(4999)
+  expect(feat.get('end')).toBe(5000)
   expect(feat.get('strand')).toBe(1)
   expect(feat.get('mate')).toEqual({
     refName: 'HLA-B*07:02:01:01',
-    start: 6000,
-    end: 6001,
+    start: 5999,
+    end: 6000,
     strand: -1,
     mateDirection: -1,
   })
@@ -90,7 +90,7 @@ test('primary feature has correct coords and mate', async () => {
   const feat = features.find(f => f.get('name') === 'GENE1--GENE2')!
   expect(feat).toBeDefined()
   expect(feat.get('refName')).toBe('chr1')
-  expect(feat.get('start')).toBe(1000)
+  expect(feat.get('start')).toBe(999)
   expect(feat.get('strand')).toBe(1)
   // the donor of a + strand fusion keeps the sequence below its breakpoint, so
   // the arc's tick points left; the acceptor here is on -, and keeps the
@@ -98,8 +98,8 @@ test('primary feature has correct coords and mate', async () => {
   expect(feat.get('mateDirection')).toBe(-1)
   expect(feat.get('mate')).toEqual({
     refName: 'chr2',
-    start: 5000,
-    end: 5001,
+    start: 4999,
+    end: 5000,
     strand: -1,
     mateDirection: -1,
   })
@@ -124,7 +124,7 @@ test('flipped mate feature has correct coords', async () => {
   const flipped = features.find(f => f.get('name') === 'GENE1--GENE2')!
   expect(flipped).toBeDefined()
   expect(flipped.get('refName')).toBe('chr2')
-  expect(flipped.get('start')).toBe(5000)
+  expect(flipped.get('start')).toBe(4999)
   expect(flipped.get('mate')).toMatchObject({ refName: 'chr1' })
   // the same junction from the other end: the ticks are the same two, swapped
   // with the endpoints rather than recomputed from the flipped feature's strand

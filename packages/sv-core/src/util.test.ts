@@ -511,7 +511,7 @@ describe('readTranslocationMate keeps-directions', () => {
 })
 
 describe('pairedEndsLocString', () => {
-  // K562's BCR--ABL1 as StarFusionAdapter emits it: both genes on +, the donor
+  // K562's BCR--ABL1 as the STAR-Fusion parser emits it: both genes on +, the donor
   // keeping its lower coordinates (-1) and the acceptor its higher ones (+1),
   // so neither panel turns
   test('a fusion on two + strand genes opens donor then acceptor, unturned', () => {

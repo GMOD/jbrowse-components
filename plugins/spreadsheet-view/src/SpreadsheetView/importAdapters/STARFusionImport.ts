@@ -1,51 +1,17 @@
+import {
+  parseStarFusionBreakpoint,
+  starFusionColumns,
+} from '@jbrowse/core/util/starFusion'
+
 import { isNumber } from './isNumber.ts'
-import { bufferToLines, parseStrand } from './util.ts'
-
-// breakpoints look like `chr17:38243106:+` and the coordinate is 1-based, so
-// convert to our interbase start
-function parseSTARFusionBreakpointString(str: string) {
-  const fields = str.split(':')
-  const pos = +fields[1]!
-  return {
-    refName: fields[0]!,
-    start: pos - 1,
-    end: pos,
-    strand: parseStrand(fields[2]),
-  }
-}
-
-// which way the sequence a breakpoint keeps runs from it (1 = right, -1 =
-// left): the fusion transcript keeps the donor's 5' side and the acceptor's 3'
-// side, so on the strand each gene is transcribed from that is the donor's lower
-// coordinates and the acceptor's higher ones. StarFusionAdapter states the same
-function keepsDirection(strand: number | undefined, isDonor: boolean) {
-  return strand === undefined ? 0 : isDonor ? -strand : strand
-}
+import { bufferToLines } from './util.ts'
 
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
-  const header = lines[0]
-  // the header is `#FusionName<TAB>...`, but the leading `#` is not universal
-  // across STAR-Fusion versions and wrappers — slicing it off unconditionally
-  // ate the first character of the first column's name
-  const columns =
-    (header?.startsWith('#') ? header.slice(1) : header)?.split('\t') ?? []
-  if (!columns.length) {
+  if (!lines[0]) {
     return { columns: [], rowSet: { rows: [] } }
   }
-  // checked up front, and named. Every row builds its feature from these two,
-  // so a file without them (the wrong file, or the right file with the wrong
-  // File Type picked in the import form) used to fail on the first row with a
-  // bare "Cannot read properties of undefined (reading 'split')" — which names
-  // neither the column that is missing nor the guess that was wrong
-  const missing = ['LeftBreakpoint', 'RightBreakpoint'].filter(
-    c => !columns.includes(c),
-  )
-  if (missing.length) {
-    throw new Error(
-      `Not a STAR-Fusion file: no ${missing.join(' or ')} column. Found: ${columns.slice(0, 6).join(', ')}`,
-    )
-  }
+  const columns = starFusionColumns(lines[0])
   return {
     columns: columns.map(c => ({ name: c })),
     rowSet: {
@@ -54,25 +20,16 @@ export function parseSTARFusionBuffer(buffer: Uint8Array) {
         const row = Object.fromEntries(
           columns.map((h, i) => [h, isNumber(cols[i]) ? +cols[i] : cols[i]!]),
         )
-        const donor = parseSTARFusionBreakpointString(
-          row.LeftBreakpoint as string,
-        )
-        const acceptor = parseSTARFusionBreakpointString(
-          row.RightBreakpoint as string,
-        )
         return {
-          // what is displayed
           cellData: row,
-          // an actual simplefeatureserialized
           feature: {
             uniqueId: `sf-${rowNumber}`,
             type: 'fusion',
-            ...donor,
-            mateDirection: keepsDirection(donor.strand, true),
-            mate: {
-              ...acceptor,
-              mateDirection: keepsDirection(acceptor.strand, false),
-            },
+            ...parseStarFusionBreakpoint(row.LeftBreakpoint as string, true),
+            mate: parseStarFusionBreakpoint(
+              row.RightBreakpoint as string,
+              false,
+            ),
           },
         }
       }),
