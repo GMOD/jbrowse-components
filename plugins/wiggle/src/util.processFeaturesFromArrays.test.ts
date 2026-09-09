@@ -1,3 +1,4 @@
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -5,6 +6,13 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import { featuresToRaw, processFeaturesFromArrays } from './util.ts'
+
+function feature(
+  data: { start: number; end: number } & Record<string, unknown>,
+  i = 0,
+) {
+  return new SimpleFeature({ uniqueId: `f${i}`, refName: 'chr1', ...data })
+}
 
 const normalizeScore = (
   score: number,
@@ -37,22 +45,9 @@ describe('processFeaturesFromArrays', () => {
       bicolorPivot,
     )
 
-    const features = [0, 1, 2].map(i => ({
-      get: (key: string) => {
-        switch (key) {
-          case 'start':
-            return starts[i]
-          case 'end':
-            return ends[i]
-          case 'score':
-            return scores[i]
-          case 'summary':
-            return false
-          default:
-            return undefined
-        }
-      },
-    }))
+    const features = [0, 1, 2].map(i =>
+      feature({ start: starts[i]!, end: ends[i]!, score: scores[i] }, i),
+    )
     const fromFeatures = processFeaturesFromArrays(
       featuresToRaw(features),
       bicolorPivot,
@@ -238,8 +233,8 @@ describe('processFeaturesFromArrays', () => {
   // `scores` is what lets processFeaturesFromArrays take the aliasing path.
   test('featuresToRaw omits min/max when no feature carries a summary', () => {
     const raw = featuresToRaw([
-      { get: (k: string) => ({ start: 0, end: 10, score: 5 })[k] },
-      { get: (k: string) => ({ start: 10, end: 20, score: 7 })[k] },
+      feature({ start: 0, end: 10, score: 5 }, 0),
+      feature({ start: 10, end: 20, score: 7 }, 1),
     ])
 
     expect(raw.minScores).toBeUndefined()
@@ -250,18 +245,18 @@ describe('processFeaturesFromArrays', () => {
 
   test('featuresToRaw materializes min/max when any feature is a summary', () => {
     const raw = featuresToRaw([
-      { get: (k: string) => ({ start: 0, end: 10, score: 5 })[k] },
-      {
-        get: (k: string) =>
-          ({
-            start: 10,
-            end: 20,
-            score: 7,
-            summary: true,
-            minScore: 3,
-            maxScore: 9,
-          })[k],
-      },
+      feature({ start: 0, end: 10, score: 5 }, 0),
+      feature(
+        {
+          start: 10,
+          end: 20,
+          score: 7,
+          summary: true,
+          minScore: 3,
+          maxScore: 9,
+        },
+        1,
+      ),
     ])
 
     // the non-summary feature backfills from its own score, not zero
@@ -274,11 +269,48 @@ describe('processFeaturesFromArrays', () => {
   // as before, and a feature with nothing in the named field plots at 0.
   test('featuresToRaw plots the named scoreField, a missing one as 0', () => {
     const features = [
-      { get: (k: string) => ({ start: 0, end: 10, score: 5, fst: 0.25 })[k] },
-      { get: (k: string) => ({ start: 10, end: 20, score: 7 })[k] },
+      feature({ start: 0, end: 10, score: 5, fst: 0.25 }, 0),
+      feature({ start: 10, end: 20, score: 7 }, 1),
     ]
     expect(Array.from(featuresToRaw(features).scores)).toEqual([5, 7])
     expect(Array.from(featuresToRaw(features, 'fst').scores)).toEqual([0.25, 0])
+  })
+
+  // The hand-written loop this replaced stored a NaN for a non-numeric score;
+  // the encoder drops the feature, and the summary band follows `featureIndex`
+  // through the drop.
+  test('featuresToRaw is the encoder plus the summary band, index-aligned', () => {
+    const raw = featuresToRaw(
+      [
+        feature({ start: 0, end: 10, score: 5, v: 1.5 }, 0),
+        feature({ start: 10, end: 20, score: 7, v: 'NA' }, 1),
+        feature(
+          { start: 20, end: 30, score: 9, v: 2.5, summary: true, minScore: 1 },
+          2,
+        ),
+        feature({ start: 30, end: 40, score: 11 }, 3),
+        feature(
+          {
+            start: 40,
+            end: 50,
+            score: 13,
+            v: 4.5,
+            summary: true,
+            minScore: 3,
+            maxScore: 6,
+          },
+          4,
+        ),
+      ],
+      'v',
+    )
+
+    expect(raw.count).toBe(4)
+    expect(Array.from(raw.starts)).toEqual([0, 20, 30, 40])
+    expect(Array.from(raw.ends)).toEqual([10, 30, 40, 50])
+    expect(Array.from(raw.scores)).toEqual([1.5, 2.5, 0, 4.5])
+    expect(Array.from(raw.minScores!)).toEqual([1.5, 1, 0, 3])
+    expect(Array.from(raw.maxScores!)).toEqual([1.5, 2.5, 0, 6])
   })
 
   test('empty input produces empty arrays', () => {

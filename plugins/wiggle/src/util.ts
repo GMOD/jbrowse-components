@@ -1,5 +1,8 @@
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
 
+import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 // Rendering-type tables live in renderingTypes.ts (import-free) so non-UI
@@ -108,8 +111,8 @@ export function groupFeaturesBySource<
 // concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the
 // executor, not here — keeps adapters out of UI policy decisions.
 export interface RawFeatureArrays {
-  starts: Int32Array
-  ends: Int32Array
+  starts: Int32Array | Uint32Array
+  ends: Int32Array | Uint32Array
   scores: Float32Array
   minScores: Float32Array | undefined
   maxScores: Float32Array | undefined
@@ -254,41 +257,55 @@ export function processFeaturesFromArrays(
   }
 }
 
+// Undefined when no feature is a summary, so `processFeaturesFromArrays`
+// aliases min/max onto the scores rather than shipping two copies.
+function summaryChannels(
+  features: readonly Feature[],
+  featureIndex: Uint32Array,
+  scores: Float32Array,
+) {
+  if (!features.some(f => f.get('summary'))) {
+    return { minScores: undefined, maxScores: undefined }
+  }
+  const n = featureIndex.length
+  const minScores = new Float32Array(n)
+  const maxScores = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const f = features[featureIndex[i]!]!
+    const score = scores[i]!
+    const summary = f.get('summary')
+    minScores[i] = summary
+      ? ((f.get('minScore') as number | undefined) ?? score)
+      : score
+    maxScores[i] = summary
+      ? ((f.get('maxScore') as number | undefined) ?? score)
+      : score
+  }
+  return { minScores, maxScores }
+}
+
+const readersOnly: JexlInstance = {
+  compile() {
+    throw new Error('wiggle hands the encoder readers, not jexl channels')
+  },
+}
+
 export function featuresToRaw(
-  features: { get: (key: string) => unknown }[],
+  features: readonly Feature[],
   scoreField = 'score',
 ): RawFeatureArrays {
-  const n = features.length
-  const starts = new Int32Array(n)
-  const ends = new Int32Array(n)
-  const scores = new Float32Array(n)
-  // Most adapters on this path (bedGraph, bedMethyl) carry no summary data at
-  // all. Reporting `undefined` there rather than two arrays that duplicate
-  // `scores` is what lets processFeaturesFromArrays alias instead of
-  // materializing, so it's worth one cheap pre-pass over already-built feature
-  // objects: the alternative costs two more arrays per source per region, and
-  // transfers them.
-  const hasSummary = features.some(f => f.get('summary'))
-  const minScores = hasSummary ? new Float32Array(n) : undefined
-  const maxScores = hasSummary ? new Float32Array(n) : undefined
-
-  for (const [i, feature] of features.entries()) {
-    starts[i] = feature.get('start') as number
-    ends[i] = feature.get('end') as number
-    const score = Number(feature.get(scoreField) ?? 0)
-    scores[i] = score
-    if (minScores && maxScores) {
-      const summary = feature.get('summary')
-      minScores[i] = summary
-        ? ((feature.get('minScore') as number | undefined) ?? score)
-        : score
-      maxScores[i] = summary
-        ? ((feature.get('maxScore') as number | undefined) ?? score)
-        : score
-    }
+  const { x, x2, y, featureIndex, count } = encodeFeatures(
+    features,
+    { y: f => Number(f.get(scoreField) ?? 0) },
+    { jexl: readersOnly },
+  )
+  return {
+    starts: x,
+    ends: x2,
+    scores: y,
+    ...summaryChannels(features, featureIndex, y),
+    count,
   }
-
-  return { starts, ends, scores, minScores, maxScores, count: n }
 }
 
 // Widen each Canvas2D bar slightly past its true pixel span so adjacent
