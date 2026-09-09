@@ -88,7 +88,7 @@ combinatorially rather than haplotypes observed, and saturates at `2147483647`
 (the track labels those bubbles uncountable). HPRC publishes no bubble file, so
 this one is ours too, built with `gfatools bubble`.
 
-### A whole chromosome as a graph
+## A whole chromosome as a graph
 
 The segments track [part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph)
 draws one node per **segment**, and a window past a few hundred kilobases is
@@ -177,7 +177,60 @@ first and cut the tier around it.
 
 <Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, the fine segments lane drawing once the view lands on its span, and a drag across that span cut from the fine index into a second graph pane." />
 
-### Inversions
+## The allele inventory
+
+The bubbles say where the graph varies. A third hosted file says what the
+variation is: one row per allele the graph holds, anchored on GRCh38 and derived
+from the two indexes
+[part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph).
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hprc_minigraph_alleles",
+  "name": "HPRC release 2 graph: allele inventory",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz"
+  }
+}
+```
+
+The `AlignmentsTrack` over a BED is what draws the sizes. Each row carries a
+`CIGAR` against the reference span it replaces (`2062M63348I`), and the
+alignments display draws whatever has one, so the alleles pack into rows and
+each insertion draws at its real magnitude.
+
+The magnitude is measured, the position inside the span is not. A bubble states
+what sequence replaces a reference interval, never where inside that interval it
+sits, so the CIGAR puts the indel at the end of the span by convention. Over a 2
+kb anchor nothing turns on it; over a CFHR-scale span the marker is placed
+rather than located.
+
+The lane's rows are the display packing overlapping alleles, not a set of
+haplotypes. The one event worth looking at over this window, the 84,684 bp
+deletion between _CFHR3_ and _CFHR1_, is
+[drawn on the same coordinates by the graph](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
+
+The whole graph holds a few hundred thousand alleles, about half of them
+insertions, so a wide window is dense. The
+[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
+walks through the columns, how the walk derives them, and the two filters that
+make a lane this size readable: `jexl:abs(feature.delta)>10000` for size and
+`jexl:feature.nested==0` before reading lengths in bulk. `nested` is common on
+this graph, and `build_rgfa_alleles.sh`'s closing summary prints how many rows
+carry it.
+
+`discoveryRank` and `firstSeenIn` carry the same
+[attribution](/docs/tutorials/pangenome_hprc#from-a-node-back-to-a-coordinate)
+the node panel does, on the allele rather than the segment. minigraph collapses,
+so one haplotype can end up named on half the rows in a dense window purely by
+build order, and a high rank does not mean the earlier haplotypes lacked the
+sequence. Carriage is
+[a different file](#carriage-at-the-graphs-own-granularity).
+
+## Inversions
 
 Insertions are nodes and deletions are edges; an inversion is the same reference
 sequence, walked backwards. The bubble file is where it is findable.
@@ -251,59 +304,6 @@ The [allele inventory](#the-allele-inventory) has nothing for them by
 construction: a mixed-orientation pair of backbone segments is a breakpoint
 rather than a skipped span, so `build_rgfa_alleles.sh` leaves those pairs out of
 its deletions.
-
-## The allele inventory
-
-The bubbles say where the graph varies. A third hosted file says what the
-variation is: one row per allele the graph holds, anchored on GRCh38 and derived
-from the two indexes
-[part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph).
-
-```json addtrack
-{
-  "type": "AlignmentsTrack",
-  "trackId": "hprc_minigraph_alleles",
-  "name": "HPRC release 2 graph: allele inventory",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz"
-  }
-}
-```
-
-The `AlignmentsTrack` over a BED is what draws the sizes. Each row carries a
-`CIGAR` against the reference span it replaces (`2062M63348I`), and the
-alignments display draws whatever has one, so the alleles pack into rows and
-each insertion draws at its real magnitude.
-
-The magnitude is measured, the position inside the span is not. A bubble states
-what sequence replaces a reference interval, never where inside that interval it
-sits, so the CIGAR puts the indel at the end of the span by convention. Over a 2
-kb anchor nothing turns on it; over a CFHR-scale span the marker is placed
-rather than located.
-
-The lane's rows are the display packing overlapping alleles, not a set of
-haplotypes. The one event worth looking at over this window, the 84,684 bp
-deletion between _CFHR3_ and _CFHR1_, is
-[drawn on the same coordinates by the graph](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
-
-The whole graph holds a few hundred thousand alleles, about half of them
-insertions, so a wide window is dense. The
-[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-walks through the columns, how the walk derives them, and the two filters that
-make a lane this size readable: `jexl:abs(feature.delta)>10000` for size and
-`jexl:feature.nested==0` before reading lengths in bulk. `nested` is common on
-this graph, and `build_rgfa_alleles.sh`'s closing summary prints how many rows
-carry it.
-
-`discoveryRank` and `firstSeenIn` carry the same
-[attribution](/docs/tutorials/pangenome_hprc#from-a-node-back-to-a-coordinate)
-the node panel does, on the allele rather than the segment. minigraph collapses,
-so one haplotype can end up named on half the rows in a dense window purely by
-build order, and a high rank does not mean the earlier haplotypes lacked the
-sequence. Carriage is
-[a different file](#carriage-at-the-graphs-own-granularity).
 
 ## The variant callset
 

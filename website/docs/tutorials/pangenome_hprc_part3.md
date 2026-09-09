@@ -154,6 +154,12 @@ is the other reading. One lane per haplotype, each in that assembly's own contig
 coordinates and carrying that assembly's own CAT gene models, with ribbons
 connecting a gene to its copy in the lane below.
 
+Eight haplotypes carry that stack, and this section picks them and fills their
+lanes from the annotations before the session opens.
+[The next one](#walks-from-the-graph) draws the same eight from the graph
+itself, with no offline step at all; the panel is chosen here because choosing
+it is a question about the callset either way.
+
 No aligner is in the loop. CAT projects the GENCODE gene set onto every release
 2 assembly, so a gene keeps its name on every haplotype, and joining the
 annotations by name is already the ortholog table: one row per GRCh38 gene in
