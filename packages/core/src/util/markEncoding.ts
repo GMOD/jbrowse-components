@@ -4,7 +4,7 @@ import {
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalPalette } from '../ui/colors.ts'
+import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import Flatbush from './flatbush/index.ts'
@@ -44,6 +44,13 @@ export const DEFAULT_MARK_COLOR = '#0068d1'
 // yields a non-string: visible, so a misconfiguration surfaces rather than
 // vanishing.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
+
+/**
+ * #api
+ * The key row a feature with nothing in a categorical colour field lands on,
+ * so the legend says why a mark is grey rather than listing a blank value.
+ */
+export const NO_VALUE_LABEL = '(no value)'
 
 const GLYPH_CODES: Record<GlyphName, number> = {
   disc: GLYPH_DISC,
@@ -253,13 +260,19 @@ export function encodeFeatures(
 
   let scale: ScaleTable | undefined
   if (scaled?.scale === 'categorical' && categories && scaledValues) {
+    // A listed domain is the author's order and walks the palette; without
+    // one the colour derives from the value itself, so two regions that met
+    // different value sets still agree on every value they share.
     const order = categoryOrder(categories, scaled.domain)
     const palette = (scaled.palette ?? categoricalPalette).map(cssColorToABGR)
     const colorOfIndex = new Uint32Array(categories.size)
     const entries: { label: string; color: number }[] = []
+    let missing = false
     order.forEach((label, slot) => {
       const index = categories.get(label)
-      const c = palette[slot % palette.length]!
+      const c = scaled.domain
+        ? palette[slot % palette.length]!
+        : categoricalValueColor(label, palette)
       if (index !== undefined) {
         colorOfIndex[index] = c
       }
@@ -267,7 +280,15 @@ export function encodeFeatures(
     })
     for (let i = 0; i < count; i++) {
       const index = scaledValues[i]!
-      color[i] = index < 0 ? FALLBACK_COLOR : colorOfIndex[index]!
+      if (index < 0) {
+        missing = true
+        color[i] = FALLBACK_COLOR
+      } else {
+        color[i] = colorOfIndex[index]!
+      }
+    }
+    if (missing) {
+      entries.push({ label: NO_VALUE_LABEL, color: FALLBACK_COLOR })
     }
     scale = { kind: 'categorical', field: scaled.field, entries }
   } else if (scaled && scaled.scale !== 'categorical' && scaledValues) {

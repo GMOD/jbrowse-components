@@ -1,5 +1,6 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -15,10 +16,11 @@ export interface MarkLegendSection {
 
 /**
  * The colour keys the loaded regions carry, one per scaled mark. A
- * categorical table is the union over regions in first-seen order, a label
- * keeping the colour the first region gave it; a ramp is the first region's,
- * since every region agrees once `domain` is pinned and disagrees otherwise
- * in a way no single bar could show.
+ * categorical table is the union over regions in first-seen order, the
+ * no-value row last; a label's colour is the same in every region (a pinned
+ * `domain` walks the palette, an unpinned one derives from the value). A ramp
+ * is the first region's, since every region agrees once `domain` is pinned
+ * and disagrees otherwise in a way no single bar could show.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
@@ -55,6 +57,15 @@ export function buildMarkLegend(
         }
       }
     })
+  }
+  for (const section of sections) {
+    if (section?.scale.kind === 'categorical') {
+      const { entries } = section.scale
+      const missing = entries.findIndex(e => e.label === NO_VALUE_LABEL)
+      if (missing !== -1 && missing !== entries.length - 1) {
+        entries.push(...entries.splice(missing, 1))
+      }
+    }
   }
   return sections.filter(s => s !== undefined)
 }

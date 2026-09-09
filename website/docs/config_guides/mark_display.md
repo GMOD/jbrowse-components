@@ -88,10 +88,10 @@ callback answers). As an object it binds a field to a scale, which is what the
 legend can describe:
 
 - **categorical** — `{ "field": "strand", "scale": "categorical" }` hands a
-  palette entry to each distinct value. `palette` lists CSS colours to use in
-  order; `domain` lists the values in legend order and pins each one's colour
-  across the whole view, where an unlisted value takes its colour from the first
-  region it was seen in.
+  palette entry to each distinct value, derived from the value itself so every
+  region paints it the same way. `palette` lists CSS colours to draw from;
+  `domain` lists the values in legend order and walks the palette from the first
+  entry, for when the colours should be spent deliberately.
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
   reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two

@@ -25,12 +25,19 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 
 **Colour is resolved in exactly one place** — the worker — and the legend reads
 the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
-A categorical scale hands out palette entries in `domain` order and then in
-sorted order of whatever else the region held; a ramp reads the field through
-`domain`, or the region's own extremes when none is listed. Both are per
-region when `domain` is left off, which is the one way two regions of one view
-can disagree about a value's colour: `domain` is what pins it, and the config
-doc says so at the slot.
+A categorical scale with a `domain` hands palette entries to the listed values
+in that order and then to whatever else the region held, sorted; without one,
+each value derives its entry from itself through `categoricalValueColor` (an
+integer takes the slot it names, anything else hashes in), so two regions that
+met different value sets agree on every value they share without a round trip,
+and a feature with nothing in the field takes a grey `(no value)` row. That
+was Manhattan's own evaluator until 2026-09-09; the encoder's per-region
+palette walk was the one way two regions of a view could disagree about a
+colour, and the reviewer's case against a view-level resolution instead was
+that it either refetches on every union growth or rewrites colour per instance
+on the main thread, which breaks the one-place rule above. A ramp reads the
+field through `domain`, or the region's own extremes when none is listed, and
+there `domain` is still what pins the answer across a view.
 
 **A `jexl:` ref is a channel escape, not the default.** The measurement below
 is why: the native read is the loop's own cost and a jexl evaluation is half
@@ -65,10 +72,9 @@ packers moved onto it on 2026-09-09:
   join against the PLINK adapter — and `ManhattanRpcResult` is
   `EncodedChannels` plus `r2s` and `indexFound`. The r² channel is read after
   the encode over `featureIndex`, which is what that array is for. Field
-  colouring fills the encoder's categorical `ScaleTable` rather than a table
-  of its own, so the legend reads one shape from both displays; it keeps
-  `categoricalValueColor` over the encoder's palette walk because two regions
-  have to agree on a value with no `domain` to pin. Measured over a million
+  colouring is the declared `{ field, scale: 'categorical' }` and nothing
+  else, once the encoder's unpinned scale derived colour from the value the
+  way Manhattan's own evaluator had. Measured over a million
   features, min of 7: 208 → 221 ns/feature in normal mode, 223 → 251 in LD
   mode, the second the r² pass's re-derivation.
 - **score-example** is `encodeFeatures(features, { y: scoreColumn })` and

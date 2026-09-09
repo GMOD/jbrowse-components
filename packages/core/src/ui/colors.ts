@@ -132,12 +132,20 @@ export const categoricalPalette = [
  * else hashes in, stable for the same reason at the cost of an occasional
  * collision.
  */
-export function categoricalValueColor(value: string) {
-  const n = categoricalPalette.length
+export function categoricalValueColor(value: string): string
+export function categoricalValueColor<T>(
+  value: string,
+  palette: readonly T[],
+): T
+export function categoricalValueColor(
+  value: string,
+  palette: readonly unknown[] = categoricalPalette,
+) {
+  const n = palette.length
   const num = Number(value)
   return value !== '' && Number.isInteger(num) && num >= 0
-    ? categoricalPalette[(num + n - 1) % n]!
-    : categoricalPalette[hashString(value) % n]!
+    ? palette[(num + n - 1) % n]!
+    : palette[hashString(value) % n]!
 }
 
 // only category10 and set1 are imported by name; the rest are reached through

@@ -94,8 +94,10 @@ and per-display meaning). Each rung is a real consumer of the one below.
   measurement.
 - `QuantitativeTrack` does not get the mark display: BigWig summary features
   are wiggle's job, and a `bar` over them would draw the bins twice.
-- Categorical and ramp tables are per region without a `domain`; a config that
-  wants one legend across regions pins the domain. Documented at the slot.
+- A ramp table is per region without a `domain`, and a config that wants one
+  legend across regions pins it. A categorical table without a `domain`
+  derives each colour from the value (2026-09-09, the rule Manhattan's field
+  colouring already had), so regions agree either way. Documented at the slot.
 - `applyDisplaySettings` / `setSlot` cannot write an array-of-sub-schema slot,
   so the promotable-pin census records `marks` as unpinned; the point form is
   covered from config.

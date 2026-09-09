@@ -1,5 +1,8 @@
+import { categoricalValueColor } from '@jbrowse/core/ui/colors'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import createJexlInstance from '@jbrowse/core/util/jexl'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   GLYPH_DISC,
@@ -121,14 +124,25 @@ test('scoreField reads another feature field as y, skipping features without one
   expect(r.yMax).toBeCloseTo(0.9)
 })
 
-test('the scale the color reader filled rides in the payload with the index flag', () => {
-  const scale = {
-    kind: 'categorical' as const,
-    field: 'pop',
-    entries: [{ label: 'CEU', color: 0xff00ffff }],
-  }
-  const r = build([feature('a', 0, 1)], { scale, indexFound: true })
-  expect(r.scale).toBe(scale)
+test('field colouring is a declared categorical scale, so the table rides in the payload', () => {
+  const pop = (id: string, start: number, pop?: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: '1',
+      start,
+      end: start + 1,
+      score: 1,
+      ...(pop === undefined ? {} : { pop }),
+    })
+  const r = build([pop('a', 0, 'CEU'), pop('b', 1), pop('c', 2, 'YRI')], {
+    color: { field: 'pop', scale: 'categorical' },
+    indexFound: true,
+  })
+  expect(r.scale?.kind).toBe('categorical')
+  expect(
+    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.label) : [],
+  ).toEqual(['CEU', 'YRI', NO_VALUE_LABEL])
+  expect(r.color[0]).toBe(cssColorToABGR(categoricalValueColor('CEU')))
   expect(r.indexFound).toBe(true)
 })
 

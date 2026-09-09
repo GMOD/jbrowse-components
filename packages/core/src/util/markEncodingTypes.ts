@@ -27,12 +27,15 @@ export type RampRef = 'viridis' | string[]
  * returning one paints per feature with no scale; the two object forms bind a
  * field to a scale, which is what a legend can describe.
  *
- * A categorical scale hands palette entries to the field's distinct values in
- * `domain` order, then in sorted order of whatever else it meets. A continuous
+ * A categorical scale with a `domain` hands palette entries to the listed
+ * values in that order, then to whatever else it meets in sorted order;
+ * without one each value derives its palette entry from itself (an integer
+ * takes the slot it names, anything else hashes in), so every region agrees
+ * on a value it shares with another at the cost of an occasional collision,
+ * and `domain` is the way to spend the palette deliberately. A continuous
  * scale reads the field through `domain` (the region's own extremes when
- * absent) into `ramp`. Both discover their table per region when `domain` is
- * left off, so two regions with different value sets can disagree — a listed
- * `domain` is what pins the answer across a whole view.
+ * absent) into `ramp`, and there a listed `domain` is what pins the answer
+ * across a whole view.
  */
 export type ColorEncoding =
   | string

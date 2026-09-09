@@ -36,12 +36,15 @@ How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
 returning one paints per feature with no scale; the two object forms bind a
 field to a scale, which is what a legend can describe.
 
-A categorical scale hands palette entries to the field's distinct values in
-`domain` order, then in sorted order of whatever else it meets. A continuous
+A categorical scale with a `domain` hands palette entries to the listed
+values in that order, then to whatever else it meets in sorted order;
+without one each value derives its palette entry from itself (an integer
+takes the slot it names, anything else hashes in), so every region agrees
+on a value it shares with another at the cost of an occasional collision,
+and `domain` is the way to spend the palette deliberately. A continuous
 scale reads the field through `domain` (the region's own extremes when
-absent) into `ramp`. Both discover their table per region when `domain` is
-left off, so two regions with different value sets can disagree — a listed
-`domain` is what pins the answer across a whole view.
+absent) into `ramp`, and there a listed `domain` is what pins the answer
+across a whole view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -130,6 +133,18 @@ the `point` shape alone.
 What `encodeFeatures` takes: a MarkEncoding, any channel of which
 may be a ChannelReader in place of its declared form. The declared
 form is what crosses the wire; a reader is built in the worker.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+## NO_VALUE_LABEL
+
+The key row a feature with nothing in a categorical colour field lands on,
+so the legend says why a mark is grey rather than listing a blank value.
+
+```js
+// type signature
+"(no value)"
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 

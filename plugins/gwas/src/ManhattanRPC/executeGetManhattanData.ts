@@ -14,7 +14,6 @@ import {
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
-import { makeFieldColorEvaluator } from './makeFieldColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
@@ -28,18 +27,20 @@ import type {
 } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { RpcResult } from '@jbrowse/core/util/librpc'
-import type { ChannelReader, ScaleTable } from '@jbrowse/core/util/markEncoding'
+import type {
+  ChannelReader,
+  ColorEncoding,
+} from '@jbrowse/core/util/markEncoding'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-// The channels a coloring mode reads off each feature, and what it ships
-// beside them: `r2` only in LD mode, whose absence is what drops the r² array
-// from the payload, and `scale` only in field mode, where the color reader
-// fills it as it meets values.
+// The channels a coloring mode reads off each feature — the colour as a
+// declared encoding in field mode, a reader otherwise — and what LD mode ships
+// beside them: `r2`, whose absence is what drops the r² array from the
+// payload, and whether the index SNP was found.
 export interface ManhattanReaders {
-  color: ChannelReader<number>
+  color: ColorEncoding | ChannelReader<number>
   glyph: ChannelReader<number>
   r2?: ChannelReader<number>
-  scale?: ScaleTable
   indexFound?: boolean
 }
 
@@ -90,7 +91,10 @@ async function makeReaders(
       indexFound: ld.indexFound,
     }
   } else if (args.colorBy === 'field') {
-    return { ...makeFieldColorEvaluator(args.colorField), glyph: defaultGlyph }
+    return {
+      color: { field: args.colorField, scale: 'categorical' },
+      glyph: defaultGlyph,
+    }
   } else {
     return {
       color: colorEvaluator(color, pluginManager.jexl),
@@ -114,18 +118,18 @@ function r2Channel(
   return r2s
 }
 
-// Pure: the encoder over `scoreField` with the mode's readers, plus what the
+// Pure: the encoder over `scoreField` with the mode's readers, plus what LD
 // mode ships beside the channels. Unit-tested without the RPC plumbing.
 export function buildManhattanResult(
   features: readonly Feature[],
   scoreField: string,
-  { r2, scale, indexFound, ...readers }: ManhattanReaders,
+  { r2, indexFound, ...readers }: ManhattanReaders,
   ctx: { jexl: JexlInstance; report?: ProgressReporter },
 ): { result: ManhattanRpcResult; transferables: ArrayBufferLike[] } {
   const encoded = encodeFeatures(features, { y: scoreField, ...readers }, ctx)
   const r2s = r2 ? r2Channel(features, encoded.featureIndex, r2) : undefined
   return {
-    result: { ...encoded, scale, r2s, indexFound },
+    result: { ...encoded, r2s, indexFound },
     transferables: [
       ...encodedChannelTransferables(encoded),
       ...(r2s ? [r2s.buffer] : []),

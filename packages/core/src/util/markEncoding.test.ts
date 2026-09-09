@@ -3,11 +3,11 @@ import {
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalPalette } from '../ui/colors.ts'
+import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
-import { encodeFeatures } from './markEncoding.ts'
+import { NO_VALUE_LABEL, encodeFeatures } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 
 const jexl = createJexlInstance()
@@ -82,23 +82,39 @@ test('a constant colour packs once, a jexl colour per feature', () => {
   expect(perFeature.scale).toBeUndefined()
 })
 
-test('a categorical scale hands out palette entries in sorted order and reports the table', () => {
+test('an unpinned categorical scale colours by value, so two regions agree, and names the missing row', () => {
   const r = encodeFeatures(
     features,
     { color: { field: 'type', scale: 'categorical' } },
     { jexl },
   )
-  const [p0, p1, p2] = categoricalPalette.map(cssColorToABGR)
+  const of = (label: string) =>
+    cssColorToABGR(categoricalValueColor(label, categoricalPalette))
   expect(r.scale).toEqual({
     kind: 'categorical',
     field: 'type',
     entries: [
-      { label: 'cds', color: p0 },
-      { label: 'exon', color: p1 },
-      { label: 'gene', color: p2 },
+      { label: 'cds', color: of('cds') },
+      { label: 'exon', color: of('exon') },
+      { label: 'gene', color: of('gene') },
     ],
   })
-  expect([...r.color]).toEqual([p2, p1, p2, p0, p2])
+  expect([...r.color]).toEqual(['gene', 'exon', 'gene', 'cds', 'gene'].map(of))
+  const other = encodeFeatures(
+    [feature(9, { type: 'gene' }), feature(10, {})],
+    { color: { field: 'type', scale: 'categorical' } },
+    { jexl },
+  )
+  expect(other.color[0]).toBe(of('gene'))
+  expect(other.scale).toEqual({
+    kind: 'categorical',
+    field: 'type',
+    entries: [
+      { label: 'gene', color: of('gene') },
+      { label: NO_VALUE_LABEL, color: cssColorToABGR('#808080') },
+    ],
+  })
+  expect(other.color[1]).toBe(cssColorToABGR('#808080'))
 })
 
 test('a categorical domain pins the order, a palette the colours, and numbers sort numerically', () => {
