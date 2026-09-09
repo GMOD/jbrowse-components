@@ -99,7 +99,7 @@ float snappedCellLeftPx(
 
 struct CellInstance {
   uint2 startEnd  : ATTR0;
-  uint  rowIndex  : ATTR1;
+  uint  row       : ATTR1;
   uint  shapeType : ATTR2;
   uint  color     : ATTR3;
 };
@@ -159,7 +159,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); the floor is drawnCellHeightPx, below.
-  float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
+  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
   float yBot = yTop + drawnCellHeightPx(u.rowHeight);
   float cyTop = yPxToClipY(yTop, u.canvasHeight);
   float cyBot = yPxToClipY(yBot, u.canvasHeight);

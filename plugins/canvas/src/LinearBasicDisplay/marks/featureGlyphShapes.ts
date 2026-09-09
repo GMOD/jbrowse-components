@@ -13,6 +13,7 @@ import {
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { blockPx } from '@jbrowse/render-core/marks'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import {
   snapBoxCenterYPx,
@@ -262,6 +263,24 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
       }
     }
   },
+
+  ink(channels, block, frame, params, i) {
+    const { startEnd, y: ys, height } = channels
+    if (!rowVisible(params.scrollY, frame.canvasHeight, ys[i]!, height[i]!)) {
+      return undefined
+    }
+    const [left, width] = paintedRectSpan(
+      startEnd[i * 2]!,
+      startEnd[i * 2 + 1]!,
+      bp => blockPx(block, bp),
+    )
+    return {
+      left,
+      top: snapBoxTopPx(ys[i]!, height[i]!, params.scrollY),
+      width,
+      height: snapBoxHeightPx(height[i]!),
+    }
+  },
 }
 
 /**
@@ -324,6 +343,37 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
           }
         }
       }
+    }
+  },
+
+  // The 1px stroke's box, grown by a chevron's full reach on every side where
+  // the line carries chevrons — a bound over the arms rather than their tight
+  // hull, which the arrow and the rect give and this shape's placement rule
+  // does not.
+  ink(channels, block, frame, params, i) {
+    const { startEnd, y: ys, height, direction } = channels
+    if (
+      !centeredRowVisible(
+        params.scrollY,
+        frame.canvasHeight,
+        ys[i]!,
+        height[i]!,
+      )
+    ) {
+      return undefined
+    }
+    const x1 = blockPx(block, startEnd[i * 2]!)
+    const x2 = blockPx(block, startEnd[i * 2 + 1]!)
+    const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
+    const width = Math.abs(x2 - x1)
+    const chevrons = direction[i] !== 0 && showChevrons(width)
+    const gx = chevrons ? CHEVRON_HALF_W + CHEVRON_THICKNESS_PX / 2 : 0
+    const gy = chevrons ? CHEVRON_HALF_H + CHEVRON_THICKNESS_PX / 2 : 0.5
+    return {
+      left: Math.min(x1, x2) - gx,
+      top: y - gy,
+      width: width + 2 * gx,
+      height: 2 * gy,
     }
   },
 }
@@ -394,6 +444,39 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       ctx.lineTo(headTipX, y)
       ctx.closePath()
       ctx.fill()
+    }
+  },
+
+  // Stem and head together: `STEM_LENGTH_PX` out from the feature's end, as
+  // tall as the taller of the two.
+  ink(channels, block, frame, params, i) {
+    const { x: xs, y: ys, height, widthBp, direction } = channels
+    if (
+      !centeredRowVisible(
+        params.scrollY,
+        frame.canvasHeight,
+        ys[i]!,
+        height[i]!,
+      )
+    ) {
+      return undefined
+    }
+    const xBp = xs[i]!
+    const rawDir = direction[i]!
+    const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
+    const cx = blockPx(block, xBp)
+    if (!arrowDraws(Math.abs(blockPx(block, otherEndBp) - cx))) {
+      return undefined
+    }
+    const dir = block.reversed ? -rawDir : rawDir
+    const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
+    const tipX = cx + STEM_LENGTH_PX * dir
+    const half = Math.max(STEM_HALF_H_PX, arrowHeadHalfHeightPx(height[i]!))
+    return {
+      left: Math.min(cx, tipX),
+      top: y - half,
+      width: STEM_LENGTH_PX,
+      height: 2 * half,
     }
   },
 }

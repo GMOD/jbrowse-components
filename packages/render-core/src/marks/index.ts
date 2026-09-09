@@ -4,7 +4,7 @@ export { planMarks } from './markPlan.ts'
 export { inkOfInstances } from './markInk.ts'
 export { barMark } from './barMark.ts'
 export { pointMark } from './pointMark.ts'
-export { spanMark } from './spanMark.ts'
+export { blockPx, spanMark } from './spanMark.ts'
 export { appendGlyph } from './glyphPaint.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 

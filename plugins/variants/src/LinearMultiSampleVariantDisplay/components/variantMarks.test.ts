@@ -95,7 +95,7 @@ function paint(
 // The declaration's own claim: which of this display's arrays reach which of
 // the shape's lanes. A lane swap here packs a valid buffer that draws the wrong
 // picture, which no shader-side test can see.
-test('the declaration feeds positions/rows/shapes/colors to startEnd/rowIndex/shapeType/color', () => {
+test('the declaration feeds positions/rows/shapes/colors to startEnd/row/shapeType/color', () => {
   const buf = MARK.pass.pack(
     mkData({
       positions: [100, 200, 300, 400],
@@ -110,13 +110,13 @@ test('the declaration feeds positions/rows/shapes/colors to startEnd/rowIndex/sh
 
   expect(u32[shader.INSTANCE_OFFSET_U32.startEnd]).toBe(100)
   expect(u32[shader.INSTANCE_OFFSET_U32.startEnd + 1]).toBe(200)
-  expect(u32[shader.INSTANCE_OFFSET_U32.rowIndex]).toBe(0)
+  expect(u32[shader.INSTANCE_OFFSET_U32.row]).toBe(0)
   expect(u32[shader.INSTANCE_OFFSET_U32.shapeType]).toBe(0)
   expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(0xff0000ff)
 
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.startEnd]).toBe(300)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.startEnd + 1]).toBe(400)
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.rowIndex]).toBe(1)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.row]).toBe(1)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.shapeType]).toBe(1)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(0x8000ff00)
 })
@@ -247,7 +247,7 @@ describe('painter', () => {
 describe('draw against hit', () => {
   const cells = {
     startEnd: Uint32Array.of(100, 200, 150, 250, 101, 102, 300, 400),
-    rowIndex: Uint32Array.of(0, 0, 1, 2),
+    row: Uint32Array.of(0, 0, 1, 2),
     color: Uint32Array.of(0xff0000ff, 0xff00ff00, 0xffff0000, 0xff0000ff),
     shapeType: Uint8Array.of(0, 1, 0, 0),
     count: 4,
@@ -278,7 +278,7 @@ describe('draw against hit', () => {
   // the survivors as instances 0 and 1 and gates the wrong pair.
   const sliceCell = (c: typeof cells, i: number) => ({
     startEnd: c.startEnd.subarray(i * 2, i * 2 + 2),
-    rowIndex: c.rowIndex.subarray(i, i + 1),
+    row: c.row.subarray(i, i + 1),
     color: c.color.subarray(i, i + 1),
     shapeType: c.shapeType.subarray(i, i + 1),
     count: 1,

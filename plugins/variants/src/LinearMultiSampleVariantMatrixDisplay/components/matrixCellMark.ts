@@ -6,15 +6,15 @@ import { f2 } from '../../shared/constants.ts'
 import * as shader from './shaders/variantMatrix.generated.ts'
 import { drawnCellHeightPx } from './shaders/variantMatrix.js.generated.ts'
 
-import type { MarkShape } from '@jbrowse/render-core/marks'
+import type { InkRect, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 
 /**
  * The `matrixCell` shape's channels: a rect on column `featureIndex` of
- * `numFeatures` equal columns across the canvas, on row `rowIndex`, in `color`.
+ * `numFeatures` equal columns across the canvas, on `row`, in `color`.
  */
 export interface MatrixCellChannels {
   featureIndex: Float32Array
-  rowIndex: Uint32Array
+  row: Uint32Array
   color: Uint32Array
   count: number
 }
@@ -56,13 +56,7 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
   },
 
   paintBlock(ctx, channels, _block, frame, params) {
-    const { featureIndex, rowIndex, color, count } = channels
-    const { canvasWidth, canvasHeight } = frame
-    const { numFeatures, rowHeight, scrollTop } = params
-    if (numFeatures === 0) {
-      return
-    }
-    const cellWidth = canvasWidth / numFeatures
+    const { color, count } = channels
     // The two axes take different rules, and the X one is load-bearing: columns
     // paint at float coordinates with a small overdraw (f2) so sub-pixel
     // columns antialias and blend. No pixel-snap and no 1px minimum on X —
@@ -77,23 +71,44 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     // phase 3 matrix: the export kept 41% of the strongly-coloured variant
     // pixels the screen showed. So a sub-pixel row takes the shader's floor
     // and its exact anchor, and a normal row keeps the seam overdraw.
-    const drawnRowHeight = drawnCellHeightPx(rowHeight)
-    const floored = drawnRowHeight > rowHeight
-    const yOffset = floored ? 0 : f2
-    const drawHeight = floored ? drawnRowHeight : rowHeight + f2
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const y = rowIndex[i]! * rowHeight - scrollTop
-      if (y - yOffset + drawHeight < 0 || y - yOffset > canvasHeight) {
-        continue
+      const r = cellRect(channels, frame, params, i)
+      if (r) {
+        setFill(color[i]!)
+        ctx.fillRect(r.left, r.top, r.width, r.height)
       }
-      setFill(color[i]!)
-      ctx.fillRect(
-        featureIndex[i]! * cellWidth - f2,
-        y - yOffset,
-        cellWidth + f2,
-        drawHeight,
-      )
     }
   },
+
+  ink(channels, _block, frame, params, i) {
+    return cellRect(channels, frame, params, i)
+  },
+}
+
+function cellRect(
+  channels: MatrixCellChannels,
+  frame: MarkFrame,
+  params: MatrixCellParams,
+  i: number,
+): InkRect | undefined {
+  const { featureIndex, row } = channels
+  const { canvasWidth, canvasHeight } = frame
+  const { numFeatures, rowHeight, scrollTop } = params
+  if (numFeatures === 0) {
+    return undefined
+  }
+  const cellWidth = canvasWidth / numFeatures
+  const drawnRowHeight = drawnCellHeightPx(rowHeight)
+  const floored = drawnRowHeight > rowHeight
+  const top = row[i]! * rowHeight - scrollTop - (floored ? 0 : f2)
+  const height = floored ? drawnRowHeight : rowHeight + f2
+  return top + height < 0 || top > canvasHeight
+    ? undefined
+    : {
+        left: featureIndex[i]! * cellWidth - f2,
+        top,
+        width: cellWidth + f2,
+        height,
+      }
 }

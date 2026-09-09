@@ -36,7 +36,7 @@ float drawnCellHeightPx(float rowHeight) {
 
 struct CellInstance {
   float featureIndex : ATTR0;
-  uint  rowIndex     : ATTR1;
+  uint  row          : ATTR1;
   uint  color        : ATTR2;
 };
 
@@ -93,7 +93,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 
   // Fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); the floor is drawnCellHeightPx, above.
-  float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
+  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
   float yBot = yTop + drawnCellHeightPx(u.rowHeight);
   float clipY = lerp(yPxToClipY(yBot, u.canvasHeight),
                      yPxToClipY(yTop, u.canvasHeight), ly);

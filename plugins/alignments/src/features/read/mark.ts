@@ -350,9 +350,10 @@ function drawReads(
  * The read body: one "home plate" pentagon or rect per exon segment, in the
  * category colour the classification pass decided, outlined when the row is
  * tall enough. A hand-tuned glyph rather than a `pileupShape` — its instance
- * is a segment, its colour a per-read function of the scheme, and its hit test
- * answers the READ (`hitTestFeature`), which is why the shape declares no
- * `hitNearest`: a segment index is not what a hover over a read means.
+ * is a segment, its colour a per-read function of the scheme — and its ink is
+ * the segment's box with the arrowhead it caps. The display answers a hover
+ * with the READ (`hitTestFeature`) and lights it as its segments' boxes, so
+ * the hit test this shape's ink implies is not the one it uses.
  */
 const readShape: MarkShape<ReadMarkRegion, RenderState> = {
   id: 'read',
@@ -363,6 +364,58 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
   writeUniforms: writePileupUniforms,
   paintBlock(ctx, region, block, _frame, state) {
     drawReads(ctx, region, block, state)
+  },
+  ink(region, block, _frame, state, s) {
+    const i = region.segmentReadIndices[s]
+    if (i === undefined) {
+      return undefined
+    }
+    const y = pileupRowY(region.readYs[i]!, state)
+    if (pileupRowOffCanvas(y, state)) {
+      return undefined
+    }
+    const bpLength = block.end - block.start
+    const fullBlockWidth = block.screenEndPx - block.screenStartPx
+    const xStart = bpToScreenX(
+      region.segmentPositions[s * 2]!,
+      block,
+      bpLength,
+      fullBlockWidth,
+    )
+    const xEnd = bpToScreenX(
+      region.segmentPositions[s * 2 + 1]!,
+      block,
+      bpLength,
+      fullBlockWidth,
+    )
+    const w = Math.max(1, Math.abs(xEnd - xStart))
+    const xL = spanLeft(xStart, xEnd, w)
+    const capsEdge = chevronCapsEdge(
+      region.readStrands[i]!,
+      region.segmentEdgeFlags[s]!,
+    )
+    const chevron =
+      capsEdge !== 0 &&
+      showChevron(
+        {
+          pxPerBp: fullBlockWidth / bpLength,
+          chainMode: state.chainMode,
+          colorScheme: state.colorScheme,
+          featureHeight: state.featureHeight,
+        },
+        region.readFlags[i]!,
+        region.readInterchrom[i]!,
+        region.readInsertSizes[i]!,
+        w,
+      )
+    const apexX = chevron ? chevronApexX(capsEdge, xStart, xEnd) : xL
+    const left = Math.min(xL, apexX)
+    return {
+      left,
+      top: y,
+      width: Math.max(xL + w, apexX) - left,
+      height: state.featureHeight,
+    }
   },
 }
 

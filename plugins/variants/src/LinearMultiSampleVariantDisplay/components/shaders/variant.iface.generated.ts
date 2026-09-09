@@ -57,21 +57,21 @@ export const INSTANCE_STRIDE_WORDS = 5
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
   startEnd: 0,
-  rowIndex: 2,
+  row: 2,
   shapeType: 3,
   color: 4,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_startEnd', components: 2, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_rowIndex', components: 1, type: 'uint', offsetBytes: 8, integer: true },
+  { name: 'a_row', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_shapeType', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
 
 export interface InstanceArrays {
   startEnd: ArrayLike<number>
-  rowIndex: ArrayLike<number>
+  row: ArrayLike<number>
   shapeType: ArrayLike<number>
   color: ArrayLike<number>
 }
@@ -82,12 +82,12 @@ export function packInstances(
   buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
 ) {
   const u32 = new Uint32Array(buf)
-  const { startEnd, rowIndex, shapeType, color } = arrays
+  const { startEnd, row, shapeType, color } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startEnd[i * 2 + 0]!
     u32[o + 1] = startEnd[i * 2 + 1]!
-    u32[o + 2] = rowIndex[i]!
+    u32[o + 2] = row[i]!
     u32[o + 3] = shapeType[i]!
     u32[o + 4] = color[i]!
   }
@@ -110,12 +110,12 @@ export function setInstanceStartEnd(
   u32[o + 1] = v1
 }
 
-// Instance `i`'s `rowIndex`.
-export function getInstanceRowIndex(u32: Uint32Array, i: number) {
+// Instance `i`'s `row`.
+export function getInstanceRow(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 2]!
 }
 
-export function setInstanceRowIndex(u32: Uint32Array, i: number, v: number) {
+export function setInstanceRow(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 2] = v
 }
 

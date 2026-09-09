@@ -12,7 +12,7 @@ export const VARIANT_MARKS = [
     shape: cellMark,
     channels: (d: VariantUploadData) => ({
       startEnd: d.cellPositions,
-      rowIndex: d.cellRowIndices,
+      row: d.cellRowIndices,
       shapeType: d.cellShapeTypes,
       color: d.cellColors,
       count: d.numCells,

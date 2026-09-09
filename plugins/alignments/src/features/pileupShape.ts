@@ -39,11 +39,12 @@ import {
 
 import type { RenderState } from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type {
+  InkRect,
   MarkContext2D,
   MarkHit,
   MarkShape,
 } from '@jbrowse/render-core/marks'
-import type { InkHit } from '@jbrowse/render-core/marks/hit'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ShaderModule } from '@jbrowse/render-core/slangPass'
 
 /**
@@ -343,10 +344,68 @@ export function pileupShape(
   const { id, mod, pack, pivot, fade, hit, band, contiguous, point, decorate } =
     spec
   const paintTables = spec.paint
+  const centerline = band === Band.centerline
+  // The box one instance paints under its pivot, or undefined for one this
+  // mark does not own or a row the viewport has scrolled past. The painter and
+  // the hit test both read it, so neither can place a mark where the other
+  // does not.
+  const inkRect = (
+    c: PileupChannels,
+    block: RenderBlock,
+    state: RenderState,
+    i: number,
+  ): InkRect | undefined => {
+    const { positions, stride, rows, kinds, kind, start, end } = c
+    if (i < start || i >= end || !markSelects(kinds, kind, i)) {
+      return undefined
+    }
+    const rowY = pileupRowY(rows[i]!, state)
+    if (pileupRowOffCanvas(rowY, state)) {
+      return undefined
+    }
+    const featureHeight = state.featureHeight
+    const bpLength = block.end - block.start
+    const fullBlockWidth = block.screenEndPx - block.screenStartPx
+    const top = rowY + (centerline ? featureHeight / 2 - 0.5 : 0)
+    const height = centerline ? 1 : featureHeight
+    const startBp = positions[i * stride]!
+    if (point !== undefined) {
+      const w = pointWidthPx(
+        point,
+        c,
+        i,
+        fullBlockWidth / bpLength,
+        featureHeight,
+      )
+      const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      return { left: x - w / 2, top, width: w, height }
+    }
+    if (pivot === 'cell') {
+      const cell = makePileupCellMapper(
+        block,
+        bpLength,
+        fullBlockWidth,
+        contiguous,
+      )
+      return { left: cell.cellX(startBp), top, width: cell.w, height }
+    }
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(
+      positions[i * stride + 1]!,
+      block,
+      bpLength,
+      fullBlockWidth,
+    )
+    const lo = x1 < x2 ? x1 : x2
+    return { left: lo, top, width: Math.abs(x2 - x1), height }
+  }
   return {
     id,
     pass: { ...slangPass({ id, mod }), pack },
     writeUniforms: writePileupUniforms,
+    ink(c, block, _frame, state, i) {
+      return inkRect(c, block, state, i)
+    },
 
     paintBlock(ctx, c, block, _frame, state) {
       const { positions, stride, rows, kinds, kind, freqs, quals, lengths } = c
@@ -361,7 +420,6 @@ export function pileupShape(
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
       const pxPerBp = fullBlockWidth / bpLength
-      const centerline = band === Band.centerline
       const bandOffset = centerline ? featureHeight / 2 - 0.5 : 0
       const bandHeight = centerline ? 1 : featureHeight
       // A layer whose fade has no per-instance input and whose palette has no
@@ -505,7 +563,6 @@ export function pileupShape(
       const bpLength = block.end - block.start
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const bpPerPx = bpLength / fullBlockWidth
-      const pxPerBp = fullBlockWidth / bpLength
       const genomicPos = bpAtPxExact(xPx, block)
       const basePos = bpAtPx(xPx, block)
       // The row under the cursor, and only its BODY: above the pileup top the
@@ -518,13 +575,7 @@ export function pileupShape(
         return undefined
       }
       const filterByFrequency = state.filterMismatchesByFrequency
-      const centerline = band === Band.centerline
-      const bandOffset = centerline ? featureHeight / 2 - 0.5 : 0
-      const bandHeight = centerline ? 1 : featureHeight
-      const cell =
-        pivot === 'cell'
-          ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
-          : undefined
+      const cellBased = pivot === 'cell'
       let best: MarkHit | undefined
       let bestDistSq = maxDistSq
       for (const i of candidates) {
@@ -542,39 +593,14 @@ export function pileupShape(
           point !== undefined
             ? Math.abs(genomicPos - startBp) <
               pointToleranceBp(point, c, i, bpPerPx, featureHeight)
-            : cell !== undefined
+            : cellBased
               ? basePos === startBp
               : genomicPos >= startBp && genomicPos < positions[offset + 1]!
         if (!contains || !hitPasses(hit, c, i, bpPerPx, filterByFrequency)) {
           continue
         }
-        const top = pileupRowY(rows[i], state) + bandOffset
-        let ink: InkHit
-        if (point !== undefined) {
-          const w = pointWidthPx(point, c, i, pxPerBp, featureHeight)
-          const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-          ink = inkOnRect(xPx, yPx, x - w / 2, top, w, bandHeight)
-        } else if (cell !== undefined) {
-          ink = inkOnRect(
-            xPx,
-            yPx,
-            cell.cellX(startBp),
-            top,
-            cell.w,
-            bandHeight,
-          )
-        } else {
-          const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-          const x2 = bpToScreenX(
-            positions[offset + 1]!,
-            block,
-            bpLength,
-            fullBlockWidth,
-          )
-          const lo = x1 < x2 ? x1 : x2
-          const hi = x1 < x2 ? x2 : x1
-          ink = inkOnRect(xPx, yPx, lo, top, hi - lo, bandHeight)
-        }
+        const r = inkRect(c, block, state, i)!
+        const ink = inkOnRect(xPx, yPx, r.left, r.top, r.width, r.height)
         if (ink.distSq < bestDistSq) {
           bestDistSq = ink.distSq
           best = { index: i, x: ink.x, y: ink.y, distSq: ink.distSq }

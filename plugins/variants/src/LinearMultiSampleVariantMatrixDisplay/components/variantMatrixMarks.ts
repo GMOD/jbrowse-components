@@ -12,7 +12,7 @@ export const VARIANT_MATRIX_MARKS = [
     shape: matrixCellMark,
     channels: (d: VariantMatrixUploadData) => ({
       featureIndex: d.cellFeatureIndices,
-      rowIndex: d.cellRowIndices,
+      row: d.cellRowIndices,
       color: d.cellColors,
       count: d.numCells,
     }),

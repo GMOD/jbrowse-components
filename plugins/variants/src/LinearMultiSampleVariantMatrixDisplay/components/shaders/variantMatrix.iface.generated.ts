@@ -53,19 +53,19 @@ export const INSTANCE_OFFSET_F32 = {
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
-  rowIndex: 1,
+  row: 1,
   color: 2,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_featureIndex', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_rowIndex', components: 1, type: 'uint', offsetBytes: 4, integer: true },
+  { name: 'a_row', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 8, integer: true },
 ]
 
 export interface InstanceArrays {
   featureIndex: ArrayLike<number>
-  rowIndex: ArrayLike<number>
+  row: ArrayLike<number>
   color: ArrayLike<number>
 }
 
@@ -76,11 +76,11 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { featureIndex, rowIndex, color } = arrays
+  const { featureIndex, row, color } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     f32[o + 0] = featureIndex[i]!
-    u32[o + 1] = rowIndex[i]!
+    u32[o + 1] = row[i]!
     u32[o + 2] = color[i]!
   }
   return buf
@@ -95,12 +95,12 @@ export function setInstanceFeatureIndex(f32: Float32Array, i: number, v: number)
   f32[i * INSTANCE_STRIDE_WORDS] = v
 }
 
-// Instance `i`'s `rowIndex`.
-export function getInstanceRowIndex(u32: Uint32Array, i: number) {
+// Instance `i`'s `row`.
+export function getInstanceRow(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 1]!
 }
 
-export function setInstanceRowIndex(u32: Uint32Array, i: number, v: number) {
+export function setInstanceRow(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 1] = v
 }
 

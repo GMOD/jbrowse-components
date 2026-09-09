@@ -89,7 +89,7 @@ function paint(data: VariantMatrixUploadData, state = STATE) {
   return mock
 }
 
-test('the declaration feeds indices/rows/colors to featureIndex/rowIndex/color', () => {
+test('the declaration feeds indices/rows/colors to featureIndex/row/color', () => {
   const buf = MARK.pass.pack(
     makeData({
       cellFeatureIndices: new Float32Array([2, 3]),
@@ -104,10 +104,10 @@ test('the declaration feeds indices/rows/colors to featureIndex/rowIndex/color',
   expect(buf.byteLength).toBe(2 * shader.INSTANCE_STRIDE_BYTES)
 
   expect(f32[shader.INSTANCE_OFFSET_F32.featureIndex]).toBe(2)
-  expect(u32[shader.INSTANCE_OFFSET_U32.rowIndex]).toBe(0)
+  expect(u32[shader.INSTANCE_OFFSET_U32.row]).toBe(0)
   expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(0xff0000ff)
   expect(f32[stride + shader.INSTANCE_OFFSET_F32.featureIndex]).toBe(3)
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.rowIndex]).toBe(7)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.row]).toBe(7)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(0x8000ff00)
 })
 
