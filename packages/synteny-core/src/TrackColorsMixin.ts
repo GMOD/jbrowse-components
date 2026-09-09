@@ -1,13 +1,17 @@
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { colorByScale } from './colorLegend.ts'
 import { continuousRampConfig, isAttributeLabels } from './colorRamps.ts'
 import { coerceColorBy, colorByAttributeName } from './colorUtils.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
-import type { ColorChip } from './colorLegend.ts'
+import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 
 // A label list only ever gains labels, in the order they were first seen, and
 // a label's file color is whichever was seen first. A text column meeting a
@@ -142,6 +146,32 @@ export function TrackColorsMixin() {
       loadedAttributeRanges(): Record<string, AttributeRange>[] {
         return []
       },
+      /**
+       * #method
+       * Overridable hook: what the key's chips are composited by. The ribbon
+       * views draw at a global alpha over the band's ground; a view that draws
+       * opaque leaves it.
+       */
+      legendAlpha(): number {
+        return 1
+      },
+      /**
+       * #method
+       * Overridable hook: the indel ops the key lists a chip for, so it names
+       * only what the eye can find. `undefined` is the static menu preview;
+       * the dotplot draws flat points and never a CIGAR op.
+       */
+      legendCigarOps(): CigarOpMask | undefined {
+        return undefined
+      },
+      /**
+       * #method
+       * Overridable hook: whether the view draws each alignment as one flat
+       * point (the dotplot) rather than a ribbon with match and indel blocks.
+       */
+      legendPointBased(): boolean {
+        return false
+      },
     }))
     .views(self => ({
       /**
@@ -223,13 +253,30 @@ export function TrackColorsMixin() {
        * closed it for this mode. Default and strand are read without one, and
        * the by-chromosome modes have no fixed key to show.
        */
-      get showColorLegend(): boolean {
+      /**
+       * #getter
+       * Whether the mode has a key worth a box: a track palette, a ramp, or
+       * a reader-named column. The two structural presets key nothing on
+       * screen — their colors are the menu preview's.
+       */
+      get hasLegendKey(): boolean {
         const mode = this.colorByMode
-        const hasKey =
+        return (
           mode === 'track' ||
           mode in continuousRampConfig ||
           colorByAttributeName(mode) !== undefined
-        return hasKey && self.colorLegendDismissedFor !== mode
+        )
+      },
+      /**
+       * #getter
+       * The legend-host half of `LegendMixin` a view needs: whether the key
+       * draws, which is the mode having one and the reader not having closed
+       * it in this mode. `ChromeLegend` and `SvgLegend` read it.
+       */
+      get showLegend(): boolean {
+        return (
+          this.hasLegendKey && self.colorLegendDismissedFor !== this.colorByMode
+        )
       },
     }))
     .views(self => ({
@@ -255,6 +302,36 @@ export function TrackColorsMixin() {
               label: t.name,
             }))
           : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The active mode's key as its one color scale, or none for a mode
+       * without one. View-wide rather than per display because the key is one
+       * box for the whole view, and the ramp domain it labels is the view's.
+       */
+      get colorScales(): ColorScale[] {
+        return self.hasLegendKey
+          ? [
+              colorByScale(self.colorByMode, {
+                pointBased: self.legendPointBased(),
+                cigarOps: self.legendCigarOps(),
+                trackChips: self.colorLegendChips,
+                attributeRanges: self.attributeRanges,
+                alpha: self.legendAlpha(),
+              }),
+            ]
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The key `ChromeLegend` draws on screen and `SvgLegend` in the export.
+       */
+      get legendSpec(): LegendSpec {
+        return legendSpecOf(self.colorScales)
       },
     }))
     .actions(self => {
@@ -336,7 +413,19 @@ export function TrackColorsMixin() {
          * #action
          * Close the legend for the mode in use.
          */
-        dismissColorLegend() {
+        /**
+         * #action
+         * The legend host's setter: closing the key hides it for this mode
+         * only, so picking another mode brings its key up.
+         */
+        setShowLegend(show: boolean) {
+          self.colorLegendDismissedFor = show ? undefined : self.colorByMode
+        },
+        /**
+         * #action
+         * One section is the whole key here.
+         */
+        dismissLegendSection() {
           self.colorLegendDismissedFor = self.colorByMode
         },
       }

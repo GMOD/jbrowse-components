@@ -140,7 +140,9 @@ test('an errored track fails the export, naming every track that failed', async 
 // is full of unrelated numbers (tick labels, coordinates, path data), so a bare
 // `svg.toContain('75')` passes whether or not the ramp is labelled at all.
 function legendContents(svg: string) {
-  const open = svg.search(/<g transform="translate\([\d.]+ 4\)"/)
+  const open = svg.search(
+    /<g transform="translate\([\d.]+ 0\)" data-testid="color-legend"/,
+  )
   expect(open).toBeGreaterThan(-1)
   let depth = 0
   for (const tag of svg.slice(open).matchAll(/<(\/?)g[\s>]/g)) {
@@ -161,7 +163,10 @@ test('the color legend is exported outside the clip, at the top right', async ()
   expect(svg).toContain('Identity')
   expect(clipGroupContents(svg)).not.toContain('Identity')
   // laid out from the right edge of the plot, so past its midpoint
-  const x = /<g transform="translate\(([\d.]+) 4\)"/.exec(svg)
+  const x =
+    /<g transform="translate\(([\d.]+) 0\)" data-testid="color-legend"/.exec(
+      svg,
+    )
   expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
 }, 20000)
 

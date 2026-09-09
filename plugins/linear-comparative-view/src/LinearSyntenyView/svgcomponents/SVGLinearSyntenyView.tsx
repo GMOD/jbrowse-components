@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import {
   SVGRowHeader,
   SVGView,
@@ -15,7 +16,6 @@ import {
   renderViewTracks,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SVGColorByLegend } from '@jbrowse/synteny-core'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 import SVGOffscreenMates from './SVGOffscreenMates.tsx'
@@ -176,15 +176,12 @@ export async function renderToSvg(
                 // one legend for the whole view, in the topmost ribbon band —
                 // the same placement the on-screen LevelSection uses
                 legend={
-                  i === 0 && model.showColorLegend ? (
-                    <SVGColorByLegend
-                      colorBy={model.colorByMode}
-                      trackChips={model.colorLegendChips}
-                      viewWidth={width}
-                      maxHeight={level.height}
-                      alpha={model.alpha}
-                      cigarOps={model.presentCigarKinds}
-                      attributeRanges={model.attributeRanges}
+                  i === 0 ? (
+                    <SvgLegend
+                      model={model}
+                      width={width}
+                      height={level.height}
+                      opts={undefined}
                     />
                   ) : undefined
                 }

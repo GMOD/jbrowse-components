@@ -187,8 +187,6 @@ export {
   paletteColorAt,
 } from './colorFunctions.ts'
 export type { ColorFunctionInputs } from './colorFunctions.ts'
-export { ColorByLegend } from './ColorByLegend.tsx'
-export { SVGColorByLegend } from './SVGColorByLegend.tsx'
 export {
   CIGAR_OP_D,
   CIGAR_OP_I,
@@ -196,6 +194,7 @@ export {
   NO_CIGAR_OPS,
   colorByFallbackNote,
   colorByShortLabel,
+  colorByScale,
   getColorBySwatch,
 } from './colorLegend.ts'
 export type {

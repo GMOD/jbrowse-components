@@ -8,9 +8,10 @@ import {
 } from '@jbrowse/core/ui'
 import { OverlayPointerProvider } from '@jbrowse/core/ui/highlightChipReveal'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
-import { ColorByLegend, DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
+import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
@@ -136,18 +137,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     <div>
       <Header model={model} interaction={interaction} />
       <div className={classes.root}>
-        {model.showColorLegend ? (
-          <ColorByLegend
-            colorBy={model.colorByMode}
-            trackChips={model.colorLegendChips}
-            pointBased
-            alpha={model.alpha}
-            attributeRanges={model.attributeRanges}
-            onClose={() => {
-              model.dismissColorLegend()
-            }}
-          />
-        ) : null}
+        <ChromeLegend model={model} />
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />

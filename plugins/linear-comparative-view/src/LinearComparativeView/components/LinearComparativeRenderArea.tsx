@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ColorByLegend } from '@jbrowse/synteny-core'
+import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import { Chip, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -134,8 +134,7 @@ const LevelSection = observer(function LevelSection({
   const syntenyModel = asSyntenyModel(model)
   // One legend for the whole view, hosted in the topmost synteny band (the
   // "helper" area) where the color-coded ribbons it describes are actually drawn
-  const legendModel =
-    levelIdx === 0 && syntenyModel?.showColorLegend ? syntenyModel : undefined
+  const legendModel = levelIdx === 0 ? syntenyModel : undefined
 
   return (
     <>
@@ -150,18 +149,7 @@ const LevelSection = observer(function LevelSection({
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
-        {legendModel ? (
-          <ColorByLegend
-            colorBy={legendModel.colorByMode}
-            trackChips={legendModel.colorLegendChips}
-            cigarOps={legendModel.presentCigarKinds}
-            attributeRanges={legendModel.attributeRanges}
-            alpha={legendModel.alpha}
-            onClose={() => {
-              legendModel.dismissColorLegend()
-            }}
-          />
-        ) : null}
+        {legendModel ? <ChromeLegend model={legendModel} /> : null}
       </div>
       {/* Sizes every band, not this one gap — see `resizeAllLevelHeights` — and
         Alt sizes this one alone, which is the only way back to a stack whose

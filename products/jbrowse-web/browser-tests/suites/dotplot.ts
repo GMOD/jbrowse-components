@@ -246,11 +246,11 @@ const suite: TestSuite = {
           )
         }
         await clickMenuRow(page, 'Distinct color per track')
-        await findByTestId(page, 'color-by-legend', 10000)
+        await findByTestId(page, 'floating-legend', 10000)
 
         // the legend keys the plot by track name, one chip each
         const labels = await page.evaluate(() => {
-          const box = document.querySelector('[data-testid="color-by-legend"]')
+          const box = document.querySelector('[data-testid="floating-legend"]')
           return box ? box.textContent : ''
         })
         if (!labels.includes('Grape vs Peach (PAF)')) {

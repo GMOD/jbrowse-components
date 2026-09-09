@@ -158,7 +158,7 @@ const identityLegendTest: TestCase = {
     await waitForDataLoaded(page, 60000)
 
     // full-page capture records the legend
-    await findByTestId(page, 'color-by-legend', 60000)
+    await findByTestId(page, 'floating-legend', 60000)
     await dualSnapshot(
       page,
       'synteny-identity-legend-canvas',
@@ -166,11 +166,12 @@ const identityLegendTest: TestCase = {
     )
 
     // dismiss it and confirm it is removed
-    const close = await findByTestId(page, 'color-by-legend-close', 10000)
-    await close.click()
+    await page.click(
+      '[data-testid="floating-legend"] [aria-label="Hide legend"]',
+    )
     await page.waitForFunction(
       () =>
-        document.querySelectorAll('[data-testid="color-by-legend"]').length ===
+        document.querySelectorAll('[data-testid="floating-legend"]').length ===
         0,
       { timeout: 10000 },
     )

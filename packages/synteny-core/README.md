@@ -149,6 +149,22 @@ lambdas.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
 
+### colorByScale
+
+The active mode's key as one color scale — what a view's `colorScales` lists,
+and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end labels
+(identity's `0%` and `100%`, dN/dS's `≥2`) through `format`; chips are blended
+over the band's ground by the view's alpha, so the key matches the on-screen
+composited ribbon colors, subject to `legendChipColor`'s legibility floor; a
+mode with no fixed key (a color per sequence name) is a note row saying so.
+
+```js
+// type signature
+(colorBy: SyntenyColorBy, {…}?: {…} & { ...; }) => ColorScale
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
+
 ### ColorBySelector
 
 The palette button both comparative headers render. The menu it opens was

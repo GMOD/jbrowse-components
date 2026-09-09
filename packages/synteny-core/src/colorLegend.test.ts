@@ -4,6 +4,7 @@ import {
   CIGAR_OP_N,
   NO_CIGAR_OPS,
   colorByFallbackNote,
+  colorByScale,
   getColorBySwatch,
 } from './colorLegend.ts'
 
@@ -134,5 +135,35 @@ test('a categorical attribute lists a chip per label', () => {
   if (many?.kind === 'chips') {
     expect(many.chips.length).toBe(31)
     expect(many.chips[30]).toEqual({ label: '+5 more' })
+  }
+})
+
+// The scale is the swatch spec in the vocabulary the shared key draws: a ramp
+// keeps its own end labels through `format`, chips become entries composited
+// by the view's alpha, and a mode with no fixed key is one note row.
+test('colorByScale carries a ramp with its own end labels', () => {
+  const scale = colorByScale('identity')
+  expect(scale.kind).toBe('ramp')
+  if (scale.kind === 'ramp') {
+    expect(scale.title).toBe('Identity')
+    expect(scale.domain).toEqual([0, 1])
+    expect(scale.format!(0)).toBe('0%')
+    expect(scale.format!(1)).toBe('100%')
+    expect(scale.stops.length).toBeGreaterThan(2)
+  }
+})
+
+test('colorByScale composites chips by alpha and notes the keyless modes', () => {
+  const chips = colorByScale('default', { pointBased: true, alpha: 0.5 })
+  expect(chips.kind).toBe('categorical')
+  if (chips.kind === 'categorical') {
+    expect(chips.entries.map(e => e.label)).toEqual(['alignment'])
+    expect(chips.entries[0]!.color).toMatch(/^rgb\(/)
+  }
+  const query = colorByScale('query')
+  if (query.kind === 'categorical') {
+    expect(query.entries).toEqual([
+      { value: 'note', label: colorByFallbackNote('query') },
+    ])
   }
 })

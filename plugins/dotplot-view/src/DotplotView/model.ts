@@ -972,6 +972,23 @@ export default function stateModelFactory(pm: PluginManager) {
         },
 
         /**
+         * #method
+         * The key's chips are composited by the plot's alpha, as the points
+         * are.
+         */
+        legendAlpha(): number {
+          return self.alpha
+        },
+
+        /**
+         * #method
+         * Flat points, never a CIGAR op.
+         */
+        legendPointBased(): boolean {
+          return true
+        },
+
+        /**
          * #getter
          * The plot rect as the displays drawing onto it see it: first paint,
          * plus the two flags that mean what is on screen is not the answer yet.

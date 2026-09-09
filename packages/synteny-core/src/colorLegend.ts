@@ -1,11 +1,17 @@
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 
+import { bandGroundColor } from './bandGround.ts'
 import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
-import { colorByAttributeName, colorSchemes } from './colorUtils.ts'
+import {
+  colorByAttributeName,
+  colorSchemes,
+  legendChipColor,
+} from './colorUtils.ts'
 
 import type { AttributeRange, Rgb } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
 
@@ -31,6 +37,7 @@ function gradientCss(stops: GradientStop[]) {
 
 function ramp(
   toRgb: (norm: number) => Rgb,
+  domain: [number, number],
   minLabel: string,
   maxLabel: string,
 ): ColorBySwatchSpec {
@@ -39,6 +46,7 @@ function ramp(
     kind: 'ramp',
     background: gradientCss(stops),
     stops,
+    domain,
     minLabel,
     maxLabel,
   }
@@ -77,6 +85,7 @@ export type ColorBySwatchSpec =
       kind: 'ramp'
       background: string
       stops: GradientStop[]
+      domain: [number, number]
       // required: `ramp()` is the only producer and always names both ends, so a
       // labelless ramp is not a state either legend has to render
       minLabel: string
@@ -171,7 +180,12 @@ export function getColorBySwatch(
   // own pale middle, which is what the end labels alone cannot say.
   const continuous = resolveContinuousMode(colorBy, attributeRanges)
   if (continuous) {
-    return ramp(continuous.toRgb, continuous.minLabel, continuous.maxLabel)
+    return ramp(
+      continuous.toRgb,
+      [continuous.minValue ?? 0, continuous.maxValue],
+      continuous.minLabel,
+      continuous.maxLabel,
+    )
   }
   const categorical = resolveCategoricalMode(colorBy, attributeRanges)
   if (categorical) {
@@ -218,5 +232,53 @@ export function getColorBySwatch(
       // query / target / reference paint a color per sequence name, which has
       // no fixed key
       return undefined
+  }
+}
+
+/**
+ * #api
+ * The active mode's key as one color scale — what a view's `colorScales`
+ * lists, and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its
+ * own end labels (identity's `0%` and `100%`, dN/dS's `≥2`) through `format`;
+ * chips are blended over the band's ground by the view's alpha, so the key
+ * matches the on-screen composited ribbon colors, subject to
+ * `legendChipColor`'s legibility floor; a mode with no fixed key (a color per
+ * sequence name) is a note row saying so.
+ */
+export function colorByScale(
+  colorBy: SyntenyColorBy,
+  {
+    alpha = 1,
+    ...opts
+  }: Parameters<typeof getColorBySwatch>[1] & { alpha?: number } = {},
+): ColorScale {
+  const swatch = getColorBySwatch(colorBy, opts)
+  const title = colorByShortLabel(colorBy)
+  if (swatch?.kind === 'ramp') {
+    const { domain, minLabel, maxLabel, stops } = swatch
+    return {
+      kind: 'ramp',
+      id: colorBy,
+      title,
+      domain,
+      stops,
+      format: v => (v === domain[0] ? minLabel : maxLabel),
+    }
+  }
+  const ground = bandGroundColor()
+  return {
+    kind: 'categorical',
+    id: colorBy,
+    title,
+    entries: swatch
+      ? swatch.chips.map(({ color, label }) => ({
+          value: label,
+          label,
+          color:
+            color === undefined
+              ? undefined
+              : legendChipColor(color, alpha, ground),
+        }))
+      : [{ value: 'note', label: colorByFallbackNote(colorBy) }],
   }
 }

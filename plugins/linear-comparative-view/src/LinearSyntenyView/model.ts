@@ -461,6 +461,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           d => d.featureData?.attributeRanges ?? {},
         )
       },
+
+      /**
+       * #method
+       * The key's chips are composited by the ribbon alpha, as the ribbons
+       * are.
+       */
+      legendAlpha(): number {
+        return self.alpha
+      },
+
+      /**
+       * #method
+       * Only the indel ops drawn on screen get a chip.
+       */
+      legendCigarOps(): CigarOpMask {
+        return this.presentCigarKinds
+      },
     }))
     .views(self => ({
       /**

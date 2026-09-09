@@ -8,7 +8,7 @@ import {
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
-import { SVGColorByLegend } from '@jbrowse/synteny-core'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
@@ -77,17 +77,12 @@ export async function renderToSvg(
               <g key={id}>{node}</g>
             ))}
           </SvgClipRect>
-          {model.showColorLegend ? (
-            <SVGColorByLegend
-              colorBy={model.colorByMode}
-              trackChips={model.colorLegendChips}
-              viewWidth={viewWidth}
-              maxHeight={viewHeight}
-              alpha={model.alpha}
-              attributeRanges={model.attributeRanges}
-              pointBased
-            />
-          ) : null}
+          <SvgLegend
+            model={model}
+            width={viewWidth}
+            height={viewHeight}
+            opts={undefined}
+          />
         </g>
         <g transform={`translate(${borderX} ${viewHeight})`}>
           <HorizontalAxisRaw model={model} />
