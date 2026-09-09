@@ -1123,6 +1123,35 @@ describe('parseTafBlocksStreaming guards a cut tail', () => {
       stream(`${twoBlocks}TT ; s 0 hg38.chr1 104 + 10`),
     ).not.toThrow()
   })
+
+  // taffy also starts a block whose rows are unchanged, and writes the `;` as
+  // the line's last character with no instructions after it. HPRC release 2
+  // carries two inside the C4 window alone, and against ` ; ` alone they read
+  // as bases: the `;` reached `parseBases` as a base with no count, which
+  // throws since it stopped skipping malformed pairs, so the whole track
+  // failed to load. The block boundary the line states goes with it — without
+  // it these four columns are one 4bp block, not two 2bp ones.
+  test('reads a coordinate line whose instruction list is empty', () => {
+    const rle = [
+      'A 1 ; i 0 hg38.chr1 100 + 1000',
+      'C 1',
+      'G 1  ;',
+      'T 1',
+      '',
+    ].join('\n')
+    const features = [
+      ...adapter.parseTafBlocksStreaming(
+        new TextEncoder().encode(rle),
+        true,
+        makeSourceResolver().resolve,
+      ),
+    ]
+    expect(features.map(f => [f.start, f.end])).toEqual([
+      [100, 102],
+      [102, 104],
+    ])
+    expect(features.map(f => f.seq)).toEqual(['AC', 'GT'])
+  })
 })
 
 describe('blockToFeature places a minus-strand reference row forward', () => {

@@ -72,6 +72,29 @@ export function parseBasesColumn(
   return parseBases(basesOnly.trim(), runLengthEncodeBases)
 }
 
+// ` ; ` on a coordinate line carrying instructions, and a bare trailing ` ;` on
+// one that carries none.
+const COORDINATE_SEPARATOR = / ; | ;$/
+
+/**
+ * Where a TAF line's coordinate section starts, or -1 for a plain bases line.
+ *
+ * The separator is ` ; `, except that taffy also starts a block whose rows are
+ * unchanged from the previous one, and there it writes the `;` as the line's
+ * last character with no instructions after it. HPRC release 2 carries two of
+ * those inside the C4 window alone. Read as a bases line instead, the `;`
+ * reaches `parseBases` as a base with no count — which the RLE decoder now
+ * rejects rather than skipping, so a whole track failed to load — and the block
+ * boundary the line states is lost.
+ *
+ * A coordinate line the byte range cut mid-instruction cannot be confused with
+ * one of these: the caller drops an unterminated final line before it gets
+ * here.
+ */
+export function findCoordinateSeparator(line: string) {
+  return COORDINATE_SEPARATOR.exec(line)?.index ?? -1
+}
+
 /**
  * Faithful translation of parse_coordinates_and_establish_block from taf.c.
  * Starts from `pBlock` (advancing each row's start by its previous length)

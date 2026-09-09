@@ -79,7 +79,10 @@ export function filterFirstLineInstructions(
  * Each instruction token sequence is parsed according to TAF format rules
  */
 export function parseRowInstructions(meta: string) {
-  const ret = meta.split(' ')
+  // Empty tokens dropped, so a block boundary with no row changes (`bases ;`)
+  // and any run of spaces between instructions parse as the nothing they are.
+  // A real unknown opcode is a non-empty token and still throws below.
+  const ret = meta.split(' ').filter(Boolean)
   const rows: RowInstruction[] = []
 
   for (let i = 0; i < ret.length;) {

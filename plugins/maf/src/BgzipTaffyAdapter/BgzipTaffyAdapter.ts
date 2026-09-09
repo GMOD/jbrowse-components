@@ -12,6 +12,7 @@ import {
 import {
   blockToFeature,
   finalizeBlock,
+  findCoordinateSeparator,
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
@@ -85,7 +86,7 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
         continue
       }
 
-      const semicolonIndex = trimmedLine.indexOf(' ; ')
+      const semicolonIndex = findCoordinateSeparator(trimmedLine)
       const hasCoordinates = semicolonIndex !== -1
 
       if (hasCoordinates) {

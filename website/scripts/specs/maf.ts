@@ -1,7 +1,11 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
-import { GRAPH_DRAWN, local, referencePositionColor } from './graph-fixtures.ts'
+import {
+  TOOLBAR_READY,
+  local,
+  referencePositionColor,
+} from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -923,20 +927,29 @@ export const mafSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportHeight: 2000,
-    // Four signals ANDed: the graph drawn, its toolbar painted, the callset's
-    // clustering landed (its dendrogram exists) and the alignment drawn WITH a
-    // tree positioned against its rows. A bare comma list would be a CSS OR and
-    // fire on whichever landed first.
-    //
-    // The last one is `data-clustered` rather than a second dendrogram, and it
-    // has to be: `:has([data-testid="tree_sidebar_dendrogram"])` on the body is
-    // satisfied by the callset's canvas alone, so with only that gate the
-    // capture could land before the alignment's own run finished and commit the
-    // unclustered order. CSS cannot ask for two of a thing.
-    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) ${displayPainted('maf-display')}[data-clustered="true"]`,
+    // The graph pane, on the shared gate every graph figure uses.
+    readySelector: TOOLBAR_READY,
     readyTimeout: 360000,
-    // the .tai alone is 4.98 MB and the first block read follows it
-    actions: [{ type: 'delay' as const, ms: 25000 }],
+    // THE TWO CLUSTERING RUNS, one wait each. Both were once folded into the
+    // readySelector as `:has([data-testid="tree_sidebar_dendrogram"])` plus a
+    // `data-clustered`, and a body-level `:has` cannot say WHICH display drew
+    // the dendrogram — either lane satisfied it — so half the gate was decided
+    // by whichever finished first. A wait per display says which is which, and
+    // each one is a selector a reader can evaluate on its own.
+    actions: [
+      {
+        type: 'waitForSelector' as const,
+        selector: `${displayPainted('variant-display')}[data-clustered="true"]`,
+        timeout: 240000,
+      },
+      {
+        type: 'waitForSelector' as const,
+        selector: `${displayPainted('maf-display')}[data-clustered="true"]`,
+        timeout: 240000,
+      },
+      // the .tai alone is 4.98 MB and the first block read follows it
+      { type: 'delay' as const, ms: 25000 },
+    ],
     // A KEY for the two fills, where this was one sentence arguing against a
     // wrong reading of one of them ("A blank row is a haplotype with no sequence
     // here, not one whose sequence matches"). Two things were wrong with that
