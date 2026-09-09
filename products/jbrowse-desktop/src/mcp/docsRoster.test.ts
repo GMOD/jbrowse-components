@@ -5,6 +5,7 @@ import { createJbApi } from '@jbrowse/app-core'
 
 import { WHOLE_TOPICS } from '../../electron/mcp/docLimits.ts'
 import {
+  CLIENT_TEXT_CAP_BYTES,
   CODE_TIMEOUT_DEFAULT_MS,
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
@@ -103,6 +104,21 @@ describe('the copies read before any doc name the load-bearing members', () => {
     it(copy, () => {
       const named = namesIn(copies[copy as keyof typeof copies])
       expect(members.filter(n => !named.has(n))).toEqual([])
+    })
+  }
+})
+
+// Past the cap the client cuts the text, and the sentence that used to say
+// "read docs live-model FIRST" sat at the end of a 5 KB description, so no
+// client ever showed it.
+describe('the copies a client shows the model fit under its cap', () => {
+  const copies = {
+    instructions: SERVER_INSTRUCTIONS,
+    ...Object.fromEntries(MCP_TOOLS.map(t => [t.name, t.description])),
+  }
+  for (const [name, text] of Object.entries(copies)) {
+    it(name, () => {
+      expect(Buffer.byteLength(text)).toBeLessThanOrEqual(CLIENT_TEXT_CAP_BYTES)
     })
   }
 })

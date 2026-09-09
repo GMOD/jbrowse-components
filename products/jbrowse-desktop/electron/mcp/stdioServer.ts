@@ -12,6 +12,14 @@ import { MCP_TOOLS, SERVER_INSTRUCTIONS } from './toolDefinitions.ts'
 
 const PROTOCOL_VERSION = '2025-06-18'
 const BRIDGE_TIMEOUT_MS = 180_000
+// Claude Desktop keeps one server process across many chats and never shows
+// the initialize instructions to the model (anthropics/claude-ai-mcp#93). The
+// server cannot see chat boundaries, so a pause this long since the previous
+// tool call is read as a new one.
+export const SESSION_GAP_MS = 15 * 60_000
+
+export const GUIDANCE_PREFIX =
+  'Guidance from the jbrowse server (repeated here because some clients do not show the server instructions):'
 
 interface JsonRpcRequest {
   jsonrpc?: string
@@ -187,15 +195,39 @@ export function runMcpStdioServer({
   onExit,
   input = process.stdin,
   output = process.stdout,
+  now = Date.now,
 }: {
   socketPath: string
   version: string
   onExit: () => void
   input?: NodeJS.ReadableStream
   output?: NodeJS.WritableStream
+  now?: () => number
 }) {
   const callBridge = connectBridge(socketPath)
   const rl = readline.createInterface({ input })
+
+  // Whether the agent has been briefed this session: by reading the guide, or
+  // by the guidance the first run_javascript result carried
+  let briefed = false
+  let lastCallAt: number | undefined
+  function startSessionIfIdle() {
+    const t = now()
+    if (lastCallAt !== undefined && t - lastCallAt > SESSION_GAP_MS) {
+      briefed = false
+    }
+    lastCallAt = t
+  }
+  function brief<T extends { content: unknown[] }>(result: T): T {
+    briefed = true
+    return {
+      ...result,
+      content: [
+        { type: 'text', text: `${GUIDANCE_PREFIX}\n\n${SERVER_INSTRUCTIONS}` },
+        ...result.content,
+      ],
+    }
+  }
 
   // Checked once per observed answer, not per docs call: the app's version
   // cannot change while it runs, and an unreachable app leaves the question
@@ -271,12 +303,16 @@ export function runMcpStdioServer({
           typeof params.arguments === 'object' && params.arguments !== null
             ? (params.arguments as Record<string, unknown>)
             : {}
+        startSessionIfIdle()
         if (name === 'docs') {
           // answered here rather than in the app, so documentation reads work
           // while JBrowse Desktop is closed; lazy so jest never resolves the
           // .md imports it bundles
           const { docsToolResult } = await import('./docsContent.ts')
           const outcome = docsToolResult(args)
+          if (args.topic === 'live-model') {
+            briefed = true
+          }
           const note = await docsSkewNote()
           respond(id, {
             result: toolCallContent(
@@ -289,7 +325,11 @@ export function runMcpStdioServer({
           const outcome = await callBridge(name, args).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),
           }))
-          respond(id, { result: toolCallContent(outcome) })
+          const result = toolCallContent(outcome)
+          respond(id, {
+            result:
+              name === 'run_javascript' && !briefed ? brief(result) : result,
+          })
         } else {
           respond(id, {
             error: { code: -32602, message: `Unknown tool: ${name}` },

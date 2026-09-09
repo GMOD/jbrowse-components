@@ -106,3 +106,15 @@ disagree (`versionSkewNote`).
 built app and runs the conformance suite in `test/mcpConformance.ts` against
 volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`
 and, condensed, in the initialize response's `instructions`.
+
+## What each client shows the model
+
+Claude Code caps a tool description and the server `instructions` at 2 KB each
+(2.1.84). Claude Desktop stores the `instructions` and never shows them to the
+model (anthropics/claude-ai-mcp#93), so there the description of
+`run_javascript` is the whole briefing until the agent calls `docs`. Both texts
+therefore stay under the cap with the essentials first (`CLIENT_TEXT_CAP_BYTES`,
+pinned by `docsRoster.test.ts`), and the stdio server prepends the instructions
+to the first `run_javascript` result of a session that has not read
+`docs topic:"live-model"`. It cannot see chat boundaries, so a pause of
+`SESSION_GAP_MS` since the previous call counts as a new session.

@@ -12,11 +12,14 @@ One interface: `run_javascript` executes your code against the live session,
 with `jb` as the standard library; `open`, `screenshot`, and `docs` cover the
 three things code inside the app cannot do.
 
-**The working discipline is served by the app, not written here.** It reaches
-every client through two channels that ship with the server, so it cannot drift
-from the version you are driving:
+**The working discipline is served by the app, not written here.** It ships with
+the server, so it cannot drift from the version you are driving, and reaches the
+agent three ways:
 
-- the `initialize` response's `instructions`, which your client has already read
+- the `initialize` response's `instructions`, which Claude Code shows you and
+  Claude Desktop does not (anthropics/claude-ai-mcp#93)
+- the same text ahead of a session's first `run_javascript` result, for the
+  clients that drop it
 - `docs topic:"live-model"` — read it before your first `run_javascript` call.
   `docs topic:"recipes"` has a verified snippet for most asks,
   `docs topic:"hosted-data"` the config URL for any UCSC or GenArk assembly when
@@ -42,4 +45,6 @@ the picture.
   socket — with another Desktop instance running it attaches to that one.
 - The discipline above lives in `website/docs/agents_live_model.md` and
   `SERVER_INSTRUCTIONS` (`electron/mcp/toolDefinitions.ts`). Edit it there;
-  `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree.
+  `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree
+  and that the instructions and each tool description stay under the 2 KB the
+  clients show the model. Put what must be read first in the first sentence.

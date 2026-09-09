@@ -13,10 +13,20 @@ import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
 
 import {
+  GUIDANCE_PREFIX,
+  SESSION_GAP_MS,
   runMcpStdioServer,
   unreachableMessage,
   versionSkewNote,
 } from './stdioServer.ts'
+
+// the bundled .md imports do not resolve under jest; the briefing tests only
+// need to see a docs call answer
+jest.mock('./docsContent.ts', () => ({
+  docsToolResult: (args: { topic?: string }) => ({
+    text: `# ${args.topic}\n\njb.sessionSummary()`,
+  }),
+}))
 
 interface JsonRpcResponse {
   id: number
@@ -66,7 +76,11 @@ afterEach(() => {
   }
 })
 
-function startServer(socketPath: string, onExit: () => void = () => {}) {
+function startServer(
+  socketPath: string,
+  onExit: () => void = () => {},
+  now: () => number = Date.now,
+) {
   const input = new PassThrough()
   const output = new PassThrough()
   const responses: JsonRpcResponse[] = []
@@ -86,6 +100,7 @@ function startServer(socketPath: string, onExit: () => void = () => {}) {
     onExit,
     input,
     output,
+    now,
   })
   cleanups.push(() => {
     input.end()
@@ -141,10 +156,90 @@ test('initialize, tools/list, and a relayed tools/call', async () => {
   const call = await server.next()
   expect(seen).toEqual(['run_javascript'])
   expect(call.result?.isError).toBeUndefined()
-  expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
+  expect(JSON.parse(call.result?.content?.at(-1)?.text ?? '')).toEqual({
     ok: true,
   })
   bridge.close()
+})
+
+// Claude Desktop never shows the model the initialize instructions, and
+// Claude Code cuts them at 2 KB; the first run_javascript result of a session
+// is the one channel every client delivers whole.
+describe('a session is briefed once, in its first run_javascript result', () => {
+  function runJs(id: number) {
+    return {
+      id,
+      method: 'tools/call',
+      params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+    }
+  }
+  function guidanceIn(r: JsonRpcResponse) {
+    return r.result?.content?.filter(c => c.text?.startsWith(GUIDANCE_PREFIX))
+      .length
+  }
+
+  it('prepends the instructions to the first call and not the second', async () => {
+    const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+    const server = startServer(bridge.socketPath)
+    server.send(runJs(1))
+    const first = await server.next()
+    expect(guidanceIn(first)).toBe(1)
+    expect(first.result?.content?.[0]?.text).toContain(
+      'docs topic "live-model"',
+    )
+    expect(JSON.parse(first.result?.content?.[1]?.text ?? '')).toEqual({
+      ok: true,
+    })
+    server.send(runJs(2))
+    expect(guidanceIn(await server.next())).toBe(0)
+    bridge.close()
+  })
+
+  it('briefs an error outcome too, ahead of the error', async () => {
+    const bridge = await startFakeBridge(() => ({ error: 'no session open' }))
+    const server = startServer(bridge.socketPath)
+    server.send(runJs(1))
+    const call = await server.next()
+    expect(call.result?.isError).toBe(true)
+    expect(guidanceIn(call)).toBe(1)
+    expect(call.result?.content?.[1]?.text).toBe('no session open')
+    bridge.close()
+  })
+
+  it('skips the briefing when the guide was read first', async () => {
+    const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+    const server = startServer(bridge.socketPath)
+    server.send({
+      id: 1,
+      method: 'tools/call',
+      params: { name: 'docs', arguments: { topic: 'live-model' } },
+    })
+    const docs = await server.next()
+    expect(docs.error).toBeUndefined()
+    expect(docs.result?.content?.[0]?.text).toContain('jb.sessionSummary')
+    server.send(runJs(2))
+    expect(guidanceIn(await server.next())).toBe(0)
+    bridge.close()
+  })
+
+  it('briefs again after a pause long enough to be a new chat', async () => {
+    let clock = 0
+    const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+    const server = startServer(
+      bridge.socketPath,
+      () => {},
+      () => clock,
+    )
+    server.send(runJs(1))
+    expect(guidanceIn(await server.next())).toBe(1)
+    clock += SESSION_GAP_MS - 1
+    server.send(runJs(2))
+    expect(guidanceIn(await server.next())).toBe(0)
+    clock += SESSION_GAP_MS + 1
+    server.send(runJs(3))
+    expect(guidanceIn(await server.next())).toBe(1)
+    bridge.close()
+  })
 })
 
 // The settle result and the image BOTH have to survive: screenshot is the tool
@@ -184,7 +279,7 @@ test('a bridge error outcome is an isError tool result, not a protocol error', a
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
-  expect(call.result?.content?.[0]?.text).toBe('no session open')
+  expect(call.result?.content?.at(-1)?.text).toBe('no session open')
   bridge.close()
 })
 
@@ -199,7 +294,7 @@ test('the app not running reads as a launch hint, not a stack trace', async () =
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
-  expect(call.result?.content?.[0]?.text).toContain(
+  expect(call.result?.content?.at(-1)?.text).toContain(
     'Launch the JBrowse Desktop app',
   )
 })
@@ -316,7 +411,7 @@ test('an app restart mid-session reconnects instead of failing forever', async (
   })
   const call = await server.next()
   expect(call.result?.isError).toBeUndefined()
-  expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
+  expect(JSON.parse(call.result?.content?.at(-1)?.text ?? '')).toEqual({
     generation: 2,
   })
 })
