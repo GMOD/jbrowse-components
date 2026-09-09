@@ -1,9 +1,11 @@
-// #exampleFile shared | MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend
+// #exampleFile shared | MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
 // #region imports
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -11,19 +13,18 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 // #endregion
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
-import type {
-  ScoreRenderState,
-  ScoreRenderingBackend,
-} from './components/scoreTypes.ts'
 import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
+import type { ScoreHit } from './findScoreHit.ts'
+import type { ScoreRenderState, ScoreRenderingBackend } from './scoreMarks.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearScoreDisplay
  * #displayFoundation MultiRegionDisplayMixin
- * The worked-example score display: one value per feature, drawn as a scatter
+ * The worked-example score display: one value per feature, drawn as a box
  * along the genome. The developer guides walk through this model.
  *
  * #example
@@ -57,6 +58,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      StoredHoverMixin<ScoreHit>((a, b) => a.start === b.start),
       types.model({
         type: types.literal('LinearScoreDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -80,15 +82,19 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
       // #endregion
+      // #region renderState
       // recomputed cheaply every frame without fetching; carries the canvas
-      // dimensions (required) plus whatever the draw path reads
+      // dimensions (required) plus whatever the marks read. The color is
+      // resolved to the packed form here, once, so the uniform write and the
+      // painter are handed the same number
       get renderState(): ScoreRenderState {
         return {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          color: getConf(self, 'color'),
+          color: cssColorToABGR(getConf(self, 'color')),
         }
       },
+      // #endregion
     }))
     .actions(self => ({
       // #region fetchNeeded
@@ -120,21 +126,35 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       },
       // #endregion
       // #region startRenderingBackend
-      // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState. This is
-      // the only part of the model that knows a backend exists, and it is
-      // identical whether that backend is the GPU or the Canvas2D one.
+      // called once by DisplayChrome when the backend is created, and again
+      // after a context loss. One installer streams each region into the
+      // backend and draws every frame from renderState; it is the only part of
+      // the model that knows a backend exists, and it is the same whether that
+      // backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installUpload(self, backend, {
           cells: () => self.rpcDataMap,
-          render: (b, regions) => {
-            if (regions.size === 0) {
-              return false // keep the loading overlay up until data lands
-            }
-            b.renderBlocks(self.renderBlocks, regions, self.renderState)
-            return true
-          },
+          render: b =>
+            b.renderBlocks(
+              self.renderBlocks,
+              self.rpcDataMap,
+              self.renderState,
+            ),
         })
+      },
+      // #endregion
+    }))
+    .actions(self => ({
+      // #region renderSvg
+      /**
+       * #action
+       * The SVG export, lazily loaded with the mark list it paints through.
+       * Its own block: the export reads `self` as the slice `renderSvg.tsx`
+       * declares, and MST does not type a block's own members onto its `self`
+       */
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
       },
       // #endregion
     }))

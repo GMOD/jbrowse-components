@@ -1,14 +1,20 @@
-// #exampleFile gpu | vertex + fragment for one pass; compiled by gen:shaders
-// Score display: one box per feature. The box spans start->end horizontally and
-// its height is score (0..1) x canvasHeight, grown up from the bottom. A single
-// uniform ABGR color fills every box. This is the minimal per-region GPU pass
-// used by the "GPU displays" developer guide.
+// #exampleFile shared | the `score` shape's shader: one box per feature, compiled by gen:shaders
+// The score shape: one box per instance, spanning startBp->endBp and grown up
+// from the canvas bottom to score (0..1) x canvasHeight, every box in the one
+// uniform ABGR color. The box height is written here once and lifted into a
+// TypeScript twin, which the painter and the hit test read.
 //! targets: wgsl, glsl
+//! export-consts: MIN_WIDTH_PX
+//! js-export: scoreBarHeightPx
 
 import hpmath;
 import colorPack;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// Narrowest a box paints, in CSS px, so a 1bp feature still shows at
+// chromosome zoom. Both backends floor at this constant.
+static const float MIN_WIDTH_PX = 1.0;
 
 struct ScoreInstance {
   uint  startBp : ATTR0;
@@ -20,7 +26,8 @@ struct Uniforms {
   // hpmath genomic->clip transform (hi, lo, +/-clippedLengthBp)
   float3 bpRangeX;
   float  zero;
-  float  canvasWidth;
+  // CSS px of the block column clip space spans, not the whole canvas
+  float  viewportWidth;
   float  canvasHeight;
   uint   color;
 };
@@ -28,6 +35,10 @@ struct Uniforms {
 
 float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
+}
+
+float scoreBarHeightPx(float score, float canvasHeight) {
+  return clamp(score, 0.0, 1.0) * canvasHeight;
 }
 
 struct VsOut {
@@ -42,12 +53,12 @@ VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
 
   float x1 = bpToClipX(inst.startBp, u);
   float x2 = bpToClipX(inst.endBp, u);
-  // widen a sub-pixel feature so a 1bp box still paints (reversal-safe: reversal
-  // is baked into bpRangeX's negated length, so x2 < x1 on reversed blocks).
-  x2 = extendToMinWidthX(x1, x2, 1.0, u.canvasWidth);
+  // reversal-safe: it is baked into bpRangeX's negated length, so x2 < x1 on a
+  // reversed block and the widening grows the same way
+  x2 = extendToMinWidthX(x1, x2, MIN_WIDTH_PX, u.viewportWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = clamp(inst.score, 0.0, 1.0) * u.canvasHeight;
+  float barHeightPx = scoreBarHeightPx(inst.score, u.canvasHeight);
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 
